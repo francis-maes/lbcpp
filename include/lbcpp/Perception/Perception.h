@@ -176,30 +176,11 @@ extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
 typedef std::vector< std::vector<size_t> > ConjunctionVector;
 extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
-extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
 
 // product perceptions
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2);
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, TypePtr type1, PerceptionPtr perception2);
-extern PerceptionPtr conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2);
-
-// boolean / enumeration features
-extern PerceptionPtr booleanFeatures();
-extern PerceptionPtr enumValueFeatures(EnumerationPtr enumeration);
-
-// number features
-extern PerceptionPtr hardDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
-extern PerceptionPtr softDiscretizedNumberFeatures(TypePtr inputType, double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
-extern PerceptionPtr softDiscretizedLogNumberFeatures(TypePtr inputType, double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures);
-
-extern PerceptionPtr signedNumberFeatures(PerceptionPtr positiveNumberPerception);
-
-extern PerceptionPtr defaultPositiveIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
-extern PerceptionPtr defaultIntegerFeatures(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
-extern PerceptionPtr defaultDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
-extern PerceptionPtr defaultPositiveDoubleFeatures(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
-extern PerceptionPtr defaultProbabilityFeatures(size_t numIntervals = 5);
 
 }; /* namespace lbcpp */
 

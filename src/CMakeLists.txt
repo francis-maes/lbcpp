@@ -213,8 +213,6 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
 SET(LBCPP_PERCEPTION_SOURCES
   ../include/lbcpp/Perception/Perception.h
   Perception/Perception.cpp
-  ../include/lbcpp/Perception/PerceptionMaths.h
-  Perception/PerceptionMaths.cpp
   ../include/lbcpp/Perception/PerceptionRewriter.h
   Perception/PerceptionRewriter.cpp
   Perception/PerceptionRewriterRules.h
@@ -332,6 +330,13 @@ SET(LBCPP_NUMERICAL_LEARNING_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningClasses.cpp
 )
 
+SET(LBCPP_NUMERICAL_LEARNING_MATH_SOURCES
+  NumericalLearning/Math/DoubleConstUnaryOperation.h
+  NumericalLearning/Math/DoubleUnaryOperation.h
+  NumericalLearning/Math/DoubleDotProductOperation.h
+  NumericalLearning/Math/DoubleAssignmentOperation.h
+)
+
 SET(LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES
   NumericalLearning/Perception/BooleanFeatures.h
   NumericalLearning/Perception/EnumValueFeatures.h
@@ -428,6 +433,7 @@ SET(LBCPP_CORE
 
   # NumericalLearning
   ${LBCPP_NUMERICAL_LEARNING_SOURCES}
+  ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES}
   ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES}
   ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES}
   ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES}
@@ -473,6 +479,7 @@ SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 
 ## NumericalLearning
 SOURCE_GROUP(NumericalLearning FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning Math FILES ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})

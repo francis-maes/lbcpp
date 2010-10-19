@@ -37,10 +37,6 @@
       <variable type="Perception" name="target"/>
     </class>
 
-    <class name="EnumValueFeaturesPerceptionRewriteRule" base="PerceptionRewriteRule">
-      <constructor/>
-    </class>
-
     <class name="PerceptionRewriter" base="NameableObject">
       <variable type="ObjectVector[PerceptionRewriteRule]" name="rules"/>
       <variable type="Boolean" name="useCache"/>

@@ -34,7 +34,6 @@ extern ClassPtr perceptionRewriteRuleClass;
 
 extern PerceptionRewriteRulePtr typeBasedPerceptionRewriteRule(TypePtr type, PerceptionPtr target);
 extern PerceptionRewriteRulePtr typeAndStackBasedPerceptionRewriteRule(TypePtr type, const String& stack, PerceptionPtr target);
-extern PerceptionRewriteRulePtr enumValueFeaturesPerceptionRewriteRule();
 
 class PerceptionRewriter : public NameableObject
 {
@@ -45,7 +44,6 @@ public:
   void addRule(PerceptionRewriteRulePtr rule);
   void addRule(TypePtr type, PerceptionPtr target);
   void addRule(TypePtr type, const String& stack, PerceptionPtr target);
-  void addEnumValueFeaturesRule();
   size_t getNumRules() const;
 
   PerceptionPtr rewrite(PerceptionPtr perception) const;
@@ -67,8 +65,6 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<PerceptionRewriter> PerceptionRewriterPtr;
-
-extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 
 }; /* namespace lbcpp */
 

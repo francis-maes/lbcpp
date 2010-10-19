@@ -7,10 +7,65 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Function/ScalarObjectFunction.h>
-#include <lbcpp/Perception/PerceptionMaths.h>
 #include <lbcpp/NumericalLearning/NumericalLearning.h>
 using namespace lbcpp;
 
+/*
+** Math
+*/
+#include "Math/DoubleUnaryOperation.h"
+#include "Math/DoubleConstUnaryOperation.h"
+#include "Math/DoubleDotProductOperation.h"
+#include "Math/DoubleAssignmentOperation.h"
+
+/*
+** Perception
+*/
+namespace lbcpp
+{
+  extern FunctionPtr multiplyDoubleFunction();
+};
+
+PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
+  {return softDiscretizedLogNumberFeatures(positiveIntegerType, 0.0, maxPowerOfTen, numIntervals, true);}
+
+PerceptionPtr lbcpp::defaultIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
+  {return signedNumberFeatures(softDiscretizedLogNumberFeatures(integerType, 0.0, maxPowerOfTen, numIntervals, true));}
+
+PerceptionPtr lbcpp::defaultProbabilityFeatures(size_t numIntervals)
+  {return softDiscretizedNumberFeatures(probabilityType, 0.0, 1.0, numIntervals, false, false);}
+
+PerceptionPtr lbcpp::defaultPositiveDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
+  {return softDiscretizedLogNumberFeatures(doubleType, minPowerOfTen, maxPowerOfTen, numIntervals, true);}
+
+PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
+  {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}
+
+PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
+  {jassert(perception1 && perception2); return productPerception(multiplyDoubleFunction(), perception1, perception2, true, true);}
+
+PerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const std::vector< std::vector<size_t> >& selectedConjunctions)
+  {return selectAndMakeProductsPerception(decorated, multiplyDoubleFunction(), selectedConjunctions);}
+
+PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
+{
+  PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
+
+  rewriter->addRule(booleanType, booleanFeatures());
+  rewriter->addRule(enumValueFeaturesPerceptionRewriteRule());
+
+  rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
+  rewriter->addRule(probabilityType, defaultProbabilityFeatures());
+  rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
+  rewriter->addRule(integerType, defaultIntegerFeatures());
+
+  rewriter->addRule(doubleType, identityPerception());
+  return rewriter->rewrite(perception);
+}
+
+/*
+** Inference
+*/
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
   : ParameterizedInference(name), perception(perception) {}
 
@@ -41,6 +96,9 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
   }
 }
 
+/*
+** OnlineLearner
+*/
 #include "OnlineLearner/StochasticGradientDescentOnlineLearner.h"
 #include "OnlineLearner/BatchGradientDescentOnlineLearner.h"
 #include "OnlineLearner/RandomizerInferenceOnlineLearner.h"
@@ -123,3 +181,4 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
     jassert(!restoreBestParametersWhenLearningStops);
   return res;
 }
+
