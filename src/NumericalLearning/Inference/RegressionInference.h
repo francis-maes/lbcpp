@@ -19,9 +19,15 @@ namespace lbcpp
 class RegressionInference : public StaticDecoratorInference
 {
 public:
-  RegressionInference(const String& name, InferencePtr scoreInference)
+  RegressionInference(const String& name, InferencePtr scoreInference, InferenceOnlineLearnerPtr onlineLearner)
     : StaticDecoratorInference(name, scoreInference)
-    {setBatchLearner(onlineToBatchInferenceLearner());}
+  {
+    if (onlineLearner)
+    {
+      setBatchLearner(onlineToBatchInferenceLearner());
+      scoreInference->addOnlineLearner(onlineLearner);
+    }
+  }
   RegressionInference() {}
   
   virtual TypePtr getSupervisionType() const
@@ -47,8 +53,7 @@ class SquareRegressionInference : public RegressionInference
 {
 public:
   SquareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception))
-    {decorated->setOnlineLearner(learner);}
+    : RegressionInference(name, linearInference(name, perception), learner) {}
 
   SquareRegressionInference() {}
   
@@ -60,8 +65,7 @@ class DihedralAngleRegressionInference : public RegressionInference
 {
 public:
   DihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception))
-    {decorated->setOnlineLearner(learner);}
+    : RegressionInference(name, linearInference(name, perception), learner) {}
 
   DihedralAngleRegressionInference() {}
   
@@ -73,8 +77,7 @@ class AbsoluteRegressionInference : public RegressionInference
 {
 public:
   AbsoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception))
-    {decorated->setOnlineLearner(learner);}
+    : RegressionInference(name, linearInference(name, perception), learner) {}
 
   AbsoluteRegressionInference() {}
   

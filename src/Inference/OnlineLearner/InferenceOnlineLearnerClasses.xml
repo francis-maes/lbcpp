@@ -22,7 +22,9 @@
       <value name="perMiniBatch10"/>
     </enumeration>
 
-    <class name="InferenceOnlineLearner" abstract="yes"/>
+    <class name="InferenceOnlineLearner" abstract="yes">
+      <variable type="InferenceOnlineLearner" name="nextLearner"/>
+    </class>
 
     <class name="UpdatableOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
       <variable type="PositiveInteger" name="epoch"/>

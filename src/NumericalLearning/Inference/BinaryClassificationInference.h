@@ -20,9 +20,15 @@ namespace lbcpp
 class BinaryClassificationInference : public StaticDecoratorInference
 {
 public:
-  BinaryClassificationInference(const String& name, InferencePtr scoreInference)
+  BinaryClassificationInference(const String& name, InferencePtr scoreInference, InferenceOnlineLearnerPtr onlineLearner = InferenceOnlineLearnerPtr())
     : StaticDecoratorInference(name, scoreInference)
-    {setBatchLearner(onlineToBatchInferenceLearner());}
+  {
+    if (onlineLearner)
+    {
+      setBatchLearner(onlineToBatchInferenceLearner());
+      scoreInference->addOnlineLearner(onlineLearner);
+    }
+  }
   BinaryClassificationInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const = 0;
@@ -88,8 +94,8 @@ class BinaryLinearSVMInference : public BinaryClassificationInference
 {
 public:
   BinaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name, perception))
-    {decorated->setOnlineLearner(learner);}
+    : BinaryClassificationInference(name, linearInference(name, perception), learner)
+    {}
   BinaryLinearSVMInference(InferencePtr scoreInference)
     : BinaryClassificationInference(scoreInference->getName(), scoreInference)
     {}
@@ -103,8 +109,8 @@ class BinaryLogisticRegressionInference : public BinaryClassificationInference
 {
 public:
   BinaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name, perception))
-    {decorated->setOnlineLearner(learner);}
+    : BinaryClassificationInference(name, linearInference(name, perception), learner)
+    {}
   BinaryLogisticRegressionInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const

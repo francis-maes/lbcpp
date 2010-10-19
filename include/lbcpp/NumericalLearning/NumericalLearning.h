@@ -119,8 +119,8 @@ protected:
 typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 
 // Atomic
-extern InferencePtr linearInference(const String& name, PerceptionPtr perception);
-extern InferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
+extern NumericalInferencePtr linearInference(const String& name, PerceptionPtr perception);
+extern NumericalInferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification
@@ -156,6 +156,9 @@ extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
           bool restoreBestParametersWhenLearningStops = false
     );
+
+extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& targetInferences);
+extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference);
 
 }; /* namespace lbcpp */
 

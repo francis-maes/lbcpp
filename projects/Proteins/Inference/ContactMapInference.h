@@ -187,7 +187,7 @@ protected:
 inline AddBiasInference::AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias)
   : StaticDecoratorInference(name, numericalInference), bias(initialBias)
 {
-  setOnlineLearner(new AddBiasInferenceOnlineLearner(InferenceOnlineLearner::perPass));
+  addOnlineLearner(new AddBiasInferenceOnlineLearner(InferenceOnlineLearner::perPass));
 }
 
 }; /* namespace lbcpp */

@@ -1,5 +1,7 @@
 * GraftingOnlineLearner
 
+* Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
+
 * StoppingCriterion: faire un reset() dans le clone()
 * StoppingCriterionOnlineLearner: ne pas cloner le StoppingCriterion manuellement
 
