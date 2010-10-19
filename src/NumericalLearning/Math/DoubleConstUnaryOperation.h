@@ -103,7 +103,7 @@ struct ComputeL0NormOperation : public DoubleConstUnaryOperation
     {res += lbcpp::l0norm(object);}
 };
 
-size_t lbcpp::l0norm(const ObjectPtr& object)
+size_t l0norm(const ObjectPtr& object)
 {
   if (object)
   {
@@ -115,7 +115,7 @@ size_t lbcpp::l0norm(const ObjectPtr& object)
     return 0;
 }
 
-size_t lbcpp::l0norm(const PerceptionPtr& perception, const Variable& input)
+size_t l0norm(const PerceptionPtr& perception, const Variable& input)
   {ComputeL0NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
@@ -137,7 +137,7 @@ struct ComputeL1NormOperation : public DoubleConstUnaryOperation
     {res += lbcpp::l1norm(object);}
 };
 
-double lbcpp::l1norm(const ObjectPtr& object)
+double l1norm(const ObjectPtr& object)
 {
   if (object)
   {
@@ -149,7 +149,7 @@ double lbcpp::l1norm(const ObjectPtr& object)
     return 0.0;
 }
 
-double lbcpp::l1norm(const PerceptionPtr& perception, const Variable& input)
+double l1norm(const PerceptionPtr& perception, const Variable& input)
   {ComputeL1NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
@@ -183,7 +183,7 @@ double lbcpp::sumOfSquares(const ObjectPtr& object)
     return 0.0;
 }
 
-double lbcpp::sumOfSquares(const PerceptionPtr& perception, const Variable& input)
+double sumOfSquares(const PerceptionPtr& perception, const Variable& input)
   {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 }; /* namespace lbcpp */
