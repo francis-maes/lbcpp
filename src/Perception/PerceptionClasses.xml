@@ -7,7 +7,6 @@
   <import name="SimplePerception"/>
   <import name="ModifierPerception"/>
   <import name="ContainerPerception"/>
-  <import name="FeaturesPerception"/>
   
   <namespace name="lbcpp">
     

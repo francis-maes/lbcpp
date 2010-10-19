@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_EXTRA_TREE_H_
 
 # include "BinaryDecisionTree.h"
-# include "../ReductionInference/ParallelVoteInference.h"
+# include "../../Inference/ReductionInference/ParallelVoteInference.h"
 # include <lbcpp/Data/ProbabilityDistribution.h>
 # include <lbcpp/Perception/Perception.h>
 

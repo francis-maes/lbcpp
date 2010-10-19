@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="NumericalLearningOnlineLearner" directory="NumericalLearning/OnlineLearner">
+
+  <namespace name="lbcpp">
+
+    <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
+
+    <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+    </class>
+
+    <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+    </class>
+
+  </namespace>
+</file>

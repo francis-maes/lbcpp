@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_BOOLEAN_H_
-# define LBCPP_FUNCTION_PERCEPTION_FEATURES_BOOLEAN_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_PERCEPTION_BOOLEAN_H_
+# define LBCPP_NUMERICAL_LEARNING_PERCEPTION_BOOLEAN_H_
 
 # include <lbcpp/Perception/Perception.h>
 
@@ -42,4 +42,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_PERCEPTION_FEATURES_BOOLEAN_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_PERCEPTION_BOOLEAN_H_

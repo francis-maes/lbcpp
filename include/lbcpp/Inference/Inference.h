@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_STEP_H_
-# define LBCPP_INFERENCE_STEP_H_
+#ifndef LBCPP_INFERENCE_H_
+# define LBCPP_INFERENCE_H_
 
 # include "predeclarations.h"
 # include "../Data/Variable.h"
@@ -89,37 +89,7 @@ extern ClassPtr inferenceClass;
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
 /*
-** Numerical Inference
-*/
-
-// Atomic
-extern InferencePtr linearInference(const String& name, PerceptionPtr perception);
-extern InferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
-extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
-
-// Binary Classification
-extern InferencePtr binaryLinearSVMInference(InferencePtr scoreInference);
-extern InferencePtr binaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr binaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-// Regression
-extern InferencePtr squareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr absoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-// MultiClass Classification
-extern StaticDecoratorInferencePtr multiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses = false, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr multiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-/*
-** Decision Tree Inference
-*/
-extern InferencePtr regressionExtraTreeInference(const String& name, PerceptionPtr perception, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr binaryClassificationExtraTreeInference(const String& name, PerceptionPtr perception, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-extern InferencePtr classificationExtraTreeInference(const String& name, PerceptionPtr perception, EnumerationPtr classes, size_t numTrees = 100, size_t numAttributeSamplesPerSplit = 10, size_t minimumSizeForSplitting = 0);
-
-/*
-** Reduction
+** Reductions
 */
 extern VectorParallelInferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 extern VectorParallelInferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
@@ -209,4 +179,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_INFERENCE_STEP_H_
+#endif //!LBCPP_INFERENCE_H_

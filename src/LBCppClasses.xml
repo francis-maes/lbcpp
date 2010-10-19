@@ -4,8 +4,12 @@
 
   <import name="Data"/>
   <import name="Function"/>
+  
   <import name="Perception"/>
   <import name="Inference"/>
+  
+  <import name="NumericalLearning"/>
+  <import name="DecisionTree"/>
 
   <declarationCode>
     lbcpp::Type::finishDeclarations();

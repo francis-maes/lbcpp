@@ -6,8 +6,8 @@
                                 |                                             |
                                 `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_
-# define LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOFT_DISCRETIZED_NUMBER_H_
+# define LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOFT_DISCRETIZED_NUMBER_H_
 
 # include "DiscretizedNumberFeatures.h"
 
@@ -133,4 +133,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_PERCEPTION_FEATURES_SOFT_DISCRETIZED_NUMBER_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOFT_DISCRETIZED_NUMBER_H_

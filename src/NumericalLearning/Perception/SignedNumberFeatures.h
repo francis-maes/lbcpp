@@ -6,8 +6,8 @@
                                 |                                             |
                                 `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_PERCEPTION_FEATURES_SIGNED_NUMBER_H_
-# define LBCPP_FUNCTION_PERCEPTION_FEATURES_SIGNED_NUMBER_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_PERCEPTION_SIGNED_NUMBER_H_
+# define LBCPP_NUMERICAL_LEARNING_PERCEPTION_SIGNED_NUMBER_H_
 
 # include <lbcpp/Perception/Perception.h>
 
@@ -62,4 +62,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_PERCEPTION_FEATURES_SIGNED_NUMBER_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_PERCEPTION_SIGNED_NUMBER_H_

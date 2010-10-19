@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="InferenceOnlineLearner" directory="Inference/OnlineLearner">
+
+  <namespace name="lbcpp">
+
+    <enumeration name="LearnerUpdateFrequency">
+      <value name="never"/>
+      <value name="perStep"/>
+      <value name="perEpisode"/>
+      <value name="perPass"/>
+      <value name="perMiniBatch"/>
+      <value name="perMiniBatch1"/>
+      <value name="perMiniBatch2"/>
+      <value name="perMiniBatch3"/>
+      <value name="perMiniBatch4"/>
+      <value name="perMiniBatch5"/>
+      <value name="perMiniBatch6"/>
+      <value name="perMiniBatch7"/>
+      <value name="perMiniBatch8"/>
+      <value name="perMiniBatch9"/>
+      <value name="perMiniBatch10"/>
+    </enumeration>
+
+    <class name="InferenceOnlineLearner" abstract="yes"/>
+
+    <class name="UpdatableOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
+      <variable type="PositiveInteger" name="epoch"/>
+      <variable type="LearnerUpdateFrequency" name="updateFrequency" enumeration="yes"/>
+    </class>
+
+    <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
+      <constructor arguments="InferenceOnlineLearnerPtr learner, InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops" returnType="InferenceOnlineLearner"/>
+
+      <variable type="InferenceOnlineLearner" name="learner"/>
+      <variable type="StoppingCriterion" name="criterion"/>
+      <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
+
+      <variable type="Boolean" name="learningStopped"/>
+      <variable type="Object" name="bestParameters"/>
+      <variable type="Double" name="bestScore"/>
+    </class>
+
+    <class name="RandomizerInferenceOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback"/>
+    </class>
+
+  </namespace>
+</file>

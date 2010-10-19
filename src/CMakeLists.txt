@@ -23,16 +23,22 @@ GENERATE_INTROSPECTION_CODE(Perception/PerceptionClasses.xml PerceptionClasses.c
 GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionClasses.xml SimplePerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionClasses.xml ModifierPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionClasses.xml ContainerPerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/Features/FeaturesPerceptionClasses.xml FeaturesPerceptionClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceContext/InferenceContextClasses.xml InferenceContextClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/NumericalInference/NumericalInferenceClasses.xml NumericalInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
+
+GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningClasses.xml NumericalLearningClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml NumericalLearningPerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceClasses.xml NumericalLearningInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml NumericalLearningOnlineLearnerClasses.cpp)
+
+GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
+GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
+
 
 #### Data ####
 
@@ -248,17 +254,6 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionClasses.cpp
 )
 
-SET(LBCPP_PERCEPTION_FEATURES_SOURCES
-  Perception/Features/BooleanFeatures.h
-  Perception/Features/EnumValueFeatures.h
-  Perception/Features/DiscretizedNumberFeatures.h
-  Perception/Features/HardDiscretizedNumberFeatures.h
-  Perception/Features/SoftDiscretizedNumberFeatures.h
-  Perception/Features/SignedNumberFeatures.h
-  Perception/Features/FeaturesPerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FeaturesPerceptionClasses.cpp
-)
-
 #### Inference ####
 
 SET(LBCPP_INFERENCE_SOURCES
@@ -299,29 +294,6 @@ SET(LBCPP_INFERENCE_CONTEXT_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceContextClasses.cpp
 )
 
-SET(LBCPP_INFERENCE_NUMERICAL_SOURCES
-  Inference/NumericalInference/NumericalInference.h
-  Inference/NumericalInference/NumericalInference.cpp
-  Inference/NumericalInference/LinearInference.h
-  Inference/NumericalInference/MultiLinearInference.h
-  Inference/NumericalInference/BinaryClassificationInference.h
-  Inference/NumericalInference/RegressionInference.h
-  Inference/NumericalInference/MultiClassInference.h
-  Inference/NumericalInference/TransferFunctionDecoratorInference.h
-  Inference/NumericalInference/NumericalInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalInferenceClasses.cpp  
-)
-
-SET(LBCPP_INFERENCE_DECISION_TREE_SOURCES
-  Inference/DecisionTreeInference/BinaryDecisionTree.h
-  Inference/DecisionTreeInference/BinaryDecisionTree.cpp
-  Inference/DecisionTreeInference/ExtraTreeInference.h
-  Inference/DecisionTreeInference/ExtraTreeInferenceLearner.h
-  Inference/DecisionTreeInference/ExtraTreeInferenceLearner.cpp
-  Inference/DecisionTreeInference/DecisionTreeInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
-)
-
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
@@ -345,16 +317,69 @@ SET(LBCPP_INFERENCE_META_SOURCES
 )
 
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
-  Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.h
-  Inference/InferenceOnlineLearner/GradientDescentOnlineLearner.cpp
-  Inference/InferenceOnlineLearner/StochasticGradientDescentOnlineLearner.h
-  Inference/InferenceOnlineLearner/BatchGradientDescentOnlineLearner.h
-  Inference/InferenceOnlineLearner/RandomizerInferenceOnlineLearner.h
-  Inference/InferenceOnlineLearner/StoppingCriterionOnlineLearner.h
-  Inference/InferenceOnlineLearner/InferenceOnlineLearnerClasses.xml
+  Inference/OnlineLearner/RandomizerInferenceOnlineLearner.h
+  Inference/OnlineLearner/StoppingCriterionOnlineLearner.h
+  Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
 )
 
+#### NumericalLearning ####
+
+SET(LBCPP_NUMERICAL_LEARNING_SOURCES
+  ../include/lbcpp/NumericalLearning/NumericalLearning.h
+  NumericalLearning/NumericalLearning.cpp
+  NumericalLearning/NumericalLearningClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningClasses.cpp
+)
+
+SET(LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES
+  NumericalLearning/Perception/BooleanFeatures.h
+  NumericalLearning/Perception/EnumValueFeatures.h
+  NumericalLearning/Perception/DiscretizedNumberFeatures.h
+  NumericalLearning/Perception/HardDiscretizedNumberFeatures.h
+  NumericalLearning/Perception/SoftDiscretizedNumberFeatures.h
+  NumericalLearning/Perception/SignedNumberFeatures.h
+  NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningPerceptionClasses.cpp
+)
+
+SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
+  NumericalLearning/Inference/LinearInference.h
+  NumericalLearning/Inference/MultiLinearInference.h
+  NumericalLearning/Inference/BinaryClassificationInference.h
+  NumericalLearning/Inference/RegressionInference.h
+  NumericalLearning/Inference/MultiClassInference.h
+  NumericalLearning/Inference/TransferFunctionDecoratorInference.h
+  NumericalLearning/Inference/NumericalLearningInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceClasses.cpp  
+)
+
+SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
+  NumericalLearning/OnlineLearner/GradientDescentOnlineLearner.h
+  NumericalLearning/OnlineLearner/GradientDescentOnlineLearner.cpp
+  NumericalLearning/OnlineLearner/StochasticGradientDescentOnlineLearner.h
+  NumericalLearning/OnlineLearner/BatchGradientDescentOnlineLearner.h
+  NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerClasses.cpp
+)
+
+#### DecisionTree ####
+
+SET(LBCPP_DECISION_TREE_SOURCES
+  ../include/lbcpp/DecisionTree/DecisionTree.h
+  DecisionTree/DecisionTreeClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeClasses.cpp
+)
+
+SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
+  DecisionTree/Inference/BinaryDecisionTree.h
+  DecisionTree/Inference/BinaryDecisionTree.cpp
+  DecisionTree/Inference/ExtraTreeInference.h
+  DecisionTree/Inference/ExtraTreeInferenceLearner.h
+  DecisionTree/Inference/ExtraTreeInferenceLearner.cpp
+  DecisionTree/Inference/DecisionTreeInferenceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
+)
 
 ##### MAIN ####
 
@@ -391,7 +416,6 @@ SET(LBCPP_CORE
     ${LBCPP_PERCEPTION_SIMPLE_SOURCES}
     ${LBCPP_PERCEPTION_MODIFIER_SOURCES}
     ${LBCPP_PERCEPTION_CONTAINER_SOURCES}
-    ${LBCPP_PERCEPTION_FEATURES_SOURCES}
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
@@ -399,10 +423,18 @@ SET(LBCPP_CORE
   ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
-    ${LBCPP_INFERENCE_NUMERICAL_SOURCES}
-    ${LBCPP_INFERENCE_DECISION_TREE_SOURCES}
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
+
+  # NumericalLearning
+  ${LBCPP_NUMERICAL_LEARNING_SOURCES}
+  ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES}
+  ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES}
+  ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES}
+
+  # DecisionTree
+  ${LBCPP_DECISION_TREE_SOURCES}
+  ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
 )
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
@@ -430,17 +462,24 @@ SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})
 SOURCE_SUB_GROUP(Perception Simple FILES ${LBCPP_PERCEPTION_SIMPLE_SOURCES})
 SOURCE_SUB_GROUP(Perception Modifier FILES ${LBCPP_PERCEPTION_MODIFIER_SOURCES})
 SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES})
-SOURCE_SUB_GROUP(Perception Features FILES ${LBCPP_PERCEPTION_FEATURES_SOURCES})
 
 ## Inference
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Inference NumericalInference FILES ${LBCPP_INFERENCE_NUMERICAL_SOURCES})
-SOURCE_SUB_GROUP(Inference DecisionTreeInference FILES ${LBCPP_INFERENCE_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
 SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 
+## NumericalLearning
+SOURCE_GROUP(NumericalLearning FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})
+
+## DecisionTree
+SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
+SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
+  
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 TARGET_LINK_LIBRARIES(lbcpp-core juce)

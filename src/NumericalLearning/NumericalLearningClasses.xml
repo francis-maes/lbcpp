@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="NumericalLearning" directory="lbcpp/NumericalLearning">
+  <include file="lbcpp/NumericalLearning/NumericalLearning.h"/>
+
+  <import name="NumericalLearningPerception"/>
+  <import name="NumericalLearningInference"/>
+  <import name="NumericalLearningOnlineLearner"/>
+
+  <namespace name="lbcpp">
+  </namespace>
+
+</file>
