@@ -182,7 +182,7 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
     {value += weight * otherValue;}
 };
 
-void lbcpp::addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
+void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
 {
   if (!weight)
     return;
@@ -215,7 +215,7 @@ void lbcpp::addWeighted(ObjectPtr& target, const PerceptionPtr& perception, cons
   }
 }
 
-void lbcpp::addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight)
+void addWeighted(ObjectPtr& target, const ObjectPtr& source, double weight)
 {
   if (!weight)
     return;
