@@ -98,21 +98,29 @@ public:
   FunctionPtr getMultiplyFunction() const
     {return multiplyFunction;}
 
-  void clearConjunctions()
-    {selectedConjunctions.clear();}// FIXME: outputType = UnnamedDynamicClassPtr();}
+  typedef std::vector<size_t> Conjunction;
 
-  void addConjunction(const std::vector<size_t>& conjunction)
-  {
-    selectedConjunctions.push_back(conjunction);
-    // FIXME: update output variables and output Type
-  }
+  void clearConjunctions()
+    {selectedConjunctions.clear(); clearOutputVariables();}
+
+  void addConjunction(const Conjunction& conjunction)
+    {selectedConjunctions.push_back(conjunction); createSubPerception(conjunction);}
+
+  const std::vector<Conjunction>& getConjunctions() const
+    {return selectedConjunctions;}
+
+  size_t getNumConjunctions() const
+    {jassert(selectedConjunctions.size() == getNumOutputVariables()); return selectedConjunctions.size();}
+
+  const Conjunction& getConjunction(size_t index) const
+    {jassert(index < selectedConjunctions.size()); return selectedConjunctions[index];}
 
 protected:
   friend class SelectAndMakeProductsPerceptionClass;
 
   PerceptionPtr decorated;
   FunctionPtr multiplyFunction;
-  std::vector< std::vector<size_t> > selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
+  std::vector<Conjunction> selectedConjunctions; // outputNumber -> numberInConjunction -> variableNumber
 
   virtual void computeOutputType()
   {
@@ -123,7 +131,7 @@ protected:
     Perception::computeOutputType();
   }
 
-  void createSubPerception(const std::vector<size_t>& conjunction)
+  void createSubPerception(const Conjunction& conjunction)
   {
     size_t arity = conjunction.size();
     jassert(arity);

@@ -85,6 +85,9 @@ public:
 
   virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
 
+  size_t getNumClasses() const
+    {return classes->getNumElements();}
+
 protected:
   friend class MultiClassLossFunctionClass;
 

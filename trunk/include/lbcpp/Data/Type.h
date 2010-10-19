@@ -306,6 +306,7 @@ public:
 
   void addVariable(TypePtr type, const String& name);
   void addVariable(const String& typeName, const String& name);
+  void clearVariables();
 
   juce_UseDebuggingNewOperator
 
