@@ -3,7 +3,7 @@
 <file name="DecisionTree" directory="lbcpp/DecisionTree">
   <include file="lbcpp/DecisionTree/DecisionTree.h"/>
 
-  <import name="Inference"/>
+  <import name="DecisionTreeInference"/>
 
   <namespace name="lbcpp">
   </namespace>

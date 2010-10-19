@@ -59,9 +59,7 @@ public:
   const InferenceOnlineLearnerPtr& getOnlineLearner() const
     {return onlineLearner;}
 
-  void setOnlineLearner(InferenceOnlineLearnerPtr learner)
-    {this->onlineLearner = learner;}
-
+  void addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront = false);
   void getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const;
 
   /*

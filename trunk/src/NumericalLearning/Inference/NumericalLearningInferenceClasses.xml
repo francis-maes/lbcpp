@@ -11,10 +11,10 @@
     </class>
 
     <class name="LinearInference" base="NumericalInference">
-      <constructor arguments="const String&amp; name, PerceptionPtr perception" returnType="Inference"/>
+      <constructor arguments="const String&amp; name, PerceptionPtr perception"/>
     </class>
     <class name="MultiLinearInference" base="NumericalInference">
-      <constructor arguments="const String&amp; name, PerceptionPtr perception, ClassPtr outputClass" returnType="Inference"/>
+      <constructor arguments="const String&amp; name, PerceptionPtr perception, ClassPtr outputClass"/>
       <variable type="Class" name="outputClass"/>
     </class>
     

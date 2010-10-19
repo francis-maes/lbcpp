@@ -4,6 +4,7 @@
 
   <namespace name="lbcpp">
 
+    <!-- Gradient Descent -->
     <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
 
     <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
@@ -14,5 +15,15 @@
       <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
 
+    <!-- Grafting -->
+    <class name="GraftingOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="PerceptionPtr perception, const std::vector&lt;InferencePtr&gt;&amp; inferences"/>
+    </class>
+
+    <code>
+      InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference)
+        {return graftingOnlineLearner(perception, std::vector&lt;InferencePtr&gt;(1, targetInference));}
+    </code>
+    
   </namespace>
 </file>

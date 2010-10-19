@@ -364,6 +364,8 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
   NumericalLearning/OnlineLearner/GradientDescentOnlineLearner.cpp
   NumericalLearning/OnlineLearner/StochasticGradientDescentOnlineLearner.h
   NumericalLearning/OnlineLearner/BatchGradientDescentOnlineLearner.h
+  NumericalLearning/OnlineLearner/GraftingOnlineLearner.h
+  NumericalLearning/OnlineLearner/GraftingOnlineLearner.cpp
   NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerClasses.cpp
 )

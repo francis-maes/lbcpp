@@ -21,9 +21,15 @@ namespace lbcpp
 class MultiClassInference : public StaticDecoratorInference
 {
 public:
-  MultiClassInference(const String& name, EnumerationPtr classes, InferencePtr scoresInference)
+  MultiClassInference(const String& name, EnumerationPtr classes, InferencePtr scoresInference, InferenceOnlineLearnerPtr onlineLearner)
     : StaticDecoratorInference(name, scoresInference), classes(classes)
-    {setBatchLearner(onlineToBatchInferenceLearner());}
+  {
+    if (onlineLearner)
+    {
+      setBatchLearner(onlineToBatchInferenceLearner());
+      scoresInference->addOnlineLearner(onlineLearner);
+    }
+  }
 
   MultiClassInference() {}
 
@@ -114,11 +120,8 @@ class MultiClassLinearSVMInference : public MultiClassInference
 {
 public:
   MultiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses, const String& name)
-    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes))), updateOnlyMostViolatedClasses(updateOnlyMostViolatedClasses)
-  {
-    decorated->setOnlineLearner(learner);
-    createPerClassLossFunctions();
-  }
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)), learner), updateOnlyMostViolatedClasses(updateOnlyMostViolatedClasses)
+    {createPerClassLossFunctions();}
 
   MultiClassLinearSVMInference() {}
 
@@ -140,11 +143,8 @@ class MultiClassMaxentInference : public MultiClassInference
 {
 public:
   MultiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name)
-    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)))
-  {
-    decorated->setOnlineLearner(learner);
-    createPerClassLossFunctions();
-  }
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)), learner)
+    {createPerClassLossFunctions();}
 
   MultiClassMaxentInference() {}
 

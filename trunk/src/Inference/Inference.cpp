@@ -35,6 +35,25 @@ void Inference::setBatchLearner(InferencePtr batchLearner)
   this->batchLearner = batchLearner;
 }
 
+void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront)
+{
+  InferenceOnlineLearnerPtr currentLearner = this->onlineLearner;
+  if (!currentLearner)
+    this->onlineLearner = learner;
+  else if (insertInFront)
+  {
+    this->onlineLearner = learner;
+    if (currentLearner)
+      learner->setNextLearner(currentLearner);
+  }
+  else
+  {
+    while (currentLearner->getNextLearner())
+      currentLearner = currentLearner->getNextLearner();
+    currentLearner->setNextLearner(learner);
+  }
+}
+
 /*
 ** DecoratorInference
 */

@@ -21,7 +21,6 @@ class InferenceOnlineLearner : public Object
 {
 public:
   virtual void startLearningCallback() = 0;
-  
   virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) {}
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
   virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
@@ -54,6 +53,17 @@ public:
   };
 
   InferenceOnlineLearnerPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
+
+  const InferenceOnlineLearnerPtr& getNextLearner() const
+    {return nextLearner;}
+
+  void setNextLearner(const InferenceOnlineLearnerPtr& learner)
+    {nextLearner = learner;}
+
+protected:
+  friend class InferenceOnlineLearnerClass;
+
+  InferenceOnlineLearnerPtr nextLearner;
 };
 
 extern ClassPtr inferenceOnlineLearnerClass;
