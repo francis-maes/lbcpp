@@ -60,6 +60,26 @@ TypePtr Perception::getOutputType() const
   return outputType.get();
 }
 
+void Perception::clearOutputVariables()
+{
+  outputVariables.clear();
+  if (outputType)
+  {
+    outputType->clearVariables();
+  }
+}
+
+void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
+{
+  OutputVariable v;
+  v.type = type;
+  v.name = name;
+  v.subPerception = subPerception;
+  outputVariables.push_back(v);
+  if (outputType)
+    outputType->addVariable(type, name);
+}
+
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {
   TypePtr outputType = getOutputType();

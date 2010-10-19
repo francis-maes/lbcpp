@@ -48,7 +48,7 @@ class Perception : public Function
 public:
   // Perception
   virtual TypePtr getOutputType() const;
-
+  
   virtual void computeOutputType();
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
 
@@ -102,14 +102,8 @@ protected:
   void addOutputVariable(const String& name, TypePtr type)
     {addOutputVariable(type, name, PerceptionPtr());}
 
-  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
-  {
-    OutputVariable v;
-    v.type = type;
-    v.name = name;
-    v.subPerception = subPerception;
-    outputVariables.push_back(v);
-  }
+  void clearOutputVariables();
+  void addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception);
 
   static String classNameToOutputClassName(const String& className);
 
@@ -180,8 +174,9 @@ extern PerceptionPtr functionBasedPerception(FunctionPtr function);
 extern PerceptionPtr composePerception(FunctionPtr function, PerceptionPtr perception);
 extern PerceptionPtr flattenPerception(PerceptionPtr perception);
 extern PerceptionPtr collapsePerception(PerceptionPtr perception);
-extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, const std::vector< std::vector<size_t> >& selectedConjunctions);
-extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const std::vector< std::vector<size_t> >& selectedConjunctions);
+typedef std::vector< std::vector<size_t> > ConjunctionVector;
+extern PerceptionPtr selectAndMakeProductsPerception(PerceptionPtr decorated, FunctionPtr multiplyFunction, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
+extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
 
 // product perceptions
 extern PerceptionPtr productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions = false);

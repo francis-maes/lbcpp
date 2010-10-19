@@ -16,19 +16,27 @@ NumericalInference::NumericalInference(const String& name, PerceptionPtr percept
 
 void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
 {
+  if (weight)
   {
-    ScopedWriteLock _(parametersLock);
+    parametersLock.enterWrite();
     lbcpp::addWeighted(parameters, value, weight);
+    parametersLock.exitWrite();
+    parametersChangedCallback();
   }
-  parametersChangedCallback();
 }
 
 void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight)
 {
+  if (weight)
   {
-    ScopedWriteLock _(parametersLock);
+    parametersLock.enterWrite();
+    bool changed = true;
     if (parameters)
       regularizer->compute(parameters, NULL, &parameters, weight);
+    else
+      changed = false;
+    parametersLock.exitWrite();
+    if (changed)
+      parametersChangedCallback();
   }
-  parametersChangedCallback();
 }

@@ -90,6 +90,11 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : Class(templateType, templateArguments, baseClass) {}
 
+void DefaultClass::clearVariables()
+{
+  variables.clear();
+}
+
 void DefaultClass::addVariable(const String& typeName, const String& name)
 {
   TypePtr type;
@@ -99,6 +104,19 @@ void DefaultClass::addVariable(const String& typeName, const String& name)
     type = Type::get(typeName);
   if (type)
     addVariable(type, name);
+}
+
+void DefaultClass::addVariable(TypePtr type, const String& name)
+{
+  if (!type || name.isEmpty())
+  {
+    MessageCallback::error(T("Class::addVariable"), T("Invalid type or name"));
+    return;
+  }
+  if (findObjectVariable(name) >= 0)
+    MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
+  else
+    variables.push_back(std::make_pair(type, name));
 }
 
 size_t DefaultClass::getObjectNumVariables() const
@@ -127,19 +145,6 @@ String DefaultClass::getObjectVariableName(size_t index) const
   
   jassert(index < variables.size());
   return variables[index].second;
-}
-
-void DefaultClass::addVariable(TypePtr type, const String& name)
-{
-  if (!type || name.isEmpty())
-  {
-    MessageCallback::error(T("Class::addVariable"), T("Invalid type or name"));
-    return;
-  }
-  if (findObjectVariable(name) >= 0)
-    MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
-  else
-    variables.push_back(std::make_pair(type, name));
 }
 
 void DefaultClass::deinitialize()
