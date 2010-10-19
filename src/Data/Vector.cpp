@@ -78,9 +78,7 @@ VectorPtr Vector::cloneContent() const
 {
   if (getElementsType()->inheritsFrom(objectClass))
   {
-    Variable variable = Variable::create(getClass());
-    jassert(variable.exists());
-    VectorPtr res = variable.getObjectAndCast<Vector>();
+    VectorPtr res = Object::create(getClass()).staticCast<Vector>();
     size_t n = getNumElements();
     res->resize(n);
     for (size_t i = 0; i < n; ++i)

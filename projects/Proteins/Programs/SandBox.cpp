@@ -70,19 +70,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    //return res;
-    
-    PerceptionPtr collapsedFeatures = collapsePerception(res);
-/*
-    std::vector< std::vector<size_t> > selectedConjunctions;
-    for (size_t i = 0; i < collapsedFeatures->getNumOutputVariables(); ++i)
-      selectedConjunctions.push_back(std::vector<size_t>(1, i));
-
-    //    selectedConjunctions.push_back(makeBinaryConjunction(0, 1));
-    //selectedConjunctions.push_back(makeBinaryConjunction(5, 10));
-    //selectedConjunctions.push_back(makeBinaryConjunction(10, 15));
-*/
-    return selectAndMakeConjunctionFeatures(collapsedFeatures);
+    return selectAndMakeConjunctionFeatures(collapsePerception(res));
   }
 
 public:

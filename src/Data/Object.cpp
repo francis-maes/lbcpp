@@ -109,6 +109,14 @@ void Object::setVariable(size_t index, const Variable& value)
   getClass()->setObjectVariable(this, index, value);
 }
 
+ObjectPtr Object::create(ClassPtr objectClass)
+{
+  ObjectPtr res = objectClass->create().getObject();
+  jassert(res->getReferenceCount() == 2);
+  res->decrementReferenceCounter();
+  return res;
+}
+
 
 /*
 ** to string
@@ -173,9 +181,8 @@ int Object::compareVariables(ObjectPtr otherObject) const
 */
 ObjectPtr Object::clone() const
 {
-  Variable variable = Variable::create(getClass());
-  jassert(variable.exists());
-  ObjectPtr res = variable.getObject();
+  ObjectPtr res = create(getClass());
+  jassert(res);
   clone(res);
   return res;
 }

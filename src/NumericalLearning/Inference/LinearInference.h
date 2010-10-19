@@ -22,7 +22,11 @@ class LinearInference : public NumericalInference
 {
 public:
   LinearInference(const String& name, PerceptionPtr perception)
-    : NumericalInference(name, perception) {}
+    : NumericalInference(name, perception)
+  {
+    parameters = new NumericalInferenceParameters(perception, getWeightsType(perception->getOutputType()));  
+  }
+
   LinearInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -31,8 +35,8 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return doubleType;}
 
-  virtual TypePtr getParametersType() const
-    {return getPerceptionOutputType();}
+  virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const
+    {return perceptionOutputType;}
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
@@ -43,21 +47,19 @@ public:
    //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
 
     if (target)
-      lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+      lbcpp::addWeighted(*target, getPerception(), input, lossDerivative * weight);
     else
-    {
-      ScopedWriteLock _(parametersLock);
-      lbcpp::addWeighted(parameters, perception, input, lossDerivative * weight);
-    }
+      addWeightedToParameters(getPerception(), input, lossDerivative * weight);
    // std::cout << " newL2 = " << l2norm(target) << std::endl;
   }
 
   virtual Variable predict(const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
-    if (!parameters)
+    const ObjectPtr& weights = getParameters()->getWeights();
+    if (!weights)
       return Variable::missingValue(doubleType);
-    return lbcpp::dotProduct(parameters, perception, input);
+    return lbcpp::dotProduct(weights, getPerception(), input);
   }
 };
 

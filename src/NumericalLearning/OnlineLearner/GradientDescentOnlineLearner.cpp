@@ -45,7 +45,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(inference);
   
-  ObjectPtr parameters = getNumericalInference(inference)->getParameters();
+  ObjectPtr parameters = getNumericalInference(inference)->getWeightsCopy();
   size_t l0norm = lbcpp::l0norm(parameters);
   double l2norm = lbcpp::l2norm(parameters);
   MessageCallback::info(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));

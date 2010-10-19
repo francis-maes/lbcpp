@@ -5,10 +5,13 @@
   <namespace name="lbcpp">
 
     <!-- Atomic Inferences -->
-    <class name="NumericalInference" base="Inference" abstract="yes">
+    <template name="NumericalInferenceParameters">
+      <parameter name="weightsType" type="Object"/>
+
       <variable type="Perception" name="perception"/>
-      <variable type="Object" name="parameters"/>
+      <variable type="weightsType" name="weights"/>
     </class>
+    <class name="NumericalInference" base="ParameterizedInference" abstract="yes"/>
 
     <class name="LinearInference" base="NumericalInference">
       <constructor arguments="const String&amp; name, PerceptionPtr perception"/>

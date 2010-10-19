@@ -167,11 +167,12 @@ void ParameterizedInference::clone(ObjectPtr t) const
 ObjectPtr ParameterizedInference::getParameters() const
 {
   ScopedReadLock _(parametersLock);
-  return parameters ? parameters->deepClone() : ObjectPtr();
+  return parameters ? parameters->clone() : ObjectPtr();
 }
 
 void ParameterizedInference::setParameters(ObjectPtr parameters)
 {
+  if (checkInheritance(parameters, getParametersType()))
   {
     ScopedWriteLock _(parametersLock);
     this->parameters = parameters;

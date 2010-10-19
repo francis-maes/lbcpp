@@ -54,6 +54,8 @@ public:
   */
   virtual ~Object() {}
 
+  static ObjectPtr create(ClassPtr objectClass);
+
   /**
   ** Name getter.
   **

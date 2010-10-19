@@ -22,7 +22,11 @@ class MultiLinearInference : public NumericalInference
 {
 public:
   MultiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass)
-    : NumericalInference(name, perception), outputClass(outputClass), numOutputs(outputClass->getObjectNumVariables()) {}
+    : NumericalInference(name, perception), outputClass(outputClass), numOutputs(outputClass->getObjectNumVariables())
+  {
+    parameters = new NumericalInferenceParameters(perception, getWeightsType(perception->getOutputType()));  
+  }
+
   MultiLinearInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -31,27 +35,27 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return outputClass;}
 
-  virtual TypePtr getParametersType() const
-    {return oneSubObjectPerInputVariableClass(outputClass, getPerceptionOutputType());}
+  virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const
+    {return oneSubObjectPerInputVariableClass(outputClass, perceptionOutputType);}
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
     const ScalarObjectFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarObjectFunction>();
     ObjectPtr lossGradient;
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (!lossGradient || !perception->getNumOutputVariables())
+    if (!lossGradient || !getPerception()->getNumOutputVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
 
     bool isLocked = false;
     if (!target)
     {
-      target = &parameters;
       parametersLock.enterWrite();
+      target = &getParameters()->getWeights();
       isLocked = true;
     }
     ObjectPtr& parameters = *target;
     if (!parameters)
-      parameters = Variable::create(getParametersType()).getObject();
+      parameters = Object::create(getWeightsType(getPerception()->getOutputType()));
     
     size_t n = lossGradient->getNumVariables();
     for (size_t i = 0; i < n; ++i)
@@ -60,7 +64,7 @@ public:
       if (w)
       {
         ObjectPtr object = parameters->getVariable(i).getObject();
-        lbcpp::addWeighted(object, perception, input, w);
+        lbcpp::addWeighted(object, getPerception(), input, w);
         parameters->setVariable(i, object);
       }
     }
@@ -73,19 +77,19 @@ public:
   virtual Variable predict(const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
-    if (!parameters)
+    const ObjectPtr& weights = getParameters()->getWeights();
+    if (!weights)
       return Variable::missingValue(outputClass);
-    Variable res = Variable::create(outputClass);
-    const ObjectPtr& object = res.getObject();
+    ObjectPtr object = Object::create(outputClass);
     size_t n = object->getNumVariables();
-    jassert(n == parameters->getNumVariables());
+    jassert(n == weights->getNumVariables());
     for (size_t i = 0; i < n; ++i)
     {
-      ObjectPtr params = parameters->getVariable(i).getObject();
+      ObjectPtr outputWeights = weights->getVariable(i).getObject();
       jassert(object->getVariableType(i)->inheritsFrom(doubleType));
-      object->setVariable(i, lbcpp::dotProduct(params, perception, input));
+      object->setVariable(i, lbcpp::dotProduct(outputWeights, getPerception(), input));
     }
-    return res;
+    return object;
   }
 
   virtual bool loadFromXml(XmlImporter& importer)
