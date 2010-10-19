@@ -171,7 +171,7 @@ struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
     {res += lbcpp::sumOfSquares(object);}
 };
 
-double lbcpp::sumOfSquares(const ObjectPtr& object)
+double sumOfSquares(const ObjectPtr& object)
 {
   if (object)
   {
