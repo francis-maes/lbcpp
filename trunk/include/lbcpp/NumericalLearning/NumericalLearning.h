@@ -81,11 +81,13 @@ extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 */
 extern ClassPtr numericalInferenceParametersClass(TypePtr weightsType);
 
+class NumericalInferenceParameters;
+typedef ReferenceCountedObjectPtr<NumericalInferenceParameters> NumericalInferenceParametersPtr;
+
 class NumericalInferenceParameters : public Object
 {
 public:
-  NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType)
-    : Object(numericalInferenceParametersClass(weightsType)), perception(perception) {}
+  NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType);
   NumericalInferenceParameters() {}
 
   const PerceptionPtr& getPerception() const
@@ -97,14 +99,14 @@ public:
   ObjectPtr& getWeights()
     {return weights;}
 
+  virtual void clone(ObjectPtr t) const;
+
 private:
   friend class NumericalInferenceParametersClass;
 
   PerceptionPtr perception;
   ObjectPtr weights;
 };
-
-typedef ReferenceCountedObjectPtr<NumericalInferenceParameters> NumericalInferenceParametersPtr;
 
 class NumericalInference : public ParameterizedInference
 {
@@ -151,6 +153,7 @@ typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 // Atomic
 extern NumericalInferencePtr linearInference(const String& name, PerceptionPtr perception);
 extern NumericalInferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
+extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification
@@ -189,6 +192,8 @@ extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
 
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& targetInferences);
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference);
+
+extern UpdatableOnlineLearnerPtr addBiasOnlineLearner(InferenceOnlineLearner::UpdateFrequency updateFrequency);
 
 }; /* namespace lbcpp */
 

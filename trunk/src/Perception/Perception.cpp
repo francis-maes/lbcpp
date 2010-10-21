@@ -76,7 +76,7 @@ void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionP
   v.name = name;
   v.subPerception = subPerception;
   outputVariables.push_back(v);
-  if (outputType)
+  if (outputType && outputType->getBaseType())
     outputType->addVariable(type, name);
 }
 
@@ -131,6 +131,13 @@ bool Perception::loadFromXml(XmlImporter& importer)
   //DBG("Perception::loadFromXml: " + toString() + T(", num outputs = ") + String(outputVariables.size()));
   jassert(!outputVariables.size() || getOutputType()->getObjectNumVariables());
   return true;
+}
+
+void Perception::clone(ObjectPtr t) const
+{
+  const PerceptionPtr& target = t.staticCast<Perception>();
+  target->outputVariables = outputVariables;
+  target->outputType = outputType;
 }
 
 /*

@@ -168,7 +168,7 @@ void ParameterizedInference::clone(ObjectPtr t) const
   Inference::clone(target);
   if (parameters)
   {
-    target->parameters = parameters->deepClone();
+    target->parameters = parameters->clone();
     target->parametersChangedCallback();
   }
 }

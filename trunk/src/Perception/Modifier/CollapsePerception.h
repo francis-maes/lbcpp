@@ -17,9 +17,10 @@ namespace lbcpp
 class CollapsePerception : public Perception
 {
 public:
-  CollapsePerception(PerceptionPtr decorated = PerceptionPtr())
+  CollapsePerception(PerceptionPtr decorated)
     : decorated(decorated)
     {computeOutputType();}
+  CollapsePerception() {}
 
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
