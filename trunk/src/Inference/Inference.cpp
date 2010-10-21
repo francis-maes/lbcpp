@@ -11,7 +11,6 @@
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
-#include <lbcpp/Inference/ParameterizedInference.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 using namespace lbcpp;
 
@@ -30,11 +29,34 @@ Inference::~Inference()
 String Inference::getDescription(const Variable& input, const Variable& supervision) const
   {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
 
-void Inference::clone(const ObjectPtr& target) const
+void Inference::clone(const ObjectPtr& t) const
 {
+  const InferencePtr& target = t.staticCast<Inference>();
   NameableObject::clone(target);
   if (onlineLearner)
-    target.staticCast<Inference>()->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
+    target->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
+  ScopedReadLock _(parametersLock);
+  if (parameters.exists())
+  {
+    target->parameters = getParameters(); // (clone)
+    target->parametersChangedCallback();
+  }
+}
+
+Variable Inference::getParameters() const
+{
+  ScopedReadLock _(parametersLock);
+  return parameters.isObject() ? Variable(parameters.getObject()->clone()) : parameters;
+}
+
+void Inference::setParameters(const Variable& parameters)
+{
+  if (checkInheritance(parameters, getParametersType()))
+  {
+    ScopedWriteLock _(parametersLock);
+    this->parameters = parameters;
+  }
+  parametersChangedCallback();
 }
 
 void Inference::setBatchLearner(InferencePtr batchLearner)
@@ -162,37 +184,6 @@ void VectorSequentialInference::clone(const ObjectPtr& t) const
   jassert(target->subInferences.size() == subInferences.size());
   for (size_t i = 0; i < subInferences.size(); ++i)
     target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>();
-}
-
-/*
-** ParameterizedInference
-*/
-void ParameterizedInference::clone(const ObjectPtr& t) const
-{
-  const ParameterizedInferencePtr& target = t.staticCast<ParameterizedInference>();
-  ScopedReadLock _(parametersLock);
-  Inference::clone(target);
-  if (parameters)
-  {
-    target->parameters = parameters->clone();
-    target->parametersChangedCallback();
-  }
-}
-
-ObjectPtr ParameterizedInference::getParameters() const
-{
-  ScopedReadLock _(parametersLock);
-  return parameters ? parameters->clone() : ObjectPtr();
-}
-
-void ParameterizedInference::setParameters(ObjectPtr parameters)
-{
-  if (checkInheritance(parameters, getParametersType()))
-  {
-    ScopedWriteLock _(parametersLock);
-    this->parameters = parameters;
-  }
-  parametersChangedCallback();
 }
 
 /*

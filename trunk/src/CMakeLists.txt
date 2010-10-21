@@ -255,7 +255,6 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/DecoratorInference.h
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
-  ../include/lbcpp/Inference/ParameterizedInference.h
   Inference/Inference.cpp
   ../include/lbcpp/Inference/InferenceStack.h
   ../include/lbcpp/Inference/InferenceContext.h

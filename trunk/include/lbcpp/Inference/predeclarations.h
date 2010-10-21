@@ -53,10 +53,6 @@ typedef DecoratorInference* DecoratorInferenceWeakPtr;
 class StaticDecoratorInference;
 typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInferencePtr;
 
-// parameterized inference
-class ParameterizedInference;
-typedef ReferenceCountedObjectPtr<ParameterizedInference> ParameterizedInferencePtr;
-
 /*
 ** InferenceContext
 */

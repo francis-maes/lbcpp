@@ -30,11 +30,14 @@ public:
     return subOutput.exists() ? Variable(subOutput.getDouble() + bias, doubleType) : subOutput;
   }
 
+  virtual TypePtr getParametersType() const
+    {return doubleType;}
+
   double getBias() const
-    {return bias;}
+    {return getParameters().getDouble();}
 
   void setBias(double bias)
-    {this->bias = bias;}
+    {setParameters(bias);}
   
 protected:
   friend class AddBiasInferenceClass;

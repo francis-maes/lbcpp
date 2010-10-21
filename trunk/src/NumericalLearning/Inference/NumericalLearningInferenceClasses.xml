@@ -11,7 +11,7 @@
       <variable type="Perception" name="perception"/>
       <variable type="weightsType" name="weights"/>
     </class>
-    <class name="NumericalInference" base="ParameterizedInference" abstract="yes"/>
+    <class name="NumericalInference" base="Inference" abstract="yes"/>
 
     <class name="LinearInference" base="NumericalInference">
       <constructor arguments="const String&amp; name, PerceptionPtr perception"/>
