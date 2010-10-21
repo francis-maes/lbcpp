@@ -120,12 +120,12 @@ protected:
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0));         // regularizer
+        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0));         // regularizer
     else
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
-        InferenceOnlineLearner::never, l2Regularizer(0.0));         // regularizer
+        InferenceOnlineLearner::never, l2RegularizerFunction(0.0));         // regularizer
 
     //res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
     return res;

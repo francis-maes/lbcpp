@@ -210,12 +210,12 @@ protected:
       res = gradientDescentOnlineLearner(
                                          InferenceOnlineLearner::perEpisode,                                                 // randomization
                                          InferenceOnlineLearner::perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
-                                         InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0));         // regularizer
+                                         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0));         // regularizer
     else
       res = gradientDescentOnlineLearner(
                                          InferenceOnlineLearner::perPass,                                                 // randomization
                                          InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
-                                         InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(regularizer));         // regularizer
+                                         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(regularizer));         // regularizer
 
     res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true)); // stopping criterion
     return res;

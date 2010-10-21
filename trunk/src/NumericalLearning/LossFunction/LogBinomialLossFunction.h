@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_SCALAR_LOG_BINOMIAL_LOSS_H_
-# define LBCPP_FUNCTION_SCALAR_LOG_BINOMIAL_LOSS_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_LOG_BINOMIAL_H_
+# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_LOG_BINOMIAL_H_
 
-# include <lbcpp/Function/ScalarFunction.h>
+# include <lbcpp/NumericalLearning/LossFunctions.h>
 
 namespace lbcpp
 {
@@ -69,4 +69,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_SCALAR_LOG_BINOMIAL_LOSS_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_LOG_BINOMIAL_H_

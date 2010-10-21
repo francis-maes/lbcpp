@@ -1,23 +1,25 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SumOfSquaresScalarObjectFunction.h| f(x) = sum_i x_i^2           |
+| Filename: L2RegularizerFunction.h        | f(x) = sum_i x_i^2              |
 | Author  : Francis Maes                   |                                 |
 | Started : 24/06/2010 14:48               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_SCALAR_OBJECT_SUM_OF_SQUARES_H_
-# define LBCPP_FUNCTION_SCALAR_OBJECT_SUM_OF_SQUARES_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_L2_REGULARIZER_H_
+# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_L2_REGULARIZER_H_
 
-# include <lbcpp/Function/ScalarObjectFunction.h>
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 
 namespace lbcpp
 {
 
-class SumOfSquaresScalarObjectFunction : public ScalarObjectFunction
+class L2RegularizerFunction : public ScalarObjectFunction
 {
 public:
+  L2RegularizerFunction(double weight = 0.0)
+    : weight(weight) {}
+
   virtual String toString() const
     {return "(sum_i x_i^2)";}
 
@@ -27,12 +29,17 @@ public:
   virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
   {
     if (output)
-      *output = lbcpp::sumOfSquares(input);
+      *output = lbcpp::sumOfSquares(input) * weight;
     if (gradientTarget)
-      lbcpp::addWeighted(*gradientTarget, input, 2.0 * gradientWeight);
+      lbcpp::addWeighted(*gradientTarget, input, 2.0 * gradientWeight * weight);
   }
+
+private:
+  friend class L2RegularizerFunctionClass;
+
+  double weight;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_SCALAR_OBJECT_SUM_OF_SQUARES_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_L2_REGULARIZER_H_

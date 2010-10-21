@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_INFERENCE_LINEAR_H_
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_LINEAR_H_
 
-# include <lbcpp/NumericalLearning/NumericalLearning.h>
+# include <lbcpp/NumericalLearning/NumericalInference.h>
 # include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp

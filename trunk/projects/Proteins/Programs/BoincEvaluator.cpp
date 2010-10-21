@@ -211,7 +211,7 @@ public:
     l2Weight = (l2Weight <= -10.0) ? 0.0 : pow(10.0, l2Weight);
 
     // FIXME: for the moment L1 regularization is not implemented
-    return l2Weight ? l2Regularizer(l2Weight) : ScalarObjectFunctionPtr();
+    return l2Weight ? l2RegularizerFunction(l2Weight) : ScalarObjectFunctionPtr();
   }
 
   InferenceOnlineLearnerPtr createOnlineLearner() const

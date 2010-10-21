@@ -6,12 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_SCALAR_OBJECT_ONE_AGAINST_ALL_MULTI_CLASS_LOSS_H_
-# define LBCPP_FUNCTION_SCALAR_OBJECT_ONE_AGAINST_ALL_MULTI_CLASS_LOSS_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ONE_AGAINST_ALL_MULTI_CLASS_H_
+# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ONE_AGAINST_ALL_MULTI_CLASS_H_
 
-# include <lbcpp/Function/ScalarObjectFunction.h>
-# include <lbcpp/NumericalLearning/NumericalLearning.h>
-
+# include <lbcpp/NumericalLearning/LossFunctions.h>
 namespace lbcpp
 {
 
@@ -69,4 +67,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_SCALAR_OBJECT_ONE_AGAINST_ALL_MULTI_CLASS_LOSS_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ONE_AGAINST_ALL_MULTI_CLASS_H_

@@ -43,17 +43,6 @@
       <variable type="Double" name="constant"/>
     </class>
 
-    <class name="BinaryClassificationLossFunction" base="ScalarFunction" abstract="yes">
-      <variable type="Boolean" name="isPositive"/>
-    </class>
-    
-    <class name="HingeLossFunction" base="BinaryClassificationLossFunction">
-      <constructor arguments="bool isPositive, double margin"/>
-    </class>
-    <class name="LogBinomialLossFunction" base="BinaryClassificationLossFunction">
-      <constructor arguments="bool isPositive"/>
-    </class>
-
   </namespace>
   
 </file>
