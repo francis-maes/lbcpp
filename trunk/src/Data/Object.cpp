@@ -187,7 +187,7 @@ ObjectPtr Object::clone() const
   return res;
 }
 
-void Object::clone(ObjectPtr target) const
+void Object::clone(const ObjectPtr& target) const
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)

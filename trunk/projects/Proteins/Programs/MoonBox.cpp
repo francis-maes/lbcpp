@@ -205,18 +205,20 @@ protected:
 
 
 
+    InferenceOnlineLearnerPtr res;
     if (targetName.startsWith(T("contactMap")))
-      return gradientDescentInferenceOnlineLearner(
-                                                   InferenceOnlineLearner::perEpisode,                                                 // randomization
-                                                   InferenceOnlineLearner::perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0),         // regularizer
-                                                   InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+      res = gradientDescentOnlineLearner(
+                                         InferenceOnlineLearner::perEpisode,                                                 // randomization
+                                         InferenceOnlineLearner::perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
+                                         InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0));         // regularizer
     else
-      return gradientDescentInferenceOnlineLearner(
-                                                   InferenceOnlineLearner::perPass,                                                 // randomization
-                                                   InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
-                                                   InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(regularizer),         // regularizer
-                                                   InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+      res = gradientDescentOnlineLearner(
+                                         InferenceOnlineLearner::perPass,                                                 // randomization
+                                         InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
+                                         InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(regularizer));         // regularizer
+
+    res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true)); // stopping criterion
+    return res;
   }
   
 private:

@@ -133,7 +133,7 @@ bool Perception::loadFromXml(XmlImporter& importer)
   return true;
 }
 
-void Perception::clone(ObjectPtr t) const
+void Perception::clone(const ObjectPtr& t) const
 {
   const PerceptionPtr& target = t.staticCast<Perception>();
   target->outputVariables = outputVariables;

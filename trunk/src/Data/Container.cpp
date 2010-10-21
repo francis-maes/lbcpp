@@ -35,7 +35,7 @@ String Container::toString() const
   return res + T("]");
 }
 
-void Container::clone(ObjectPtr target) const
+void Container::clone(const ObjectPtr& target) const
 {
   Object::clone(target);
   ContainerPtr targetContainer = target.staticCast<Container>();

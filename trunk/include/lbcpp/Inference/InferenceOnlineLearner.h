@@ -20,11 +20,20 @@ namespace lbcpp
 class InferenceOnlineLearner : public Object
 {
 public:
-  virtual void startLearningCallback() = 0;
-  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) {}
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction) = 0;
-  virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
-  virtual void passFinishedCallback(const InferencePtr& inference) = 0;
+  virtual void startLearningCallback()
+    {if (nextLearner) nextLearner->startLearningCallback();}
+
+  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+    {if (nextLearner) nextLearner->subStepFinishedCallback(inference, input, supervision, prediction);}
+
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+    {if (nextLearner) nextLearner->stepFinishedCallback(inference, input, supervision, prediction);}
+
+  virtual void episodeFinishedCallback(const InferencePtr& inference)
+    {if (nextLearner) nextLearner->episodeFinishedCallback(inference);}
+
+  virtual void passFinishedCallback(const InferencePtr& inference)
+    {if (nextLearner) nextLearner->passFinishedCallback(inference);}
 
   virtual double getCurrentLossEstimate() const;
 
@@ -32,7 +41,7 @@ public:
     {return !isLearningStopped();}
 
   virtual bool isLearningStopped() const
-    {return false;}
+    {return nextLearner && nextLearner->isLearningStopped();}
 
   enum UpdateFrequency
   {
@@ -52,8 +61,6 @@ public:
     perStepMiniBatch1000 = perStepMiniBatch + 1000,
   };
 
-  InferenceOnlineLearnerPtr addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true) const;
-
   const InferenceOnlineLearnerPtr& getNextLearner() const
     {return nextLearner;}
 
@@ -62,6 +69,8 @@ public:
 
   void setPreviousLearner(const InferenceOnlineLearnerPtr& learner)
     {if (learner) learner->nextLearner = this; previousLearner = learner;}
+
+  virtual void clone(const ObjectPtr& target) const;
 
 protected:
   friend class InferenceOnlineLearnerClass;
@@ -80,7 +89,11 @@ public:
   virtual void update(const InferencePtr& inference) = 0;
 
   virtual void startLearningCallback()
-    {epoch = 0;}
+  {
+    epoch = 0;
+    InferenceOnlineLearner::startLearningCallback();
+  }
+
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(const InferencePtr& inference);
   virtual void passFinishedCallback(const InferencePtr& inference);
@@ -90,13 +103,16 @@ protected:
 
   size_t epoch;
   UpdateFrequency updateFrequency;
+
+  void updateAfterStep(const InferencePtr& inference);
 };
 
 typedef ReferenceCountedObjectPtr<UpdatableOnlineLearner> UpdatableOnlineLearnerPtr;
 
-extern InferenceOnlineLearnerPtr stoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr learner,
-                    InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
+extern UpdatableOnlineLearnerPtr stoppingCriterionOnlineLearner(InferenceOnlineLearner::UpdateFrequency criterionTestFrequency,
+                                                                StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops);
 
+extern UpdatableOnlineLearnerPtr randomizerOnlineLearner(InferenceOnlineLearner::UpdateFrequency randomizationFrequency);
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_ONLINE_LEARNER_H_

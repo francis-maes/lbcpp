@@ -28,8 +28,6 @@ public:
 
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
-
     updateParameters(inference, 1.0, input, supervision, prediction, &gradientSum);
     ++epoch;
     if (learningUpdateFrequency >= perStepMiniBatch)
@@ -39,6 +37,7 @@ public:
         applyGradientSum(inference);
     }
     checkRegularizerAfterStep(inference);
+    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
   }
 
   virtual void episodeFinishedCallback(const InferencePtr& inference)

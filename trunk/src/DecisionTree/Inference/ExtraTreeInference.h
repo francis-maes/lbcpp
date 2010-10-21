@@ -37,7 +37,7 @@ public:
   PerceptionPtr getPerception() const
     {return perception;}
 
-  virtual void clone(ObjectPtr target) const
+  virtual void clone(const ObjectPtr& target) const
   {
     Inference::clone(target);
     ReferenceCountedObjectPtr<BinaryDecisionTreeInference> res = target.staticCast<BinaryDecisionTreeInference>();

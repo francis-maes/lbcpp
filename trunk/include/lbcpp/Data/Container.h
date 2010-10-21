@@ -42,7 +42,7 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
   juce_UseDebuggingNewOperator
 

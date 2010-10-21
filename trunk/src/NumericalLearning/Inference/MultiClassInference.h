@@ -96,7 +96,7 @@ public:
     return true;
   }
 
-  virtual void clone(ObjectPtr target) const
+  virtual void clone(const ObjectPtr& target) const
   {
     StaticDecoratorInference::clone(target);
     target.staticCast<MultiClassInference>()->lossFunctions = lossFunctions;

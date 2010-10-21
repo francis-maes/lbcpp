@@ -66,7 +66,7 @@ public:
   /*
   ** Object
   */
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
   juce_UseDebuggingNewOperator
 

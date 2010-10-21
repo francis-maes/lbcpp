@@ -20,8 +20,8 @@ namespace lbcpp
 class StoppingCriterionOnlineLearner : public UpdatableOnlineLearner
 {
 public:
-  StoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr learner, UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops)
-    : UpdatableOnlineLearner(criterionTestFrequency), learner(learner), 
+  StoppingCriterionOnlineLearner(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops)
+    : UpdatableOnlineLearner(criterionTestFrequency), 
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
         learningStopped(false), bestScore(-DBL_MAX)
      {criterion->reset();}
@@ -34,49 +34,14 @@ public:
     learningStopped = false;
     bestParameters = ObjectPtr();
     bestScore = -DBL_MAX;
-    if (learner)
-      learner->startLearningCallback();
   }
-
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-  {
-    if (learner)
-      learner->stepFinishedCallback(inference, input, supervision, prediction);
-    UpdatableOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
-  }
-
-  virtual void episodeFinishedCallback(const InferencePtr& inference)
-  {
-    jassert(!learningStopped);
-    if (learner)
-      learner->episodeFinishedCallback(inference);
-    UpdatableOnlineLearner::episodeFinishedCallback(inference);
-  }
-
-  virtual void passFinishedCallback(const InferencePtr& inference)
-  {
-    jassert(!learningStopped);
-    if (learner)
-      learner->passFinishedCallback(inference);
-    UpdatableOnlineLearner::passFinishedCallback(inference);
-  }
-
-  virtual double getCurrentLossEstimate() const
-    {return learner ? learner->getCurrentLossEstimate() : InferenceOnlineLearner::getCurrentLossEstimate();}
 
   virtual bool isLearningStopped() const
     {return learningStopped;}
 
-  virtual void clone(ObjectPtr target) const
-  {
-    UpdatableOnlineLearner::clone(target);
-    target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>();
-  }
-
 private:
   friend class StoppingCriterionOnlineLearnerClass;
 
-  InferenceOnlineLearnerPtr learner;
   StoppingCriterionPtr criterion;
   bool restoreBestParametersWhenLearningStops;
 

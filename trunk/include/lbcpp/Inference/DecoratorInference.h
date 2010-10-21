@@ -117,13 +117,8 @@ public:
   */
   virtual String toString() const;
   
-  virtual void clone(ObjectPtr target) const
-  {
-    DecoratorInference::clone(target);
-    if (decorated)
-      ReferenceCountedObjectPtr<StaticDecoratorInference>(target)->decorated = decorated->cloneAndCast<Inference>();
-  }
- 
+  virtual void clone(const ObjectPtr& target) const;
+
 protected:
   friend class StaticDecoratorInferenceClass;
 

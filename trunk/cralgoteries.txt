@@ -1,29 +1,22 @@
 
-* merge ParameterizedInference into Inference
-  -> AddBiasInference: put the bias into parameters
+Cleaning:
+ * Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
+ * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
-* GraftingOnlineLearner
+GraftingOnlineLearner:
   -> GraftingOnlineLearner::pruneParameters()
 
-* StoppingCriterionInferenceOnlineLearner: ne plus etre un decorator, s'intégrer dans la chaine de learners online
+Inference:
+ * Segmental Features
+ * merge ParameterizedInference into Inference
+  -> AddBiasInference: put the bias into parameters
+  -> recursive parameters
 
-* ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
-
-* Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
-
-* StoppingCriterion: faire un reset() dans le clone()
-* StoppingCriterionOnlineLearner: ne pas cloner le StoppingCriterion manuellement
-
-* Segmental Features
-
-Learning:
- * BiasLearner for contact map and disorder regions 
-     * MultiPassLearner: 1- apprentissage online, 2- apprentissage du seuil en batch
- * Grafting
- * Extra-trees
- * Neural networks
+Extra-trees:
+ * Make it really work !
 
 Explorer:
+ * Verifier la stabilité
  * Mettre à jour le ProcessManager pour qu'il utilise les classes Job et ThreadPool
 
 Types:

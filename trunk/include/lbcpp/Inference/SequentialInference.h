@@ -139,7 +139,7 @@ public:
   void appendInference(const InferencePtr& inference)
     {subInferences.push_back(inference);}
 
-  virtual void clone(ObjectPtr t) const;
+  virtual void clone(const ObjectPtr& t) const;
 
 protected:
   friend class VectorSequentialInferenceClass;

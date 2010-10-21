@@ -30,11 +30,11 @@ Inference::~Inference()
 String Inference::getDescription(const Variable& input, const Variable& supervision) const
   {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
 
-void Inference::clone(ObjectPtr target) const
+void Inference::clone(const ObjectPtr& target) const
 {
   NameableObject::clone(target);
   if (onlineLearner)
-    InferencePtr(target)->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
+    target.staticCast<Inference>()->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
 }
 
 void Inference::setBatchLearner(InferencePtr batchLearner)
@@ -75,6 +75,12 @@ DecoratorInference::DecoratorInference(const String& name)
 String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
+void StaticDecoratorInference::clone(const ObjectPtr& target) const
+{
+  DecoratorInference::clone(target);
+  if (decorated)
+    target.staticCast<StaticDecoratorInference>()->decorated = decorated->cloneAndCast<Inference>();
+}
 /*
 ** ParallelInference
 */
@@ -104,7 +110,7 @@ String SharedParallelInference::toString() const
   return getClassName() + T("(") + subInference->toString() + T(")");
 }
 
-void VectorParallelInference::clone(ObjectPtr t) const
+void VectorParallelInference::clone(const ObjectPtr& t) const
 {
   ReferenceCountedObjectPtr<VectorParallelInference> target = t.staticCast<VectorParallelInference>();
   StaticParallelInference::clone(target);
@@ -149,7 +155,7 @@ bool VectorSequentialInference::updateInference(InferenceContextPtr context, Seq
     return false;
 }
 
-void VectorSequentialInference::clone(ObjectPtr t) const
+void VectorSequentialInference::clone(const ObjectPtr& t) const
 {
   ReferenceCountedObjectPtr<VectorSequentialInference> target = t.staticCast<VectorSequentialInference>();
   StaticSequentialInference::clone(target);
@@ -161,7 +167,7 @@ void VectorSequentialInference::clone(ObjectPtr t) const
 /*
 ** ParameterizedInference
 */
-void ParameterizedInference::clone(ObjectPtr t) const
+void ParameterizedInference::clone(const ObjectPtr& t) const
 {
   const ParameterizedInferencePtr& target = t.staticCast<ParameterizedInference>();
   ScopedReadLock _(parametersLock);

@@ -69,7 +69,7 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 NumericalInferenceParameters::NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType)
   : Object(numericalInferenceParametersClass(weightsType)), perception(perception) {}
 
-void NumericalInferenceParameters::clone(ObjectPtr t) const
+void NumericalInferenceParameters::clone(const ObjectPtr& t) const
 {
   Object::clone(t);
   const NumericalInferenceParametersPtr& target = t.staticCast<NumericalInferenceParameters>();
@@ -153,13 +153,9 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
 */
 #include "OnlineLearner/StochasticGradientDescentOnlineLearner.h"
 #include "OnlineLearner/BatchGradientDescentOnlineLearner.h"
-#include "OnlineLearner/RandomizerInferenceOnlineLearner.h"
 
 namespace lbcpp
 {
-  extern InferenceOnlineLearnerPtr randomizerInferenceOnlineLearner(
-    InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback);
- 
   extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
@@ -192,11 +188,10 @@ static bool isRandomizationRequired(InferenceOnlineLearner::UpdateFrequency lear
   return false;
 }
 
-InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
+InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
         InferenceOnlineLearner::UpdateFrequency randomizationFrequency,
         InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-        InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer,
-        InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr stoppingCriterion, bool restoreBestParametersWhenLearningStops)
+        InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
 {
   jassert(learningUpdateFrequency != InferenceOnlineLearner::never);
   InferenceOnlineLearnerPtr res;
@@ -220,17 +215,12 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentInferenceOnlineLearner(
 
   // randomization
   if (isRandomizationRequired(learningUpdateFrequency, randomizationFrequency))
-    res = InferenceOnlineLearnerPtr(randomizerInferenceOnlineLearner(randomizationFrequency, res));
-
-  // stopping criterion and best parameters restore
-  jassert(!restoreBestParametersWhenLearningStops || stoppingCriterion);
-  if (stoppingCriterion)
   {
-    jassert(criterionTestFrequency != InferenceOnlineLearner::never);
-    res = res->addStoppingCriterion(criterionTestFrequency, stoppingCriterion, restoreBestParametersWhenLearningStops);
+    InferenceOnlineLearnerPtr randomized = randomizerOnlineLearner(randomizationFrequency);
+    randomized->setNextLearner(res);
+    return randomized;
   }
   else
-    jassert(!restoreBestParametersWhenLearningStops);
-  return res;
+    return res;
 }
 

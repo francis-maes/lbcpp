@@ -315,7 +315,7 @@ SET(LBCPP_INFERENCE_META_SOURCES
 )
 
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
-  Inference/OnlineLearner/RandomizerInferenceOnlineLearner.h
+  Inference/OnlineLearner/RandomizerOnlineLearner.h
   Inference/OnlineLearner/StoppingCriterionOnlineLearner.h
   Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp

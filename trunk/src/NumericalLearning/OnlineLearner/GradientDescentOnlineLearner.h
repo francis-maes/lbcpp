@@ -33,7 +33,7 @@ public:
   virtual double getCurrentLossEstimate() const
     {return lossValue.getMean();}
   
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
 protected:
   const NumericalInferencePtr& getNumericalInference(const InferencePtr& inference) const
