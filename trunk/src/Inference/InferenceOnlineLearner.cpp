@@ -60,11 +60,13 @@ void UpdatableOnlineLearner::episodeFinishedCallback(const InferencePtr& inferen
 {
   if (updateFrequency == perEpisode)
     update(inference);
+  InferenceOnlineLearner::episodeFinishedCallback(inference);
 }
 
 void UpdatableOnlineLearner::passFinishedCallback(const InferencePtr& inference)
 {
   if (updateFrequency == perPass)
     update(inference);
+  InferenceOnlineLearner::passFinishedCallback(inference);
 }
 
