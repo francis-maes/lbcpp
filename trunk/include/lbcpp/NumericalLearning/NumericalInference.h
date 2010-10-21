@@ -9,6 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 
+# include "../Perception/Perception.h"
 # include "../Inference/Inference.h"
 
 namespace lbcpp
