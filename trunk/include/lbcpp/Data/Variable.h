@@ -84,7 +84,7 @@ public:
   Variable& operator =(ReferenceCountedObjectPtr<T>&& other)
   {
     clear();
-    type = other ? other->getClass() : nilType;
+    type = other ? (TypePtr)other->getClass() : nilType;
     value = other;
     other.setPointerToNull();
     return *this;
