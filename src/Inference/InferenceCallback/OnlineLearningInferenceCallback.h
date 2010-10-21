@@ -83,56 +83,39 @@ private:
   void callStartLearningCallback(const InferencePtr& inference)
   {
     InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
-    while (learner)
+    if (learner)
     {
       learner->startLearningCallback();
       jassert(!learner->isLearningStopped());
-      learner = learner->getNextLearner();
     }
   }
 
   void callStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
     InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
-    while (learner)
-    {
-      if (!learner->isLearningStopped())
-        learner->stepFinishedCallback(inference, input, supervision, output);
-      learner = learner->getNextLearner();
-    }
+    if (learner && !learner->isLearningStopped())
+      learner->stepFinishedCallback(inference, input, supervision, output);
   }
 
   void callSubStepFinishedCallback(const InferencePtr& parentInference, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
     InferenceOnlineLearnerPtr learner = parentInference->getOnlineLearner();
-    while (learner)
-    {
-      if (!learner->isLearningStopped())
-        learner->stepFinishedCallback(inference, input, supervision, output);
-      learner = learner->getNextLearner();
-    }
+    if (learner && !learner->isLearningStopped())
+      learner->subStepFinishedCallback(inference, input, supervision, output);
   }
 
   void callEpisodeFinishedCallback(const InferencePtr& inference)
   {
     InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
-    while (learner)
-    {
-      if (!learner->isLearningStopped())
-        learner->episodeFinishedCallback(inference);
-      learner = learner->getNextLearner();
-    }
+    if (learner && !learner->isLearningStopped())
+      learner->episodeFinishedCallback(inference);
   }
 
   void callPassFinishedCallback(const InferencePtr& inference)
   {
     InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
-    while (learner)
-    {
-      if (!learner->isLearningStopped())
-        learner->passFinishedCallback(inference);
-      learner = learner->getNextLearner();
-    }
+    if (learner && !learner->isLearningStopped())
+      learner->passFinishedCallback(inference);
   }
 };
 

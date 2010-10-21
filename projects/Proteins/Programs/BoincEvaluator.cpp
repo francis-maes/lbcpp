@@ -218,11 +218,13 @@ public:
   {
     StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
 
-    return gradientDescentInferenceOnlineLearner(
+    InferenceOnlineLearnerPtr res = gradientDescentOnlineLearner(
         getUpdateFrequencyParameter(T("randomizationFrequency")),                            // randomization
         getUpdateFrequencyParameter(T("learningStepsFrequency")), createLearningRate(), true,// learning steps
-        getUpdateFrequencyParameter(T("regularizerFrequency")), createRegularizer(),         // regularizer
-        InferenceOnlineLearner::perPass, stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished"))); // stopping criterion
+        getUpdateFrequencyParameter(T("regularizerFrequency")), createRegularizer());         // regularizer
+    res->setNextLearner(stoppingCriterionOnlineLearner(
+        InferenceOnlineLearner::perPass, stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished")))); // stopping criterion
+    return res;
   }
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const

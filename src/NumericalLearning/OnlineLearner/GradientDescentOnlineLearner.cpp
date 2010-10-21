@@ -27,17 +27,20 @@ void GradientDescentOnlineLearner::startLearningCallback()
   ScopedLock _(lossValueLock);
   lossValue.clear();
   lastApplyRegularizerEpoch = 0;
+  InferenceOnlineLearner::startLearningCallback();
 }
 
 void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   updateNumberOfActiveFeatures(getPerception(inference), input);
+  InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
 }
   
 void GradientDescentOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
     applyRegularizer(inference);
+  InferenceOnlineLearner::episodeFinishedCallback(inference);
 }
 
 void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& inference)
@@ -56,6 +59,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
     lossValue.clear();
     lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
+  InferenceOnlineLearner::passFinishedCallback(inference);
 }
 
 void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
@@ -134,7 +138,7 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const Perception
   }
 }
 
-void GradientDescentOnlineLearner::clone(ObjectPtr target) const
+void GradientDescentOnlineLearner::clone(const ObjectPtr& target) const
 {
   GradientDescentOnlineLearnerPtr res = (GradientDescentOnlineLearnerPtr)target;
   res->numberOfActiveFeatures = numberOfActiveFeatures;

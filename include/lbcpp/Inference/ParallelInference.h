@@ -115,7 +115,7 @@ public:
   void appendInference(InferencePtr inference)
     {subInferences.push_back(inference);}
   
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
 protected:
   friend class VectorParallelInferenceClass;
@@ -151,7 +151,7 @@ public:
   */
   virtual String toString() const;
 
-  virtual void clone(ObjectPtr target) const
+  virtual void clone(const ObjectPtr& target) const
   {
     StaticParallelInference::clone(target);
     if (subInference)

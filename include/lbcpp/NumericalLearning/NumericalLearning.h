@@ -99,7 +99,7 @@ public:
   ObjectPtr& getWeights()
     {return weights;}
 
-  virtual void clone(ObjectPtr t) const;
+  virtual void clone(const ObjectPtr& t) const;
 
 private:
   friend class NumericalInferenceParametersClass;
@@ -174,7 +174,7 @@ extern StaticDecoratorInferencePtr multiClassMaxentInference(PerceptionPtr perce
 ** OnlineLearner
 */
 // Gradient Descent Learner
-extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
+extern InferenceOnlineLearnerPtr gradientDescentOnlineLearner(
           // randomization
           InferenceOnlineLearner::UpdateFrequency randomizationFrequency = InferenceOnlineLearner::never,
           // learning steps
@@ -183,12 +183,7 @@ extern InferenceOnlineLearnerPtr gradientDescentInferenceOnlineLearner(
           bool normalizeLearningRate = true,
           // regularizer
           InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency = InferenceOnlineLearner::perEpisode,
-          ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr(),
-          // stopping criterion
-          InferenceOnlineLearner::UpdateFrequency criterionTestFrequency = InferenceOnlineLearner::never,
-          StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-          bool restoreBestParametersWhenLearningStops = false
-    );
+          ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr());
 
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& targetInferences);
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference);

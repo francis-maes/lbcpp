@@ -12,10 +12,12 @@ using namespace lbcpp;
 /*
 ** InferenceOnlineLearner
 */
-InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops) const
+void InferenceOnlineLearner::clone(const ObjectPtr& t) const
 {
-  return stoppingCriterionOnlineLearner(refCountedPointerFromThis(this),
-    criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
+  Object::clone(t);
+  const InferenceOnlineLearnerPtr& target = t.staticCast<InferenceOnlineLearner>();
+  if (nextLearner)
+    target->setNextLearner(nextLearner->cloneAndCast<InferenceOnlineLearner>());
 }
 
 double InferenceOnlineLearner::getCurrentLossEstimate() const
@@ -35,7 +37,7 @@ double InferenceOnlineLearner::getCurrentLossEstimate() const
 UpdatableOnlineLearner::UpdatableOnlineLearner(UpdateFrequency updateFrequency)
   : epoch(0), updateFrequency(updateFrequency) {}
 
-void UpdatableOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void UpdatableOnlineLearner::updateAfterStep(const InferencePtr& inference)
 {
   ++epoch;
   if (updateFrequency == perStep)
@@ -46,6 +48,12 @@ void UpdatableOnlineLearner::stepFinishedCallback(const InferencePtr& inference,
     if (miniBatchSize <= 1 || (epoch % miniBatchSize) == 0)
       update(inference);
   }
+}
+
+void UpdatableOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+{
+  updateAfterStep(inference);
+  InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
 }
 
 void UpdatableOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)

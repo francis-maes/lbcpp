@@ -64,7 +64,7 @@ public:
   // Object
   virtual bool loadFromXml(XmlImporter& importer);
   virtual String toString() const;
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
   // output variables
   struct OutputVariable

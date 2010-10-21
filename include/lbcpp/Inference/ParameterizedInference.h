@@ -26,7 +26,7 @@ public:
   ObjectPtr getParameters() const;
   void setParameters(ObjectPtr parameters);
 
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
 
 protected:
   virtual void parametersChangedCallback() {}

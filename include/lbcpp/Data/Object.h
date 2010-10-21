@@ -86,7 +86,7 @@ public:
   ** the clone() operation is undefined for this object.
   */
   virtual ObjectPtr clone() const;
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
   ObjectPtr deepClone() const;
 
   /**

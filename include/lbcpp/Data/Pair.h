@@ -55,7 +55,7 @@ public:
   virtual ObjectPtr clone() const
     {return new Pair(thisClass, first, second);}
 
-  virtual void clone(ObjectPtr target) const
+  virtual void clone(const ObjectPtr& target) const
     {PairPtr targetPair = target.staticCast<Pair>(); targetPair->first = first; targetPair->second = second;}
  
   const Variable& getFirst() const

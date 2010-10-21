@@ -97,11 +97,10 @@ public:
   {
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
     NumericalInferencePtr multiLinearInference = res->getSubInference();
-    StoppingCriterionPtr graftingStoppingCriterion = maxIterationsStoppingCriterion(2);
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);
 
-    multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
-    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr(), 
-      InferenceOnlineLearner::perPass, graftingStoppingCriterion, true));
+    //multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
+    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true));
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
@@ -116,26 +115,20 @@ public:
 protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
   {
-      StoppingCriterionPtr stoppingCriterion;// = maxIterationsStoppingCriterion(5);/* logicalOr(
-/*                                                     maxIterationsStoppingCriterion(5),
-                                                     maxIterationsWithoutImprovementStoppingCriterion(1));*/
-
-//    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(5);/*logicalOr(
-      /*maxIterationsStoppingCriterion(100),
-      maxIterationsWithoutImprovementStoppingCriterion(1));*/
-
+    InferenceOnlineLearnerPtr res;
     if (targetName.startsWith(T("contactMap")))
-      return gradientDescentInferenceOnlineLearner(
+      res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0),         // regularizer
-        InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
+        InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0));         // regularizer
     else
-      return gradientDescentInferenceOnlineLearner(
+      res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
-        InferenceOnlineLearner::never, l2Regularizer(0.0),         // regularizer
-        InferenceOnlineLearner::perPass, stoppingCriterion, false);                     // stopping criterion
+        InferenceOnlineLearner::never, l2Regularizer(0.0));         // regularizer
+
+    //res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
+    return res;
   }
 };
 
@@ -213,9 +206,9 @@ private:
 VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 7;
+  size_t maxCount = 1;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -266,11 +259,11 @@ int main(int argc, char** argv)
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
 
-  InferencePtr lastStep = factory->createInferenceStep(T("disorderRegions"));
+  InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
   inference->appendInference(lastStep);
   for (int i = 1; i < 5; ++i)
   {
-    InferencePtr step = factory->createInferenceStep(T("disorderRegions"));
+    InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
     initializeLearnerByCloning(step, lastStep);
     inference->appendInference(step);
     lastStep = step;

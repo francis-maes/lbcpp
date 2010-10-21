@@ -35,7 +35,7 @@ public:
   */
   virtual String toString() const;
   virtual bool loadFromXml(XmlImporter& importer);
-  virtual void clone(ObjectPtr target) const;
+  virtual void clone(const ObjectPtr& target) const;
   VectorPtr cloneContent() const;
 
   juce_UseDebuggingNewOperator

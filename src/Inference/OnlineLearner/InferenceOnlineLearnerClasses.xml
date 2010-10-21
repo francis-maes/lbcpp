@@ -32,9 +32,8 @@
     </class>
 
     <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="InferenceOnlineLearnerPtr learner, InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops" returnType="InferenceOnlineLearner"/>
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops"/>
 
-      <variable type="InferenceOnlineLearner" name="learner"/>
       <variable type="StoppingCriterion" name="criterion"/>
       <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
 
@@ -43,8 +42,8 @@
       <variable type="Double" name="bestScore"/>
     </class>
 
-    <class name="RandomizerInferenceOnlineLearner" base="InferenceOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency randomizationFrequency, InferenceOnlineLearnerPtr targetLearningCallback"/>
+    <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">
+      <constructor arguments="InferenceOnlineLearner::UpdateFrequency randomizationFrequency"/>
     </class>
 
   </namespace>
