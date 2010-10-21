@@ -12,7 +12,7 @@
 # include <lbcpp/Data/Pair.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/ParameterizedInference.h>
+# include <lbcpp/Inference/Inference.h>
 
 namespace lbcpp
 {
@@ -77,16 +77,14 @@ private:
   bool restoreBestParametersWhenLearningStops;
 
   bool learningStopped;
-  ObjectPtr bestParameters;
+  Variable bestParameters;
   double bestScore;
 
-  virtual void update(const InferencePtr& inf)
+  virtual void update(const InferencePtr& inference)
   {
-    ParameterizedInferencePtr inference = inf.staticCast<ParameterizedInference>();
-
     double score = -getCurrentLossEstimate();
-    ObjectPtr parameters = inference->getParameters();
-    if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
+    Variable parameters = inference->getParameters();
+    if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters;
       bestScore = score;
@@ -96,7 +94,7 @@ private:
     {
       //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
       learningStopped = true;
-      if (bestParameters && bestScore > score)
+      if (bestParameters.exists() && bestScore > score)
       {
         MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String((double)bestScore));
         inference->setParameters(bestParameters);

@@ -24,6 +24,9 @@ public:
     : NameableObject(name) {}
   virtual ~Inference();
 
+  /*
+  ** Types
+  */
   virtual TypePtr getInputType() const
     {return anyType;}
 
@@ -33,6 +36,10 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType;}
 
+  virtual TypePtr getParametersType() const
+    {return nilType;}
+
+  // description
   virtual String getDescription(const Variable& input, const Variable& supervision) const;
 
   enum ReturnCode
@@ -64,6 +71,12 @@ public:
   void getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const;
 
   /*
+  ** Parameters
+  */
+  Variable getParameters() const;
+  void setParameters(const Variable& parameters);
+
+  /*
   ** Object
   */
   virtual void clone(const ObjectPtr& target) const;
@@ -74,10 +87,14 @@ protected:
   friend class InferenceClass;
   friend class InferenceContext;
 
+  virtual void parametersChangedCallback() {}
+
   virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
+  juce::ReadWriteLock parametersLock;
+  Variable parameters;
 };
 
 extern ClassPtr inferenceClass;

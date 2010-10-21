@@ -80,14 +80,14 @@ void NumericalInferenceParameters::clone(const ObjectPtr& t) const
 ** NumericalInference
 */
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
-  : ParameterizedInference(name)
+  : Inference(name)
 {
 }
 
 const NumericalInferenceParametersPtr& NumericalInference::getParameters() const
 {
   ScopedReadLock _(parametersLock);
-  return parameters.staticCast<NumericalInferenceParameters>();
+  return parameters.getObjectAndCast<NumericalInferenceParameters>();
 }
 
 const PerceptionPtr& NumericalInference::getPerception() const

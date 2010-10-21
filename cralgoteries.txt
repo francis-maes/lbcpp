@@ -1,4 +1,8 @@
 
+Ranking:
+ * RankingLoss
+ * RankingInference
+
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
@@ -7,9 +11,7 @@ GraftingOnlineLearner:
 
 Inference:
  * Segmental Features
- * merge ParameterizedInference into Inference
-  -> AddBiasInference: put the bias into parameters
-  -> recursive parameters
+ * StoppingCriterion: recursive parameters
 
 Extra-trees:
  * Make it really work !

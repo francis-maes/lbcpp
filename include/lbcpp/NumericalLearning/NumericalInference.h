@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 
-# include "../Inference/ParameterizedInference.h"
+# include "../Inference/Inference.h"
 
 namespace lbcpp
 {
@@ -43,7 +43,7 @@ private:
   ObjectPtr weights;
 };
 
-class NumericalInference : public ParameterizedInference
+class NumericalInference : public Inference
 {
 public:
   NumericalInference(const String& name, PerceptionPtr perception);
@@ -55,7 +55,7 @@ public:
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const = 0;
 
   virtual TypePtr getParametersType() const
-    {return parameters ? parameters->getClass() : numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
+    {return parameters.exists() ? parameters.getType() : numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
 
   const NumericalInferenceParametersPtr& getParameters() const;
   

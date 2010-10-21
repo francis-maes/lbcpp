@@ -12,7 +12,7 @@
 # include <lbcpp/Data/Pair.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/ParameterizedInference.h>
+# include <lbcpp/Inference/Inference.h>
 
 namespace lbcpp
 {
@@ -49,12 +49,10 @@ private:
   ObjectPtr bestParameters;
   double bestScore;
 
-  virtual void update(const InferencePtr& inf)
+  virtual void update(const InferencePtr& inference)
   {
-    ParameterizedInferencePtr inference = inf.staticCast<ParameterizedInference>();
-
     double score = -getCurrentLossEstimate();
-    ObjectPtr parameters = inference->getParameters();
+    ObjectPtr parameters = inference->getParameters().getObject();
     if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters;
