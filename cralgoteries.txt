@@ -3,6 +3,8 @@
 
 * StoppingCriterionInferenceOnlineLearner: ne plus etre un decorator, s'intégrer dans la chaine de learners online
 
+* ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine
+
 * Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
 
 * StoppingCriterion: faire un reset() dans le clone()
