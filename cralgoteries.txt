@@ -1,13 +1,13 @@
 
+GraftingOnlineLearner:
+  -> GraftingOnlineLearner::pruneParameters()
+
 Ranking:
  * RankingLoss
  * RankingInference
 
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
-
-GraftingOnlineLearner:
-  -> GraftingOnlineLearner::pruneParameters()
 
 Inference:
  * Segmental Features

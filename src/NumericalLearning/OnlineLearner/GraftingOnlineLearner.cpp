@@ -262,10 +262,14 @@ double GraftingOnlineLearner::getCandidateScore(size_t candidateNumber, size_t s
   }
 }
 
-void GraftingOnlineLearner::updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GraftingOnlineLearner::updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& pred)
 {
   jassert(perception == numericalInference->getPerception());
   jassert(candidatesPerception->getNumConjunctions());
+
+  Variable prediction = pred;
+  if (prediction.isNil())
+    prediction = numericalInference->predict(input);
 
   if (numericalInference.dynamicCast<LinearInference>())
   {

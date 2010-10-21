@@ -97,10 +97,8 @@ public:
   {
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
     NumericalInferencePtr multiLinearInference = res->getSubInference();
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(1);
-
-    //multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
-    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true));
+    multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
+    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1000), true));
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);

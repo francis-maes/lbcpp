@@ -31,7 +31,7 @@ public:
   virtual void episodeFinishedCallback(const InferencePtr& inference)
   {
     if (updateFrequency >= perStepMiniBatch + 1)
-      update(inference);
+      update(inference); // flush remaining examples
     if (updateFrequency != perPass)
       UpdatableOnlineLearner::episodeFinishedCallback(inference);
   }
