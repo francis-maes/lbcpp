@@ -18,10 +18,8 @@ namespace lbcpp
 class DenseObjectObject : public Object
 {
 public:
-  DenseObjectObject(TypePtr thisType)
-    : Object(thisType)
-  {
-  }
+  DenseObjectObject(DynamicClassSharedPtr thisClass)
+    : Object((Class* )thisClass.get()), thisClass(thisClass) {}
 
   ObjectPtr& getObjectReference(size_t index)
   {
@@ -71,6 +69,7 @@ private:
   friend class DenseObjectObjectVariableIterator;
 
   std::vector<ObjectPtr> values;
+  DynamicClassSharedPtr thisClass;
 };
 
 typedef ReferenceCountedObjectPtr<DenseObjectObject> DenseObjectObjectPtr;

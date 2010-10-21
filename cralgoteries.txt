@@ -1,9 +1,4 @@
 
-GraftingOnlineLearner:
-  * Object::cloneToNewType
-  * SelectAndMakeProductsPerception::removeConjunctions
-  -> GraftingOnlineLearner::pruneParameters()
-
 Ranking:
  * RankingLoss
  * RankingInference

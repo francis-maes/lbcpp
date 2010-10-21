@@ -45,6 +45,7 @@ protected:
 };
 
 typedef NativePtr<DynamicClass> DynamicClassPtr;
+typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassSharedPtr;
 
 extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
 extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);

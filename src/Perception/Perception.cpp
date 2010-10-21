@@ -52,7 +52,7 @@ String Perception::toString() const
 
 TypePtr Perception::getOutputType() const
 {
-  if (!outputType)
+  if (!outputType || !outputType->getBaseType())
   {
     const_cast<Perception* >(this)->computeOutputType();
     jassert(outputType);
@@ -60,14 +60,11 @@ TypePtr Perception::getOutputType() const
   return outputType.get();
 }
 
+void Perception::clearOutputType()
+  {outputType = UnnamedDynamicClassPtr();}
+
 void Perception::clearOutputVariables()
-{
-  outputVariables.clear();
-  if (outputType)
-  {
-    outputType->clearVariables();
-  }
-}
+  {outputVariables.clear(); clearOutputType();}
 
 void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionPtr subPerception)
 {

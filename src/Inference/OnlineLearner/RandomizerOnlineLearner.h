@@ -39,8 +39,11 @@ public:
   virtual void passFinishedCallback(const InferencePtr& inference)
   {
     if (updateFrequency == perPass)
+    {
+      update(inference);
       nextLearner->episodeFinishedCallback(inference);
-    UpdatableOnlineLearner::passFinishedCallback(inference);
+    }
+    InferenceOnlineLearner::passFinishedCallback(inference);
   }
 
   virtual void update(const InferencePtr& inference)

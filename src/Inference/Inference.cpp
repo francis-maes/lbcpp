@@ -46,6 +46,12 @@ void Inference::clone(const ObjectPtr& t) const
 Variable Inference::getParameters() const
 {
   ScopedReadLock _(parametersLock);
+  return parameters;
+}
+
+Variable Inference::getParametersCopy() const
+{
+  ScopedReadLock _(parametersLock);
   return parameters.isObject() ? Variable(parameters.getObject()->clone()) : parameters;
 }
 

@@ -18,8 +18,9 @@ namespace lbcpp
 class SparseGenericObject : public Object
 {
 public:
-  SparseGenericObject(TypePtr thisType)
-    : Object(thisType), first(NULL), last(NULL), numElements(0)  {}
+  SparseGenericObject(DynamicClassSharedPtr thisClass)
+    : Object((Class* )thisClass.get()), thisClass(thisClass), first(NULL), last(NULL), numElements(0)  {}
+
   virtual ~SparseGenericObject()
   {
     Node* nextNode;
@@ -81,6 +82,7 @@ private:
   Node* first;
   Node* last;
   size_t numElements;
+  DynamicClassSharedPtr thisClass;
 
   void appendNode(size_t index, const Variable& value)
   {

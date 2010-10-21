@@ -178,7 +178,7 @@ public:
   virtual juce::Component* createComponent() const
     {return NULL;}
 
-  ObjectPtr cloneToNewType(TypePtr newType) const;
+  ObjectPtr cloneToNewType(ClassPtr newType) const;
 
   juce_UseDebuggingNewOperator
 

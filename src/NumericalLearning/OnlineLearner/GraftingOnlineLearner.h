@@ -38,11 +38,13 @@ public:
     {return !learningStopped;}
 
 protected:
-  void generateCandidates();
-  void acceptCandidates();
-  void pruneParameters();
+  typedef std::multimap<double, std::pair<size_t, Conjunction> > SortedConjunctions;
 
+  void pruneParameters(const SortedConjunctions& activeScores);
+  bool acceptCandidates(const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores);
+  void generateCandidates(const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores);
   void resetCandidateScores();
+
   void updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction);
 
   void computeCandidateScores(std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const;

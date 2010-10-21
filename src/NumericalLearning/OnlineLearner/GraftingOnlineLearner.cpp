@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include <lbcpp/Data/RandomGenerator.h>
 #include "GraftingOnlineLearner.h"
 using namespace lbcpp;
 
@@ -37,7 +38,7 @@ GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std
 void GraftingOnlineLearner::startLearningCallback()
 {
   learningStopped = false;
-  generateCandidates();
+  generateCandidates(SortedConjunctions(), SortedConjunctions());
   resetCandidateScores();
   InferenceOnlineLearner::startLearningCallback();
 }
@@ -59,10 +60,40 @@ void GraftingOnlineLearner::stepFinishedCallback(const InferencePtr& inference, 
 
 void GraftingOnlineLearner::passFinishedCallback(const InferencePtr& inference)
 {
-  acceptCandidates();
-  pruneParameters();
-  generateCandidates();
+  // compute active feature scores
+  std::vector<double> activeScores;
+  computeActiveScores(activeScores);
+  SortedConjunctions sortedActiveScores;
+  for (size_t i = 0; i < activeScores.size(); ++i)
+    sortedActiveScores.insert(std::make_pair(activeScores[i], std::make_pair(i, perception->getConjunction(i))));
+
+  // compute candidate scores
+  std::vector<double> candidateScores;
+  Conjunction bestCandidate;
+  double bestCandidateScore;
+  computeCandidateScores(candidateScores, bestCandidate, bestCandidateScore);
+  SortedConjunctions sortedCandidateScores;
+  for (size_t i = 0; i < candidateScores.size(); ++i)
+    sortedCandidateScores.insert(std::make_pair(candidateScores[i], std::make_pair(i, candidatesPerception->getConjunction(i))));
+
+  // prune parameters
+  pruneParameters(sortedActiveScores);
+
+  // accept candidate and re-generate candidates set
+  if (!acceptCandidates(bestCandidate, bestCandidateScore, sortedCandidateScores))
+  {
+    MessageCallback::info(T("Grafting"), T("Finished!"));
+    learningStopped = true;
+    return;
+  }
+  generateCandidates(sortedActiveScores, sortedCandidateScores);
   resetCandidateScores();
+
+  // update parameters type
+  for (size_t i = 0; i < inferences.size(); ++i)
+    inferences[i]->updateParametersType();
+
+  // display some informations
   MessageCallback::info(String::empty);
   MessageCallback::info(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
     + String((int)candidatesPerception->getNumConjunctions()) + T(" candidates ==="));
@@ -77,7 +108,7 @@ static inline void makeSetFromVector(std::set<Type>& res, const std::vector<Type
     res.insert(source[i]);
 }
 
-void GraftingOnlineLearner::generateCandidates()
+void GraftingOnlineLearner::generateCandidates(const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores)
 {
   std::set<Conjunction> conjunctions;
   makeSetFromVector(conjunctions, perception->getConjunctions());
@@ -92,13 +123,44 @@ void GraftingOnlineLearner::generateCandidates()
     if (conjunctions.find(conjunction) == conjunctions.end())
       candidatesPerception->addConjunction(conjunction);
   }
-  for (size_t i = 0; i < n / 10; ++i)
+
+  size_t numActives = 10;
+  size_t numCandidates = 10;
+  SortedConjunctions::const_iterator iti, itj;
+  size_t i, j;
+  for (i = 0, iti = activeScores.begin(); i < numActives && iti != activeScores.end(); ++i, ++iti)
+  {
+    const Conjunction& c1 = iti->second.second;
+    for (j = 0, itj = candidateScores.begin(); j < numCandidates && itj != candidateScores.end(); ++j, ++itj)
+    {
+      const Conjunction& c2 = itj->second.second;
+      if (c1.size() == 1 && c2.size() == 1)
+      {
+        Conjunction conjunction = c1;
+        conjunction.push_back(c2[0]);
+        if (conjunctions.find(conjunction) == conjunctions.end())
+        {
+          conjunctions.insert(conjunction);
+          candidatesPerception->addConjunction(conjunction);
+        }
+      }
+    }
+  }
+
+  // fill with randomly sampled candidates
+  static const size_t wantedCount = 5000;
+  RandomGeneratorPtr random = RandomGenerator::getInstance();
+  for (size_t i = candidatesPerception->getNumConjunctions(); i < wantedCount; )
   {
     Conjunction conjunction(2);
-    conjunction[0] = i;
-    conjunction[1] = i + 1;
+    conjunction[0] = random->sampleSize(n);
+    conjunction[1] = random->sampleSize(n);
     if (conjunctions.find(conjunction) == conjunctions.end())
+    {
+      conjunctions.insert(conjunction);
       candidatesPerception->addConjunction(conjunction);
+      ++i;
+    }
   }
 }
 
@@ -114,67 +176,37 @@ String GraftingOnlineLearner::conjunctionToString(const Conjunction& conjunction
   return res;
 }
 
-void GraftingOnlineLearner::acceptCandidates()
+bool GraftingOnlineLearner::acceptCandidates(const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores)
 {
-  static const double regularizerWeight = 0.0001;
-
-  // compute candidate scores
-  std::vector<double> scores;
-  Conjunction bestCandidate;
-  double bestCandidateScore;
-  computeCandidateScores(scores, bestCandidate, bestCandidateScore);
+  static const double threshold = 0.0001;
 
   // generate top-five
-  std::multimap<double, String> sortedScores;
-  for (size_t i = 0; i < scores.size(); ++i)
-    sortedScores.insert(std::make_pair(scores[i], conjunctionToString(candidatesPerception->getConjunction(i))));
   size_t i = 0;
-  for (std::multimap<double, String>::reverse_iterator it = sortedScores.rbegin(); i < 5 && it != sortedScores.rend(); ++i, ++it)
+  bool res = false;
+  for (SortedConjunctions::const_reverse_iterator it = sortedScores.rbegin(); i < 5 && it != sortedScores.rend(); ++i, ++it)
   {
-    if (!it->first)
+    if (it->first < threshold)
       break;
-    MessageCallback::info(T("Grafting"), T("Top ") + String((int)i + 1) + T(": ") + it->second + T(" (") + String(it->first) + T(")"));
+    MessageCallback::info(T("Grafting"), T("Incorporating ") + conjunctionToString(it->second.second) + T(" (") + String(it->first) + T(")"));
+    perception->addConjunction(it->second.second);
+    res = true;
   }
-
-  // select top candidate
-  if (bestCandidateScore > regularizerWeight)
-  {
-    MessageCallback::info(T("Grafting"), T("Incorporating ") + conjunctionToString(bestCandidate));
-    perception->addConjunction(bestCandidate);
-  }
-  else
-  {
-    MessageCallback::info(T("Grafting"), T("Finished!"));
-    learningStopped = true;
-  }
+  return res;
 }
 
-void GraftingOnlineLearner::pruneParameters()
+void GraftingOnlineLearner::pruneParameters(const SortedConjunctions& sortedActiveScores)
 {
-  std::vector<double> activeScores;
-  computeActiveScores(activeScores);
-
-   // generate worst-five
-  std::multimap<double, size_t> sortedScores;
-  for (size_t i = 0; i < activeScores.size(); ++i)
-    sortedScores.insert(std::make_pair(activeScores[i], i));
-
-  static const double threshold = 0.0001;
+  static const double threshold = 0.001;
   size_t i = 0;
   std::set<size_t> conjunctionsToRemove;
-  for (std::multimap<double, size_t>::iterator it = sortedScores.begin(); it != sortedScores.end() && it->first <= threshold; ++i, ++it)
+  for (SortedConjunctions::const_iterator it = sortedActiveScores.begin(); it != sortedActiveScores.end() && it->first <= threshold; ++i, ++it)
   {
-    conjunctionsToRemove.insert(it->second);
-    const Conjunction& conjunction = perception->getConjunction(it->second);
+    conjunctionsToRemove.insert(it->second.first);
     MessageCallback::info(T("Grafting"), T("Removing ") + String((int)i + 1)
-      + T(": ") + conjunctionToString(conjunction) + T(" (") + String(it->first) + T(")"));
+      + T(": ") + conjunctionToString(it->second.second) + T(" (") + String(it->first) + T(")"));
   }
   if (conjunctionsToRemove.size())
-  {
     perception->removeConjunctions(conjunctionsToRemove);
-    for (size_t i = 0; i < inferences.size(); ++i)
-      inferences[i]->updateParametersType();
-  }
 }
 
 size_t GraftingOnlineLearner::getNumOutputs(const InferencePtr& inference) const
@@ -195,7 +227,7 @@ void GraftingOnlineLearner::computeActiveScores(std::vector<double>& res) const
   size_t outputIndex = 0;
   for (size_t i = 0; i < inferences.size(); ++i)
   {
-    NumericalInferencePtr inference = inferences[i];
+    const NumericalInferencePtr& inference = inferences[i];
     size_t numOutputs = getNumOutputs(inference);
     jassert(numOutputs);
     for (size_t j = 0; j < numOutputs; ++j)

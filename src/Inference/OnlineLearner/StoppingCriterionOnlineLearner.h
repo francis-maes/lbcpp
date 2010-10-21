@@ -46,14 +46,14 @@ private:
   bool restoreBestParametersWhenLearningStops;
 
   bool learningStopped;
-  ObjectPtr bestParameters;
+  Variable bestParameters;
   double bestScore;
 
   virtual void update(const InferencePtr& inference)
   {
     double score = -getCurrentLossEstimate();
-    ObjectPtr parameters = inference->getParameters().getObject();
-    if (parameters && restoreBestParametersWhenLearningStops && score > bestScore)
+    Variable parameters = inference->getParametersCopy().getObject();
+    if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters;
       bestScore = score;
@@ -63,7 +63,7 @@ private:
     {
       //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
       learningStopped = true;
-      if (bestParameters && bestScore > score)
+      if (bestParameters.exists() && bestScore > score)
       {
         MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String((double)bestScore));
         inference->setParameters(bestParameters);

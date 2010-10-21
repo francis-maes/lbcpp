@@ -49,7 +49,8 @@ void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr*
         denseGradientTarget = gradientTarget->dynamicCast<DenseDoubleObject>();
       else
       {
-        denseGradientTarget = new DenseDoubleObject(enumBasedDoubleVectorClass(classes), 0.0);
+        DynamicClassSharedPtr cl = enumBasedDoubleVectorClass(classes).staticCast<DynamicClass>().get();
+        denseGradientTarget = new DenseDoubleObject(cl, 0.0);
         *gradientTarget = denseGradientTarget;
       }
       jassert(denseGradientTarget);
