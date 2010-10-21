@@ -1,54 +1,136 @@
 #!/bin/sh
 
+res_memory="6"
+res_time="5"
+
 function launch {
-  targetName=`echo $target | sed 's/(/./g'`
-  targetName=`echo $targetName | sed 's/)/./g'`
-	name="${prefix}${targetName}"
-
-  nbTarget=`echo $targetName | grep -o "-" | wc -l`
-	expected_time=`expr ${nbTarget} + 3`
-	expected_time=`expr $expected_time '*' 10`
-  echo "Expected Time: ${expected_time}"
-
   sleep 2
 
+  echo "Job - " ${prefix}
+
 qsub << EOF
-#$ -l h_vmem=3G
-#$ -l h_rt=${expected_time}:00:00
+#$ -l h_vmem=${res_memory}G
+#$ -l h_rt=${res_time}:00:00
 
 #$ -m eas
 #$ -M J.Becker@ULg.ac.be
 
 #$ -cwd
 
-#$ -N ${name}
-./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${name} Targets "${target}" NumProteinsToLoad ${nbProt} ${other}
+#$ -N ${prefix}
+./${program} ProteinsDirectory /scratch/jbecker/${database} Output ${prefix} Targets "${target}" ${other}
 EOF
 
 }
 
 program="MoonBox"
+other_=""
 
-target="(SS3)5"
+function DB_PSIPRED
+{
+  database="PSIPRED/train/"
+  other_="${other_} TestingProteinsDirectory /scratch/jbecker/PSIPRED/test/"
+  db_name="PSIPRED"
+}
 
-prefix="exp"
-database="PDB70/protein"
-nbProt="500"
+function DB_PDB30
+{
+  database="PDB30Large/xml/"
+  db_name="PDB30Large"
+}
+
+
+target_="(SS3)1"
+prefix_="e"
 #------------------------------------------------
 
-database="ProteinToXml/xml" #"PDB30/protein"
-prefix_="exp.500.basic"
-other_="StoppingIteration 10"
-target="(SS3)5"
-for lr in 5 10 20 50
+other_="${other_} StoppingIteration 40 SaveIterations"
+
+#DB_PSIPRED
+#DB_PDB30
+#target="(SS3-SS8-SA-DR-StAl)1"
+#other="StoppingIteration 20 GenerateIntermediate"
+#prefix="${prefix_}${db_name}.AllTargets.OnePass"
+#res_memory="6"
+#res_time="40"
+#launch
+#exit
+
+#res_time="50"
+#for targ in SS3 SA DR SS8 StAl
+#do
+#  DB_PDB30
+#  target="(${targ})10"
+#  prefix="${prefix_}${db_name}.SingleTask.${targ}"
+#  other="StoppingIteration 20"
+#  launch
+#
+#  DB_PSIPRED
+#  target="(${targ})10"
+#  prefix="${prefix_}${db_name}.SingleTask.${targ}"
+#  other="StoppingIteration 20"
+#  launch
+#done
+#exit
+
+res_time="40"
+res_memory="6"
+
+other_="StoppingIteration 20"
+for targ in SS3 SA DR SS8 StAl
 do
-for ls in 1000000
-do
-  prefix="${prefix_}.lr${lr}.ls${ls}"
-  other="${other_} LearningRate ${lr} LearningStep ${ls}"
+  for ls in 10000 50000 100000 500000 1000000 5000000
+  do
+    for lr in 0.01 0.05 0.1 0.5 1 5 10
+    do
+      for reg in 0
+      do
+        DB_PSIPRED
+        #DB_PDB30
+        target="(SS3-SS8-SA-DR-StAl)1(${targ})1"
+        prefix="${prefix_}${db_name}.OnePass.${targ}.LS${ls}.LR${lr}.REG${reg}"
+        other="${other_} ForceUse LearningStep ${ls} LearningRate ${lr} Regularizer ${reg}"
+        launch
+      done
+    done
+  done
+done
+
+exit
+
+for lr in 2 5 10 20 50 100; do
+  other="${other_} LearningRate ${lr}"
+  prefix="${prefix_}_${lr}"
   launch
 done
+exit
+
+for size in 3 5 7 9 11 13 15 17 21 31 41 51 71 101 201; do
+  other="${other_} WindowSize ${size}"
+  prefix="${prefix_}_ws_${size}"
+  launch
 done
+
+exit
+for targ in `python CombinaisonGenerator.py SS3 SS8 SA DR StAl`; do
+  target="(${targ})5"
+  launch
+done
+
+exit
+for lr in 1 2 5 10 20 50; do
+  other="${other_} LearningRate ${lr}"
+  prefix="${prefix_}.lr${lr}"
+  launch
+done
+
+exit
+for ls in 1 10 100 1000 10000 100000 1000000; do
+  other="${other_} LearningStep ${ls}"
+  prefix="${prefix_}.ls${ls}"
+  launch
+done
+
 
 
 exit

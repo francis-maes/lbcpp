@@ -34,6 +34,7 @@ struct DefaultParameters
   static bool   forceUse; // TODO
   static bool   saveIterations;
   static size_t numThreads;
+  static size_t currentPass;
 };
 
 ThreadPoolPtr createThreadPool()
@@ -118,37 +119,83 @@ protected:
     }
     else if(targetName == T("secondaryStructure"))
     {
-      learningRate = 2;
-      learningRateUpdate = (size_t)5e4;
-      regularizer = 1e-5;
+      if (DefaultParameters::currentPass == 0)
+      {
+        learningRate = 5;
+        learningRateUpdate = (size_t)5e4;
+        regularizer = 1e-7;
+      }
+      else
+      {
+        learningRate = 5;
+        learningRateUpdate = (size_t)5e5;
+        regularizer = 1e-7;
+      }
     }
     else if (targetName == T("dsspSecondaryStructure"))
     {
-      learningRate = 2.0;
-      learningRateUpdate = (size_t)1e5;
-      regularizer = 1e-7;
+      if (DefaultParameters::currentPass == 0)
+      {
+        learningRate = 10.0;
+        learningRateUpdate = (size_t)5e4;
+        regularizer = 1e-7;
+      }
+      else
+      {
+        learningRate = 5.0;
+        learningRateUpdate = (size_t)5e5;
+        regularizer = 1e-7;
+      }
     }
     else if (targetName == T("solventAccessibilityAt20p"))
     {
-      learningRate = 1.0;
-      learningRateUpdate = (size_t)2e5;
-      regularizer = 1e-5;
+      if (DefaultParameters::currentPass == 0)
+      {
+        learningRate = 1.0;
+        learningRateUpdate = (size_t)7e4;
+        regularizer = 1e-5;
+      }
+      else
+      {
+        learningRate = 10.0;
+        learningRateUpdate = (size_t)5e5;
+        regularizer = 1e-7;
+      }
     }
     else if (targetName == T("disorderRegions"))
     {
-      learningRate = 2.0;
-      learningRateUpdate = (size_t)2e7;
-      regularizer = 1e-8;
+      if (DefaultParameters::currentPass == 0)
+      {
+        learningRate = 1.0;
+        learningRateUpdate = (size_t)5e6;
+        regularizer = 1e-8;
+      }
+      else
+      {
+        learningRate = 10.0;
+        learningRateUpdate = (size_t)5e5;
+        regularizer = 1e-7;
+      }
     }
     else if (targetName == T("structuralAlphabetSequence"))
     {
-      learningRate = 0.1;
-      learningRateUpdate = (size_t)1e4;
-      regularizer = 0;
+      if (DefaultParameters::currentPass == 0)
+      {
+        learningRate = 1;
+        learningRateUpdate = (size_t)1e5;
+        regularizer = 0;
+      }
+      else
+      {
+        learningRate = 5.0;
+        learningRateUpdate = (size_t)5e5;
+        regularizer = 1e-7;
+      }
     }
+    std::cout << targetName << " - LS: " << (int)learningRateUpdate << " - LR: " << learningRate << std::endl;
 
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
-                                                       maxIterationsWithoutImprovementStoppingCriterion(4));
+                                                       maxIterationsWithoutImprovementStoppingCriterion(3));
 
 //    if (DefaultParameters::forceUse)
 //      stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
@@ -417,6 +464,7 @@ size_t DefaultParameters::stoppingIteration   = 20;
 bool   DefaultParameters::forceUse            = false;
 bool   DefaultParameters::saveIterations      = false;
 size_t DefaultParameters::numThreads          = 1;
+size_t DefaultParameters::currentPass         = 0;
 
 int main(int argc, char** argv)
 {
@@ -546,6 +594,7 @@ int main(int argc, char** argv)
 
   for (size_t i = 0; i < targets.size(); ++i)
   {
+    DefaultParameters::currentPass = i;
     ProteinSequentialInferencePtr inferencePass = new ProteinSequentialInference("Pass"); //new ProteinParallelInference("Pass");
     if (targets[i].contains(T("SS3")))
       inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));

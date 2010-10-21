@@ -2,7 +2,7 @@
 
 #----- CONSTANTS -------------#
 TARGETS="SS3 SS8 SA DR StAl"
-MULTITASK_TARGETS="SS3 SS8 SA DR BBB StAl"
+MULTITASK_TARGETS="SS3 SS8 SA DR StAl"
 _MINUS_INF=-10000;
 
 #----- GLOBAL VARIABLES -----#
@@ -10,8 +10,8 @@ _MINUS_INF=-10000;
 #----- FUNCTIONS ------------#
 function OrderTarget
 {
-  toConvert=`echo ${1} | sed "s/SS3/1/g;s/SS8/2/g;s/SA/3/g;s/DR/4/g;s/BBB/5/g;s/StAl/6/g" |  tr '-' '\n' | sort -u`
-  toConvert=`echo -${toConvert} | sed "s/ /--/g;s/-1/SS3/g;s/-2/SS8/g;s/-3/SA/g;s/-4/DR/g;s/-5/BBB/g;s/-6/StAl/g"`
+  toConvert=`echo ${1} | sed "s/SS3/1/g;s/SS8/2/g;s/SA/3/g;s/DR/4/g;s/StAl/6/g" |  tr '-' '\n' | sort -u`
+  toConvert=`echo -${toConvert} | sed "s/ /--/g;s/-1/SS3/g;s/-2/SS8/g;s/-3/SA/g;s/-4/DR/g;s/-6/StAl/g"`
   echo $toConvert
 }
 
@@ -22,7 +22,6 @@ function IndexOfTarget
     "SS8")   echo "2" ;;
     "SA" )   echo "3" ;;
     "DR" )   echo "4" ;;
-    "BBB" )  echo "5" ;;
     "StAl" ) echo "6" ;;
   esac
 }
@@ -30,12 +29,11 @@ function IndexOfTarget
 function FullTargetName
 {
   case $1 in
-    "SS3" )  echo "SecondaryStructureSequence" ;;
-    "SS8")   echo "DSSPSecondaryStructureSequence" ;;
-    "SA" )   echo "SolventAccessibilityThreshold20" ;;
-    "DR" )   echo "DisorderProbabilitySequence" ;;
-    "BBB" )  echo "BackboneBondSequence" ;;
-    "StAl" ) echo "StructuralAlphabetSequence" ;;
+    "SS3" )  echo "secondaryStructure" ;;
+    "SS8")   echo "dsspSecondaryStructure" ;;
+    "SA" )   echo "solventAccessibilityAt20p" ;;
+    "DR" )   echo "disorderRegions" ;;
+    "StAl" ) echo "structuralAlphabetSequence" ;;
   esac
 }
 
@@ -119,7 +117,7 @@ function MultiTask
       else
         fileName=`OrderTarget "${combi}-${task}"`
         targetName=`FullTargetName ${task}`
-        value=`cat ${prefix}${fileName}.*..$targetName | grep "^4" | cut -f 3`
+        value=`cat ${prefix}${fileName}.*.$targetName | grep "^4" | cut -f 3`
         value=`echo "${value} * 100" | bc`
         value=${value:0:4}
         if [ -z $value ]
@@ -176,7 +174,7 @@ for task in $TARGETS
 do
   echo -n " & "
   targetName=`FullTargetName ${task}`
-  value=`cat ${prefix}${task}.*..${targetName} | grep "^0" | cut -f 3`
+  value=`cat ${prefix}${task}.*.${targetName} | grep "^0" | cut -f 3`
 
   setCurrentScore ${task} $value
   if [ -z $value ]
@@ -203,7 +201,7 @@ do
   do
     echo -n " & "
     targetName=`FullTargetName ${task}`
-    value=`cat ${prefix}${task}.*..${targetName} | grep "^${pass}" | cut -f 3`
+    value=`cat ${prefix}${task}.*.${targetName} | grep "^${pass}" | cut -f 3`
     value=`echo "${value} * 100" | bc`
     value=${value:0:4}
     if [ -z $value ]
