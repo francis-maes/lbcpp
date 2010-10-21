@@ -1,9 +1,13 @@
+
+* merge ParameterizedInference into Inference
+  -> AddBiasInference: put the bias into parameters
+
 * GraftingOnlineLearner
   -> GraftingOnlineLearner::pruneParameters()
 
 * StoppingCriterionInferenceOnlineLearner: ne plus etre un decorator, s'intégrer dans la chaine de learners online
 
-* ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine
+* ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
 * Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
 

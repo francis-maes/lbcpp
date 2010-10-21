@@ -23,15 +23,15 @@ public:
     : UpdatableOnlineLearner(updateFrequency) {}
   AddBiasOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferencePtr inf, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(const InferencePtr& inf, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
+    const AddBiasInferencePtr& inference = inf.staticCast<AddBiasInference>();
 
     if (prediction.exists())
     {
       const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>();
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
-      double unbiasedScore = (prediction.getDouble() - inference->getBias()) * 1000;
+      double unbiasedScore = prediction.getDouble() - inference->getBias();
       roc.addPrediction(unbiasedScore, isPositiveExample);
     }
     UpdatableOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
@@ -48,13 +48,17 @@ public:
 
   virtual void update(const InferencePtr& inf)
   {
-    AddBiasInferencePtr inference = inf.staticCast<AddBiasInference>();
+    const AddBiasInferencePtr& inference = inf.staticCast<AddBiasInference>();
     
     if (roc.getSampleCount())
     {
       double bestF1Score, precision, recall;
       double threshold = roc.findThresholdMaximisingF1(bestF1Score, precision, recall);
-      MessageCallback::info(T("Best threshold: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%)"));
+      MessageCallback::info(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%)"));
+      double bestMcc;
+      threshold = roc.findThresholdMaximisingMCC(bestMcc);
+      MessageCallback::info(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
+
       inference->setBias(-threshold);
       roc.clear();
     }

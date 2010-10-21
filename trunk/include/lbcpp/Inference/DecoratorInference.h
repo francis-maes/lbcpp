@@ -106,8 +106,11 @@ public:
     return res;
   }
 
-  InferencePtr getSubInference() const
+  const InferencePtr& getSubInference() const
     {return decorated;}
+
+  void setSubInference(const InferencePtr& subInference)
+    {decorated = subInference;}
 
   /*
   ** Object
