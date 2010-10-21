@@ -41,7 +41,7 @@ public:
   virtual void updateParametersType()
   {
     const ObjectPtr& weights = getWeights();
-    if (weights->getClass() != getPerception()->getOutputType())
+    if (weights && weights->getClass() != getPerception()->getOutputType())
       getParameters()->getWeights() = weights->cloneToNewType(getPerception()->getOutputType());
   }
 

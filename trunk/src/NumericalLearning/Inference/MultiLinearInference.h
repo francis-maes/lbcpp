@@ -43,7 +43,7 @@ public:
     const ScalarObjectFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarObjectFunction>();
     ObjectPtr lossGradient;
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (!lossGradient || !getPerception()->getNumOutputVariables())
+    if (!lossGradient || !getPerception()->getOutputType()->getObjectNumVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
 
     bool isLocked = false;
@@ -76,9 +76,12 @@ public:
   virtual void updateParametersType()
   {
     const ObjectPtr& weights = getWeights();
-    TypePtr weightsType = getWeightsType(getPerception()->getOutputType());
-    if (weights->getClass() != weightsType)
-      getParameters()->getWeights() = weights->cloneToNewType(weightsType);
+    if (weights)
+    {
+      TypePtr weightsType = getWeightsType(getPerception()->getOutputType());
+      if (weights->getClass() != weightsType)
+        getParameters()->getWeights() = weights->cloneToNewType(weightsType);
+    }
   }
 
   virtual Variable predict(const Variable& input) const

@@ -104,19 +104,29 @@ public:
     {selectedConjunctions.clear(); clearOutputVariables();}
 
   void addConjunction(const Conjunction& conjunction)
-    {selectedConjunctions.push_back(conjunction); createSubPerception(conjunction);}
+    {selectedConjunctions.push_back(conjunction); clearOutputVariables();}
 
   void removeConjunctions(const std::set<size_t>& conjunctionsToRemove)
   {
-    jassert(false);
-    // FIXMS
+    size_t oldIndex = 0;
+    size_t newIndex = 0;
+    clearOutputVariables();
+    for (std::set<size_t>::const_iterator it = conjunctionsToRemove.begin(); it != conjunctionsToRemove.end(); ++it)
+    {
+      jassert(oldIndex <= *it);
+      newIndex += *it - oldIndex;
+      oldIndex = *it;
+      selectedConjunctions.erase(selectedConjunctions.begin() + newIndex);
+      //outputVariables.erase(outputVariables.begin() + newIndex);
+      ++oldIndex;
+    }
   }
 
   const std::vector<Conjunction>& getConjunctions() const
     {return selectedConjunctions;}
 
   size_t getNumConjunctions() const
-    {jassert(selectedConjunctions.size() == getNumOutputVariables()); return selectedConjunctions.size();}
+    {return selectedConjunctions.size();}
 
   const Conjunction& getConjunction(size_t index) const
     {jassert(index < selectedConjunctions.size()); return selectedConjunctions[index];}

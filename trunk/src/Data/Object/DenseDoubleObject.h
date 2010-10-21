@@ -18,14 +18,14 @@ namespace lbcpp
 class DenseDoubleObject : public Object
 {
 public:
-  DenseDoubleObject(TypePtr thisType)
-    : Object(thisType)
+  DenseDoubleObject(DynamicClassSharedPtr thisClass)
+    : Object((Class* )thisClass.get()), thisClass(thisClass)
   {
     missingValue = doubleType->getMissingValue().getDouble();
   }
 
-  DenseDoubleObject(TypePtr thisType, double initialValue)
-    : Object(thisType), values(thisType->getObjectNumVariables(), initialValue)
+  DenseDoubleObject(DynamicClassSharedPtr thisClass, double initialValue)
+    : Object((Class* )thisClass.get()), thisClass(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
   {
     missingValue = doubleType->getMissingValue().getDouble();
   }
@@ -108,6 +108,7 @@ private:
 
   std::vector<double> values;
   double missingValue;
+  DynamicClassSharedPtr thisClass;
 };
 
 typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;

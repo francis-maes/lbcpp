@@ -70,9 +70,9 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
     PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget));
-    std::vector<std::vector<size_t> > conjunctions(res->getNumOutputVariables());
-    for (size_t i = 0; i < conjunctions.size(); ++i)
-      conjunctions[i].push_back(i);
+    std::vector<std::vector<size_t> > conjunctions;//(res->getNumOutputVariables());
+    //for (size_t i = 0; i < conjunctions.size(); ++i)
+    // conjunctions[i].push_back(i);
     return selectAndMakeConjunctionFeatures(res, conjunctions);
   }
 
@@ -123,7 +123,7 @@ protected:
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
-        InferenceOnlineLearner::never, l2RegularizerFunction(0.0));         // regularizer
+        InferenceOnlineLearner::perEpisode, l2RegularizerFunction(0.0001));         // regularizer
 
     //res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
     return res;

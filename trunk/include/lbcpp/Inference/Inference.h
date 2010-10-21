@@ -74,6 +74,7 @@ public:
   ** Parameters
   */
   Variable getParameters() const;
+  Variable getParametersCopy() const;
   void setParameters(const Variable& parameters);
 
   /*

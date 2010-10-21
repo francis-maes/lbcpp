@@ -106,6 +106,7 @@ SET(LBCPP_DATA_OBJECT_SOURCES
   Data/Object/SparseGenericObject.h
   Data/Object/DenseGenericObject.h
   Data/Object/DenseDoubleObject.h
+  Data/Object/DenseObjectObject.h
 )
 
 SET(LBCPP_DATA_STREAM_SOURCES

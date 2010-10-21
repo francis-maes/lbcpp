@@ -212,10 +212,34 @@ ObjectPtr Object::deepClone() const
   return res;
 }
 
-ObjectPtr Object::cloneToNewType(TypePtr newType) const
+ObjectPtr Object::cloneToNewType(ClassPtr newType) const
 {
-  jassert(false); // todo
-  return ObjectPtr();
+  ClassPtr thisClass = getClass();
+  if (newType == thisClass)
+    return clone();
+
+  ObjectPtr res = create(newType);
+  size_t n = newType->getObjectNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    int sourceIndex = thisClass->findObjectVariable(newType->getObjectVariableName(i));
+    if (sourceIndex >= 0)
+    {
+      Variable variable = getVariable((size_t)sourceIndex);
+      if (!variable.exists())
+        continue;
+
+      TypePtr newVariableType = newType->getObjectVariableType(i);
+      if (variable.isObject())
+        res->setVariable(i, variable.getObject()->cloneToNewType(newVariableType));
+      else
+      {
+        jassert(variable.getType() == newVariableType);
+        res->setVariable(i, variable);
+      }
+    }
+  }
+  return res;
 }
 
 /*

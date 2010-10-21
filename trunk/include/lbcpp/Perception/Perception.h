@@ -50,6 +50,8 @@ public:
   virtual TypePtr getOutputType() const;
   
   virtual void computeOutputType();
+  void clearOutputType();
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
 
   virtual bool isSparse() const
