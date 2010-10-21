@@ -121,9 +121,12 @@ public:
     {return parameters ? parameters->getClass() : numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
 
   const NumericalInferenceParametersPtr& getParameters() const;
-  ObjectPtr getWeightsCopy() const;
+  
   const PerceptionPtr& getPerception() const;
 
+  ObjectPtr getWeightsCopy() const;
+  const ObjectPtr& getWeights() const;
+  
   virtual Variable predict(const Variable& input) const = 0;
 
   // if target == NULL, target is this parameters

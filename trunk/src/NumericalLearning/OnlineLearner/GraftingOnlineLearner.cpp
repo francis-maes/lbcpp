@@ -88,6 +88,14 @@ void GraftingOnlineLearner::generateCandidates()
     if (conjunctions.find(conjunction) == conjunctions.end())
       candidatesPerception->addConjunction(conjunction);
   }
+  for (size_t i = 0; i < n / 10; ++i)
+  {
+    Conjunction conjunction(2);
+    conjunction[0] = i;
+    conjunction[1] = i + 1;
+    if (conjunctions.find(conjunction) == conjunctions.end())
+      candidatesPerception->addConjunction(conjunction);
+  }
 }
 
 String GraftingOnlineLearner::conjunctionToString(const Conjunction& conjunction) const
@@ -139,9 +147,18 @@ void GraftingOnlineLearner::acceptCandidates()
 
 void GraftingOnlineLearner::pruneParameters()
 {
-  //std::vector<InferencePtr> inferences;
+  std::vector<double> activeScores;
+  computeActiveScores(activeScores);
 
-  // todo
+   // generate worst-five
+  std::multimap<double, String> sortedScores;
+  for (size_t i = 0; i < activeScores.size(); ++i)
+    sortedScores.insert(std::make_pair(activeScores[i], conjunctionToString(perception->getConjunction(i))));
+  size_t i = 0;
+  for (std::multimap<double, String>::iterator it = sortedScores.begin(); i < 5 && it != sortedScores.end(); ++i, ++it)
+  {
+    MessageCallback::info(T("Grafting"), T("Bottom ") + String((int)i + 1) + T(": ") + it->second + T(" (") + String(it->first) + T(")"));
+  }
 }
 
 size_t GraftingOnlineLearner::getNumOutputs(const InferencePtr& inference) const
@@ -151,6 +168,40 @@ size_t GraftingOnlineLearner::getNumOutputs(const InferencePtr& inference) const
     return outputType;
   else
     return outputType->getObjectNumVariables();
+}
+
+void GraftingOnlineLearner::computeActiveScores(std::vector<double>& res) const
+{
+  size_t numActives = perception->getNumConjunctions();
+  res.clear();
+  res.resize(numActives, 0.0);
+
+  size_t outputIndex = 0;
+  for (size_t i = 0; i < inferences.size(); ++i)
+  {
+    NumericalInferencePtr inference = inferences[i];
+    size_t numOutputs = getNumOutputs(inference);
+    jassert(numOutputs);
+    for (size_t j = 0; j < numOutputs; ++j)
+    {
+      ObjectPtr weights = inference->getWeights();
+      if (weights && numOutputs > 1)
+        weights = weights->getVariable(j).getObject();
+      if (weights)
+      {
+        for (size_t k = 0; k < numActives; ++k)
+        {
+          Variable subWeights = weights->getVariable(k);
+          if (subWeights.exists())
+          {
+            double value = subWeights.isDouble() ? subWeights.getDouble() : lbcpp::l1norm(subWeights.getObject());
+            if (value > res[k])
+              res[k] = value;
+          }
+        }
+      }
+    }
+  }
 }
 
 void GraftingOnlineLearner::resetCandidateScores()

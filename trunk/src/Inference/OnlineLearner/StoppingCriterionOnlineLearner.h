@@ -34,31 +34,35 @@ public:
     learningStopped = false;
     bestParameters = ObjectPtr();
     bestScore = -DBL_MAX;
-    learner->startLearningCallback();
+    if (learner)
+      learner->startLearningCallback();
   }
 
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    learner->stepFinishedCallback(inference, input, supervision, prediction);
+    if (learner)
+      learner->stepFinishedCallback(inference, input, supervision, prediction);
     UpdatableOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
   }
 
   virtual void episodeFinishedCallback(const InferencePtr& inference)
   {
     jassert(!learningStopped);
-    learner->episodeFinishedCallback(inference);
+    if (learner)
+      learner->episodeFinishedCallback(inference);
     UpdatableOnlineLearner::episodeFinishedCallback(inference);
   }
 
   virtual void passFinishedCallback(const InferencePtr& inference)
   {
     jassert(!learningStopped);
-    learner->passFinishedCallback(inference);
+    if (learner)
+      learner->passFinishedCallback(inference);
     UpdatableOnlineLearner::passFinishedCallback(inference);
   }
 
   virtual double getCurrentLossEstimate() const
-    {return learner->getCurrentLossEstimate();}
+    {return learner ? learner->getCurrentLossEstimate() : InferenceOnlineLearner::getCurrentLossEstimate();}
 
   virtual bool isLearningStopped() const
     {return learningStopped;}

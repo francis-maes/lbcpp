@@ -83,6 +83,12 @@ const PerceptionPtr& NumericalInference::getPerception() const
   return getParameters()->getPerception();
 }
 
+const ObjectPtr& NumericalInference::getWeights() const
+{
+  ScopedReadLock _(parametersLock);
+  return getParameters()->getWeights();
+}
+
 ObjectPtr NumericalInference::getWeightsCopy() const
 {
   ScopedReadLock _(parametersLock);

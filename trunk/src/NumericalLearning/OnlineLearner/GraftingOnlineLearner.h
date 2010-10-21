@@ -30,9 +30,6 @@ public:
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(const InferencePtr& inference) {}
   virtual void passFinishedCallback(const InferencePtr& inference);
- 
-  virtual double getCurrentLossEstimate() const
-    {jassert(false); return 0.0;}
 
   virtual bool isLearningStopped() const
     {return learningStopped;}
@@ -50,6 +47,8 @@ protected:
 
   void computeCandidateScores(std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const;
   double getCandidateScore(size_t candidateNumber, size_t scoreNumber) const;
+
+  void computeActiveScores(std::vector<double>& res) const;
 
   String conjunctionToString(const Conjunction& conjunction) const;
   size_t getNumOutputs(const InferencePtr& inference) const;

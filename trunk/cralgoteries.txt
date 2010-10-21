@@ -1,7 +1,7 @@
 * GraftingOnlineLearner
-  -> NumericalInference: stoquer à la fois la perception et les paramètres
   -> GraftingOnlineLearner::pruneParameters()
 
+* StoppingCriterionInferenceOnlineLearner: ne plus etre un decorator, s'intégrer dans la chaine de learners online
 
 * Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
 

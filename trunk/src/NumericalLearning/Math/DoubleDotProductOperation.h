@@ -16,31 +16,13 @@
 namespace lbcpp
 {
 
-struct ComputeDotProductOperationCallback : public PerceptionCallback
-{
-  ComputeDotProductOperationCallback()
-    : res(0.0) {}
-
-  double res;
-
-  virtual void sense(size_t variableNumber, const Variable& value)
-  {
-    if (value.exists())
-    {
-      if (value.isObject())
-        sense(variableNumber, value.getObject());
-      else
-        sense(variableNumber, value.getDouble());
-    }
-  }
-};
-
-struct DefaultComputeDotProductCallback : public ComputeDotProductOperationCallback
+struct DefaultComputeDotProductCallback : public PerceptionCallback
 {
   DefaultComputeDotProductCallback(const ObjectPtr& object)
-    : object(object) {}
+    : object(object), res(0.0) {}
 
   ObjectPtr object;
+  double res;
 
   virtual void sense(size_t variableNumber, double value)
   {
@@ -65,14 +47,26 @@ struct DefaultComputeDotProductCallback : public ComputeDotProductOperationCallb
     if (subObject)
       res += dotProduct(subObject, subPerception, subInput);
   }
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+  {
+    if (value.exists())
+    {
+      if (value.isObject())
+        sense(variableNumber, value.getObject());
+      else
+        sense(variableNumber, value.getDouble());
+    }
+  }
 };
 
-struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductOperationCallback
+struct ComputeDotProductWithDenseObjectCallback : public PerceptionCallback
 {
   ComputeDotProductWithDenseObjectCallback(DenseObjectObject* object)
-    : object(object) {}
+    : object(object), res(0.0) {}
 
   DenseObjectObject* object;
+  double res;
 
   virtual void sense(size_t variableNumber, double value)
     {jassert(false);}
@@ -90,14 +84,18 @@ struct ComputeDotProductWithDenseObjectCallback : public ComputeDotProductOperat
     if (subObject)
       res += dotProduct(subObject, subPerception, subInput);
   }
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+    {sense(variableNumber, value.getObject());}
 };
 
-struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductOperationCallback
+struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
 {
   ComputeDotProductWithDenseDoubleCallback(DenseDoubleObject* object)
-    : object(object) {}
+    : object(object), res(0.0) {}
 
   DenseDoubleObject* object;
+  double res;
 
   virtual void sense(size_t variableNumber, double value)
   {
@@ -114,6 +112,9 @@ struct ComputeDotProductWithDenseDoubleCallback : public ComputeDotProductOperat
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
     {jassert(false);}
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+    {sense(variableNumber, value.getDouble());}
 };
 
 double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
