@@ -26,8 +26,8 @@ public:
 
   virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
-    Variable subOutput = finalState->getSubOutput();
-    return subOutput.exists() ? Variable((subOutput.getDouble() + bias) / 1000.0) : subOutput;
+    const Variable& subOutput = finalState->getSubOutput();
+    return subOutput.exists() ? Variable(subOutput.getDouble() + bias, doubleType) : subOutput;
   }
 
   double getBias() const

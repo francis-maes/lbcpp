@@ -160,11 +160,22 @@ double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score, double& precis
   bestF1Score = -DBL_MAX;
   double bestThreshold = 0.0;
   //std::cout << "=========" << std::endl;
+
+  jassert(predictedScores.size());
+//  size_t displayStep = predictedScores.size() / 10;
+//  if (!displayStep)
+//    displayStep = 1;
+//  size_t step = 0;
+
+//  std::cout << predictedScores.size() << " examples" << std::endl;
   for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     size_t falseNegatives = numPositives - truePositives;
     double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
-    //std::cout << "(x >= " << it->first << ") ==> prec = " << precision << " recall = " << recall << " f1 = " << f1 << std::endl;
+//    if ((step % displayStep) == 0)
+//      std::cout << "(x >= " << it->first << ") ==> prec = " << (100.0 * truePositives / (double)(truePositives + falsePositives))
+//                << "% recall = " << (100.0 * truePositives / (double)numPositives) << "% f1 = " << f1 * 100.0 << "%" << std::endl;
+//    ++step;
     if (f1 > bestF1Score)
     {
       bestF1Score = f1;
@@ -195,6 +206,38 @@ double ROCAnalyse::findThresholdMaximisingRecallGivenPrecision(double minimumPre
       if (recall > bestRecall)
         bestRecall = recall, bestThreshold = it->first;
     }
+    falsePositives -= it->second.first;
+    truePositives -= it->second.second;
+  }
+  return bestThreshold;
+}
+
+double ROCAnalyse::findThresholdMaximisingMCC(double& bestMcc) const
+{
+  size_t truePositives = numPositives;
+  size_t falsePositives = numNegatives;
+
+  bestMcc = 0.0;
+  double bestThreshold = 0.0;
+  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  {
+    size_t predictedPositiveCount = truePositives + falsePositives;
+    size_t predictedNegativeCount = numPositives + numNegatives - predictedPositiveCount;
+    size_t trueNegatives = numNegatives - falsePositives;
+    size_t falseNegatives = numPositives - truePositives;
+
+    double mccNo = (double)(truePositives * trueNegatives) - (double)(falsePositives * falseNegatives);
+    double mccDeno = (double)numPositives * (double)numNegatives * (double)predictedPositiveCount * (double)predictedNegativeCount;
+    if (mccDeno)
+    {
+      double mcc = mccNo / sqrt(mccDeno);
+      if (mcc > bestMcc)
+      {
+        bestMcc = mcc;
+        bestThreshold = it->first;
+      }
+    }
+
     falsePositives -= it->second.first;
     truePositives -= it->second.second;
   }

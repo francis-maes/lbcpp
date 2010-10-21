@@ -115,6 +115,7 @@ public:
   void addPrediction(double predictedScore, bool isPositive);
   double findThresholdMaximisingF1(double& bestF1Score, double& precision, double& recall) const;
   double findThresholdMaximisingRecallGivenPrecision(double minimumPrecision, double& recall) const;
+  double findThresholdMaximisingMCC(double& bestMCC) const;
 
   void getScores(std::vector< std::pair<String, double> >& res) const;
 

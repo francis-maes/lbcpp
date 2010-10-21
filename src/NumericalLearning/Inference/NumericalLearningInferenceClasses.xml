@@ -25,27 +25,27 @@
     <class name="BinaryClassificationInference" base="StaticDecoratorInference" abstract="yes"/>
 
     <class name="BinaryLinearSVMInference" base="BinaryClassificationInference">
-      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
-      <constructor arguments="InferencePtr scoreInference" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
+      <constructor arguments="InferencePtr scoreInference" returnType="StaticDecoratorInference"/>
     </class>
     
     <class name="BinaryLogisticRegressionInference" base="BinaryClassificationInference">
-      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
 
     <!-- Regression -->
     <class name="RegressionInference" base="StaticDecoratorInference" abstract="yes"/>
 
     <class name="SquareRegressionInference" base="RegressionInference">
-      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
     
     <class name="AbsoluteRegressionInference" base="RegressionInference">
-      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
     
     <class name="DihedralAngleRegressionInference" base="RegressionInference">
-      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="Inference"/>
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
 
     <!-- MultiClass Classification -->

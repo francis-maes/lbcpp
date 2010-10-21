@@ -86,12 +86,9 @@ public:
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    InferencePtr scoreInference = linearInference(targetName + T(" Classifier"), perception);
-    scoreInference->addOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
+    StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName), targetName);
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-      scoreInference = addBiasInference(targetName, scoreInference, 0.0);
-
-    InferencePtr res = binaryLinearSVMInference(scoreInference);
+      res->setSubInference(addBiasInference(targetName, res->getSubInference()));
     res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
@@ -129,13 +126,13 @@ protected:
 
     if (targetName.startsWith(T("contactMap")))
       return gradientDescentInferenceOnlineLearner(
-        InferenceOnlineLearner::perEpisode,                                                 // randomization
+        InferenceOnlineLearner::perPass,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2Regularizer(0.0),         // regularizer
         InferenceOnlineLearner::perPass, stoppingCriterion, true);                     // stopping criterion
     else
       return gradientDescentInferenceOnlineLearner(
-        InferenceOnlineLearner::perPass,                                                 // randomization
+        InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
         InferenceOnlineLearner::never, l2Regularizer(0.0),         // regularizer
         InferenceOnlineLearner::perPass, stoppingCriterion, false);                     // stopping criterion
@@ -216,7 +213,7 @@ private:
 VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 1;
+  size_t maxCount = 7;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG

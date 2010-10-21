@@ -153,18 +153,18 @@ typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;
 // Atomic
 extern NumericalInferencePtr linearInference(const String& name, PerceptionPtr perception);
 extern NumericalInferencePtr multiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass);
-extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias);
+extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Binary Classification
-extern InferencePtr binaryLinearSVMInference(InferencePtr scoreInference);
-extern InferencePtr binaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr binaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern StaticDecoratorInferencePtr binaryLinearSVMInference(InferencePtr scoreInference);
+extern StaticDecoratorInferencePtr binaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern StaticDecoratorInferencePtr binaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 // Regression
-extern InferencePtr squareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr absoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern InferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern StaticDecoratorInferencePtr squareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern StaticDecoratorInferencePtr absoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
+extern StaticDecoratorInferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 
 // MultiClass Classification
 extern StaticDecoratorInferencePtr multiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses = false, const String& name = T("unnamed"));
