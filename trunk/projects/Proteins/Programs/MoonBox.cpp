@@ -117,7 +117,7 @@ protected:
     {
       // skip
     }
-    else if(targetName == T("secondaryStructure"))
+    else if(targetName.startsWith(T("secondaryStructure")))
     {
       if (DefaultParameters::currentPass == 0)
       {
@@ -132,7 +132,7 @@ protected:
         regularizer = 1e-7;
       }
     }
-    else if (targetName == T("dsspSecondaryStructure"))
+    else if (targetName.startsWith(T("dsspSecondaryStructure")))
     {
       if (DefaultParameters::currentPass == 0)
       {
@@ -147,7 +147,7 @@ protected:
         regularizer = 1e-7;
       }
     }
-    else if (targetName == T("solventAccessibilityAt20p"))
+    else if (targetName.startsWith(T("solventAccessibilityAt20p")))
     {
       if (DefaultParameters::currentPass == 0)
       {
@@ -162,7 +162,7 @@ protected:
         regularizer = 1e-7;
       }
     }
-    else if (targetName == T("disorderRegions"))
+    else if (targetName.startsWith(T("disorderRegions")))
     {
       if (DefaultParameters::currentPass == 0)
       {
@@ -177,7 +177,7 @@ protected:
         regularizer = 1e-7;
       }
     }
-    else if (targetName == T("structuralAlphabetSequence"))
+    else if (targetName.startsWith(T("structuralAlphabetSequence")))
     {
       if (DefaultParameters::currentPass == 0)
       {
