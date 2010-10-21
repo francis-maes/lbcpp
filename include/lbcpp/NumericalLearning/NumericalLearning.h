@@ -9,12 +9,10 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_H_
 # define LBCPP_NUMERICAL_LEARNING_H_
 
-# include "../Perception/Perception.h"
-# include "../Perception/PerceptionRewriter.h"
-# include "../Inference/Inference.h"
-# include "../Inference/InferenceOnlineLearner.h"
 # include "LossFunctions.h"
 # include "NumericalInference.h"
+# include "../Perception/PerceptionRewriter.h"
+# include "../Inference/InferenceOnlineLearner.h"
 
 namespace lbcpp
 {
