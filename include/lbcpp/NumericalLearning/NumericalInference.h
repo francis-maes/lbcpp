@@ -56,7 +56,7 @@ public:
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const = 0;
 
   virtual TypePtr getParametersType() const
-    {return parameters.exists() ? parameters.getType() : numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
+    {return parameters.exists() ? parameters.getType() : (TypePtr)numericalInferenceParametersClass(getWeightsType(getPerception()->getOutputType()));}
 
   const NumericalInferenceParametersPtr& getParameters() const;
   
