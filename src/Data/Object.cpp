@@ -212,6 +212,12 @@ ObjectPtr Object::deepClone() const
   return res;
 }
 
+ObjectPtr Object::cloneToNewType(TypePtr newType) const
+{
+  jassert(false); // todo
+  return ObjectPtr();
+}
+
 /*
 ** XML Serialisation
 */
