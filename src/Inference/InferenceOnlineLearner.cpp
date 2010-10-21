@@ -18,6 +18,17 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::addStoppingCriterion(UpdateFre
     criterionTestFrequency, criterion, restoreBestParametersWhenLearningStops);
 }
 
+double InferenceOnlineLearner::getCurrentLossEstimate() const
+{
+  if (previousLearner)
+    return previousLearner->getCurrentLossEstimate();
+  else
+  {
+    jassert(false);
+    return 0.0;
+  }
+}
+
 /*
 ** UpdatableOnlineLearner
 */

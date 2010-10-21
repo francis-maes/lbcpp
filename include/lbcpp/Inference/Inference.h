@@ -22,6 +22,7 @@ class Inference : public NameableObject
 public:
   Inference(const String& name = T("Unnamed"))
     : NameableObject(name) {}
+  virtual ~Inference();
 
   virtual TypePtr getInputType() const
     {return anyType;}

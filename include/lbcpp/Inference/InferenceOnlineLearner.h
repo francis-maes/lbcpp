@@ -26,7 +26,7 @@ public:
   virtual void episodeFinishedCallback(const InferencePtr& inference) = 0;
   virtual void passFinishedCallback(const InferencePtr& inference) = 0;
 
-  virtual double getCurrentLossEstimate() const = 0;
+  virtual double getCurrentLossEstimate() const;
 
   virtual bool wantsMoreIterations() const
     {return !isLearningStopped();}
@@ -58,12 +58,16 @@ public:
     {return nextLearner;}
 
   void setNextLearner(const InferenceOnlineLearnerPtr& learner)
-    {nextLearner = learner;}
+    {if (learner) learner->previousLearner = this; nextLearner = learner;}
+
+  void setPreviousLearner(const InferenceOnlineLearnerPtr& learner)
+    {if (learner) learner->nextLearner = this; previousLearner = learner;}
 
 protected:
   friend class InferenceOnlineLearnerClass;
 
   InferenceOnlineLearnerPtr nextLearner;
+  InferenceOnlineLearnerPtr previousLearner;
 };
 
 extern ClassPtr inferenceOnlineLearnerClass;

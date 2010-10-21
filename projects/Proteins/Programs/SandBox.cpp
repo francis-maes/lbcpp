@@ -69,8 +69,11 @@ public:
 
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
-    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
-    return selectAndMakeConjunctionFeatures(collapsePerception(res));
+    PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget));
+    std::vector<std::vector<size_t> > conjunctions(res->getNumOutputVariables());
+    for (size_t i = 0; i < conjunctions.size(); ++i)
+      conjunctions[i].push_back(i);
+    return selectAndMakeConjunctionFeatures(res, conjunctions);
   }
 
 public:
@@ -94,7 +97,12 @@ public:
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
-    res->getSubInference()->addOnlineLearner(graftingOnlineLearner(perception, res->getSubInference()));
+    NumericalInferencePtr multiLinearInference = res->getSubInference();
+    StoppingCriterionPtr graftingStoppingCriterion = maxIterationsStoppingCriterion(2);
+
+    multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
+    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearnerPtr(), 
+      InferenceOnlineLearner::perPass, graftingStoppingCriterion, true));
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);

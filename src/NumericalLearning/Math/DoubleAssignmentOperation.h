@@ -30,42 +30,23 @@ struct DoubleAssignmentOperation
 };
 
 template<class OperationType>
-struct DoubleAssignmentCallback : public PerceptionCallback
+struct DefaultDoubleAssignmentCallback : public PerceptionCallback
 {
-  DoubleAssignmentCallback(OperationType& operation)
-    : operation(operation) {}
-
-  OperationType& operation;
-
-  virtual void sense(size_t variableNumber, const Variable& value)
-  {
-    if (value.isObject())
-      sense(variableNumber, value.getObject());
-    else
-      sense(variableNumber, value.getDouble());
-  }
-}; 
-
-template<class OperationType>
-struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<OperationType>
-{
-  typedef DoubleAssignmentCallback<OperationType> BaseClass;
-
   DefaultDoubleAssignmentCallback(const ObjectPtr& object, OperationType& operation)
-    : BaseClass(operation), object(object) {}
+    : operation(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
   {
     Variable targetVariable = object->getVariable(variableNumber);
     double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
-    BaseClass::operation.compute(targetValue, value);
+    operation.compute(targetValue, value);
     object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
   }
 
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
-    BaseClass::operation.compute(targetObject, value);
+    operation.compute(targetObject, value);
     object->setVariable(variableNumber, targetObject);
   }
 
@@ -77,19 +58,26 @@ struct DefaultDoubleAssignmentCallback : public DoubleAssignmentCallback<Operati
       subObject = Object::create(subPerception->getOutputType());
       object->setVariable(variableNumber, subObject);
     }
-    BaseClass::operation.compute(subObject, subPerception, subInput);
+    operation.compute(subObject, subPerception, subInput);
   }
 
+  virtual void sense(size_t variableNumber, const Variable& value)
+  {
+    if (value.isObject())
+      sense(variableNumber, value.getObject());
+    else
+      sense(variableNumber, value.getDouble());
+  }
+
+  OperationType& operation;
   ObjectPtr object;
 };
 
 template<class OperationType>
-struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<OperationType>
+struct DenseObjectAssignmentCallback : public PerceptionCallback
 {
-  typedef DoubleAssignmentCallback<OperationType> BaseClass;
-
   DenseObjectAssignmentCallback(DenseObjectObject* object, OperationType& operation)
-    : BaseClass(operation), object(object) {}
+    : operation(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
     {jassert(false);}
@@ -97,32 +85,34 @@ struct DenseObjectAssignmentCallback : public DoubleAssignmentCallback<Operation
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
     ObjectPtr& targetObject = object->getObjectReference(variableNumber);
-    BaseClass::operation.compute(targetObject, value);
+    operation.compute(targetObject, value);
   }
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr& targetObject = object->getObjectReference(variableNumber);
-    BaseClass::operation.compute(targetObject, subPerception, subInput);
+    operation.compute(targetObject, subPerception, subInput);
   }
 
+  virtual void sense(size_t variableNumber, const Variable& value)
+    {sense(variableNumber, value.getObject());}
+
+  OperationType& operation;
   DenseObjectObject* object;
 };
 
 template<class OperationType>
-struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<OperationType>
+struct DenseDoubleAssignmentCallback : public PerceptionCallback
 {
-  typedef DoubleAssignmentCallback<OperationType> BaseClass;
-
   DenseDoubleAssignmentCallback(DenseDoubleObject* object, OperationType& operation)
-    : BaseClass(operation), object(object) {}
+    : operation(operation), object(object) {}
 
   virtual void sense(size_t variableNumber, double value)
   {
     double& targetValue = object->getValueReference(variableNumber);
     if (object->isMissing(targetValue))
       targetValue = 0.0;
-    BaseClass::operation.compute(targetValue, value);
+    operation.compute(targetValue, value);
   }
 
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
@@ -131,6 +121,10 @@ struct DenseDoubleAssignmentCallback : public DoubleAssignmentCallback<Operation
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
     {jassert(false);}
 
+  virtual void sense(size_t variableNumber, const Variable& value)
+    {sense(variableNumber, value.getDouble());}
+
+  OperationType& operation;
   DenseDoubleObject* object;
 };
 

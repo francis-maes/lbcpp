@@ -18,6 +18,15 @@ using namespace lbcpp;
 /*
 ** Inference
 */
+Inference::~Inference()
+{
+  while (onlineLearner)
+  {
+    onlineLearner->setPreviousLearner(InferenceOnlineLearnerPtr());
+    onlineLearner = onlineLearner->getNextLearner();
+  }
+}
+
 String Inference::getDescription(const Variable& input, const Variable& supervision) const
   {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
 
