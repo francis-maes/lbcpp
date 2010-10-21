@@ -109,6 +109,12 @@ ObjectPtr NumericalInference::getWeightsCopy() const
   return weights ? weights->deepClone() : ObjectPtr();
 }
 
+void NumericalInference::setWeights(const ObjectPtr& newWeights)
+{
+  ScopedWriteLock _(parametersLock);
+  getParameters()->getWeights() = newWeights;
+}
+
 void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
 {
   if (weight)

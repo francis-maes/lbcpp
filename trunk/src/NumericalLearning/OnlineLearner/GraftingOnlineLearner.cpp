@@ -155,13 +155,25 @@ void GraftingOnlineLearner::pruneParameters()
   computeActiveScores(activeScores);
 
    // generate worst-five
-  std::multimap<double, String> sortedScores;
+  std::multimap<double, size_t> sortedScores;
   for (size_t i = 0; i < activeScores.size(); ++i)
-    sortedScores.insert(std::make_pair(activeScores[i], conjunctionToString(perception->getConjunction(i))));
+    sortedScores.insert(std::make_pair(activeScores[i], i));
+
+  static const double threshold = 0.0001;
   size_t i = 0;
-  for (std::multimap<double, String>::iterator it = sortedScores.begin(); i < 5 && it != sortedScores.end(); ++i, ++it)
+  std::set<size_t> conjunctionsToRemove;
+  for (std::multimap<double, size_t>::iterator it = sortedScores.begin(); it != sortedScores.end() && it->first <= threshold; ++i, ++it)
   {
-    MessageCallback::info(T("Grafting"), T("Bottom ") + String((int)i + 1) + T(": ") + it->second + T(" (") + String(it->first) + T(")"));
+    conjunctionsToRemove.insert(it->second);
+    const Conjunction& conjunction = perception->getConjunction(it->second);
+    MessageCallback::info(T("Grafting"), T("Removing ") + String((int)i + 1)
+      + T(": ") + conjunctionToString(conjunction) + T(" (") + String(it->first) + T(")"));
+  }
+  if (conjunctionsToRemove.size())
+  {
+    perception->removeConjunctions(conjunctionsToRemove);
+    for (size_t i = 0; i < inferences.size(); ++i)
+      inferences[i]->updateParametersType();
   }
 }
 

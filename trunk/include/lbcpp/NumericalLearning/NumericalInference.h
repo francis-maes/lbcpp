@@ -64,6 +64,7 @@ public:
 
   ObjectPtr getWeightsCopy() const;
   const ObjectPtr& getWeights() const;
+  void setWeights(const ObjectPtr& newWeights);
   
   virtual Variable predict(const Variable& input) const = 0;
 
@@ -74,6 +75,9 @@ public:
   // parameters += weight * gradient(input, supervision=lossFunction, prediction)
   // exampleLossValue = loss(prediction) (supervision=lossFunction)
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
+
+  // this function is called when the type of Perception changes
+  virtual void updateParametersType() = 0;
 
   void addWeightedToParameters(const ObjectPtr& value, double weight);
   void addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight);

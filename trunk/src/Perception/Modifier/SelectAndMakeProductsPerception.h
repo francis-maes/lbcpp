@@ -106,6 +106,12 @@ public:
   void addConjunction(const Conjunction& conjunction)
     {selectedConjunctions.push_back(conjunction); createSubPerception(conjunction);}
 
+  void removeConjunctions(const std::set<size_t>& conjunctionsToRemove)
+  {
+    jassert(false);
+    // FIXMS
+  }
+
   const std::vector<Conjunction>& getConjunctions() const
     {return selectedConjunctions;}
 
