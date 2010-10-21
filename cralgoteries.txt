@@ -1,6 +1,5 @@
 
 Cleaning:
- * Deplacer les fonctions de loss et de regularisation dans NumericalLearning/Function
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
 GraftingOnlineLearner:

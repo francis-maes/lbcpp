@@ -3,6 +3,7 @@
 <file name="NumericalLearning" directory="lbcpp/NumericalLearning">
   <include file="lbcpp/NumericalLearning/NumericalLearning.h"/>
 
+  <import name="NumericalLearningLossFunction"/>
   <import name="NumericalLearningPerception"/>
   <import name="NumericalLearningInference"/>
   <import name="NumericalLearningOnlineLearner"/>

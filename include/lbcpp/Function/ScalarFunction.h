@@ -71,26 +71,6 @@ public:
 
 extern ClassPtr scalarFunctionClass;
 
-class BinaryClassificationLossFunction : public ScalarFunction
-{
-public:
-  BinaryClassificationLossFunction(bool isPositive) : isPositive(isPositive) {}
-  BinaryClassificationLossFunction() {}
-
-  virtual String toString() const;
-
-  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
-
-protected:
-  friend class BinaryClassificationLossFunctionClass;
-
-  bool isPositive;
-};
-
-typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;
-
 extern ScalarFunctionPtr composeScalarFunction(ScalarFunctionPtr f1, ScalarFunctionPtr f2);
 extern ScalarFunctionPtr multiplyByScalarFunction(ScalarFunctionPtr function, double scalar);
 
@@ -119,24 +99,6 @@ extern ScalarFunctionPtr absFunction();
 
 inline ScalarFunctionPtr absFunction(ScalarFunctionPtr input)
   {return input->composeWith(absFunction());}
-
-/*
-** Regression Loss Functions
-*/
-inline ScalarFunctionPtr squareLossFunction(double target)
-  {return squareFunction(addConstantScalarFunction(-target));}
-
-inline ScalarFunctionPtr absoluteLossFunction(double target)
-  {return absFunction(addConstantScalarFunction(-target));}
-
-inline ScalarFunctionPtr dihedralAngleSquareLossFunction(double target)
-  {return squareFunction(angleDifferenceScalarFunction(target));}
-
-/*
-** Binary Classification Loss Functions
-*/
-extern BinaryClassificationLossFunctionPtr hingeLossFunction(bool isPositive, double margin = 1);
-extern BinaryClassificationLossFunctionPtr logBinomialLossFunction(bool isPositive);
 
 }; /* namespace lbcpp */
 

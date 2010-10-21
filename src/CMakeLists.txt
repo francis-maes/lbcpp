@@ -32,6 +32,7 @@ GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClass
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningClasses.xml NumericalLearningClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml NumericalLearningLossFunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml NumericalLearningPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceClasses.xml NumericalLearningInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml NumericalLearningOnlineLearnerClasses.cpp)
@@ -155,8 +156,6 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
 SET(LBCPP_FUNCTION_SCALAR_SOURCES
   Function/ScalarFunction/ComposeScalarFunction.h
   Function/ScalarFunction/MultiplyByScalarFunction.h
-  Function/ScalarFunction/HingeLossFunction.h
-  Function/ScalarFunction/LogBinomialLossFunction.h
   Function/ScalarFunction/AbsFunction.h
   Function/ScalarFunction/SquareFunction.h
   Function/ScalarFunction/AddConstantScalarFunction.h
@@ -168,10 +167,6 @@ SET(LBCPP_FUNCTION_SCALAR_SOURCES
 SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
   Function/ScalarObjectFunction/BinarySumScalarObjectFunction.h
   Function/ScalarObjectFunction/MultiplyByScalarObjectFunction.h
-  Function/ScalarObjectFunction/SumOfSquaresScalarObjectFunction.h
-  Function/ScalarObjectFunction/OneAgainstAllMultiClassLossFunction.h
-  Function/ScalarObjectFunction/MostViolatedMultiClassLossFunction.h
-  Function/ScalarObjectFunction/LogBinomialMultiClassLossFunction.h
   Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionClasses.cpp
 )
@@ -324,10 +319,24 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
 #### NumericalLearning ####
 
 SET(LBCPP_NUMERICAL_LEARNING_SOURCES
+  ../include/lbcpp/NumericalLearning/LossFunctions.h
+  NumericalLearning/LossFunctions.cpp
+  ../include/lbcpp/NumericalLearning/NumericalInference.h
   ../include/lbcpp/NumericalLearning/NumericalLearning.h
   NumericalLearning/NumericalLearning.cpp
   NumericalLearning/NumericalLearningClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningClasses.cpp
+)
+
+SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
+  NumericalLearning/LossFunction/HingeLossFunction.h
+  NumericalLearning/LossFunction/LogBinomialLossFunction.h
+  NumericalLearning/LossFunction/OneAgainstAllMultiClassLossFunction.h
+  NumericalLearning/LossFunction/MostViolatedMultiClassLossFunction.h
+  NumericalLearning/LossFunction/LogBinomialMultiClassLossFunction.h
+  NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml
+  NumericalLearning/LossFunction/L2RegularizerFunction.h
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLossFunctionClasses.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_MATH_SOURCES
@@ -437,10 +446,11 @@ SET(LBCPP_CORE
 
   # NumericalLearning
   ${LBCPP_NUMERICAL_LEARNING_SOURCES}
-  ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES}
-  ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES}
-  ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES}
-  ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES}
+    ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES}
+    ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES}
+    ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES}
+    ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES}
+    ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES}
 
   # DecisionTree
   ${LBCPP_DECISION_TREE_SOURCES}
@@ -484,6 +494,7 @@ SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 ## NumericalLearning
 SOURCE_GROUP(NumericalLearning FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Math FILES ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning LossFunction FILES ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})
