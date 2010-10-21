@@ -15,7 +15,8 @@ using namespace lbcpp;
 XmlExporter::XmlExporter(const String& rootTag, int version)
 {
   root = new XmlElement(rootTag);
-  root->setAttribute(T("version"), version);
+  if (version)
+    root->setAttribute(T("version"), version);
   currentStack.push_back(root);
 }
 
