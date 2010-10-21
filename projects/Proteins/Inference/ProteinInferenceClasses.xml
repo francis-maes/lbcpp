@@ -3,14 +3,6 @@
 <file name="ProteinInference" directory="Inference">
   <namespace name="lbcpp">
 
-    <class name="AddBiasInference" base="StaticDecoratorInference">
-      <constructor arguments="const String&amp; name, InferencePtr numericalInference, double initialBias = 0.0"/>
-      <variable type="Double" name="bias"/>
-    </class>
-    <class name="AddBiasInferenceOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency updateFrequency"/>
-    </class>
-    
     <class name="ContactMapInference" base="SharedParallelInference"/>
     
     <class name="ProteinSequentialInference" base="VectorSequentialInference"/>

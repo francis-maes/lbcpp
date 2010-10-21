@@ -88,10 +88,12 @@ public:
   {
     InferencePtr scoreInference = linearInference(targetName + T(" Classifier"), perception);
     scoreInference->addOnlineLearner(createOnlineLearner(targetName + T(" Learner")));
-    // FIXME !
-    //if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-    //  scoreInference = addBiasInference(targetName, scoreInference, 0.0);
-    return binaryLinearSVMInference(scoreInference);
+    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+      scoreInference = addBiasInference(targetName, scoreInference, 0.0);
+
+    InferencePtr res = binaryLinearSVMInference(scoreInference);
+    res->setBatchLearner(onlineToBatchInferenceLearner());
+    return res;
   }
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
@@ -182,6 +184,7 @@ public:
       MessageCallback::info(T("====================================================="));
 
       //singleThreadedInferenceContext();
+      InferenceContextPtr context = multiThreadedInferenceContext(7);
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       context->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -266,11 +269,11 @@ int main(int argc, char** argv)
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
 
-  InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
+  InferencePtr lastStep = factory->createInferenceStep(T("disorderRegions"));
   inference->appendInference(lastStep);
   for (int i = 1; i < 5; ++i)
   {
-    InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
+    InferencePtr step = factory->createInferenceStep(T("disorderRegions"));
     initializeLearnerByCloning(step, lastStep);
     inference->appendInference(step);
     lastStep = step;
@@ -297,7 +300,7 @@ int main(int argc, char** argv)
   Variable(inference).printRecursively(std::cout, 2);*/
 
 
-  InferenceContextPtr context = multiThreadedInferenceContext(pool);
+  InferenceContextPtr context = singleThreadedInferenceContext();// multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   /*

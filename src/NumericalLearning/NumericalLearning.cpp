@@ -64,7 +64,20 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 }
 
 /*
-** Inference
+** NumericalInferenceParameters
+*/
+NumericalInferenceParameters::NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType)
+  : Object(numericalInferenceParametersClass(weightsType)), perception(perception) {}
+
+void NumericalInferenceParameters::clone(ObjectPtr t) const
+{
+  Object::clone(t);
+  const NumericalInferenceParametersPtr& target = t.staticCast<NumericalInferenceParameters>();
+  target->weights = weights ? weights->deepClone() : ObjectPtr();
+}
+
+/*
+** NumericalInference
 */
 NumericalInference::NumericalInference(const String& name, PerceptionPtr perception)
   : ParameterizedInference(name)

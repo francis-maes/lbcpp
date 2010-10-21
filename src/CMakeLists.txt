@@ -354,6 +354,7 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
   NumericalLearning/Inference/BinaryClassificationInference.h
   NumericalLearning/Inference/RegressionInference.h
   NumericalLearning/Inference/MultiClassInference.h
+  NumericalLearning/Inference/AddBiasInference.h
   NumericalLearning/Inference/TransferFunctionDecoratorInference.h
   NumericalLearning/Inference/NumericalLearningInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceClasses.cpp  
@@ -366,6 +367,7 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
   NumericalLearning/OnlineLearner/BatchGradientDescentOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.cpp
+  NumericalLearning/OnlineLearner/AddBiasOnlineLearner.h
   NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerClasses.cpp
 )
