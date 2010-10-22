@@ -137,7 +137,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
         InferenceOnlineLearner::perEpisode, l2RegularizerFunction(0.0001));         // regularizer
 
-    //res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
+    //res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
     return res;
   }
 };

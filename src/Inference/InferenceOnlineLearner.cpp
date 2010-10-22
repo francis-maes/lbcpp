@@ -31,6 +31,14 @@ double InferenceOnlineLearner::getCurrentLossEstimate() const
   }
 }
 
+InferenceOnlineLearnerPtr InferenceOnlineLearner::getLastLearner() const
+{
+  InferenceOnlineLearnerPtr last = refCountedPointerFromThis(this);
+  while (last->getNextLearner())
+    last = last->getNextLearner();
+  return last;
+}
+
 /*
 ** UpdatableOnlineLearner
 */

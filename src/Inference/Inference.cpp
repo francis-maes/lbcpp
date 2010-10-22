@@ -84,11 +84,7 @@ void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool 
       learner->setNextLearner(currentLearner);
   }
   else
-  {
-    while (currentLearner->getNextLearner())
-      currentLearner = currentLearner->getNextLearner();
-    currentLearner->setNextLearner(learner);
-  }
+    currentLearner->getLastLearner()->setNextLearner(learner);
 }
 
 /*

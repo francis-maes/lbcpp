@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
           InferenceOnlineLearner::never, // randomization
           InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, // learning steps
           InferenceOnlineLearner::never, ScalarObjectFunctionPtr()); // regularizer
-  learner->setNextLearner(stoppingCriterionOnlineLearner(
+  learner->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(
           InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(100), true)); // stopping criterion
   InferencePtr regressor = squareRegressionInference(perception, learner, T("XOR-Regressor"));
  

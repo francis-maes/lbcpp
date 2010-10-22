@@ -217,7 +217,7 @@ protected:
                                          InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
                                          InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(regularizer));         // regularizer
 
-    res->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true)); // stopping criterion
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true)); // stopping criterion
     return res;
   }
   
