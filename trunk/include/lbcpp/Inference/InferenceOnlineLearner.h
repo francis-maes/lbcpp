@@ -64,6 +64,8 @@ public:
   const InferenceOnlineLearnerPtr& getNextLearner() const
     {return nextLearner;}
 
+  InferenceOnlineLearnerPtr getLastLearner() const;
+
   void setNextLearner(const InferenceOnlineLearnerPtr& learner)
     {if (learner) learner->previousLearner = this; nextLearner = learner;}
 

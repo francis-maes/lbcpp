@@ -222,8 +222,10 @@ public:
         getUpdateFrequencyParameter(T("randomizationFrequency")),                            // randomization
         getUpdateFrequencyParameter(T("learningStepsFrequency")), createLearningRate(), true,// learning steps
         getUpdateFrequencyParameter(T("regularizerFrequency")), createRegularizer());         // regularizer
-    res->setNextLearner(stoppingCriterionOnlineLearner(
+
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(
         InferenceOnlineLearner::perPass, stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished")))); // stopping criterion
+
     return res;
   }
 
