@@ -303,7 +303,7 @@ protected:
           }
           writeLine(T("default: jassert(false); return Variable();"), -1);
         closeScope();
-        writeLine(T("jassert(!__res__.isNil() || expectedType == nilType);"));
+        writeLine(T("jassert(__res__.getType()->inheritsFrom(expectedType));"));
         writeLine(T("return __res__;"));
       closeScope();
       newLine();

@@ -38,13 +38,6 @@ public:
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const
     {return perceptionOutputType;}
 
-  virtual void updateParametersType()
-  {
-    const ObjectPtr& weights = getWeights();
-    if (weights && weights->getClass() != getPerception()->getOutputType())
-      getParameters()->getWeights() = weights->cloneToNewType(getPerception()->getOutputType());
-  }
-
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
     const ScalarFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarFunction>();

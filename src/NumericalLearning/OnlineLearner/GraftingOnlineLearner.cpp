@@ -45,7 +45,10 @@ void GraftingOnlineLearner::startLearningCallback()
 
 void GraftingOnlineLearner::subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
-  stepFinishedCallback(inference, input, supervision, prediction);
+  jassert(supervision.exists());
+  std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
+  if (it != scoresMapping.end())
+    updateCandidateScores(inference, it->second, input, supervision, prediction);
   InferenceOnlineLearner::subStepFinishedCallback(inference, input, supervision, prediction);
 }
 
@@ -126,12 +129,12 @@ void GraftingOnlineLearner::generateCandidates(const SortedConjunctions& activeS
 
   size_t numActives = 10;
   size_t numCandidates = 10;
-  SortedConjunctions::const_iterator iti, itj;
+  SortedConjunctions::const_reverse_iterator iti, itj;
   size_t i, j;
-  for (i = 0, iti = activeScores.begin(); i < numActives && iti != activeScores.end(); ++i, ++iti)
+  for (i = 0, iti = activeScores.rbegin(); i < numActives && iti != activeScores.rend(); ++i, ++iti)
   {
     const Conjunction& c1 = iti->second.second;
-    for (j = 0, itj = candidateScores.begin(); j < numCandidates && itj != candidateScores.end(); ++j, ++itj)
+    for (j = 0, itj = candidateScores.rbegin(); j < numCandidates && itj != candidateScores.rend(); ++j, ++itj)
     {
       const Conjunction& c2 = itj->second.second;
       if (c1.size() == 1 && c2.size() == 1)
@@ -147,8 +150,8 @@ void GraftingOnlineLearner::generateCandidates(const SortedConjunctions& activeS
     }
   }
 
-  // fill with randomly sampled candidates
-  static const size_t wantedCount = 5000;
+  // we want at least 100 candidates, fill with randomly sampled candidates
+  static const size_t wantedCount = 1000;
   RandomGeneratorPtr random = RandomGenerator::getInstance();
   for (size_t i = candidatesPerception->getNumConjunctions(); i < wantedCount; )
   {
@@ -191,7 +194,15 @@ bool GraftingOnlineLearner::acceptCandidates(const Conjunction& bestCandidate, d
     perception->addConjunction(it->second.second);
     res = true;
   }
-  return res;
+
+  if (res)
+    return true;
+
+  String info = T("At the end: ") + String((int)sortedScores.size()) + T(" sorted scores");
+  if (sortedScores.size())
+    info += T(", range: ") + String(sortedScores.begin()->first) + T(" .. ") + String(sortedScores.rbegin()->first);
+  MessageCallback::info(T("Grafting"), info);
+  return false;
 }
 
 void GraftingOnlineLearner::pruneParameters(const SortedConjunctions& sortedActiveScores)

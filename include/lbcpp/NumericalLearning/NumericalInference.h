@@ -76,12 +76,10 @@ public:
   // exampleLossValue = loss(prediction) (supervision=lossFunction)
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
-  // this function is called when the type of Perception changes
-  virtual void updateParametersType() = 0;
-
   void addWeightedToParameters(const ObjectPtr& value, double weight);
   void addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight);
   void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
+  void updateParametersType(); // this function is called when the type of Perception changes
 
 protected:
   virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)

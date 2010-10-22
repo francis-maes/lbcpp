@@ -154,6 +154,18 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
   }
 }
 
+void NumericalInference::updateParametersType()
+{
+  NumericalInferenceParametersPtr previousParameters = getParameters();
+  const PerceptionPtr& perception = previousParameters->getPerception();
+  const ObjectPtr& weights = previousParameters->getWeights();
+
+  ScopedWriteLock _(parametersLock);
+  TypePtr weightsType = getWeightsType(perception->getOutputType());
+  parameters = Variable(new NumericalInferenceParameters(perception, weightsType));
+  if (weights)
+    getParameters()->getWeights() = weights->cloneToNewType(weightsType);
+}
 /*
 ** OnlineLearner
 */

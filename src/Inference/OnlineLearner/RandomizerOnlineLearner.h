@@ -21,7 +21,12 @@ public:
   RandomizerOnlineLearner(UpdateFrequency randomizationFrequency)
     : UpdatableOnlineLearner(randomizationFrequency) {}
   RandomizerOnlineLearner() {}
-  
+ 
+  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {
+    jassert(false); // not supported yet
+  }
+
   virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     storeExample(input, supervision, prediction);
