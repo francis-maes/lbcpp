@@ -73,17 +73,6 @@ public:
       parametersLock.exitWrite();
   }
 
-  virtual void updateParametersType()
-  {
-    const ObjectPtr& weights = getWeights();
-    if (weights)
-    {
-      TypePtr weightsType = getWeightsType(getPerception()->getOutputType());
-      if (weights->getClass() != weightsType)
-        getParameters()->getWeights() = weights->cloneToNewType(weightsType);
-    }
-  }
-
   virtual Variable predict(const Variable& input) const
   {
     ScopedReadLock _(parametersLock);

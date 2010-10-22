@@ -36,7 +36,7 @@ public:
       callStepFinishedCallback(inference, input, supervision, output);
 
       // call subStepFinishedCallback
-      for (int i = stack->getDepth() - 1; i >= 0; --i)
+      for (int i = (int)stack->getDepth() - 2; i >= 0; --i)
       {
         const InferencePtr& parent = stack->getInference(i);
         callSubStepFinishedCallback(parent, inference, input, supervision, output);

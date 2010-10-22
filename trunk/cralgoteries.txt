@@ -8,7 +8,9 @@ Cleaning:
 
 Inference:
  * Segmental Features
- * StoppingCriterion: recursive parameters
+ * Recursive parameters, use in:
+    - StoppingCriterionOnlineLearner
+    - InitializeByCloningBatchLearner
 
 Extra-trees:
  * Make it really work !

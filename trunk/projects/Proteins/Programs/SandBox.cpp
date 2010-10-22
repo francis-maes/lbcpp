@@ -69,11 +69,17 @@ public:
 
   virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
   {
-    PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget));
-    std::vector<std::vector<size_t> > conjunctions;//(res->getNumOutputVariables());
-    //for (size_t i = 0; i < conjunctions.size(); ++i)
-    // conjunctions[i].push_back(i);
-    return selectAndMakeConjunctionFeatures(res, conjunctions);
+    static int count = 1;
+    if (count++ == 1)
+      return ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    else
+    {
+      PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget));
+      std::vector<std::vector<size_t> > conjunctions(res->getNumOutputVariables());
+      for (size_t i = 0; i < conjunctions.size(); ++i)
+        conjunctions[i].push_back(i);
+      return selectAndMakeConjunctionFeatures(res, conjunctions);
+    }
   }
 
 public:
@@ -95,10 +101,16 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
+    static int count = 1;
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
     NumericalInferencePtr multiLinearInference = res->getSubInference();
-    multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
-    multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1000), true));
+    if (count++ == 1)
+      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true));
+    else
+    {
+      multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
+      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1000), true));
+    }
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
@@ -206,7 +218,7 @@ VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
 #ifdef JUCE_DEBUG
   size_t maxCount = 1;
 #else
-  size_t maxCount = 50;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
     ->apply(proteinToInputOutputPairFunction(), false)->randomize();
@@ -259,10 +271,10 @@ int main(int argc, char** argv)
 
   InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
   inference->appendInference(lastStep);
-  for (int i = 1; i < 5; ++i)
+  for (int i = 1; i < 2; ++i)
   {
     InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
-    initializeLearnerByCloning(step, lastStep);
+    //initializeLearnerByCloning(step, lastStep);
     inference->appendInference(step);
     lastStep = step;
   } 
