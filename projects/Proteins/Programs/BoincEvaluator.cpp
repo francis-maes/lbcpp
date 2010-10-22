@@ -311,8 +311,13 @@ protected:
 
   virtual bool initializeWorker(MessageCallback& callback)
   {
+    std::cout << "Loading training data..." << std::flush;
     trainingProteins = loadProteins(dataDirectory.getChildFile(T("train")));
+    std::cout << " ok: " << trainingProteins->getNumElements() << " proteins" << std::endl;
+    std::cout << "Loading testing data..." << std::flush;
     testingProteins = loadProteins(dataDirectory.getChildFile(T("test")));
+    std::cout << " ok: " << testingProteins->getNumElements() << " proteins" << std::endl;
+
     if (!trainingProteins || !trainingProteins->getNumElements() || !testingProteins || !testingProteins->getNumElements())
     {
       callback.error(T("initializeWorker"), T("Could not load training or testing proteins"));
@@ -346,6 +351,12 @@ protected:
         ++counter;
         if (counter < 10)
           worker->updateProgression(T("Learning Iteration ") + String((int)counter + 1), counter / 10.0);
+      }
+      else
+      {
+        static size_t anotherCounter = 0;
+        if (++anotherCounter % 1000 == 0)
+          std::cout << "." << std::flush;
       }
     }
   };
