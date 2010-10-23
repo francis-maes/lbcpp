@@ -66,7 +66,6 @@
 
     <class name="AddBiasInference" base="StaticDecoratorInference">
       <constructor arguments="const String&amp; name, InferencePtr numericalInference, double initialBias"/>
-      <variable type="Double" name="bias"/>
     </class>
 
     <class name="TransferFunctionDecoratorInference" base="StaticDecoratorInference">

@@ -62,7 +62,7 @@ public:
     File file2 = pair->getSecond().getFile();
 
     Variable res1 = Variable::createFromFile(file1, callback);
-    Variable res2 = Variable::createFromFile(file1, callback);
+    Variable res2 = Variable::createFromFile(file2, callback);
     if (!res1.exists() || !res2.exists())
       return Variable::missingValue(expectedType);
     Variable res = Variable::pair(res1, res2);

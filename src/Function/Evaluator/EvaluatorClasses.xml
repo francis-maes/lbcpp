@@ -9,6 +9,7 @@
     <class name="ROCAnalyse"/>
     
     <class name="Evaluator" base="NameableObject" abstract="yes"/>
+    
     <class name="RegressionErrorEvaluator" base="Evaluator">
       <constructor arguments="const String&amp; name"/>
     </class>
@@ -33,5 +34,12 @@
       <constructor arguments="const String&amp; name, EvaluatorPtr elementEvaluator"/>
       <variable type="Evaluator" name="elementEvaluator"/>
     </class>
+
+    <class name="SaveToDirectoryEvaluator" base="Evaluator">
+      <constructor arguments="const File&amp; directory, const String&amp; extension"/>
+      <variable type="File" name="directory"/>
+      <variable type="String" name="extension"/>
+    </class>
+    
   </namespace> 
 </file>
