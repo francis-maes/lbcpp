@@ -38,7 +38,7 @@
       <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
 
       <variable type="Boolean" name="learningStopped"/>
-      <variable type="Object" name="bestParameters"/>
+      <variable type="Variable" name="bestParameters"/>
       <variable type="Double" name="bestScore"/>
     </class>
 
