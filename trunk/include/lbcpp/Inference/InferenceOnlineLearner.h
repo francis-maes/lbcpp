@@ -20,28 +20,16 @@ namespace lbcpp
 class InferenceOnlineLearner : public Object
 {
 public:
-  virtual void startLearningCallback()
-    {if (nextLearner) nextLearner->startLearningCallback();}
-
-  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-    {if (nextLearner) nextLearner->subStepFinishedCallback(inference, input, supervision, prediction);}
-
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-    {if (nextLearner) nextLearner->stepFinishedCallback(inference, input, supervision, prediction);}
-
-  virtual void episodeFinishedCallback(const InferencePtr& inference)
-    {if (nextLearner) nextLearner->episodeFinishedCallback(inference);}
-
-  virtual void passFinishedCallback(const InferencePtr& inference)
-    {if (nextLearner) nextLearner->passFinishedCallback(inference);}
+  virtual void startLearningCallback();
+  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(const InferencePtr& inference);
+  virtual void passFinishedCallback(const InferencePtr& inference);
 
   virtual double getCurrentLossEstimate() const;
 
-  virtual bool wantsMoreIterations() const
-    {return !isLearningStopped();}
-
-  virtual bool isLearningStopped() const
-    {return nextLearner && nextLearner->isLearningStopped();}
+  virtual bool wantsMoreIterations() const;
+  virtual bool isLearningStopped() const;
 
   enum UpdateFrequency
   {
@@ -63,6 +51,9 @@ public:
 
   const InferenceOnlineLearnerPtr& getNextLearner() const
     {return nextLearner;}
+
+  const InferenceOnlineLearnerPtr& getPreviousLearner() const
+    {return previousLearner;}
 
   InferenceOnlineLearnerPtr getLastLearner() const;
 

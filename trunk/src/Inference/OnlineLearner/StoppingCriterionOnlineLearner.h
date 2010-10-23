@@ -52,7 +52,7 @@ private:
   virtual void update(const InferencePtr& inference)
   {
     double score = -getCurrentLossEstimate();
-    Variable parameters = inference->getParametersCopy().getObject();
+    Variable parameters = inference->getParametersCopy();
     if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters;

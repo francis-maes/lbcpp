@@ -149,6 +149,14 @@ public:
   */
   void computeMissingVariables();
 
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!Object::loadFromXml(importer))
+      return false;
+    computeMissingVariables();
+    return true;
+  }
+
   juce_UseDebuggingNewOperator
 
 protected:

@@ -34,7 +34,10 @@ void Inference::clone(const ObjectPtr& t) const
   const InferencePtr& target = t.staticCast<Inference>();
   NameableObject::clone(target);
   if (onlineLearner)
+  {
     target->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
+    jassert(!target->onlineLearner->getNextLearner() || target->onlineLearner->getNextLearner()->getPreviousLearner() == target->onlineLearner);
+  }
   ScopedReadLock _(parametersLock);
   if (parameters.exists())
   {

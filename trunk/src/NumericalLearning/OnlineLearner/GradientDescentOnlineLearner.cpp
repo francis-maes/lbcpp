@@ -140,7 +140,9 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const Perception
 
 void GradientDescentOnlineLearner::clone(const ObjectPtr& target) const
 {
-  GradientDescentOnlineLearnerPtr res = (GradientDescentOnlineLearnerPtr)target;
+  InferenceOnlineLearner::clone(target);
+
+  const GradientDescentOnlineLearnerPtr& res = target.staticCast<GradientDescentOnlineLearner>();
   res->numberOfActiveFeatures = numberOfActiveFeatures;
   res->epoch = epoch;
   res->learningRate = learningRate;
@@ -150,5 +152,4 @@ void GradientDescentOnlineLearner::clone(const ObjectPtr& target) const
   res->regularizer = regularizer;
   res->lossValue = lossValue;
   res->lastApplyRegularizerEpoch = lastApplyRegularizerEpoch;
-  Object::clone(res);
 }

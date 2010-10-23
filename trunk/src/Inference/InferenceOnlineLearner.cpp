@@ -12,18 +12,59 @@ using namespace lbcpp;
 /*
 ** InferenceOnlineLearner
 */
+void InferenceOnlineLearner::startLearningCallback()
+{
+  if (nextLearner)
+  {
+    jassert(nextLearner->getPreviousLearner().get() == this);
+    nextLearner->startLearningCallback();
+  }
+}
+
+void InferenceOnlineLearner::subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {if (nextLearner) nextLearner->subStepFinishedCallback(inference, input, supervision, prediction);}
+
+void InferenceOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {if (nextLearner) nextLearner->stepFinishedCallback(inference, input, supervision, prediction);}
+
+void InferenceOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
+  {if (nextLearner) nextLearner->episodeFinishedCallback(inference);}
+
+void InferenceOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+{
+  if (nextLearner)
+  {
+    jassert(nextLearner->getPreviousLearner().get() == this);
+    nextLearner->passFinishedCallback(inference);
+  }
+}
+
+bool InferenceOnlineLearner::wantsMoreIterations() const
+  {return !isLearningStopped();}
+
+bool InferenceOnlineLearner::isLearningStopped() const
+  {return nextLearner && nextLearner->isLearningStopped();}
+
 void InferenceOnlineLearner::clone(const ObjectPtr& t) const
 {
   Object::clone(t);
   const InferenceOnlineLearnerPtr& target = t.staticCast<InferenceOnlineLearner>();
   if (nextLearner)
+  {
+    jassert(nextLearner->getPreviousLearner().get() == this);
+
     target->setNextLearner(nextLearner->cloneAndCast<InferenceOnlineLearner>());
+    jassert(target->getNextLearner()->getPreviousLearner() == target);
+  }
 }
 
 double InferenceOnlineLearner::getCurrentLossEstimate() const
 {
   if (previousLearner)
+  {
+    jassert(previousLearner->getNextLearner().get() == this);
     return previousLearner->getCurrentLossEstimate();
+  }
   else
   {
     jassert(false);
