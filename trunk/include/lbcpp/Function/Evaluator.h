@@ -70,6 +70,9 @@ inline EvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
 inline EvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
   {return containerElementsEvaluator(name, binaryClassificationConfusionEvaluator(name));}
 
+// Save To Directory
+extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
+
 class BinaryClassificationConfusionMatrix : public Object
 {
 public:

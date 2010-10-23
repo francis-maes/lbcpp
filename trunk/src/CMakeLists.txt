@@ -200,6 +200,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/BinaryClassificationConfusionEvaluator.h
   Function/Evaluator/ClassificationAccuracyEvaluator.h
   Function/Evaluator/RegressionErrorEvaluator.h
+  Function/Evaluator/SaveToDirectoryEvaluator.h
   Function/Evaluator/EvaluatorClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorClasses.cpp
 )

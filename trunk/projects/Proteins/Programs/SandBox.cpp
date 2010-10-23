@@ -101,11 +101,11 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    static int count = 1;
+/*    static int count = 1;
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
     NumericalInferencePtr multiLinearInference = res->getSubInference();
     if (count++ == 1)
-      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true));
+      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(15), true));
     else
     {
       multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
@@ -114,12 +114,11 @@ public:
     return res;
 
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
-
-  /*
+*/
+  
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    //res->setBatchLearner(onlineToBatchInferenceLearner());
-    return res;*/
+    return res;
   }
 
 protected:
@@ -134,10 +133,10 @@ protected:
     else
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
-        InferenceOnlineLearner::perStep, constantIterationFunction(0.3)/* invLinearIterationFunction(initialLearningRate, 10000)*/, true, // learning steps
-        InferenceOnlineLearner::perEpisode, l2RegularizerFunction(0.0001));         // regularizer
-
-    //res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(5), true)); // stopping criterion
+        InferenceOnlineLearner::perStep, invLinearIterationFunction(5.0, (size_t)5e4), true, // learning steps
+        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-7));         // regularizer
+        
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(15), true)); // stopping criterion
     return res;
   }
 };
@@ -174,8 +173,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName == T("LearningPass"))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -184,7 +183,7 @@ public:
       MessageCallback::info(T("====================================================="));
 
       //singleThreadedInferenceContext();
-      InferenceContextPtr context = multiThreadedInferenceContext(7);
+      //InferenceContextPtr context = multiThreadedInferenceContext(7);
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       context->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -213,18 +212,18 @@ private:
 
 /////////////////////////////////////////
 
-VectorPtr loadProteins(const File& directory, ThreadPoolPtr pool)
+VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
   size_t maxCount = 1;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
-  return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+  //return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
+//    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 
-//  return directoryPairFileStream(directory, directory)->load(maxCount)
-//      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
+  return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
+      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
@@ -245,18 +244,22 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr trainProteins = loadProteins(workingDirectory.getChildFile(T("train")), pool);
-  ContainerPtr testProteins = loadProteins(workingDirectory.getChildFile(T("test")), pool);
+  ContainerPtr trainProteins = loadProteins(workingDirectory.getChildFile(T("trainPass1")), workingDirectory.getChildFile(T("train")), pool);
+  ContainerPtr testProteins = loadProteins(workingDirectory.getChildFile(T("testPass1")), workingDirectory.getChildFile(T("test")), pool);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  ProteinParallelInferencePtr inferencePass = new ProteinParallelInference();
+  ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
-  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+
+  /*
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));*/
@@ -265,19 +268,19 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
-  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  //ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
 
-  InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
-  inference->appendInference(lastStep);
-  for (int i = 1; i < 2; ++i)
+  //InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
+  //inference->appendInference(lastStep);
+  /*for (int i = 1; i < 2; ++i)
   {
     InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
     //initializeLearnerByCloning(step, lastStep);
     inference->appendInference(step);
     lastStep = step;
-  } 
+  } */
 
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -300,7 +303,7 @@ int main(int argc, char** argv)
   Variable(inference).printRecursively(std::cout, 2);*/
 
 
-  InferenceContextPtr context = singleThreadedInferenceContext();// multiThreadedInferenceContext(pool);
+  InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   /*
@@ -313,6 +316,12 @@ int main(int argc, char** argv)
   context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
   context->train(inference, trainProteins);
 
+  /*
+  std::cout << "Making and saving train predicions..." << std::endl;
+  context->evaluate(inference, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainPass2"))));
+  std::cout << "Making and saving test predicions..." << std::endl;
+  context->evaluate(inference, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testPass2"))));
+*/
   {
     std::cout << "Check Evaluating..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
@@ -320,6 +329,8 @@ int main(int argc, char** argv)
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
+
+  
 
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));

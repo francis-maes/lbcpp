@@ -2,7 +2,8 @@
 Ranking:
  * RankingLoss
  * RankingInference
-
+   -> use in DR and CM
+   
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
@@ -20,6 +21,5 @@ Explorer:
  * Mettre à jour le ProcessManager pour qu'il utilise les classes Job et ThreadPool
 
 Types:
- * Les HistrogramPerception devrait avoir des sortie de type DiscreteProbabilityDistribution
  * permettre de déclarer des variables ayant des Types abstraits -> c.f. pb dans ProteinInferenceStep::ProteinInferenceStep
 

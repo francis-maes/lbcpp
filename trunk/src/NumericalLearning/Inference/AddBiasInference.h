@@ -19,15 +19,18 @@ class AddBiasInference : public StaticDecoratorInference
 {
 public:
   AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0)
-    : StaticDecoratorInference(name, numericalInference), bias(initialBias)
-    {addOnlineLearner(addBiasOnlineLearner(InferenceOnlineLearner::perPass));}
+    : StaticDecoratorInference(name, numericalInference)
+  {
+    parameters = initialBias;
+    addOnlineLearner(addBiasOnlineLearner(InferenceOnlineLearner::perPass));
+  }
 
   AddBiasInference() {}
 
   virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     const Variable& subOutput = finalState->getSubOutput();
-    return subOutput.exists() ? Variable(subOutput.getDouble() + bias, doubleType) : subOutput;
+    return subOutput.exists() ? Variable(subOutput.getDouble() + getBias(), doubleType) : subOutput;
   }
 
   virtual TypePtr getParametersType() const
@@ -38,10 +41,6 @@ public:
 
   void setBias(double bias)
     {setParameters(bias);}
-  
-protected:
-  friend class AddBiasInferenceClass;
-  double bias;
 };
 
 typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;

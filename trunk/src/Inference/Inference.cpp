@@ -38,7 +38,7 @@ void Inference::clone(const ObjectPtr& t) const
   ScopedReadLock _(parametersLock);
   if (parameters.exists())
   {
-    target->parameters = getParameters(); // (clone)
+    target->parameters = getParametersCopy(); // clone parameters
     target->parametersChangedCallback();
   }
 }
