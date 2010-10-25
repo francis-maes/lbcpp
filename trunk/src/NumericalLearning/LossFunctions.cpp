@@ -173,7 +173,7 @@ void RankingLossFunction::sortScores(const std::vector<double>& scores, std::vec
 */
 void AdditiveRankingLossFunction::addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const
 {
-  assert(deltaCost > 0);
+  jassert(deltaCost > 0);
   // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
   // deltaScore should be positive
   
