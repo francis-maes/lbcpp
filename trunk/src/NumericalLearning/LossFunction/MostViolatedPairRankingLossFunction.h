@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include "AdditiveRankingLossFunction.h"
 
 namespace lbcpp
 {
@@ -17,9 +17,11 @@ namespace lbcpp
 class MostViolatedPairRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  MostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss = BinaryClassificationLossFunctionPtr())
-    : AdditiveRankingLossFunction(baseLoss) {}
+  MostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+    : AdditiveRankingLossFunction(baseLoss, costs) {}
   
+  MostViolatedPairRankingLossFunction() {}
+
   virtual bool isDerivable() const
     {return false;}
 
