@@ -10,8 +10,8 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_REGRESSION_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
-# include <lbcpp/Function/ScalarFunction.h>
-# include <lbcpp/NumericalLearning/NumericalLearning.h>
+# include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/NumericalLearning/LossFunctions.h>
 
 namespace lbcpp
 {

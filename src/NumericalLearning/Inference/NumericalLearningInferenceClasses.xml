@@ -62,8 +62,34 @@
       <constructor arguments="PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String&amp; name" returnType="StaticDecoratorInference"/>
     </class>
 
-    <!-- Misc -->
+    <!-- Ranking -->
+    <class name="LossBasedRankingInference" base="SharedParallelInference">
+      <constructor arguments="const String&amp; name, InferencePtr scoreInference"/>
+    </class>
 
+    <class name="RankingInference" base="StaticDecoratorInference" abstract="yes"/>
+    
+    <class name="AdditiveRankingInference" base="RankingInference" abstract="yes">
+      <variable type="BinaryClassificationLossFunction" name="baseLoss"/>
+    </class>
+    
+    <class name="MostViolatedPairRankingInference" base="RankingInference">
+      <constructor arguments="InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name" returnType="StaticDecoratorInference"/>
+    </class>
+      
+    <class name="BestAgainstAllRankingInference" base="RankingInference">
+      <constructor arguments="InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name" returnType="StaticDecoratorInference"/>
+    </class>
+
+    <class name="AllPairsRankingInference" base="RankingInference">
+      <constructor arguments="InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name" returnType="StaticDecoratorInference"/>
+    </class>
+
+    <class name="AllPairsRankingLinearSVMInference" base="AllPairsRankingInference">
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name" returnType="StaticDecoratorInference"/>
+    </class>
+
+      <!-- Misc -->
     <class name="AddBiasInference" base="StaticDecoratorInference">
       <constructor arguments="const String&amp; name, InferencePtr numericalInference, double initialBias"/>
     </class>

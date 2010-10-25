@@ -335,6 +335,7 @@ SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
   NumericalLearning/LossFunction/OneAgainstAllMultiClassLossFunction.h
   NumericalLearning/LossFunction/MostViolatedMultiClassLossFunction.h
   NumericalLearning/LossFunction/LogBinomialMultiClassLossFunction.h
+  NumericalLearning/LossFunction/AdditiveRankingLossFunction.h
   NumericalLearning/LossFunction/AllPairsRankingLossFunction.h
   NumericalLearning/LossFunction/MostViolatedPairRankingLossFunction.h
   NumericalLearning/LossFunction/BestAgainstAllRankingLossFunction.h
@@ -367,6 +368,7 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
   NumericalLearning/Inference/BinaryClassificationInference.h
   NumericalLearning/Inference/RegressionInference.h
   NumericalLearning/Inference/MultiClassInference.h
+  NumericalLearning/Inference/RankingInference.h
   NumericalLearning/Inference/AddBiasInference.h
   NumericalLearning/Inference/TransferFunctionDecoratorInference.h
   NumericalLearning/Inference/NumericalLearningInferenceClasses.xml

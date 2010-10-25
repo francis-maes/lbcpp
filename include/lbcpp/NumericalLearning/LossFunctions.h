@@ -110,6 +110,9 @@ extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction(EnumerationPt
 class RankingLossFunction : public ScalarObjectFunction
 {
 public:
+  RankingLossFunction(const std::vector<double>& costs) : costs(costs) {}
+  RankingLossFunction() {}
+
   virtual TypePtr getInputType() const
     {return containerClass(doubleType);}
 
@@ -140,32 +143,11 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<RankingLossFunction> RankingLossFunctionPtr;
+extern ClassPtr rankingLossFunctionClass;
 
-class AdditiveRankingLossFunction : public RankingLossFunction
-{
-public:
-  AdditiveRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss)
-    : baseLoss(baseLoss) {}
-
-  virtual bool isDerivable() const
-    {return baseLoss->isDerivable();}
-
-  const BinaryClassificationLossFunctionPtr& getBaseLoss() const
-    {return baseLoss;}
-
-protected:
-  friend class AdditiveRankingLossFunctionClass;
-
-  BinaryClassificationLossFunctionPtr baseLoss;
-
-  void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const;
-};
-
-typedef ReferenceCountedObjectPtr<AdditiveRankingLossFunction> AdditiveRankingLossFunctionPtr;
-
-extern AdditiveRankingLossFunctionPtr allPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
-extern AdditiveRankingLossFunctionPtr mostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
-extern AdditiveRankingLossFunctionPtr bestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
+extern RankingLossFunctionPtr allPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr mostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr bestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
 
 /*
 ** Regularizers

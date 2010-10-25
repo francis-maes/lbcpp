@@ -9,7 +9,8 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ONE_AGAINST_ALL_MULTI_CLASS_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ONE_AGAINST_ALL_MULTI_CLASS_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include "AdditiveRankingLossFunction.h"
+
 namespace lbcpp
 {
 

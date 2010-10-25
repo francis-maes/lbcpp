@@ -47,15 +47,15 @@
     </class>
 
     <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
-      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
     </class>
     
     <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
-      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
     </class>
     
     <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
-      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
     </class>
 
     <!-- Regularizers -->

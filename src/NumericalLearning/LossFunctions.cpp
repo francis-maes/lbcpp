@@ -167,24 +167,3 @@ void RankingLossFunction::sortScores(const std::vector<double>& scores, std::vec
     res[i] = i;
   std::sort(res.begin(), res.end(), CompareRankingLossScores(scores));
 }
-
-/*
-** AdditiveRankingLossFunction
-*/
-void AdditiveRankingLossFunction::addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const
-{
-  jassert(deltaCost > 0);
-  // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
-  // deltaScore should be positive
-  
-  double discriminantValue, discriminantDerivative;
-  baseLoss->computePositive(deltaScore, output ? &discriminantValue : NULL, NULL, gradient ? &discriminantDerivative : NULL);
-  if (gradient)
-  {
-    double delta = deltaCost * discriminantDerivative;
-    (*gradient)[positiveAlternative] += delta;
-    (*gradient)[negativeAlternative] -= delta;
-  }
-  if (output)
-    *output += deltaCost * discriminantValue;
-}

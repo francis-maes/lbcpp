@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include "AdditiveRankingLossFunction.h"
 # include "HingeLossFunction.h"
 
 namespace lbcpp
@@ -18,8 +18,9 @@ namespace lbcpp
 class AllPairsRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  AllPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss = BinaryClassificationLossFunctionPtr())
-    : AdditiveRankingLossFunction(baseLoss) {}
+  AllPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+    : AdditiveRankingLossFunction(baseLoss, costs) {}
+  AllPairsRankingLossFunction() {}
 
   virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
