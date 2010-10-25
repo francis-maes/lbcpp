@@ -33,7 +33,7 @@ public:
 
   enum UpdateFrequency
   {
-    never,
+    never = 0,
     perStep,
     perEpisode,
     perPass,

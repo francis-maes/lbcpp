@@ -8,30 +8,6 @@
 
 #include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
-/*
-#include "Evaluator/ContainerElementsEvaluator.h"
-#include "Evaluator/ClassificationAccuracyEvaluator.h"
-#include "Evaluator/BinaryClassificationConfusionEvaluator.h"
-#include "Evaluator/RegressionErrorEvaluator.h"
-
-EvaluatorPtr lbcpp::classificationAccuracyEvaluator(const String& name)
-  {return new ClassificationAccuracyEvaluator(name);}
-
-EvaluatorPtr lbcpp::binaryClassificationConfusionEvaluator(const String& name)
-  {return new BinaryClassificationConfusionEvaluator(name);}
-
-EvaluatorPtr lbcpp::rocAnalysisEvaluator(const String& name)
-  {return new ROCAnalysisEvaluator(name);}
-
-EvaluatorPtr lbcpp::regressionErrorEvaluator(const String& name)
-  {return new RegressionErrorEvaluator(name);}
-
-EvaluatorPtr lbcpp::dihedralRegressionErrorEvaluator(const String& name)
-  {return new DihedralAngleRegressionErrorEvaluator(name);}
-
-EvaluatorPtr lbcpp::containerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator)
-  {return new ContainerElementsEvaluator(name, elementEvaluator);}
-*/
 
 /*
 ** RegressionErrorEvaluator
@@ -176,7 +152,7 @@ double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score, double& precis
 //      std::cout << "(x >= " << it->first << ") ==> prec = " << (100.0 * truePositives / (double)(truePositives + falsePositives))
 //                << "% recall = " << (100.0 * truePositives / (double)numPositives) << "% f1 = " << f1 * 100.0 << "%" << std::endl;
 //    ++step;
-    if (f1 > bestF1Score)
+    if (f1 >= bestF1Score)
     {
       bestF1Score = f1;
       bestThreshold = it->first;

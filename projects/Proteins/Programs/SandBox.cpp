@@ -132,11 +132,11 @@ protected:
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0));         // regularizer
     else
       res = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(5.0, (size_t)5e4), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-7));         // regularizer
-        
-    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(15), true)); // stopping criterion
+        InferenceOnlineLearner::perStepMiniBatch100, //perStepMiniBatch1000,                                                 // randomization
+        InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, (size_t)5e6), true, // learning steps
+        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
+
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1), true)); // stopping criterion
     return res;
   }
 };
@@ -251,13 +251,13 @@ int main(int argc, char** argv)
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  ProteinParallelInferencePtr inference = new ProteinParallelInference();
+  //ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  //inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
 
   /*
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -268,7 +268,9 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
-  //ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
 

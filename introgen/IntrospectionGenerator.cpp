@@ -207,6 +207,10 @@ protected:
       generateEnumValueInConstructor(elt);
     closeScope();
 
+    // custom code
+    forEachXmlChildElementWithTagName(*xml, elt, T("code"))
+      {generateCode(elt); newLine();}
+
     closeClass();
     currentScopes.pop_back();
 
@@ -291,10 +295,7 @@ protected:
             String code = T("case ") + String((int)i) + T(": lbcpp::nativeToVariable(__res__, ");
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)
-            {
-              code += T("Variable((int)__this__->") + name + T(", ")
-                + replaceFirstLettersByLowerCase(variables[i]->getStringAttribute(T("type"))) + T("Enumeration)");
-            }
+              code += T("(int)(__this__->") + name + T(")");
             else
               code += T("__this__->") + name;
 
