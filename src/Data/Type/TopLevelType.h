@@ -27,7 +27,7 @@
 #ifndef LBCPP_DATA_TYPE_TOP_LEVEL_H_
 # define LBCPP_DATA_TYPE_TOP_LEVEL_H_
 
-# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Data/XmlSerialisation.h>
 
 namespace lbcpp
 {
