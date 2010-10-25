@@ -93,8 +93,8 @@ public:
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName), targetName);
-    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-      res->setSubInference(addBiasInference(targetName, res->getSubInference()));
+    //if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+    //  res->setSubInference(addBiasInference(targetName, res->getSubInference()));
     res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
@@ -132,11 +132,11 @@ protected:
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0));         // regularizer
     else
       res = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perStepMiniBatch100, //perStepMiniBatch1000,                                                 // randomization
+        InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1), true)); // stopping criterion
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(10), true)); // stopping criterion
     return res;
   }
 };
@@ -326,12 +326,17 @@ int main(int argc, char** argv)
 */
   {
     std::cout << "Check Evaluating..." << std::endl;
-    EvaluatorPtr evaluator = new ProteinEvaluator();
+    evaluator = new ProteinEvaluator();
     context->evaluate(inference, trainProteins, evaluator);
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
-  }
 
+    EvaluatorPtr evaluator = new ProteinEvaluator();
+    context->evaluate(inference, testProteins, evaluator);
+    std::cout << "============================" << std::endl << std::endl;
+    std::cout << evaluator->toString() << std::endl << std::endl;
+  }
+  return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;

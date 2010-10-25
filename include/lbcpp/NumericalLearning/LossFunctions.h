@@ -27,6 +27,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTIONS_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTIONS_H_
 
+# include "../Data/Container.h"
 # include "../Function/ScalarFunction.h"
 # include "../Function/ScalarObjectFunction.h"
 
@@ -81,6 +82,8 @@ public:
   MultiClassLossFunction() : correctClass(0) {}
 
   virtual String toString() const;
+  virtual TypePtr getInputType() const
+    {return containerClass(doubleType);}
   virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
 
   virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
@@ -100,6 +103,69 @@ typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunction
 extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
 extern MultiClassLossFunctionPtr mostViolatedMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
 extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction(EnumerationPtr classes, size_t correctClass);
+
+/*
+** Ranking Loss Functions
+*/
+class RankingLossFunction : public ScalarObjectFunction
+{
+public:
+  virtual TypePtr getInputType() const
+    {return containerClass(doubleType);}
+
+  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
+
+  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
+
+  const std::vector<double>& getCosts() const
+    {return costs;}
+
+  void setCosts(const std::vector<double>& costs)
+    {this->costs = costs;}
+
+protected:
+  friend class RankingLossFunctionClass;
+
+  std::vector<double> costs;
+
+  static void multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k);
+  static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res);
+
+  // returns true if all costs are equal to 0 or equal to a shared positive constant
+  static bool areCostsBipartite(const std::vector<double>& costs);
+
+  // returns a map from costs to (argmin scores, argmax scores) pairs
+  static void getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res);
+  static bool hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts);
+};
+
+typedef ReferenceCountedObjectPtr<RankingLossFunction> RankingLossFunctionPtr;
+
+class AdditiveRankingLossFunction : public RankingLossFunction
+{
+public:
+  AdditiveRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss)
+    : baseLoss(baseLoss) {}
+
+  virtual bool isDerivable() const
+    {return baseLoss->isDerivable();}
+
+  const BinaryClassificationLossFunctionPtr& getBaseLoss() const
+    {return baseLoss;}
+
+protected:
+  friend class AdditiveRankingLossFunctionClass;
+
+  BinaryClassificationLossFunctionPtr baseLoss;
+
+  void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const;
+};
+
+typedef ReferenceCountedObjectPtr<AdditiveRankingLossFunction> AdditiveRankingLossFunctionPtr;
+
+extern AdditiveRankingLossFunctionPtr allPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
+extern AdditiveRankingLossFunctionPtr mostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
+extern AdditiveRankingLossFunctionPtr bestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss);
 
 /*
 ** Regularizers
