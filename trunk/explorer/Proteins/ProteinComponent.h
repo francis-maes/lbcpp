@@ -102,7 +102,7 @@ public:
     : PerceptionComponent(protein)
   {
     ProteinInferenceFactory factory;
-    perception = factory.createProteinPerception();
+    perception = factory.createProteinPerception(String::empty);
   }
 };
 

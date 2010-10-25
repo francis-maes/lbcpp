@@ -3,14 +3,22 @@
 <file name="ProteinInference" directory="Inference">
   <namespace name="lbcpp">
 
+    <!-- Task-specific inferences -->
     <class name="ContactMapInference" base="SharedParallelInference"/>
-    
-    <class name="ProteinSequentialInference" base="VectorSequentialInference"/>
-    <class name="ProteinParallelInference" base="VectorParallelInference"/>
-    
+
+    <class name="RankingBasedExtractionInference" base="VectorSequentialInference" abstract="yes"/>
+    <class name="DisorderedRegionInference" base="RankingBasedExtractionInference">
+      <constructor arguments="const String&amp; name, InferencePtr rankingInference, InferencePtr cutoffInference" returnType="VectorSequentialInference"/>
+    </class>
+
+    <!-- Protein Inference Step Adaptator -->
     <class name="ProteinInferenceStep" base="StaticDecoratorInference">
       <variable type="Integer" name="targetIndex"/>
     </class>
-    
+
+    <!-- Top Level Inferences -->
+    <class name="ProteinSequentialInference" base="VectorSequentialInference"/>
+    <class name="ProteinParallelInference" base="VectorParallelInference"/>
+
   </namespace>  
 </file>

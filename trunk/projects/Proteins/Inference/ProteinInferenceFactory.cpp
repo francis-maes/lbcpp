@@ -41,21 +41,21 @@ InferencePtr ProteinInferenceFactory::createLabelSequenceInference(const String&
   TypePtr targetType = getTargetType(targetName);
   EnumerationPtr elementsType = targetType->getTemplateArgument(0).dynamicCast<Enumeration>();
   jassert(elementsType);
-  PerceptionPtr perception = createPerception(targetName, true, false);
+  PerceptionPtr perception = createPerception(targetName, residuePerception);
   InferencePtr classifier = createMultiClassClassifier(targetName, perception, elementsType);
   return sharedParallelVectorInference(targetName, proteinLengthFunction(), classifier);
 }
 
 InferencePtr ProteinInferenceFactory::createProbabilitySequenceInference(const String& targetName) const
 {
-  PerceptionPtr perception = createPerception(targetName, true, false);
+  PerceptionPtr perception = createPerception(targetName, residuePerception);
   InferencePtr classifier = createBinaryClassifier(targetName, perception);
   return sharedParallelVectorInference(targetName, proteinLengthFunction(), classifier);
 }
 
 InferencePtr ProteinInferenceFactory::createContactMapInference(const String& targetName) const
 {
-  PerceptionPtr perception = createPerception(targetName, false, true);
+  PerceptionPtr perception = createPerception(targetName, residuePairPerception);
   InferencePtr classifier = createBinaryClassifier(targetName, perception);
   return new ContactMapInference(targetName, classifier);
 }
@@ -99,7 +99,7 @@ PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPercep
   return res;
 }
 
-PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
+PerceptionPtr ProteinInferenceFactory::createProteinPerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ProteinCompositePerception();
   res->addPerception(T("length"), proteinLengthPerception());
@@ -124,7 +124,7 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception() const
 PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("protein"), createProteinPerception());
+  res->addPerception(T("protein"), createProteinPerception(targetName));
   addPerception(res, T("position"), T("primaryStructure"), boundsProximityPerception());
   res->addPerception(T("aa"), createLabelSequencePerception(T("primaryStructure")));
   res->addPerception(T("pssm"), createPositionSpecificScoringMatrixPerception());
@@ -141,7 +141,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   PerceptionPtr residuePerception = createResiduePerception(targetName);
 
   CompositePerceptionPtr res = new ResiduePairCompositePerception();
-  res->addPerception(T("protein"), createProteinPerception());
+  res->addPerception(T("protein"), createProteinPerception(targetName));
   res->addPerception(T("residues"), residuePerception);
   res->addPerception(T("separationDistance"), separationDistanceResiduePairPerception());
 
@@ -163,12 +163,14 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   return res;
 }
 
-PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName, PerceptionType type) const
 {
   PerceptionPtr res;
-  if (is1DTarget)
+  if (type == proteinPerception)
+    res = createProteinPerception(targetName);
+  else if (type == residuePerception)
     res = createResiduePerception(targetName);
-  else if (is2DTarget)
+  else if (type == residuePairPerception)
     res = createResiduePairPerception(targetName);
   else
     {jassert(false); return PerceptionPtr();}
