@@ -245,6 +245,7 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   Perception/Container/SegmentsPerception.cpp
   Perception/Container/BoundsProximityPerception.h
   Perception/Container/ProbabilityDistributionPerception.h
+  Perception/Container/InputLabelPairPerception.h
   Perception/Container/ContainerPerceptionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionClasses.cpp
 )
@@ -290,6 +291,7 @@ SET(LBCPP_INFERENCE_CONTEXT_SOURCES
 
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
+  Inference/ReductionInference/RankingBasedClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
   Inference/ReductionInference/SharedParallelVectorInference.h
   Inference/ReductionInference/ReductionInferenceClasses.xml

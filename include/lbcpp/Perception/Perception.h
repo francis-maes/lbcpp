@@ -168,6 +168,7 @@ extern PerceptionPtr containerHistogramPerception(TypePtr elementsType, bool use
 extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t windowSize, bool useCache = true); // (Container, CentralIndex) input
 extern PerceptionPtr segmentHistogramPerception(TypePtr elementsType, bool useCache = true); // (Container, IndexPair) input
 extern PerceptionPtr boundsProximityPerception();
+extern PerceptionPtr inputLabelPairPerception(PerceptionPtr inputPerception, EnumerationPtr classes);
 
 // probability distribution perceptions
 extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr enumeration);

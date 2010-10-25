@@ -119,6 +119,7 @@ public:
   virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
 
   virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
+  void compute(const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;
 
   const std::vector<double>& getCosts() const
     {return costs;}

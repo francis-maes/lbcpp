@@ -238,16 +238,32 @@ public:
     {return ptr != NULL;}
 
   /** Returns true if this pointer refers to the given object. */
-  bool operator ==(const ReferenceCountedObjectPtr<T>& other) const
-    {return ptr == other.ptr;}
+  template<class O>
+  bool operator ==(const ReferenceCountedObjectPtr<O>& other) const
+    {return ptr == other.staticCast<T>().ptr;}
+  
+  template<class O>
+  bool operator ==(const O* other) const
+    {return ptr == other;}
 
   /** Returns true if this pointer doesn't refer to the given object. */
-  bool operator !=(const ReferenceCountedObjectPtr<T>& other) const
-    {return ptr != other.ptr;}
+  template<class O>
+  bool operator !=(const ReferenceCountedObjectPtr<O>& other) const
+    {return ptr != other.staticCast<T>().ptr;}
+
+  template<class O>
+  bool operator !=(const O* other) const
+    {return ptr != other;}
 
   /** Returns true if this pointer is smaller to the pointer of the given object. */
-  bool operator <(const ReferenceCountedObjectPtr<T>& other) const
-    {return ptr < other.ptr;}
+  template<class O>
+  bool operator <(const ReferenceCountedObjectPtr<O>& other) const
+    {return ptr < other.staticCast<T>().ptr;}
+
+  template<class O>
+  bool operator <(const O* other) const
+    {return ptr < other;}
+
 
   /** Returns the object that this pointer references.
 
@@ -291,14 +307,8 @@ public:
   template<class O>
   inline const ReferenceCountedObjectPtr<O>& staticCast() const
   {
+    jassert(!ptr || dynamic_cast<O* >(ptr));
     return *(const ReferenceCountedObjectPtr<O>* )this;
-    /*if (ptr)
-    {
-      jassert(dynamic_cast<O* >(ptr));
-      return (O* )ptr;
-    }
-    else
-      return ReferenceCountedObjectPtr<O>();*/
   }
 
   /** Checks if a cast is valid and throw an error if not.

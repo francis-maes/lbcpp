@@ -40,7 +40,13 @@
       <constructor arguments="EnumerationPtr enumeration"/>
       <variable type="Enumeration" name="enumeration"/>
     </class>
-    
+
+    <!-- Pair Perception -->
+    <class name="InputLabelPairPerception" base="Perception">
+      <constructor arguments="PerceptionPtr inputPerception, EnumerationPtr classes"/>
+      <variable type="Perception" name="inputPerception"/>
+      <variable type="Enumeration" name="classes"/>
+    </class>
   </namespace>
 
 </file>
