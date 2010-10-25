@@ -34,7 +34,7 @@ public:
       if (score > topRankScore)
         topRankScore = score, topRankIndex = i;
     }
-    assert(topRankIndex != (size_t)-1);
+    jassert(topRankIndex != (size_t)-1);
     double topRankCost = costs[topRankIndex];
     
     size_t numPairs = 0;
