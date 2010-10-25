@@ -1,9 +1,7 @@
+* Voir l'apprentissage en ligne du Ranking
+* Adaptateur pour pouvoir prédire le DR et les CM en utilisant du Ranking
 
-Ranking:
- * RankingLoss
- * RankingInference
-   -> use in DR and CM
-   
+
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
 
