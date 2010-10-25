@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/Data/Vector.h>
 #include <lbcpp/NumericalLearning/LossFunctions.h>
 #include "../Data/Object/DenseDoubleObject.h"
 #include <algorithm>
@@ -68,32 +69,43 @@ void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr*
 /*
 ** RankingLossFunction
 */
+void RankingLossFunction::compute(const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const
+{
+  jassert(!scores || scores->getNumElements() == numScores);
+  std::vector<double> scoreVector(numScores);
+  for (size_t i = 0; i < numScores; ++i)
+    scoreVector[i] = scores ? scores->getElement(i).getDouble() : 0.0;
+  if (output)
+    *output = 0.0;
+  if (gradient)
+    gradient->resize(numScores, 0.0);
+  computeRankingLoss(scoreVector, costs, output, gradient);
+}
+
 void RankingLossFunction::compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
 {
-  DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
-  if (denseDoubleInput)
-  {
-    std::vector<double> gradient;
-    if (gradientTarget)
-      gradient.resize(denseDoubleInput->getValues().size(), 0.0);
-    computeRankingLoss(denseDoubleInput->getValues(), costs, output, gradientTarget ? &gradient : NULL);
+  const ContainerPtr& scores = input.staticCast<Container>();
+  jassert(scores);
+  size_t n = scores->getNumElements();
 
-    if (gradientTarget)
+  std::vector<double> gradient;
+  compute(input, n, output, gradientTarget ? &gradient : NULL);
+  if (gradientTarget)
+  {
+    ContainerPtr target;
+    if (!*gradientTarget)
     {
-      DenseDoubleObjectPtr denseGradientTarget;
-      if (*gradientTarget)
-        denseGradientTarget = gradientTarget->dynamicCast<DenseDoubleObject>();
-      else
-      {
-        denseGradientTarget = denseDoubleInput->createCompatibleNullObject();
-        *gradientTarget = denseGradientTarget;
-      }
+      *gradientTarget = target = lbcpp::vector(doubleType, n);
+      for (size_t i = 0; i < n; ++i)
+        target->setElement(i, gradient[i] * gradientWeight);
+    }
+    else
+    {
+      target = gradientTarget->staticCast<Container>();
       for (size_t i = 0; i < gradient.size(); ++i)
-        denseGradientTarget->getValueReference(i) += gradient[i] * gradientWeight;
+        target->setElement(i, target->getElement(i).getDouble() + gradient[i] * gradientWeight);
     }
   }
-  else
-    jassert(false); // not implemented
 }
 
 bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs)

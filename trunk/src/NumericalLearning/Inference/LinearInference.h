@@ -40,17 +40,49 @@ public:
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
-    const ScalarFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarFunction>();
-    double lossDerivative;
-    lossFunction->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
-   // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
-   //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
+    jassert(supervision.exists());
+    const PerceptionPtr& perception = getPerception();
+    const FunctionPtr& lossFunction = supervision.getObjectAndCast<Function>();
+    if (lossFunction.isInstanceOf<ScalarFunction>())
+    {
+      const ScalarFunctionPtr& loss = lossFunction.staticCast<ScalarFunction>();
+      double lossDerivative;
+      loss->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
+     // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
+     //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
 
-    if (target)
-      lbcpp::addWeighted(*target, getPerception(), input, lossDerivative * weight);
+      if (target)
+        lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+      else
+        addWeightedToParameters(perception, input, lossDerivative * weight);
+     // std::cout << " newL2 = " << l2norm(target) << std::endl;
+    }
+    else if (lossFunction.isInstanceOf<RankingLossFunction>())
+    {
+      const ContainerPtr& alternatives = input.getObjectAndCast<Container>();
+      const ContainerPtr& scores = prediction.getObjectAndCast<Container>();
+      size_t n = alternatives->getNumElements();
+      jassert(!scores || n == scores->getNumElements());
+      std::vector<double> lossGradient;
+      const RankingLossFunctionPtr& loss = lossFunction.staticCast<RankingLossFunction>();
+      loss->compute(scores, n, &exampleLossValue, &lossGradient);
+      jassert(lossGradient.size() == n);
+      
+      if (target)
+      {
+        for (size_t i = 0; i < n; ++i)
+          lbcpp::addWeighted(*target, perception, alternatives->getElement(i).getObject(), lossGradient[i] * weight);
+      }
+      else
+      {
+        ScopedWriteLock _(parametersLock);
+        const NumericalInferenceParametersPtr& parameters = getParameters();
+        for (size_t i = 0; i < n; ++i)
+          lbcpp::addWeighted(parameters->getWeights(), perception, alternatives->getElement(i).getObject(), lossGradient[i] * weight);
+      }
+    }
     else
-      addWeightedToParameters(getPerception(), input, lossDerivative * weight);
-   // std::cout << " newL2 = " << l2norm(target) << std::endl;
+      jassert(false); // unrecognized loss function
   }
 
   virtual Variable predict(const Variable& input) const

@@ -55,7 +55,7 @@ TypePtr Perception::getOutputType() const
   if (!outputType || !outputType->getBaseType())
   {
     const_cast<Perception* >(this)->computeOutputType();
-    jassert(outputType);
+    jassert(outputType); // make sure that you call Perception::computeOutputType() in your implementation of computeOutputType()
   }
   return outputType.get();
 }

@@ -4,7 +4,10 @@
 
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
-
+ * Multiclass classifiers: output discrete distributions
+ * Rendre le save deterministe
+ * Render le load de fichiers deterministe (trier les fichiers)
+ 
 Inference:
  * Segmental Features
  * Recursive parameters, use in:

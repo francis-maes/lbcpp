@@ -8,6 +8,9 @@
 
 #include "GradientDescentOnlineLearner.h"
 #include <lbcpp/Function/ScalarFunction.h>
+#include <lbcpp/Inference/InferenceContext.h>
+#include <lbcpp/Inference/DecoratorInference.h>
+#include <lbcpp/Inference/ParallelInference.h>
 using namespace lbcpp;
 
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(
@@ -32,7 +35,20 @@ void GradientDescentOnlineLearner::startLearningCallback()
 
 void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
-  updateNumberOfActiveFeatures(getPerception(inference), input);
+  PerceptionPtr perception = getPerception(inference);
+  if (input.isObject() && input.dynamicCast<Container>())
+  {
+    // composite inputs (e.g. ranking)
+    const ContainerPtr& inputs = input.getObjectAndCast<Container>();
+    size_t n = inputs->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+      updateNumberOfActiveFeatures(perception, inputs->getElement(i));
+  }
+  else
+  {
+    // simple input
+    updateNumberOfActiveFeatures(perception, input);
+  }
   InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
 }
   
@@ -66,7 +82,17 @@ void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inferenc
 {
   double exampleLossValue;
   const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
-  Variable pred = prediction.exists() ? prediction : numericalInference->predict(input);
+  Variable pred;
+  if (prediction.exists())
+    pred = prediction;
+  else if (inference == numericalInference) 
+    pred = numericalInference->predict(input);
+  else
+  {
+    // special case for ranking
+    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+    pred = singleThreadedInferenceContext()->run(inference, input, Variable(), returnCode);
+  }
   numericalInference->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
@@ -152,4 +178,19 @@ void GradientDescentOnlineLearner::clone(const ObjectPtr& target) const
   res->regularizer = regularizer;
   res->lossValue = lossValue;
   res->lastApplyRegularizerEpoch = lastApplyRegularizerEpoch;
+}
+
+NumericalInferencePtr GradientDescentOnlineLearner::getNumericalInference(const InferencePtr& inference) const
+{
+  if (inference.isInstanceOf<NumericalInference>())
+    return inference.staticCast<NumericalInference>();
+  else if (inference.isInstanceOf<StaticDecoratorInference>())
+    return getNumericalInference(inference.staticCast<StaticDecoratorInference>()->getSubInference());
+  else if (inference.isInstanceOf<SharedParallelInference>())
+    return getNumericalInference(inference.staticCast<SharedParallelInference>()->getSubInference());
+  else
+  {
+    jassert(false);
+    return *(const NumericalInferencePtr* )0;
+  }
 }

@@ -36,12 +36,6 @@ public:
   virtual void clone(const ObjectPtr& target) const;
 
 protected:
-  const NumericalInferencePtr& getNumericalInference(const InferencePtr& inference) const
-    {return inference.staticCast<NumericalInference>();}
-
-  const PerceptionPtr& getPerception(const InferencePtr& inference) const
-    {return getNumericalInference(inference)->getPerception();}
-
   ScalarVariableRecentMean numberOfActiveFeatures;
   size_t epoch;
 
@@ -64,6 +58,11 @@ protected:
   void gradientDescentStep(const InferencePtr& inference, const ObjectPtr& gradient, double weight = 1.0);
   double computeLearningRate() const;
   void updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input);
+
+private:
+  NumericalInferencePtr getNumericalInference(const InferencePtr& inference) const;
+  const PerceptionPtr& getPerception(const InferencePtr& inference) const
+    {return getNumericalInference(inference)->getPerception();}
 };
 
 typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentOnlineLearnerPtr;

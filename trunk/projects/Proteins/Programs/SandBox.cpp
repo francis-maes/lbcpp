@@ -253,9 +253,12 @@ public:
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
 */
   
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    return res;
+    //InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+    //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    //return res;
+
+    InferencePtr rankingInference = allPairsRankingLinearSVMInference(inputLabelPairPerception(perception, classes), createOnlineLearner(targetName), targetName);
+    return rankingBasedClassificationInference(targetName, rankingInference, classes);
   }
 
 protected:
@@ -273,7 +276,7 @@ protected:
         InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(10), true)); // stopping criterion
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1), true)); // stopping criterion
     return res;
   }
 };
@@ -406,7 +409,7 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
@@ -473,7 +476,7 @@ int main(int argc, char** argv)
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
-  return 0;
+  //return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;

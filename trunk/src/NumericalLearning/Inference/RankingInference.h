@@ -50,14 +50,17 @@ public:
   {
     size_t n = state->getNumSubInferences();
     VectorPtr res = vector(doubleType, n);
+    bool atLeastOneResult = false;
     for (size_t i = 0; i < n; ++i)
     {
       Variable result = state->getSubOutput(i);
-      if (!result.exists())
-        return Variable::missingValue(res->getClass());
-      res->setElement(i, result.getDouble());
+      if (result.exists())
+      {
+        res->setElement(i, result.getDouble());
+        atLeastOneResult = true;
+      }
     }
-    return res;
+    return atLeastOneResult ? res : Variable::missingValue(res->getClass());
   }
 };
 
