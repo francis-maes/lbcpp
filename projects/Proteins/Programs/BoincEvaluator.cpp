@@ -182,8 +182,8 @@ public:
     rewriter->addRule(doubleType, identityPerception());
   }
 
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
-    {return ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);}
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
+    {return ProteinInferenceFactory::createPerception(targetName, type);}
 
 public:
   virtual InferencePtr createContactMapInference(const String& targetName) const

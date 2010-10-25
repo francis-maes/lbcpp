@@ -12,148 +12,12 @@
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
 #include "Inference/ContactMapInference.h"
+#include "Inference/DisorderRegionsInference.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-class RankingBasedExtractionInference : public VectorSequentialInference
-{
-public:
-  RankingBasedExtractionInference(const String& name, InferencePtr rankingInference, InferencePtr cutoffInference)
-    : VectorSequentialInference(name)
-  {
-    appendInference(rankingInference);
-    appendInference(cutoffInference);
-  }
-
-  virtual TypePtr getInputType() const
-    {return subInferences[0]->getInputType();}
-
-  virtual TypePtr getSupervisionType() const
-    {return subInferences[0]->getSupervisionType();}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return subInferences[0]->getOutputType(inputType);}
-
-  virtual ContainerPtr createRankingInputs(const Variable& input) const;
-  virtual ContainerPtr createRankingCosts(const Variable& supervision) const = 0;
-  virtual Variable createCutoffInput(const Variable& input) const
-    {return input;}
-  virtual double computeBestCutoff(const ContainerPtr& scores, const ContainerPtr& costs) const = 0;
-
-  virtual Variable computeOutput(const ContainerPtr& scores, double cutoff) const = 0;
-
-  struct State : public SequentialInferenceState
-  {
-    State(const Variable& input, const Variable& supervision)
-      : SequentialInferenceState(input, supervision) {}
-
-    ContainerPtr scores;
-  };
-
-  typedef ReferenceCountedObjectPtr<State> StatePtr;
-
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    SequentialInferenceStatePtr state = new State(input, supervision);
-    state->setSubInference(subInferences[0], createRankingInputs(input), supervision.exists() ? createRankingCosts(supervision) : ContainerPtr());
-    return state;
-  }
-
-  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr s, size_t index, ReturnCode& returnCode)
-  {
-    jassert(index == 1);
-    const StatePtr& state = s.staticCast<State>();
-    state->scores = state->getSubOutput().getObjectAndCast<Container>();
-    jassert(state->scores);
-
-    Variable supervision;
-    if (state->getSupervision().exists())
-      supervision = computeBestCutoff(state->getSubOutput().getObjectAndCast<Container>(), state->getSubSupervision().getObjectAndCast<Container>());
-    state->setSubInference(subInferences[1], createCutoffInput(state->getInput()), supervision);
-  }
-
-  virtual Variable finalizeInference(const InferenceContextPtr& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
-  {
-    const StatePtr& state = finalState.staticCast<State>();
-    Variable predictedCutoff = state->getSubOutput();
-    double cutoff = predictedCutoff.exists() ? predictedCutoff.getDouble() : 0.0;
-    return computeOutput(state->scores, cutoff);
-  }
-};
-
-class DisorderedRegionInference : public RankingBasedExtractionInference
-{
-public:
-  DisorderedRegionInference(const String& name, InferencePtr rankingInference, InferencePtr cutoffInference)
-    : RankingBasedExtractionInference(name, rankingInference, cutoffInference)
-  {
-    checkInheritance(rankingInference->getInputType(), containerClass(pairClass(proteinClass, positiveIntegerType)));
-    checkInheritance(cutoffInference->getInputType(), proteinClass);
-  }
-
-  virtual TypePtr getInputType() const
-    {return proteinClass;}
-
-  virtual TypePtr getSupervisionType() const
-    {return containerClass(probabilityType);}
-
-  virtual TypePtr getOutputType() const
-    {return containerClass(probabilityType);}
-
-  virtual ContainerPtr createRankingInputs(const Variable& input) const
-  {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>();
-    size_t n = protein->getLength();
-
-    TypePtr elementsType = pairClass(proteinClass, positiveIntegerType);
-    ContainerPtr res = objectVector(elementsType, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, Variable::pair(input, i, elementsType));
-    return res;
-  }
-
-  virtual ContainerPtr createRankingCosts(const Variable& sup) const
-  {
-    const ContainerPtr& supervision = sup.getObjectAndCast<Container>();
-    size_t n = supervision->getNumElements();
-    ContainerPtr res = vector(doubleType, n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, supervision->getElement(i).getDouble() < 0.5 ? 1.0 : 0.0);
-    return res;
-  }
-
-  virtual Variable createCutoffInput(const Variable& input) const
-    {return input;}
-
-  virtual double computeBestCutoff(const ContainerPtr& scores, const ContainerPtr& costs) const
-  {
-    ROCAnalyse roc;
-    size_t n = scores->getNumElements();
-    jassert(n == costs->getNumElements());
-    for (size_t i = 0; i < n; ++i)
-      roc.addPrediction(scores->getElement(i).getDouble(), costs->getElement(i).getDouble() == 0.0);
-    double bestMCC;
-    double res = roc.findThresholdMaximisingMCC(bestMCC);
-    MessageCallback::info(T("computeBestCutoff: ") + String(res) + T(" (MCC = ") + String(bestMCC) + T(")"));
-    return res;
-  }
-
-  virtual Variable computeOutput(const ContainerPtr& scores, double cutoff) const
-  {
-    size_t n = scores->getNumElements();
-    VectorPtr res = vector(probabilityType, n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      static const double temperature = 1.0;
-      double score = scores->getElement(i).getDouble() - cutoff;
-      double probability = 1.0 / (1.0 + exp(-score * temperature));
-      res->setElement(i, probability);
-    }
-    return res;
-  }
-};
 
 ///////////////////////////////////////////////
 
@@ -165,9 +29,9 @@ InferenceContextPtr createInferenceContext()
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
-    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
     return res ? flattenPerception(res) : PerceptionPtr();
   }
 
@@ -187,6 +51,26 @@ public:
     //res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
   }
+
+  virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const
+  {
+    if (targetName == T("disorderRegions"))
+    {
+      InferencePtr rankingInference = allPairsRankingLinearSVMInference(
+                                        createPerception(targetName, residuePerception),
+                                        createOnlineLearner(targetName),
+                                        targetName);
+
+      InferencePtr cutoffInference = squareRegressionInference(
+                                        createPerception(targetName, proteinPerception),
+                                        createOnlineLearner(targetName + T(" cutoff"), 0.1),
+                                        targetName + T(" cutoff"));
+
+      return new DisorderedRegionInference(targetName, rankingInference, cutoffInference);
+    }
+    else
+      return ProteinInferenceFactory::createProbabilitySequenceInference(targetName);
+  }
   
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
@@ -203,21 +87,21 @@ public:
 
   std::vector<size_t> makeBinaryConjunction(size_t index1, size_t index2) const
     {std::vector<size_t> res(2); res[0] = index1; res[1] = index2; return res;}
-
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+/*
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     static int count = 1;
     if (count++ == 1)
-      return ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+      return ProteinInferenceFactory::createPerception(targetName, type);
     else
     {
-      PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget));
+      PerceptionPtr res = collapsePerception(ProteinInferenceFactory::createPerception(targetName, type));
       std::vector<std::vector<size_t> > conjunctions(res->getNumOutputVariables());
       for (size_t i = 0; i < conjunctions.size(); ++i)
         conjunctions[i].push_back(i);
       return selectAndMakeConjunctionFeatures(res, conjunctions);
     }
-  }
+  }*/
 
 public:
   virtual InferencePtr createContactMapInference(const String& targetName) const
@@ -355,7 +239,7 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 1;
+  size_t maxCount = 7;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -409,7 +293,7 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());

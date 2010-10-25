@@ -39,12 +39,19 @@ public:
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
     {}
 
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const;
+  enum PerceptionType
+  {
+    proteinPerception = 0,
+    residuePerception,
+    residuePairPerception
+  };
 
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const;
+
+  virtual PerceptionPtr createProteinPerception(const String& targetName) const;
   virtual PerceptionPtr createResiduePerception(const String& targetName) const;
   virtual PerceptionPtr createResiduePairPerception(const String& targetName) const;
 
-  virtual PerceptionPtr createProteinPerception() const;
   virtual PerceptionPtr createLabelSequencePerception(const String& targetName) const;
   virtual PerceptionPtr createProbabilitySequencePerception(const String& targetName) const;
   virtual PerceptionPtr createPositionSpecificScoringMatrixPerception() const;

@@ -52,9 +52,9 @@ InferenceContextPtr createInferenceContext()
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  virtual PerceptionPtr createPerception(const String& targetName, bool is1DTarget, bool is2DTarget) const
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
-    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, is1DTarget, is2DTarget);
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
     return res ? flattenPerception(res) : PerceptionPtr();
   }
 

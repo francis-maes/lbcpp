@@ -125,6 +125,12 @@ public:
   size_t getSampleCount() const
     {return predictedScores.size();}
 
+  size_t getNumPositives() const
+    {return numPositives;}
+
+  size_t getNumNegatives() const
+    {return numNegatives;}
+
   void clear()
     {predictedScores.clear(); numPositives = numNegatives = 0;}
 

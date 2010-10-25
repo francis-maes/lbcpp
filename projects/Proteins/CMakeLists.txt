@@ -69,6 +69,7 @@ SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
+  Inference/DisorderRegionsInference.h
   Inference/ContactMapInference.h
   Inference/ProteinInference.h
   Inference/ProteinInference.cpp
