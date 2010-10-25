@@ -38,6 +38,8 @@ public:
         std::map<double, std::vector<size_t> > alternativesPerCost;
         for (size_t i = 0; i < scores.size(); ++i)
           alternativesPerCost[costs[order[i]]].push_back(order[i]);
+        if (alternativesPerCost.size() == 1)
+          return;
         if (hasFewDifferentCosts(scores.size(), alternativesPerCost.size()))
           computeAllPairsFewDifferentCostsLargeMargin(scores, costs, hingeLoss->getMargin(), order, alternativesPerCost, output, gradient);
         else

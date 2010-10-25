@@ -152,7 +152,7 @@ double GradientDescentOnlineLearner::computeLearningRate() const
 
 void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input)
 {
-  if (normalizeLearningRate)
+  if (normalizeLearningRate && input.exists())
   {
     // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
     if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))

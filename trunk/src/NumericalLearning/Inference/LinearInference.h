@@ -78,7 +78,11 @@ public:
         ScopedWriteLock _(parametersLock);
         const NumericalInferenceParametersPtr& parameters = getParameters();
         for (size_t i = 0; i < n; ++i)
-          lbcpp::addWeighted(parameters->getWeights(), perception, alternatives->getElement(i).getObject(), lossGradient[i] * weight);
+        {
+          Variable alternative = alternatives->getElement(i);
+          if (alternative.exists())
+            lbcpp::addWeighted(parameters->getWeights(), perception, alternative, lossGradient[i] * weight);
+        }
       }
     }
     else
@@ -91,6 +95,8 @@ public:
     const ObjectPtr& weights = getParameters()->getWeights();
     if (!weights)
       return Variable::missingValue(doubleType);
+    if (!input.exists())
+      return 0.0;
     return lbcpp::dotProduct(weights, getPerception(), input);
   }
 };

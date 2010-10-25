@@ -50,6 +50,7 @@ public:
       : SequentialInferenceState(input, supervision) {}
 
     ContainerPtr scores;
+    Variable bestCutoff;
   };
 
   typedef ReferenceCountedObjectPtr<State> StatePtr;
@@ -68,8 +69,8 @@ public:
     state->scores = state->getSubOutput().getObjectAndCast<Container>();
 
     Variable supervision;
-    if (state->scores && state->getSupervision().exists())
-      supervision = computeBestCutoff(state->scores, state->getSubSupervision().getObjectAndCast<Container>());
+    if (state->scores && state->getSubSupervision().exists())
+      supervision = state->bestCutoff = computeBestCutoff(state->scores, state->getSubSupervision().getObjectAndCast<Container>());
     state->setSubInference(subInferences[1], createCutoffInput(state->getInput()), supervision);
   }
 
@@ -79,7 +80,13 @@ public:
     if (!state->scores)
       return Variable();
     Variable predictedCutoff = state->getSubOutput();
-    double cutoff = predictedCutoff.exists() ? predictedCutoff.getDouble() : 0.0;
+
+    /* Use optimistic cutoff
+    predictedCutoff = state->bestCutoff.exists() ? state->bestCutoff : Variable(0.0);
+    */
+
+    // tmp
+    double cutoff = 0.0;//predictedCutoff.exists() ? predictedCutoff.getDouble() : 0.0;
     return computeOutput(state->scores, cutoff);
   }
 };
@@ -110,9 +117,10 @@ public:
     size_t n = protein->getLength();
 
     TypePtr elementsType = pairClass(proteinClass, positiveIntegerType);
-    ContainerPtr res = objectVector(elementsType, n);
+    ContainerPtr res = objectVector(elementsType, n + 1);
     for (size_t i = 0; i < n; ++i)
       res->setElement(i, Variable::pair(input, i, elementsType));
+    res->setElement(n, Variable::missingValue(elementsType));
     return res;
   }
 
@@ -120,9 +128,10 @@ public:
   {
     const ContainerPtr& supervision = sup.getObjectAndCast<Container>();
     size_t n = supervision->getNumElements();
-    ContainerPtr res = vector(doubleType, n);
+    ContainerPtr res = vector(doubleType, n + 1);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, supervision->getElement(i).getDouble() < 0.5 ? 1.0 : 0.0);
+      res->setElement(i, supervision->getElement(i).getDouble() < 0.5 ? 1.0 : -1.0);
+    res->setElement(n, 0.99);
     return res;
   }
 
@@ -133,21 +142,21 @@ public:
   {
     ROCAnalyse roc;
     size_t n = scores->getNumElements();
+    if (!n)
+      return Variable();
+
     jassert(n == costs->getNumElements());
     for (size_t i = 0; i < n; ++i)
       roc.addPrediction(scores->getElement(i).getDouble(), costs->getElement(i).getDouble() == 0.0);
-    if (!n || !roc.getNumNegatives() || !roc.getNumPositives())
-      return Variable(); // best cutoff is undefined in these cases
-
-    double bestMCC;
-    double res = roc.findThresholdMaximisingMCC(bestMCC);
-    //MessageCallback::info(T("computeBestCutoff: ") + String(res) + T(" (MCC = ") + String(bestMCC) + T(")"));
+    double bestMcc;
+    double res = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
+    //MessageCallback::info(T("computeBestCutoff: ") + String(res) + T(" (MCC = ") + String(bestMcc) + T(")"));
     return res;
   }
 
   virtual Variable computeOutput(const ContainerPtr& scores, double cutoff) const
   {
-    size_t n = scores->getNumElements();
+    size_t n = scores->getNumElements() - 1;
     VectorPtr res = vector(probabilityType, n);
     for (size_t i = 0; i < n; ++i)
     {

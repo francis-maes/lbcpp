@@ -83,6 +83,15 @@ void BinaryClassificationConfusionMatrix::clear()
   truePositive = falsePositive = falseNegative = trueNegative = totalCount = 0;
 }
 
+void BinaryClassificationConfusionMatrix::set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative)
+{
+  this->truePositive = truePositive;
+  this->falsePositive = falsePositive;
+  this->falseNegative = falseNegative;
+  this->trueNegative = trueNegative;
+  totalCount = truePositive + falsePositive + falseNegative + trueNegative;
+}
+
 void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct)
 {
   if (predicted)
@@ -114,6 +123,14 @@ void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& pr
   recall = (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
   f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
 }
+double BinaryClassificationConfusionMatrix::computeF1Score() const
+  {double precision, recall, f1; computePrecisionRecallAndF1(precision, recall, f1); return f1;}
+
+double BinaryClassificationConfusionMatrix::computePrecision() const
+  {return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;}
+
+double BinaryClassificationConfusionMatrix::computeRecall() const
+  {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
 
 /*
 ** ROCAnalyse
@@ -128,95 +145,43 @@ void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
     ++counters.first;
 }
 
-double ROCAnalyse::findThresholdMaximisingF1(double& bestF1Score, double& precision, double& recall) const
+double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
+{
+  ScoresMap::const_iterator nxt = lastLower;
+  ++nxt;
+  if (nxt == predictedScores.end())
+    return lastLower->first + margin;
+  else
+    return (lastLower->first + nxt->first) / 2.0;
+}
+
+double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
 {
   size_t truePositives = numPositives;
   size_t falsePositives = numNegatives;
-
-  bestF1Score = -DBL_MAX;
-  double bestThreshold = 0.0;
-  //std::cout << "=========" << std::endl;
 
   jassert(predictedScores.size());
-//  size_t displayStep = predictedScores.size() / 10;
-//  if (!displayStep)
-//    displayStep = 1;
-//  size_t step = 0;
 
-//  std::cout << predictedScores.size() << " examples" << std::endl;
-  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+  BinaryClassificationConfusionMatrix confusionMatrix;
+  confusionMatrix.set(truePositives, falsePositives, 0, 0);
+  bestScore = (confusionMatrix.*measure)(); 
+  double bestThreshold = predictedScores.size() ? predictedScores.begin()->first - margin : 0.0;
+
+  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
-    size_t falseNegatives = numPositives - truePositives;
-    double f1 = 2.0 * truePositives / (2.0 * truePositives + falseNegatives + falsePositives);
-//    if ((step % displayStep) == 0)
-//      std::cout << "(x >= " << it->first << ") ==> prec = " << (100.0 * truePositives / (double)(truePositives + falsePositives))
-//                << "% recall = " << (100.0 * truePositives / (double)numPositives) << "% f1 = " << f1 * 100.0 << "%" << std::endl;
-//    ++step;
-    if (f1 >= bestF1Score)
-    {
-      bestF1Score = f1;
-      bestThreshold = it->first;
-      recall = truePositives / (double)numPositives;
-      precision = truePositives / (double)(truePositives + falsePositives);
-    }
     falsePositives -= it->second.first;
     truePositives -= it->second.second;
-  }
-  return bestThreshold;
-}
 
-double ROCAnalyse::findThresholdMaximisingRecallGivenPrecision(double minimumPrecision, double& bestRecall) const
-{
-  size_t truePositives = numPositives;
-  size_t falsePositives = numNegatives;
-
-  bestRecall = 0.0;
-  double bestThreshold = 0.0;
-  //std::cout << "=========" << std::endl;
-  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-  {
-    double recall = truePositives / (double)numPositives;
-    double precision = truePositives / (double)(truePositives + falsePositives);
-    if (precision >= minimumPrecision)
+    confusionMatrix.set(truePositives, falsePositives, numPositives - truePositives, numNegatives - falsePositives);
+    double result = (confusionMatrix.*measure)(); 
+    if (result >= bestScore)
     {
-      if (recall > bestRecall)
-        bestRecall = recall, bestThreshold = it->first;
+      bestScore = result;
+      bestThreshold = getBestThreshold(it, margin);
     }
-    falsePositives -= it->second.first;
-    truePositives -= it->second.second;
   }
-  return bestThreshold;
-}
-
-double ROCAnalyse::findThresholdMaximisingMCC(double& bestMcc) const
-{
-  size_t truePositives = numPositives;
-  size_t falsePositives = numNegatives;
-
-  bestMcc = 0.0;
-  double bestThreshold = 0.0;
-  for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-  {
-    size_t predictedPositiveCount = truePositives + falsePositives;
-    size_t predictedNegativeCount = numPositives + numNegatives - predictedPositiveCount;
-    size_t trueNegatives = numNegatives - falsePositives;
-    size_t falseNegatives = numPositives - truePositives;
-
-    double mccNo = (double)(truePositives * trueNegatives) - (double)(falsePositives * falseNegatives);
-    double mccDeno = (double)numPositives * (double)numNegatives * (double)predictedPositiveCount * (double)predictedNegativeCount;
-    if (mccDeno)
-    {
-      double mcc = mccNo / sqrt(mccDeno);
-      if (mcc > bestMcc)
-      {
-        bestMcc = mcc;
-        bestThreshold = it->first;
-      }
-    }
-
-    falsePositives -= it->second.first;
-    truePositives -= it->second.second;
-  }
+  jassert(falsePositives == 0);
+  jassert(truePositives == 0);
   return bestThreshold;
 }
 
