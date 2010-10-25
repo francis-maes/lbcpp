@@ -8,6 +8,7 @@
 
 #include <lbcpp/NumericalLearning/LossFunctions.h>
 #include "../Data/Object/DenseDoubleObject.h"
+#include <algorithm>
 using namespace lbcpp;
 
 /*
@@ -62,4 +63,128 @@ void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr*
   }
   else
     jassert(false); // not implemented
+}
+
+/*
+** RankingLossFunction
+*/
+void RankingLossFunction::compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+{
+  DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
+  if (denseDoubleInput)
+  {
+    std::vector<double> gradient;
+    if (gradientTarget)
+      gradient.resize(denseDoubleInput->getValues().size(), 0.0);
+    computeRankingLoss(denseDoubleInput->getValues(), costs, output, gradientTarget ? &gradient : NULL);
+
+    if (gradientTarget)
+    {
+      DenseDoubleObjectPtr denseGradientTarget;
+      if (*gradientTarget)
+        denseGradientTarget = gradientTarget->dynamicCast<DenseDoubleObject>();
+      else
+      {
+        denseGradientTarget = denseDoubleInput->createCompatibleNullObject();
+        *gradientTarget = denseGradientTarget;
+      }
+      for (size_t i = 0; i < gradient.size(); ++i)
+        denseGradientTarget->getValueReference(i) += gradient[i] * gradientWeight;
+    }
+  }
+  else
+    jassert(false); // not implemented
+}
+
+bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs)
+{
+  double positiveCost = 0.0;
+  bool positiveCostDefined = false;
+  for (size_t i = 0; i < costs.size(); ++i)
+    if (costs[i])
+    {
+      if (positiveCostDefined)
+      {
+        if (costs[i] != positiveCost)
+          return false;
+      }
+      else
+        positiveCost = costs[i], positiveCostDefined = true;
+    }
+    
+  return positiveCostDefined;
+}
+
+
+// returns a map from costs to (argmin scores, argmax scores) pairs
+void RankingLossFunction::getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res)
+{
+  res.clear();
+  for (size_t i = 0; i < costs.size(); ++i)
+  {
+    double cost = costs[i];
+    double score = scores[i];
+    std::map<double, std::pair<size_t, size_t> >::iterator it = res.find(cost);
+    if (it == res.end())
+      res[cost] = std::make_pair(i, i);
+    else
+    {
+      if (score < scores[it->second.first]) it->second.first = i;
+      if (score > scores[it->second.second]) it->second.second = i;
+    }
+  }
+}
+
+bool RankingLossFunction::hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts)
+  {return numAlternatives > 3 && (double)numAlternatives < 2.5 * numDifferentCosts;}  
+
+void RankingLossFunction::multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k)
+{
+  if (k != 1.0)
+  {
+    if (output)
+      *output *= k;
+    if (gradient)
+      for (size_t i = 0; i < gradient->size(); ++i)
+        (*gradient)[i] *= k;
+  }
+}
+
+struct CompareRankingLossScores
+{
+  CompareRankingLossScores(const std::vector<double>& scores) : scores(scores) {}
+
+  const std::vector<double>& scores;
+
+  bool operator()(size_t first, size_t second) const
+    {return scores[first] > scores[second];}
+};
+
+void RankingLossFunction::sortScores(const std::vector<double>& scores, std::vector<size_t>& res)
+{
+  res.resize(scores.size());
+  for (size_t i = 0; i < res.size(); ++i)
+    res[i] = i;
+  std::sort(res.begin(), res.end(), CompareRankingLossScores(scores));
+}
+
+/*
+** AdditiveRankingLossFunction
+*/
+void AdditiveRankingLossFunction::addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const
+{
+  assert(deltaCost > 0);
+  // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
+  // deltaScore should be positive
+  
+  double discriminantValue, discriminantDerivative;
+  baseLoss->computePositive(deltaScore, output ? &discriminantValue : NULL, NULL, gradient ? &discriminantDerivative : NULL);
+  if (gradient)
+  {
+    double delta = deltaCost * discriminantDerivative;
+    (*gradient)[positiveAlternative] += delta;
+    (*gradient)[negativeAlternative] -= delta;
+  }
+  if (output)
+    *output += deltaCost * discriminantValue;
 }

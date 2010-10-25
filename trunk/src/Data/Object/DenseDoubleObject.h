@@ -15,6 +15,9 @@
 namespace lbcpp
 {
 
+class DenseDoubleObject;
+typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
+
 class DenseDoubleObject : public Object
 {
 public:
@@ -103,6 +106,9 @@ public:
   virtual bool loadFromXml(XmlImporter& importer)
     {return loadFromString(importer.getAllSubText(), importer.getCallback());}
 
+  DenseDoubleObjectPtr createCompatibleNullObject() const
+    {return new DenseDoubleObject(thisClass, 0.0);}
+
 private:
   friend class DenseDoubleObjectVariableIterator;
 
@@ -111,7 +117,6 @@ private:
   DynamicClassSharedPtr thisClass;
 };
 
-typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
 
 class DenseDoubleObjectVariableIterator : public Object::VariableIterator
 {

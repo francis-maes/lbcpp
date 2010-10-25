@@ -36,6 +36,27 @@
     <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">
       <constructor arguments="EnumerationPtr classes, size_t correctClass"/>
     </class>
+    
+    <!-- Ranking Loss Functions -->
+    <class name="RankingLossFunction" base="ScalarObjectFunction" abstract="yes">
+      <variable type="GenericVector[Double]" name="costs"/>
+    </class>
+    
+    <class name="AdditiveRankingLossFunction" base="RankingLossFunction" abstract="yes">
+      <variable type="BinaryClassificationLossFunction" name="baseLoss"/>
+    </class>
+
+    <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+    </class>
+    
+    <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+    </class>
+    
+    <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss"/>
+    </class>
 
     <!-- Regularizers -->
     <class name="L2RegularizerFunction" base="ScalarObjectFunction">

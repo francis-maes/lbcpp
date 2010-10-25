@@ -45,9 +45,14 @@ public:
     }
   }
 
+  double getMargin() const
+    {return margin;}
+
 protected:
   double margin;
 };
+
+typedef ReferenceCountedObjectPtr<HingeLossFunction> HingeLossFunctionPtr;
 
 }; /* namespace lbcpp */
 
