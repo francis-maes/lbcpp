@@ -408,5 +408,5 @@ int main(int argc, char* argv[])
   if (!worker.initialize(workingDirectory, dataDirectory))
     return 1;
 
-  return worker.run();
+  return worker.run() ? 0 : 1;
 }
