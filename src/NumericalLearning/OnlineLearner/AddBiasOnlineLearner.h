@@ -52,11 +52,11 @@ public:
     
     if (roc.getSampleCount())
     {
-      double bestF1Score, precision, recall;
-      double threshold = roc.findThresholdMaximisingF1(bestF1Score, precision, recall);
+      double bestF1Score;
+      double threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1Score);
       MessageCallback::info(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%)"));
       double bestMcc;
-      threshold = roc.findThresholdMaximisingMCC(bestMcc);
+      threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
       MessageCallback::info(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
 
       inference->setBias(-threshold);

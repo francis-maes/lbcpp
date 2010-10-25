@@ -37,9 +37,9 @@ public:
       std::map<double, std::pair<size_t, size_t> > scoreRangePerCost;
       getScoreRangePerCost(scores, costs, scoreRangePerCost);
       if (hasFewDifferentCosts(scores.size(), scoreRangePerCost.size()))
-        hasViolation = findMaxViolationAllPairs(scores, costs, mostViolatedPair);
-      else
         hasViolation = findMaxViolationFewDifferentCosts(scores, costs, scoreRangePerCost, mostViolatedPair);
+      else
+        hasViolation = findMaxViolationAllPairs(scores, costs, mostViolatedPair);        
     }
     
     if (hasViolation)

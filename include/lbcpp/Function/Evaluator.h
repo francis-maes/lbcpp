@@ -81,10 +81,15 @@ public:
   virtual String toString() const;
 
   void clear();
+  void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);
   void addPrediction(bool predicted, bool correct);
 
-  double computeMatthewsCorrelation() const;
   double computeAccuracy() const;
+  double computeF1Score() const;
+  double computePrecision() const;
+  double computeRecall() const;
+  double computeMatthewsCorrelation() const;
+  
   void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
 
   size_t getSampleCount() const
@@ -115,12 +120,11 @@ class ROCAnalyse : public Object
 public:
   ROCAnalyse() : numPositives(0), numNegatives(0) {}
 
-  void addPrediction(double predictedScore, bool isPositive);
-  double findThresholdMaximisingF1(double& bestF1Score, double& precision, double& recall) const;
-  double findThresholdMaximisingRecallGivenPrecision(double minimumPrecision, double& recall) const;
-  double findThresholdMaximisingMCC(double& bestMCC) const;
+  typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
 
+  void addPrediction(double predictedScore, bool isPositive); 
   void getScores(std::vector< std::pair<String, double> >& res) const;
+  double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 
   size_t getSampleCount() const
     {return predictedScores.size();}
@@ -135,8 +139,12 @@ public:
     {predictedScores.clear(); numPositives = numNegatives = 0;}
 
 private:
-  std::map<double, std::pair<size_t, size_t> > predictedScores;
+  typedef std::map<double, std::pair<size_t, size_t> > ScoresMap;
+
+  ScoresMap predictedScores;
   size_t numPositives, numNegatives;
+
+  double getBestThreshold(ScoresMap::const_iterator lastLower, double margin = 1.0) const;
 };
 
 }; /* namespace lbcpp */

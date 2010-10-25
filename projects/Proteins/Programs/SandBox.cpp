@@ -56,14 +56,15 @@ public:
   {
     if (targetName == T("disorderRegions"))
     {
-      InferencePtr rankingInference = allPairsRankingLinearSVMInference(
-                                        createPerception(targetName, residuePerception),
-                                        createOnlineLearner(targetName),
+      InferencePtr rankingInference = allPairsRankingInference(
+                                        linearInference(targetName, createPerception(targetName, residuePerception)),
+                                        hingeLossFunction(true),
+                                        createOnlineLearner(targetName, 1.0),
                                         targetName);
 
       InferencePtr cutoffInference = squareRegressionInference(
                                         createPerception(targetName, proteinPerception),
-                                        createOnlineLearner(targetName + T(" cutoff"), 0.1),
+                                        createOnlineLearner(targetName + T(" cutoff"), 0.05),
                                         targetName + T(" cutoff"));
 
       return new DisorderedRegionInference(targetName, rankingInference, cutoffInference);
@@ -157,10 +158,12 @@ protected:
     else
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, (size_t)5e6), true, // learning steps
+        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1), true)); // stopping criterion
+    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 5);
+    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
+        maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
   }
 };

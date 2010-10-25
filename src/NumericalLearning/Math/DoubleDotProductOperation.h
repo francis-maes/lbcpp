@@ -119,6 +119,7 @@ struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
 
 double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
 {
+  jassert(input.exists());
   if (!object)
     return 0.0;
 

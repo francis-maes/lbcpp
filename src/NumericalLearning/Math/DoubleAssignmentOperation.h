@@ -178,6 +178,7 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
 
 void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
 {
+  jassert(input.exists());
   if (!weight)
     return;
   if (!target)

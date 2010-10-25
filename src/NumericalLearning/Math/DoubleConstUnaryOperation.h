@@ -79,6 +79,7 @@ struct DoubleConstUnaryOperationCallback : public PerceptionCallback
 template<class OperationType>
 void doubleConstUnaryOperation(OperationType& operation, const PerceptionPtr& perception, const Variable& input)
 {
+  jassert(input.exists());
   typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
   Callback callback(operation);
   perception->computePerception(input, &callback);

@@ -148,7 +148,7 @@ void RankingLossFunction::getScoreRangePerCost(const std::vector<double>& scores
 }
 
 bool RankingLossFunction::hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts)
-  {return numAlternatives > 3 && (double)numAlternatives < 2.5 * numDifferentCosts;}  
+  {return numAlternatives > 3 && numDifferentCosts < numAlternatives / 3;}  
 
 void RankingLossFunction::multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k)
 {
