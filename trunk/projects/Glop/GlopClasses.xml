@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Glop">
+
+  <namespace name="lbcpp">
+    <!-- Todo: fill classes here -->
+    <class name="XorExamplePerception" base="Perception"/>
+
+    <class name="OFQIInference" base="VectorSequentialInference">
+      <variable type="Double" name="discount"/>
+    </class>
+
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+  
+</file>
