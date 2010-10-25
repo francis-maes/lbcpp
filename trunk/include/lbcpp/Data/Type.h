@@ -207,6 +207,7 @@ public:
   virtual VariableValue create() const;
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual VariableValue getMissingValue() const;
 

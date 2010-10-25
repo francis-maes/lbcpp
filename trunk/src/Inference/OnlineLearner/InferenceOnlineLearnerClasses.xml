@@ -9,17 +9,28 @@
       <value name="perStep"/>
       <value name="perEpisode"/>
       <value name="perPass"/>
-      <value name="perMiniBatch"/>
-      <value name="perMiniBatch1"/>
-      <value name="perMiniBatch2"/>
-      <value name="perMiniBatch3"/>
-      <value name="perMiniBatch4"/>
-      <value name="perMiniBatch5"/>
-      <value name="perMiniBatch6"/>
-      <value name="perMiniBatch7"/>
-      <value name="perMiniBatch8"/>
-      <value name="perMiniBatch9"/>
-      <value name="perMiniBatch10"/>
+      <value name="perStepMiniBatch"/>
+
+      <code>
+        VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
+        {
+          String str = value.trim();
+          if (str.startsWith(T("perStepMiniBatch")))
+            return VariableValue(InferenceOnlineLearner::perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
+          else
+            return Enumeration::createFromString(value, callback);
+        }
+        
+        virtual String toString(const VariableValue&amp; value) const
+        {
+          juce::int64 val = value.getInteger();
+          if (val >= InferenceOnlineLearner::perStepMiniBatch)
+            return T("perStepMiniBatch") + String(val - InferenceOnlineLearner::perStepMiniBatch);
+          else
+            return Enumeration::toString(value);
+        }
+      </code>
+
     </enumeration>
 
     <class name="InferenceOnlineLearner" abstract="yes">

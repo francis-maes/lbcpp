@@ -82,10 +82,15 @@ VariableValue Enumeration::createFromString(const String& value, MessageCallback
   return getMissingValue();
 }
 
+void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const
+{
+  exporter.addTextElement(toString(value));
+}
+
 String Enumeration::toString(const VariableValue& value) const
 {
   juce::int64 val = value.getInteger();
-  return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Nil");
+  return val >= 0 && (size_t)val < getNumElements() ? getElementName((size_t)val) : T("Missing");
 }
 
 bool Enumeration::hasOneLetterCodes() const
