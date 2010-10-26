@@ -53,6 +53,10 @@ double RegressionErrorEvaluator::getRMSE() const
 /*
 ** BinaryClassificationConfusionMatrix
 */
+BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& other)
+  : truePositive(other.truePositive), falsePositive(other.falsePositive), falseNegative(other.falseNegative), trueNegative(other.trueNegative), totalCount(other.totalCount)
+{
+}
 
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix()
   : truePositive(0), falsePositive(0), falseNegative(0), trueNegative(0), totalCount(0)
@@ -101,6 +105,23 @@ void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool cor
   ++totalCount;
 }
 
+void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool correct)
+{
+  jassert(totalCount);
+  if (predicted)
+    correct ? --truePositive : --falsePositive;
+  else
+    correct ? --falseNegative : --trueNegative;
+  --totalCount;
+}
+
+size_t BinaryClassificationConfusionMatrix::getCount(bool predicted, bool correct) const
+{
+  return predicted
+    ? (correct ? truePositive : falsePositive)
+    : (correct ? falseNegative : trueNegative);
+}
+
 double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
 {
   size_t positiveCount = truePositive + falseNegative;
@@ -123,14 +144,22 @@ void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& pr
   recall = (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;
   f1score = precision + recall > 0.0 ? (2.0 * precision * recall / (precision + recall)) : 0.0;
 }
+
 double BinaryClassificationConfusionMatrix::computeF1Score() const
-  {double precision, recall, f1; computePrecisionRecallAndF1(precision, recall, f1); return f1;}
+{
+  double denom = truePositive + (falseNegative + falsePositive) / 2.0;
+  return denom ? truePositive / (double)denom : 1.0;
+}
 
 double BinaryClassificationConfusionMatrix::computePrecision() const
   {return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;}
 
 double BinaryClassificationConfusionMatrix::computeRecall() const
   {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
+
+bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
+  {return truePositive == other.truePositive && falsePositive == other.falsePositive && 
+    falseNegative == other.falseNegative && trueNegative == other.trueNegative && totalCount == other.totalCount;}
 
 /*
 ** ROCAnalyse

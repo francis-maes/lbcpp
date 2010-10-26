@@ -1,12 +1,10 @@
-* Voir l'apprentissage en ligne du Ranking
-* Adaptateur pour pouvoir prédire le DR et les CM en utilisant du Ranking
-
 
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Multiclass classifiers: output discrete distributions
  * Rendre le save deterministe
  * Render le load de fichiers deterministe (trier les fichiers)
+ * Optimiser l'utilisation mémoire (=> Boinc)
  
 Inference:
  * Segmental Features

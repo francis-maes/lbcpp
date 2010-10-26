@@ -76,6 +76,7 @@ extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String
 class BinaryClassificationConfusionMatrix : public Object
 {
 public:
+  BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& otherMatrix);
   BinaryClassificationConfusionMatrix();
 
   virtual String toString() const;
@@ -83,6 +84,7 @@ public:
   void clear();
   void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);
   void addPrediction(bool predicted, bool correct);
+  void removePrediction(bool predicted, bool correct);
 
   double computeAccuracy() const;
   double computeF1Score() const;
@@ -106,6 +108,18 @@ public:
 
   size_t getTrueNegatives() const
     {return trueNegative;}
+
+  size_t getCount(bool predicted, bool correct) const;
+
+  size_t getPositives() const
+    {return truePositive + falseNegative;}
+
+  size_t getNegatives() const
+    {return trueNegative + falsePositive;}
+
+  bool operator ==(const BinaryClassificationConfusionMatrix& other) const;
+  bool operator !=(const BinaryClassificationConfusionMatrix& other) const
+    {return !(*this == other);}
 
 private:
  // correct: positive   negative

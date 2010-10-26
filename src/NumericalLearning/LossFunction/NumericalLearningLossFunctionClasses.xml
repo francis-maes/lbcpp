@@ -58,6 +58,14 @@
       <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
     </class>
 
+    <class name="BinaryClassificationRankingLossFunction" base="AdditiveRankingLossFunction" abstract="yes"/>
+    <class name="F1ScoreRankingLossFunction" base="BinaryClassificationRankingLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    </class>
+    <class name="MCCRankingLossFunction" base="BinaryClassificationRankingLossFunction">
+      <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    </class>
+
     <!-- Regularizers -->
     <class name="L2RegularizerFunction" base="ScalarObjectFunction">
       <constructor arguments="double weight"/>

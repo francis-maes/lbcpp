@@ -341,6 +341,7 @@ SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
   NumericalLearning/LossFunction/AllPairsRankingLossFunction.h
   NumericalLearning/LossFunction/MostViolatedPairRankingLossFunction.h
   NumericalLearning/LossFunction/BestAgainstAllRankingLossFunction.h
+  NumericalLearning/LossFunction/BinaryClassificationRankingLossFunction.h
   NumericalLearning/LossFunction/L2RegularizerFunction.h
   NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLossFunctionClasses.cpp

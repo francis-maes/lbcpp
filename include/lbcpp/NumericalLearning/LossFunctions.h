@@ -150,6 +150,9 @@ extern RankingLossFunctionPtr allPairsRankingLossFunction(BinaryClassificationLo
 extern RankingLossFunctionPtr mostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
 extern RankingLossFunctionPtr bestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
 
+extern RankingLossFunctionPtr f1ScoreRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr mccRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+
 /*
 ** Regularizers
 */
