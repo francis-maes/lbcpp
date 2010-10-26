@@ -163,6 +163,22 @@ public:
     {return allPairsRankingLossFunction(baseLoss, costs);}
 };
 
+class BinaryClassificationRankingLinearSVMInference : public AdditiveRankingInference
+{
+public:
+  BinaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name, bool optimizeMcc)
+    : AdditiveRankingInference(name, linearInference(name, perception), hingeLossFunction(true), onlineLearner), optimizeMcc(optimizeMcc) {}
+  BinaryClassificationRankingLinearSVMInference() : optimizeMcc(false) {}
+
+  virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
+    {return optimizeMcc ? mccRankingLossFunction(baseLoss, costs) : f1ScoreRankingLossFunction(baseLoss, costs);}
+
+protected:
+  friend class BinaryClassificationRankingLinearSVMInferenceClass;
+
+  bool optimizeMcc;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_NUMERICAL_LEARNING_INFERENCE_MULTI_CLASS_H_

@@ -18,7 +18,6 @@ using namespace lbcpp;
 
 extern void declareProteinClasses();
 
-
 ///////////////////////////////////////////////
 
 InferenceContextPtr createInferenceContext()
@@ -56,16 +55,19 @@ public:
   {
     if (targetName == T("disorderRegions"))
     {
-      InferencePtr rankingInference = allPairsRankingInference(
+/*      InferencePtr rankingInference = allPairsRankingInference(
                                         linearInference(targetName, createPerception(targetName, residuePerception)),
                                         hingeLossFunction(true),
                                         createOnlineLearner(targetName, 1.0),
-                                        targetName);
+                                        targetName);*/
 
-      InferencePtr cutoffInference = squareRegressionInference(
+      InferencePtr rankingInference = binaryClassificationRankingLinearSVMInference(
+          createPerception(targetName, residuePerception), createOnlineLearner(targetName, 0.01), targetName, false);
+
+      InferencePtr cutoffInference;/* = squareRegressionInference(
                                         createPerception(targetName, proteinPerception),
                                         createOnlineLearner(targetName + T(" cutoff"), 0.05),
-                                        targetName + T(" cutoff"));
+                                        targetName + T(" cutoff"));*/
 
       return new DisorderedRegionInference(targetName, rankingInference, cutoffInference);
     }
@@ -142,7 +144,10 @@ public:
     //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     //return res;
 
-    InferencePtr rankingInference = allPairsRankingLinearSVMInference(inputLabelPairPerception(perception, classes), createOnlineLearner(targetName), targetName);
+    InferencePtr rankingInference = allPairsRankingInference(linearInference(targetName, inputLabelPairPerception(perception, classes)), hingeLossFunction(true), 
+      createOnlineLearner(targetName), targetName);
+
+      //mostViolatedPairRankingLinearSVMInference(inputLabelPairPerception(perception, classes), createOnlineLearner(targetName), targetName);
     return rankingBasedClassificationInference(targetName, rankingInference, classes);
   }
 
@@ -161,7 +166,7 @@ protected:
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 5);
+    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 15);
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -200,8 +205,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName == T("LearningPass"))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -296,7 +301,7 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());

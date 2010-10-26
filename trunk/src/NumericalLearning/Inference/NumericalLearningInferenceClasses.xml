@@ -10,7 +10,7 @@
 
       <variable type="Perception" name="perception"/>
       <variable type="weightsType" name="weights"/>
-    </class>
+    </template>
     <class name="NumericalInference" base="Inference" abstract="yes"/>
 
     <class name="LinearInference" base="NumericalInference">
@@ -87,6 +87,11 @@
 
     <class name="AllPairsRankingLinearSVMInference" base="AllPairsRankingInference">
       <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name" returnType="StaticDecoratorInference"/>
+    </class>
+      
+    <class name="BinaryClassificationRankingLinearSVMInference" base="AdditiveRankingInference">
+      <constructor arguments="PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String&amp; name, bool optimizeMcc" returnType="StaticDecoratorInference"/>
+      <variable type="Boolean" name="optimizeMcc"/>
     </class>
 
       <!-- Misc -->

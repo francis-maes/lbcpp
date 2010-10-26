@@ -101,7 +101,7 @@ extern StaticDecoratorInferencePtr bestAgainstAllRankingInference(InferencePtr s
 extern StaticDecoratorInferencePtr mostViolatedPairRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"));
 extern StaticDecoratorInferencePtr allPairsRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"));
 extern StaticDecoratorInferencePtr allPairsRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
+extern StaticDecoratorInferencePtr binaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"), bool optimizeMcc = false); // F1 by default
 /*
 ** OnlineLearner
 */

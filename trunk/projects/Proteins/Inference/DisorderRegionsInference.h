@@ -23,7 +23,8 @@ public:
     : VectorSequentialInference(name)
   {
     appendInference(rankingInference);
-    appendInference(cutoffInference);
+    if (cutoffInference)
+      appendInference(cutoffInference);
   }
   RankingBasedExtractionInference() {}
 
@@ -61,17 +62,26 @@ public:
     state->setSubInference(subInferences[0], createRankingInputs(input), supervision.exists() ? createRankingCosts(supervision) : ContainerPtr());
     return state;
   }
+  
+  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  {
+    if (index == 0)
+      state.staticCast<State>()->scores = state->getSubOutput().getObjectAndCast<Container>();
+  }
 
   virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr s, size_t index, ReturnCode& returnCode)
   {
     jassert(index == 1);
     const StatePtr& state = s.staticCast<State>();
-    state->scores = state->getSubOutput().getObjectAndCast<Container>();
-
-    Variable supervision;
-    if (state->scores && state->getSubSupervision().exists())
-      supervision = state->bestCutoff = computeBestCutoff(state->scores, state->getSubSupervision().getObjectAndCast<Container>());
-    state->setSubInference(subInferences[1], createCutoffInput(state->getInput()), supervision);
+    if (getNumSubInferences() == 2)
+    {
+      Variable supervision;
+      if (state->scores && state->getSubSupervision().exists())
+        supervision = state->bestCutoff = computeBestCutoff(state->scores, state->getSubSupervision().getObjectAndCast<Container>());
+      state->setSubInference(subInferences[1], createCutoffInput(state->getInput()), supervision);
+    }
+    else
+      state->setFinalState();
   }
 
   virtual Variable finalizeInference(const InferenceContextPtr& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
@@ -79,14 +89,14 @@ public:
     const StatePtr& state = finalState.staticCast<State>();
     if (!state->scores)
       return Variable();
-    Variable predictedCutoff = state->getSubOutput();
-
-    /* Use optimistic cutoff
-    predictedCutoff = state->bestCutoff.exists() ? state->bestCutoff : Variable(0.0);
-    */
-
-    // tmp
-    double cutoff = 0.0;//predictedCutoff.exists() ? predictedCutoff.getDouble() : 0.0;
+    
+    double cutoff = 0.0;
+    if (getNumSubInferences() == 2)
+    {
+      Variable predictedCutoff = state->getSubOutput();
+      if (predictedCutoff.exists())
+        cutoff = predictedCutoff.getDouble();
+    }
     return computeOutput(state->scores, cutoff);
   }
 };
@@ -98,7 +108,8 @@ public:
     : RankingBasedExtractionInference(name, rankingInference, cutoffInference)
   {
     checkInheritance(rankingInference->getInputType(), containerClass(pairClass(proteinClass, positiveIntegerType)));
-    checkInheritance(cutoffInference->getInputType(), proteinClass);
+    if (cutoffInference)
+      checkInheritance(cutoffInference->getInputType(), proteinClass);
   }
   DisorderedRegionInference() {}
 
@@ -117,10 +128,10 @@ public:
     size_t n = protein->getLength();
 
     TypePtr elementsType = pairClass(proteinClass, positiveIntegerType);
-    ContainerPtr res = objectVector(elementsType, n + 1);
+    ContainerPtr res = objectVector(elementsType, n);
     for (size_t i = 0; i < n; ++i)
       res->setElement(i, Variable::pair(input, i, elementsType));
-    res->setElement(n, Variable::missingValue(elementsType));
+    //res->setElement(n, Variable::missingValue(elementsType));
     return res;
   }
 
@@ -128,10 +139,10 @@ public:
   {
     const ContainerPtr& supervision = sup.getObjectAndCast<Container>();
     size_t n = supervision->getNumElements();
-    ContainerPtr res = vector(doubleType, n + 1);
+    ContainerPtr res = vector(doubleType, n);
     for (size_t i = 0; i < n; ++i)
-      res->setElement(i, supervision->getElement(i).getDouble() < 0.5 ? 1.0 : -1.0);
-    res->setElement(n, 0.99);
+      res->setElement(i, supervision->getElement(i).getDouble() < 0.5 ? 1.0 : 0.0);
+    //res->setElement(n, 0.99);
     return res;
   }
 
@@ -156,7 +167,7 @@ public:
 
   virtual Variable computeOutput(const ContainerPtr& scores, double cutoff) const
   {
-    size_t n = scores->getNumElements() - 1;
+    size_t n = scores->getNumElements();
     VectorPtr res = vector(probabilityType, n);
     for (size_t i = 0; i < n; ++i)
     {
