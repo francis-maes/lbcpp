@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Numbers">
+
+  <namespace name="lbcpp">
+    <!-- Numbers Serie Problem -->
+    <class name="NumbersSerieProblem" base="Object">
+      <constructor arguments="const std::vector&lt;int&gt;&amp; numbers, int target"/>
+      <constructor arguments="const String&amp; description"/>
+      <variable type="GenericVector[Integer]" name="previousNumbers"/>
+      <variable type="Integer" name="target"/>
+    </class>
+
+    <class name="NumbersSerieProblemGetNumbersPairFunction" base="Function"/>
+
+    <!-- Number Features -->
+    <class name="NumberPairIsMultipleFeatures" base="Perception">
+      <constructor arguments="int firstMultiple, int lastMultiple"/>
+      <variable type="Integer" name="firstMultiple"/>
+      <variable type="Integer" name="lastMultiple"/>
+    </class>
+    
+    <!-- Generic Perceptions -->
+    <class name="PairBidirectionalPerception" base="Perception">
+      <constructor arguments="PerceptionPtr directionalPerception"/>
+      <variable type="Perception" name="directionalPerception"/>
+    </class>
+
+    
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+  
+</file>
