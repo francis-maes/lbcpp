@@ -95,8 +95,8 @@
     </class>
 
       <!-- Misc -->
-    <class name="AddBiasInference" base="StaticDecoratorInference">
-      <constructor arguments="const String&amp; name, InferencePtr numericalInference, double initialBias"/>
+    <class name="AddBiasInference" base="Inference">
+      <constructor arguments="const String&amp; name, double initialBias"/>
     </class>
 
     <class name="TransferFunctionDecoratorInference" base="StaticDecoratorInference">

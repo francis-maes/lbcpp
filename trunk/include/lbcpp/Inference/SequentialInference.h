@@ -118,6 +118,9 @@ public:
   VectorSequentialInference(const String& name);
   VectorSequentialInference() {}
 
+  virtual TypePtr getInputType() const
+    {return subInferences.size() ? subInferences[0]->getInputType() : anyType;}
+
   virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
 

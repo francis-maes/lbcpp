@@ -23,16 +23,13 @@ public:
     : UpdatableOnlineLearner(updateFrequency) {}
   AddBiasOnlineLearner() {}
 
-  virtual void stepFinishedCallback(const InferencePtr& inf, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    const AddBiasInferencePtr& inference = inf.staticCast<AddBiasInference>();
-
-    if (prediction.exists())
+    if (supervision.exists())
     {
       const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>();
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
-      double unbiasedScore = prediction.getDouble() - inference->getBias();
-      roc.addPrediction(unbiasedScore, isPositiveExample);
+      roc.addPrediction(input.getDouble(), isPositiveExample);
     }
     UpdatableOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
   }
@@ -48,13 +45,14 @@ public:
 
   virtual void update(const InferencePtr& inf)
   {
+    // retrieve examples
     const AddBiasInferencePtr& inference = inf.staticCast<AddBiasInference>();
     
     if (roc.getSampleCount())
     {
       double bestF1Score;
       double threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1Score);
-      MessageCallback::info(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%)"));
+      MessageCallback::info(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%) - ") + String((int)roc.getSampleCount()) + T(" samples"));
       double bestMcc;
       threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
       MessageCallback::info(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
@@ -67,6 +65,7 @@ public:
 protected:
   UpdateFrequency updateFrequency;
   ScalarVariableMean bestThreshold;
+
   ROCAnalyse roc;
 };
 
