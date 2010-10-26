@@ -39,6 +39,13 @@ public:
   virtual bool isLearningStopped() const
     {return learningStopped;}
 
+  virtual void clone(const ObjectPtr& target) const
+  {
+    UpdatableOnlineLearner::clone(target);
+    if (criterion)
+      target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>();
+  }
+
 private:
   friend class StoppingCriterionOnlineLearnerClass;
 
