@@ -13,6 +13,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
+# include "LinearInference.h"
 
 namespace lbcpp
 {
