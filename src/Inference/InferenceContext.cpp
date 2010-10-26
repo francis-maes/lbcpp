@@ -17,6 +17,7 @@ InferencePtr InferenceStack::nullInference;
 
 Variable InferenceContext::run(const InferencePtr& inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
 {
+  jassert(!in.isNil());
   jassert(inference);
   Variable input(in);
   Variable supervision(sup);
@@ -112,6 +113,12 @@ Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceMode
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, inferenceModel, numFolds));
   run(cvInference, examples, Variable(), res);
   return res;
+}
+
+Variable InferenceContext::predict(InferencePtr inference, const Variable& input)
+{
+  ReturnCode returnCode = Inference::finishedReturnCode;
+  return run(inference, input, Variable(), returnCode);
 }
 
 void InferenceContext::callPreInference(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)

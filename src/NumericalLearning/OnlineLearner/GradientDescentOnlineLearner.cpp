@@ -35,6 +35,8 @@ void GradientDescentOnlineLearner::startLearningCallback()
 
 void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
+  checkRegularizerAfterStep(inference);
+
   PerceptionPtr perception = getPerception(inference);
   if (input.isObject() && input.dynamicCast<Container>())
   {
@@ -68,12 +70,13 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   size_t l0norm = lbcpp::l0norm(parameters);
   double l2norm = lbcpp::l2norm(parameters);
   MessageCallback::info(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
+  //Variable(parameters).printRecursively(std::cout, -1, false, false);
   if (lossValue.getCount())
   {
     double mean = lossValue.getMean();
     MessageCallback::info(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
     lossValue.clear();
-    lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
+    //lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
   InferenceOnlineLearner::passFinishedCallback(inference);
 }
@@ -88,11 +91,8 @@ void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inferenc
   else if (inference == numericalInference) 
     pred = numericalInference->predict(input);
   else
-  {
     // special case for ranking
-    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    pred = singleThreadedInferenceContext()->run(inference, input, Variable(), returnCode);
-  }
+    pred = singleThreadedInferenceContext()->predict(inference, input);
   numericalInference->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
@@ -127,7 +127,6 @@ void GradientDescentOnlineLearner::applyExample(const InferencePtr& inference, c
 {
   ++epoch;
   updateParameters(inference, 1.0, input, supervision, prediction);
-  checkRegularizerAfterStep(inference);
 }
 
 void GradientDescentOnlineLearner::applyRegularizer(const InferencePtr& inference)
