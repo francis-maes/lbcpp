@@ -96,23 +96,23 @@ void BinaryClassificationConfusionMatrix::set(size_t truePositive, size_t falseP
   totalCount = truePositive + falsePositive + falseNegative + trueNegative;
 }
 
-void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct)
+void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool correct, size_t count)
 {
   if (predicted)
-    correct ? ++truePositive : ++falsePositive;
+    correct ? (truePositive += count) : (falsePositive += count);
   else
-    correct ? ++falseNegative : ++trueNegative;
-  ++totalCount;
+    correct ? (falseNegative += count) : (trueNegative += count);
+  totalCount += count;
 }
 
-void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool correct)
+void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool correct, size_t count)
 {
   jassert(totalCount);
   if (predicted)
-    correct ? --truePositive : --falsePositive;
+    correct ? (truePositive -= count) : (falsePositive -= count);
   else
-    correct ? --falseNegative : --trueNegative;
-  --totalCount;
+    correct ? (falseNegative -= count) : (trueNegative -= count);
+  totalCount -= count;
 }
 
 size_t BinaryClassificationConfusionMatrix::getCount(bool predicted, bool correct) const
@@ -186,31 +186,59 @@ double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double 
 
 double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
 {
-  size_t truePositives = numPositives;
-  size_t falsePositives = numNegatives;
-
   jassert(predictedScores.size());
 
   BinaryClassificationConfusionMatrix confusionMatrix;
-  confusionMatrix.set(truePositives, falsePositives, 0, 0);
+  confusionMatrix.set(numPositives, numNegatives, 0, 0);
   bestScore = (confusionMatrix.*measure)(); 
   double bestThreshold = predictedScores.size() ? predictedScores.begin()->first - margin : 0.0;
 
+#ifdef JUCE_DEBUG
+  BinaryClassificationConfusionMatrix bestMatrix = confusionMatrix;
+#endif // JUCE_DEBUG
+
   for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
-    falsePositives -= it->second.first;
-    truePositives -= it->second.second;
+    if (it->second.first)
+    {
+      confusionMatrix.removePrediction(true, false, it->second.first);
+      confusionMatrix.addPrediction(false, false, it->second.first);
+    }
+    if (it->second.second)
+    {
+      confusionMatrix.removePrediction(true, true, it->second.second);
+      confusionMatrix.addPrediction(false, true, it->second.second);
+    }
 
-    confusionMatrix.set(truePositives, falsePositives, numPositives - truePositives, numNegatives - falsePositives);
     double result = (confusionMatrix.*measure)(); 
     if (result >= bestScore)
     {
       bestScore = result;
       bestThreshold = getBestThreshold(it, margin);
+#ifdef JUCE_DEBUG
+      bestMatrix = confusionMatrix;
+#endif // JUCE_DEBUG
     }
   }
-  jassert(falsePositives == 0);
-  jassert(truePositives == 0);
+
+#ifdef JUCE_DEBUG
+  BinaryClassificationConfusionMatrix debugMatrix;
+  for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+    if (it->first > bestThreshold)
+    {
+      debugMatrix.addPrediction(true, false, it->second.first);
+      debugMatrix.addPrediction(true, true, it->second.second);
+    }
+    else
+    {
+      debugMatrix.addPrediction(false, false, it->second.first);
+      debugMatrix.addPrediction(false, true, it->second.second);
+    }
+  double debugScore = (debugMatrix.*measure)(); 
+  jassert(debugMatrix == bestMatrix);
+  jassert(debugScore == bestScore);
+#endif // JUCE_DEBUG
+
   return bestThreshold;
 }
 

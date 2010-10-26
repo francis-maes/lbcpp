@@ -83,8 +83,8 @@ public:
 
   void clear();
   void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);
-  void addPrediction(bool predicted, bool correct);
-  void removePrediction(bool predicted, bool correct);
+  void addPrediction(bool predicted, bool correct, size_t count = 1);
+  void removePrediction(bool predicted, bool correct, size_t count = 1);
 
   double computeAccuracy() const;
   double computeF1Score() const;

@@ -44,6 +44,12 @@ public:
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  /*virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
+  {
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
+    return res ? flattenPerception(res) : PerceptionPtr();
+  }*/
+
   virtual InferencePtr createTargetInference(const String& targetName) const
   {
     InferencePtr res = ProteinInferenceFactory::createTargetInference(targetName);
@@ -53,6 +59,7 @@ public:
 
   virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const
   {
+#if 0
     if (targetName == T("disorderRegions"))
     {
 /*      InferencePtr rankingInference = allPairsRankingInference(
@@ -72,6 +79,7 @@ public:
       return new DisorderedRegionInference(targetName, rankingInference, cutoffInference);
     }
     else
+#endif // 0
       return ProteinInferenceFactory::createProbabilitySequenceInference(targetName);
   }
   
@@ -117,9 +125,14 @@ public:
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName), targetName);
-    //if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
-    //  res->setSubInference(addBiasInference(targetName, res->getSubInference()));
-    res->setBatchLearner(onlineToBatchInferenceLearner());
+    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+    {
+      VectorSequentialInferencePtr sequentialInference = new VectorSequentialInference(targetName);
+      sequentialInference->appendInference(res->getSubInference());
+      sequentialInference->appendInference(addBiasInference(targetName));
+      res->setSubInference(sequentialInference);
+      //res->setBatchLearner(onlineToBatchInferenceLearner());
+    }
     return res;
   }
 
@@ -166,7 +179,7 @@ protected:
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 15);
+    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 10);
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -205,8 +218,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName == T("LearningPass"))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName == T("LearningPass"))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);

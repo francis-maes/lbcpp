@@ -12,14 +12,16 @@
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 
+# include <lbcpp/Data/RandomGenerator.h> // tmp
+
 namespace lbcpp
 {
 
-class AddBiasInference : public StaticDecoratorInference
+class AddBiasInference : public Inference
 {
 public:
-  AddBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0)
-    : StaticDecoratorInference(name, numericalInference)
+  AddBiasInference(const String& name, double initialBias = 0.0)
+    : Inference(name)
   {
     parameters = initialBias;
     addOnlineLearner(addBiasOnlineLearner(InferenceOnlineLearner::perPass));
@@ -27,11 +29,14 @@ public:
 
   AddBiasInference() {}
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
-  {
-    const Variable& subOutput = finalState->getSubOutput();
-    return subOutput.exists() ? Variable(subOutput.getDouble() + getBias(), doubleType) : subOutput;
-  }
+  virtual TypePtr getInputType() const
+    {return doubleType;}
+
+  virtual TypePtr getSupervisionType() const
+    {return anyType;}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return inputType;}
 
   virtual TypePtr getParametersType() const
     {return doubleType;}
@@ -41,6 +46,10 @@ public:
 
   void setBias(double bias)
     {setParameters(bias);}
+
+protected:
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return Variable(input.getDouble() + getBias(), input.getType());}
 };
 
 typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;

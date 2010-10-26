@@ -79,7 +79,7 @@ extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 ** Inferences
 */
 // Modifiers
-extern StaticDecoratorInferencePtr addBiasInference(const String& name, InferencePtr numericalInference, double initialBias = 0.0);
+extern InferencePtr addBiasInference(const String& name, double initialBias = 0.0);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
 
 // Regression
