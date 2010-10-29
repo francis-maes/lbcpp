@@ -25,7 +25,7 @@ public:
   {
     if (onlineLearner)
     {
-      scoreInference->setBatchLearner(onlineToBatchInferenceLearner());
+      scoreInference->setBatchLearner(stochasticInferenceLearner(true));
       scoreInference->addOnlineLearner(onlineLearner);
     }
   }

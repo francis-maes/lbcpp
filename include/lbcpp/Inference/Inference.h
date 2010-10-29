@@ -125,9 +125,9 @@ extern InferencePtr staticSequentialInferenceLearner();
 extern ParallelInferencePtr staticParallelInferenceLearner();
 extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
 extern ParallelInferencePtr parallelVoteInferenceLearner();
-extern SequentialInferencePtr onlineToBatchInferenceLearner();
 extern DecoratorInferencePtr decoratorInferenceLearner();
 extern DecoratorInferencePtr postProcessInferenceLearner();
+extern SequentialInferencePtr stochasticInferenceLearner(bool randomizeExamples = false);
 
 extern VectorSequentialInferencePtr multiPassInferenceLearner();
 extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);

@@ -44,16 +44,16 @@ public:
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  /*virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
     return res ? flattenPerception(res) : PerceptionPtr();
-  }*/
+  }
 
   virtual InferencePtr createTargetInference(const String& targetName) const
   {
     InferencePtr res = ProteinInferenceFactory::createTargetInference(targetName);
-    //res->setBatchLearner(onlineToBatchInferenceLearner());
+    res->setBatchLearner(stochasticInferenceLearner());
     return res;
   }
 
@@ -118,7 +118,7 @@ public:
   virtual InferencePtr createContactMapInference(const String& targetName) const
   {
     InferencePtr res = ProteinInferenceFactory::createContactMapInference(targetName);
-    res->setBatchLearner(onlineToBatchInferenceLearner());
+    //res->setBatchLearner(stochasticInferenceLearner());
     return res;
   }
 
@@ -131,7 +131,7 @@ public:
       sequentialInference->appendInference(res->getSubInference());
       sequentialInference->appendInference(addBiasInference(targetName));
       res->setSubInference(sequentialInference);
-      //res->setBatchLearner(onlineToBatchInferenceLearner());
+      //res->setBatchLearner(stochasticInferenceLearner());
     }
     return res;
   }
@@ -176,11 +176,11 @@ protected:
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0));         // regularizer
     else
       res = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
+        InferenceOnlineLearner::never, //perStepMiniBatch1000,                                                 // randomization
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 3);
+    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 10);
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -220,7 +220,7 @@ public:
     String inferenceName = stack->getCurrentInference()->getName();
 
     if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName == T("LearningPass"))
+    //if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -263,7 +263,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 1;
 #else
-  size_t maxCount = 0;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
@@ -413,6 +413,7 @@ int main(int argc, char** argv)
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
+  return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;

@@ -111,7 +111,7 @@ public:
     
     //InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
     if (DefaultParameters::saveIterations)
-      res->setBatchLearner(onlineToBatchInferenceLearner());
+      res->setBatchLearner(stochasticInferenceLearner());
     return res;
   }
 

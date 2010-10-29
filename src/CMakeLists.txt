@@ -307,7 +307,7 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/StaticParallelInferenceLearner.h
   Inference/MetaInference/SharedParallelInferenceLearner.h
   Inference/MetaInference/DecoratorInferenceLearner.h
-  Inference/MetaInference/OnlineToBatchInferenceLearner.h
+  Inference/MetaInference/StochasticInferenceLearner.h
   Inference/MetaInference/MetaInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp
 )
