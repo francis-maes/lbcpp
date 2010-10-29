@@ -20,7 +20,7 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   virtual void sense(size_t variableNumber, const Variable& value)
   {
     jassert(!value.isMissingValue());
-    jassert(!target->getVariable(variableNumber).exists());
+    // jassert(!target->getVariable(variableNumber).exists());
     target->setVariable(variableNumber, value);
     atLeastOneVariable = true;
   }

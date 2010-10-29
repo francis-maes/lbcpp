@@ -12,6 +12,7 @@
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 # include "../../Data/Object/DenseObjectObject.h"
 # include "../../Data/Object/DenseDoubleObject.h"
+# include "../../Data/Object/SparseDoubleObject.h"
 
 namespace lbcpp
 {
@@ -149,12 +150,42 @@ double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, cons
   }
 }
 
+double dotProduct(const DenseDoubleObjectPtr& dense, const SparseDoubleObjectPtr& sparse)
+{
+  const std::vector<double>& denseValues = dense->getValues();
+  const std::vector< std::pair<size_t, double> >& sparseValues = sparse->getValues();
+  double res = 0.0;
+  for (size_t i = 0; i < sparseValues.size(); ++i)
+  {
+    const std::pair<size_t, double>& sv = sparseValues[i];
+    if (sv.first >= denseValues.size())
+      break;
+    res += sv.second * denseValues[sv.first];
+  }
+  return res;
+}
+
+bool dotProductSpecialImplementation(const ObjectPtr& object1, const ObjectPtr& object2, double& res)
+{
+  DenseDoubleObjectPtr denseDouble1 = object1.dynamicCast<DenseDoubleObject>();
+  SparseDoubleObjectPtr sparseDouble2 = object2.dynamicCast<SparseDoubleObject>();
+  if (denseDouble1 && sparseDouble2)
+  {
+    res = dotProduct(denseDouble1, sparseDouble2);
+    return true;
+  }
+  return false;
+}
+
 // the sparse object should be object2 for optimal performances
 double dotProduct(const ObjectPtr& object1, const ObjectPtr& object2)
 {
   jassert(object1->getClass() == object2->getClass());
-
   double res = 0.0;
+  if (dotProductSpecialImplementation(object1, object2, res) ||
+      dotProductSpecialImplementation(object2, object1, res))
+    return res;
+
   Object::VariableIterator* iterator = object2->createVariablesIterator();
   while (iterator->exists())
   {

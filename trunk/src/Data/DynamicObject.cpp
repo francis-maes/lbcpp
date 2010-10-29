@@ -9,6 +9,7 @@
 #include <lbcpp/Data/DynamicObject.h>
 #include <lbcpp/Data/XmlSerialisation.h>
 #include "Object/SparseGenericObject.h"
+#include "Object/SparseDoubleObject.h"
 #include "Object/DenseGenericObject.h"
 #include "Object/DenseObjectObject.h"
 #include "Object/DenseDoubleObject.h"
@@ -49,7 +50,19 @@ ObjectPtr DynamicClass::createDenseObject() const
 }
 
 ObjectPtr DynamicClass::createSparseObject() const
-  {return new SparseGenericObject(refCountedPointerFromThis(this));}
+{
+  bool hasOnlyDoubles = true;
+  for (size_t i = 0; i < variables.size(); ++i)
+    if (!variables[i].first->inheritsFrom(doubleType))
+    {
+      hasOnlyDoubles = false;
+      break;
+    }
+  if (hasOnlyDoubles)
+    return new SparseDoubleObject(refCountedPointerFromThis(this));
+  else
+    return new SparseGenericObject(refCountedPointerFromThis(this));
+}
 
 Variable DynamicClass::getObjectVariable(const Object* pthis, size_t index) const
   {jassert(pthis); return pthis->getVariable(index);}
