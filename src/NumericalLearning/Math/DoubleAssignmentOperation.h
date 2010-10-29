@@ -10,6 +10,9 @@
 # define LBCPP_NUMERICAL_LEARNING_MATH_DOUBLE_ASSIGNMENT_OPERATION_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
+# include "../../Data/Object/DenseObjectObject.h"
+# include "../../Data/Object/DenseDoubleObject.h"
+# include "../../Data/Object/SparseDoubleObject.h"
 
 namespace lbcpp
 {
@@ -130,8 +133,42 @@ struct DenseDoubleAssignmentCallback : public PerceptionCallback
 };
 
 template<class OperationType>
+void doubleAssignmentOperation(OperationType& operation, const DenseDoubleObjectPtr& target, const SparseDoubleObjectPtr& source)
+{
+  std::vector<double>& targetValues = target->getValues();
+  const std::vector< std::pair<size_t, double> >& sourceValues = source->getValues();
+  if (sourceValues.size())
+  {
+    size_t lastIndex = sourceValues.back().first;
+    if (targetValues.size() <= lastIndex)
+      targetValues.resize(lastIndex + 1, 0.0);
+    for (size_t i = 0; i < sourceValues.size(); ++i)
+    {
+      const std::pair<size_t, double>& sv = sourceValues[i];
+      operation.compute(targetValues[sv.first], sv.second);
+    }
+  }
+}
+
+template<class OperationType>
+bool doubleAssignmentOperationSpecialImplementation(OperationType& operation, const ObjectPtr& target, const ObjectPtr& source)
+{
+  DenseDoubleObjectPtr denseTarget = target.dynamicCast<DenseDoubleObject>();
+  SparseDoubleObjectPtr sparseSource = source.dynamicCast<SparseDoubleObject>();
+  if (denseTarget && sparseSource)
+  {
+    doubleAssignmentOperation(operation, denseTarget, sparseSource);
+    return true;
+  }
+  return false;
+}
+
+template<class OperationType>
 void doubleAssignmentOperation(OperationType& operation, const ObjectPtr& target, const ObjectPtr& source)
 {
+  if (doubleAssignmentOperationSpecialImplementation(operation, target, source))
+    return;
+
   Object::VariableIterator* iterator = source->createVariablesIterator();
   for (; iterator->exists(); iterator->next())
   {

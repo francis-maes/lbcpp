@@ -104,6 +104,7 @@ SET(LBCPP_DATA_TYPE_SOURCES
 
 SET(LBCPP_DATA_OBJECT_SOURCES
   Data/Object/SparseGenericObject.h
+  Data/Object/SparseDoubleObject.h
   Data/Object/DenseGenericObject.h
   Data/Object/DenseDoubleObject.h
   Data/Object/DenseObjectObject.h

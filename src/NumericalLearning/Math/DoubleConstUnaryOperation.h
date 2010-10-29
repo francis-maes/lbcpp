@@ -10,6 +10,9 @@
 # define LBCPP_NUMERICAL_LEARNING_MATH_DOUBLE_CONST_UNARY_OPERATION_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
+# include "../../Data/Object/DenseObjectObject.h"
+# include "../../Data/Object/DenseDoubleObject.h"
+# include "../../Data/Object/SparseDoubleObject.h"
 
 namespace lbcpp
 {
@@ -28,12 +31,51 @@ struct DoubleConstUnaryOperation
 };
 
 template<class OperationType>
-void doubleConstUnaryOperation(OperationType& operation, ObjectPtr object)
+void doubleConstUnaryOperation(OperationType& operation, const DenseDoubleObjectPtr& object)
 {
-  size_t n = object->getNumVariables();
-  for (size_t i = 0; i < n; ++i)
+  const std::vector<double>& values = object->getValues();
+  for (size_t i = 0; i < values.size(); ++i)
+    operation.sense(values[i]);
+}
+
+template<class OperationType>
+void doubleConstUnaryOperation(OperationType& operation, const SparseDoubleObjectPtr& object)
+{
+  const std::vector<std::pair<size_t, double> >& values = object->getValues();
+  for (size_t i = 0; i < values.size(); ++i)
+    operation.sense(values[i].second);
+}
+
+template<class OperationType>
+bool doubleConstUnaryOperationSpecialImplementation(OperationType& operation, const ObjectPtr& object)
+{
+  SparseDoubleObjectPtr sparse = object.dynamicCast<SparseDoubleObject>();
+  if (sparse)
   {
-    Variable v = object->getVariable(i);
+    doubleConstUnaryOperation(operation, sparse);
+    return true;
+  }
+  DenseDoubleObjectPtr dense = object.dynamicCast<DenseDoubleObject>();
+  if (dense)
+  {
+    doubleConstUnaryOperation(operation, dense);
+    return true;
+  }
+  return false;
+}
+
+
+template<class OperationType>
+void doubleConstUnaryOperation(OperationType& operation, const ObjectPtr& object)
+{
+  if (doubleConstUnaryOperationSpecialImplementation(operation, object))
+    return;
+
+  Object::VariableIterator* iterator = object->createVariablesIterator();
+  for (; iterator->exists(); iterator->next())
+  {
+    size_t index;
+    Variable v = iterator->getCurrentVariable(index);
     if (v.isMissingValue())
       continue;
 
@@ -45,6 +87,7 @@ void doubleConstUnaryOperation(OperationType& operation, ObjectPtr object)
       operation.sense(v.getDouble());
     }
   }
+  delete iterator;
 }
 
 template<class OperationType>
