@@ -150,12 +150,13 @@ public:
     }
     return res;
 
-   // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
+    
 */
+    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
   
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+    /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    return res;
+    return res;*/
 
     //InferencePtr rankingInference = allPairsRankingInference(linearInference(targetName, inputLabelPairPerception(perception, classes)), hingeLossFunction(true), 
     //  createOnlineLearner(targetName), targetName);
@@ -260,7 +261,7 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 50;
+  size_t maxCount = 1;
 #else
   size_t maxCount = 0;
 #endif // JUCE_DEBUG
@@ -412,7 +413,6 @@ int main(int argc, char** argv)
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
-  return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;

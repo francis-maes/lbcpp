@@ -1,7 +1,5 @@
-2- Rendre déterministe
- * Rendre le save deterministe
 
-3- Mechante optimisation (précalcul des Perceptions)
+* Mechante optimisation (précalcul des Perceptions)
 
 * Voir si on peut faire du Dissulfide Bond Matrix
 * Voir comment récuperer le Loss pendant l'évaluation
@@ -12,7 +10,7 @@ Boinc:
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Multiclass classifiers: output discrete distributions
- 
+
 Inference:
  * Segmental Features
  * Recursive parameters, use in:
