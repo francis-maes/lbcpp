@@ -49,13 +49,13 @@ public:
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
     return res ? flattenPerception(res) : PerceptionPtr();
   }
-
+/*
   virtual InferencePtr createTargetInference(const String& targetName) const
   {
     InferencePtr res = ProteinInferenceFactory::createTargetInference(targetName);
     res->setBatchLearner(stochasticInferenceLearner());
     return res;
-  }
+  }*/
 
   virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const
   {
