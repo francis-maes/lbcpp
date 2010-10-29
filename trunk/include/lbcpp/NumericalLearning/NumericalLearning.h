@@ -104,7 +104,7 @@ extern StaticDecoratorInferencePtr allPairsRankingLinearSVMInference(PerceptionP
 extern StaticDecoratorInferencePtr binaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"), bool optimizeMcc = false); // F1 by default
 
 // Batch Learner
-extern SequentialInferencePtr stochasticNumericalInferenceLearner(bool randomizeExamples = true);
+extern SequentialInferencePtr stochasticNumericalInferenceLearner(bool precomputePerceptions = true, bool randomizeExamples = true);
 
 /*
 ** OnlineLearner
