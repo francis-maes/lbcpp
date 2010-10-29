@@ -45,6 +45,7 @@ public:
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
     if (!lossGradient || !getPerception()->getOutputType()->getObjectNumVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
+    const PerceptionPtr& perception = getPerception();
 
     bool isLocked = false;
     if (!target)
@@ -64,7 +65,10 @@ public:
       if (w)
       {
         ObjectPtr object = parameters->getVariable(i).getObject();
-        lbcpp::addWeighted(object, getPerception(), input, w);
+        if (input.getType() == perception->getOutputType())
+          lbcpp::addWeighted(object, input.getObject(), w);
+        else
+          lbcpp::addWeighted(object, perception, input, w);
         parameters->setVariable(i, object);
       }
     }
@@ -79,14 +83,30 @@ public:
     const ObjectPtr& weights = getParameters()->getWeights();
     if (!weights)
       return Variable::missingValue(outputClass);
+
     ObjectPtr object = Object::create(outputClass);
     size_t n = object->getNumVariables();
     jassert(n == weights->getNumVariables());
-    for (size_t i = 0; i < n; ++i)
+    const PerceptionPtr& perception = getPerception();
+    if (input.getType() == perception->getOutputType())
     {
-      ObjectPtr outputWeights = weights->getVariable(i).getObject();
-      jassert(object->getVariableType(i)->inheritsFrom(doubleType));
-      object->setVariable(i, lbcpp::dotProduct(outputWeights, getPerception(), input));
+      // perception as already been applied
+      for (size_t i = 0; i < n; ++i)
+      {
+        ObjectPtr outputWeights = weights->getVariable(i).getObject();
+        jassert(object->getVariableType(i)->inheritsFrom(doubleType));
+        object->setVariable(i, lbcpp::dotProduct(outputWeights, input.getObject()));
+      }
+    }
+    else
+    {
+      // default case: simultaneous perception computation and dot-product computation
+      for (size_t i = 0; i < n; ++i)
+      {
+        ObjectPtr outputWeights = weights->getVariable(i).getObject();
+        jassert(object->getVariableType(i)->inheritsFrom(doubleType));
+        object->setVariable(i, lbcpp::dotProduct(outputWeights, perception, input));
+      }
     }
     return object;
   }

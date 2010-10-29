@@ -132,29 +132,31 @@ struct DenseDoubleAssignmentCallback : public PerceptionCallback
 template<class OperationType>
 void doubleAssignmentOperation(OperationType& operation, const ObjectPtr& target, const ObjectPtr& source)
 {
-  size_t n = source->getNumVariables();
-  for (size_t i = 0; i < n; ++i)
+  Object::VariableIterator* iterator = source->createVariablesIterator();
+  for (; iterator->exists(); iterator->next())
   {
-    Variable sourceVariable = source->getVariable(i);
+    size_t index;
+    Variable sourceVariable = iterator->getCurrentVariable(index);
     if (sourceVariable.isMissingValue())
       continue;
-    Variable targetVariable = target->getVariable(i);
+    Variable targetVariable = target->getVariable(index);
 
     if (sourceVariable.isObject())
     {
       jassert(targetVariable.isObject());
       ObjectPtr targetObject = targetVariable.getObject();
       operation.compute(targetObject, sourceVariable.getObject());
-      target->setVariable(i, targetObject);
+      target->setVariable(index, targetObject);
     }
     else
     {
       jassert(sourceVariable.isDouble() && targetVariable.isDouble());
       double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
       operation.compute(targetValue, sourceVariable.getDouble());
-      target->setVariable(i, Variable(targetValue, targetVariable.getType()));
+      target->setVariable(index, Variable(targetValue, targetVariable.getType()));
     }
   }
+  delete iterator;
 }
 
 /*
@@ -179,6 +181,9 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
 
 void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
 {
+  checkInheritance(input.getType(), perception->getInputType());
+  checkInheritance((TypePtr)target->getClass(), perception->getOutputType());
+
   jassert(input.exists());
   if (!weight)
     return;

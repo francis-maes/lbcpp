@@ -11,7 +11,6 @@
 
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Inference/DecoratorInference.h>
-# include "../InferenceCallback/OnlineLearningInferenceCallback.h"
 
 namespace lbcpp
 {

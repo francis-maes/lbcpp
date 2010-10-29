@@ -29,6 +29,14 @@ public:
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 
+  virtual bool isSparse() const
+  {
+    for (size_t i = 0; i < variablesMap.size(); ++i)
+      if (variablesMap[i].second->isSparse())
+        return true;
+    return false;
+  }
+
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
     Callback callback(targetCallback, this);

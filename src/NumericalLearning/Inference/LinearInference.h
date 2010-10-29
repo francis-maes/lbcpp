@@ -51,10 +51,21 @@ public:
      // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
      //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
 
-      if (target)
-        lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+      bool isLocked = false;
+      if (!target)
+      {
+        parametersLock.enterWrite();
+        target = &getParameters()->getWeights();
+        isLocked = true;
+      }
+
+      if (input.getType() == perception->getOutputType())
+        lbcpp::addWeighted(*target, input.getObject(), lossDerivative * weight);
       else
-        addWeightedToParameters(perception, input, lossDerivative * weight);
+        lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+       
+      if (isLocked)
+        parametersLock.exitWrite();
      // std::cout << " newL2 = " << l2norm(target) << std::endl;
     }
     else if (lossFunction.isInstanceOf<RankingLossFunction>())
@@ -97,7 +108,11 @@ public:
       return Variable::missingValue(doubleType);
     if (!input.exists())
       return 0.0;
-    return lbcpp::dotProduct(weights, getPerception(), input);
+    const PerceptionPtr& perception = getPerception();
+    if (input.getType() == perception->getOutputType())
+      return lbcpp::dotProduct(weights, input.getObject());
+    else
+      return lbcpp::dotProduct(weights, perception, input);
   }
 };
 

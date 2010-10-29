@@ -127,6 +127,8 @@ public:
   virtual TypePtr getInputType() const
     {return inputType;}
 
+  virtual bool isSparse() const;
+
   virtual String toString() const
     {return stringDescription;}
 

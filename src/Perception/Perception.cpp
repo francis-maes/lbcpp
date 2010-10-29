@@ -202,6 +202,14 @@ void CompositePerception::computeOutputType()
   Perception::computeOutputType();
 }
 
+bool CompositePerception::isSparse() const
+{
+  for (size_t i = 0; i < outputVariables.size(); ++i)
+    if (outputVariables[i].subPerception->isSparse())
+      return true;
+  return false;
+}
+
 /*
 ** Constructor functions
 */

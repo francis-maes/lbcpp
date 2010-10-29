@@ -80,9 +80,12 @@ template<class OperationType>
 void doubleConstUnaryOperation(OperationType& operation, const PerceptionPtr& perception, const Variable& input)
 {
   jassert(input.exists());
-  typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
-  Callback callback(operation);
-  perception->computePerception(input, &callback);
+  if (checkInheritance(input, perception->getInputType()))
+  {
+    typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
+    Callback callback(operation);
+    perception->computePerception(input, &callback);
+  }
 }
 
 /*
