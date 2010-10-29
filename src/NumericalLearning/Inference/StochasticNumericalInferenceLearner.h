@@ -17,8 +17,8 @@ namespace lbcpp
 class StochasticNumericalInferenceLearner : public StochasticInferenceLearner
 {
 public:
-  StochasticNumericalInferenceLearner(bool randomizeExamples = false)
-    : StochasticInferenceLearner(randomizeExamples) {}
+  StochasticNumericalInferenceLearner(bool precomputePerceptions = true, bool randomizeExamples = false)
+    : StochasticInferenceLearner(randomizeExamples), precomputePerceptions(precomputePerceptions) {}
 
   virtual ClassPtr getTargetInferenceClass() const
     {return numericalInferenceClass;}
@@ -31,19 +31,27 @@ public:
     jassert(learner);
     learner->startLearningCallback();
 
-    TypePtr elementsType = pairClass(perception->getOutputType(), numericalInference->getSupervisionType());
-    size_t n = trainingData->getNumElements();
-    ContainerPtr precomputedTrainingData = vector(elementsType, n);
-    for (size_t i = 0; i < n; ++i)
+    if (precomputePerceptions)
     {
-      PairPtr example = trainingData->getElement(i).getObjectAndCast<Pair>();
-      precomputedTrainingData->setElement(i, new Pair(elementsType, perception->compute(example->getFirst()), example->getSecond()));
+      TypePtr elementsType = pairClass(perception->getOutputType(), numericalInference->getSupervisionType());
+      size_t n = trainingData->getNumElements();
+      ContainerPtr precomputedTrainingData = vector(elementsType, n);
+      for (size_t i = 0; i < n; ++i)
+      {
+        PairPtr example = trainingData->getElement(i).getObjectAndCast<Pair>();
+        precomputedTrainingData->setElement(i, new Pair(elementsType, perception->compute(example->getFirst()), example->getSecond()));
+      }
+      trainingData = precomputedTrainingData;
     }
-    trainingData = precomputedTrainingData;
 
     // create sequential inference state
     return new StochasticPassInferenceLearner(std::vector<InferencePtr>(1, targetInference), randomizeExamples);
   }
+
+protected:
+  friend class StochasticNumericalInferenceLearnerClass;
+
+  bool precomputePerceptions;
 };
 
 }; /* namespace lbcpp */

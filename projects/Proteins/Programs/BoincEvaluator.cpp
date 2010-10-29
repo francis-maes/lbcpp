@@ -154,12 +154,12 @@ public:
   ExampleProteinInferenceFactory(const std::map<String, String>& parameters)
     : parameters(parameters) {}
 
-  /*virtual InferencePtr createTargetInference(const String& targetName) const
+  virtual InferencePtr createTargetInference(const String& targetName) const
   {
     InferencePtr res = ProteinInferenceFactory::createTargetInference(targetName);
-    res->setBatchLearner(stochasticInferenceLearner());
+    res->setBatchLearner(stochasticInferenceLearner()); // this avoid to precompute the Perceptions (=> use much less memory)
     return res;
-  }*/
+  }
   /* FIXME: support these paremeters:
 
       <param name="includeGlobalHistograms" type="Boolean"/>
