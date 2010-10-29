@@ -92,15 +92,24 @@ public:
 */
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    return binaryLinearSVMInference(perception, createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
+    StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
+    
+    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+    {
+      VectorSequentialInferencePtr sequentialInference = new VectorSequentialInference(targetName);
+      sequentialInference->appendInference(res->getSubInference());
+      sequentialInference->appendInference(addBiasInference(targetName));
+      res->setSubInference(sequentialInference);
+    }
+    return res;
   }
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    //InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     
-    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
+//    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
     if (DefaultParameters::saveIterations)
       res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
@@ -193,11 +202,11 @@ protected:
     }
     std::cout << targetName << " - LS: " << (int)learningRateUpdate << " - LR: " << learningRate << std::endl;
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
-                                                       maxIterationsWithoutImprovementStoppingCriterion(3));
+//    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
+//                                                       maxIterationsWithoutImprovementStoppingCriterion(3));
 
 //    if (DefaultParameters::forceUse)
-//      stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
 
     IterationFunctionPtr learningStepFunction = DefaultParameters::useConstantLearning ? constantIterationFunction(DefaultParameters::learningRate)
                                                                               : invLinearIterationFunction(learningRate, learningRateUpdate);
@@ -591,12 +600,12 @@ int main(int argc, char** argv)
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
   jassert(!(generateIntermediate && foldCrossValidation));
   if (generateIntermediate)
-    inference->setProteinDebugDirectory(File::getCurrentWorkingDirectory().getChildFile(output));
+    inference->setProteinDebugDirectory(File::getCurrentWorkingDirectory().getChildFile(output + T(".xml")));
 
   for (size_t i = 0; i < targets.size(); ++i)
   {
     DefaultParameters::currentPass = i;
-    ProteinSequentialInferencePtr inferencePass = new ProteinSequentialInference("Pass"); //new ProteinParallelInference("Pass");
+    ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Pass"); //new ProteinParallelInference("Pass");
     if (targets[i].contains(T("SS3")))
       inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
     if (targets[i].contains(T("SS8")))
@@ -653,7 +662,7 @@ int main(int argc, char** argv)
     context->appendCallback(callbacks);
 
     context->train(inference, trainingData);
-    
+
     if (generateIntermediate)
       inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output + T(".inference")));
   }
