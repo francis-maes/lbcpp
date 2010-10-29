@@ -23,7 +23,7 @@ public:
   OnlineLearningInferenceCallback(InferencePtr targetInference, const std::vector<InferencePtr>& learnedInferences)
     : learnedInferences(learnedInferences), targetInference(targetInference), learningStopped(false)
   {
-    for (size_t i = 0; i < learnedInferences.size(); ++i)
+    for (int i = learnedInferences.size() - 1; i >= 0; --i)
       callStartLearningCallback(learnedInferences[i]);
   }
 
@@ -60,14 +60,14 @@ private:
 
   void finishEpisode()
   {
-    for (int i = (int)learnedInferences.size() - 1; i >= 0; --i)
+    for (size_t i = 0; i < learnedInferences.size(); ++i)
       callEpisodeFinishedCallback(learnedInferences[i]);
   }
 
   void finishPass()
   {
     bool wantsMoreIterations = false;
-    for (int i = (int)learnedInferences.size() - 1; i >= 0; --i)
+    for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
       const InferencePtr& inference = learnedInferences[i];
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
@@ -82,7 +82,7 @@ private:
 
   void callStartLearningCallback(const InferencePtr& inference)
   {
-    InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
+    const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
     if (learner)
     {
       learner->startLearningCallback();
@@ -92,28 +92,28 @@ private:
 
   void callStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
-    InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
+    const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
     if (learner && !learner->isLearningStopped())
       learner->stepFinishedCallback(inference, input, supervision, output);
   }
 
   void callSubStepFinishedCallback(const InferencePtr& parentInference, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
-    InferenceOnlineLearnerPtr learner = parentInference->getOnlineLearner();
+    const InferenceOnlineLearnerPtr& learner = parentInference->getOnlineLearner();
     if (learner && !learner->isLearningStopped())
       learner->subStepFinishedCallback(inference, input, supervision, output);
   }
 
   void callEpisodeFinishedCallback(const InferencePtr& inference)
   {
-    InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
+    const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
     if (learner && !learner->isLearningStopped())
       learner->episodeFinishedCallback(inference);
   }
 
   void callPassFinishedCallback(const InferencePtr& inference)
   {
-    InferenceOnlineLearnerPtr learner = inference->getOnlineLearner();
+    const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
     if (learner && !learner->isLearningStopped())
       learner->passFinishedCallback(inference);
   }

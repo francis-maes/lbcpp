@@ -141,20 +141,21 @@ public:
   double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 
   size_t getSampleCount() const
-    {return predictedScores.size();}
+    {ScopedLock _(lock); return predictedScores.size();}
 
   size_t getNumPositives() const
-    {return numPositives;}
+    {ScopedLock _(lock); return numPositives;}
 
   size_t getNumNegatives() const
-    {return numNegatives;}
+    {ScopedLock _(lock); return numNegatives;}
 
   void clear()
-    {predictedScores.clear(); numPositives = numNegatives = 0;}
+    {ScopedLock _(lock); predictedScores.clear(); numPositives = numNegatives = 0;}
 
 private:
   typedef std::map<double, std::pair<size_t, size_t> > ScoresMap;
 
+  CriticalSection lock;
   ScoresMap predictedScores;
   size_t numPositives, numNegatives;
 

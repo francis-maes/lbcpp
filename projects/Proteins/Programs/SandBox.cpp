@@ -314,7 +314,7 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());

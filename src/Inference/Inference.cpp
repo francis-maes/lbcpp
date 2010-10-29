@@ -239,9 +239,9 @@ public:
 
   virtual void visit(InferencePtr inference)
   {
+    accept(inference);
     if (inference->getOnlineLearner())
       res.push_back(inference);
-    accept(inference);
   }
 };
 
