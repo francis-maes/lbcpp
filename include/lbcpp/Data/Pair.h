@@ -70,7 +70,7 @@ public:
   Variable& getSecond()
     {return second;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class PairClass;

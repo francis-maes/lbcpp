@@ -217,7 +217,7 @@ public:
   void printRecursively(std::ostream& ostr, int maxDepth = -1, bool displayMissingValues = true, bool displayTypes = true);
   bool printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName = T("variable")) const; // returns true if there is at least one difference
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   Variable(TypePtr type, const VariableValue& value)

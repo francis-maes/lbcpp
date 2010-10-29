@@ -89,7 +89,7 @@ public:
   PerceptionPtr getOutputVariableSubPerception(size_t index) const
     {jassert(index < outputVariables.size()); return outputVariables[index].subPerception;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   std::vector<OutputVariable> outputVariables;
@@ -138,7 +138,7 @@ public:
   // Perception
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   virtual void computeOutputType();

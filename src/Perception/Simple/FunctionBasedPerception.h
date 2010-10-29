@@ -37,7 +37,7 @@ public:
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
     {callback->sense(0, function->compute(input));}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class FunctionBasedPerceptionClass;

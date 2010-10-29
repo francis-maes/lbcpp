@@ -45,14 +45,10 @@ namespace lbcpp
 class Object : public ReferenceCountedObject
 {
 public:
-  Object(ClassPtr thisClass)
-    : thisClass(thisClass) {}
-  Object() {}
-  
-  /**
-  ** Destructor.
-  */
-  virtual ~Object() {}
+  Object(ClassPtr thisClass = ClassPtr());
+  virtual ~Object();
+
+  static void displayObjectAllocationInfo(std::ostream& ostr);
 
   static ObjectPtr create(ClassPtr objectClass);
 
@@ -146,8 +142,7 @@ public:
   virtual ClassPtr getClass() const;
   String getClassName() const;
 
-  void setThisClass(ClassPtr thisClass)
-    {this->thisClass = thisClass;}
+  void setThisClass(ClassPtr thisClass);
 
   /*
   ** Introspection: Variables
@@ -180,12 +175,15 @@ public:
 
   ObjectPtr cloneToNewType(ClassPtr newType) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ObjectClass;
   
   ClassPtr thisClass;
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  String classNameUnderWhichThisIsKnown;
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
   
   template<class T>
   friend struct ObjectTraits;

@@ -306,7 +306,7 @@ protected:
   ContainerPtr loadProteins(const File& directory)
   {
     return directoryFileStream(directory)->load()->apply(loadFromFileFunction(proteinClass))
-      ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+      ->apply(proteinToInputOutputPairFunction(false), false)->randomize();
   }
 
   virtual bool initializeWorker(MessageCallback& callback)

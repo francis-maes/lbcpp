@@ -1,11 +1,9 @@
 
-* Voir comment récuperer le Loss pendant l'évaluation
-
+* Optimisation de l'utilisation mémoire
 * Mechante optimisation (précalcul des Perceptions)
 
 * Voir si on peut faire du Dissulfide Bond Matrix
-
-* Optimisation de l'utilisation mémoire
+* Voir comment récuperer le Loss pendant l'évaluation
 
 Boinc:
  * Gestion générique des paramètres

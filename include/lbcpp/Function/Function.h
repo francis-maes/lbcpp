@@ -43,7 +43,7 @@ public:
   Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
     {return checkInheritance(input, getInputType()) ? computeFunction(input, callback) : Variable();}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr functionClass;

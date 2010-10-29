@@ -22,7 +22,7 @@ class AccumulatedScoresCache : public Cache
 public:
   AccumulatedScoresCache();
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   virtual Variable createEntry(const ObjectPtr& object) const;
@@ -41,7 +41,7 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   virtual void computeOutputType();

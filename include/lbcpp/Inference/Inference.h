@@ -82,7 +82,7 @@ public:
   */
   virtual void clone(const ObjectPtr& target) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class InferenceClass;

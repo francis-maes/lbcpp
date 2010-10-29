@@ -158,7 +158,8 @@
     </class>
     
     <class name="ProteinToInputOutputPairFunction" base="Function">
-      <constructor/>
+      <constructor arguments="bool keepTertiaryStructure"/>
+      <variable type="Boolean" name="keepTertiaryStructure"/>
     </class>
   </namespace>
   

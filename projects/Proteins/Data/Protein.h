@@ -131,16 +131,16 @@ public:
   */
   CartesianPositionVectorPtr getCAlphaTrace() const;
 
-  void setCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
+  void setCAlphaTrace(const CartesianPositionVectorPtr& calphaTrace)
     {this->calphaTrace = calphaTrace;}
 
   TertiaryStructurePtr getTertiaryStructure() const
     {return tertiaryStructure;}
 
-  void setTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+  void setTertiaryStructure(const TertiaryStructurePtr& tertiaryStructure)
     {this->tertiaryStructure = tertiaryStructure;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ProteinClass;
@@ -187,7 +187,7 @@ extern ClassPtr proteinClass;
 extern TypePtr angstromDistanceType;
 
 extern FunctionPtr proteinLengthFunction();
-extern FunctionPtr proteinToInputOutputPairFunction();
+extern FunctionPtr proteinToInputOutputPairFunction(bool keepTertiaryStructure = true);
 
 }; /* namespace lbcpp */
 

@@ -41,7 +41,7 @@ public:
     callback->sense(n + 1, distribution->computeEntropy());
   }
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DiscreteProbabilityDistributionPerceptionClass;

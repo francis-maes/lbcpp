@@ -35,7 +35,7 @@ public:
     decorated->computePerception(input, &callback);
   }
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class PerceptionRewriteRules;

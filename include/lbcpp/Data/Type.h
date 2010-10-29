@@ -150,7 +150,7 @@ public:
   virtual String toString() const
     {return getName();}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class TypeClass;
@@ -230,7 +230,7 @@ public:
   juce::tchar getOneLetterCode(size_t index) const;
   String getOneLetterCodes() const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   void addElement(const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
@@ -280,7 +280,7 @@ public:
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr objectClass;
@@ -309,7 +309,7 @@ public:
   void addVariable(const String& typeName, const String& name);
   void clearVariables();
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DefaultClassClass;

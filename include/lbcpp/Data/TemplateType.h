@@ -74,7 +74,7 @@ public:
   virtual ClassPtr getClass() const
     {return templateTypeClass;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   bool initialized;
@@ -97,7 +97,7 @@ public:
 
   virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
 

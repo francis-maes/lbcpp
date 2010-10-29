@@ -58,7 +58,7 @@ public:
   void incrementStepNumber()
     {++stepNumber;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   int stepNumber;
@@ -86,7 +86,7 @@ public:
   virtual Variable finalizeInference(const InferenceContextPtr& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   /*

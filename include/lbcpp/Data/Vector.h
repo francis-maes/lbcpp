@@ -38,7 +38,7 @@ public:
   virtual void clone(const ObjectPtr& target) const;
   VectorPtr cloneContent() const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   bool checkType(const Variable& value) const;

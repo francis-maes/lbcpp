@@ -41,8 +41,9 @@ public:
 class ProteinToInputOutputPairFunction : public Function
 {
 public:
-  ProteinToInputOutputPairFunction()
-    : outputType(pairClass(proteinClass, proteinClass)) {}
+  ProteinToInputOutputPairFunction(bool keepTertiaryStructure)
+    : outputType(pairClass(proteinClass, proteinClass)), keepTertiaryStructure(keepTertiaryStructure) {}
+  ProteinToInputOutputPairFunction() {}
 
   virtual TypePtr getInputType() const
     {return proteinClass;}
@@ -54,14 +55,33 @@ public:
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
+    if (!keepTertiaryStructure)
+    {
+      protein->getDisorderRegions(); // be sure that disordered regions are computed
+      protein->getStructuralAlphabetSequence(); // be sure that structural alphabet is computed
+      protein->setTertiaryStructure(TertiaryStructurePtr()); // remove tertiary structure
+      protein->setCAlphaTrace(CartesianPositionVectorPtr()); // remove c-alpha trace
+    }
+
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
     return Variable::pair(inputProtein, protein, outputType);
   }
 
+  virtual bool loadFromXml(XmlImporter& importer)
+  {
+    if (!Function::loadFromXml(importer))
+      return false;
+    outputType = pairClass(proteinClass, proteinClass); // precompute output type
+    return true;
+  }
+
 protected:
+  friend class ProteinToInputOutputPairFunctionClass;
+
   TypePtr outputType;
+  bool keepTertiaryStructure;
 };
 
 }; /* namespace lbcpp */

@@ -64,7 +64,7 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return (int)(value1.getInteger() - value2.getInteger());}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */
