@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -67,8 +68,8 @@ public:
     int nextIndex = state->getStepNumber() + 1; 
     if (nextIndex < (int)examples->getNumElements())
     {
-      Variable example = examples->getElement(nextIndex);
-      state->setSubInference(inference, example[0], example[1]);
+      const PairPtr& example = examples->getElement(nextIndex).getObjectAndCast<Pair>();
+      state->setSubInference(inference, example->getFirst(), example->getSecond());
       return true;
     }
     else

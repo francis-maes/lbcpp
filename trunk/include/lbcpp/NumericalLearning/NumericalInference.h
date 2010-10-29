@@ -15,6 +15,7 @@
 namespace lbcpp
 {
 
+extern ClassPtr numericalInferenceClass;
 extern ClassPtr numericalInferenceParametersClass(TypePtr weightsType);
 
 class NumericalInferenceParameters;
