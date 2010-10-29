@@ -128,16 +128,12 @@ int main(int argc, char* argv[])
   if (argc < 4)
   {
     std::cout << "Usage: mainInputDirectory [otherInputDirectories]* outputDirectory" << std::endl;
+    std::cout << "   or: mainInputFile [inputDirectories]* outputDirectory" << std::endl;
     return 1;
   }
 
   File cwd = File::getCurrentWorkingDirectory();
   File mainInputDirectory = cwd.getChildFile(argv[1]);
-  if (!mainInputDirectory.isDirectory())
-  {
-    std::cerr << argv[1] << " is not a directory" << std::endl;
-    return 1;
-  }
 
   std::vector<File> otherInputDirectories;
   for (int i = 2; i < argc - 1; ++i)
@@ -164,6 +160,16 @@ int main(int argc, char* argv[])
     return 1;
   }
  
-  compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance());
+  if (!mainInputDirectory.isDirectory())
+  {
+    if (compileProtein(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance()))
+      std::cout << "Succeed to compile protein." << std::endl;
+    else
+      std::cout << "Could not compile protein." << std::endl;
+  }
+  else
+  {
+    compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance());
+  }
   return 0;
 }

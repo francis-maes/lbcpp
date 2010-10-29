@@ -79,10 +79,10 @@ private:
   };
 
   TypePtr elementsType;
+  DynamicClassSharedPtr thisClass;
   Node* first;
   Node* last;
   size_t numElements;
-  DynamicClassSharedPtr thisClass;
 
   void appendNode(size_t index, const Variable& value)
   {
