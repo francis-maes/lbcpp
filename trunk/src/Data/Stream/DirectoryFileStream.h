@@ -21,25 +21,32 @@ public:
     : directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
-  DirectoryFileStream() : nextFilePosition(0) {}
+  DirectoryFileStream() {}
 
   virtual TypePtr getElementsType() const
     {return fileType;}
 
   virtual bool rewind()
-    {nextFilePosition = 0; return true;}
+    {nextFileIterator = files.begin(); return true;}
 
   virtual bool isExhausted() const
-    {return nextFilePosition >= files.size();}
+    {return nextFileIterator == files.end();}
 
   virtual Variable next()
   {
     if (isExhausted())
       return Variable();
-    jassert(nextFilePosition < files.size());
-    File file = *files[nextFilePosition];
-    ++nextFilePosition;
+    File file(*nextFileIterator);
+    ++nextFileIterator;
     return file;
+  }
+
+  static void findChildFiles(const File& directory, const String& wildCardPattern, bool searchRecursively, std::set<String>& res)
+  {
+    juce::OwnedArray<File> files;
+    directory.findChildFiles(files, File::findFiles, searchRecursively, wildCardPattern);
+    for (int i = 0; i < files.size(); ++i)
+      res.insert(files[i]->getFullPathName());
   }
 
 private:
@@ -47,13 +54,14 @@ private:
   String wildCardPattern;
   bool searchFilesRecursively;
 
-  juce::OwnedArray<File> files;
-  int nextFilePosition;
+  std::set<String> files;
+  std::set<String>::const_iterator nextFileIterator;
 
   void initialize()
   {
-    directory.findChildFiles(files, File::findFiles, searchFilesRecursively, wildCardPattern);
-    nextFilePosition = 0;
+    files.clear();    
+    findChildFiles(directory, wildCardPattern, searchFilesRecursively, files);
+    nextFileIterator = files.begin();
   }
 };
 

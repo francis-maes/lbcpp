@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_STREAM_DIRECTORY_PAIR_FILES_H_
 # define LBCPP_DATA_STREAM_DIRECTORY_PAIR_FILES_H_
 
-# include <lbcpp/Data/Stream.h>
+# include "DirectoryFileStream.h"
 
 namespace lbcpp
 {
@@ -53,15 +53,16 @@ private:
 
   void initialize()
   {
-    juce::OwnedArray<File> files1;
-    mainDirectory.findChildFiles(files1, File::findFiles, searchFilesRecursively, wildCardPattern);
+    std::set<String> mainFiles;
+    DirectoryFileStream::findChildFiles(mainDirectory, wildCardPattern, searchFilesRecursively, mainFiles);
 
-    files.reserve(files1.size());
-    for (int i = 0; i < files1.size(); ++i)
+    files.reserve(mainFiles.size());
+    for (std::set<String>::const_iterator it = mainFiles.begin(); it != mainFiles.end(); ++it)
     {
-      File file2 = secondDirectory.getChildFile(files1[i]->getRelativePathFrom(mainDirectory));
+      File file1(*it);
+      File file2 = secondDirectory.getChildFile(file1.getRelativePathFrom(mainDirectory));
       if (file2.existsAsFile())
-        files.push_back(std::make_pair(*files1[i], file2));
+        files.push_back(std::make_pair(file1, file2));
     }
 
     nextFilePosition = 0;

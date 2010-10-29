@@ -262,7 +262,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 50;
 #else
-  size_t maxCount = 1;
+  size_t maxCount = 0;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
@@ -412,7 +412,7 @@ int main(int argc, char** argv)
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
-  //return 0;
+  return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;
