@@ -119,6 +119,9 @@ struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
 
 double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
 {
+  checkInheritance(input.getType(), perception->getInputType());
+  checkInheritance((TypePtr)object->getClass(), perception->getOutputType());
+
   jassert(input.exists());
   if (!object)
     return 0.0;
@@ -146,27 +149,34 @@ double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, cons
   }
 }
 
+// the sparse object should be object2 for optimal performances
 double dotProduct(const ObjectPtr& object1, const ObjectPtr& object2)
 {
   jassert(object1->getClass() == object2->getClass());
-  
+
   double res = 0.0;
-  size_t n = object1->getNumVariables();
-  for (size_t i = 0; i < n; ++i)
+  Object::VariableIterator* iterator = object2->createVariablesIterator();
+  while (iterator->exists())
   {
-    Variable v1 = object1->getVariable(i);
-    Variable v2 = object2->getVariable(i);
-    if (v1.exists() && v2.exists())
+    size_t index;
+    Variable v2 = iterator->getCurrentVariable(index);
+    if (v2.exists())
     {
-      if (v1.isObject())
-        res += dotProduct(v1.getObject(), v2.getObject());
-      else
+      Variable v1 = object1->getVariable(index);
+      if (v1.exists())
       {
-        jassert(v1.isDouble());
-        res += v1.getDouble() * v2.getDouble();
+        if (v1.isObject())
+          res += dotProduct(v1.getObject(), v2.getObject());
+        else
+        {
+          jassert(v1.isDouble());
+          res += v1.getDouble() * v2.getDouble();
+        }
       }
     }
+    iterator->next();
   }
+  delete iterator;
   return res;
 }
 

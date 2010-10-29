@@ -21,6 +21,9 @@ public:
     : decorated(decorated)
     {computeOutputType();}
 
+  virtual bool isSparse() const
+    {return decorated->isSparse();}
+
   virtual TypePtr getInputType() const
     {return decorated->getInputType();}
 

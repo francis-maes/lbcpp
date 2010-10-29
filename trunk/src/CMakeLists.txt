@@ -274,7 +274,6 @@ SET(LBCPP_INFERENCE_SOURCES
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
-  Inference/InferenceCallback/OnlineLearningInferenceCallback.h
   Inference/InferenceCallback/EvaluationInferenceCallback.h
   Inference/InferenceCallback/InferenceCallbackClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceCallbackClasses.cpp  
@@ -374,6 +373,7 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
   NumericalLearning/Inference/RankingInference.h
   NumericalLearning/Inference/AddBiasInference.h
   NumericalLearning/Inference/TransferFunctionDecoratorInference.h
+  NumericalLearning/Inference/StochasticNumericalInferenceLearner.h
   NumericalLearning/Inference/NumericalLearningInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceClasses.cpp  
 )

@@ -6,11 +6,14 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_META_ONLINE_TO_BATCH_LEARNER_H_
-# define LBCPP_INFERENCE_META_ONLINE_TO_BATCH_LEARNER_H_
+#ifndef LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_
+# define LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_
 
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/Inference/InferenceStack.h>
 # include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
 {
@@ -153,11 +156,8 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual InferencePtr createLearningPass(const InferencePtr& targetInference, ContainerPtr& trainingData)
   {
-    InferencePtr targetInference = getInference(input);
-    ContainerPtr trainingData = getTrainingData(input);
-
     // enumerate learners
     std::vector<InferencePtr> inferencesThatHaveALearner;
     targetInference->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
@@ -168,10 +168,18 @@ public:
       inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback();
 
     // create sequential inference state
+    return new StochasticPassInferenceLearner(inferencesThatHaveALearner, randomizeExamples);
+  }
+
+  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    InferencePtr targetInference = getInference(input);
+    ContainerPtr trainingData = getTrainingData(input);
+
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
-    InferencePtr learningPass = new StochasticPassInferenceLearner(inferencesThatHaveALearner, randomizeExamples);
+    InferencePtr learningPass = createLearningPass(targetInference, trainingData);
     learningPass->setName(T("LearningPass ") + targetInference->getName());
-    res->setSubInference(learningPass, input, supervision);
+    res->setSubInference(learningPass, Variable::pair(targetInference, trainingData), Variable());
     return res;
   }
 
@@ -187,4 +195,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_META_ONLINE_TO_BATCH_LEARNER_H_
+#endif // !LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_

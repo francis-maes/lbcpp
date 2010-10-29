@@ -74,7 +74,7 @@ public:
     if (onlineLearner)
     {
       decorated->addOnlineLearner(onlineLearner);
-      decorated->setBatchLearner(stochasticInferenceLearner(true));
+      decorated->setBatchLearner(stochasticNumericalInferenceLearner());
     }
   }
 

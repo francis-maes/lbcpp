@@ -156,7 +156,7 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const Perception
     // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
     if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
     {
-      double norm = lbcpp::l1norm(perception, input);
+      double norm = input.getType() == perception->getOutputType() ? lbcpp::l1norm(input.getObject()) : lbcpp::l1norm(perception, input);
       if (norm)
         numberOfActiveFeatures.push(norm);
     }
