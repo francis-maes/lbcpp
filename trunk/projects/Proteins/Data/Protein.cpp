@@ -66,12 +66,6 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
     this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
 }
 
-SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAtoms) const
-{
-  jassert(threshold == 8.0);
-  return betweenCBetaAtoms ? contactMap8Cb : contactMap8Ca;
-}
-
 void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, bool betweenCBetaAtoms)
 {
   jassert(threshold == 8.0);
@@ -79,11 +73,6 @@ void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, boo
     contactMap8Cb = contactMap;
   else
     contactMap8Ca = contactMap;
-}
-
-SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
-{
-  return betweenCBetaAtoms ? distanceMapCb : distanceMapCa;
 }
 
 void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAtoms)
@@ -127,6 +116,7 @@ String Protein::getTargetFriendlyName(size_t index)
 String Protein::getTargetShortName(size_t index)
 {
   // FIXME: use info from class
+
   // skip base class variables
   size_t baseClassVariables = nameableObjectClass->getObjectNumVariables();
   if (index < baseClassVariables)
@@ -155,38 +145,104 @@ String Protein::getTargetShortName(size_t index)
   }
 }
 
+Variable Protein::getTargetOrComputeIfMissing(size_t index) const
+{
+  // skip base class variables
+  size_t baseClassVariables = nameableObjectClass->getObjectNumVariables();
+  if (index < baseClassVariables)
+    return String::empty;
+  index -= baseClassVariables;
+
+  switch (index)
+  {
+  case 0: return getPrimaryStructure();
+  case 1: return getPositionSpecificScoringMatrix();
+  case 2: return getSecondaryStructure();
+  case 3: return getDSSPSecondaryStructure();
+  case 4: return getStructuralAlphabetSequence();
+  case 5: return getSolventAccessibility();
+  case 6: return getSolventAccessibilityAt20p();
+  case 7: return getDisorderRegions();
+  case 8: return getContactMap(8, false);
+  case 9: return getContactMap(8, true);
+  case 10: return getDistanceMap(false);
+  case 11: return getDistanceMap(true);
+  case 12: return getCAlphaTrace();
+  case 13: return getTertiaryStructure();
+  default: jassert(false); return Variable();
+  }
+}
 
 /*
 ** Compute Missing Targets
 */
-void Protein::computeMissingVariables()
+VectorPtr Protein::getSecondaryStructure() const
 {
-  jassert(primaryStructure);
-  if (dsspSecondaryStructure && !secondaryStructure)
-    secondaryStructure = computeSecondaryStructureFromDSSPSecondaryStructure(dsspSecondaryStructure);
-  
-  if (solventAccessibility && !solventAccessibilityAt20p)
-    solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
-  
-  if (tertiaryStructure)
+  if (!secondaryStructure && dsspSecondaryStructure)
+    const_cast<Protein* >(this)->secondaryStructure = computeSecondaryStructureFromDSSPSecondaryStructure(dsspSecondaryStructure);
+  return secondaryStructure;
+}
+
+VectorPtr Protein::getSolventAccessibilityAt20p() const
+{
+  if (!solventAccessibilityAt20p && solventAccessibility)
+    const_cast<Protein* >(this)->solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
+  return solventAccessibilityAt20p;
+}
+
+VectorPtr Protein::getDisorderRegions() const
+{
+  if (!disorderRegions && tertiaryStructure)
+    const_cast<Protein* >(this)->disorderRegions = computeDisorderRegionsFromTertiaryStructure(tertiaryStructure);
+  return disorderRegions;
+}
+
+CartesianPositionVectorPtr Protein::getCAlphaTrace() const
+{
+  if (!calphaTrace && tertiaryStructure)
+    const_cast<Protein* >(this)->calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
+  return calphaTrace;
+}
+
+SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
+{
+  if (betweenCBetaAtoms)
   {
-    if (!disorderRegions)
-      disorderRegions = computeDisorderRegionsFromTertiaryStructure(tertiaryStructure);
-    if (!calphaTrace)
-      calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
-    if (!distanceMapCa && tertiaryStructure->hasCAlphaAtoms())
-      distanceMapCa = computeDistanceMapFromTertiaryStructure(tertiaryStructure, false);
-    if (!distanceMapCb && tertiaryStructure->hasBackboneAndCBetaAtoms())
-      distanceMapCb = computeDistanceMapFromTertiaryStructure(tertiaryStructure, true);
+    if (!distanceMapCb && tertiaryStructure && tertiaryStructure->hasBackboneAndCBetaAtoms())
+      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(tertiaryStructure, true);
+    return distanceMapCb;
   }
+  else
+  {
+    if (!distanceMapCa && tertiaryStructure && tertiaryStructure->hasCAlphaAtoms())
+      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(tertiaryStructure, false);
+    return distanceMapCa;
+  }
+}
 
-  if (calphaTrace && !structuralAlphabetSequence)
-    structuralAlphabetSequence = computeStructuralAlphabetSequenceFromCAlphaTrace(calphaTrace);
+SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAtoms) const
+{
+  jassert(threshold == 8.0);
+  SymmetricMatrixPtr* res = const_cast<SymmetricMatrixPtr* >(betweenCBetaAtoms ? &contactMap8Cb : &contactMap8Ca);
+  if (!*res)
+  {
+    SymmetricMatrixPtr distanceMap = getDistanceMap(betweenCBetaAtoms);
+    if (distanceMap)
+      *res = computeContactMapFromDistanceMap(distanceMapCa, threshold);
 
-  if (distanceMapCa && !contactMap8Ca)
-    contactMap8Ca = computeContactMapFromDistanceMap(distanceMapCa, 8);
-  if (distanceMapCb && !contactMap8Cb)
-    contactMap8Cb = computeContactMapFromDistanceMap(distanceMapCb, 8);
+  }
+  return *res;
+}
+
+VectorPtr Protein::getStructuralAlphabetSequence() const
+{
+  if (!structuralAlphabetSequence)
+  {
+    CartesianPositionVectorPtr calphaTrace = getCAlphaTrace();
+    if (calphaTrace)
+      const_cast<Protein* >(this)->structuralAlphabetSequence = computeStructuralAlphabetSequenceFromCAlphaTrace(calphaTrace);
+  }
+  return structuralAlphabetSequence;
 }
 
 VectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)

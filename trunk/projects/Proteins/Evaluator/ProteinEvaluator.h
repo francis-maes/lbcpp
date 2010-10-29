@@ -62,7 +62,6 @@ public:
     const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>();
 
     ++numProteins;
-    predicted->computeMissingVariables();
 
     //pssmEvaluator->addPrediction(predicted->getPositionSpecificScoringMatrix(), correct->getPositionSpecificScoringMatrix());
     secondaryStructureEvaluator->addPrediction(predicted->getSecondaryStructure(), correct->getSecondaryStructure());

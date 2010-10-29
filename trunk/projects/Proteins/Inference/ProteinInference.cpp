@@ -38,7 +38,6 @@ ProteinPtr ProteinInferenceHelper::cloneInputProtein(const Variable& input)
 void ProteinInferenceHelper::prepareSupervisionProtein(ProteinPtr protein)
 {
   jassert(protein);
-  protein->computeMissingVariables();
   if (pdbDebugDirectory.exists() && protein->getTertiaryStructure())
     protein->saveToPDBFile(pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
   if (proteinDebugDirectory.exists())
@@ -171,8 +170,11 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
 DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
-  ObjectPtr supervisionObject = supervision.getObject();
-  res->setSubInference(decorated, input, supervisionObject ? supervisionObject->getVariable(targetIndex) : Variable());
+  Variable targetSupervision;
+  const ProteinPtr& supervisionProtein = supervision.getObjectAndCast<Protein>();
+  if (supervisionProtein)
+    targetSupervision = supervisionProtein->getTargetOrComputeIfMissing(targetIndex);
+  res->setSubInference(decorated, input, targetSupervision);
   return res;
 }
 
