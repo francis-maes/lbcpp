@@ -8808,6 +8808,10 @@ public:
     */
     inline const String& getTagName() const throw()  { return tagName; }
 
+    // francis
+    void setTagName(const String& tagName)
+      {this->tagName = tagName;}
+
     /** Tests whether this element has a particular tag name.
 
         @param possibleTagName  the tag name you're comparing it with

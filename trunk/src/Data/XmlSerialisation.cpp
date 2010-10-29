@@ -87,134 +87,6 @@ void XmlExporter::leave()
   getCurrentElement()->addChildElement(elt);
 }
 
-void XmlExporter::flushSave()
-{
-  /*std::cout << unresolvedLinks.size() << " unresolved links" << std::endl;
-  std::cout << savedObjects.size() << " saved objects:" << std::endl;
-  for (SavedObjectMap::const_iterator it = savedObjects.begin(); it != savedObjects.end(); ++it)
-  {
-    std::cout << "Num references: " <<  it->second.references.size() << std::endl;
-    XmlElement* elt = it->second.elt;
-    if (elt)
-      std::cout << "\t" << elt->createDocument(T("toto"), true, false) << std::endl << std::endl;
-  }*/
-
-  if (unresolvedLinks.empty())
-    {jassert(savedObjects.size() == 0); return;}
-
-  std::map<ObjectPtr, int> referencedObjects;
-  std::set<String> identifiers;
-  resolveChildLinks(root, referencedObjects, identifiers);
-
-  jassert(referencedObjects.empty());
-  jassert(identifiers.empty());
-  savedObjects.clear();
-  solvedLinks.clear();
-}
-
-String XmlExporter::makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers)
-{
-  String cn = object->getClassName();
-  for (int i = 1; true; ++i)
-  {
-    String res = cn + String(i);
-    if (identifiers.find(res) == identifiers.end())
-    {
-      identifiers.insert(res);
-      return res;
-    }
-  }
-  return String::empty;
-}
-
-void XmlExporter::resolveLink(XmlElement* xml, std::map<ObjectPtr, int>& referencedObjects, std::set<String>& identifiers)
-{
-  if (solvedLinks.find(xml) != solvedLinks.end())
-    return; // already solved
-  solvedLinks.insert(xml);
-
-  std::map<XmlElement* , SavedObject* >::iterator it = unresolvedLinks.find(xml);
-  if (it != unresolvedLinks.end())
-  {
-    SavedObject& savedObject = *(it->second);
-    unresolvedLinks.erase(it);
-
-    //std::cout << "Solving Link: " << xml->getTagName() << " " << xml->getStringAttribute(T("name")) << " numref = " << savedObject.references.size() << std::endl;
-    
-    if (savedObject.references.size() == 1)
-    {
-      // single reference: classical save
-      jassert(savedObject.elt);
-      xml->moveChildrenFrom(*savedObject.elt); 
-      for (int i = 0; i < savedObject.elt->getNumAttributes(); ++i)
-        xml->setAttribute(savedObject.elt->getAttributeName(i), savedObject.elt->getAttributeValue(i));
-      deleteAndZero(savedObject.elt);
-      resolveChildLinks(xml, referencedObjects, identifiers);
-    }
-    else
-    {
-      jassert(savedObject.references.size() > 1);
-
-      // shared reference
-      if (savedObject.identifier.isEmpty())
-        savedObject.identifier = makeUniqueIdentifier(savedObject.object, identifiers);
-      
-      currentStack.push_back(xml);
-      writeType(savedObject.object->getClass());
-      setAttribute(T("reference"), savedObject.identifier);
-      currentStack.pop_back();
-
-      jassert(!xml->getNumChildElements());
-      referencedObjects[savedObject.object]++;
-    }
-  }
-  else
-    resolveChildLinks(xml, referencedObjects, identifiers);
-}
-
-void XmlExporter::resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& referencedObjects, std::set<String>& identifiers)
-{
-  //std::cout << "Start: " << xml->getTagName() << " " << xml->getStringAttribute(T("name"), T("unnamed")) << " " << xml->getNumChildElements() << std::endl;
-
-  std::map<ObjectPtr, int> prevReferencedObjects = referencedObjects;
-
-  forEachXmlChildElement(*xml, elt)
-    resolveLink(elt, referencedObjects, identifiers);
-
-  int count = referencedObjects.size();
-  while (true)
-  {
-    std::map<ObjectPtr, int>::iterator nxt;
-    for (std::map<ObjectPtr, int>::iterator it = referencedObjects.begin(); it != referencedObjects.end(); it = nxt)
-    {
-      nxt = it; ++nxt;
-      SavedObject& savedObject = savedObjects[it->first];
-      if (!savedObject.elt)
-        continue;
-      if ((prevReferencedObjects.find(it->first) == prevReferencedObjects.end() && (size_t)it->second == savedObject.references.size()))
-      {
-        if (savedObject.object->getClass()->isUnnamedType())
-        {
-          jassert(savedObject.elt->hasAttribute(T("type")));
-          jassert(savedObject.elt->getChildByName(T("type")));
-        }
-        else
-          savedObject.elt->setAttribute(T("type"), savedObject.object->getClass()->getName().replaceCharacters(T("<>"), T("[]")));
-
-        savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
-        identifiers.erase(savedObject.identifier);
-        referencedObjects.erase(it);
-        xml->insertChildElement(savedObject.elt, 0);
-        resolveChildLinks(savedObject.elt, referencedObjects, identifiers);
-      }
-    }
-    if (referencedObjects.size() == (size_t)count)
-      break;
-    count = referencedObjects.size();
-  }
-  //std::cout << "End: " << xml->getTagName() << " " << xml->getStringAttribute(T("name"), T("unnamed")) << std::endl;
-}
-
 void XmlExporter::writeName(const String& name)
 {
   XmlElement* elt = getCurrentElement();
@@ -266,21 +138,138 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
   jassert(object->getReferenceCount());
   XmlElement* currentElement = getCurrentElement();
 
-  SavedObject& savedObject = savedObjects[object];
-  if (!savedObject.object)
+  size_t index;
+  SavedObjectsMap::const_iterator it = savedObjectsMap.find(object);
+  if (it == savedObjectsMap.end())
   {
+    // create index
+    index = savedObjects.size();
+    savedObjectsMap[object] = index;
+
+    // create SavedObject
+    SavedObject savedObject;
     savedObject.object = object;
-    savedObject.elt = new XmlElement(T("shared"));
+    savedObject.elt = new XmlElement(T("NOTAGYET"));
+    savedObjects.push_back(savedObject);
+
+    // save object
+    currentlySavedObjects.insert(index);
     currentStack.push_back(savedObject.elt);
     if (object->getClass() != expectedType)
       writeType(object->getClass());
     object->saveToXml(*this);
     currentStack.pop_back();
+    currentlySavedObjects.erase(index);
+
+    savedObjects[index].references.push_back(currentElement);
   }
-  unresolvedLinks[currentElement] = &savedObject;
-  savedObject.references.insert(currentElement);
+  else
+  {
+    index = it->second;
+    std::vector<XmlElement* >& references = savedObjects[index].references;
+    references.push_back(currentElement);
+    if (references.size() == 2)
+      sharedObjectsIndices.insert(it->second);
+  }
+
+  for (std::set<size_t>::const_iterator it = currentlySavedObjects.begin(); it != currentlySavedObjects.end(); ++it)
+    savedObjects[*it].dependencies.insert(index);
 }
 
+void XmlExporter::makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjectsIndices, std::vector<size_t>& res)
+{
+  std::set<size_t> todo = sharedObjectsIndices;
+
+  res.reserve(todo.size());
+  size_t n = todo.size();
+  for (size_t iteration = 0; todo.size() && iteration < n; ++iteration)
+  {
+    std::set<size_t>::const_iterator nxt;
+    for (std::set<size_t>::const_iterator it = todo.begin(); it != todo.end(); it = nxt)
+    {
+      nxt = it; ++nxt;
+
+      bool areAllDependenciesDone = true;
+      const std::set<size_t>& dependencies = savedObjects[*it].dependencies;
+      for (std::set<size_t>::const_iterator it2 = dependencies.begin(); it2 != dependencies.end(); ++it2)
+        if (sharedObjectsIndices.find(*it2) != sharedObjectsIndices.end() && !savedObjects[*it2].ordered)
+        {
+          areAllDependenciesDone = false;
+          break;
+        }
+      if (areAllDependenciesDone)
+      {
+        res.push_back(*it);
+        savedObjects[*it].ordered = true;
+        todo.erase(it);
+      }
+    }
+  }
+  
+  if (todo.empty())
+    return;
+  MessageCallback::error(T("XmlExporter::makeSharedObjectsSaveOrder"), T("Cyclic dependancy between shared objects"));
+}
+
+void XmlExporter::resolveSingleObjectReference(SavedObject& savedObject)
+{
+  XmlElement* reference = savedObject.references[0];
+  reference->moveChildrenFrom(*savedObject.elt); 
+  for (int i = 0; i < savedObject.elt->getNumAttributes(); ++i)
+    reference->setAttribute(savedObject.elt->getAttributeName(i), savedObject.elt->getAttributeValue(i));
+  deleteAndZero(savedObject.elt);
+}
+
+void XmlExporter::resolveSharedObjectReferences(SavedObject& savedObject)
+{
+  jassert(savedObject.references.size() > 1);
+  for (size_t i = 0; i < savedObject.references.size(); ++i)
+    savedObject.references[i]->setAttribute(T("reference"), savedObject.identifier);
+}
+
+void XmlExporter::flushSave()
+{
+  // make shared object order
+  std::vector<size_t> sharedObjectsOrder;
+  makeSharedObjectsSaveOrder(sharedObjectsIndices, sharedObjectsOrder);
+  jassert(sharedObjectsOrder.size() == sharedObjectsIndices.size());
+
+  // save all shared objects and solve their references
+  std::set<String> sharedObjectIdentifiers;
+  for (int i = sharedObjectsOrder.size() - 1; i >= 0; --i)
+  {
+    SavedObject& savedObject = savedObjects[sharedObjectsOrder[i]];
+    savedObject.elt->setTagName(T("shared"));
+    savedObject.identifier = makeUniqueIdentifier(savedObject.object, sharedObjectIdentifiers);
+    savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
+    root->insertChildElement(savedObject.elt, 0);
+    resolveSharedObjectReferences(savedObject);
+    savedObject.elt = NULL;
+  }
+  
+  // resolve all remaining single-references
+  for (size_t i = 0; i < savedObjects.size(); ++i)
+  {
+    SavedObject& savedObject = savedObjects[i];
+    if (savedObject.references.size() == 1)
+      resolveSingleObjectReference(savedObject);
+  }
+}
+
+String XmlExporter::makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers)
+{
+  String cn = object->getClassName();
+  for (int i = 1; true; ++i)
+  {
+    String res = cn + String(i);
+    if (identifiers.find(res) == identifiers.end())
+    {
+      identifiers.insert(res);
+      return res;
+    }
+  }
+  return String::empty;
+}
 /*
 ** XmlImporter
 */
@@ -310,7 +299,7 @@ XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
     return;
   }
   else
-    stack.push_back(root);
+    enter(root);
 
   if (lastParseError.isNotEmpty())
     callback.warningMessage(T("Variable::createFromFile"), lastParseError);
@@ -318,9 +307,8 @@ XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
 
 Variable XmlImporter::load()
 {
-  jassert(sharedObjectsStack.empty());
   if (root->getTagName() == T("lbcpp"))
-    return loadVariable(root->getFirstChildElement(), TypePtr());
+    return loadSharedObjects() ? loadVariable(root->getChildByName(T("variable")), TypePtr()) : Variable();
   else
     return loadVariable(root, TypePtr());
 }
@@ -441,4 +429,44 @@ void XmlImporter::leave()
   jassert(sharedObjectsStack.size());
   sharedObjectsStack.pop_back();
 }
-
+/*
+bool XmlExporter::CompareObjectsDeterministically::operator()(const ObjectPtr& object1, const ObjectPtr& object2) const
+{
+  if (!object2)
+    return false;
+  if (!object1)
+    return true;
+  if (object1->getClass() != object2->getClass())
+  {
+    jassert(object1->getClass()->getName() != object2->getClass()->getName());
+    return object1->getClass()->getName() < object2->getClass()->getName();
+  }
+  ClassPtr cl = object1->getClass();
+  size_t n = cl->getObjectNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v1 = object1->getVariable(i);
+    Variable v2 = object2->getVariable(i);
+    if (v1 == v2)
+      continue;
+    if (!v2.exists())
+      return false;
+    if (!v1.exists())
+      return true;
+    if (v1.isObject())
+    {
+      bool res1 = (*this)(v1.getObject(), v2.getObject());
+      bool res2 = (*this)(v2.getObject(), v1.getObject());
+      jassert(!res1 || !res2);
+      if (res1 != res2)
+        return res1;
+      else
+      {
+        // objects are stricly identic
+        return v1.getObject() < v2.getObject();
+      }
+    }
+  }
+  return false;
+}
+*/

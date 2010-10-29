@@ -67,21 +67,28 @@ private:
 
   struct SavedObject
   {
+    SavedObject() : elt(NULL), ordered(false) {}
+
     String identifier;
     ObjectPtr object;
     XmlElement* elt;
-    std::set<XmlElement* > references;
+    std::vector<XmlElement* > references; // XmlElements refering to this object
+    std::set<size_t> dependencies; // dependencies on other savedObjects 
+    bool ordered;
   };
 
-  typedef std::map<ObjectPtr, SavedObject> SavedObjectMap;
-  SavedObjectMap savedObjects;
-  std::map<XmlElement* , SavedObject* > unresolvedLinks;
-  std::set<XmlElement* > solvedLinks;
-  
-  static String makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers);
+  std::vector<SavedObject> savedObjects;
+  typedef std::map<ObjectPtr, size_t> SavedObjectsMap;
+  SavedObjectsMap savedObjectsMap;
+  std::set<size_t> sharedObjectsIndices;
+  std::set<size_t> currentlySavedObjects;
 
-  void resolveLink(XmlElement* xml, std::map<ObjectPtr, int>& referencedObjects, std::set<String>& identifiers);
-  void resolveChildLinks(XmlElement* xml, std::map<ObjectPtr, int>& referencedObjects, std::set<String>& identifiers);
+  void makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjectsIndices, std::vector<size_t>& res);
+
+  void resolveSingleObjectReference(SavedObject& savedObject);
+  void resolveSharedObjectReferences(SavedObject& savedObject);
+
+  static String makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers);
 
   void writeName(const String& name);
   void writeVariable(const Variable& variable, TypePtr expectedType);

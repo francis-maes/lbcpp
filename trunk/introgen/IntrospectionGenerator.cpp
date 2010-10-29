@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <set>
 
 static File inputFile;
 
@@ -110,14 +111,17 @@ protected:
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();
     directory.findChildFiles(headerFiles, File::findFiles, false, T("*.h"));
+    std::set<String> sortedFiles;
     for (int i = 0; i < headerFiles.size(); ++i)
     {
       String path = directoryName;
       if (path.isNotEmpty())
         path += T("/");
       path += headerFiles[i]->getRelativePathFrom(directory).replaceCharacter('\\', '/');
-      writeLine(T("#include ") + path.quoted());
+      sortedFiles.insert(path);
     }
+    for (std::set<String>::const_iterator it = sortedFiles.begin(); it != sortedFiles.end(); ++it)
+      writeLine(T("#include ") + it->quoted());
   }
 
   /*
