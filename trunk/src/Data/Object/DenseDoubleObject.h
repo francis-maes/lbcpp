@@ -111,10 +111,10 @@ public:
 
 private:
   friend class DenseDoubleObjectVariableIterator;
-
+  
+  DynamicClassSharedPtr thisClass;
   std::vector<double> values;
   double missingValue;
-  DynamicClassSharedPtr thisClass;
 };
 
 

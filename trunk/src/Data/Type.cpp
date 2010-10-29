@@ -290,10 +290,7 @@ Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArg
       baseType(baseType), templateType(templateType), templateArguments(templateArguments)
  {}
 
-Type::~Type()
-{
-  int i = 51;
-}
+Type::~Type() {}
 
 bool Type::initialize(MessageCallback& callback)
   {return (initialized = true);}

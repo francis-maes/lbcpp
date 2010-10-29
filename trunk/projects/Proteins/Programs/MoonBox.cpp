@@ -654,6 +654,9 @@ int main(int argc, char** argv)
     context->appendCallback(callbacks);
 
     context->train(inference, trainingData);
+    
+    if (generateIntermediate)
+      inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output + T(".inference")));
   }
 
   lbcpp::deinitialize();
