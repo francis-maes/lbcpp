@@ -91,7 +91,7 @@ public:
   // Object
   virtual String toString() const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ResidueClass;

@@ -20,7 +20,7 @@ public:
   virtual bool match(TypePtr type, const std::vector<String>& stack) const = 0;
   PerceptionPtr compute(TypePtr type) const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   virtual PerceptionPtr computeRule(TypePtr type) const = 0;
@@ -53,7 +53,7 @@ public:
   void clearCache()
     {rewritedPerceptions.clear();}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class PerceptionRewriterClass;

@@ -46,7 +46,7 @@ public:
   size_t getNumElements() const
     {return accumulators.size();}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   std::vector< std::vector<double> > accumulators; // index -> label -> count

@@ -21,6 +21,7 @@
 # endif
 
 //#define LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
+//#define LBCPP_DEBUG_OBJECT_ALLOCATION
 
 /*
 ** Standard library
@@ -70,6 +71,23 @@ public:
   ScopedLock(const CriticalSection& cs) {}
 };
 #endif // LBCPP_MULTI_THREAD
+
+#ifdef JUCE_DEBUG
+
+extern void* debugMalloc(const int size, const char* file, const int line);
+extern void* debugCalloc(const int size, const char* file, const int line);
+extern void* debugRealloc(void* const block, const int size, const char* file, const int line);
+extern void debugFree(void* const block);
+
+# define lbcpp_UseDebuggingNewOperator \
+  static void* operator new (size_t sz)           { void* const p = lbcpp::debugMalloc ((int) sz,  __FILE__, __LINE__); return (p != 0) ? p : ::operator new (sz); } \
+  static void* operator new (size_t sz, void* p)  { return ::operator new (sz, p); } \
+  static void operator delete (void* p)           { lbcpp::debugFree (p); }
+
+#else 
+# define lbcpp_UseDebuggingNewOperator 
+#endif // JUCE_DEBUG
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_COMMON_H_

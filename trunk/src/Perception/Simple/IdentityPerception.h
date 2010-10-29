@@ -73,7 +73,7 @@ public:
     }
   }
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class IdentityPerceptionClass;

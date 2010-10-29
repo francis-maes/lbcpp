@@ -27,7 +27,7 @@ public:
   virtual PerceptionPtr computeRule(TypePtr type) const
     {return target;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class TypeBasedPerceptionRewriteRuleClass;
@@ -65,7 +65,7 @@ public:
   virtual PerceptionPtr computeRule(TypePtr type) const
     {return target;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class TypeAndStackBasedPerceptionRewriteRuleClass;

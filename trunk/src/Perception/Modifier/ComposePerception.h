@@ -51,7 +51,7 @@ public:
     }
   }
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ComposePerceptionClass;

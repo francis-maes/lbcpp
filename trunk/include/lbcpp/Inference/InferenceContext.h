@@ -43,7 +43,7 @@ public:
   void setCallbacks(const std::vector<InferenceCallbackPtr>& callbacks)
     {this->callbacks = callbacks;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DecoratorInference;

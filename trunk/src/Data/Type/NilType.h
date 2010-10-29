@@ -60,7 +60,7 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return 0;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */

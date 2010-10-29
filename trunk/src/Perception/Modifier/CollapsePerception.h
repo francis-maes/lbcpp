@@ -80,7 +80,7 @@ public:
     decorated->computePerception(input, &callback);
   }
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class CollapsePerceptionClass;

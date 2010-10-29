@@ -86,7 +86,7 @@ public:
   virtual String getElementName(const VariableValue& value, size_t index) const
     {MessageCallback::error(T("Type::getElementName()"), T("Not implemented")); return String::empty;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */

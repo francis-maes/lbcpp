@@ -75,7 +75,7 @@ public:
   JobPtr getJob() const
     {return job;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   JobPtr job;

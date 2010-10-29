@@ -20,7 +20,6 @@
 
 using namespace lbcpp;
 
-extern void declareLBCppClasses();
 extern void declareProteinClasses();
 
 struct DefaultParameters
@@ -546,7 +545,7 @@ int main(int argc, char** argv)
   ContainerPtr trainingData = directoryFileStream(proteinsDirectory, T("*.xml"))
                             ->load(numProteinsToLoad)
                             ->apply(loadFromFileFunction(proteinClass), createThreadPool())
-                            ->apply(proteinToInputOutputPairFunction())
+                            ->apply(proteinToInputOutputPairFunction(true))
                             ->randomize();
   ContainerPtr testingData;
 

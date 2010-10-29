@@ -87,6 +87,8 @@ public:
   double getProbability(size_t index) const
     {jassert(index < values.size()); return values[index];}
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class DiscreteProbabilityDistributionClass;
 

@@ -12,6 +12,37 @@
 #include <fstream>
 using namespace lbcpp;
 
+#ifdef JUCE_DEBUG
+namespace lbcpp
+{
+#ifdef JUCE_MSVC
+  void* debugMalloc(const int size, const char* file, const int line)
+    {return _malloc_dbg (size, _NORMAL_BLOCK, file, line);}
+
+  void* debugCalloc(const int size, const char* file, const int line)
+    {return _calloc_dbg(1, size, _NORMAL_BLOCK, file, line);}
+
+  void* debugRealloc(void* const block, const int size, const char* file, const int line)
+    {return _realloc_dbg(block, size, _NORMAL_BLOCK, file, line);}
+
+  void debugFree(void* const block)
+    {_free_dbg(block, _NORMAL_BLOCK);}
+#else
+  void* debugMalloc(const int size, const char* file, const int line)
+    {return malloc(size);}
+
+  void* debugCalloc(const int size, const char* file, const int line)
+    {return calloc(1, size);}
+
+  void* debugRealloc(void* const block, const int size, const char* file, const int line)
+    {return realloc(block, size);}
+
+  void debugFree(void* const block)
+    {free(block);}
+#endif 
+}; /* namespace lbcpp */
+#endif // JUCE_DEBUG
+
 #ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 static CriticalSection refCountInfoLock;
@@ -67,7 +98,63 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
   {std::cout << "No RefCount Debug Info." << std::endl;}
 #endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
-extern void declareLBCppClasses();
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+static CriticalSection objectsCountPerTypeLock;
+static std::map<String, size_t > objectsCountPerType;
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
+
+Object::Object(ClassPtr thisClass)
+  : thisClass(thisClass)
+{
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  ScopedLock _(objectsCountPerTypeLock);
+  if (thisClass)
+  {
+    classNameUnderWhichThisIsKnown = thisClass->getName();
+    objectsCountPerType[classNameUnderWhichThisIsKnown]++;
+  }
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
+}
+
+void Object::setThisClass(ClassPtr thisClass)
+{
+  this->thisClass = thisClass;
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  ScopedLock _(objectsCountPerTypeLock);
+  if (thisClass && classNameUnderWhichThisIsKnown.isEmpty())
+  {
+    classNameUnderWhichThisIsKnown = thisClass->getName();
+    objectsCountPerType[classNameUnderWhichThisIsKnown]++;
+  }
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
+}
+
+Object::~Object()
+{
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  if (classNameUnderWhichThisIsKnown.isNotEmpty())
+  {
+    ScopedLock _(objectsCountPerTypeLock);
+    objectsCountPerType[classNameUnderWhichThisIsKnown]--;
+  }
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
+}
+
+void Object::displayObjectAllocationInfo(std::ostream& ostr)
+{
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  std::multimap<size_t, String> info;
+  {
+    ScopedLock _(objectsCountPerTypeLock);
+    for (std::map<String, size_t>::const_iterator it = objectsCountPerType.begin(); it != objectsCountPerType.end(); ++it)
+      info.insert(std::make_pair(it->second, it->first));
+  }
+  for (std::multimap<size_t, String>::const_reverse_iterator it = info.rbegin(); it != info.rend(); ++it)
+    std::cout << it->first << " " << it->second << std::endl;
+#else
+  ostr << "No Object Allocation Info, enable LBCPP_DEBUG_OBJECT_ALLOCATION flag" << std::endl;
+#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
+}
 
 String Object::getClassName() const
 {

@@ -49,7 +49,7 @@ public:
   virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */

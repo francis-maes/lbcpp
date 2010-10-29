@@ -233,7 +233,6 @@ private:
   ExplorerContentTabs* contentTabs;
 };
 
-extern void declareLBCppClasses();
 extern void declareProteinClasses();
 extern void declareExplorerClasses();
 

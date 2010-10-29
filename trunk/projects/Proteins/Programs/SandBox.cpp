@@ -260,21 +260,51 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 7;
+  size_t maxCount = 50;
 #else
-  size_t maxCount = 0;
+  size_t maxCount = 1;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
         ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
   else
     return directoryFileStream(supervisionDirectory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-      ->apply(proteinToInputOutputPairFunction(), false)->randomize();
+      ->apply(proteinToInputOutputPairFunction(false), false)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
 {
   inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
+}
+
+void getAllObjectsRecursively(const ObjectPtr& object, std::set<ObjectPtr>& res)
+{
+  if (res.find(object) == res.end())
+  {
+    res.insert(object);
+    size_t n = object->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable v = object->getVariable(i);
+      if (v.exists() && v.isObject())
+        getAllObjectsRecursively(v.getObject(), res);
+    }
+    ContainerPtr container = object.dynamicCast<Container>();
+    if (container && container->getElementsType()->inheritsFrom(objectClass))
+    {
+      n = container->getNumElements();
+      for (size_t i  = 0; i < n; ++i)
+      {
+        Variable elt = container->getElement(i);
+        if (elt.exists())
+          getAllObjectsRecursively(elt.getObject(), res);
+      }
+    }
+  }
+}
+namespace lbcpp
+{
+  extern size_t allocatedSize;
 }
 
 int main(int argc, char** argv)
