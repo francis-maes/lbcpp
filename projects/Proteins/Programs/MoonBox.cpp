@@ -109,7 +109,7 @@ public:
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
     
-//    InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
+    //InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
     if (DefaultParameters::saveIterations)
       res->setBatchLearner(onlineToBatchInferenceLearner());
     return res;
@@ -202,11 +202,10 @@ protected:
     }
     std::cout << targetName << " - LS: " << (int)learningRateUpdate << " - LR: " << learningRate << std::endl;
 
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
 //    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration),
 //                                                       maxIterationsWithoutImprovementStoppingCriterion(3));
-
 //    if (DefaultParameters::forceUse)
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
 
     IterationFunctionPtr learningStepFunction = DefaultParameters::useConstantLearning ? constantIterationFunction(DefaultParameters::learningRate)
                                                                               : invLinearIterationFunction(learningRate, learningRateUpdate);
@@ -476,6 +475,11 @@ bool   DefaultParameters::saveIterations      = false;
 size_t DefaultParameters::numThreads          = 1;
 size_t DefaultParameters::currentPass         = 0;
 
+void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
+{
+  inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
+}
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
@@ -602,10 +606,11 @@ int main(int argc, char** argv)
   if (generateIntermediate)
     inference->setProteinDebugDirectory(File::getCurrentWorkingDirectory().getChildFile(output + T(".xml")));
 
+  InferencePtr previousInference;
   for (size_t i = 0; i < targets.size(); ++i)
   {
     DefaultParameters::currentPass = i;
-    ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Pass"); //new ProteinParallelInference("Pass");
+    ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Pass");
     if (targets[i].contains(T("SS3")))
       inferencePass->appendInference(factory->createInferenceStep(T("secondaryStructure")));
     if (targets[i].contains(T("SS8")))
@@ -616,7 +621,12 @@ int main(int argc, char** argv)
       inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
     if (targets[i].contains(T("StAl")))
       inferencePass->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+
+    if (previousInference)
+      initializeLearnerByCloning(inferencePass, previousInference);
+ 
     inference->appendInference(inferencePass);
+    previousInference = inferencePass;
   }
 
   /*
