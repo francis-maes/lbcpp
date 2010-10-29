@@ -166,6 +166,7 @@ bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassification
 */
 void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
 {
+  ScopedLock _(lock);
   isPositive ? ++numPositives : ++numNegatives;
   std::pair<size_t, size_t>& counters = predictedScores[predictedScore];
   if (isPositive)
@@ -174,18 +175,10 @@ void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
     ++counters.first;
 }
 
-double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
-{
-  ScoresMap::const_iterator nxt = lastLower;
-  ++nxt;
-  if (nxt == predictedScores.end())
-    return lastLower->first + margin;
-  else
-    return (lastLower->first + nxt->first) / 2.0;
-}
-
 double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
 {
+  ScopedLock _(lock);
+
   jassert(predictedScores.size());
 
   BinaryClassificationConfusionMatrix confusionMatrix;
@@ -209,6 +202,7 @@ double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, d
       confusionMatrix.removePrediction(true, true, it->second.second);
       confusionMatrix.addPrediction(false, true, it->second.second);
     }
+    jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
 
     double result = (confusionMatrix.*measure)(); 
     if (result >= bestScore)
@@ -242,8 +236,20 @@ double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, d
   return bestThreshold;
 }
 
+double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
+{
+  ScoresMap::const_iterator nxt = lastLower;
+  ++nxt;
+  if (nxt == predictedScores.end())
+    return lastLower->first + margin;
+  else
+    return (lastLower->first + nxt->first) / 2.0;
+}
+
 void ROCAnalyse::getScores(std::vector< std::pair<String, double> >& res) const
 {
+  ScopedLock _(lock);
+
   size_t truePositives = numPositives;
   size_t falsePositives = numNegatives;
 

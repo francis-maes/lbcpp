@@ -1,6 +1,4 @@
 
-* Bug de conversion de PDB de julien
-* Réparer les contact maps (tester Perceptions dans l'explorer)
 * Voir comment récuperer le Loss pendant l'évaluation
 
 * Mechante optimisation (précalcul des Perceptions)
