@@ -262,13 +262,14 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 0;
 #endif // JUCE_DEBUG
-  //return directoryFileStream(directory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-//    ->apply(proteinToInputOutputPairFunction(), false)->randomize();
-
-  return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
-      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
+  if (inputDirectory.exists())
+    return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
+        ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
+  else
+    return directoryFileStream(supervisionDirectory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
+      ->apply(proteinToInputOutputPairFunction(), false)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
@@ -289,8 +290,8 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr trainProteins = loadProteins(workingDirectory.getChildFile(T("trainPass1")), workingDirectory.getChildFile(T("train")), pool);
-  ContainerPtr testProteins = loadProteins(workingDirectory.getChildFile(T("testPass1")), workingDirectory.getChildFile(T("test")), pool);
+  ContainerPtr trainProteins = loadProteins(File::nonexistent, workingDirectory.getChildFile(T("train")), pool);
+  ContainerPtr testProteins = loadProteins(File::nonexistent, workingDirectory.getChildFile(T("test")), pool);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();

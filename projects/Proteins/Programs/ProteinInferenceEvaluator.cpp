@@ -85,12 +85,6 @@ public:
       for (size_t i = 0; i < outputProtein->getNumVariables(); ++i)
         inputProtein->setVariable(i, outputProtein->getVariable(i));
 
-      inputProtein->computeMissingVariables();
-      
-      ProteinPtr supervisionProtein = supervision.dynamicCast<Protein>();
-      jassert(supervisionProtein);
-      supervisionProtein->computeMissingVariables();
-
       Variable::pair(inputProtein, supervision).saveToFile(f);
     }
   }

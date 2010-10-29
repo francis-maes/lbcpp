@@ -43,6 +43,8 @@ public:
   void saveToFASTAFile(const File& fastaFile, MessageCallback& callback = MessageCallback::getInstance()) const;
 
   Variable createEmptyTarget(size_t index) const;
+  Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
+
   static String getTargetFriendlyName(size_t index);
   static String getTargetShortName(size_t index);
   VectorPtr createEmptyProbabilitySequence() const;
@@ -75,9 +77,7 @@ public:
   void setSecondaryStructure(VectorPtr secondaryStructure)
     {this->secondaryStructure = secondaryStructure;}
 
-  VectorPtr getSecondaryStructure() const
-    {return secondaryStructure;}
-
+  VectorPtr getSecondaryStructure() const;
   VectorPtr createEmptySecondaryStructure() const;
 
   void setDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
@@ -91,8 +91,7 @@ public:
   void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
     {this->structuralAlphabetSequence = structuralAlphabetSequence;}
 
-  VectorPtr getStructuralAlphabetSequence() const
-    {return structuralAlphabetSequence;}
+  VectorPtr getStructuralAlphabetSequence() const;
 
   /*
   ** Solvent Accesibility
@@ -106,8 +105,7 @@ public:
   void setSolventAccessibilityAt20p(VectorPtr solventAccessibilityAt20p)
     {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}
 
-  VectorPtr getSolventAccessibilityAt20p() const
-    {return solventAccessibilityAt20p;}
+  VectorPtr getSolventAccessibilityAt20p() const;
 
   /*
   ** Disorder regions
@@ -115,8 +113,7 @@ public:
   void setDisorderRegions(VectorPtr disorderRegions)
   {jassert(disorderRegions->getElementsType() == probabilityType); this->disorderRegions = disorderRegions;}
 
-  VectorPtr getDisorderRegions() const
-    {return disorderRegions;}
+  VectorPtr getDisorderRegions() const;
   
   /*
   ** Contact maps / Distance maps
@@ -132,8 +129,7 @@ public:
   /*
   ** Tertiary Structure
   */
-  CartesianPositionVectorPtr getCAlphaTrace() const
-    {return calphaTrace;}
+  CartesianPositionVectorPtr getCAlphaTrace() const;
 
   void setCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
     {this->calphaTrace = calphaTrace;}
@@ -143,19 +139,6 @@ public:
 
   void setTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
     {this->tertiaryStructure = tertiaryStructure;}
-
-  /*
-  ** Compute Missing Variables
-  */
-  void computeMissingVariables();
-
-  virtual bool loadFromXml(XmlImporter& importer)
-  {
-    if (!Object::loadFromXml(importer))
-      return false;
-    computeMissingVariables();
-    return true;
-  }
 
   juce_UseDebuggingNewOperator
 

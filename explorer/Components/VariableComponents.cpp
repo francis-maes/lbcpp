@@ -51,7 +51,6 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
         const ProteinPtr& protein = container->getElement(i).getObjectAndCast<Protein>();
         if (protein)
         {
-          protein->computeMissingVariables();
           proteins.push_back(protein);
           names.push_back(String((int)i) + T(" - ") + protein->getName());
         }
@@ -65,7 +64,6 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
   if (object.dynamicCast<Protein>())
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
-    protein->computeMissingVariables();
     return new ProteinComponent(protein, name);
   }
 

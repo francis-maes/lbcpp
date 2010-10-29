@@ -54,7 +54,6 @@ public:
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
-    protein->computeMissingVariables();
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
