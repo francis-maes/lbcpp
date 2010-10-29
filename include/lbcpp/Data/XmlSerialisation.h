@@ -67,7 +67,7 @@ private:
 
   struct SavedObject
   {
-    SavedObject() : elt(NULL), ordered(false) {}
+    SavedObject() : elt(NULL), ordered(true) {}
 
     String identifier;
     ObjectPtr object;
