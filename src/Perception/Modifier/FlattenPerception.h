@@ -29,7 +29,7 @@ public:
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    FlattenCallback callback(decorated, targetCallback, offsets);
+    FlattenCallback callback(decorated, targetCallback, &offsets);
     decorated->computePerception(input, &callback);
   }
 
@@ -39,22 +39,39 @@ private:
   friend class FlattenPerceptionClass;
 
   PerceptionPtr decorated;
-  std::map< std::vector<size_t> , size_t> offsets;
+
+  struct OffsetInfo
+  {
+    OffsetInfo() : offset(0), subInfo(NULL) {}
+    ~OffsetInfo()
+      {if (subInfo) delete [] subInfo;}
+
+    size_t offset;
+    OffsetInfo* subInfo;
+
+    void set(size_t offset, size_t numSubInfos)
+    {
+      jassert(!subInfo);
+      this->offset = offset;
+      subInfo = new OffsetInfo[numSubInfos]();
+    }
+  };
+
+  OffsetInfo offsets;
 
   virtual void computeOutputType()
   {
-    precompute(decorated, String::empty);
+    precompute(decorated, String::empty, offsets);
     Perception::computeOutputType();
   }
 
-  void precompute(PerceptionPtr perception, const String& fullName, const std::vector<size_t>& stack = std::vector<size_t>())
+  void precompute(PerceptionPtr perception, const String& fullName, OffsetInfo& offsets)
   {
-    offsets[stack] = outputVariables.size();
-
     TypePtr perceptionOutputType = perception->getOutputType();
     size_t n = perceptionOutputType->getObjectNumVariables();
-    std::vector<size_t> newStack(stack);
-    newStack.push_back(0);
+
+    offsets.set(outputVariables.size(), n);
+
     for (size_t i = 0; i < n; ++i)
     {
       String name = fullName;
@@ -62,11 +79,9 @@ private:
         name += '.';
       name += perception->getOutputVariableName(i);
 
-      newStack.back() = i;
-
       PerceptionPtr subPerception = perception->getOutputVariableSubPerception(i);
       if (subPerception)
-        precompute(subPerception, name, newStack);
+        precompute(subPerception, name, offsets.subInfo[i]);
       else
         addOutputVariable(name, perception->getOutputVariableType(i));
     }
@@ -74,40 +89,31 @@ private:
 
   struct FlattenCallback : public PerceptionCallback
   {
-    FlattenCallback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const std::map< std::vector<size_t> , size_t>& offsets)
-      : targetCallback(targetCallback), offsets(offsets)
-      {updateOffset();}
+    FlattenCallback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const OffsetInfo* offsets)
+      : targetCallback(targetCallback), currentOffset(offsets)
+      {}
 
     virtual void sense(size_t variableNumber, const Variable& value)
-      {targetCallback->sense(variableNumber + offset, value);}
+      {targetCallback->sense(variableNumber + currentOffset->offset, value);}
 
     virtual void sense(size_t variableNumber, double value)
-      {targetCallback->sense(variableNumber + offset, value);}
+      {targetCallback->sense(variableNumber + currentOffset->offset, value);}
 
     virtual void sense(size_t variableNumber, const ObjectPtr& value)
-      {targetCallback->sense(variableNumber + offset, value);}
+      {targetCallback->sense(variableNumber + currentOffset->offset, value);}
 
     virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
     {
-      stack.push_back(variableNumber);
-      updateOffset();
+      const OffsetInfo* offsetBackup = currentOffset;
+      jassert(currentOffset->subInfo);
+      currentOffset = currentOffset->subInfo + variableNumber;
       subPerception->computePerception(input, this);
-      stack.pop_back();
-      updateOffset();
+      currentOffset = offsetBackup;
     }
 
   private:
     PerceptionCallbackPtr targetCallback;
-    const std::map< std::vector<size_t> , size_t>& offsets;
-    std::vector<size_t> stack;
-    size_t offset;
-
-    void updateOffset()
-    {
-      std::map< std::vector<size_t> , size_t>::const_iterator it = offsets.find(stack);
-      jassert(it != offsets.end());
-      offset = it->second;
-    }
+    const OffsetInfo* currentOffset;
   };
 };
 
