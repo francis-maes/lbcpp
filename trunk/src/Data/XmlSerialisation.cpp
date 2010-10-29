@@ -169,7 +169,10 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
     std::vector<XmlElement* >& references = savedObjects[index].references;
     references.push_back(currentElement);
     if (references.size() == 2)
+    {
       sharedObjectsIndices.insert(it->second);
+      savedObjects[index].ordered = false;
+    }
   }
 
   for (std::set<size_t>::const_iterator it = currentlySavedObjects.begin(); it != currentlySavedObjects.end(); ++it)
@@ -192,7 +195,7 @@ void XmlExporter::makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjec
       bool areAllDependenciesDone = true;
       const std::set<size_t>& dependencies = savedObjects[*it].dependencies;
       for (std::set<size_t>::const_iterator it2 = dependencies.begin(); it2 != dependencies.end(); ++it2)
-        if (sharedObjectsIndices.find(*it2) != sharedObjectsIndices.end() && !savedObjects[*it2].ordered)
+        if (!savedObjects[*it2].ordered)
         {
           areAllDependenciesDone = false;
           break;
