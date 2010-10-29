@@ -51,7 +51,8 @@ private:
   {
     offsets[stack] = outputVariables.size();
 
-    size_t n = perception->getNumOutputVariables();
+    TypePtr perceptionOutputType = perception->getOutputType();
+    size_t n = perceptionOutputType->getObjectNumVariables();
     std::vector<size_t> newStack(stack);
     newStack.push_back(0);
     for (size_t i = 0; i < n; ++i)

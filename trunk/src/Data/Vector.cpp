@@ -172,6 +172,15 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
   TypePtr type = getElementsType();
   exporter.setAttribute(T("size"), (int)n);
 
+  // enumeration vectors: as text
+  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
+  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType))
+  {
+    exporter.addTextElement(toString());
+    return;
+  }
+
+  // long builtin-type vectors: binary encoding
   if (n > 1000 && (type->inheritsFrom(integerType) || type->inheritsFrom(doubleType) || type->inheritsFrom(booleanType)))
   {
     juce::MemoryBlock block(&values[0], sizeof (VariableValue) * values.size());
@@ -180,11 +189,8 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
     return;
   }
 
-  EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-  if ((enumeration && enumeration->hasOneLetterCodes()) || type->inheritsFrom(doubleType))
-    exporter.addTextElement(toString());
-  else
-    Container::saveToXml(exporter);
+  // other vectors: encore into XML child elements (default implementation)
+  Container::saveToXml(exporter);
 }
 
 bool GenericVector::loadFromXml(XmlImporter& importer)

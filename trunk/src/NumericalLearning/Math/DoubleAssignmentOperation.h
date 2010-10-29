@@ -45,6 +45,7 @@ struct DefaultDoubleAssignmentCallback : public PerceptionCallback
 
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
   {
+    jassert(value);
     ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
     operation.compute(targetObject, value);
     object->setVariable(variableNumber, targetObject);
@@ -181,8 +182,11 @@ void addWeighted(ObjectPtr& target, const PerceptionPtr& perception, const Varia
   jassert(input.exists());
   if (!weight)
     return;
+  TypePtr type = perception->getOutputType();
+  if (type == nilType)
+    return;
   if (!target)
-    target = Object::create(perception->getOutputType());
+    target = Object::create(type);
 
   AddWeightedOperation operation(weight);
   DenseDoubleObject* denseDoubleTarget = dynamic_cast<DenseDoubleObject* >(target.get());

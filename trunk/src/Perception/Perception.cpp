@@ -18,7 +18,12 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
     : target(target), atLeastOneVariable(false) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
-    {jassert(value.exists()); target->setVariable(variableNumber, value); atLeastOneVariable = true;}
+  {
+    jassert(!value.isMissingValue());
+    jassert(!target->getVariable(variableNumber).exists());
+    target->setVariable(variableNumber, value);
+    atLeastOneVariable = true;
+  }
 
   ObjectPtr target;
   bool atLeastOneVariable;
@@ -52,12 +57,23 @@ String Perception::toString() const
 
 TypePtr Perception::getOutputType() const
 {
+  const_cast<Perception* >(this)->ensureOutputTypeIsComputed();
+  return outputType.get();
+}
+
+size_t Perception::getNumOutputVariables() const
+{
+  const_cast<Perception* >(this)->ensureOutputTypeIsComputed();
+  return outputVariables.size();
+}
+
+void Perception::ensureOutputTypeIsComputed()
+{
   if (!outputType || !outputType->getBaseType())
   {
-    const_cast<Perception* >(this)->computeOutputType();
+    computeOutputType();
     jassert(outputType); // make sure that you call Perception::computeOutputType() in your implementation of computeOutputType()
   }
-  return outputType.get();
 }
 
 void Perception::clearOutputType()
@@ -80,6 +96,8 @@ void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionP
 Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
 {
   TypePtr outputType = getOutputType();
+  if (outputType == nilType)
+    return Variable();
   
   // create empty sparse or dense object
   ObjectPtr res;

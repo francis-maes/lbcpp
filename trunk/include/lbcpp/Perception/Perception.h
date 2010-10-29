@@ -79,9 +79,7 @@ public:
   const std::vector<OutputVariable>& getOutputVariables() const
     {return outputVariables;}
 
-  size_t getNumOutputVariables() const
-    {return outputVariables.size();}
-
+  size_t getNumOutputVariables() const;
   TypePtr getOutputVariableType(size_t index) const
     {jassert(index < outputVariables.size()); return outputVariables[index].type;}
 
@@ -111,6 +109,8 @@ protected:
   static String classNameToOutputClassName(const String& className);
 
 private:
+  void ensureOutputTypeIsComputed();
+
   friend class PerceptionClass;
   UnnamedDynamicClassPtr outputType;
 };
