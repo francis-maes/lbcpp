@@ -112,6 +112,7 @@ void Object::setVariable(size_t index, const Variable& value)
 ObjectPtr Object::create(ClassPtr objectClass)
 {
   ObjectPtr res = objectClass->create().getObject();
+  jassert(res);
   jassert(res->getReferenceCount() == 2);
   res->decrementReferenceCounter();
   return res;

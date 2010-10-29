@@ -81,7 +81,7 @@ Variable Variable::clone() const
     return *this;
 }
 
-static void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth, bool displayType)
+static void printVariableLine(const Variable& value, std::ostream& ostr, size_t variableNumber, const String& name, int currentDepth, bool displayType, bool displayValue)
 {
   for (int i = 0; i < currentDepth; ++i)
     ostr << "  ";
@@ -91,10 +91,33 @@ static void printVariableLine(const Variable& value, std::ostream& ostr, size_t 
     ostr << " " << (const char* )value.getTypeName();
   if (name.isNotEmpty())
     ostr << " " << name;
-  String v = value.toString();
-  if (v.length() > 30)
-    v = v.substring(0, 30) + T("...");
-  ostr << " = " << v << std::endl;
+  if (displayValue)
+  {
+    String v = value.toString();
+    if (v.length() > 30)
+      v = v.substring(0, 30) + T("...");
+    ostr << " = " << v;
+  }
+  ostr << std::endl;
+}
+
+static bool hasPrintChildren(const Variable& variable, int maxDepth, int currentDepth)
+{
+  if (maxDepth >= 0 && currentDepth >= maxDepth)
+    return false;
+
+  if (variable.size() > 0)
+    return true;
+
+  TypePtr type = variable.getType();
+  if (type->inheritsFrom(objectClass))
+  {
+    ObjectPtr object = variable.getObject();
+    if (object && type->getObjectNumVariables())
+      return true;
+  }
+
+  return false;
 }
 
 static void printVariablesRecursively(const Variable& variable, std::ostream& ostr, int maxDepth, int currentDepth, bool displayMissingValues, bool displayTypes)
@@ -111,7 +134,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
         Variable subVariable = object->getVariable(i);
         if (displayMissingValues || subVariable.exists())
         {
-          printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth, displayTypes);
+          printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
           printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
         }
       }
@@ -121,7 +144,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
     Variable subVariable = variable[i];
     if (displayMissingValues || subVariable.exists())
     {
-      printVariableLine(subVariable, ostr, (size_t)-1, variable.getName(i), currentDepth, displayTypes);
+      printVariableLine(subVariable, ostr, (size_t)-1, variable.getName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
       printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
     }
   }
@@ -129,7 +152,7 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
 
 void Variable::printRecursively(std::ostream& ostr, int maxDepth, bool displayMissingValues, bool displayTypes)
 {
-  printVariableLine(*this, ostr, (size_t)-1, String::empty, 0, displayTypes);
+  printVariableLine(*this, ostr, (size_t)-1, String::empty, 0, displayTypes, false);
   printVariablesRecursively(*this, ostr, maxDepth, 1, displayMissingValues, displayTypes);
 }
 

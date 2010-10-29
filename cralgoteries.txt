@@ -1,10 +1,23 @@
 
+* Bug de conversion de PDB de julien
+* Réparer les contact maps (tester Perceptions dans l'explorer)
+* Voir comment récuperer le Loss pendant l'évaluation
+
+* Mechante optimisation (précalcul des Perceptions)
+
+* Voir si on peut faire du Dissulfide Bond Matrix
+
+* Optimisation de l'utilisation mémoire
+
+Boinc:
+ * Gestion générique des paramètres
+ * Essayer d'optimiser l'utilisation mémoire
+ * Rendre le save deterministe
+ * Render le load de fichiers deterministe (trier les fichiers)
+
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Multiclass classifiers: output discrete distributions
- * Rendre le save deterministe
- * Render le load de fichiers deterministe (trier les fichiers)
- * Optimiser l'utilisation mémoire (=> Boinc)
  
 Inference:
  * Segmental Features
@@ -21,4 +34,3 @@ Explorer:
 
 Types:
  * permettre de déclarer des variables ayant des Types abstraits -> c.f. pb dans ProteinInferenceStep::ProteinInferenceStep
-

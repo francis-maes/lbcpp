@@ -153,15 +153,15 @@ public:
    // return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
 */
   
-    //InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    //InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
-    //return res;
+    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    return res;
 
-    InferencePtr rankingInference = allPairsRankingInference(linearInference(targetName, inputLabelPairPerception(perception, classes)), hingeLossFunction(true), 
-      createOnlineLearner(targetName), targetName);
+    //InferencePtr rankingInference = allPairsRankingInference(linearInference(targetName, inputLabelPairPerception(perception, classes)), hingeLossFunction(true), 
+    //  createOnlineLearner(targetName), targetName);
 
       //mostViolatedPairRankingLinearSVMInference(inputLabelPairPerception(perception, classes), createOnlineLearner(targetName), targetName);
-    return rankingBasedClassificationInference(targetName, rankingInference, classes);
+    //return rankingBasedClassificationInference(targetName, rankingInference, classes);
   }
 
 protected:
@@ -179,7 +179,7 @@ protected:
         InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 10);
+    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 3);
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -314,20 +314,20 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
-
-  //InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
-  //inference->appendInference(lastStep);
-  /*for (int i = 1; i < 2; ++i)
+/*
+  InferencePtr lastStep = factory->createInferenceStep(T("secondaryStructure"));
+  inference->appendInference(lastStep);
+  for (int i = 1; i < 5; ++i)
   {
     InferencePtr step = factory->createInferenceStep(T("secondaryStructure"));
     //initializeLearnerByCloning(step, lastStep);
     inference->appendInference(step);
     lastStep = step;
-  } */
+  }*/
 
   //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
