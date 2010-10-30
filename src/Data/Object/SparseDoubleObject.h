@@ -19,7 +19,7 @@ class SparseDoubleObject : public Object
 {
 public:
   SparseDoubleObject(DynamicClassSharedPtr thisClass)
-    : Object((Class* )thisClass.get()), thisClass(thisClass)  {}
+    : Object((Class* )thisClass.get()), thisClass(thisClass), lastIndex(-1)  {}
   
   virtual Variable getVariable(size_t index) const
   {
@@ -29,11 +29,15 @@ public:
 
   virtual void setVariable(size_t index, const Variable& value)
   {
-    if (value.exists() && (values.empty() || index > values.back().first))
+    jassert(value.exists() && value.isDouble());
+    if ((int)index > lastIndex)
     {
       double d = value.getDouble();
       if (d)
+      {
         values.push_back(std::make_pair(index, value.getDouble()));
+        lastIndex = (int)index;
+      }
       return;
     }
     // not implemented
@@ -53,6 +57,7 @@ private:
 
   DynamicClassSharedPtr thisClass;
   std::vector< std::pair<size_t, double> > values;
+  int lastIndex;
 };
 
 typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;

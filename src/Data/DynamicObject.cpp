@@ -23,6 +23,26 @@ bool DynamicClass::initialize(MessageCallback& callback)
 {
   if (!getObjectNumVariables())
     createObjectVariables();
+
+  // compute variablesType
+  variablesType = mixedVariableTypes;
+  if (variables.size())
+  {
+    bool hasOnlyDoubles = true;
+    bool hasOnlyObjects = true;
+    for (size_t i = 0; i < variables.size(); ++i)
+    {
+      if (!variables[i].first->inheritsFrom(doubleType))
+        hasOnlyDoubles = false;
+      if (!variables[i].first->inheritsFrom(objectClass))
+        hasOnlyObjects = false;
+    }
+    if (hasOnlyDoubles)
+      variablesType = onlyDoubleVariables;
+    else if (hasOnlyObjects)
+      variablesType = onlyObjectVariables;
+  }
+
   return DefaultClass::initialize(callback);
 }
 
@@ -32,33 +52,20 @@ VariableValue DynamicClass::create() const
 ObjectPtr DynamicClass::createDenseObject() const
 {
   jassert(variables.size());
-  bool hasOnlyDoubles = true;
-  bool hasOnlyObjects = true;
-  for (size_t i = 0; i < variables.size(); ++i)
-  {
-    if (!variables[i].first->inheritsFrom(doubleType))
-      hasOnlyDoubles = false;
-    if (!variables[i].first->inheritsFrom(objectClass))
-      hasOnlyObjects = false;
-  }
-  if (hasOnlyDoubles)
+  jassert(variablesType != uncomputedVariableTypes)
+  if (variablesType == onlyDoubleVariables)
     return new DenseDoubleObject(refCountedPointerFromThis(this));
-  else if (hasOnlyObjects)
+  else if (variablesType == onlyObjectVariables)
     return new DenseObjectObject(refCountedPointerFromThis(this));
   else
     return new DenseGenericObject(refCountedPointerFromThis(this));
 }
 
 ObjectPtr DynamicClass::createSparseObject() const
-{
-  bool hasOnlyDoubles = true;
-  for (size_t i = 0; i < variables.size(); ++i)
-    if (!variables[i].first->inheritsFrom(doubleType))
-    {
-      hasOnlyDoubles = false;
-      break;
-    }
-  if (hasOnlyDoubles)
+{ 
+  jassert(variables.size());
+  jassert(variablesType != uncomputedVariableTypes)
+  if (variablesType == onlyDoubleVariables)
     return new SparseDoubleObject(refCountedPointerFromThis(this));
   else
     return new SparseGenericObject(refCountedPointerFromThis(this));

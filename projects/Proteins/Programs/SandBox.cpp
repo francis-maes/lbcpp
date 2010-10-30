@@ -261,9 +261,9 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 50;
+  size_t maxCount = 7;
 #else
-  size_t maxCount = 50;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
