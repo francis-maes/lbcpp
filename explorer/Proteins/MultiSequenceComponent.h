@@ -84,7 +84,7 @@ public:
     if (numElementsPerLine < 1)
       return availableHeight;
     int numParts = (int)ceil(longestSequence / (double)numElementsPerLine);
-    return numParts * (numSequences * elementHeight + marginVertical);
+    return numParts * ((int)numSequences * elementHeight + marginVertical);
   }
 
   virtual void paint(Graphics& g)
@@ -103,7 +103,7 @@ public:
         end = longestSequence;
       paintSequencesInterval(g, begin, end, marginLeft, y);
       begin = end;
-      y += elementHeight * numSequences + marginVertical;
+      y += elementHeight * (int)numSequences + marginVertical;
     }
   }
 
@@ -139,7 +139,7 @@ private:
     g.setColour(Colours::grey);
     for (size_t i = begin; i < end; ++i)
       if (i == begin || i == end - 1 || ((i + 1) % 5) == 0)
-        g.drawText(String((int)(i + 1)), x1 + (i - begin) * elementWidth, y1 - 10, elementWidth, 10, Justification::centred, true);
+        g.drawText(String((int)(i + 1)), x1 + ((int)i - (int)begin) * elementWidth, y1 - 10, elementWidth, 10, Justification::centred, true);
 
     bool hasMultiSequences = false;
     for (size_t i = 0; i < sequences.size(); ++i)
@@ -261,12 +261,12 @@ private:
     {
       DiscreteProbabilityDistributionPtr probs = sequence->getElement(index).getObjectAndCast<DiscreteProbabilityDistribution>();
       size_t numVariables = probs->getEnumeration()->getNumElements();
-      for (size_t i = 0; i < numVariables; ++i)
+      for (int i = 0; i < (int)numVariables; ++i)
       {
         juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - probs->getVariable(i).getDouble()));
         g.setColour(Colour(255, level, level));
-        int y1 = y + i * h / numVariables;
-        int y2 = y + (i + 1) * h / numVariables;
+        int y1 = y + i * h / (int)numVariables;
+        int y2 = y + (i + 1) * h / (int)numVariables;
         g.fillRect(x, y1, w, y2 - y1);
       }
       return;
