@@ -71,7 +71,7 @@ typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
 class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
 public:
-  ScalarVariableMeanAndVariance(const String& name = "")
+  ScalarVariableMeanAndVariance(const String& name = T("Unnamed"))
     : ScalarVariableMean(name) {}
 
   void push(double val)
@@ -99,7 +99,7 @@ private:
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
 public:
-  ScalarVariableStatistics(const String& name = "")
+  ScalarVariableStatistics(const String& name = T("Unnamed"))
     : ScalarVariableMeanAndVariance(name), min(DBL_MAX), max(-DBL_MAX) {}
 
   void push(double val)
@@ -186,6 +186,28 @@ protected:
     for (std::deque<double>::const_iterator it = values.begin(); it != values.end(); ++it)
       currentSum += *it;
   }
+};
+
+class ScalarVariableRecentMeanAndVariance : public ScalarVariableRecentMean
+{
+public:
+  ScalarVariableRecentMeanAndVariance(const String& name = T("Unnamed"), size_t memorySize = 0)
+    : ScalarVariableRecentMean(name, memorySize), meansqr(name + T(" sqr"), memorySize) {}
+
+  void clear()
+    {ScalarVariableRecentMean::clear(); meansqr.clear();}
+
+  void push(double value)
+    {ScalarVariableRecentMean::push(value); meansqr.push(value * value);}
+
+  double getVariance() const
+    {double mean = getMean(); return meansqr.getMean() - mean * mean;}
+
+  double getStandardDeviation() const
+    {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
+
+private:
+  ScalarVariableRecentMean meansqr;
 };
 
 }; /* namespace lbcpp */

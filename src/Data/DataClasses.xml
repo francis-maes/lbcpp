@@ -143,6 +143,9 @@
     <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean"/>
     <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance"/>
 
+    <class name="ScalarVariableRecentMean" base="NameableObject"/>
+    <class name="ScalarVariableRecentMeanAndVariance" base="ScalarVariableRecentMean"/>
+
     <!-- Consumer -->
     <class name="Consumer" base="Object" abstract="yes"/>
     <class name="TextPrinter" base="Consumer" abstract="yes"/>

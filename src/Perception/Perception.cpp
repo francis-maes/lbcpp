@@ -32,8 +32,9 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
 
 struct SetInSparseDoubleObjectPerceptionCallback : public PerceptionCallback
 {
-  SetInSparseDoubleObjectPerceptionCallback(const SparseDoubleObjectPtr& target)
-    : target(target), atLeastOneVariable(false) {}
+  SetInSparseDoubleObjectPerceptionCallback(const SparseDoubleObjectPtr& target, size_t initialSize)
+    : target(target)
+    {target->reserveValues(initialSize);}
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
@@ -42,14 +43,14 @@ struct SetInSparseDoubleObjectPerceptionCallback : public PerceptionCallback
   }
 
   virtual void sense(size_t variableNumber, double value)
-  {
-    target->appendValue(variableNumber, value);
-    atLeastOneVariable = true;
-  }
+    {target->appendValue(variableNumber, value);}
 
   SparseDoubleObjectPtr target;
-  bool atLeastOneVariable;
 };
+
+Perception::Perception() : sparseness(T("Sparseness"), 100)
+{
+}
 
 void PerceptionCallback::sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
 {
@@ -142,9 +143,12 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   // compute perception
   if (sparseDoubleRes)
   {
-    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(res);
+    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(sparseDoubleRes, (size_t)(sparseness.getMean() + sparseness.getStandardDeviation() * 3.0));
     computePerception(input, &perceptionCallback);
-    if (!perceptionCallback.atLeastOneVariable)
+    size_t numValues = sparseDoubleRes->getValues().size();
+    if (numValues)
+      const_cast<Perception* >(this)->sparseness.push((double)numValues);
+    else
       res = ObjectPtr();
   }
   else

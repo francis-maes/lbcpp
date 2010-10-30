@@ -27,16 +27,6 @@ public:
     return Variable();
   }
 
-  void appendValue(size_t index, double value)
-  {
-    jassert((int)index > lastIndex);
-    if (value)
-    {
-      values.push_back(std::make_pair(index, value));
-      lastIndex = (int)index;
-    }
-  }
-
   virtual void setVariable(size_t index, const Variable& value)
   {
     jassert(value.exists() && value.isDouble());
@@ -57,6 +47,18 @@ public:
   const std::vector< std::pair<size_t, double> >& getValues() const
     {return values;}
 
+  void reserveValues(size_t count)
+    {values.reserve(count);}
+
+  void appendValue(size_t index, double value)
+  {
+    jassert((int)index > lastIndex);
+    if (value)
+    {
+      values.push_back(std::make_pair(index, value));
+      lastIndex = (int)index;
+    }
+  }
 private:
   friend class SparseDoubleObjectVariableIterator;
 
