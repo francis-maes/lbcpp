@@ -103,7 +103,7 @@ protected:
   struct Callback : public PerceptionCallback
   {
     Callback(PerceptionCallbackPtr targetCallback, const RewritedPerception* owner)
-      : targetCallback(targetCallback), owner(owner)
+      : targetCallback(targetCallback), variablesMap(owner->variablesMap)
       {}
 
     template<class Type>
@@ -155,13 +155,12 @@ protected:
 
   private:
     PerceptionCallbackPtr targetCallback;
-    const RewritedPerception* owner;
+    const std::vector< std::pair<size_t, PerceptionPtr> >& variablesMap;
 
     const std::pair<size_t, PerceptionPtr>* getTargetPerception(size_t variableNumber)
     {
-      if (variableNumber >= owner->variablesMap.size())
-        return NULL;
-      const std::pair<size_t, PerceptionPtr>& res = owner->variablesMap[variableNumber];
+      jassert(variableNumber < variablesMap.size());
+      const std::pair<size_t, PerceptionPtr>& res = variablesMap[variableNumber];
       return res.first == (size_t)-1 ? NULL : &res;
     }
   };
