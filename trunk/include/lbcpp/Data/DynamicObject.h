@@ -18,10 +18,10 @@ class DynamicClass : public DefaultClass
 {
 public:
   DynamicClass(const String& name, TypePtr baseClass = objectClass)
-    : DefaultClass(name, baseClass) {}
+    : DefaultClass(name, baseClass), variablesType(uncomputedVariableTypes) {}
   DynamicClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-    : DefaultClass(templateType, templateArguments, baseClass) {}
-  DynamicClass() {}
+    : DefaultClass(templateType, templateArguments, baseClass), variablesType(uncomputedVariableTypes) {}
+  DynamicClass() : variablesType(uncomputedVariableTypes) {}
   virtual ~DynamicClass();
 
   ObjectPtr createDenseObject() const;
@@ -42,6 +42,14 @@ public:
 
 protected:
   virtual void createObjectVariables() = 0;
+
+  enum VariablesType
+  {
+    uncomputedVariableTypes = 0,
+    onlyDoubleVariables,
+    onlyObjectVariables,
+    mixedVariableTypes
+  } variablesType;
 };
 
 typedef NativePtr<DynamicClass> DynamicClassPtr;
