@@ -239,7 +239,7 @@ void XmlExporter::flushSave()
 
   // save all shared objects and solve their references
   std::set<String> sharedObjectIdentifiers;
-  for (int i = sharedObjectsOrder.size() - 1; i >= 0; --i)
+  for (int i = (int)sharedObjectsOrder.size() - 1; i >= 0; --i)
   {
     SavedObject& savedObject = savedObjects[sharedObjectsOrder[i]];
     savedObject.elt->setTagName(T("shared"));

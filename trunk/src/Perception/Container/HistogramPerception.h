@@ -90,7 +90,7 @@ public:
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
     beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
-    endIndex = beginIndex + windowSize;
+    endIndex = beginIndex + (int)windowSize;
     return container;
   }
 

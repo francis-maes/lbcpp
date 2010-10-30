@@ -102,7 +102,7 @@ juce::tchar Enumeration::getOneLetterCode(size_t index) const
   if (oneLetterCodes.length())
   {
     jassert(oneLetterCodes.length() == (int)elements.size());
-    return oneLetterCodes[index];
+    return oneLetterCodes[(int)index];
   }
   else
   {

@@ -164,7 +164,7 @@ public:
     jassert(inferencesThatHaveALearner.size());
 
     // call startLearningCallback()
-    for (int i = inferencesThatHaveALearner.size() - 1; i >= 0; --i)
+    for (int i = (int)inferencesThatHaveALearner.size() - 1; i >= 0; --i)
       inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback();
 
     // create sequential inference state

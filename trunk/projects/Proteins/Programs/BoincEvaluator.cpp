@@ -287,7 +287,7 @@ protected:
     else if (value == T("perStep"))
       return InferenceOnlineLearner::perStep;
     else if (value.startsWith(T("perMiniBatch")))
-      return (InferenceOnlineLearner::UpdateFrequency)(InferenceOnlineLearner::perStepMiniBatch + value.substring(strlen("perMiniBatch")).getIntValue());
+      return (InferenceOnlineLearner::UpdateFrequency)(InferenceOnlineLearner::perStepMiniBatch + (size_t)value.substring(strlen("perMiniBatch")).getIntValue());
     else if (value == T("perEpisode"))
       return InferenceOnlineLearner::perEpisode;
     else if (value == T("perPass"))

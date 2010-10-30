@@ -112,7 +112,7 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception(const String& tar
   };
   for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
   {
-    int index = getTargetIndex(histogramTargets[i]); jassert(index >= 0);
+    int index = (int)getTargetIndex(histogramTargets[i]); jassert(index >= 0);
     String name = Protein::getTargetShortName((size_t)index);
     TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
     addPerception(freq, name, histogramTargets[i], containerHistogramPerception(elementsType));
@@ -153,7 +153,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   };
   for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
   {
-    int index = getTargetIndex(histogramTargets[i]); jassert(index >= 0);
+    int index = (int)getTargetIndex(histogramTargets[i]); jassert(index >= 0);
     String name = Protein::getTargetShortName((size_t)index);
     TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
     addPerception(freq, name, histogramTargets[i], segmentHistogramPerception(elementsType));

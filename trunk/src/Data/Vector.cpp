@@ -183,7 +183,7 @@ void GenericVector::saveToXml(XmlExporter& exporter) const
   // long builtin-type vectors: binary encoding
   if (n > 1000 && (type->inheritsFrom(integerType) || type->inheritsFrom(doubleType) || type->inheritsFrom(booleanType)))
   {
-    juce::MemoryBlock block(&values[0], sizeof (VariableValue) * values.size());
+    juce::MemoryBlock block(&values[0], (int)(sizeof (VariableValue) * values.size()));
     exporter.setAttribute(T("binary"), T("true"));
     exporter.addTextElement(block.toBase64Encoding());
     return;
@@ -243,13 +243,13 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
     String oneLetterCodes = enumeration->getOneLetterCodes();
     for (size_t i = 0; i < values.size(); ++i)
     {
-      int j = oneLetterCodes.indexOfChar(text[i]);
+      int j = oneLetterCodes.indexOfChar(text[(int)i]);
       if (j >= 0)
         values[i] = VariableValue(j);
       else
       {
-        if (text[i] != '_')
-          importer.warningMessage(T("Vector::loadFromXml"), String(T("Could not recognize one letter code '")) + text[i] + T("'"));
+        if (text[(int)i] != '_')
+          importer.warningMessage(T("Vector::loadFromXml"), String(T("Could not recognize one letter code '")) + text[(int)i] + T("'"));
         values[i] = enumeration->getMissingValue();
       }
     }
@@ -267,9 +267,9 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
       return false;
     }
     for (size_t i = 0; i < values.size(); ++i)
-      if (tokens[i] != T("_"))
+      if (tokens[(int)i] != T("_"))
       {
-        Variable value = Variable::createFromString(doubleType, tokens[i], importer.getCallback());
+        Variable value = Variable::createFromString(doubleType, tokens[(int)i], importer.getCallback());
         if (!value.exists())
           return false;
         values[i] = value.getDouble();
