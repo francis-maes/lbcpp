@@ -11,6 +11,7 @@
 
 # include "../Data/Vector.h"
 # include "../Data/DynamicObject.h"
+# include "../Data/RandomVariable.h"
 # include "../Function/Function.h"
 
 namespace lbcpp
@@ -46,6 +47,8 @@ typedef PerceptionCallback* PerceptionCallbackPtr; // no ref-counting for Percep
 class Perception : public Function
 {
 public:
+  Perception();
+
   // Perception
   virtual TypePtr getOutputType() const;
   
@@ -113,6 +116,7 @@ private:
 
   friend class PerceptionClass;
   UnnamedDynamicClassPtr outputType;
+  ScalarVariableRecentMeanAndVariance sparseness;
 };
 
 extern ClassPtr perceptionClass;
