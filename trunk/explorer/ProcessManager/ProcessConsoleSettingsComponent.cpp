@@ -84,10 +84,10 @@ public:
 
   virtual void resized()
   {
-    for (size_t i = 0; i < filters.size(); ++i)
+    for (int i = 0; i < (int)filters.size(); ++i)
     {
-      int x1 = (i * getWidth() / filters.size());
-      int x2 = ((i + 1) * getWidth() / filters.size());
+      int x1 = (i * getWidth() / (int)filters.size());
+      int x2 = ((i + 1) * getWidth() / (int)filters.size());
       filters[i]->setBounds(x1, 0, x2 - x1, getHeight());
     }
   }

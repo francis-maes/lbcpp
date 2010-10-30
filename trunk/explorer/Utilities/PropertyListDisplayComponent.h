@@ -30,7 +30,7 @@ public:
     g.fillAll(Colour(240, 245, 250));
     if (!properties.size())
       return;
-    int baseHeight = getHeight() / properties.size();
+    int baseHeight = getHeight() / (int)properties.size();
     for (size_t i = 0; i < properties.size(); ++i)
     {
       int h1 = (int)(i * baseHeight);

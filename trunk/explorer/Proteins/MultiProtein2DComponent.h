@@ -116,7 +116,7 @@ private:
   {
     juce::ComboBox* res = new juce::ComboBox(T("ProteinObject"));
     for (size_t i = 0; i < configuration->getNumProteins(); ++i)
-      res->addItem(configuration->getProteinName(i), i + 1);
+      res->addItem(configuration->getProteinName(i), (int)i + 1);
     res->addListener(this);
     return res;
   }
@@ -125,7 +125,7 @@ private:
   {
     juce::ComboBox* res = new juce::ComboBox(T("Map"));
     for (size_t i = 0; i < configuration->getNumMaps(); ++i)
-      res->addItem(configuration->getMapFriendlyName(i), i + 1);
+      res->addItem(configuration->getMapFriendlyName(i), (int)i + 1);
     res->addListener(this);
     return res;
   }
@@ -147,19 +147,19 @@ public:
   int computePixelsPerEntry(int availableWidth, int availableHeight) const
   {
     int availableSize = juce::jmin(availableWidth, availableHeight);
-    return n ? juce::jmax(1, availableSize / n) : 4;
+    return n ? juce::jmax(1, availableSize / (int)n) : 4;
   }
   
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
   {
     int pixelsPerEntry = computePixelsPerEntry(availableWidth, availableHeight);
-    return juce::jmax(pixelsPerEntry * n, availableWidth);
+    return juce::jmax(pixelsPerEntry * (int)n, availableWidth);
   }
 
   virtual int getPreferedHeight(int availableWidth, int availableHeight) const
   {
     int pixelsPerEntry = computePixelsPerEntry(availableWidth, availableHeight);
-    return juce::jmax(pixelsPerEntry * n, availableHeight);
+    return juce::jmax(pixelsPerEntry * (int)n, availableHeight);
   }
 
   virtual void paint(Graphics& g)
@@ -167,8 +167,8 @@ public:
     int pixelsPerEntry, x1, y1;
     getPaintCoordinates(pixelsPerEntry, x1, y1);
   
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = i; j < n; ++j)
+    for (int i = 0; i < (int)n; ++i)
+      for (int j = i; j < (int)n; ++j)
       {
         paintEntry(g, x1 + i * pixelsPerEntry, y1 + j * pixelsPerEntry, pixelsPerEntry, map1, i, j);
         paintEntry(g, x1 + j * pixelsPerEntry, y1 + i * pixelsPerEntry, pixelsPerEntry, map2, i, j);
@@ -182,7 +182,7 @@ public:
     }
 
     g.setColour(Colours::black);
-    g.drawRect(x1, y1, n * pixelsPerEntry, n * pixelsPerEntry);
+    g.drawRect(x1, y1, (int)n * pixelsPerEntry, (int)n * pixelsPerEntry);
     g.drawLine((float)x1, (float)y1, (float)(x1 + n * pixelsPerEntry), (float)(y1 + n * pixelsPerEntry));
   }
 
@@ -219,8 +219,8 @@ private:
   void getPaintCoordinates(int& pixelsPerEntry, int& x1, int& y1) const
   {
     pixelsPerEntry = computePixelsPerEntry(getWidth(), getHeight());
-    x1 = (getWidth() - pixelsPerEntry * n) / 2;
-    y1 = (getHeight() - pixelsPerEntry * n) / 2;
+    x1 = (getWidth() - pixelsPerEntry * (int)n) / 2;
+    y1 = (getHeight() - pixelsPerEntry * (int)n) / 2;
   }
 
   static Colour selectColour(SymmetricMatrixPtr map, size_t i, size_t j)
@@ -319,7 +319,7 @@ protected:
     SymmetricMatrixPtr contactMap = input[0].getObjectAndCast<SymmetricMatrix>();
 
     for (size_t i = 0; i < proteins.size(); ++i)
-      if (contactMap == getMap(i))
+      if (contactMap == getMap((int)i))
         return Variable::pair(proteins[i], input[1]);
     jassert(false);
     return Variable();

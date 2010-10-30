@@ -177,10 +177,10 @@ protected:
     else
       res = gradientDescentOnlineLearner(
         InferenceOnlineLearner::never, //perStepMiniBatch1000,                                                 // randomization
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, (size_t)5e6), true, // learning steps
+        InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = (targetName == T("disorderRegions cutoff") ? 1 : 10);
+    size_t numIterations = 30;
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;

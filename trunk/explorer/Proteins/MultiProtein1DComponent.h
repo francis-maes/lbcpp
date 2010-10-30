@@ -140,9 +140,9 @@ public:
   {
     for (size_t i = 0; i < buttons.size(); ++i)
     {
-      int x = i * buttonWidth;
+      int x = (int)i * buttonWidth;
       for (size_t j = 0; j < buttons[i].size(); ++j)
-        buttons[i][j]->setBounds(x, j * buttonHeight, buttonWidth, buttonHeight);
+        buttons[i][j]->setBounds(x, (int)j * buttonHeight, buttonWidth, buttonHeight);
     }
   }
 
@@ -171,7 +171,7 @@ public:
     for (size_t i = 0; i < configuration->getNumSequences(); ++i)
       if (configuration->isSequenceEnabled(i))
       {
-        int sequenceIndex = configuration->getSequenceIndex(i);
+        int sequenceIndex = (int)configuration->getSequenceIndex(i);
         String sequenceFriendlyName = configuration->getSequenceFriendlyName(i);
         std::vector< std::pair<String, ContainerPtr> > sequences;
         for (size_t j = 0; j < configuration->getNumProteins(); ++j)

@@ -100,7 +100,7 @@ public:
       {
         String str = recent->getRecentExecutable(i).getFullPathName();
         if (str.isNotEmpty())
-          comboBox->addItem(str, i + 1);
+          comboBox->addItem(str, (int)i + 1);
       }
       if (numRecents)
         startingDirectory = recent->getRecentExecutable(0).getParentDirectory();
@@ -140,7 +140,7 @@ public:
         RecentProcessesPtr recent = RecentProcesses::getInstance();
         std::vector<String> arguments = recent->getRecentArguments(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
-          addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], i + 1);
+          addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
         setSelectedItemIndex(0);
       }
     }
@@ -162,7 +162,7 @@ public:
         RecentProcessesPtr recent = RecentProcesses::getInstance();
         std::vector<File> arguments = recent->getRecentWorkingDirectories(comboBoxThatHasChanged->getText());
         for (size_t i = 0; i < arguments.size(); ++i)
-          comboBox->addItem(arguments[i].getFullPathName(), i + 1);
+          comboBox->addItem(arguments[i].getFullPathName(), (int)i + 1);
         comboBox->setSelectedItemIndex(0);
       }
       else
