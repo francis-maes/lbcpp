@@ -63,7 +63,7 @@ void Protein::setPrimaryStructure(const String& primaryStructure)
 
   this->primaryStructure = vector(aminoAcidTypeEnumeration, n);
   for (size_t i = 0; i < n; ++i)
-    this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[i]));
+    this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[(int)i]));
 }
 
 void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, bool betweenCBetaAtoms)
@@ -394,7 +394,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
       if (dist < minDistance)
       {
         minDistance = dist;
-        bestGroup = j;
+        bestGroup = (int)j;
       }
     }
     res->setElement(i - 2, Variable(bestGroup, structuralAlphabetElementEnumeration));

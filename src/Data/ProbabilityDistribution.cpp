@@ -66,7 +66,7 @@ String DiscreteProbabilityDistribution::toString() const
 Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) const
 {
   EnumerationPtr enumeration = getEnumeration();
-  int res = random->sampleWithProbabilities(values);
+  int res = (int)random->sampleWithProbabilities(values);
   if (res >= 0 && res < (int)enumeration->getNumElements())
     return Variable(res, enumeration);
   else

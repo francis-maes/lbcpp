@@ -78,7 +78,7 @@ static bool isVariableConstant(ContainerPtr container, size_t index1, int index2
 }
 
 static bool isInputVariableConstant(ContainerPtr trainingData, size_t variableIndex, Variable& value)
-  {return isVariableConstant(trainingData, 0, variableIndex, value);}
+  {return isVariableConstant(trainingData, 0, (int)variableIndex, value);}
 
 static bool isOutputConstant(ContainerPtr trainingData, Variable& value)
   {return isVariableConstant(trainingData, 1, -1, value);}

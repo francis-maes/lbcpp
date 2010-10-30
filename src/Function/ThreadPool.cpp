@@ -140,7 +140,7 @@ void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, Multi
 JobPtr ThreadPool::popJob()
 {
   ScopedLock _(waitingJobsLock);
-  for (int i = waitingJobs.size() - 1; i >= 0; --i)
+  for (int i = (int)waitingJobs.size() - 1; i >= 0; --i)
   {
     std::list<JobPtr>& jobs = waitingJobs[i];
     if (jobs.size())
@@ -282,7 +282,7 @@ void ThreadPool::writeCurrentState(std::ostream& ostr)
   if (numWaitingJobs)
   {
     ostr << "- Queue - " << std::endl;
-    for (int i = waitingJobs.size() - 1; i >= 0; --i)
+    for (int i = (int)waitingJobs.size() - 1; i >= 0; --i)
     {
       const std::list<JobPtr>& jobs = waitingJobs[i];
       for (std::list<JobPtr>::const_iterator it = jobs.begin(); it != jobs.end(); ++it)

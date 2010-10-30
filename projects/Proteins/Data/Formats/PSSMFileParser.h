@@ -80,7 +80,7 @@ public:
     DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
-      int begin = 10 + i * 3;
+      int begin = 10 + (int)i * 3;
       String score = line.substring(begin, begin + 3).trim();
       if (!score.containsOnly(T("0123456789-")))
       {

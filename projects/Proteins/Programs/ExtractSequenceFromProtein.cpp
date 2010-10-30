@@ -80,7 +80,7 @@ int main(int argc, char** argv)
   outputFile.deleteFile();
   OutputStream* o = outputFile.createOutputStream();
   
-  for (size_t i = 0; i < (size_t)proteinFiles.size(); ++i)
+  for (int i = 0; i < proteinFiles.size(); ++i)
   {
     ProteinPtr protein = Protein::createFromXml(*proteinFiles[i]);
 

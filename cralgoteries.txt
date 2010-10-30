@@ -1,7 +1,3 @@
-* Optimisation:
-   - précalculer les Perceptions pour les numérical inferences
-   - faire un SparseDoubleObject et optimiser les opérations avec
-
 * Voir si on peut faire du Dissulfide Bond Matrix
 * Voir comment récuperer le Loss pendant l'évaluation
 

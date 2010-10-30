@@ -86,7 +86,7 @@ bool PDBFileParser::parseRemarkLine(const String& line)
   String remark = getSubString(line, 12, 70).trim();
   if (remark.startsWith(T("RESOLUTION.")))
   {
-    int b = strlen("RESOLUTION.");
+    int b = (int)strlen("RESOLUTION.");
     int n = remark.indexOf(b, T("ANGSTROMS."));
     if (n >= 0)
     {
@@ -118,7 +118,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   int aminoAcidCodesLength = 0;
   for (size_t i = 0; i < numAminoAcidsPerLine; ++i)
   {
-    int firstColumn = 20 + i * 4;
+    int firstColumn = 20 + (int)i * 4;
     String aminoAcidCode = getSubString(line, firstColumn, firstColumn + 2).trim();
     if (aminoAcidCode.isEmpty())
       break;
@@ -177,7 +177,7 @@ bool PDBFileParser::parseSeqResLine(const String& line)
   // parse amino acids
   for (size_t i = 0; i < numAminoAcidsPerLine; ++i)
   {
-    int firstColumn = 20 + i * 4;
+    int firstColumn = 20 + (int)i * 4;
     String aminoAcidCode = getSubString(line, firstColumn, firstColumn + 2);
     if (aminoAcidCode == T("   "))
       break;

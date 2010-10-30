@@ -120,7 +120,7 @@ protected:
     if (gradient)
     {
       // for each negative example
-      int forwardIndex = n - 1;
+      int forwardIndex = (int)n - 1;
       double forwardCosts = 0;
       for (int i = (int)n - 1; i >= 0; --i)
         if (costs[order[i]]) // negative
@@ -182,9 +182,9 @@ protected:
       std::vector<double> losses(alternativesOfCost.size(), 0.0);
       if (it != alternativesPerCost.begin()) // if is not the lowest cost
       {
-        int forwardIndex = n - 1;
+        int forwardIndex = (int)n - 1;
         double forwardCosts = 0;
-        for (int i = alternativesOfCost.size() - 1; i >= 0; --i)
+        for (int i = (int)alternativesOfCost.size() - 1; i >= 0; --i)
         {
           double scorePlusMargin = scores[alternativesOfCost[i]] + margin;
           while (forwardIndex >= 0 && scores[order[forwardIndex]] <= scorePlusMargin)
