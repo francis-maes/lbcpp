@@ -113,7 +113,7 @@ protected:
       if (targetPerception)
       {
         if (targetPerception->second)
-          targetCallback->sense(targetPerception->first, targetPerception->second, Variable(value));//, targetPerception->getInputType()));
+          targetCallback->sense(targetPerception->first, targetPerception->second, Variable(value));
         else
           targetCallback->sense(targetPerception->first, value);          
       }

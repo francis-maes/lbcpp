@@ -11,6 +11,8 @@
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 # include <lbcpp/Function/ScalarObjectFunction.h>
+# include "../../Data/Object/DenseObjectObject.h"
+# include "../../Data/Object/DenseDoubleObject.h"
 
 namespace lbcpp
 {
@@ -40,10 +42,10 @@ public:
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
-    const ScalarObjectFunctionPtr& lossFunction = supervision.getObjectAndCast<ScalarObjectFunction>();
-    ObjectPtr lossGradient;
+    const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>();
+    std::vector<double> lossGradient;
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (!lossGradient || !getPerception()->getOutputType()->getObjectNumVariables())
+    if (lossGradient.empty() || !getPerception()->getOutputType()->getObjectNumVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
     const PerceptionPtr& perception = getPerception();
 
@@ -58,10 +60,9 @@ public:
     if (!parameters)
       parameters = Object::create(getWeightsType(getPerception()->getOutputType()));
     
-    size_t n = lossGradient->getNumVariables();
-    for (size_t i = 0; i < n; ++i)
+    for (size_t i = 0; i < lossGradient.size(); ++i)
     {
-      double w = lossGradient->getVariable(i).getDouble() * weight;
+      double w = lossGradient[i] * weight;
       if (w)
       {
         ObjectPtr object = parameters->getVariable(i).getObject();
@@ -80,35 +81,31 @@ public:
   virtual Variable predict(const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
-    const ObjectPtr& weights = getParameters()->getWeights();
+    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>();
+    const PerceptionPtr& perception = parameters->getPerception();
+    const ObjectPtr& weights = parameters->getWeights();
     if (!weights)
       return Variable::missingValue(outputClass);
 
-    ObjectPtr object = Object::create(outputClass);
-    size_t n = object->getNumVariables();
-    jassert(n == weights->getNumVariables());
-    const PerceptionPtr& perception = getPerception();
+    const DenseObjectObjectPtr& denseWeights = weights.staticCast<DenseObjectObject>();
+    DenseDoubleObjectPtr res = new DenseDoubleObject(outputClass.staticCast<DynamicClass>().get());
+    std::vector<double>& outputs = res->getValues();
+    size_t n = outputClass->getObjectNumVariables();
+    outputs.resize(n);
+    jassert(n == denseWeights->getNumObjects());
     if (input.getType() == perception->getOutputType())
     {
       // perception as already been applied
       for (size_t i = 0; i < n; ++i)
-      {
-        ObjectPtr outputWeights = weights->getVariable(i).getObject();
-        jassert(object->getVariableType(i)->inheritsFrom(doubleType));
-        object->setVariable(i, lbcpp::dotProduct(outputWeights, input.getObject()));
-      }
+        outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), input.getObject());
     }
     else
     {
       // default case: simultaneous perception computation and dot-product computation
       for (size_t i = 0; i < n; ++i)
-      {
-        ObjectPtr outputWeights = weights->getVariable(i).getObject();
-        jassert(object->getVariableType(i)->inheritsFrom(doubleType));
-        object->setVariable(i, lbcpp::dotProduct(outputWeights, perception, input));
-      }
+        outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), perception, input);
     }
-    return object;
+    return res;
   }
 
   virtual bool loadFromXml(XmlImporter& importer)

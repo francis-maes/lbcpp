@@ -44,10 +44,14 @@ public:
   double getValue(size_t index) const
     {return index < values.size() ? values[index] : missingValue;}
 
+  const std::vector<double>& getValues() const
+    {return values;}
+
   std::vector<double>& getValues()
   {
-    if (values.size() < thisClass->getObjectNumVariables())
-      values.resize(thisClass->getObjectNumVariables(), missingValue);
+    /*size_t n = thisClass->getObjectNumVariables();
+    if (values.size() < n)
+      values.resize(n, missingValue);*/
     return values;
   }
 
