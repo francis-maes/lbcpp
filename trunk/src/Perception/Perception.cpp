@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Perception/Perception.h>
+#include "../Data/Object/SparseDoubleObject.h"
 using namespace lbcpp;
 
 /*
@@ -26,6 +27,27 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
   }
 
   ObjectPtr target;
+  bool atLeastOneVariable;
+};
+
+struct SetInSparseDoubleObjectPerceptionCallback : public PerceptionCallback
+{
+  SetInSparseDoubleObjectPerceptionCallback(const SparseDoubleObjectPtr& target)
+    : target(target), atLeastOneVariable(false) {}
+
+  virtual void sense(size_t variableNumber, const Variable& value)
+  {
+    jassert(!value.isMissingValue() && value.isDouble());
+    sense(variableNumber, value.getDouble());
+  }
+
+  virtual void sense(size_t variableNumber, double value)
+  {
+    target->appendValue(variableNumber, value);
+    atLeastOneVariable = true;
+  }
+
+  SparseDoubleObjectPtr target;
   bool atLeastOneVariable;
 };
 
@@ -101,11 +123,15 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   
   // create empty sparse or dense object
   ObjectPtr res;
+  SparseDoubleObjectPtr sparseDoubleRes;
   if (isSparse())
   {
     DynamicClassPtr dynamicClassOutputType = outputType.dynamicCast<DynamicClass>();
     if (dynamicClassOutputType)
+    {
       res = dynamicClassOutputType->createSparseObject();
+      sparseDoubleRes = res.dynamicCast<SparseDoubleObject>();
+    }
   }
   if (!res)
   {
@@ -114,9 +140,21 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   }
 
   // compute perception
-  SetInObjectPerceptionCallback perceptionCallback(res);
-  computePerception(input, &perceptionCallback);
-  return perceptionCallback.atLeastOneVariable ? Variable(res) : Variable::missingValue(outputType);
+  if (sparseDoubleRes)
+  {
+    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(res);
+    computePerception(input, &perceptionCallback);
+    if (!perceptionCallback.atLeastOneVariable)
+      res = ObjectPtr();
+  }
+  else
+  {
+    SetInObjectPerceptionCallback perceptionCallback(res);
+    computePerception(input, &perceptionCallback);
+    if (!perceptionCallback.atLeastOneVariable)
+      res = ObjectPtr();
+  }
+  return Variable(res, outputType);
 }
 
 void Perception::computeOutputType()

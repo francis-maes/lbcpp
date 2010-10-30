@@ -27,17 +27,22 @@ public:
     return Variable();
   }
 
+  void appendValue(size_t index, double value)
+  {
+    jassert((int)index > lastIndex);
+    if (value)
+    {
+      values.push_back(std::make_pair(index, value));
+      lastIndex = (int)index;
+    }
+  }
+
   virtual void setVariable(size_t index, const Variable& value)
   {
     jassert(value.exists() && value.isDouble());
     if ((int)index > lastIndex)
     {
-      double d = value.getDouble();
-      if (d)
-      {
-        values.push_back(std::make_pair(index, value.getDouble()));
-        lastIndex = (int)index;
-      }
+      appendValue(index, value.getDouble());
       return;
     }
     // not implemented

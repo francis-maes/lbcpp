@@ -152,7 +152,7 @@ double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, cons
 
 double dotProduct(const DenseDoubleObjectPtr& dense, const SparseDoubleObjectPtr& sparse)
 {
-  const std::vector<double>& denseValues = dense->getValues();
+  const std::vector<double>& denseValues = ((DenseDoubleObject const * )dense.get())->getValues();
   const std::vector< std::pair<size_t, double> >& sparseValues = sparse->getValues();
   double res = 0.0;
   for (size_t i = 0; i < sparseValues.size(); ++i)

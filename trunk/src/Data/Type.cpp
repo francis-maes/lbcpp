@@ -87,11 +87,11 @@ public:
     }
   }
 
-  TypePtr getType(const String& name, const std::vector<TypePtr>& arguments, MessageCallback& callback) const
+  TypePtr getType(const String& typeName, const std::vector<TypePtr>& arguments, MessageCallback& callback) const
   {
     jassert(arguments.size());
 
-    String typeName = removeAllSpaces(name);
+    jassert(!typeName.containsAnyOf(T(" \t\r\n")));
     if (typeName.isEmpty())
     {
       callback.errorMessage(T("TypeManager::getType"), T("Empty type name"));

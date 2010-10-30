@@ -29,6 +29,9 @@ public:
     return values[index];
   }
 
+  size_t getNumObjects() const
+    {return values.size();}
+
   const ObjectPtr& getObject(size_t index) const
   {
     static ObjectPtr empty;

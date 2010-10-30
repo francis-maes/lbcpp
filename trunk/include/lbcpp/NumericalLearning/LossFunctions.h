@@ -28,6 +28,7 @@
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTIONS_H_
 
 # include "../Data/Container.h"
+# include "../Data/DynamicObject.h"
 # include "../Function/ScalarFunction.h"
 # include "../Function/ScalarObjectFunction.h"
 
@@ -88,6 +89,8 @@ public:
 
   virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
 
+  void compute(const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const;
+
   size_t getNumClasses() const
     {return classes->getNumElements();}
 
@@ -96,6 +99,8 @@ protected:
 
   EnumerationPtr classes;
   size_t correctClass;
+
+  DynamicClassSharedPtr outputClass;
 };
 
 typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
