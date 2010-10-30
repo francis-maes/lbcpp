@@ -42,37 +42,40 @@ public:
 
   virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
+    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>();
+    const PerceptionPtr& perception = parameters->getPerception();
+
     const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>();
     std::vector<double> lossGradient;
     lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (lossGradient.empty() || !getPerception()->getOutputType()->getObjectNumVariables())
+    if (lossGradient.empty() || !perception->getOutputType()->getObjectNumVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
-    const PerceptionPtr& perception = getPerception();
 
     bool isLocked = false;
     if (!target)
     {
       parametersLock.enterWrite();
-      target = &getParameters()->getWeights();
+      target = &parameters->getWeights();
       isLocked = true;
     }
-    ObjectPtr& parameters = *target;
-    if (!parameters)
-      parameters = Object::create(getWeightsType(getPerception()->getOutputType()));
+    DenseObjectObjectPtr& weights = *(DenseObjectObjectPtr* )target;
+    if (!weights)
+      weights = Object::create(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
     
-    for (size_t i = 0; i < lossGradient.size(); ++i)
-    {
-      double w = lossGradient[i] * weight;
-      if (w)
+    if (input.getType() == perception->getOutputType())
+      for (size_t i = 0; i < lossGradient.size(); ++i)
       {
-        ObjectPtr object = parameters->getVariable(i).getObject();
-        if (input.getType() == perception->getOutputType())
-          lbcpp::addWeighted(object, input.getObject(), w);
-        else
-          lbcpp::addWeighted(object, perception, input, w);
-        parameters->setVariable(i, object);
+        double w = lossGradient[i] * weight;
+        if (w)
+          lbcpp::addWeighted(weights->getObjectReference(i), input.getObject(), w);
       }
-    }
+    else
+      for (size_t i = 0; i < lossGradient.size(); ++i)
+      {
+        double w = lossGradient[i] * weight;
+        if (w)
+          lbcpp::addWeighted(weights->getObjectReference(i), perception, input, w);
+      }
 
     if (isLocked)
       parametersLock.exitWrite();
