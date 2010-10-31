@@ -94,12 +94,6 @@
       <variable type="Boolean" name="optimizeMcc"/>
     </class>
 
-    <!-- Batch Learner -->
-    <class name="StochasticNumericalInferenceLearner" base="StochasticInferenceLearner">
-      <constructor arguments="bool precomputePerceptions, bool randomizeExamples" returnType="SequentialInference"/>
-      <variable type="Boolean" name="precomputePerceptions"/>
-    </class>
-
     <!-- Misc -->
     <class name="AddBiasInference" base="Inference">
       <constructor arguments="const String&amp; name, double initialBias"/>

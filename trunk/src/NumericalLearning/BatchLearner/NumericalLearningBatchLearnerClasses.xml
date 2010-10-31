@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="NumericalLearningBatchLearner" directory="NumericalLearning/BatchLearner">
+
+  <namespace name="lbcpp">
+
+    <class name="StochasticNumericalInferenceLearner" base="StochasticInferenceLearner">
+      <constructor arguments="bool precomputePerceptions, bool randomizeExamples" returnType="SequentialInference"/>
+      <variable type="Boolean" name="precomputePerceptions"/>
+    </class>
+
+    <class name="AddBiasInferenceLearner" base="AtomicInferenceLearner">
+      <constructor/>
+    </class>
+
+  </namespace>
+</file>

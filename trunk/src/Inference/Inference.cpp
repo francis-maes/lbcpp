@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/Data/Pair.h>
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Inference/DecoratorInference.h>
@@ -249,4 +250,15 @@ void Inference::getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& 
 {
   GetInferencesThatHaveAnOnlineLearnerVisitor visitor(res);
   visitor.visit(refCountedPointerFromThis(this));
+}
+
+/*
+** InferenceLearner
+*/
+Variable AtomicInferenceLearner::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  const PairPtr& pair = input.getObjectAndCast<Pair>();
+  const InferencePtr& targetInference = pair->getFirst().getObjectAndCast<Inference>();
+  const ContainerPtr& trainingData = pair->getSecond().getObjectAndCast<Container>();
+  return learn(context, targetInference, trainingData);
 }

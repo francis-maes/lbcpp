@@ -6,6 +6,7 @@
   <import name="NumericalLearningLossFunction"/>
   <import name="NumericalLearningPerception"/>
   <import name="NumericalLearningInference"/>
+  <import name="NumericalLearningBatchLearner"/>
   <import name="NumericalLearningOnlineLearner"/>
 
   <namespace name="lbcpp">

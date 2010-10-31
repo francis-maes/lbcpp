@@ -24,7 +24,7 @@ public:
     : Inference(name)
   {
     parameters = initialBias;
-    addOnlineLearner(addBiasOnlineLearner(InferenceOnlineLearner::perPass));
+    setBatchLearner(addBiasInferenceLearner());
   }
 
   AddBiasInference() {}
@@ -52,6 +52,7 @@ protected:
     {return Variable(input.getDouble() + getBias(), input.getType());}
 };
 
+extern ClassPtr addBiasInferenceClass;
 typedef ReferenceCountedObjectPtr<AddBiasInference> AddBiasInferencePtr;
 
 }; /* namespace lbcpp */

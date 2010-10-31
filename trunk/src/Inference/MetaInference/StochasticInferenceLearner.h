@@ -18,7 +18,7 @@
 namespace lbcpp
 {
 
-class StochasticPassInferenceLearner : public InferenceLearner<Inference>
+class StochasticPassInferenceLearner : public AtomicInferenceLearner
 {
 public:
   StochasticPassInferenceLearner(const std::vector<InferencePtr>& learnedInferences, bool randomizeExamples)
@@ -69,11 +69,8 @@ protected:
     InferencePtr targetInference;
   };
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& examples)
   {
-    ContainerPtr examples = getTrainingData(input);
-    InferencePtr targetInference = getInference(input);
-
     bool isDirectlyConnectedToOnlineLearner = (learnedInferences.size() == 1 && learnedInferences[0] == targetInference);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     jassert(!isDirectlyConnectedToOnlineLearner || onlineLearner);
@@ -102,6 +99,7 @@ protected:
       else
       {
         // make an episode
+        Inference::ReturnCode returnCode = Inference::finishedReturnCode;
         context->run(targetInference,  example->getFirst(), example->getSecond(), returnCode);
         finishEpisode();
       }

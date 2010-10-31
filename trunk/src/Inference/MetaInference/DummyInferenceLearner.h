@@ -15,13 +15,13 @@
 namespace lbcpp
 {
 
-class DummyInferenceLearner : public InferenceLearner<Inference>
+class DummyInferenceLearner : public AtomicInferenceLearner
 {
 protected:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData)
     {return Variable();}
 };
 
@@ -35,20 +35,19 @@ public:
     {state->setSubInference(getSubInference(index), state->getInput(), Variable());}
 };
 
-class InitializeByCloningInferenceLearner : public InferenceLearner<Inference>
+class InitializeByCloningInferenceLearner : public AtomicInferenceLearner
 {
 public:
-  InitializeByCloningInferenceLearner(InferencePtr inferenceToClone)
+  InitializeByCloningInferenceLearner(const InferencePtr& inferenceToClone)
     : inferenceToClone(inferenceToClone) {}
   InitializeByCloningInferenceLearner() {}
 
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData)
   {
-    InferencePtr targetInference = getInference(input);
-    std::cout << "Cloning Inference: " << inferenceToClone.get() << " ==> " << targetInference.get() << std::endl;
+    MessageCallback::info(T("InitializeByCloningInferenceLearner"), T("Cloning Inference ") + inferenceToClone->getName());
     inferenceToClone->clone(targetInference);
     return Variable();
   }

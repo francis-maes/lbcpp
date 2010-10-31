@@ -74,6 +74,9 @@
       <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
     </class>
     
+    <!-- Batch Learner -->
+    <class name="AtomicInferenceLearner" base="Inference" abstract="yes"/>
+
   </namespace>
 
 </file>

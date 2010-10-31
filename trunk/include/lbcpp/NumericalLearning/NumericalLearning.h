@@ -103,8 +103,11 @@ extern StaticDecoratorInferencePtr allPairsRankingInference(InferencePtr scoreIn
 extern StaticDecoratorInferencePtr allPairsRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
 extern StaticDecoratorInferencePtr binaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"), bool optimizeMcc = false); // F1 by default
 
-// Batch Learner
+/*
+** Batch Learner
+*/
 extern SequentialInferencePtr stochasticNumericalInferenceLearner(bool precomputePerceptions = true, bool randomizeExamples = true);
+extern AtomicInferenceLearnerPtr addBiasInferenceLearner();
 
 /*
 ** OnlineLearner

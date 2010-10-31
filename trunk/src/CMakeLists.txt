@@ -35,6 +35,7 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningClasses.xml Numer
 GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml NumericalLearningLossFunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml NumericalLearningPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceClasses.xml NumericalLearningInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/BatchLearner/NumericalLearningBatchLearnerClasses.xml NumericalLearningBatchLearnerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml NumericalLearningOnlineLearnerClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
@@ -374,9 +375,15 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
   NumericalLearning/Inference/RankingInference.h
   NumericalLearning/Inference/AddBiasInference.h
   NumericalLearning/Inference/TransferFunctionDecoratorInference.h
-  NumericalLearning/Inference/StochasticNumericalInferenceLearner.h
   NumericalLearning/Inference/NumericalLearningInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceClasses.cpp  
+)
+
+SET(LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES
+  NumericalLearning/BatchLearner/StochasticNumericalInferenceLearner.h
+  NumericalLearning/BatchLearner/AddBiasInferenceLearner.h
+  NumericalLearning/BatchLearner/NumericalLearningBatchLearnerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningBatchLearnerClasses.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
@@ -386,7 +393,6 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
   NumericalLearning/OnlineLearner/BatchGradientDescentOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.cpp
-  NumericalLearning/OnlineLearner/AddBiasOnlineLearner.h
   NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerClasses.cpp
 )
@@ -460,6 +466,7 @@ SET(LBCPP_CORE
     ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES}
     ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES}
     ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES}
+	${LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES}
     ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES}
 
   # DecisionTree
@@ -507,6 +514,7 @@ SOURCE_SUB_GROUP(NumericalLearning Math FILES ${LBCPP_NUMERICAL_LEARNING_MATH_SO
 SOURCE_SUB_GROUP(NumericalLearning LossFunction FILES ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(NumericalLearning BatchLearner FILES ${LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})
 
 ## DecisionTree

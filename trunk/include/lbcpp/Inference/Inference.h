@@ -120,7 +120,7 @@ extern SharedParallelInferencePtr sharedParallelVectorInference(const String& na
 // Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
 // Supervision: None
 // Output: None (side-effect on input Inference)
-extern InferencePtr dummyInferenceLearner();
+extern AtomicInferenceLearnerPtr dummyInferenceLearner();
 extern InferencePtr staticSequentialInferenceLearner();
 extern ParallelInferencePtr staticParallelInferenceLearner();
 extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
@@ -132,7 +132,7 @@ extern SequentialInferencePtr stochasticInferenceLearner(bool randomizeExamples 
 extern VectorSequentialInferencePtr multiPassInferenceLearner();
 extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);
 
-extern InferencePtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
+extern AtomicInferenceLearnerPtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
 
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
@@ -194,6 +194,15 @@ protected:
 
   ContainerPtr getTrainingData(const Variable& input) const
     {return input[1].getObjectAndCast<Container>();}
+};
+
+class AtomicInferenceLearner : public InferenceLearner<Inference>
+{
+public:
+  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData) = 0;
+
+protected:
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 };
 
 }; /* namespace lbcpp */
