@@ -2,12 +2,14 @@
 
 res_memory="6"
 res_time="5"
+res_core="1"
 
 function launch {
   sleep 2
 
   echo "Job - " ${prefix}
 
+#$ -pe snode ${res_core}
 qsub << EOF
 #$ -l h_vmem=${res_memory}G
 #$ -l h_rt=${res_time}:00:00
@@ -25,6 +27,7 @@ EOF
 
 program="MoonBox"
 other_=""
+prefix_="e"
 
 function DB_PSIPRED
 {
@@ -33,45 +36,67 @@ function DB_PSIPRED
   db_name="PSIPRED"
 }
 
-function DB_PDB30
+function DB_PDB30Large
 {
   database="PDB30Large/xml/"
+  other_=""
   db_name="PDB30Large"
 }
 
+function DB_PDB30Medium
+{
+  database="PDB30Medium/xml/"
+  other_=""
+  db_name="PDB30Medium"
+}
 
-target_="(SS3)1"
-prefix_="e"
+function SingleTask
+{
+  res_time="150"
+  res_memory="6"
+  for targ in SS3
+  do
+    res_core="3"
+    target="(${targ})10"
+    DB_PSIPRED
+    other="${other_} StoppingIteration 20"
+    prefix="${prefix_}${db_name}.SingleTask.${targ}"
+    #launch
+
+    DB_PDB30Medium
+    other="SaveIterations StoppingIteration 15 NumThreads 3 LearningRate 1 LearningStep 200000 Regularizer 0.001 ForceUse"
+    prefix="${prefix_}${db_name}.Test.r1000.ParallelWithInitialization"
+    launch
+  done
+}
+
+function MultiTask
+{
+  res_time="250"
+  res_memory="8"
+  res_core="27"
+  target="(SS3-SS8-SA-DR-StAl)10"
+  other="${other_} StoppingIteration 20"
+  
+  DB_PDB30Medium
+  lr="1"
+  ls="200000"
+  other="StoppingIteration 15 NumThreads ${res_core} LearningRate ${lr} LearningStep ${ls} Regularizer 0.001 ForceUse"
+  prefix="${prefix_}${db_name}.969.LS${ls}.LR${lr}.REGe3"
+  launch
+  
+  DB_PSIPRED
+  other="${other_} StoppingIteration 20 NumThreads ${res_core}"
+  prefix="${prefix_}${db_name}.969"
+  #launch
+}
+
+
 #------------------------------------------------
 
-other_="${other_} StoppingIteration 40 SaveIterations"
-
-#DB_PSIPRED
-#DB_PDB30
-#target="(SS3-SS8-SA-DR-StAl)1"
-#other="StoppingIteration 20 GenerateIntermediate"
-#prefix="${prefix_}${db_name}.AllTargets.OnePass"
-#res_memory="6"
-#res_time="40"
-#launch
-#exit
-
-#res_time="50"
-#for targ in SS3 SA DR SS8 StAl
-#do
-#  DB_PDB30
-#  target="(${targ})10"
-#  prefix="${prefix_}${db_name}.SingleTask.${targ}"
-#  other="StoppingIteration 20"
-#  launch
-#
-#  DB_PSIPRED
-#  target="(${targ})10"
-#  prefix="${prefix_}${db_name}.SingleTask.${targ}"
-#  other="StoppingIteration 20"
-#  launch
-#done
-#exit
+SingleTask
+#MultiTask
+exit
 
 res_time="40"
 res_memory="6"
