@@ -59,20 +59,21 @@ private:
   virtual void update(const InferencePtr& inference)
   {
     double score = -getCurrentLossEstimate();
+    //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy();
     if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
     {
       bestParameters = parameters;
       bestScore = score;
-      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String((double)bestScore));
+      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String(bestScore));
     }
     if (criterion->shouldStop(score))
     {
-      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String((double)bestScore));
+      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String(bestScore));
       learningStopped = true;
       if (bestParameters.exists() && bestScore > score)
       {
-        MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String((double)bestScore));
+        MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String(bestScore));
         inference->setParameters(bestParameters);
       }
     }

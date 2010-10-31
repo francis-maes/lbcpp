@@ -5,7 +5,16 @@
   <namespace name="lbcpp">
 
     <!-- Gradient Descent -->
-    <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes"/>
+    <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
+      <variable type="PositiveInteger" name="epoch"/>
+      <variable type="LearnerUpdateFrequency" name="learningUpdateFrequency" enumeration="yes"/>
+      <variable type="IterationFunction" name="learningRate"/>
+      <variable type="Boolean" name="normalizeLearningRate"/>
+      <variable type="LearnerUpdateFrequency" name="regularizerUpdateFrequency" enumeration="yes"/>
+      <variable type="ScalarObjectFunction" name="regularizer"/>
+      <variable type="Double" name="lastEmpiricalLossValue"/>
+      <variable type="PositiveInteger" name="lastApplyRegularizerEpoch"/>
+    </class>
 
     <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
       <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>

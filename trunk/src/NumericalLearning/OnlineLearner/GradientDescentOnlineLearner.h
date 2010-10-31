@@ -22,7 +22,7 @@ public:
   GradientDescentOnlineLearner(UpdateFrequency learningUpdateFrequency,
                                 IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                 UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
-  GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never) {}
+  GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalLossValue(0.0) {}
 
 
   virtual void startLearningCallback();
@@ -31,11 +31,13 @@ public:
   virtual void episodeFinishedCallback(const InferencePtr& inference);
   virtual void passFinishedCallback(const InferencePtr& inference);
   virtual double getCurrentLossEstimate() const
-    {return lossValue.getMean();}
+    {return lastEmpiricalLossValue;}
   
   virtual void clone(const ObjectPtr& target) const;
 
 protected:
+  friend class GradientDescentOnlineLearnerClass;
+
   ScalarVariableRecentMean numberOfActiveFeatures;
   size_t epoch;
 
@@ -47,6 +49,7 @@ protected:
   ScalarObjectFunctionPtr regularizer;
   CriticalSection lossValueLock;
   ScalarVariableMean lossValue;
+  double lastEmpiricalLossValue;
   size_t lastApplyRegularizerEpoch;
 
   void updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
