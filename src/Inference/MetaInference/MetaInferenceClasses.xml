@@ -4,7 +4,7 @@
 
   <namespace name="lbcpp">
 
-    <class name="DummyInferenceLearner" base="Inference">
+    <class name="DummyInferenceLearner" base="AtomicInferenceLearner">
       <constructor/>
     </class>
 
@@ -22,7 +22,7 @@
       }
     </code>
 
-    <class name="InitializeByCloningInferenceLearner" base="Inference">
+    <class name="InitializeByCloningInferenceLearner" base="AtomicInferenceLearner">
       <constructor arguments="InferencePtr inferenceToClone"/>
       <variable type="Inference" name="inferenceToClone"/>
     </class>
@@ -51,7 +51,7 @@
       <constructor returnType="DecoratorInference"/>
     </class>
 
-    <class name="StochasticPassInferenceLearner" base="Inference">
+    <class name="StochasticPassInferenceLearner" base="AtomicInferenceLearner">
       <constructor arguments="const std::vector&lt;InferencePtr&gt;&amp; learnedInferences, bool randomizeExamples"/>
       <variable type="ObjectVector[Inference]" name="learnedInferences"/>
       <variable type="Boolean" name="randomizeExamples"/>

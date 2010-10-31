@@ -34,10 +34,5 @@
         {return graftingOnlineLearner(perception, std::vector&lt;NumericalInferencePtr&gt;(1, targetInference));}
     </code>
 
-    <!-- Add Bias -->
-    <class name="AddBiasOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency updateFrequency"/>
-    </class>
-
   </namespace>
 </file>

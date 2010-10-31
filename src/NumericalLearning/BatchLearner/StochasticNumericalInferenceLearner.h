@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NUMERICAL_LEARNING_INFERENCE_STOCHASTIC_LEARNER_H_
-# define LBCPP_NUMERICAL_LEARNING_INFERENCE_STOCHASTIC_LEARNER_H_
+#ifndef LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_STOCHASTIC_H_
+# define LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_STOCHASTIC_H_
 
 # include "../../Inference/MetaInference/StochasticInferenceLearner.h"
 
@@ -56,4 +56,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_NUMERICAL_LEARNING_INFERENCE_STOCHASTIC_LEARNER_H_
+#endif // !LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_STOCHASTIC_H_

@@ -129,7 +129,7 @@ public:
     {
       VectorSequentialInferencePtr sequentialInference = new VectorSequentialInference(targetName);
       sequentialInference->appendInference(res->getSubInference());
-      sequentialInference->appendInference(addBiasInference(targetName));
+      sequentialInference->appendInference(addBiasInference(targetName + T(" bias")));
       res->setSubInference(sequentialInference);
       //res->setBatchLearner(stochasticInferenceLearner());
     }
@@ -180,7 +180,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 100;
+    size_t numIterations = 10;
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -263,7 +263,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 50;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
@@ -316,7 +316,7 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());

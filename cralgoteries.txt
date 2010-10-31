@@ -1,3 +1,7 @@
+* InferenceLearner: fonction virtual learn()
+* Extract Inference/MetaInference => Inference/BatchLearner
+
+
 * Voir si on peut faire du Dissulfide Bond Matrix
 * Voir comment récuperer le Loss pendant l'évaluation
 
