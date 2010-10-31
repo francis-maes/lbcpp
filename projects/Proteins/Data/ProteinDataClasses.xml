@@ -146,6 +146,7 @@
       <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortdesc="Contact Map C-beta 8"/>
       <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortdesc="Distance Map C-alpha"/>
       <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortdesc="Distance Map C-beta"/>
+      <variable type="SymmetricMatrix[Probability]" name="disulfideBonds" shortdesc="Disulfide Bonds"/>
 
       <!-- Tertiary Structure -->
       <variable type="CartesianPositionVector" name="calphaTrace" shortdesc="C-alpha Trace"/>

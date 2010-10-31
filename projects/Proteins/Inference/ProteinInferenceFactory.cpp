@@ -9,6 +9,7 @@
 #include "ProteinInferenceFactory.h"
 #include "ProteinInference.h"
 #include "ContactMapInference.h"
+#include "DisulfideBondsInference.h"
 #include "../Perception/ProteinPerception.h"
 #include <lbcpp/Perception/Perception.h>
 #include <lbcpp/Inference/DecoratorInference.h>
@@ -32,6 +33,8 @@ InferencePtr ProteinInferenceFactory::createTargetInference(const String& target
     return createProbabilitySequenceInference(targetName);
   if (targetName.startsWith(T("contactMap")))
     return createContactMapInference(targetName);
+  if (targetName == T("disulfideBonds"))
+    return createDisulfideBondsInference(targetName);
   jassert(false);
   return InferencePtr();
 }
@@ -58,6 +61,13 @@ InferencePtr ProteinInferenceFactory::createContactMapInference(const String& ta
   PerceptionPtr perception = createPerception(targetName, residuePairPerception);
   InferencePtr classifier = createBinaryClassifier(targetName, perception);
   return new ContactMapInference(targetName, classifier);
+}
+
+InferencePtr ProteinInferenceFactory::createDisulfideBondsInference(const String& targetName) const
+{
+  PerceptionPtr perception = createPerception(targetName, residuePairPerception);
+  InferencePtr classifier = createBinaryClassifier(targetName, perception);
+  return new DisulfideBondsInference(targetName, classifier);
 }
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const

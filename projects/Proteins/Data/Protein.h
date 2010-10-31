@@ -58,6 +58,8 @@ public:
   VectorPtr getPrimaryStructure() const
     {return primaryStructure;}
 
+  void getCysteineIndices(std::vector<size_t>& res) const;
+
   void setPrimaryStructure(VectorPtr primaryStructure)
     {this->primaryStructure = primaryStructure;}
 
@@ -127,6 +129,11 @@ public:
   SymmetricMatrixPtr createEmptyDistanceMap() const;
 
   /*
+  ** Disulfide Bonds
+  */
+  SymmetricMatrixPtr getDisulfideBonds() const;
+
+  /*
   ** Tertiary Structure
   */
   CartesianPositionVectorPtr getCAlphaTrace() const;
@@ -165,6 +172,9 @@ protected:
   SymmetricMatrixPtr distanceMapCa;
   SymmetricMatrixPtr distanceMapCb;
 
+  SymmetricMatrixPtr disulfideBonds;
+
+
   // 3D
   CartesianPositionVectorPtr calphaTrace;
   TertiaryStructurePtr tertiaryStructure;
@@ -174,6 +184,7 @@ protected:
   static VectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold);
   static SymmetricMatrixPtr computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold);
   static VectorPtr computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace);
+  static SymmetricMatrixPtr computeDisulfideBondsFromCBetaDistanceMap(const std::vector<size_t>& cysteines, SymmetricMatrixPtr distanceMap);
 
   static CartesianPositionVectorPtr computeCAlphaTraceFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
     {return tertiaryStructure->makeCAlphaTrace();}

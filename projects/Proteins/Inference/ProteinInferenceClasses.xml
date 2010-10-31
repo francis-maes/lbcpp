@@ -5,11 +5,7 @@
 
     <!-- Task-specific inferences -->
     <class name="ContactMapInference" base="SharedParallelInference"/>
-
-    <class name="RankingBasedExtractionInference" base="VectorSequentialInference" abstract="yes"/>
-    <class name="DisorderedRegionInference" base="RankingBasedExtractionInference">
-      <constructor arguments="const String&amp; name, InferencePtr rankingInference, InferencePtr cutoffInference" returnType="VectorSequentialInference"/>
-    </class>
+    <class name="DisulfideBondsInference" base="SharedParallelInference"/>
 
     <!-- Protein Inference Step Adaptator -->
     <class name="ProteinInferenceStep" base="StaticDecoratorInference">

@@ -106,8 +106,9 @@ String Protein::getTargetFriendlyName(size_t index)
   case 9: return T("Contact Map C-beta 8");
   case 10: return T("Distance Map C-alpha");
   case 11: return T("Distance Map C-beta");
-  case 12: return T("C-alpha Trace");
-  case 13: return T("Tertiary Structure");
+  case 12: return T("Disulfide Bonds");
+  case 13: return T("C-alpha Trace");
+  case 14: return T("Tertiary Structure");
   default:
     jassert(false); 
     return String::empty;
@@ -137,8 +138,9 @@ String Protein::getTargetShortName(size_t index)
   case 9: return T("cmb8");
   case 10: return T("dma");
   case 11: return T("dmb");
-  case 12: return T("cat");
-  case 13: return T("ts");
+  case 12: return T("dsb");
+  case 13: return T("cat");
+  case 14: return T("ts");
   default:
     jassert(false); 
     return String::empty;
@@ -167,8 +169,9 @@ Variable Protein::getTargetOrComputeIfMissing(size_t index) const
   case 9: return getContactMap(8, true);
   case 10: return getDistanceMap(false);
   case 11: return getDistanceMap(true);
-  case 12: return getCAlphaTrace();
-  case 13: return getTertiaryStructure();
+  case 12: return getDisulfideBonds();
+  case 13: return getCAlphaTrace();
+  case 14: return getTertiaryStructure();
   default: jassert(false); return Variable();
   }
 }
@@ -197,11 +200,15 @@ VectorPtr Protein::getDisorderRegions() const
   return disorderRegions;
 }
 
-CartesianPositionVectorPtr Protein::getCAlphaTrace() const
+VectorPtr Protein::getStructuralAlphabetSequence() const
 {
-  if (!calphaTrace && tertiaryStructure)
-    const_cast<Protein* >(this)->calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
-  return calphaTrace;
+  if (!structuralAlphabetSequence)
+  {
+    CartesianPositionVectorPtr calphaTrace = getCAlphaTrace();
+    if (calphaTrace)
+      const_cast<Protein* >(this)->structuralAlphabetSequence = computeStructuralAlphabetSequenceFromCAlphaTrace(calphaTrace);
+  }
+  return structuralAlphabetSequence;
 }
 
 SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
@@ -234,17 +241,31 @@ SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAto
   return *res;
 }
 
-VectorPtr Protein::getStructuralAlphabetSequence() const
+SymmetricMatrixPtr Protein::getDisulfideBonds() const
 {
-  if (!structuralAlphabetSequence)
+  if (!disulfideBonds)
   {
-    CartesianPositionVectorPtr calphaTrace = getCAlphaTrace();
-    if (calphaTrace)
-      const_cast<Protein* >(this)->structuralAlphabetSequence = computeStructuralAlphabetSequenceFromCAlphaTrace(calphaTrace);
+    SymmetricMatrixPtr distanceMap = getDistanceMap(true);
+    if (distanceMap)
+    {
+      std::vector<size_t> cysteines;
+      getCysteineIndices(cysteines);
+      const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromCBetaDistanceMap(cysteines, distanceMap);
+    }
   }
-  return structuralAlphabetSequence;
+  return disulfideBonds;
 }
 
+CartesianPositionVectorPtr Protein::getCAlphaTrace() const
+{
+  if (!calphaTrace && tertiaryStructure)
+    const_cast<Protein* >(this)->calphaTrace = computeCAlphaTraceFromTertiaryStructure(tertiaryStructure);
+  return calphaTrace;
+}
+
+/*
+** Converters
+*/
 VectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
 {
   if (!tertiaryStructure)
@@ -318,6 +339,62 @@ SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr 
         res->setElement(i, j, Variable(distance.getDouble() <= threshold ? 1.0 : 0.0, probabilityType));
       }
     }
+  return res;
+}  
+
+void Protein::getCysteineIndices(std::vector<size_t>& res) const
+{
+  size_t n = getLength();
+  jassert(primaryStructure->getNumElements() == n);
+  res.clear();
+  res.reserve(n / 20);
+  for (size_t i = 0; i < n; ++i)
+  {
+    AminoAcidType aminoAcid = (AminoAcidType)primaryStructure->getElement(i).getInteger();
+    if (aminoAcid == cysteine)
+      res.push_back(i);
+  }
+}
+
+
+SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std::vector<size_t>& cysteines, SymmetricMatrixPtr distanceMap)
+{
+  static const double disulfideBondCBetaDistanceThreshold = 10.0;
+
+  size_t n = cysteines.size();
+  size_t numBonds = 0;
+  SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
+  for (size_t i = 0; i < n; ++i)
+    for (size_t j = i; j < n; ++j)
+    {
+      double probability = 0.0;
+      if (i != j)
+      {
+        Variable distance = distanceMap->getElement(cysteines[i], cysteines[j]);
+        if (distance.isMissingValue())
+          continue;
+        //std::cout << distance.getDouble() << " ";
+        if (distance.getDouble() < disulfideBondCBetaDistanceThreshold)
+        {
+          probability = 1.0;
+          ++numBonds;
+        }
+      }
+      res->setElement(i, j, Variable(probability, probabilityType));
+    }
+
+#ifndef JUCE_DEBUG
+  for (size_t i = 0; i < n; ++i)
+  {
+    size_t numBonds = 0;
+    for (size_t j = 0; j < n; ++j)
+      if (res->getElement(i, j).exists() && res->getElement(i, j).getDouble() > 0.5)
+        ++numBonds;
+    jassert(numBonds <= 1);
+  }
+#endif // JUCE_DEBUG
+
+  MessageCallback::info(T("NumResidues: ") + String((int)distanceMap->getDimension()) + T(" NumCysteines: ") + String((int)cysteines.size()) + T(" NumBonds: ") + String((int)numBonds));
   return res;
 }
 

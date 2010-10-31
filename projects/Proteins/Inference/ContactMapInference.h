@@ -12,25 +12,20 @@
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Inference/ParallelInference.h>
 # include "../Data/Protein.h"
+# include "DisulfideBondsInference.h"
 
 namespace lbcpp
 {
 
-class ContactMapInference : public SharedParallelInference
+class ContactMapInference : public SymmetricProbabilityMatrixInference
 {
 public:
   ContactMapInference(const String& name, InferencePtr contactInference)
-    : SharedParallelInference(name, contactInference) {}
+    : SymmetricProbabilityMatrixInference(name, contactInference) {}
   ContactMapInference() {}
 
   virtual TypePtr getInputType() const
     {return proteinClass;}
-
-  virtual TypePtr getSupervisionType() const
-    {return symmetricMatrixClass(probabilityType);}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return symmetricMatrixClass(probabilityType);}
 
   virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
@@ -40,7 +35,7 @@ public:
 
     size_t n = inputProtein->getLength();
 
-    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    ParallelInferenceStatePtr res = new State(input, supervision, n, 6);
     res->reserve((n * (n - 6)) / 2);
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i + 6; j < n; ++j)
@@ -51,28 +46,6 @@ public:
         res->addSubInference(subInference, Variable::pair(input, Variable::pair(i, j)), elementSupervision);
       }
     return res;
-  }
-
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
-  {
-    const ProteinPtr& inputProtein = state->getInput().getObjectAndCast<Protein>();    
-    size_t n = inputProtein->getLength();
-
-    SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
-    bool atLeastOnePrediction = false;
-    size_t index = 0;
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = i + 6; j < n; ++j)
-      {
-        Variable result = state->getSubOutput(index++);
-        if (result.exists())
-        {
-          atLeastOnePrediction = true;
-          res->setElement(i, j, result);
-        }
-      }
-
-    return atLeastOnePrediction ? res : Variable::missingValue(res->getClass());
   }
 };
 

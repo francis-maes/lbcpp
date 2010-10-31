@@ -12,7 +12,6 @@
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
 #include "Inference/ContactMapInference.h"
-#include "Inference/DisorderRegionsInference.h"
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
@@ -180,7 +179,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 3;
+    size_t numIterations = 15;
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -263,7 +262,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
@@ -291,22 +290,22 @@ int main(int argc, char** argv)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
 
-  ContainerPtr trainProteins = loadProteins(File::nonexistent, workingDirectory.getChildFile(T("train")), pool);
-  ContainerPtr testProteins = loadProteins(File::nonexistent, workingDirectory.getChildFile(T("test")), pool);
+  ContainerPtr trainProteins = loadProteins(workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")), pool);
+  ContainerPtr testProteins = loadProteins(workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")), pool);
   std::cout << trainProteins->getNumElements() << " training proteins, " << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  ProteinParallelInferencePtr inference = new ProteinParallelInference();
+  //ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
-  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
-  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
+  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));*/
 
   /*
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -317,8 +316,8 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
-  //ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
@@ -364,15 +363,20 @@ int main(int argc, char** argv)
   ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
   return 0;*/
 
-  InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
-  context->appendCallback(trainingCallback);
-  context->train(inference, trainProteins);
-  context->removeCallback(trainingCallback);
+  {
+    InferenceContextPtr context = singleThreadedInferenceContext();
+    InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
+    context->appendCallback(trainingCallback);
+    context->train(inference, trainProteins);
+    context->removeCallback(trainingCallback);
+  }
 
+  /*
   std::cout << "Making and saving train predicions..." << std::endl;
   context->evaluate(inference, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
   std::cout << "Making and saving test predicions..." << std::endl;
   context->evaluate(inference, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
+  */
 
   {
     std::cout << "Check Evaluating..." << std::endl;
