@@ -62,20 +62,18 @@ public:
     if (!weights)
       weights = Object::create(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
     
+    ObjectPtr perceivedInput;
     if (input.getType() == perception->getOutputType())
-      for (size_t i = 0; i < lossGradient.size(); ++i)
-      {
-        double w = lossGradient[i] * weight;
-        if (w)
-          lbcpp::addWeighted(weights->getObjectReference(i), input.getObject(), w);
-      }
+      perceivedInput = input.getObject();
     else
-      for (size_t i = 0; i < lossGradient.size(); ++i)
-      {
-        double w = lossGradient[i] * weight;
-        if (w)
-          lbcpp::addWeighted(weights->getObjectReference(i), perception, input, w);
-      }
+      perceivedInput = perception->compute(input).getObject();
+
+    for (size_t i = 0; i < lossGradient.size(); ++i)
+    {
+      double w = lossGradient[i] * weight;
+      if (w)
+        lbcpp::addWeighted(weights->getObjectReference(i), perceivedInput, w);
+    }
 
     if (isLocked)
       parametersLock.exitWrite();
@@ -96,18 +94,14 @@ public:
     size_t n = outputClass->getObjectNumVariables();
     outputs.resize(n);
     jassert(n == denseWeights->getNumObjects());
+
+    ObjectPtr perceivedInput;
     if (input.getType() == perception->getOutputType())
-    {
-      // perception as already been applied
-      for (size_t i = 0; i < n; ++i)
-        outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), input.getObject());
-    }
+      perceivedInput = input.getObject();
     else
-    {
-      // default case: simultaneous perception computation and dot-product computation
-      for (size_t i = 0; i < n; ++i)
-        outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), perception, input);
-    }
+      perceivedInput = perception->compute(input).getObject();
+    for (size_t i = 0; i < n; ++i)
+      outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), perceivedInput);
     return res;
   }
 

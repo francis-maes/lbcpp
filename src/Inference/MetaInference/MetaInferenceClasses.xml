@@ -4,65 +4,6 @@
 
   <namespace name="lbcpp">
 
-    <class name="DummyInferenceLearner" base="AtomicInferenceLearner">
-      <constructor/>
-    </class>
-
-    <class name="MultiPassInferenceLearner" base="VectorSequentialInference">
-      <constructor/>
-    </class>
-
-    <code>
-      VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner)
-      {
-        VectorSequentialInferencePtr res = multiPassInferenceLearner();
-        res->appendInference(firstLearner);
-        res->appendInference(secondLearner);
-        return res;
-      }
-    </code>
-
-    <class name="InitializeByCloningInferenceLearner" base="AtomicInferenceLearner">
-      <constructor arguments="InferencePtr inferenceToClone"/>
-      <variable type="Inference" name="inferenceToClone"/>
-    </class>
-
-    <class name="StaticSequentialInferenceLearner" base="Inference">
-      <constructor/>
-    </class>
-
-    <class name="StaticParallelInferenceLearner" base="ParallelInference">
-      <constructor/>
-    </class>
-    
-    <class name="ParallelVoteInferenceLearner" base="StaticParallelInferenceLearner">
-      <constructor returnType="ParallelInference"/>
-    </class>
-    
-    <class name="SharedParallelInferenceLearner" base="DecoratorInference">
-      <constructor arguments="bool filterUnsupervisedExamples"/>
-    </class>
-    
-    <class name="DecoratorInferenceLearner" base="DecoratorInference">
-      <constructor/>
-    </class>
-    
-    <class name="PostProcessInferenceLearner" base="DecoratorInferenceLearner">
-      <constructor returnType="DecoratorInference"/>
-    </class>
-
-    <class name="StochasticPassInferenceLearner" base="AtomicInferenceLearner">
-      <constructor arguments="const std::vector&lt;InferencePtr&gt;&amp; learnedInferences, bool randomizeExamples"/>
-      <variable type="ObjectVector[Inference]" name="learnedInferences"/>
-      <variable type="Boolean" name="randomizeExamples"/>
-    </class>
-
-    <class name="StochasticInferenceLearner" base="SequentialInference">
-      <constructor arguments="bool randomizeExamples"/>
-      <variable type="Boolean" name="randomizeExamples"/>
-    </class>
-
-
     <class name="RunOnSupervisedExamplesSequentialInference" base="SequentialInference">
       <constructor arguments="InferencePtr inference"/>
     </class>
@@ -92,8 +33,6 @@
       <variable type="Integer" name="numFolds"/>
     </class>
     
-    <class name="RunSequentialInferenceStepOnExamples" base="ParallelInference" abstract="yes"/>
-
     <class name="CallbackBasedDecoratorInference" base="StaticDecoratorInference">
       <constructor arguments="const String&amp; name, InferencePtr decoratedInference, InferenceCallbackPtr callback"/>
     </class>

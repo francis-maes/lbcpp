@@ -53,18 +53,14 @@ class SelectPairVariablesFunction : public Function
 public:
   SelectPairVariablesFunction(int index1, int index2, TypePtr inputPairClass)
     : index1(index1), index2(index2), inputPairClass(inputPairClass)
-  {
-    outputType = getOutputType(inputPairClass);
-  }
+    {computeOutputType();}
   SelectPairVariablesFunction() : index1(-1), index2(-1) {}
 
   virtual TypePtr getInputType() const
     {return inputPairClass;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return pairClass(
-      getOutputTypeBase(inputType->getTemplateArgument(0), index1),
-      getOutputTypeBase(inputType->getTemplateArgument(1), index2));}
+    {return outputType;}
 
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -77,12 +73,7 @@ public:
   }
 
   virtual bool loadFromXml(XmlImporter& importer)
-  {
-    if (!Function::loadFromXml(importer))
-      return false;
-    outputType = getOutputType(inputPairClass);
-    return true;
-  }
+    {return Function::loadFromXml(importer) && computeOutputType();}
 
 private:
   friend class SelectPairVariablesFunctionClass;
@@ -91,6 +82,14 @@ private:
   TypePtr inputPairClass;
 
   TypePtr outputType;
+
+  bool computeOutputType()
+  {
+    outputType = pairClass(
+      getOutputTypeBase(inputPairClass->getTemplateArgument(0), index1),
+      getOutputTypeBase(inputPairClass->getTemplateArgument(1), index2));
+    return true;
+  }
 
   static TypePtr getOutputTypeBase(TypePtr inputType, int index)
   {

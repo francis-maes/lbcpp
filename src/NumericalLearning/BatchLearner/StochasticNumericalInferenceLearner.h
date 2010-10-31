@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_STOCHASTIC_H_
 # define LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_STOCHASTIC_H_
 
-# include "../../Inference/MetaInference/StochasticInferenceLearner.h"
+# include "../../Inference/BatchLearner/StochasticInferenceLearner.h"
 
 namespace lbcpp
 {

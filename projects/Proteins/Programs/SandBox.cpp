@@ -125,7 +125,7 @@ public:
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName), targetName);
-    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
+    if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions") || targetName == T("solventAccessibilityAt20p"))
     {
       VectorSequentialInferencePtr sequentialInference = new VectorSequentialInference(targetName);
       sequentialInference->appendInference(res->getSubInference());
@@ -180,7 +180,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 10;
+    size_t numIterations = 3;
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -219,7 +219,7 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (stack->getDepth() == 1) // getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
     //if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
@@ -263,7 +263,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
@@ -298,13 +298,15 @@ int main(int argc, char** argv)
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
 
-  //ProteinParallelInferencePtr inference = new ProteinParallelInference();
+  ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
-  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
-  //inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
+  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));
 
   /*
   inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
@@ -315,8 +317,8 @@ int main(int argc, char** argv)
   //inferencePass->appendInference(factory->createInferenceStep(T("disorderRegions")));
   //inferencePass->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
 
-  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
-  inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
+  //ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  //inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
@@ -362,15 +364,16 @@ int main(int argc, char** argv)
   ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
   return 0;*/
 
-  context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
+  InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
+  context->appendCallback(trainingCallback);
   context->train(inference, trainProteins);
+  context->removeCallback(trainingCallback);
 
-  /*
   std::cout << "Making and saving train predicions..." << std::endl;
-  context->evaluate(inference, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainPass2"))));
+  context->evaluate(inference, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
   std::cout << "Making and saving test predicions..." << std::endl;
-  context->evaluate(inference, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testPass2"))));
-*/
+  context->evaluate(inference, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
+
   {
     std::cout << "Check Evaluating..." << std::endl;
     evaluator = new ProteinEvaluator();

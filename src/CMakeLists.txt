@@ -27,9 +27,10 @@ GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionClasses.xml 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceContext/InferenceContextClasses.xml InferenceContextClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/BatchLearner/InferenceBatchLearnerClasses.xml InferenceBatchLearnerClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningClasses.xml NumericalLearningClasses.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml NumericalLearningLossFunctionClasses.cpp)
@@ -303,14 +304,20 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/CallbackBasedDecoratorInference.h
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
   Inference/MetaInference/CrossValidationInference.h
-  Inference/MetaInference/DummyInferenceLearner.h
-  Inference/MetaInference/StaticSequentialInferenceLearner.h
-  Inference/MetaInference/StaticParallelInferenceLearner.h
-  Inference/MetaInference/SharedParallelInferenceLearner.h
-  Inference/MetaInference/DecoratorInferenceLearner.h
-  Inference/MetaInference/StochasticInferenceLearner.h
   Inference/MetaInference/MetaInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp
+)
+
+SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
+  Inference/BatchLearner/DummyInferenceLearner.h
+  Inference/BatchLearner/StaticSequentialInferenceLearner.h
+  Inference/BatchLearner/StaticParallelInferenceLearner.h
+  Inference/BatchLearner/SharedParallelInferenceLearner.h
+  Inference/BatchLearner/DecoratorInferenceLearner.h
+  Inference/BatchLearner/StochasticInferenceLearner.h
+  Inference/BatchLearner/InitializeByCloningInferenceLearner.h
+  Inference/BatchLearner/InferenceBatchLearnerClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceBatchLearnerClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
@@ -455,10 +462,11 @@ SET(LBCPP_CORE
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
   ${LBCPP_INFERENCE_CONTEXT_SOURCES}
-  ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
+  ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES}
+  ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES}
 
   # NumericalLearning
   ${LBCPP_NUMERICAL_LEARNING_SOURCES}
@@ -504,9 +512,10 @@ SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
 SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
-SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
 SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
+SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
 
 ## NumericalLearning
 SOURCE_GROUP(NumericalLearning FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})

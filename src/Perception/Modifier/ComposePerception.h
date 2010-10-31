@@ -39,12 +39,13 @@ public:
   virtual void computeOutputType()
   {
     outputVariables = perception->getOutputVariables();
+    perceptionInputType = perception->getInputType();
     Perception::computeOutputType();
   }
 
   virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    if (checkInheritance(function->getOutputType(input.getType()), perception->getInputType()))
+    if (checkInheritance(function->getOutputType(input.getType()), perceptionInputType))
     {
       Variable intermediate = function->compute(input);
       perception->computePerception(intermediate, callback);
@@ -58,6 +59,7 @@ protected:
 
   FunctionPtr function;
   PerceptionPtr perception;
+  TypePtr perceptionInputType;
 };
 
 }; /* namespace lbcpp */

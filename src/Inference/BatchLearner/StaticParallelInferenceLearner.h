@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_META_STATIC_PARALLEL_LEARNER_H_
-# define LBCPP_INFERENCE_META_STATIC_PARALLEL_LEARNER_H_
+#ifndef LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
+# define LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
@@ -89,4 +89,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_META_STATIC_PARALLEL_LEARNER_H_
+#endif // !LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_

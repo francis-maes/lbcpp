@@ -116,7 +116,12 @@ private:
 
   friend class PerceptionClass;
   UnnamedDynamicClassPtr outputType;
+
+  CriticalSection sparsenessLock;
   ScalarVariableRecentMeanAndVariance sparseness;
+
+  void pushSparsenessValue(size_t numActives);
+  size_t esimateSparsenessUpperBound() const;
 };
 
 extern ClassPtr perceptionClass;

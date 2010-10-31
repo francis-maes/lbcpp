@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_
-# define LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_
+#ifndef LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
+# define LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
 
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
@@ -193,4 +193,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_META_STOCHASTIC_LEARNER_H_
+#endif // !LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
