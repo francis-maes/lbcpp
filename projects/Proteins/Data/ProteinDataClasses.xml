@@ -72,33 +72,33 @@
     </code>
 
     <enumeration name="StructuralAlphabetElement">
-      <value name="A"/>
-      <value name="B"/>
-      <value name="C"/>
-      <value name="D"/>
-      <value name="E"/>
-      <value name="F"/>
-      <value name="G"/>
-      <value name="H"/>
-      <value name="I"/>
-      <value name="J"/>
-      <value name="K"/>
-      <value name="L"/>
-      <value name="M"/>
-      <value name="N"/>
-      <value name="O"/>
-      <value name="P"/>
-      <value name="Q"/>
-      <value name="R"/>
-      <value name="S"/>
-      <value name="T"/>
-      <value name="U"/>
-      <value name="V"/>
-      <value name="W"/>
-      <value name="X"/>
-      <value name="Y"/>
-      <value name="Z"/>
-      <value name="a"/>
+      <value name="A" oneLetterCode="A"/>
+      <value name="B" oneLetterCode="B"/>
+      <value name="C" oneLetterCode="C"/>
+      <value name="D" oneLetterCode="D"/>
+      <value name="E" oneLetterCode="E"/>
+      <value name="F" oneLetterCode="F"/>
+      <value name="G" oneLetterCode="G"/>
+      <value name="H" oneLetterCode="H"/>
+      <value name="I" oneLetterCode="I"/>
+      <value name="J" oneLetterCode="J"/>
+      <value name="K" oneLetterCode="K"/>
+      <value name="L" oneLetterCode="L"/>
+      <value name="M" oneLetterCode="M"/>
+      <value name="N" oneLetterCode="N"/>
+      <value name="O" oneLetterCode="O"/>
+      <value name="P" oneLetterCode="P"/>
+      <value name="Q" oneLetterCode="Q"/>
+      <value name="R" oneLetterCode="R"/>
+      <value name="S" oneLetterCode="S"/>
+      <value name="T" oneLetterCode="T"/>
+      <value name="U" oneLetterCode="U"/>
+      <value name="V" oneLetterCode="V"/>
+      <value name="W" oneLetterCode="W"/>
+      <value name="X" oneLetterCode="X"/>
+      <value name="Y" oneLetterCode="Y"/>
+      <value name="Z" oneLetterCode="Z"/>
+      <value name="a" oneLetterCode="a"/>
     </enumeration>
 
     <!-- Amino Acid Class -->      
