@@ -287,7 +287,7 @@ protected:
     else if (value == T("perStep"))
       return InferenceOnlineLearner::perStep;
     else if (value.startsWith(T("perMiniBatch")))
-      return (InferenceOnlineLearner::UpdateFrequency)(InferenceOnlineLearner::perStepMiniBatch + (size_t)value.substring(strlen("perMiniBatch")).getIntValue());
+      return (InferenceOnlineLearner::UpdateFrequency)(InferenceOnlineLearner::perStepMiniBatch + (size_t)value.substring((int)strlen("perMiniBatch")).getIntValue());
     else if (value == T("perEpisode"))
       return InferenceOnlineLearner::perEpisode;
     else if (value == T("perPass"))
@@ -346,7 +346,7 @@ protected:
     virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       String inferenceName = stack->getCurrentInference()->getName();
-      if (inferenceName == T("LearningPass"))
+      if (inferenceName.startsWith(T("LearningPass")))
       {
         ++counter;
         if (counter < 10)
