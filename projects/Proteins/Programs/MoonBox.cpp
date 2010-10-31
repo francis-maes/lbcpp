@@ -34,6 +34,8 @@ struct DefaultParameters
   static bool   saveIterations;
   static size_t numThreads;
   static size_t currentPass;
+  static bool   useMultiClassSVM;
+  static String databaseName;
 };
 
 ThreadPoolPtr createThreadPool()
@@ -106,100 +108,193 @@ public:
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    InferencePtr res;
+    if (DefaultParameters::useMultiClassSVM)
+    {
+      res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
+    }
+    else
+    {
+      InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
+      res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    }
     
-    //InferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
     if (DefaultParameters::saveIterations)
       res->setBatchLearner(stochasticInferenceLearner());
     return res;
   }
 
 protected:
+  void getLearningRate(const String& targetName, double& learningRate, size_t& learningRateUpdate, double& regularizer) const
+  {
+    if (DefaultParameters::databaseName == T("PSIPRED"))
+    {
+      if (targetName.startsWith(T("secondaryStructure")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 5;
+          learningRateUpdate = (size_t)5e4;
+          regularizer = 1e-7;
+        }
+        else
+        {
+          learningRate = 5;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("dsspSecondaryStructure")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 10.0;
+          learningRateUpdate = (size_t)5e4;
+          regularizer = 1e-7;
+        }
+        else
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("solventAccessibilityAt20p")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 1.0;
+          learningRateUpdate = (size_t)7e4;
+          regularizer = 1e-5;
+        }
+        else
+        {
+          learningRate = 10.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("disorderRegions")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 1.0;
+          learningRateUpdate = (size_t)5e6;
+          regularizer = 1e-8;
+        }
+        else
+        {
+          learningRate = 10.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("structuralAlphabetSequence")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 1;
+          learningRateUpdate = (size_t)1e5;
+          regularizer = 0;
+        }
+        else
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+    }
+    else if (DefaultParameters::databaseName == T("DISpro"))
+    {
+      if(targetName.startsWith(T("secondaryStructure")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 3.0;
+          learningRateUpdate = (size_t)7e4;
+          regularizer = 1e-7;
+        }
+        else
+        {
+          learningRate = 1;
+          learningRateUpdate = (size_t)5e4;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("dsspSecondaryStructure")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 6.0;
+          learningRateUpdate = (size_t)7e4;
+          regularizer = 1e-7;
+        }
+        else
+        {
+          learningRate = 10.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("solventAccessibilityAt20p")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 1.0;
+          learningRateUpdate = (size_t)1e5;
+          regularizer = 1e-7;
+        }
+        else
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("disorderRegions")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)1e5;
+          regularizer = 1e-8;
+        }
+        else
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)5e5;
+          regularizer = 1e-7;
+        }
+      }
+      else if (targetName.startsWith(T("structuralAlphabetSequence")))
+      {
+        if (DefaultParameters::currentPass == 0)
+        {
+          learningRate = 3;
+          learningRateUpdate = (size_t)7e4;
+          regularizer = 0;
+        }
+        else
+        {
+          learningRate = 5.0;
+          learningRateUpdate = (size_t)1e5;
+          regularizer = 1e-7;
+        }
+      }
+    }
+  }
+  
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName) const
   {
     double learningRate = DefaultParameters::learningRate;
     size_t learningRateUpdate = DefaultParameters::learningRateUpdate;
     double regularizer = DefaultParameters::regularizer;
-    if (DefaultParameters::forceUse)
+    if (!DefaultParameters::forceUse)
+    //if (DefaultParameters::forceUse && DefaultParameters::currentPass == 0)
     {
-      // skip
-    }
-    else if(targetName.startsWith(T("secondaryStructure")))
-    {
-      if (DefaultParameters::currentPass == 0)
-      {
-        learningRate = 5;
-        learningRateUpdate = (size_t)5e4;
-        regularizer = 1e-7;
-      }
-      else
-      {
-        learningRate = 5;
-        learningRateUpdate = (size_t)5e5;
-        regularizer = 1e-7;
-      }
-    }
-    else if (targetName.startsWith(T("dsspSecondaryStructure")))
-    {
-      if (DefaultParameters::currentPass == 0)
-      {
-        learningRate = 10.0;
-        learningRateUpdate = (size_t)5e4;
-        regularizer = 1e-7;
-      }
-      else
-      {
-        learningRate = 5.0;
-        learningRateUpdate = (size_t)5e5;
-        regularizer = 1e-7;
-      }
-    }
-    else if (targetName.startsWith(T("solventAccessibilityAt20p")))
-    {
-      if (DefaultParameters::currentPass == 0)
-      {
-        learningRate = 1.0;
-        learningRateUpdate = (size_t)7e4;
-        regularizer = 1e-5;
-      }
-      else
-      {
-        learningRate = 10.0;
-        learningRateUpdate = (size_t)5e5;
-        regularizer = 1e-7;
-      }
-    }
-    else if (targetName.startsWith(T("disorderRegions")))
-    {
-      if (DefaultParameters::currentPass == 0)
-      {
-        learningRate = 1.0;
-        learningRateUpdate = (size_t)5e6;
-        regularizer = 1e-8;
-      }
-      else
-      {
-        learningRate = 10.0;
-        learningRateUpdate = (size_t)5e5;
-        regularizer = 1e-7;
-      }
-    }
-    else if (targetName.startsWith(T("structuralAlphabetSequence")))
-    {
-      if (DefaultParameters::currentPass == 0)
-      {
-        learningRate = 1;
-        learningRateUpdate = (size_t)1e5;
-        regularizer = 0;
-      }
-      else
-      {
-        learningRate = 5.0;
-        learningRateUpdate = (size_t)5e5;
-        regularizer = 1e-7;
-      }
-    }
+      getLearningRate(targetName, learningRate, learningRateUpdate, regularizer);
+    } 
     std::cout << targetName << " - LS: " << (int)learningRateUpdate << " - LR: " << learningRate << std::endl;
 
     StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(DefaultParameters::stoppingIteration);
@@ -326,7 +421,7 @@ public:
   virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getName() == inferenceNameToEvaluate) // T("Pass learner")
+    if (currentInference->getName().startsWith(inferenceNameToEvaluate)) // T("Pass learner")
     {
       ProteinEvaluatorPtr trainingEvaluator = new ProteinEvaluator();
       context->evaluate(inference, trainingData, trainingEvaluator);
@@ -474,6 +569,8 @@ bool   DefaultParameters::forceUse            = false;
 bool   DefaultParameters::saveIterations      = false;
 size_t DefaultParameters::numThreads          = 1;
 size_t DefaultParameters::currentPass         = 0;
+bool   DefaultParameters::useMultiClassSVM    = false;
+String DefaultParameters::databaseName        = T("PSIPRED");
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
 {
@@ -519,12 +616,14 @@ int main(int argc, char** argv)
   arguments.insert(new DoubleArgument(T("Regularizer"), DefaultParameters::regularizer));
   arguments.insert(new IntegerArgument(T("StoppingIteration"), (int&)DefaultParameters::stoppingIteration));
   arguments.insert(new BooleanArgument(T("ForceUse"), DefaultParameters::forceUse));
+  arguments.insert(new BooleanArgument(T("UseMultiClassSVM"), DefaultParameters::useMultiClassSVM));
+  arguments.insert(new StringArgument(T("DatabaseName"), DefaultParameters::databaseName));
   /* Perception Parameters */
-  arguments.insert(new IntegerArgument(T("WindowSize"), (int&)windowSize));
+  //arguments.insert(new IntegerArgument(T("WindowSize"), (int&)windowSize));
   // ...
   /* Modes */
-  arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
-  arguments.insert(new BooleanArgument(T("IsExperimentalMode"), isExperimentalMode));
+  //arguments.insert(new BooleanArgument(T("IsTestVersion"), isTestVersion));
+  //arguments.insert(new BooleanArgument(T("IsExperimentalMode"), isExperimentalMode));
   arguments.insert(new IntegerArgument(T("FoldCrossValidation"), (int&)foldCrossValidation));
   arguments.insert(new IntegerArgument(T("NumThreads"), (int&)DefaultParameters::numThreads));
 
