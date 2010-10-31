@@ -141,7 +141,7 @@ public:
       {
         PopupMenu openRecentFilesMenu;
         for (size_t i = 0; i < configuration->getNumRecentFiles(); ++i)
-          openRecentFilesMenu.addItem(101 + i, configuration->getRecentFile(i).getFileName());
+          openRecentFilesMenu.addItem(101 + (int)i, configuration->getRecentFile(i).getFileName());
         openRecentFilesMenu.addSeparator();
         openRecentFilesMenu.addItem(100, T("Clear Menu"));
         menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);

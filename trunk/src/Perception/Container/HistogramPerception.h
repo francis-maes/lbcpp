@@ -60,7 +60,7 @@ public:
   ContainerHistogramPerception() {}
 
   virtual TypePtr getInputType() const
-    {return containerClass(elementsType);}
+   {return containerClass(elementsType);}
   
   virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
   {

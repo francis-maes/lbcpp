@@ -119,53 +119,6 @@ inline bool isRunOnSupervisedExamplesInference(InferencePtr inference)
       || cl->inheritsFrom(runOnSupervisedExamplesParallelInferenceClass);
 }
 
-class RunSequentialInferenceStepOnExamples : public ParallelInference
-{
-public:
-  RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
-    : ParallelInference(T("RunSequentialInferenceStepOnExamples")), inference(inference), currentStates(currentStates) {}
-
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    ContainerPtr examples = input.dynamicCast<Container>();
-    jassert(examples);
-
-    ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    size_t n = examples->getNumElements();
-    res->reserve(n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable example = examples->getElement(i);
-      res->addSubInference(currentStates[i]->getSubInference(), example[0], example[1]);
-    }
-    return res;
-  }
-
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
-  {
-    for (size_t i = 0; i < state->getNumSubInferences(); ++i)
-    {
-      currentStates[i]->setSubOutput(state->getSubOutput(i));
-      if (!inference->updateInference(context, currentStates[i], returnCode))
-        currentStates[i]->setFinalState();
-      if (returnCode != finishedReturnCode)
-        break;
-    }
-    return Variable();
-  }
-
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
-  {
-    const ContainerPtr& examples = input.getObjectAndCast<Container>();
-    return T("Run ") + inference->getName() + T(" step with ") + 
-      String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
-  }
-
-private:
-  SequentialInferencePtr inference;
-  std::vector<SequentialInferenceStatePtr>& currentStates;
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_RUN_ON_SUPERVISED_EXAMPLES_H_

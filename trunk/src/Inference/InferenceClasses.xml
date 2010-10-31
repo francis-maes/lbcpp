@@ -9,9 +9,10 @@
 
   <import name="InferenceCallback"/>
   <import name="InferenceContext"/>
-  <import name="InferenceOnlineLearner"/>
   <import name="ReductionInference"/>
   <import name="MetaInference"/>
+  <import name="InferenceBatchLearner"/>
+  <import name="InferenceOnlineLearner"/>
 
   <namespace name="lbcpp">
 

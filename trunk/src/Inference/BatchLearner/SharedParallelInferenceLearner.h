@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_INFERENCE_META_SHARED_PARALLEL_LEARNER_H_
-# define LBCPP_INFERENCE_META_SHARED_PARALLEL_LEARNER_H_
+#ifndef LBCPP_INFERENCE_BATCH_LEARNER_SHARED_PARALLEL_H_
+# define LBCPP_INFERENCE_BATCH_LEARNER_SHARED_PARALLEL_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/ParallelInference.h>
@@ -73,4 +73,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_INFERENCE_META_SHARED_PARALLEL_LEARNER_H_
+#endif // !LBCPP_INFERENCE_BATCH_LEARNER_SHARED_PARALLEL_H_

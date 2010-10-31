@@ -143,11 +143,11 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   // compute perception
   if (sparseDoubleRes)
   {
-    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(sparseDoubleRes, (size_t)(sparseness.getMean() + sparseness.getStandardDeviation() * 3.0));
+    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(sparseDoubleRes, esimateSparsenessUpperBound());
     computePerception(input, &perceptionCallback);
     size_t numValues = sparseDoubleRes->getValues().size();
     if (numValues)
-      const_cast<Perception* >(this)->sparseness.push((double)numValues);
+      const_cast<Perception* >(this)->pushSparsenessValue(numValues);
     else
       res = ObjectPtr();
   }
@@ -196,6 +196,12 @@ void Perception::clone(const ObjectPtr& t) const
   target->outputVariables = outputVariables;
   target->outputType = outputType;
 }
+
+void Perception::pushSparsenessValue(size_t numActives)
+  {ScopedLock _(sparsenessLock); sparseness.push((double)numActives);}
+
+size_t Perception::esimateSparsenessUpperBound() const
+  {ScopedLock _(sparsenessLock); return (size_t)(sparseness.getMean() + sparseness.getStandardDeviation() * 3.0);}
 
 /*
 ** CompositePerception
