@@ -19,7 +19,7 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
     : numberOfActiveFeatures(T("NumActiveFeatures"), 10), epoch(0),
       learningUpdateFrequency(learningUpdateFrequency), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate),
       regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),
-      lossValue(T("Loss")), lastApplyRegularizerEpoch(0)
+      lossValue(T("Loss")), lastEmpiricalLossValue(0.0), lastApplyRegularizerEpoch(0)
 {
 }
 
@@ -75,6 +75,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   {
     double mean = lossValue.getMean();
     MessageCallback::info(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
+    lastEmpiricalLossValue = mean;
     lossValue.clear();
     //lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }

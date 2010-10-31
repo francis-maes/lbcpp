@@ -180,7 +180,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 30;
+    size_t numIterations = 100;
     res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -263,7 +263,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 0;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
