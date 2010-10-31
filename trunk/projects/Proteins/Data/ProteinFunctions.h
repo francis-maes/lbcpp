@@ -59,8 +59,12 @@ public:
     {
       protein->getDisorderRegions(); // be sure that disordered regions are computed
       protein->getStructuralAlphabetSequence(); // be sure that structural alphabet is computed
+      protein->getDisulfideBonds();
+
       protein->setTertiaryStructure(TertiaryStructurePtr()); // remove tertiary structure
       protein->setCAlphaTrace(CartesianPositionVectorPtr()); // remove c-alpha trace
+      protein->setDistanceMap(SymmetricMatrixPtr(), false);
+      protein->setDistanceMap(SymmetricMatrixPtr(), true);
     }
 
     ProteinPtr inputProtein = new Protein(protein->getName());

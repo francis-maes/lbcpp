@@ -1,20 +1,19 @@
-* Générer trainCO et testCO
+New tasks:
+  * Voir si on peut faire du Dissulfide Bond Matrix
 
-* Voir si on peut faire du Dissulfide Bond Matrix
-* Voir comment récuperer le Loss pendant l'évaluation
+More Features:
+  * Probabilities for SS3, SS8 and STAL
+  * Segments for SS3, SS8, SA and DR
 
-Boinc:
- * Gestion générique des paramètres
+Automatize:
+  * Voir comment récuperer le Loss pendant l'évaluation
+  * Tuning sur une base de validation
+  * Boinc: Gestion générique des paramètres
 
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Multiclass classifiers: output discrete distributions
-
-Inference:
- * Segmental Features
- * Recursive parameters, use in:
-    - StoppingCriterionOnlineLearner
-    - InitializeByCloningBatchLearner
+ * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
 
 Extra-trees:
  * Make it really work !

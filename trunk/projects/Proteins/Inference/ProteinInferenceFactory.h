@@ -32,6 +32,7 @@ public:
   virtual InferencePtr createLabelSequenceInference(const String& targetName) const;
   virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const;
   virtual InferencePtr createContactMapInference(const String& targetName) const;
+  virtual InferencePtr createDisulfideBondsInference(const String& targetName) const;
 
   /*
   ** Perceptions
