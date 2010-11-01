@@ -269,6 +269,7 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/InferenceResultCache.h
   Inference/InferenceCallback.cpp
   ../include/lbcpp/Inference/InferenceBatchLearner.h
+  Inference/InferenceBatchLearner.cpp
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceClasses.xml
@@ -327,6 +328,7 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/OnlineLearner/ComputeEvaluatorOnlineLearner.h
   Inference/OnlineLearner/RandomizerOnlineLearner.h
   Inference/OnlineLearner/StoppingCriterionOnlineLearner.h
+  Inference/OnlineLearner/SaveScoresToGnuPlotFileOnlineLearner.h
   Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
 )

@@ -13,4 +13,10 @@
       <variable type="Integer" name="myInt"/>
     </class>
   </namespace>
+
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+
 </file>

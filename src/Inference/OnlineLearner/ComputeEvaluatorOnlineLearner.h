@@ -13,26 +13,28 @@
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Inference/InferenceContext.h>
 
 namespace lbcpp
 {
 
-class ComputeEvaluatorOnlineLearner : public UpdatableOnlineLearner
+class ComputeEvaluatorOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  ComputeEvaluatorOnlineLearner(EvaluatorPtr evaluator, ContainerPtr examples, LearnerUpdateFrequency computeFrequency)
-    : UpdatableOnlineLearner(computeFrequency), evaluator(evaluator), examples(examples), lastDefaultScore(0.0)
-    {}
-  ComputeEvaluatorOnlineLearner() : lastDefaultScore(0.0) {}
+  ComputeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData)
+    : evaluator(evaluator), computeOnValidationData(computeOnValidationData), lastDefaultScore(0.0) {}
+  ComputeEvaluatorOnlineLearner() : lastDefaultScore(0.0), computeOnValidationData(false) {}
 
-  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {
     EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>();
+    InferenceExampleVectorPtr examples = computeOnValidationData ? batchLearnerInput->getValidationExamples() : batchLearnerInput->getTrainingExamples();
     context->evaluate(inference, examples, eval);
     lastScores.clear();
     eval->getScores(lastScores);
     lastDefaultScore = eval->getDefaultScore();
+    InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
@@ -51,7 +53,7 @@ protected:
   friend class ComputeEvaluatorOnlineLearnerClass;
 
   EvaluatorPtr evaluator;
-  ContainerPtr examples;
+  bool computeOnValidationData;
 
   std::vector< std::pair<String, double> > lastScores;
   double lastDefaultScore;

@@ -94,6 +94,9 @@ public:
   size_t getNumClasses() const
     {return classes->getNumElements();}
 
+  size_t getCorrectClass() const
+    {return correctClass;}
+
 protected:
   friend class MultiClassLossFunctionClass;
 

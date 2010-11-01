@@ -58,7 +58,7 @@ private:
 
   virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
-    double score = -getDefaultScore();
+    double score = getDefaultScore();
     //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy();
     if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
@@ -69,7 +69,7 @@ private:
     }
     if (criterion->shouldStop(score))
     {
-      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, best score = ") + String(bestScore));
+      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(score) + T(" best score = ") + String(bestScore));
       learningStopped = true;
       if (bestParameters.exists() && bestScore > score)
       {

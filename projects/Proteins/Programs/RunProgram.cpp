@@ -17,10 +17,14 @@ void usage()
   std::cout << "Usage ..." << std::endl;
 }
 
+extern void declareProteinClasses();
+extern void declareProgramClasses();
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
   declareProteinClasses();
+  declareProgramClasses();
 
   if (argc == 1)
   {

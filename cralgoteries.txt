@@ -1,18 +1,4 @@
-- Use InferenceBatchLearner input everywhere
-  - refcounter les vecteurs d'exemples
-  
-- Faire un learner pour créer l'ensemble de validation
 
-- Avoir tous les scores dans les OnlineLearners
-- StoppingCriterion sur le validation dataset
-
-- GnuPlotScoreExporterOnlineLearner
-
-
-Automatize:
- * Voir comment récuperer le Loss pendant l'évaluation
- * Tuning sur une base de validation
- * Boinc: Gestion générique des paramètres
 
 More Features:
  * Probabilities for SS3, SS8 and STAL

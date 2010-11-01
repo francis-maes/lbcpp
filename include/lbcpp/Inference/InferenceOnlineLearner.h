@@ -24,7 +24,8 @@ public:
   virtual void subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  // batchLearnerInput: if learning is performed within the context of a batch learner, we have batch learning parameters here
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const;
   virtual double getDefaultScore() const;
@@ -40,8 +41,8 @@ public:
 
   InferenceOnlineLearnerPtr getLastLearner() const;
 
-  void setNextLearner(const InferenceOnlineLearnerPtr& learner)
-    {if (learner) learner->previousLearner = this; nextLearner = learner;}
+  InferenceOnlineLearnerPtr setNextLearner(const InferenceOnlineLearnerPtr& learner)
+    {if (learner) learner->previousLearner = this; nextLearner = learner; return learner;}
 
   void setPreviousLearner(const InferenceOnlineLearnerPtr& learner)
     {if (learner) learner->nextLearner = this; previousLearner = learner;}
@@ -87,7 +88,7 @@ public:
 
   virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
 protected:
   friend class UpdatableOnlineLearnerClass;
@@ -104,7 +105,9 @@ extern UpdatableOnlineLearnerPtr randomizerOnlineLearner(LearnerUpdateFrequency 
 extern UpdatableOnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency = perPass);
 
 extern UpdatableOnlineLearnerPtr computeScoreOnlineLearner(FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency = perPass);
-extern UpdatableOnlineLearnerPtr computeEvaluatorOnlineLearner(EvaluatorPtr evaluator, ContainerPtr examples, LearnerUpdateFrequency computeFrequency = perPass);
+extern InferenceOnlineLearnerPtr computeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData);
+
+extern UpdatableOnlineLearnerPtr saveScoresToGnuPlotFileOnlineLearner(const File& outputFile, LearnerUpdateFrequency updateFrequency = perPass);
 
 }; /* namespace lbcpp */
 

@@ -28,13 +28,13 @@ public:
   virtual void startLearningCallback(InferenceContextWeakPtr context);
   virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("empiricalRisk"), lastEmpiricalRisk));}
 
   virtual double getDefaultScore() const
-    {return lastEmpiricalRisk;}
+    {return -lastEmpiricalRisk;}
   
   virtual void clone(const ObjectPtr& target) const;
 

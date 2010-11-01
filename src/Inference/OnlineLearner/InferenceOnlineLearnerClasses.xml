@@ -47,10 +47,10 @@
       <variable type="Function" name="scoreFunction"/>
     </class>
 
-    <class name="ComputeEvaluatorOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="EvaluatorPtr evaluator, ContainerPtr examples, LearnerUpdateFrequency computeFrequency"/>
+    <class name="ComputeEvaluatorOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="EvaluatorPtr evaluator, bool computeOnValidationData"/>
       <variable type="Evaluator" name="evaluator"/>
-      <variable type="Container[Pair[Variable,Variable]]" name="examples"/>
+      <variable type="Boolean" name="computeOnValidationData"/>
       <variable type="ObjectVector[Pair[String,Double]]" name="lastScores"/>
       <variable type="Double" name="lastDefaultScore"/>
     </class>
@@ -68,6 +68,10 @@
 
     <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">
       <constructor arguments="LearnerUpdateFrequency randomizationFrequency"/>
+    </class>
+
+    <class name="SaveScoresToGnuPlotFileOnlineLearner" base="UpdatableOnlineLearner">
+      <constructor arguments="const File&amp; outputFile, LearnerUpdateFrequency updateFrequency"/>
     </class>
 
   </namespace>

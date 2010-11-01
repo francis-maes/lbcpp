@@ -55,12 +55,14 @@
     </class>
     
     <!-- Batch Learner -->
+    <class name="InferenceExampleVector" base="Vector[Pair[Variable,Variable]]"/>
+
     <template name="InferenceBatchLearnerInput" base="Object">
       <parameter name="targetInferenceType" type="Inference"/>
       
       <variable type="targetInferenceType" name="targetInference"/>
-      <variable type="ObjectVector[Pair[Variable,Variable]]" name="trainingData"/>
-      <variable type="ObjectVector[Pair[Variable,Variable]]" name="validationData"/>
+      <variable type="InferenceExampleVector" name="trainingData"/>
+      <variable type="InferenceExampleVector" name="validationData"/>
     </template>
     
   </namespace>

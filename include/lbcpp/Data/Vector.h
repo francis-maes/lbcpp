@@ -217,12 +217,7 @@ public:
     {return values.size();}
 
   virtual Variable getElement(size_t index) const
-  {
-    if (values[index].exists())
-      return ObjectPtr(new ObjectType(values[index]));
-    else
-      return Variable::missingValue(getElementsType());
-  }
+    {return new ObjectType(values[index]);}
 
   virtual void setElement(size_t index, const Variable& value)
     {values[index] = getImplementation(value);}
@@ -251,6 +246,18 @@ public:
   virtual void remove(size_t index)
     {values.erase(values.begin() + index);}
 
+  size_t size() const
+    {return values.size();}
+
+  const ImplementationType& get(size_t index) const
+    {jassert(index < values.size()); return values[index];}
+
+  ImplementationType& get(size_t index)
+    {jassert(index < values.size()); return values[index];}
+
+  void set(size_t index, const ImplementationType& value)
+    {jassert(index < values.size()); values[index] = value;}
+
   void append(const ImplementationType& value)
     {values.push_back(value);}
 
@@ -260,7 +267,7 @@ protected:
   static ImplementationType getImplementation(const Variable& value)
   {
     const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
-    return v ? ImplementationType() : v->getValue();
+    return v ? v->getValue() : ImplementationType();
   }
 };
 

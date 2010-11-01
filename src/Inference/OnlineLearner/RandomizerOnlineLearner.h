@@ -41,14 +41,14 @@ public:
       UpdatableOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {
     if (updateFrequency == perPass)
     {
       update(context, inference);
       nextLearner->episodeFinishedCallback(context, inference);
     }
-    InferenceOnlineLearner::passFinishedCallback(context, inference);
+    InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
   }
 
   virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
