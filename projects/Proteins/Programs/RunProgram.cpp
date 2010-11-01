@@ -3,12 +3,19 @@
 
 using namespace lbcpp;
 
+extern void declareProteinClasses();
+
+class MuteMessageCallback : public MessageCallback
+{
+  virtual void errorMessage(const String& where, const String& what) {}
+  virtual void warningMessage(const String& where, const String& what) {}
+  virtual void infoMessage(const String& where, const String& what) {}
+};
+
 void usage()
 {
   std::cout << "Usage ..." << std::endl;
 }
-
-extern void declareProteinClasses();
 
 int main(int argc, char** argv)
 {
@@ -26,30 +33,28 @@ int main(int argc, char** argv)
   {
     // load from serialization
     File parametersFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
-    ObjectPtr obj = Object::createFromFile(parametersFile, callback);
-    if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
-    {
-      ProgramPtr program = obj.staticCast<Program>();
-      return program->run(callback);
-    }
+    MuteMessageCallback muteCallback;
+    ObjectPtr obj = Object::createFromFile(parametersFile, muteCallback);
     
-    // load program from string
-    obj = Object::create(Type::get(argv[1], callback));
     if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
     {
       ProgramPtr program = obj.staticCast<Program>();
-      if (program->getNumVariables())
-      { // TODO open a shell and ask parameters
-        callback.errorMessage(T("main"), T("Not enough parameters"));
-        usage();
-        return -1;
-      }
-      return program->run(callback);
+      int exitCode = program->run(callback);
+      lbcpp::deinitialize();
+      return exitCode;
     }
   }
-  
-  callback.errorMessage(T("main"), T("Not yet implemented"));
-  return 0;
 
-  lbcpp::deinitialize();
+  // load program from string
+  ObjectPtr obj = Object::create(Type::get(argv[1], callback));
+  if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
+  {
+    ProgramPtr program = obj.staticCast<Program>();
+    int exitCode = program->run(callback);
+    lbcpp::deinitialize();
+    return exitCode;
+  }
+  
+  usage();
+  return -1;
 }
