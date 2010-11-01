@@ -26,6 +26,7 @@ public:
   virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   ReturnCode train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples = ContainerPtr());
+  ReturnCode train(InferencePtr inference, const InferenceBatchLearnerInputPtr& learnerInput);
   ReturnCode evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator);
   ReturnCode crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds);
   Variable predict(InferencePtr inference, const Variable& input);

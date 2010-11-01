@@ -31,8 +31,8 @@ public:
   virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
     std::vector< std::pair<String, double> > scores;
-    scores.push_back(std::make_pair(T("defaultScore"), getDefaultScore()));
     getScores(scores);
+    scores.insert(scores.begin(), std::make_pair(T("defaultScore"), getDefaultScore()));
     
     if (numLines == 0)
     {

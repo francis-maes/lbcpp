@@ -11,6 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Data/Pair.h>
 
 namespace lbcpp
@@ -97,11 +98,21 @@ public:
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     size_t n = examples->getNumElements();
     res->reserve(n);
-    for (size_t i = 0; i < n; ++i)
+    InferenceExampleVectorPtr examplesVector = examples.dynamicCast<InferenceExampleVector>();
+    if (examplesVector)
     {
-      Variable example = examples->getElement(i);
-      res->addSubInference(inference, example[0], example[1]);
+      for (size_t i = 0; i < n; ++i)
+      {
+        const std::pair<Variable, Variable>& example = examplesVector->get(i);
+        res->addSubInference(inference, example.first, example.second);
+      }
     }
+    else
+      for (size_t i = 0; i < n; ++i)
+      {
+        Variable example = examples->getElement(i);
+        res->addSubInference(inference, example[0], example[1]);
+      }
     return res;
   }
 

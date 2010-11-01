@@ -141,6 +141,7 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/IterationFunction.h
   ../include/lbcpp/Function/StoppingCriterion.h
   ../include/lbcpp/Function/Predicate.h
+  ../include/lbcpp/Function/ObjectiveFunction.h
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
   ../include/lbcpp/Function/ThreadPool.h

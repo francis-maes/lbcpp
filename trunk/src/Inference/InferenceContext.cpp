@@ -86,13 +86,16 @@ Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inf
 }
 
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
+  {return train(inference, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples));}
+
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, const InferenceBatchLearnerInputPtr& learnerInput)
 {
-  ReturnCode res = Inference::finishedReturnCode;
   const InferencePtr& learner = inference->getBatchLearner();
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
-  run(learner, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples), Variable(), res);
+  ReturnCode res = Inference::finishedReturnCode;
+  run(learner, learnerInput, Variable(), res);
   return res;
 }
 
