@@ -28,4 +28,40 @@ public:
 
 typedef ReferenceCountedObjectPtr<Program> ProgramPtr;
 
+class ProgramDecorator : public Program
+{
+public:
+  ProgramDecorator(ProgramPtr decorated) : decorated(decorated) {}
+  ProgramDecorator() {}
+  
+
+  friend class ProgramDecoratorClass;
+  
+  ProgramPtr decorated;
+};
+
+class CommandLineProgram : ProgramDecorator
+{
+public:
+  CommandLineProgram(ProgramPtr decorated, const std::vector<String>& arguments)
+    : ProgramDecorator(decorated), arguments(arguments) {}
+  CommandLineProgram() {}
+  
+  virtual bool parseArguments()
+  {
+    // TODO
+    return true;
+  }
+  
+  virtual int run(MessageCallback& callback = MessageCallback::getInstance())
+  {
+    if (!parseArguments())
+      return -1;
+    return decorated->run();
+  }
+
+protected:
+  std::vector<String> arguments;
+};
+
 #endif // !LBCPP_PROTEINS_PROGRAMS_PROGRAM_H_
