@@ -11,6 +11,7 @@
 
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
+# include "../../Data/Object/DenseDoubleObject.h"
 
 namespace lbcpp
 {
@@ -21,22 +22,43 @@ public:
   ClassificationAccuracyEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
   ClassificationAccuracyEvaluator() {}
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(const Variable& predicted, const Variable& correctObject)
   {
-    if (!predictedObject.exists() || !correctObject.exists())
+    if (!predicted.exists() || !correctObject.exists())
       return;
+
     jassert(correctObject.isEnumeration());
-    if (predictedObject.isEnumeration())
+    if (predicted.isEnumeration())
     {
-      jassert(predictedObject.getType() == correctObject.getType());
-      accuracy->push(predictedObject.getInteger() == correctObject.getInteger());
+      jassert(predicted.getType() == correctObject.getType());
+      accuracy->push(predicted.getInteger() == correctObject.getInteger());
+      return;
     }
-    else
+    
+    if (predicted.isObject())
     {
-      const DiscreteProbabilityDistributionPtr& distribution = predictedObject.getObjectAndCast<DiscreteProbabilityDistribution>();
-      jassert(distribution);
-      accuracy->push(distribution->compute(correctObject));
+      DenseDoubleObjectPtr scores = predicted.dynamicCast<DenseDoubleObject>();
+      if (scores)
+      {
+        const std::vector<double>& scoreValues = scores->getValues();
+        double bestScore = -DBL_MAX;
+        int bestIndex = -1;
+        for (size_t i = 0; i < scoreValues.size(); ++i)
+          if (scoreValues[i] > bestScore)
+            bestScore = scoreValues[i], bestIndex = (int)i;
+        accuracy->push(bestIndex == correctObject.getInteger());
+        return;
+      }
+
+      DiscreteProbabilityDistributionPtr distribution = predicted.dynamicCast<DiscreteProbabilityDistribution>();
+      if (distribution)
+      {
+        accuracy->push(distribution->compute(correctObject));
+        return;
+      }
     }
+
+    jassert(false);
   }
   
   virtual String toString() const

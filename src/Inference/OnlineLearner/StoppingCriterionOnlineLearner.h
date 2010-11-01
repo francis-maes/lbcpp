@@ -20,7 +20,7 @@ namespace lbcpp
 class StoppingCriterionOnlineLearner : public UpdatableOnlineLearner
 {
 public:
-  StoppingCriterionOnlineLearner(UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops)
+  StoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency)
     : UpdatableOnlineLearner(criterionTestFrequency), 
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
         learningStopped(false), bestScore(-DBL_MAX)
@@ -28,9 +28,9 @@ public:
 
   StoppingCriterionOnlineLearner() : learningStopped(false), bestScore(-DBL_MAX) {}
 
-  virtual void startLearningCallback()
+  virtual void startLearningCallback(InferenceContextWeakPtr context)
   {
-    UpdatableOnlineLearner::startLearningCallback();
+    UpdatableOnlineLearner::startLearningCallback(context);
     learningStopped = false;
     bestParameters = ObjectPtr();
     bestScore = -DBL_MAX;
@@ -56,9 +56,9 @@ private:
   Variable bestParameters;
   double bestScore;
 
-  virtual void update(const InferencePtr& inference)
+  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
-    double score = -getCurrentLossEstimate();
+    double score = -getDefaultScore();
     //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy();
     if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)

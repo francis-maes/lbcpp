@@ -18,40 +18,40 @@ namespace lbcpp
 class RandomizerOnlineLearner : public UpdatableOnlineLearner
 {
 public:
-  RandomizerOnlineLearner(UpdateFrequency randomizationFrequency)
+  RandomizerOnlineLearner(LearnerUpdateFrequency randomizationFrequency)
     : UpdatableOnlineLearner(randomizationFrequency) {}
   RandomizerOnlineLearner() {}
  
-  virtual void subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     jassert(false); // not supported yet
   }
 
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     storeExample(input, supervision, prediction);
-    updateAfterStep(inference);
+    updateAfterStep(context, inference);
   }
  
-  virtual void episodeFinishedCallback(const InferencePtr& inference)
+  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
     if (updateFrequency >= perStepMiniBatch + 1)
-      update(inference); // flush remaining examples
+      update(context, inference); // flush remaining examples
     if (updateFrequency != perPass)
-      UpdatableOnlineLearner::episodeFinishedCallback(inference);
+      UpdatableOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(const InferencePtr& inference)
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
     if (updateFrequency == perPass)
     {
-      update(inference);
-      nextLearner->episodeFinishedCallback(inference);
+      update(context, inference);
+      nextLearner->episodeFinishedCallback(context, inference);
     }
-    InferenceOnlineLearner::passFinishedCallback(inference);
+    InferenceOnlineLearner::passFinishedCallback(context, inference);
   }
 
-  virtual void update(const InferencePtr& inference)
+  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
     std::vector<Example> examples;
     getExamplesAndClear(examples);
@@ -63,12 +63,9 @@ public:
     for (size_t i = 0; i < order.size(); ++i)
     {
       const Example& example = examples[order[i]];
-      nextLearner->stepFinishedCallback(inference, example.input, example.supervision, Variable()/*example.prediction*/);
+      nextLearner->stepFinishedCallback(context, inference, example.input, example.supervision, Variable()/*example.prediction*/);
     }
   }
-
-  virtual double getCurrentLossEstimate() const
-    {return nextLearner->getCurrentLossEstimate();}
 
 private:
   struct Example

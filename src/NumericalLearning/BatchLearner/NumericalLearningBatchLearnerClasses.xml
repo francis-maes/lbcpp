@@ -4,9 +4,8 @@
 
   <namespace name="lbcpp">
 
-    <class name="StochasticNumericalInferenceLearner" base="StochasticInferenceLearner">
-      <constructor arguments="bool precomputePerceptions, bool randomizeExamples" returnType="SequentialInference"/>
-      <variable type="Boolean" name="precomputePerceptions"/>
+    <class name="PrecomputePerceptionsNumericalInferenceLearner" base="PrecomputePerceptionsInferenceLearner">
+      <constructor arguments="InferencePtr baseLearner" returnType="StaticDecoratorInference"/>
     </class>
 
     <class name="AddBiasInferenceLearner" base="AtomicInferenceLearner">

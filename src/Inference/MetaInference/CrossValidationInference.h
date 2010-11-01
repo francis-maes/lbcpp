@@ -77,7 +77,7 @@ public:
       String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getName() + T("s");
   }
 
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const ContainerPtr& trainingData = input.getObjectAndCast<Container>();
 
@@ -91,7 +91,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 
 protected:

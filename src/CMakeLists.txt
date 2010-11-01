@@ -316,11 +316,14 @@ SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
   Inference/BatchLearner/DecoratorInferenceLearner.h
   Inference/BatchLearner/StochasticInferenceLearner.h
   Inference/BatchLearner/InitializeByCloningInferenceLearner.h
+  Inference/BatchLearner/PrecomputePerceptionsInferenceLearner.h
   Inference/BatchLearner/InferenceBatchLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceBatchLearnerClasses.cpp
 )
 
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
+  Inference/OnlineLearner/ComputeScoreOnlineLearner.h
+  Inference/OnlineLearner/ComputeEvaluatorOnlineLearner.h
   Inference/OnlineLearner/RandomizerOnlineLearner.h
   Inference/OnlineLearner/StoppingCriterionOnlineLearner.h
   Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml
@@ -388,7 +391,7 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES
-  NumericalLearning/BatchLearner/StochasticNumericalInferenceLearner.h
+  NumericalLearning/BatchLearner/PrecomputePerceptionsNumericalInferenceLearner.h
   NumericalLearning/BatchLearner/AddBiasInferenceLearner.h
   NumericalLearning/BatchLearner/NumericalLearningBatchLearnerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningBatchLearnerClasses.cpp

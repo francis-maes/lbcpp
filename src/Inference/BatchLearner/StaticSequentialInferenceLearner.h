@@ -20,7 +20,7 @@ public:
   RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
     : ParallelInference(T("RunSequentialInferenceStepOnExamples")), inference(inference), currentStates(currentStates) {}
 
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();
     jassert(examples);
@@ -36,7 +36,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
@@ -67,7 +67,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticSequentialInferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
     ContainerPtr trainingData = getTrainingData(input);
@@ -96,7 +96,7 @@ public:
   }
 
   // returns false if the final state is reached
-  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr s, ReturnCode& returnCode)
+  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr s, ReturnCode& returnCode)
   {
     StatePtr state = s.staticCast<State>();
     Variable input = state->getInput();

@@ -21,7 +21,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticDecoratorInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     StaticDecoratorInferencePtr targetInference = getInferenceAndCast<StaticDecoratorInference>(input);
     ContainerPtr trainingData = getTrainingData(input);
@@ -42,7 +42,7 @@ public:
   }
 
 protected:
-  virtual ContainerPtr createSubTrainingData(InferenceContextPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
+  virtual ContainerPtr createSubTrainingData(InferenceContextWeakPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     size_t n = trainingData->getNumElements();
     InferencePtr targetSubInference = targetInference->getSubInference();
@@ -65,7 +65,7 @@ protected:
 class PostProcessInferenceLearner : public DecoratorInferenceLearner
 {
 protected:
-  virtual ContainerPtr createSubTrainingData(InferenceContextPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
+  virtual ContainerPtr createSubTrainingData(InferenceContextWeakPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
     {return trainingData;}
 };
 

@@ -32,7 +32,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return classes;}
   
-  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     TypePtr alternativeType = pairClass(input.getType(), classes);
@@ -52,7 +52,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     // todo: output discrete distribution
     const ContainerPtr& scores = finalState->getSubOutput().getObjectAndCast<Container>();

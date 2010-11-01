@@ -35,33 +35,33 @@ GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std
   candidateScores.resize(c);
 }
 
-void GraftingOnlineLearner::startLearningCallback()
+void GraftingOnlineLearner::startLearningCallback(InferenceContextWeakPtr context)
 {
   learningStopped = false;
   generateCandidates(SortedConjunctions(), SortedConjunctions());
   resetCandidateScores();
-  InferenceOnlineLearner::startLearningCallback();
+  InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GraftingOnlineLearner::subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GraftingOnlineLearner::subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   jassert(supervision.exists());
   std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
   if (it != scoresMapping.end())
     updateCandidateScores(inference, it->second, input, supervision, prediction);
-  InferenceOnlineLearner::subStepFinishedCallback(inference, input, supervision, prediction);
+  InferenceOnlineLearner::subStepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void GraftingOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GraftingOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   jassert(supervision.exists());
   std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
   if (it != scoresMapping.end())
     updateCandidateScores(inference, it->second, input, supervision, prediction);
-  InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+  InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void GraftingOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   // compute active feature scores
   std::vector<double> activeScores;
@@ -100,7 +100,7 @@ void GraftingOnlineLearner::passFinishedCallback(const InferencePtr& inference)
   MessageCallback::info(String::empty);
   MessageCallback::info(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
     + String((int)candidatesPerception->getNumConjunctions()) + T(" candidates ==="));
-  InferenceOnlineLearner::passFinishedCallback(inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference);
 }
 
 

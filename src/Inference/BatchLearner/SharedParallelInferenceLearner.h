@@ -24,7 +24,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return sharedParallelInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SharedParallelInferencePtr targetInference = getInferenceAndCast<SharedParallelInference>(input);
     ContainerPtr trainingData = getTrainingData(input);
@@ -46,7 +46,7 @@ public:
 private:
   bool filterUnsupervisedExamples;
 
-  ContainerPtr computeSubTrainingData(InferenceContextPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
+  ContainerPtr computeSubTrainingData(InferenceContextWeakPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
   {
     InferencePtr targetSubInference = targetInference->getSubInference();
     TypePtr pairType = pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType());

@@ -44,7 +44,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return voteInferenceModel->getOutputType(inputType);}
 
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
     state->reserve(subInferences.size());
@@ -53,7 +53,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     if (!n)
@@ -83,7 +83,7 @@ public:
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType));}
   MeanScalarParallelVoteInference() {}
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     double sum = 0.0;
@@ -111,7 +111,7 @@ public:
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType()).dynamicCast<Enumeration>());}
   MajorityClassParallelVoteInference() {}
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     TypePtr enumType = getOutputType(getInputType());
     size_t n = state->getNumSubInferences();

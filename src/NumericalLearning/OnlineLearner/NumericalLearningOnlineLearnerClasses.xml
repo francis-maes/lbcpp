@@ -12,16 +12,16 @@
       <variable type="Boolean" name="normalizeLearningRate"/>
       <variable type="LearnerUpdateFrequency" name="regularizerUpdateFrequency" enumeration="yes"/>
       <variable type="ScalarObjectFunction" name="regularizer"/>
-      <variable type="Double" name="lastEmpiricalLossValue"/>
+      <variable type="Double" name="lastEmpiricalRisk"/>
       <variable type="PositiveInteger" name="lastApplyRegularizerEpoch"/>
     </class>
 
     <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
-      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
 
     <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+      <constructor arguments="LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
     </class>
 
     <!-- Grafting -->

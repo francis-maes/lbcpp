@@ -173,7 +173,10 @@ void NumericalInference::updateParametersType()
 void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples)
 {
   jassert(onlineLearner);
-  decorated->setBatchLearner(stochasticNumericalInferenceLearner(precomputePerceptions, randomizeExamples));
+  InferencePtr batchLearner = stochasticInferenceLearner(randomizeExamples);
+  if (precomputePerceptions)
+    batchLearner = precomputePerceptionsNumericalInferenceLearner(batchLearner);
+  decorated->setBatchLearner(batchLearner);
   decorated->addOnlineLearner(onlineLearner);
 }
 
@@ -187,34 +190,34 @@ namespace lbcpp
 {
   extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
-    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency,
+    LearnerUpdateFrequency regularizerUpdateFrequency,
     ScalarObjectFunctionPtr regularizer);
 
   extern GradientDescentOnlineLearnerPtr batchGradientDescentOnlineLearner(
-    InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-    InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
+    LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
+    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   
 };
 
 InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
-        InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-        InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+        LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
+        LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
 {
-  jassert(learningUpdateFrequency != InferenceOnlineLearner::never);
+  jassert(learningUpdateFrequency != never);
   InferenceOnlineLearnerPtr res;
 
   size_t miniBatchSize = 0;
-  if (learningUpdateFrequency >= InferenceOnlineLearner::perStepMiniBatch)
+  if (learningUpdateFrequency >= perStepMiniBatch)
   {
-    miniBatchSize = learningUpdateFrequency - InferenceOnlineLearner::perStepMiniBatch;
+    miniBatchSize = learningUpdateFrequency - perStepMiniBatch;
     if (miniBatchSize <= 1)
-      learningUpdateFrequency = InferenceOnlineLearner::perStep;
+      learningUpdateFrequency = perStep;
   }
 
   // base learner
-  if (learningUpdateFrequency == InferenceOnlineLearner::perStep)
+  if (learningUpdateFrequency == perStep)
     return stochasticGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
-  //else if (learningUpdateFrequency >= InferenceOnlineLearner::perStepMiniBatch && miniBatchSize < 100)
+  //else if (learningUpdateFrequency >= perStepMiniBatch && miniBatchSize < 100)
   //  res = miniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else
     return batchGradientDescentOnlineLearner(learningUpdateFrequency,

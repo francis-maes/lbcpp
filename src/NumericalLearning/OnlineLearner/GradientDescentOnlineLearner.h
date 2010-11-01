@@ -19,19 +19,22 @@ namespace lbcpp
 class GradientDescentOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  GradientDescentOnlineLearner(UpdateFrequency learningUpdateFrequency,
+  GradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
                                 IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
-  GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalLossValue(0.0) {}
+                                LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
+  GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
 
 
-  virtual void startLearningCallback();
+  virtual void startLearningCallback(InferenceContextWeakPtr context);
+  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
 
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(const InferencePtr& inference);
-  virtual void passFinishedCallback(const InferencePtr& inference);
-  virtual double getCurrentLossEstimate() const
-    {return lastEmpiricalLossValue;}
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+    {res.push_back(std::make_pair(T("empiricalRisk"), lastEmpiricalRisk));}
+
+  virtual double getDefaultScore() const
+    {return lastEmpiricalRisk;}
   
   virtual void clone(const ObjectPtr& target) const;
 
@@ -41,21 +44,20 @@ protected:
   ScalarVariableRecentMean numberOfActiveFeatures;
   size_t epoch;
 
-  UpdateFrequency learningUpdateFrequency;
+  LearnerUpdateFrequency learningUpdateFrequency;
   IterationFunctionPtr learningRate;
   bool normalizeLearningRate;
 
-  UpdateFrequency regularizerUpdateFrequency;
+  LearnerUpdateFrequency regularizerUpdateFrequency;
   ScalarObjectFunctionPtr regularizer;
   CriticalSection lossValueLock;
   ScalarVariableMean lossValue;
-  double lastEmpiricalLossValue;
+  double lastEmpiricalRisk;
   size_t lastApplyRegularizerEpoch;
 
-  void updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
+  void updateParameters(InferenceContextWeakPtr context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
 
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
-  void applyExample(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   void applyRegularizer(const InferencePtr& inference);
   void checkRegularizerAfterStep(const InferencePtr& inference);
   void gradientDescentStep(const InferencePtr& inference, const ObjectPtr& gradient, double weight = 1.0);

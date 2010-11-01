@@ -15,13 +15,12 @@ InferenceOnlineLearnerPtr createOnlineLearner()
 {
   InferenceOnlineLearnerPtr res, lastLearner;
   
-  res = randomizerOnlineLearner(InferenceOnlineLearner::perPass);
+  res = randomizerOnlineLearner(perPass);
   res->setNextLearner(lastLearner = gradientDescentOnlineLearner(
-      InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 1000), true, // learning steps
-      InferenceOnlineLearner::perStep, l2RegularizerFunction(0.01)));         // regularizer
+      perStep, invLinearIterationFunction(1.0, 1000), true, // learning steps
+      perStep, l2RegularizerFunction(0.01)));         // regularizer
 
-  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
-        maxIterationsStoppingCriterion(10), true)); // stopping criterion
+  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(10), true)); // stopping criterion
   return res;
 }
 

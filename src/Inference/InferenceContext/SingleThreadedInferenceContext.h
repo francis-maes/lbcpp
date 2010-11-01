@@ -39,7 +39,7 @@ public:
 
   virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(refCountedPointerFromThis(this), input, supervision, returnCode);
+    ParallelInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
     
@@ -60,7 +60,7 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-    return inference->finalizeInference(refCountedPointerFromThis(this), state, returnCode);
+    return inference->finalizeInference(this, state, returnCode);
   }
 
 private:

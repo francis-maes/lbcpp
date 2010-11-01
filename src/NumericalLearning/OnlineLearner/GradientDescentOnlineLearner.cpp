@@ -14,26 +14,27 @@
 using namespace lbcpp;
 
 GradientDescentOnlineLearner::GradientDescentOnlineLearner(
-                      UpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                      UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+                      LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
+                      LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : numberOfActiveFeatures(T("NumActiveFeatures"), 10), epoch(0),
       learningUpdateFrequency(learningUpdateFrequency), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate),
       regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),
-      lossValue(T("Loss")), lastEmpiricalLossValue(0.0), lastApplyRegularizerEpoch(0)
+      lossValue(T("Loss")), lastEmpiricalRisk(0.0), lastApplyRegularizerEpoch(0)
 {
 }
 
-void GradientDescentOnlineLearner::startLearningCallback()
+void GradientDescentOnlineLearner::startLearningCallback(InferenceContextWeakPtr context)
 {
   numberOfActiveFeatures.clear();
   epoch = 0;
   ScopedLock _(lossValueLock);
   lossValue.clear();
   lastApplyRegularizerEpoch = 0;
-  InferenceOnlineLearner::startLearningCallback();
+  lastEmpiricalRisk = 0.0;
+  InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GradientDescentOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   checkRegularizerAfterStep(inference);
 
@@ -51,17 +52,17 @@ void GradientDescentOnlineLearner::stepFinishedCallback(const InferencePtr& infe
     // simple input
     updateNumberOfActiveFeatures(perception, input);
   }
-  InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+  InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
   
-void GradientDescentOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
+void GradientDescentOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
     applyRegularizer(inference);
-  InferenceOnlineLearner::episodeFinishedCallback(inference);
+  InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(inference);
@@ -75,14 +76,14 @@ void GradientDescentOnlineLearner::passFinishedCallback(const InferencePtr& infe
   {
     double mean = lossValue.getMean();
     MessageCallback::info(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
-    lastEmpiricalLossValue = mean;
+    lastEmpiricalRisk = mean;
     lossValue.clear();
     //lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
-  InferenceOnlineLearner::passFinishedCallback(inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
+void GradientDescentOnlineLearner::updateParameters(InferenceContextWeakPtr context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
   const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
@@ -93,7 +94,7 @@ void GradientDescentOnlineLearner::updateParameters(const InferencePtr& inferenc
     pred = numericalInference->predict(input);
   else
     // special case for ranking
-    pred = singleThreadedInferenceContext()->predict(inference, input);
+    pred = context->predict(inference, input);
   numericalInference->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
@@ -122,12 +123,6 @@ void GradientDescentOnlineLearner::gradientDescentStep(const InferencePtr& inf, 
 {
   NumericalInferencePtr inference = getNumericalInference(inf);
   inference->addWeightedToParameters(gradient, -computeLearningRate() * weight);
-}
-
-void GradientDescentOnlineLearner::applyExample(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-{
-  ++epoch;
-  updateParameters(inference, 1.0, input, supervision, prediction);
 }
 
 void GradientDescentOnlineLearner::applyRegularizer(const InferencePtr& inference)
