@@ -17,19 +17,11 @@
 namespace lbcpp
 {
 
-class MultiClassInference : public StaticDecoratorInference
+class MultiClassInference : public NumericalSupervisedInference
 {
 public:
-  MultiClassInference(const String& name, EnumerationPtr classes, InferencePtr scoresInference, InferenceOnlineLearnerPtr onlineLearner)
-    : StaticDecoratorInference(name, scoresInference), classes(classes)
-  {
-    if (onlineLearner)
-    {
-      scoresInference->setBatchLearner(stochasticNumericalInferenceLearner());
-      scoresInference->addOnlineLearner(onlineLearner);
-    }
-  }
-
+  MultiClassInference(const String& name, EnumerationPtr classes, InferencePtr scoresInference)
+    : NumericalSupervisedInference(name, scoresInference), classes(classes) {}
   MultiClassInference() {}
 
   virtual MultiClassLossFunctionPtr createLossFunction(size_t correctClass) const = 0;
@@ -118,8 +110,8 @@ protected:
 class MultiClassLinearSVMInference : public MultiClassInference
 {
 public:
-  MultiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses, const String& name)
-    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)), learner), updateOnlyMostViolatedClasses(updateOnlyMostViolatedClasses)
+  MultiClassLinearSVMInference(const String& name, PerceptionPtr perception, EnumerationPtr classes, bool updateOnlyMostViolatedClasses)
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes))), updateOnlyMostViolatedClasses(updateOnlyMostViolatedClasses)
     {createPerClassLossFunctions();}
 
   MultiClassLinearSVMInference() {}
@@ -141,8 +133,8 @@ protected:
 class MultiClassMaxentInference : public MultiClassInference
 {
 public:
-  MultiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name)
-    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)), learner)
+  MultiClassMaxentInference(const String& name, PerceptionPtr perception, EnumerationPtr classes)
+    : MultiClassInference(name, classes, multiLinearInference(name, perception, enumBasedDoubleVectorClass(classes)))
     {createPerClassLossFunctions();}
 
   MultiClassMaxentInference() {}

@@ -12,22 +12,16 @@
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
+# include <lbcpp/NumericalLearning/NumericalSupervisedInference.h>
 
 namespace lbcpp
 {
 
-class RegressionInference : public StaticDecoratorInference
+class RegressionInference : public NumericalSupervisedInference
 {
 public:
-  RegressionInference(const String& name, InferencePtr scoreInference, InferenceOnlineLearnerPtr onlineLearner)
-    : StaticDecoratorInference(name, scoreInference)
-  {
-    if (onlineLearner)
-    {
-      scoreInference->setBatchLearner(stochasticNumericalInferenceLearner());
-      scoreInference->addOnlineLearner(onlineLearner);
-    }
-  }
+  RegressionInference(const String& name, InferencePtr scoreInference)
+    : NumericalSupervisedInference(name, scoreInference) {}
   RegressionInference() {}
   
   virtual TypePtr getSupervisionType() const
@@ -52,8 +46,8 @@ public:
 class SquareRegressionInference : public RegressionInference
 {
 public:
-  SquareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception), learner) {}
+  SquareRegressionInference(const String& name, PerceptionPtr perception)
+    : RegressionInference(name, linearInference(name, perception)) {}
 
   SquareRegressionInference() {}
   
@@ -64,8 +58,8 @@ public:
 class DihedralAngleRegressionInference : public RegressionInference
 {
 public:
-  DihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception), learner) {}
+  DihedralAngleRegressionInference(const String& name, PerceptionPtr perception)
+    : RegressionInference(name, linearInference(name, perception)) {}
 
   DihedralAngleRegressionInference() {}
   
@@ -76,8 +70,8 @@ public:
 class AbsoluteRegressionInference : public RegressionInference
 {
 public:
-  AbsoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : RegressionInference(name, linearInference(name, perception), learner) {}
+  AbsoluteRegressionInference(const String& name, PerceptionPtr perception)
+    : RegressionInference(name, linearInference(name, perception)) {}
 
   AbsoluteRegressionInference() {}
   

@@ -8,6 +8,7 @@
 
 #include <lbcpp/Function/ScalarObjectFunction.h>
 #include <lbcpp/NumericalLearning/NumericalLearning.h>
+#include <lbcpp/Inference/SequentialInference.h>
 using namespace lbcpp;
 
 /*
@@ -165,6 +166,17 @@ void NumericalInference::updateParametersType()
   if (weights)
     getParameters()->getWeights() = weights->cloneToNewType(weightsType);
 }
+
+/*
+** NumericalSupervisedInference
+*/
+void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples)
+{
+  jassert(onlineLearner);
+  decorated->setBatchLearner(stochasticNumericalInferenceLearner(precomputePerceptions, randomizeExamples));
+  decorated->addOnlineLearner(onlineLearner);
+}
+
 /*
 ** OnlineLearner
 */

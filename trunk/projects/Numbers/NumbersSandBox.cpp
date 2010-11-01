@@ -36,7 +36,11 @@ PerceptionPtr createPerception()
 }
 
 InferencePtr createRankingInference(PerceptionPtr perception)
-  {return allPairsRankingLinearSVMInference(perception, createOnlineLearner());}
+{
+  NumericalSupervisedInferencePtr res = allPairsRankingLinearSVMInference(T("numbers-ranker"), perception);
+  res->setStochasticLearner(createOnlineLearner());
+  return res;
+}
 
 ////////////////////////
 

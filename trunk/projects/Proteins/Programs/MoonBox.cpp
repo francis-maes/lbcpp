@@ -94,7 +94,8 @@ public:
 */
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName + T(" Learner")), targetName + T(" Classifier"));
+    NumericalSupervisedInferencePtr res = binaryLinearSVMInference(targetName + T(" Classifier"), perception);
+    res->setStochasticLearner(createOnlineLearner(targetName + T(" Learner")));
     
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions"))
     {
@@ -111,7 +112,9 @@ public:
     InferencePtr res;
     if (DefaultParameters::useMultiClassSVM)
     {
-      res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName), false, targetName);
+      NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
+      svm->setStochasticLearner(createOnlineLearner(targetName));
+      res = svm;
     }
     else
     {

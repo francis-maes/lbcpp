@@ -48,7 +48,8 @@ int main(int argc, char* argv[])
           InferenceOnlineLearner::never, ScalarObjectFunctionPtr()); // regularizer
   learner->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(
           InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(100), true)); // stopping criterion
-  InferencePtr regressor = squareRegressionInference(perception, learner, T("XOR-Regressor"));
+  NumericalSupervisedInferencePtr regressor = squareRegressionInference(T("XOR-Regressor"), perception);
+  regressor->setStochasticLearner(learner);
  
   // make training set
   TypePtr inputType = perception->getInputType();
