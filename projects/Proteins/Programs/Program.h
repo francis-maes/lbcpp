@@ -12,7 +12,7 @@ public:
   Program(const String& name = T("Unnamed Program"))
     : NameableObject(name) {}
 
-  virtual int run(MessageCallback& callback = MessageCallback::getInstance())
+  virtual int runProgram(MessageCallback& callback = MessageCallback::getInstance())
   {
     callback.errorMessage(T("Program::run"), T("Program not yet implemented !"));
     return 0;
@@ -33,7 +33,6 @@ class ProgramDecorator : public Program
 public:
   ProgramDecorator(ProgramPtr decorated) : decorated(decorated) {}
   ProgramDecorator() {}
-  
 
   friend class ProgramDecoratorClass;
   
@@ -53,11 +52,11 @@ public:
     return true;
   }
   
-  virtual int run(MessageCallback& callback = MessageCallback::getInstance())
+  virtual int runProgram(MessageCallback& callback = MessageCallback::getInstance())
   {
     if (!parseArguments())
       return -1;
-    return decorated->run();
+    return decorated->runProgram();
   }
 
 protected:
