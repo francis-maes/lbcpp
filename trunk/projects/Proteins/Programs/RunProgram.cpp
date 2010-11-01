@@ -3,8 +3,6 @@
 
 using namespace lbcpp;
 
-extern void declareProteinClasses();
-
 class MuteMessageCallback : public MessageCallback
 {
   virtual void errorMessage(const String& where, const String& what) {}
@@ -43,7 +41,7 @@ int main(int argc, char** argv)
     if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
     {
       ProgramPtr program = obj.staticCast<Program>();
-      int exitCode = program->run(callback);
+      int exitCode = program->runProgram(callback);
       lbcpp::deinitialize();
       return exitCode;
     }
@@ -58,7 +56,7 @@ int main(int argc, char** argv)
       arguments.push_back(argv[i]);
     // TODO use CommandLineProgram
     ProgramPtr program = obj.staticCast<Program>();
-    int exitCode = program->run(callback);
+    int exitCode = program->runProgram(callback);
     lbcpp::deinitialize();
     return exitCode;
   }
