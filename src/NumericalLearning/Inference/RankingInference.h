@@ -65,19 +65,11 @@ public:
   }
 };
 
-class RankingInference : public StaticDecoratorInference
+class RankingInference : public NumericalSupervisedInference
 {
 public:
-  RankingInference(const String& name, InferencePtr scoreInference, InferenceOnlineLearnerPtr onlineLearner)
-    : StaticDecoratorInference(name, new LossBasedRankingInference(name, scoreInference))
-  {
-    if (onlineLearner)
-    {
-      decorated->addOnlineLearner(onlineLearner);
-      decorated->setBatchLearner(stochasticNumericalInferenceLearner());
-    }
-  }
-
+  RankingInference(const String& name, InferencePtr scoreInference)
+    : NumericalSupervisedInference(name, new LossBasedRankingInference(name, scoreInference)) {}
   RankingInference() {}
  
   virtual TypePtr getSupervisionType() const
@@ -109,8 +101,8 @@ protected:
 class AdditiveRankingInference : public RankingInference
 {
 public:
-  AdditiveRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner)
-    : RankingInference(name, scoreInference, onlineLearner), baseLoss(baseLoss) {}
+  AdditiveRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss)
+    : RankingInference(name, scoreInference), baseLoss(baseLoss) {}
   AdditiveRankingInference() {}
 
 protected:
@@ -122,8 +114,8 @@ protected:
 class MostViolatedPairRankingInference : public AdditiveRankingInference
 {
 public:
-  MostViolatedPairRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name)
-    : AdditiveRankingInference(name, scoreInference, baseLoss, onlineLearner) {}
+  MostViolatedPairRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss)
+    : AdditiveRankingInference(name, scoreInference, baseLoss) {}
   MostViolatedPairRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
@@ -133,8 +125,8 @@ public:
 class BestAgainstAllRankingInference : public AdditiveRankingInference
 {
 public:
-  BestAgainstAllRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name)
-    : AdditiveRankingInference(name, scoreInference, baseLoss, onlineLearner) {}
+  BestAgainstAllRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss)
+    : AdditiveRankingInference(name, scoreInference, baseLoss) {}
   BestAgainstAllRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
@@ -144,8 +136,8 @@ public:
 class AllPairsRankingInference : public AdditiveRankingInference
 {
 public:
-  AllPairsRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name)
-    : AdditiveRankingInference(name, scoreInference, baseLoss, onlineLearner) {}
+  AllPairsRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss)
+    : AdditiveRankingInference(name, scoreInference, baseLoss) {}
   AllPairsRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
@@ -155,8 +147,8 @@ public:
 class AllPairsRankingLinearSVMInference : public AllPairsRankingInference
 {
 public:
-  AllPairsRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name)
-    : AllPairsRankingInference(linearInference(name, perception), hingeLossFunction(true), onlineLearner, name) {}
+  AllPairsRankingLinearSVMInference(const String& name, PerceptionPtr perception)
+    : AllPairsRankingInference(name, linearInference(name, perception), hingeLossFunction(true)) {}
   AllPairsRankingLinearSVMInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
@@ -166,8 +158,8 @@ public:
 class BinaryClassificationRankingLinearSVMInference : public AdditiveRankingInference
 {
 public:
-  BinaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name, bool optimizeMcc)
-    : AdditiveRankingInference(name, linearInference(name, perception), hingeLossFunction(true), onlineLearner), optimizeMcc(optimizeMcc) {}
+  BinaryClassificationRankingLinearSVMInference(const String& name, PerceptionPtr perception, bool optimizeMcc)
+    : AdditiveRankingInference(name, linearInference(name, perception), hingeLossFunction(true)), optimizeMcc(optimizeMcc) {}
   BinaryClassificationRankingLinearSVMInference() : optimizeMcc(false) {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const

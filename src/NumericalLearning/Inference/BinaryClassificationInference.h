@@ -17,18 +17,11 @@
 namespace lbcpp
 {
 
-class BinaryClassificationInference : public StaticDecoratorInference
+class BinaryClassificationInference : public NumericalSupervisedInference
 {
 public:
-  BinaryClassificationInference(const String& name, InferencePtr scoreInference, InferenceOnlineLearnerPtr onlineLearner = InferenceOnlineLearnerPtr())
-    : StaticDecoratorInference(name, scoreInference)
-  {
-    if (onlineLearner)
-    {
-      scoreInference->setBatchLearner(stochasticNumericalInferenceLearner());
-      scoreInference->addOnlineLearner(onlineLearner);
-    }
-  }
+  BinaryClassificationInference(const String& name, InferencePtr scoreInference)
+    : NumericalSupervisedInference(name, scoreInference) {}
   BinaryClassificationInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const = 0;
@@ -93,12 +86,10 @@ protected:
 class BinaryLinearSVMInference : public BinaryClassificationInference
 {
 public:
-  BinaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name, perception), learner)
-    {}
+  BinaryLinearSVMInference(const String& name, PerceptionPtr perception)
+    : BinaryClassificationInference(name, linearInference(name, perception)) {}
   BinaryLinearSVMInference(InferencePtr scoreInference)
-    : BinaryClassificationInference(scoreInference->getName(), scoreInference)
-    {}
+    : BinaryClassificationInference(scoreInference->getName(), scoreInference) {}
   BinaryLinearSVMInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const
@@ -108,9 +99,8 @@ public:
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
 {
 public:
-  BinaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name)
-    : BinaryClassificationInference(name, linearInference(name, perception), learner)
-    {}
+  BinaryLogisticRegressionInference(const String& name, PerceptionPtr perception)
+    : BinaryClassificationInference(name, linearInference(name, perception)) {}
   BinaryLogisticRegressionInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const

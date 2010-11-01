@@ -239,17 +239,39 @@ public:
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
     String multiClassClassifier = getParameter(T("multiClassInference"));
-    
+
+    InferenceOnlineLearnerPtr onlineLearner = createOnlineLearner();
+
     if (multiClassClassifier == T("multiClassMaxent"))
-      return multiClassMaxentInference(perception, classes, createOnlineLearner(), targetName);
+    {
+      NumericalSupervisedInferencePtr res = multiClassMaxentInference(targetName, perception, classes);
+      res->setStochasticLearner(onlineLearner);
+      return res;
+    }
     else if (multiClassClassifier == T("multiClassLinearSVM"))
-      return multiClassLinearSVMInference(perception, classes, createOnlineLearner(), false, targetName);
+    {
+      NumericalSupervisedInferencePtr res = multiClassLinearSVMInference(targetName, perception, classes);
+      res->setStochasticLearner(onlineLearner);
+      return res;
+    }
     else if (multiClassClassifier == T("multiClassLinearSVMMostViolated"))
-      return multiClassLinearSVMInference(perception, classes, createOnlineLearner(), true, targetName);
+    {
+      NumericalSupervisedInferencePtr res = multiClassLinearSVMInference(targetName, perception, classes, true);
+      res->setStochasticLearner(onlineLearner);
+      return res;
+    }
     else if (multiClassClassifier == T("oneAgainstAllLinearSVM"))
-      return oneAgainstAllClassificationInference(targetName, classes, binaryLinearSVMInference(perception, createOnlineLearner(), targetName));
+    {
+      NumericalSupervisedInferencePtr binary = binaryLinearSVMInference(targetName, perception);
+      binary->setStochasticLearner(onlineLearner);
+      return oneAgainstAllClassificationInference(targetName, classes, binary);
+    }
     else if (multiClassClassifier == T("oneAgainstAllLogisticRegression"))
-      return oneAgainstAllClassificationInference(targetName, classes, binaryLogisticRegressionInference(perception, createOnlineLearner(), targetName));
+    {
+      NumericalSupervisedInferencePtr binary = binaryLogisticRegressionInference(targetName, perception);
+      binary->setStochasticLearner(onlineLearner);
+      return oneAgainstAllClassificationInference(targetName, classes, binary);
+    }
     else
     {
       MessageCallback::error(T("createMultiClassClassifier"), T("Unrecognized classifier name: ") + multiClassClassifier);

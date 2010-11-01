@@ -55,33 +55,7 @@ public:
     res->setBatchLearner(stochasticInferenceLearner());
     return res;
   }*/
-
-  virtual InferencePtr createProbabilitySequenceInference(const String& targetName) const
-  {
-#if 0
-    if (targetName == T("disorderRegions"))
-    {
-/*      InferencePtr rankingInference = allPairsRankingInference(
-                                        linearInference(targetName, createPerception(targetName, residuePerception)),
-                                        hingeLossFunction(true),
-                                        createOnlineLearner(targetName, 1.0),
-                                        targetName);*/
-
-      InferencePtr rankingInference = binaryClassificationRankingLinearSVMInference(
-          createPerception(targetName, residuePerception), createOnlineLearner(targetName, 0.01), targetName, false);
-
-      InferencePtr cutoffInference;/* = squareRegressionInference(
-                                        createPerception(targetName, proteinPerception),
-                                        createOnlineLearner(targetName + T(" cutoff"), 0.05),
-                                        targetName + T(" cutoff"));*/
-
-      return new DisorderedRegionInference(targetName, rankingInference, cutoffInference);
-    }
-    else
-#endif // 0
-      return ProteinInferenceFactory::createProbabilitySequenceInference(targetName);
-  }
-  
+ 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -123,7 +97,9 @@ public:
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
-    StaticDecoratorInferencePtr res = binaryLinearSVMInference(perception, createOnlineLearner(targetName), targetName);
+    NumericalSupervisedInferencePtr res = binaryLinearSVMInference(targetName, perception);
+    res->setStochasticLearner(createOnlineLearner(targetName));
+
     if (targetName.startsWith(T("contactMap")) || targetName == T("disorderRegions") || targetName == T("solventAccessibilityAt20p") || targetName == T("disulfideBonds"))
     {
       VectorSequentialInferencePtr sequentialInference = new VectorSequentialInference(targetName);
@@ -151,7 +127,9 @@ public:
 
     
 */
-    return multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.5), false, targetName);
+    NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
+    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5), true, false);
+    return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
     InferencePtr res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
@@ -180,7 +158,7 @@ protected:
         InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 50;
+    size_t numIterations = 10;
     lastLearner->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
     return res;
@@ -219,7 +197,8 @@ public:
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getDepth() == 1) // getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (stack->getDepth() == 1) // 
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
     //if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
@@ -240,7 +219,8 @@ public:
 
       MessageCallback::info(T("====================================================="));
     }
-    else if (stack->getDepth() == 1)
+    
+    if (stack->getDepth() == 1)
     {
       MessageCallback::info(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }
@@ -263,7 +243,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 50;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 50;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)

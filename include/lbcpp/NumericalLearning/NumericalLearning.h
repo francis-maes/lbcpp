@@ -11,6 +11,7 @@
 
 # include "LossFunctions.h"
 # include "NumericalInference.h"
+# include "NumericalSupervisedInference.h"
 # include "../Perception/PerceptionRewriter.h"
 # include "../Inference/InferenceOnlineLearner.h"
 
@@ -81,27 +82,6 @@ extern PerceptionPtr perceptionToFeatures(PerceptionPtr perception);
 // Modifiers
 extern InferencePtr addBiasInference(const String& name, double initialBias = 0.0);
 extern InferencePtr transferFunctionDecoratorInference(const String& name, InferencePtr decoratedInference, ScalarFunctionPtr transferFunction);
-
-// Regression
-extern StaticDecoratorInferencePtr squareRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr absoluteRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr dihedralAngleRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-// Binary Classification
-extern StaticDecoratorInferencePtr binaryLinearSVMInference(InferencePtr scoreInference);
-extern StaticDecoratorInferencePtr binaryLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr binaryLogisticRegressionInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-// MultiClass Classification
-extern StaticDecoratorInferencePtr multiClassLinearSVMInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, bool updateOnlyMostViolatedClasses = false, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr multiClassMaxentInference(PerceptionPtr perception, EnumerationPtr classes, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-
-// Ranking
-extern StaticDecoratorInferencePtr bestAgainstAllRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr mostViolatedPairRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr allPairsRankingInference(InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr allPairsRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr learner, const String& name = T("unnamed"));
-extern StaticDecoratorInferencePtr binaryClassificationRankingLinearSVMInference(PerceptionPtr perception, InferenceOnlineLearnerPtr onlineLearner, const String& name = T("unnamed"), bool optimizeMcc = false); // F1 by default
 
 /*
 ** Batch Learner

@@ -333,6 +333,7 @@ SET(LBCPP_NUMERICAL_LEARNING_SOURCES
   ../include/lbcpp/NumericalLearning/LossFunctions.h
   NumericalLearning/LossFunctions.cpp
   ../include/lbcpp/NumericalLearning/NumericalInference.h
+  ../include/lbcpp/NumericalLearning/NumericalSupervisedInference.h
   ../include/lbcpp/NumericalLearning/NumericalLearning.h
   NumericalLearning/NumericalLearning.cpp
   NumericalLearning/NumericalLearningClasses.xml
