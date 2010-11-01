@@ -198,14 +198,18 @@ public:
     String inferenceName = stack->getCurrentInference()->getName();
 
     //if (stack->getDepth() == 1) // 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName.startsWith(T("LearningPass")))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
       MessageCallback::info(T("====================================================="));
       MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       MessageCallback::info(T("====================================================="));
+
+      InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
+      if (targetInference && targetInference->getOnlineLearner())
+        std::cout << "Loss: " << targetInference->getLastOnlineLearner()->getCurrentLossEstimate() << std::endl;
 
       //singleThreadedInferenceContext();
       //InferenceContextPtr context = multiThreadedInferenceContext(7);
@@ -243,7 +247,7 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
 #ifdef JUCE_DEBUG
   size_t maxCount = 50;
 #else
-  size_t maxCount = 50;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
