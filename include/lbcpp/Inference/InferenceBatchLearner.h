@@ -10,8 +10,8 @@
 # define LBCPP_INFERENCE_BATCH_LEARNER_H_
 
 # include "Inference.h"
-# include <lbcpp/Data/Container.h>
 # include <lbcpp/Data/Pair.h>
+# include <lbcpp/Data/Container.h>
 
 namespace lbcpp
 {
