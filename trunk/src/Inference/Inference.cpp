@@ -91,6 +91,12 @@ void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool 
     currentLearner->getLastLearner()->setNextLearner(learner);
 }
 
+const InferenceOnlineLearnerPtr& Inference::getOnlineLearner() const
+  {return onlineLearner;}
+
+const InferenceOnlineLearnerPtr& Inference::getLastOnlineLearner() const
+  {return onlineLearner->getLastLearner();}
+
 /*
 ** DecoratorInference
 */

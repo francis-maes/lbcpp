@@ -1,15 +1,15 @@
 Automatize:
-  * Voir comment récuperer le Loss pendant l'évaluation
-  * Tuning sur une base de validation
-  * Boinc: Gestion générique des paramètres
+ * Voir comment récuperer le Loss pendant l'évaluation
+ * Tuning sur une base de validation
+ * Boinc: Gestion générique des paramètres
 
 More Features:
-  * Probabilities for SS3, SS8 and STAL
-  * Segments for SS3, SS8, SA and DR
+ * Probabilities for SS3, SS8 and STAL
+ * Segments for SS3, SS8, SA and DR
+ * Multiclass classifiers: output discrete distributions
 
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
- * Multiclass classifiers: output discrete distributions
  * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
 
 Extra-trees:
