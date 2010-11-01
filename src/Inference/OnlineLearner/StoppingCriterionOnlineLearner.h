@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_ONLINE_LEARNER_STOPPING_CRITERION_H_
 
 # include <lbcpp/Data/Pair.h>
+# include <lbcpp/Data/Container.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/Inference.h>
@@ -23,17 +24,18 @@ public:
   StoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency)
     : UpdatableOnlineLearner(criterionTestFrequency), 
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
-        learningStopped(false), bestScore(-DBL_MAX)
+        learningStopped(false), bestDefaultScore(-DBL_MAX)
      {criterion->reset();}
 
-  StoppingCriterionOnlineLearner() : learningStopped(false), bestScore(-DBL_MAX) {}
+  StoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
 
   virtual void startLearningCallback(InferenceContextWeakPtr context)
   {
     UpdatableOnlineLearner::startLearningCallback(context);
     learningStopped = false;
     bestParameters = ObjectPtr();
-    bestScore = -DBL_MAX;
+    bestDefaultScore = -DBL_MAX;
+    bestScores.clear();
   }
 
   virtual bool isLearningStopped() const
@@ -46,6 +48,25 @@ public:
       target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>();
   }
 
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  {
+    UpdatableOnlineLearner::getScores(res);
+    if (restoreBestParametersWhenLearningStops)
+    {
+      size_t n = res.size();
+      res.resize(2 * n);
+      jassert(!bestScores.size() || bestScores.size() == n);
+      for (size_t i = 0; i < n; ++i)
+      {
+        res[i + n].first = T("best ") + res[i].first;
+        res[i + n].second = bestScores.size() ? bestScores[i].second : res[i].second;
+      }
+    }
+  }
+
+  virtual double getDefaultScore() const
+    {return bestDefaultScore;}
+
 private:
   friend class StoppingCriterionOnlineLearnerClass;
 
@@ -54,26 +75,29 @@ private:
 
   bool learningStopped;
   Variable bestParameters;
-  double bestScore;
+  double bestDefaultScore;
+  std::vector< std::pair<String, double> > bestScores;
 
   virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
-    double score = getDefaultScore();
+    double defaultScore = UpdatableOnlineLearner::getDefaultScore();
     //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy();
-    if (parameters.exists() && restoreBestParametersWhenLearningStops && score > bestScore)
+    if (parameters.exists() && restoreBestParametersWhenLearningStops && defaultScore > bestDefaultScore)
     {
       bestParameters = parameters;
-      bestScore = score;
+      bestDefaultScore = defaultScore;
+      bestScores.clear();
+      UpdatableOnlineLearner::getScores(bestScores);
       //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String(bestScore));
     }
-    if (criterion->shouldStop(score))
+    if (criterion->shouldStop(defaultScore))
     {
-      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(score) + T(" best score = ") + String(bestScore));
+      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(defaultScore) + T(" best score = ") + String(bestDefaultScore));
       learningStopped = true;
-      if (bestParameters.exists() && bestScore > score)
+      if (bestParameters.exists() && bestDefaultScore > defaultScore)
       {
-        MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String(bestScore));
+        MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String(bestDefaultScore));
         inference->setParameters(bestParameters);
       }
     }

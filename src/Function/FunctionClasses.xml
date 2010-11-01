@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Function" directory="Function">
+  <include file="lbcpp/Function/ObjectiveFunction.h"/>
+
   <namespace name="lbcpp">
-   <class name="Function" abstract="yes"/>
+    <class name="Function" abstract="yes"/>
+
+    <!-- Job and ThreadPool -->
+    <class name="Job" base="NameableObject" abstract="yes"/>
+
+    <class name="ThreadPool">
+      <variable type="Integer" name="numCpus"/>
+      <variable type="Boolean" name="verbose"/>
+      <variable type="AverageValuesCache" name="timingsCache"/>
+    </class>
+
+    <!-- Objective Function -->
+    <class name="ObjectiveFunction" base="Function" abstract="yes"/>
+
+    <class name="EvaluateObjectiveFunctionJob" base="Job">
+      <constructor arguments="const String&amp; name, ObjectiveFunctionPtr objective, const Variable&amp; input, double&amp; result"/>
+      <variable type="ObjectiveFunction" name="objective"/>
+      <variable type="Variable" name="input"/>
+    </class>
   </namespace>
   
   <import name="MiscFunctions"/>
@@ -12,5 +32,5 @@
   <import name="StoppingCriterion"/>
   <import name="Predicate"/>
   <import name="Evaluator"/>
-  
+
 </file>

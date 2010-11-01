@@ -220,7 +220,14 @@ void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t
     ScopedLock _(threadsLock);
     addJobs(jobs, priority, event);
     if (currentThread)
-      waitingThreads.insert(currentThread);
+    {
+      for (size_t i = 0; i < threads.size(); ++i)
+        if (threads[i] == currentThread)
+        {
+          waitingThreads.insert(currentThread);
+          break;
+        }
+    }
   }
 
   if (callUpdateWhileWaiting)

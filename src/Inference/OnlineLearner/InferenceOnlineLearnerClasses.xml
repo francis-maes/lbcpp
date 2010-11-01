@@ -63,7 +63,8 @@
 
       <variable type="Boolean" name="learningStopped"/>
       <variable type="Variable" name="bestParameters"/>
-      <variable type="Double" name="bestScore"/>
+      <variable type="Double" name="bestDefaultScore"/>
+      <variable type="ObjectVector[Pair[String,Double]]" name="bestScores"/>
     </class>
 
     <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">

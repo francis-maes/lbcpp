@@ -19,6 +19,123 @@ extern void declareProteinClasses();
 
 ///////////////////////////////////////////////
 
+class EvaluateOnlineLearnerObjectiveFunction : public ObjectiveFunction
+{
+public:
+  EvaluateOnlineLearnerObjectiveFunction(InferenceContextWeakPtr context, const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
+    : context(context), inferenceLearner(inferenceLearner), learnerInput(learnerInput) {}
+  EvaluateOnlineLearnerObjectiveFunction() {}
+
+  virtual void customizeLearner(const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const = 0;
+
+  virtual double compute(const Variable& input) const
+  {
+    InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>();
+    const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
+    customizeLearner(input, onlineLearner);
+    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+    singleThreadedInferenceContext()->run(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    return onlineLearner->getLastLearner()->getDefaultScore();
+  }
+
+protected:
+  friend class EvaluateOnlineLearnerObjectiveFunctionClass;
+
+  InferenceContextWeakPtr context;
+  InferencePtr inferenceLearner;
+  InferenceBatchLearnerInputPtr learnerInput;
+};
+
+typedef ReferenceCountedObjectPtr<EvaluateOnlineLearnerObjectiveFunction> EvaluateOnlineLearnerObjectiveFunctionPtr;
+
+class EvaluateLearningRateObjectiveFunction : public EvaluateOnlineLearnerObjectiveFunction
+{
+public:
+  EvaluateLearningRateObjectiveFunction(InferenceContextWeakPtr context, const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
+    : EvaluateOnlineLearnerObjectiveFunction(context, inferenceLearner, learnerInput) {}
+
+  virtual TypePtr getInputType() const
+    {return doubleType;}
+
+  virtual void customizeLearner(const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const
+  {
+    int index = onlineLearner->getClass()->findObjectVariable(T("learningRate"));
+    jassert(index >= 0);
+    onlineLearner->setVariable(index, constantIterationFunction(input.getDouble()));
+  }
+};
+
+///////////////////////////////////////////////
+
+// Optimizer: ObjectiveFunction x Aprioris -> Variable
+// OptimizerInferenceLearner: decorates the optimizer
+
+class AlaRacheOptimizer : public Inference
+{
+public:
+  virtual TypePtr getInputType() const
+    {return objectiveFunctionClass;}
+
+  virtual TypePtr getOutputType(TypePtr input) const
+    {return doubleType;}
+
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
+
+    std::vector<JobPtr> jobs(70);
+    std::vector<double> scores(70);
+    for (size_t i = 0; i < jobs.size(); ++i)
+    {
+      double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
+      jobs[i] = evaluateObjectiveFunctionJob(T("LearningRate"), objective, learningRate, scores[i]);
+    }
+    ThreadPoolPtr pool = new ThreadPool(7);
+    pool->addJobsAndWaitExecution(jobs, 0, true);
+    double bestScore = -DBL_MAX;
+    double res = 0.0;
+    for (size_t i = 0; i < scores.size(); ++i)
+    {
+      double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
+      std::cout << "Score for LR = " << learningRate << ": " << scores[i] << std::endl;
+      if (scores[i] > bestScore)
+        bestScore = scores[i], res = learningRate;
+    }
+
+    return res;
+  }
+};
+
+class OptimizerInferenceLearner : public InferenceBatchLearner<Inference>
+{
+public:
+  OptimizerInferenceLearner(InferencePtr optimizer, InferencePtr baseLearner)
+    : optimizer(optimizer), baseLearner(baseLearner) {}
+
+  virtual ClassPtr getTargetInferenceClass() const
+    {return inferenceClass;}
+
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  {
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(context, baseLearner, learnerInput);
+    
+    Variable optimizedValue = context->run(optimizer, objective, Variable(), returnCode);
+    
+    InferencePtr targetInference = learnerInput->getTargetInference();
+    const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
+    objective->customizeLearner(optimizedValue, onlineLearner);
+    context->run(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    return Variable();
+  }
+
+protected:
+  InferencePtr optimizer;
+  InferencePtr baseLearner;
+};
+
+///////////////////////////////////////////////
+
 InferenceContextPtr createInferenceContext()
 {
   return multiThreadedInferenceContext(new ThreadPool(7, false));
@@ -129,6 +246,10 @@ public:
 */
     NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
     svm->setStochasticLearner(createOnlineLearner(targetName, 0.5, classificationAccuracyEvaluator()), true, true);
+  
+    svm->getSubInference()->setBatchLearner(
+      precomputePerceptionsNumericalInferenceLearner(
+            new OptimizerInferenceLearner(new AlaRacheOptimizer(), stochasticInferenceLearner(true))));
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
@@ -172,8 +293,8 @@ protected:
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(100), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
-    File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
-    lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(workingDirectory.getChildFile(T("results.txt"))));
+    //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
+    //lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(workingDirectory.getChildFile(T("results.txt"))));
     return res;
   }
 };
@@ -273,7 +394,7 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 1;
+  size_t maxCount = 10;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -293,6 +414,11 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
+  Class::declare(ClassPtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
+  Class::declare(ClassPtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
+  Class::declare(ClassPtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
+  Class::declare(ClassPtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
+
   declareProteinClasses();
 
   ThreadPoolPtr pool = new ThreadPool(7);

@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_THREAD_POOL_H_
 
 # include "../Data/Object.h"
+# include "../Data/Cache.h"
 # include <list>
 
 namespace lbcpp
