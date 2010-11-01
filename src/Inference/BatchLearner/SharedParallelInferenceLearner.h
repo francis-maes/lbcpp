@@ -27,19 +27,17 @@ public:
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    SharedParallelInferencePtr targetInference = getInferenceAndCast<SharedParallelInference>(input);
-    ContainerPtr trainingData = getTrainingData(input);
-    
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const SharedParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<SharedParallelInference>();
+
     DecoratorInferenceStatePtr res(new DecoratorInferenceState(input, supervision));
-    
     InferencePtr targetSubInference = targetInference->getSubInference();
     InferencePtr subLearner = targetSubInference->getBatchLearner();
     if (subLearner)
     {
-      ContainerPtr subTrainingData = computeSubTrainingData(context, targetInference, trainingData, returnCode);
-      if (returnCode != finishedReturnCode)
-        return DecoratorInferenceStatePtr();
-      res->setSubInference(subLearner, Variable::pair(targetSubInference, subTrainingData), Variable());
+      InferenceBatchLearnerInputPtr subLearnerInput = computeSubLearnerInput(context, targetInference, learnerInput);
+      if (subLearnerInput)
+        res->setSubInference(subLearner, subLearnerInput, Variable());
     }
     return res;
   }
@@ -47,25 +45,35 @@ public:
 private:
   bool filterUnsupervisedExamples;
 
-  ContainerPtr computeSubTrainingData(InferenceContextWeakPtr context, SharedParallelInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
+  InferenceBatchLearnerInputPtr computeSubLearnerInput(InferenceContextWeakPtr context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples)
   {
-    InferencePtr targetSubInference = targetInference->getSubInference();
-    TypePtr pairType = pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType());
-    VectorPtr res = vector(pairType);
+    const InferencePtr& targetSubInference = targetInference->getSubInference();
+    const InferencePtr& subLearner = targetSubInference->getBatchLearner();
+
+    InferenceBatchLearnerInputPtr res = new InferenceBatchLearnerInput(targetSubInference);
     
-    size_t n = trainingData->getNumElements();
+    size_t n = examples->getNumExamples();
     for (size_t i = 0; i < n; ++i)
     {
-      Variable inputAndSupervision = trainingData->getElement(i);
-      ParallelInferenceStatePtr state = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
+      const std::pair<Variable, Variable>& example = examples->getExample(i);
+      bool isValidationExample = i >= examples->getNumTrainingExamples();
+
+      ReturnCode returnCode = finishedReturnCode;
+      ParallelInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second, returnCode);
       if (returnCode != finishedReturnCode)
-        return ContainerPtr();
+        return InferenceBatchLearnerInputPtr();
+
       for (size_t j = 0; j < state->getNumSubInferences(); ++j)
       {
         jassert(state->getSubInference(j) == targetSubInference);
         Variable subSupervision = state->getSubSupervision(j);
         if (!filterUnsupervisedExamples || subSupervision.exists())
-          res->append(Variable::pair(state->getSubInput(j), subSupervision, pairType));
+        {
+          if (isValidationExample)
+            res->addValidationExample(state->getSubInput(j), subSupervision);
+          else
+            res->addTrainingExample(state->getSubInput(j), subSupervision);
+        }
       }
     }
     return res;

@@ -10,6 +10,7 @@
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceStack.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 #include <lbcpp/Data/Container.h>
 using namespace lbcpp;
 
@@ -84,14 +85,14 @@ Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inf
   return inference->finalizeInference(this, state, returnCode);
 }
 
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr examples)
+Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
 {
   ReturnCode res = Inference::finishedReturnCode;
   const InferencePtr& learner = inference->getBatchLearner();
   jassert(learner);
   if (!learner)
     return Inference::errorReturnCode;
-  run(learner, Variable::pair(inference, examples), Variable(), res);
+  run(learner, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples), Variable(), res);
   return res;
 }
 

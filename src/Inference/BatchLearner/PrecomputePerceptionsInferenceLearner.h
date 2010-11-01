@@ -27,21 +27,20 @@ public:
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    InferencePtr targetInference = getInference(input);
-    ContainerPtr trainingData = getTrainingData(input);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferencePtr& targetInference = learnerInput->getTargetInference();
     const PerceptionPtr& perception = getPerception(targetInference);
 
-    TypePtr elementsType = pairClass(perception->getOutputType(), targetInference->getSupervisionType());
-    size_t n = trainingData->getNumElements();
-    ContainerPtr precomputedTrainingData = vector(elementsType, n);
+    InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(targetInference, learnerInput->getNumTrainingExamples(), learnerInput->getNumValidationExamples());
+    size_t n = learnerInput->getNumExamples();
     for (size_t i = 0; i < n; ++i)
     {
-      PairPtr example = trainingData->getElement(i).getObjectAndCast<Pair>();
-      precomputedTrainingData->setElement(i, new Pair(elementsType, perception->compute(example->getFirst()), example->getSecond()));
+      const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
+      subLearnerInput->setExample(i, perception->compute(example.first), example.second);
     }
 
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
-    res->setSubInference(decorated, Variable::pair(targetInference, precomputedTrainingData), supervision);
+    res->setSubInference(decorated, subLearnerInput, supervision);
     return res;
   }
 };

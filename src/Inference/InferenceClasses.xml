@@ -55,13 +55,14 @@
     </class>
     
     <!-- Batch Learner -->
-    <class name="InferenceBatchLearnerInput" base="Object">
-      <variable type="Inference" name="targetInference"/>
+    <template name="InferenceBatchLearnerInput" base="Object">
+      <parameter name="targetInferenceType" type="Inference"/>
+      
+      <variable type="targetInferenceType" name="targetInference"/>
       <variable type="ObjectVector[Pair[Variable,Variable]]" name="trainingData"/>
       <variable type="ObjectVector[Pair[Variable,Variable]]" name="validationData"/>
-    </class>
-    <class name="AtomicInferenceBatchLearner" base="Inference" abstract="yes"/>
-
+    </template>
+    
   </namespace>
 
 </file>

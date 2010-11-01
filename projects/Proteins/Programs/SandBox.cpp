@@ -180,12 +180,11 @@ public:
       iterationNumber = 0;
     }
 
-    if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
+    InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
+    if (learnerInput)
     {
-      TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
-      jassert(trainingExamplesType->getNumTemplateArguments() == 2);
-      String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      MessageCallback::info(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
+      String inputTypeName = learnerInput->getTargetInference()->getInputType()->getName();
+      MessageCallback::info(T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ") + String(learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
       //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
@@ -196,8 +195,8 @@ public:
     String inferenceName = stack->getCurrentInference()->getName();
 
     //if (stack->getDepth() == 1) // 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName.startsWith(T("LearningPass")))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -250,7 +249,7 @@ private:
 VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 50;
+  size_t maxCount = 1;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG

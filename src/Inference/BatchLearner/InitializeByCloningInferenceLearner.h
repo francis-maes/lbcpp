@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class InitializeByCloningInferenceLearner : public AtomicInferenceBatchLearner
+class InitializeByCloningInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   InitializeByCloningInferenceLearner(const InferencePtr& inferenceToClone)
@@ -24,10 +24,11 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
     MessageCallback::info(T("InitializeByCloningInferenceLearner"), T("Cloning Inference ") + inferenceToClone->getName());
-    inferenceToClone->clone(targetInference);
+    inferenceToClone->clone(learnerInput->getTargetInference());
     return Variable();
   }
 

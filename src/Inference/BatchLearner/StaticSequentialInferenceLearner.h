@@ -23,16 +23,15 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ContainerPtr examples = input.dynamicCast<Container>();
-    jassert(examples);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
-    size_t n = examples->getNumElements();
+    size_t n = learnerInput->getNumExamples();
     res->reserve(n);
     for (size_t i = 0; i < n; ++i)
     {
-      Variable example = examples->getElement(i);
-      res->addSubInference(currentStates[i]->getSubInference(), example[0], example[1]);
+      const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
+      res->addSubInference(currentStates[i]->getSubInference(), example.first, example.second);
     }
     return res;
   }
@@ -52,9 +51,10 @@ public:
 
   virtual String getDescription(const Variable& input, const Variable& supervision) const
   {
-    const ContainerPtr& examples = input.getObjectAndCast<Container>();
-    return T("Run ") + inference->getName() + T(" step with ") + 
-      String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferencePtr& targetInference = learnerInput->getTargetInference();
+    return T("Run ") + targetInference->getName() + T(" step with ") + 
+      String((int)learnerInput->getNumExamples()) + T(" ") + targetInference->getInputType()->getName() + T("(s)");
   }
 
 private:
@@ -70,22 +70,24 @@ public:
 
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
-    ContainerPtr trainingData = getTrainingData(input);
-    jassert(targetInference && trainingData);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const StaticSequentialInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticSequentialInference>();
+    jassert(targetInference);
 
-    size_t n = trainingData->getNumElements();
+    size_t n = learnerInput->getNumExamples();
 
     StatePtr res = new State(input, supervision);
     if (!targetInference->getNumSubInferences())
       return res;
 
     // for each training example: make initial target state
+    res->numTrainingExamples = learnerInput->getNumTrainingExamples();
+    res->numValidationExamples = learnerInput->getNumValidationExamples();
     res->targetStates.resize(n);
     for (size_t i = 0; i < n; ++i)
     {
-      Variable inputAndSupervision = trainingData->getElement(i);
-      SequentialInferenceStatePtr targetState = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
+      const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
+      SequentialInferenceStatePtr targetState = targetInference->prepareInference(context, example.first, example.second, returnCode);
       if (!targetState)
         return SequentialInferenceStatePtr();
       res->targetStates[i] = targetState;
@@ -100,11 +102,11 @@ public:
   virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr s, ReturnCode& returnCode)
   {
     StatePtr state = s.staticCast<State>();
-    Variable input = state->getInput();
-    StaticSequentialInferencePtr targetInference = getInferenceAndCast<StaticSequentialInference>(input);
+    const InferenceBatchLearnerInputPtr& input = state->getInput().getObjectAndCast<InferenceBatchLearnerInput>();
+    const StaticSequentialInferencePtr& targetInference = input->getTargetInference().staticCast<StaticSequentialInference>();
     jassert(targetInference);
 
-    ContainerPtr subTrainingData = getTrainingData(state->getSubInput());
+    const InferenceBatchLearnerInputPtr& subInput = state->getSubInput().getObjectAndCast<InferenceBatchLearnerInput>();
     
     int index = state->getStepNumber(); 
     jassert(index >= 0);
@@ -113,7 +115,7 @@ public:
     {
        // evaluate sub-inference and update currentObjects
       InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
-      context->run(evaluateStepOnSubTrainingData.get(), subTrainingData, ObjectPtr(), returnCode);
+      context->run(evaluateStepOnSubTrainingData, subInput, ObjectPtr(), returnCode);
 
       setSubLearningInference(targetInference, state, index);
       return true;
@@ -126,43 +128,15 @@ private:
   struct State : public SequentialInferenceState
   {
     State(const Variable& input, const Variable& supervision)
-      : SequentialInferenceState(input, supervision) {}
+      : SequentialInferenceState(input, supervision), numTrainingExamples(0), numValidationExamples(0) {}
 
     std::vector<SequentialInferenceStatePtr> targetStates;
+    size_t numTrainingExamples;
+    size_t numValidationExamples;
   };
   typedef ReferenceCountedObjectPtr<State> StatePtr;
 
-  struct SubTrainingData : public Container
-  {
-    SubTrainingData(InferencePtr subInference, std::vector<SequentialInferenceStatePtr>& targetStates)
-      : subInference(subInference), targetStates(targetStates), pairType(pairClass(subInference->getInputType(), subInference->getSupervisionType())) {}
-
-    virtual ClassPtr getClass() const
-      {return containerClass(pairClass(anyType, anyType));}
-
-    virtual TypePtr getElementsType() const
-      {return pairType;}
-
-    virtual size_t getNumElements() const
-      {return targetStates.size();}
-
-    virtual Variable getElement(size_t index) const
-    {
-      jassert(index < targetStates.size());
-      SequentialInferenceStatePtr targetState = targetStates[index];
-      return Variable::pair(targetState->getSubInput(), targetState->getSubSupervision(), pairType);
-    }
-
-    virtual void setElement(size_t index, const Variable& value)
-      {jassert(false);}
-
-  private:
-    InferencePtr subInference;
-    std::vector<SequentialInferenceStatePtr>& targetStates;
-    TypePtr pairType;
-  };
-
-  void setSubLearningInference(StaticSequentialInferencePtr targetInference, StatePtr state, size_t index)
+  void setSubLearningInference(const StaticSequentialInferencePtr& targetInference, const StatePtr& state, size_t index)
   {
     // get sub-learner
     InferencePtr targetSubInference = targetInference->getSubInference(index);
@@ -171,8 +145,16 @@ private:
       subLearner = dummyInferenceLearner();
 
     // create sub-learning inference
-    ContainerPtr subTrainingData = new SubTrainingData(targetSubInference, state->targetStates);
-    state->setSubInference(subLearner, Variable::pair(targetSubInference, subTrainingData), Variable());
+    InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(targetSubInference, state->numTrainingExamples, state->numValidationExamples);
+    size_t n = state->targetStates.size();
+    jassert(n == state->numTrainingExamples + state->numValidationExamples);
+    for (size_t i = 0; i < n; ++i)
+    {
+      const SequentialInferenceStatePtr& targetState = state->targetStates[i];
+      subLearnerInput->setExample(i, targetState->getSubInput(), targetState->getSubSupervision());
+    }
+
+    state->setSubInference(subLearner, subLearnerInput, Variable());
   }
 };
 

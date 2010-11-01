@@ -24,40 +24,40 @@ public:
 
   virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticDecoratorInferencePtr targetInference = getInferenceAndCast<StaticDecoratorInference>(input);
-    ContainerPtr trainingData = getTrainingData(input);
-    jassert(targetInference && trainingData);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const StaticDecoratorInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticDecoratorInference>();
+    jassert(targetInference);
     
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
 
     InferencePtr targetSubInference = targetInference->getSubInference();
     if (targetSubInference && targetSubInference->getBatchLearner())
     {
-      ContainerPtr subTrainingData = createSubTrainingData(context, targetInference, trainingData, returnCode);
+      InferenceBatchLearnerInputPtr subLearnerInput = createSubLearnerInput(context, learnerInput, returnCode);
       if (returnCode != finishedReturnCode)
         return DecoratorInferenceStatePtr();
 
-      res->setSubInference(targetSubInference->getBatchLearner(), Variable::pair(targetSubInference, subTrainingData), Variable());
+      res->setSubInference(targetSubInference->getBatchLearner(), subLearnerInput, Variable());
     }
     return res;
   }
 
 protected:
-  virtual ContainerPtr createSubTrainingData(InferenceContextWeakPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
   {
-    size_t n = trainingData->getNumElements();
-    InferencePtr targetSubInference = targetInference->getSubInference();
-    TypePtr pairType = pairClass(targetSubInference->getInputType(), targetSubInference->getSupervisionType());
-    VectorPtr res = vector(pairType, n);
+    const StaticDecoratorInferencePtr& targetInference = input->getTargetInference().staticCast<StaticDecoratorInference>();
+    const InferencePtr& targetSubInference = targetInference->getSubInference();
+    InferenceBatchLearnerInputPtr res = new InferenceBatchLearnerInput(targetSubInference, input->getNumTrainingExamples(), input->getNumValidationExamples());
 
+    size_t n = input->getNumExamples();
     for (size_t i = 0; i < n; ++i)
     {
-      Variable inputAndSupervision = trainingData->getElement(i);
+      const std::pair<Variable, Variable>& example = input->getExample(i);
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      DecoratorInferenceStatePtr state = targetInference->prepareInference(context, inputAndSupervision[0], inputAndSupervision[1], returnCode);
+      DecoratorInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second, returnCode);
       if (returnCode != Inference::finishedReturnCode)
-        return ContainerPtr();
-      res->setElement(i, Variable::pair(state->getSubInput(), state->getSubSupervision(), pairType));
+        return InferenceBatchLearnerInputPtr();
+      res->setExample(i, state->getSubInput(), state->getSubSupervision());
     }
     return res;
   }
@@ -66,8 +66,11 @@ protected:
 class PostProcessInferenceLearner : public DecoratorInferenceLearner
 {
 protected:
-  virtual ContainerPtr createSubTrainingData(InferenceContextWeakPtr context, StaticDecoratorInferencePtr targetInference, ContainerPtr trainingData, ReturnCode& returnCode)
-    {return trainingData;}
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
+  {
+    const InferencePtr& targetSubInference = input->getTargetInference().staticCast<StaticDecoratorInference>()->getSubInference();
+    return new InferenceBatchLearnerInput(targetSubInference, input->getTrainingExamples(), input->getValidationExamples());
+  }
 };
 
 }; /* namespace lbcpp */

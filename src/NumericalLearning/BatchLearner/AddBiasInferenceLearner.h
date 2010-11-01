@@ -17,22 +17,23 @@
 namespace lbcpp
 {
 
-class AddBiasInferenceLearner : public AtomicInferenceBatchLearner
+class AddBiasInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const
     {return addBiasInferenceClass;}
   
-  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
     ROCAnalyse roc;
-    size_t n = trainingData->getNumElements();
+    size_t n = learnerInput->getNumTrainingExamples();
     for (size_t i = 0; i < n; ++i)
     {
-      PairPtr example = trainingData->getElement(i).getObjectAndCast<Pair>();
-      const ScalarFunctionPtr& loss = example->getSecond().getObjectAndCast<ScalarFunction>();
+      const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
+      const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>();
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
-      roc.addPrediction(example->getFirst().getDouble(), isPositiveExample);
+      roc.addPrediction(example.first.getDouble(), isPositiveExample);
     }
     if (n)
     {
@@ -43,7 +44,7 @@ public:
       threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
       MessageCallback::info(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
 
-      targetInference.staticCast<AddBiasInference>()->setBias(-threshold);
+      learnerInput->getTargetInference().staticCast<AddBiasInference>()->setBias(-threshold);
     }
     return Variable();
   }
