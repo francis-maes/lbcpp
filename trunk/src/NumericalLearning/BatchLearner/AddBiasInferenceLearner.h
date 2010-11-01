@@ -12,12 +12,12 @@
 # include "../Inference/AddBiasInference.h"
 # include <lbcpp/Data/Pair.h>
 # include <lbcpp/Function/Evaluator.h>
-# include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class AddBiasInferenceLearner : public AtomicInferenceLearner
+class AddBiasInferenceLearner : public AtomicInferenceBatchLearner
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const

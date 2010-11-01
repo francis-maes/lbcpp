@@ -9,12 +9,12 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_INITIALIZE_BY_CLONING_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_INITIALIZE_BY_CLONING_H_
 
-# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class InitializeByCloningInferenceLearner : public AtomicInferenceLearner
+class InitializeByCloningInferenceLearner : public AtomicInferenceBatchLearner
 {
 public:
   InitializeByCloningInferenceLearner(const InferencePtr& inferenceToClone)

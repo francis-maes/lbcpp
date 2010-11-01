@@ -9,16 +9,17 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
 
-# include <lbcpp/Inference/SequentialInference.h>
-# include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Inference/InferenceStack.h>
-# include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Data/Pair.h>
+# include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class StochasticPassInferenceLearner : public AtomicInferenceLearner
+class StochasticPassInferenceLearner : public AtomicInferenceBatchLearner
 {
 public:
   StochasticPassInferenceLearner(const std::vector<InferencePtr>& learnedInferences, bool randomizeExamples)
@@ -145,7 +146,7 @@ protected:
   }
 };
 
-class StochasticInferenceLearner : public InferenceLearner<SequentialInference>
+class StochasticInferenceLearner : public InferenceBatchLearner<SequentialInference>
 {
 public:
   StochasticInferenceLearner(bool randomizeExamples = false)

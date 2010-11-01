@@ -268,6 +268,7 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceResultCache.h
   Inference/InferenceCallback.cpp
+  ../include/lbcpp/Inference/InferenceBatchLearner.h
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
   Inference/InferenceOnlineLearner.cpp
   Inference/InferenceClasses.xml

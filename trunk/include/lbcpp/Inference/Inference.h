@@ -17,6 +17,29 @@
 namespace lbcpp
 {
 
+/*
+** InferenceState
+*/
+class InferenceState : public Object
+{
+public:
+  InferenceState(const Variable& input, const Variable& supervision)
+    : input(input), supervision(supervision) {}
+
+  const Variable& getInput() const
+    {return input;}
+
+  const Variable& getSupervision() const
+    {return supervision;}
+
+protected:
+  Variable input;
+  Variable supervision;
+};
+
+/*
+** Inference
+*/
 class Inference : public NameableObject
 {
 public:
@@ -100,110 +123,19 @@ protected:
 
 extern ClassPtr inferenceClass;
 
-/*
-** Decorator inference
-*/
+// Decorator
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
-/*
-** Reductions
-*/
+// Reductions
 extern VectorParallelInferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 extern StaticDecoratorInferencePtr rankingBasedClassificationInference(const String& name, InferencePtr rankingInference, EnumerationPtr classes);
-
 extern VectorParallelInferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
 extern SharedParallelInferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, InferencePtr elementInference);
-
-/*
-** Batch Learners
-*/
-// Input: (Inference, trainingData) pair; trainingData = container of (input, supervision) pairs
-// Supervision: None
-// Output: None (side-effect on input Inference)
-extern AtomicInferenceLearnerPtr dummyInferenceLearner();
-extern InferencePtr staticSequentialInferenceLearner();
-extern ParallelInferencePtr staticParallelInferenceLearner();
-extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervisedExamples = true);
-extern ParallelInferencePtr parallelVoteInferenceLearner();
-extern DecoratorInferencePtr decoratorInferenceLearner();
-extern DecoratorInferencePtr postProcessInferenceLearner();
-extern SequentialInferencePtr stochasticInferenceLearner(bool randomizeExamples = false);
-
-extern VectorSequentialInferencePtr multiPassInferenceLearner();
-extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);
-
-extern AtomicInferenceLearnerPtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
 
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
 extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
-
-/*
-** InferenceState
-*/
-class InferenceState : public Object
-{
-public:
-  InferenceState(const Variable& input, const Variable& supervision)
-    : input(input), supervision(supervision) {}
-
-  const Variable& getInput() const
-    {return input;}
-
-  const Variable& getSupervision() const
-    {return supervision;}
-
-protected:
-  Variable input;
-  Variable supervision;
-};
-
-typedef ReferenceCountedObjectPtr<InferenceState> InferenceStatePtr;
-
-template<class BaseClass>
-class InferenceLearner : public BaseClass
-{
-public:
-  virtual ClassPtr getTargetInferenceClass() const = 0;
-
-  virtual TypePtr getInputType() const
-    {return pairClass(getTargetInferenceClass(), containerClass(pairClass(anyType, anyType)));}
-
-  virtual TypePtr getSupervisionType() const
-    {return nilType;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return nilType;}
-
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
-  {
-    InferencePtr targetInference = getInference(input);
-    ContainerPtr trainingData = getTrainingData(input);
-    return T("Learning ") + targetInference->getName() + T(" with ") + 
-      String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getTemplateArgument(0)->getName() + T("(s)");
-  }
-
-protected:
-  InferencePtr getInference(const Variable& input) const
-    {return input[0].getObjectAndCast<Inference>();}
-
-  template<class T>
-  ReferenceCountedObjectPtr<T> getInferenceAndCast(const Variable& input) const
-    {return input[0].getObjectAndCast<T>();}
-
-  ContainerPtr getTrainingData(const Variable& input) const
-    {return input[1].getObjectAndCast<Container>();}
-};
-
-class AtomicInferenceLearner : public InferenceLearner<Inference>
-{
-public:
-  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData) = 0;
-
-protected:
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-};
 
 }; /* namespace lbcpp */
 

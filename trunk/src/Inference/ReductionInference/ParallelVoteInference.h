@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_REDUCTION_PARALLEL_VOTE_H_
 
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 

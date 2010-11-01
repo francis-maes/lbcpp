@@ -11,11 +11,12 @@
 
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Inference/DecoratorInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class DecoratorInferenceLearner : public InferenceLearner<DecoratorInference>
+class DecoratorInferenceLearner : public InferenceBatchLearner<DecoratorInference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const

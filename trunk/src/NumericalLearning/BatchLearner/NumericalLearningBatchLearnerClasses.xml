@@ -8,7 +8,7 @@
       <constructor arguments="InferencePtr baseLearner" returnType="StaticDecoratorInference"/>
     </class>
 
-    <class name="AddBiasInferenceLearner" base="AtomicInferenceLearner">
+    <class name="AddBiasInferenceLearner" base="AtomicInferenceBatchLearner">
       <constructor/>
     </class>
 

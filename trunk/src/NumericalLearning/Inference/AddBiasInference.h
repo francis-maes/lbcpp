@@ -10,6 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_ADD_BIAS_H_
 
 # include <lbcpp/Inference/DecoratorInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 
 # include <lbcpp/Data/RandomGenerator.h> // tmp

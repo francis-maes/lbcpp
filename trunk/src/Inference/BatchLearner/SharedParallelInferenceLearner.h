@@ -11,11 +11,12 @@
 
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class SharedParallelInferenceLearner : public InferenceLearner<DecoratorInference>
+class SharedParallelInferenceLearner : public InferenceBatchLearner<DecoratorInference>
 {
 public:
   SharedParallelInferenceLearner(bool filterUnsupervisedExamples = true)

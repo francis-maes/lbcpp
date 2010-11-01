@@ -17,6 +17,9 @@ namespace lbcpp
 /*
 ** Inference
 */
+class InferenceState;
+typedef ReferenceCountedObjectPtr<InferenceState> InferenceStatePtr;
+
 class Inference;
 typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
 
@@ -72,8 +75,8 @@ typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;
 /*
 ** Batch Learner
 */
-class AtomicInferenceLearner;
-typedef ReferenceCountedObjectPtr<AtomicInferenceLearner> AtomicInferenceLearnerPtr;
+class AtomicInferenceBatchLearner;
+typedef ReferenceCountedObjectPtr<AtomicInferenceBatchLearner> AtomicInferenceBatchLearnerPtr;
 
 /*
 ** Online Learner

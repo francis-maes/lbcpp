@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_BATCH_LEARNER_STATIC_SEQUENTIAL_H_
 
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
@@ -61,7 +62,7 @@ private:
   std::vector<SequentialInferenceStatePtr>& currentStates;
 };
 
-class StaticSequentialInferenceLearner : public InferenceLearner<SequentialInference>
+class StaticSequentialInferenceLearner : public InferenceBatchLearner<SequentialInference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const

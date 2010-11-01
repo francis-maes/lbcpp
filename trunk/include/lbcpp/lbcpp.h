@@ -56,13 +56,14 @@
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceStack.h"
+# include "Inference/InferenceResultCache.h"
 # include "Inference/InferenceContext.h"
 # include "Inference/InferenceCallback.h"
 # include "Inference/DecoratorInference.h"
 # include "Inference/SequentialInference.h"
 # include "Inference/ParallelInference.h"
+# include "Inference/InferenceBatchLearner.h"
 # include "Inference/InferenceOnlineLearner.h"
-# include "Inference/InferenceResultCache.h"
 
 # include "NumericalLearning/NumericalLearning.h"
 

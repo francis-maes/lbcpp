@@ -11,11 +11,12 @@
 
 # include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Inference/SequentialInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class DummyInferenceLearner : public AtomicInferenceLearner
+class DummyInferenceLearner : public AtomicInferenceBatchLearner
 {
 protected:
   virtual ClassPtr getTargetInferenceClass() const
@@ -25,7 +26,7 @@ protected:
     {return Variable();}
 };
 
-class MultiPassInferenceLearner : public InferenceLearner<VectorSequentialInference>
+class MultiPassInferenceLearner : public InferenceBatchLearner<VectorSequentialInference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const
