@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Program" directory="Programs">
+  <namespace name="lbcpp">
+    <class name="Program" base="NameableObject"/>
+  
+    <class name="HelloWorldProgram" base="Program">
+      <variable type="Integer" name="myInt"/>
+    </class>
+  </namespace>
+</file>

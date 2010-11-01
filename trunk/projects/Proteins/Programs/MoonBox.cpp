@@ -586,7 +586,7 @@ int main(int argc, char** argv)
   lbcpp::initialize();
   declareProteinClasses();
 
-  enum {numFolds = 7};
+  enum {numFolds = 5};
   /*
   ** Parameters initialization
   */
