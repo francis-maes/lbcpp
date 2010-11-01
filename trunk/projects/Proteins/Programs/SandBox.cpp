@@ -184,7 +184,8 @@ public:
     if (learnerInput)
     {
       String inputTypeName = learnerInput->getTargetInference()->getInputType()->getName();
-      MessageCallback::info(T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ") + String(learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
+      MessageCallback::info(T("=== Learning ") + learnerInput->getTargetInference()->getName() +
+        T(" with ") + String((int)learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
       //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
