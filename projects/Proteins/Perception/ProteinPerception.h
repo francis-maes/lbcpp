@@ -46,9 +46,13 @@ public:
 inline PerceptionPtr proteinLengthPerception()
   {return functionBasedPerception(proteinLengthFunction());}
 
+// Residue Perception
+extern PerceptionPtr disulfideBondsResiduePerception();
+
 // Residue Pair Perception
 extern PerceptionPtr residueToResiduePairPerception(PerceptionPtr residuePerception);
 extern PerceptionPtr separationDistanceResiduePairPerception();
+extern PerceptionPtr disulfideBondsResiduePairPerception();
 
 }; /* namespace lbcpp */
 

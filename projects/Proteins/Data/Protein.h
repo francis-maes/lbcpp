@@ -42,6 +42,9 @@ public:
   void saveToXmlFile(const File& xmlFile, MessageCallback& callback = MessageCallback::getInstance()) const;
   void saveToFASTAFile(const File& fastaFile, MessageCallback& callback = MessageCallback::getInstance()) const;
 
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void clone(const ObjectPtr& target) const;
+
   Variable createEmptyTarget(size_t index) const;
   Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
 
@@ -58,11 +61,13 @@ public:
   VectorPtr getPrimaryStructure() const
     {return primaryStructure;}
 
-  void getCysteineIndices(std::vector<size_t>& res) const;
+  const std::vector<size_t>& getCysteinIndices() const
+    {return cysteinIndices;}
 
-  void setPrimaryStructure(VectorPtr primaryStructure)
-    {this->primaryStructure = primaryStructure;}
+  const std::vector<int>& getCysteinInvIndices() const // residue position => cystein index
+    {return cysteinInvIndices;}
 
+  void setPrimaryStructure(VectorPtr primaryStructure);
   void setPrimaryStructure(const String& primaryStructure);
   
   VectorPtr getPositionSpecificScoringMatrix() const
@@ -131,7 +136,7 @@ public:
   /*
   ** Disulfide Bonds
   */
-  SymmetricMatrixPtr getDisulfideBonds() const;
+  const SymmetricMatrixPtr& getDisulfideBonds() const;
 
   /*
   ** Tertiary Structure
@@ -155,6 +160,8 @@ protected:
   // input
   VectorPtr primaryStructure;
   VectorPtr positionSpecificScoringMatrix;
+  std::vector<size_t> cysteinIndices;
+  std::vector<int> cysteinInvIndices; // residue position => cystein index
 
   // 1D
   VectorPtr secondaryStructure;

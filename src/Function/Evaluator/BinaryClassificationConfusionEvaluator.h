@@ -67,7 +67,7 @@ public:
 
     double accuracy = confusionMatrix.computeAccuracy();
 
-    return getName() + T("\n") + confusionMatrix.toString()
+    return getName() + T(" (") + String((int)confusionMatrix.getSampleCount()) + T(" examples)\n") + confusionMatrix.toString()
                      + T("ACC = ") + String(accuracy * 100.0, 2)
                      + T("% P = ") + String(precision * 100.0, 2)
                      + T("% R = ") + String(recall * 100.0, 2)

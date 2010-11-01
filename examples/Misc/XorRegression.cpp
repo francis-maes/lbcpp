@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
   InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(
-          InferenceOnlineLearner::never, // randomization
           InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, // learning steps
           InferenceOnlineLearner::never, ScalarObjectFunctionPtr()); // regularizer
   learner->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(

@@ -114,9 +114,12 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
     return;
   }
   if (findObjectVariable(name) >= 0)
+  {
     MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
-  else
-    variables.push_back(std::make_pair(type, name));
+    return;
+  }
+  variablesMap[name] = variables.size();
+  variables.push_back(std::make_pair(type, name));
 }
 
 size_t DefaultClass::getObjectNumVariables() const
@@ -155,8 +158,8 @@ void DefaultClass::deinitialize()
 
 int DefaultClass::findObjectVariable(const String& name) const
 {
-  for (size_t i = 0; i < variables.size(); ++i)
-    if (variables[i].second == name)
-      return (int)(i + baseType->getObjectNumVariables());
+  std::map<String, size_t>::const_iterator it = variablesMap.find(name);
+  if (it != variablesMap.end())
+    return (int)(baseType->getObjectNumVariables() + it->second);
   return baseType->findObjectVariable(name);
 }

@@ -170,6 +170,7 @@ void Perception::computeOutputType()
     outputType->setName(toString());
     outputType->setBaseType(objectClass);
     size_t n = outputVariables.size();
+    outputType->reserveVariables(n);
     for (size_t i = 0; i < n; ++i)
     {
       const OutputVariable& v = outputVariables[i];

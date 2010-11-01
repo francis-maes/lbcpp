@@ -134,7 +134,8 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception(const String& tar
 PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& targetName) const
 {
   CompositePerceptionPtr res = new ResidueCompositePerception();
-  res->addPerception(T("protein"), createProteinPerception(targetName));
+  if (!targetName.startsWith(T("contactMap")) && targetName != T("disulfideBonds"))
+    res->addPerception(T("protein"), createProteinPerception(targetName));
   addPerception(res, T("position"), T("primaryStructure"), boundsProximityPerception());
   res->addPerception(T("aa"), createLabelSequencePerception(T("primaryStructure")));
   res->addPerception(T("pssm"), createPositionSpecificScoringMatrixPerception());
@@ -143,6 +144,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePerception(const String& tar
   res->addPerception(T("sa20"), createProbabilitySequencePerception(T("solventAccessibilityAt20p")));
   res->addPerception(T("dr"), createProbabilitySequencePerception(T("disorderRegions")));
   res->addPerception(T("stal"), createLabelSequencePerception(T("structuralAlphabetSequence")));
+  res->addPerception(T("dsb"), disulfideBondsResiduePerception());
   return res;
 }
 
@@ -154,6 +156,7 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   res->addPerception(T("protein"), createProteinPerception(targetName));
   res->addPerception(T("residues"), residuePerception);
   res->addPerception(T("separationDistance"), separationDistanceResiduePairPerception());
+  res->addPerception(T("disulfideBond"), disulfideBondsResiduePairPerception());
 
   CompositePerceptionPtr freq = new ResiduePairCompositePerception();
   static const juce::tchar* histogramTargets[] = {

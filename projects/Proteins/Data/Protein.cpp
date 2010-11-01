@@ -56,14 +56,49 @@ void Protein::saveToXmlFile(const File& xmlFile, MessageCallback& callback) cons
 void Protein::saveToFASTAFile(const File& fastaFile, MessageCallback& callback) const
   {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(refCountedPointerFromThis(this));}
 
+void Protein::setPrimaryStructure(VectorPtr primaryStructure)
+{
+  this->primaryStructure = primaryStructure;
+
+  size_t n = primaryStructure->getNumElements();
+  cysteinInvIndices.clear();
+  cysteinInvIndices.resize(n, -1);
+  cysteinIndices.clear();
+  cysteinIndices.reserve(n / 20);
+
+  for (size_t i = 0; i < n; ++i)
+    if ((AminoAcidType)primaryStructure->getElement(i).getInteger() == cysteine)
+    {
+      cysteinInvIndices[i] = (int)cysteinIndices.size();
+      cysteinIndices.push_back(i);
+    }
+}
+
+bool Protein::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+  if (primaryStructure)
+    setPrimaryStructure(primaryStructure); // precompute cysteins info
+  return true;
+}
+
+void Protein::clone(const ObjectPtr& target) const
+{
+  Object::clone(target);
+  const ProteinPtr& targetProtein = target.staticCast<Protein>();
+  targetProtein->cysteinIndices = cysteinIndices;
+  targetProtein->cysteinInvIndices = cysteinInvIndices;
+}
+
 void Protein::setPrimaryStructure(const String& primaryStructure)
 {
   jassert(!this->primaryStructure);
   size_t n = primaryStructure.length();
-
-  this->primaryStructure = vector(aminoAcidTypeEnumeration, n);
+  VectorPtr v = vector(aminoAcidTypeEnumeration, n);
   for (size_t i = 0; i < n; ++i)
-    this->primaryStructure->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[(int)i]));
+    v->setElement(i, AminoAcid::fromOneLetterCode(primaryStructure[(int)i]));
+  setPrimaryStructure(v);
 }
 
 void Protein::setContactMap(SymmetricMatrixPtr contactMap, double threshold, bool betweenCBetaAtoms)
@@ -241,17 +276,13 @@ SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAto
   return *res;
 }
 
-SymmetricMatrixPtr Protein::getDisulfideBonds() const
+const SymmetricMatrixPtr& Protein::getDisulfideBonds() const
 {
   if (!disulfideBonds)
   {
     SymmetricMatrixPtr distanceMap = getDistanceMap(true);
     if (distanceMap)
-    {
-      std::vector<size_t> cysteines;
-      getCysteineIndices(cysteines);
-      const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromCBetaDistanceMap(cysteines, distanceMap);
-    }
+      const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromCBetaDistanceMap(cysteinIndices, distanceMap);
   }
   return disulfideBonds;
 }
@@ -342,24 +373,9 @@ SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr 
   return res;
 }  
 
-void Protein::getCysteineIndices(std::vector<size_t>& res) const
-{
-  size_t n = getLength();
-  jassert(primaryStructure->getNumElements() == n);
-  res.clear();
-  res.reserve(n / 20);
-  for (size_t i = 0; i < n; ++i)
-  {
-    AminoAcidType aminoAcid = (AminoAcidType)primaryStructure->getElement(i).getInteger();
-    if (aminoAcid == cysteine)
-      res.push_back(i);
-  }
-}
-
-
 SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std::vector<size_t>& cysteines, SymmetricMatrixPtr distanceMap)
 {
-  static const double disulfideBondCBetaDistanceThreshold = 10.0;
+  static const double disulfideBondCBetaDistanceThreshold = 5.0;
 
   size_t n = cysteines.size();
   size_t numBonds = 0;
@@ -373,7 +389,6 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std:
         Variable distance = distanceMap->getElement(cysteines[i], cysteines[j]);
         if (distance.isMissingValue())
           continue;
-        //std::cout << distance.getDouble() << " ";
         if (distance.getDouble() < disulfideBondCBetaDistanceThreshold)
         {
           probability = 1.0;
@@ -394,7 +409,7 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std:
   }
 #endif // JUCE_DEBUG
 
-  MessageCallback::info(T("NumResidues: ") + String((int)distanceMap->getDimension()) + T(" NumCysteines: ") + String((int)cysteines.size()) + T(" NumBonds: ") + String((int)numBonds));
+ // MessageCallback::info(T("NumResidues: ") + String((int)distanceMap->getDimension()) + T(" NumCysteines: ") + String((int)cysteines.size()) + T(" NumBonds: ") + String((int)numBonds));
   return res;
 }
 

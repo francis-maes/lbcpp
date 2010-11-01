@@ -13,12 +13,14 @@ using namespace lbcpp;
 
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
-  InferenceOnlineLearnerPtr res = gradientDescentOnlineLearner(
-      InferenceOnlineLearner::perPass, //perStepMiniBatch1000,                                                 // randomization
+  InferenceOnlineLearnerPtr res, lastLearner;
+  
+  res = randomizerOnlineLearner(InferenceOnlineLearner::perPass);
+  res->setNextLearner(lastLearner = gradientDescentOnlineLearner(
       InferenceOnlineLearner::perStep, invLinearIterationFunction(1.0, 1000), true, // learning steps
-      InferenceOnlineLearner::perStep, l2RegularizerFunction(0.01));         // regularizer
+      InferenceOnlineLearner::perStep, l2RegularizerFunction(0.01)));         // regularizer
 
-  res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
+  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
         maxIterationsStoppingCriterion(10), true)); // stopping criterion
   return res;
 }

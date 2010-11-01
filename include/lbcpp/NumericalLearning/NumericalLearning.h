@@ -114,8 +114,6 @@ extern AtomicInferenceLearnerPtr addBiasInferenceLearner();
 */
 // Gradient Descent Learner
 extern InferenceOnlineLearnerPtr gradientDescentOnlineLearner(
-          // randomization
-          InferenceOnlineLearner::UpdateFrequency randomizationFrequency = InferenceOnlineLearner::never,
           // learning steps
           InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency = InferenceOnlineLearner::perEpisode,
           IterationFunctionPtr learningRate = constantIterationFunction(1.0),
