@@ -44,10 +44,9 @@ int main(int argc, char* argv[])
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
   InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(
-          InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, // learning steps
-          InferenceOnlineLearner::never, ScalarObjectFunctionPtr()); // regularizer
-  learner->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(
-          InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(100), true)); // stopping criterion
+          perStep, constantIterationFunction(0.1), true, // learning steps
+          never, ScalarObjectFunctionPtr()); // regularizer
+  learner->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(100), true)); // stopping criterion
   NumericalSupervisedInferencePtr regressor = squareRegressionInference(T("XOR-Regressor"), perception);
   regressor->setStochasticLearner(learner);
  

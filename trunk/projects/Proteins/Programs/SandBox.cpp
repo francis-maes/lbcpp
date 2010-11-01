@@ -117,11 +117,11 @@ public:
     StaticDecoratorInferencePtr res = multiClassLinearSVMInference(perception, classes, createOnlineLearner(targetName, 0.1), true, targetName);
     NumericalInferencePtr multiLinearInference = res->getSubInference();
     if (count++ == 1)
-      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(15), true));
+      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(15), true));
     else
     {
       multiLinearInference->addOnlineLearner(graftingOnlineLearner(perception, multiLinearInference));
-      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(1000), true));
+      multiLinearInference->addOnlineLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(1000), true));
     }
     return res;
 
@@ -148,19 +148,17 @@ protected:
     InferenceOnlineLearnerPtr res, lastLearner;
     if (targetName.startsWith(T("contactMap")))
     {
-      res = randomizerOnlineLearner(InferenceOnlineLearner::perPass);
+      res = randomizerOnlineLearner(perPass);
       res->setNextLearner(lastLearner = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
+        perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
+        perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
     }
     else
       res = lastLearner = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
+        perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
+        perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    size_t numIterations = 10;
-    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass,
-        maxIterationsStoppingCriterion(numIterations), true)); // stopping criterion
+    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(10), true)); // stopping criterion
     return res;
   }
 };
@@ -173,7 +171,7 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -193,13 +191,13 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
     //if (stack->getDepth() == 1) // 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName.startsWith(T("LearningPass")))
+    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
@@ -207,9 +205,16 @@ public:
       MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       MessageCallback::info(T("====================================================="));
 
-      InferencePtr targetInference = input[0].getObjectAndCast<Inference>();
+      PairPtr inputPair = input.dynamicCast<Pair>();
+      InferencePtr targetInference = inputPair ? inputPair->getFirst().dynamicCast<Inference>() : InferencePtr();
       if (targetInference && targetInference->getOnlineLearner())
-        std::cout << "Loss: " << targetInference->getLastOnlineLearner()->getCurrentLossEstimate() << std::endl;
+      {
+        std::vector< std::pair<String, double> > scores;
+        targetInference->getLastOnlineLearner()->getScores(scores);
+        for (size_t i = 0; i < scores.size(); ++i)
+          std::cout << "Score " << scores[i].first << ": " << scores[i].second << std::endl;
+        std::cout << "Default Score: " << targetInference->getLastOnlineLearner()->getDefaultScore();
+      }
 
       //singleThreadedInferenceContext();
       //InferenceContextPtr context = multiThreadedInferenceContext(7);

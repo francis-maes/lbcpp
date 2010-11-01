@@ -86,7 +86,7 @@ extern InferencePtr transferFunctionDecoratorInference(const String& name, Infer
 /*
 ** Batch Learner
 */
-extern SequentialInferencePtr stochasticNumericalInferenceLearner(bool precomputePerceptions = true, bool randomizeExamples = true);
+extern StaticDecoratorInferencePtr precomputePerceptionsNumericalInferenceLearner(InferencePtr baseLearner);
 extern AtomicInferenceLearnerPtr addBiasInferenceLearner();
 
 /*
@@ -95,17 +95,17 @@ extern AtomicInferenceLearnerPtr addBiasInferenceLearner();
 // Gradient Descent Learner
 extern InferenceOnlineLearnerPtr gradientDescentOnlineLearner(
           // learning steps
-          InferenceOnlineLearner::UpdateFrequency learningUpdateFrequency = InferenceOnlineLearner::perEpisode,
+          LearnerUpdateFrequency learningUpdateFrequency = perEpisode,
           IterationFunctionPtr learningRate = constantIterationFunction(1.0),
           bool normalizeLearningRate = true,
           // regularizer
-          InferenceOnlineLearner::UpdateFrequency regularizerUpdateFrequency = InferenceOnlineLearner::perEpisode,
+          LearnerUpdateFrequency regularizerUpdateFrequency = perEpisode,
           ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr());
 
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& targetInferences);
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference);
 
-extern UpdatableOnlineLearnerPtr addBiasOnlineLearner(InferenceOnlineLearner::UpdateFrequency updateFrequency);
+extern UpdatableOnlineLearnerPtr addBiasOnlineLearner(LearnerUpdateFrequency updateFrequency);
 
 }; /* namespace lbcpp */
 

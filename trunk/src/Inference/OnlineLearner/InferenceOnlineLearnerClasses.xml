@@ -16,7 +16,7 @@
         {
           String str = value.trim();
           if (str.startsWith(T("perStepMiniBatch")))
-            return VariableValue(InferenceOnlineLearner::perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
+            return VariableValue(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
           else
             return Enumeration::createFromString(value, callback);
         }
@@ -24,8 +24,8 @@
         virtual String toString(const VariableValue&amp; value) const
         {
           juce::int64 val = value.getInteger();
-          if (val >= InferenceOnlineLearner::perStepMiniBatch)
-            return T("perStepMiniBatch") + String(val - InferenceOnlineLearner::perStepMiniBatch);
+          if (val >= perStepMiniBatch)
+            return T("perStepMiniBatch") + String(val - perStepMiniBatch);
           else
             return Enumeration::toString(value);
         }
@@ -42,8 +42,21 @@
       <variable type="LearnerUpdateFrequency" name="updateFrequency" enumeration="yes"/>
     </class>
 
+    <class name="ComputeScoreOnlineLearner" base="UpdatableOnlineLearner">
+      <constructor arguments="const String&amp; scoreName, FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency"/>
+      <variable type="Function" name="scoreFunction"/>
+    </class>
+
+    <class name="ComputeEvaluatorOnlineLearner" base="UpdatableOnlineLearner">
+      <constructor arguments="EvaluatorPtr evaluator, ContainerPtr examples, LearnerUpdateFrequency computeFrequency"/>
+      <variable type="Evaluator" name="evaluator"/>
+      <variable type="Container[Pair[Variable,Variable]]" name="examples"/>
+      <variable type="ObjectVector[Pair[String,Double]]" name="lastScores"/>
+      <variable type="Double" name="lastDefaultScore"/>
+    </class>
+
     <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency criterionTestFrequency, StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops"/>
+      <constructor arguments="StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency"/>
 
       <variable type="StoppingCriterion" name="criterion"/>
       <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
@@ -54,7 +67,7 @@
     </class>
 
     <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="InferenceOnlineLearner::UpdateFrequency randomizationFrequency"/>
+      <constructor arguments="LearnerUpdateFrequency randomizationFrequency"/>
     </class>
 
   </namespace>

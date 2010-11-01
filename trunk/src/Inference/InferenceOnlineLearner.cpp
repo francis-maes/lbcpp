@@ -12,30 +12,30 @@ using namespace lbcpp;
 /*
 ** InferenceOnlineLearner
 */
-void InferenceOnlineLearner::startLearningCallback()
+void InferenceOnlineLearner::startLearningCallback(InferenceContextWeakPtr context)
 {
   if (nextLearner)
   {
     jassert(nextLearner->getPreviousLearner().get() == this);
-    nextLearner->startLearningCallback();
+    nextLearner->startLearningCallback(context);
   }
 }
 
-void InferenceOnlineLearner::subStepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-  {if (nextLearner) nextLearner->subStepFinishedCallback(inference, input, supervision, prediction);}
+void InferenceOnlineLearner::subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {if (nextLearner) nextLearner->subStepFinishedCallback(context, inference, input, supervision, prediction);}
 
-void InferenceOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
-  {if (nextLearner) nextLearner->stepFinishedCallback(inference, input, supervision, prediction);}
+void InferenceOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  {if (nextLearner) nextLearner->stepFinishedCallback(context, inference, input, supervision, prediction);}
 
-void InferenceOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
-  {if (nextLearner) nextLearner->episodeFinishedCallback(inference);}
+void InferenceOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+  {if (nextLearner) nextLearner->episodeFinishedCallback(context, inference);}
 
-void InferenceOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+void InferenceOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   if (nextLearner)
   {
     jassert(nextLearner->getPreviousLearner().get() == this);
-    nextLearner->passFinishedCallback(inference);
+    nextLearner->passFinishedCallback(context, inference);
   }
 }
 
@@ -58,13 +58,16 @@ void InferenceOnlineLearner::clone(const ObjectPtr& t) const
   }
 }
 
-double InferenceOnlineLearner::getCurrentLossEstimate() const
+void InferenceOnlineLearner::getScores(std::vector< std::pair<String, double> >& res) const
 {
   if (previousLearner)
-  {
-    jassert(previousLearner->getNextLearner().get() == this);
-    return previousLearner->getCurrentLossEstimate();
-  }
+    previousLearner->getScores(res);
+}
+
+double InferenceOnlineLearner::getDefaultScore() const
+{
+  if (previousLearner)
+    return previousLearner->getDefaultScore();
   else
   {
     jassert(false);
@@ -83,39 +86,39 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::getLastLearner() const
 /*
 ** UpdatableOnlineLearner
 */
-UpdatableOnlineLearner::UpdatableOnlineLearner(UpdateFrequency updateFrequency)
+UpdatableOnlineLearner::UpdatableOnlineLearner(LearnerUpdateFrequency updateFrequency)
   : epoch(0), updateFrequency(updateFrequency) {}
 
-void UpdatableOnlineLearner::updateAfterStep(const InferencePtr& inference)
+void UpdatableOnlineLearner::updateAfterStep(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   ++epoch;
   if (updateFrequency == perStep)
-    update(inference);
-  if (updateFrequency >= perStepMiniBatch)
+    update(context, inference);
+  else if (updateFrequency >= perStepMiniBatch)
   {
     int miniBatchSize = updateFrequency - perStepMiniBatch;
     if (miniBatchSize <= 1 || (epoch % miniBatchSize) == 0)
-      update(inference);
+      update(context, inference);
   }
 }
 
-void UpdatableOnlineLearner::stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void UpdatableOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
-  updateAfterStep(inference);
-  InferenceOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+  updateAfterStep(context, inference);
+  InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void UpdatableOnlineLearner::episodeFinishedCallback(const InferencePtr& inference)
+void UpdatableOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   if (updateFrequency == perEpisode)
-    update(inference);
-  InferenceOnlineLearner::episodeFinishedCallback(inference);
+    update(context, inference);
+  InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void UpdatableOnlineLearner::passFinishedCallback(const InferencePtr& inference)
+void UpdatableOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
 {
   if (updateFrequency == perPass)
-    update(inference);
-  InferenceOnlineLearner::passFinishedCallback(inference);
+    update(context, inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference);
 }
 

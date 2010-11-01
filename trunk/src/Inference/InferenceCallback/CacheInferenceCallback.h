@@ -23,13 +23,13 @@ public:
     : cache(cache), parentStep(parentStep) {}
   CacheInferenceCallback() {}
 
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (!output.exists() && stack->getParentInference() == parentStep)
       output = Variable(cache->get(stack->getCurrentInference(), input.getObject()));
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getParentInference() == parentStep && returnCode == Inference::finishedReturnCode)
     {

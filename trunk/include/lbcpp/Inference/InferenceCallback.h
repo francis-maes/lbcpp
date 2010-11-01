@@ -22,10 +22,10 @@ public:
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
   // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 };
 

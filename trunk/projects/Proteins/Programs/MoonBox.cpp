@@ -313,17 +313,17 @@ protected:
     InferenceOnlineLearnerPtr res, lastLearner;
     if (targetName.startsWith(T("contactMap")))
     {
-      res = randomizerOnlineLearner(InferenceOnlineLearner::perEpisode);
+      res = randomizerOnlineLearner(perEpisode);
       res->setNextLearner(lastLearner = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
+        perStep, invLinearIterationFunction(DefaultParameters::learningRate, 100000), true, // learning steps
+        perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
     }
     else
       res = lastLearner = gradientDescentOnlineLearner(
-        InferenceOnlineLearner::perStep, learningStepFunction, true, // learning steps
-        InferenceOnlineLearner::perStepMiniBatch20, l2RegularizerFunction(regularizer));         // regularizer
+        perStep, learningStepFunction, true, // learning steps
+        perStepMiniBatch20, l2RegularizerFunction(regularizer));         // regularizer
 
-    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(InferenceOnlineLearner::perPass, stoppingCriterion, true)); // stopping criterion
+    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
     return res;
   }
   
@@ -336,7 +336,7 @@ private:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -349,7 +349,7 @@ public:
     MessageCallback::info(line);
   }
   
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -416,13 +416,13 @@ public:
     callbacks.push_back(callback);
   }
 
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName().startsWith(inferenceNameToEvaluate)) // T("Pass learner")
@@ -457,7 +457,7 @@ typedef ReferenceCountedObjectPtr<WrapperInferenceCallback> WrapperInferenceCall
 class StandardOutputInferenceCallback : public WrappedInferenceCallback
 {
 public:
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -476,7 +476,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {
@@ -522,7 +522,7 @@ public:
     }
   }
 
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -531,7 +531,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {

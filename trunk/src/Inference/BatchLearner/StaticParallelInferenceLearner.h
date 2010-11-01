@@ -22,7 +22,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticParallelInferenceClass;}
 
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     StaticParallelInferencePtr targetInference = getInferenceAndCast<StaticParallelInference>(input);
     size_t numSubInferences = targetInference->getNumSubInferences();
@@ -60,14 +60,14 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 };
 
 class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner 
 {
 public:
-  virtual ParallelInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     const StaticParallelInferencePtr& targetInference = pair->getFirst().getObjectAndCast<StaticParallelInference>();

@@ -22,7 +22,7 @@ public:
     : stepName(step->getName()) {}
   CancelAfterStepCallback() {}
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference()->getName() == stepName)
       returnCode = Inference::canceledReturnCode;

@@ -46,7 +46,7 @@ public:
   SaveOutputInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
@@ -68,7 +68,7 @@ public:
   SaveProteinPairInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
@@ -97,7 +97,7 @@ private:
 class PrintDotForEachExampleInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
       std::cout << "." << std::flush;

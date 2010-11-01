@@ -17,18 +17,18 @@ namespace lbcpp
 class BatchGradientDescentOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  BatchGradientDescentOnlineLearner(UpdateFrequency learningUpdateFrequency,
+  BatchGradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
                                     IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                    UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+                                    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : GradientDescentOnlineLearner(learningUpdateFrequency, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer)
     {jassert(learningUpdateFrequency != never && learningUpdateFrequency != perStep);}
 
   BatchGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    updateParameters(inference, 1.0, input, supervision, prediction, &gradientSum);
+    updateParameters(context, inference, 1.0, input, supervision, prediction, &gradientSum);
     ++epoch;
     if (learningUpdateFrequency >= perStepMiniBatch)
     {
@@ -37,18 +37,18 @@ public:
         applyGradientSum(inference);
     }
     checkRegularizerAfterStep(inference);
-    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+    GradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
   }
 
-  virtual void episodeFinishedCallback(const InferencePtr& inference)
+  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
   {
     if (learningUpdateFrequency == perEpisode)
       applyGradientSum(inference);
-    GradientDescentOnlineLearner::episodeFinishedCallback(inference);
+    GradientDescentOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(const InferencePtr& inference)
-    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(inference);}
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference);}
 
 protected:
   ObjectPtr gradientSum;

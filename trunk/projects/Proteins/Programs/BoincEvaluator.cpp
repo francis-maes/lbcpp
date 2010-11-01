@@ -223,15 +223,15 @@ public:
         getUpdateFrequencyParameter(T("regularizerFrequency")), createRegularizer());         // regularizer
 
     InferenceOnlineLearnerPtr lastLearner = res;
-    InferenceOnlineLearner::UpdateFrequency randomizationFrequency = getUpdateFrequencyParameter(T("randomizationFrequency"));
-    if (randomizationFrequency != InferenceOnlineLearner::never && randomizationFrequency != InferenceOnlineLearner::perStep)
+    LearnerUpdateFrequency randomizationFrequency = getUpdateFrequencyParameter(T("randomizationFrequency"));
+    if (randomizationFrequency != never && randomizationFrequency != perStep)
     {
       res = randomizerOnlineLearner(randomizationFrequency);
       res->setNextLearner(lastLearner);
     }
        
     lastLearner->setNextLearner(stoppingCriterionOnlineLearner(
-        InferenceOnlineLearner::perPass, stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished")))); // stopping criterion
+        stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished")))); // stopping criterion
 
     return res;
   }
@@ -308,23 +308,23 @@ protected:
   bool getBooleanParameter(const String& name) const
     {return getParameter(name) == T("yes");}
 
-  InferenceOnlineLearner::UpdateFrequency getUpdateFrequencyParameter(const String& parameterName) const
+  LearnerUpdateFrequency getUpdateFrequencyParameter(const String& parameterName) const
   {
     String value = getParameter(parameterName);
     if (value.isEmpty() || value == T("never"))
-      return InferenceOnlineLearner::never;
+      return never;
     else if (value == T("perStep"))
-      return InferenceOnlineLearner::perStep;
+      return perStep;
     else if (value.startsWith(T("perMiniBatch")))
-      return (InferenceOnlineLearner::UpdateFrequency)(InferenceOnlineLearner::perStepMiniBatch + (size_t)value.substring((int)strlen("perMiniBatch")).getIntValue());
+      return (LearnerUpdateFrequency)(perStepMiniBatch + (size_t)value.substring((int)strlen("perMiniBatch")).getIntValue());
     else if (value == T("perEpisode"))
-      return InferenceOnlineLearner::perEpisode;
+      return perEpisode;
     else if (value == T("perPass"))
-      return InferenceOnlineLearner::perPass;
+      return perPass;
     else
     {
       MessageCallback::error(T("getUpdateFrequencyParameter"), T("Unrecognized value: ") + value);
-      return InferenceOnlineLearner::never;
+      return never;
     }
   }
 };
@@ -372,7 +372,7 @@ protected:
     ExampleBoincWorker* worker;
     size_t counter;
 
-    virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       String inferenceName = stack->getCurrentInference()->getName();
       if (inferenceName.startsWith(T("LearningPass")))

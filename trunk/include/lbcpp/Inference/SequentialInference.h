@@ -78,12 +78,12 @@ public:
   /*
   ** Abstract
   */
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   // returns false if the final state is reached
-  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
-  virtual Variable finalizeInference(const InferenceContextPtr& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
 
   lbcpp_UseDebuggingNewOperator
@@ -121,8 +121,8 @@ public:
   virtual TypePtr getInputType() const
     {return subInferences.size() ? subInferences[0]->getInputType() : anyType;}
 
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
 
   virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
     {}

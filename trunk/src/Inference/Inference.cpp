@@ -94,7 +94,7 @@ void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool 
 const InferenceOnlineLearnerPtr& Inference::getOnlineLearner() const
   {return onlineLearner;}
 
-const InferenceOnlineLearnerPtr& Inference::getLastOnlineLearner() const
+InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
   {return onlineLearner->getLastLearner();}
 
 /*
@@ -165,7 +165,7 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 VectorSequentialInference::VectorSequentialInference(const String& name)
   : StaticSequentialInference(name) {}
 
-SequentialInferenceStatePtr VectorSequentialInference::prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
   if (subInferences.size())
@@ -173,7 +173,7 @@ SequentialInferenceStatePtr VectorSequentialInference::prepareInference(const In
   return state;
 }
 
-bool VectorSequentialInference::updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+bool VectorSequentialInference::updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
 {
   int index = state->getStepNumber(); 
   jassert(index >= 0);

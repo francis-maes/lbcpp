@@ -43,7 +43,7 @@ protected:
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       const InferencePtr& inference = stack->getCurrentInference();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
@@ -51,7 +51,7 @@ protected:
         return;
 
       // call stepFinishedCallback
-      onlineLearner->stepFinishedCallback(inference, input, supervision, output);
+      onlineLearner->stepFinishedCallback(context, inference, input, supervision, output);
 
       // call subStepFinishedCallback
       for (int i = (int)stack->getDepth() - 2; i >= 0; --i)
@@ -59,7 +59,7 @@ protected:
         const InferencePtr& parentInference = stack->getInference(i);
         const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
         if (parentLearner && !parentLearner->isLearningStopped())
-          parentLearner->subStepFinishedCallback(inference, input, supervision, output);
+          parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);
         if (parentInference == targetInference)
           break;
       }
@@ -94,14 +94,14 @@ protected:
       if (isDirectlyConnectedToOnlineLearner)
       {
         // make a step
-        onlineLearner->stepFinishedCallback(targetInference, example->getFirst(), example->getSecond(), Variable());
+        onlineLearner->stepFinishedCallback(context, targetInference, example->getFirst(), example->getSecond(), Variable());
       }
       else
       {
         // make an episode
         Inference::ReturnCode returnCode = Inference::finishedReturnCode;
         context->run(targetInference,  example->getFirst(), example->getSecond(), returnCode);
-        finishEpisode();
+        finishEpisode(context);
       }
     }
 
@@ -111,24 +111,24 @@ protected:
     {
       // The "episode" concept is ill-defined in this case.
       // Since finishEpisode() should not be called too frequently, we prefer to call it once per pass instead of once per step
-      finishEpisode();
+      finishEpisode(context);
     }
 
-    return finishPass();
+    return finishPass(context);
   }
 
-  void finishEpisode()
+  void finishEpisode(InferenceContextWeakPtr context)
   {
     for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
       const InferencePtr& inference = learnedInferences[i];
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (learner && !learner->isLearningStopped())
-        learner->episodeFinishedCallback(inference);
+        learner->episodeFinishedCallback(context, inference);
     }
   }
 
-  bool finishPass() // returns false when learning is finished
+  bool finishPass(InferenceContextWeakPtr context) // returns false when learning is finished
   {
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
@@ -137,7 +137,7 @@ protected:
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
-        learner->passFinishedCallback(inference);
+        learner->passFinishedCallback(context, inference);
         wantsMoreIterations |= learner->wantsMoreIterations();
       }
     }
@@ -154,7 +154,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual InferencePtr createLearningPass(const InferencePtr& targetInference, ContainerPtr& trainingData)
+  virtual InferencePtr createLearningPass(InferenceContextWeakPtr context, const InferencePtr& targetInference, ContainerPtr& trainingData)
   {
     // enumerate learners
     std::vector<InferencePtr> inferencesThatHaveALearner;
@@ -163,26 +163,26 @@ public:
 
     // call startLearningCallback()
     for (int i = (int)inferencesThatHaveALearner.size() - 1; i >= 0; --i)
-      inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback();
+      inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback(context);
 
     // create sequential inference state
     return new StochasticPassInferenceLearner(inferencesThatHaveALearner, randomizeExamples);
   }
 
-  virtual SequentialInferenceStatePtr prepareInference(const InferenceContextPtr& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     InferencePtr targetInference = getInference(input);
     ContainerPtr trainingData = getTrainingData(input);
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
-    InferencePtr learningPass = createLearningPass(targetInference, trainingData);
+    InferencePtr learningPass = createLearningPass(context, targetInference, trainingData);
     learningPass->setName(T("LearningPass ") + targetInference->getName());
     res->setSubInference(learningPass, Variable::pair(targetInference, trainingData), Variable());
     return res;
   }
 
   // returns false if the final state is reached
-  virtual bool updateInference(InferenceContextPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
     {return state->getSubOutput().getBoolean();} // repeat passes until a pass returns "false"
 
 protected:

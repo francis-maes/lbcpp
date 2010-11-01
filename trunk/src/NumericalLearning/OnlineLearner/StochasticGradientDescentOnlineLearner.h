@@ -18,16 +18,17 @@ class StochasticGradientDescentOnlineLearner : public GradientDescentOnlineLearn
 {
 public:
   StochasticGradientDescentOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                          UpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+                                          LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : GradientDescentOnlineLearner(perStep, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer) {}
 
   StochasticGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
-    applyExample(inference, input, supervision, prediction);
-    GradientDescentOnlineLearner::stepFinishedCallback(inference, input, supervision, prediction);
+    ++epoch;
+    updateParameters(context, inference, 1.0, input, supervision, prediction);
+    GradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
   }
 };
 

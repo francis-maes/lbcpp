@@ -65,7 +65,7 @@ public:
   ** Online Learner
   */
   const InferenceOnlineLearnerPtr& getOnlineLearner() const;
-  const InferenceOnlineLearnerPtr& getLastOnlineLearner() const;
+  InferenceOnlineLearnerPtr getLastOnlineLearner() const;
 
   void addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront = false);
   void getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const;
