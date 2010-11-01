@@ -128,7 +128,7 @@ public:
     
 */
     NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
-    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5), true, true);
+    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5, classificationAccuracyEvaluator()), true, true);
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
@@ -143,13 +143,13 @@ public:
   }
 
 protected:
-  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0) const
+  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0, EvaluatorPtr evaluator = EvaluatorPtr()) const
   {
     InferenceOnlineLearnerPtr res, lastLearner;
     if (targetName.startsWith(T("contactMap")))
     {
-      res = randomizerOnlineLearner(perPass);
-      res->setNextLearner(lastLearner = gradientDescentOnlineLearner(
+      res = randomizerOnlineLearner(perEpisode);
+      lastLearner = res->setNextLearner(gradientDescentOnlineLearner(
         perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
         perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
     }
@@ -158,7 +158,22 @@ protected:
         perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
         perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
 
-    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(10), true)); // stopping criterion
+    if (evaluator)
+    {
+      EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
+      trainEvaluator->setName(T("trainScore"));
+      lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(trainEvaluator, false));
+
+      EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>();
+      validationEvaluator->setName(T("validationScore"));
+      lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
+    }
+
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(100), maxIterationsWithoutImprovementStoppingCriterion(5));
+    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
+
+    File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
+    lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(workingDirectory.getChildFile(T("results.txt"))));
     return res;
   }
 };
@@ -183,11 +198,15 @@ public:
     InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
     if (learnerInput)
     {
-      String inputTypeName = learnerInput->getTargetInference()->getInputType()->getName();
-      MessageCallback::info(T("=== Learning ") + learnerInput->getTargetInference()->getName() +
-        T(" with ") + String((int)learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
-      //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
-      //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
+      String inputTypeName = learnerInput->getTrainingExamples()->computeElementsCommonBaseType()->getTemplateArgument(0)->getName();
+
+      String info = T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ");
+      info += String((int)learnerInput->getNumTrainingExamples());
+      if (learnerInput->getNumValidationExamples())
+        info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
+
+      info += T(" ") + inputTypeName + T("(s) ===");
+      MessageCallback::info(info);
     }
   }
 
@@ -196,26 +215,30 @@ public:
     String inferenceName = stack->getCurrentInference()->getName();
 
     //if (stack->getDepth() == 1) // 
-    if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    //if (inferenceName.startsWith(T("LearningPass")))
+    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
       MessageCallback::info(String::empty);
-      MessageCallback::info(T("====================================================="));
-      MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
-      MessageCallback::info(T("====================================================="));
+      //MessageCallback::info(T("====================================================="));
+      //MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
+      //MessageCallback::info(T("====================================================="));
 
-      PairPtr inputPair = input.dynamicCast<Pair>();
-      InferencePtr targetInference = inputPair ? inputPair->getFirst().dynamicCast<Inference>() : InferencePtr();
-      if (targetInference && targetInference->getOnlineLearner())
+      InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
+      if (learnerInput)
       {
-        std::vector< std::pair<String, double> > scores;
-        targetInference->getLastOnlineLearner()->getScores(scores);
-        for (size_t i = 0; i < scores.size(); ++i)
-          std::cout << "Score " << scores[i].first << ": " << scores[i].second << std::endl;
-        std::cout << "Default Score: " << targetInference->getLastOnlineLearner()->getDefaultScore();
+        const InferencePtr& targetInference = learnerInput->getTargetInference();
+        if (targetInference && targetInference->getOnlineLearner())
+        {
+          std::vector< std::pair<String, double> > scores;
+          targetInference->getLastOnlineLearner()->getScores(scores);
+          String info;
+          for (size_t i = 0; i < scores.size(); ++i)
+            info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
+          MessageCallback::info(info);
+        }
       }
-
+/*
       //singleThreadedInferenceContext();
       //InferenceContextPtr context = multiThreadedInferenceContext(7);
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
@@ -224,9 +247,9 @@ public:
 
       evaluator = new ProteinEvaluator();
       context->evaluate(inference, testingData, evaluator);
-      processResults(evaluator, false);
+      processResults(evaluator, false);*/
 
-      MessageCallback::info(T("====================================================="));
+      //MessageCallback::info(T("====================================================="));
     }
     
     if (stack->getDepth() == 1)
@@ -283,10 +306,10 @@ int main(int argc, char** argv)
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")), pool);
   ContainerPtr testProteins = loadProteins(inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")), pool);
-  //ContainerPtr validationProteins = trainProteins->fold(0, 10);
-  //trainProteins = trainProteins->invFold(0, 10);
+  ContainerPtr validationProteins = trainProteins->fold(0, 10);
+  trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "
-    //        << validationProteins->getNumElements() << " validation proteins "
+            << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
@@ -368,7 +391,7 @@ int main(int argc, char** argv)
     InferenceContextPtr context = singleThreadedInferenceContext();
     InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context->appendCallback(trainingCallback);
-    context->train(inference, trainProteins);
+    context->train(inference, trainProteins, validationProteins);
     context->removeCallback(trainingCallback);
   }
 
@@ -383,6 +406,11 @@ int main(int argc, char** argv)
     std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
     context->evaluate(inference, trainProteins, evaluator);
+    std::cout << evaluator->toString() << std::endl << std::endl;
+
+    std::cout << "================== Validation Evaluation ==================" << std::endl << std::endl;
+    evaluator = new ProteinEvaluator();
+    context->evaluate(inference, validationProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;

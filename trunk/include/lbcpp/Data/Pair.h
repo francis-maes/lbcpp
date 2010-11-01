@@ -41,6 +41,8 @@ public:
     : Object(thisClass), first(first), second(second) {}
   Pair(const Variable& first, const Variable& second)
     : Object(pairClass(first.getType(), second.getType())), first(first), second(second) {}
+  Pair(const std::pair<Variable, Variable>& pair)
+    : Object(pairClass(pair.first.getType(), pair.second.getType())), first(pair.first), second(pair.second) {}
   Pair() {}
   
   virtual String toString() const
@@ -69,6 +71,9 @@ public:
 
   Variable& getSecond()
     {return second;}
+
+  std::pair<Variable, Variable> getValue() const
+    {return std::make_pair(first, second);}
 
   lbcpp_UseDebuggingNewOperator
 

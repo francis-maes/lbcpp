@@ -30,12 +30,12 @@ void InferenceOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr contex
 void InferenceOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
   {if (nextLearner) nextLearner->episodeFinishedCallback(context, inference);}
 
-void InferenceOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+void InferenceOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (nextLearner)
   {
     jassert(nextLearner->getPreviousLearner().get() == this);
-    nextLearner->passFinishedCallback(context, inference);
+    nextLearner->passFinishedCallback(context, inference, batchLearnerInput);
   }
 }
 
@@ -115,10 +115,10 @@ void UpdatableOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr con
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void UpdatableOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+void UpdatableOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (updateFrequency == perPass)
     update(context, inference);
-  InferenceOnlineLearner::passFinishedCallback(context, inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 

@@ -32,6 +32,14 @@ public:
   virtual TypePtr getElementsType() const
     {return vector3Class;}
 
+  virtual Variable getElement(size_t index) const
+  {
+    if (values[index].exists())
+      return new Vector3(values[index]);
+    else
+      return Variable::missingValue(vector3Class);
+  }
+
   bool hasPosition(size_t index) const
     {return values[index].exists();}
 

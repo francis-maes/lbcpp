@@ -47,8 +47,8 @@ public:
     GradientDescentOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
-    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference);}
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);}
 
 protected:
   ObjectPtr gradientSum;

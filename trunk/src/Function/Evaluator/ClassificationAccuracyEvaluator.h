@@ -11,6 +11,7 @@
 
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/NumericalLearning/LossFunctions.h>
 # include "../../Data/Object/DenseDoubleObject.h"
 
 namespace lbcpp
@@ -22,16 +23,18 @@ public:
   ClassificationAccuracyEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
   ClassificationAccuracyEvaluator() {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correctObject)
+  virtual void addPrediction(const Variable& predicted, const Variable& correct)
   {
-    if (!predicted.exists() || !correctObject.exists())
+    if (!predicted.exists() || !correct.exists())
       return;
 
-    jassert(correctObject.isEnumeration());
+    int correctLabel = getCorrectLabel(correct);
+    if (correctLabel < 0)
+      return;
+
     if (predicted.isEnumeration())
     {
-      jassert(predicted.getType() == correctObject.getType());
-      accuracy->push(predicted.getInteger() == correctObject.getInteger());
+      accuracy->push(predicted.getInteger() == correctLabel);
       return;
     }
     
@@ -46,14 +49,14 @@ public:
         for (size_t i = 0; i < scoreValues.size(); ++i)
           if (scoreValues[i] > bestScore)
             bestScore = scoreValues[i], bestIndex = (int)i;
-        accuracy->push(bestIndex == correctObject.getInteger());
+        accuracy->push(bestIndex == correctLabel);
         return;
       }
 
       DiscreteProbabilityDistributionPtr distribution = predicted.dynamicCast<DiscreteProbabilityDistribution>();
       if (distribution)
       {
-        accuracy->push(distribution->compute(correctObject));
+        accuracy->push(distribution->compute(correctLabel));
         return;
       }
     }
@@ -73,10 +76,30 @@ public:
     {return accuracy->getMean();}
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {res.push_back(std::make_pair(T("Acc"), accuracy->getMean()));}
+    {res.push_back(std::make_pair(getName(), accuracy->getMean()));}
   
+  virtual void clone(const ObjectPtr& target) const
+    {Evaluator::clone(target); target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>();}
+
 protected:
+  friend class ClassificationAccuracyEvaluatorClass;
+
   ScalarVariableMeanPtr accuracy;
+
+  int getCorrectLabel(const Variable& correct) const
+  {
+    if (!correct.exists())
+      return -1;
+    if (correct.isEnumeration())
+      return correct.getInteger();
+
+    MultiClassLossFunctionPtr lossFunction = correct.dynamicCast<MultiClassLossFunction>();
+    if (lossFunction)
+      return lossFunction->getCorrectClass();
+
+    jassert(false);
+    return -1;
+  }
 };
 
 }; /* namespace lbcpp */

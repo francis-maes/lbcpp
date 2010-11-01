@@ -117,7 +117,7 @@ protected:
       finishEpisode(context);
     }
 
-    return finishPass(context);
+    return finishPass(context, learnerInput);
   }
 
   void finishEpisode(InferenceContextWeakPtr context)
@@ -131,7 +131,7 @@ protected:
     }
   }
 
-  bool finishPass(InferenceContextWeakPtr context) // returns false when learning is finished
+  bool finishPass(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& learnerInput) // returns false when learning is finished
   {
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
@@ -140,7 +140,7 @@ protected:
       const InferenceOnlineLearnerPtr& learner = inference->getOnlineLearner();
       if (!learner->isLearningStopped())
       {
-        learner->passFinishedCallback(context, inference);
+        learner->passFinishedCallback(context, inference, learnerInput);
         wantsMoreIterations |= learner->wantsMoreIterations();
       }
     }

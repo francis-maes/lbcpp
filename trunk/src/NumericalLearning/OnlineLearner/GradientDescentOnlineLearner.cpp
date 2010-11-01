@@ -62,7 +62,7 @@ void GradientDescentOnlineLearner::episodeFinishedCallback(InferenceContextWeakP
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(inference);
@@ -80,7 +80,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr 
     lossValue.clear();
     //lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives
   }
-  InferenceOnlineLearner::passFinishedCallback(context, inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 
 void GradientDescentOnlineLearner::updateParameters(InferenceContextWeakPtr context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)

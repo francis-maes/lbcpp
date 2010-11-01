@@ -55,7 +55,7 @@ protected:
 typedef ReferenceCountedObjectPtr<RegressionErrorEvaluator> RegressionErrorEvaluatorPtr;
 
 // Classification
-extern EvaluatorPtr classificationAccuracyEvaluator(const String& name);
+extern EvaluatorPtr classificationAccuracyEvaluator(const String& name = T("accuracy"));
 extern EvaluatorPtr binaryClassificationConfusionEvaluator(const String& name);
 extern EvaluatorPtr rocAnalysisEvaluator(const String& name);
 

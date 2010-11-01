@@ -61,7 +61,7 @@ void GraftingOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   // compute active feature scores
   std::vector<double> activeScores;
@@ -100,7 +100,7 @@ void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context
   MessageCallback::info(String::empty);
   MessageCallback::info(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
     + String((int)candidatesPerception->getNumConjunctions()) + T(" candidates ==="));
-  InferenceOnlineLearner::passFinishedCallback(context, inference);
+  InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 
 

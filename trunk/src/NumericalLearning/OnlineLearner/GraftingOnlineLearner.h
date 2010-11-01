@@ -29,7 +29,7 @@ public:
   virtual void subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
   virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference) {}
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual bool isLearningStopped() const
     {return learningStopped;}

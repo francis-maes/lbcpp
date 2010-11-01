@@ -28,6 +28,7 @@
 
     <class name="ClassificationAccuracyEvaluator" base="Evaluator">
       <constructor arguments="const String&amp; name"/>
+      <variable type="ScalarVariableMean" name="accuracy"/>
     </class>
 
     <class name="ContainerElementsEvaluator" base="Evaluator">
