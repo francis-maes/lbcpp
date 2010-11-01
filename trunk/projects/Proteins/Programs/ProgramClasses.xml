@@ -3,6 +3,11 @@
 <file name="Program" directory="Programs">
   <namespace name="lbcpp">
     <class name="Program" base="NameableObject"/>
+    
+    <class name="ProgramDecorator" base="Program">
+      <constructor arguments="ProgramPtr decorated"/>
+      <variable name="decorated" type="Program"/>
+    </class>
   
     <class name="HelloWorldProgram" base="Program">
       <variable type="Integer" name="myInt"/>
