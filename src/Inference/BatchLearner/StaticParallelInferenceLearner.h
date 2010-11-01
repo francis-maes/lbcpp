@@ -9,14 +9,15 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
 
-# include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Data/Pair.h>
+# include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class StaticParallelInferenceLearner : public InferenceLearner<ParallelInference>
+class StaticParallelInferenceLearner : public InferenceBatchLearner<ParallelInference>
 {
 public:
   virtual ClassPtr getTargetInferenceClass() const

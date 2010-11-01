@@ -11,12 +11,12 @@
 
 # include <lbcpp/Data/Pair.h>
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/Inference/Inference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp
 {
 
-class PrecomputePerceptionsInferenceLearner : public InferenceLearner<StaticDecoratorInference>
+class PrecomputePerceptionsInferenceLearner : public InferenceBatchLearner<StaticDecoratorInference>
 {
 public:
   PrecomputePerceptionsInferenceLearner(InferencePtr baseLearner)

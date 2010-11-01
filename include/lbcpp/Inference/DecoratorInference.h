@@ -129,6 +129,20 @@ typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInfer
 
 extern ClassPtr staticDecoratorInferenceClass;
 
+class PostProcessInference : public StaticDecoratorInference
+{
+public:
+  PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction);
+  PostProcessInference() {}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const;
+  virtual Variable finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
+
+protected:
+  friend class PostProcessInferenceClass;
+  FunctionPtr postProcessingFunction;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_DECORATOR_H_

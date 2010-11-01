@@ -5,6 +5,7 @@
   <include file="lbcpp/Inference/DecoratorInference.h"/>
   <include file="lbcpp/Inference/SequentialInference.h"/>
   <include file="lbcpp/Inference/ParallelInference.h"/>
+  <include file="lbcpp/Inference/InferenceBatchLearner.h"/>
   <include file="lbcpp/Inference/InferenceOnlineLearner.h"/>
 
   <import name="InferenceCallback"/>
@@ -48,35 +49,18 @@
       <variable type="ObjectVector[Inference]" name="subInferences"/>
     </class>
 
-    <code> <!-- FIXME: ranger -->
-      class PostProcessInference : public StaticDecoratorInference
-      {
-      public:
-      // postProcessingFunction: from (object,any) pair to object
-      PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
-        : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
-      postProcessingFunction(postProcessingFunction)
-        {setBatchLearner(postProcessInferenceLearner());}
-
-      PostProcessInference() {}
-
-      virtual TypePtr getOutputType(TypePtr inputType) const
-        {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
-
-      virtual Variable finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr&amp; finalState, ReturnCode&amp; returnCode)
-        {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
-
-      protected:
-        FunctionPtr postProcessingFunction;
-      };
-    </code>
-
     <class name="PostProcessInference" base="DecoratorInference">
       <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
+      <variable type="Function" name="postProcessingFunction"/>
     </class>
     
     <!-- Batch Learner -->
-    <class name="AtomicInferenceLearner" base="Inference" abstract="yes"/>
+    <class name="InferenceBatchLearnerInput" base="Object">
+      <variable type="Inference" name="targetInference"/>
+      <variable type="ObjectVector[Pair[Variable,Variable]]" name="trainingData"/>
+      <variable type="ObjectVector[Pair[Variable,Variable]]" name="validationData"/>
+    </class>
+    <class name="AtomicInferenceBatchLearner" base="Inference" abstract="yes"/>
 
   </namespace>
 

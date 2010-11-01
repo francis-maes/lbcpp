@@ -9,6 +9,7 @@
 #include <lbcpp/Function/ScalarObjectFunction.h>
 #include <lbcpp/NumericalLearning/NumericalLearning.h>
 #include <lbcpp/Inference/SequentialInference.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
 /*
@@ -168,19 +169,6 @@ void NumericalInference::updateParametersType()
 }
 
 /*
-** NumericalSupervisedInference
-*/
-void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples)
-{
-  jassert(onlineLearner);
-  InferencePtr batchLearner = stochasticInferenceLearner(randomizeExamples);
-  if (precomputePerceptions)
-    batchLearner = precomputePerceptionsNumericalInferenceLearner(batchLearner);
-  decorated->setBatchLearner(batchLearner);
-  decorated->addOnlineLearner(onlineLearner);
-}
-
-/*
 ** OnlineLearner
 */
 #include "OnlineLearner/StochasticGradientDescentOnlineLearner.h"
@@ -224,3 +212,18 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
                                               learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
 }
 
+
+/*
+** NumericalSupervisedInference
+*/
+namespace lbcpp { extern ClassPtr stoppingCriterionOnlineLearnerClass; };
+
+void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples, EvaluatorPtr evaluator, double validationDataPercentage)
+{
+  jassert(onlineLearner);
+  InferencePtr batchLearner = stochasticInferenceLearner(randomizeExamples);//, evaluator, validationDataPercentage);
+  if (precomputePerceptions)
+    batchLearner = precomputePerceptionsNumericalInferenceLearner(batchLearner);
+  decorated->setBatchLearner(batchLearner);
+  decorated->addOnlineLearner(onlineLearner);
+}

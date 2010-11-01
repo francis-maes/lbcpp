@@ -87,7 +87,7 @@ extern InferencePtr transferFunctionDecoratorInference(const String& name, Infer
 ** Batch Learner
 */
 extern StaticDecoratorInferencePtr precomputePerceptionsNumericalInferenceLearner(InferencePtr baseLearner);
-extern AtomicInferenceLearnerPtr addBiasInferenceLearner();
+extern AtomicInferenceBatchLearnerPtr addBiasInferenceLearner();
 
 /*
 ** OnlineLearner

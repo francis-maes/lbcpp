@@ -13,6 +13,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
 /*
@@ -115,6 +116,23 @@ void StaticDecoratorInference::clone(const ObjectPtr& target) const
   if (decorated)
     target.staticCast<StaticDecoratorInference>()->decorated = decorated->cloneAndCast<Inference>();
 }
+
+/*
+** PostProcessInference
+*/
+PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
+  : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
+    postProcessingFunction(postProcessingFunction)
+{
+  setBatchLearner(postProcessInferenceLearner());
+}
+
+TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
+  {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
+
+Variable PostProcessInference::finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
+
 /*
 ** ParallelInference
 */
@@ -259,9 +277,9 @@ void Inference::getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& 
 }
 
 /*
-** InferenceLearner
+** InferenceBatchLearner
 */
-Variable AtomicInferenceLearner::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable AtomicInferenceBatchLearner::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   const PairPtr& pair = input.getObjectAndCast<Pair>();
   const InferencePtr& targetInference = pair->getFirst().getObjectAndCast<Inference>();
