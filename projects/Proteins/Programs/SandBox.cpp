@@ -128,7 +128,7 @@ public:
     
 */
     NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
-    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5), true, false);
+    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5), true, true);
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
@@ -362,7 +362,6 @@ int main(int argc, char** argv)
     context->train(inference, trainProteins);
     context->removeCallback(trainingCallback);
   }
-  return 0;
 
   /*
   std::cout << "Making and saving train predicions..." << std::endl;
@@ -372,17 +371,17 @@ int main(int argc, char** argv)
   */
 
   {
-    std::cout << "Check Evaluating..." << std::endl;
+    std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
     context->evaluate(inference, trainProteins, evaluator);
-    std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
 
+    std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
     context->evaluate(inference, testProteins, evaluator);
-    std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
+  return 0;
   
 
   std::cout << "Saving inference ..." << std::flush;
