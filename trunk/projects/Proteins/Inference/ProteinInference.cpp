@@ -110,13 +110,12 @@ ParallelInferenceStatePtr ProteinParallelInference::prepareInference(const Infer
   if (supervision.exists())
     prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
 
-  const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
-  ParallelInferenceStatePtr state(new ParallelInferenceState(inputProtein, supervision));
+  ParallelInferenceStatePtr state(new ParallelInferenceState(input, supervision));
   size_t n = getNumSubInferences();
   state->reserve(n);
   jassert(n);
   for (size_t i = 0; i < n; ++i)
-    state->addSubInference(getSubInference(i), inputProtein->clone(), supervision);
+    state->addSubInference(getSubInference(i), input.clone(), supervision);
   return state;
 }
 

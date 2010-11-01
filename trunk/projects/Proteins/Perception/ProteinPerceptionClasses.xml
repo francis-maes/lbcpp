@@ -19,6 +19,14 @@
       <constructor/>
     </class>
 
+    <class name="DisulfideBondsResiduePerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="DisulfideBondsResiduePairPerception" base="Perception">
+      <constructor/>
+    </class>
+
     <class name="ResiduePairCompositePerception" base="CompositePerception"/>
 
   </namespace>  

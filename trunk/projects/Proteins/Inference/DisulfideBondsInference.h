@@ -36,6 +36,8 @@ public:
     size_t minDistance = state.staticCast<State>()->minDistance;
 
     SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
+    if (!n)
+      return res;
     bool atLeastOnePrediction = false;
     size_t index = 0;
     for (size_t i = 0; i < n; ++i)
@@ -84,8 +86,7 @@ public:
     const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
     jassert(inputProtein && (!supervision.exists() || supervisionMap));
 
-    std::vector<size_t> cysteines;
-    inputProtein->getCysteineIndices(cysteines);
+    const std::vector<size_t>& cysteines = inputProtein->getCysteinIndices();
     size_t n = cysteines.size();
 
     const int minDistance = 1;

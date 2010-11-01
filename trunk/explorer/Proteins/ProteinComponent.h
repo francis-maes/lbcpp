@@ -54,8 +54,8 @@ protected:
       return flattenPerception(perception);
     else if (tabName == T("Features"))
     {
-      //return perceptionToFeatures(perception);
-      
+      return flattenPerception(perceptionToFeatures(perception));
+      /*
       PerceptionPtr collapsedFeatures = collapsePerception(perceptionToFeatures(perception));
 
       std::vector< std::vector<size_t> > selectedConjunctions;
@@ -66,7 +66,7 @@ protected:
       selectedConjunctions.push_back(makeBinaryConjunction(5, 10));
       selectedConjunctions.push_back(makeBinaryConjunction(10, 15));
 
-      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);
+      return selectAndMakeConjunctionFeatures(collapsedFeatures, selectedConjunctions);*/
     }
     else
       return perception;
@@ -175,7 +175,7 @@ protected:
   void addObjectNameIfExists(const String& friendlyName, size_t variableIndex, std::vector< std::pair<String, size_t> >& res)
   {
     for (size_t i = 0; i < proteins.size(); ++i)
-      if (proteins[i]->getVariable(variableIndex).exists())
+      if (proteins[i]->getTargetOrComputeIfMissing(variableIndex).exists())
       {
         res.push_back(std::make_pair(friendlyName, variableIndex));
         return;

@@ -117,6 +117,8 @@ public:
     const PairPtr& indexPair = pair->getSecond().getObjectAndCast<Pair>();
     beginIndex = indexPair->getFirst().getInteger();
     endIndex = indexPair->getSecond().getInteger(); 
+    if (beginIndex > endIndex)
+      std::swap(beginIndex, endIndex);
     return container;
   }
 };

@@ -76,7 +76,7 @@ public:
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
 
-      const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>()->clone();
+      ProteinPtr inputProtein = input.clone().getObjectAndCast<Protein>();
       jassert(inputProtein);
 
       const ProteinPtr& outputProtein = output.getObjectAndCast<Protein>();

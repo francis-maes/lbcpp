@@ -305,6 +305,9 @@ public:
   virtual String getObjectVariableName(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
 
+  void reserveVariables(size_t count)
+    {variables.reserve(count);}
+
   void addVariable(TypePtr type, const String& name);
   void addVariable(const String& typeName, const String& name);
   void clearVariables();
@@ -315,6 +318,7 @@ protected:
   friend class DefaultClassClass;
 
   std::vector< std::pair<TypePtr, String> > variables;
+  std::map<String, size_t> variablesMap;
 };
 
 typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;

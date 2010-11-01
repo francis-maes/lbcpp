@@ -18,10 +18,11 @@ namespace lbcpp
 class ContactMapEvaluator : public Evaluator
 {
 public:
-  ContactMapEvaluator(const String& name)
+  ContactMapEvaluator(const String& name, size_t minimumDistance)
     : Evaluator(name),
       classificationEvaluator(binaryClassificationConfusionEvaluator(name)), 
-      rocEvaluator(rocAnalysisEvaluator(name)) {}
+      rocEvaluator(rocAnalysisEvaluator(name)),
+      minimumDistance(minimumDistance) {}
 
   virtual String toString() const
   {
@@ -53,7 +54,7 @@ public:
     jassert(predicted->getDimension() == predicted->getDimension());
     size_t n = predicted->getDimension();
     for (size_t i = 0; i < n; ++i)
-      for (size_t j = i + 6; j < n; ++j)
+      for (size_t j = i + minimumDistance; j < n; ++j)
       {
         Variable predictedElement = predicted->getElement(i, j);
         Variable correctElement = correct->getElement(i, j);
@@ -70,6 +71,7 @@ public:
 protected:
   EvaluatorPtr classificationEvaluator;
   EvaluatorPtr rocEvaluator;
+  size_t minimumDistance;
 };
 
 }; /* namespace lbcpp */

@@ -219,11 +219,18 @@ public:
     StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
 
     InferenceOnlineLearnerPtr res = gradientDescentOnlineLearner(
-        getUpdateFrequencyParameter(T("randomizationFrequency")),                            // randomization
         getUpdateFrequencyParameter(T("learningStepsFrequency")), createLearningRate(), true,// learning steps
         getUpdateFrequencyParameter(T("regularizerFrequency")), createRegularizer());         // regularizer
 
-    res->getLastLearner()->setNextLearner(stoppingCriterionOnlineLearner(
+    InferenceOnlineLearnerPtr lastLearner = res;
+    InferenceOnlineLearner::UpdateFrequency randomizationFrequency = getUpdateFrequencyParameter(T("randomizationFrequency"));
+    if (randomizationFrequency != InferenceOnlineLearner::never && randomizationFrequency != InferenceOnlineLearner::perStep)
+    {
+      res = randomizerOnlineLearner(randomizationFrequency);
+      res->setNextLearner(lastLearner);
+    }
+       
+    lastLearner->setNextLearner(stoppingCriterionOnlineLearner(
         InferenceOnlineLearner::perPass, stoppingCriterion, getBooleanParameter(T("restoreBestParametersWhenFinished")))); // stopping criterion
 
     return res;
