@@ -19,7 +19,7 @@
 namespace lbcpp
 {
 
-class StochasticPassInferenceLearner : public AtomicInferenceBatchLearner
+class StochasticPassInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   StochasticPassInferenceLearner(const std::vector<InferencePtr>& learnedInferences, bool randomizeExamples)
@@ -70,13 +70,15 @@ protected:
     InferencePtr targetInference;
   };
 
-  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& examples)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferencePtr& targetInference = learnerInput->getTargetInference();
     bool isDirectlyConnectedToOnlineLearner = (learnedInferences.size() == 1 && learnedInferences[0] == targetInference);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     jassert(!isDirectlyConnectedToOnlineLearner || onlineLearner);
 
-    size_t n = examples->getNumElements();
+    size_t n = learnerInput->getNumTrainingExamples();
 
     std::vector<size_t> order;
     if (randomizeExamples)
@@ -91,17 +93,17 @@ protected:
 
     for (size_t i = 0; i < n; ++i)
     {
-      PairPtr example = examples->getElement(randomizeExamples ? order[i] : i).getObjectAndCast<Pair>();
+      const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(randomizeExamples ? order[i] : i);
       if (isDirectlyConnectedToOnlineLearner)
       {
         // make a step
-        onlineLearner->stepFinishedCallback(context, targetInference, example->getFirst(), example->getSecond(), Variable());
+        onlineLearner->stepFinishedCallback(context, targetInference, example.first, example.second, Variable());
       }
       else
       {
         // make an episode
         Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-        context->run(targetInference,  example->getFirst(), example->getSecond(), returnCode);
+        context->run(targetInference,  example.first, example.second, returnCode);
         finishEpisode(context);
       }
     }
@@ -155,30 +157,15 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual InferencePtr createLearningPass(InferenceContextWeakPtr context, const InferencePtr& targetInference, ContainerPtr& trainingData)
-  {
-    // enumerate learners
-    std::vector<InferencePtr> inferencesThatHaveALearner;
-    targetInference->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
-    jassert(inferencesThatHaveALearner.size());
-
-    // call startLearningCallback()
-    for (int i = (int)inferencesThatHaveALearner.size() - 1; i >= 0; --i)
-      inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback(context);
-
-    // create sequential inference state
-    return new StochasticPassInferenceLearner(inferencesThatHaveALearner, randomizeExamples);
-  }
-
   virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    InferencePtr targetInference = getInference(input);
-    ContainerPtr trainingData = getTrainingData(input);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferencePtr& targetInference = learnerInput->getTargetInference();
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
-    InferencePtr learningPass = createLearningPass(context, targetInference, trainingData);
+    InferencePtr learningPass = createLearningPass(context, learnerInput);
     learningPass->setName(T("LearningPass ") + targetInference->getName());
-    res->setSubInference(learningPass, Variable::pair(targetInference, trainingData), Variable());
+    res->setSubInference(learningPass, learnerInput, Variable());
     return res;
   }
 
@@ -190,6 +177,21 @@ protected:
   friend class StochasticInferenceLearnerClass;
 
   bool randomizeExamples;
+
+  InferencePtr createLearningPass(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& learnerInput)
+  {
+    // enumerate learners
+    std::vector<InferencePtr> inferencesThatHaveALearner;
+    learnerInput->getTargetInference()->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
+    jassert(inferencesThatHaveALearner.size());
+
+    // call startLearningCallback()
+    for (int i = (int)inferencesThatHaveALearner.size() - 1; i >= 0; --i)
+      inferencesThatHaveALearner[i]->getOnlineLearner()->startLearningCallback(context);
+
+    // create sequential inference state
+    return new StochasticPassInferenceLearner(inferencesThatHaveALearner, randomizeExamples);
+  }
 };
 
 }; /* namespace lbcpp */

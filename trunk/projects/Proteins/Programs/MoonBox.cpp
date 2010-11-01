@@ -466,13 +466,12 @@ public:
       iterationNumber = 0;
     }
 
-    InferencePtr currentInference = stack->getCurrentInference();
-    if (currentInference->getClassName().contains(T("Learner")) && input.size() == 2)
+    InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
+    if (learnerInput)
     {
-      TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
-      jassert(trainingExamplesType->getNumTemplateArguments() == 2);
-      String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      MessageCallback::info(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
+      const InferencePtr& targetInference = learnerInput->getTargetInference();
+      String inputTypeName = targetInference->getInputType()->getName();
+      MessageCallback::info(T("=== Learning ") + targetInference->getName() + T(" with ") + String((int)learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
     }
   }
 

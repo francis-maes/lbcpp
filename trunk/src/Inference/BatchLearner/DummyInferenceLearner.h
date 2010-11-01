@@ -16,13 +16,13 @@
 namespace lbcpp
 {
 
-class DummyInferenceLearner : public AtomicInferenceBatchLearner
+class DummyInferenceLearner : public InferenceBatchLearner<Inference>
 {
 protected:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable learn(InferenceContextWeakPtr context, const InferencePtr& targetInference, const ContainerPtr& trainingData)
+  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
     {return Variable();}
 };
 

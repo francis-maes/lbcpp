@@ -25,18 +25,19 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    StaticParallelInferencePtr targetInference = getInferenceAndCast<StaticParallelInference>(input);
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const StaticParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticParallelInference>();
+
     size_t numSubInferences = targetInference->getNumSubInferences();
-    ContainerPtr trainingData = getTrainingData(input);
-    size_t n = trainingData->getNumElements();
+    size_t n = learnerInput->getNumExamples();
 
     // Compute sub-inferences for each example
     // Compute input and supervision types for each sub-inference
     std::vector<ParallelInferenceStatePtr> currentStates(n);
     for (size_t i = 0; i < currentStates.size(); ++i)
     {
-      Variable example = trainingData->getElement(i);
-      currentStates[i] = targetInference->prepareInference(context, example[0], example[1], returnCode);
+      const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
+      currentStates[i] = targetInference->prepareInference(context, example.first, example.second, returnCode);
       if (returnCode != Inference::finishedReturnCode)
         return ParallelInferenceStatePtr();
       jassert(currentStates[i]->getNumSubInferences() == numSubInferences);
@@ -51,11 +52,10 @@ public:
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)
       {
-        TypePtr pairType = pairClass(subInference->getInputType(), subInference->getSupervisionType());
-        VectorPtr subTrainingData = vector(pairType, n);
+        InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(subInference, learnerInput->getNumTrainingExamples(), learnerInput->getNumValidationExamples());
         for (size_t j = 0; j < n; ++j)
-          subTrainingData->setElement(j, Variable::pair(currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i), pairType));
-        res->addSubInference(subInferenceLearner, Variable::pair(subInference, subTrainingData), Variable());
+          subLearnerInput->setExample(j, currentStates[j]->getSubInput(i), currentStates[j]->getSubSupervision(i));
+        res->addSubInference(subInferenceLearner, subLearnerInput, Variable());
       }
     }
     return res;
@@ -70,19 +70,20 @@ class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner
 public:
   virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const StaticParallelInferencePtr& targetInference = pair->getFirst().getObjectAndCast<StaticParallelInference>();
-    size_t numSubInferences = targetInference->getNumSubInferences();
-    const ContainerPtr& trainingData = pair->getSecond().getObjectAndCast<Container>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const StaticParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticParallelInference>();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
+    size_t numSubInferences = targetInference->getNumSubInferences();
     res->reserve(numSubInferences);
     for (size_t i = 0; i < numSubInferences; ++i)
     {
       InferencePtr subInference = targetInference->getSubInference(i);
+      // FIXME: ref counting on examples vectors
+      InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(subInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples());
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)
-        res->addSubInference(subInferenceLearner, Variable::pair(subInference, trainingData), Variable());
+        res->addSubInference(subInferenceLearner, subLearnerInput, Variable());
     }
     return res;
   }

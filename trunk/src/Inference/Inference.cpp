@@ -277,12 +277,43 @@ void Inference::getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& 
 }
 
 /*
-** InferenceBatchLearner
+** InferenceBatchLearnerInput
 */
-Variable AtomicInferenceBatchLearner::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+static void convert(const ContainerPtr& examples, std::vector< std::pair<Variable, Variable> >& res)
 {
-  const PairPtr& pair = input.getObjectAndCast<Pair>();
-  const InferencePtr& targetInference = pair->getFirst().getObjectAndCast<Inference>();
-  const ContainerPtr& trainingData = pair->getSecond().getObjectAndCast<Container>();
-  return learn(context, targetInference, trainingData);
+  if (examples)
+  {
+    size_t n = examples->getNumElements();
+    res.resize(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      PairPtr pair = examples->getElement(i).getObjectAndCast<Pair>();
+      res[i].first = pair->getFirst();
+      res[i].second = pair->getSecond();
+    }
+  }
+}
+
+InferenceBatchLearnerInput::InferenceBatchLearnerInput(const InferencePtr& targetInference, const ContainerPtr& trainingExamples, const ContainerPtr& validationExamples)
+  : Object(inferenceBatchLearnerInputClass(targetInference->getClass())), targetInference(targetInference)
+{
+  convert(trainingExamples, trainingData);
+  convert(validationExamples, validationData);
+}
+
+InferenceBatchLearnerInput::InferenceBatchLearnerInput(const InferencePtr& targetInference, size_t numTrainingExamples, size_t numValidationExamples)
+  : Object(inferenceBatchLearnerInputClass(targetInference->getClass())), targetInference(targetInference),
+    trainingData(numTrainingExamples), validationData(numValidationExamples)
+{
+}
+
+InferenceBatchLearnerInput::InferenceBatchLearnerInput(const InferencePtr& targetInference, const ExampleVector& trainingData, const ExampleVector& validationData)
+  : Object(inferenceBatchLearnerInputClass(targetInference->getClass())), targetInference(targetInference),
+    trainingData(trainingData), validationData(validationData)
+{
+}
+
+InferenceBatchLearnerInput::InferenceBatchLearnerInput(const InferencePtr& targetInference)
+  : Object(inferenceBatchLearnerInputClass(targetInference->getClass())), targetInference(targetInference)
+{
 }
