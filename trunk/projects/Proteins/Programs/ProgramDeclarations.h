@@ -59,8 +59,9 @@ public:
 protected:
   friend class SmartBoxClass;
   
-  File trainingDirectory;
+  File learningDirectory;
   File testingDirectory;
+  File validationDirectory;
   
   size_t numberOfFolds;
   size_t currentFold;
