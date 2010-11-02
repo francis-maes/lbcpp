@@ -19,6 +19,11 @@ void usage()
 extern void declareProteinClasses();
 extern void declareProgramClasses();
 
+namespace lbcpp
+{
+  extern ClassPtr programClass;
+}
+
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
@@ -39,7 +44,7 @@ int main(int argc, char** argv)
     MuteMessageCallback muteCallback;
     ObjectPtr obj = Object::createFromFile(parametersFile, muteCallback);
     
-    if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
+    if (obj && obj->getClass()->inheritsFrom(programClass))
     {
       ProgramPtr program = obj.staticCast<Program>();
       int exitCode = program->runProgram(callback);
@@ -50,13 +55,15 @@ int main(int argc, char** argv)
 
   // load program from string
   ObjectPtr obj = Object::create(Type::get(argv[1], callback));
-  if (obj && obj->getClass()->canBeCastedTo(Type::get("Program", callback)))
+  if (obj && obj->getClass()->inheritsFrom(Type::get("Program", callback)))
   {
     std::vector<String> arguments;
     for (size_t i = 2; i < (size_t)argc; ++i)
       arguments.push_back(argv[i]);
-    // TODO use CommandLineProgram
+
     ProgramPtr program = obj.staticCast<Program>();
+    if (!program->parseArguments(arguments, callback))
+      return -1;
     int exitCode = program->runProgram(callback);
     lbcpp::deinitialize();
     return exitCode;

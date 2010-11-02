@@ -218,7 +218,7 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
 */
 namespace lbcpp { extern ClassPtr stoppingCriterionOnlineLearnerClass; };
 
-void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples, EvaluatorPtr evaluator, double validationDataPercentage)
+void NumericalSupervisedInference::setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner, bool precomputePerceptions, bool randomizeExamples)
 {
   jassert(onlineLearner);
   InferencePtr batchLearner = stochasticInferenceLearner(randomizeExamples);//, evaluator, validationDataPercentage);

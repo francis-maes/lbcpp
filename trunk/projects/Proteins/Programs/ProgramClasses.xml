@@ -2,22 +2,17 @@
 
 <file name="Program" directory="Programs">
   <namespace name="lbcpp">
-    <class name="Program" base="NameableObject"/>
-    
-    <class name="ProgramDecorator" base="Program">
-      <constructor arguments="ProgramPtr decorated"/>
-      <variable name="decorated" type="Program"/>
-    </class>
+    <class name="Program" base="Object"/>
   
     <class name="HelloWorldProgram" base="Program">
-      <variable type="Integer" name="myInt"/>
+      <variable type="Integer" name="myInt" desc="An arbitrary integer !" shortName="i"/>
     </class>
 
     <class name="SmartBox" base ="Program">
       <variable type="File" name="trainingDirectory"/>
       <variable type="File" name="testingDirectory"/>
       <variable type="PositiveInteger" name="numberOfFolds"/>
-      <variable type="PositiveInteger" name="currentFold"/>
+      <variable type="PositiveInteger" name="currentFold" desc="The current fold" shortName="c"/>
     </class>
   </namespace>
 

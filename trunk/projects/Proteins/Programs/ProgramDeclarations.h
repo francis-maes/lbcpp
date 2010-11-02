@@ -7,10 +7,10 @@ namespace lbcpp {
 class HelloWorldProgram : public Program
 {
 public:
-  HelloWorldProgram() : Program(T("Hello World"))
+  HelloWorldProgram()
     {myInt = 4;}
   
-  virtual String description() const
+  virtual String toString() const
     {return T("It's just a test program ! Don't worry about it !");}
   
   virtual int runProgram(MessageCallback& callback)
@@ -24,7 +24,7 @@ protected:
   
 class SaveObjectProgram : public Program
 {
-  virtual String description() const
+  virtual String toString() const
     {return T("SaveObjectProgram is able to serialize a object.");}
   
   virtual int runProgram(MessageCallback& callback)
@@ -45,9 +45,7 @@ protected:
 class SmartBox : public Program
 {
 public:
-  SmartBox() : Program(T("SmartBox")) {}
-  
-  virtual String description() const
+  virtual String toString() const
   {
     return T("SmartBox is ... a smart box ! It's a flexible program allowing"    \
               " you to learn, save, resume models. Just by giving the targets"   \
