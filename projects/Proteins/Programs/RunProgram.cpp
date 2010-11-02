@@ -11,6 +11,31 @@ class MuteMessageCallback : public MessageCallback
   virtual void infoMessage(const String& where, const String& what) {}
 };
 
+class StandardOutputMessageCallback : public MessageCallback
+{
+  virtual void errorMessage(const String& where, const String& what)
+  {
+    ScopedLock _(lock);
+    std::cerr << "Error in '" << (const char* )where << "': " << (const char* )what << "." << std::endl;
+    jassert(false);
+  }
+
+  virtual void warningMessage(const String& where, const String& what)
+  {
+    ScopedLock _(lock);
+    std::cerr << "Warning - " << where << " - " << what << std::endl;
+  }
+
+  virtual void infoMessage(const String& where, const String& what)
+  {
+    ScopedLock _(lock);
+    std::cout << what << std::endl;
+  }
+
+private:
+  CriticalSection lock;
+};
+
 void usage()
 {
   std::cout << "Usage ..." << std::endl;
@@ -36,7 +61,7 @@ int main(int argc, char** argv)
     return 0;
   }
   
-  MessageCallback& callback = MessageCallback::getInstance();
+  StandardOutputMessageCallback callback;
   if (argc == 2)
   {
     // load from serialization

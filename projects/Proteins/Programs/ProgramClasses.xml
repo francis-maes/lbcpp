@@ -7,6 +7,11 @@
     <class name="HelloWorldProgram" base="Program">
       <variable type="Integer" name="myInt" desc="An arbitrary integer !" shortName="i"/>
     </class>
+    
+    <class name="SaveObjectProgram" base="Program">
+      <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
+      <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
+    </class>
 
     <class name="SmartBox" base ="Program">
       <variable type="File" name="learningDirectory" desc="The path to the learning set directory" shortName="ls"/>

@@ -96,6 +96,12 @@ public:
   virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
+  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  {
+    File v = File::getCurrentWorkingDirectory().getChildFile(value);
+    return VariableValue(v.getFullPathName());
+  }
+  
 private:
   static DirectoriesCache cache;
 
