@@ -12,8 +12,14 @@
     <class name="HelloWorldProgram" base="Program">
       <variable type="Integer" name="myInt"/>
     </class>
-  </namespace>
 
+    <class name="SmartBox" base ="Program">
+      <variable type="File" name="trainingDirectory"/>
+      <variable type="File" name="testingDirectory"/>
+      <variable type="PositiveInteger" name="numberOfFolds"/>
+      <variable type="PositiveInteger" name="currentFold"/>
+    </class>
+  </namespace>
 
   <declarationCode>
     lbcpp::Type::finishDeclarations();
