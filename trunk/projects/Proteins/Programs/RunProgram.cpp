@@ -1,5 +1,6 @@
 
-#include "Programs/SurfBox.h"
+#include <lbcpp/lbcpp.h>
+#include "Programs/Program.h"
 
 using namespace lbcpp;
 

@@ -4,7 +4,8 @@
 
 # include <lbcpp/lbcpp.h>
 
-using namespace lbcpp;
+namespace lbcpp
+{
 
 class Program : public NameableObject
 {
@@ -18,7 +19,7 @@ public:
     return 0;
   }
   
-  virtual String description()
+  virtual String description() const
   {
     return T("No description available !");
   }
@@ -34,6 +35,7 @@ public:
   ProgramDecorator(ProgramPtr decorated) : decorated(decorated) {}
   ProgramDecorator() {}
 
+protected:
   friend class ProgramDecoratorClass;
   
   ProgramPtr decorated;
@@ -63,4 +65,5 @@ protected:
   std::vector<String> arguments;
 };
 
+};
 #endif // !LBCPP_PROTEINS_PROGRAMS_PROGRAM_H_
