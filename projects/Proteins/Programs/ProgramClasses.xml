@@ -9,9 +9,10 @@
     </class>
 
     <class name="SmartBox" base ="Program">
-      <variable type="File" name="trainingDirectory"/>
-      <variable type="File" name="testingDirectory"/>
-      <variable type="PositiveInteger" name="numberOfFolds"/>
+      <variable type="File" name="learningDirectory" desc="The path to the learning set directory" shortName="ls"/>
+      <variable type="File" name="testingDirectory" desc="The path to the testing set directory" shortName="ts"/>
+      <variable type="File" name="validationDirectory" desc="The path to the validation set directory" shortName="vs"/>
+      <variable type="PositiveInteger" name="numberOfFolds" desc="The number of fold of the training set" shortName="n"/>
       <variable type="PositiveInteger" name="currentFold" desc="The current fold" shortName="c"/>
     </class>
   </namespace>
