@@ -6,6 +6,12 @@ using namespace lbcpp;
 
 bool Program::parseArguments(const std::vector<String>& arguments, MessageCallback& callback)
 {
+  if (helpRequired(arguments))
+  {
+    callback.infoMessage(T("Program::parseArguments"), getUsage());
+    return false;
+  }
+  
   /* shortcut */
   std::map<String, size_t> variableNames;
   std::map<String, size_t> variableShortNames;
@@ -13,7 +19,7 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     variableNames[getVariableName(i)] = i;
-    //variableShortNames[getVariableShortName(i)] = i;
+    //variableShortNames[getVariableShortName(i)] = i; // FIXME
   }
   
   for (size_t i = 0; i < arguments.size(); )
@@ -64,13 +70,21 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
   
 String Program::getUsage() const
 {
-  String argumentDescriptions;
+  String argumentDescriptions = T("-h --help Display this help message.\n");
   for (size_t i = 0; i < getNumVariables(); ++i)
-    argumentDescriptions += T("--") + getVariableName(i) + T(" ") /*+ getVariableDescription(i)*/ + T("\n");
+    argumentDescriptions += T("--") + getVariableName(i) + T(" ") /*+ getVariableDescription(i)*/ + T("\n");  // FIXME
   
   return toString() + T("\n\n")
     + T("Usage : ") + toShortString() + T(" file.xml\n")
     + T("   or : ") + toShortString() + T(" [argument ...]\n\n")
     + T("The arguments are as follows :\n\n")
     + argumentDescriptions;
+}
+
+bool Program::helpRequired(const std::vector<String>& arguments) const
+{
+  for (size_t i = 0; i < arguments.size(); ++i)
+    if (arguments[i] == T("-h") || arguments[i] == T("--help"))
+      return true;
+  return false;
 }

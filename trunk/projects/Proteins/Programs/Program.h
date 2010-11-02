@@ -31,6 +31,9 @@ public:
   virtual bool parseArguments(const std::vector<String>& arguments, MessageCallback& callback = MessageCallback::getInstance());
 
   virtual String getUsage() const;
+
+private:
+  bool helpRequired(const std::vector<String>& arguments) const;
 };
 
 typedef ReferenceCountedObjectPtr<Program> ProgramPtr;
