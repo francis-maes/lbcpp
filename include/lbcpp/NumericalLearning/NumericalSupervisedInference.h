@@ -25,9 +25,7 @@ public:
 
   void setStochasticLearner(const InferenceOnlineLearnerPtr& onlineLearner,
                             bool precomputePerceptions = true, // this makes learning much faster, but may consume lots of memory
-                            bool randomizeExamples = true, // randomize examples at each learning pass
-                            EvaluatorPtr evaluator = EvaluatorPtr(), // the evaluator that computes the score to be optimized (use the empirical risk by default)
-                            double validationDataPercentage = 0.0); // 0 is tuning is performed on the training set, p > 0 to use a validation training set containing p % of the training examples
+                            bool randomizeExamples = true); // randomize examples at each learning pass
 };
 
 typedef ReferenceCountedObjectPtr<NumericalSupervisedInference> NumericalSupervisedInferencePtr;
