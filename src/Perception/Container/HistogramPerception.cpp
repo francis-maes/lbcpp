@@ -181,7 +181,7 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
   for (size_t i = 0; i < numScores; ++i)
   {
     double p = (endScores[i] - startScores[i]) * invK;
-    callback->sense(i, p);
+    callback->sense(i, Variable(p, probabilityType));
     if (p)
       entropy -= p * log2(p);
   }

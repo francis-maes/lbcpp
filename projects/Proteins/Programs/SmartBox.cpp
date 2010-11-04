@@ -352,6 +352,8 @@ void SnowBox::printInformation() const
   else
     std::cout << "Separated part of training set (fold " << (currentFold+1) << " over " << numberOfFolds << ")";
   std::cout << std::endl;
+  std::cout << "* ----------------------------------------- *" << std::endl;
+  std::cout << std::endl;
 }
 
 int SnowBox::runProgram(MessageCallback& callback)

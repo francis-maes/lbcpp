@@ -36,7 +36,7 @@ public:
     {
       double p = distribution->getProbability(i);
       if (p)
-        callback->sense(i, p);
+        callback->sense(i, Variable(p, probabilityType));
     }
     callback->sense(n + 1, distribution->computeEntropy());
   }
