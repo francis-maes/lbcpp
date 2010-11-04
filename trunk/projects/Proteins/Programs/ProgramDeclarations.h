@@ -1,6 +1,7 @@
 
 
 #include "Programs/Program.h"
+#include "Inference/ProteinInferenceFactory.h"
 
 namespace lbcpp {
 
@@ -72,10 +73,73 @@ protected:
   File outputFile;
 };
 
-class SmartBox : public Program
+class NumericalLearningParameter : public Object
 {
 public:
-  SmartBox() : numberOfFolds(7), currentFold(0) {}
+  NumericalLearningParameter() : learningRate(0.0), learningRateDecrease(0.0), regularizer(0.0) {}
+  
+  NumericalLearningParameter(double learningRate, double learningRateDecrease, double regularizer)
+    : learningRate(learningRate), learningRateDecrease(learningRateDecrease), regularizer(regularizer)
+    {}
+  
+  double getLearningRate() const
+    {return pow(10.0, learningRate);}
+  
+  size_t getLearningRateDecrease() const
+    {return pow(10.0, learningRateDecrease);}
+  
+  double getRegularizer() const
+    {return (regularizer <= -10.0) ? 0 : pow(10.0, regularizer);}
+  
+  virtual bool loadFromString(const String& value, MessageCallback& callback);
+  
+protected:
+  friend class NumericalLearningParameterClass;
+  
+  double learningRate;
+  double learningRateDecrease;
+  double regularizer;
+};
+
+typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningParameterPtr;
+  
+class ProteinTarget : public Object
+{
+public:
+  ProteinTarget() {loadFromString(T("(SS3-DR)2")); /* TODO test serialisation and remove*/}
+
+  ProteinTarget(const String& targets)
+    {loadFromString(targets);}
+  
+  size_t getNumPasses() const
+    {return tasks.size();}
+  
+  size_t getNumTasks(size_t passIndex) const
+    {jassert(passIndex < getNumPasses()); return tasks[passIndex].size();}
+  
+  String getTask(size_t passIndex, size_t taskIndex) const
+    {jassert(taskIndex < getNumTasks(passIndex)); return tasks[passIndex][taskIndex];}
+  
+  virtual bool loadFromString(const String& str, MessageCallback& callback = MessageCallback::getInstance());
+  
+protected:
+  friend class ProteinTargetClass;
+  
+  std::vector<std::vector<String> > tasks;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinTarget> ProteinTargetPtr;
+  
+class SnowBox : public Program
+{
+public:
+  SnowBox() : output(File::getCurrentWorkingDirectory().getChildFile(T("result")))
+            , maxProteinsToLoad(0), numberOfFolds(7), currentFold(0)
+            , useCrossValidation(false), partAsValidation(0)
+            , baseLearner(T("OneAgainstAllLinearSVM"))
+            , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
+            , target(new ProteinTarget(T("(SS3-DR)2"))), numberOfThreads(1)
+            , currentPass(0) {}
   
   virtual String toString() const
   {
@@ -85,18 +149,46 @@ public:
               " based-model, the learning rate for each target and each passes," \
               " a specific testing set or a cross-validation protocol.");
   }
-  
+
   virtual int runProgram(MessageCallback& callback);
 
 protected:
-  friend class SmartBoxClass;
-  
+  friend class SnowBoxClass;
+
   File learningDirectory;
   File testingDirectory;
   File validationDirectory;
-  
+  File output;
+
+  size_t maxProteinsToLoad;
+
   size_t numberOfFolds;
   size_t currentFold;
+  bool useCrossValidation;
+  size_t partAsValidation;
+
+  String baseLearner;
+  std::vector<std::pair<String, std::pair<NumericalLearningParameterPtr, NumericalLearningParameterPtr> > > learningParameters;
+  NumericalLearningParameterPtr defaultParameter;
+  
+  ProteinTargetPtr target;
+
+  size_t numberOfThreads;
+
+private:
+  ContainerPtr learningData;
+  ContainerPtr testingData;
+  ContainerPtr validationData;
+  
+  size_t currentPass;
+
+  ProteinInferenceFactoryPtr createFactory() const;
+
+  bool loadData(MessageCallback& callback);
+
+  ContainerPtr loadProteins(const File& f, size_t maxToLoad = 0) const;
+  
+  void printInformation() const;
 };
 
 };

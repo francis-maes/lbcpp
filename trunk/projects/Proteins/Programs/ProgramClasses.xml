@@ -12,13 +12,32 @@
       <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
       <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
     </class>
+    
+    <class name="NumericalLearningParameter" base="Object">
+      <variable type="Double" name="learningRate"/>
+      <variable type="Double" name="learningRateDecrease"/>
+      <variable type="Double" name="regularizer"/>
+    </class>
+    
+    <class name="ProteinTarget" base="Object">
+      <variable type="ObjectVector[ObjectVector[String]]" name="tasks"/>
+    </class>
 
-    <class name="SmartBox" base ="Program">
+    <class name="SnowBox" base ="Program">
       <variable type="File" name="learningDirectory" desc="The path to the learning set directory" shortName="ls"/>
       <variable type="File" name="testingDirectory" desc="The path to the testing set directory" shortName="ts"/>
       <variable type="File" name="validationDirectory" desc="The path to the validation set directory" shortName="vs"/>
+      <variable type="File" name="output" desc="The prefix path to the outputs" shortName="o"/>
+      <variable type="PositiveInteger" name="maxProteinsToLoad" desc="Maximum number of learning proteins to load" shortName="max"/>
       <variable type="PositiveInteger" name="numberOfFolds" desc="The number of fold of the training set" shortName="n"/>
       <variable type="PositiveInteger" name="currentFold" desc="The current fold" shortName="c"/>
+      <variable type="Boolean" name="useCrossValidation" desc="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
+      <variable type="PositiveInteger" name="partAsValidation" desc="The part of learning proteins to use as validation proteins." shortName="vpart"/>
+      <variable type="String" name="baseLearner" desc="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
+      <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" desc="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
+      <variable type="NumericalLearningParameter" name="defaultParameter" desc="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
+      <variable type="ProteinTarget" name="target" desc="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
+      <variable type="PositiveInteger" name="numberOfThreads" desc="The number of threads" shortName="th"/>
     </class>
   </namespace>
 
