@@ -20,7 +20,7 @@
     </class>
     
     <class name="ProteinTarget" base="Object">
-      <variable type="ObjectVector[ObjectVector[String]]" name="tasks"/>
+      <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
     </class>
 
     <class name="SnowBox" base ="Program">

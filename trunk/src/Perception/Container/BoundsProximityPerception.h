@@ -38,9 +38,9 @@ public:
     
     if (index >= 0 && index < n)
     {
-      callback->sense(0, index);
-      callback->sense(1, n - index);
-      callback->sense(2, index / (double)(n - 1));
+      callback->sense(0, Variable(index, positiveIntegerType));
+      callback->sense(1, Variable(n - index, positiveIntegerType));
+      callback->sense(2, Variable(index / (double)(n - 1), probabilityType));
     }
   }
 
