@@ -51,7 +51,7 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
 
     size_t variableIndex = defaultMap[argumentName];
 
-    for (++i ; i < getNumVariables() && !arguments[i].startsWith(T("-")); ++i)
+    for (++i ; i < arguments.size() && !arguments[i].startsWith(T("-")); ++i)
       argumentValue += T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
 
