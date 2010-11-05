@@ -32,6 +32,7 @@ public:
       res = variable.getDouble() > 0.5;
     else
     {
+      MessageCallback::error(T("BinaryClassificationConfusionEvaluator::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
       jassert(false);
       return false;
     }
@@ -55,6 +56,11 @@ public:
       mcc = confusionMatrix.computeMatthewsCorrelation();
       accuracy = confusionMatrix.computeAccuracy();
     }
+    res.push_back(std::make_pair(T("Precision"), precision));
+    res.push_back(std::make_pair(T("Recall"), recall));
+    res.push_back(std::make_pair(T("F1"), f1));
+    res.push_back(std::make_pair(T("MCC"), mcc));
+    res.push_back(std::make_pair(T("Accuracy"), accuracy));
   }
 
   virtual String toString() const

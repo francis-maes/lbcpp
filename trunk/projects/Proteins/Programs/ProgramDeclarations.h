@@ -138,7 +138,7 @@ public:
             , useCrossValidation(false), partAsValidation(0)
             , baseLearner(T("OneAgainstAllLinearSVM"))
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
-            , target(new ProteinTarget(T("(SS3-DR)2"))), numberOfThreads(1)
+            , numberOfThreads(1)
             , currentPass(0) {}
   
   virtual String toString() const
