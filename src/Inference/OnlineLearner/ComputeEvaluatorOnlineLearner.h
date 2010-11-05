@@ -24,7 +24,7 @@ class ComputeEvaluatorOnlineLearner : public InferenceOnlineLearner
 public:
   ComputeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData)
     : evaluator(evaluator), computeOnValidationData(computeOnValidationData), lastDefaultScore(0.0) {}
-  ComputeEvaluatorOnlineLearner() : lastDefaultScore(0.0), computeOnValidationData(false) {}
+  ComputeEvaluatorOnlineLearner() : computeOnValidationData(false), lastDefaultScore(0.0) {}
 
   virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {

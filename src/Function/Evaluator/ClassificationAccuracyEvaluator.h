@@ -76,7 +76,7 @@ public:
     {return accuracy->getMean();}
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {res.push_back(std::make_pair(getName(), accuracy->getMean()));}
+    {res.push_back(std::make_pair(T("Accuracy"), accuracy->getMean()));}
   
   virtual void clone(const ObjectPtr& target) const
     {Evaluator::clone(target); target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>();}
