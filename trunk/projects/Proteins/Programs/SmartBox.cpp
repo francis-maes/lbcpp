@@ -323,7 +323,7 @@ public:
         String targetName = it->first;
         OutputStream* o = it->second.createOutputStream();
         size_t index = scoreNameToIndex[scoresToUse[targetName]];
-        std::cout << (int)passNumber << '\t'
+        *o << (int)passNumber << '\t'
            << learningScores[index].second << '\t'
            << testingScores[index].second << '\t'
            << validationScores[index].second << '\t'
