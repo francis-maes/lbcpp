@@ -75,6 +75,8 @@ protected:
     if (!parameters.count(targetName))
     {
       jassert(defaultParameter);
+      std::cout << "Default learning parameter used for " << targetName.quoted()
+                << " on " << ((contentOnly) ? "Content-Only" : "MultiPass") << " context" << std::endl;
       return defaultParameter;
     }
 
