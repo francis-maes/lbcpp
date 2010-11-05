@@ -136,8 +136,9 @@ public:
   SnowBox() : output(File::getCurrentWorkingDirectory().getChildFile(T("result")))
             , maxProteinsToLoad(0), numberOfFolds(7), currentFold(0)
             , useCrossValidation(false), partAsValidation(0)
-            , baseLearner(T("OneAgainstAllLinearSVM"))
+            , baseLearner(T("OneAgainstAllLinearSVM")), maxIterations(15)
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
+            , target(T("(SS3-DR)2"))
             , numberOfThreads(1)
             , currentPass(0) {}
   
@@ -168,6 +169,7 @@ protected:
   size_t partAsValidation;
 
   String baseLearner;
+  size_t maxIterations;
   std::vector<std::pair<String, std::pair<NumericalLearningParameterPtr, NumericalLearningParameterPtr> > > learningParameters;
   NumericalLearningParameterPtr defaultParameter;
   

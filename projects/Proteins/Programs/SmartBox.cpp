@@ -51,6 +51,10 @@ public:
 
   virtual void setCurrentPassPointer(const size_t* currentPass)
     {currentPassPointer = currentPass;}
+  
+  virtual void setMaximumIterations(size_t maxIterations)
+    {this->maxIterations = maxIterations;}
+
 protected:  
   void addBiasInferenceIfNeeded(NumericalSupervisedInferencePtr inference, const String& targetName) const
   {
@@ -113,7 +117,7 @@ protected:
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(evaluator, true));
      */
     /* stopping criterion */
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(2), 
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(maxIterations), 
                                                        maxIterationsWithoutImprovementStoppingCriterion(2));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
     
@@ -126,6 +130,8 @@ private:
   NumericalLearningParameterPtr defaultParameter;
   
   const size_t* currentPassPointer;
+  
+  size_t maxIterations;
 };
 
 typedef ReferenceCountedObjectPtr<NumericalProteinInferenceFactory> NumericalProteinInferenceFactoryPtr;

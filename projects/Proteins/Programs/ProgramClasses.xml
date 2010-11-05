@@ -34,6 +34,7 @@
       <variable type="Boolean" name="useCrossValidation" desc="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
       <variable type="PositiveInteger" name="partAsValidation" desc="The part of learning proteins to use as validation proteins." shortName="vpart"/>
       <variable type="String" name="baseLearner" desc="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
+      <variable type="PositiveInteger" name="maxIterations" desc="The maximum number of iteration per learner" shortName="iter"/>
       <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" desc="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
       <variable type="NumericalLearningParameter" name="defaultParameter" desc="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
       <variable type="ProteinTarget" name="target" desc="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
