@@ -98,6 +98,8 @@ public:
 
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
   {
+    if (value == String::empty)
+      return VariableValue(String::empty);
     File v = File::getCurrentWorkingDirectory().getChildFile(value);
     return VariableValue(v.getFullPathName());
   }
