@@ -86,7 +86,7 @@ public:
     {return pow(10.0, learningRate);}
   
   size_t getLearningRateDecrease() const
-    {return pow(10.0, learningRateDecrease);}
+    {return (size_t)pow(10.0, learningRateDecrease);}
   
   double getRegularizer() const
     {return (regularizer <= -10.0) ? 0 : pow(10.0, regularizer);}

@@ -27,6 +27,8 @@ public:
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  NumericalProteinInferenceFactory() : maxIterations(0) {} 
+  
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -317,6 +319,7 @@ public:
       scoresToUse[T("dsspSecondaryStructure")] = T("dsspSecondaryStructure[Accuracy]");
       scoresToUse[T("disorderRegions")] = T("disorderRegions[MCC]");
       scoresToUse[T("solventAccessibilityAt20p")] = T("solventAccessibilityAt20p[Accuracy]");
+      scoresToUse[T("structuralAlphabetSequence")] = T("structuralAlphabetSequence[Accuracy]");
       
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)
       {
@@ -469,6 +472,7 @@ ProteinInferenceFactoryPtr SnowBox::createFactory() const
     res->setParameters(learningParameters);
     res->setDefaultParameter(defaultParameter);
     res->setCurrentPassPointer(&currentPass);
+    res->setMaximumIterations(maxIterations);
     return res;
   }
 
