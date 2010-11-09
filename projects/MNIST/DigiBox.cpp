@@ -9,6 +9,7 @@
 #include <lbcpp/lbcpp.h>
 #include "MNISTProgram.h"
 #include "MNISTImage.h"
+#include "MNISTPerception.h"
 #include "MatlabFileParser.h"
 
 using namespace lbcpp;
@@ -33,46 +34,9 @@ class InputOutputPairFunction : public Function
   }
 };
 
-class MNISTImageFlattenPerception : public Perception
-{
-  virtual TypePtr getInputType() const
-    {return mnistImageClass;}
-  
-  virtual void computeOutputType()
-  {
-    for (size_t i = 0; i < MNISTImage::numPixels; ++i)
-      addOutputVariable(String((int)i), doubleType);
-    Perception::computeOutputType();
-  }
-  
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
-  {
-    jassert(input.isObject());
-    
-    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>();
-    jassert(image);
-    
-    const std::vector<double>& pixels = image->getPixels();
-    for (size_t i = 0; i < pixels.size(); ++i)
-      callback->sense(i, Variable(pixels[i], doubleType));
-  }
-};
-
 ContainerPtr MNISTProgram::loadDataFromFile(const File& file)
 {
-  ObjectVectorPtr res = new ObjectVector(mnistImageClass, 0);
-  
-  ReferenceCountedObjectPtr<MatlabFileParser> parser(new MatlabFileParser(file));
-
-  while (!parser->isExhausted())
-  {
-    Variable v = parser->next();
-    if (v.isNil())
-      break;
-    res->append(v);
-  }
-  
-  return res->apply(FunctionPtr(new InputOutputPairFunction()));
+  return StreamPtr(new MatlabFileParser(file))->load()->apply(FunctionPtr(new InputOutputPairFunction()));
 }
 
 bool MNISTProgram::loadData()
@@ -109,42 +73,48 @@ bool MNISTProgram::loadData()
 
 int MNISTProgram::runProgram(MessageCallback& callback)
 {
+  juce::uint32 startingTime = Time::getMillisecondCounter();
+  
   if (!loadData())
     return -1;
   
-  std::cout << "------------ Data ------------" << std::endl;
+  std::cout << "------------ Data ------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
   
   InferenceContextPtr context = singleThreadedInferenceContext();
 
   /* Perception */
-  PerceptionPtr perception = PerceptionPtr(new MNISTImageFlattenPerception());
+  PerceptionPtr perception = imageFlattenPerception();
   /* Inference */
   InferenceOnlineLearnerPtr learner, lastLearner;
   learner = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(1.0),
                                                        true, perStepMiniBatch20,
                                                        l2RegularizerFunction(0.0));
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
+
+  //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
+  
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(20);
   lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
   
   NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), perception, digitTypeEnumeration, false);
   inference->setStochasticLearner(learner);
 
+  /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
   context->train(inference, learningData, ContainerPtr());
 
-  std::cout << "----- Evaluation - Train -----" << std::endl;
+  std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
   context->evaluate(inference, learningData, evaluator);
-
-  std::cout << "----- Evaluation - Test ------" << std::endl;
-  evaluator = classificationAccuracyEvaluator(T("digit"));
-  context->evaluate(inference, testingData, evaluator);
-
   std::cout << evaluator->toString() << std::endl;
 
-  std::cout << "------------ Bye -------------" << std::endl;
+  std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+  evaluator = classificationAccuracyEvaluator(T("digit"));
+  context->evaluate(inference, testingData, evaluator);
+  std::cout << evaluator->toString() << std::endl;
+
+  std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   return 0;
 }
 

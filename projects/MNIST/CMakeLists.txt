@@ -10,6 +10,7 @@ SET(LBCPP_MNIST_SOURCES
   DigiBox.cpp
   MNISTProgram.h
   MNISTImage.h
+  MNISTPerception.h
   MatlabFileParser.h
   MNISTClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MNISTClasses.cpp
