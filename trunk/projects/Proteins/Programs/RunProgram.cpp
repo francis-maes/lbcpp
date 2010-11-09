@@ -81,11 +81,12 @@ int main(int argc, char** argv)
   ObjectPtr obj = Object::create(Type::get(argv[1], callback));
   if (obj && obj->getClass()->inheritsFrom(Type::get("Program", callback)))
   {
-    char** arguments = new char*[argc - 2];
+    char** arguments = new char*[argc - 1];
     for (size_t i = 2; i < (size_t)argc; ++i)
-      arguments[i - 2] = argv[i];
+      arguments[i - 1] = argv[i];
+    arguments[0] = argv[0];
 
-    int exitCode = obj.staticCast<Program>()->main(argc - 2, arguments);
+    int exitCode = obj.staticCast<Program>()->main(argc - 1, arguments);
     delete[] arguments;
     lbcpp::deinitialize();
     return exitCode;

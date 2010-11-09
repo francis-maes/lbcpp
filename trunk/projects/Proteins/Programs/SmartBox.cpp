@@ -613,7 +613,7 @@ int SnowBox::runProgram(MessageCallback& callback)
       initializeLearnerByCloning(inferencePass, previousInference);
 
     inference->appendInference(inferencePass);
-    //previousInference = inferencePass;
+    previousInference = inferencePass;
   }
   
   InferenceContextPtr context = (numberOfThreads == 1)

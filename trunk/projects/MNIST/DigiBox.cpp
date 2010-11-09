@@ -13,17 +13,46 @@
 
 using namespace lbcpp;
 
-class MNISTImage : public Perception
+class InputOutputPairFunction : public Function
+{
+  virtual TypePtr getInputType() const
+    {return mnistImageClass;}
+  
+  virtual TypePtr getOutputType(TypePtr ) const
+    {return pairClass(mnistImageClass, digitTypeEnumeration);}
+
+  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  {
+    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>();
+    jassert(image);
+    MNISTImagePtr inputImage = new MNISTImage();
+    inputImage->setPixels(image->getPixels());
+    return Variable::pair(inputImage, image->getDigit(), pairClass(mnistImageClass, digitTypeEnumeration));
+  }
+};
+
+class MNISTImageFlattenPerception : public Perception
 {
   virtual TypePtr getInputType() const
     {return mnistImageClass;}
   
   virtual void computeOutputType()
   {
-    /*
     for (size_t i = 0; i < MNISTImage::numPixels; ++i)
-      addOutputVariable(String(i), doubleType);
-    Perception::*/
+      addOutputVariable(String((int)i), doubleType);
+    Perception::computeOutputType();
+  }
+  
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  {
+    jassert(input.isObject());
+    
+    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>();
+    jassert(image);
+    
+    const std::vector<double>& pixels = image->getPixels();
+    for (size_t i = 0; i < pixels.size(); ++i)
+      callback->sense(i, Variable(pixels[i], doubleType));
   }
 };
 
@@ -41,7 +70,7 @@ ContainerPtr MNISTProgram::loadDataFromFile(const File& file)
     res->append(v);
   }
   
-  return res;
+  return res->apply(FunctionPtr(new InputOutputPairFunction()));
 }
 
 bool MNISTProgram::loadData()
@@ -61,8 +90,8 @@ bool MNISTProgram::loadData()
   
   if (testingFile == File::nonexistent)
   {
-    testingData = learningData->fold(0, 10);
-    learningData = learningData->invFold(0, 10);
+    testingData = learningData->fold(0, 5);
+    learningData = learningData->invFold(0, 5);
     return true;
   }
   
@@ -81,17 +110,39 @@ int MNISTProgram::runProgram(MessageCallback& callback)
   if (!loadData())
     return -1;
   
+  std::cout << "------------ Data ------------" << std::endl;
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
   
   InferenceContextPtr context = singleThreadedInferenceContext();
-  /*
-  PerceptionPtr perception = ...;
-  
-  InferencePtr inference = multiClassLinearSVMInference(T("Digit"), perception, digitTypeEnumeration, false);
 
-  context->train(inference, trainingData);
-  */
+  /* Perception */
+  PerceptionPtr perception = PerceptionPtr(new MNISTImageFlattenPerception());
+  /* Inference */
+  InferenceOnlineLearnerPtr learner, lastLearner;
+  learner = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(1.0),
+                                                       true, perStepMiniBatch20,
+                                                       l2RegularizerFunction(0.0));
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
+  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
+  
+  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), perception, digitTypeEnumeration, false);
+  inference->setStochasticLearner(learner);
+
+  std::cout << "---------- Learning ----------" << std::endl;
+  context->train(inference, learningData, ContainerPtr());
+
+  std::cout << "----- Evaluation - Train -----" << std::endl;
+  EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
+  context->evaluate(inference, learningData, evaluator);
+
+  std::cout << "----- Evaluation - Test ------" << std::endl;
+  evaluator = classificationAccuracyEvaluator(T("digit"));
+  context->evaluate(inference, testingData, evaluator);
+
+  std::cout << evaluator->toString() << std::endl;
+
+  std::cout << "------------ Bye -------------" << std::endl;
   return 0;
 }
 

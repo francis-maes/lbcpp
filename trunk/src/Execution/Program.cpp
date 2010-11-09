@@ -5,10 +5,14 @@ using namespace lbcpp;
 
 int Program::main(int argc, char* argv[])
 {
-  std::vector<String> arguments(argc);
-  for (size_t i = 0; i < (size_t)argc; ++i)
-    arguments[i] = argv[i];
+  std::vector<String> arguments(argc - 1);
+  for (size_t i = 1; i < (size_t)argc; ++i)
+    arguments[i - 1] = argv[i];
 
+/*  std::cout << "----- Arguments -----" << std::endl;
+  for (size_t i = 0; i < arguments.size(); ++i)
+    std::cout << i << " : " << arguments[i] << std::endl;
+*/ 
   MessageCallback& callback = MessageCallback::getInstance();
   if (!parseArguments(arguments, callback))
     return -1;
@@ -27,10 +31,11 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
   std::map<String, size_t> variableNames;
   std::map<String, size_t> variableShortNames;
   std::map<String, size_t>& defaultMap = variableNames;
+  ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
-    variableNames[getVariableName(i)] = i;
-    //variableShortNames[getVariableShortName(i)] = i; // FIXME
+    variableNames[thisClass->getObjectVariableName(i)] = i;
+    variableShortNames[thisClass->getObjectVariableShortName(i)] = i;
   }
   
   for (size_t i = 0; i < arguments.size(); )
@@ -88,12 +93,32 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
   
 String Program::getUsage() const
 {
-  String argumentDescriptions = T("-h --help Display this help message.\n");
   ClassPtr thisClass = getClass();
+  /* Compute the longest string */
+  size_t longestName = 0;
+  size_t longestShortName = 0;
   for (size_t i = 0; i < getNumVariables(); ++i)
+  {
+    size_t nameLength = thisClass->getObjectVariableName(i).length();
+    if (nameLength > longestName)
+      longestName = nameLength;
+    size_t shortNameLength = thisClass->getObjectVariableShortName(i).length();
+    if (shortNameLength > longestShortName)
+      longestShortName = shortNameLength;
+  }
+  /* Generate usage */
+  String argumentDescriptions = T("-h") + String::repeatedString(T(" "), longestShortName - 1)
+                              + T(" --help") + String::repeatedString(T(" "), longestName - 4)
+                              + (" Display this help message.\n");
+  for (size_t i = 0; i < getNumVariables(); ++i)
+  {
+    
     argumentDescriptions += T("-") + thisClass->getObjectVariableShortName(i)
+                        + String::repeatedString(T(" "), longestShortName - thisClass->getObjectVariableShortName(i).length())
                         + T(" --") + thisClass->getObjectVariableName(i)
+                        + String::repeatedString(T(" "), longestName - thisClass->getObjectVariableName(i).length())
                         + T(" ") + thisClass->getObjectVariableDescription(i) + T("\n");
+  }
   
   return toString() + T("\n\n")
     + T("Usage : ") + toShortString() + T(" file.xml\n")
