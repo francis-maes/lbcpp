@@ -26,8 +26,8 @@
     
     <!-- Program -->
     <class name="MNISTProgram" base="Program">
-      <variable type="File" name="learningFile"/>
-      <variable type="File" name="testingFile"/>
+      <variable type="File" name="learningFile" shortName="ls"/>
+      <variable type="File" name="testingFile" shortName="ts"/>
     </class>
     
   </namespace>

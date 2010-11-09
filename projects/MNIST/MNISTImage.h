@@ -18,6 +18,14 @@ public:
   
   MNISTImage() {}
   
+  void setPixels(const std::vector<double>& pixels)
+    {this->pixels = pixels;}
+  
+  const std::vector<double>& getPixels() const
+    {return pixels;}
+  
+  Variable getDigit() const
+    {return Variable(digit, digitTypeEnumeration);}
 protected:
   friend class MNISTImageClass;
   
