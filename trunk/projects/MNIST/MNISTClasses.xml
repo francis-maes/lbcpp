@@ -30,6 +30,11 @@
       <variable type="File" name="testingFile" shortName="ts"/>
     </class>
     
+    <!-- Perception -->
+    <class name="ImageFlattenPerception" base="Perception">
+      <constructor/>
+    </class>
+    
   </namespace>
 
   <declarationCode>
