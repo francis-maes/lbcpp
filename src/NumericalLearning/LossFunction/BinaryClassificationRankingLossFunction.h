@@ -63,13 +63,13 @@ public:
     jassert(n && n == costs.size());
     for (size_t i = 0; i < n; ++i)
       matrix.addPrediction(scores[i] > 0, costs[i] == 0.0);
-    double refScore = computeScore(matrix);
 
-    BinaryClassificationConfusionMatrix dbg(matrix);
 #ifdef JUCE_DEBUG
-    double diff1 = computeScoreDifference(matrix, refScore, true);
+    BinaryClassificationConfusionMatrix dbg(matrix);
+    double refScore = computeScore(matrix);
+    //double diff1 = computeScoreDifference(matrix, refScore, true);
     jassert(matrix == dbg);
-    double diff2 = computeScoreDifference(matrix, refScore, false);
+    //double diff2 = computeScoreDifference(matrix, refScore, false);
     jassert(matrix == dbg);
     //MessageCallback::info(T("F1-RankingLoss: d1=") + String(diff1) + T(" d2=") + String(diff2));
 #endif // JUCE_DEBUG

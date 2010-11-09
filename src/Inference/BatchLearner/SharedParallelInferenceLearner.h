@@ -48,7 +48,6 @@ private:
   InferenceBatchLearnerInputPtr computeSubLearnerInput(InferenceContextWeakPtr context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples)
   {
     const InferencePtr& targetSubInference = targetInference->getSubInference();
-    const InferencePtr& subLearner = targetSubInference->getBatchLearner();
 
     InferenceBatchLearnerInputPtr res = new InferenceBatchLearnerInput(targetSubInference);
     

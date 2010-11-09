@@ -144,7 +144,7 @@ public:
         if (type->inheritsFrom(genericVectorClass(anyType))
          || type->inheritsFrom(objectVectorClass(discreteProbabilityDistributionClass(anyType))))
         {
-          String friendlyName = Protein::getTargetFriendlyName(i);
+          String friendlyName = proteinClass->getObjectVariableDescription(i);
           addObjectNameIfExists(friendlyName, i, sequenceIndex);
         }
       }

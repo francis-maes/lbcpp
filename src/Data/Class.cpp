@@ -95,7 +95,7 @@ void DefaultClass::clearVariables()
   variables.clear();
 }
 
-void DefaultClass::addVariable(const String& typeName, const String& name)
+void DefaultClass::addVariable(const String& typeName, const String& name, const String& shortName, const String& description)
 {
   TypePtr type;
   if (templateType)
@@ -103,10 +103,10 @@ void DefaultClass::addVariable(const String& typeName, const String& name)
   else
     type = Type::get(typeName);
   if (type)
-    addVariable(type, name);
+    addVariable(type, name, shortName, description);
 }
 
-void DefaultClass::addVariable(TypePtr type, const String& name)
+void DefaultClass::addVariable(TypePtr type, const String& name, const String& shortName, const String& description)
 {
   if (!type || name.isEmpty())
   {
@@ -119,7 +119,12 @@ void DefaultClass::addVariable(TypePtr type, const String& name)
     return;
   }
   variablesMap[name] = variables.size();
-  variables.push_back(std::make_pair(type, name));
+  VariableInfo info;
+  info.type = type;
+  info.name = name;
+  info.shortName = shortName.isNotEmpty() ? shortName : name;
+  info.description = description.isNotEmpty() ? description : name;
+  variables.push_back(info);
 }
 
 size_t DefaultClass::getObjectNumVariables() const
@@ -136,7 +141,7 @@ TypePtr DefaultClass::getObjectVariableType(size_t index) const
   index -= n;
   
   jassert(index < variables.size());
-  return variables[index].first;
+  return variables[index].type;
 }
 
 String DefaultClass::getObjectVariableName(size_t index) const
@@ -147,7 +152,29 @@ String DefaultClass::getObjectVariableName(size_t index) const
   index -= n;
   
   jassert(index < variables.size());
-  return variables[index].second;
+  return variables[index].name;
+}
+
+String DefaultClass::getObjectVariableShortName(size_t index) const
+{
+  size_t n = baseType->getObjectNumVariables();
+  if (index < n)
+    return baseType->getObjectVariableShortName(index);
+  index -= n;
+  
+  jassert(index < variables.size());
+  return variables[index].shortName;
+}
+
+String DefaultClass::getObjectVariableDescription(size_t index) const
+{
+  size_t n = baseType->getObjectNumVariables();
+  if (index < n)
+    return baseType->getObjectVariableDescription(index);
+  index -= n;
+  
+  jassert(index < variables.size());
+  return variables[index].description;
 }
 
 void DefaultClass::deinitialize()

@@ -92,7 +92,6 @@
       </code>
     </class>
     <class name="DefaultClass" base="Class">
-      <variable type="ObjectVector[Pair[Type,String]]" name="variables"/>
       <code>
       virtual void destroy(VariableValue&amp; value) const
         {Type::destroy(value);}
