@@ -27,7 +27,9 @@ class InputOutputPairFunction : public Function
     jassert(image);
     MNISTImagePtr inputImage = new MNISTImage();
     inputImage->setPixels(image->getPixels());
-    return Variable::pair(inputImage, image->getDigit(), pairClass(mnistImageClass, digitTypeEnumeration));
+    Variable digit = image->getDigit();
+    jassert(!digit.isNil());
+    return Variable::pair(inputImage, digit);
   }
 };
 

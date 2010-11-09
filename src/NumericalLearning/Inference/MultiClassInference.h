@@ -45,7 +45,7 @@ public:
       jassert(correctClass < lossFunctions.size());
       lossFunction = lossFunctions[correctClass];
     }
-    res->setSubInference(decorated, input, lossFunction);
+    res->setSubInference(decorated, input, Variable(lossFunction, scalarObjectFunctionClass));
     return res;
   }
 
