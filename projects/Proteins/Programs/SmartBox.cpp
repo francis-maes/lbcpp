@@ -72,7 +72,7 @@ protected:
     }
   }
   
-  const NumericalLearningParameterPtr getParamerters(const String& targetName, bool contentOnly) const
+  const NumericalLearningParameterPtr getParameters(const String& targetName, bool contentOnly) const
   {
     if (!parameters.count(targetName))
     {
@@ -96,7 +96,7 @@ protected:
   InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName) const
   {
     jassert(!targetName.startsWith(T("contactMap"))); // Not yet implemented
-    NumericalLearningParameterPtr parameter = getParamerters(targetName, *currentPassPointer == 0);
+    NumericalLearningParameterPtr parameter = getParameters(targetName, *currentPassPointer == 0);
     
     InferenceOnlineLearnerPtr res, lastLearner;
     /* randomizer */

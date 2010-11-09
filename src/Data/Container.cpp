@@ -10,7 +10,7 @@
 #include <lbcpp/Data/XmlSerialisation.h>
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
-#include <lbcpp/Function/ThreadPool.h>
+#include <lbcpp/Execution/ThreadPool.h>
 using namespace lbcpp;
 
 VectorPtr Container::toVector() const

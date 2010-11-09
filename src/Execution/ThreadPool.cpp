@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Function/ThreadPool.h>
+#include <lbcpp/Execution/ThreadPool.h>
 #include <lbcpp/Data/Cache.h>
 using namespace lbcpp;
 

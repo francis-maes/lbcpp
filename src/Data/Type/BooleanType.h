@@ -40,7 +40,7 @@ public:
   virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
   {
     String v = value.trim().toLowerCase();
-    if (v == T("true") || v == String::empty)
+    if (v == T("true"))
       return VariableValue(true);
     else if (v == T("false"))
       return VariableValue(false);

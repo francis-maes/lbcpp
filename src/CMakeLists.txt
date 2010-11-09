@@ -42,6 +42,7 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
 
+GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
 
 #### Data ####
 
@@ -144,8 +145,6 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/ObjectiveFunction.h
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
-  ../include/lbcpp/Function/ThreadPool.h
-  Function/ThreadPool.cpp
   Function/FunctionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
 )
@@ -296,6 +295,7 @@ SET(LBCPP_INFERENCE_CONTEXT_SOURCES
 
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
+  Inference/ReductionInference/OneAgainstOneClassificationInference.h
   Inference/ReductionInference/RankingBasedClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
   Inference/ReductionInference/SharedParallelVectorInference.h
@@ -430,6 +430,19 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
 )
 
+#### Execution ####
+SET(LBCPP_EXECUTION_SOURCES
+  ../include/lbcpp/Execution/Program.h
+  Execution/Program.cpp
+  ../include/lbcpp/Execution/MessageCallback.h
+  Execution/MessageCallback.cpp
+  ../include/lbcpp/Execution/Job.h
+  ../include/lbcpp/Execution/ThreadPool.h
+  Execution/ThreadPool.cpp
+  Execution/ExecutionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
+)
+
 ##### MAIN ####
 
 SET(LBCPP_MAIN_SOURCES
@@ -488,6 +501,9 @@ SET(LBCPP_CORE
   # DecisionTree
   ${LBCPP_DECISION_TREE_SOURCES}
   ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
+  
+  # Execution
+  ${LBCPP_EXECUTION_SOURCES}
 )
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
@@ -537,6 +553,9 @@ SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNIN
 ## DecisionTree
 SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
-  
+
+## Execution
+SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
+
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 TARGET_LINK_LIBRARIES(lbcpp-core juce)

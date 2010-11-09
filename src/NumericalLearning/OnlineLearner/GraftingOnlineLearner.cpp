@@ -235,7 +235,7 @@ void GraftingOnlineLearner::computeActiveScores(std::vector<double>& res) const
   res.clear();
   res.resize(numActives, 0.0);
 
-  size_t outputIndex = 0;
+  //size_t outputIndex = 0;
   for (size_t i = 0; i < inferences.size(); ++i)
   {
     const NumericalInferencePtr& inference = inferences[i];

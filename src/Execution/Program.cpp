@@ -1,8 +1,19 @@
 
 #include <lbcpp/lbcpp.h>
-#include "Programs/Program.h"
 
 using namespace lbcpp;
+
+int Program::main(int argc, char* argv[])
+{
+  std::vector<String> arguments(argc);
+  for (size_t i = 0; i < (size_t)argc; ++i)
+    arguments[i] = argv[i];
+
+  MessageCallback& callback = MessageCallback::getInstance();
+  if (!parseArguments(arguments, callback))
+    return -1;
+  return runProgram(callback);
+}
 
 bool Program::parseArguments(const std::vector<String>& arguments, MessageCallback& callback)
 {
@@ -55,11 +66,18 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
       argumentValue += T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
 
-    Variable value = Variable::createFromString(getVariableType(variableIndex), argumentValue, callback);
-    if (value.isMissingValue())
+    TypePtr argumentType = getVariableType(variableIndex);
+    Variable value;
+    if (argumentType == booleanType && argumentValue.isEmpty())
+      value = Variable(true); // particular case for boolean arguments: if no value has been given, we take true by default
+    else
     {
-      callback.errorMessage(T("Program::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
-      return false;
+      value = Variable::createFromString(argumentType, argumentValue, callback);
+      if (value.isMissingValue())
+      {
+        callback.errorMessage(T("Program::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
+        return false;
+      }
     }
 
     setVariable(variableIndex, value);
@@ -71,8 +89,11 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
 String Program::getUsage() const
 {
   String argumentDescriptions = T("-h --help Display this help message.\n");
+  ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
-    argumentDescriptions += T("--") + getVariableName(i) + T(" ") /*+ getVariableDescription(i)*/ + T("\n");  // FIXME
+    argumentDescriptions += T("-") + thisClass->getObjectVariableShortName(i)
+                        + T(" --") + thisClass->getObjectVariableName(i)
+                        + T(" ") + thisClass->getObjectVariableDescription(i) + T("\n");
   
   return toString() + T("\n\n")
     + T("Usage : ") + toShortString() + T(" file.xml\n")

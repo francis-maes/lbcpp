@@ -41,9 +41,9 @@ public:
     String res;
     res += String((int)numProteins) + T(" proteins");
     res += "\n";
-    for (std::map<String, std::pair<size_t, EvaluatorPtr> >::const_iterator it = evaluators.begin(); it != evaluators.end(); ++it)
+    for (size_t i = 0; i < evaluators.size(); ++i)
     {
-      String str = it->second.second->toString();
+      String str = evaluators[i].second->toString();
       if (str.isNotEmpty())
         res += str + T("\n");
     }
@@ -59,26 +59,33 @@ public:
     const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>();
 
     ++numProteins;
-    for (std::map<String, std::pair<size_t, EvaluatorPtr> >::iterator it = evaluators.begin(); it != evaluators.end(); ++it)
+    for (size_t i = 0; i < evaluators.size(); ++i)
     {
-      size_t variableIndex = it->second.first;
+      size_t variableIndex = evaluators[i].first;
       Variable predictedVariable = predicted->getVariable(variableIndex);
       if (predictedVariable.exists())
       {
         Variable correctVariable = correct->getTargetOrComputeIfMissing(variableIndex);
-        it->second.second->addPrediction(predictedVariable, correctVariable);
+        evaluators[i].second->addPrediction(predictedVariable, correctVariable);
       }
     }
   }
 
   EvaluatorPtr getEvaluatorForTarget(const String& targetName) const
   {
-    if (!evaluators.count(targetName))
+    int variableIndex = proteinClass->findObjectVariable(targetName);
+    if (variableIndex < 0)
     {
       MessageCallback::error(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
       return EvaluatorPtr();
     }
-    return evaluators.find(targetName)->second.second;
+
+    for (size_t i = 0; i < evaluators.size(); ++i)
+      if (evaluators[i].first == (size_t)variableIndex)
+        return evaluators[i].second;
+    
+    MessageCallback::error(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator for target ") + targetName);
+    return EvaluatorPtr();
   }
   
   virtual double getDefaultScore() const
@@ -86,27 +93,27 @@ public:
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
   {
-    for (std::map<String, std::pair<size_t, EvaluatorPtr> >::const_iterator it = evaluators.begin(); it != evaluators.end(); ++it)
+    for (size_t i = 0; i < evaluators.size(); ++i)
     {
-      EvaluatorPtr eval = it->second.second;
+      EvaluatorPtr evaluator = evaluators[i].second;
       std::vector<std::pair<String, double> > scores;
-      eval->getScores(scores);
+      evaluator->getScores(scores);
       
-      for (size_t i = 0; i < scores.size(); ++i)
-        res.push_back(std::make_pair(it->first + T("[") + scores[i].first + T("]"), scores[i].second));
+      for (size_t j = 0; j < scores.size(); ++j)
+        res.push_back(std::make_pair(evaluator->getName() + T("[") + scores[j].first + T("]"), scores[j].second));
     }
   }
 
 protected:
   size_t numProteins;
 
-  std::map<String, std::pair<size_t, EvaluatorPtr> > evaluators;
+  std::vector<std::pair<size_t, EvaluatorPtr> > evaluators;
 
   void addEvaluator(const String& variableName, EvaluatorPtr evaluator)
   {
     int variableIndex = proteinClass->findObjectVariable(variableName);
     jassert(variableIndex >= 0);
-    evaluators[variableName] = std::make_pair(variableIndex, evaluator);
+    evaluators.push_back(std::make_pair(variableIndex, evaluator));
   }
 };
 

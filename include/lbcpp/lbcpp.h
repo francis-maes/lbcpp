@@ -70,4 +70,9 @@
 
 # include "DecisionTree/DecisionTree.h"
 
+# include "Execution/Program.h"
+# include "Execution/MessageCallback.h"
+# include "Execution/Job.h"
+# include "Execution/ThreadPool.h"
+
 #endif // !LBCPP_LBCPP_H_

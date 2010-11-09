@@ -8,6 +8,12 @@
       <variable type="Enumeration" name="classes"/>
       <variable type="Inference" name="binaryClassifierModel"/>
     </class>
+    
+    <class name="OneAgainstOneClassificationInference" base="VectorParallelInference">
+      <constructor arguments="const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
+      <variable type="Enumeration" name="classes"/>
+      <variable type="Inference" name="binaryClassifierModel"/>
+    </class>
 
     <class name="RankingBasedClassificationInference" base="StaticDecoratorInference">
       <constructor arguments="const String&amp; name, InferencePtr rankingInference, EnumerationPtr classes"/>

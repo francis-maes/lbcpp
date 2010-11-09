@@ -2,8 +2,7 @@
 
 <file name="Program" directory="Programs">
   <namespace name="lbcpp">
-    <class name="Program" base="Object"/>
-  
+
     <class name="HelloWorldProgram" base="Program">
       <variable type="Integer" name="myInt" desc="An arbitrary integer !" shortName="i"/>
     </class>

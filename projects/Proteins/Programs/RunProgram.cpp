@@ -1,6 +1,5 @@
 
 #include <lbcpp/lbcpp.h>
-#include "Programs/Program.h"
 
 using namespace lbcpp;
 
@@ -82,14 +81,12 @@ int main(int argc, char** argv)
   ObjectPtr obj = Object::create(Type::get(argv[1], callback));
   if (obj && obj->getClass()->inheritsFrom(Type::get("Program", callback)))
   {
-    std::vector<String> arguments;
+    char** arguments = new char*[argc - 2];
     for (size_t i = 2; i < (size_t)argc; ++i)
-      arguments.push_back(argv[i]);
+      arguments[i - 2] = argv[i];
 
-    ProgramPtr program = obj.staticCast<Program>();
-    if (!program->parseArguments(arguments, callback))
-      return -1;
-    int exitCode = program->runProgram(callback);
+    int exitCode = obj.staticCast<Program>()->main(argc - 2, arguments);
+    delete[] arguments;
     lbcpp::deinitialize();
     return exitCode;
   }
