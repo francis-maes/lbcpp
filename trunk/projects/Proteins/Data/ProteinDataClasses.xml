@@ -127,30 +127,29 @@
     </class>
     
     <class name="Protein" base="NameableObject">
-      
       <!-- Primary Structure -->
-      <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortdesc="Primary Structure"/>
-      <variable type="ObjectVector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortdesc="PSSM"/>
+      <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
+      <variable type="ObjectVector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
       
       <!-- Secondary Structure -->
-      <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortdesc="Secondary Structure"/>
-      <variable type="GenericVector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortdesc="DSSP Secondary Structure"/>
-      <variable type="GenericVector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortdesc="Structural Alphabet"/>
+      <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
+      <variable type="GenericVector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
+      <variable type="GenericVector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
 
-      <variable type="GenericVector[Probability]" name="solventAccessibility" shortdesc="Solvent Accessibility"/>
-      <variable type="GenericVector[Probability]" name="solventAccessibilityAt20p" shortdesc="Solvent Accessibility at 20%"/>
-      <variable type="GenericVector[Probability]" name="disorderRegions" shortdesc="Disorder Regions"/>
+      <variable type="GenericVector[Probability]" name="solventAccessibility" shortName="sa" description="Solvent Accessibility"/>
+      <variable type="GenericVector[Probability]" name="solventAccessibilityAt20p" shortName="sa20" description="Solvent Accessibility at 20%"/>
+      <variable type="GenericVector[Probability]" name="disorderRegions" shortName="dr" description="Disorder Regions"/>
       
       <!-- Contact Maps -->
-      <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortdesc="Contact Map C-alpha 8"/>
-      <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortdesc="Contact Map C-beta 8"/>
-      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortdesc="Distance Map C-alpha"/>
-      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortdesc="Distance Map C-beta"/>
-      <variable type="SymmetricMatrix[Probability]" name="disulfideBonds" shortdesc="Disulfide Bonds"/>
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortName="cma8" description="Contact Map C-alpha 8"/>
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortName="cmb8" description="Contact Map C-beta 8"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
+      <variable type="SymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
 
       <!-- Tertiary Structure -->
-      <variable type="CartesianPositionVector" name="calphaTrace" shortdesc="C-alpha Trace"/>
-      <variable type="TertiaryStructure" name="tertiaryStructure" shortdesc="Tertiary Structure"/>
+      <variable type="CartesianPositionVector" name="calphaTrace" shortName="cat" description="C-alpha Trace"/>
+      <variable type="TertiaryStructure" name="tertiaryStructure" shortName="ts" description="Tertiary Structure"/>
     </class>
     
     <!-- Protein Functions -->

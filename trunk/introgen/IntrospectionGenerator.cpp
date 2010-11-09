@@ -365,9 +365,17 @@ protected:
   {
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("???")));
     String name = xml->getStringAttribute(T("name"), T("???"));
-    
+    String shortName = xml->getStringAttribute(T("shortName"), String::empty);
+    String description = xml->getStringAttribute(T("description"), String::empty);
     String typeArgument = (type == className ? T("this") : T("T(") + type.quoted() + T(")"));
-    writeLine(T("addVariable(") + typeArgument + T(", T(") + name.quoted() + T("));"));
+    
+    String arguments = typeArgument + T(", T(") + name.quoted() + T(")");
+    arguments += T(", ");
+    arguments += shortName.isEmpty() ? T("String::empty") : T("T(") + shortName.quoted() + T(")");
+    arguments += T(", ");
+    arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
+    
+    writeLine(T("addVariable(") + arguments + T(");"));
   }
 
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)

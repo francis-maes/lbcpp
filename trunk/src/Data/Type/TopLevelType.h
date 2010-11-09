@@ -71,6 +71,12 @@ public:
   virtual String getObjectVariableName(size_t index) const
     {MessageCallback::error(T("Type::getObjectVariableName()"), T("Not implemented")); return String::empty;}
 
+  virtual String getObjectVariableShortName(size_t index) const
+    {MessageCallback::error(T("Type::getObjectVariableShortName()"), T("Not implemented")); return String::empty;}
+
+  virtual String getObjectVariableDescription(size_t index) const
+    {MessageCallback::error(T("Type::getObjectVariableDescription()"), T("Not implemented")); return String::empty;}
+
   virtual int findObjectVariable(const String& name) const
     {return -1;}
 

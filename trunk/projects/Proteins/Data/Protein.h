@@ -48,8 +48,6 @@ public:
   Variable createEmptyTarget(size_t index) const;
   Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
 
-  static String getTargetFriendlyName(size_t index);
-  static String getTargetShortName(size_t index);
   VectorPtr createEmptyProbabilitySequence() const;
   
   size_t getLength() const

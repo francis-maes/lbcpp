@@ -431,6 +431,12 @@ TypePtr Type::getObjectVariableType(size_t index) const
 String Type::getObjectVariableName(size_t index) const
   {jassert(baseType); return baseType->getObjectVariableName(index);}
 
+String Type::getObjectVariableShortName(size_t index) const
+  {jassert(baseType); return baseType->getObjectVariableShortName(index);}
+
+String Type::getObjectVariableDescription(size_t index) const
+  {jassert(baseType); return baseType->getObjectVariableDescription(index);}
+
 int Type::findObjectVariable(const String& name) const
   {jassert(baseType); return baseType->findObjectVariable(name);}
   

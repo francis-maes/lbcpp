@@ -32,9 +32,9 @@ bool DynamicClass::initialize(MessageCallback& callback)
     bool hasOnlyObjects = true;
     for (size_t i = 0; i < variables.size(); ++i)
     {
-      if (!variables[i].first->inheritsFrom(doubleType))
+      if (!variables[i].type->inheritsFrom(doubleType))
         hasOnlyDoubles = false;
-      if (!variables[i].first->inheritsFrom(objectClass))
+      if (!variables[i].type->inheritsFrom(objectClass))
         hasOnlyObjects = false;
     }
     if (hasOnlyDoubles)

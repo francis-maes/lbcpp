@@ -24,21 +24,21 @@
     </class>
 
     <class name="SnowBox" base ="Program">
-      <variable type="File" name="learningDirectory" desc="The path to the learning set directory" shortName="ls"/>
-      <variable type="File" name="testingDirectory" desc="The path to the testing set directory" shortName="ts"/>
-      <variable type="File" name="validationDirectory" desc="The path to the validation set directory" shortName="vs"/>
-      <variable type="File" name="output" desc="The prefix path to the outputs" shortName="o"/>
-      <variable type="PositiveInteger" name="maxProteinsToLoad" desc="Maximum number of learning proteins to load" shortName="max"/>
-      <variable type="PositiveInteger" name="numberOfFolds" desc="The number of fold of the training set" shortName="n"/>
-      <variable type="PositiveInteger" name="currentFold" desc="The current fold" shortName="c"/>
-      <variable type="Boolean" name="useCrossValidation" desc="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
-      <variable type="PositiveInteger" name="partAsValidation" desc="The part of learning proteins to use as validation proteins." shortName="vpart"/>
-      <variable type="String" name="baseLearner" desc="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
-      <variable type="PositiveInteger" name="maxIterations" desc="The maximum number of iteration per learner" shortName="iter"/>
-      <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" desc="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
-      <variable type="NumericalLearningParameter" name="defaultParameter" desc="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
-      <variable type="ProteinTarget" name="target" desc="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
-      <variable type="PositiveInteger" name="numberOfThreads" desc="The number of threads" shortName="th"/>
+      <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
+      <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
+      <variable type="File" name="validationDirectory" description="The path to the validation set directory" shortName="vs"/>
+      <variable type="File" name="output" description="The prefix path to the outputs" shortName="o"/>
+      <variable type="PositiveInteger" name="maxProteinsToLoad" description="Maximum number of learning proteins to load" shortName="max"/>
+      <variable type="PositiveInteger" name="numberOfFolds" description="The number of fold of the training set" shortName="n"/>
+      <variable type="PositiveInteger" name="currentFold" description="The current fold" shortName="c"/>
+      <variable type="Boolean" name="useCrossValidation" description="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
+      <variable type="PositiveInteger" name="partAsValidation" description="The part of learning proteins to use as validation proteins." shortName="vpart"/>
+      <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
+      <variable type="PositiveInteger" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
+      <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" description="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
+      <variable type="NumericalLearningParameter" name="defaultParameter" description="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
+      <variable type="ProteinTarget" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
+      <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
     </class>
   </namespace>
 

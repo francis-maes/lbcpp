@@ -128,6 +128,8 @@ public:
   virtual size_t getObjectNumVariables() const;
   virtual TypePtr getObjectVariableType(size_t index) const;
   virtual String getObjectVariableName(size_t index) const;
+  virtual String getObjectVariableShortName(size_t index) const;
+  virtual String getObjectVariableDescription(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
   virtual void setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const;
@@ -303,13 +305,15 @@ public:
   virtual size_t getObjectNumVariables() const;
   virtual TypePtr getObjectVariableType(size_t index) const;
   virtual String getObjectVariableName(size_t index) const;
+  virtual String getObjectVariableShortName(size_t index) const;
+  virtual String getObjectVariableDescription(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
 
   void reserveVariables(size_t count)
     {variables.reserve(count);}
 
-  void addVariable(TypePtr type, const String& name);
-  void addVariable(const String& typeName, const String& name);
+  void addVariable(TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  void addVariable(const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
   void clearVariables();
 
   lbcpp_UseDebuggingNewOperator
@@ -317,7 +321,15 @@ public:
 protected:
   friend class DefaultClassClass;
 
-  std::vector< std::pair<TypePtr, String> > variables;
+  struct VariableInfo
+  {
+    TypePtr type;
+    String name;
+    String shortName;
+    String description;
+  };
+
+  std::vector<VariableInfo> variables;
   std::map<String, size_t> variablesMap;
 };
 
