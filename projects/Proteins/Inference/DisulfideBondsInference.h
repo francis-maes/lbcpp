@@ -31,7 +31,6 @@ public:
 
   virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    const ProteinPtr& inputProtein = state->getInput().getObjectAndCast<Protein>();    
     size_t n = state.staticCast<State>()->dimension;
     size_t minDistance = state.staticCast<State>()->minDistance;
 

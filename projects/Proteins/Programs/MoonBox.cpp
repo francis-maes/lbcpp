@@ -773,7 +773,7 @@ int main(int argc, char** argv)
     //context->appendCallback(new StackPrinterCallback());
     context->appendCallback(callbacks);
 
-    context->train(inference, trainingData);
+    context->train(inference, trainingData, ContainerPtr());
 
     if (generateIntermediate)
       inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output + T(".inference")));

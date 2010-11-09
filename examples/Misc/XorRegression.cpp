@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 
   // create context and train
   InferenceContextPtr context = multiThreadedInferenceContext(8);
-  context->train(regressor, trainingSet);
+  context->train(regressor, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));

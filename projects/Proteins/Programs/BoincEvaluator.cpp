@@ -394,7 +394,7 @@ protected:
   {
     InferenceContextPtr context = singleThreadedInferenceContext();
     context->appendCallback(new Callback(this));
-    context->train(inference, trainingProteins);
+    context->train(inference, trainingProteins, ContainerPtr());
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
     context->evaluate(inference, testingProteins, evaluator);

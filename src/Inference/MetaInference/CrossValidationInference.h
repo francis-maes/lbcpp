@@ -46,7 +46,7 @@ protected:
     const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>();
     InferencePtr inference = inferenceModel->cloneAndCast<Inference>();
     jassert(trainingData && evaluationData && inference);
-    returnCode = context->train(inference, trainingData);
+    returnCode = context->train(inference, trainingData, ContainerPtr());
     if (returnCode != finishedReturnCode)
       return Variable();
     returnCode = context->evaluate(inference, evaluationData, evaluator);
