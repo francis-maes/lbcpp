@@ -66,7 +66,7 @@ public:
 
 #ifdef JUCE_DEBUG
     BinaryClassificationConfusionMatrix dbg(matrix);
-    double refScore = computeScore(matrix);
+    //double refScore = computeScore(matrix);
     //double diff1 = computeScoreDifference(matrix, refScore, true);
     jassert(matrix == dbg);
     //double diff2 = computeScoreDifference(matrix, refScore, false);

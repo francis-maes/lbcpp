@@ -1,6 +1,6 @@
 
 
-#include "Programs/Program.h"
+#include <lbcpp/lbcpp.h>
 #include "Inference/ProteinInferenceFactory.h"
 
 namespace lbcpp {

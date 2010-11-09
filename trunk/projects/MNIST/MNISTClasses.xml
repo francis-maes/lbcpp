@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="MNIST">
+
+  <namespace name="lbcpp">
+    
+    <!-- Enumeration -->
+    <enumeration name="DigitType">
+      <value name="zero"  oneLetterCode="0"/>
+      <value name="one"   oneLetterCode="1"/>
+      <value name="two"   oneLetterCode="2"/>
+      <value name="three" oneLetterCode="3"/>
+      <value name="four"  oneLetterCode="4"/>
+      <value name="five"  oneLetterCode="5"/>
+      <value name="six"   oneLetterCode="6"/>
+      <value name="seven" oneLetterCode="7"/>
+      <value name="eight" oneLetterCode="8"/>
+      <value name="nine"  oneLetterCode="9"/>
+    </enumeration>
+    
+    <!-- Data -->
+    <class name="MNISTImage">
+      <variable type="GenericVector[Double]" name="pixels"/>
+      <variable type="DigitType" name="digit"/>
+    </class>
+    
+    <!-- Program -->
+    <class name="MNISTProgram" base="Program">
+      <variable type="File" name="learningFile"/>
+      <variable type="File" name="testingFile"/>
+    </class>
+    
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+  
+</file>

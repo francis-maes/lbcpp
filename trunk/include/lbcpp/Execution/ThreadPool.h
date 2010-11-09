@@ -6,40 +6,17 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_THREAD_POOL_H_
-# define LBCPP_FUNCTION_THREAD_POOL_H_
+#ifndef LBCPP_EXECUTION_THREAD_POOL_H_
+# define LBCPP_EXECUTION_THREAD_POOL_H_
 
 # include "../Data/Object.h"
 # include "../Data/Cache.h"
+# include "Job.h"
+
 # include <list>
 
 namespace lbcpp
 {
-
-class Job : public NameableObject
-{
-public:
-  Job(const String& name)
-    : NameableObject(name), jobShouldExit(false) {}
-  Job() : jobShouldExit(false) {}
-
-  virtual String getCurrentStatus() const = 0;
-
-  virtual bool runJob(String& failureReason) = 0;
-
-  bool shouldExit() const
-    {return jobShouldExit;}
-
-  void signalJobShouldExit()
-    {jobShouldExit = true;}
-
-private:
-  friend class JobClass;
-
-  bool volatile jobShouldExit;
-};
-
-typedef ReferenceCountedObjectPtr<Job> JobPtr;
 
 class MultipleWaitableEvent;
 typedef ReferenceCountedObjectPtr<MultipleWaitableEvent> MultipleWaitableEventPtr;
@@ -98,4 +75,4 @@ typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;
 
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_FUNCTION_THREAD_POOL_H_
+#endif //!LBCPP_EXECUTION_THREAD_POOL_H_

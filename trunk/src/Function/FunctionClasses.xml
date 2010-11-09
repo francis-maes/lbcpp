@@ -6,15 +6,6 @@
   <namespace name="lbcpp">
     <class name="Function" abstract="yes"/>
 
-    <!-- Job and ThreadPool -->
-    <class name="Job" base="NameableObject" abstract="yes"/>
-
-    <class name="ThreadPool">
-      <variable type="Integer" name="numCpus"/>
-      <variable type="Boolean" name="verbose"/>
-      <variable type="AverageValuesCache" name="timingsCache"/>
-    </class>
-
     <!-- Objective Function -->
     <class name="ObjectiveFunction" base="Function" abstract="yes"/>
 

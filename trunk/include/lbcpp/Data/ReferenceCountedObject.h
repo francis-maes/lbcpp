@@ -27,7 +27,7 @@
 #ifndef LBCPP_REFERENCE_COUNTED_OBJECT_H_
 # define LBCPP_REFERENCE_COUNTED_OBJECT_H_
 
-# include "Utilities.h"
+# include "../Execution/MessageCallback.h"
 
 namespace lbcpp
 {

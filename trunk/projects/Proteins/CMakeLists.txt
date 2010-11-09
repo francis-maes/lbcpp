@@ -129,13 +129,10 @@ ADD_SINGLE_CPP_EXECUTABLE(ComputePSSMs)
 ADD_SINGLE_CPP_EXECUTABLE(CompileProteins)
 ADD_SINGLE_CPP_EXECUTABLE(ProteinInferenceEvaluator)
 ADD_SINGLE_CPP_EXECUTABLE(ConvertCASPToValidPDB)
-ADD_SINGLE_CPP_EXECUTABLE(ExtractSequenceFromProtein)
 ADD_SINGLE_CPP_EXECUTABLE(MoonBox)
 
 ADD_EXECUTABLE(RunProgram
   Programs/RunProgram.cpp
-  Programs/Program.h
-  Programs/Program.cpp
   Programs/ProgramDeclarations.h
   Programs/SmartBox.cpp
   Programs/ProgramClasses.xml

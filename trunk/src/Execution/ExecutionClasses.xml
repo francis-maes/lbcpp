@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Execution" directory="lbcpp/Execution">
+
+  <include file="lbcpp/Execution/Program.h"/>
+  <include file="lbcpp/Execution/Job.h"/>
+  <include file="lbcpp/Execution/ThreadPool.h"/>
+
+  <namespace name="lbcpp">
+
+    <!-- Program -->
+    <class name="Program" base="Object"/>
+
+    <!-- Job and ThreadPool -->
+    <class name="Job" base="NameableObject" abstract="yes"/>
+
+    <class name="ThreadPool">
+      <variable type="Integer" name="numCpus"/>
+      <variable type="Boolean" name="verbose"/>
+      <variable type="AverageValuesCache" name="timingsCache"/>
+    </class>
+
+  </namespace>
+
+</file>
