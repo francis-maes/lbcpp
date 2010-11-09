@@ -97,6 +97,7 @@ protected:
       if (isDirectlyConnectedToOnlineLearner)
       {
         // make a step
+        jassert(!example.second.isNil()); // use a missing value if there is no supervision
         onlineLearner->stepFinishedCallback(context, targetInference, example.first, example.second, Variable());
       }
       else
