@@ -14,7 +14,7 @@ class ImageFlattenPerception : public Perception
   virtual void computeOutputType()
   {
     for (size_t i = 0; i < MNISTImage::numPixels; ++i)
-      addOutputVariable(String((int)i), doubleType);
+      addOutputVariable(String((int)i), probabilityType);
     Perception::computeOutputType();
   }
   
@@ -27,7 +27,7 @@ class ImageFlattenPerception : public Perception
     
     const std::vector<double>& pixels = image->getPixels();
     for (size_t i = 0; i < pixels.size(); ++i)
-      callback->sense(i, Variable(pixels[i], doubleType));
+      callback->sense(i, Variable(pixels[i], probabilityType));
   }
 };
 

@@ -71,6 +71,22 @@ bool LearnerProgram::loadData()
   return true;
 }
 
+PerceptionPtr rewritePerception(PerceptionPtr perception)
+{
+  PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
+
+  //rewriter->addRule(booleanType, booleanFeatures());
+  //rewriter->addRule(enumValueFeaturesPerceptionRewriteRule());
+  
+  //rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
+  rewriter->addRule(probabilityType, defaultProbabilityFeatures());
+  //rewriter->addRule(positiveIntegerType, defaultPositiveIntegerFeatures());
+  //rewriter->addRule(integerType, defaultIntegerFeatures());
+  
+  rewriter->addRule(doubleType, identityPerception());
+  return rewriter->rewrite(perception);
+}
+
 InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
 {
   InferenceOnlineLearnerPtr learner, lastLearner;
@@ -103,8 +119,11 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   /* Perception */
   PerceptionPtr perception = imageFlattenPerception();
   /* Inference */
-  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), perception, digitTypeEnumeration, false);
+  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
   inference->setStochasticLearner(createOnlineLearner());
+  
+  //InferencePtr inference = classificationExtraTreeInference(T("digit"), perception, digitTypeEnumeration, 10, 26, 1);
+  
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
   context->train(inference, learningData, testingData);
