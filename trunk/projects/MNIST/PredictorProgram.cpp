@@ -49,7 +49,7 @@ private:
 
 int PredictorProgram::runProgram(MessageCallback& callback)
 {
-  ContainerPtr data = StreamPtr(new MatlabFileParser(dataFile))->load();
+  ContainerPtr data = parseDataFile(dataFile);
   jassert(data && data->getNumElements());
   std::cout << "Data : " << data->getNumElements() << std::endl;
   InferencePtr inference = Object::createFromFile(inferenceFile, callback).staticCast<Inference>();

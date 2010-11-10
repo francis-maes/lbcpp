@@ -30,6 +30,8 @@
       <variable type="File" name="testingFile" shortName="ts"/>
       <variable type="File" name="output" shortName="o"/>
       <variable type="PositiveInteger" name="numIterations" shortName="n"/>
+      <variable type="Double" name="binarizationThreshold" shortName="bin"/>
+      <variable type="Double" name="regularizer" shortName="reg"/>
     </class>
     
     <class name="PredictorProgram" base="Program">
@@ -38,11 +40,45 @@
       <variable type="File" name="output" shortName="o"/>
     </class>
     
+    <class name="BinarizerProgram" base="Program">
+      <variable type="File" name="inputFile" shortName="in"/>
+      <variable type="File" name="outputFile" shortName="o"/>
+    </class>
+    
     <!-- Perception -->
     <class name="ImageFlattenPerception" base="Perception">
       <constructor/>
     </class>
     
+    <class name="BinarizeImagePerception" base="Perception">
+      <constructor arguments="double threshold"/>
+    </class>
+    
+  <code>
+  ContainerPtr parseDataFile(const File&amp; file)
+  {
+    if (file.getFileExtension().toLowerCase() == T(".bin"))
+    {
+      VectorPtr res = vector(mnistImageClass);
+      InputStream* is = file.createInputStream();
+      while (!is-&gt;isExhausted())
+      {
+        bool hasSupervision = is-&gt;readBool();
+        std::vector&lt;double&gt; pixels(MNISTImage::numPixels);
+        for (size_t i = 0; i &lt; MNISTImage::numPixels; ++i)
+          pixels[i] = is-&gt;readDouble();
+        size_t digit = Variable::missingValue(digitTypeEnumeration).getInteger();
+        if (hasSupervision)
+          digit = is-&gt;readInt();
+        res-&gt;append(Variable(new MNISTImage(pixels, digit), mnistImageClass));
+      }
+      return res;
+    }
+    
+    return StreamPtr(new MatlabFileParser(file))-&gt;load();
+  }
+  </code>
+  
   </namespace>
 
   <declarationCode>
