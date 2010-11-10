@@ -584,6 +584,17 @@ void SnowBox::printInformation() const
   std::cout << std::endl;
 }
 
+ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference() const
+{
+  if (inferenceFile != File::nonexistent)
+  {
+    ObjectPtr obj = Object::createFromFile(inferenceFile);
+    if (obj && obj->getClass()->inheritsFrom(lbcpp::proteinSequentialInferenceClass))
+      return obj.staticCast<ProteinSequentialInference>();
+  }
+  return new ProteinSequentialInference();
+}
+
 int SnowBox::runProgram(MessageCallback& callback)
 {
   if (!loadData(callback))
@@ -601,7 +612,7 @@ int SnowBox::runProgram(MessageCallback& callback)
 
   printInformation();
 
-  ProteinSequentialInferencePtr inference = new ProteinSequentialInference();
+  ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference();
   InferencePtr previousInference;
   for (currentPass = 0; currentPass < target->getNumPasses(); ++currentPass)
   {

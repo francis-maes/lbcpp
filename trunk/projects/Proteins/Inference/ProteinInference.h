@@ -57,6 +57,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
 
+extern ClassPtr proteinSequentialInferenceClass;
+  
 class ProteinParallelInference : public VectorParallelInference, public ProteinInferenceHelper
 {
 public:

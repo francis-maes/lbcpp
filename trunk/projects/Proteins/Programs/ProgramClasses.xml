@@ -27,6 +27,7 @@
       <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
       <variable type="File" name="validationDirectory" description="The path to the validation set directory" shortName="vs"/>
       <variable type="File" name="output" description="The prefix path to the outputs" shortName="o"/>
+      <variable type="File" name="inferenceFile" description="Use a saved inference as a starting point" shortName="inf"/>
       <variable type="PositiveInteger" name="maxProteinsToLoad" description="Maximum number of learning proteins to load" shortName="max"/>
       <variable type="PositiveInteger" name="numberOfFolds" description="The number of fold of the training set" shortName="n"/>
       <variable type="PositiveInteger" name="currentFold" description="The current fold" shortName="c"/>
