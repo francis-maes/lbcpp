@@ -9,8 +9,8 @@
 #ifndef LBCPP_MNIST_MATLAB_FILE_PARSER_H_
 # define LBCPP_MNIST_MATLAB_FILE_PARSER_H_
 
-# include "MNISTImage.h"
 # include <lbcpp/lbcpp.h>
+# include "MNISTImage.h"
 
 namespace lbcpp
 {
@@ -19,7 +19,8 @@ class MatlabFileParser : public TextParser
 {
 public:
   MatlabFileParser(const File& file, MessageCallback& callback = MessageCallback::getInstance())
-    : TextParser(file, callback) {}
+    : TextParser(file, callback)
+  {}
   
   virtual TypePtr getElementsType() const
     {return mnistImageClass;}
@@ -54,6 +55,8 @@ public:
   virtual bool parseEnd()
     {return true;}
 };
+  
+extern ContainerPtr parseDataFile(const File& file);
 
 }; /* namespace lbcpp */
 

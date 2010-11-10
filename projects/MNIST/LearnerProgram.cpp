@@ -34,11 +34,6 @@ class InputOutputPairFunction : public Function
   }
 };
 
-ContainerPtr loadDataFromFile(const File& file)
-{
-  return StreamPtr(new MatlabFileParser(file))->load()->apply(FunctionPtr(new InputOutputPairFunction()));
-}
-
 bool LearnerProgram::loadData()
 {
   if (learningFile == File::nonexistent)
@@ -47,7 +42,7 @@ bool LearnerProgram::loadData()
     return false;
   }
   
-  learningData = loadDataFromFile(learningFile);
+  learningData = parseDataFile(learningFile)->apply(FunctionPtr(new InputOutputPairFunction()), false);
   if (!learningData->getNumElements())
   {
     std::cerr << "Error - No training data found in " << learningFile.getFullPathName().quoted() << std::endl;
@@ -61,7 +56,7 @@ bool LearnerProgram::loadData()
     return true;
   }
   
-  testingData = loadDataFromFile(testingFile);
+  testingData = parseDataFile(testingFile)->apply(FunctionPtr(new InputOutputPairFunction()), false);
   if (!testingData->getNumElements())
   {
     std::cerr << "Error - No testing data found in " << testingFile.getFullPathName().quoted() << std::endl;
@@ -75,7 +70,7 @@ PerceptionPtr rewritePerception(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
 
-  //rewriter->addRule(booleanType, booleanFeatures());
+  rewriter->addRule(booleanType, booleanFeatures());
   //rewriter->addRule(enumValueFeaturesPerceptionRewriteRule());
   
   //rewriter->addRule(negativeLogProbabilityType, defaultPositiveDoubleFeatures(30, -3, 3));
@@ -92,7 +87,7 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
   InferenceOnlineLearnerPtr learner, lastLearner;
   learner = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(1.0),
                                                        true, perStepMiniBatch20,
-                                                       l2RegularizerFunction(0.05));
+                                                       l2RegularizerFunction(regularizer));
   
   lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
   lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(output.getFullPathName() + T(".gnuplot")));
@@ -117,7 +112,10 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   InferenceContextPtr context = singleThreadedInferenceContext();
 
   /* Perception */
-  PerceptionPtr perception = imageFlattenPerception();
+  CompositePerceptionPtr perception = compositePerception(mnistImageClass, T("Image"));
+  perception->addPerception(T("raw data"), imageFlattenPerception());
+  perception->addPerception(T("binarized data"), binarizeImagePerception(binarizationThreshold));
+
   /* Inference */
   NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
   inference->setStochasticLearner(createOnlineLearner());
@@ -126,7 +124,7 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
-  context->train(inference, learningData, testingData);
+  context->train(inference, learningData, ContainerPtr());
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));

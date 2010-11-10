@@ -9,11 +9,12 @@ GENERATE_INTROSPECTION_CODE(MNISTClasses.xml MNISTClasses.cpp)
 SET(LBCPP_MNIST_SOURCES
   LearnerProgram.h
   LearnerProgram.cpp
+  PredictorProgram.h
+  PredictorProgram.cpp
+  BinarizerProgram.h
   MNISTImage.h
   MNISTPerception.h
   MatlabFileParser.h
-  PredictorProgram.h
-  PredictorProgram.cpp
   MNISTClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MNISTClasses.cpp
 )
@@ -34,3 +35,6 @@ TARGET_LINK_LIBRARIES(mnistLearner mnist)
 
 ADD_EXECUTABLE(mnistPredictor MainPredictor.cpp)
 TARGET_LINK_LIBRARIES(mnistPredictor mnist)
+
+ADD_EXECUTABLE(mnistConvertDataToBinaryFile MainConvertDataToBinaryFile.cpp)
+TARGET_LINK_LIBRARIES(mnistConvertDataToBinaryFile mnist)
