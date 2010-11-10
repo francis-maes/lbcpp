@@ -6,16 +6,16 @@
     
     <!-- Enumeration -->
     <enumeration name="DigitType">
-      <value name="zero"  oneLetterCode="0"/>
-      <value name="one"   oneLetterCode="1"/>
-      <value name="two"   oneLetterCode="2"/>
-      <value name="three" oneLetterCode="3"/>
-      <value name="four"  oneLetterCode="4"/>
-      <value name="five"  oneLetterCode="5"/>
-      <value name="six"   oneLetterCode="6"/>
-      <value name="seven" oneLetterCode="7"/>
-      <value name="eight" oneLetterCode="8"/>
-      <value name="nine"  oneLetterCode="9"/>
+      <value name="0" oneLetterCode="0"/>
+      <value name="1" oneLetterCode="1"/>
+      <value name="2" oneLetterCode="2"/>
+      <value name="3" oneLetterCode="3"/>
+      <value name="4" oneLetterCode="4"/>
+      <value name="5" oneLetterCode="5"/>
+      <value name="6" oneLetterCode="6"/>
+      <value name="7" oneLetterCode="7"/>
+      <value name="8" oneLetterCode="8"/>
+      <value name="9" oneLetterCode="9"/>
     </enumeration>
     
     <!-- Data -->
@@ -25,9 +25,17 @@
     </class>
     
     <!-- Program -->
-    <class name="MNISTProgram" base="Program">
+    <class name="LearnerProgram" base="Program">
       <variable type="File" name="learningFile" shortName="ls"/>
       <variable type="File" name="testingFile" shortName="ts"/>
+      <variable type="File" name="output" shortName="o"/>
+      <variable type="PositiveInteger" name="numIterations" shortName="n"/>
+    </class>
+    
+    <class name="PredictorProgram" base="Program">
+      <variable type="File" name="dataFile" shortName="data"/>
+      <variable type="File" name="inferenceFile" shortName="inf"/>
+      <variable type="File" name="output" shortName="o"/>
     </class>
     
     <!-- Perception -->

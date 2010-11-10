@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "MNISTProgram.h"
+#include "LearnerProgram.h"
 #include "MNISTImage.h"
 #include "MNISTPerception.h"
 #include "MatlabFileParser.h"
@@ -34,12 +34,12 @@ class InputOutputPairFunction : public Function
   }
 };
 
-ContainerPtr MNISTProgram::loadDataFromFile(const File& file)
+ContainerPtr loadDataFromFile(const File& file)
 {
   return StreamPtr(new MatlabFileParser(file))->load()->apply(FunctionPtr(new InputOutputPairFunction()));
 }
 
-bool MNISTProgram::loadData()
+bool LearnerProgram::loadData()
 {
   if (learningFile == File::nonexistent)
   {
@@ -71,7 +71,23 @@ bool MNISTProgram::loadData()
   return true;
 }
 
-int MNISTProgram::runProgram(MessageCallback& callback)
+InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
+{
+  InferenceOnlineLearnerPtr learner, lastLearner;
+  learner = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(1.0),
+                                                       true, perStepMiniBatch20,
+                                                       l2RegularizerFunction(0.05));
+  
+  lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
+  lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(output.getFullPathName() + T(".gnuplot")));
+  
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(numIterations);
+  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
+  
+  return learner;
+}
+
+int LearnerProgram::runProgram(MessageCallback& callback)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
   
@@ -87,49 +103,26 @@ int MNISTProgram::runProgram(MessageCallback& callback)
   /* Perception */
   PerceptionPtr perception = imageFlattenPerception();
   /* Inference */
-  InferenceOnlineLearnerPtr learner, lastLearner;
-  learner = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(1.0),
-                                                       true, perStepMiniBatch20,
-                                                       l2RegularizerFunction(0.0));
-
-  lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
-  lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(File::getCurrentWorkingDirectory().getChildFile(T("MNIST.gnuplot"))));
-  
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(100);
-  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
-  
   NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), perception, digitTypeEnumeration, false);
-  inference->setStochasticLearner(learner);
-
+  inference->setStochasticLearner(createOnlineLearner());
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
-  context->train(inference, learningData, ContainerPtr());
+  context->train(inference, learningData, testingData);
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
   context->evaluate(inference, learningData, evaluator);
   std::cout << evaluator->toString() << std::endl;
 
-  std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
-  evaluator = classificationAccuracyEvaluator(T("digit"));
-  context->evaluate(inference, testingData, evaluator);
-  std::cout << evaluator->toString() << std::endl;
+  if (testingData && testingData->getNumElements())
+  {
+    std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+    evaluator = classificationAccuracyEvaluator(T("digit"));
+    context->evaluate(inference, testingData, evaluator);
+    std::cout << evaluator->toString() << std::endl;
+  }
 
-  inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(T("MNIST.inference")));
+  inference->saveToFile(output.getFullPathName() + T(".inference"));
   std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   return 0;
-}
-
-extern void declareMNISTClasses();
-
-namespace lbcpp
-{
-  extern ClassPtr mnistProgramClass;
-}
-
-int main(int argc, char* argv[])
-{
-  lbcpp::initialize();
-  declareMNISTClasses();
-  return ProgramPtr(new MNISTProgram())->main(argc, argv);
 }

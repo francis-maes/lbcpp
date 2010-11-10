@@ -2,6 +2,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "Inference/ProteinInferenceFactory.h"
+#include "Inference/ProteinInference.h"
 
 namespace lbcpp {
 
@@ -160,6 +161,7 @@ protected:
   File testingDirectory;
   File validationDirectory;
   File output;
+  File inferenceFile;
 
   size_t maxProteinsToLoad;
 
@@ -189,6 +191,8 @@ private:
   bool loadData(MessageCallback& callback);
 
   ContainerPtr loadProteins(const File& f, size_t maxToLoad = 0) const;
+  
+  ProteinSequentialInferencePtr loadOrCreateIfFailInference() const;
   
   void printInformation() const;
 };
