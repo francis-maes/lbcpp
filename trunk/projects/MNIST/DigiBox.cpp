@@ -92,9 +92,10 @@ int MNISTProgram::runProgram(MessageCallback& callback)
                                                        true, perStepMiniBatch20,
                                                        l2RegularizerFunction(0.0));
 
-  //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
+  lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
+  lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(File::getCurrentWorkingDirectory().getChildFile(T("MNIST.gnuplot"))));
   
-  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(20);
+  StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(100);
   lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
   
   NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), perception, digitTypeEnumeration, false);
@@ -114,6 +115,7 @@ int MNISTProgram::runProgram(MessageCallback& callback)
   context->evaluate(inference, testingData, evaluator);
   std::cout << evaluator->toString() << std::endl;
 
+  inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(T("MNIST.inference")));
   std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   return 0;
 }
