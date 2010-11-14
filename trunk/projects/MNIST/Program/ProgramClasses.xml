@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Program" directory="Program">
+
+  <namespace name="lbcpp">
+    
+    <!-- Program -->
+    <class name="LearnerProgram" base="Program">
+      <variable type="File" name="learningFile" shortName="ls"/>
+      <variable type="File" name="testingFile" shortName="ts"/>
+      <variable type="File" name="output" shortName="o"/>
+      <variable type="PositiveInteger" name="numIterations" shortName="n"/>
+      <variable type="Double" name="binarizationThreshold" shortName="bin"/>
+      <variable type="Double" name="regularizer" shortName="reg"/>
+    </class>
+    
+    <class name="PredictorProgram" base="Program">
+      <variable type="File" name="dataFile" shortName="data"/>
+      <variable type="File" name="inferenceFile" shortName="inf"/>
+      <variable type="File" name="output" shortName="o"/>
+    </class>
+    
+    <class name="BinarizerProgram" base="Program">
+      <variable type="File" name="inputFile" shortName="in"/>
+      <variable type="File" name="outputFile" shortName="o"/>
+    </class>
+
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+  
+</file>

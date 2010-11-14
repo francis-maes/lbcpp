@@ -16,7 +16,7 @@
 namespace lbcpp 
 {
 
-// Input: (Inference, training data ObjectContainer) pair
+// Input: InferenceBatchLearnerInput
 // Supervision: None
 // Output: BinaryDecisionTree
 class SingleExtraTreeInferenceLearner : public Inference

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Image" directory="Image">
+
+  <namespace name="lbcpp">
+    
+    <!-- Image Data -->
+    <class name="Image">
+      <constructor arguments="size_t width, size_t height"/>
+      <variable type="PositiveInteger" name="width"/>
+      <variable type="PositiveInteger" name="height"/>
+      <variable type="GenericVector[Double]" name="pixels"/>
+    </class>
+    
+    <class name="BinaryImage">
+      <constructor arguments="size_t width, size_t height"/>
+    </class>
+    
+    <!-- Image Function -->
+    <class name="ImageFunction" base="Function" abstract="yes">
+      <variable type="PositiveInteger" name="width"/>
+      <variable type="PositiveInteger" name="height"/>
+    </class>
+    
+    <class name="AverageImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t radius"/>
+      <variable type="PositiveInteger" name="radius"/>
+    </class>
+    
+    <class name="ReduceImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t scaleFactor"/>
+      <variable type="PositiveInteger" name="scaleFactor"/>
+    </class>
+    
+    <class name="BinarizeImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, double threshold"/>
+      <variable type="Double" name="threshold"/>
+    </class>
+    
+  </namespace>
+
+  <declarationCode>
+    lbcpp::Type::finishDeclarations();
+  </declarationCode>
+  
+</file>

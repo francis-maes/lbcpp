@@ -47,6 +47,9 @@ PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
   if (argument.isDouble() || argument.isInteger())
     return lessThanOrEqualToPredicate(argument);
 
+  if (argument.isBoolean())
+    return equalToPredicate(argument);
+  
   jassert(argument.isObject());
 
   PredicatePtr predicate = argument.dynamicCast<Predicate>();

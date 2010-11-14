@@ -8,7 +8,6 @@
 
 #include <lbcpp/lbcpp.h>
 #include "LearnerProgram.h"
-#include "MNISTImage.h"
 #include "MNISTPerception.h"
 #include "MatlabFileParser.h"
 
@@ -122,10 +121,10 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   perception->addPerception(T("binarized data"), binarizeImagePerception(binarizationThreshold));
 
   /* Inference */
-  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
-  inference->setStochasticLearner(createOnlineLearner());
+  //NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
+  //inference->setStochasticLearner(createOnlineLearner());
   
-  //InferencePtr inference = classificationExtraTreeInference(T("digit"), perception, digitTypeEnumeration, 10, 26, 1);
+  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, 10, 26, 1);
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
