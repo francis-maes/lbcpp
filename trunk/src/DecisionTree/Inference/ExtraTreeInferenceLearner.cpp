@@ -61,7 +61,7 @@ static bool isVariableConstant(ContainerPtr container, size_t index1, int index2
   if (n <= 1)
     return true;
   constantValue = Variable();
-  for (size_t i = 1; i < n; ++i)
+  for (size_t i = 0; i < n; ++i)
   {
     Variable value = container->getElement(i)[index1];
     if (index2 >= 0)
@@ -93,9 +93,43 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
       leafValue = trainingData->getElement(0)[1];
     else
     {
-      // FIXME: create distribution instead of first output 
-      leafValue = trainingData->getElement(0)[1];
-      //jassert(false); 
+      // FIXME: create distribution instead of the most represented output 
+      if (outputType->inheritsFrom(doubleType))
+      {
+        double sum = 0;
+        for (size_t i = 0; i < n; ++i)
+          sum += trainingData->getElement(i)[1].getDouble();
+        leafValue = Variable(sum / (double)n);
+      }
+      else if (outputType->inheritsFrom(enumValueType))
+      {
+        EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
+        std::vector<size_t> vote(enumeration->getNumElements(), 0);
+        for (size_t i = 0; i < n; ++i)
+        {
+          Variable output = trainingData->getElement(i)[1];
+          if (output.isMissingValue())
+            continue;
+          ++vote[output.getInteger()];
+        }
+        
+        int bestClass = -1;
+        int bestVote = -1;
+        for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+        {
+          if ((int)vote[i] > bestVote)
+          {
+            bestVote = vote[i];
+            bestClass = i;
+          }
+        }
+        leafValue = Variable(bestClass, outputType);
+      }
+      else
+      {
+        MessageCallback::error(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
+        leafValue = trainingData->getElement(0)[1];
+      }
       /*
       jassert(n > 1);
       double weight = 1.0 / (double)n;
@@ -315,7 +349,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     if (!isInputVariableConstant(trainingData, variables[i], value))
       nonConstantVariables.push_back(variables[i]);
   }
-  
+
   Variable leafValue;
   if (shouldCreateLeaf(trainingData, nonConstantVariables, outputType, leafValue))
   {
@@ -343,6 +377,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     PredicatePtr splitPredicate = sampleSplit(random, trainingData, inputType, splitVariables[i], splitArgument);
     ContainerPtr negativeExamples, positiveExamples;
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
+    jassert(negativeExamples->getNumElements() + positiveExamples->getNumElements() == trainingData->getNumElements());
     if (splitScore > bestSplitScore)
     {
       //std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
@@ -362,7 +397,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
 
   // create the node
   tree->createInternalNode(nodeIndex, bestSplitVariable, bestSplitArgument, leftChildIndex);
-
+  
   // call recursively
   sampleTreeRecursively(tree, leftChildIndex, inputType, outputType, bestNegativeExamples, nonConstantVariables);
   sampleTreeRecursively(tree, leftChildIndex + 1, inputType, outputType, bestPositiveExamples, nonConstantVariables);
