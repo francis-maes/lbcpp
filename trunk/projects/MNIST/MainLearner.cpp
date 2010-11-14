@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "LearnerProgram.h"
+#include "Program/LearnerProgram.h"
 
 using namespace lbcpp;
 

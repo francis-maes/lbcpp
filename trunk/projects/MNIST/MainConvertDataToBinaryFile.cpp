@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "BinarizerProgram.h"
+#include "Program/BinarizerProgram.h"
 
 using namespace lbcpp;
 
