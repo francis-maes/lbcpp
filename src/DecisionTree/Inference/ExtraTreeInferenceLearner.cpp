@@ -23,30 +23,29 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
 
 Variable SingleExtraTreeInferenceLearner::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  const BinaryDecisionTreeInferencePtr& inference = input[0].getObjectAndCast<BinaryDecisionTreeInference>();
-  const ContainerPtr& trainingData = input[1].getObjectAndCast<Container>();
-  jassert(inference && trainingData);
-  if (!trainingData->getNumElements())
+  const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+  jassert(learnerInput);
+  const BinaryDecisionTreeInferencePtr& inference = learnerInput->getTargetInference();
+  jassert(inference);
+
+  if (!learnerInput->getNumTrainingExamples())
     return Variable();
-  
-  TypePtr trainingDataType = trainingData->getElementsType();
-  jassert(trainingDataType->getNumTemplateArguments() == 2);
-  TypePtr inputType = trainingDataType->getTemplateArgument(0);
-  TypePtr outputType = trainingDataType->getTemplateArgument(1);
+
+  TypePtr outputType = learnerInput->getTrainingExample(0).second.getType();
 
   PerceptionPtr perception = inference->getPerception();
-  VectorPtr newTrainingData = vector(pairClass(perception->getOutputType(), outputType), trainingData->getNumElements());
+  VectorPtr newTrainingData = vector(pairClass(perception->getOutputType(), outputType), learnerInput->getNumTrainingExamples());
   for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
   {
-    Variable example = trainingData->getElement(i);
-    newTrainingData->setElement(i, Variable::pair(perception->compute(example[0]), example[1]));
+    const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
+    newTrainingData->setElement(i, Variable::pair(perception->compute(example.first), example.second));
   }
 
   BinaryDecisionTreePtr tree = sampleTree(perception->getOutputType(), outputType, newTrainingData);
   if (tree)
   {
     MessageCallback::info(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
-          T(" numExamples = ") + String((int)trainingData->getNumElements()) +
+          T(" numExamples = ") + String((int)learnerInput->getNumTrainingExamples()) +
           T(" numNodes = ") + String((int)tree->getNumNodes()));
     inference->setTree(tree);
   }
@@ -152,6 +151,11 @@ Variable sampleNumericalSplit(RandomGeneratorPtr random, ContainerPtr trainingDa
   return Variable(res);
 }
 
+Variable sampleBooleanSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
+{
+  return Variable(random->sampleBool(), booleanType);
+}
+
 Variable sampleEnumerationSplit(RandomGeneratorPtr random, EnumerationPtr enumeration, ContainerPtr trainingData, size_t variableIndex)
 {
   size_t n = enumeration->getNumElements();
@@ -201,13 +205,15 @@ PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, T
     EnumerationPtr enumeration = variableType.dynamicCast<Enumeration>();
     splitArgument = sampleEnumerationSplit(random, enumeration, trainingData, variableIndex);
   }
+  else if (variableType->inheritsFrom(booleanType))
+    splitArgument = sampleBooleanSplit(random, trainingData, variableIndex);
   else if (variableType->inheritsFrom(discreteProbabilityDistributionClass(topLevelType)))
   {
     jassert(false);
   }
   else
   {
-    jassert(false);
+    MessageCallback::error(T("sampleSplit"), T("Type ") + variableType->getClassName().quoted() + (" not yet implemented"));
     return PredicatePtr();
   }
   

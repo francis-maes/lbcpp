@@ -2,190 +2,48 @@
 # define LBCPP_MNISP_PERCEPTION_PROGRAM_H_
 
 # include <lbcpp/lbcpp.h>
+# include "Image/Image.h"
+# include "Image/ImageFunction.h"
+# include "MatlabFileParser.h"
 
 namespace lbcpp
 {
 
-extern ClassPtr imageClass;
-extern ClassPtr binaryImageClass;
-  
-class Image : public Object
+class ImageFunctionToFlattenPerception : Perception
 {
 public:
-  Image(size_t width, size_t height) : width(width), height(height), pixels(std::vector<double>(width * height)) {}
-  Image() {}
+  ImageFunctionToFlattenPerception(ImageFunctionPtr function) : function(function) {}
   
-  size_t getWidth() const
-    {return width;}
-
-  size_t getHeight() const
-    {return height;}
-
-  double getValue(size_t x, size_t y) const
-    {return pixels[getIndex(x, y)];}
-  
-  void setValue(size_t x, size_t y, double value)
-    {pixels[getIndex(x, y)] = value;}
-  
-  virtual TypePtr getImageType() const
-    {return doubleType;}
-
-protected:
-  friend class ImageClass;
-  
-  size_t width;
-  size_t height;
-  std::vector<double> pixels;
-
-  size_t getIndex(size_t x, size_t y) const
-    {jassert(x < width && y < height); return x * width + height;}
-};
-
-typedef ReferenceCountedObjectPtr<Image> ImagePtr;
-  
-class BinaryImage : public Image
-{
-public:
-  BinaryImage(size_t width, size_t height) : Image(width, height) {}
-  
-  BinaryImage() {}
-  
-  virtual TypePtr getImageType() const
-    {return booleanType;}
-  
-protected:
-  friend class BinaryImageClass;
-};
-  
-class ImageFunction : public Function
-{
-public:
   virtual TypePtr getInputType() const
-    {return imageClass;}
+    {return function->getInputType();}
   
-  virtual TypePtr getOutputImageType() const {return doubleType;}
-  // average
-  // binarization
-  // resize
-  
-  // getOutputWidth
-  // getOutputHeight
-  // getOutputType
-  
-};
-
-class AverageImageFunction : public Function
-{
-public:
-  AverageImageFunction(size_t radius) : radius(radius) {}
-
-  virtual TypePtr getInputType() const
-    {return imageClass;}
-  
-  virtual TypePtr getOutputType(TypePtr inputType) const
+  virtual void computeOutputType()
   {
-    jassert(inputType->inheritsFrom(imageClass));
-    return inputType;
+    for (size_t i = 0; i < function->getOutputImageWidth(); ++i)
+      for (size_t j = 0; j < function->getOutputImageHeight(); ++j)
+        addOutputVariable(T("[") + String((int)i) + T(",") + String((int)j) + T("]"), function->getOutputImageType());
+    Perception::computeOutputType();
   }
-
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  
+  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
   {
-    jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
-    jassert(image);
+    Variable v = function->computeFunction(input, MessageCallback::getInstance());
+    jassert(v.isObject() && v.getType()->inheritsFrom(imageClass));
     
-    size_t width = image->getWidth();
-    size_t height = image->getHeight();
-    ImagePtr res = new Image(width, height);
-    for (size_t i = 0; i < width; ++i)
-      for (size_t j = 0; i < height; ++j)
-      {
-        size_t startX = juce::jlimit(0, (int)width-1, (int)(i - radius));
-        size_t endX   = juce::jlimit(0, (int)width-1, (int)(i + radius));
-        size_t startY = juce::jlimit(0, (int)height-1, (int)(j - radius));
-        size_t endY   = juce::jlimit(0, (int)height-1, (int)(j + radius));
-        
-        double sum = 0.0;
-        for (size_t ii = startX; ii <= endX; ++ii)
-          for (size_t jj = startY; jj <= endY; ++jj)
-            sum += image->getValue(ii, jj);
-        
-        res->setValue(i, j, sum / ((endX - startX + 1) * (endY - startY + 1)));
-      }
+    ImagePtr image = v.getObjectAndCast<Image>();
+    if (!image)
+      return;
+    jassert(image->getWidth() == function->getOutputImageWidth()
+            && image->getHeight() == function->getOutputImageHeight()
+            && image->getImageType() == function->getOutputImageType());
 
-    return res;
-  }
-
-protected:
-  size_t radius;
-};
-
-class ReduceImageFunction : public  Function
-{
-public:
-  ReduceImageFunction(size_t scaleFactor) : scaleFactor(scaleFactor) {}
-  
-  virtual TypePtr getInputType() const
-    {return imageClass;}
-  
-  virtual TypePtr getOutputType(TypePtr inputType) const
-  {
-    jassert(inputType->inheritsFrom(imageClass));
-    return inputType;
-  }
-  
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-  {
-    jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
-    jassert(image);
-
-    size_t width = image->getWidth();
-    size_t height = image->getHeight();
-    size_t scaledWidth = width / scaleFactor;
-    size_t scaledHeight = height / scaleFactor;
-
-    ImagePtr res = new Image(scaledWidth, scaledHeight);
-    for (size_t i = width % scaleFactor, indexX = 0; i < width; i += scaleFactor, ++indexX)
-      for (size_t j = height % scaleFactor, indexY = 0; j < height; j += scaleFactor, ++indexY)
-        res->setValue(indexX, indexY, image->getValue(i, j));
-
-    return res;
-  }
-
-protected:
-  size_t scaleFactor;
-};
-
-class BinarizeImageFunction : public Function
-{
-public:
-  BinarizeImageFunction(double threshold = 0.1) : threshold(threshold)
-    {jassert(0.0 <= threshold <= 1.0);}
-  
-  virtual TypePtr getInputType() const
-    {return imageClass;}
-  
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {jassert(inputType->inheritsFrom(imageClass)); return binaryImageClass;}
-
-  virtual void computeFunction(const Variable& input, PerceptionCallbackPtr callback) const
-  {
-    jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
-    jassert(image);
-    
-    size_t width = image->getWidth();
-    size_t height = image->getHeight();
-
-    ImagePtr res = new BinaryImage(width, height);
-    for (size_t i = 0; i < width; ++i)
-      for (size_t j = 0; j < height; ++j)
-        res->setValue(i, j, image->getValue(i, j) >= threshold);
+    for (size_t i = 0, index = 0; image->getWidth(); ++i)
+      for (size_t j = 0; image->getHeight(); ++j, ++index)
+        callback->sense(index, Variable(image->getValue(i, j), function->getOutputImageType()));
   }
   
 protected:
-  double threshold;
+  ImageFunctionPtr function;
 };
 
 class ImageFlattenPerception : public Perception
@@ -212,7 +70,7 @@ public:
       callback->sense(i, Variable(pixels[i], probabilityType));
   }
 };
-  
+
 class BinarizeImagePerception : public Perception
 {
 public:

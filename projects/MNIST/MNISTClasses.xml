@@ -2,6 +2,9 @@
 
 <file name="MNIST">
 
+  <import name="Image"/>
+  <import name="Program"/>
+
   <namespace name="lbcpp">
     
     <!-- Enumeration -->
@@ -24,43 +27,11 @@
       <variable type="DigitType" name="digit"/>
     </class>
     
-    <class name="Image">
-      <constructor arguments="size_t width, size_t height"/>
-      <variable type="PositiveInteger" name="width"/>
-      <variable type="PositiveInteger" name="height"/>
-      <variable type="GenericVector[Double]" name="pixels"/>
-    </class>
-    
-    <class name="BinaryImage">
-      <constructor arguments="size_t width, size_t height"/>
-    </class>
-    
-    <!-- Program -->
-    <class name="LearnerProgram" base="Program">
-      <variable type="File" name="learningFile" shortName="ls"/>
-      <variable type="File" name="testingFile" shortName="ts"/>
-      <variable type="File" name="output" shortName="o"/>
-      <variable type="PositiveInteger" name="numIterations" shortName="n"/>
-      <variable type="Double" name="binarizationThreshold" shortName="bin"/>
-      <variable type="Double" name="regularizer" shortName="reg"/>
-    </class>
-    
-    <class name="PredictorProgram" base="Program">
-      <variable type="File" name="dataFile" shortName="data"/>
-      <variable type="File" name="inferenceFile" shortName="inf"/>
-      <variable type="File" name="output" shortName="o"/>
-    </class>
-    
-    <class name="BinarizerProgram" base="Program">
-      <variable type="File" name="inputFile" shortName="in"/>
-      <variable type="File" name="outputFile" shortName="o"/>
-    </class>
-    
     <!-- Perception -->
     <class name="ImageFlattenPerception" base="Perception">
       <constructor/>
     </class>
-    
+
     <class name="BinarizeImagePerception" base="Perception">
       <constructor arguments="double threshold"/>
       <variable type="Double" name="threshold"/>

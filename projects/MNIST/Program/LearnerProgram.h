@@ -10,7 +10,7 @@ class LearnerProgram : public Program
 {
 public:
   LearnerProgram() : output(File::getCurrentWorkingDirectory().getChildFile(T("result"))),
-  numIterations(50), binarizationThreshold(0.05), regularizer(0.0)
+                     numIterations(50), binarizationThreshold(0.05), regularizer(0.0)
   {}
   
   virtual String toString() const

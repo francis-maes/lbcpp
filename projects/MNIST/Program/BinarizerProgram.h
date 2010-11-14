@@ -2,7 +2,6 @@
 # define LBCPP_BINARIZER_PROGRAM_PROGRAM_H_
 
 # include <lbcpp/lbcpp.h>
-# include "MNISTImage.h"
 # include "MatlabFileParser.h"
 
 namespace lbcpp

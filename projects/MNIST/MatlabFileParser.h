@@ -10,11 +10,42 @@
 # define LBCPP_MNIST_MATLAB_FILE_PARSER_H_
 
 # include <lbcpp/lbcpp.h>
-# include "MNISTImage.h"
+# include "Image/Image.h"
 
 namespace lbcpp
 {
 
+extern EnumerationPtr digitTypeEnumeration;
+extern ClassPtr mnistImageClass;  
+
+class MNISTImage : public Object
+{
+public:
+  enum {numPixels = 784};
+  
+  MNISTImage(const std::vector<double>& pixels, size_t digit)
+  : pixels(pixels), digit(digit)
+  {}
+  
+  MNISTImage() {}
+  
+  void setPixels(const std::vector<double>& pixels)
+  {this->pixels = pixels;}
+  
+  const std::vector<double>& getPixels() const
+  {return pixels;}
+  
+  Variable getDigit() const
+  {return Variable(digit, digitTypeEnumeration);}
+protected:
+  friend class MNISTImageClass;
+  
+  std::vector<double> pixels;
+  size_t digit;
+};
+
+typedef ReferenceCountedObjectPtr<MNISTImage> MNISTImagePtr;
+  
 class MatlabFileParser : public TextParser
 {
 public:
