@@ -42,12 +42,17 @@ bool LearnerProgram::loadData()
     return false;
   }
   
-  learningData = parseDataFile(learningFile)->apply(FunctionPtr(new InputOutputPairFunction()), false);
-  if (!learningData->getNumElements())
+  learningData = parseDataFile(learningFile);
+  if (!learningData || !learningData->getNumElements())
   {
     std::cerr << "Error - No training data found in " << learningFile.getFullPathName().quoted() << std::endl;
     return false;
   }
+  else
+  {
+    learningData = learningData->apply(FunctionPtr(new InputOutputPairFunction()), false);
+  }
+
   
   if (testingFile == File::nonexistent)
   {

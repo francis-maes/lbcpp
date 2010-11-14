@@ -15,7 +15,7 @@
       <variable type="DynamicClass" name="outputType"/>
     </class>
 
-    <class name="CompositePerception" base="Perception" abstract="yes">
+    <class name="CompositePerception" base="Perception">
       <variable type="Type" name="inputType"/>
       <variable type="String" name="stringDescription"/>
       <variable type="ObjectVector[Pair[String,Perception]]" name="subPerceptions"/>

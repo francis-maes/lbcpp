@@ -7,6 +7,12 @@ namespace lbcpp
 extern EnumerationPtr digitTypeEnumeration;
 extern ClassPtr mnistImageClass;
 
+struct Dimension
+{
+  size_t width;
+  size_t height;
+};
+  
 class MNISTImage : public Object
 {
 public:
