@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "PredictorProgram.h"
+#include "Program/PredictorProgram.h"
 
 using namespace lbcpp;
 
