@@ -24,6 +24,17 @@
       <variable type="DigitType" name="digit"/>
     </class>
     
+    <class name="Image">
+      <constructor arguments="size_t width, size_t height"/>
+      <variable type="PositiveInteger" name="width"/>
+      <variable type="PositiveInteger" name="height"/>
+      <variable type="GenericVector[Double]" name="pixels"/>
+    </class>
+    
+    <class name="BinaryImage">
+      <constructor arguments="size_t width, size_t height"/>
+    </class>
+    
     <!-- Program -->
     <class name="LearnerProgram" base="Program">
       <variable type="File" name="learningFile" shortName="ls"/>
@@ -52,6 +63,7 @@
     
     <class name="BinarizeImagePerception" base="Perception">
       <constructor arguments="double threshold"/>
+      <variable type="Double" name="threshold"/>
     </class>
     
   <code>
@@ -70,7 +82,7 @@
         size_t digit = Variable::missingValue(digitTypeEnumeration).getInteger();
         if (hasSupervision)
           digit = is-&gt;readInt();
-        res-&gt;append(Variable(new MNISTImage(pixels, digit), mnistImageClass));
+        res-&gt;append(Variable(ObjectPtr(new MNISTImage(pixels, digit)), mnistImageClass));
       }
       return res;
     }
