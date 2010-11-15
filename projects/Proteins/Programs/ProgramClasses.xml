@@ -40,6 +40,13 @@
       <variable type="ProteinTarget" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
       <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
     </class>
+    
+    <class name="ProteinInferenceEvaluatorProgram" base="Program">
+      <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
+      <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
+      <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
+      <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
+    </class>
   </namespace>
 
   <declarationCode>

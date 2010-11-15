@@ -134,6 +134,7 @@ ADD_SINGLE_CPP_EXECUTABLE(MoonBox)
 ADD_EXECUTABLE(RunProgram
   Programs/RunProgram.cpp
   Programs/ProgramDeclarations.h
+  Programs/ProteinInferenceEvaluatorProgram.h
   Programs/SmartBox.cpp
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
