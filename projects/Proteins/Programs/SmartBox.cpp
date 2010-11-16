@@ -189,7 +189,7 @@ public:
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
-    if (stack->getDepth() > 3
+    if (stack->getDepth() > 4
         || currentInference->getClassName() == T("BinaryLinearSVMInference")
         || currentInference->getClassName() == T("OneAgainstAllClassificationInference"))
       return;
@@ -271,7 +271,8 @@ public:
   {
     //String inferenceName = stack->getCurrentInference()->getName();
 
-    if (stack->getDepth() == 2 && stack->getCurrentInference()->getClassName() == T("StaticParallelInferenceLearner"))
+    if (stack->getDepth() == 2 && (stack->getCurrentInference()->getClassName() == T("StaticParallelInferenceLearner")
+                                   || stack->getCurrentInference()->getClassName() == T("MultiPassInferenceLearner")))
     {
       MessageCallback::info(T("===================== EVALUATION ====================="));
 
@@ -331,7 +332,7 @@ public:
              << "\t" << testingScores[i].second
              << "\t" << validationScores[i].second;
         }
-        *o << String((Time::getMillisecondCounter() - startingTime) / 1000) << "\n";
+        *o << "\t" << String((Time::getMillisecondCounter() - startingTime) / 1000) << "\n";
         delete o;
       }
 
@@ -630,7 +631,7 @@ int SnowBox::runProgram(MessageCallback& callback)
       initializeLearnerByCloning(inferencePass, previousInference);
 
     inference->appendInference(inferencePass);
-    //previousInference = inferencePass;
+    previousInference = inferencePass;
   }
   
   InferenceContextPtr context = (numberOfThreads == 1)
@@ -646,7 +647,7 @@ int SnowBox::runProgram(MessageCallback& callback)
   else
   {
     context->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
-    context->appendCallback(new StackPrinterCallback());
+    //context->appendCallback(new StackPrinterCallback());
     context->train(inference, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
