@@ -8,6 +8,7 @@
 
 #include <lbcpp/lbcpp.h>
 #include "Program/PredictorProgram.h"
+#include "Program/X3TesterProgram.h"
 
 using namespace lbcpp;
 
@@ -17,5 +18,5 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize();
   declareMNISTClasses();
-  return ProgramPtr(new PredictorProgram())->main(argc, argv);
+  return ProgramPtr(new X3TesterProgram())->main(argc, argv);
 }

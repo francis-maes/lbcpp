@@ -34,13 +34,18 @@ String RegressionErrorEvaluator::toString() const
   double count = squaredError->getCount();
   if (!count)
     return String::empty;
-  return getName() + T(": rmse = ") + String(getRMSE(), 4)
-      + T(" abs = ") + String(absoluteError->getMean(), 4)
+  return getName()
+      + T(": Least squares = ") + String(squaredError->getSum(), 4)
+      + T(", MSE = ") + String(squaredError->getMean(), 4)
+      + T(", RMSE = ") + String(getRMSE(), 4)
+      + T(", ABS = ") + String(absoluteError->getMean(), 4)
       + T(" (") + String((int)count) + T(" examples)");
 }
 
 void RegressionErrorEvaluator::getScores(std::vector< std::pair<String, double> >& res) const
 {
+  res.push_back(std::make_pair(T("LS"),   -squaredError->getSum()));
+  res.push_back(std::make_pair(T("MSE"),  -squaredError->getMean()));
   res.push_back(std::make_pair(T("RMSE"), -getRMSE()));
   res.push_back(std::make_pair(T("AbsE"), -absoluteError->getMean()));
 }
