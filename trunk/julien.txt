@@ -1,0 +1,32 @@
+Paper ESANN:
+ * Réviser les commentaires fait par Pierre
+ * Prender en compte les feedbacks de NIPS
+   * Enoncer dès l'abstract que notre méthode simple premet déjà de bon résultat
+   * ...
+ * Description de PSIPRED (utilisation de RNN)
+
+SnowBox:
+ * Problème de la callback lors de passe initialisée
+
+Extra-trees:
+ * Suspission de bug lors de l'évaluation de test
+   * Confirmer la presence de bug
+   * Trouver une petite base de donnée et comparer la version Matlab de Pierre avec la nôtre
+
+DISpro:
+ * Tuning des paramètres en mode MP
+
+CASP:
+ * Télécharger les données de CASP8
+ * Entrainer un modère, tester, comparer
+ * De même pour CASP9
+
+Optimizer:
+ * Comprendre le fonctionnement et en continuer le développement
+
+MNIST:
+ * Features
+   * Générer une image/2 contenant les mins et une contenant les max, ainsi récursivement
+ * Tester les extra-trees
+
+

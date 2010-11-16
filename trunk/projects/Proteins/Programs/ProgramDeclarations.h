@@ -162,6 +162,7 @@ protected:
   File validationDirectory;
   File output;
   File inferenceFile;
+  File inputDirectory;
 
   size_t maxProteinsToLoad;
 

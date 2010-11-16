@@ -305,35 +305,36 @@ public:
 
       MessageCallback::info(T("======================================================"));
 
-      std::vector< std::pair<String, double> > learningScores, testingScores, validationScores;
-      learningEvaluator->getScores(learningScores);
-      testingEvaluator->getScores(testingScores);
-      validationEvaluator->getScores(validationScores);
-      
-      std::map<String, size_t> scoreNameToIndex;
-      for (size_t i = 0; i < learningScores.size(); ++i)
-        scoreNameToIndex[learningScores[i].first] = i;
-      
-      std::map<String, String> scoresToUse;
-      scoresToUse[T("secondaryStructure")] = T("secondaryStructure[Accuracy]");
-      scoresToUse[T("dsspSecondaryStructure")] = T("dsspSecondaryStructure[Accuracy]");
-      scoresToUse[T("disorderRegions")] = T("disorderRegions[MCC]");
-      scoresToUse[T("solventAccessibilityAt20p")] = T("solventAccessibilityAt20p[Accuracy]");
-      scoresToUse[T("structuralAlphabetSequence")] = T("structuralAlphabetSequence[Accuracy]");
-      
+      /* GnuPlot File Generation */
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)
       {
-        String targetName = it->first;
+        std::vector< std::pair<String, double> > learningScores, testingScores, validationScores;
+        learningEvaluator->getScoresForTarget(it->first, learningScores);
+        testingEvaluator->getScoresForTarget(it->first, testingScores);
+        validationEvaluator->getScoresForTarget(it->first, validationScores);
+        jassert(learningScores.size() == testingScores.size() && learningScores.size() == validationScores.size());
+        // Header
         OutputStream* o = it->second.createOutputStream();
-        size_t index = scoreNameToIndex[scoresToUse[targetName]];
-        *o << (int)passNumber << '\t'
-           << learningScores[index].second << '\t'
-           << testingScores[index].second << '\t'
-           << validationScores[index].second << '\t'
-           << String((int)(Time::getMillisecondCounter() - startingTime) / 1000) << '\n';
+        if (!passNumber)
+        {
+          *o << "# GnuPlot File Generated on " << Time::getCurrentTime().toString(true, true, true, true) << "\n";
+          *o << "# pass";
+          for (size_t i = 0; i < learningScores.size(); ++i)
+            *o << "\t" << learningScores[i].first << "(train, test, valid)";
+          *o << "\n";
+        }        
+
+        *o << (int)passNumber;
+        for (size_t i = 0; i < learningScores.size(); ++i)
+        {
+          *o << "\t" << learningScores[i].second
+             << "\t" << testingScores[i].second
+             << "\t" << validationScores[i].second;
+        }
+        *o << String((Time::getMillisecondCounter() - startingTime) / 1000) << "\n";
         delete o;
       }
-      
+
       // Mouais ... -_-"
       /*InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
       if (learnerInput)
@@ -350,7 +351,6 @@ public:
         }
       }*/
 
-      MessageCallback::info(T("======================================================"));
       ++passNumber;
     }
 
@@ -482,10 +482,16 @@ ProteinInferenceFactoryPtr SnowBox::createFactory() const
 ContainerPtr SnowBox::loadProteins(const File& f, size_t maxToLoad) const
 {
   static ThreadPoolPtr pool = new ThreadPool(numberOfThreads, false);
+  if (inputDirectory != File::nonexistent)
+    return directoryPairFileStream(inputDirectory, f, T("*.xml"))
+      ->load(maxToLoad)
+      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)
+      ->randomize();
+  
   return directoryFileStream(f, T("*.xml"))
     ->load(maxToLoad)
     ->apply(loadFromFileFunction(proteinClass), pool)
-    ->apply(proteinToInputOutputPairFunction(true))
+    ->apply(proteinToInputOutputPairFunction(false))
     ->randomize();
 }
 
@@ -624,7 +630,7 @@ int SnowBox::runProgram(MessageCallback& callback)
       initializeLearnerByCloning(inferencePass, previousInference);
 
     inference->appendInference(inferencePass);
-    previousInference = inferencePass;
+    //previousInference = inferencePass;
   }
   
   InferenceContextPtr context = (numberOfThreads == 1)
@@ -640,7 +646,7 @@ int SnowBox::runProgram(MessageCallback& callback)
   else
   {
     context->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
-    //context->appendCallback(new StackPrinterCallback());
+    context->appendCallback(new StackPrinterCallback());
     context->train(inference, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");

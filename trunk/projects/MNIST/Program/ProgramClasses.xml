@@ -24,6 +24,14 @@
       <variable type="File" name="inputFile" shortName="in"/>
       <variable type="File" name="outputFile" shortName="o"/>
     </class>
+    
+    <class name="X3TesterProgram" base="Program">
+    </class>
+    
+    <class name="FlattenContainerPerception" base="Perception">
+      <variable type="PositiveInteger" name="numElements"/>
+      <variable type="Type" name="elementType"/>
+    </class>
 
   </namespace>
 

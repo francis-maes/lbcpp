@@ -21,6 +21,7 @@ SET(LBCPP_MNIST_PROGRAM_SOURCES
   Program/PredictorProgram.h
   Program/PredictorProgram.cpp
   Program/BinarizerProgram.h
+  Program/X3TesterProgram.h
   Program/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

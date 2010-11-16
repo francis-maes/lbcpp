@@ -310,6 +310,18 @@ static double computeClassificationSplitScore(ContainerPtr examples, ContainerPt
   return 2.0 * informationGain / (splitEntropy + classificationEntropy);
 }
 
+static double computeRegressionSplitScore(ContainerPtr examples, ContainerPtr negativeExamples, ContainerPtr positiveExamples)
+{
+  double max = negativeExamples->getNumElements();
+  double min = positiveExamples->getNumElements();
+  if (max < min)
+  {
+    max = positiveExamples->getNumElements();
+    min = negativeExamples->getNumElements();
+  }
+  return min / max;
+}
+
 double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
 {
   VectorPtr neg = vector(examples->getElementsType());
@@ -329,6 +341,8 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   TypePtr outputType = examples->getElementsType()->getTemplateArgument(1);
   if (outputType->inheritsFrom(enumValueType))
     return computeClassificationSplitScore(examples, negativeExamples, positiveExamples);
+  if (outputType->inheritsFrom(doubleType))
+    return computeRegressionSplitScore(examples, negativeExamples, positiveExamples);
 
   jassert(false);
   return 0.0;

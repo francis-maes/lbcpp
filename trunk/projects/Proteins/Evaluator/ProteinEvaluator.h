@@ -103,6 +103,13 @@ public:
         res.push_back(std::make_pair(evaluator->getName() + T("[") + scores[j].first + T("]"), scores[j].second));
     }
   }
+  
+  void getScoresForTarget(const String& targetName, std::vector< std::pair<String, double> >& res) const
+  {
+    EvaluatorPtr evaluator = getEvaluatorForTarget(targetName);
+    jassert(evaluator);
+    evaluator->getScores(res);
+  }
 
 protected:
   size_t numProteins;
