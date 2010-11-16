@@ -6,7 +6,6 @@ Paper ESANN:
  * Description de PSIPRED (utilisation de RNN)
 
 SnowBox:
- * Problème de la callback lors de passe initialisée
 
 Extra-trees:
  * Suspission de bug lors de l'évaluation de test
