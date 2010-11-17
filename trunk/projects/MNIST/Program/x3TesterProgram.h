@@ -39,6 +39,8 @@ protected:
 class X3TesterProgram : public Program
 {
 public:
+  X3TesterProgram() : numTrees(100), numAttributes(10), minSplitSize(1) {}
+  
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
   
@@ -49,28 +51,32 @@ public:
     std::vector<std::vector<double> > data;
     parseDataFile(input, data);
     
-    ContainerPtr learningData = loadDataToContainer(data, 0, 3000);
+    ContainerPtr learningData = loadDataToContainer(data, 0, 300);
     ContainerPtr testingData = loadDataToContainer(data, 8000, 10000);
 
     InferenceContextPtr context = singleThreadedInferenceContext();
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(10));
-    InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, 100, 10, 1);
+    InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
     
     context->train(inference, learningData, ContainerPtr());
     
     EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     context->evaluate(inference, learningData, evaluator);
-    std::cout << "Evaluation (Train) - " << std::endl << evaluator->toString() << std::endl;
+    std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
     evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     context->evaluate(inference, testingData, evaluator);
-    std::cout << "Evaluation (Test)  - " << std::endl << evaluator->toString() << std::endl;
+    std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
     
     return 0;
   }
 
 protected:
   friend class X3TesterProgramClass;
+  
+  size_t numTrees;
+  size_t numAttributes;
+  size_t minSplitSize;
 
 private:
   void parseDataFile(const File& file, std::vector<std::vector<double> >& results)
@@ -86,18 +92,18 @@ private:
       jassert(example.size() == 11);
       results.push_back(example);
     }
-    jassert(results.size() == 10000);
+    //jassert(results.size() == 10000);
     delete is;
   }
   
   ContainerPtr loadDataToContainer(const std::vector<std::vector<double> >& data, size_t from, size_t to)
   {
-    jassert(from <= to <= 10000);
+    jassert(from <= to && to <= data.size());
     ContainerPtr res = vector(pairClass(vectorClass(doubleType), doubleType), to - from);
     for (size_t i = from; i < to; ++i)
     {
       ContainerPtr example = vector(doubleType, data[i].size());
-      for (size_t j = 0; j < data[i].size() - 1; ++j)
+      for (size_t j = 0; j < data[i].size(); ++j)
         example->setElement(j, Variable(data[i][j], doubleType));
       res->setElement(i - from, Variable::pair(example, data[i][data[i].size() - 1]));
     }

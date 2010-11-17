@@ -26,6 +26,9 @@
     </class>
     
     <class name="X3TesterProgram" base="Program">
+      <variable type="PositiveInteger" name="numTrees" shortName="t"/>
+      <variable type="PositiveInteger" name="numAttributes" shortName="k"/>
+      <variable type="PositiveInteger" name="minSplitSize" shortName="nmin"/>
     </class>
     
     <class name="FlattenContainerPerception" base="Perception">

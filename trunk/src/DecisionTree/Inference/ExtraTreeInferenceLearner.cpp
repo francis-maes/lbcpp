@@ -32,7 +32,6 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextWeakPtr context, c
     return Variable();
 
   TypePtr outputType = learnerInput->getTrainingExample(0).second.getType();
-
   PerceptionPtr perception = inference->getPerception();
   VectorPtr newTrainingData = vector(pairClass(perception->getOutputType(), outputType), learnerInput->getNumTrainingExamples());
   for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
@@ -45,6 +44,7 @@ Variable SingleExtraTreeInferenceLearner::run(InferenceContextWeakPtr context, c
   if (tree)
   {
     MessageCallback::info(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
+          T(" k = ") + String((int)numAttributeSamplesPerSplit) +
           T(" numExamples = ") + String((int)learnerInput->getNumTrainingExamples()) +
           T(" numNodes = ") + String((int)tree->getNumNodes()));
     inference->setTree(tree);
@@ -86,59 +86,68 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
 {
   size_t n = trainingData->getNumElements();
   jassert(n);
-
-  if (n < minimumSizeForSplitting || variables.empty())
+  
+  if (n == 1)
   {
-    if (n == 1)
-      leafValue = trainingData->getElement(0)[1];
-    else
-    {
-      // FIXME: create distribution instead of the most represented output 
-      if (outputType->inheritsFrom(doubleType))
-      {
-        double sum = 0;
-        for (size_t i = 0; i < n; ++i)
-          sum += trainingData->getElement(i)[1].getDouble();
-        leafValue = Variable(sum / (double)n);
-      }
-      else if (outputType->inheritsFrom(enumValueType))
-      {
-        EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
-        std::vector<size_t> vote(enumeration->getNumElements(), 0);
-        for (size_t i = 0; i < n; ++i)
-        {
-          Variable output = trainingData->getElement(i)[1];
-          if (output.isMissingValue())
-            continue;
-          ++vote[output.getInteger()];
-        }
-        
-        int bestClass = -1;
-        int bestVote = -1;
-        for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-        {
-          if ((int)vote[i] > bestVote)
-          {
-            bestVote = vote[i];
-            bestClass = i;
-          }
-        }
-        leafValue = Variable(bestClass, outputType);
-      }
-      else
-      {
-        MessageCallback::error(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
-        leafValue = trainingData->getElement(0)[1];
-      }
-      /*
-      jassert(n > 1);
-      double weight = 1.0 / (double)n;
-      for (size_t i = 0; i < n; ++i)
-        leafValue.addWeighted(trainingData->getElement(i)[1], weight);*/
-    }
+    leafValue = trainingData->getElement(0)[1];
     return true;
   }
-  return isOutputConstant(trainingData, leafValue);
+
+  if (n >= minimumSizeForSplitting && variables.size())
+    return isOutputConstant(trainingData, leafValue);
+
+  // FIXME: create distribution instead of the most represented output 
+  if (outputType->inheritsFrom(doubleType))
+  {
+    double sum = 0;
+    size_t count = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable vote = trainingData->getElement(i)[1];
+      if (vote.exists())
+      {
+        ++count;
+        sum += vote.getDouble();
+      }
+    }
+    leafValue = count ? Variable(sum / (double)count, doubleType) : Variable::missingValue(doubleType);
+  }
+  else if (outputType->inheritsFrom(enumValueType))
+  {
+    EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
+    std::vector<size_t> vote(enumeration->getNumElements(), 0);
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable output = trainingData->getElement(i)[1];
+      if (output.isMissingValue())
+        continue;
+      ++vote[output.getInteger()];
+    }
+    
+    int bestClass = -1;
+    int bestVote = -1;
+    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+    {
+      if ((int)vote[i] > bestVote)
+      {
+        bestVote = vote[i];
+        bestClass = i;
+      }
+    }
+    leafValue = Variable(bestClass, outputType);
+  }
+  else
+  {
+    MessageCallback::error(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
+    leafValue = trainingData->getElement(0)[1];
+  }
+  /*
+  jassert(n > 1);
+  double weight = 1.0 / (double)n;
+  for (size_t i = 0; i < n; ++i)
+    leafValue.addWeighted(trainingData->getElement(i)[1], weight);*/
+  
+  return true;
 }
 ///////////////////////////////////// Split Predicate Sampling functions /////////////////////
 Variable sampleNumericalIntegerSplit(RandomGeneratorPtr random, ContainerPtr trainingData, size_t variableIndex)
@@ -310,16 +319,33 @@ static double computeClassificationSplitScore(ContainerPtr examples, ContainerPt
   return 2.0 * informationGain / (splitEntropy + classificationEntropy);
 }
 
+static double computeLeastSquardDeviation(ContainerPtr examples)
+{
+  size_t n = examples->getNumElements();
+  jassert(n);
+  /* compute mean */
+  double sum = 0;
+  for (size_t i = 0; i < n; ++i)
+    sum += examples->getElement(i)[1].getDouble();
+  double mean = sum / (double)n;
+  /* compute least square */
+  double leastSquare = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    double delta = examples->getElement(i)[1].getDouble() - mean;
+    leastSquare += delta * delta;
+  }
+  
+  return leastSquare;
+}
+
 static double computeRegressionSplitScore(ContainerPtr examples, ContainerPtr negativeExamples, ContainerPtr positiveExamples)
 {
-  double max = negativeExamples->getNumElements();
-  double min = positiveExamples->getNumElements();
-  if (max < min)
-  {
-    max = positiveExamples->getNumElements();
-    min = negativeExamples->getNumElements();
-  }
-  return min / max;
+  double partOfNegative = (double)negativeExamples->getNumElements() / examples->getNumElements();
+  double partOfPositive = 1 - partOfNegative;
+
+  return -(computeLeastSquardDeviation(negativeExamples)
+  + computeLeastSquardDeviation(positiveExamples));
 }
 
 double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
@@ -380,11 +406,12 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
   size_t K = splitVariables.size();
   
   // generate split predicates, score them, and keep the best one
-  PredicatePtr bestSplitPredicate;
-  size_t bestSplitVariable;
-  Variable bestSplitArgument;
   double bestSplitScore = -DBL_MAX;
-  ContainerPtr bestNegativeExamples, bestPositiveExamples;
+  std::vector<size_t>       bestSplitVariable;
+  std::vector<Variable>     bestSplitArgument;
+  std::vector<ContainerPtr> bestPositiveExamples;
+  std::vector<ContainerPtr> bestNegativeExamples;
+
   for (size_t i = 0; i < K; ++i)
   {
     Variable splitArgument;
@@ -392,29 +419,50 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     ContainerPtr negativeExamples, positiveExamples;
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     jassert(negativeExamples->getNumElements() + positiveExamples->getNumElements() == trainingData->getNumElements());
+ /*   std::cout << "Predicate: " << splitPredicate->toString()
+              << "\tx = " << splitVariables[i]
+              << "\t=> score = " << splitScore
+              << "\tnbPos: " << positiveExamples->getNumElements()
+              << "\tnbNeg: " << negativeExamples->getNumElements()
+              << std::endl;*/
+    // FIXME: I think that we must take a random bestSplitScore when there are many bestSplit
+    // I constat a significant difference between 'take the first bestScore' and 'take the last best score'
     if (splitScore > bestSplitScore)
     {
       //std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
-      bestSplitPredicate = splitPredicate;
-      bestSplitVariable = splitVariables[i];
-      bestSplitArgument = splitArgument;
-      bestNegativeExamples = negativeExamples;
-      bestPositiveExamples = positiveExamples;
+      bestSplitVariable.clear();
+      bestSplitArgument.clear();
+      bestPositiveExamples.clear();
+      bestNegativeExamples.clear();
+      
       bestSplitScore = splitScore;
     }
+    if (splitScore >= bestSplitScore)
+    {
+      bestSplitVariable.push_back(splitVariables[i]);
+      bestSplitArgument.push_back(splitArgument);
+      bestPositiveExamples.push_back(positiveExamples);
+      bestNegativeExamples.push_back(negativeExamples);
+    }
   }
-
-  jassert(bestSplitArgument.exists() && bestNegativeExamples && bestPositiveExamples);
+  jassert(bestSplitVariable.size());
+  int bestIndex = RandomGenerator::getInstance()->sampleInt(0, (int)bestSplitVariable.size());
+/*  std::cout << "Best: " << bestSplitArgument[bestIndex].toString()
+  << "\tx = " << bestSplitVariable[bestIndex]
+  << "\t=> score = " << bestSplitScore
+  << "\tnbPos: " << bestPositiveExamples[bestIndex]->getNumElements()
+  << "\tnbNeg: " << bestNegativeExamples[bestIndex]->getNumElements()
+  << std::endl;*/
 
   // allocate child nodes
   size_t leftChildIndex = tree->allocateNodes(2);
 
   // create the node
-  tree->createInternalNode(nodeIndex, bestSplitVariable, bestSplitArgument, leftChildIndex);
+  tree->createInternalNode(nodeIndex, bestSplitVariable[bestIndex], bestSplitArgument[bestIndex], leftChildIndex);
   
   // call recursively
-  sampleTreeRecursively(tree, leftChildIndex, inputType, outputType, bestNegativeExamples, nonConstantVariables);
-  sampleTreeRecursively(tree, leftChildIndex + 1, inputType, outputType, bestPositiveExamples, nonConstantVariables);
+  sampleTreeRecursively(tree, leftChildIndex, inputType, outputType, bestNegativeExamples[bestIndex], nonConstantVariables);
+  sampleTreeRecursively(tree, leftChildIndex + 1, inputType, outputType, bestPositiveExamples[bestIndex], nonConstantVariables);
 }
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData)
