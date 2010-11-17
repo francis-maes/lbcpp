@@ -95,8 +95,8 @@ String Program::getUsage() const
 {
   ClassPtr thisClass = getClass();
   /* Compute the longest string */
-  size_t longestName = 0;
-  size_t longestShortName = 0;
+  size_t longestName = 4;
+  size_t longestShortName = 1;
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     size_t nameLength = thisClass->getObjectVariableName(i).length();
@@ -109,7 +109,7 @@ String Program::getUsage() const
   /* Generate usage */
   String argumentDescriptions = T("-h") + String::repeatedString(T(" "), longestShortName - 1)
                               + T(" --help") + String::repeatedString(T(" "), longestName - 4)
-                              + (" Display this help message.\n");
+                              + T(" Display this help message.\n");
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     
