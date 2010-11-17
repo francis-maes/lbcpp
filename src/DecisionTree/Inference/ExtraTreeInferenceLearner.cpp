@@ -87,7 +87,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
   size_t n = trainingData->getNumElements();
   jassert(n);
   
-  if (n == 1)
+  if (n <= 1)
   {
     leafValue = trainingData->getElement(0)[1];
     return true;
@@ -286,37 +286,42 @@ PredicatePtr sampleSplit(RandomGeneratorPtr random, ContainerPtr trainingData, T
 
 DiscreteProbabilityDistributionPtr computeDiscreteOutputDistribution(ContainerPtr examples)
 {
-  if (!examples->getNumElements())
-    return DiscreteProbabilityDistributionPtr();
-  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(examples->getElementsType()->getTemplateArgument(1));
   size_t n = examples->getNumElements();
+  if (!n)
+    return DiscreteProbabilityDistributionPtr();
+
+  EnumerationPtr enumeration = examples->getElementsType()->getTemplateArgument(1);
+  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);  
+  /* count */
   for (size_t i = 0; i < n; ++i)
   {
     Variable output = examples->getElement(i)[1];
     jassert(output.exists());
     res->increment(output);
   }
+  /* normalize */
+  for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+    res->setProbability(i, res->getProbability(i) / (double) n);
+
   return res;
 }
 
 static double computeClassificationSplitScore(ContainerPtr examples, ContainerPtr negativeExamples, ContainerPtr positiveExamples)
 {
-  DiscreteProbabilityDistributionPtr priorDistribution = computeDiscreteOutputDistribution(examples);
+  EnumerationPtr enumeration = examples->getElementsType()->getTemplateArgument(1);
+  
   DiscreteProbabilityDistributionPtr negativeDistribution = computeDiscreteOutputDistribution(negativeExamples);
   DiscreteProbabilityDistributionPtr positiveDistribution = computeDiscreteOutputDistribution(positiveExamples);
+  DiscreteProbabilityDistributionPtr priorDistribution    = new DiscreteProbabilityDistribution(enumeration);
+  for (size_t i = 0;  i < enumeration->getNumElements(); ++i)
+    priorDistribution->setProbability(i, (negativeDistribution->getProbability(i) + positiveDistribution->getProbability(i)) / 2);
 
-  BernoulliDistributionPtr splitDistribution = new BernoulliDistribution(positiveExamples->getNumElements() / (double)examples->getNumElements());
+  double probOfTrue = positiveExamples->getNumElements() / (double)examples->getNumElements();
+  double informationGain = priorDistribution->computeEntropy()
+    - probOfTrue * positiveDistribution->computeEntropy() 
+    - (1 - probOfTrue) * negativeDistribution->computeEntropy(); 
 
-  double classificationEntropy = priorDistribution->computeEntropy();
-  
-  double informationGain = classificationEntropy
-    - splitDistribution->getProbabilityOfTrue() * positiveDistribution->computeEntropy() 
-    - splitDistribution->getProbabilityOfFalse() * negativeDistribution->computeEntropy(); 
-
-  double splitEntropy = splitDistribution->computeEntropy();
-
-  jassert(splitEntropy + classificationEntropy != 0);
-  return 2.0 * informationGain / (splitEntropy + classificationEntropy);
+  return informationGain;
 }
 
 static double computeLeastSquardDeviation(ContainerPtr examples)
@@ -340,13 +345,7 @@ static double computeLeastSquardDeviation(ContainerPtr examples)
 }
 
 static double computeRegressionSplitScore(ContainerPtr examples, ContainerPtr negativeExamples, ContainerPtr positiveExamples)
-{
-  double partOfNegative = (double)negativeExamples->getNumElements() / examples->getNumElements();
-  double partOfPositive = 1 - partOfNegative;
-
-  return -(computeLeastSquardDeviation(negativeExamples)
-  + computeLeastSquardDeviation(positiveExamples));
-}
+  {return -computeLeastSquardDeviation(negativeExamples) - computeLeastSquardDeviation(positiveExamples);}
 
 double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicatePtr predicate, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples)
 {
@@ -419,17 +418,15 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
     ContainerPtr negativeExamples, positiveExamples;
     double splitScore = computeSplitScore(trainingData, splitVariables[i], splitPredicate, negativeExamples, positiveExamples);
     jassert(negativeExamples->getNumElements() + positiveExamples->getNumElements() == trainingData->getNumElements());
- /*   std::cout << "Predicate: " << splitPredicate->toString()
-              << "\tx = " << splitVariables[i]
-              << "\t=> score = " << splitScore
-              << "\tnbPos: " << positiveExamples->getNumElements()
-              << "\tnbNeg: " << negativeExamples->getNumElements()
-              << std::endl;*/
-    // FIXME: I think that we must take a random bestSplitScore when there are many bestSplit
-    // I constat a significant difference between 'take the first bestScore' and 'take the last best score'
+ 
+/*    std::cout << splitPredicate->toString() << "\t score: " << splitScore << std::endl;
+    DiscreteProbabilityDistributionPtr dis = computeDiscreteOutputDistribution(positiveExamples);
+    std::cout << "   nbPos: " << positiveExamples->getNumElements() << " distri Pos: " << dis->toString() << std::endl;
+    dis = computeDiscreteOutputDistribution(negativeExamples);
+    std::cout << "   nbNeg: " << negativeExamples->getNumElements() << " distri Neg: " << dis->toString() << std::endl;
+*/
     if (splitScore > bestSplitScore)
     {
-      //std::cout << "Predicate: " << splitPredicate->toString() << " => score = " << splitScore << std::endl;
       bestSplitVariable.clear();
       bestSplitArgument.clear();
       bestPositiveExamples.clear();
@@ -447,13 +444,10 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(BinaryDecisionTreePt
   }
   jassert(bestSplitVariable.size());
   int bestIndex = RandomGenerator::getInstance()->sampleInt(0, (int)bestSplitVariable.size());
-/*  std::cout << "Best: " << bestSplitArgument[bestIndex].toString()
-  << "\tx = " << bestSplitVariable[bestIndex]
-  << "\t=> score = " << bestSplitScore
-  << "\tnbPos: " << bestPositiveExamples[bestIndex]->getNumElements()
-  << "\tnbNeg: " << bestNegativeExamples[bestIndex]->getNumElements()
-  << std::endl;*/
-
+  // FIXME: the remaining bestXXX[Y != bestIndex] must be cleaned to save memory !
+  // Generaly those vector are of size 1. The few case when size is greather is generaly near a leaf.
+  // This is because near a leaf there are less very distinct examples, so, more chance to have the same splitScore
+//  std::cout << "Best Score: " << bestSplitScore << std::endl;
   // allocate child nodes
   size_t leftChildIndex = tree->allocateNodes(2);
 

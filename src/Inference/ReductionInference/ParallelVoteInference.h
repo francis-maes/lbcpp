@@ -114,17 +114,29 @@ public:
 
   virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
-    TypePtr enumType = getOutputType(getInputType());
+    EnumerationPtr enumType = getOutputType(getInputType());
     size_t n = state->getNumSubInferences();
     DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(enumType); 
     for (size_t i = 0; i < n; ++i)
     {
       Variable vote = state->getSubOutput(i);
       jassert(vote.getType()->inheritsFrom(enumType));
+      jassert(vote.exists());
       if (vote.exists())
         distribution->increment(vote);
     }
-    return distribution->sample(RandomGenerator::getInstance()); // FIXME: replace by a sampling of argmaxs 
+    
+    double bestVote = DBL_MIN;
+    int bestClass = -1;
+    for (size_t i = 0; i < enumType->getNumElements(); ++i)
+      if (distribution->getProbability(i) > bestVote)
+      {
+        bestVote = distribution->getProbability(i);
+        bestClass = i;
+      }
+    
+    return Variable(bestClass, enumType);
+    //return distribution->sample(RandomGenerator::getInstance()); // FIXME: replace by a sampling of argmaxs 
   }
 };
 
