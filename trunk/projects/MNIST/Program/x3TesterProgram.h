@@ -6,6 +6,8 @@
 namespace lbcpp
 {
 
+extern EnumerationPtr waveFormTypeEnumeration;
+  
 class FlattenContainerPerception : public Perception
 {
 public:
@@ -46,25 +48,25 @@ public:
   
   virtual int runProgram(MessageCallback& callback)
   {
-    File input(T("/Users/jbecker/Documents/Workspace/Data/x3Friedman/friedman1.csv"));
+    File input(T("/Users/jbecker/Documents/Workspace/Data/x3TestData/waveform.txt"));
     
     std::vector<std::vector<double> > data;
     parseDataFile(input, data);
     
     ContainerPtr learningData = loadDataToContainer(data, 0, 300);
-    ContainerPtr testingData = loadDataToContainer(data, 8000, 10000);
+    ContainerPtr testingData = loadDataToContainer(data, 3000, 5000);
 
     InferenceContextPtr context = singleThreadedInferenceContext();
-    PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(10));
-    InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
+    PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
+    InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
     
     context->train(inference, learningData, ContainerPtr());
     
-    EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
+    EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     context->evaluate(inference, learningData, evaluator);
     std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
-    evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
+    evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     context->evaluate(inference, testingData, evaluator);
     std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
     
@@ -89,23 +91,23 @@ private:
       tokens.addTokens(is->readNextLine(), T(" "));
       for (size_t i = 0; i < (size_t)tokens.size(); ++i)
         example.push_back(tokens[i].getDoubleValue());
-      jassert(example.size() == 11);
+      jassert(example.size() == 22);
       results.push_back(example);
     }
-    //jassert(results.size() == 10000);
+    jassert(results.size() == 5000);
     delete is;
   }
   
   ContainerPtr loadDataToContainer(const std::vector<std::vector<double> >& data, size_t from, size_t to)
   {
     jassert(from <= to && to <= data.size());
-    ContainerPtr res = vector(pairClass(vectorClass(doubleType), doubleType), to - from);
+    ContainerPtr res = vector(pairClass(vectorClass(doubleType), waveFormTypeEnumeration), to - from);
     for (size_t i = from; i < to; ++i)
     {
       ContainerPtr example = vector(doubleType, data[i].size());
       for (size_t j = 0; j < data[i].size(); ++j)
         example->setElement(j, Variable(data[i][j], doubleType));
-      res->setElement(i - from, Variable::pair(example, data[i][data[i].size() - 1]));
+      res->setElement(i - from, Variable::pair(example, Variable((int)data[i][data[i].size() - 1], waveFormTypeEnumeration)));
     }
     return res;
   }
