@@ -12,6 +12,9 @@
       <variable type="PositiveInteger" name="numIterations" shortName="n"/>
       <variable type="Double" name="binarizationThreshold" shortName="bin"/>
       <variable type="Double" name="regularizer" shortName="reg"/>
+      <variable type="PositiveInteger" name="numTrees" shortName="t"/>
+      <variable type="PositiveInteger" name="numAttr" shortName="k"/>
+      <variable type="PositiveInteger" name="splitSize" shortName="s"/>
     </class>
     
     <class name="PredictorProgram" base="Program">

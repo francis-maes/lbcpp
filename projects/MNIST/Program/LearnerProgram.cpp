@@ -114,17 +114,18 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
   
   InferenceContextPtr context = singleThreadedInferenceContext();
+//  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
 
   /* Perception */
   CompositePerceptionPtr perception = compositePerception(mnistImageClass, T("Image"));
   perception->addPerception(T("raw data"), imageFlattenPerception());
-//  perception->addPerception(T("binarized data"), binarizeImagePerception(binarizationThreshold));
+  perception->addPerception(T("binarized data"), binarizeImagePerception(binarizationThreshold));
 
   /* Inference */
   //NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
   //inference->setStochasticLearner(createOnlineLearner());
   
-  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, 100, 100, 1);
+  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;

@@ -10,7 +10,8 @@ class LearnerProgram : public Program
 {
 public:
   LearnerProgram() : output(File::getCurrentWorkingDirectory().getChildFile(T("result"))),
-                     numIterations(50), binarizationThreshold(0.05), regularizer(0.0)
+                     numIterations(50), binarizationThreshold(0.05), regularizer(0.0),
+                     numTrees(100), numAttr(10), splitSize(2)
   {}
   
   virtual String toString() const
@@ -29,6 +30,10 @@ protected:
   double binarizationThreshold;
   
   double regularizer;
+
+  size_t numTrees;
+  size_t numAttr;
+  size_t splitSize;
 
 private:
   ContainerPtr learningData;
