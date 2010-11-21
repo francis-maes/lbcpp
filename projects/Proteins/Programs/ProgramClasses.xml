@@ -48,6 +48,12 @@
       <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
       <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
     </class>
+    
+    <class name="ClientProgram" base="Program">
+    </class>
+    
+    <class name="ServerProgram" base="Program">
+    </class>
   </namespace>
 
   <declarationCode>
