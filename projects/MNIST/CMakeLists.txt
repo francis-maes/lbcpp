@@ -11,6 +11,7 @@ GENERATE_INTROSPECTION_CODE(MNISTClasses.xml MNISTClasses.cpp)
 SET(LBCPP_MNIST_IMAGE_SOURCES
   Image/Image.h
   Image/ImageFunction.h
+  Image/ImagePerception.h
   Image/ImageClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ImageClasses.cpp
 )
@@ -27,7 +28,6 @@ SET(LBCPP_MNIST_PROGRAM_SOURCES
 )
 
 SET(LBCPP_MNIST_SOURCES
-  MNISTPerception.h
   MatlabFileParser.h
   MNISTClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MNISTClasses.cpp
