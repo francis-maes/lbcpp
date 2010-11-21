@@ -27,33 +27,24 @@
       <variable type="DigitType" name="digit"/>
     </class>
     
-    <!-- Perception -->
-    <class name="ImageFlattenPerception" base="Perception">
-      <constructor/>
-    </class>
-
-    <class name="BinarizeImagePerception" base="Perception">
-      <constructor arguments="double threshold"/>
-      <variable type="Double" name="threshold"/>
-    </class>
-    
   <code>
   ContainerPtr parseDataFile(const File&amp; file)
   {
     if (file.getFileExtension().toLowerCase() == T(".bin"))
     {
-      VectorPtr res = vector(mnistImageClass);
+      VectorPtr res = vector(pairClass(imageClass, digitTypeEnumeration));
       InputStream* is = file.createInputStream();
       while (!is-&gt;isExhausted())
       {
         bool hasSupervision = is-&gt;readBool();
-        std::vector&lt;double&gt; pixels(MNISTImage::numPixels);
-        for (size_t i = 0; i &lt; MNISTImage::numPixels; ++i)
-          pixels[i] = is-&gt;readDouble();
+        ImagePtr image = new Image(28, 28);
+        for (size_t i = 0; i &lt; 28; ++i)
+          for (size_t j = 0; j &lt; 28; ++j)
+            image-&gt;setValue(i, j, is-&gt;readDouble());
         size_t digit = Variable::missingValue(digitTypeEnumeration).getInteger();
         if (hasSupervision)
           digit = is-&gt;readInt();
-        res-&gt;append(Variable(ObjectPtr(new MNISTImage(pixels, digit)), mnistImageClass));
+        res-&gt;append(Variable::pair(Variable(image, imageClass), Variable(digit, digitTypeEnumeration)));
       }
       return res;
     }

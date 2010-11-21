@@ -1,11 +1,10 @@
-#ifndef LBCPP_MNIST_IMAGE_H_
-# define LBCPP_MNIST_IMAGE_H_
+#ifndef LBCPP_IMAGE_H_
+# define LBCPP_IMAGE_H_
+
+# include <lbcpp/lbcpp.h>
 
 namespace lbcpp
 {
-
-extern ClassPtr imageClass;
-extern ClassPtr binaryImageClass;
 
 class Image : public Object
 {
@@ -37,7 +36,7 @@ protected:
   std::vector<double> pixels;
   
   size_t getIndex(size_t x, size_t y) const
-    {jassert(x < width && y < height); return x * width + height;}
+    {jassert(x < width && y < height); return y * height + x;}
 };
 
 typedef ReferenceCountedObjectPtr<Image> ImagePtr;
@@ -48,14 +47,29 @@ public:
   BinaryImage(size_t width, size_t height) : Image(width, height) {}
   
   BinaryImage() {}
-  
+
   virtual TypePtr getImageType() const
   {return booleanType;}
   
 protected:
   friend class BinaryImageClass;
 };
+
+class ImageFunction;
+typedef ReferenceCountedObjectPtr<ImageFunction> ImageFunctionPtr;
+
+extern ClassPtr imageClass;
+extern ClassPtr binaryImageClass;
   
+extern ImageFunctionPtr identityImageFunction(size_t inputWidth, size_t inputHeight);
+extern ImageFunctionPtr averageImageFunction(size_t inputWidth, size_t inputHeight, size_t radius);
+extern ImageFunctionPtr reduceImageFunction(size_t inputWidth, size_t inputHeight, size_t scaleFactor);
+extern ImageFunctionPtr binarizeImageFunction(size_t inputWidth, size_t inputHeight, double threshold);
+extern ImageFunctionPtr minimumImageFunction(size_t inputWidth, size_t inputHeight);
+extern ImageFunctionPtr maximumImageFunction(size_t inputWidth, size_t inputHeight);
+
+extern PerceptionPtr imageFunctionToFlattenPerception(ImageFunctionPtr function);
+
 };
 
-#endif //!LBCPP_MNIST_IMAGE_H_
+#endif //!LBCPP_IMAGE_H_

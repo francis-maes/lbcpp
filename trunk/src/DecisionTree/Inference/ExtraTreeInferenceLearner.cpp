@@ -369,6 +369,7 @@ double computeSplitScore(ContainerPtr examples, size_t variableIndex, PredicateP
   if (outputType->inheritsFrom(doubleType))
     return computeRegressionSplitScore(examples, negativeExamples, positiveExamples);
 
+  MessageCallback::getInstance().errorMessage(T("computeSplitScore"), T("Type: ") + outputType->toString());
   jassert(false);
   return 0.0;
 }

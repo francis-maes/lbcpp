@@ -8,30 +8,15 @@
 
 #include <lbcpp/lbcpp.h>
 #include "LearnerProgram.h"
-#include "MNISTPerception.h"
-#include "MatlabFileParser.h"
+#include "../Image/Image.h"
 
 using namespace lbcpp;
 
-class InputOutputPairFunction : public Function
+namespace lbcpp
 {
-  virtual TypePtr getInputType() const
-    {return mnistImageClass;}
-  
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return pairClass(mnistImageClass, digitTypeEnumeration);}
-
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-  {
-    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>();
-    jassert(image);
-    MNISTImagePtr inputImage = new MNISTImage();
-    inputImage->setPixels(image->getPixels());
-    Variable digit = image->getDigit();
-    jassert(!digit.isNil());
-    return Variable::pair(inputImage, digit);
-  }
-};
+extern TypePtr digitTypeEnumeration;
+extern ContainerPtr parseDataFile(const File& f);
+}
 
 bool LearnerProgram::loadData()
 {
@@ -40,33 +25,28 @@ bool LearnerProgram::loadData()
     std::cerr << "Error - No learning file found !" << std::endl;
     return false;
   }
-  
+
   learningData = parseDataFile(learningFile);
   if (!learningData || !learningData->getNumElements())
   {
     std::cerr << "Error - No training data found in " << learningFile.getFullPathName().quoted() << std::endl;
     return false;
   }
-  else
-  {
-    learningData = learningData->apply(FunctionPtr(new InputOutputPairFunction()), false);
-  }
 
-  
   if (testingFile == File::nonexistent)
   {
     testingData = learningData->fold(0, 5);
     learningData = learningData->invFold(0, 5);
     return true;
   }
-  
-  testingData = parseDataFile(testingFile)->apply(FunctionPtr(new InputOutputPairFunction()), false);
+
+  testingData = parseDataFile(testingFile);
   if (!testingData->getNumElements())
   {
     std::cerr << "Error - No testing data found in " << testingFile.getFullPathName().quoted() << std::endl;
     return false;
   }
-  
+
   return true;
 }
 
@@ -117,14 +97,16 @@ int LearnerProgram::runProgram(MessageCallback& callback)
 //  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
 
   /* Perception */
-  CompositePerceptionPtr perception = compositePerception(mnistImageClass, T("Image"));
-  perception->addPerception(T("raw data"), imageFlattenPerception());
-  perception->addPerception(T("binarized data"), binarizeImagePerception(binarizationThreshold));
+  CompositePerceptionPtr perception = compositePerception(imageClass, T("Image"));
+  perception->addPerception(T("raw data"), imageFunctionToFlattenPerception(identityImageFunction(28, 28)));
+  perception->addPerception(T("binarized"), imageFunctionToFlattenPerception(binarizeImageFunction(28, 28, 0.02)));
+  perception->addPerception(T("maxima"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28)));
+  perception->addPerception(T("minima"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28)));
 
   /* Inference */
-  //NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
-  //inference->setStochasticLearner(createOnlineLearner());
-  
+//  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
+//  inference->setStochasticLearner(createOnlineLearner());
+
   InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */

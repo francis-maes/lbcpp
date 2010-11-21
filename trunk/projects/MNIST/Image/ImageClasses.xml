@@ -22,6 +22,10 @@
       <variable type="PositiveInteger" name="height"/>
     </class>
     
+    <class name="IdentityImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+    </class>
+    
     <class name="AverageImageFunction" base="ImageFunction">
       <constructor arguments="size_t inputWidth, size_t inputHeight, size_t radius"/>
       <variable type="PositiveInteger" name="radius"/>
@@ -35,6 +39,20 @@
     <class name="BinarizeImageFunction" base="ImageFunction">
       <constructor arguments="size_t inputWidth, size_t inputHeight, double threshold"/>
       <variable type="Double" name="threshold"/>
+    </class>
+    
+    <class name="MinimumImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+    </class>
+    
+    <class name="MaximumImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+    </class>
+    
+    <!-- Perception -->
+    <class name="ImageFunctionToFlattenPerception" base="Perception">
+      <constructor arguments="ImageFunctionPtr function"/>
+      <variable type="ImageFunction" name="function"/>
     </class>
     
   </namespace>

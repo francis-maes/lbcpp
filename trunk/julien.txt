@@ -1,4 +1,5 @@
 Paper ESANN:
+ * Relire le papier
 
 SnowBox:
  * segfault en fin d'exécution.
@@ -8,7 +9,7 @@ Extra-trees:
  * Générique: sur le type de sortie (classification: binaire/multiclasse, regression: simple/multiple)
 
 DISpro:
- * Tuning DR
+ * 10-CV
 
 CASP:
  * Télécharger les données de CASP8
