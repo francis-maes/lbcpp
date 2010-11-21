@@ -136,6 +136,8 @@ ADD_EXECUTABLE(RunProgram
   Programs/ProgramDeclarations.h
   Programs/ProteinInferenceEvaluatorProgram.h
   Programs/SmartBox.cpp
+  Programs/ClientServer.h
+  Programs/ClientServer.cpp
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

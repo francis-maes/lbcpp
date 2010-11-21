@@ -1,23 +1,18 @@
 Paper ESANN:
- * Réviser les commentaires fait par Pierre
- * Prender en compte les feedbacks de NIPS
-   * Enoncer dès l'abstract que notre méthode simple premet déjà de bon résultat
-   * ...
- * Description de PSIPRED (utilisation de RNN)
 
 SnowBox:
+ * segfault en fin d'exécution.
 
 Extra-trees:
- * Suspission de bug lors de l'évaluation de test
-   * Confirmer la presence de bug
-   * Trouver une petite base de donnée et comparer la version Matlab de Pierre avec la nôtre
+ * Revoir le design
+ * Générique: sur le type de sortie (classification: binaire/multiclasse, regression: simple/multiple)
 
 DISpro:
- * Tuning des paramètres en mode MP
+ * Tuning DR
 
 CASP:
  * Télécharger les données de CASP8
- * Entrainer un modère, tester, comparer
+ * Entrainer un modèle, tester, comparer
  * De même pour CASP9
 
 Optimizer:
