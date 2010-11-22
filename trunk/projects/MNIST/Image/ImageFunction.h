@@ -134,6 +134,9 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {jassert(inputType->inheritsFrom(imageClass)); return binaryImageClass;}
 
+  virtual TypePtr getOutputImageType() const
+    {return booleanType;}
+
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
     jassert(input.isObject());
