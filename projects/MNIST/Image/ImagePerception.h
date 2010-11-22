@@ -13,7 +13,7 @@ public:
   ImageFunctionToFlattenPerception() {}
   
   virtual TypePtr getInputType() const
-  {return function->getInputType();}
+    {return function->getInputType();}
   
   virtual void computeOutputType()
   {
@@ -37,7 +37,10 @@ public:
     
     for (size_t i = 0, index = 0; i < image->getWidth(); ++i)
       for (size_t j = 0; j < image->getHeight(); ++j, ++index)
-        callback->sense(index, Variable(image->getValue(i, j), function->getOutputImageType()));
+        if (function->getOutputImageType()->inheritsFrom(booleanType))
+          callback->sense(index, Variable(image->getValue(i, j) == 1.0, function->getOutputImageType()));
+        else
+          callback->sense(index, Variable(image->getValue(i, j), function->getOutputImageType()));
   }
   
 protected:

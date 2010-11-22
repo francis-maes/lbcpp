@@ -12,7 +12,7 @@
       <variable type="GenericVector[Double]" name="pixels"/>
     </class>
     
-    <class name="BinaryImage">
+    <class name="BinaryImage" base="Image">
       <constructor arguments="size_t width, size_t height"/>
     </class>
     
