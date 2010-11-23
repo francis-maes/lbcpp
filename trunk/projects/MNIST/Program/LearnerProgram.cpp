@@ -92,22 +92,24 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   std::cout << "------------ Data ------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
-  
+
   InferenceContextPtr context = singleThreadedInferenceContext();
 //  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
 
   /* Perception */
   CompositePerceptionPtr perception = compositePerception(imageClass, T("Image"));
-  perception->addPerception(T("raw data"), imageFunctionToFlattenPerception(identityImageFunction(28, 28)));
-  perception->addPerception(T("binarized"), imageFunctionToFlattenPerception(binarizeImageFunction(28, 28, 0.02)));
-  perception->addPerception(T("maxima"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28)));
-  perception->addPerception(T("minima"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28)));
+//  perception->addPerception(T("raw data"), imageFunctionToFlattenPerception(identityImageFunction(28, 28)));
+//  perception->addPerception(T("binarized"), imageFunctionToFlattenPerception(binarizeImageFunction(28, 28, 0.02)));
+//  perception->addPerception(T("maxima"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 2)));
+  perception->addPerception(T("minima x2"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 2)));
+//  perception->addPerception(T("minima x4"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 4)));
+//  perception->addPerception(T("minima x8"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 8)));
 
   /* Inference */
-//  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
-//  inference->setStochasticLearner(createOnlineLearner());
+  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
+  inference->setStochasticLearner(createOnlineLearner());
 
-  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
+//  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
