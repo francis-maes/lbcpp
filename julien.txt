@@ -17,11 +17,16 @@ CASP:
  * De même pour CASP9
 
 Optimizer:
- * Comprendre le fonctionnement et en continuer le développement
 
 MNIST:
  * Features
-   * Générer une image/2 contenant les mins et une contenant les max, ainsi récursivement
  * Tester les extra-trees
+   * Lors de gros tests, segfault vers 300 trees ... problème de mémoire ?
 
+Make:
+ * Faire une sur-couche générant automatiquement les fonctions mains à partir des classes Program
+
+Cystein Bond:
+ * Waiting for SP39
+ * Parser SPX, controler les données (nb Cys=Cys)
 

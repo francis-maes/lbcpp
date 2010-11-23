@@ -138,6 +138,7 @@ ADD_EXECUTABLE(RunProgram
   Programs/SmartBox.cpp
   Programs/ClientServer.h
   Programs/ClientServer.cpp
+  Programs/DichotomicOptimizer.h
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

@@ -26,7 +26,7 @@ public:
     {pixels[getIndex(x, y)] = value;}
   
   virtual TypePtr getImageType() const
-    {return doubleType;}
+    {return probabilityType;}
   
 protected:
   friend class ImageClass;
@@ -49,7 +49,7 @@ public:
   BinaryImage() {}
 
   virtual TypePtr getImageType() const
-  {return booleanType;}
+    {return booleanType;}
   
 protected:
   friend class BinaryImageClass;
@@ -65,8 +65,8 @@ extern ImageFunctionPtr identityImageFunction(size_t inputWidth, size_t inputHei
 extern ImageFunctionPtr averageImageFunction(size_t inputWidth, size_t inputHeight, size_t radius);
 extern ImageFunctionPtr reduceImageFunction(size_t inputWidth, size_t inputHeight, size_t scaleFactor);
 extern ImageFunctionPtr binarizeImageFunction(size_t inputWidth, size_t inputHeight, double threshold);
-extern ImageFunctionPtr minimumImageFunction(size_t inputWidth, size_t inputHeight);
-extern ImageFunctionPtr maximumImageFunction(size_t inputWidth, size_t inputHeight);
+extern ImageFunctionPtr minimumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize);
+extern ImageFunctionPtr maximumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize);
 
 extern PerceptionPtr imageFunctionToFlattenPerception(ImageFunctionPtr function);
 

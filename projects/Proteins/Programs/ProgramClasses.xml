@@ -49,11 +49,12 @@
       <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
     </class>
     
-    <class name="ClientProgram" base="Program">
-    </class>
+    <class name="ClientProgram" base="Program"/>
     
-    <class name="ServerProgram" base="Program">
-    </class>
+    <class name="ServerProgram" base="Program"/>
+    
+    <class name="DumbOptimizerProgram" base="Program"/>
+    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
   </namespace>
 
   <declarationCode>

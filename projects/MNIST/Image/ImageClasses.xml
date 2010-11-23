@@ -5,7 +5,7 @@
   <namespace name="lbcpp">
     
     <!-- Image Data -->
-    <class name="Image">
+    <class name="Image" base="Object">
       <constructor arguments="size_t width, size_t height"/>
       <variable type="PositiveInteger" name="width"/>
       <variable type="PositiveInteger" name="height"/>
@@ -42,11 +42,13 @@
     </class>
     
     <class name="MinimumImageFunction" base="ImageFunction">
-      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t blockSize"/>
+      <variable type="PositiveInteger" name="blockSize"/>
     </class>
     
     <class name="MaximumImageFunction" base="ImageFunction">
-      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t blockSize"/>
+      <variable type="PositiveInteger" name="blockSize"/>
     </class>
     
     <!-- Perception -->

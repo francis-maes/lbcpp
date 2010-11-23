@@ -19,7 +19,7 @@ public:
     {jassert(inputType->inheritsFrom(imageClass)); return inputType;}
   
   virtual TypePtr getOutputImageType() const
-    {return doubleType;}
+    {return probabilityType;}
   
   virtual size_t getOutputImageWidth() const
     {return width;}
@@ -162,14 +162,14 @@ protected:
 class MinimumImageFunction : public ImageFunction
 {
 public:
-  MinimumImageFunction(size_t inputWidth, size_t inputHeight) : ImageFunction(inputWidth, inputHeight) {}
-  MinimumImageFunction() {}
+  MinimumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize) : ImageFunction(inputWidth, inputHeight), blockSize(blockSize) {}
+  MinimumImageFunction() : blockSize(0) {}
   
   virtual size_t getOutputImageWidth() const
-    {return width / 2;}
+    {return (size_t)ceil(width / (double)blockSize);}
   
   virtual size_t getOutputImageHeight() const
-    {return height / 2;}
+    {return (size_t)ceil(height / (double)blockSize);}
   
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -177,32 +177,33 @@ public:
     ImagePtr image = input.getObjectAndCast<Image>();
     jassert(image);
     
-    ImagePtr res = new Image(width / 2, height / 2);
-    for (size_t i = 0; i < width / 2; ++i)
-      for (size_t j = 0; j < height / 2; ++j)
+    size_t scaledWidth = (size_t)ceil(width / (double)blockSize);
+    size_t scaledHeight = (size_t)ceil(height / (double)blockSize);
+    ImagePtr res = new Image(scaledWidth, scaledHeight);
+    for (size_t i = 0; i < scaledWidth; ++i)
+      for (size_t j = 0; j < scaledHeight; ++j)
       {
-        size_t x = 2 * i;
-        size_t y = 2 * j;
-        res->setValue(i, j, min(image->getValue(x, y),
-                                image->getValue(x + 1, y),
-                                image->getValue(x + 1, y + 1),
-                                image->getValue(x, y + 1)));
+        size_t startX = blockSize * i;
+        size_t startY = blockSize * j;
+        size_t endX = juce::jmin((int)width, (int)(startX + blockSize));
+        size_t endY = juce::jmin((int)height, (int)(startY + blockSize));
+        res->setValue(i, j, squareMin(image, startX, startY, endX, endY));
       }
     return res;
   }
-
+  
 protected:
   friend class MinimumImageFunctionClass;
   
-  double min(double a, double b, double c, double d) const
+  size_t blockSize;
+  
+  double squareMin(ImagePtr image, size_t startX, size_t startY, size_t endX, size_t endY) const
   {
-    double res = a;
-    if (b < res)
-      res = b;
-    if (c < res)
-      res = c;
-    if (d < res)
-      res = d;
+    double res = DBL_MAX;
+    for (size_t i = startX; i < endX; ++i)
+      for (size_t j = startY; j < endY; ++j)
+        if (image->getValue(i, j) < res)
+          res = image->getValue(i, j);
     return res;
   }
 };
@@ -210,14 +211,14 @@ protected:
 class MaximumImageFunction : public ImageFunction
 {
 public:
-  MaximumImageFunction(size_t inputWidth, size_t inputHeight) : ImageFunction(inputWidth, inputHeight) {}
-  MaximumImageFunction() {}
+  MaximumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize) : ImageFunction(inputWidth, inputHeight), blockSize(blockSize) {}
+  MaximumImageFunction() : blockSize(0) {}
   
   virtual size_t getOutputImageWidth() const
-    {return width / 2;}
+    {return (size_t)ceil(width / blockSize);}
   
   virtual size_t getOutputImageHeight() const
-    {return height / 2;}
+    {return (size_t)ceil(height / 2);}
   
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -225,16 +226,17 @@ public:
     ImagePtr image = input.getObjectAndCast<Image>();
     jassert(image);
     
-    ImagePtr res = new Image(width / 2, height / 2);
-    for (size_t i = 0; i < width / 2; ++i)
-      for (size_t j = 0; j < height / 2; ++j)
+    size_t scaledWidth = (size_t)ceil(width / blockSize);
+    size_t scaledHeight = (size_t)ceil(height / blockSize);
+    ImagePtr res = new Image(scaledWidth, scaledHeight);
+    for (size_t i = 0; i < scaledWidth; ++i)
+      for (size_t j = 0; j < scaledHeight; ++j)
       {
-        size_t x = i * 2;
-        size_t y = j * 2;
-        res->setValue(i, j, max(image->getValue(x, y),
-                                image->getValue(x + 1, y),
-                                image->getValue(x + 1, y + 1),
-                                image->getValue(x, y + 1)));
+        size_t startX = i * blockSize;
+        size_t startY = j * blockSize;
+        size_t endX = juce::jmin((int)width, (int)(startX + blockSize));
+        size_t endY = juce::jmin((int)height, (int)(startY + blockSize));
+        res->setValue(i, j, squareMax(image, startX, startY, endX, endY));
       }
     return res;
   }
@@ -242,15 +244,15 @@ public:
 protected:
   friend class MaximumImageFunctionClass;
   
-  double max(double a, double b, double c, double d) const
+  size_t blockSize;
+  
+  double squareMax(ImagePtr image, size_t startX, size_t startY, size_t endX, size_t endY) const
   {
-    double res = a;
-    if (b > res)
-      res = b;
-    if (c > res)
-      res = c;
-    if (d > res)
-      res = d;
+    double res = -DBL_MAX;
+    for (size_t i = startX; i < endX; ++i)
+      for (size_t j = startY; j < endY; ++j)
+        if (image->getValue(i, j) > res)
+          res = image->getValue(i, j);
     return res;
   }
 };
