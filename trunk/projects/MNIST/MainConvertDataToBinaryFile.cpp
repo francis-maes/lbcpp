@@ -17,5 +17,5 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize();
   declareMNISTClasses();
-  return ProgramPtr(new BinarizerProgram())->main(argc, argv);
+  return WorkUnit::main(new BinarizerProgram(), argc, argv);
 }

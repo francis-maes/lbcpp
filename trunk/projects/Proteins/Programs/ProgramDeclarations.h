@@ -6,7 +6,7 @@
 
 namespace lbcpp {
 
-class HelloWorldProgram : public Program
+class HelloWorldProgram : public WorkUnit
 {
 public:
   HelloWorldProgram()
@@ -15,8 +15,8 @@ public:
   virtual String toString() const
     {return T("It's just a test program ! Don't worry about it !");}
   
-  virtual int runProgram(MessageCallback& callback)
-    {std::cout << "Hello World : " << myInt << std::endl; return 0;}
+  virtual bool run(ExecutionContext& context)
+    {std::cout << "Hello World : " << myInt << std::endl; return true;}
 
 protected:
   friend class HelloWorldProgramClass;
@@ -24,17 +24,17 @@ protected:
   int myInt;
 };
   
-class SaveObjectProgram : public Program
+class SaveObjectProgram : public WorkUnit
 {
   virtual String toString() const
     {return T("SaveObjectProgram is able to serialize a object.");}
   
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
     if (className == String::empty)
     {
-      callback.warningMessage(T("SaveObjectProgram::runProgram"), T("No class name specified"));
-      return 0;
+      context.warningCallback(T("SaveObjectProgram::run"), T("No class name specified"));
+      return false;
     }
 
     if (outputFile == File::nonexistent)
@@ -43,28 +43,28 @@ class SaveObjectProgram : public Program
     std::cout << "Loading class " << className.quoted() << " ... ";
     std::flush(std::cout);
 
-    TypePtr type = Type::get(className, callback);
+    TypePtr type = Type::get(className);
     if (!type)
     {
       std::cout << "Fail" << std::endl;
-      return -1;
+      return false;
     }
 
     ObjectPtr obj = Object::create(type);
     if (!obj)
     {
       std::cout << "Fail" << std::endl;
-      return -1;
+      return false;
     }
 
     std::cout << "OK" << std::endl;
     std::cout << "Saving class to " << outputFile.getFileName().quoted() << " ... ";
     std::flush(std::cout);
 
-    obj->saveToFile(outputFile, callback);
+    obj->saveToFile(outputFile);
 
     std::cout << "OK" << std::endl;
-    return 0;
+    return true;
   }
 
 protected:
@@ -131,7 +131,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<ProteinTarget> ProteinTargetPtr;
   
-class SnowBox : public Program
+class SnowBox : public WorkUnit
 {
 public:
   SnowBox() : output(File::getCurrentWorkingDirectory().getChildFile(T("result")))
@@ -152,7 +152,7 @@ public:
               " a specific testing set or a cross-validation protocol.");
   }
 
-  virtual int runProgram(MessageCallback& callback);
+  virtual bool run(ExecutionContext& context);
 
 protected:
   friend class SnowBoxClass;
@@ -189,7 +189,7 @@ private:
 
   ProteinInferenceFactoryPtr createFactory() const;
 
-  bool loadData(MessageCallback& callback);
+  bool loadData(ExecutionContext& context);
 
   ContainerPtr loadProteins(const File& f, size_t maxToLoad = 0) const;
   

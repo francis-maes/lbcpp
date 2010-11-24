@@ -82,18 +82,18 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
   return learner;
 }
 
-int LearnerProgram::runProgram(MessageCallback& callback)
+bool LearnerProgram::run(ExecutionContext& context)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
   
   if (!loadData())
-    return -1;
+    return false;
   
   std::cout << "------------ Data ------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
 
-  InferenceContextPtr context = singleThreadedInferenceContext();
+  InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
 //  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
 
   /* Perception */
@@ -113,22 +113,22 @@ int LearnerProgram::runProgram(MessageCallback& callback)
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
-  context->train(inference, learningData, ContainerPtr());
+  inferenceContext->train(inference, learningData, ContainerPtr());
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
-  context->evaluate(inference, learningData, evaluator);
+  inferenceContext->evaluate(inference, learningData, evaluator);
   std::cout << evaluator->toString() << std::endl;
 
   if (testingData && testingData->getNumElements())
   {
     std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
-    context->evaluate(inference, testingData, evaluator);
+    inferenceContext->evaluate(inference, testingData, evaluator);
     std::cout << evaluator->toString() << std::endl;
   }
 
   inference->saveToFile(output.getFullPathName() + T(".inference"));
   std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
-  return 0;
+  return true;
 }

@@ -47,12 +47,12 @@ private:
   OutputStream* o;
 };
 
-int PredictorProgram::runProgram(MessageCallback& callback)
+bool PredictorProgram::run(ExecutionContext& context)
 {
   ContainerPtr data = parseDataFile(dataFile);
   jassert(data && data->getNumElements());
   std::cout << "Data : " << data->getNumElements() << std::endl;
-  InferencePtr inference = Object::createFromFile(inferenceFile, callback).staticCast<Inference>();
+  InferencePtr inference = Object::createFromFile(inferenceFile).staticCast<Inference>();
   jassert(inference);
   
   if (output == File::nonexistent)
@@ -60,5 +60,5 @@ int PredictorProgram::runProgram(MessageCallback& callback)
   std::cout << "Prediction : " << output.getFullPathName() << std::endl;
 
   data->apply(FunctionPtr(new SavePredictionFunction(inference, output)), false);  
-  return 0;
+  return true;
 }

@@ -84,9 +84,9 @@ protected:
 };
 #endif // JUCE_LINUX
 
-class ServerProgram : public Program
+class ServerProgram : public WorkUnit
 {
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
 #ifdef JUCE_LINUX
     ServerSocketPtr server = new ServerSocket(10021, callback);
@@ -125,24 +125,24 @@ class ServerProgram : public Program
     client->close();
     server->close();
 #endif // JUCE_LINUX
-    return 0;
+    return true;
   }
 };
 
-class ClientProgram : public Program
+class ClientProgram : public WorkUnit
 {
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
 #ifdef JUCE_LINUX
     InetAddressPtr ip = inetAddressByHostName(T("192.168.1.3"));
     if (!ip)
-      return -1;
+      return false;
 
     SocketPtr socket = new Socket(ip, 10021, callback);
     if (!socket->isConnected())
     {
       std::cout << "Not connected !" << std::endl;
-      return -2;
+      return false;
     }
 
     OutputStreamPtr os = socket->getOutputStream();
@@ -163,7 +163,7 @@ class ClientProgram : public Program
     
     socket->close();
 #endif // JUCE_LINUX
-    return 0;
+    return true;
   }
 };
 

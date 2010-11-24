@@ -5,7 +5,7 @@
   <namespace name="lbcpp">
     
     <!-- Program -->
-    <class name="LearnerProgram" base="Program">
+    <class name="LearnerProgram" base="WorkUnit">
       <variable type="File" name="learningFile" shortName="ls"/>
       <variable type="File" name="testingFile" shortName="ts"/>
       <variable type="File" name="output" shortName="o"/>
@@ -17,13 +17,13 @@
       <variable type="PositiveInteger" name="splitSize" shortName="s"/>
     </class>
     
-    <class name="PredictorProgram" base="Program">
+    <class name="PredictorProgram" base="WorkUnit">
       <variable type="File" name="dataFile" shortName="data"/>
       <variable type="File" name="inferenceFile" shortName="inf"/>
       <variable type="File" name="output" shortName="o"/>
     </class>
     
-    <class name="BinarizerProgram" base="Program">
+    <class name="BinarizerProgram" base="WorkUnit">
       <variable type="File" name="inputFile" shortName="in"/>
       <variable type="File" name="outputFile" shortName="o"/>
     </class>
@@ -34,7 +34,7 @@
       <value name="2" oneLetterCode="2"/>
     </enumeration>
     
-    <class name="X3TesterProgram" base="Program">
+    <class name="X3TesterProgram" base="WorkUnit">
       <variable type="PositiveInteger" name="numTrees" shortName="t"/>
       <variable type="PositiveInteger" name="numAttributes" shortName="k"/>
       <variable type="PositiveInteger" name="minSplitSize" shortName="nmin"/>

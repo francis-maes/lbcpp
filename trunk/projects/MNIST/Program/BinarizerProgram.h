@@ -45,20 +45,20 @@ private:
   OutputStream* o;
 };
   
-class BinarizerProgram : public Program
+class BinarizerProgram : public WorkUnit
 {
 public:
   virtual String toString() const
     {return T("Convert text file to binary file.");}
   
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
     jassert(inputFile != File::nonexistent);
     if (outputFile == File::nonexistent)
       outputFile = File::getCurrentWorkingDirectory().getChildFile(T("data.bin"));
     
     ContainerPtr data = StreamPtr(new MatlabFileParser(inputFile))->load()->apply(new SaveMNISTImageAsBinaryFunction(outputFile), false);
-    return 0;
+    return true;
   }
   
 protected:

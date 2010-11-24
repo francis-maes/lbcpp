@@ -38,7 +38,7 @@ protected:
   TypePtr elementType;
 };
   
-class X3TesterProgram : public Program
+class X3TesterProgram : public WorkUnit
 {
 public:
   X3TesterProgram() : numTrees(100), numAttributes(10), minSplitSize(1) {}
@@ -46,7 +46,7 @@ public:
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
   
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
     File input(T("/Users/jbecker/Documents/Workspace/Data/x3TestData/waveform.txt"));
     
@@ -56,21 +56,20 @@ public:
     ContainerPtr learningData = loadDataToContainer(data, 0, 300);
     ContainerPtr testingData = loadDataToContainer(data, 3000, 5000);
 
-    InferenceContextPtr context = singleThreadedInferenceContext();
+    InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
     InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
     
-    context->train(inference, learningData, ContainerPtr());
+    inferenceContext->train(inference, learningData, ContainerPtr());
     
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    context->evaluate(inference, learningData, evaluator);
+    inferenceContext->evaluate(inference, learningData, evaluator);
     std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    context->evaluate(inference, testingData, evaluator);
+    inferenceContext->evaluate(inference, testingData, evaluator);
     std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
-    
-    return 0;
+    return true;
   }
 
 protected:

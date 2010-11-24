@@ -67,7 +67,8 @@ protected:
   ExecutionContext* context;
 };
 
-typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;
+extern ExecutionCallbackPtr silentExecutionCallback();
+extern ExecutionCallbackPtr consoleExecutionCallback();
 
 }; /* namespace lbcpp */
 

@@ -75,7 +75,6 @@
 # include "Execution/WorkUnit.h"
 
 // old
-# include "Execution/Program.h"
 # include "Execution/MessageCallback.h"
 # include "Execution/ThreadPool.h"
 

@@ -138,11 +138,10 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
 SET(LBCPP_EXECUTION_SOURCES
   ../include/lbcpp/Execution/predeclarations.h
   ../include/lbcpp/Execution/WorkUnit.h
+  Execution/WorkUnit.cpp
   ../include/lbcpp/Execution/ExecutionCallback.h
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp
-  ../include/lbcpp/Execution/Program.h
-  Execution/Program.cpp
   ../include/lbcpp/Execution/MessageCallback.h
   Execution/MessageCallback.cpp
   ../include/lbcpp/Execution/ThreadPool.h
