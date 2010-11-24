@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_CALLBACK_H_
 
 # include "../Data/Object.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {
@@ -17,6 +18,8 @@ namespace lbcpp
 class ExecutionCallback : public Object
 {
 public:
+  ExecutionCallback() : context(NULL) {}
+
   /*
   ** Informations
   */
@@ -39,6 +42,29 @@ public:
 
   void progressCallback(double normalizedProgression)
     {progressCallback(normalizedProgression * 100.0, 100.0, T("%"));}
+
+  /*
+  ** Execution
+  */
+  virtual void preExecutionCallback(const WorkUnitPtr& workUnit) {}
+  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result) {}
+
+  /*
+  ** Results
+  */
+  virtual void resultCallback(const String& name, const Variable& value) {}
+
+  /*
+  ** Context
+  */
+  void setContext(ExecutionContext& context)
+    {this->context = &context;}
+
+  ExecutionContext& getContext()
+    {jassert(context); return *context;}
+
+protected:
+  ExecutionContext* context;
 };
 
 typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;

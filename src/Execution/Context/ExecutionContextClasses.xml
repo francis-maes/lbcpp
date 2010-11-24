@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ExecutionContext" directory="Execution/Context">
+
+  <namespace name="lbcpp">
+    <class name="SingleThreadedExecutionContext" base="ExecutionContext"/>
+    <class name="DecoratorExecutionContext" base="ExecutionContext" abstract="yes"/>
+    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext"/>
+  </namespace>
+
+</file>
