@@ -26,8 +26,8 @@ public:
   {
     Variable output;
     returnCode = Inference::finishedReturnCode;
-    JobPtr job(new RunInferenceJob(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode));
-    pool->addJobAndWaitExecution(job);
+    WorkUnitPtr workUnit(new RunInferenceWorkUnit(refCountedPointerFromThis(this), pool, InferenceStackPtr(), inference, input, supervision, output, returnCode));
+    pool->addWorkUnitAndWaitExecution(workUnit);
     return output;
   }
 

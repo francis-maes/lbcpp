@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/ThreadPool.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Data/Cache.h>
 using namespace lbcpp;
 
@@ -50,56 +51,19 @@ private:
   size_t count;
 };
 
-/*
-** RunJobThread
-*/
-class RunJobThread : public Thread
+struct SignalingWorkUnit : public DecoratorWorkUnit
 {
-public:
-  RunJobThread(JobPtr job)
-    : Thread(job->getName()), job(job) {}
+  SignalingWorkUnit(WorkUnitPtr workUnit, MultipleWaitableEventPtr event)
+    : DecoratorWorkUnit(workUnit), event(event) {}
 
-  void signalShouldExit()
+  MultipleWaitableEventPtr event;
+
+  virtual bool run(ExecutionContext& context)
   {
-    job->signalJobShouldExit();
-    signalThreadShouldExit();
-  }
-
-  virtual void run()
-  {
-    juce::SystemStats::initialiseStats();
-    String failureReason;
-    job->runJob(failureReason);
-  }
-
-  JobPtr getJob() const
-    {return job;}
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  JobPtr job;
-};
-
-class SignalingJob : public Job
-{
-public:
-  SignalingJob(JobPtr job, MultipleWaitableEventPtr event)
-    : Job(job->getName()), job(job), event(event) {}
-
-  virtual String getCurrentStatus() const
-    {return job->getCurrentStatus();}
-
-  virtual bool runJob(String& failureReason)
-  {
-    bool res = job->runJob(failureReason);
+    bool res = DecoratorWorkUnit::run(context);
     event->signal();
     return res;
   }
-
-protected:
-  JobPtr job;
-  MultipleWaitableEventPtr event;
 };
 
 }; /* namespace lbcpp */
@@ -113,40 +77,40 @@ ThreadPool::ThreadPool(size_t numCpus, bool verbose)
 ThreadPool::~ThreadPool()
 {
   for (size_t i = 0; i < threads.size(); ++i)
-    ((RunJobThread* )threads[i])->signalShouldExit();
+    threads[i]->signalThreadShouldExit();
   for (size_t i = 0; i < threads.size(); ++i)
     delete threads[i];
 }
 
-void ThreadPool::addJob(JobPtr job, size_t priority, MultipleWaitableEventPtr event)
+void ThreadPool::addWorkUnit(WorkUnitPtr workUnit, size_t priority, MultipleWaitableEventPtr event)
 {
-  ScopedLock _(waitingJobsLock);
-  if (waitingJobs.size() <= priority)
-    waitingJobs.resize(priority + 1);
-  waitingJobs[priority].push_back(new SignalingJob(job, event));
+  ScopedLock _(waitingWorkUnitsLock);
+  if (waitingWorkUnits.size() <= priority)
+    waitingWorkUnits.resize(priority + 1);
+  waitingWorkUnits[priority].push_back(new SignalingWorkUnit(workUnit, event));
 }
 
-void ThreadPool::addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEventPtr event)
+void ThreadPool::addWorkUnits(const std::vector<WorkUnitPtr>& workUnits, size_t priority, MultipleWaitableEventPtr event)
 {
-  ScopedLock _(waitingJobsLock);
-  if (waitingJobs.size() <= priority)
-    waitingJobs.resize(priority + 1);
+  ScopedLock _(waitingWorkUnitsLock);
+  if (waitingWorkUnits.size() <= priority)
+    waitingWorkUnits.resize(priority + 1);
 
-  std::list<JobPtr>& waiting = waitingJobs[priority];
-  for (size_t i = 0; i < jobs.size(); ++i)
-    waiting.push_back(new SignalingJob(jobs[i], event));
+  std::list<WorkUnitPtr>& waiting = waitingWorkUnits[priority];
+  for (size_t i = 0; i < workUnits.size(); ++i)
+    waiting.push_back(new SignalingWorkUnit(workUnits[i], event));
 }
 
-JobPtr ThreadPool::popJob()
+WorkUnitPtr ThreadPool::popWorkUnit()
 {
-  ScopedLock _(waitingJobsLock);
-  for (int i = (int)waitingJobs.size() - 1; i >= 0; --i)
+  ScopedLock _(waitingWorkUnitsLock);
+  for (int i = (int)waitingWorkUnits.size() - 1; i >= 0; --i)
   {
-    std::list<JobPtr>& jobs = waitingJobs[i];
-    if (jobs.size())
+    std::list<WorkUnitPtr>& workUnits = waitingWorkUnits[i];
+    if (workUnits.size())
     {
-      JobPtr res = jobs.front();
-      jobs.pop_front();
+      WorkUnitPtr res = workUnits.front();
+      workUnits.pop_front();
       return res;
     }
   }
@@ -178,12 +142,12 @@ void ThreadPool::update()
   }
   while (getNumRunningThreads() < numCpus)
   {
-    JobPtr job = popJob();
-    if (job)
+    WorkUnitPtr workUnit = popWorkUnit();
+    if (workUnit)
     {
       if (verbose)
-        MessageCallback::info(T("Start Job: ") + job->getName());
-      startThreadForJob(job);
+        MessageCallback::info(T("Start Work Unit: ") + workUnit->getName());
+      startThreadForWorkUnit(workUnit);
     }
     else
       break;
@@ -201,10 +165,10 @@ void ThreadPool::update()
   }
 }
 
-void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority, bool callUpdateWhileWaiting)
+void ThreadPool::addWorkUnitAndWaitExecution(WorkUnitPtr workUnit, size_t priority, bool callUpdateWhileWaiting)
 {
   MultipleWaitableEventPtr event = new MultipleWaitableEvent();
-  addJob(job, priority, event);
+  addWorkUnit(workUnit, priority, event);
   if (callUpdateWhileWaiting)
     while (!event->wait(1, 1))
       update();
@@ -212,13 +176,13 @@ void ThreadPool::addJobAndWaitExecution(JobPtr job, size_t priority, bool callUp
     event->wait(1);
 }
 
-void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority, bool callUpdateWhileWaiting)
+void ThreadPool::addWorkUnitsAndWaitExecution(const std::vector<WorkUnitPtr>& workUnits, size_t priority, bool callUpdateWhileWaiting)
 {
   Thread* currentThread = Thread::getCurrentThread();
   MultipleWaitableEventPtr event = new MultipleWaitableEvent();
   {
     ScopedLock _(threadsLock);
-    addJobs(jobs, priority, event);
+    addWorkUnits(workUnits, priority, event);
     if (currentThread)
     {
       for (size_t i = 0; i < threads.size(); ++i)
@@ -231,10 +195,10 @@ void ThreadPool::addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t
   }
 
   if (callUpdateWhileWaiting)
-    while (!event->wait(jobs.size(), 1))
+    while (!event->wait(workUnits.size(), 1))
       update();
   else
-    event->wait(jobs.size());
+    event->wait(workUnits.size());
   
   {
     ScopedLock _(threadsLock);
@@ -258,10 +222,12 @@ bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
   return waitingThreads.find(thread) != waitingThreads.end();
 }
 
-void ThreadPool::startThreadForJob(JobPtr job)
+#include "Context/ThreadOwnedExecutionContext.h"
+
+void ThreadPool::startThreadForWorkUnit(WorkUnitPtr workUnit)
 {
   ScopedLock _(threadsLock);
-  Thread* res = new RunJobThread(job);
+  Thread* res = new ThreadOwnedExecutionContext(singleThreadedExecutionContext(), workUnit);
   res->startThread();
   threads.push_back(res);
 }
@@ -269,30 +235,30 @@ void ThreadPool::startThreadForJob(JobPtr job)
 void ThreadPool::writeCurrentState(std::ostream& ostr)
 {
   ScopedLock _1(threadsLock);
-  ScopedLock _2(waitingJobsLock);
+  ScopedLock _2(waitingWorkUnitsLock);
 
-  size_t numWaitingJobs = 0;
-  for (size_t i = 0; i < waitingJobs.size(); ++i)
-    numWaitingJobs += waitingJobs[i].size();
+  size_t numWaitingWorkUnits = 0;
+  for (size_t i = 0; i < waitingWorkUnits.size(); ++i)
+    numWaitingWorkUnits += waitingWorkUnits[i].size();
 
   ostr << numCpus << " cpus, " << getNumWaitingThreads() << " paused threads, "
       << getNumRunningThreads() << " running threads, "
-      << numWaitingJobs << " waiting jobs " << std::endl;
+      << numWaitingWorkUnits << " waiting work units" << std::endl;
 
   for (size_t i = 0; i < threads.size(); ++i)
   {
-    RunJobThread* thread = dynamic_cast<RunJobThread* >(threads[i]);
+    ThreadOwnedExecutionContext* thread = dynamic_cast<ThreadOwnedExecutionContext* >(threads[i]);
     jassert(thread);
-    JobPtr job = thread->getJob();
-    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << job->getName() << std::endl << "  " << job->getCurrentStatus() << std::endl << std::endl;
+    WorkUnitPtr workUnit = thread->getWorkUnit();
+    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << workUnit->getName() << std::endl << std::endl;
   }
-  if (numWaitingJobs)
+  if (numWaitingWorkUnits)
   {
     ostr << "- Queue - " << std::endl;
-    for (int i = (int)waitingJobs.size() - 1; i >= 0; --i)
+    for (int i = (int)waitingWorkUnits.size() - 1; i >= 0; --i)
     {
-      const std::list<JobPtr>& jobs = waitingJobs[i];
-      for (std::list<JobPtr>::const_iterator it = jobs.begin(); it != jobs.end(); ++it)
+      const std::list<WorkUnitPtr>& workUnits = waitingWorkUnits[i];
+      for (std::list<WorkUnitPtr>::const_iterator it = workUnits.begin(); it != workUnits.end(); ++it)
         ostr << "[" << i << "] " << (*it)->getName() << std::endl;
     }
   }

@@ -11,7 +11,7 @@
 
 # include "../Data/Object.h"
 # include "../Data/Cache.h"
-# include "Job.h"
+# include "WorkUnit.h"
 
 # include <list>
 
@@ -39,8 +39,8 @@ public:
   size_t getNumRunningThreads() const;
   size_t getNumThreads() const;
 
-  void addJobAndWaitExecution(JobPtr job, size_t priority = 0, bool callUpdateWhileWaiting = true);
-  void addJobsAndWaitExecution(const std::vector<JobPtr>& jobs, size_t priority, bool callUpdateWhileWaiting = true);
+  void addWorkUnitAndWaitExecution(WorkUnitPtr workUnit, size_t priority = 0, bool callUpdateWhileWaiting = true);
+  void addWorkUnitsAndWaitExecution(const std::vector<WorkUnitPtr>& workUnits, size_t priority, bool callUpdateWhileWaiting = true);
 
   bool isThreadWaiting(Thread* thread) const;
 
@@ -60,15 +60,15 @@ private:
   std::vector<juce::Thread* > threads;
   std::set<juce::Thread* > waitingThreads;
 
-  CriticalSection waitingJobsLock;
-  std::vector< std::list< JobPtr > > waitingJobs;
+  CriticalSection waitingWorkUnitsLock;
+  std::vector< std::list< WorkUnitPtr > > waitingWorkUnits;
 
-  void addJob(JobPtr job, size_t priority, MultipleWaitableEventPtr waitingEvent);
-  void addJobs(const std::vector<JobPtr>& jobs, size_t priority, MultipleWaitableEventPtr waitingEvent);
-  JobPtr popJob();
+  void addWorkUnit(WorkUnitPtr workUnit, size_t priority, MultipleWaitableEventPtr waitingEvent);
+  void addWorkUnits(const std::vector<WorkUnitPtr>& workUnits, size_t priority, MultipleWaitableEventPtr waitingEvent);
+  WorkUnitPtr popWorkUnit();
 
-  void startThreadForJob(JobPtr job);
-  Thread* createThreadForJobIfAvailableCpu(JobPtr job);
+  void startThreadForWorkUnit(WorkUnitPtr workUnit);
+  Thread* createThreadForWorkUnitIfAvailableCpu(WorkUnitPtr workUnit);
 };
 
 typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;

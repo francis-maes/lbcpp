@@ -63,6 +63,9 @@ private:
   std::vector<ExecutionCallbackPtr> callbacks;
 };
 
+extern ExecutionContextPtr singleThreadedExecutionContext();
+extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr context, WorkUnitPtr workUnit);
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_CONTEXT_H_

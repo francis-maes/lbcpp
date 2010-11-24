@@ -9,7 +9,7 @@
     <!-- Objective Function -->
     <class name="ObjectiveFunction" base="Function" abstract="yes"/>
 
-    <class name="EvaluateObjectiveFunctionJob" base="Job">
+    <class name="EvaluateObjectiveFunctionWorkUnit" base="WorkUnit">
       <constructor arguments="const String&amp; name, ObjectiveFunctionPtr objective, const Variable&amp; input, double&amp; result"/>
       <variable type="ObjectiveFunction" name="objective"/>
       <variable type="Variable" name="input"/>

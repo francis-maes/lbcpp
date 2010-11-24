@@ -3,9 +3,16 @@
 <file name="ExecutionContext" directory="Execution/Context">
 
   <namespace name="lbcpp">
-    <class name="SingleThreadedExecutionContext" base="ExecutionContext"/>
+    
+    <class name="SingleThreadedExecutionContext" base="ExecutionContext">
+      <constructor/>
+    </class>
+    
     <class name="DecoratorExecutionContext" base="ExecutionContext" abstract="yes"/>
-    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext"/>
+    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext">
+      <constructor arguments="ExecutionContextPtr context, WorkUnitPtr workUnit" returnType="ExecutionContext"/>
+    </class>
+    
   </namespace>
 
 </file>

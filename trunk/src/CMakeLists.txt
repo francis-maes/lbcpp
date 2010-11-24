@@ -145,7 +145,6 @@ SET(LBCPP_EXECUTION_SOURCES
   Execution/Program.cpp
   ../include/lbcpp/Execution/MessageCallback.h
   Execution/MessageCallback.cpp
-  ../include/lbcpp/Execution/Job.h
   ../include/lbcpp/Execution/ThreadPool.h
   Execution/ThreadPool.cpp
   Execution/ExecutionClasses.xml
@@ -545,6 +544,7 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
+SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
 ## Function
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})

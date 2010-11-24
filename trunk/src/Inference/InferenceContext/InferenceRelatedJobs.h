@@ -9,27 +9,29 @@
 #ifndef LBCPP_INFERENCE_CONTEXT_RELATED_JOBS_H_
 # define LBCPP_INFERENCE_CONTEXT_RELATED_JOBS_H_
 
+# include <lbcpp/Data/Cache.h>
+# include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionContext.h>
 # include <lbcpp/Inference/InferenceContext.h>
 # include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/Data/Cache.h>
 # include "ThreadOwnedInferenceContext.h"
 
 namespace lbcpp
 {
 
-class InferenceRelatedJob : public Job
+class InferenceRelatedWorkUnit : public WorkUnit
 {
 public:
-  InferenceRelatedJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name = T("Unnamed"), bool areSubJobsAtomic = false)
-    : Job(name), parentContext(parentContext), pool(pool), stack(stack), areSubJobsAtomic(areSubJobsAtomic) {}
+  InferenceRelatedWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, const String& name = T("Unnamed"), bool areSubJobsAtomic = false)
+    : WorkUnit(name), parentContext(parentContext), pool(pool), stack(stack), areSubJobsAtomic(areSubJobsAtomic) {}
 
-  virtual String getCurrentStatus() const
+  /*virtual String getCurrentStatus() const
   {
     ScopedLock _(contextLock);
     return context ? context->describeCurrentState() : T("Not started yet");
-  }
+  }*/
 
-  virtual bool runJob(String& failureReason)
+  virtual bool run(ExecutionContext& executionContext)
   {
     ScopedLock _(contextLock);
     Thread* thread = Thread::getCurrentThread();
@@ -50,18 +52,18 @@ protected:
   ThreadOwnedInferenceContextPtr context;
 };
 
-class RunInferenceJob : public InferenceRelatedJob
+class RunInferenceWorkUnit : public InferenceRelatedWorkUnit
 {
 public:
-  RunInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
-    : InferenceRelatedJob(parentContext, pool, stack), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode)
+  RunInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
+    : InferenceRelatedWorkUnit(parentContext, pool, stack), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode)
   {
     setName(inference->getDescription(input, supervision));
   }
 
-  virtual bool runJob(String& failureReason)
+  virtual bool run(ExecutionContext& executionContext)
   {
-    if (!InferenceRelatedJob::runJob(failureReason))
+    if (!InferenceRelatedWorkUnit::run(executionContext))
       return false;
     output = context->run(inference, input, supervision, returnCode);
     return true;
@@ -75,11 +77,11 @@ private:
   Inference::ReturnCode& returnCode;
 };
 
-class RunParallelInferencesJob : public InferenceRelatedJob
+class RunParallelInferencesWorkUnit : public InferenceRelatedWorkUnit
 {
 public:
-  RunParallelInferencesJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
-    : InferenceRelatedJob(parentContext, pool, stack, String::empty, areSubJobsAtomic), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), areSubJobsAtomic(areSubJobsAtomic)
+  RunParallelInferencesWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
+    : InferenceRelatedWorkUnit(parentContext, pool, stack, String::empty, areSubJobsAtomic), inference(inference), state(state), beginIndex(beginIndex), endIndex(endIndex), returnCode(Inference::finishedReturnCode), areSubJobsAtomic(areSubJobsAtomic)
   {
     if (endIndex == beginIndex + 1)
     {
@@ -95,14 +97,14 @@ public:
     }
   }
 
-  bool runJob(String& failureReason)
+  virtual bool run(ExecutionContext& executionContext)
   {
-    if (!InferenceRelatedJob::runJob(failureReason))
+    if (!InferenceRelatedWorkUnit::run(executionContext))
       return false;
 
     for (size_t i = beginIndex; i < endIndex; ++i)
     {
-      if (shouldExit())
+      if (executionContext.isCanceled())
         return true;
 
       Variable subOutput;
@@ -116,7 +118,7 @@ public:
         subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
-          failureReason = T("Could not finish sub inference");
+          executionContext.errorCallback(T("RunParallelInferencesWorkUnit"), T("Could not finish sub inference"));
           return false; 
         }
 
@@ -143,8 +145,8 @@ private:
   bool areSubJobsAtomic;
 };
 
-JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
-  {return JobPtr(new RunParallelInferencesJob(parentContext, pool, stack, inference, state, beginIndex, endIndex, areSubJobsAtomic));}
+WorkUnitPtr parallelInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
+  {return WorkUnitPtr(new RunParallelInferencesWorkUnit(parentContext, pool, stack, inference, state, beginIndex, endIndex, areSubJobsAtomic));}
 
 }; /* namespace lbcpp */
 

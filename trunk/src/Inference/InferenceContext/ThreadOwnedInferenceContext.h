@@ -17,7 +17,7 @@
 namespace lbcpp
 {
 
-extern JobPtr parallelInferenceJob(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic);
+extern WorkUnitPtr parallelInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic);
 
 class ThreadOwnedInferenceContext : public InferenceContext
 {
@@ -125,20 +125,20 @@ public:
         InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>();
         stackLock.exit();
 
-        std::vector<JobPtr> jobs;
-        jobs.reserve(1 + n / step);
+        std::vector<WorkUnitPtr> workUnits;
+        workUnits.reserve(1 + n / step);
 
         for (size_t begin = 0; begin < n; )
         {
           size_t end = begin + step;
           if (end > n)
             end = n;
-          jobs.push_back(parallelInferenceJob(refCountedPointerFromThis(this), pool,
+          workUnits.push_back(parallelInferenceWorkUnit(refCountedPointerFromThis(this), pool,
             stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, areSubJobsAtomic));
           begin = end;
         }
 
-        pool->addJobsAndWaitExecution(jobs, stack->getDepth(), false);
+        pool->addWorkUnitsAndWaitExecution(workUnits, stack->getDepth(), false);
       }
     }
     return inference->finalizeInference(this, state, returnCode);
