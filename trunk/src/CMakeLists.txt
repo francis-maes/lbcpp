@@ -12,6 +12,7 @@ GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackClasses.xml ExecutionCallbackClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextClasses.xml ExecutionContextClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
@@ -135,8 +136,11 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
 #### Execution ####
 
 SET(LBCPP_EXECUTION_SOURCES
+  ../include/lbcpp/Execution/predeclarations.h
+  ../include/lbcpp/Execution/WorkUnit.h
   ../include/lbcpp/Execution/ExecutionCallback.h
   ../include/lbcpp/Execution/ExecutionContext.h
+  Execution/ExecutionContext.cpp
   ../include/lbcpp/Execution/Program.h
   Execution/Program.cpp
   ../include/lbcpp/Execution/MessageCallback.h
@@ -153,6 +157,14 @@ SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ConsoleExecutionCallback.h
   Execution/Callback/ExecutionCallbackClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
+)
+
+SET(LBCPP_EXECUTION_CONTEXT_SOURCES
+  Execution/Context/SingleThreadedExecutionContext.h
+  Execution/Context/DecoratorExecutionContext.h
+  Execution/Context/ThreadOwnedExecutionContext.h
+  Execution/Context/ExecutionContextClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
 )
 
 #### Function ####
@@ -478,6 +490,7 @@ SET(LBCPP_CORE
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
+    ${LBCPP_EXECUTION_CONTEXT_SOURCES}
   
   # Function
   ${LBCPP_FUNCTION_SOURCES}

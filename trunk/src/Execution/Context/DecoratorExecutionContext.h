@@ -1,0 +1,46 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: DecoratorExecutionContext.h    | Base class for Execution Context|
+| Author  : Francis Maes                   |   decorators                    |
+| Started : 24/11/2010 18:55               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#ifndef LBCPP_EXECUTION_CONTEXT_DECORATOR_H_
+# define LBCPP_EXECUTION_CONTEXT_DECORATOR_H_
+
+# include <lbcpp/Execution/ExecutionContext.h>
+
+namespace lbcpp
+{
+
+class DecoratorExecutionContext : public ExecutionContext
+{
+public:
+  DecoratorExecutionContext(ExecutionContextPtr decorated)
+    : decorated(decorated)
+    {appendCallback(decorated);}
+
+  DecoratorExecutionContext() {}
+
+  virtual bool isCanceled() const
+    {return decorated->isCanceled();}
+
+  virtual bool isPaused() const
+    {return decorated->isPaused();}
+
+  virtual bool run(const WorkUnitPtr& workUnit)
+    {return decorated->run(workUnit);}
+
+  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+    {return decorated->run(workUnits);}
+
+protected:
+  friend class DecoratorExecutionContextClass;
+
+  ExecutionContextPtr decorated;
+};
+
+}; /* namespace lbcpp */
+
+#endif //!LBCPP_EXECUTION_CONTEXT_DECORATOR_H_

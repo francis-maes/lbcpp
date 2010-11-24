@@ -10,26 +10,16 @@
 # define LBCPP_EXECUTION_CONTEXT_H_
 
 # include "ExecutionCallback.h"
+# include "WorkUnit.h"
 
 namespace lbcpp
 {
 
-class ExecutionContext;
-class WorkUnit : public NameableObject
-{
-public:
-  WorkUnit(const String& name) : NameableObject(name) {}
-  WorkUnit() {}
-
-protected:
-  virtual bool run(ExecutionContext& context) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
-
 class ExecutionContext : public ExecutionCallback
 {
 public:
+  ExecutionContext();
+
   /*
   ** ExecutionCallback
   */
@@ -38,6 +28,9 @@ public:
   virtual void errorCallback(const String& where, const String& what);
   virtual void statusCallback(const String& status);
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
+  virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
+  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
+  virtual void resultCallback(const String& name, const Variable& value);
 
   /*
   ** Current State
@@ -48,8 +41,8 @@ public:
   /*
   ** Work Units
   */
-  virtual void run(WorkUnitPtr workUnit) = 0;
-  virtual void run(const std::vector<WorkUnit>& workUnits) = 0;
+  virtual bool run(const WorkUnitPtr& workUnit);
+  virtual bool run(const std::vector<WorkUnitPtr>& workUnits) = 0;
 
   /*
   ** Callbacks

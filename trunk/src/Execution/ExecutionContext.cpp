@@ -1,75 +1,91 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExecutionContext.h             | Execution Context Base Class    |
+| Filename: ExecutionContext.cpp           | Execution Context Base Class    |
 | Author  : Francis Maes                   |                                 |
-| Started : 24/11/2010 17:39               |                                 |
+| Started : 24/11/2010 18:38               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXECUTION_CONTEXT_H_
-# define LBCPP_EXECUTION_CONTEXT_H_
+#include <lbcpp/Execution/ExecutionContext.h>
+using namespace lbcpp;
 
-# include "ExecutionCallback.h"
-
-namespace lbcpp
+ExecutionContext::ExecutionContext()
 {
+  context = this;
+}
 
-class ExecutionContext;
-class WorkUnit : public NameableObject
+void ExecutionContext::informationCallback(const String& where, const String& what)
 {
-public:
-  WorkUnit(const String& name) : NameableObject(name) {}
-  WorkUnit() {}
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->informationCallback(where, what);
+}
 
-protected:
-  virtual bool run(ExecutionContext& context) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
-
-class ExecutionContext : public ExecutionCallback
+void ExecutionContext::warningCallback(const String& where, const String& what)
 {
-public:
-  /*
-  ** ExecutionCallback
-  */
-  virtual void informationCallback(const String& where, const String& what);
-  virtual void warningCallback(const String& where, const String& what);
-  virtual void errorCallback(const String& where, const String& what);
-  virtual void statusCallback(const String& status);
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->warningCallback(where, what);
+}
 
-  /*
-  ** Current State
-  */
-  virtual bool isCanceled() const = 0;
-  virtual bool isPaused() const = 0;
+void ExecutionContext::errorCallback(const String& where, const String& what)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->errorCallback(where, what);
+}
 
-  /*
-  ** Work Units
-  */
-  virtual void run(WorkUnitPtr workUnit) = 0;
-  virtual void run(const std::vector<WorkUnit>& workUnits) = 0;
+void ExecutionContext::statusCallback(const String& status)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->statusCallback(status);
+}
 
-  /*
-  ** Callbacks
-  */
-  void appendCallback(const ExecutionCallbackPtr& callback);
-  void removeCallback(const ExecutionCallbackPtr& callback);
-  void clearCallbacks();
+void ExecutionContext::progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->progressCallback(progression, progressionTotal, progressionUnit);
+}
 
-  const std::vector<ExecutionCallbackPtr>& getCallbacks() const
-    {return callbacks;}
+void ExecutionContext::preExecutionCallback(const WorkUnitPtr& workUnit)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->preExecutionCallback(workUnit);
+}
 
-  void setCallbacks(const std::vector<ExecutionCallbackPtr>& callbacks)
-    {this->callbacks = callbacks;}
+void ExecutionContext::postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->postExecutionCallback(workUnit, result);
+}
 
-private:
-  friend class ExecutionContextClass;
+void ExecutionContext::resultCallback(const String& name, const Variable& value)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->resultCallback(name, value);
+}
 
-  std::vector<ExecutionCallbackPtr> callbacks;
-};
+void ExecutionContext::appendCallback(const ExecutionCallbackPtr& callback)
+{
+  jassert(callback);
+  callback->setContext(*this);
+  callbacks.push_back(callback);
+}
 
-}; /* namespace lbcpp */
+void ExecutionContext::removeCallback(const ExecutionCallbackPtr& callback)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    if (callbacks[i] == callback)
+    {
+      callbacks.erase(callbacks.begin() + i);
+      break;
+    }
+}
 
-#endif //!LBCPP_EXECUTION_CONTEXT_H_
+void ExecutionContext::clearCallbacks()
+  {callbacks.clear();}
+
+bool ExecutionContext::run(const WorkUnitPtr& workUnit)
+{
+  preExecutionCallback(workUnit);
+  bool res = workUnit->run(*this);
+  postExecutionCallback(workUnit, res);
+  return res;
+}
