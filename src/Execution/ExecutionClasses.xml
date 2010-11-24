@@ -2,12 +2,23 @@
 
 <file name="Execution" directory="lbcpp/Execution">
 
+  <include file="lbcpp/Execution/ExecutionContext.h"/>
   <include file="lbcpp/Execution/Program.h"/>
   <include file="lbcpp/Execution/Job.h"/>
   <include file="lbcpp/Execution/ThreadPool.h"/>
+  <import name="ExecutionCallback"/>
 
   <namespace name="lbcpp">
 
+    <!-- Work Unit -->
+    <class name="WorkUnit" base="NameableObject" abstract="yes"/>
+    
+    <!-- Execution Context -->
+    <class name="ExecutionCallback" base="Object" abstract="yes"/>
+    <class name="ExecutionContext" base="ExecutionCallback" abstract="yes">
+      <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
+    </class>
+    
     <!-- Program -->
     <class name="Program" base="Object"/>
 

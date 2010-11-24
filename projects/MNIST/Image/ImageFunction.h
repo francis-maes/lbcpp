@@ -215,10 +215,10 @@ public:
   MaximumImageFunction() : blockSize(0) {}
   
   virtual size_t getOutputImageWidth() const
-    {return (size_t)ceil(width / blockSize);}
+    {return (size_t)ceil(width / (double)blockSize);}
   
   virtual size_t getOutputImageHeight() const
-    {return (size_t)ceil(height / 2);}
+    {return (size_t)ceil(height / 2.0);}
   
   virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
   {
@@ -226,8 +226,8 @@ public:
     ImagePtr image = input.getObjectAndCast<Image>();
     jassert(image);
     
-    size_t scaledWidth = (size_t)ceil(width / blockSize);
-    size_t scaledHeight = (size_t)ceil(height / blockSize);
+    size_t scaledWidth = (size_t)ceil(width / (double)blockSize);
+    size_t scaledHeight = (size_t)ceil(height / (double)blockSize);
     ImagePtr res = new Image(scaledWidth, scaledHeight);
     for (size_t i = 0; i < scaledWidth; ++i)
       for (size_t j = 0; j < scaledHeight; ++j)

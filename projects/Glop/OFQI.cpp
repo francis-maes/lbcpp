@@ -36,15 +36,14 @@ int main(int argc, char* argv[])
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
   InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(
-          InferenceOnlineLearner::never, // randomization
-          InferenceOnlineLearner::perStep, constantIterationFunction(0.1), true, // learning steps
-          InferenceOnlineLearner::never, ScalarObjectFunctionPtr()); // regularizer
-  learner->setNextLearner(stoppingCriterionOnlineLearner( 
-	InferenceOnlineLearner::perPass, maxIterationsStoppingCriterion(2), true));
-  InferencePtr regressor = squareRegressionInference(perception, learner, T("toto regr"));
+          perStep, constantIterationFunction(0.1), true, // learning steps
+          never, ScalarObjectFunctionPtr()); // regularizer
+  learner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(2), true));
+  NumericalSupervisedInferencePtr regressor = squareRegressionInference(T("toto regr"), perception);
+  regressor->setStochasticLearner(learner);
 
   InferencePtr ofqiInference = new OFQIInference(5, 0.9, regressor);
-  ofqiInference->setBatchLearner(onlineToBatchInferenceLearner());
+  ofqiInference->setBatchLearner(stochasticInferenceLearner());
  
   // make training set
   TypePtr inputType = perception->getInputType();
@@ -57,7 +56,7 @@ int main(int argc, char* argv[])
   // create context and train
   InferenceContextPtr context = multiThreadedInferenceContext(8);
   context->appendCallback(new MyInferenceCallback());
-  context->train(ofqiInference, trainingSet);
+  context->train(ofqiInference, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));

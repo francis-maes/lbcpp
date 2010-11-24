@@ -1,5 +1,5 @@
 #include <lbcpp/lbcpp.h>
-
+#ifdef JUCE_LINUX
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -386,3 +386,5 @@ void ServerSocket::createAndBindSocket()
   
   callback.errorMessage(T("ServerSocket::createAndBindSocket"), getErrorMessage());
 }
+
+#endif // JUCE_LINUX
