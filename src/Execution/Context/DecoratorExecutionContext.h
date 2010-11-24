@@ -19,21 +19,21 @@ class DecoratorExecutionContext : public ExecutionContext
 public:
   DecoratorExecutionContext(ExecutionContextPtr decorated)
     : decorated(decorated)
-    {appendCallback(decorated);}
+    {if (decorated) appendCallback(decorated);}
 
   DecoratorExecutionContext() {}
 
   virtual bool isCanceled() const
-    {return decorated->isCanceled();}
+    {return decorated && decorated->isCanceled();}
 
   virtual bool isPaused() const
-    {return decorated->isPaused();}
+    {return decorated && decorated->isPaused();}
 
   virtual bool run(const WorkUnitPtr& workUnit)
-    {return decorated->run(workUnit);}
+    {return decorated && decorated->run(workUnit);}
 
   virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
-    {return decorated->run(workUnits);}
+    {return decorated && decorated->run(workUnits);}
 
 protected:
   friend class DecoratorExecutionContextClass;

@@ -11,6 +11,7 @@
 
 # include "Function.h"
 # include "../Execution/ThreadPool.h"
+# include "../Execution/WorkUnit.h"
 
 namespace lbcpp
 {
@@ -31,31 +32,28 @@ typedef ReferenceCountedObjectPtr<ObjectiveFunction> ObjectiveFunctionPtr;
 
 extern ClassPtr objectiveFunctionClass;
 
-class EvaluateObjectiveFunctionJob : public Job
+class EvaluateObjectiveFunctionWorkUnit : public WorkUnit
 {
 public:
-  EvaluateObjectiveFunctionJob(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result)
-    : Job(name), objective(objective), input(input), result(result) {}
-  EvaluateObjectiveFunctionJob() : result(*(double* )0) {}
+  EvaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result)
+    : WorkUnit(name), objective(objective), input(input), result(result) {}
+  EvaluateObjectiveFunctionWorkUnit() : result(*(double* )0) {}
 
-  virtual String getCurrentStatus() const
-    {return T("Evaluating ") + input.toShortString();}
-
-  virtual bool runJob(String& failureReason)
+protected:
+  virtual bool run(ExecutionContext& context)
   {
     result = objective->compute(input);
     return true;
   }
 
-protected:
-  friend class EvaluateObjectiveFunctionJobClass;
+  friend class EvaluateObjectiveFunctionWorkUnitClass;
 
   ObjectiveFunctionPtr objective;
   Variable input;
   double& result;
 };
 
-extern JobPtr evaluateObjectiveFunctionJob(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result);
+extern WorkUnitPtr evaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result);
 
 }; /* namespace lbcpp */
 

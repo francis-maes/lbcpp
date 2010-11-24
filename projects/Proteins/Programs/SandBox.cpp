@@ -83,15 +83,15 @@ public:
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
-    std::vector<JobPtr> jobs(70);
-    std::vector<double> scores(70);
-    for (size_t i = 0; i < jobs.size(); ++i)
+    std::vector<WorkUnitPtr> workUnits(7);
+    std::vector<double> scores(7);
+    for (size_t i = 0; i < workUnits.size(); ++i)
     {
       double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
-      jobs[i] = evaluateObjectiveFunctionJob(T("LearningRate"), objective, learningRate, scores[i]);
+      workUnits[i] = evaluateObjectiveFunctionWorkUnit(T("LearningRate"), objective, learningRate, scores[i]);
     }
     ThreadPoolPtr pool = new ThreadPool(7);
-    pool->addJobsAndWaitExecution(jobs, 0, true);
+    pool->addWorkUnitsAndWaitExecution(workUnits, 0, true);
     double bestScore = -DBL_MAX;
     double res = 0.0;
     for (size_t i = 0; i < scores.size(); ++i)

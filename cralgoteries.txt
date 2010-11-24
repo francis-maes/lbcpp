@@ -5,10 +5,9 @@
  * Replace Program by WorkUnit
  * Take a ExecutionContext& parameter in Function
  * Inherit InferenceCallback from ExecutionCallback and InferenceContext from ExecutionContext
-
+ * Unify also with Boinc
 
 Program:
- * Unifier Job, Program, JobContext, InferenceContext, InformationCallback, ProgressCallback, etc...  "WorkUnit (?)"
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
  * SandBox: dériver de Program
  * SandBoxNewFeatures: enlever (?)

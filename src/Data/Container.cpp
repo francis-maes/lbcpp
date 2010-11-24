@@ -130,33 +130,30 @@ ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
   }
 }
 
-class ApplyFunctionInContainerJob : public Job
+class ApplyFunctionInContainerWorkUnit : public WorkUnit
 {
 public:
-  ApplyFunctionInContainerJob(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
-    : Job(T("apply ") + function->toString() + T(" ") + String((int)index)), source(source), function(function), target(target), index(index) {}
-
-  virtual String getCurrentStatus() const
-    {return String::empty;}
-
-  virtual bool runJob(String& failureReason)
-    {target->setElement(index, function->compute(source->getElement(index))); return true;}
+  ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
+    : WorkUnit(T("apply ") + function->toString() + T(" ") + String((int)index)), source(source), function(function), target(target), index(index) {}
 
 protected:
   ContainerPtr source;
   FunctionPtr function;
   ContainerPtr target;
   size_t index;
+
+  virtual bool run(ExecutionContext& context)
+    {target->setElement(index, function->compute(source->getElement(index))); return true;}
 };
 
 ContainerPtr Container::apply(FunctionPtr function, ThreadPoolPtr pool) const
 {
   size_t n = getNumElements();
   VectorPtr res = vector(function->getOutputType(getElementsType()), n);
-  std::vector<JobPtr> jobs(n);
+  std::vector<WorkUnitPtr> workUnits(n);
   for (size_t i = 0; i < n; ++i)
-    jobs[i] = new ApplyFunctionInContainerJob(refCountedPointerFromThis(this), function, res, i);
-  pool->addJobsAndWaitExecution(jobs, 10);
+    workUnits[i] = new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i);
+  pool->addWorkUnitsAndWaitExecution(workUnits, 10);
   return res;
 }
 
