@@ -6,13 +6,13 @@
 namespace lbcpp
 {
 
-class PredictorProgram : public Program
+class PredictorProgram : public WorkUnit
 {
 public:
   virtual String toString() const
     {return T("Predictor");}
   
-  virtual int runProgram(MessageCallback& callback);
+  virtual bool run(ExecutionContext& context);
 
 protected:
   friend class PredictorProgramClass;

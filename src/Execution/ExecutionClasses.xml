@@ -2,9 +2,9 @@
 
 <file name="Execution" directory="lbcpp/Execution">
 
+  <include file="lbcpp/Data/Vector.h"/>
   <include file="lbcpp/Execution/ExecutionContext.h"/>
   <include file="lbcpp/Execution/WorkUnit.h"/>
-  <include file="lbcpp/Execution/Program.h"/>
   <include file="lbcpp/Execution/ThreadPool.h"/>
   <import name="ExecutionCallback"/>
   <import name="ExecutionContext"/>
@@ -23,12 +23,7 @@
       <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
     </class>
     
-    <!-- Program -->
-    <class name="Program" base="Object"/>
-
-    <!-- Job and ThreadPool -->
-    <class name="Job" base="NameableObject" abstract="yes"/>
-
+    <!-- ThreadPool -->
     <class name="ThreadPool">
       <variable type="Integer" name="numCpus"/>
       <variable type="Boolean" name="verbose"/>

@@ -21,14 +21,26 @@ public:
   WorkUnit(const String& name) : NameableObject(name) {}
   WorkUnit() {}
 
+  virtual String toShortString() const
+    {return getClassName();}
+
+  virtual String toString() const
+    {return T("No description available !");}
+ 
+  static int main(WorkUnitPtr workUnit, int argc, char* argv[]);
+
 protected:
   friend class ExecutionContext;
   friend class DecoratorWorkUnit;
 
   virtual bool run(ExecutionContext& context) = 0;
+
+protected:
+  String getUsageString() const;
+  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 };
 
-typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
+extern ClassPtr workUnitClass;
 
 class DecoratorWorkUnit : public WorkUnit
 {

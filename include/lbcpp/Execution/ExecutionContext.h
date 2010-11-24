@@ -32,6 +32,10 @@ public:
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
   virtual void resultCallback(const String& name, const Variable& value);
 
+  // shortcuts
+  void informationCallback(const String& what)
+    {informationCallback(String::empty, what);}
+
   /*
   ** Current State
   */

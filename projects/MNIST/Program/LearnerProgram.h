@@ -6,7 +6,7 @@
 namespace lbcpp
 {
 
-class LearnerProgram : public Program
+class LearnerProgram : public WorkUnit
 {
 public:
   LearnerProgram() : output(File::getCurrentWorkingDirectory().getChildFile(T("result"))),
@@ -17,7 +17,7 @@ public:
   virtual String toString() const
     {return T("Program developed for the challenge of the course ELEN0062, at University of Liege, in 2010.");}
   
-  virtual int runProgram(MessageCallback& callback);
+  virtual bool run(ExecutionContext& context);
   
 protected:
   friend class LearnerProgramClass;

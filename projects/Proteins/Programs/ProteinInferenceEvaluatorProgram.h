@@ -78,7 +78,7 @@ public:
   }
 };
   
-class ProteinInferenceEvaluatorProgram : public Program
+class ProteinInferenceEvaluatorProgram : public WorkUnit
 {
 public:
   ProteinInferenceEvaluatorProgram() : numThreads(1) {}
@@ -87,21 +87,21 @@ public:
     {return T("Take an learned inference and save prediction \
               from an input protein directory to an output directory.");}
   
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
     if (!inputDirectory.exists()
         || !outputDirectory.exists()
         || !inferenceFile.exists())
     {
-      callback.errorMessage(T("ProteinInferenceEvaluatorProgram::runProgram"), getUsage());
-      return -1;
+      context.errorCallback(T("ProteinInferenceEvaluatorProgram::run"), getUsageString());
+      return false;
     }
 
-    InferencePtr inference = Inference::createFromFile(inferenceFile, callback);
+    InferencePtr inference = Inference::createFromFile(inferenceFile);
     if (!inference)
     {
-      callback.errorMessage(T("ProteinInferenceEvaluatorProgram::runProgram"), T("Sorry, the inference file is not correct !"));
-      return -1;
+      context.errorCallback(T("ProteinInferenceEvaluatorProgram::run"), T("Sorry, the inference file is not correct !"));
+      return false;
     }
 
     ThreadPoolPtr pool = new ThreadPool(numThreads, false);
@@ -116,7 +116,7 @@ public:
     data->apply(FunctionPtr(new PredictFunction(inference, multiThreadedInferenceContext(pool))))
       ->apply(FunctionPtr(new SaveToFileFunction(outputDirectory)), false);
 
-    return 0;
+    return true;
   }
 
 protected:

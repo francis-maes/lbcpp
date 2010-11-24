@@ -496,12 +496,12 @@ ContainerPtr SnowBox::loadProteins(const File& f, size_t maxToLoad) const
     ->randomize();
 }
 
-bool SnowBox::loadData(MessageCallback& callback)
+bool SnowBox::loadData(ExecutionContext& context)
 {
   /* learning data */
   if (learningDirectory == File::nonexistent)
   {
-    callback.errorMessage(T("SnowBox::loadData"), T("No learning directory specified"));
+    context.errorCallback(T("SnowBox::loadData"), T("No learning directory specified"));
     return false;
   }
   
@@ -509,7 +509,7 @@ bool SnowBox::loadData(MessageCallback& callback)
   
   if (!learningData->getNumElements())
   {
-    callback.errorMessage(T("SnowBox::loadData"), T("No data found in ") + learningDirectory.getFullPathName().quoted());
+    context.errorCallback(T("SnowBox::loadData"), T("No data found in ") + learningDirectory.getFullPathName().quoted());
     return false;
   }
   /* validation data */
@@ -542,7 +542,7 @@ bool SnowBox::loadData(MessageCallback& callback)
   
   if (!useCrossValidation && !testingData->getNumElements())
   {
-    callback.errorMessage(T("SnowBox::loadData"), T("No testing data found"));
+    context.errorCallback(T("SnowBox::loadData"), T("No testing data found"));
     return false;
   }
   return true;
@@ -602,19 +602,19 @@ ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference() const
   return new ProteinSequentialInference();
 }
 
-int SnowBox::runProgram(MessageCallback& callback)
+bool SnowBox::run(ExecutionContext& context)
 {
-  if (!loadData(callback))
+  if (!loadData(context))
   {
-    callback.errorMessage(T("SnowBox::runProgram"), T("Loading data failed"));
-    return -1;
+    context.errorCallback(T("SnowBox::run"), T("Loading data failed"));
+    return false;
   }
 
   ProteinInferenceFactoryPtr factory = createFactory();
   if (!factory)
   {
-    callback.errorMessage(T("SnowBox::runProgram"), T("Unknown base learned and/or multiclass learner !"));
-    return -1;
+    context.errorCallback(T("SnowBox::run"), T("Unknown base learned and/or multiclass learner !"));
+    return false;
   }
 
   printInformation();
@@ -634,26 +634,25 @@ int SnowBox::runProgram(MessageCallback& callback)
     previousInference = inferencePass;
   }
   
-  InferenceContextPtr context = (numberOfThreads == 1)
+  InferenceContextPtr inferenceContext = (numberOfThreads == 1)
                               ? singleThreadedInferenceContext()
                               : multiThreadedInferenceContext(new ThreadPool(numberOfThreads, false));
   
   if (useCrossValidation)
   {
     //context->crossValidate(inference, learningData, evaluator, numberOfFolds);
-    callback.errorMessage(T("SnowBox::runProgram"), T("CrossValidation not yet implemented (missing appropriate evaluator)"));
-    return -1;
+    context.errorCallback(T("SnowBox::run"), T("CrossValidation not yet implemented (missing appropriate evaluator)"));
+    return false;
   }
   else
   {
-    context->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
+    inferenceContext->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
     //context->appendCallback(new StackPrinterCallback());
-    context->train(inference, learningData, validationData);
+    inferenceContext->train(inference, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
     inference->saveToFile(outputInferenceFile);
     std::cout << "Save inference : " << outputInferenceFile.getFullPathName() << std::endl;
   }
-  
-  return 0;
+  return true;
 }

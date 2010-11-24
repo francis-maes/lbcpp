@@ -127,19 +127,18 @@ public:
   }
 };
 
-class DumbOptimizerProgram : public Program
+class DumbOptimizerProgram : public WorkUnit
 {
 public:
-  virtual int runProgram(MessageCallback& callback)
+  virtual bool run(ExecutionContext& context)
   {
     //InferencePtr optimizer = new DichotomicOptimizer(-5, 10, maxIterationsStoppingCriterion(11));
     InferencePtr optimizer = new PolychotomicOptimizer(2, -5, 10, maxIterationsStoppingCriterion(11));
 
-    InferenceContextPtr context = singleThreadedInferenceContext();
+    InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    context->run(optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable(), returnCode);
-
-    return 0;
+    inferenceContext->run(optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable(), returnCode);
+    return true;
   }
 };
 

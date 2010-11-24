@@ -8,7 +8,6 @@
 
 #include <lbcpp/lbcpp.h>
 #include "Program/LearnerProgram.h"
-
 using namespace lbcpp;
 
 extern void declareMNISTClasses();
@@ -17,5 +16,5 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize();
   declareMNISTClasses();
-  return ProgramPtr(new LearnerProgram())->main(argc, argv);
+  return WorkUnit::main(new LearnerProgram(), argc, argv);
 }

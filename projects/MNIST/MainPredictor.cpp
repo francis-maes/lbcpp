@@ -18,5 +18,5 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize();
   declareMNISTClasses();
-  return ProgramPtr(new X3TesterProgram())->main(argc, argv);
+  return WorkUnit::main(new X3TesterProgram(), argc, argv);
 }

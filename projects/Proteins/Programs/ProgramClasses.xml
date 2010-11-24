@@ -3,11 +3,11 @@
 <file name="Program" directory="Programs">
   <namespace name="lbcpp">
 
-    <class name="HelloWorldProgram" base="Program">
+    <class name="HelloWorldProgram" base="WorkUnit">
       <variable type="Integer" name="myInt" desc="An arbitrary integer !" shortName="i"/>
     </class>
     
-    <class name="SaveObjectProgram" base="Program">
+    <class name="SaveObjectProgram" base="WorkUnit">
       <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
       <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
     </class>
@@ -22,7 +22,7 @@
       <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
     </class>
 
-    <class name="SnowBox" base ="Program">
+    <class name="SnowBox" base ="WorkUnit">
       <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
       <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
       <variable type="File" name="validationDirectory" description="The path to the validation set directory" shortName="vs"/>
@@ -42,18 +42,18 @@
       <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
     </class>
     
-    <class name="ProteinInferenceEvaluatorProgram" base="Program">
+    <class name="ProteinInferenceEvaluatorProgram" base="WorkUnit">
       <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
       <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
       <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
       <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
     </class>
     
-    <class name="ClientProgram" base="Program"/>
+    <class name="ClientProgram" base="WorkUnit"/>
     
-    <class name="ServerProgram" base="Program"/>
+    <class name="ServerProgram" base="WorkUnit"/>
     
-    <class name="DumbOptimizerProgram" base="Program"/>
+    <class name="DumbOptimizerProgram" base="WorkUnit"/>
     <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
   </namespace>
 

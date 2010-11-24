@@ -1,32 +1,38 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: WorkUnit.cpp                   | Base class for Work Units       |
+| Author  : Francis Maes                   |                                 |
+| Started : 24/11/2010 20:39               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
-#include <lbcpp/lbcpp.h>
-
+#include <lbcpp/Data/Variable.h>
+#include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
-int Program::main(int argc, char* argv[])
+int WorkUnit::main(WorkUnitPtr workUnit, int argc, char* argv[])
 {
+  ExecutionContextPtr context = singleThreadedExecutionContext();
+  context->appendCallback(consoleExecutionCallback());
+
   std::vector<String> arguments(argc - 1);
   for (size_t i = 1; i < (size_t)argc; ++i)
-    arguments[i - 1] = argv[i];
+  {
+    String arg = argv[i];
+    arguments[i - 1] = arg;
+    if (arg == T("-h") || arg == T("--help"))
+    {
+      context->informationCallback(workUnit->getUsageString());
+      return 0;
+    }
+  }
 
-/*  std::cout << "----- Arguments -----" << std::endl;
-  for (size_t i = 0; i < arguments.size(); ++i)
-    std::cout << i << " : " << arguments[i] << std::endl;
-*/ 
-  MessageCallback& callback = MessageCallback::getInstance();
-  if (!parseArguments(arguments, callback))
-    return -1;
-  return runProgram(callback);
+  return workUnit->parseArguments(*context, arguments) && context->run(workUnit) ? 0 : 1;
 }
 
-bool Program::parseArguments(const std::vector<String>& arguments, MessageCallback& callback)
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
 {
-  if (helpRequired(arguments))
-  {
-    callback.infoMessage(T("Program::parseArguments"), getUsage());
-    return false;
-  }
-  
   /* shortcut */
   std::map<String, size_t> variableNames;
   std::map<String, size_t> variableShortNames;
@@ -60,8 +66,8 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
 
     if (!defaultMap.count(argumentName))
     {
-      callback.infoMessage(T("Program::parseArguments"), getUsage());
-      callback.errorMessage(T("Program::parseArguments"), T("Unexpected expression : ") + arguments[i]);
+      context.informationCallback(getUsageString());
+      context.errorCallback(T("WorkUnit::parseArguments"), T("Unexpected expression : ") + arguments[i]);
       return false;
     }
 
@@ -77,21 +83,19 @@ bool Program::parseArguments(const std::vector<String>& arguments, MessageCallba
       value = Variable(true); // particular case for boolean arguments: if no value has been given, we take true by default
     else
     {
-      value = Variable::createFromString(argumentType, argumentValue, callback);
+      value = Variable::createFromString(argumentType, argumentValue);
       if (value.isMissingValue())
       {
-        callback.errorMessage(T("Program::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
+        context.errorCallback(T("WorkUnit::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
         return false;
       }
     }
-
     setVariable(variableIndex, value);
   }
-
   return true;
 }
-  
-String Program::getUsage() const
+
+String WorkUnit::getUsageString() const
 {
   ClassPtr thisClass = getClass();
   /* Compute the longest string */
@@ -125,12 +129,4 @@ String Program::getUsage() const
     + T("   or : ") + toShortString() + T(" [argument ...]\n\n")
     + T("The arguments are as follows :\n\n")
     + argumentDescriptions;
-}
-
-bool Program::helpRequired(const std::vector<String>& arguments) const
-{
-  for (size_t i = 0; i < arguments.size(); ++i)
-    if (arguments[i] == T("-h") || arguments[i] == T("--help"))
-      return true;
-  return false;
 }
