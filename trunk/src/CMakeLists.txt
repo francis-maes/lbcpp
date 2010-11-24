@@ -10,6 +10,9 @@ GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
+GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackClasses.xml ExecutionCallbackClasses.cpp)
+
 GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionClasses.xml ScalarFunctionClasses.cpp)
@@ -41,8 +44,6 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
-
-GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
 
 #### Data ####
 
@@ -129,6 +130,29 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/ExcludeRangeContainer.h
   Data/Container/ContainerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
+)
+
+#### Execution ####
+
+SET(LBCPP_EXECUTION_SOURCES
+  ../include/lbcpp/Execution/ExecutionCallback.h
+  ../include/lbcpp/Execution/ExecutionContext.h
+  ../include/lbcpp/Execution/Program.h
+  Execution/Program.cpp
+  ../include/lbcpp/Execution/MessageCallback.h
+  Execution/MessageCallback.cpp
+  ../include/lbcpp/Execution/Job.h
+  ../include/lbcpp/Execution/ThreadPool.h
+  Execution/ThreadPool.cpp
+  Execution/ExecutionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
+)
+
+SET(LBCPP_EXECUTION_CALLBACK_SOURCES
+  Execution/Callback/SilentExecutionCallback.h
+  Execution/Callback/ConsoleExecutionCallback.h
+  Execution/Callback/ExecutionCallbackClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
 )
 
 #### Function ####
@@ -430,18 +454,6 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
 )
 
-#### Execution ####
-SET(LBCPP_EXECUTION_SOURCES
-  ../include/lbcpp/Execution/Program.h
-  Execution/Program.cpp
-  ../include/lbcpp/Execution/MessageCallback.h
-  Execution/MessageCallback.cpp
-  ../include/lbcpp/Execution/Job.h
-  ../include/lbcpp/Execution/ThreadPool.h
-  Execution/ThreadPool.cpp
-  Execution/ExecutionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
-)
 
 ##### MAIN ####
 
@@ -462,6 +474,10 @@ SET(LBCPP_CORE
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
     ${LBCPP_DATA_IMPL_HEADERS}
+
+  # Execution
+  ${LBCPP_EXECUTION_SOURCES}
+    ${LBCPP_EXECUTION_CALLBACK_SOURCES}
   
   # Function
   ${LBCPP_FUNCTION_SOURCES}
@@ -501,9 +517,6 @@ SET(LBCPP_CORE
   # DecisionTree
   ${LBCPP_DECISION_TREE_SOURCES}
   ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
-  
-  # Execution
-  ${LBCPP_EXECUTION_SOURCES}
 )
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
@@ -515,6 +528,10 @@ SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Data Object FILES ${LBCPP_DATA_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
+
+## Execution
+SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
+SOURCE_SUB_GROUP(Execution Callback FILES ${LBCPP_EXECUTION_CALLBACK_SOURCES})
 
 ## Function
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
@@ -553,9 +570,6 @@ SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNIN
 ## DecisionTree
 SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
-
-## Execution
-SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 TARGET_LINK_LIBRARIES(lbcpp-core juce)

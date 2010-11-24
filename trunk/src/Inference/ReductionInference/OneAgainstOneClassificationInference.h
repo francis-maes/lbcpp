@@ -60,9 +60,7 @@ public:
   virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = classes->getNumElements();
-    double sumScores[n];
-    for (size_t i = 0; i < n; ++i)
-      sumScores[i] = 0;
+    std::vector<double> sumScores(n, 0.0);
     
     for (size_t index = 0, i = 0; i < n; ++i)
       for (size_t j = i + 1; j < n; ++n, ++index)

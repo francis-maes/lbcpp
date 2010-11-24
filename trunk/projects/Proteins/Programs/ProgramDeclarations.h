@@ -145,7 +145,7 @@ public:
   
   virtual String toString() const
   {
-    return T("SmartBox is ... a smart box ! It's a flexible program allowing"    \
+    return String("SmartBox is ... a smart box ! It's a flexible program allowing"    \
               " you to learn, save, resume models. Just by giving the targets"   \
               " to learn and a training dataset. You can specified the learning" \
               " based-model, the learning rate for each target and each passes," \

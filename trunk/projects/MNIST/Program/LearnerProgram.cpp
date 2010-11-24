@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 namespace lbcpp
 {
-extern TypePtr digitTypeEnumeration;
+extern EnumerationPtr digitTypeEnumeration;
 extern ContainerPtr parseDataFile(const File& f);
 }
 

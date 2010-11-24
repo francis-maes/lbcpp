@@ -19,6 +19,7 @@ typedef ReferenceCountedObjectPtr<InputStream> InputStreamPtr;
 
 extern InetAddressPtr inetAddressByHostName(const String& hostName);
 
+#ifdef JUCE_LINUX 
 class Socket
 {
 public:  
@@ -81,11 +82,13 @@ protected:
   
   void createAndBindSocket();
 };
+#endif // JUCE_LINUX
 
 class ServerProgram : public Program
 {
   virtual int runProgram(MessageCallback& callback)
   {
+#ifdef JUCE_LINUX
     ServerSocketPtr server = new ServerSocket(10021, callback);
     if (!server->isBound())
       return -1;
@@ -121,7 +124,7 @@ class ServerProgram : public Program
     }
     client->close();
     server->close();
-
+#endif // JUCE_LINUX
     return 0;
   }
 };
@@ -130,6 +133,7 @@ class ClientProgram : public Program
 {
   virtual int runProgram(MessageCallback& callback)
   {
+#ifdef JUCE_LINUX
     InetAddressPtr ip = inetAddressByHostName(T("192.168.1.3"));
     if (!ip)
       return -1;
@@ -158,7 +162,7 @@ class ClientProgram : public Program
     os->writeString(T("QUIT"));
     
     socket->close();
-
+#endif // JUCE_LINUX
     return 0;
   }
 };

@@ -1,5 +1,13 @@
-ESSAN:
- * Faire une passe
+ 
+ 
+ * SingleThreadedExecutionContext
+ * MultiThreadedExecutionContext
+ 
+ * Replace Job by WorkUnit
+ * Replace Program by WorkUnit
+ * Take a ExecutionContext& parameter in Function
+ * Inherit InferenceCallback from ExecutionCallback and InferenceContext from ExecutionContext
+
 
 Program:
  * Unifier Job, Program, JobContext, InferenceContext, InformationCallback, ProgressCallback, etc...  "WorkUnit (?)"
@@ -25,9 +33,6 @@ More Features:
 Cleaning:
  * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
-
-Extra-trees:
- * Make it really work !
 
 Explorer:
  * Verifier la stabilité
