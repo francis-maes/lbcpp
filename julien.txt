@@ -1,12 +1,56 @@
 Paper ESANN:
- * Relire le papier
+ * Finir
 
-SnowBox:
+Programmes Proteines:
+ * Enlever le MoonBox, ArgumentSet
+ * Enlever ProteinInferenceEvaluator
+ * Faire deriver les anciens progs de Program
  * segfault en fin d'exécution.
 
+Network:
+ * Tester les ports sur le NIC3 (port 1664)
+ * Classes NetworkClient (dérive de InterprocessConnection), NetworkServer (dérive de InterprocessConnectionServer)
+ * void sendVariable(const Variable& variable)
+ * void variableReceived(const Variable& variable)
+ 
 Extra-trees:
  * Revoir le design
- * Générique: sur le type de sortie (classification: binaire/multiclasse, regression: simple/multiple)
+     - SplitScoringFunction (dérive de ObjectiveFunction, entrée: +/- sorties à gauche et sorties à droites, sortie: scalaire)
+         - ClassificationIGSplitScoringFunction
+         - RegressionIGSplitScoringFunction
+     
+     - BinaryDecisionTreeSplitter
+        - Constructeur: SplitScoringFunction en argument
+        - Variable findBestSplit(data)
+        - Variable sampleSplit(data), valeur de retour: "argument" du split (threshold, bitmask)
+        - PredicatePtr getSplitPredicate(const Variable& ): "argument" => "Predicate"
+        - classes dérivés: BooleanBinaryDecisionTreeSplitter, DoubleDecisionTreeSplitter, ...
+        
+     - tableau std::vector<BinaryDecisionTreeSplitterPtr> construit au moment de la construction des arbres
+     
+ * Rajouter void DiscreteProbabilityDistribution::normalize()
+ 
+ * ProbabilityDistributionBuilder:
+     - virtual TypePtr getInputType() const
+     - virtual void clear()
+     - virtual void add(const Variable& variable, double weight)  (=> checkInheritance)
+     - virtual ProbabilityDistributionPtr build() const
+     - classes dérivés: DiscreteProbabilityDistributionBuilder, GaussianProbabilityDistributionBuilder, ...
+     
+   => Utiliser dans ParallelVote (en parametre à la construction; enlever les classes qui dérive de ParallelVote; mettre des checkInheritance)
+   => Utiliser dans les ExtraTree si plusieurs labels de sortie dans la feuille
+   => Render les ExtraTree generique sur le type de sortie
+
+ * Delocker les arbres
+
+MNIST:
+ * Features
+ * Tester les extra-trees
+   * Lors de gros tests, segfault vers 300 trees ... problème de mémoire ?
+
+Cystein Bond:
+ * Waiting for SP39
+ * Parser SPX, controler les données (nb Cys=Cys)
 
 DISpro:
  * 10-CV
@@ -15,18 +59,3 @@ CASP:
  * Télécharger les données de CASP8
  * Entrainer un modèle, tester, comparer
  * De même pour CASP9
-
-Optimizer:
-
-MNIST:
- * Features
- * Tester les extra-trees
-   * Lors de gros tests, segfault vers 300 trees ... problème de mémoire ?
-
-Make:
- * Faire une sur-couche générant automatiquement les fonctions mains à partir des classes Program
-
-Cystein Bond:
- * Waiting for SP39
- * Parser SPX, controler les données (nb Cys=Cys)
-
