@@ -23,12 +23,12 @@ public:
     Perception::computeOutputType();
   }
   
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    Variable v = function->computeFunction(input, MessageCallback::getInstance());
+    Variable v = function->computeFunction(context, input);
     jassert(v.isObject() && v.getType()->inheritsFrom(imageClass));
     
-    ImagePtr image = v.getObjectAndCast<Image>();
+    ImagePtr image = v.getObjectAndCast<Image>(context);
     if (!image)
       return;
     jassert(image->getWidth() == function->getOutputImageWidth()

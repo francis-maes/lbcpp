@@ -14,7 +14,7 @@ namespace lbcpp {
 class AccumulatedScores : public Object
 {
 public:
-  void compute(ContainerPtr container)
+  void compute(ExecutionContext& context, ContainerPtr container)
   {
     ScopedLock _(lock);
     jassert(container);
@@ -32,7 +32,7 @@ public:
     {
       EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
       jassert(enumeration);
-      computeForDiscreteDistribution(enumeration, container);
+      computeForDiscreteDistribution(context, enumeration, container);
     }
     else
       jassert(false);
@@ -79,7 +79,7 @@ private:
     }
   }
 
-  void computeForDiscreteDistribution(EnumerationPtr enumeration, ContainerPtr container)
+  void computeForDiscreteDistribution(ExecutionContext& context, EnumerationPtr enumeration, ContainerPtr container)
   {
     accumulators[0].resize(enumeration->getNumElements() + 1, 0.0);
     for (size_t i = 0; i < accumulators.size(); ++i)
@@ -87,7 +87,7 @@ private:
       std::vector<double>& scores = accumulators[i];
       if (i > 0)
         scores = accumulators[i - 1];
-      DiscreteProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>();
+      DiscreteProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>(context);
       jassert(distribution);
       for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
         scores[j] += distribution->compute(Variable(j, enumeration));
@@ -148,10 +148,10 @@ void HistogramPerception::computeOutputType()
   Perception::computeOutputType();
 }
 
-void HistogramPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+void HistogramPerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
   int startPosition, endPosition;
-  const ContainerPtr& container = getInput(input, startPosition, endPosition);
+  const ContainerPtr& container = getInput(context, input, startPosition, endPosition);
   if (!container)
     return;
 
@@ -168,7 +168,7 @@ void HistogramPerception::computePerception(const Variable& input, PerceptionCal
 
   scores->lock.enter();
   if (!scores->getNumElements())
-    scores->compute(container);
+    scores->compute(context, container);
   std::vector<double> startScores = scores->getAccumulatedScores(startPosition);
   std::vector<double> endScores = scores->getAccumulatedScores(endPosition - 1);
   scores->lock.exit();

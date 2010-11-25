@@ -4,13 +4,13 @@
   <namespace name="lbcpp">
 
     <class name="OneAgainstAllClassificationInference" base="VectorParallelInference">
-      <constructor arguments="const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
+      <constructor arguments="ExecutionContext&amp; context, const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
       <variable type="Enumeration" name="classes"/>
       <variable type="Inference" name="binaryClassifierModel"/>
     </class>
     
     <class name="OneAgainstOneClassificationInference" base="VectorParallelInference">
-      <constructor arguments="const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
+      <constructor arguments="ExecutionContext&amp; context, const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
       <variable type="Enumeration" name="classes"/>
       <variable type="Inference" name="binaryClassifierModel"/>
     </class>
@@ -21,7 +21,7 @@
     </class>
 
     <class name="ParallelVoteInference" base="VectorParallelInference">
-      <constructor arguments="const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner"/>
+      <constructor arguments="ExecutionContext&amp; context, const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner"/>
       <variable type="Inference" name="voteInferenceModel"/>
     </class>
 

@@ -26,7 +26,7 @@ public:
 
   BatchGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     updateParameters(context, inference, 1.0, input, supervision, prediction, &gradientSum);
     ++epoch;
@@ -34,31 +34,31 @@ public:
     {
       int miniBatchSize = learningUpdateFrequency - perStepMiniBatch;
       if (miniBatchSize <= 1 || (epoch % miniBatchSize == 0))
-        applyGradientSum(inference);
+        applyGradientSum(context, inference);
     }
-    checkRegularizerAfterStep(inference);
+    checkRegularizerAfterStep(context, inference);
     GradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
   }
 
-  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
   {
     if (learningUpdateFrequency == perEpisode)
-      applyGradientSum(inference);
+      applyGradientSum(context, inference);
     GradientDescentOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
-    {applyGradientSum(inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);}
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+    {applyGradientSum(context, inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);}
 
 protected:
   ObjectPtr gradientSum;
 
-  void applyGradientSum(InferencePtr inference)
+  void applyGradientSum(ExecutionContext& context, InferencePtr inference)
   {
     if (gradientSum)
     {
       //std::cout << "E" << std::flush;
-      gradientDescentStep(inference, gradientSum);
+      gradientDescentStep(context, inference, gradientSum);
       gradientSum = ObjectPtr();
     }
   }

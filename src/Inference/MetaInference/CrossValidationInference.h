@@ -39,17 +39,17 @@ protected:
   EvaluatorPtr evaluator;
   InferencePtr inferenceModel;
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>();
-    const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>();
-    InferencePtr inference = inferenceModel->cloneAndCast<Inference>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>(context);
+    const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>(context);
+    InferencePtr inference = inferenceModel->cloneAndCast<Inference>(context);
     jassert(trainingData && evaluationData && inference);
-    returnCode = context->train(inference, trainingData, ContainerPtr());
+    returnCode = context.train(inference, trainingData, ContainerPtr());
     if (returnCode != finishedReturnCode)
       return Variable();
-    returnCode = context->evaluate(inference, evaluationData, evaluator);
+    returnCode = context.evaluate(inference, evaluationData, evaluator);
     return Variable();
   }
 };
@@ -70,16 +70,16 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return nilType;}
 
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
-    const ContainerPtr& trainingData = input.getObjectAndCast<Container>();
+    const ContainerPtr& trainingData = input.getObjectAndCast<Container>(context);
     return String((int)numFolds) + T("-Cross Validating ") + inferenceModel->getName() + T(" with ") +
       String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getName() + T("s");
   }
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const ContainerPtr& trainingData = input.getObjectAndCast<Container>();
+    const ContainerPtr& trainingData = input.getObjectAndCast<Container>(context);
 
     ParallelInferenceStatePtr state(new ParallelInferenceState(input, supervision));
     state->reserve(numFolds);
@@ -91,7 +91,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 
 protected:

@@ -75,7 +75,7 @@ public:
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
-  virtual bool loadFromString(const String& str, MessageCallback& callback);
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
 
   virtual int compare(ObjectPtr otherObject) const
     {return compareVariables(otherObject);}

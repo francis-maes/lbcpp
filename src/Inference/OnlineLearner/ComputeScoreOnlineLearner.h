@@ -26,8 +26,8 @@ public:
   }
   ComputeScoreOnlineLearner() : lastScoreValue(0.0) {}
 
-  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
-    {lastScoreValue = scoreFunction->compute(inference).getDouble();}
+  virtual void update(InferenceContext& context, const InferencePtr& inference)
+    {lastScoreValue = scoreFunction->computeFunction(context, inference).getDouble();}
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
   {

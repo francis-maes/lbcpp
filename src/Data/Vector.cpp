@@ -67,26 +67,11 @@ bool Vector::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
-void Vector::clone(const ObjectPtr& target) const
+void Vector::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   VectorPtr targetVector = target.staticCast<Vector>();
   targetVector->resize(getNumElements());
-  Container::clone(targetVector);
-}
-
-VectorPtr Vector::cloneContent() const
-{
-  if (getElementsType()->inheritsFrom(objectClass))
-  {
-    VectorPtr res = Object::create(getClass()).staticCast<Vector>();
-    size_t n = getNumElements();
-    res->resize(n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, getElement(i).getObject()->clone());
-    return res;
-  }
-  else
-    return cloneAndCast<Vector>();
+  Container::clone(context, targetVector);
 }
 
 /*
@@ -269,7 +254,7 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
     for (size_t i = 0; i < values.size(); ++i)
       if (tokens[(int)i] != T("_"))
       {
-        Variable value = Variable::createFromString(doubleType, tokens[(int)i], importer.getCallback());
+        Variable value = Variable::createFromString(importer.getContext(), doubleType, tokens[(int)i]);
         if (!value.exists())
           return false;
         values[i] = value.getDouble();

@@ -40,14 +40,14 @@ public:
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const
     {return oneSubObjectPerInputVariableClass(outputClass, perceptionOutputType);}
 
-  virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
+  virtual void computeAndAddGradient(ExecutionContext& context, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
-    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>();
+    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>(context);
     const PerceptionPtr& perception = parameters->getPerception();
 
-    const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>();
+    const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     std::vector<double> lossGradient;
-    lossFunction->compute(prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
+    lossFunction->compute(context, prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
     if (lossGradient.empty() || !perception->getOutputType()->getObjectNumVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
 
@@ -60,29 +60,29 @@ public:
     }
     DenseObjectObjectPtr& weights = *(DenseObjectObjectPtr* )target;
     if (!weights)
-      weights = Object::create(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
+      weights = context.createObject(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
     
     ObjectPtr perceivedInput;
     if (input.getType() == perception->getOutputType())
       perceivedInput = input.getObject();
     else
-      perceivedInput = perception->compute(input).getObject();
+      perceivedInput = perception->computeFunction(context, input).getObject();
 
     for (size_t i = 0; i < lossGradient.size(); ++i)
     {
       double w = lossGradient[i] * weight;
       if (w)
-        lbcpp::addWeighted(weights->getObjectReference(i), perceivedInput, w);
+        lbcpp::addWeighted(context, weights->getObjectReference(i), perceivedInput, w);
     }
 
     if (isLocked)
       parametersLock.exitWrite();
   }
 
-  virtual Variable predict(const Variable& input) const
+  virtual Variable predict(ExecutionContext& context, const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
-    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>();
+    const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>(context);
     const PerceptionPtr& perception = parameters->getPerception();
     const ObjectPtr& weights = parameters->getWeights();
     if (!weights)
@@ -99,9 +99,9 @@ public:
     if (input.getType() == perception->getOutputType())
       perceivedInput = input.getObject();
     else
-      perceivedInput = perception->compute(input).getObject();
+      perceivedInput = perception->computeFunction(context, input).getObject();
     for (size_t i = 0; i < n; ++i)
-      outputs[i] = lbcpp::dotProduct(denseWeights->getObject(i), perceivedInput);
+      outputs[i] = lbcpp::dotProduct(context, denseWeights->getObject(i), perceivedInput);
     return res;
   }
 

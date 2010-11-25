@@ -18,8 +18,8 @@ namespace lbcpp
 class DSSPFileParser : public TextParser
 {
 public:
-  DSSPFileParser(const File& file, ProteinPtr protein, MessageCallback& callback = MessageCallback::getInstance())
-    : TextParser(file, callback), protein(protein)
+  DSSPFileParser(ExecutionContext& context, const File& file, ProteinPtr protein)
+    : TextParser(context, file), protein(protein)
   {
     jassert(protein->getPrimaryStructure());
     primarySequence = protein->getPrimaryStructure();
@@ -29,10 +29,10 @@ public:
   virtual TypePtr getElementsType() const
     {return proteinClass;}
 
-  virtual void parseBegin()
+  virtual void parseBegin(ExecutionContext& context)
     {serialNumber = 0;}
 
-  virtual bool parseLine(const String& line)
+  virtual bool parseLine(ExecutionContext& context, const String& line)
   {
     if (line.isEmpty())
       return true; // skip empty lines
@@ -52,14 +52,14 @@ public:
 
     if (line.length() < 100)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Line is not long enough"));
       return false;
     }
 
     int newSerialNumber = line.substring(0, 5).trim().getIntValue();
     if (newSerialNumber != (int)serialNumber)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + String(newSerialNumber));
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Invalid serial number: ") + String(newSerialNumber));
       return false;
     }
     ++serialNumber;
@@ -71,7 +71,7 @@ public:
     int residueNumber = residueNumberString.getIntValue() -1;    
     if (residueNumber < 0 || residueNumber >= (int)n)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + String(residueNumber));
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Invalid residue number: ") + String(residueNumber));
       return false;
     }
 
@@ -84,7 +84,7 @@ public:
 
     if (aminoAcidCode != expectedAminoAcid)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Amino acid does not matches: ") + aminoAcidCode);
       return false;
     }
     
@@ -98,7 +98,7 @@ public:
     int secondaryStructureIndex = dsspEnum->getOneLetterCodes().indexOf(secondaryStructureCode);
     if (secondaryStructureIndex < 0)
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
       return false;
     }
     dsspSecondaryStructureSequence->setElement((size_t)residueNumber, Variable(secondaryStructureIndex, dsspEnum));
@@ -109,7 +109,7 @@ public:
     String solventAccessibilityString = line.substring(34, 38).trim();
     if (!solventAccessibilityString.containsOnly(T("0123456789")))
     {
-      callback.errorMessage(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccessibilityString);
+      context.errorCallback(T("DSSPFileParser::parseLine"), T("Invalid solvent accesibility: ") + solventAccessibilityString);
       return false;
     }
     int absoluteSolventAccesiblity = solventAccessibilityString.getIntValue();
@@ -133,11 +133,11 @@ public:
     return true;
   }
 
-  virtual bool parseEnd()
+  virtual bool parseEnd(ExecutionContext& context)
   {
     if (!serialNumber)
     {
-      callback.errorMessage(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
+      context.errorCallback(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
 

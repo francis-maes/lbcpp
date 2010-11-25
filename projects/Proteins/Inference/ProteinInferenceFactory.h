@@ -20,7 +20,7 @@ namespace lbcpp
 class ProteinInferenceFactory : public Object
 {
 public:
-  ProteinInferenceFactory();
+  ProteinInferenceFactory(ExecutionContext& context);
   virtual ~ProteinInferenceFactory();
 
   /*
@@ -67,6 +67,8 @@ public:
     {jassert(false); return InferencePtr();}
 
 protected:
+  ExecutionContext& context;
+
   PerceptionRewriterPtr perceptionRewriter;
 
   size_t getTargetIndex(const String& targetName) const;

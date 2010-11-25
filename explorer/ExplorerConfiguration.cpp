@@ -12,12 +12,12 @@ using namespace lbcpp;
 /*
 ** ExplorerRecentFiles
 */
-ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance()
+ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance(ExecutionContext& context)
 {
-  Variable& res = ExplorerConfiguration::getConfiguration(T("ExplorerRecentFiles"));
+  Variable& res = ExplorerConfiguration::getConfiguration(context, T("ExplorerRecentFiles"));
   if (!res.exists())
     res = Variable(new ExplorerRecentFiles());
-  return res.getObjectAndCast<ExplorerRecentFiles>();
+  return res.getObjectAndCast<ExplorerRecentFiles>(context);
 }
 
 void ExplorerRecentFiles::addRecentFile(const File& file)
@@ -64,7 +64,7 @@ VariableVectorPtr ExplorerConfiguration::getInstance()
   {
     File configurationFile = getConfigurationFile();
     if (configurationFile.exists())
-      configuration = Variable::createFromFile(configurationFile).getObjectAndCast<VariableVector>();
+      configuration = Variable::createFromFile(*silentExecutionContext, configurationFile).getObjectAndCast<VariableVector>();
     if (!configuration)
       configuration = new ExplorerConfiguration();
   }

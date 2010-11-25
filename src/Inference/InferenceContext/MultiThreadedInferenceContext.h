@@ -30,7 +30,16 @@ public:
     pool->addWorkUnitAndWaitExecution(workUnit);
     return output;
   }
+  // FIXME !
+  virtual bool isCanceled() const
+    {return false;}
 
+  virtual bool isPaused() const
+    {return false;}
+
+  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+    {jassert(false); return false;}
+  // -
 protected:
   friend class MultiThreadedInferenceContextClass;
 

@@ -18,9 +18,9 @@ namespace lbcpp
 class PDBFileGenerator : public TextPrinter
 {
 public:
-  PDBFileGenerator(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  PDBFileGenerator(ExecutionContext& context, const File& file);
 
-  virtual void consume(const Variable& variable);
+  virtual void consume(ExecutionContext& context, const Variable& variable);
 
   static String makeHeaderLine(const String& classification, const String& date, const String& idCode);
     

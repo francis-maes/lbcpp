@@ -27,9 +27,9 @@ public:
   virtual TypePtr getInputType() const
     {return discreteProbabilityDistributionClass(enumeration);}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const DiscreteProbabilityDistributionPtr& distribution = input.getObjectAndCast<DiscreteProbabilityDistribution>();
+    const DiscreteProbabilityDistributionPtr& distribution = input.getObjectAndCast<DiscreteProbabilityDistribution>(context);
     jassert(distribution);
     size_t n = enumeration->getNumElements();
     for (size_t i = 0; i <= n; ++i)

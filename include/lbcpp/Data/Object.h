@@ -50,8 +50,6 @@ public:
 
   static void displayObjectAllocationInfo(std::ostream& ostr);
 
-  static ObjectPtr create(ClassPtr objectClass);
-
   /**
   ** Name getter.
   **
@@ -81,9 +79,10 @@ public:
   ** @return a copy of the current object or ObjectPtr() if
   ** the clone() operation is undefined for this object.
   */
-  virtual ObjectPtr clone() const;
-  virtual void clone(const ObjectPtr& target) const;
-  ObjectPtr deepClone() const;
+  virtual ObjectPtr clone(ExecutionContext& context) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  ObjectPtr deepClone(ExecutionContext& context) const;
+  ObjectPtr cloneToNewType(ExecutionContext& context, ClassPtr newType) const;
 
   /**
   ** Clones and cast the current object.
@@ -91,10 +90,10 @@ public:
   ** @return a casted copy of the current object.
   */
   template<class Type>
-  ReferenceCountedObjectPtr<Type> cloneAndCast() const
+  ReferenceCountedObjectPtr<Type> cloneAndCast(ExecutionContext& context) const
   {
-    ObjectPtr res = clone();
-    return res.checkCast<Type>(T("Object::cloneAndCast"));
+    ObjectPtr res = clone(context);
+    return res.staticCast<Type>();
   }
 
   /*
@@ -128,13 +127,13 @@ public:
   ** @return false is the loading fails, true otherwise. If loading fails,
   ** load() is responsible for declaring an error to the callback.
   */
-  virtual bool loadFromString(const String& str, MessageCallback& callback);
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
 
   /*
   ** High level serialisation
   */
-  void saveToFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
-  static ObjectPtr createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  void saveToFile(ExecutionContext& context, const File& file) const;
+  static ObjectPtr createFromFile(ExecutionContext& context, const File& file);
 
   /*
   ** Introspection: Class
@@ -151,7 +150,7 @@ public:
   TypePtr getVariableType(size_t index) const;
   String getVariableName(size_t index) const;
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(size_t index, const Variable& value);
+  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
 
   class VariableIterator
   {
@@ -172,8 +171,6 @@ public:
   */
   virtual juce::Component* createComponent() const
     {return NULL;}
-
-  ObjectPtr cloneToNewType(ClassPtr newType) const;
 
   lbcpp_UseDebuggingNewOperator
 

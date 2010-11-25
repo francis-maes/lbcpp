@@ -39,14 +39,14 @@
       <variable type="TemplateType" name="templateType"/>
       <variable type="ObjectVector[Type]" name="templateArguments"/>
       <code>
-        virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-          {return VariableValue(Type::get(value, callback), false);}
+        virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+          {return VariableValue(context.getType(value), false);}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {
           String text = importer.getAllSubText().trim();
           if (text.isNotEmpty())
-            return createFromString(importer.getAllSubText(), importer.getCallback());
+            return createFromString(importer.getContext(), importer.getAllSubText());
           else
             return VariableValue(Type::loadUnnamedTypeFromXml(importer), false);
         }
@@ -62,8 +62,8 @@
     <class name="Enumeration" base="Type" abstract="yes">
       <variable type="String" name="oneLetterCodes"/>
       <code>
-        virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-          {return Type::createFromString(value, callback);}
+        virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+          {return Type::createFromString(context, value);}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
           {return Type::createFromXml(importer);}
@@ -78,8 +78,8 @@
 
     <class name="Class" base="Type" abstract="yes">
       <code>
-      virtual VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
-        {return Type::createFromString(value, callback);}
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return Type::createFromString(context, value);}
 
       virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {return Type::createFromXml(importer);}

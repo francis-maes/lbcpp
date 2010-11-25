@@ -15,14 +15,14 @@ using namespace lbcpp;
 */
 struct SetInObjectPerceptionCallback : public PerceptionCallback
 {
-  SetInObjectPerceptionCallback(ObjectPtr target)
-    : target(target), atLeastOneVariable(false) {}
+  SetInObjectPerceptionCallback(ExecutionContext& context, ObjectPtr target)
+    : PerceptionCallback(context), target(target), atLeastOneVariable(false) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
     jassert(!value.isMissingValue());
     // jassert(!target->getVariable(variableNumber).exists());
-    target->setVariable(variableNumber, value);
+    target->setVariable(context, variableNumber, value);
     atLeastOneVariable = true;
   }
 
@@ -32,8 +32,8 @@ struct SetInObjectPerceptionCallback : public PerceptionCallback
 
 struct SetInSparseDoubleObjectPerceptionCallback : public PerceptionCallback
 {
-  SetInSparseDoubleObjectPerceptionCallback(const SparseDoubleObjectPtr& target, size_t initialSize)
-    : target(target)
+  SetInSparseDoubleObjectPerceptionCallback(ExecutionContext& context, const SparseDoubleObjectPtr& target, size_t initialSize)
+    : PerceptionCallback(context), target(target)
     {target->reserveValues(initialSize);}
 
   virtual void sense(size_t variableNumber, const Variable& value)
@@ -55,7 +55,7 @@ Perception::Perception() : sparseness(T("Sparseness"), 100)
 void PerceptionCallback::sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input)
 {
   jassert(subPerception);
-  Variable variable = subPerception->compute(input);
+  Variable variable = subPerception->computeFunction(context, input);
   if (variable.exists())
     sense(variableNumber, variable.getObject());
 }
@@ -113,10 +113,10 @@ void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionP
   v.subPerception = subPerception;
   outputVariables.push_back(v);
   if (outputType && outputType->getBaseType())
-    outputType->addVariable(type, name);
+    outputType->addVariable(*silentExecutionContext, type, name);
 }
 
-Variable Perception::computeFunction(const Variable& input, MessageCallback& callback) const
+Variable Perception::computeFunction(ExecutionContext& context, const Variable& input) const
 {
   TypePtr outputType = getOutputType();
   if (outputType == nilType)
@@ -136,15 +136,15 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   }
   if (!res)
   {
-    res = Object::create(outputType);
+    res = context.createObject(outputType);
     jassert(res);
   }
 
   // compute perception
   if (sparseDoubleRes)
   {
-    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(sparseDoubleRes, esimateSparsenessUpperBound());
-    computePerception(input, &perceptionCallback);
+    SetInSparseDoubleObjectPerceptionCallback perceptionCallback(context, sparseDoubleRes, esimateSparsenessUpperBound());
+    computePerception(context, input, &perceptionCallback);
     size_t numValues = sparseDoubleRes->getValues().size();
     if (numValues)
       const_cast<Perception* >(this)->pushSparsenessValue(numValues);
@@ -153,8 +153,8 @@ Variable Perception::computeFunction(const Variable& input, MessageCallback& cal
   }
   else
   {
-    SetInObjectPerceptionCallback perceptionCallback(res);
-    computePerception(input, &perceptionCallback);
+    SetInObjectPerceptionCallback perceptionCallback(context, res);
+    computePerception(context, input, &perceptionCallback);
     if (!perceptionCallback.atLeastOneVariable)
       res = ObjectPtr();
   }
@@ -174,9 +174,9 @@ void Perception::computeOutputType()
     for (size_t i = 0; i < n; ++i)
     {
       const OutputVariable& v = outputVariables[i];
-      outputType->addVariable(v.type, v.name);
+      outputType->addVariable(*silentExecutionContext, v.type, v.name);
     }
-    outputType->initialize(MessageCallback::getInstance());
+    outputType->initialize(*silentExecutionContext); // FIXME: context
   }
 }
 
@@ -191,7 +191,7 @@ bool Perception::loadFromXml(XmlImporter& importer)
   return true;
 }
 
-void Perception::clone(const ObjectPtr& t) const
+void Perception::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const PerceptionPtr& target = t.staticCast<Perception>();
   target->outputVariables = outputVariables;
@@ -231,7 +231,7 @@ void CompositePerception::addPerception(const String& name, PerceptionPtr subPer
   }
 }
 
-void CompositePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+void CompositePerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
   for (size_t i = 0; i < outputVariables.size(); ++i)
     callback->sense(i, outputVariables[i].subPerception, input);

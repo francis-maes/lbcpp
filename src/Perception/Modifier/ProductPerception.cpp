@@ -21,8 +21,8 @@ struct PerceptionVariable
 
 struct ComputePerceptionProductCallback : public PerceptionCallback
 {
-  ComputePerceptionProductCallback(const ProductPerception* owner, std::list<PerceptionVariable>& variables, PerceptionCallbackPtr targetCallback)
-    : owner(owner), variables(variables), targetCallback(targetCallback) {}
+  ComputePerceptionProductCallback(ExecutionContext& context, const ProductPerception* owner, std::list<PerceptionVariable>& variables, PerceptionCallbackPtr targetCallback)
+    : PerceptionCallback(context), owner(owner), variables(variables), targetCallback(targetCallback) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
   {
@@ -54,14 +54,14 @@ private:
     if (subPerception)
       targetCallback->sense(index, subPerception, p);
     else
-      targetCallback->sense(index, owner->getMultiplyFunction()->compute(p));
+      targetCallback->sense(index, owner->getMultiplyFunction()->computeFunction(context, p));
   }
 };
 
 struct FillVariableListCallback : public PerceptionCallback
 {
-  FillVariableListCallback(std::list<PerceptionVariable>& variables)
-    : variables(variables) {}
+  FillVariableListCallback(ExecutionContext& context, std::list<PerceptionVariable>& variables)
+    : PerceptionCallback(context), variables(variables) {}
 
   virtual void sense(size_t variableNumber, double value)
     {sense(variableNumber, Variable(value));}
@@ -107,7 +107,7 @@ TypePtr ProductPerception::getInputType() const
     return pairClass(perception1->getInputType(), perception2->getInputType());
 }
 
-void ProductPerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+void ProductPerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
   // retrieve inputs
   Variable input1, input2;
@@ -118,12 +118,12 @@ void ProductPerception::computePerception(const Variable& input, PerceptionCallb
 
   // compute Perception2
   std::list<PerceptionVariable> variables;
-  FillVariableListCallback fillVariableListCallback(variables);
-  perception2->computePerception(input2, &fillVariableListCallback);
+  FillVariableListCallback fillVariableListCallback(context, variables);
+  perception2->computePerception(context, input2, &fillVariableListCallback);
 
   // iterate over Perception1
-  ComputePerceptionProductCallback computePerceptionProductCallback(this, variables, callback);
-  perception1->computePerception(input1, &computePerceptionProductCallback);
+  ComputePerceptionProductCallback computePerceptionProductCallback(context, this, variables, callback);
+  perception1->computePerception(context, input1, &computePerceptionProductCallback);
 }
 
 void ProductPerception::addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2)
@@ -172,8 +172,8 @@ void ProductPerception::computeOutputType()
 */
 struct ComputePerceptionWithVariableProductCallback : public PerceptionCallback
 {
-  ComputePerceptionWithVariableProductCallback(const ProductWithVariablePerception* owner, const Variable& constant, PerceptionCallbackPtr targetCallback)
-    : owner(owner), constant(constant), targetCallback(targetCallback) {}
+  ComputePerceptionWithVariableProductCallback(ExecutionContext& context, const ProductWithVariablePerception* owner, const Variable& constant, PerceptionCallbackPtr targetCallback)
+    : PerceptionCallback(context), owner(owner), constant(constant), targetCallback(targetCallback) {}
 
   virtual void sense(size_t variableNumber, const Variable& value)
     {targetCallback->sense(variableNumber, productWith(value));}
@@ -199,7 +199,7 @@ protected:
   }
 
   Variable productWith(const Variable& value) const
-    {return owner->getMultiplyFunction()->compute(makePairWith(value));}
+    {return owner->getMultiplyFunction()->computeFunction(context, makePairWith(value));}
 };
 
 ProductWithVariablePerception::ProductWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables)
@@ -223,7 +223,7 @@ String ProductWithVariablePerception::toString() const
   return (swapVariables ? b : a) + T(" x ") + (swapVariables ? a : b);
 }
 
-void ProductWithVariablePerception::computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+void ProductWithVariablePerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
   Variable input1 = input[swapVariables ? 1 : 0];
   Variable input2 = input[swapVariables ? 0 : 1];
@@ -231,8 +231,8 @@ void ProductWithVariablePerception::computePerception(const Variable& input, Per
   jassert(input1.getType()->inheritsFrom(perception->getInputType()));
   jassert(input2.getType()->inheritsFrom(variableType));
 
-  ComputePerceptionWithVariableProductCallback computeProductCallback(this, input2, callback);
-  perception->computePerception(input1, &computeProductCallback);
+  ComputePerceptionWithVariableProductCallback computeProductCallback(context, this, input2, callback);
+  perception->computePerception(context, input1, &computeProductCallback);
 }
 
 void ProductWithVariablePerception::computeOutputType()

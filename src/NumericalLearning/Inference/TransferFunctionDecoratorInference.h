@@ -22,7 +22,7 @@ public:
     : StaticDecoratorInference(name, regressionStep), transferFunction(transferFunction) {}
   TransferFunctionDecoratorInference() {}
   
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     if (supervision.exists())
@@ -47,7 +47,7 @@ public:
     return std::make_pair(input, supervision);
   }
    
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     Variable subOutput = finalState->getSubOutput();
     return subOutput.exists() ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();

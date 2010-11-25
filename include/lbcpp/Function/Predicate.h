@@ -17,7 +17,7 @@ namespace lbcpp
 class Predicate : public Function
 {
 public:
-  virtual bool computePredicate(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const = 0;
+  virtual bool computePredicate(ExecutionContext& context, const Variable& input) const = 0;
 
   /*
   ** Function
@@ -29,8 +29,8 @@ public:
     {return booleanType;}
 
 protected:
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-    {return computePredicate(input, callback);}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return computePredicate(context, input);}
 };
 
 typedef ReferenceCountedObjectPtr<Predicate> PredicatePtr;

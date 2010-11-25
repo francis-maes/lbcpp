@@ -18,7 +18,7 @@ using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
 
-Component* createComponentForObject(ObjectPtr object, const String& explicitName)
+Component* createComponentForObject(ExecutionContext& context, ObjectPtr object, const String& explicitName)
 {
   String name = explicitName.isEmpty() ? object->getName() : explicitName;
 
@@ -34,8 +34,8 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
     TypePtr elementsType = container->computeElementsCommonBaseType();
     if (elementsType->inheritsFrom(fileType))
     {
-      ContainerPtr loadedContainer = container->apply(loadFromFileFunction(objectClass));
-      return createComponentForObject(loadedContainer, explicitName);
+      ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
+      return createComponentForObject(context, loadedContainer, explicitName);
     }
 
     if (elementsType->inheritsFrom(proteinClass))
@@ -70,7 +70,7 @@ Component* createComponentForObject(ObjectPtr object, const String& explicitName
   return NULL;
 }
 
-Component* createComponentForVariableImpl(const Variable& variable, const String& explicitName)
+Component* createComponentForVariableImpl(ExecutionContext& context, const Variable& variable, const String& explicitName)
 {
   if (variable.isNil())
     return NULL;
@@ -89,8 +89,8 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
     case textFile: return new StringComponent(variable); 
     case lbcppXmlFile:
       {
-        Variable v = Variable::createFromFile(file);
-        return v.exists() ? createComponentForVariableImpl(v, file.getFileName()) : NULL;
+        Variable v = Variable::createFromFile(context, file);
+        return v.exists() ? createComponentForVariableImpl(context, v, file.getFileName()) : NULL;
       }
     case directory: return new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false));
     default: return NULL;
@@ -105,7 +105,7 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
 
   if (variable.isObject())
   {
-    res = createComponentForObject(variable.getObject(), explicitName);
+    res = createComponentForObject(context, variable.getObject(), explicitName);
     if (res) return res;
   }
 
@@ -114,11 +114,11 @@ Component* createComponentForVariableImpl(const Variable& variable, const String
   return res;
 }
 
-Component* lbcpp::createComponentForVariable(const Variable& variable, const String& explicitName, bool topLevelComponent)
+Component* lbcpp::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& explicitName, bool topLevelComponent)
 {
   if (!variable.exists())
     return NULL;
-  Component* res = createComponentForVariableImpl(variable, explicitName);
+  Component* res = createComponentForVariableImpl(context, variable, explicitName);
   if (topLevelComponent && dynamic_cast<VariableSelector* >(res))
     res = new VariableBrowser(variable, res);
   String title = T("Create Component");

@@ -43,12 +43,12 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    if (checkInheritance(function->getOutputType(input.getType()), perceptionInputType))
+    if (context.checkInheritance(function->getOutputType(input.getType()), perceptionInputType))
     {
-      Variable intermediate = function->compute(input);
-      perception->computePerception(intermediate, callback);
+      Variable intermediate = function->computeFunction(context, input);
+      perception->computePerception(context, intermediate, callback);
     }
   }
 

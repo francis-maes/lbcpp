@@ -25,9 +25,9 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return sharedParallelInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const SharedParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<SharedParallelInference>();
 
     DecoratorInferenceStatePtr res(new DecoratorInferenceState(input, supervision));
@@ -45,7 +45,7 @@ public:
 private:
   bool filterUnsupervisedExamples;
 
-  InferenceBatchLearnerInputPtr computeSubLearnerInput(InferenceContextWeakPtr context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples)
+  InferenceBatchLearnerInputPtr computeSubLearnerInput(InferenceContext& context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples)
   {
     const InferencePtr& targetSubInference = targetInference->getSubInference();
 

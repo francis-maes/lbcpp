@@ -24,7 +24,7 @@ public:
 
   StochasticGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     ++epoch;
     updateParameters(context, inference, 1.0, input, supervision, prediction);

@@ -33,8 +33,8 @@ public:
 
   struct Callback : public PerceptionCallback
   {
-    Callback(PerceptionVariableVector& variables)
-      : variables(variables) {}
+    Callback(ExecutionContext& context, PerceptionVariableVector& variables)
+      : PerceptionCallback(context), variables(variables) {}
 
     PerceptionVariableVector& variables;
 
@@ -51,12 +51,12 @@ public:
       {variables[variableNumber].first = subPerception; variables[variableNumber].second = input;}
   };
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
     // surface compute decorated perception
     PerceptionVariableVector variables(decorated->getNumOutputVariables());
-    Callback callback(variables);
-    decorated->computePerception(input, &callback);
+    Callback callback(context, variables);
+    decorated->computePerception(context, input, &callback);
   
     // sense
     size_t n = getNumOutputVariables();

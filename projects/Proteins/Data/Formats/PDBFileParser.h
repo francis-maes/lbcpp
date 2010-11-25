@@ -18,14 +18,14 @@ namespace lbcpp
 class PDBFileParser : public TextParser
 {
 public:
-  PDBFileParser(const File& file, bool beTolerant, MessageCallback& callback = MessageCallback::getInstance());
+  PDBFileParser(ExecutionContext& context, const File& file, bool beTolerant);
   
   virtual TypePtr getElementsType() const
     {return proteinClass;}
 
-  virtual void parseBegin();
-  virtual bool parseLine(const String& line);
-  virtual bool parseEnd();
+  virtual void parseBegin(ExecutionContext& context);
+  virtual bool parseLine(ExecutionContext& context, const String& line);
+  virtual bool parseEnd(ExecutionContext& context);
 
   std::vector<ProteinPtr> getAllChains() const;
 
@@ -52,30 +52,30 @@ protected:
 
   size_t currentResidueIndex;
 
-  bool parseHeaderLine(const String& line);
-  bool parseExpDataLine(const String& line);
-  bool parseRemarkLine(const String& line);
+  bool parseHeaderLine(ExecutionContext& context, const String& line);
+  bool parseExpDataLine(ExecutionContext& context, const String& line);
+  bool parseRemarkLine(ExecutionContext& context, const String& line);
 
-  bool parseSeqResLine(const String& line);
+  bool parseSeqResLine(ExecutionContext& context, const String& line);
 
-  bool parseModelLine(const String& line);
-  bool parseAtomLine(const String& line);
-  bool parseTerLine(const String& line);
-  bool parseHetAtomLine(const String& line);
+  bool parseModelLine(ExecutionContext& context, const String& line);
+  bool parseAtomLine(ExecutionContext& context, const String& line);
+  bool parseTerLine(ExecutionContext& context, const String& line);
+  bool parseHetAtomLine(ExecutionContext& context, const String& line);
 
   static String getSubString(const String& line, int firstColumn, int lastColumn);
-  static bool getChar(const String& line, int column, char& result, MessageCallback& callback);
-  static bool getInteger(const String& line, int firstColumn, int lastColumn, int& result, MessageCallback& callback);
-  static bool getDouble(const String& line, int firstColumn, int lastColumn, double& result, MessageCallback& callback);
+  static bool getChar(ExecutionContext& context, const String& line, int column, char& result);
+  static bool getInteger(ExecutionContext& context, const String& line, int firstColumn, int lastColumn, int& result);
+  static bool getDouble(ExecutionContext& context, const String& line, int firstColumn, int lastColumn, double& result);
 
-  bool getChainId(const String& line, int column, char& res) const;
-  Chain* getChain(const String& line, int column);
-  bool parseAndCheckAtomSerialNumber(const String& line, int firstColumn, int lastColumn);
+  bool getChainId(ExecutionContext& context, const String& line, int column, char& res) const;
+  Chain* getChain(ExecutionContext& context, const String& line, int column);
+  bool parseAndCheckAtomSerialNumber(ExecutionContext& context, const String& line, int firstColumn, int lastColumn);
 
-  TertiaryStructurePtr finalizeChain(char chainId, ProteinPtr protein, const std::vector< std::vector<ResiduePtr> >& tertiaryStructureBlocks);
+  TertiaryStructurePtr finalizeChain(ExecutionContext& context, char chainId, ProteinPtr protein, const std::vector< std::vector<ResiduePtr> >& tertiaryStructureBlocks);
   VectorPtr finalizeDisorderSequence(ProteinPtr protein);
 
-  bool checkResidueConsistency(ResiduePtr residue);
+  bool checkResidueConsistency(ExecutionContext& context, ResiduePtr residue);
 };
 
 }; /* namespace lbcpp */

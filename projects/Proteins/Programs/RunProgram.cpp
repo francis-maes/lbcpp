@@ -8,14 +8,15 @@ void usage()
   std::cout << "Usage ..." << std::endl;
 }
 
-extern void declareProteinClasses();
-extern void declareProgramClasses();
+extern void declareProteinClasses(ExecutionContext& context);
+extern void declareProgramClasses(ExecutionContext& context);
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
-  declareProgramClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
+  declareProgramClasses(*context);
 
   if (argc == 1)
   {
@@ -23,15 +24,12 @@ int main(int argc, char** argv)
     return 0;
   }
   
-  ExecutionContextPtr context = singleThreadedExecutionContext();
-  context->appendCallback(consoleExecutionCallback());
-  
   if (argc == 2)
   {
     // load from serialization
     File parametersFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
     //MuteMessageCallback muteCallback; // FIXME: mute is not mute anymore
-    ObjectPtr obj = Object::createFromFile(parametersFile);//, muteCallback);
+    ObjectPtr obj = Object::createFromFile(*context, parametersFile);//, muteCallback);
     
     if (obj && obj->getClass()->inheritsFrom(workUnitClass))
     {
@@ -43,7 +41,7 @@ int main(int argc, char** argv)
   }
 
   // load program from string
-  ObjectPtr obj = Object::create(Type::get(argv[1]));
+  ObjectPtr obj = context->createObject(context->getType(argv[1]));
   if (obj && obj->getClass()->inheritsFrom(workUnitClass)) 
   {
     char** arguments = new char*[argc - 1];

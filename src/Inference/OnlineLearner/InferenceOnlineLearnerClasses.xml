@@ -12,13 +12,13 @@
       <value name="perStepMiniBatch"/>
 
       <code>
-        VariableValue createFromString(const String&amp; value, MessageCallback&amp; callback) const
+        VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
         {
           String str = value.trim();
           if (str.startsWith(T("perStepMiniBatch")))
             return VariableValue(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
           else
-            return Enumeration::createFromString(value, callback);
+            return Enumeration::createFromString(context, value);
         }
         
         virtual String toString(const VariableValue&amp; value) const

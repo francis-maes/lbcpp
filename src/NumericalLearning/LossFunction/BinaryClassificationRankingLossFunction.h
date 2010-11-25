@@ -56,7 +56,7 @@ public:
     return count ? (score1 - score2) / (double)count : 0.0;
   }
 
-  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
+  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
     BinaryClassificationConfusionMatrix matrix;
     size_t n = scores.size();

@@ -24,11 +24,11 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
-    MessageCallback::info(T("InitializeByCloningInferenceLearner"), T("Cloning Inference ") + inferenceToClone->getName());
-    inferenceToClone->clone(learnerInput->getTargetInference());
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
+    context.informationCallback(T("InitializeByCloningInferenceLearner"), T("Cloning Inference ") + inferenceToClone->getName());
+    inferenceToClone->clone(context, learnerInput->getTargetInference());
     return Variable();
   }
 

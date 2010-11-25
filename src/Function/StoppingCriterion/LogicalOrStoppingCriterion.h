@@ -34,11 +34,11 @@ public:
     return t1 || t2;
   }
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     ReferenceCountedObjectPtr<LogicalOrStoppingCriterion> t = target.staticCast<LogicalOrStoppingCriterion>();
-    t->criterion1 = criterion1->cloneAndCast<StoppingCriterion>();
-    t->criterion2 = criterion2->cloneAndCast<StoppingCriterion>();
+    t->criterion1 = criterion1->cloneAndCast<StoppingCriterion>(context);
+    t->criterion2 = criterion2->cloneAndCast<StoppingCriterion>(context);
   }
 
 private:

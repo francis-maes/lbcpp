@@ -84,7 +84,7 @@ public:
   **
   ** @return a Variable containing the next database element.
   */
-  virtual Variable next() = 0;
+  virtual Variable next(ExecutionContext& context) = 0;
 
 
   /**
@@ -100,7 +100,7 @@ public:
   ** @param maximumCount : iteration steps.
   ** @return False if any errors occurs.
   */
-  bool iterate(size_t maximumCount = 0);
+  bool iterate(ExecutionContext& context, size_t maximumCount = 0);
 
   /**
   ** Loads \a maximumCount items (maximum) from the stream and stores
@@ -113,7 +113,7 @@ public:
   ** @return a Vector containing loaded items.
   ** @see Container
   */
-  VectorPtr load(size_t maximumCount = 0);
+  VectorPtr load(ExecutionContext& context, size_t maximumCount = 0);
 
   /**
   ** Applies an Function to this stream.
@@ -127,7 +127,7 @@ public:
   ** @return a new object stream instance referring to this one.
   ** @see Function
   */
-  StreamPtr apply(FunctionPtr function) const;
+  StreamPtr apply(ExecutionContext& context, FunctionPtr function) const;
 };
 
 StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
@@ -149,7 +149,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  TextParser(ExecutionContext& context, const File& file);
   
   /**
    ** Constructor.
@@ -160,7 +160,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(InputStream* newInputStream, MessageCallback& callback = MessageCallback::getInstance());
+  TextParser(InputStream* newInputStream);
   
   /**
    ** Destructor.
@@ -177,7 +177,8 @@ public:
    ** This function is called at the begging of parsing.
    **
    */
-  virtual void parseBegin()   {}
+  virtual void parseBegin(ExecutionContext& context)
+    {}
   
   /**
    ** This function is called to process one line during parsing.
@@ -192,7 +193,7 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseLine(const String& line) = 0;
+  virtual bool parseLine(ExecutionContext& context, const String& line) = 0;
   
   /**
    ** This function is called at the end of the parsing.
@@ -205,7 +206,8 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseEnd()     {return true;}
+  virtual bool parseEnd(ExecutionContext& context)
+    {return true;}
   
   /**
    ** Loads the next object from the stream.
@@ -220,11 +222,9 @@ public:
    ** @return a pointer on the next parsed object or Variable()
    ** if there are no more object in the stream.
    */
-  virtual Variable next();
+  virtual Variable next(ExecutionContext& context);
   
 protected:
-  MessageCallback& callback;
-
   /**
    ** currentObject setter.
    **

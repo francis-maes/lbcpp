@@ -85,11 +85,11 @@ public:
   virtual String toString() const;
   virtual TypePtr getInputType() const
     {return containerClass(doubleType);}
-  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
+  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
 
-  virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
+  virtual void compute(ExecutionContext& context, const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
 
-  void compute(const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const;
+  void compute(ExecutionContext& context, const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const;
 
   size_t getNumClasses() const
     {return classes->getNumElements();}
@@ -124,10 +124,10 @@ public:
   virtual TypePtr getInputType() const
     {return containerClass(doubleType);}
 
-  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
+  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
 
-  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
-  void compute(const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;
+  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
+  void compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;
 
   const std::vector<double>& getCosts() const
     {return costs;}

@@ -39,7 +39,7 @@ MultiClassLossFunction::MultiClassLossFunction(EnumerationPtr classes, size_t co
 String MultiClassLossFunction::toString() const
   {return getClassName() + T("(") + String((int)correctClass) + T(")");}
 
-void MultiClassLossFunction::compute(const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
+void MultiClassLossFunction::compute(ExecutionContext& context, const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
 {
   DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
   if (!input || denseDoubleInput)
@@ -49,13 +49,13 @@ void MultiClassLossFunction::compute(const ObjectPtr& input, double* output, std
       gradientTarget->clear();
       gradientTarget->resize(classes->getNumElements(), 0.0);
     }
-    compute(denseDoubleInput ? &denseDoubleInput->getValues() : NULL, output, gradientTarget, gradientWeight);
+    compute(context, denseDoubleInput ? &denseDoubleInput->getValues() : NULL, output, gradientTarget, gradientWeight);
   }
   else
     jassert(false); // not implemented
 }
 
-void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+void MultiClassLossFunction::compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
 {
   jassert(!gradientTarget || !*gradientTarget || gradientTarget->isInstanceOf<DenseDoubleObject>());
   std::vector<double>* gradientVectorTarget = NULL;
@@ -76,13 +76,13 @@ void MultiClassLossFunction::compute(ObjectPtr input, double* output, ObjectPtr*
     jassert(gradientVectorTarget->size() == classes->getNumElements());
   }
 
-  compute(input, output, gradientVectorTarget, gradientWeight);
+  compute(context, input, output, gradientVectorTarget, gradientWeight);
 }
 
 /*
 ** RankingLossFunction
 */
-void RankingLossFunction::compute(const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const
+void RankingLossFunction::compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const
 {
   jassert(!scores || scores->getNumElements() == numScores);
   std::vector<double> scoreVector(numScores);
@@ -92,17 +92,17 @@ void RankingLossFunction::compute(const ContainerPtr& scores, size_t numScores, 
     *output = 0.0;
   if (gradient)
     gradient->resize(numScores, 0.0);
-  computeRankingLoss(scoreVector, costs, output, gradient);
+  computeRankingLoss(context, scoreVector, costs, output, gradient);
 }
 
-void RankingLossFunction::compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+void RankingLossFunction::compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
 {
   const ContainerPtr& scores = input.staticCast<Container>();
   jassert(scores);
   size_t n = scores->getNumElements();
 
   std::vector<double> gradient;
-  compute(input, n, output, gradientTarget ? &gradient : NULL);
+  compute(context, input, n, output, gradientTarget ? &gradient : NULL);
   if (gradientTarget)
   {
     ContainerPtr target;

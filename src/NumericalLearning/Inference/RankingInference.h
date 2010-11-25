@@ -34,9 +34,9 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return containerClass(doubleType);} // score vector
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const ContainerPtr& inputContainer = input.getObjectAndCast<Container>();
+    const ContainerPtr& inputContainer = input.getObjectAndCast<Container>(context);
     jassert(inputContainer);
     size_t n = inputContainer->getNumElements();
 
@@ -47,7 +47,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     VectorPtr res = vector(doubleType, n);
@@ -78,13 +78,13 @@ public:
   virtual void setName(const String& name)
     {StaticDecoratorInference::setName(name); decorated->setName(name + T(" scores"));}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     RankingLossFunctionPtr lossFunction;
     if (supervision.exists())
     {
-      const ContainerPtr& costContainer = supervision.getObjectAndCast<Container>();
+      const ContainerPtr& costContainer = supervision.getObjectAndCast<Container>(context);
       std::vector<double> costs(costContainer->getNumElements());
       for (size_t i = 0; i < costs.size(); ++i)
         costs[i] = costContainer->getElement(i).getDouble();

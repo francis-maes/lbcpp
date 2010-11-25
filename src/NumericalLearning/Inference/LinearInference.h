@@ -38,11 +38,11 @@ public:
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const
     {return perceptionOutputType;}
 
-  virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
+  virtual void computeAndAddGradient(ExecutionContext& context, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target)
   {
     jassert(supervision.exists());
     const PerceptionPtr& perception = getPerception();
-    const FunctionPtr& lossFunction = supervision.getObjectAndCast<Function>();
+    const FunctionPtr& lossFunction = supervision.getObjectAndCast<Function>(context);
     if (lossFunction.isInstanceOf<ScalarFunction>())
     {
       const ScalarFunctionPtr& loss = lossFunction.staticCast<ScalarFunction>();
@@ -60,9 +60,9 @@ public:
       }
 
       if (input.getType() == perception->getOutputType())
-        lbcpp::addWeighted(*target, input.getObject(), lossDerivative * weight);
+        lbcpp::addWeighted(context, *target, input.getObject(), lossDerivative * weight);
       else
-        lbcpp::addWeighted(*target, perception, input, lossDerivative * weight);
+        lbcpp::addWeighted(context, *target, perception, input, lossDerivative * weight);
        
       if (isLocked)
         parametersLock.exitWrite();
@@ -70,19 +70,19 @@ public:
     }
     else if (lossFunction.isInstanceOf<RankingLossFunction>())
     {
-      const ContainerPtr& alternatives = input.getObjectAndCast<Container>();
-      const ContainerPtr& scores = prediction.getObjectAndCast<Container>();
+      const ContainerPtr& alternatives = input.getObjectAndCast<Container>(context);
+      const ContainerPtr& scores = prediction.getObjectAndCast<Container>(context);
       size_t n = alternatives->getNumElements();
       jassert(!scores || n == scores->getNumElements());
       std::vector<double> lossGradient;
       const RankingLossFunctionPtr& loss = lossFunction.staticCast<RankingLossFunction>();
-      loss->compute(scores, n, &exampleLossValue, &lossGradient);
+      loss->compute(context, scores, n, &exampleLossValue, &lossGradient);
       jassert(lossGradient.size() == n);
       
       if (target)
       {
         for (size_t i = 0; i < n; ++i)
-          lbcpp::addWeighted(*target, perception, alternatives->getElement(i).getObject(), lossGradient[i] * weight);
+          lbcpp::addWeighted(context, *target, perception, alternatives->getElement(i).getObject(), lossGradient[i] * weight);
       }
       else
       {
@@ -92,7 +92,7 @@ public:
         {
           Variable alternative = alternatives->getElement(i);
           if (alternative.exists())
-            lbcpp::addWeighted(parameters->getWeights(), perception, alternative, lossGradient[i] * weight);
+            lbcpp::addWeighted(context, parameters->getWeights(), perception, alternative, lossGradient[i] * weight);
         }
       }
     }
@@ -100,7 +100,7 @@ public:
       jassert(false); // unrecognized loss function
   }
 
-  virtual Variable predict(const Variable& input) const
+  virtual Variable predict(ExecutionContext& context, const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
     const ObjectPtr& weights = getParameters()->getWeights();
@@ -110,9 +110,9 @@ public:
       return 0.0;
     const PerceptionPtr& perception = getPerception();
     if (input.getType() == perception->getOutputType())
-      return lbcpp::dotProduct(weights, input.getObject());
+      return lbcpp::dotProduct(context, weights, input.getObject());
     else
-      return lbcpp::dotProduct(weights, perception, input);
+      return lbcpp::dotProduct(context, weights, perception, input);
   }
 };
 

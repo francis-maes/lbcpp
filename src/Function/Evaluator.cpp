@@ -17,7 +17,7 @@ RegressionErrorEvaluator::RegressionErrorEvaluator(const String& name)
 {
 }
   
-void RegressionErrorEvaluator::addPrediction(const Variable& predicted, const Variable& correct)
+void RegressionErrorEvaluator::addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
 {
   if (predicted.exists() && correct.exists())
     addDelta(predicted.getDouble() - correct.getDouble());
@@ -169,7 +169,7 @@ bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassification
 /*
 ** ROCAnalyse
 */
-void ROCAnalyse::addPrediction(double predictedScore, bool isPositive)
+void ROCAnalyse::addPrediction(ExecutionContext& context, double predictedScore, bool isPositive)
 {
   ScopedLock _(lock);
   isPositive ? ++numPositives : ++numNegatives;

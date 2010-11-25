@@ -5,12 +5,14 @@
 
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
   
   File pdbDirectoryFile;
   File fastaFile;
@@ -25,15 +27,15 @@ int main(int argc, char** argv)
     std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
     return 1;
   }
-  
-  FASTAFileParser fastaParser(fastaFile);
+
+  FASTAFileParser fastaParser(*context, fastaFile);
   while (true)
   {
-    Variable variable = fastaParser.next();
+    Variable variable = fastaParser.next(*context);
     if (!variable.exists())
       break;
 
-    const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
+    const ProteinPtr& protein = variable.getObjectAndCast<Protein>(*context);
     
     String name = protein->getName().substring(0, 5);
     VectorPtr primaryStructure = protein->getPrimaryStructure();

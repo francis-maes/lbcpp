@@ -8,11 +8,11 @@
 #include "BinaryDecisionTree.h"
 using namespace lbcpp;
 
-Variable BinaryDecisionTree::makePrediction(const Variable& input, size_t nodeIndex) const
+Variable BinaryDecisionTree::makePrediction(ExecutionContext& context, const Variable& input, size_t nodeIndex) const
 {
   jassert(nodeIndex < nodes.size());
   const Node& node = nodes[nodeIndex];
-  return node.isLeaf() ? node.getLeafValue() : makePrediction(input, node.getChildNodeIndex(input));
+  return node.isLeaf() ? node.getLeafValue() : makePrediction(context, input, node.getChildNodeIndex(context, input));
 }
 
 #include <lbcpp/Function/Predicate.h>
@@ -29,7 +29,7 @@ public:
   virtual TypePtr getInputType() const
     {return integerType;}
 
-  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
+  virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
   {
     if (value.isMissingValue())
       return mask->get(mask->getNumElements() - 1);
@@ -64,11 +64,11 @@ PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
   return PredicatePtr();
 }
 
-bool BinaryDecisionTree::Node::test(const Variable& variable) const
+bool BinaryDecisionTree::Node::test(ExecutionContext& context, const Variable& variable) const
 {
   jassert(isInternalNode());
   jassert(splitVariable >= 0 && splitVariable < (int)variable.getObject()->getNumVariables());
-  return getSplitPredicate(argument)->computePredicate(variable.getObject()->getVariable(splitVariable));
+  return getSplitPredicate(argument)->computePredicate(context, variable.getObject()->getVariable(splitVariable));
 }
 
 String BinaryDecisionTree::toString() const

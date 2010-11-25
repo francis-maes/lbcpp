@@ -18,12 +18,12 @@ namespace lbcpp
 class FASTAFileGenerator : public TextPrinter
 {
 public:
-  FASTAFileGenerator(const File& file, MessageCallback& callback = MessageCallback::getInstance())
-    : TextPrinter(file, callback) {}
+  FASTAFileGenerator(ExecutionContext& context, const File& file)
+    : TextPrinter(context, file) {}
 
-  virtual void consume(const Variable& variable)
+  virtual void consume(ExecutionContext& context, const Variable& variable)
   {
-    const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
+    const ProteinPtr& protein = variable.getObjectAndCast<Protein>(context);
     jassert(protein);
     print(T(">") + protein->getName(), true);
     VectorPtr primaryStructure = protein->getPrimaryStructure();

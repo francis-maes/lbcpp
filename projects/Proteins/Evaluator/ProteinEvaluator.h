@@ -50,13 +50,13 @@ public:
     return res;
   }
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    const ProteinPtr& predicted = predictedObject.getObjectAndCast<Protein>();
-    const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>();
+    const ProteinPtr& predicted = predictedObject.getObjectAndCast<Protein>(context);
+    const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>(context);
 
     ++numProteins;
     for (size_t i = 0; i < evaluators.size(); ++i)
@@ -66,7 +66,7 @@ public:
       if (predictedVariable.exists())
       {
         Variable correctVariable = correct->getTargetOrComputeIfMissing(variableIndex);
-        evaluators[i].second->addPrediction(predictedVariable, correctVariable);
+        evaluators[i].second->addPrediction(context, predictedVariable, correctVariable);
       }
     }
   }

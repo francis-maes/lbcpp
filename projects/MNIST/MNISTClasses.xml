@@ -28,7 +28,7 @@
     </class>
     
   <code>
-  ContainerPtr parseDataFile(const File&amp; file)
+  ContainerPtr parseDataFile(ExecutionContext&amp; context, const File&amp; file)
   {
     if (file.getFileExtension().toLowerCase() == T(".bin"))
     {
@@ -49,14 +49,14 @@
       return res;
     }
     
-    return StreamPtr(new MatlabFileParser(file))-&gt;load();
+    return StreamPtr(new MatlabFileParser(context, file))-&gt;load(context);
   }
   </code>
   
   </namespace>
 
   <declarationCode>
-    lbcpp::Type::finishDeclarations();
+    context.finishTypeDeclarations();
   </declarationCode>
   
 </file>

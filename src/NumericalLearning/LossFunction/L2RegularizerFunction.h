@@ -26,12 +26,12 @@ public:
   virtual bool isDerivable() const
     {return true;}
   
-  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
   {
     if (output)
-      *output = lbcpp::sumOfSquares(input) * weight;
+      *output = lbcpp::sumOfSquares(context, input) * weight;
     if (gradientTarget)
-      lbcpp::addWeighted(*gradientTarget, input, 2.0 * gradientWeight * weight);
+      lbcpp::addWeighted(context, *gradientTarget, input, 2.0 * gradientWeight * weight);
   }
 
 private:

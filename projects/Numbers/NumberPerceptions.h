@@ -114,9 +114,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const EnrichedNumberSequencePtr& sequence = input.getObjectAndCast<EnrichedNumberSequence>();
+    const EnrichedNumberSequencePtr& sequence = input.getObjectAndCast<EnrichedNumberSequence>(context);
     callback->sense(0, numbersPerception, sequence->getNumbers());
     callback->sense(1, pairsPerception, sequence->getPairs());
     callback->sense(2, tripletsPerception, sequence->getTriplets());
@@ -144,9 +144,9 @@ public:
     Perception::computeOutputType();
   }
 
- virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+ virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
  {
-   const ContainerPtr& container = input.getObjectAndCast<Container>();
+   const ContainerPtr& container = input.getObjectAndCast<Container>(context);
    if (container)
    {
      Variable refValue = container->getElement(0);
@@ -174,9 +174,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const ContainerPtr& container = input.getObjectAndCast<Container>();
+    const ContainerPtr& container = input.getObjectAndCast<Container>(context);
     size_t n = container->getNumElements();
     
     //ObjectPtr sum;
@@ -283,9 +283,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return pairClass(integerType, integerType);}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const NumbersSerieProblemPtr& problem = input.getObjectAndCast<NumbersSerieProblem>();
+    const NumbersSerieProblemPtr& problem = input.getObjectAndCast<NumbersSerieProblem>(context);
     return Variable::pair(problem->getTargetNumber(), problem->getLastPreviousNumber());
   }
 };
@@ -312,7 +312,7 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
     int i = input.getInteger();
     if (i > -10 && i < 10)
@@ -334,7 +334,7 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
     int i = input.getInteger();
     if (i > -100 && i < 100)
@@ -357,9 +357,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();    
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);    
     int a = pair->getFirst().getInteger();
     int b = pair->getSecond().getInteger();
     callback->sense(0, differencePerception, b - a);
@@ -393,9 +393,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();    
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);    
     int a = pair->getFirst().getInteger();
     int b = pair->getSecond().getInteger();
     int m;
@@ -451,9 +451,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();    
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);    
     callback->sense(0, directionalPerception, pair);
     callback->sense(1, directionalPerception, new Pair(pair->getSecond(), pair->getFirst()));
   }

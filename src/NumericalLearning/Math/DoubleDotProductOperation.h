@@ -19,8 +19,8 @@ namespace lbcpp
 
 struct DefaultComputeDotProductCallback : public PerceptionCallback
 {
-  DefaultComputeDotProductCallback(const ObjectPtr& object)
-    : object(object), res(0.0) {}
+  DefaultComputeDotProductCallback(ExecutionContext& context, const ObjectPtr& object)
+    : PerceptionCallback(context), object(object), res(0.0) {}
 
   ObjectPtr object;
   double res;
@@ -39,14 +39,14 @@ struct DefaultComputeDotProductCallback : public PerceptionCallback
   {
     Variable objectValue = object->getVariable(variableNumber);
     if (objectValue.exists())
-      res += dotProduct(objectValue.getObject(), value);
+      res += dotProduct(context, objectValue.getObject(), value);
   }
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     ObjectPtr subObject = object->getVariable(variableNumber).getObject();
     if (subObject)
-      res += dotProduct(subObject, subPerception, subInput);
+      res += dotProduct(context, subObject, subPerception, subInput);
   }
 
   virtual void sense(size_t variableNumber, const Variable& value)
@@ -63,8 +63,8 @@ struct DefaultComputeDotProductCallback : public PerceptionCallback
 
 struct ComputeDotProductWithDenseObjectCallback : public PerceptionCallback
 {
-  ComputeDotProductWithDenseObjectCallback(DenseObjectObject* object)
-    : object(object), res(0.0) {}
+  ComputeDotProductWithDenseObjectCallback(ExecutionContext& context, DenseObjectObject* object)
+    : PerceptionCallback(context), object(object), res(0.0) {}
 
   DenseObjectObject* object;
   double res;
@@ -76,14 +76,14 @@ struct ComputeDotProductWithDenseObjectCallback : public PerceptionCallback
   {
     const ObjectPtr& objectValue = object->getObject(variableNumber);
     if (objectValue)
-      res += dotProduct(objectValue, value);
+      res += dotProduct(context, objectValue, value);
   }
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
   {
     const ObjectPtr& subObject = object->getObject(variableNumber);
     if (subObject)
-      res += dotProduct(subObject, subPerception, subInput);
+      res += dotProduct(context, subObject, subPerception, subInput);
   }
 
   virtual void sense(size_t variableNumber, const Variable& value)
@@ -92,8 +92,8 @@ struct ComputeDotProductWithDenseObjectCallback : public PerceptionCallback
 
 struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
 {
-  ComputeDotProductWithDenseDoubleCallback(DenseDoubleObject* object)
-    : object(object), res(0.0) {}
+  ComputeDotProductWithDenseDoubleCallback(ExecutionContext& context, DenseDoubleObject* object)
+    : PerceptionCallback(context), object(object), res(0.0) {}
 
   DenseDoubleObject* object;
   double res;
@@ -118,7 +118,7 @@ struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
     {sense(variableNumber, value.getDouble());}
 };
 
-double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
+double dotProduct(ExecutionContext& context, const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
 {
   checkInheritance(input.getType(), perception->getInputType());
   checkInheritance((TypePtr)object->getClass(), perception->getOutputType());
@@ -130,22 +130,22 @@ double dotProduct(const ObjectPtr& object, const PerceptionPtr& perception, cons
   DenseDoubleObject* denseDoubleObject = dynamic_cast<DenseDoubleObject* >(object.get());
   if (denseDoubleObject)
   {
-    ComputeDotProductWithDenseDoubleCallback callback(denseDoubleObject);
-    perception->computePerception(input, &callback);
+    ComputeDotProductWithDenseDoubleCallback callback(context, denseDoubleObject);
+    perception->computePerception(context, input, &callback);
     return callback.res;
   }
 
   DenseObjectObject* denseObjectObject = dynamic_cast<DenseObjectObject* >(object.get());
   if (denseObjectObject)
   {
-    ComputeDotProductWithDenseObjectCallback callback(denseObjectObject);
-    perception->computePerception(input, &callback);
+    ComputeDotProductWithDenseObjectCallback callback(context, denseObjectObject);
+    perception->computePerception(context, input, &callback);
     return callback.res;
   }
 
   {
-    DefaultComputeDotProductCallback callback(object);
-    perception->computePerception(input, &callback);
+    DefaultComputeDotProductCallback callback(context, object);
+    perception->computePerception(context, input, &callback);
     return callback.res;
   }
 }
@@ -178,7 +178,7 @@ bool dotProductSpecialImplementation(const ObjectPtr& object1, const ObjectPtr& 
 }
 
 // the sparse object should be object2 for optimal performances
-double dotProduct(const ObjectPtr& object1, const ObjectPtr& object2)
+double dotProduct(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2)
 {
   jassert(object1->getClass() == object2->getClass());
   double res = 0.0;

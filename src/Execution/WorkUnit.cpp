@@ -83,14 +83,14 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
       value = Variable(true); // particular case for boolean arguments: if no value has been given, we take true by default
     else
     {
-      value = Variable::createFromString(argumentType, argumentValue);
+      value = Variable::createFromString(context, argumentType, argumentValue);
       if (value.isMissingValue())
       {
         context.errorCallback(T("WorkUnit::parseArguments"), T("Incomprehensible value of") + argumentName.quoted() + T(" : ") + argumentValue);
         return false;
       }
     }
-    setVariable(variableIndex, value);
+    setVariable(context, variableIndex, value);
   }
   return true;
 }

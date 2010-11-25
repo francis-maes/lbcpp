@@ -41,8 +41,8 @@ public:
   virtual VariableValue create() const
     {MessageCallback::error(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
-    {callback.errorMessage(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
 
   virtual VariableValue createFromXml(XmlImporter& importer) const
     {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}

@@ -32,10 +32,10 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), integerType);}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>(context);
     if (container)
     {
       int startPosition = pair->getSecond().getInteger() - (int)(windowSize / 2);

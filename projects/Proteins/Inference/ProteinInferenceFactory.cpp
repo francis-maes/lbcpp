@@ -15,8 +15,10 @@
 #include <lbcpp/Inference/DecoratorInference.h>
 using namespace lbcpp;
 
-ProteinInferenceFactory::ProteinInferenceFactory()
-  {}
+ProteinInferenceFactory::ProteinInferenceFactory(ExecutionContext& context)
+  : context(context)
+{
+}
 
 ProteinInferenceFactory::~ProteinInferenceFactory()
   {if (perceptionRewriter) perceptionRewriter->clearCache();}

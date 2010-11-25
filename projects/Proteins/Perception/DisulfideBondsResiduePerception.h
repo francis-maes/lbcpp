@@ -30,11 +30,11 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ProteinPtr& protein = pair->getFirst().getObjectAndCast<Protein>();
-    const PairPtr& positionPair = pair->getSecond().getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ProteinPtr& protein = pair->getFirst().getObjectAndCast<Protein>(context);
+    const PairPtr& positionPair = pair->getSecond().getObjectAndCast<Pair>(context);
 
      // check that we are a pair of cysteins
     int cysteinIndex1 = protein->getCysteinInvIndices()[positionPair->getFirst().getInteger()];
@@ -76,10 +76,10 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ProteinPtr& protein = pair->getFirst().getObjectAndCast<Protein>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ProteinPtr& protein = pair->getFirst().getObjectAndCast<Protein>(context);
     size_t position = (size_t)pair->getSecond().getInteger();
 
     // check that we are a cystein

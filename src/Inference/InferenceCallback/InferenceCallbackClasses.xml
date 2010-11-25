@@ -4,7 +4,7 @@
 
   <namespace name="lbcpp">
 
-    <class name="InferenceCallback" abstract="yes"/>
+    <class name="InferenceCallback" base="ExecutionCallback" abstract="yes"/>
 
     <class name="CacheInferenceCallback" base="InferenceCallback">
       <constructor arguments="InferenceResultCachePtr cache, InferencePtr parentStep"/>

@@ -11,6 +11,7 @@
 
 # include "Inference.h"
 # include "../Execution/ThreadPool.h"
+# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -18,7 +19,7 @@ namespace lbcpp
 class Evaluator;
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 
-class InferenceContext : public Object
+class InferenceContext : public ExecutionContext
 {
 public:
   typedef Inference::ReturnCode ReturnCode;
@@ -60,8 +61,8 @@ protected:
   
   Variable callRunInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   
-  void callPreInference(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
-  void callPostInference(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
+  void callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
+  void callPostInference(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
 
 private:
   friend class InferenceContextClass;

@@ -25,9 +25,9 @@ public:
 
   virtual const PerceptionPtr& getPerception(const InferencePtr& targetInference) const = 0;
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();
     const PerceptionPtr& perception = getPerception(targetInference);
 
@@ -36,7 +36,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
-      subLearnerInput->setExample(i, perception->compute(example.first), example.second);
+      subLearnerInput->setExample(i, perception->computeFunction(context, example.first), example.second);
     }
 
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);

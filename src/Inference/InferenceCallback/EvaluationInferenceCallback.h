@@ -9,9 +9,9 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 # define LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 
-# include <lbcpp/Inference/InferenceCallback.h>
-# include <lbcpp/Inference/InferenceStack.h>
 # include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Inference/InferenceContext.h>
 
 namespace lbcpp
 {
@@ -23,14 +23,14 @@ public:
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference() == inference)
     {
       if (output.exists() && supervision.exists())
       {
         ScopedLock _(evaluatorLock);
-        evaluator->addPrediction(output, supervision);
+        evaluator->addPrediction(context, output, supervision);
       }
     }
   }

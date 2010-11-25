@@ -18,12 +18,12 @@ namespace lbcpp
 class CASPFileGenerator : public TextPrinter
 {
 public:
-  CASPFileGenerator(const File& file, const String& method);
+  CASPFileGenerator(ExecutionContext& context, const File& file, const String& method);
 
   virtual String getFormatSpecificationCode() const = 0;
   virtual void printPredictionData(ProteinPtr protein) = 0;
 
-  virtual void consume(const Variable& variable);
+  virtual void consume(ExecutionContext& context, const Variable& variable);
 
 protected:
   enum {maxColumns = 80};
@@ -35,9 +35,9 @@ protected:
   void printMultiLineRecordBase(const String& keyword, const String& text);
 };
 
-ConsumerPtr caspTertiaryStructureFileGenerator(const File& file, const String& method);
-ConsumerPtr caspResidueResidueDistanceFileGenerator(const File& file, const String& method);
-ConsumerPtr caspOrderDisorderRegionFileGenerator(const File& file, const String& method);
+ConsumerPtr caspTertiaryStructureFileGenerator(ExecutionContext& context, const File& file, const String& method);
+ConsumerPtr caspResidueResidueDistanceFileGenerator(ExecutionContext& context, const File& file, const String& method);
+ConsumerPtr caspOrderDisorderRegionFileGenerator(ExecutionContext& context, const File& file, const String& method);
 
 }; /* namespace lbcpp */
 

@@ -37,10 +37,10 @@ public:
     return false;
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    Callback callback(targetCallback, this);
-    decorated->computePerception(input, &callback);
+    Callback callback(context, targetCallback, this);
+    decorated->computePerception(context, input, &callback);
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -102,8 +102,8 @@ protected:
 
   struct Callback : public PerceptionCallback
   {
-    Callback(PerceptionCallbackPtr targetCallback, const RewritedPerception* owner)
-      : targetCallback(targetCallback), variablesMap(owner->variablesMap)
+    Callback(ExecutionContext& context, PerceptionCallbackPtr targetCallback, const RewritedPerception* owner)
+      : PerceptionCallback(context), targetCallback(targetCallback), variablesMap(owner->variablesMap)
       {}
 
     template<class Type>

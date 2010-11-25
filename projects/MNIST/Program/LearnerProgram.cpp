@@ -15,10 +15,10 @@ using namespace lbcpp;
 namespace lbcpp
 {
 extern EnumerationPtr digitTypeEnumeration;
-extern ContainerPtr parseDataFile(const File& f);
+extern ContainerPtr parseDataFile(ExecutionContext& context, const File& f);
 }
 
-bool LearnerProgram::loadData()
+bool LearnerProgram::loadData(ExecutionContext& context)
 {
   if (learningFile == File::nonexistent)
   {
@@ -26,7 +26,7 @@ bool LearnerProgram::loadData()
     return false;
   }
 
-  learningData = parseDataFile(learningFile);
+  learningData = parseDataFile(context, learningFile);
   if (!learningData || !learningData->getNumElements())
   {
     std::cerr << "Error - No training data found in " << learningFile.getFullPathName().quoted() << std::endl;
@@ -40,7 +40,7 @@ bool LearnerProgram::loadData()
     return true;
   }
 
-  testingData = parseDataFile(testingFile);
+  testingData = parseDataFile(context, testingFile);
   if (!testingData->getNumElements())
   {
     std::cerr << "Error - No testing data found in " << testingFile.getFullPathName().quoted() << std::endl;
@@ -86,15 +86,16 @@ bool LearnerProgram::run(ExecutionContext& context)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
   
-  if (!loadData())
+  InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
+//  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
+
+  if (!loadData(context))
     return false;
   
   std::cout << "------------ Data ------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
 
-  InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
-//  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
 
   /* Perception */
   CompositePerceptionPtr perception = compositePerception(imageClass, T("Image"));
@@ -128,7 +129,7 @@ bool LearnerProgram::run(ExecutionContext& context)
     std::cout << evaluator->toString() << std::endl;
   }
 
-  inference->saveToFile(output.getFullPathName() + T(".inference"));
+  inference->saveToFile(context, output.getFullPathName() + T(".inference"));
   std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   return true;
 }

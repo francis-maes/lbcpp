@@ -31,7 +31,7 @@ public:
   void createInternalNode(size_t index, size_t splitVariable, const Variable& splitArgument, size_t indexOfLeftChild)
     {jassert(index < nodes.size()); nodes[index].setInternalNode(splitVariable, splitArgument, indexOfLeftChild);}
 
-  Variable makePrediction(const Variable& input, size_t nodeIndex = 0) const;
+  Variable makePrediction(ExecutionContext& context, const Variable& input, size_t nodeIndex = 0) const;
 
   size_t getNumNodes() const
     {return nodes.size();}
@@ -52,10 +52,10 @@ protected:
     Variable getLeafValue() const
       {jassert(isLeaf()); return argument;}
 
-    bool test(const Variable& variable) const;
+    bool test(ExecutionContext& context, const Variable& variable) const;
 
-    size_t getChildNodeIndex(const Variable& variable) const
-      {return indexOfLeftChild + (test(variable) ? 1 : 0);}
+    size_t getChildNodeIndex(ExecutionContext& context, const Variable& variable) const
+      {return indexOfLeftChild + (test(context, variable) ? 1 : 0);}
 
     void setLeaf(const Variable& value)
       {splitVariable = -1; argument = value; indexOfLeftChild = 0;}

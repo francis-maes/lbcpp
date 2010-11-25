@@ -79,12 +79,12 @@ public:
   /*
   ** Abstract
   */
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   // returns false if the final state is reached
-  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual bool updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
     {return finalState->getSubOutput();}
 
   lbcpp_UseDebuggingNewOperator
@@ -93,8 +93,8 @@ protected:
   /*
   ** Inference
   */
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context->runSequentialInference(this, input, supervision, returnCode);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return context.runSequentialInference(this, input, supervision, returnCode);}
 };
 
 extern ClassPtr sequentialInferenceClass;
@@ -122,13 +122,13 @@ public:
   virtual TypePtr getInputType() const
     {return subInferences.size() ? subInferences[0]->getInputType() : anyType;}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual bool updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
 
-  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  virtual void finalizeSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
     {}
 
-  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  virtual void prepareSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
     {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const
@@ -143,7 +143,7 @@ public:
   void appendInference(const InferencePtr& inference)
     {subInferences.push_back(inference);}
 
-  virtual void clone(const ObjectPtr& t) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
 protected:
   friend class VectorSequentialInferenceClass;

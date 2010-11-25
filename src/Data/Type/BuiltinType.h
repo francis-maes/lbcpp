@@ -41,7 +41,7 @@ public:
     : Type(templateType, templateArguments, baseType) {}
 
   virtual VariableValue createFromXml(XmlImporter& importer) const
-    {return createFromString(importer.getAllSubText(), importer.getCallback());}
+    {return createFromString(importer.getContext(), importer.getAllSubText());}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
     {exporter.addTextElement(toString(value));}

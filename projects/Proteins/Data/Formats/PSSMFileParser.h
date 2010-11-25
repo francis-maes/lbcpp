@@ -19,21 +19,21 @@ namespace lbcpp
 class PSSMFileParser : public TextParser
 {
 public:
-  PSSMFileParser(const File& file, VectorPtr primaryStructure, MessageCallback& callback = MessageCallback::getInstance())
-    : TextParser(file, callback), primaryStructure(primaryStructure)
+  PSSMFileParser(ExecutionContext& context, const File& file, VectorPtr primaryStructure)
+    : TextParser(context, file), primaryStructure(primaryStructure)
     {}
   
   virtual TypePtr getElementsType() const
     {return vectorClass(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration)));}
 
-  virtual void parseBegin()
+  virtual void parseBegin(ExecutionContext& context)
   {
     currentPosition = -3;
 
     pssm = vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
   }
 
-  virtual bool parseLine(const String& line)
+  virtual bool parseLine(ExecutionContext& context, const String& line)
   {
     if (currentPosition <= -2)
     {
@@ -46,7 +46,7 @@ public:
       tokenize(line, aminoAcidsIndex);
       if (aminoAcidsIndex.size() != 40)
       {
-        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Could not recognize PSSM file format"));
+        context.errorCallback(T("PSSMFileParser::parseLine"), T("Could not recognize PSSM file format"));
         return false;
       }
       aminoAcidsIndex.resize(AminoAcid::numStandardAminoAcid);
@@ -59,21 +59,21 @@ public:
 
     if (line.length() < 73)
     {
-      callback.errorMessage(T("PSSMFileParser::parseLine"), T("The line is not long enough"));
+      context.errorCallback(T("PSSMFileParser::parseLine"), T("The line is not long enough"));
       return false;
     }
 
     String serialNumber = line.substring(0, 5).trim();
     if (serialNumber.getIntValue() != currentPosition + 1)
     {
-      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + serialNumber);
+      context.errorCallback(T("PSSMFileParser::parseLine"), T("Invalid serial number ") + serialNumber);
       return false;
     }   
 
     String aminoAcid = line.substring(6, 7);
     if (AminoAcid::fromOneLetterCode(aminoAcid[0]) != primaryStructure->getElement(currentPosition))
     {
-      callback.errorMessage(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + String((int)currentPosition));
+      context.errorCallback(T("PSSMFileParser::parseLine"), T("Amino acid does not match at position ") + String((int)currentPosition));
       return false;
     }
 
@@ -84,14 +84,14 @@ public:
       String score = line.substring(begin, begin + 3).trim();
       if (!score.containsOnly(T("0123456789-")))
       {
-        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Invalid score: ") + score);
+        context.errorCallback(T("PSSMFileParser::parseLine"), T("Invalid score: ") + score);
         return false;
       }
       int scoreI = score.getIntValue();
       int index = aminoAcidTypeEnumeration->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
       if (index < 0)
       {
-        callback.errorMessage(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
+        context.errorCallback(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
         return false;
       }
       scores->setProbability(index, normalize(scoreI));
@@ -105,7 +105,7 @@ public:
     return true;
   }
 
-  virtual bool parseEnd()
+  virtual bool parseEnd(ExecutionContext& context)
   {
     setResult(pssm);
     return true;

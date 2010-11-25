@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_FUNCTION_H_
 
 # include "../Data/Variable.h"
+# include "../Execution/ExecutionContext.h"
 # include "predeclarations.h"
 
 namespace lbcpp
@@ -38,10 +39,10 @@ public:
   **
   ** @return a variable of type getOutputType(inputType)
   */
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const = 0;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const = 0;
 
-  Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
-    {return checkInheritance(input, getInputType()) ? computeFunction(input, callback) : Variable();}
+  //Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
+  //  {return checkInheritance(input, getInputType()) ? computeFunction(input, callback) : Variable();}
 
   lbcpp_UseDebuggingNewOperator
 };

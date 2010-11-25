@@ -36,11 +36,6 @@ namespace lbcpp
 extern void initialize();
 extern void deinitialize();
 
-class TemplateType;
-typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
-class Vector;
-typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
-
 class Type : public NameableObject
 {
 public:
@@ -49,25 +44,13 @@ public:
   Type() {}
   virtual ~Type();
 
-  static void declare(TypePtr typeInstance);
-  static void declare(ClassPtr classInstance)
-    {declare((TypePtr)classInstance);}
-  static void declare(EnumerationPtr enumerationInstance)
-    {declare((TypePtr)enumerationInstance);}
-  static void declare(TemplateTypePtr templateTypeInstance);
-
-  static void finishDeclarations(MessageCallback& callback = MessageCallback::getInstance());
-  static bool doTypeExists(const String& typeName);
-  static TypePtr get(const String& typeName, MessageCallback& callback = MessageCallback::getInstance());
-  static TypePtr get(const String& name, const std::vector<TypePtr>& arguments, MessageCallback& callback = MessageCallback::getInstance());
-
   /*
   ** Initialization
   */
   bool isInitialized() const
     {return initialized;}
 
-  virtual bool initialize(MessageCallback& callback);
+  virtual bool initialize(ExecutionContext& context);
   virtual void deinitialize();
 
   /*
@@ -111,7 +94,7 @@ public:
   virtual bool isMissingValue(const VariableValue& value) const;
 
   virtual VariableValue create() const;
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
@@ -132,7 +115,7 @@ public:
   virtual String getObjectVariableDescription(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
-  virtual void setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const;
+  virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Dynamic Variables
@@ -203,11 +186,8 @@ public:
 
   virtual ClassPtr getClass() const;
 
-  static EnumerationPtr get(const String& className)
-    {return (EnumerationPtr)Type::get(className);}
-
   virtual VariableValue create() const;
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
@@ -265,7 +245,7 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const;
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
@@ -312,8 +292,8 @@ public:
   void reserveVariables(size_t count)
     {variables.reserve(count);}
 
-  void addVariable(TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
-  void addVariable(const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  void addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  void addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
   void clearVariables();
 
   lbcpp_UseDebuggingNewOperator

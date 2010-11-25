@@ -43,13 +43,13 @@ public:
     rocEvaluator->getScores(res);
   }
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    const SymmetricMatrixPtr& predicted = predictedObject.getObjectAndCast<SymmetricMatrix>();
-    const SymmetricMatrixPtr& correct = correctObject.getObjectAndCast<SymmetricMatrix>();
+    const SymmetricMatrixPtr& predicted = predictedObject.getObjectAndCast<SymmetricMatrix>(context);
+    const SymmetricMatrixPtr& correct = correctObject.getObjectAndCast<SymmetricMatrix>(context);
 
     jassert(predicted->getDimension() == predicted->getDimension());
     size_t n = predicted->getDimension();
@@ -63,8 +63,8 @@ public:
           continue;
 
         bool shouldBePositive = correctElement.getDouble() > 0.5;
-        classificationEvaluator->addPrediction(predictedElement.getDouble() > 0.5, shouldBePositive);
-        rocEvaluator->addPrediction(predictedElement.getDouble(), shouldBePositive);
+        classificationEvaluator->addPrediction(context, predictedElement.getDouble() > 0.5, shouldBePositive);
+        rocEvaluator->addPrediction(context, predictedElement.getDouble(), shouldBePositive);
       }
   }
 

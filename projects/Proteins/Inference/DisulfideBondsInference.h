@@ -29,7 +29,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return symmetricMatrixClass(probabilityType);}
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state.staticCast<State>()->dimension;
     size_t minDistance = state.staticCast<State>()->minDistance;
@@ -79,10 +79,10 @@ public:
   virtual TypePtr getInputType() const
     {return proteinClass;}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
-    const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>();
+    const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>(context);
+    const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>(context);
     jassert(inputProtein && (!supervision.exists() || supervisionMap));
 
     const std::vector<size_t>& cysteines = inputProtein->getCysteinIndices();

@@ -58,7 +58,7 @@ public:
   RunInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output, Inference::ReturnCode& returnCode)
     : InferenceRelatedWorkUnit(parentContext, pool, stack), inference(inference), input(input), supervision(supervision), output(output), returnCode(returnCode)
   {
-    setName(inference->getDescription(input, supervision));
+    setName(inference->getDescription(*parentContext, input, supervision));
   }
 
   virtual bool run(ExecutionContext& executionContext)
@@ -87,12 +87,12 @@ public:
     {
       const InferencePtr& subInference = state->getSubInference(beginIndex);
       stack->push(subInference);
-      setName(subInference->getDescription(state->getSubInput(beginIndex), state->getSubSupervision(beginIndex)));
+      setName(subInference->getDescription(*parentContext, state->getSubInput(beginIndex), state->getSubSupervision(beginIndex)));
       stack->pop();
     }
     else
     {
-      setName(inference->getDescription(state->getInput(), state->getSupervision()) +
+      setName(inference->getDescription(*parentContext, state->getInput(), state->getSupervision()) +
         T("[") + String((int)beginIndex) + T(":") + String((int)(endIndex - 1)) + T("]"));
     }
   }

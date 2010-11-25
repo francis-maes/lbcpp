@@ -40,7 +40,7 @@ public:
   IdentityImageFunction(size_t inputWidth, size_t inputHeight) : ImageFunction(inputWidth, inputHeight) {}
   IdentityImageFunction() {}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return input;}
 
 protected:
@@ -53,10 +53,10 @@ public:
   AverageImageFunction(size_t inputWidth, size_t inputHeight, size_t radius) : ImageFunction(inputWidth, inputHeight), radius(radius) {}
   AverageImageFunction() {}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
+    ImagePtr image = input.getObjectAndCast<Image>(context);
     jassert(image);
     
     size_t width = image->getWidth();
@@ -99,10 +99,10 @@ public:
   virtual size_t getOutputImageHeight() const
     {return height / scaleFactor;}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
+    ImagePtr image = input.getObjectAndCast<Image>(context);
     jassert(image);
 
     size_t width = image->getWidth();
@@ -128,7 +128,7 @@ class BinarizeImageFunction : public ImageFunction
 {
 public:
   BinarizeImageFunction(size_t inputWidth, size_t inputHeight, double threshold = 0.1) : ImageFunction(inputWidth, inputHeight), threshold(threshold)
-    {jassert(0.0 <= threshold <= 1.0);}
+    {}//jassert(0.0 <= threshold <= 1.0);}
   BinarizeImageFunction() {}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
@@ -137,10 +137,10 @@ public:
   virtual TypePtr getOutputImageType() const
     {return booleanType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
+    ImagePtr image = input.getObjectAndCast<Image>(context);
     jassert(image);
     
     size_t width = image->getWidth();
@@ -171,10 +171,10 @@ public:
   virtual size_t getOutputImageHeight() const
     {return (size_t)ceil(height / (double)blockSize);}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
+    ImagePtr image = input.getObjectAndCast<Image>(context);
     jassert(image);
     
     size_t scaledWidth = (size_t)ceil(width / (double)blockSize);
@@ -220,10 +220,10 @@ public:
   virtual size_t getOutputImageHeight() const
     {return (size_t)ceil(height / 2.0);}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    ImagePtr image = input.getObjectAndCast<Image>();
+    ImagePtr image = input.getObjectAndCast<Image>(context);
     jassert(image);
     
     size_t scaledWidth = (size_t)ceil(width / (double)blockSize);

@@ -30,10 +30,10 @@ public:
   /*
   ** Class
   */
-  virtual bool initialize(MessageCallback& callback);
+  virtual bool initialize(ExecutionContext& context);
   virtual VariableValue create() const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
-  virtual void setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const;
+  virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object

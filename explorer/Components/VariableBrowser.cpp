@@ -199,7 +199,7 @@ public:
       rows.erase(rows.begin() + i);
     }
     Variable variable = selector->createMultiSelectionVariable(selectedVariables);
-    Component* component = selector->createComponentForVariable(variable, variable.toShortString());
+    Component* component = selector->createComponentForVariable(*silentExecutionContext, variable, variable.toShortString());
     if (component)
       appendVariable(variable, component);
 

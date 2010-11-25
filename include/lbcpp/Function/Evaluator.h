@@ -21,7 +21,7 @@ public:
   Evaluator(const String& name) : NameableObject(name) {}
   Evaluator() {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correct) = 0;
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct) = 0;
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const = 0;
   virtual double getDefaultScore() const = 0;
@@ -35,7 +35,7 @@ public:
   RegressionErrorEvaluator(const String& name);
   RegressionErrorEvaluator() {}
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject);
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject);
   virtual void addDelta(double delta);
 
   virtual String toString() const;
@@ -136,7 +136,7 @@ public:
 
   typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
 
-  void addPrediction(double predictedScore, bool isPositive); 
+  void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
   void getScores(std::vector< std::pair<String, double> >& res) const;
   double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 

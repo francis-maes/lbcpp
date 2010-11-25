@@ -37,12 +37,12 @@ public:
   PerceptionPtr getPerception() const
     {return perception;}
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
-    Inference::clone(target);
+    Inference::clone(context, target);
     ReferenceCountedObjectPtr<BinaryDecisionTreeInference> res = target.staticCast<BinaryDecisionTreeInference>();
     if (tree)
-      res->tree = tree->cloneAndCast<BinaryDecisionTree>();
+      res->tree = tree->cloneAndCast<BinaryDecisionTree>(context);
   }
 
 protected:
@@ -51,8 +51,8 @@ protected:
   PerceptionPtr perception;
   BinaryDecisionTreePtr tree;
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return tree && tree->getNumNodes() ? tree->makePrediction(perception->compute(input)) : Variable::missingValue(getOutputType(input.getType()));}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return tree && tree->getNumNodes() ? tree->makePrediction(context, perception->computeFunction(context, input)) : Variable::missingValue(getOutputType(input.getType()));}
 };
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;

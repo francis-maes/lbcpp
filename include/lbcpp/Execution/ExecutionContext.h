@@ -36,6 +36,39 @@ public:
   void informationCallback(const String& what)
     {informationCallback(String::empty, what);}
 
+  void warningCallback(const String& what)
+    {warningCallback(String::empty, what);}
+
+  void errorCallback(const String& what)
+    {errorCallback(String::empty, what);}
+
+  /*
+  ** Checks
+  */
+#ifdef JUCE_DEBUG
+  bool checkInheritance(TypePtr type, TypePtr baseType);
+  bool checkInheritance(const Variable& variable, TypePtr baseType);
+#else
+  inline bool checkInheritance(TypePtr type, TypePtr baseType) {return true;}
+  inline bool checkInheritance(const Variable& variable, TypePtr baseType) {return true;}
+#endif // JUCE_DEBUG
+
+  /*
+  ** Utilities
+  */
+  ObjectPtr createObject(ClassPtr objectClass);
+  Variable createVariable(TypePtr type);
+
+  void declareType(TypePtr typeInstance);
+  void declareTemplateType(TemplateTypePtr templateTypeInstance);
+  void finishTypeDeclarations();
+
+  bool doTypeExists(const String& typeName);
+
+  TypePtr getType(const String& typeName);
+  TypePtr getType(const String& name, const std::vector<TypePtr>& arguments);
+  EnumerationPtr getEnumeration(const String& className);
+
   /*
   ** Current State
   */
@@ -67,8 +100,12 @@ private:
   std::vector<ExecutionCallbackPtr> callbacks;
 };
 
+extern ExecutionContextPtr silentExecutionContext;
+
 extern ExecutionContextPtr singleThreadedExecutionContext();
 extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr context, WorkUnitPtr workUnit);
+
+extern ExecutionContextPtr defaultConsoleExecutionContext();
 
 }; /* namespace lbcpp */
 

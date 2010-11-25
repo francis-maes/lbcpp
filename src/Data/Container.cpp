@@ -35,9 +35,9 @@ String Container::toString() const
   return res + T("]");
 }
 
-void Container::clone(const ObjectPtr& target) const
+void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
-  Object::clone(target);
+  Object::clone(context, target);
   ContainerPtr targetContainer = target.staticCast<Container>();
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
@@ -116,20 +116,6 @@ namespace lbcpp
   extern DecoratorContainerPtr applyFunctionContainer(ContainerPtr container, FunctionPtr function);
 };
 
-ContainerPtr Container::apply(FunctionPtr function, bool lazyCompute) const
-{
-  if (lazyCompute)
-    return applyFunctionContainer(refCountedPointerFromThis(this), function);
-  else
-  {
-    size_t n = getNumElements();
-    VectorPtr res = vector(function->getOutputType(getElementsType()), n);
-    for (size_t i = 0; i < n; ++i)
-      res->setElement(i, function->compute(getElement(i)));
-    return res;
-  }
-}
-
 class ApplyFunctionInContainerWorkUnit : public WorkUnit
 {
 public:
@@ -143,18 +129,33 @@ protected:
   size_t index;
 
   virtual bool run(ExecutionContext& context)
-    {target->setElement(index, function->compute(source->getElement(index))); return true;}
+    {target->setElement(index, function->computeFunction(context, source->getElement(index))); return true;}
 };
 
-ContainerPtr Container::apply(FunctionPtr function, ThreadPoolPtr pool) const
+ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode) const
 {
-  size_t n = getNumElements();
-  VectorPtr res = vector(function->getOutputType(getElementsType()), n);
-  std::vector<WorkUnitPtr> workUnits(n);
-  for (size_t i = 0; i < n; ++i)
-    workUnits[i] = new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i);
-  pool->addWorkUnitsAndWaitExecution(workUnits, 10);
-  return res;
+  if (computeMode == lazyApply)
+    return applyFunctionContainer(refCountedPointerFromThis(this), function);
+  else
+  {
+    size_t n = getNumElements();
+    VectorPtr res = vector(function->getOutputType(getElementsType()), n);
+    if (computeMode == sequentialApply)
+    {
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, function->computeFunction(context, getElement(i)));
+    }
+    else if (computeMode == parallelApply)
+    {
+      std::vector<WorkUnitPtr> workUnits(n);
+      for (size_t i = 0; i < n; ++i)
+        workUnits[i] = new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i);
+      context.run(workUnits);
+    }
+    else
+      jassert(false);
+    return res;
+  }
 }
 
 ContainerPtr Container::subset(const std::vector<size_t>& indices) const

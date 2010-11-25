@@ -1,15 +1,18 @@
- * Replace Job by WorkUnit
-
- * SingleThreadedExecutionContext
+ * Use ExecutionContext in Function
+ 
+ * Use ExecutionContext in ObjectiveFunction
+ * Use ExecutionContext in Predicate
+ * Use ExecutionContext in Perception
+ 
+ 
+ * Replace MessageCallback everywhere
  * MultiThreadedExecutionContext
- * Replace Program by WorkUnit
- * Take a ExecutionContext& parameter in Function
  * Inherit InferenceCallback from ExecutionCallback and InferenceContext from ExecutionContext
  * Unify also with Boinc
 
 Program:
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
- * SandBox: dériver de Program
+ * SandBox: dériver de WorkUnit
  * SandBoxNewFeatures: enlever (?)
 
 AutoTune:

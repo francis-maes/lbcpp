@@ -34,13 +34,13 @@ protected:
 
   size_t fieldIndex;
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ObjectPtr object = input[0].getObject();
     if (object && input[1].exists())
-      object->setVariable(fieldIndex, input[1]);
+      object->setVariable(context, fieldIndex, input[1]);
     else if (!object)
-      callback.warningMessage(T("SetFieldFunction::computeFunction"), T("Null object"));
+      context.warningCallback(T("SetFieldFunction::computeFunction"), T("Null object"));
     return input[0];
   }
 };

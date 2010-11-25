@@ -24,7 +24,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return doubleType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return input[0].getDouble() * input[1].getDouble();}
 };
 
@@ -45,7 +45,7 @@ public:
   virtual bool isSparse() const
     {return perception1->isSparse() || perception2->isSparse();}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const;
 
   PerceptionPtr getPerception1() const
     {return perception1;}
@@ -77,7 +77,7 @@ public:
 
   virtual TypePtr getInputType() const;
   virtual String toString() const;
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const;
 
   FunctionPtr getMultiplyFunction() const
     {return multiplyFunction;}

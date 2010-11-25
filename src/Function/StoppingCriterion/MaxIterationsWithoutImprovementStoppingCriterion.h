@@ -44,7 +44,7 @@ public:
     return false;
   }
 
-  virtual ObjectPtr clone() const
+  virtual ObjectPtr clone(ExecutionContext& context) const
   {
     ReferenceCountedObjectPtr<MaxIterationsWithoutImprovementStoppingCriterion> res 
       = new MaxIterationsWithoutImprovementStoppingCriterion(maxIterationsWithoutImprovement);

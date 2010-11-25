@@ -35,8 +35,7 @@ public:
   */
   virtual String toString() const;
   virtual bool loadFromXml(XmlImporter& importer);
-  virtual void clone(const ObjectPtr& target) const;
-  VectorPtr cloneContent() const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -220,7 +219,7 @@ public:
     {return new ObjectType(values[index]);}
 
   virtual void setElement(size_t index, const Variable& value)
-    {values[index] = getImplementation(value);}
+    {values[index] = getImplementation(*(ExecutionContext* )0, value);} // FIXME : context
 
   virtual void saveToXml(XmlExporter& exporter) const
     {jassert(false);}
@@ -238,10 +237,10 @@ public:
     {values.clear();}
 
   virtual void prepend(const Variable& value)
-    {values.insert(values.begin(), getImplementation(value));}
+    {values.insert(values.begin(), getImplementation(*(ExecutionContext* )0, value));} // FIXME : context
 
   virtual void append(const Variable& value)
-    {values.push_back(getImplementation(value));}
+    {values.push_back(getImplementation(*(ExecutionContext* )0, value));} // FIXME: context
 
   virtual void remove(size_t index)
     {values.erase(values.begin() + index);}
@@ -264,9 +263,9 @@ public:
 protected:
   std::vector<ImplementationType> values;
 
-  static ImplementationType getImplementation(const Variable& value)
+  static ImplementationType getImplementation(ExecutionContext& context, const Variable& value)
   {
-    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
+    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>(context);
     return v ? v->getValue() : ImplementationType();
   }
 };
@@ -284,15 +283,15 @@ extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr variableVector(size_t initialSize);
 
 template<class TT>
-inline void variableToNative(std::vector<TT>& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, std::vector<TT>& dest, const Variable& source)
 {
   jassert(source.isObject());
-  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>();
+  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
   if (sourceVector)
   {
     dest.resize(sourceVector->getNumElements());
     for (size_t i = 0; i < dest.size(); ++i)
-      lbcpp::variableToNative(dest[i], sourceVector->getElement(i));
+      lbcpp::variableToNative(context, dest[i], sourceVector->getElement(i));
   }
   else
     dest.clear();
@@ -302,7 +301,7 @@ template<class TT>
 inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
 {
   dest = Variable::create(expectedType);
-  const VectorPtr& destVector = dest.getObjectAndCast<Vector>();
+  const VectorPtr& destVector = dest.getObject().staticCast<Vector>();
   jassert(destVector);
   destVector->resize(source.size());
   TypePtr elementsType = destVector->getElementsType();

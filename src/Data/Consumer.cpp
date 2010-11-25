@@ -15,22 +15,22 @@ using namespace lbcpp;
 /*
 ** Consumer
 */
-void Consumer::consumeStream(StreamPtr stream, size_t maximumCount)
+void Consumer::consumeStream(ExecutionContext& context, StreamPtr stream, size_t maximumCount)
 {
   for (size_t i = 0; !maximumCount || i < maximumCount; ++i)
   {
-    Variable variable = stream->next();
+    Variable variable = stream->next(context);
     if (!variable.exists())
       break;
-    consume(variable);
+    consume(context, variable);
   }
 }
 
-void Consumer::consumeContainer(ContainerPtr container)
+void Consumer::consumeContainer(ExecutionContext& context, ContainerPtr container)
 {
   size_t s = container->getNumElements();
   for (size_t i = 0; i < s; ++i)
-    consume(container->getElement(i));
+    consume(context, container->getElement(i));
 }
 
 /*
@@ -39,12 +39,12 @@ void Consumer::consumeContainer(ContainerPtr container)
 TextPrinter::TextPrinter(OutputStream* newOutputStream)
   : ostr(newOutputStream) {}
 
-TextPrinter::TextPrinter(const File& file, MessageCallback& callback)
+TextPrinter::TextPrinter(ExecutionContext& context, const File& file)
   : ostr(NULL)
 {
   if (file == File::nonexistent)
   {
-    callback.errorMessage(T("TextPrinter::TextPrinter"), T("No filename specified"));
+    context.errorCallback(T("TextPrinter::TextPrinter"), T("No filename specified"));
     return;
   }
   if (file.existsAsFile())
@@ -52,7 +52,7 @@ TextPrinter::TextPrinter(const File& file, MessageCallback& callback)
   OutputStream* outputStream = file.createOutputStream();
   if (!outputStream)
   {
-    callback.errorMessage(T("TextPrinter::TextPrinter"), T("Could not open file ") + file.getFullPathName());
+    context.errorCallback(T("TextPrinter::TextPrinter"), T("Could not open file ") + file.getFullPathName());
     return;
   }
   this->ostr = outputStream;

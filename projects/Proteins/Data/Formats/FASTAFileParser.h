@@ -18,16 +18,16 @@ namespace lbcpp
 class FASTAFileParser : public TextParser
 {
 public:
-  FASTAFileParser(const File& file, MessageCallback& callback = MessageCallback::getInstance())
-    : TextParser(file, callback) {}
+  FASTAFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file) {}
   
   virtual TypePtr getElementsType() const
     {return proteinClass;}
   
-  virtual void parseBegin()
+  virtual void parseBegin(ExecutionContext& context)
     {}
 
-  virtual bool parseLine(const String& line)
+  virtual bool parseLine(ExecutionContext& context, const String& line)
   {
     String str = line.trim();
     if (str.isEmpty())
@@ -42,7 +42,7 @@ public:
     return true;
   }
   
-  virtual bool parseEnd()
+  virtual bool parseEnd(ExecutionContext& context)
   {
     flush();
     return true;

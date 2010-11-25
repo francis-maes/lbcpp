@@ -10,11 +10,12 @@
 #include "Program/LearnerProgram.h"
 using namespace lbcpp;
 
-extern void declareMNISTClasses();
+extern void declareMNISTClasses(ExecutionContext& context);
 
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareMNISTClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareMNISTClasses(*context);
   return WorkUnit::main(new LearnerProgram(), argc, argv);
 }

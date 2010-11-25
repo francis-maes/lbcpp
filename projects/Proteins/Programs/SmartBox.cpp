@@ -11,6 +11,9 @@ using namespace lbcpp;
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  ExtraTreeProteinInferenceFactory(ExecutionContext& context)
+    : ProteinInferenceFactory(context) {}
+
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
@@ -18,16 +21,17 @@ public:
   }
   
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception, 2, 3);}
+    {return binaryClassificationExtraTreeInference(context, targetName, perception, 2, 3);}
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
+    {return classificationExtraTreeInference(context, targetName, perception, classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  NumericalProteinInferenceFactory() : maxIterations(0) {} 
+  NumericalProteinInferenceFactory(ExecutionContext& context)
+    : ProteinInferenceFactory(context), maxIterations(0) {} 
   
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
@@ -143,6 +147,9 @@ typedef ReferenceCountedObjectPtr<NumericalProteinInferenceFactory> NumericalPro
 class OneAgainstAllLinearSVMProteinInferenceFactory : public NumericalProteinInferenceFactory
 {
 public:
+  OneAgainstAllLinearSVMProteinInferenceFactory(ExecutionContext& context)
+    : NumericalProteinInferenceFactory(context) {}
+
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     NumericalSupervisedInferencePtr res = binaryLinearSVMInference(targetName, perception);
@@ -156,13 +163,16 @@ public:
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
     InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-    return oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+    return oneAgainstAllClassificationInference(context, targetName, classes, binaryClassifier);
   }
 };
 
 class MultiClassLinearSVMProteinInferenceFactory : public NumericalProteinInferenceFactory
 {
 public:
+  MultiClassLinearSVMProteinInferenceFactory(ExecutionContext& context)
+    : NumericalProteinInferenceFactory(context) {}
+
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
     NumericalSupervisedInferencePtr res = binaryLinearSVMInference(targetName, perception);
@@ -185,7 +195,7 @@ public:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -197,10 +207,10 @@ public:
     for (size_t i = 1; i < stack->getDepth(); ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
-    MessageCallback::info(line);
+    context.informationCallback(line);
   }
   
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     return;
     ScopedLock _(lock);
@@ -213,7 +223,7 @@ public:
     for (size_t i = 0; i < stack->getDepth() - 1; ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
-    MessageCallback::info(line);
+    context.informationCallback(line);
   }
   
 private:
@@ -240,7 +250,7 @@ public:
     }
   }
   
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -263,48 +273,48 @@ public:
         info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
       
       info += T(" ") + inputTypeName + T("(s) ===");
-      MessageCallback::info(info);
+      context.informationCallback(info);
     }
   }
   
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     //String inferenceName = stack->getCurrentInference()->getName();
 
     if (stack->getDepth() == 2 && (stack->getCurrentInference()->getClassName() == T("StaticParallelInferenceLearner")
                                    || stack->getCurrentInference()->getClassName() == T("MultiPassInferenceLearner")))
     {
-      MessageCallback::info(T("===================== EVALUATION ====================="));
+      context.informationCallback(T("===================== EVALUATION ====================="));
 
       ProteinEvaluatorPtr learningEvaluator = new ProteinEvaluator();
       ProteinEvaluatorPtr testingEvaluator = new ProteinEvaluator();
       ProteinEvaluatorPtr validationEvaluator = new ProteinEvaluator();
       
-      MessageCallback::info(T("================== Train Evaluation ==================  ")
+      context.informationCallback(T("================== Train Evaluation ==================  ")
                             + String((Time::getMillisecondCounter() - startingTime) / 1000)
                             + T(" s"));
-      context->evaluate(inference, trainingData, learningEvaluator);
-      MessageCallback::info(learningEvaluator->toString());
+      context.evaluate(inference, trainingData, learningEvaluator);
+      context.informationCallback(learningEvaluator->toString());
 
       if (testingData && testingData->getNumElements())
       {
-        MessageCallback::info(T("=================== Test Evaluation ==================  ")
+        context.informationCallback(T("=================== Test Evaluation ==================  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        context->evaluate(inference, testingData, testingEvaluator);
-        MessageCallback::info(testingEvaluator->toString());
+        context.evaluate(inference, testingData, testingEvaluator);
+        context.informationCallback(testingEvaluator->toString());
       }
 
       if (validationData && validationData->getNumElements())
       {
-        MessageCallback::info(T("============== Validation Evaluation ===============  ")
+        context.informationCallback(T("============== Validation Evaluation ===============  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        context->evaluate(inference, validationData, validationEvaluator);
-        MessageCallback::info(validationEvaluator->toString());
+        context.evaluate(inference, validationData, validationEvaluator);
+        context.informationCallback(validationEvaluator->toString());
       }
 
-      MessageCallback::info(T("======================================================"));
+      context.informationCallback(T("======================================================"));
 
       /* GnuPlot File Generation */
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)
@@ -357,7 +367,7 @@ public:
 
     if (stack->getDepth() == 1)
     {
-      MessageCallback::info(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
+      context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }
   }
 
@@ -374,34 +384,33 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
   inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
 }
 
-bool NumericalLearningParameter::loadFromString(const String& value, MessageCallback& callback)
+bool NumericalLearningParameter::loadFromString(ExecutionContext& context, const String& value)
 {
   StringArray values;
   values.addTokens(value, T(";"), T(""));
   if (values.size() != 3)
   {
-    callback.errorMessage(T("NumericalLearningParameter::loadFromString"), value.quoted() + T(" is not valid"));
+    context.errorCallback(T("NumericalLearningParameter::loadFromString"), value.quoted() + T(" is not valid"));
     return false;
   }
   
-  Variable vLR  = Variable::createFromString(doubleType, values[0], callback);
-  Variable vLRD = Variable::createFromString(doubleType, values[1], callback);
-  Variable vR   = Variable::createFromString(doubleType, values[2], callback);
+  Variable vLR  = Variable::createFromString(context, doubleType, values[0]);
+  Variable vLRD = Variable::createFromString(context, doubleType, values[1]);
+  Variable vR   = Variable::createFromString(context, doubleType, values[2]);
   
   if (vLR.isMissingValue() || vLRD.isMissingValue() || vR.isMissingValue())
   {
-    callback.errorMessage(T("NumericalLearningParameter::loadFromString"), value.quoted() + T(" is not valid"));
+    context.errorCallback(T("NumericalLearningParameter::loadFromString"), value.quoted() + T(" is not valid"));
     return false;
   }
   
   learningRate = vLR.getDouble();
   learningRateDecrease = vLRD.getDouble();
   regularizer = vR.getDouble();
-
   return true;
 }
 
-bool ProteinTarget::loadFromString(const String& value, MessageCallback& callback)
+bool ProteinTarget::loadFromString(ExecutionContext& context, const String& value)
 {
   tasks.clear();
 
@@ -410,7 +419,7 @@ bool ProteinTarget::loadFromString(const String& value, MessageCallback& callbac
     int end = value.indexOfChar(begin, T(')'));
     if (value[begin] != T('(') || end == -1)
     {
-      callback.errorMessage(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
+      context.errorCallback(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
       return false;
     }
     
@@ -421,10 +430,10 @@ bool ProteinTarget::loadFromString(const String& value, MessageCallback& callbac
     if (begin == -1)
       begin = value.length();
     
-    Variable nbPass = Variable::createFromString(positiveIntegerType, value.substring(++end, begin), callback);
+    Variable nbPass = Variable::createFromString(context, positiveIntegerType, value.substring(++end, begin));
     if (nbPass.isMissingValue())
     {
-      callback.errorMessage(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
+      context.errorCallback(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
       return false;
     }
     
@@ -445,7 +454,7 @@ bool ProteinTarget::loadFromString(const String& value, MessageCallback& callbac
           pass.push_back(T("structuralAlphabetSequence"));
         else
         {
-          callback.errorMessage(T("ProteinTarget::loadFromString"), taskValues[i].quoted() + T(" is not a valid task"));
+          context.errorCallback(T("ProteinTarget::loadFromString"), taskValues[i].quoted() + T(" is not a valid task"));
           return false;
         }
       }
@@ -453,20 +462,19 @@ bool ProteinTarget::loadFromString(const String& value, MessageCallback& callbac
       tasks.push_back(pass);
     }
   }
-
   return true;
 }
 
-ProteinInferenceFactoryPtr SnowBox::createFactory() const
+ProteinInferenceFactoryPtr SnowBox::createFactory(ExecutionContext& context) const
 {
   if (baseLearner == T("ExtraTree"))
-    return new ExtraTreeProteinInferenceFactory();
+    return new ExtraTreeProteinInferenceFactory(context);
 
   NumericalProteinInferenceFactoryPtr res;
   if (baseLearner == T("OneAgainstAllLinearSVM"))
-    res = new OneAgainstAllLinearSVMProteinInferenceFactory();
+    res = new OneAgainstAllLinearSVMProteinInferenceFactory(context);
   if (baseLearner == T("MultiClassLinearSVM"))
-    res = new MultiClassLinearSVMProteinInferenceFactory();
+    res = new MultiClassLinearSVMProteinInferenceFactory(context);
   
   if (res)
   {
@@ -480,19 +488,18 @@ ProteinInferenceFactoryPtr SnowBox::createFactory() const
   return ProteinInferenceFactoryPtr();
 }
 
-ContainerPtr SnowBox::loadProteins(const File& f, size_t maxToLoad) const
+ContainerPtr SnowBox::loadProteins(ExecutionContext& context, const File& f, size_t maxToLoad) const
 {
-  static ThreadPoolPtr pool = new ThreadPool(numberOfThreads, false);
   if (inputDirectory != File::nonexistent)
     return directoryPairFileStream(inputDirectory, f, T("*.xml"))
-      ->load(maxToLoad)
-      ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)
+      ->load(context, maxToLoad)
+      ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)
       ->randomize();
   
   return directoryFileStream(f, T("*.xml"))
-    ->load(maxToLoad)
-    ->apply(loadFromFileFunction(proteinClass), pool)
-    ->apply(proteinToInputOutputPairFunction(false))
+    ->load(context, maxToLoad)
+    ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
+    ->apply(context, proteinToInputOutputPairFunction(false))
     ->randomize();
 }
 
@@ -505,7 +512,7 @@ bool SnowBox::loadData(ExecutionContext& context)
     return false;
   }
   
-  learningData = loadProteins(learningDirectory, maxProteinsToLoad);
+  learningData = loadProteins(context, learningDirectory, maxProteinsToLoad);
   
   if (!learningData->getNumElements())
   {
@@ -524,7 +531,7 @@ bool SnowBox::loadData(ExecutionContext& context)
   }
   else
   {
-    validationData = loadProteins(validationDirectory);
+    validationData = loadProteins(context, validationDirectory);
   }
   /* testing data */
   if (testingDirectory == File::nonexistent)
@@ -537,7 +544,7 @@ bool SnowBox::loadData(ExecutionContext& context)
   }
   else
   {
-    testingData = loadProteins(testingDirectory);
+    testingData = loadProteins(context, testingDirectory);
   }
   
   if (!useCrossValidation && !testingData->getNumElements())
@@ -591,11 +598,11 @@ void SnowBox::printInformation() const
   std::cout << std::endl;
 }
 
-ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference() const
+ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference(ExecutionContext& context) const
 {
   if (inferenceFile != File::nonexistent)
   {
-    ObjectPtr obj = Object::createFromFile(inferenceFile);
+    ObjectPtr obj = Object::createFromFile(context, inferenceFile);
     if (obj && obj->getClass()->inheritsFrom(lbcpp::proteinSequentialInferenceClass))
       return obj.staticCast<ProteinSequentialInference>();
   }
@@ -610,7 +617,7 @@ bool SnowBox::run(ExecutionContext& context)
     return false;
   }
 
-  ProteinInferenceFactoryPtr factory = createFactory();
+  ProteinInferenceFactoryPtr factory = createFactory(context);
   if (!factory)
   {
     context.errorCallback(T("SnowBox::run"), T("Unknown base learned and/or multiclass learner !"));
@@ -619,7 +626,7 @@ bool SnowBox::run(ExecutionContext& context)
 
   printInformation();
 
-  ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference();
+  ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference(context);
   InferencePtr previousInference;
   for (currentPass = 0; currentPass < target->getNumPasses(); ++currentPass)
   {
@@ -651,7 +658,7 @@ bool SnowBox::run(ExecutionContext& context)
     inferenceContext->train(inference, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
-    inference->saveToFile(outputInferenceFile);
+    inference->saveToFile(context, outputInferenceFile);
     std::cout << "Save inference : " << outputInferenceFile.getFullPathName() << std::endl;
   }
   return true;

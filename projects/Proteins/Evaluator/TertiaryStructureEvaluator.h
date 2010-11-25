@@ -35,13 +35,13 @@ public:
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("C-Alpha RMSE"), -calphaRMSE->getMean()));}
  
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     if (!correctObject.exists() || !predictedObject.exists())
       return;
 
-    const TertiaryStructurePtr& predicted = predictedObject.getObjectAndCast<TertiaryStructure>();
-    const TertiaryStructurePtr& correct = correctObject.getObjectAndCast<TertiaryStructure>();
+    const TertiaryStructurePtr& predicted = predictedObject.getObjectAndCast<TertiaryStructure>(context);
+    const TertiaryStructurePtr& correct = correctObject.getObjectAndCast<TertiaryStructure>(context);
     jassert(correct->getNumResidues() == predicted->getNumResidues());
     calphaRMSE->push(predicted->computeCAlphaAtomsRMSE(correct));
   }

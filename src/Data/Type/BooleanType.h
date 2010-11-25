@@ -37,7 +37,7 @@ public:
   BooleanType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim().toLowerCase();
     if (v == T("true"))
@@ -46,7 +46,7 @@ public:
       return VariableValue(false);
     else
     {
-      callback.errorMessage(T("BooleanType::createFromString"), T("Could not read boolean value ") + value.quoted());
+      context.errorCallback(T("BooleanType::createFromString"), T("Could not read boolean value ") + value.quoted());
       return getMissingValue();
     }
   }

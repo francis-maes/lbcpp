@@ -25,11 +25,11 @@ public:
 
   typedef std::vector<size_t> Conjunction;
 
-  virtual void startLearningCallback(InferenceContextWeakPtr context);
-  virtual void subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference) {}
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void startLearningCallback(InferenceContext& context);
+  virtual void subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference) {}
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual bool isLearningStopped() const
     {return learningStopped;}
@@ -45,12 +45,12 @@ protected:
   void generateCandidates(const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores);
   void resetCandidateScores();
 
-  void updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction);
+  void updateCandidateScores(ExecutionContext& context, const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction);
 
-  void computeCandidateScores(std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const;
-  double getCandidateScore(size_t candidateNumber, size_t scoreNumber) const;
+  void computeCandidateScores(ExecutionContext& context, std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const;
+  double getCandidateScore(ExecutionContext& context, size_t candidateNumber, size_t scoreNumber) const;
 
-  void computeActiveScores(std::vector<double>& res) const;
+  void computeActiveScores(ExecutionContext& context, std::vector<double>& res) const;
 
   String conjunctionToString(const Conjunction& conjunction) const;
   size_t getNumOutputs(const InferencePtr& inference) const;

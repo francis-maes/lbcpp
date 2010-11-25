@@ -54,6 +54,9 @@ typedef NativePtr<Class> ClassPtr;
 class Enumeration;
 typedef NativePtr<Enumeration> EnumerationPtr;
 
+class TemplateType;
+typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
+
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 class Stream;
@@ -76,6 +79,8 @@ typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
 
 class ThreadPool;
 typedef ReferenceCountedObjectPtr<ThreadPool> ThreadPoolPtr;
+
+class ExecutionContext;
 
 }; /* namespace lbcpp */
 

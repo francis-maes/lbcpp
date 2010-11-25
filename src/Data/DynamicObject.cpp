@@ -19,7 +19,7 @@ DynamicClass::~DynamicClass()
 {
 }
 
-bool DynamicClass::initialize(MessageCallback& callback)
+bool DynamicClass::initialize(ExecutionContext& context)
 {
   if (!getObjectNumVariables())
     createObjectVariables();
@@ -43,7 +43,7 @@ bool DynamicClass::initialize(MessageCallback& callback)
       variablesType = onlyObjectVariables;
   }
 
-  return DefaultClass::initialize(callback);
+  return DefaultClass::initialize(context);
 }
 
 VariableValue DynamicClass::create() const
@@ -74,12 +74,12 @@ ObjectPtr DynamicClass::createSparseObject() const
 Variable DynamicClass::getObjectVariable(const Object* pthis, size_t index) const
   {jassert(pthis); return pthis->getVariable(index);}
 
-void DynamicClass::setObjectVariable(Object* pthis, size_t index, const Variable& subValue) const
+void DynamicClass::setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
 {
-  if (checkInheritance(subValue.getType(), getObjectVariableType(index)))
+  if (context.checkInheritance(subValue.getType(), getObjectVariableType(index)))
   {
     jassert(pthis);
-    pthis->setVariable(index, subValue);
+    pthis->setVariable(context, index, subValue);
   }
 }
 

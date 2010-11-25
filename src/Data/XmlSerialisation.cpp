@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Data/XmlSerialisation.h>
 #include <lbcpp/Data/DynamicObject.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
 /*
@@ -23,7 +24,7 @@ XmlExporter::XmlExporter(const String& rootTag, int version)
 XmlExporter::~XmlExporter()
   {delete root;}
 
-bool XmlExporter::saveToFile(const File& file, MessageCallback& callback)
+bool XmlExporter::saveToFile(ExecutionContext& context, const File& file)
 {
   flushSave();
   if (file.exists())
@@ -32,25 +33,25 @@ bool XmlExporter::saveToFile(const File& file, MessageCallback& callback)
     {
       if (!file.deleteFile())
       {
-        callback.errorMessage(T("XmlExporter::saveToFile"), T("Could not delete file ") + file.getFullPathName());
+        context.errorCallback(T("XmlExporter::saveToFile"), T("Could not delete file ") + file.getFullPathName());
         return false;
       }
     }
     else
     {
-      callback.errorMessage(T("XmlExporter::saveToFile"), file.getFullPathName() + T(" is a directory"));
+      context.errorCallback(T("XmlExporter::saveToFile"), file.getFullPathName() + T(" is a directory"));
       return false;
     }
   }
   
   if (!root)
   {
-    callback.errorMessage(T("XmlExporter::saveToFile"), T("No root xml element in file ") + file.getFullPathName());
+    context.errorCallback(T("XmlExporter::saveToFile"), T("No root xml element in file ") + file.getFullPathName());
     return false;
   }
   bool ok = root->writeToFile(file, String::empty);
   if (!ok)
-    callback.errorMessage(T("XmlExporter::saveToFile"), T("Could not write file ") + file.getFullPathName());
+    context.errorCallback(T("XmlExporter::saveToFile"), T("Could not write file ") + file.getFullPathName());
   return ok;
 }
 
@@ -276,18 +277,18 @@ String XmlExporter::makeUniqueIdentifier(ObjectPtr object, std::set<String>& ide
 /*
 ** XmlImporter
 */
-XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
-  : callback(callback), root(NULL)
+XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
+  : context(context), root(NULL)
 {
   if (file.isDirectory())
   {
-    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
+    context.errorCallback(T("Variable::createFromFile"), file.getFullPathName() + T(" is a directory"));
     return;
   }
   
   if (!file.existsAsFile())
   {
-    callback.errorMessage(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
+    context.errorCallback(T("Variable::createFromFile"), file.getFullPathName() + T(" does not exists"));
     return;
   }
 
@@ -297,7 +298,7 @@ XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
   String lastParseError = document.getLastParseError();
   if (!root)
   {
-    callback.errorMessage(T("Variable::createFromFile"),
+    context.errorCallback(T("Variable::createFromFile"),
       lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
     return;
   }
@@ -305,8 +306,14 @@ XmlImporter::XmlImporter(const File& file, MessageCallback& callback)
     enter(root);
 
   if (lastParseError.isNotEmpty())
-    callback.warningMessage(T("Variable::createFromFile"), lastParseError);
+    context.warningCallback(T("Variable::createFromFile"), lastParseError);
 }
+
+void XmlImporter::errorMessage(const String& where, const String& what) const
+  {context.errorCallback(where, what);}
+
+void XmlImporter::warningMessage(const String& where, const String& what) const
+  {context.warningCallback(where, what);}
 
 Variable XmlImporter::load()
 {
@@ -345,7 +352,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   XmlElement* elt = getCurrentElement();
   String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
   if (typeName.isNotEmpty())
-    return Type::get(typeName, callback);
+    return context.getType(typeName);
   else
   {
     XmlElement* child = elt->getChildByName(T("type"));
@@ -354,7 +361,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
       TypePtr res;
       enter(child);
       if (hasAttribute(T("reference")))
-        res = getReferencedObject().checkCast<Type>(T("XmlImporter::loadType"), callback).get();
+        res = getReferencedObject().staticCast<Type>().get();
       else
         res = Type::loadUnnamedTypeFromXml(*this);
       leave();
@@ -363,7 +370,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
     else
     {
       if (!expectedType)
-        errorMessage(T("XmlImporter::loadType"), T("Could not find type"));
+        context.errorCallback(T("XmlImporter::loadType"), T("Could not find type"));
       return expectedType;
     }
   }
@@ -418,7 +425,7 @@ bool XmlImporter::enter(const String& childTagName)
   XmlElement* child = getCurrentElement()->getChildByName(childTagName);
   if (!child)
   {
-    callback.errorMessage(T("XmlImporter::enter"), T("Could not find child ") + childTagName.quoted());
+    context.errorCallback(T("XmlImporter::enter"), T("Could not find child ") + childTagName.quoted());
     return false;
   }
   enter(child);

@@ -15,14 +15,14 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType;}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     if (input.isObject())
     {
       ObjectPtr obj = input.getObject();
       jassert(obj);
       std::cout << "Saving: " << directory.getChildFile(obj->getName() + T(".xml")).getFullPathName() << std::endl;
-      obj->saveToFile(directory.getChildFile(obj->getName() + T(".xml")), callback);
+      obj->saveToFile(context, directory.getChildFile(obj->getName() + T(".xml")));
     }
     else
       jassert(false);
@@ -37,10 +37,9 @@ protected:
 class PredictFunction : public Function
 {
 public:
-  PredictFunction(InferencePtr inference,
-                  InferenceContextPtr context = singleThreadedInferenceContext())
-    : inference(inference), context(context)
-    {jassert(inference && context);}
+  PredictFunction(InferencePtr inference)
+    : inference(inference)
+    {jassert(inference);}
   
   virtual TypePtr getInputType() const
     {return inference->getInputType();}
@@ -48,12 +47,11 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inference->getOutputType(inputType);}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-    {return context->predict(inference, input);}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return ((InferenceContext& )context).predict(inference, input);}
   
 protected:
   InferencePtr inference;
-  InferenceContextPtr context;
 };
 
 // Protein -> Protein (with input data only)
@@ -66,14 +64,13 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return proteinClass;}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ProteinPtr protein = input.getObjectAndCast<Protein>();
     jassert(protein);
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
-    
     return inputProtein;
   }
 };
@@ -97,7 +94,7 @@ public:
       return false;
     }
 
-    InferencePtr inference = Inference::createFromFile(inferenceFile);
+    InferencePtr inference = Inference::createFromFile(context, inferenceFile);
     if (!inference)
     {
       context.errorCallback(T("ProteinInferenceEvaluatorProgram::run"), T("Sorry, the inference file is not correct !"));
@@ -108,13 +105,13 @@ public:
     std::cout << "Threads      : " << numThreads << std::endl;
 
     ContainerPtr data = directoryFileStream(inputDirectory, T("*.xml"))
-      ->load()
-      ->apply(loadFromFileFunction(proteinClass), pool)
-      ->apply(FunctionPtr(new InputProteinFunction()));
+      ->load(context)
+      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
+      ->apply(context, FunctionPtr(new InputProteinFunction()));
     std::cout << "Data         : " << data->getNumElements() << std::endl;
 
-    data->apply(FunctionPtr(new PredictFunction(inference, multiThreadedInferenceContext(pool))))
-      ->apply(FunctionPtr(new SaveToFileFunction(outputDirectory)), false);
+    data->apply(context, FunctionPtr(new PredictFunction(inference)))
+      ->apply(context, FunctionPtr(new SaveToFileFunction(outputDirectory)), Container::sequentialApply);
 
     return true;
   }

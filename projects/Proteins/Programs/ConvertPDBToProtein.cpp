@@ -10,12 +10,12 @@
 #include "../Data/Protein.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
-bool convertPDBToProtein(const File& inputFile, const File& outputFile)
+bool convertPDBToProtein(ExecutionContext& context, const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromPDB(inputFile, false);
+  ProteinPtr protein = Protein::createFromPDB(context, inputFile, false);
   if (!protein)
     return false;
  
@@ -28,14 +28,14 @@ bool convertPDBToProtein(const File& inputFile, const File& outputFile)
   //*o << "> " << inputFile.getFileNameWithoutExtension() << "\n";
   //*o << protein->getPrimaryStructure()->toString();
   //delete o;
-  Variable(protein).saveToFile(output);
+  Variable(protein).saveToFile(context, output);
   return true;
 }
 
-bool convertProteinToPDB(const File& inputFile, const File& outputFile)
+bool convertProteinToPDB(ExecutionContext& context, const File& inputFile, const File& outputFile)
 {
   std::cout << inputFile.getFullPathName() << "..." << std::endl;
-  ProteinPtr protein = Protein::createFromXml(inputFile);
+  ProteinPtr protein = Protein::createFromXml(context, inputFile);
   if (!protein)
     return false;
   
@@ -44,7 +44,7 @@ bool convertProteinToPDB(const File& inputFile, const File& outputFile)
   {
     output = output.getChildFile(inputFile.getFileNameWithoutExtension() + T(".pdb"));
   }
-  protein->saveToPDBFile(output);
+  protein->saveToPDBFile(context, output);
   return true;
 }
 
@@ -52,7 +52,9 @@ bool convertProteinToPDB(const File& inputFile, const File& outputFile)
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
 
   if (argc < 3)
   {
@@ -105,9 +107,9 @@ int main(int argc, char* argv[])
     if (inputFiles.size() > 1)
       std::cout << (i+1) << " / " << inputFiles.size() << ", ";
 
-    if (convertToPDB && !convertProteinToPDB(*inputFiles[i], output))
+    if (convertToPDB && !convertProteinToPDB(*context, *inputFiles[i], output))
         errors.push_back(*inputFiles[i]);
-    else if (!convertToPDB && !convertPDBToProtein(*inputFiles[i], output))
+    else if (!convertToPDB && !convertPDBToProtein(*context, *inputFiles[i], output))
       errors.push_back(*inputFiles[i]);
   }
 

@@ -24,9 +24,9 @@ public:
     Perception::computeOutputType();
   }
   
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    ContainerPtr data = input.getObjectAndCast<Container>();
+    ContainerPtr data = input.getObjectAndCast<Container>(context);
     for (size_t i = 0; i < numElements; ++i)
       callback->sense(i, data->getElement(i).getDouble());
   }
@@ -46,28 +46,28 @@ public:
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
   
-  virtual bool run(ExecutionContext& context)
+  virtual bool run(ExecutionContext& c)
   {
     File input(T("/Users/jbecker/Documents/Workspace/Data/x3TestData/waveform.txt"));
+    InferenceContext& context = (InferenceContext& )c;
     
     std::vector<std::vector<double> > data;
-    parseDataFile(input, data);
+    parseDataFile(context, input, data);
     
     ContainerPtr learningData = loadDataToContainer(data, 0, 300);
     ContainerPtr testingData = loadDataToContainer(data, 3000, 5000);
 
-    InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
-    InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
+    InferencePtr inference = classificationExtraTreeInference(context, T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
     
-    inferenceContext->train(inference, learningData, ContainerPtr());
+    context.train(inference, learningData, ContainerPtr());
     
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    inferenceContext->evaluate(inference, learningData, evaluator);
+    context.evaluate(inference, learningData, evaluator);
     std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    inferenceContext->evaluate(inference, testingData, evaluator);
+    context.evaluate(inference, testingData, evaluator);
     std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
     return true;
   }
@@ -80,7 +80,7 @@ protected:
   size_t minSplitSize;
 
 private:
-  void parseDataFile(const File& file, std::vector<std::vector<double> >& results)
+  void parseDataFile(ExecutionContext& context, const File& file, std::vector<std::vector<double> >& results)
   {
     InputStream* is = file.createInputStream();
     while (!is->isExhausted())

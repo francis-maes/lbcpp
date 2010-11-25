@@ -162,7 +162,7 @@ protected:
     {
       fullName += T(", ");
       if (xml->getTagName() == T("type"))
-        fullName += T("lbcpp::Type::get(T(") + baseTypeName.quoted() + T("))");
+        fullName += T("context.getType(T(") + baseTypeName.quoted() + T("))");
       else
         fullName += T("T(") + baseTypeName.quoted() + T(")");
     }
@@ -256,13 +256,13 @@ protected:
     closeScope();
     newLine();
 
-    openScope(T("virtual bool initialize(MessageCallback& callback)"));
+    openScope(T("virtual bool initialize(ExecutionContext& context)"));
       forEachXmlChildElementWithTagName(*xml, elt, T("variable"))
       {
         generateVariableDeclarationInConstructor(className, elt);
         variables.push_back(elt);
       }
-      writeLine(T("return ") + classBaseClass + T("::initialize(callback);"));
+      writeLine(T("return ") + classBaseClass + T("::initialize(context);"));
     closeScope();
     newLine();
 
@@ -314,9 +314,9 @@ protected:
       newLine();
 
       // setObjectVariable
-      openScope(T("virtual void setObjectVariable(Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
+      openScope(T("virtual void setObjectVariable(ExecutionContext& context, Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
-        writeLine(T("{baseType->setObjectVariable(__thisbase__, __index__, __subValue__); return;}"), 1);
+        writeLine(T("{baseType->setObjectVariable(context, __thisbase__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
         writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__thisbase__);"));
         newLine();
@@ -327,7 +327,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(");
+            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(context, ");
 
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)
@@ -375,7 +375,7 @@ protected:
     arguments += T(", ");
     arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
     
-    writeLine(T("addVariable(") + arguments + T(");"));
+    writeLine(T("addVariable(context, ") + arguments + T(");"));
   }
 
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)
@@ -434,19 +434,19 @@ protected:
     newLine();
 
     // initialize()
-    openScope(T("virtual bool initialize(MessageCallback& callback)"));
+    openScope(T("virtual bool initialize(ExecutionContext& context)"));
       std::vector<XmlElement* > parameters;
       forEachXmlChildElementWithTagName(*xml, elt, T("parameter"))
       {
         generateParameterDeclarationInConstructor(className, elt);
         parameters.push_back(elt);
       }
-      writeLine(T("return DefaultTemplateType::initialize(callback);"));
+      writeLine(T("return DefaultTemplateType::initialize(context);"));
     closeScope();
     newLine();
 
     // instantiate
-    openScope(T("virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const"));
+    openScope(T("virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments, TypePtr baseType) const"));
       writeLine(T("return new ") + className + T("Class(refCountedPointerFromThis(this), arguments, baseType);"));
     closeScope();
     newLine();
@@ -460,11 +460,11 @@ protected:
       std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
     else if (parameters.size() == 1)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
-          T("return lbcpp::Type::get(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
+        T("return silentExecutionContext->getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
           //T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
     else if (parameters.size() == 2)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type1, TypePtr type2)"),
-        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::Type::get(T(") + className.quoted() + T("), types);"));
+        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return silentExecutionContext->getType(T(") + className.quoted() + T("), types);"));
           //T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
     else
       std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
@@ -479,7 +479,7 @@ protected:
   {
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Variable")));
     String name = xml->getStringAttribute(T("name"), T("???"));
-    writeLine(T("addParameter(T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
+    writeLine(T("addParameter(context, T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
   }
 
   /*
@@ -532,13 +532,13 @@ protected:
     forEachXmlChildElementWithTagName(*xml, elt, T("import"))
     {
       String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(T("extern void declare") + name + T("Classes();"));
+      writeLine(T("extern void declare") + name + T("Classes(lbcpp::ExecutionContext& context);"));
       hasImports = true;
     }
     if (hasImports)
       newLine();
 
-    openScope(T("void declare") + fileName + T("Classes()"));
+    openScope(T("void declare") + fileName + T("Classes(lbcpp::ExecutionContext& context)"));
     
     if (hasImports)
     {
@@ -547,7 +547,7 @@ protected:
         if (elt->getBoolAttribute(T("pre"), false))
         {
           String name = elt->getStringAttribute(T("name"), T("???"));
-          writeLine(T("declare") + name + T("Classes();"));
+          writeLine(T("declare") + name + T("Classes(context);"));
         }
     }
 
@@ -555,9 +555,11 @@ protected:
     {
       String classVariableName = types[i].first;
       String typeName = types[i].second;
-      String code = T("lbcpp::Type::declare(");
+      String code;
       if (classVariableName.isNotEmpty())
-        code += classVariableName + T(" = ");
+        code = T("context.declareType(") + classVariableName + T(" = ");
+      else
+        code = T("context.declareTemplateType(");
       code += T("new ") + typeName + T(");");
       writeLine(code);
     }
@@ -569,7 +571,7 @@ protected:
         if (!elt->getBoolAttribute(T("pre"), false))
         {
           String name = elt->getStringAttribute(T("name"), T("???"));
-          writeLine(T("declare") + name + T("Classes();"));
+          writeLine(T("declare") + name + T("Classes(context);"));
         }
     }
 

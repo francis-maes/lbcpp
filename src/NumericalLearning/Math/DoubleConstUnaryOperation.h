@@ -22,6 +22,10 @@ namespace lbcpp
 */
 struct DoubleConstUnaryOperation
 {
+  DoubleConstUnaryOperation(ExecutionContext& context) : context(context) {}
+
+  ExecutionContext& context;
+
   void sense(double value)
     {jassert(false);}
   void sense(const PerceptionPtr& perception, const Variable& input)
@@ -94,7 +98,7 @@ template<class OperationType>
 struct DoubleConstUnaryOperationCallback : public PerceptionCallback
 {
   DoubleConstUnaryOperationCallback(OperationType& operation)
-    : operation(operation) {}
+    : PerceptionCallback(operation.context), operation(operation) {}
 
   OperationType& operation;
 
@@ -123,11 +127,11 @@ template<class OperationType>
 void doubleConstUnaryOperation(OperationType& operation, const PerceptionPtr& perception, const Variable& input)
 {
   jassert(input.exists());
-  if (checkInheritance(input, perception->getInputType()))
+  if (operation.context.checkInheritance(input, perception->getInputType()))
   {
     typedef DoubleConstUnaryOperationCallback<OperationType> Callback;
     Callback callback(operation);
-    perception->computePerception(input, &callback);
+    perception->computePerception(operation.context, input, &callback);
   }
 }
 
@@ -136,7 +140,8 @@ void doubleConstUnaryOperation(OperationType& operation, const PerceptionPtr& pe
 */
 struct ComputeL0NormOperation : public DoubleConstUnaryOperation
 {
-  ComputeL0NormOperation() : res(0) {}
+  ComputeL0NormOperation(ExecutionContext& context) 
+    : DoubleConstUnaryOperation(context), res(0) {}
 
   size_t res;
 
@@ -144,17 +149,17 @@ struct ComputeL0NormOperation : public DoubleConstUnaryOperation
     {if (value) ++res;}
 
   void sense(const PerceptionPtr& perception, const Variable& input)
-    {res += lbcpp::l0norm(perception, input);}
+    {res += lbcpp::l0norm(context, perception, input);}
 
   void sense(const ObjectPtr& object)
-    {res += lbcpp::l0norm(object);}
+    {res += lbcpp::l0norm(context, object);}
 };
 
-size_t l0norm(const ObjectPtr& object)
+size_t l0norm(ExecutionContext& context, const ObjectPtr& object)
 {
   if (object)
   {
-    ComputeL0NormOperation operation;
+    ComputeL0NormOperation operation(context);
     doubleConstUnaryOperation(operation, object);
     return operation.res;
   }
@@ -162,15 +167,16 @@ size_t l0norm(const ObjectPtr& object)
     return 0;
 }
 
-size_t l0norm(const PerceptionPtr& perception, const Variable& input)
-  {ComputeL0NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
+size_t l0norm(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
+  {ComputeL0NormOperation operation(context); doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
 ** L1 Norm
 */
 struct ComputeL1NormOperation : public DoubleConstUnaryOperation
 {
-  ComputeL1NormOperation() : res(0.0) {}
+  ComputeL1NormOperation(ExecutionContext& context) 
+    : DoubleConstUnaryOperation(context), res(0.0) {}
 
   double res;
 
@@ -178,17 +184,17 @@ struct ComputeL1NormOperation : public DoubleConstUnaryOperation
     {res += fabs(value);}
 
   void sense(const PerceptionPtr& perception, const Variable& input)
-    {res += lbcpp::l1norm(perception, input);}
+    {res += lbcpp::l1norm(context, perception, input);}
 
   void sense(const ObjectPtr& object)
-    {res += lbcpp::l1norm(object);}
+    {res += lbcpp::l1norm(context, object);}
 };
 
-double l1norm(const ObjectPtr& object)
+double l1norm(ExecutionContext& context, const ObjectPtr& object)
 {
   if (object)
   {
-    ComputeL1NormOperation operation;
+    ComputeL1NormOperation operation(context);
     doubleConstUnaryOperation(operation, object);
     return operation.res;
   }
@@ -196,15 +202,16 @@ double l1norm(const ObjectPtr& object)
     return 0.0;
 }
 
-double l1norm(const PerceptionPtr& perception, const Variable& input)
-  {ComputeL1NormOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
+double l1norm(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
+  {ComputeL1NormOperation operation(context); doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 /*
 ** Sum of squares
 */
 struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
 {
-  ComputeSumOfSquaresOperation() : res(0.0) {}
+  ComputeSumOfSquaresOperation(ExecutionContext& context) 
+    : DoubleConstUnaryOperation(context), res(0.0) {}
 
   double res;
 
@@ -212,17 +219,17 @@ struct ComputeSumOfSquaresOperation : public DoubleConstUnaryOperation
     {res += value * value;}
 
   void sense(const PerceptionPtr& perception, const Variable& input)
-    {res += lbcpp::sumOfSquares(perception, input);}
+    {res += lbcpp::sumOfSquares(context, perception, input);}
 
   void sense(const ObjectPtr& object)
-    {res += lbcpp::sumOfSquares(object);}
+    {res += lbcpp::sumOfSquares(context, object);}
 };
 
-double sumOfSquares(const ObjectPtr& object)
+double sumOfSquares(ExecutionContext& context, const ObjectPtr& object)
 {
   if (object)
   {
-    ComputeSumOfSquaresOperation operation;
+    ComputeSumOfSquaresOperation operation(context);
     doubleConstUnaryOperation(operation, object);
     return operation.res;
   }
@@ -230,8 +237,8 @@ double sumOfSquares(const ObjectPtr& object)
     return 0.0;
 }
 
-double sumOfSquares(const PerceptionPtr& perception, const Variable& input)
-  {ComputeSumOfSquaresOperation operation; doubleConstUnaryOperation(operation, perception, input); return operation.res;}
+double sumOfSquares(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
+  {ComputeSumOfSquaresOperation operation(context); doubleConstUnaryOperation(operation, perception, input); return operation.res;}
 
 }; /* namespace lbcpp */
 

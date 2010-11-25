@@ -63,7 +63,7 @@ public:
     {return nilType;}
 
   // description
-  virtual String getDescription(const Variable& input, const Variable& supervision) const;
+  virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
   enum ReturnCode
   {
@@ -91,19 +91,19 @@ public:
   InferenceOnlineLearnerPtr getLastOnlineLearner() const;
 
   void addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront = false);
-  void getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const;
+  void getInferencesThatHaveAnOnlineLearner(ExecutionContext& context, std::vector<InferencePtr>& res) const;
 
   /*
   ** Parameters
   */
   Variable getParameters() const;
-  Variable getParametersCopy() const;
+  Variable getParametersCopy(ExecutionContext& context) const;
   void setParameters(const Variable& parameters);
 
   /*
   ** Object
   */
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -113,7 +113,7 @@ protected:
 
   virtual void parametersChangedCallback() {}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
@@ -127,9 +127,9 @@ extern ClassPtr inferenceClass;
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
 // Reductions
-extern VectorParallelInferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
+extern VectorParallelInferencePtr oneAgainstAllClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 extern StaticDecoratorInferencePtr rankingBasedClassificationInference(const String& name, InferencePtr rankingInference, EnumerationPtr classes);
-extern VectorParallelInferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
+extern VectorParallelInferencePtr parallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
 extern SharedParallelInferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, InferencePtr elementInference);
 
 // Meta

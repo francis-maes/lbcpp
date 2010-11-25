@@ -23,7 +23,7 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
-void GradientDescentOnlineLearner::startLearningCallback(InferenceContextWeakPtr context)
+void GradientDescentOnlineLearner::startLearningCallback(InferenceContext& context)
 {
   numberOfActiveFeatures.clear();
   epoch = 0;
@@ -34,42 +34,42 @@ void GradientDescentOnlineLearner::startLearningCallback(InferenceContextWeakPtr
   InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GradientDescentOnlineLearner::stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
-  checkRegularizerAfterStep(inference);
+  checkRegularizerAfterStep(context, inference);
 
   PerceptionPtr perception = getPerception(inference);
   if (input.isObject() && input.dynamicCast<Container>())
   {
     // composite inputs (e.g. ranking)
-    const ContainerPtr& inputs = input.getObjectAndCast<Container>();
+    const ContainerPtr& inputs = input.getObjectAndCast<Container>(context);
     size_t n = inputs->getNumElements();
     for (size_t i = 0; i < n; ++i)
-      updateNumberOfActiveFeatures(perception, inputs->getElement(i));
+      updateNumberOfActiveFeatures(context, perception, inputs->getElement(i));
   }
   else
   {
     // simple input
-    updateNumberOfActiveFeatures(perception, input);
+    updateNumberOfActiveFeatures(context, perception, input);
   }
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
   
-void GradientDescentOnlineLearner::episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference)
+void GradientDescentOnlineLearner::episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
-    applyRegularizer(inference);
+    applyRegularizer(context, inference);
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void GradientDescentOnlineLearner::passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (regularizerUpdateFrequency == perPass)
-    applyRegularizer(inference);
+    applyRegularizer(context, inference);
   
-  ObjectPtr parameters = getNumericalInference(inference)->getWeightsCopy();
-  size_t l0norm = lbcpp::l0norm(parameters);
-  double l2norm = lbcpp::l2norm(parameters);
+  ObjectPtr parameters = getNumericalInference(inference)->getWeightsCopy(context);
+  size_t l0norm = lbcpp::l0norm(context, parameters);
+  double l2norm = lbcpp::l2norm(context, parameters);
   MessageCallback::info(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
   //Variable(parameters).printRecursively(std::cout, -1, false, false);
   if (lossValue.getCount())
@@ -83,7 +83,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferenceContextWeakPtr 
   InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 
-void GradientDescentOnlineLearner::updateParameters(InferenceContextWeakPtr context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
+void GradientDescentOnlineLearner::updateParameters(InferenceContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
   const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
@@ -91,11 +91,11 @@ void GradientDescentOnlineLearner::updateParameters(InferenceContextWeakPtr cont
   if (prediction.exists())
     pred = prediction;
   else if (inference == numericalInference) 
-    pred = numericalInference->predict(input);
+    pred = numericalInference->predict(context, input);
   else
     // special case for ranking
-    pred = context->predict(inference, input);
-  numericalInference->computeAndAddGradient(- weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
+    pred = context.predict(inference, input);
+  numericalInference->computeAndAddGradient(context, - weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);
   lossValue.push(exampleLossValue);
@@ -113,24 +113,24 @@ bool GradientDescentOnlineLearner::shouldApplyRegularizerAfterStep(size_t epoch)
   return false;
 }
 
-void GradientDescentOnlineLearner::checkRegularizerAfterStep(const InferencePtr& inference)
+void GradientDescentOnlineLearner::checkRegularizerAfterStep(ExecutionContext& context, const InferencePtr& inference)
 {
   if (shouldApplyRegularizerAfterStep(epoch))
-    applyRegularizer(inference);
+    applyRegularizer(context, inference);
 }
 
-void GradientDescentOnlineLearner::gradientDescentStep(const InferencePtr& inf, const ObjectPtr& gradient, double weight)
+void GradientDescentOnlineLearner::gradientDescentStep(ExecutionContext& context, const InferencePtr& inf, const ObjectPtr& gradient, double weight)
 {
   NumericalInferencePtr inference = getNumericalInference(inf);
-  inference->addWeightedToParameters(gradient, -computeLearningRate() * weight);
+  inference->addWeightedToParameters(context, gradient, -computeLearningRate() * weight);
 }
 
-void GradientDescentOnlineLearner::applyRegularizer(const InferencePtr& inference)
+void GradientDescentOnlineLearner::applyRegularizer(ExecutionContext& context, const InferencePtr& inference)
 {
   if (regularizer)
   {
     double weight = (double)(epoch - lastApplyRegularizerEpoch);
-    getNumericalInference(inference)->applyRegularizerToParameters(regularizer, -computeLearningRate() * weight);
+    getNumericalInference(inference)->applyRegularizerToParameters(context, regularizer, -computeLearningRate() * weight);
     lastApplyRegularizerEpoch = epoch;
   }
 }
@@ -145,23 +145,23 @@ double GradientDescentOnlineLearner::computeLearningRate() const
   return res;
 }
 
-void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input)
+void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
 {
   if (normalizeLearningRate && input.exists())
   {
     // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
     if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
     {
-      double norm = input.getType() == perception->getOutputType() ? lbcpp::l1norm(input.getObject()) : lbcpp::l1norm(perception, input);
+      double norm = input.getType() == perception->getOutputType() ? lbcpp::l1norm(context, input.getObject()) : lbcpp::l1norm(context, perception, input);
       if (norm)
         numberOfActiveFeatures.push(norm);
     }
   }
 }
 
-void GradientDescentOnlineLearner::clone(const ObjectPtr& target) const
+void GradientDescentOnlineLearner::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
-  InferenceOnlineLearner::clone(target);
+  InferenceOnlineLearner::clone(context, target);
 
   const GradientDescentOnlineLearnerPtr& res = target.staticCast<GradientDescentOnlineLearner>();
   res->numberOfActiveFeatures = numberOfActiveFeatures;

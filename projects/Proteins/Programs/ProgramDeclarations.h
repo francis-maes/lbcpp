@@ -43,14 +43,14 @@ class SaveObjectProgram : public WorkUnit
     std::cout << "Loading class " << className.quoted() << " ... ";
     std::flush(std::cout);
 
-    TypePtr type = Type::get(className);
+    TypePtr type = context.getType(className);
     if (!type)
     {
       std::cout << "Fail" << std::endl;
       return false;
     }
 
-    ObjectPtr obj = Object::create(type);
+    ObjectPtr obj = context.createObject(type);
     if (!obj)
     {
       std::cout << "Fail" << std::endl;
@@ -61,7 +61,7 @@ class SaveObjectProgram : public WorkUnit
     std::cout << "Saving class to " << outputFile.getFileName().quoted() << " ... ";
     std::flush(std::cout);
 
-    obj->saveToFile(outputFile);
+    obj->saveToFile(context, outputFile);
 
     std::cout << "OK" << std::endl;
     return true;
@@ -92,7 +92,7 @@ public:
   double getRegularizer() const
     {return (regularizer <= -10.0) ? 0 : pow(10.0, regularizer);}
   
-  virtual bool loadFromString(const String& value, MessageCallback& callback);
+  virtual bool loadFromString(ExecutionContext& context, const String& value);
   
 protected:
   friend class NumericalLearningParameterClass;
@@ -107,10 +107,14 @@ typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningP
 class ProteinTarget : public Object
 {
 public:
-  ProteinTarget() {loadFromString(T("(SS3-DR)2")); /* TODO test serialisation and remove*/}
+  ProteinTarget()
+  {
+    jassert(false); // FIXME
+    /*loadFromString(T("(SS3-DR)2"));*/ /* TODO test serialisation and remove*/
+  }
 
-  ProteinTarget(const String& targets)
-    {loadFromString(targets);}
+  ProteinTarget(ExecutionContext& context, const String& targets)
+    {loadFromString(context, targets);}
   
   size_t getNumPasses() const
     {return tasks.size();}
@@ -121,7 +125,7 @@ public:
   String getTask(size_t passIndex, size_t taskIndex) const
     {jassert(taskIndex < getNumTasks(passIndex)); return tasks[passIndex][taskIndex];}
   
-  virtual bool loadFromString(const String& str, MessageCallback& callback = MessageCallback::getInstance());
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
   
 protected:
   friend class ProteinTargetClass;
@@ -139,7 +143,7 @@ public:
             , useCrossValidation(false), partAsValidation(0)
             , baseLearner(T("OneAgainstAllLinearSVM")), maxIterations(15)
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
-            , target(new ProteinTarget(T("(SS3-DR)2")))
+            , target(new ProteinTarget(*silentExecutionContext, T("(SS3-DR)2")))
             , numberOfThreads(1)
             , currentPass(0) {}
   
@@ -187,13 +191,13 @@ private:
   
   size_t currentPass;
 
-  ProteinInferenceFactoryPtr createFactory() const;
+  ProteinInferenceFactoryPtr createFactory(ExecutionContext& context) const;
 
   bool loadData(ExecutionContext& context);
 
-  ContainerPtr loadProteins(const File& f, size_t maxToLoad = 0) const;
+  ContainerPtr loadProteins(ExecutionContext& context, const File& f, size_t maxToLoad = 0) const;
   
-  ProteinSequentialInferencePtr loadOrCreateIfFailInference() const;
+  ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context) const;
   
   void printInformation() const;
 };

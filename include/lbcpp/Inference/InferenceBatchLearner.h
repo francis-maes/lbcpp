@@ -122,9 +122,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType;}
 
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     return T("Learning ") + learnerInput->getTargetInference()->getName() + T(" with ") + 
       String((int)learnerInput->getNumTrainingExamples()) + T(" ") + learnerInput->getTargetInference()->getInputType()->getName() + T("(s)");
   }

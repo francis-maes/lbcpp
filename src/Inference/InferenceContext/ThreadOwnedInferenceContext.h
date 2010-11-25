@@ -23,12 +23,26 @@ class ThreadOwnedInferenceContext : public InferenceContext
 {
 public:
   ThreadOwnedInferenceContext(Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack, bool isAtomicJob = false)
-    : thread(thread), pool(pool),
-      stack(stack ? stack->cloneAndCast<InferenceStack>() : InferenceStackPtr(new InferenceStack())), isAtomicJob(isAtomicJob)
+    : thread(thread), pool(pool), isAtomicJob(isAtomicJob)
   {
+    this->stack = stack ? stack->cloneAndCast<InferenceStack>(*this) : InferenceStackPtr(new InferenceStack());
   }
 
   ThreadOwnedInferenceContext() : thread(NULL) {}
+  
+  // FIXME !
+  virtual bool isCanceled() const
+    {return false;}
+
+  virtual bool isPaused() const
+    {return false;}
+
+  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+    {jassert(false); return false;}
+
+  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return InferenceContext::run(inference, input, supervision, returnCode);}
+  // -
 
   virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
@@ -46,7 +60,7 @@ public:
     {
       ScopedLock _(stackLock);
       stack->push(inference);
-      callPreInference(this, stack, input, supervision, output, returnCode);
+      callPreInference(*this, stack, input, supervision, output, returnCode);
     }
   }
 
@@ -54,13 +68,13 @@ public:
   {
     ScopedLock _(stackLock);
     jassert(stack->getCurrentInference() == inference);
-    callPostInference(this, stack, input, supervision, output, returnCode);
+    callPostInference(*this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
   virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
+    ParallelInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
 
@@ -109,7 +123,7 @@ public:
             subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
             if (returnCode == Inference::errorReturnCode)
             {
-              MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
+              errorCallback("InferenceContext::runParallelInferences", "Could not finish sub inference");
               return Variable(); 
             }
           }
@@ -118,11 +132,11 @@ public:
       }
       else
       {
-        MessageCallback::info(T("Parallelisation: ") + inference->getDescription(input, supervision) + T("\n\t=> ") +
+        informationCallback(T("Parallelisation: ") + inference->getDescription(*this, input, supervision) + T("\n\t=> ") +
           String((int)n) + T(" sub inferences, ") + String((int)step) + T(" inferences per thread"));
 
         stackLock.enter();
-        InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>();
+        InferenceStackPtr stack = this->stack->cloneAndCast<InferenceStack>(*this);
         stackLock.exit();
 
         std::vector<WorkUnitPtr> workUnits;
@@ -134,21 +148,21 @@ public:
           if (end > n)
             end = n;
           workUnits.push_back(parallelInferenceWorkUnit(refCountedPointerFromThis(this), pool,
-            stack->cloneAndCast<InferenceStack>(), inference, state, begin, end, areSubJobsAtomic));
+            stack->cloneAndCast<InferenceStack>(*this), inference, state, begin, end, areSubJobsAtomic));
           begin = end;
         }
 
         pool->addWorkUnitsAndWaitExecution(workUnits, stack->getDepth(), false);
       }
     }
-    return inference->finalizeInference(this, state, returnCode);
+    return inference->finalizeInference(*this, state, returnCode);
   }
 
-  String describeCurrentState() const
+  String describeCurrentState()
   {
     ScopedLock _(currentStateLock);
     if (currentInference)
-      return currentInference->getDescription(currentInput, currentSupervision);
+      return currentInference->getDescription(*this, currentInput, currentSupervision);
     else
       return T("Not started");
   }

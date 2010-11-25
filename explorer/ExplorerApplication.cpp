@@ -59,9 +59,9 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addVariable(const Variable& variable, const String& name)
+  void addVariable(ExecutionContext& context, const Variable& variable, const String& name)
   {
-    Component* component = createComponentForVariable(variable, name, true);
+    Component* component = createComponentForVariable(context, variable, name, true);
     addTab(name, Colours::lightblue, component, true);
     variables.push_back(variable);
     setCurrentTabIndex(getNumTabs() - 1);
@@ -98,7 +98,8 @@ private:
 class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
 {
 public:
-  ExplorerMainWindow() : DocumentWindow("LBC++ Explorer", Colours::whitesmoke, allButtons)
+  ExplorerMainWindow(ExecutionContext& context) 
+    : DocumentWindow("LBC++ Explorer", Colours::whitesmoke, allButtons), context(context)
   {
     setContentComponent(contentTabs = new ExplorerContentTabs(this));
     setMenuBar(this);
@@ -136,7 +137,7 @@ public:
       menu.addItem(1, "Open");
       menu.addItem(2, "Open Directory");
       
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(*silentExecutionContext);
       if (configuration->getNumRecentFiles())
       {
         PopupMenu openRecentFilesMenu;
@@ -167,7 +168,7 @@ public:
   {
     if (topLevelMenuIndex == 0)
     {
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance();
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(*silentExecutionContext);
 
       if (menuItemID == 1 || menuItemID == 2)
       {
@@ -198,7 +199,7 @@ public:
       else if (menuItemID == 3)
         contentTabs->closeCurrentTab();
       else if (menuItemID == 4)
-        contentTabs->addVariable(localProcessManager(), T("Process Manager"));
+        contentTabs->addVariable(*silentExecutionContext, localProcessManager(), T("Process Manager"));
       else if (menuItemID == 5)
         JUCEApplication::quit();
     }
@@ -213,16 +214,16 @@ public:
 
   void loadObjectFromFile(const File& file)
   {
-    ExplorerRecentFiles::getInstance()->addRecentFile(file);
-    ExplorerConfiguration::save();
+    ExplorerRecentFiles::getInstance(context)->addRecentFile(file);
+    ExplorerConfiguration::save(context);
     Variable variable = createVariableFromFile(file);
     if (variable.exists())
-      contentTabs->addVariable(variable, file.getFileNameWithoutExtension());
+      contentTabs->addVariable(context, variable, file.getFileNameWithoutExtension());
   }
 
   Variable createVariableFromFile(const File& file)
   {
-    Variable res = getFileType(file) == lbcppXmlFile ? Variable::createFromFile(file) : Variable(file);
+    Variable res = getFileType(file) == lbcppXmlFile ? Variable::createFromFile(context, file) : Variable(file);
     flushErrorAndWarningMessages(T("Load ") + file.getFileName());
     return res;
   }
@@ -230,11 +231,12 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
+  ExecutionContext& context;
   ExplorerContentTabs* contentTabs;
 };
 
-extern void declareProteinClasses();
-extern void declareExplorerClasses();
+extern void declareProteinClasses(ExecutionContext& context);
+extern void declareExplorerClasses(ExecutionContext& context);
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -245,12 +247,13 @@ public:
   {    
     MessageCallback::setInstance(explorerMessageCallback);
     lbcpp::initialize();
-    declareProteinClasses();
-    declareExplorerClasses();
+    context = defaultConsoleExecutionContext(); // FIXME
+    declareProteinClasses(*context);
+    declareExplorerClasses(*context);
 
     theCommandManager = new ApplicationCommandManager();
 
-    mainWindow = new ExplorerMainWindow();
+    mainWindow = new ExplorerMainWindow(*context);
     mainWindow->setVisible(true);
 
     flushErrorAndWarningMessages(T("Explorer Start-up"));
@@ -270,7 +273,7 @@ public:
     if (mainWindow)
     {
       deleteAndZero(mainWindow);
-      ExplorerConfiguration::save();
+      ExplorerConfiguration::save(*context);
       quit();
     }
   }
@@ -291,6 +294,7 @@ public:
 
 private:
   ExplorerMainWindow* mainWindow;
+  ExecutionContextPtr context;
 };
 
 // START_JUCE_APPLICATION(ExplorerApplication)

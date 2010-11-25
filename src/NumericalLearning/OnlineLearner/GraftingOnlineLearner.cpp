@@ -35,7 +35,7 @@ GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std
   candidateScores.resize(c);
 }
 
-void GraftingOnlineLearner::startLearningCallback(InferenceContextWeakPtr context)
+void GraftingOnlineLearner::startLearningCallback(InferenceContext& context)
 {
   learningStopped = false;
   generateCandidates(SortedConjunctions(), SortedConjunctions());
@@ -43,29 +43,29 @@ void GraftingOnlineLearner::startLearningCallback(InferenceContextWeakPtr contex
   InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GraftingOnlineLearner::subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GraftingOnlineLearner::subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   jassert(supervision.exists());
   std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
   if (it != scoresMapping.end())
-    updateCandidateScores(inference, it->second, input, supervision, prediction);
+    updateCandidateScores(context, inference, it->second, input, supervision, prediction);
   InferenceOnlineLearner::subStepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void GraftingOnlineLearner::stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GraftingOnlineLearner::stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   jassert(supervision.exists());
   std::map<NumericalInferencePtr, size_t>::const_iterator it = scoresMapping.find(inference);
   if (it != scoresMapping.end())
-    updateCandidateScores(inference, it->second, input, supervision, prediction);
+    updateCandidateScores(context, inference, it->second, input, supervision, prediction);
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void GraftingOnlineLearner::passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   // compute active feature scores
   std::vector<double> activeScores;
-  computeActiveScores(activeScores);
+  computeActiveScores(context, activeScores);
   SortedConjunctions sortedActiveScores;
   for (size_t i = 0; i < activeScores.size(); ++i)
     sortedActiveScores.insert(std::make_pair(activeScores[i], std::make_pair(i, perception->getConjunction(i))));
@@ -74,7 +74,7 @@ void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context
   std::vector<double> candidateScores;
   Conjunction bestCandidate;
   double bestCandidateScore;
-  computeCandidateScores(candidateScores, bestCandidate, bestCandidateScore);
+  computeCandidateScores(context, candidateScores, bestCandidate, bestCandidateScore);
   SortedConjunctions sortedCandidateScores;
   for (size_t i = 0; i < candidateScores.size(); ++i)
     sortedCandidateScores.insert(std::make_pair(candidateScores[i], std::make_pair(i, candidatesPerception->getConjunction(i))));
@@ -94,7 +94,7 @@ void GraftingOnlineLearner::passFinishedCallback(InferenceContextWeakPtr context
 
   // update parameters type
   for (size_t i = 0; i < inferences.size(); ++i)
-    inferences[i]->updateParametersType();
+    inferences[i]->updateParametersType(context);
 
   // display some informations
   MessageCallback::info(String::empty);
@@ -229,7 +229,7 @@ size_t GraftingOnlineLearner::getNumOutputs(const InferencePtr& inference) const
     return outputType->getObjectNumVariables();
 }
 
-void GraftingOnlineLearner::computeActiveScores(std::vector<double>& res) const
+void GraftingOnlineLearner::computeActiveScores(ExecutionContext& context, std::vector<double>& res) const
 {
   size_t numActives = perception->getNumConjunctions();
   res.clear();
@@ -253,7 +253,7 @@ void GraftingOnlineLearner::computeActiveScores(std::vector<double>& res) const
           Variable subWeights = weights->getVariable(k);
           if (subWeights.exists())
           {
-            double value = subWeights.isDouble() ? subWeights.getDouble() : lbcpp::l1norm(subWeights.getObject());
+            double value = subWeights.isDouble() ? subWeights.getDouble() : lbcpp::l1norm(context, subWeights.getObject());
             if (value > res[k])
               res[k] = value;
           }
@@ -269,7 +269,7 @@ void GraftingOnlineLearner::resetCandidateScores()
     candidateScores[i] = std::make_pair(ObjectPtr(), 0);
 }
 
-void GraftingOnlineLearner::computeCandidateScores(std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const
+void GraftingOnlineLearner::computeCandidateScores(ExecutionContext& context, std::vector<double>& res, Conjunction& bestCandidate, double& bestCandidateScore) const
 {
   size_t numCandidates = candidatesPerception->getNumConjunctions();
   size_t numScores = candidateScores.size();
@@ -283,7 +283,7 @@ void GraftingOnlineLearner::computeCandidateScores(std::vector<double>& res, Con
     double scoresMax = 0.0;
     for (size_t j = 0; j < numScores; ++j)
     {
-      double score = getCandidateScore(i, j);
+      double score = getCandidateScore(context, i, j);
       if (score > scoresMax)
         scoresMax = score;
     }
@@ -296,7 +296,7 @@ void GraftingOnlineLearner::computeCandidateScores(std::vector<double>& res, Con
   }
 }
 
-double GraftingOnlineLearner::getCandidateScore(size_t candidateNumber, size_t scoreNumber) const
+double GraftingOnlineLearner::getCandidateScore(ExecutionContext& context, size_t candidateNumber, size_t scoreNumber) const
 {
   const ObjectPtr& scores = candidateScores[scoreNumber].first;
   size_t examplesCount = candidateScores[scoreNumber].second;
@@ -313,38 +313,38 @@ double GraftingOnlineLearner::getCandidateScore(size_t candidateNumber, size_t s
   {
     // score of a group of features
     jassert(candidateScore.isObject());
-    return lbcpp::l1norm(candidateScore.getObject()) * invC;
+    return lbcpp::l1norm(context, candidateScore.getObject()) * invC;
   }
 }
 
-void GraftingOnlineLearner::updateCandidateScores(const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& pred)
+void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& pred)
 {
   jassert(perception == numericalInference->getPerception());
   jassert(candidatesPerception->getNumConjunctions());
 
   Variable prediction = pred;
   if (prediction.isNil())
-    prediction = numericalInference->predict(input);
+    prediction = numericalInference->predict(context, input);
 
   if (numericalInference.dynamicCast<LinearInference>())
   {
-    const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>();
+    const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>(context);
     double derivative = loss->computeDerivative(prediction.getDouble());
-    lbcpp::addWeighted(candidateScores[firstScoreIndex].first, candidatesPerception, input, derivative);
+    lbcpp::addWeighted(context, candidateScores[firstScoreIndex].first, candidatesPerception, input, derivative);
     ++candidateScores[firstScoreIndex].second;
   }
   else if (numericalInference.dynamicCast<MultiLinearInference>())
   {
-    const MultiClassLossFunctionPtr& loss = supervision.getObjectAndCast<MultiClassLossFunction>();
+    const MultiClassLossFunctionPtr& loss = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     ObjectPtr gradient;
     jassert(prediction.isObject());
-    loss->compute(prediction.getObject(), NULL, &gradient, 1.0);
+    loss->compute(context, prediction.getObject(), NULL, &gradient, 1.0);
 
     size_t n = gradient->getNumVariables();
     for (size_t i = 0; i < n; ++i)
     {
       double derivative = gradient->getVariable(i).getDouble();
-      lbcpp::addWeighted(candidateScores[firstScoreIndex + i].first, candidatesPerception, input, derivative);
+      lbcpp::addWeighted(context, candidateScores[firstScoreIndex + i].first, candidatesPerception, input, derivative);
       ++candidateScores[firstScoreIndex + i].second;
     }
   }

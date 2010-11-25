@@ -24,22 +24,36 @@ public:
   virtual String getName() const
     {return T("SingleThreadedInferenceContext");}
 
+  // FIXME
+  virtual bool isCanceled() const
+    {return false;}
+
+  virtual bool isPaused() const
+    {return false;}
+
+  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+    {jassert(false); return false;}
+
+  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return InferenceContext::run(inference, input, supervision, returnCode);}
+  // -
+
   virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     stack->push(inference);
-    callPreInference(this, stack, input, supervision, output, returnCode);
+    callPreInference(*this, stack, input, supervision, output, returnCode);
   }
 
   virtual void postInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     jassert(inference == stack->getCurrentInference().get());
-    callPostInference(this, stack, input, supervision, output, returnCode);
+    callPostInference(*this, stack, input, supervision, output, returnCode);
     stack->pop();
   }
 
   virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    ParallelInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
+    ParallelInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
     
@@ -60,7 +74,7 @@ public:
       }
       state->setSubOutput(i, subOutput);
     }
-    return inference->finalizeInference(this, state, returnCode);
+    return inference->finalizeInference(*this, state, returnCode);
   }
 
 private:

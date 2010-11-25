@@ -11,7 +11,7 @@
 #include "../Data/Protein.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 File psiBlastExecutable(T("C:\\Program Files (x86)\\NCBI\\blast-2.2.23+\\bin\\psiblast.exe"));
 File dsspExecutable(T("C:\\Projets\\LBC++\\projects\\temp\\DSSPCMBI.EXE"));
@@ -71,12 +71,14 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinPtr protein = Protein::createFromXml(inputFile);
+    ExecutionContextPtr context = defaultConsoleExecutionContext();
+
+    ProteinPtr protein = Protein::createFromXml(*context, inputFile);
     if (!protein)
       return jobHasFinished;
     
     File pdbFile = File::createTempFile(T("pdb"));
-    protein->saveToPDBFile(pdbFile);
+    protein->saveToPDBFile(*context, pdbFile);
     if (outputFile.exists())
       outputFile.deleteFile();
     commandArguments = pdbFile.getFullPathName().quoted() + T(" ") + outputFile.getFullPathName().quoted();
@@ -99,12 +101,14 @@ public:
 
   virtual JobStatus runJob()
   {
-    ProteinPtr protein = Protein::createFromXml(inputFile);
+    ExecutionContextPtr context = defaultConsoleExecutionContext();
+
+    ProteinPtr protein = Protein::createFromXml(*context, inputFile);
     if (!protein)
       return jobHasFinished;
     
     File fastaFile = File::createTempFile(T("fasta"));
-    protein->saveToFASTAFile(fastaFile);
+    protein->saveToFASTAFile(*context, fastaFile);
 
     if (outputFile.exists())
       outputFile.deleteFile();
@@ -152,7 +156,7 @@ void computePSSMsAndDSSPs(const File& inputDirectory, const File& pssmOutputDire
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  declareProteinClasses(*silentExecutionContext);
   juce::initialiseJuce_NonGUI();
 
   if (argc < 4)

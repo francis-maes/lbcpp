@@ -37,9 +37,9 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     if (pair->getSecond().exists())
       callback->sense((size_t)pair->getSecond().getInteger(), inputPerception, pair->getFirst());
   }

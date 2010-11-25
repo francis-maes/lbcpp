@@ -43,11 +43,11 @@ Variable InferenceContext::run(const InferencePtr& inference, const Variable& in
 }
 
 Variable InferenceContext::callRunInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {return inference->run(this, input, supervision, returnCode);}
+  {return inference->computeInference(*this, input, supervision, returnCode);}
 
 Variable InferenceContext::runDecoratorInference(DecoratorInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  DecoratorInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
+  DecoratorInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
   jassert(state);
   if (returnCode != Inference::finishedReturnCode)
     return Variable();
@@ -61,12 +61,12 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferenceWeakPtr infer
     state->setSubOutput(subOutput);
   }
 
-  return inference->finalizeInference(this, state, returnCode);
+  return inference->finalizeInference(*this, state, returnCode);
 }
 
 Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
-  SequentialInferenceStatePtr state = inference->prepareInference(this, input, supervision, returnCode);
+  SequentialInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
   if (!state)
     return Variable();
   while (!state->isFinal())
@@ -76,13 +76,13 @@ Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inf
       return state->getInput();
 
     state->setSubOutput(subOutput);
-    bool res = inference->updateInference(this, state, returnCode);
+    bool res = inference->updateInference(*this, state, returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getInput();
     if (!res)
       state->setFinalState();
   }
-  return inference->finalizeInference(this, state, returnCode);
+  return inference->finalizeInference(*this, state, returnCode);
 }
 
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
@@ -123,13 +123,13 @@ Variable InferenceContext::predict(InferencePtr inference, const Variable& input
   return run(inference, input, Variable(), returnCode);
 }
 
-void InferenceContext::callPreInference(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+void InferenceContext::callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
 }
 
-void InferenceContext::callPostInference(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+void InferenceContext::callPostInference(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (int i = (int)callbacks.size() - 1; i >= 0; --i)
     callbacks[i]->postInferenceCallback(context, stack, input, supervision, output, returnCode);

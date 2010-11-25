@@ -67,7 +67,6 @@ typedef ReferenceCountedObjectPtr<InferenceStack> InferenceStackPtr;
 
 class InferenceContext;
 typedef ReferenceCountedObjectPtr<InferenceContext> InferenceContextPtr;
-typedef InferenceContext* InferenceContextWeakPtr;
 
 class InferenceResultCache;
 typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;

@@ -44,8 +44,8 @@ public:
   virtual Variable createMultiSelectionVariable(const std::vector<Variable>& selection)
     {return lbcpp::createMultiSelectionVariable(selection);}
 
-  virtual Component* createComponentForVariable(const Variable& variable, const String& name)
-    {return lbcpp::createComponentForVariable(variable, name);}
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+    {return lbcpp::createComponentForVariable(context, variable, name);}
 
 protected:
   std::vector<VariableSelectorCallback* > callbacks;

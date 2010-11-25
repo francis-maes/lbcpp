@@ -26,19 +26,18 @@ Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
   return res;
 }
 
-Variable Variable::createFromString(TypePtr type, const String& str, MessageCallback& callback)
+Variable Variable::createFromString(ExecutionContext& context, TypePtr type, const String& str)
 {
-  String failureReason;
-  VariableValue value = type->createFromString(str, callback);
+  VariableValue value = type->createFromString(context, str);
   return type->isMissingValue(value) ? Variable() : Variable(type, value);
 }
 
 Variable Variable::createFromXml(TypePtr type, XmlImporter& importer)
   {return Variable(type, type->createFromXml(importer));}
 
-Variable Variable::createFromFile(const File& file, MessageCallback& callback)
+Variable Variable::createFromFile(ExecutionContext& context, const File& file)
 {
-  XmlImporter importer(file, callback);
+  XmlImporter importer(context, file);
   return importer.isOpened() ? importer.load() : Variable();
 }
 
@@ -48,11 +47,11 @@ void Variable::saveToXml(XmlExporter& exporter) const
     type->saveToXml(exporter, value);
 }
 
-bool Variable::saveToFile(const File& file, MessageCallback& callback) const
+bool Variable::saveToFile(ExecutionContext& context, const File& file) const
 {
   XmlExporter exporter;
   exporter.saveVariable(String::empty, *this, TypePtr());
-  return exporter.saveToFile(file, callback);
+  return exporter.saveToFile(context, file);
 }
 
 int Variable::compare(const Variable& otherValue) const
@@ -70,12 +69,12 @@ int Variable::compare(const Variable& otherValue) const
   return type->compare(value, otherValue.value);
 }
 
-Variable Variable::clone() const
+Variable Variable::clone(ExecutionContext& context) const
 {
   if (isObject())
   {
     ObjectPtr object = getObject();
-    return Variable(object ? object->clone() : ObjectPtr(), type);
+    return Variable(object ? object->clone(context) : ObjectPtr(), type);
   }
   else
     return *this;

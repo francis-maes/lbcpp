@@ -35,17 +35,17 @@ namespace lbcpp
 class Consumer : public Object
 {
 public:
-  virtual void consume(const Variable& variable) = 0;
+  virtual void consume(ExecutionContext& context, const Variable& variable) = 0;
   
-  void consumeStream(StreamPtr stream, size_t maximumCount = 0);
-  void consumeContainer(ContainerPtr container);
+  void consumeStream(ExecutionContext& context, StreamPtr stream, size_t maximumCount = 0);
+  void consumeContainer(ExecutionContext& context, ContainerPtr container);
 };
 
 class TextPrinter : public Consumer
 {
 public:
   TextPrinter(OutputStream* newOutputStream);
-  TextPrinter(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  TextPrinter(ExecutionContext& context, const File& file);
   
   virtual ~TextPrinter()
     {if (ostr) delete ostr;}

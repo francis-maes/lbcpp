@@ -27,7 +27,7 @@ public:
     {return "InvLinearIterationFunction(" + String(initialValue) + 
        ", " + String((int)numberIterationsToReachHalfInitialValue) + ")";}
 
-  virtual ObjectPtr clone() const
+  virtual ObjectPtr clone(ExecutionContext& context) const
     {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
 
 private:

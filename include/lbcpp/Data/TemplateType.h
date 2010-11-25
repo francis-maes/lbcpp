@@ -42,8 +42,8 @@ public:
   TemplateType() : initialized(false) {}
 
   static bool isInstanciatedTypeName(const String& name);
-  static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<String>& arguments, MessageCallback& callback);
-  static bool parseInstanciatedTypeName(const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments, MessageCallback& callback);
+  static bool parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<String>& arguments);
+  static bool parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<TypePtr>& templateArguments);
   static String makeInstanciatedTypeName(const String& name, const std::vector<TypePtr>& templateArguments);
 
   String makeTypeName(const std::vector<TypePtr>& arguments) const
@@ -55,7 +55,7 @@ public:
   bool isInitialized() const
     {return initialized;}
 
-  virtual bool initialize(MessageCallback& callback)
+  virtual bool initialize(ExecutionContext& context)
     {return (initialized = true);}
 
   /*
@@ -65,8 +65,8 @@ public:
   virtual String getParameterName(size_t index) const = 0;
   virtual TypePtr getParameterBaseType(size_t index) const = 0;
 
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
-  virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const = 0;
+  virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments) const = 0;
+  virtual TypePtr instantiateTypeName(ExecutionContext& context, const String& typeNameExpr, const std::vector<TypePtr>& arguments) const = 0;
 
   /*
   ** Object
@@ -92,20 +92,19 @@ public:
 
   int findParameter(const String& name) const;
 
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, TypePtr baseType, MessageCallback& callback) const = 0;
-  virtual TypePtr instantiate(const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
+  virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments, TypePtr baseType) const = 0;
+  virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments) const;
 
-  virtual TypePtr instantiateTypeName(const String& typeNameExpr, const std::vector<TypePtr>& arguments, MessageCallback& callback) const;
+  virtual TypePtr instantiateTypeName(ExecutionContext& context, const String& typeNameExpr, const std::vector<TypePtr>& arguments) const;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-
   String baseTypeExpr;
   std::vector<std::pair<String, TypePtr> > parameters;
 
   void addParameter(const String& name, TypePtr baseType = anyType);
-  void addParameter(const String& name, const String& type);
+  void addParameter(ExecutionContext& context, const String& name, const String& type);
 };
 
 }; /* namespace lbcpp */

@@ -28,7 +28,7 @@ public:
   ~SaveScoresToGnuPlotFileOnlineLearner()
     {if (ostr) delete ostr;}
 
-  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
+  virtual void update(InferenceContext& context, const InferencePtr& inference)
   {
     std::vector< std::pair<String, double> > scores;
     getScores(scores);

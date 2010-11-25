@@ -72,14 +72,14 @@ public:
   ParallelInference(const String& name) : Inference(name) {}
   ParallelInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context->runParallelInference(this, input, supervision, returnCode);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return context.runParallelInference(this, input, supervision, returnCode);}
 };
 
 extern ClassPtr parallelInferenceClass;
@@ -115,7 +115,7 @@ public:
   void appendInference(InferencePtr inference)
     {subInferences.push_back(inference);}
   
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
   friend class VectorParallelInferenceClass;
@@ -151,17 +151,17 @@ public:
   */
   virtual String toString() const;
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
-    StaticParallelInference::clone(target);
+    StaticParallelInference::clone(context, target);
     if (subInference)
-      SharedParallelInferencePtr(target)->subInference = subInference->cloneAndCast<Inference>();
+      SharedParallelInferencePtr(target)->subInference = subInference->cloneAndCast<Inference>(context);
   }
 
 protected:
   friend class SharedParallelInferenceClass;
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   InferencePtr subInference;
 };
