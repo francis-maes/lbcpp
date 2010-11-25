@@ -19,14 +19,14 @@ typedef ReferenceCountedObjectPtr<InputStream> InputStreamPtr;
 
 extern InetAddressPtr inetAddressByHostName(const String& hostName);
 
-#ifdef JUCE_LINUX 
+#if 0
 class Socket
 {
 public:  
-  Socket(InetAddressPtr inetAddress, size_t hostPort, MessageCallback& callback = MessageCallback::getInstance());
+  Socket(ExecutionContext& context, InetAddressPtr inetAddress, size_t hostPort);
   
-  Socket(const String& hostName, size_t hostPort, MessageCallback& callback = MessageCallback::getInstance())
-    : callback(callback)
+  Socket(ExecutionContext& context, const String& hostName, size_t hostPort)
+    : context(context)
     {Socket(inetAddressByHostName(hostName), hostPort, callback);}
   
   ~Socket() {}
@@ -40,18 +40,18 @@ public:
 
   OutputStreamPtr getOutputStream();
 
-  static SocketPtr createFromServer(int clientDescriptor, MessageCallback& callback)
-    {return new Socket(clientDescriptor, callback);}
+  static SocketPtr createFromServer(ExecutionContext& context, int clientDescriptor)
+    {return new Socket(context, clientDescriptor);}
   
 protected:
   InetAddressPtr address;
   size_t port;
   int socketDescriptor;
   bool connected;
-  MessageCallback& callback;
+  ExecutionContext& context;
   
-  Socket(int clientFileDescriptor, MessageCallback& callback)
-    : address(InetAddressPtr()), port(0), socketDescriptor(clientFileDescriptor), connected(true), callback(callback)
+  Socket(ExecutionContext& context, int clientFileDescriptor)
+    : address(InetAddressPtr()), port(0), socketDescriptor(clientFileDescriptor), connected(true), context(context)
     {}
   
   void createAndConnectSocket();
@@ -60,8 +60,8 @@ protected:
 class ServerSocket
 {
 public:
-  ServerSocket(size_t port, MessageCallback& callback = MessageCallback::getInstance())
-  : port(port), callback(callback), socketDescriptor(-1), bound(false)
+  ServerSocket(ExecutionContext& context, size_t port)
+  : port(port), context(context), socketDescriptor(-1), bound(false)
     {createAndBindSocket();}
   
   ~ServerSocket() {}
@@ -75,21 +75,21 @@ public:
   
 protected:
   size_t port;
-  MessageCallback& callback;
+  ExecutionContext& context;
   
   int socketDescriptor;
   bool bound;
   
   void createAndBindSocket();
 };
-#endif // JUCE_LINUX
+#endif
 
 class ServerProgram : public WorkUnit
 {
   virtual bool run(ExecutionContext& context)
   {
-#ifdef JUCE_LINUX
-    ServerSocketPtr server = new ServerSocket(10021, callback);
+#if 0
+    ServerSocketPtr server = new ServerSocket(context, 10021);
     if (!server->isBound())
       return -1;
 
@@ -124,7 +124,7 @@ class ServerProgram : public WorkUnit
     }
     client->close();
     server->close();
-#endif // JUCE_LINUX
+#endif 
     return true;
   }
 };
@@ -133,12 +133,12 @@ class ClientProgram : public WorkUnit
 {
   virtual bool run(ExecutionContext& context)
   {
-#ifdef JUCE_LINUX
+#if 0
     InetAddressPtr ip = inetAddressByHostName(T("192.168.1.3"));
     if (!ip)
       return false;
 
-    SocketPtr socket = new Socket(ip, 10021, callback);
+    SocketPtr socket = new Socket(context, ip, 10021);
     if (!socket->isConnected())
     {
       std::cout << "Not connected !" << std::endl;
@@ -162,7 +162,7 @@ class ClientProgram : public WorkUnit
     os->writeString(T("QUIT"));
     
     socket->close();
-#endif // JUCE_LINUX
+#endif
     return true;
   }
 };
