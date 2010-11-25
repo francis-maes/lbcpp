@@ -24,7 +24,7 @@ public:
   virtual String getName() const
     {return T("RecentProcesses");}
 
-  static RecentProcessesPtr getInstance();
+  static RecentProcessesPtr getInstance(ExecutionContext& context = *silentExecutionContext);
 
   size_t getNumRecentExecutables() const
     {return v.size();}

@@ -23,26 +23,26 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return addBiasInferenceClass;}
   
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     ROCAnalyse roc;
     size_t n = learnerInput->getNumTrainingExamples();
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
-      const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>();
+      const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>(context);
       bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
-      roc.addPrediction(example.first.getDouble(), isPositiveExample);
+      roc.addPrediction(context, example.first.getDouble(), isPositiveExample);
     }
     if (n)
     {
       double bestF1Score;
       double threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1Score);
-      MessageCallback::info(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%) - ") + String((int)roc.getSampleCount()) + T(" samples"));
+      context.informationCallback(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%) - ") + String((int)roc.getSampleCount()) + T(" samples"));
       double bestMcc;
       threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
-      MessageCallback::info(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
+      context.informationCallback(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
 
       learnerInput->getTargetInference().staticCast<AddBiasInference>()->setBias(-threshold);
     }

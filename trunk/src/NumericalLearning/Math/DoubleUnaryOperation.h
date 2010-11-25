@@ -22,6 +22,10 @@ namespace lbcpp
 */
 struct DoubleUnaryOperation
 {
+  DoubleUnaryOperation(ExecutionContext& context) : context(context) {}
+
+  ExecutionContext& context;
+
   void compute(double& value)
     {jassert(false);}
   void compute(const ObjectPtr& object)
@@ -87,7 +91,7 @@ void doubleUnaryOperation(OperationType& operation, const ObjectPtr& object)
       jassert(v.isDouble());
       double value = v.isMissingValue() ? 0.0 : v.getDouble();
       operation.compute(value);
-      object->setVariable(i, Variable(value, v.getType()));
+      object->setVariable(operation.context, i, Variable(value, v.getType()));
     }
   }
 }
@@ -97,8 +101,8 @@ void doubleUnaryOperation(OperationType& operation, const ObjectPtr& object)
 */
 struct MultiplyByScalarOperation : public DoubleUnaryOperation
 {
-  MultiplyByScalarOperation(double scalar)
-    : scalar(scalar) {}
+  MultiplyByScalarOperation(ExecutionContext& context, double scalar)
+    : DoubleUnaryOperation(context), scalar(scalar) {}
 
   double scalar;
 
@@ -106,14 +110,14 @@ struct MultiplyByScalarOperation : public DoubleUnaryOperation
     {value *= scalar;}
 
   void compute(const ObjectPtr& object)
-    {multiplyByScalar(object, scalar);}
+    {multiplyByScalar(context, object, scalar);}
 };
 
-void multiplyByScalar(const ObjectPtr& object, double scalar)
+void multiplyByScalar(ExecutionContext& context, const ObjectPtr& object, double scalar)
 {
   if (scalar != 1.0 && object)
   {
-    MultiplyByScalarOperation operation(scalar);
+    MultiplyByScalarOperation operation(context, scalar);
     doubleUnaryOperation(operation, object);
   }
 }

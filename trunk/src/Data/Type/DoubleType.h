@@ -42,12 +42,12 @@ public:
   virtual VariableValue create() const
     {return VariableValue(0.0);}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim().toLowerCase();
     if (!v.containsOnly(T("0123456789e.-")))
     {
-      callback.errorMessage(T("DoubleType::createFromString"), T("Could not read double value ") + value.quoted());
+      context.errorCallback(T("DoubleType::createFromString"), T("Could not read double value ") + value.quoted());
       return getMissingValue();
     }
     return VariableValue(v.getDoubleValue());
@@ -85,7 +85,7 @@ public:
   virtual String toString(const VariableValue& value) const
     {return String(value.getDouble() * 100, 2) + T("%");}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     String str = value.trim();
     if (str.endsWithChar('%'))

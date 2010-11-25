@@ -19,13 +19,13 @@ namespace lbcpp
 class ObjectiveFunction : public Function
 {
 public:
-  virtual double compute(const Variable& input) const = 0;
+  virtual double compute(ExecutionContext& context, const Variable& input) const = 0;
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return doubleType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-    {return compute(input);}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return compute(context, input);}
 };
 
 typedef ReferenceCountedObjectPtr<ObjectiveFunction> ObjectiveFunctionPtr;
@@ -42,7 +42,7 @@ public:
 protected:
   virtual bool run(ExecutionContext& context)
   {
-    result = objective->compute(input);
+    result = objective->compute(context, input);
     return true;
   }
 

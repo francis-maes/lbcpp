@@ -20,6 +20,8 @@ namespace lbcpp
 class PerceptionCallback
 {
 public:
+  PerceptionCallback(ExecutionContext& context)
+    : context(context) {}
   virtual ~PerceptionCallback() {}
 
   virtual void sense(size_t variableNumber, const Variable& value) = 0;
@@ -40,6 +42,9 @@ public:
     {sense(variableNumber, Variable(value));}
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& input);
+
+protected:
+  ExecutionContext& context;
 };
 
 typedef PerceptionCallback* PerceptionCallbackPtr; // no ref-counting for PerceptionCallbacks
@@ -55,7 +60,7 @@ public:
   virtual void computeOutputType();
   void clearOutputType();
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const = 0;
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const = 0;
 
   virtual bool isSparse() const
     {return false;}
@@ -64,12 +69,12 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return getOutputType();}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const;
 
   // Object
   virtual bool loadFromXml(XmlImporter& importer);
   virtual String toString() const;
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   // output variables
   struct OutputVariable
@@ -147,7 +152,7 @@ public:
   virtual void addPerception(const String& name, PerceptionPtr subPerception);
 
   // Perception
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const;
 
   lbcpp_UseDebuggingNewOperator
 

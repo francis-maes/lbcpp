@@ -162,22 +162,33 @@ inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 }
 
 template<class O>
-inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast(MessageCallback& callback) const
+inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast() const
+{
+#ifdef JUCE_DEBUG
+  static ReferenceCountedObjectPtr<O> empty;
+  if (isNil() || !isObject())
+    return empty;
+#endif
+  return value.getObjectAndCast<O>();
+}
+
+template<class O>
+inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast(ExecutionContext& context) const
 {
 #ifdef JUCE_DEBUG
   static ReferenceCountedObjectPtr<O> empty;
   if (isNil())
   {
-    callback.errorMessage(T("Variable::getObjectAndCast"), T("Variable is nil"));
+    context.errorCallback(T("Variable::getObjectAndCast"), T("Variable is nil"));
     return empty;
   }
   if (!isObject())
   {
-    callback.errorMessage(T("Variable::getObjectAndCast"), T("This variable is not an object"));
+    context.errorCallback(T("Variable::getObjectAndCast"), T("This variable is not an object"));
     return empty;
   }
 #endif
-  return value.getObjectAndCast<O>(callback);
+  return value.getObjectAndCast<O>(context);
 }
 
 inline String Variable::toString() const
@@ -213,39 +224,39 @@ inline Variable& Variable::operator =(const Variable& otherVariable)
 /*
 ** Variable => C++ Native
 */
-inline void variableToNative(bool& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, bool& dest, const Variable& source)
   {jassert(source.isBoolean()); dest = source.getBoolean();}
 
-inline void variableToNative(int& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, int& dest, const Variable& source)
   {jassert(source.isInteger()); dest = source.getInteger();}
 
-inline void variableToNative(juce::int64& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, juce::int64& dest, const Variable& source)
   {jassert(source.isInteger()); dest = source.getInteger();}
 
-inline void variableToNative(size_t& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, size_t& dest, const Variable& source)
   {jassert(source.isInteger() && source.getInteger() >= 0); dest = (size_t)source.getInteger();}
 
-inline void variableToNative(double& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, double& dest, const Variable& source)
   {jassert(source.isDouble()); dest = source.getDouble();}
 
-inline void variableToNative(String& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, String& dest, const Variable& source)
   {jassert(source.isString()); dest = source.getString();}
 
-inline void variableToNative(File& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, File& dest, const Variable& source)
   {jassert(source.isString()); dest = File(source.getString());}
 
-inline void variableToNative(ObjectPtr& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, ObjectPtr& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObject();}
 
 template<class TT>
-inline void variableToNative(ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>();}
+inline void variableToNative(ExecutionContext& context, ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
+  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context);}
 
 template<class TT>
-inline void variableToNative(NativePtr<TT>& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>().get();}
+inline void variableToNative(ExecutionContext& context, NativePtr<TT>& dest, const Variable& source)
+  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context).get();}
 
-inline void variableToNative(Variable& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, Variable& dest, const Variable& source)
   {dest = source;}
 
 /*
@@ -270,6 +281,7 @@ inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedT
 ** Inheritance check
 */
 #ifdef JUCE_DEBUG
+// old
 inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
 {
   jassert(baseType);
@@ -284,7 +296,7 @@ inline bool checkInheritance(const Variable& variable, TypePtr baseType, Message
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
 
 #else
-#define checkInheritance(type, baseType) true
+#define checkInheritance(context, type, baseType) true
 #endif // JUCE_DEBUG
 
 }; /* namespace lbcpp */

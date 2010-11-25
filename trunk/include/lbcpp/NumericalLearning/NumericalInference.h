@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 
 # include "../Perception/Perception.h"
-# include "../Inference/Inference.h"
+# include "../Inference/InferenceContext.h"
 
 namespace lbcpp
 {
@@ -36,7 +36,7 @@ public:
   ObjectPtr& getWeights()
     {return weights;}
 
-  virtual void clone(const ObjectPtr& t) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
 
 private:
   friend class NumericalInferenceParametersClass;
@@ -63,11 +63,11 @@ public:
   
   const PerceptionPtr& getPerception() const;
 
-  ObjectPtr getWeightsCopy() const;
+  ObjectPtr getWeightsCopy(ExecutionContext& context) const;
   const ObjectPtr& getWeights() const;
   void setWeights(const ObjectPtr& newWeights);
   
-  virtual Variable predict(const Variable& input) const = 0;
+  virtual Variable predict(ExecutionContext& context, const Variable& input) const = 0;
 
   // if target == NULL, target is this parameters
   // supervision is the loss function
@@ -75,16 +75,16 @@ public:
   //   ObjectScalarFunction for multiple output machines
   // parameters += weight * gradient(input, supervision=lossFunction, prediction)
   // exampleLossValue = loss(prediction) (supervision=lossFunction)
-  virtual void computeAndAddGradient(double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
+  virtual void computeAndAddGradient(ExecutionContext& context, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, double& exampleLossValue, ObjectPtr* target) = 0;
 
-  void addWeightedToParameters(const ObjectPtr& value, double weight);
-  void addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight);
-  void applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight);
-  void updateParametersType(); // this function is called when the type of Perception changes
+  void addWeightedToParameters(ExecutionContext& context, const ObjectPtr& value, double weight);
+  void addWeightedToParameters(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input, double weight);
+  void applyRegularizerToParameters(ExecutionContext& context, ScalarObjectFunctionPtr regularizer, double weight);
+  void updateParametersType(ExecutionContext& context); // this function is called when the type of Perception changes
 
 protected:
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return predict(input);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+    {return predict(context, input);}
 };
 
 typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;

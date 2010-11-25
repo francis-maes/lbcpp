@@ -42,15 +42,15 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
   return object1->compare(object2);
 }
 
-VariableValue Class::createFromString(const String& value, MessageCallback& callback) const
+VariableValue Class::createFromString(ExecutionContext& context, const String& value) const
 {
   VariableValue res = create();
   if (isMissingValue(res))
   {
-    callback.errorMessage(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
+    context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
     return getMissingValue();
   }
-  return res.getObject()->loadFromString(value, callback) ? res : getMissingValue();
+  return res.getObject()->loadFromString(context, value) ? res : getMissingValue();
 }
 
 VariableValue Class::createFromXml(XmlImporter& importer) const
@@ -83,7 +83,7 @@ DefaultClass::DefaultClass(const String& name, TypePtr baseClass)
 }
 
 DefaultClass::DefaultClass(const String& name, const String& baseClass)
-  : Class(name, Class::get(baseClass))
+  : Class(name, silentExecutionContext->getType(baseClass))
 {
 }
 
@@ -95,27 +95,27 @@ void DefaultClass::clearVariables()
   variables.clear();
 }
 
-void DefaultClass::addVariable(const String& typeName, const String& name, const String& shortName, const String& description)
+void DefaultClass::addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
 {
   TypePtr type;
   if (templateType)
-    type = templateType->instantiateTypeName(typeName, templateArguments, MessageCallback::getInstance());
+    type = templateType->instantiateTypeName(context, typeName, templateArguments);
   else
-    type = Type::get(typeName);
+    type = context.getType(typeName);
   if (type)
-    addVariable(type, name, shortName, description);
+    addVariable(context, type, name, shortName, description);
 }
 
-void DefaultClass::addVariable(TypePtr type, const String& name, const String& shortName, const String& description)
+void DefaultClass::addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
 {
   if (!type || name.isEmpty())
   {
-    MessageCallback::error(T("Class::addVariable"), T("Invalid type or name"));
+    context.errorCallback(T("Class::addVariable"), T("Invalid type or name"));
     return;
   }
   if (findObjectVariable(name) >= 0)
   {
-    MessageCallback::error(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
+    context.errorCallback(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
     return;
   }
   variablesMap[name] = variables.size();

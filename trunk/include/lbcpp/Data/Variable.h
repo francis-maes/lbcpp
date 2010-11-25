@@ -30,6 +30,7 @@
 # include "Object.h"
 # include "Type.h"
 # include "TemplateType.h"
+# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -104,7 +105,7 @@ public:
   */
   static Variable create(TypePtr type);
   static Variable createFromXml(TypePtr type, XmlImporter& importer);
-  static Variable createFromString(TypePtr type, const String& value, MessageCallback& callback = MessageCallback::getInstance());
+  static Variable createFromString(ExecutionContext& context, TypePtr type, const String& value);
 
   /**
   ** Loads a variable from a file.
@@ -114,7 +115,7 @@ public:
   ** @return the loaded Variable or Nil if any error occurs.
   ** @see saveToFile
   */
-  static Variable createFromFile(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  static Variable createFromFile(ExecutionContext& context, const File& file);
 
   static Variable missingValue(TypePtr type);
 
@@ -158,7 +159,10 @@ public:
   const ObjectPtr& getObject() const;
   
   template<class O>
-  const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const;
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast() const;
+
+  template<class O>
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast(ExecutionContext& context) const;
 
   template<class O>
   ReferenceCountedObjectPtr<O> dynamicCast() const;
@@ -168,7 +172,7 @@ public:
   */
   String toString() const;
   String toShortString() const;
-  Variable clone() const;
+  Variable clone(ExecutionContext& context) const;
 
   void saveToXml(XmlExporter& exporter) const;
 
@@ -181,7 +185,7 @@ public:
   ** @return false if any error occurs.
   ** @see createFromFile
   */
-  bool saveToFile(const File& file, MessageCallback& callback = MessageCallback::getInstance()) const;
+  bool saveToFile(ExecutionContext& context, const File& file) const;
 
   int compare(const Variable& otherValue) const;
   bool equals(const Variable& otherValue) const;
@@ -220,6 +224,8 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 private:
+  friend class ExecutionContext;
+
   Variable(TypePtr type, const VariableValue& value)
     : type(type), value(value) {}
 

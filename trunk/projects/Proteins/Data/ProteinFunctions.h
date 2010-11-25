@@ -27,9 +27,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return positiveIntegerType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>();
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
     jassert(protein);
     return Variable(protein->getLength(), positiveIntegerType);
   }
@@ -51,9 +51,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return outputType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    ProteinPtr protein = input.getObjectAndCast<Protein>();
+    ProteinPtr protein = input.getObjectAndCast<Protein>(context);
     jassert(protein);
     if (!keepTertiaryStructure)
     {

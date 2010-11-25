@@ -30,10 +30,10 @@ public:
   virtual String toString() const
     {return decorated->toString() + T(" flattened");}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    FlattenCallback callback(decorated, targetCallback, &offsets);
-    decorated->computePerception(input, &callback);
+    FlattenCallback callback(context, decorated, targetCallback, &offsets);
+    decorated->computePerception(context, input, &callback);
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -92,8 +92,8 @@ private:
 
   struct FlattenCallback : public PerceptionCallback
   {
-    FlattenCallback(PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const OffsetInfo* offsets)
-      : targetCallback(targetCallback), currentOffset(offsets)
+    FlattenCallback(ExecutionContext& context, PerceptionPtr targetRepresentation, PerceptionCallbackPtr targetCallback, const OffsetInfo* offsets)
+      : PerceptionCallback(context), targetCallback(targetCallback), currentOffset(offsets)
       {}
 
     virtual void sense(size_t variableNumber, const Variable& value)
@@ -110,7 +110,7 @@ private:
       const OffsetInfo* offsetBackup = currentOffset;
       jassert(currentOffset->subInfo);
       currentOffset = currentOffset->subInfo + variableNumber;
-      subPerception->computePerception(input, this);
+      subPerception->computePerception(context, input, this);
       currentOffset = offsetBackup;
     }
 

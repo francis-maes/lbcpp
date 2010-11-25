@@ -20,14 +20,14 @@ namespace lbcpp
 class ParallelVoteInference : public VectorParallelInference
 {
 public:
-  ParallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner)
     : VectorParallelInference(name), voteInferenceModel(voteInferenceModel)
   {
     jassert(numVoters);
     subInferences.resize(numVoters);
     for (size_t i = 0; i < numVoters; ++i)
     {
-      InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>();
+      InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>(context);
       voteInference->setBatchLearner(voterLearner);
       subInferences[i] = voteInference;
     }
@@ -45,7 +45,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return voteInferenceModel->getOutputType(inputType);}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
     state->reserve(subInferences.size());
@@ -54,7 +54,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     if (!n)
@@ -79,12 +79,12 @@ typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePt
 class MeanScalarParallelVoteInference : public ParallelVoteInference
 {
 public:
-  MeanScalarParallelVoteInference(const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : ParallelVoteInference(name, numVotes, voteInferenceModel, voterLearner)
+  MeanScalarParallelVoteInference(ExecutionContext& context, const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+    : ParallelVoteInference(context, name, numVotes, voteInferenceModel, voterLearner)
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType));}
   MeanScalarParallelVoteInference() {}
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     double sum = 0.0;
@@ -107,12 +107,12 @@ public:
 class MajorityClassParallelVoteInference : public ParallelVoteInference
 {
 public:
-  MajorityClassParallelVoteInference(const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : ParallelVoteInference(name, numVotes, voteInferenceModel, voterLearner)
+  MajorityClassParallelVoteInference(ExecutionContext& context, const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
+    : ParallelVoteInference(context, name, numVotes, voteInferenceModel, voterLearner)
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType()).dynamicCast<Enumeration>());}
   MajorityClassParallelVoteInference() {}
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     EnumerationPtr enumType = getOutputType(getInputType());
     size_t n = state->getNumSubInferences();

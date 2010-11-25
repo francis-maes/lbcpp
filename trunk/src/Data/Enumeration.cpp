@@ -69,16 +69,16 @@ VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}
 
 VariableValue Enumeration::createFromXml(XmlImporter& importer) const
-  {return createFromString(importer.getAllSubText(), importer.getCallback());}
+  {return createFromString(importer.getContext(), importer.getAllSubText());}
  
-VariableValue Enumeration::createFromString(const String& value, MessageCallback& callback) const
+VariableValue Enumeration::createFromString(ExecutionContext& context, const String& value) const
 {
   String str = value.trim();
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
     if (str == getElementName(i))
       return VariableValue(i);
-  callback.errorMessage(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
+  context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
   return getMissingValue();
 }
 

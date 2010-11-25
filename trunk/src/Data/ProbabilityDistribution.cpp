@@ -115,7 +115,7 @@ void DiscreteProbabilityDistribution::increment(const Variable& value)
 void DiscreteProbabilityDistribution::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
-bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageCallback& callback)
+bool DiscreteProbabilityDistribution::loadFromString(ExecutionContext& context, const String& str)
 {
   EnumerationPtr enumeration = getEnumeration();
   jassert(enumeration);
@@ -125,7 +125,7 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
   tokens.addTokens(str, true);
   if (tokens.size() % 2 == 1)
   {
-    callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Invalid number of arguments in ") + str.quoted());
+    context.errorCallback(T("DiscreteProbabilityDistribution::loadFromString"), T("Invalid number of arguments in ") + str.quoted());
     return false;
   }
   
@@ -143,7 +143,7 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
         index = enumeration->getOneLetterCodes().indexOfChar(indexString[0]);
         if (index < 0)
         {
-          callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find one-letter code ") + indexString.quoted());
+          context.errorCallback(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find one-letter code ") + indexString.quoted());
           return false;
         }
       }
@@ -153,7 +153,7 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
       index = enumeration->findElement(indexString);
       if (index < 0)
       {
-        callback.errorMessage(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find element ") + indexString.quoted());
+        context.errorCallback(T("DiscreteProbabilityDistribution::loadFromString"), T("Could not find element ") + indexString.quoted());
         return false;
       }
     }
@@ -163,7 +163,7 @@ bool DiscreteProbabilityDistribution::loadFromString(const String& str, MessageC
 }
 
 bool DiscreteProbabilityDistribution::loadFromXml(XmlImporter& importer)
-  {return loadFromString(importer.getAllSubText(), importer.getCallback());}
+  {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
 void DiscreteProbabilityDistribution::setProbability(size_t index, double probability)
 {

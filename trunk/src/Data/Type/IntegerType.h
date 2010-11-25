@@ -42,11 +42,11 @@ public:
   virtual VariableValue create() const
     {return VariableValue(0);}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     if (!value.trim().containsOnly(T("-+e0123456789")))
     {
-      callback.errorMessage(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
       return getMissingValue();
     }
     return VariableValue(value.getIntValue());

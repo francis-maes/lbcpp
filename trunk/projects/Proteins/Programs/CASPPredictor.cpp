@@ -13,7 +13,7 @@
 #include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 #if 0
 void addDefaultPredictions(ProteinObjectPtr protein)
@@ -67,13 +67,15 @@ void displayVectorIfExists(String friendlyName, VectorPtr vector)
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
 
   if (argc < 3)
   {
     std::cerr << "Usage: " << argv[0] << " fastaFile pssmFile [modelFile]" << std::endl;
     return 1;
   }
+
   File cwd = File::getCurrentWorkingDirectory();
   File fastaFile = cwd.getChildFile(argv[1]);
   File pssmFile = cwd.getChildFile(argv[2]);
@@ -91,7 +93,7 @@ int main(int argc, char* argv[])
   String outputBaseName = fastaFile.getFileNameWithoutExtension();
   
   std::cout << "FASTA File: " << fastaFile.getFullPathName() << " PSSM File: " << pssmFile.getFullPathName() << std::endl;
-  ProteinPtr protein = Protein::createFromFASTA(fastaFile);
+  ProteinPtr protein = Protein::createFromFASTA(*context, fastaFile);
   if (!protein)
   {
     std::cerr << "Could not load FASTA file" << std::endl;
@@ -113,7 +115,7 @@ int main(int argc, char* argv[])
   //  std::cout << "Loaded pssm: " << pssm->toString() << std::endl;
 
   std::cout << "Model file: " << modelFile.getFullPathName() << std::endl;
-  ProteinSequentialInferencePtr inference = Variable::createFromFile(modelFile).getObjectAndCast<ProteinSequentialInference>();
+  ProteinSequentialInferencePtr inference = Variable::createFromFile(*context, modelFile).getObjectAndCast<ProteinSequentialInference>(*context);
   if (!inference)
   {
     std::cerr << "Could not load model" << std::endl;
@@ -147,7 +149,7 @@ int main(int argc, char* argv[])
   {
     File rrFile = outputDirectory.getChildFile(outputBaseName + T(".rr"));
     std::cout << "Write residue-residue distance file " << rrFile.getFullPathName() << std::endl;
-    caspResidueResidueDistanceFileGenerator(rrFile, method)->consume(protein);
+    caspResidueResidueDistanceFileGenerator(*context, rrFile, method)->consume(*context, protein);
     ++numFilesGenerated;
   }
 
@@ -160,7 +162,7 @@ int main(int argc, char* argv[])
   {
     File drFile = outputDirectory.getChildFile(outputBaseName + T(".dr"));
     std::cout << "Write Disorder region prediction file " << drFile.getFullPathName() << std::endl;
-    caspOrderDisorderRegionFileGenerator(drFile, method)->consume(protein);
+    caspOrderDisorderRegionFileGenerator(*context, drFile, method)->consume(*context, protein);
     ++numFilesGenerated;
   }
 
@@ -168,7 +170,7 @@ int main(int argc, char* argv[])
   {
     File pdbFile = outputDirectory.getChildFile(outputBaseName + T(".pdbca"));
     std::cout << "Write C-alpha chain in PDB file " << pdbFile.getFullPathName() << std::endl;
-    protein->saveToPDBFile(pdbFile);
+    protein->saveToPDBFile(*context, pdbFile);
     ++numFilesGenerated;
   }
 

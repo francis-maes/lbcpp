@@ -17,7 +17,7 @@ namespace lbcpp
 class OneAgainstOneClassificationInference : public VectorParallelInference
 {
 public:
-  OneAgainstOneClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+  OneAgainstOneClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
     checkInheritance(binaryClassifierModel->getOutputType(getInputType()), probabilityType);
@@ -27,7 +27,7 @@ public:
     for (size_t index = 0, i = 0; i < n; ++i)
       for (size_t j = i + 1; j < n; ++j, ++index)
       {
-        InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
+        InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>(context);
         subInference->setName(classes->getElementName(i) + T(" vs ") + classes->getElementName(j));
         subInferences[index] = subInference;
       }
@@ -44,7 +44,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return classes;}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences.size());
@@ -57,7 +57,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = classes->getNumElements();
     std::vector<double> sumScores(n, 0.0);

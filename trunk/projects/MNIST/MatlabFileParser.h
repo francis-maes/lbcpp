@@ -49,16 +49,16 @@ typedef ReferenceCountedObjectPtr<MNISTImage> MNISTImagePtr;
 class MatlabFileParser : public TextParser
 {
 public:
-  MatlabFileParser(const File& file, MessageCallback& callback = MessageCallback::getInstance())
-    : TextParser(file, callback)
+  MatlabFileParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file)
   {}
   
   virtual TypePtr getElementsType() const
     {return mnistImageClass;}
   
-  virtual void parseBegin() {}
+  virtual void parseBegin(ExecutionContext& context) {}
 
-  virtual bool parseLine(const String& line)
+  virtual bool parseLine(ExecutionContext& context, const String& line)
   {
     if (line.trim() == String::empty)
       return true;
@@ -66,7 +66,7 @@ public:
     std::vector<String> values;
     tokenize(line, values);
 
-    jassert(MNISTImage::numPixels <= values.size() <= MNISTImage::numPixels + 1);
+    //jassert(MNISTImage::numPixels <= values.size() <= MNISTImage::numPixels + 1);
     std::vector<double> pixels(MNISTImage::numPixels);
     for (size_t i = 0; i < MNISTImage::numPixels; ++i)
       pixels[i] = values[i].getDoubleValue();
@@ -75,7 +75,7 @@ public:
     size_t digit = missingValue;
     if (values.size() == MNISTImage::numPixels + 1) 
     {
-      jassert(0 <= values[MNISTImage::numPixels].getIntValue() < missingValue);
+      //jassert(0 <= values[MNISTImage::numPixels].getIntValue() < missingValue);
       digit = values[MNISTImage::numPixels].getIntValue();
     }
 
@@ -83,11 +83,11 @@ public:
     return true;
   }
   
-  virtual bool parseEnd()
+  virtual bool parseEnd(ExecutionContext& context)
     {return true;}
 };
   
-extern ContainerPtr parseDataFile(const File& file);
+extern ContainerPtr parseDataFile(ExecutionContext& context, const File& file);
 
 }; /* namespace lbcpp */
 

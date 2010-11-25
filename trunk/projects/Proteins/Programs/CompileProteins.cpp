@@ -12,60 +12,60 @@
 #include "../Data/Formats/DSSPFileParser.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 using juce::OwnedArray;
 
-File findMatchingFileInOtherDirectory(const File& inputFile, const File& otherDirectory, MessageCallback& callback)
+File findMatchingFileInOtherDirectory(ExecutionContext& context, const File& inputFile, const File& otherDirectory)
 {
   OwnedArray<File> res;
   otherDirectory.findChildFiles(res, File::findFiles, false, inputFile.getFileNameWithoutExtension() + T(".*"));
   if (res.size() == 0)
   {
-    callback.errorMessage(T("findMatchingFileInOtherDirectory"),
+    context.errorCallback(T("findMatchingFileInOtherDirectory"),
       T("Could not find matching of ") + inputFile.getFileNameWithoutExtension() + T(" in ") + otherDirectory.getFullPathName());
     return File::nonexistent;
   }
   if (res.size() > 1)
   {
-    callback.errorMessage(T("findMatchingFileInOtherDirectory"),
+    context.errorCallback(T("findMatchingFileInOtherDirectory"),
       T("More of one matching files of ") + inputFile.getFileNameWithoutExtension() + T(" in ") + otherDirectory.getFullPathName());
     return File::nonexistent;
   }
   return *res[0];
 }
 
-bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, MessageCallback& callback)
+bool loadPSSMFile(ExecutionContext& context, ProteinPtr protein, const File& pssmFile)
 {
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   jassert(primaryStructure);
-  VectorPtr pssm = StreamPtr(new PSSMFileParser(pssmFile, primaryStructure, callback))->next().getObjectAndCast<Vector>(); 
+  VectorPtr pssm = StreamPtr(new PSSMFileParser(context, pssmFile, primaryStructure))->next(context).getObjectAndCast<Vector>(context); 
   if (!pssm)
     return false;
   protein->setPositionSpecificScoringMatrix(pssm);
   return true;
 }
 
-bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, MessageCallback& callback)
-  {StreamPtr(new DSSPFileParser(dsspFile, protein, callback))->next(); return true;}
+bool loadDSSPFile(ExecutionContext& context, ProteinPtr protein, const File& dsspFile)
+  {StreamPtr(new DSSPFileParser(context, dsspFile, protein))->next(context); return true;}
 
-bool loadProteinRelatedFile(ProteinPtr protein, const File& file, MessageCallback& callback)
+bool loadProteinRelatedFile(ExecutionContext& context, ProteinPtr protein, const File& file)
 {
   String ext = file.getFileExtension();
   if (ext == T(".pssm"))
-    return loadPSSMFile(protein, file, callback);
+    return loadPSSMFile(context, protein, file);
   else if (ext == T(".dssp"))
-    return loadDSSPFile(protein, file, callback);
+    return loadDSSPFile(context, protein, file);
   else
   {
-    callback.errorMessage(T("loadProteinRelatedFile"), T("Unrecognized extension: ") + ext);
+    context.errorCallback(T("loadProteinRelatedFile"), T("Unrecognized extension: ") + ext);
     return false;
   }
 }
 
-bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile, MessageCallback& callback)
+bool compileProtein(ExecutionContext& context, const std::vector<File>& inputFiles, const File& outputFile)
 {
-  std::cout << "Compile " << outputFile.getFileNameWithoutExtension() << "..." << std::endl;
+  context.informationCallback(T("Compile ") + outputFile.getFileNameWithoutExtension() + T("..."));
 
   int proteinIndex = -1;
   for (size_t i = 0; i < inputFiles.size(); ++i)
@@ -74,56 +74,57 @@ bool compileProtein(const std::vector<File>& inputFiles, const File& outputFile,
 
   if (proteinIndex < 0)
   {
-    callback.errorMessage(T("compileProtein"), T("No input protein"));
+    context.errorCallback(T("compileProtein"), T("No input protein"));
     return false;
   }
 
-  ProteinPtr protein = Protein::createFromXml(inputFiles[proteinIndex], callback);
+  ProteinPtr protein = Protein::createFromXml(context, inputFiles[proteinIndex]);
   if (!protein)
   {
-    callback.errorMessage(T("compileProtein"), T("Could not load protein"));
+    context.errorCallback(T("compileProtein"), T("Could not load protein"));
     return false;
   }
   
   for (size_t i = 0; i < inputFiles.size(); ++i)
     if (i != (size_t)proteinIndex)
-      if (!loadProteinRelatedFile(protein, inputFiles[i], callback))
+      if (!loadProteinRelatedFile(context, protein, inputFiles[i]))
         return false;
 
-  protein->saveToXmlFile(outputFile);
+  protein->saveToXmlFile(context, outputFile);
   return true;
 }
 
-bool compileProtein(const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory, MessageCallback& callback)
+bool compileProtein(ExecutionContext& context, const File& inputFile, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
 {
   std::vector<File> inputFiles;
   inputFiles.push_back(inputFile);
   for (size_t i = 0; i < otherInputDirectories.size(); ++i)
   {
-    File f = findMatchingFileInOtherDirectory(inputFile, otherInputDirectories[i], callback);
+    File f = findMatchingFileInOtherDirectory(context, inputFile, otherInputDirectories[i]);
     if (!f.exists())
       return false;
     inputFiles.push_back(f);
   }
   File outputFile = outputDirectory.getChildFile(inputFile.getFileNameWithoutExtension() + T(".xml"));
-  return compileProtein(inputFiles, outputFile, callback);
+  return compileProtein(context, inputFiles, outputFile);
 }
 
-void compileProteins(const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory, MessageCallback& callback)
+void compileProteins(ExecutionContext& context, const File& mainInputDirectory, const std::vector<File>& otherInputDirectories, const File& outputDirectory)
 {
   OwnedArray<File> inputs;
   mainInputDirectory.findChildFiles(inputs, File::findFiles, false, T("*.xml"));
   size_t numSuccess = 0;
   for (int i = 0; i < inputs.size(); ++i)
-    if (compileProtein(*inputs[i], otherInputDirectories, outputDirectory, callback))
+    if (compileProtein(context, *inputs[i], otherInputDirectories, outputDirectory))
       ++numSuccess;
-  std::cout << "Succeed to compile " << numSuccess << " / " << inputs.size() << " proteins." << std::endl;
+  context.informationCallback(T("Succeed to compile ") + String((int)numSuccess) + T(" / ") + String((int)inputs.size()) + T(" proteins."));
 }
 
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
 
   if (argc < 4)
   {
@@ -131,6 +132,7 @@ int main(int argc, char* argv[])
     std::cout << "   or: mainInputFile [inputDirectories]* outputDirectory" << std::endl;
     return 1;
   }
+
 
   File cwd = File::getCurrentWorkingDirectory();
   File mainInputDirectory = cwd.getChildFile(argv[1]);
@@ -162,14 +164,14 @@ int main(int argc, char* argv[])
  
   if (!mainInputDirectory.isDirectory())
   {
-    if (compileProtein(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance()))
+    if (compileProtein(*context, mainInputDirectory, otherInputDirectories, outputDirectory))
       std::cout << "Succeed to compile protein." << std::endl;
     else
       std::cout << "Could not compile protein." << std::endl;
   }
   else
   {
-    compileProteins(mainInputDirectory, otherInputDirectories, outputDirectory, MessageCallback::getInstance());
+    compileProteins(*context, mainInputDirectory, otherInputDirectories, outputDirectory);
   }
   return 0;
 }

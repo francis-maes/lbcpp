@@ -20,12 +20,12 @@ namespace lbcpp
 class InferenceOnlineLearner : public Object
 {
 public:
-  virtual void startLearningCallback(InferenceContextWeakPtr context);
-  virtual void subStepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
+  virtual void startLearningCallback(InferenceContext& context);
+  virtual void subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference);
   // batchLearnerInput: if learning is performed within the context of a batch learner, we have batch learning parameters here
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const;
   virtual double getDefaultScore() const;
@@ -47,7 +47,7 @@ public:
   void setPreviousLearner(const InferenceOnlineLearnerPtr& learner)
     {if (learner) learner->nextLearner = this; previousLearner = learner;}
 
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
   friend class InferenceOnlineLearnerClass;
@@ -81,14 +81,14 @@ class UpdatableOnlineLearner : public InferenceOnlineLearner
 public:
   UpdatableOnlineLearner(LearnerUpdateFrequency updateFrequency = never);
 
-  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference) = 0;
+  virtual void update(InferenceContext& context, const InferencePtr& inference) = 0;
 
-  virtual void startLearningCallback(InferenceContextWeakPtr context)
+  virtual void startLearningCallback(InferenceContext& context)
     {epoch = 0; InferenceOnlineLearner::startLearningCallback(context);}
 
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
 protected:
   friend class UpdatableOnlineLearnerClass;
@@ -96,7 +96,7 @@ protected:
   size_t epoch;
   LearnerUpdateFrequency updateFrequency;
 
-  void updateAfterStep(InferenceContextWeakPtr context, const InferencePtr& inference);
+  void updateAfterStep(InferenceContext& context, const InferencePtr& inference);
 };
 
 typedef ReferenceCountedObjectPtr<UpdatableOnlineLearner> UpdatableOnlineLearnerPtr;

@@ -26,34 +26,34 @@ void ProteinInferenceHelper::setProteinDebugDirectory(const File& directory)
     directory.createDirectory();
 }
 
-ProteinPtr ProteinInferenceHelper::cloneInputProtein(const Variable& input)
+ProteinPtr ProteinInferenceHelper::cloneInputProtein(ExecutionContext& context, const Variable& input)
 {
-  const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>();
+  const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>(context);
   jassert(inputProtein);
-  ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>();
+  ProteinPtr workingProtein = inputProtein->cloneAndCast<Protein>(context);
   jassert(workingProtein);
   return workingProtein;
 }
 
-void ProteinInferenceHelper::prepareSupervisionProtein(ProteinPtr protein)
+void ProteinInferenceHelper::prepareSupervisionProtein(ExecutionContext& context, ProteinPtr protein)
 {
   jassert(protein);
   if (pdbDebugDirectory.exists() && protein->getTertiaryStructure())
-    protein->saveToPDBFile(pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
+    protein->saveToPDBFile(context, pdbDebugDirectory.getChildFile(protein->getName() + T("_correct.pdb")));
   if (proteinDebugDirectory.exists())
-    protein->saveToXmlFile(proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xml")));
+    protein->saveToXmlFile(context, proteinDebugDirectory.getChildFile(protein->getName() + T("_correct.xml")));
 }
 
-void ProteinInferenceHelper::saveDebugFiles(ProteinPtr protein, size_t stepNumber)
+void ProteinInferenceHelper::saveDebugFiles(ExecutionContext& context, ProteinPtr protein, size_t stepNumber)
 {
   String idx((int)stepNumber);
 
    if (pdbDebugDirectory.exists() &&  protein->getTertiaryStructure())
-    protein->saveToPDBFile(pdbDebugDirectory.getChildFile
+    protein->saveToPDBFile(context, pdbDebugDirectory.getChildFile
       (protein->getName() + T("_pred") + idx + T(".pdb")));
 
   if (proteinDebugDirectory.exists())
-    protein->saveToXmlFile(proteinDebugDirectory.getChildFile
+    protein->saveToXmlFile(context, proteinDebugDirectory.getChildFile
       (protein->getName() + T("_pred") + idx + T(".xml")));
 }
 
@@ -65,14 +65,14 @@ ProteinSequentialInference::ProteinSequentialInference(const String& name)
 {
 }
 
-SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   if (supervision.exists())
-    prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
-  return VectorSequentialInference::prepareInference(context, cloneInputProtein(input), supervision, returnCode);
+    prepareSupervisionProtein(context, supervision.getObjectAndCast<Protein>(context));
+  return VectorSequentialInference::prepareInference(context, cloneInputProtein(context, input), supervision, returnCode);
 }
 
-void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+void ProteinSequentialInference::prepareSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   // we keep the same input and supervision for sub-inferences
   Variable inputProtein;
@@ -84,17 +84,17 @@ void ProteinSequentialInference::prepareSubInference(InferenceContextPtr context
   state->setSubInference(getSubInference(index), inputProtein, state->getSupervision());
 }
 
-void ProteinSequentialInference::finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+void ProteinSequentialInference::finalizeSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   if (state->getSubOutput().exists())
   {
-    const ProteinPtr& workingProtein = state->getSubOutput().getObjectAndCast<Protein>();
+    const ProteinPtr& workingProtein = state->getSubOutput().getObjectAndCast<Protein>(context);
     jassert(workingProtein);
-    saveDebugFiles(workingProtein, state->getStepNumber());
+    saveDebugFiles(context, workingProtein, state->getStepNumber());
   }
 }
 
-Variable ProteinSequentialInference::finalizeInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+Variable ProteinSequentialInference::finalizeInference(InferenceContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
   {return finalState->getSubOutput();} // latest version of the working protein
 
 /*
@@ -105,29 +105,29 @@ ProteinParallelInference::ProteinParallelInference(const String& name)
 {
 }
 
-ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   if (supervision.exists())
-    prepareSupervisionProtein(supervision.getObjectAndCast<Protein>());
+    prepareSupervisionProtein(context, supervision.getObjectAndCast<Protein>(context));
 
   ParallelInferenceStatePtr state(new ParallelInferenceState(input, supervision));
   size_t n = getNumSubInferences();
   state->reserve(n);
   jassert(n);
   for (size_t i = 0; i < n; ++i)
-    state->addSubInference(getSubInference(i), input.clone(), supervision);
+    state->addSubInference(getSubInference(i), input.clone(context), supervision);
   return state;
 }
 
-Variable ProteinParallelInference::finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+Variable ProteinParallelInference::finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
 {
-  const ProteinPtr& initialProtein = state->getInput().getObjectAndCast<Protein>();
-  ProteinPtr finalProtein = initialProtein->cloneAndCast<Protein>();
+  const ProteinPtr& initialProtein = state->getInput().getObjectAndCast<Protein>(context);
+  ProteinPtr finalProtein = initialProtein->cloneAndCast<Protein>(context);
   size_t numVariables = proteinClass->getObjectNumVariables();
   std::set<size_t> alreadySet;
   for (size_t i = 0; i < state->getNumSubInferences(); ++i)
   {
-    ProteinPtr predictedProtein = state->getSubOutput(i).getObjectAndCast<Protein>();
+    ProteinPtr predictedProtein = state->getSubOutput(i).getObjectAndCast<Protein>(context);
     for (size_t j = 0; j < numVariables; ++j)
     {
       Variable initial = initialProtein->getVariable(j);
@@ -137,13 +137,13 @@ Variable ProteinParallelInference::finalizeInference(InferenceContextWeakPtr con
         if (alreadySet.find(j) == alreadySet.end())
           alreadySet.insert(j);
         else
-          MessageCallback::warning(T("ProteinParallelInference::finalizeInference"),
+          context.warningCallback(T("ProteinParallelInference::finalizeInference"),
             T("More than one version of Protein::") + proteinClass->getObjectVariableName(j));
-        finalProtein->setVariable(j, predicted);
+        finalProtein->setVariable(context, j, predicted);
       }
     }
   }
-  saveDebugFiles(finalProtein, 0);
+  saveDebugFiles(context, finalProtein, 0);
   return finalProtein;
 }
 
@@ -166,11 +166,11 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
   //checkInheritance(targetInference->getOutputType(proteinClass), getTargetType());
 }
 
-DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
   Variable targetSupervision;
-  const ProteinPtr& supervisionProtein = supervision.getObjectAndCast<Protein>();
+  const ProteinPtr& supervisionProtein = supervision.getObjectAndCast<Protein>(context);
   if (supervisionProtein)
     targetSupervision = supervisionProtein->getTargetOrComputeIfMissing(targetIndex);
   if (targetSupervision.isNil())
@@ -179,11 +179,11 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceConte
   return res;
 }
 
-Variable ProteinInferenceStep::finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+Variable ProteinInferenceStep::finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
 {
-  const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>();
+  const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>(context);
   Variable prediction = finalState->getSubOutput();
   if (prediction.exists())
-    protein->setVariable(targetIndex, prediction);
+    protein->setVariable(context, targetIndex, prediction);
   return protein;
 }

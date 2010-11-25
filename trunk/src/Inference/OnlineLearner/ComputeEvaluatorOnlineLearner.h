@@ -26,11 +26,11 @@ public:
     : evaluator(evaluator), computeOnValidationData(computeOnValidationData), lastDefaultScore(0.0) {}
   ComputeEvaluatorOnlineLearner() : computeOnValidationData(false), lastDefaultScore(0.0) {}
 
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {
-    EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>();
+    EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>(context);
     InferenceExampleVectorPtr examples = computeOnValidationData ? batchLearnerInput->getValidationExamples() : batchLearnerInput->getTrainingExamples();
-    context->evaluate(inference, examples, eval);
+    context.evaluate(inference, examples, eval);
     lastScores.clear();
     eval->getScores(lastScores);
     lastDefaultScore = eval->getDefaultScore();

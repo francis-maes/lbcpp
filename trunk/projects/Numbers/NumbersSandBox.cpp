@@ -91,18 +91,18 @@ double binomialProbability(double numSuccess, double numTrials, double probabili
   return log(binomialProbability(featureValue, 
 }*/
 
-extern void declareNumbersClasses();
+extern void declareNumbersClasses(ExecutionContext& context);
 
-ObjectPtr estimateFeaturesExpectation(PerceptionPtr perception, ContainerPtr inputs)
+ObjectPtr estimateFeaturesExpectation(ExecutionContext& context, PerceptionPtr perception, ContainerPtr inputs)
 {
-  if (!checkInheritance(inputs->getElementsType(), perception->getInputType()))
+  if (!context.checkInheritance(inputs->getElementsType(), perception->getInputType()))
     return ObjectPtr();
 
   size_t n = inputs->getNumElements();
   ObjectPtr mean;
   double invK = 1.0 / (double)n;
   for (size_t i = 0; i < n; ++i)
-    lbcpp::addWeighted(mean, perception, inputs->getElement(i), invK);
+    lbcpp::addWeighted(context, mean, perception, inputs->getElement(i), invK);
   return mean;
 }
 
@@ -120,13 +120,13 @@ public:
     }
   }
 
-  void compute(ContainerPtr inputs)
+  void compute(ExecutionContext& context, ContainerPtr inputs)
   {
     size_t n = inputs->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr target;
-      lbcpp::addWeighted(target, perception, inputs->getElement(i), 1.0);
+      lbcpp::addWeighted(context, target, perception, inputs->getElement(i), 1.0);
       DenseDoubleObjectPtr denseTarget = target.dynamicCast<DenseDoubleObject>();
       jassert(denseTarget);
       update(denseTarget->getValues());
@@ -139,10 +139,10 @@ public:
       std::cout << statistics[i].toString() << std::endl;
   }
 
-  void getRelevanceScores(const Variable& input, std::multimap<double, size_t>& featuresByRelevance)
+  void getRelevanceScores(ExecutionContext& context, const Variable& input, std::multimap<double, size_t>& featuresByRelevance)
   {
     ObjectPtr object;
-    lbcpp::addWeighted(object, perception, input, 1.0);
+    lbcpp::addWeighted(context, object, perception, input, 1.0);
     DenseDoubleObjectPtr denseObject = object.staticCast<DenseDoubleObject>();
     std::vector<double>& featureValues = denseObject->getValues();
     
@@ -156,11 +156,11 @@ public:
     }
   }
 
-  void printMostRelevantFeatures(const Variable& input)
+  void printMostRelevantFeatures(ExecutionContext& context, const Variable& input)
   {
     typedef std::multimap<double, size_t> FeaturesByScoreMap;
     FeaturesByScoreMap featuresByRelevance;
-    getRelevanceScores(input, featuresByRelevance);
+    getRelevanceScores(context, input, featuresByRelevance);
     int i = 0;
     for (FeaturesByScoreMap::const_reverse_iterator it = featuresByRelevance.rbegin(); it != featuresByRelevance.rend() && i < 10; ++it, ++i)
       std::cout << "Top " << (i+1) << ": " << perception->getOutputVariableName(it->second) << " (" << it->first << ")" << std::endl;
@@ -208,7 +208,9 @@ private:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareNumbersClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+
+  declareNumbersClasses(*context);
 
   // Perception
   PerceptionPtr numberPerception = twoDigitNumberFeatures();
@@ -226,12 +228,12 @@ int main(int argc, char* argv[])
   // Random Number Sequences
   ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 10000);
   FeaturesInformation featuresInfo(perception);
-  featuresInfo.compute(randomInputs);
+  featuresInfo.compute(*context, randomInputs);
   //featuresInfo.print();
 
   ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
   EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
-  featuresInfo.printMostRelevantFeatures(enrichedProblem);
+  featuresInfo.printMostRelevantFeatures(*context, enrichedProblem);
   return 0;
 
   /*

@@ -9,12 +9,12 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
-void testPerception(const String& name, PerceptionPtr perception, const Variable& input)
+void testPerception(ExecutionContext& context, const String& name, PerceptionPtr perception, const Variable& input)
 {
   std::cout << "=========== " << name << " ==============" << std::endl;
-  Variable output = perception->compute(input);
+  Variable output = perception->computeFunction(context, input);
   output.printRecursively(std::cout, -1, false, false);
   std::cout << std::endl;
 }
@@ -34,7 +34,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return input;}
 
 protected:
@@ -45,6 +45,8 @@ protected:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
+
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
 
   Variable myProb(0.5, probabilityType);
   Variable myBoolean(true);
@@ -69,8 +71,8 @@ int main(int argc, char** argv)
   FunctionPtr makePairFunction = new IdentityFunction(pairClass(anyType, anyType));
 
 
-  testPerception(T("F"), defaultPositiveIntegerFeatures(), myInteger1);
-  testPerception(T("C"), composite, myInteger2);
+  testPerception(*context, T("F"), defaultPositiveIntegerFeatures(), myInteger1);
+  testPerception(*context, T("C"), composite, myInteger2);
   //testPerception(T("int 51 x 10.0"), productPerception(makePairFunction, composite, doubleType), Variable::pair(myInteger1, 10.0));
   //testPerception(T("10.0 x int 51"), productPerception(makePairFunction, doubleType, composite), Variable::pair(10.0, myInteger1));
 
@@ -78,7 +80,7 @@ int main(int argc, char** argv)
   
   //testPerception(T("pair F,F"), conjunctionFeatures(defaultPositiveIntegerFeatures(), defaultPositiveIntegerFeatures()), Variable::pair(myInteger1, myInteger2));
   //testPerception(T("pair C,F"), productPerception(makePairFunction, false, composite, defaultPositiveIntegerFeatures()), Variable::pair(myInteger1, myInteger2));
-  testPerception(T("pair F,C"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), Variable::pair(myInteger1, myInteger2));
+  testPerception(*context, T("pair F,C"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), Variable::pair(myInteger1, myInteger2));
   //testPerception(T("pair C,C"), conjunctionFeatures(composite, composite), Variable::pair(myInteger1, myInteger2));
 
 //  testPerception(T("doubleFeatures"), doubleFeatures(), -0.000000000005);

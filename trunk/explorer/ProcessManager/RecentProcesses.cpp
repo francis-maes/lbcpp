@@ -8,9 +8,9 @@
 #include "RecentProcesses.h"
 using namespace lbcpp;
 
-RecentProcessesPtr RecentProcesses::getInstance()
+RecentProcessesPtr RecentProcesses::getInstance(ExecutionContext& context)
 {
-  Variable& res = ExplorerConfiguration::getConfiguration(T("RecentProcesses"));
+  Variable& res = ExplorerConfiguration::getConfiguration(context, T("RecentProcesses"));
   if (!res.exists())
     res = Variable(new RecentProcesses());
   return res.getObjectAndCast<RecentProcesses>();
@@ -27,7 +27,7 @@ void RecentProcesses::addRecentExecutable(const File& file)
   }
   else
     v.insert(v.begin(), RecentExecutable(file));
-  ExplorerConfiguration::save();
+  ExplorerConfiguration::save(*silentExecutionContext);
 }
 
 std::vector<String> RecentProcesses::getRecentArguments(const File& executable) const
@@ -61,7 +61,7 @@ void RecentProcesses::addRecent(const File& executable, const String& arguments,
   v[0].addRecentArguments(arguments);
   if (workingDirectory.exists())
     v[0].addRecentWorkingDirectory(workingDirectory);
-  ExplorerConfiguration::save();
+  ExplorerConfiguration::save(*silentExecutionContext);
 }
 
 RecentProcesses::RecentExecutable::RecentExecutable(const File& executable)

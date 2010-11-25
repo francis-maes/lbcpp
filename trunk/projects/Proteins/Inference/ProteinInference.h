@@ -34,10 +34,10 @@ public:
   void setProteinDebugDirectory(const File& directory);
 
 protected:
-  static ProteinPtr cloneInputProtein(const Variable& input);
+  static ProteinPtr cloneInputProtein(ExecutionContext& context, const Variable& input);
 
-  void prepareSupervisionProtein(ProteinPtr protein);
-  void saveDebugFiles(ProteinPtr protein, size_t stepNumber);
+  void prepareSupervisionProtein(ExecutionContext& context, ProteinPtr protein);
+  void saveDebugFiles(ExecutionContext& context, ProteinPtr protein, size_t stepNumber);
 
 private:
   File pdbDebugDirectory;
@@ -49,10 +49,10 @@ class ProteinSequentialInference : public VectorSequentialInference, public Prot
 public:
   ProteinSequentialInference(const String& name = T("Protein"));
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual void prepareSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
-  virtual void finalizeSubInference(InferenceContextPtr context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual void prepareSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
+  virtual void finalizeSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode);
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
@@ -64,8 +64,8 @@ class ProteinParallelInference : public VectorParallelInference, public ProteinI
 public:
   ProteinParallelInference(const String& name = T("Protein"));
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
 };
 
 typedef ReferenceCountedObjectPtr<ProteinParallelInference> ProteinParallelInferencePtr;
@@ -88,8 +88,8 @@ public:
     {return decorated;}
 
   // DecoratorInference
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
+  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
 
   // Inference
   virtual TypePtr getInputType() const

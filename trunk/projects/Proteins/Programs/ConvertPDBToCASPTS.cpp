@@ -11,12 +11,13 @@
 #include "../Data/Formats/CASPFileGenerator.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  declareProteinClasses(*context);
   
   if (argc < 2)
   {
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
   File pdbFile = cwd.getChildFile(argv[1]);
   std::cout << "Input PDB File: " << pdbFile.getFullPathName() << std::endl;
 
-  ProteinPtr protein = Protein::createFromPDB(pdbFile);
+  ProteinPtr protein = Protein::createFromPDB(*context, pdbFile);
   if (!protein)
   {
     std::cerr << "Could not load pdb file" << std::endl;
@@ -39,6 +40,6 @@ int main(int argc, char* argv[])
   std::cout << "Output File: " << outputFile.getFullPathName() << std::endl;
 
   String method = T("This files contains a default prediction. No prediction methods are applied yet.\nWe have to quickly develop our code !!!");
-  caspTertiaryStructureFileGenerator(outputFile, method)->consume(protein);
+  caspTertiaryStructureFileGenerator(*context, outputFile, method)->consume(*context, protein);
   return 0;
 }

@@ -23,7 +23,7 @@ public:
   ClassificationAccuracyEvaluator(const String& name) : Evaluator(name), accuracy(new ScalarVariableMean()) {}
   ClassificationAccuracyEvaluator() {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correct)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
   {
     if (!predicted.exists() || !correct.exists())
       return;
@@ -78,8 +78,8 @@ public:
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("Accuracy"), accuracy->getMean()));}
   
-  virtual void clone(const ObjectPtr& target) const
-    {Evaluator::clone(target); target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>();}
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+    {Evaluator::clone(context, target); target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>(context);}
 
 protected:
   friend class ClassificationAccuracyEvaluatorClass;

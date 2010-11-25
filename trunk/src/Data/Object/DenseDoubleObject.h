@@ -67,7 +67,7 @@ public:
       return Variable::missingValue(type);
   }
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
     {getValueReference(index) = value.getDouble();}
 
   virtual VariableIterator* createVariablesIterator() const;
@@ -91,7 +91,7 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const
     {exporter.addTextElement(toString());}
 
-  virtual bool loadFromString(const String& str, MessageCallback& callback)
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
   {
     StringArray tokens;
     tokens.addTokens(str, false);
@@ -108,7 +108,7 @@ public:
   }
 
   virtual bool loadFromXml(XmlImporter& importer)
-    {return loadFromString(importer.getAllSubText(), importer.getCallback());}
+    {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
   DenseDoubleObjectPtr createCompatibleNullObject() const
     {return new DenseDoubleObject(thisClass, 0.0);}

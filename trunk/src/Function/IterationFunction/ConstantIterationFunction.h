@@ -25,7 +25,7 @@ public:
   virtual String toString() const
     {return "ConstantIterationFunction(" + String(value) + ")";}
   
-  virtual ObjectPtr clone() const
+  virtual ObjectPtr clone(ExecutionContext& context) const
     {return new ConstantIterationFunction(value);}
   
 private:

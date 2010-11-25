@@ -31,10 +31,10 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType;}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::cout << "." << std::flush;
-    Variable res = context->predict(inference, input);
+    Variable res = this->context->predict(inference, input);
     *o << res.toShortString() << "\n";
     return input;
   }
@@ -49,16 +49,16 @@ private:
 
 bool PredictorProgram::run(ExecutionContext& context)
 {
-  ContainerPtr data = parseDataFile(dataFile);
+  ContainerPtr data = parseDataFile(context, dataFile);
   jassert(data && data->getNumElements());
   std::cout << "Data : " << data->getNumElements() << std::endl;
-  InferencePtr inference = Object::createFromFile(inferenceFile).staticCast<Inference>();
+  InferencePtr inference = Object::createFromFile(context, inferenceFile).staticCast<Inference>();
   jassert(inference);
   
   if (output == File::nonexistent)
     output = File::getCurrentWorkingDirectory().getChildFile(T("prediction.txt"));
   std::cout << "Prediction : " << output.getFullPathName() << std::endl;
 
-  data->apply(FunctionPtr(new SavePredictionFunction(inference, output)), false);  
+  data->apply(context, FunctionPtr(new SavePredictionFunction(inference, output)), Container::sequentialApply);
   return true;
 }

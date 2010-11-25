@@ -45,8 +45,8 @@ public:
 
   struct Callback : public PerceptionCallback
   {
-    Callback(const CollapsePerception* owner, PerceptionCallbackPtr targetCallback)
-      : owner(owner), targetCallback(targetCallback), currentNode(&owner->rootNode) {}
+    Callback(ExecutionContext& context, const CollapsePerception* owner, PerceptionCallbackPtr targetCallback)
+      : PerceptionCallback(context), owner(owner), targetCallback(targetCallback), currentNode(&owner->rootNode) {}
 
     virtual void sense(size_t variableNumber, double value)
       {}
@@ -64,7 +64,7 @@ public:
       if (currentNode->variableNumber >= 0)
         targetCallback->sense(currentNode->variableNumber, subPerception, input);
       else
-        subPerception->computePerception(input, this);
+        subPerception->computePerception(context, input, this);
       currentNode = currentNode->parent;
       jassert(currentNode);
     }
@@ -74,10 +74,10 @@ public:
     const Node* currentNode;
   };
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr targetCallback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr targetCallback) const
   {
-    Callback callback(this, targetCallback);
-    decorated->computePerception(input, &callback);
+    Callback callback(context, this, targetCallback);
+    decorated->computePerception(context, input, &callback);
   }
 
   lbcpp_UseDebuggingNewOperator

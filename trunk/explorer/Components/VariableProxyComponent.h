@@ -24,8 +24,8 @@ public:
   virtual ~VariableProxyComponent()
     {deleteAllChildren();}
 
-  void setVariable(const Variable& variable)
-    {setVariable(variable, createComponentForVariable(variable));}
+  void setVariable(ExecutionContext& context, const Variable& variable)
+    {setVariable(variable, createComponentForVariable(context, variable));}
   
   void setVariable(const Variable& variable, Component* newComponent)
   {

@@ -21,24 +21,27 @@ public:
   ExecutionCallback() : context(NULL) {}
 
   /*
-  ** Informations
+  ** Informations, warnings and Errors
   */
-  virtual void informationCallback(const String& where, const String& what) = 0;
+  virtual void informationCallback(const String& where, const String& what) {}
+  virtual void warningCallback(const String& where, const String& what) {}
+  virtual void errorCallback(const String& where, const String& what) {}
 
+  // shortcuts
   void informationCallback(const String& what)
     {informationCallback(String::empty, what);}
 
-  /*
-  ** Warnings and Errors
-  */
-  virtual void warningCallback(const String& where, const String& what) = 0;
-  virtual void errorCallback(const String& where, const String& what) = 0;
+  void warningCallback(const String& what)
+    {warningCallback(String::empty, what);}
+
+  void errorCallback(const String& what)
+    {errorCallback(String::empty, what);}
 
   /*
   ** Status and Progression
   */
-  virtual void statusCallback(const String& status) = 0;
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit) = 0;
+  virtual void statusCallback(const String& status) {}
+  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit) {}
 
   void progressCallback(double normalizedProgression)
     {progressCallback(normalizedProgression * 100.0, 100.0, T("%"));}

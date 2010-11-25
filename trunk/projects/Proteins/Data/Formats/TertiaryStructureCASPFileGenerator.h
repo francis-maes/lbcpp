@@ -17,8 +17,8 @@ namespace lbcpp
 class TertiaryStructureCASPFileGenerator : public CASPFileGenerator
 {
 public:
-  TertiaryStructureCASPFileGenerator(const File& file, const String& method)
-    : CASPFileGenerator(file, method) {}
+  TertiaryStructureCASPFileGenerator(ExecutionContext& context, const File& file, const String& method)
+    : CASPFileGenerator(context, file, method) {}
 
   virtual String getFormatSpecificationCode() const
     {return T("TS");}

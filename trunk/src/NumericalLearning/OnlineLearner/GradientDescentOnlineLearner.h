@@ -25,10 +25,10 @@ public:
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
 
 
-  virtual void startLearningCallback(InferenceContextWeakPtr context);
-  virtual void stepFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContextWeakPtr context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void startLearningCallback(InferenceContext& context);
+  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference);
+  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("empiricalRisk"), lastEmpiricalRisk));}
@@ -36,7 +36,7 @@ public:
   virtual double getDefaultScore() const
     {return -lastEmpiricalRisk;}
   
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
   friend class GradientDescentOnlineLearnerClass;
@@ -55,14 +55,14 @@ protected:
   double lastEmpiricalRisk;
   size_t lastApplyRegularizerEpoch;
 
-  void updateParameters(InferenceContextWeakPtr context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
+  void updateParameters(InferenceContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
 
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
-  void applyRegularizer(const InferencePtr& inference);
-  void checkRegularizerAfterStep(const InferencePtr& inference);
-  void gradientDescentStep(const InferencePtr& inference, const ObjectPtr& gradient, double weight = 1.0);
+  void applyRegularizer(ExecutionContext& context, const InferencePtr& inference);
+  void checkRegularizerAfterStep(ExecutionContext& context, const InferencePtr& inference);
+  void gradientDescentStep(ExecutionContext& context, const InferencePtr& inference, const ObjectPtr& gradient, double weight = 1.0);
   double computeLearningRate() const;
-  void updateNumberOfActiveFeatures(const PerceptionPtr& perception, const Variable& input);
+  void updateNumberOfActiveFeatures(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input);
 
 private:
   NumericalInferencePtr getNumericalInference(const InferencePtr& inference) const;

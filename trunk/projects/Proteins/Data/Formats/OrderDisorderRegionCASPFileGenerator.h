@@ -17,8 +17,8 @@ namespace lbcpp
 class OrderDisorderRegionCASPFileGenerator : public CASPFileGenerator
 {
 public:
-  OrderDisorderRegionCASPFileGenerator(const File& file, const String& method)
-    : CASPFileGenerator(file, method) {}
+  OrderDisorderRegionCASPFileGenerator(ExecutionContext& context, const File& file, const String& method)
+    : CASPFileGenerator(context, file, method) {}
 
   virtual String getFormatSpecificationCode() const
     {return T("DR");}

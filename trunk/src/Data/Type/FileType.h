@@ -96,7 +96,7 @@ public:
   virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     if (value == String::empty)
       return VariableValue(String::empty);

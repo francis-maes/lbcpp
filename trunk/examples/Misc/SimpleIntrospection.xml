@@ -40,17 +40,18 @@
     int main(int argc, char** argv)
     {
       lbcpp::initialize();
+      ExecutionContextPtr context = defaultConsoleExecutionContext();
 
-      Class::declare(ClassPtr(new AClass()));
+      context->declareType(TypePtr(new AClass()));
 
       APtr a = new A(true);
       APtr emptyA = new A();
       std::cout &lt;&lt; "A = " &lt;&lt; std::endl &lt;&lt; a->toString() &lt;&lt; std::endl;
       std::cout &lt;&lt; "EmptyA = " &lt;&lt; std::endl &lt;&lt; emptyA->toString() &lt;&lt; std::endl;
       File file = File::createTempFile(T("a"));
-      Variable(a).saveToFile(file);
+      Variable(a).saveToFile(*context, file);
 
-      APtr loadedA = Variable::createFromFile(file).getObjectAndCast&lt;A&gt;();
+      APtr loadedA = Variable::createFromFile(*context, file).getObjectAndCast&lt;A&gt;(*context);
       std::cout &lt;&lt; "LoadedA = " &lt;&lt; std::endl &lt;&lt; loadedA->toString() &lt;&lt; std::endl;
       return 0;
     }

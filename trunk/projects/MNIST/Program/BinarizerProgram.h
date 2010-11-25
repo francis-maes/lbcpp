@@ -26,10 +26,10 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return inputType;}
   
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     jassert(input.isObject());
-    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>();
+    MNISTImagePtr image = input.getObjectAndCast<MNISTImage>(context);
     jassert(image);
     Variable digit = image->getDigit();
     o->writeBool(!digit.isMissingValue());
@@ -57,7 +57,8 @@ public:
     if (outputFile == File::nonexistent)
       outputFile = File::getCurrentWorkingDirectory().getChildFile(T("data.bin"));
     
-    ContainerPtr data = StreamPtr(new MatlabFileParser(inputFile))->load()->apply(new SaveMNISTImageAsBinaryFunction(outputFile), false);
+    ContainerPtr data = StreamPtr(new MatlabFileParser(context, inputFile))->load(context)
+      ->apply(context, new SaveMNISTImageAsBinaryFunction(outputFile), Container::sequentialApply);
     return true;
   }
   

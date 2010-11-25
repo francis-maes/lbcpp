@@ -11,16 +11,16 @@
 #include "Inference/ProteinInference.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
-ContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
+ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory, size_t maxCount = 0)
 {
   if (fileOrDirectory.isDirectory())
   {
     ContainerPtr res = directoryFileStream(fileOrDirectory, T("*.xml"))
-      ->load(maxCount)
+      ->load(context, maxCount)
       ->randomize()
-      ->apply(proteinToInputOutputPairFunction());
+      ->apply(context, proteinToInputOutputPairFunction());
 
     return res;
   }
@@ -28,8 +28,8 @@ ContainerPtr loadProteins(const File& fileOrDirectory, size_t maxCount = 0)
   if (fileOrDirectory.getFileExtension() == T(".xml")) 
   {
     ContainerPtr res = directoryFileStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
-    ->load()
-    ->apply(proteinToInputOutputPairFunction());
+    ->load(context)
+    ->apply(context, proteinToInputOutputPairFunction());
     if (res->getNumElements())
       return res;
   }
@@ -46,14 +46,14 @@ public:
   SaveOutputInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
       ObjectPtr object = output.getObject();
       File f = directory.getChildFile(object->getName() + T(".") + extension);
       std::cout << "Save " << f.getFileName() << "." << std::endl;
-      Variable(object).saveToFile(f);
+      object->saveToFile(context, f);
     }
   }
 
@@ -68,24 +68,24 @@ public:
   SaveProteinPairInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 2)
     {
       ObjectPtr object = output.getObject();
       File f = directory.getChildFile(object->getName() + T(".") + extension);
-      std::cout << "Save Pair " << f.getFileName() << "." << std::endl;
+      context.informationCallback(T("Save Pair ") + f.getFileName() + T("."));
 
-      ProteinPtr inputProtein = input.clone().getObjectAndCast<Protein>();
+      ProteinPtr inputProtein = input.clone(context).getObjectAndCast<Protein>();
       jassert(inputProtein);
 
       const ProteinPtr& outputProtein = output.getObjectAndCast<Protein>();
       jassert(outputProtein);
       
       for (size_t i = 0; i < outputProtein->getNumVariables(); ++i)
-        inputProtein->setVariable(i, outputProtein->getVariable(i));
+        inputProtein->setVariable(context, i, outputProtein->getVariable(i));
 
-      Variable::pair(inputProtein, supervision).saveToFile(f);
+      Variable::pair(inputProtein, supervision).saveToFile(context, f);
     }
   }
 
@@ -97,7 +97,7 @@ private:
 class PrintDotForEachExampleInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
       std::cout << "." << std::flush;
@@ -107,7 +107,8 @@ public:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+  InferenceContextPtr context = singleThreadedInferenceContext();
+  declareProteinClasses(*context);
 
   if (argc < 4)
   {
@@ -146,7 +147,7 @@ int main(int argc, char** argv)
   }
 
   std::cout << "Loading data... " << std::flush;
-  ContainerPtr proteins = loadProteins(proteinsFileOrDirectory);
+  ContainerPtr proteins = loadProteins(*context, proteinsFileOrDirectory);
   if (!proteins)
     return 2;
   std::cout << proteins->getNumElements() << " protein(s)." << std::endl;
@@ -162,29 +163,28 @@ int main(int argc, char** argv)
   }
   std::cout << inference->getNumSubInferences() << " step(s)." << std::endl;
 
-  InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
   // FIXME
   //ProteinEvaluationCallbackPtr evaluationCallback = new ProteinEvaluationCallback();
   //inferenceContext->appendCallback(evaluationCallback);
-  inferenceContext->appendCallback(new PrintDotForEachExampleInferenceCallback());
+  context->appendCallback(new PrintDotForEachExampleInferenceCallback());
   InferenceResultCachePtr cache = new InferenceResultCache();
 
   if (mode == T("All") || mode == T("AllSave") || mode == T("AllSavePair"))
   {
     if (mode == T("AllSave"))
-      inferenceContext->appendCallback(new SaveOutputInferenceCallback(outputDirectory, T("protein")));
+      context->appendCallback(new SaveOutputInferenceCallback(outputDirectory, T("protein")));
     if (mode == T("AllSavePair"))
-      inferenceContext->appendCallback(new SaveProteinPairInferenceCallback(outputDirectory, T("proteinPair")));
+      context->appendCallback(new SaveProteinPairInferenceCallback(outputDirectory, T("proteinPair")));
     std::cout << "Making predictions..." << std::endl;
 
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    inferenceContext->run(runOnSupervisedExamplesInference(inference, false), proteins, ObjectPtr(), returnCode);
+    context->run(runOnSupervisedExamplesInference(inference, false), proteins, ObjectPtr(), returnCode);
     // FIXME
     //std::cout << evaluationCallback->toString() << std::endl << std::endl;
   }
   else if (mode == T("StepByStep"))
   {
-    inferenceContext->appendCallback(cacheInferenceCallback(cache, inference));
+    context->appendCallback(cacheInferenceCallback(cache, inference));
     std::cout << std::endl;
     for (size_t i = 0; i < inference->getNumSubInferences(); ++i)
     {
@@ -201,7 +201,7 @@ int main(int argc, char** argv)
       }
       
       Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      inferenceContext->run(runOnSupervisedExamplesInference(decoratedInference, false), proteins, ObjectPtr(), returnCode);
+      context->run(runOnSupervisedExamplesInference(decoratedInference, false), proteins, ObjectPtr(), returnCode);
       // FIXME
       //std::cout << evaluationCallback->toString() << std::endl << std::endl;
     }

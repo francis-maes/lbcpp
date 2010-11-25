@@ -13,12 +13,12 @@ using namespace lbcpp;
 /*
 ** Stream
 */
-VectorPtr Stream::load(size_t maximumCount)
+VectorPtr Stream::load(ExecutionContext& context, size_t maximumCount)
 {
   VectorPtr res = vector(getElementsType());
   while (maximumCount == 0 || res->getNumElements() < maximumCount)
   {
-    Variable variable = next();
+    Variable variable = next(context);
     if (!variable.isNil())
       res->append(variable);
     if (isExhausted())
@@ -27,12 +27,12 @@ VectorPtr Stream::load(size_t maximumCount)
   return res;
 }
 
-bool Stream::iterate(size_t maximumCount)
+bool Stream::iterate(ExecutionContext& context, size_t maximumCount)
 {
   size_t count = 0;
   while (maximumCount == 0 || count < maximumCount)
   {
-    Variable variable = next();
+    Variable variable = next(context);
     if (variable.exists())
       ++count;
     else
@@ -46,9 +46,9 @@ namespace lbcpp
   extern StreamPtr applyFunctionStream(StreamPtr stream, FunctionPtr function);
 };
 
-StreamPtr Stream::apply(FunctionPtr function) const
+StreamPtr Stream::apply(ExecutionContext& context, FunctionPtr function) const
 {
-  return checkInheritance(getElementsType(), function->getInputType())
+  return context.checkInheritance(getElementsType(), function->getInputType())
     ? applyFunctionStream(refCountedPointerFromThis(this), function)
     : StreamPtr();
 }
@@ -56,21 +56,21 @@ StreamPtr Stream::apply(FunctionPtr function) const
 /*
 ** TextParser
 */
-TextParser::TextParser(InputStream* newInputStream, MessageCallback& callback)
-  : callback(callback), istr(newInputStream) {}
+TextParser::TextParser(InputStream* newInputStream)
+  : istr(newInputStream) {}
 
-TextParser::TextParser(const File& file, MessageCallback& callback)
-  : callback(callback), istr(NULL)
+TextParser::TextParser(ExecutionContext& context, const File& file)
+  : istr(NULL)
 {
   if (file == File::nonexistent)
   {
-    callback.errorMessage(T("TextParser::parseFile"), T("No filename specified"));
+    context.errorCallback(T("TextParser::parseFile"), T("No filename specified"));
     return;
   }
   InputStream* inputStream = file.createInputStream();
   if (!inputStream)
   {
-    callback.errorMessage(T("TextParser::parseFile"), T("Could not open file ") + file.getFullPathName());
+    context.errorCallback(T("TextParser::parseFile"), T("Could not open file ") + file.getFullPathName());
     return;
   }
   
@@ -108,23 +108,23 @@ void TextParser::tokenize(const String& line, std::vector<String>& columns, cons
   }
 }
 
-Variable TextParser::next()
+Variable TextParser::next(ExecutionContext& context)
 {
   if (!istr)
     return Variable();
   if (!currentResult.exists())
   {
     //parsingBreaked = false;
-    parseBegin();
+    parseBegin(context);
   }
   currentResult = Variable();
   
   while (!istr->isExhausted()/* && !parsingBreaked*/)
   {
     String line = istr->readNextLine();
-    if (!parseLine(line))
+    if (!parseLine(context, line))
     {
-      callback.errorMessage(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
+      context.errorCallback(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
       delete istr;
       istr = NULL;
       return Variable();
@@ -133,8 +133,8 @@ Variable TextParser::next()
       return currentResult;
   }
   
-  if (!parseEnd())
-    callback.errorMessage(T("TextParser::next"), T("Error in parse end"));
+  if (!parseEnd(context))
+    context.errorCallback(T("TextParser::next"), T("Error in parse end"));
   delete istr;
   istr = NULL;
   return currentResult;

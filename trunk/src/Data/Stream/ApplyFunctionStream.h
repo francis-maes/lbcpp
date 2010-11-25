@@ -32,10 +32,10 @@ public:
   virtual bool isExhausted() const
     {return stream->isExhausted();}
 
-  virtual Variable next()
+  virtual Variable next(ExecutionContext& context)
   {
-    Variable v = stream->next();
-    return v.isNil() ? Variable() : function->compute(v);
+    Variable v = stream->next(context);
+    return v.isNil() ? Variable() : function->computeFunction(context, v);
   }
 
 private:

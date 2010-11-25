@@ -22,7 +22,7 @@ class ExplorerRecentFiles : public Object
 public:
   ExplorerRecentFiles() : recentFiles(vector(fileType)) {}
 
-  static ExplorerRecentFilesPtr getInstance();
+  static ExplorerRecentFilesPtr getInstance(ExecutionContext& context);
 
   virtual String getName() const
     {return T("ExplorerRecentFiles");}
@@ -65,10 +65,10 @@ public:
   static VariableVectorPtr& getInstancePtr();
   static VariableVectorPtr getInstance();
 
-  static void save()
-    {Variable(getInstance()).saveToFile(getConfigurationFile());}
+  static void save(ExecutionContext& context)
+    {Variable(getInstance()).saveToFile(context, getConfigurationFile());}
 
-  static Variable& getConfiguration(const String& typeName)
+  static Variable& getConfiguration(ExecutionContext& context, const String& typeName)
   {
     // FIXME !
     VariableVectorPtr object = getInstance();
@@ -78,9 +78,9 @@ public:
       if (variable.getTypeName() == typeName)
         return variable;
     }
-    TypePtr type = Type::get(typeName);
+    TypePtr type = context.getType(typeName);
     jassert(type);
-    object->append(Variable::create(type));
+    object->append(context.createVariable(type));
     return object->getElement(object->getNumElements() - 1);
   }
 };

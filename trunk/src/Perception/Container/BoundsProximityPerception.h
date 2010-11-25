@@ -27,11 +27,11 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(anyType), integerType);}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     const Variable& first = pair->getFirst();
-    const ContainerPtr& container = first.getObjectAndCast<Container>();
+    const ContainerPtr& container = first.getObjectAndCast<Container>(context);
     jassert(container);
     int n = (int)container->getNumElements();
     int index = pair->getSecond().getInteger();

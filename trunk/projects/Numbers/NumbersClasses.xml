@@ -70,7 +70,7 @@
   </namespace>
 
   <declarationCode>
-    lbcpp::Type::finishDeclarations();
+    context.finishTypeDeclarations();
   </declarationCode>
   
 </file>

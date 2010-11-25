@@ -18,31 +18,31 @@ using namespace lbcpp;
 class BoincWorker : public Object
 {
 public:
-  bool initialize(const File& workingDirectory, const File& dataDirectory, MessageCallback& callback = MessageCallback::getInstance())
+  bool initialize(ExecutionContext& context, const File& workingDirectory, const File& dataDirectory)
   {
     if (!workingDirectory.isDirectory() || !workingDirectory.exists())
     {
-      callback.errorMessage(T("BoincEvaluator::initialize"), T("Working directory ") + workingDirectory.getFullPathName() + T(" does not exists"));
+      context.errorCallback(T("BoincEvaluator::initialize"), T("Working directory ") + workingDirectory.getFullPathName() + T(" does not exists"));
       return false;
     }
     if (!dataDirectory.isDirectory() || !dataDirectory.exists())
     {
-      callback.errorMessage(T("BoincEvaluator::initialize"), T("Data directory ") + dataDirectory.getFullPathName() + T(" does not exists"));
+      context.errorCallback(T("BoincEvaluator::initialize"), T("Data directory ") + dataDirectory.getFullPathName() + T(" does not exists"));
       return false;
     }
-    if (!parseInputFile(workingDirectory.getChildFile(T("input.xml")), callback))
+    if (!parseInputFile(context, workingDirectory.getChildFile(T("input.xml"))))
       return false;
 
     this->workingDirectory = workingDirectory;
     this->dataDirectory = dataDirectory;
-    return initializeWorker(callback);
+    return initializeWorker(context);
   }
 
-  bool run()
+  bool run(ExecutionContext& context)
   {
-    if (!runWorker(MessageCallback::getInstance()))
+    if (!runWorker(context))
       return false;
-    return generateOutputFile(workingDirectory.getChildFile(T("output.xml")), MessageCallback::getInstance());
+    return generateOutputFile(context, workingDirectory.getChildFile(T("output.xml")));
   }
  
   void updateProgression(const String& message, double percentage)
@@ -61,10 +61,10 @@ protected:
   File workingDirectory;
   File dataDirectory;
 
-  virtual bool initializeWorker(MessageCallback& callback)
+  virtual bool initializeWorker(ExecutionContext& context)
     {return true;}
 
-  virtual bool runWorker(MessageCallback& callback) = 0;
+  virtual bool runWorker(ExecutionContext& context) = 0;
 
   virtual void saveWorkerModel(XmlExporter& exporter)
     {}
@@ -72,11 +72,11 @@ protected:
   virtual void getWorkerScores(std::vector< std::pair<String, double> >& res) = 0;
 
 private:
-  bool parseInputFile(const File& file, MessageCallback& callback)
+  bool parseInputFile(ExecutionContext& context, const File& file)
   {
     if (!file.existsAsFile())
     {
-      callback.errorMessage(T("BoincEvaluator::parseInputFile"), T("File ") + file.getFullPathName() + T(" does not exists"));
+      context.errorCallback(T("BoincEvaluator::parseInputFile"), T("File ") + file.getFullPathName() + T(" does not exists"));
       return false;
     }
     juce::XmlDocument document(file);
@@ -85,7 +85,7 @@ private:
     String lastParseError = document.getLastParseError();
     if (!elt)
     {
-      callback.errorMessage(T("BoincEvaluator::parseInputFile"),
+      context.errorCallback(T("BoincEvaluator::parseInputFile"),
         lastParseError.isEmpty() ? T("Could not parse file ") + file.getFullPathName() : lastParseError);
       return false;
     }
@@ -96,12 +96,12 @@ private:
       String value = param->getStringAttribute(T("value"));
       if (name.isEmpty() || value.isEmpty())
       {
-        callback.errorMessage(T("BoincEvaluator::parseInputFile"), T("Missing name or value in parameter"));
+        context.errorCallback(T("BoincEvaluator::parseInputFile"), T("Missing name or value in parameter"));
         return false;
       }
       if (parameters.find(name) != parameters.end())
       {
-        callback.errorMessage(T("BoincEvaluator::parseInputFile"), T("Parameter ") + name.quoted() + T(" multiply defined"));
+        context.errorCallback(T("BoincEvaluator::parseInputFile"), T("Parameter ") + name.quoted() + T(" multiply defined"));
         return false;
       }
       parameters[name] = value;
@@ -111,7 +111,7 @@ private:
     return true;
   }
 
-  bool generateOutputFile(const File& file, MessageCallback& callback)
+  bool generateOutputFile(ExecutionContext& context, const File& file)
   {
     XmlExporter exporter(T("result"), 0);
 
@@ -144,15 +144,15 @@ private:
     }
     exporter.leave();
 
-    return exporter.saveToFile(file, callback);
+    return exporter.saveToFile(context, file);
   }
 };
 
 class ExampleProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  ExampleProteinInferenceFactory(const std::map<String, String>& parameters)
-    : parameters(parameters) {}
+  ExampleProteinInferenceFactory(ExecutionContext& context, const std::map<String, String>& parameters)
+    : ProteinInferenceFactory(context), parameters(parameters) {}
 
   virtual InferencePtr createTargetInference(const String& targetName) const
   {
@@ -264,13 +264,13 @@ public:
     {
       NumericalSupervisedInferencePtr binary = binaryLinearSVMInference(targetName, perception);
       binary->setStochasticLearner(onlineLearner);
-      return oneAgainstAllClassificationInference(targetName, classes, binary);
+      return oneAgainstAllClassificationInference(context, targetName, classes, binary);
     }
     else if (multiClassClassifier == T("oneAgainstAllLogisticRegression"))
     {
       NumericalSupervisedInferencePtr binary = binaryLogisticRegressionInference(targetName, perception);
       binary->setStochasticLearner(onlineLearner);
-      return oneAgainstAllClassificationInference(targetName, classes, binary);
+      return oneAgainstAllClassificationInference(context, targetName, classes, binary);
     }
     else
     {
@@ -332,29 +332,29 @@ protected:
 class ExampleBoincWorker : public BoincWorker
 {
 protected:
-  ContainerPtr loadProteins(const File& directory)
+  ContainerPtr loadProteins(ExecutionContext& context, const File& directory)
   {
-    return directoryFileStream(directory)->load()->apply(loadFromFileFunction(proteinClass))
-      ->apply(proteinToInputOutputPairFunction(false), false)->randomize();
+    return directoryFileStream(directory)->load(context)->apply(context, loadFromFileFunction(proteinClass))
+      ->apply(context, proteinToInputOutputPairFunction(false), Container::sequentialApply)->randomize();
   }
 
-  virtual bool initializeWorker(MessageCallback& callback)
+  virtual bool initializeWorker(ExecutionContext& context)
   {
     std::cout << "Loading training data..." << std::flush;
-    trainingProteins = loadProteins(dataDirectory.getChildFile(T("train")));
+    trainingProteins = loadProteins(context, dataDirectory.getChildFile(T("train")));
     std::cout << " ok: " << trainingProteins->getNumElements() << " proteins" << std::endl;
     std::cout << "Loading testing data..." << std::flush;
-    testingProteins = loadProteins(dataDirectory.getChildFile(T("test")));
+    testingProteins = loadProteins(context, dataDirectory.getChildFile(T("test")));
     std::cout << " ok: " << testingProteins->getNumElements() << " proteins" << std::endl;
 
     if (!trainingProteins || !trainingProteins->getNumElements() || !testingProteins || !testingProteins->getNumElements())
     {
-      callback.error(T("initializeWorker"), T("Could not load training or testing proteins"));
+      context.errorCallback(T("initializeWorker"), T("Could not load training or testing proteins"));
       return false;
     }
     std::cout << trainingProteins->getNumElements() << " training proteins, " << testingProteins->getNumElements() << " testing proteins" << std::endl;
 
-    ExampleProteinInferenceFactory factory(parameters);
+    ExampleProteinInferenceFactory factory(context, parameters);
 
     inference = new ProteinSequentialInference();
     inference->appendInference(factory.createInferenceStep(T("secondaryStructure")));
@@ -372,7 +372,7 @@ protected:
     ExampleBoincWorker* worker;
     size_t counter;
 
-    virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       String inferenceName = stack->getCurrentInference()->getName();
       if (inferenceName.startsWith(T("LearningPass")))
@@ -390,15 +390,16 @@ protected:
     }
   };
 
-  virtual bool runWorker(MessageCallback& callback)
+  virtual bool runWorker(ExecutionContext& c)
   {
-    InferenceContextPtr context = singleThreadedInferenceContext();
-    context->appendCallback(new Callback(this));
-    context->train(inference, trainingProteins, ContainerPtr());
+    InferenceContext& context = (InferenceContext& )c;
+
+    context.appendCallback(new Callback(this));
+    context.train(inference, trainingProteins, ContainerPtr());
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    context->evaluate(inference, testingProteins, evaluator);
-    std::cout << "Evaluation: " << evaluator->toString() << std::endl;
+    context.evaluate(inference, testingProteins, evaluator);
+    context.informationCallback(T("Evaluation: ") + evaluator->toString());
 
     testAccuracy = evaluator->getEvaluatorForTarget(T("secondaryStructure"))->getDefaultScore();
     return true;
@@ -417,7 +418,7 @@ protected:
   double testAccuracy;
 };
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 int main(int argc, char* argv[])
 {
@@ -428,14 +429,16 @@ int main(int argc, char* argv[])
   }
 
   lbcpp::initialize();
-  declareProteinClasses();
+  InferenceContextPtr context = singleThreadedExecutionContext();
+  declareProteinClasses(*context);
 
   File workingDirectory = File::getCurrentWorkingDirectory();
   File dataDirectory = workingDirectory.getChildFile(argv[1]);
 
+
   ExampleBoincWorker worker;
-  if (!worker.initialize(workingDirectory, dataDirectory))
+  if (!worker.initialize(*context, workingDirectory, dataDirectory))
     return 1;
 
-  return worker.run() ? 0 : 1;
+  return worker.run(*context) ? 0 : 1;
 }

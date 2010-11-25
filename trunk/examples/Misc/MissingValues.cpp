@@ -19,7 +19,8 @@ public:
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  Type::declare(ClassPtr(new DefaultClass(T("A"))));
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  context->declareType(ClassPtr(new DefaultClass(T("A"))));
 
   Variable myBoolean(true);
   Variable myMissingBoolean = Variable::missingValue(booleanType);
@@ -30,9 +31,9 @@ int main(int argc, char** argv)
   Variable myString(T("Hello"));
   Variable myMissingString = Variable::missingValue(stringType);
   Variable myObject(new A());
-  Variable myMissingObject = Variable::missingValue(Class::get(T("A")));
+  Variable myMissingObject = Variable::missingValue(context->getType(T("A")));
   Variable myPair = Variable::pair(myBoolean, myObject);
-  Variable myMissingPair = Variable::missingValue(pairClass(booleanType, Class::get(T("A"))));
+  Variable myMissingPair = Variable::missingValue(pairClass(booleanType, context->getType(T("A"))));
   
   std::cout << myBoolean << " " << myMissingBoolean << std::endl
             << myInt << " " << myMissingInt << std::endl

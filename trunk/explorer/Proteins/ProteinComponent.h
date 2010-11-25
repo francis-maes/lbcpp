@@ -31,14 +31,14 @@ public:
     addTab(T("Features"), Colours::white);
   }
 
-  virtual Component* createComponentForVariable(const Variable& variable, const String& name)
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
   {
     ClassPtr proteinClass = lbcpp::proteinClass;
     jassert(variable.getType()->canBeCastedTo(pairClass(anyType, stringType)));
     String tabName = variable[1].getString();
     VariableTreeOptions options;
     options.showMissingVariables = false;
-    return new VariableTreeComponent(getPerception(tabName)->compute(input), name + T(" ") + tabName, options);
+    return new VariableTreeComponent(getPerception(tabName)->computeFunction(context, input), name + T(" ") + tabName, options);
   }
 
 protected:
@@ -79,7 +79,7 @@ public:
   ResiduePerceptionComponent(const Variable& proteinAndPosition)
     : PerceptionComponent(proteinAndPosition)
   {
-    ProteinInferenceFactory factory;
+    ProteinInferenceFactory factory(*silentExecutionContext);
     perception = factory.createResiduePerception(String::empty);
   }
 };
@@ -90,7 +90,7 @@ public:
   ResiduePairPerceptionComponent(const Variable& proteinAndPositions)
     : PerceptionComponent(proteinAndPositions)
   {
-    ProteinInferenceFactory factory;
+    ProteinInferenceFactory factory(*silentExecutionContext);
     perception = factory.createResiduePairPerception(String::empty);
   }
 };
@@ -101,7 +101,7 @@ public:
   ProteinPerceptionComponent(const Variable& protein)
     : PerceptionComponent(protein)
   {
-    ProteinInferenceFactory factory;
+    ProteinInferenceFactory factory(*silentExecutionContext);
     perception = factory.createProteinPerception(String::empty);
   }
 };
@@ -124,7 +124,7 @@ public:
     addTab(T("Protein 2D"), Colours::white);
   }
   
-  virtual Component* createComponentForVariable(const Variable& variable, const String& name)
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
   {
     ClassPtr proteinClass = lbcpp::proteinClass;
 

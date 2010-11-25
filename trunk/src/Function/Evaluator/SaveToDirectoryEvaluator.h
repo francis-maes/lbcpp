@@ -20,13 +20,13 @@ public:
     : Evaluator(T("Save To ") + directory.getFileName()), directory(directory), extension(extension), savedCount(0) {}
   SaveToDirectoryEvaluator() : savedCount(0) {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correct)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
   {
     if (predicted.exists())
     {
       ObjectPtr object = predicted.getObject();
       jassert(object);
-      object->saveToFile(directory.getChildFile(object->getName() + extension));
+      object->saveToFile(context, directory.getChildFile(object->getName() + extension));
     }
   }
 

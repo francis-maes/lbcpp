@@ -10,11 +10,12 @@
 # define LBCPP_INFERENCE_CALLBACK_H_
 
 # include "Inference.h"
+# include "../Execution/ExecutionCallback.h"
 
 namespace lbcpp
 {
 
-class InferenceCallback : public Object
+class InferenceCallback : public ExecutionCallback
 {
 public:
   typedef Inference::ReturnCode ReturnCode;
@@ -22,10 +23,10 @@ public:
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
   // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {}
 };
 

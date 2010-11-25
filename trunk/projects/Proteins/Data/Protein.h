@@ -34,16 +34,16 @@ public:
   /*
   ** Save/Load operators
   */
-  static ProteinPtr createFromPDB(const File& pdbFile, bool beTolerant = true, MessageCallback& callback = MessageCallback::getInstance());
-  static ProteinPtr createFromXml(const File& file, MessageCallback& callback = MessageCallback::getInstance());
-  static ProteinPtr createFromFASTA(const File& file, MessageCallback& callback = MessageCallback::getInstance());
+  static ProteinPtr createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant = true);
+  static ProteinPtr createFromXml(ExecutionContext& context, const File& file);
+  static ProteinPtr createFromFASTA(ExecutionContext& context, const File& file);
 
-  void saveToPDBFile(const File& pdbFile, MessageCallback& callback = MessageCallback::getInstance()) const;
-  void saveToXmlFile(const File& xmlFile, MessageCallback& callback = MessageCallback::getInstance()) const;
-  void saveToFASTAFile(const File& fastaFile, MessageCallback& callback = MessageCallback::getInstance()) const;
+  void saveToPDBFile(ExecutionContext& context, const File& pdbFile) const;
+  void saveToXmlFile(ExecutionContext& context, const File& xmlFile) const;
+  void saveToFASTAFile(ExecutionContext& context, const File& fastaFile) const;
 
   virtual bool loadFromXml(XmlImporter& importer);
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   Variable createEmptyTarget(size_t index) const;
   Variable getTargetOrComputeIfMissing(size_t variableIndex) const;

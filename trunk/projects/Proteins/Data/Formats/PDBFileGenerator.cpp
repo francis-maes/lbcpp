@@ -9,12 +9,12 @@
 #include "PDBFileGenerator.h"
 using namespace lbcpp;
 
-PDBFileGenerator::PDBFileGenerator(const File& file, MessageCallback& callback)
-  : TextPrinter(file, callback) {}
+PDBFileGenerator::PDBFileGenerator(ExecutionContext& context, const File& file)
+  : TextPrinter(context, file) {}
 
-void PDBFileGenerator::consume(const Variable& variable)
+void PDBFileGenerator::consume(ExecutionContext& context, const Variable& variable)
 {
-  const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
+  const ProteinPtr& protein = variable.getObjectAndCast<Protein>(context);
   jassert(protein);
   size_t n = protein->getLength();
 

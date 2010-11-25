@@ -42,7 +42,7 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
-  virtual void clone(const ObjectPtr& target) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -60,9 +60,13 @@ public:
   ** @return an object container pointer.
   ** @see Function
   */
-  ContainerPtr apply(FunctionPtr function, bool lazyCompute = true) const;
-
-  ContainerPtr apply(FunctionPtr function, ThreadPoolPtr pool) const;
+  enum ApplyComputeMode
+  {
+    lazyApply,
+    parallelApply,
+    sequentialApply,
+  };
+  ContainerPtr apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode = lazyApply) const;
 
   /**
   ** Creates a randomized version of a dataset.

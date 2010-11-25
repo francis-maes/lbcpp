@@ -44,7 +44,7 @@ protected:
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       const InferencePtr& inference = stack->getCurrentInference();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
@@ -70,9 +70,9 @@ protected:
     InferencePtr targetInference;
   };
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();
     bool isDirectlyConnectedToOnlineLearner = (learnedInferences.size() == 1 && learnedInferences[0] == targetInference);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
@@ -89,7 +89,7 @@ protected:
 
     Callback callback(targetInference);
     callback.setStaticAllocationFlag();
-    context->appendCallback(&callback);
+    context.appendCallback(&callback);
 
     for (size_t i = 0; i < n; ++i)
     {
@@ -104,12 +104,12 @@ protected:
       {
         // make an episode
         Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-        context->run(targetInference,  example.first, example.second, returnCode);
+        context.run(targetInference,  example.first, example.second, returnCode);
         finishEpisode(context);
       }
     }
 
-    context->removeCallback(&callback);
+    context.removeCallback(&callback);
 
     if (isDirectlyConnectedToOnlineLearner)
     {
@@ -121,7 +121,7 @@ protected:
     return finishPass(context, learnerInput);
   }
 
-  void finishEpisode(InferenceContextWeakPtr context)
+  void finishEpisode(InferenceContext& context)
   {
     for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
@@ -132,7 +132,7 @@ protected:
     }
   }
 
-  bool finishPass(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& learnerInput) // returns false when learning is finished
+  bool finishPass(InferenceContext& context, const InferenceBatchLearnerInputPtr& learnerInput) // returns false when learning is finished
   {
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
@@ -158,9 +158,9 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
@@ -171,7 +171,7 @@ public:
   }
 
   // returns false if the final state is reached
-  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  virtual bool updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
     {return state->getSubOutput().getBoolean();} // repeat passes until a pass returns "false"
 
 protected:
@@ -179,11 +179,11 @@ protected:
 
   bool randomizeExamples;
 
-  InferencePtr createLearningPass(InferenceContextWeakPtr context, const InferenceBatchLearnerInputPtr& learnerInput)
+  InferencePtr createLearningPass(InferenceContext& context, const InferenceBatchLearnerInputPtr& learnerInput)
   {
     // enumerate learners
     std::vector<InferencePtr> inferencesThatHaveALearner;
-    learnerInput->getTargetInference()->getInferencesThatHaveAnOnlineLearner(inferencesThatHaveALearner);
+    learnerInput->getTargetInference()->getInferencesThatHaveAnOnlineLearner(context, inferencesThatHaveALearner);
     jassert(inferencesThatHaveALearner.size());
 
     // call startLearningCallback()

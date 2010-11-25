@@ -4,7 +4,7 @@
 
 using namespace lbcpp;
 
-extern void declareGlopClasses();
+extern void declareGlopClasses(ExecutionContext& context);
 
 class MyInferenceCallback : public InferenceCallback
 {
@@ -31,7 +31,8 @@ public:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  declareGlopClasses();
+  InferenceContextPtr context = multiThreadedInferenceContext(8);
+  declareGlopClasses(*context);
 
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
   NumericalSupervisedInferencePtr regressor = squareRegressionInference(T("toto regr"), perception);
   regressor->setStochasticLearner(learner);
 
-  InferencePtr ofqiInference = new OFQIInference(5, 0.9, regressor);
+  InferencePtr ofqiInference = new OFQIInference(*context, 5, 0.9, regressor);
   ofqiInference->setBatchLearner(stochasticInferenceLearner());
  
   // make training set
@@ -54,7 +55,6 @@ int main(int argc, char* argv[])
   trainingSet->append(Variable::pair(Variable::pair(1.0, 1.0), 1.0));
 
   // create context and train
-  InferenceContextPtr context = multiThreadedInferenceContext(8);
   context->appendCallback(new MyInferenceCallback());
   context->train(ofqiInference, trainingSet, ContainerPtr());
 

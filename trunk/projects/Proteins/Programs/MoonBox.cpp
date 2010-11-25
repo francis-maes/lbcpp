@@ -20,7 +20,7 @@
 
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 struct DefaultParameters
 {
@@ -53,6 +53,9 @@ InferenceContextPtr createInferenceContext()
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  ExtraTreeProteinInferenceFactory(ExecutionContext& context)
+    : ProteinInferenceFactory(context) {}
+
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
@@ -60,17 +63,17 @@ public:
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception, 2, 3);}
+    {return binaryClassificationExtraTreeInference(context, targetName, perception, 2, 3);}
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
+    {return classificationExtraTreeInference(context, targetName, perception, classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  NumericalProteinInferenceFactory(size_t windowSize)
-  : windowSize(windowSize) {}
+  NumericalProteinInferenceFactory(ExecutionContext& context, size_t windowSize)
+    : ProteinInferenceFactory(context), windowSize(windowSize) {}
 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
@@ -119,7 +122,7 @@ public:
     else
     {
       InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
-      res = oneAgainstAllClassificationInference(targetName, classes, binaryClassifier);
+      res = oneAgainstAllClassificationInference(context, targetName, classes, binaryClassifier);
     }
     
     if (DefaultParameters::saveIterations)
@@ -336,7 +339,7 @@ private:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -346,10 +349,10 @@ public:
     for (size_t i = 0; i < stack->getDepth(); ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
-    MessageCallback::info(line);
+    context.informationCallback(line);
   }
   
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -359,7 +362,7 @@ public:
     for (size_t i = 0; i < stack->getDepth() - 1; ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
-    MessageCallback::info(line);
+    context.informationCallback(line);
   }
 
 private:
@@ -416,22 +419,22 @@ public:
     callbacks.push_back(callback);
   }
 
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
       callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
   }
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     InferencePtr currentInference = stack->getCurrentInference();
     if (currentInference->getName().startsWith(inferenceNameToEvaluate)) // T("Pass learner")
     {
       ProteinEvaluatorPtr trainingEvaluator = new ProteinEvaluator();
-      context->evaluate(inference, trainingData, trainingEvaluator);
+      context.evaluate(inference, trainingData, trainingEvaluator);
 
       ProteinEvaluatorPtr testingEvaluator = new ProteinEvaluator();
-      context->evaluate(inference, testingData, testingEvaluator);
+      context.evaluate(inference, testingData, testingEvaluator);
 
       for (size_t i = 0; i < callbacks.size(); ++i)
       {
@@ -457,7 +460,7 @@ typedef ReferenceCountedObjectPtr<WrapperInferenceCallback> WrapperInferenceCall
 class StandardOutputInferenceCallback : public WrappedInferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -471,11 +474,11 @@ public:
     {
       const InferencePtr& targetInference = learnerInput->getTargetInference();
       String inputTypeName = targetInference->getInputType()->getName();
-      MessageCallback::info(T("=== Learning ") + targetInference->getName() + T(" with ") + String((int)learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
+      context.informationCallback(T("=== Learning ") + targetInference->getName() + T(" with ") + String((int)learnerInput->getNumExamples()) + T(" ") + inputTypeName + T("(s) ==="));
     }
   }
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {
@@ -521,7 +524,7 @@ public:
     }
   }
 
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -530,7 +533,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (hasNewEvaluators())
     {
@@ -583,7 +586,9 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  declareProteinClasses();
+
+  InferenceContextPtr context = createInferenceContext(); // = singleThreadedInferenceContext();
+  declareProteinClasses(*context);
 
   enum {numFolds = 5};
   /*
@@ -658,18 +663,18 @@ int main(int argc, char** argv)
   ** Loading proteins
   */
   ContainerPtr trainingData = directoryFileStream(proteinsDirectory, T("*.xml"))
-                            ->load(numProteinsToLoad)
-                            ->apply(loadFromFileFunction(proteinClass), createThreadPool())
-                            ->apply(proteinToInputOutputPairFunction(true))
+                            ->load(*context, numProteinsToLoad)
+                            ->apply(*context, loadFromFileFunction(proteinClass), Container::parallelApply)
+                            ->apply(*context, proteinToInputOutputPairFunction(true))
                             ->randomize();
   ContainerPtr testingData;
 
   if (testingProteinsDirectory != File::nonexistent)
   {
     testingData = directoryFileStream(testingProteinsDirectory, T("*.xml"))
-                ->load()
-                ->apply(loadFromFileFunction(proteinClass), createThreadPool())
-                ->apply(proteinToInputOutputPairFunction());
+                ->load(*context)
+                ->apply(*context, loadFromFileFunction(proteinClass), Container::parallelApply)
+                ->apply(*context, proteinToInputOutputPairFunction());
   }
   
   if (foldCrossValidation && testingProteinsDirectory != File::nonexistent)
@@ -696,9 +701,9 @@ int main(int argc, char** argv)
   */
   ProteinInferenceFactoryPtr factory;
   if (DefaultParameters::useExtraTrees)
-    factory = new ExtraTreeProteinInferenceFactory();
+    factory = new ExtraTreeProteinInferenceFactory(*context);
   else
-    factory = new NumericalProteinInferenceFactory(windowSize);
+    factory = new NumericalProteinInferenceFactory(*context, windowSize);
 
   /*
   ** Creation of the inference
@@ -730,11 +735,6 @@ int main(int argc, char** argv)
     inference->appendInference(inferencePass);
     previousInference = inferencePass;
   }
-
-  /*
-  ** Setting Callbacks
-  */
-  InferenceContextPtr context = createInferenceContext(); // = singleThreadedInferenceContext();
 
   /*
   ** Run
@@ -776,7 +776,7 @@ int main(int argc, char** argv)
     context->train(inference, trainingData, ContainerPtr());
 
     if (generateIntermediate)
-      inference->saveToFile(File::getCurrentWorkingDirectory().getChildFile(output + T(".inference")));
+      inference->saveToFile(*context, File::getCurrentWorkingDirectory().getChildFile(output + T(".inference")));
   }
 
   lbcpp::deinitialize();

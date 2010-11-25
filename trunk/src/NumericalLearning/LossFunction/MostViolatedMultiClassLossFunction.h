@@ -28,7 +28,7 @@ public:
   virtual bool isDerivable() const
     {return false;}
   
-  virtual void compute(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
+  virtual void compute(ExecutionContext& context, const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
   {
     size_t numClasses = classes->getNumElements();
     jassert(correctClass < numClasses && numClasses > 1);

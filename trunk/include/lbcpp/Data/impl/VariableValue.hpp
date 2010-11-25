@@ -110,13 +110,27 @@ struct VariableValue
     {return *(const ObjectPtr* )this;}
 
   template<class O>
-  const ReferenceCountedObjectPtr<O>& getObjectAndCast(MessageCallback& callback = MessageCallback::getInstance()) const
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast() const
+  {
+#ifdef JUCE_DEBUG
+    if (u.objectValue && !dynamic_cast<O* >(u.objectValue))
+    {
+      jassert(false);
+      static ReferenceCountedObjectPtr<O> empty;
+      return empty;
+    }
+#endif
+    return *(const ReferenceCountedObjectPtr<O>* )this;
+  }
+
+  template<class O>
+  const ReferenceCountedObjectPtr<O>& getObjectAndCast(ExecutionContext& context) const
   {
 #ifdef JUCE_DEBUG
     if (u.objectValue && !dynamic_cast<O* >(u.objectValue))
     {
       static ReferenceCountedObjectPtr<O> empty;
-      callback.errorMessage(T("Variable::getObjectAndCast"), T("Could not cast object from '") + getTypeName(typeid(*u.objectValue)) + T("' to '") + getTypeName(typeid(O)) + T("'"));
+      context.errorCallback(T("Variable::getObjectAndCast"), T("Could not cast object from '") + getTypeName(typeid(*u.objectValue)) + T("' to '") + getTypeName(typeid(O)) + T("'"));
       return empty;
     }
 #endif

@@ -16,7 +16,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -31,8 +31,8 @@ public:
       double minBound = mean - step;
       double maxBound = mean + step;
 
-      double firstResult = objective->compute(minBound);
-      double secondResult = objective->compute(maxBound);
+      double firstResult = objective->compute(context, minBound);
+      double secondResult = objective->compute(context, maxBound);
 
       if (firstResult > secondResult)
       {
@@ -67,7 +67,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
   
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -82,7 +82,7 @@ public:
 
       for (size_t i = 0; i < numParts; ++i) // FIXME: launch jobs
       {
-        results[i] = objective->compute(minValue + (i * 2 + 1) * step);
+        results[i] = objective->compute(context, minValue + (i * 2 + 1) * step);
         //std::cout << "["<<(minValue + (i * 2 + 1) * step)<<"]: "<< results[i] << " ";
       }
       //std::cout << std::endl;
@@ -120,7 +120,7 @@ public:
   virtual TypePtr getInputType() const
     {return doubleType;}
   
-  virtual double compute(const Variable& input) const
+  virtual double compute(ExecutionContext& context, const Variable& input) const
   {
     double x = input.getDouble();
     return -(x * x);

@@ -9,12 +9,12 @@ namespace lbcpp
 class OFQIInference : public VectorSequentialInference
 {
 public:
-  OFQIInference(size_t horizon, double discount, InferencePtr regressorModel)
+  OFQIInference(ExecutionContext& context, size_t horizon, double discount, InferencePtr regressorModel)
     : VectorSequentialInference(T("OFQI")), discount(discount)
   {
     for (size_t i = 0; i < horizon; ++i)
       {
-	InferencePtr regressor = regressorModel->cloneAndCast<Inference>();
+	InferencePtr regressor = regressorModel->cloneAndCast<Inference>(context);
 	regressor->setName(T("OFQI - ") + String((int)i));
 	appendInference(regressor);
       }

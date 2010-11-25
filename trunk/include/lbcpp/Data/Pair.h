@@ -54,10 +54,10 @@ public:
   virtual int compare(ObjectPtr otherObject) const
     {return compareVariables(otherObject);}
 
-  virtual ObjectPtr clone() const
+  virtual ObjectPtr clone(ExecutionContext& context) const
     {return new Pair(thisClass, first, second);}
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {PairPtr targetPair = target.staticCast<Pair>(); targetPair->first = first; targetPair->second = second;}
  
   const Variable& getFirst() const
@@ -86,14 +86,14 @@ protected:
 
 
 template<class T1, class T2>
-inline void variableToNative(std::pair<T1, T2>& dest, const Variable& source)
+inline void variableToNative(ExecutionContext& context, std::pair<T1, T2>& dest, const Variable& source)
 {
   jassert(source.isObject());
-  const PairPtr& sourcePair = source.getObjectAndCast<Pair>();
+  const PairPtr& sourcePair = source.getObjectAndCast<Pair>(context);
   if (sourcePair)
   {
-    lbcpp::variableToNative(dest.first, sourcePair->getFirst());
-    lbcpp::variableToNative(dest.second, sourcePair->getSecond());
+    lbcpp::variableToNative(context, dest.first, sourcePair->getFirst());
+    lbcpp::variableToNative(context, dest.second, sourcePair->getSecond());
   }
   else
   {
@@ -107,7 +107,7 @@ inline void nativeToVariable(Variable& dest, const std::pair<T1, T2>& source, Ty
 {
   jassert(expectedType->getNumTemplateArguments() == 2);
   dest = Variable::create(expectedType);
-  const PairPtr& destPair = dest.getObjectAndCast<Pair>();
+  const PairPtr& destPair = dest.getObject().staticCast<Pair>();
   jassert(destPair);
   nativeToVariable(destPair->getFirst(), source.first, expectedType->getTemplateArgument(0));
   nativeToVariable(destPair->getSecond(), source.second, expectedType->getTemplateArgument(1));

@@ -38,11 +38,11 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return vectorClass(getOutputElementsType(inputType));}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
-    size_t n = (size_t)sizeFunction->compute(input).getInteger();
+    size_t n = (size_t)sizeFunction->computeFunction(context, input).getInteger();
     
-    VectorPtr supervisionVector = supervision.exists() ? supervision.getObjectAndCast<Vector>() : VectorPtr();
+    VectorPtr supervisionVector = supervision.exists() ? supervision.getObjectAndCast<Vector>(context) : VectorPtr();
 
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     TypePtr subInputType = pairClass(input.getType(), positiveIntegerType);
@@ -57,7 +57,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     VectorPtr res = vector(getOutputElementsType(state->getInput().getType()), n);

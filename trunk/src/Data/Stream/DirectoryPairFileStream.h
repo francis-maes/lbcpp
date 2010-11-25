@@ -32,7 +32,7 @@ public:
   virtual bool isExhausted() const
     {return nextFilePosition >= (int)files.size();}
 
-  virtual Variable next()
+  virtual Variable next(ExecutionContext& context)
   {
     if (isExhausted())
       return Variable();

@@ -27,7 +27,7 @@ public:
     return Variable();
   }
 
-  virtual void setVariable(size_t index, const Variable& value)
+  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
   {
     jassert(value.exists() && value.isDouble());
     if ((int)index > lastIndex)

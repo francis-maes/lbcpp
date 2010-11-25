@@ -39,8 +39,8 @@ public:
   virtual void reset() = 0;
   virtual bool shouldStop(double objectiveValueToMinimize) = 0;
 
-  virtual void clone(const ObjectPtr& target) const
-    {Object::clone(target); target.staticCast<StoppingCriterion>()->reset();}
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+    {Object::clone(context, target); target.staticCast<StoppingCriterion>()->reset();}
 };
 
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);

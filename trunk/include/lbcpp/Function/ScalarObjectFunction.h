@@ -52,8 +52,8 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
-    {return compute(input.getObject());}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return compute(context, input.getObject());}
 
   /**
   ** Checks if the function is derivable or not.
@@ -62,12 +62,12 @@ public:
   */
   virtual bool isDerivable() const = 0;
 
-  virtual double compute(ObjectPtr input) const
-    {double res = 0.0; compute(input, &res, NULL, 0.0); return res;}
+  virtual double compute(ExecutionContext& context, ObjectPtr input) const
+    {double res = 0.0; compute(context, input, &res, NULL, 0.0); return res;}
 
   // if (output) *output += f(input)
   // if (gradientTarget) *gradientTarget += gradient_f(input) * gradientWeight
-  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const = 0;
+  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const = 0;
 
   ScalarObjectFunctionPtr multiplyByScalar(double weight) const;
 };

@@ -24,8 +24,8 @@ public:
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" v ") + predicate2->toString() + T(")");}
 
-  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
-    {return predicate1->computePredicate(value, callback) || predicate2->computePredicate(value, callback);}
+  virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
+    {return predicate1->computePredicate(context, value) || predicate2->computePredicate(context, value);}
 };
 
 class LogicalAndPredicate : public BinaryPredicate
@@ -38,8 +38,8 @@ public:
   virtual String toString() const
     {return T("(") + predicate1->toString() + T(" ^ ") + predicate2->toString() + T(")");}
 
-  virtual bool computePredicate(const Variable& value, MessageCallback& callback) const
-    {return predicate1->computePredicate(value, callback) && predicate2->computePredicate(value, callback);}
+  virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
+    {return predicate1->computePredicate(context, value) && predicate2->computePredicate(context, value);}
 };
 
 }; /* namespace lbcpp */

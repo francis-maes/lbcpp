@@ -13,7 +13,7 @@
   <import name="DecisionTree"/>
 
   <declarationCode>
-    lbcpp::Type::finishDeclarations();
+    context.finishTypeDeclarations();
   </declarationCode>
   
 </file>

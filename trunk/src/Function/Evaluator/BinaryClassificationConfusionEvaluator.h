@@ -39,7 +39,7 @@ public:
     return true;
   }
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     bool predicted, correct;
     if (convertToBoolean(predictedObject, predicted) && convertToBoolean(correctObject, correct))
@@ -99,12 +99,12 @@ public:
     : Evaluator(name)  {}
   ROCAnalysisEvaluator() {}
 
-  virtual void addPrediction(const Variable& predicted, const Variable& correct)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
   {
     if (!predicted.exists() || !correct.exists())
       return;
     jassert(predicted.isDouble() && correct.isBoolean());
-    roc.addPrediction(predicted.getDouble(), correct.getBoolean());
+    roc.addPrediction(context, predicted.getDouble(), correct.getBoolean());
   }
  
   virtual String toString() const

@@ -12,10 +12,10 @@
 #include "Formats/FASTAFileGenerator.h"
 using namespace lbcpp;
 
-ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, MessageCallback& callback)
+ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant)
 {
-  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(pdbFile, beTolerant, callback));
-  if (!parser->next().exists())
+  ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(context, pdbFile, beTolerant));
+  if (!parser->next(context).exists())
     return ProteinPtr();
   
   std::vector<ProteinPtr> proteins = parser->getAllChains();
@@ -29,7 +29,7 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, MessageC
       {
         for (size_t j = 0; j < proteins.size(); ++j)
           std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
-        callback.errorMessage(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
+        context.errorCallback(T("ProteinObject::createFromPDB"), T("This file contains chains of different size, I do not know which one to choose"));
         return ProteinPtr();
       }
   }
@@ -41,20 +41,20 @@ ProteinPtr Protein::createFromPDB(const File& pdbFile, bool beTolerant, MessageC
   return res;
 }
 
-ProteinPtr Protein::createFromXml(const File& file, MessageCallback& callback)
-  {return Variable::createFromFile(file, callback).getObjectAndCast<Protein>();}
+ProteinPtr Protein::createFromXml(ExecutionContext& context, const File& file)
+  {return Variable::createFromFile(context, file).getObjectAndCast<Protein>(context);}
 
-ProteinPtr Protein::createFromFASTA(const File& file, MessageCallback& callback)
-  {return StreamPtr(new FASTAFileParser(file, callback))->next().getObjectAndCast<Protein>(callback);}
+ProteinPtr Protein::createFromFASTA(ExecutionContext& context, const File& file)
+  {return StreamPtr(new FASTAFileParser(context, file))->next(context).getObjectAndCast<Protein>(context);}
 
-void Protein::saveToPDBFile(const File& pdbFile, MessageCallback& callback) const
-  {ConsumerPtr(new PDBFileGenerator(pdbFile, callback))->consume(refCountedPointerFromThis(this));}
+void Protein::saveToPDBFile(ExecutionContext& context, const File& pdbFile) const
+  {ConsumerPtr(new PDBFileGenerator(context, pdbFile))->consume(context, refCountedPointerFromThis(this));}
 
-void Protein::saveToXmlFile(const File& xmlFile, MessageCallback& callback) const
-  {Variable(refCountedPointerFromThis(this)).saveToFile(xmlFile, callback);}
+void Protein::saveToXmlFile(ExecutionContext& context, const File& xmlFile) const
+  {Object::saveToFile(context, xmlFile);}
 
-void Protein::saveToFASTAFile(const File& fastaFile, MessageCallback& callback) const
-  {ConsumerPtr(new FASTAFileGenerator(fastaFile, callback))->consume(refCountedPointerFromThis(this));}
+void Protein::saveToFASTAFile(ExecutionContext& context, const File& fastaFile) const
+  {ConsumerPtr(new FASTAFileGenerator(context, fastaFile))->consume(context, refCountedPointerFromThis(this));}
 
 void Protein::setPrimaryStructure(VectorPtr primaryStructure)
 {
@@ -83,9 +83,9 @@ bool Protein::loadFromXml(XmlImporter& importer)
   return true;
 }
 
-void Protein::clone(const ObjectPtr& target) const
+void Protein::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
-  Object::clone(target);
+  Object::clone(context, target);
   const ProteinPtr& targetProtein = target.staticCast<Protein>();
   targetProtein->cysteinIndices = cysteinIndices;
   targetProtein->cysteinInvIndices = cysteinInvIndices;

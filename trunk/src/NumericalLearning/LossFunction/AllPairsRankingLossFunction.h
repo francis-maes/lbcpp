@@ -22,7 +22,7 @@ public:
     : AdditiveRankingLossFunction(baseLoss, costs) {}
   AllPairsRankingLossFunction() {}
 
-  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
+  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
     // testLoss(scores, costs);
     HingeLossFunctionPtr hingeLoss = baseLoss.dynamicCast<HingeLossFunction>();

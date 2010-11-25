@@ -45,7 +45,7 @@ public:
   virtual VariableValue create() const
     {return VariableValue(String::empty);}
 
-  virtual VariableValue createFromString(const String& value, MessageCallback& callback) const
+  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim();
     return VariableValue(v.startsWithChar('"') ? v.unquoted() : v);

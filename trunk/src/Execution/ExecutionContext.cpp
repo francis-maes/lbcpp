@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Data/Variable.h>
 using namespace lbcpp;
 
 ExecutionContext::ExecutionContext()
@@ -89,3 +90,51 @@ bool ExecutionContext::run(const WorkUnitPtr& workUnit)
   postExecutionCallback(workUnit, res);
   return res;
 }
+
+ObjectPtr ExecutionContext::createObject(ClassPtr objectClass)
+{
+  ObjectPtr res = objectClass->create().getObject();
+  jassert(res);
+  jassert(res->getReferenceCount() == 2);
+  res->decrementReferenceCounter();
+  return res;
+}
+
+Variable ExecutionContext::createVariable(TypePtr type)
+{
+  jassert(type && type->isInitialized());
+  return Variable(type, type->create());
+}
+
+EnumerationPtr ExecutionContext::getEnumeration(const String& className)
+  {return (EnumerationPtr)getType(className);}
+
+#ifdef JUCE_DEBUG
+bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
+{
+  jassert(baseType);
+  if (!type || !type->inheritsFrom(baseType))
+  {
+    errorCallback(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
+    return false;
+  }
+  return true;
+}
+
+bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseType)
+{
+  jassert(baseType);
+  return variable.isNil() || checkInheritance(variable.getType(), baseType);
+}
+#endif // JUCE_DEBUG
+
+ExecutionContextPtr lbcpp::defaultConsoleExecutionContext()
+{
+  int numCpus = juce::SystemStats::getNumCpus();
+  ExecutionContextPtr res = singleThreadedExecutionContext(); // todo: multi-threaded execution context
+  res->appendCallback(consoleExecutionCallback());
+  return res;
+}
+
+
+ExecutionContextPtr lbcpp::silentExecutionContext = singleThreadedExecutionContext();

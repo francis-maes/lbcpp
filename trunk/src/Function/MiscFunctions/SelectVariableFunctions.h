@@ -28,7 +28,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return index >= 0 ? inputType->getObjectVariableType((size_t)index) : inputType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     if (index >= 0)
     {
@@ -62,9 +62,9 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return outputType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     jassert(pair);
     const Variable& first = pair->getFirst();
     const Variable& second = pair->getSecond();

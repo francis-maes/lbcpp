@@ -28,11 +28,11 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return expectedType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     File file = input.getFile();
-    Variable res = Variable::createFromFile(file, callback);
-    checkInheritance(res, expectedType);
+    Variable res = Variable::createFromFile(context, file);
+    context.checkInheritance(res, expectedType);
     return res;
   }
 
@@ -55,18 +55,18 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return expectedType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     File file1 = pair->getFirst().getFile();
     File file2 = pair->getSecond().getFile();
 
-    Variable res1 = Variable::createFromFile(file1, callback);
-    Variable res2 = Variable::createFromFile(file2, callback);
+    Variable res1 = Variable::createFromFile(context, file1);
+    Variable res2 = Variable::createFromFile(context, file2);
     if (!res1.exists() || !res2.exists())
       return Variable::missingValue(expectedType);
     Variable res = Variable::pair(res1, res2);
-    checkInheritance(res, expectedType);
+    context.checkInheritance(res, expectedType);
     return res;
   }
 

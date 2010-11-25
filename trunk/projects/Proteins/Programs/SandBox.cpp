@@ -15,33 +15,32 @@
 #include "Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses();
+extern void declareProteinClasses(ExecutionContext& context);
 
 ///////////////////////////////////////////////
 
 class EvaluateOnlineLearnerObjectiveFunction : public ObjectiveFunction
 {
 public:
-  EvaluateOnlineLearnerObjectiveFunction(InferenceContextWeakPtr context, const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
-    : context(context), inferenceLearner(inferenceLearner), learnerInput(learnerInput) {}
+  EvaluateOnlineLearnerObjectiveFunction(const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
+    : inferenceLearner(inferenceLearner), learnerInput(learnerInput) {}
   EvaluateOnlineLearnerObjectiveFunction() {}
 
-  virtual void customizeLearner(const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const = 0;
+  virtual void customizeLearner(ExecutionContext& context, const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const = 0;
 
-  virtual double compute(const Variable& input) const
+  virtual double compute(ExecutionContext& context, const Variable& input) const
   {
-    InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>();
+    InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
-    customizeLearner(input, onlineLearner);
+    customizeLearner(context, input, onlineLearner);
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    singleThreadedInferenceContext()->run(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    ((InferenceContext& )context).run(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
     return onlineLearner->getLastLearner()->getDefaultScore();
   }
 
 protected:
   friend class EvaluateOnlineLearnerObjectiveFunctionClass;
 
-  InferenceContextWeakPtr context;
   InferencePtr inferenceLearner;
   InferenceBatchLearnerInputPtr learnerInput;
 };
@@ -51,17 +50,17 @@ typedef ReferenceCountedObjectPtr<EvaluateOnlineLearnerObjectiveFunction> Evalua
 class EvaluateLearningRateObjectiveFunction : public EvaluateOnlineLearnerObjectiveFunction
 {
 public:
-  EvaluateLearningRateObjectiveFunction(InferenceContextWeakPtr context, const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
-    : EvaluateOnlineLearnerObjectiveFunction(context, inferenceLearner, learnerInput) {}
+  EvaluateLearningRateObjectiveFunction(const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
+    : EvaluateOnlineLearnerObjectiveFunction(inferenceLearner, learnerInput) {}
 
   virtual TypePtr getInputType() const
     {return doubleType;}
 
-  virtual void customizeLearner(const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const
+  virtual void customizeLearner(ExecutionContext& context, const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const
   {
     int index = onlineLearner->getClass()->findObjectVariable(T("learningRate"));
     jassert(index >= 0);
-    onlineLearner->setVariable(index, constantIterationFunction(input.getDouble()));
+    onlineLearner->setVariable(context, index, constantIterationFunction(input.getDouble()));
   }
 };
 
@@ -79,7 +78,7 @@ public:
   virtual TypePtr getOutputType(TypePtr input) const
     {return doubleType;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
@@ -115,17 +114,17 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
-    EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(context, baseLearner, learnerInput);
+    EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
     
-    Variable optimizedValue = context->run(optimizer, objective, Variable(), returnCode);
+    Variable optimizedValue = context.run(optimizer, objective, Variable(), returnCode);
     
     InferencePtr targetInference = learnerInput->getTargetInference();
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
-    objective->customizeLearner(optimizedValue, onlineLearner);
-    context->run(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    objective->customizeLearner(context, optimizedValue, onlineLearner);
+    context.run(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
     return Variable();
   }
 
@@ -144,6 +143,9 @@ InferenceContextPtr createInferenceContext()
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  ExtraTreeProteinInferenceFactory(ExecutionContext& context)
+    : ProteinInferenceFactory(context) {}
+
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
@@ -151,15 +153,18 @@ public:
   }
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception, 2, 3);}
+    {return binaryClassificationExtraTreeInference(context, targetName, perception, 2, 3);}
 
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
+    {return classificationExtraTreeInference(context, targetName, perception, classes, 2, 3);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
+  NumericalProteinInferenceFactory(ExecutionContext& context)
+    : ProteinInferenceFactory(context) {}
+
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
@@ -281,11 +286,11 @@ protected:
 
     if (evaluator)
     {
-      EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
+      EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>(context);
       trainEvaluator->setName(T("trainScore"));
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(trainEvaluator, false));
 
-      EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>();
+      EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>(context);
       validationEvaluator->setName(T("validationScore"));
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
@@ -307,7 +312,7 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -327,11 +332,11 @@ public:
         info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
 
       info += T(" ") + inputTypeName + T("(s) ===");
-      MessageCallback::info(info);
+      context.informationCallback(info);
     }
   }
 
-  virtual void postInferenceCallback(InferenceContextWeakPtr context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
@@ -340,7 +345,7 @@ public:
     if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration
-      MessageCallback::info(String::empty);
+      context.informationCallback(String::empty);
       //MessageCallback::info(T("====================================================="));
       //MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       //MessageCallback::info(T("====================================================="));
@@ -356,7 +361,7 @@ public:
           String info;
           for (size_t i = 0; i < scores.size(); ++i)
             info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
-          MessageCallback::info(info);
+          context.informationCallback(info);
         }
       }
 /*
@@ -375,7 +380,7 @@ public:
     
     if (stack->getDepth() == 1)
     {
-      MessageCallback::info(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
+      context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }
   }
 
@@ -391,7 +396,7 @@ private:
 
 /////////////////////////////////////////
 
-VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirectory, ThreadPoolPtr pool)
+VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
   size_t maxCount = 10;
@@ -399,11 +404,12 @@ VectorPtr loadProteins(const File& inputDirectory, const File& supervisionDirect
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
-    return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(maxCount)
-        ->apply(loadFromFilePairFunction(proteinClass, proteinClass), pool)->randomize();
+    return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
+      ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)->randomize();
   else
-    return directoryFileStream(supervisionDirectory)->load(maxCount)->apply(loadFromFileFunction(proteinClass), pool)
-      ->apply(proteinToInputOutputPairFunction(false), false)->randomize();
+    return directoryFileStream(supervisionDirectory)->load(context, maxCount)
+      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
+      ->apply(context, proteinToInputOutputPairFunction(false), Container::sequentialApply)->randomize();
 }
 
 void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
@@ -414,14 +420,14 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
 int main(int argc, char** argv)
 {
   lbcpp::initialize();
-  Class::declare(ClassPtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
-  Class::declare(ClassPtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
-  Class::declare(ClassPtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
-  Class::declare(ClassPtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
-
-  declareProteinClasses();
 
   ThreadPoolPtr pool = new ThreadPool(7);
+  InferenceContextPtr context = multiThreadedInferenceContext(pool);
+  context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
+  context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
+  context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
+  context->declareType(TypePtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
+  declareProteinClasses(*context);
 
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -430,16 +436,16 @@ int main(int argc, char** argv)
 #endif
 
   bool inputOnly = true;
-  ContainerPtr trainProteins = loadProteins(inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")), pool);
-  ContainerPtr testProteins = loadProteins(inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")), pool);
+  ContainerPtr trainProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
+  ContainerPtr testProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 10);
   trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
 
-  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory();
-  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory();
+  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(*context);
+  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(*context);
 
   //ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
@@ -503,7 +509,6 @@ int main(int argc, char** argv)
   Variable(inference).printRecursively(std::cout, 2);*/
 
 
-  InferenceContextPtr context = multiThreadedInferenceContext(pool);
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
   /*
@@ -548,11 +553,11 @@ int main(int argc, char** argv)
   
 
   std::cout << "Saving inference ..." << std::flush;
-  inference->saveToFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  inference->saveToFile(*context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
   std::cout << "Loading..." << std::flush;
-  inference = Inference::createFromFile(workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  inference = Inference::createFromFile(*context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
   for (size_t i = 7; i <= 7; i += 1)

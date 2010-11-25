@@ -23,7 +23,7 @@ public:
   virtual TypePtr getOutputType() const
     {return nilType;}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
     {}
 
   lbcpp_UseDebuggingNewOperator

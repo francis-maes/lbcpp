@@ -71,10 +71,10 @@ PerceptionPtr lbcpp::perceptionToFeatures(PerceptionPtr perception)
 NumericalInferenceParameters::NumericalInferenceParameters(const PerceptionPtr& perception, TypePtr weightsType)
   : Object(numericalInferenceParametersClass(weightsType)), perception(perception) {}
 
-void NumericalInferenceParameters::clone(const ObjectPtr& target) const
+void NumericalInferenceParameters::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
-  Object::clone(target);
-  target.staticCast<NumericalInferenceParameters>()->weights = weights ? weights->deepClone() : ObjectPtr();
+  Object::clone(context, target);
+  target.staticCast<NumericalInferenceParameters>()->weights = weights ? weights->deepClone(context) : ObjectPtr();
 }
 
 /*
@@ -88,7 +88,7 @@ NumericalInference::NumericalInference(const String& name, PerceptionPtr percept
 const NumericalInferenceParametersPtr& NumericalInference::getParameters() const
 {
   ScopedReadLock _(parametersLock);
-  return parameters.getObjectAndCast<NumericalInferenceParameters>();
+  return parameters.getObject().staticCast<NumericalInferenceParameters>();
 }
 
 const PerceptionPtr& NumericalInference::getPerception() const
@@ -100,14 +100,14 @@ const PerceptionPtr& NumericalInference::getPerception() const
 const ObjectPtr& NumericalInference::getWeights() const
 {
   ScopedReadLock _(parametersLock);
-  return parameters.getObjectAndCast<NumericalInferenceParameters>()->getWeights();
+  return parameters.getObject().staticCast<NumericalInferenceParameters>()->getWeights();
 }
 
-ObjectPtr NumericalInference::getWeightsCopy() const
+ObjectPtr NumericalInference::getWeightsCopy(ExecutionContext& context) const
 {
   ScopedReadLock _(parametersLock);
   ObjectPtr weights = getParameters()->getWeights();
-  return weights ? weights->deepClone() : ObjectPtr();
+  return weights ? weights->deepClone(context) : ObjectPtr();
 }
 
 void NumericalInference::setWeights(const ObjectPtr& newWeights)
@@ -116,29 +116,29 @@ void NumericalInference::setWeights(const ObjectPtr& newWeights)
   getParameters()->getWeights() = newWeights;
 }
 
-void NumericalInference::addWeightedToParameters(const ObjectPtr& value, double weight)
+void NumericalInference::addWeightedToParameters(ExecutionContext& context, const ObjectPtr& value, double weight)
 {
   if (weight)
   {
     parametersLock.enterWrite();
-    lbcpp::addWeighted(getParameters()->getWeights(), value, weight);
+    lbcpp::addWeighted(context, getParameters()->getWeights(), value, weight);
     parametersLock.exitWrite();
     parametersChangedCallback();
   }
 }
 
-void NumericalInference::addWeightedToParameters(const PerceptionPtr& perception, const Variable& input, double weight)
+void NumericalInference::addWeightedToParameters(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input, double weight)
 {
   if (weight)
   {
     parametersLock.enterWrite();
-    lbcpp::addWeighted(getParameters()->getWeights(), perception, input, weight);
+    lbcpp::addWeighted(context, getParameters()->getWeights(), perception, input, weight);
     parametersLock.exitWrite();
     parametersChangedCallback();
   }
 }
 
-void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr regularizer, double weight)
+void NumericalInference::applyRegularizerToParameters(ExecutionContext& context, ScalarObjectFunctionPtr regularizer, double weight)
 {
   if (weight)
   {
@@ -146,7 +146,7 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
     bool changed = true;
     ObjectPtr weights = getParameters()->getWeights();
     if (weights)
-      regularizer->compute(weights, NULL, &weights, weight);
+      regularizer->compute(context, weights, NULL, &weights, weight);
     else
       changed = false;
     parametersLock.exitWrite();
@@ -155,7 +155,7 @@ void NumericalInference::applyRegularizerToParameters(ScalarObjectFunctionPtr re
   }
 }
 
-void NumericalInference::updateParametersType()
+void NumericalInference::updateParametersType(ExecutionContext& context)
 {
   NumericalInferenceParametersPtr previousParameters = getParameters();
   const PerceptionPtr& perception = previousParameters->getPerception();
@@ -165,7 +165,7 @@ void NumericalInference::updateParametersType()
   TypePtr weightsType = getWeightsType(perception->getOutputType());
   parameters = Variable(new NumericalInferenceParameters(perception, weightsType));
   if (weights)
-    getParameters()->getWeights() = weights->cloneToNewType(weightsType);
+    getParameters()->getWeights() = weights->cloneToNewType(context, weightsType);
 }
 
 /*

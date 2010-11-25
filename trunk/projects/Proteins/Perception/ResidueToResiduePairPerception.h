@@ -30,7 +30,7 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
     Variable protein = input[0];
     Variable positionPair = input[1];

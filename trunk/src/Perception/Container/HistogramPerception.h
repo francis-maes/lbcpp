@@ -34,12 +34,12 @@ public:
   HistogramPerception(TypePtr elementsType, bool useCache);
   HistogramPerception() {}
 
-  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const = 0;
+  virtual const ContainerPtr& getInput(ExecutionContext& context, const Variable& input, int& beginIndex, int& endIndex) const = 0;
   
   virtual String toString() const
     {return elementsType->getName() + T(" histogram");}
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const;
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -62,9 +62,9 @@ public:
   virtual TypePtr getInputType() const
    {return containerClass(elementsType);}
   
-  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(ExecutionContext& context, const Variable& input, int& beginIndex, int& endIndex) const
   {
-    const ContainerPtr& container = input.getObjectAndCast<Container>();
+    const ContainerPtr& container = input.getObjectAndCast<Container>(context);
     if (container)
     {
       beginIndex = 0;
@@ -84,11 +84,11 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), positiveIntegerType);}
   
-  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(ExecutionContext& context, const Variable& input, int& beginIndex, int& endIndex) const
   {
     jassert(windowSize);
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>(context);
     beginIndex = pair->getSecond().getInteger() - (int)(windowSize / 2);
     endIndex = beginIndex + (int)windowSize;
     return container;
@@ -110,11 +110,11 @@ public:
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementsType), pairClass(positiveIntegerType, positiveIntegerType));}
   
-  virtual const ContainerPtr& getInput(const Variable& input, int& beginIndex, int& endIndex) const
+  virtual const ContainerPtr& getInput(ExecutionContext& context, const Variable& input, int& beginIndex, int& endIndex) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>();
-    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>();
-    const PairPtr& indexPair = pair->getSecond().getObjectAndCast<Pair>();
+    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
+    const ContainerPtr& container = pair->getFirst().getObjectAndCast<Container>(context);
+    const PairPtr& indexPair = pair->getSecond().getObjectAndCast<Pair>(context);
     beginIndex = indexPair->getFirst().getInteger();
     endIndex = indexPair->getSecond().getInteger(); 
     if (beginIndex > endIndex)

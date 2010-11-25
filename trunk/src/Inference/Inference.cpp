@@ -28,22 +28,22 @@ Inference::~Inference()
   }
 }
 
-String Inference::getDescription(const Variable& input, const Variable& supervision) const
+String Inference::getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {return getClassName() + T("(") + input.toShortString() + T(", ") + supervision.toShortString() + T(")");}
 
-void Inference::clone(const ObjectPtr& t) const
+void Inference::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const InferencePtr& target = t.staticCast<Inference>();
-  NameableObject::clone(target);
+  NameableObject::clone(context, target);
   if (onlineLearner)
   {
-    target->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>();
+    target->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>(context);
     jassert(!target->onlineLearner->getNextLearner() || target->onlineLearner->getNextLearner()->getPreviousLearner() == target->onlineLearner);
   }
   ScopedReadLock _(parametersLock);
   if (parameters.exists())
   {
-    target->parameters = getParametersCopy(); // clone parameters
+    target->parameters = getParametersCopy(context); // clone parameters
     target->parametersChangedCallback();
   }
 }
@@ -54,10 +54,10 @@ Variable Inference::getParameters() const
   return parameters;
 }
 
-Variable Inference::getParametersCopy() const
+Variable Inference::getParametersCopy(ExecutionContext& context) const
 {
   ScopedReadLock _(parametersLock);
-  return parameters.isObject() ? Variable(parameters.getObject()->clone()) : parameters;
+  return parameters.isObject() ? Variable(parameters.getObject()->clone(context)) : parameters;
 }
 
 void Inference::setParameters(const Variable& parameters)
@@ -110,11 +110,11 @@ DecoratorInference::DecoratorInference(const String& name)
 String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
-void StaticDecoratorInference::clone(const ObjectPtr& target) const
+void StaticDecoratorInference::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
-  DecoratorInference::clone(target);
+  DecoratorInference::clone(context, target);
   if (decorated)
-    target.staticCast<StaticDecoratorInference>()->decorated = decorated->cloneAndCast<Inference>();
+    target.staticCast<StaticDecoratorInference>()->decorated = decorated->cloneAndCast<Inference>(context);
 }
 
 /*
@@ -130,8 +130,8 @@ PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr p
 TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
   {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
 
-Variable PostProcessInference::finalizeInference(InferenceContextWeakPtr context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
-  {return postProcessingFunction->compute(Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
+Variable PostProcessInference::finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  {return postProcessingFunction->computeFunction(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
 
 /*
 ** ParallelInference
@@ -148,10 +148,10 @@ SharedParallelInference::SharedParallelInference(const String& name, InferencePt
   setBatchLearner(sharedParallelInferenceLearner());
 }
 
-Variable SharedParallelInference::run(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SharedParallelInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   subInference->beginRunSession();
-  Variable res = ParallelInference::run(context, input, supervision, returnCode);
+  Variable res = ParallelInference::computeInference(context, input, supervision, returnCode);
   subInference->endRunSession();
   return res;
 }
@@ -162,13 +162,13 @@ String SharedParallelInference::toString() const
   return getClassName() + T("(") + subInference->toString() + T(")");
 }
 
-void VectorParallelInference::clone(const ObjectPtr& t) const
+void VectorParallelInference::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   ReferenceCountedObjectPtr<VectorParallelInference> target = t.staticCast<VectorParallelInference>();
-  StaticParallelInference::clone(target);
+  StaticParallelInference::clone(context, target);
   jassert(target->subInferences.size() == subInferences.size());
   for (size_t i = 0; i < subInferences.size(); ++i)
-    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>();
+    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>(context);
 }
 
 /*
@@ -183,7 +183,7 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 VectorSequentialInference::VectorSequentialInference(const String& name)
   : StaticSequentialInference(name) {}
 
-SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
   if (subInferences.size())
@@ -191,7 +191,7 @@ SequentialInferenceStatePtr VectorSequentialInference::prepareInference(Inferenc
   return state;
 }
 
-bool VectorSequentialInference::updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+bool VectorSequentialInference::updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
 {
   int index = state->getStepNumber(); 
   jassert(index >= 0);
@@ -207,13 +207,13 @@ bool VectorSequentialInference::updateInference(InferenceContextWeakPtr context,
     return false;
 }
 
-void VectorSequentialInference::clone(const ObjectPtr& t) const
+void VectorSequentialInference::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   ReferenceCountedObjectPtr<VectorSequentialInference> target = t.staticCast<VectorSequentialInference>();
-  StaticSequentialInference::clone(target);
+  StaticSequentialInference::clone(context, target);
   jassert(target->subInferences.size() == subInferences.size());
   for (size_t i = 0; i < subInferences.size(); ++i)
-    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>();
+    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>(context);
 }
 
 /*
@@ -222,12 +222,17 @@ void VectorSequentialInference::clone(const ObjectPtr& t) const
 class InferenceVisitor
 {
 public:
+  InferenceVisitor(ExecutionContext& context)
+    : context(context) {}
+
   virtual ~InferenceVisitor() {}
 
   virtual void visit(InferencePtr inference)
     {accept(inference);}
 
 protected:
+  ExecutionContext& context;
+
   void accept(InferencePtr inference)
   {
     size_t n = inference->getNumVariables();
@@ -235,17 +240,17 @@ protected:
     {
       if (inference->getVariableType(i)->inheritsFrom(inferenceClass))
       {
-        InferencePtr subInference = inference->getVariable(i).getObjectAndCast<Inference>();
+        InferencePtr subInference = inference->getVariable(i).getObjectAndCast<Inference>(context);
         if (subInference)
           visit(subInference);
       }
       else if (inference->getVariableType(i)->inheritsFrom(containerClass(inferenceClass)))
       {
-        ContainerPtr subInferences = inference->getVariable(i).getObjectAndCast<Container>();
+        ContainerPtr subInferences = inference->getVariable(i).getObjectAndCast<Container>(context);
         size_t m = subInferences->getNumElements();
         for (size_t j = 0; j < m; ++j)
         {
-          InferencePtr subInference = subInferences->getElement(j).getObjectAndCast<Inference>();
+          InferencePtr subInference = subInferences->getElement(j).getObjectAndCast<Inference>(context);
           if (subInference)
             visit(subInference);
         }
@@ -257,8 +262,8 @@ protected:
 class GetInferencesThatHaveAnOnlineLearnerVisitor : public InferenceVisitor
 {
 public:
-  GetInferencesThatHaveAnOnlineLearnerVisitor(std::vector<InferencePtr>& res)
-    : res(res) {}
+  GetInferencesThatHaveAnOnlineLearnerVisitor(ExecutionContext& context, std::vector<InferencePtr>& res)
+    : InferenceVisitor(context), res(res) {}
 
   std::vector<InferencePtr>& res;
 
@@ -270,8 +275,8 @@ public:
   }
 };
 
-void Inference::getInferencesThatHaveAnOnlineLearner(std::vector<InferencePtr>& res) const
+void Inference::getInferencesThatHaveAnOnlineLearner(ExecutionContext& context, std::vector<InferencePtr>& res) const
 {
-  GetInferencesThatHaveAnOnlineLearnerVisitor visitor(res);
+  GetInferencesThatHaveAnOnlineLearnerVisitor visitor(context, res);
   visitor.visit(refCountedPointerFromThis(this));
 }

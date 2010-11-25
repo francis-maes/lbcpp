@@ -24,10 +24,10 @@ public:
   virtual bool isDerivable() const
     {return f1->isDerivable() && f2->isDerivable();}
 
-  virtual void compute(ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
   {
-    f1->compute(input, output, gradientTarget, gradientWeight);
-    f2->compute(input, output, gradientTarget, gradientWeight);
+    f1->compute(context, input, output, gradientTarget, gradientWeight);
+    f2->compute(context, input, output, gradientTarget, gradientWeight);
   }
 
 protected:

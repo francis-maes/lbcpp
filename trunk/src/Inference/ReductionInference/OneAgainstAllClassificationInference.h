@@ -17,13 +17,13 @@ namespace lbcpp
 class OneAgainstAllClassificationInference : public VectorParallelInference
 {
 public:
-  OneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+  OneAgainstAllClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
     subInferences.resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
+      InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>(context);
       subInference->setName(classes->getElementName(i));
       subInferences[i] = subInference;
     }
@@ -39,7 +39,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return classes;}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences.size());
@@ -49,7 +49,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     double bestScore = -DBL_MAX;
     int bestClass = -1;

@@ -13,8 +13,8 @@ using namespace lbcpp;
 class ProcessConsoleFilterComponent : public Component, public juce::ButtonListener
 {
 public:
-  ProcessConsoleFilterComponent(ProcessConsoleFilterPtr filter)
-    : filter(filter)
+  ProcessConsoleFilterComponent(ExecutionContext& context, ProcessConsoleFilterPtr filter)
+    : context(context), filter(filter)
   {
     addAndMakeVisible(displayButton = new juce::ToggleButton(String::empty));
     displayButton->setToggleState(filter->getDisplayFlag(), false);
@@ -48,26 +48,27 @@ public:
       {
         filter->setPattern(alertWindow.getTextEditorContents(T("pattern")));
         configureButton->setButtonText(filter->getPattern());
-        ExplorerConfiguration::save();
+        ExplorerConfiguration::save(context);
       }
     }
     else if (button == displayButton)
     {
       filter->setDisplayFlag(displayButton->getToggleState());
-      ExplorerConfiguration::save();
+      ExplorerConfiguration::save(context);
     }
   }
 
   juce_UseDebuggingNewOperator
 
 private:
+  ExecutionContext& context;
   ProcessConsoleFilterPtr filter;
   juce::Button* configureButton;
   juce::Button* displayButton;
 };
 
 juce::Component* ProcessConsoleFilter::createComponent() const
-  {return new ProcessConsoleFilterComponent(ProcessConsoleFilterPtr(const_cast<ProcessConsoleFilter* >(this)));}
+  {return new ProcessConsoleFilterComponent(*silentExecutionContext, ProcessConsoleFilterPtr(const_cast<ProcessConsoleFilter* >(this)));}
 
 class ProcessConsoleSettingsComponent : public Component
 {

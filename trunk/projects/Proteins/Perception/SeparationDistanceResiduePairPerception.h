@@ -29,7 +29,7 @@ public:
     Perception::computeOutputType();
   }
   
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
     Variable positionPair = input[1];
     callback->sense(0, abs(positionPair[1].getInteger() - positionPair[0].getInteger()));

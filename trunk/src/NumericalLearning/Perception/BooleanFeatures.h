@@ -32,7 +32,7 @@ public:
     Perception::computeOutputType();
   }
 
-  virtual void computePerception(const Variable& input, PerceptionCallbackPtr callback) const
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
     jassert(input.isBoolean());
     if (input.exists() && input.getBoolean())

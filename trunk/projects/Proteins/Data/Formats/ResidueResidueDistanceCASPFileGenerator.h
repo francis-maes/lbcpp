@@ -17,8 +17,8 @@ namespace lbcpp
 class ResidueResidueDistanceCASPFileGenerator : public CASPFileGenerator
 {
 public:
-  ResidueResidueDistanceCASPFileGenerator(const File& file, const String& method)
-    : CASPFileGenerator(file, method) {}
+  ResidueResidueDistanceCASPFileGenerator(ExecutionContext& context, const File& file, const String& method)
+    : CASPFileGenerator(context, file, method) {}
 
   virtual String getFormatSpecificationCode() const
     {return T("RR");}

@@ -49,7 +49,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
 
-  virtual Variable computeFunction(const Variable& input, MessageCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return compute(input.getDouble());}
 
   /**

@@ -29,7 +29,7 @@ public:
 
   StoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
 
-  virtual void startLearningCallback(InferenceContextWeakPtr context)
+  virtual void startLearningCallback(InferenceContext& context)
   {
     UpdatableOnlineLearner::startLearningCallback(context);
     learningStopped = false;
@@ -41,11 +41,11 @@ public:
   virtual bool isLearningStopped() const
     {return learningStopped;}
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
-    UpdatableOnlineLearner::clone(target);
+    UpdatableOnlineLearner::clone(context, target);
     if (criterion)
-      target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>();
+      target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>(context);
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
@@ -78,11 +78,11 @@ private:
   double bestDefaultScore;
   std::vector< std::pair<String, double> > bestScores;
 
-  virtual void update(InferenceContextWeakPtr context, const InferencePtr& inference)
+  virtual void update(InferenceContext& context, const InferencePtr& inference)
   {
     double defaultScore = UpdatableOnlineLearner::getDefaultScore();
     //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
-    Variable parameters = inference->getParametersCopy();
+    Variable parameters = inference->getParametersCopy(context);
     if (parameters.exists() && restoreBestParametersWhenLearningStops && defaultScore > bestDefaultScore)
     {
       bestParameters = parameters;

@@ -34,9 +34,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return nilType;}
 
-  virtual String getDescription(const Variable& input, const Variable& supervision) const
+  virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
-    const ContainerPtr& examples = input.getObjectAndCast<Container>();
+    const ContainerPtr& examples = input.getObjectAndCast<Container>(context);
     return T("Run ") + inference->getName() + T(" with ") + 
       String((int)examples->getNumElements()) + T(" ") + examples->getElementsType()->getName() + T("(s)");
   }
@@ -54,14 +54,14 @@ public:
     : BaseClass(inference) {}
   RunOnSupervisedExamplesSequentialInference() {}
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     SequentialInferenceStatePtr res(new SequentialInferenceState(input, supervision));
     updateInference(context, res, returnCode);
     return res;
   }
 
-  virtual bool updateInference(InferenceContextWeakPtr context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  virtual bool updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
   {
     ContainerPtr examples = state->getInput().dynamicCast<Container>();
     jassert(examples);
@@ -69,7 +69,7 @@ public:
     int nextIndex = state->getStepNumber() + 1; 
     if (nextIndex < (int)examples->getNumElements())
     {
-      const PairPtr& example = examples->getElement(nextIndex).getObjectAndCast<Pair>();
+      const PairPtr& example = examples->getElement(nextIndex).getObjectAndCast<Pair>(context);
       state->setSubInference(inference, example->getFirst(), example->getSecond());
       return true;
     }
@@ -90,7 +90,7 @@ public:
     : BaseClass(inference) {}
   RunOnSupervisedExamplesParallelInference() {}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContextWeakPtr context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ContainerPtr examples = input.dynamicCast<Container>();
     jassert(examples);
@@ -116,7 +116,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContextWeakPtr context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 };
 

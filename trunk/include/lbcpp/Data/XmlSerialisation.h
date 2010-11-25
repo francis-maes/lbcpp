@@ -38,7 +38,7 @@ public:
   XmlExporter(const String& rootTag = T("lbcpp"), int version = 100);
   ~XmlExporter();
 
-  bool saveToFile(const File& file, MessageCallback& callback);
+  bool saveToFile(ExecutionContext& context, const File& file);
 
   XmlElement* getCurrentElement();
 
@@ -98,18 +98,15 @@ private:
 class XmlImporter
 {
 public:
-  XmlImporter(const File& file, MessageCallback& callback);
+  XmlImporter(ExecutionContext& context, const File& file);
   ~XmlImporter()
     {if (root) delete root;}
 
   bool isOpened() const
     {return root != NULL;}
 
-  void errorMessage(const String& where, const String& what) const
-    {callback.errorMessage(where, what);}
-
-  void warningMessage(const String& where, const String& what) const
-    {callback.warningMessage(where, what);}
+  void errorMessage(const String& where, const String& what) const;
+  void warningMessage(const String& where, const String& what) const;
 
   typedef std::map<String, ObjectPtr> SharedObjectMap;
 
@@ -140,11 +137,11 @@ public:
   TypePtr loadType(TypePtr expectedType);
   void leave();
 
-  MessageCallback& getCallback()
-    {return callback;}
+  ExecutionContext& getContext()
+    {return context;}
 
 private:
-  MessageCallback& callback;
+  ExecutionContext& context;
   XmlElement* root;
 
   std::vector<XmlElement* > stack;

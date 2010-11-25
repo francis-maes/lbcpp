@@ -9,6 +9,7 @@
 #include <lbcpp/Data/Object.h>
 #include <lbcpp/Data/Variable.h>
 #include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Execution/ExecutionContext.h>
 #include <fstream>
 using namespace lbcpp;
 
@@ -169,7 +170,7 @@ ClassPtr Object::getClass() const
   if (!thisClass)
   {
     //jassert(false);
-    const_cast<Object* >(this)->thisClass = Class::get(getTypeName(typeid(*this)));
+    const_cast<Object* >(this)->thisClass = silentExecutionContext->getType(getTypeName(typeid(*this)));
     jassert(thisClass);
   }
   return thisClass;
@@ -190,19 +191,10 @@ Variable Object::getVariable(size_t index) const
   return getClass()->getObjectVariable(this, index);
 }
 
-void Object::setVariable(size_t index, const Variable& value)
+void Object::setVariable(ExecutionContext& context, size_t index, const Variable& value)
 {
   jassert(index < getClass()->getObjectNumVariables());
-  getClass()->setObjectVariable(this, index, value);
-}
-
-ObjectPtr Object::create(ClassPtr objectClass)
-{
-  ObjectPtr res = objectClass->create().getObject();
-  jassert(res);
-  jassert(res->getReferenceCount() == 2);
-  res->decrementReferenceCounter();
-  return res;
+  getClass()->setObjectVariable(context, this, index, value);
 }
 
 
@@ -267,25 +259,25 @@ int Object::compareVariables(ObjectPtr otherObject) const
 /*
 ** Clone
 */
-ObjectPtr Object::clone() const
+ObjectPtr Object::clone(ExecutionContext& context) const
 {
-  ObjectPtr res = create(getClass());
+  ObjectPtr res = context.createObject(getClass());
   jassert(res);
-  clone(res);
+  clone(context, res);
   return res;
 }
 
-void Object::clone(const ObjectPtr& target) const
+void Object::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
-    target->setVariable(i, getVariable(i));
+    target->setVariable(context, i, getVariable(i));
 }
 
-ObjectPtr Object::deepClone() const
+ObjectPtr Object::deepClone(ExecutionContext& context) const
 {
   ClassPtr thisClass = getClass();
-  ObjectPtr res = clone();
+  ObjectPtr res = clone(context);
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
@@ -294,19 +286,19 @@ ObjectPtr Object::deepClone() const
     {
       ObjectPtr object = res->getVariable(i).getObject();
       if (object)
-        res->setVariable(i, Variable(object->deepClone(), variableType));
+        res->setVariable(context, i, Variable(object->deepClone(context), variableType));
     }
   }
   return res;
 }
 
-ObjectPtr Object::cloneToNewType(ClassPtr newType) const
+ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) const
 {
   ClassPtr thisClass = getClass();
   if (newType == thisClass)
-    return clone();
+    return clone(context);
 
-  ObjectPtr res = create(newType);
+  ObjectPtr res = context.createObject(newType);
   size_t n = newType->getObjectNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
@@ -319,11 +311,11 @@ ObjectPtr Object::cloneToNewType(ClassPtr newType) const
 
       TypePtr newVariableType = newType->getObjectVariableType(i);
       if (variable.isObject())
-        res->setVariable(i, variable.getObject()->cloneToNewType(newVariableType));
+        res->setVariable(context, i, variable.getObject()->cloneToNewType(context, newVariableType));
       else
       {
         jassert(variable.getType() == newVariableType);
-        res->setVariable(i, variable);
+        res->setVariable(context, i, variable);
       }
     }
   }
@@ -368,7 +360,7 @@ bool Object::loadFromXml(XmlImporter& importer)
     Variable value = importer.loadVariable(child, expectedType);
     if (value.exists() && !checkInheritance(value, expectedType))
       return false;
-    setVariable((size_t)variableNumber, value);
+    setVariable(importer.getContext(), (size_t)variableNumber, value);
   }
   return true;
 }
@@ -389,9 +381,9 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
     String name = getVariableName(i);
     if (xml->hasAttribute(name))
     {
-      Variable var = Variable::createFromString(getVariableType(i), xml->getStringAttribute(name), importer.getCallback());
+      Variable var = Variable::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
       if (!var.isMissingValue())
-        setVariable(i, var);
+        setVariable(importer.getContext(), i, var);
     }
     else if (name != T("thisClass"))
       importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());
@@ -399,14 +391,14 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
   return true;
 }
 
-bool Object::loadFromString(const String& str, MessageCallback& callback)
+bool Object::loadFromString(ExecutionContext& context, const String& str)
 {
-  callback.errorMessage(T("Object::loadFromString"), T("Not implemented"));
+  context.errorCallback(T("Object::loadFromString"), T("Not implemented"));
   return false;
 }
 
-void Object::saveToFile(const File& file, MessageCallback& callback)
-  {Variable(refCountedPointerFromThis(this)).saveToFile(file, callback);}
+void Object::saveToFile(ExecutionContext& context, const File& file) const
+  {Variable(refCountedPointerFromThis(this)).saveToFile(context, file);}
 
-ObjectPtr Object::createFromFile(const File& file, MessageCallback& callback)
-  {return Variable::createFromFile(file, callback).getObject();}
+ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
+  {return Variable::createFromFile(context, file).getObject();}

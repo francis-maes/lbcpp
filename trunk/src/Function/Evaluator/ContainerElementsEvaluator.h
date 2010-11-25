@@ -31,7 +31,7 @@ public:
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {elementEvaluator->getScores(res);}
 
-  virtual void addPrediction(const Variable& predictedObject, const Variable& correctObject)
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     if (!predictedObject.exists() || !correctObject.exists())
       return;
@@ -41,7 +41,7 @@ public:
     size_t n = predicted->getNumElements();
     jassert(correct->getNumElements() == n);
     for (size_t i = 0; i < n; ++i)
-      elementEvaluator->addPrediction(predicted->getElement(i), correct->getElement(i));
+      elementEvaluator->addPrediction(context, predicted->getElement(i), correct->getElement(i));
   }
 
 protected:
