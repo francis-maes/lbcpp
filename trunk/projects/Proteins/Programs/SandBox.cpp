@@ -422,6 +422,7 @@ int main(int argc, char** argv)
 
   ThreadPoolPtr pool = new ThreadPool(7);
   InferenceContextPtr context = multiThreadedInferenceContext(pool);
+  context->appendCallback(consoleExecutionCallback());
   context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
   context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
   context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
@@ -435,8 +436,9 @@ int main(int argc, char** argv)
 #endif
 
   bool inputOnly = true;
-  ContainerPtr trainProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
-  ContainerPtr testProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
+  ExecutionContextPtr testContext = defaultConsoleExecutionContext();
+  ContainerPtr trainProteins = loadProteins(*testContext, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
+  ContainerPtr testProteins = loadProteins(*testContext, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 3);
   trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "

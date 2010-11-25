@@ -222,14 +222,15 @@ bool ThreadPool::isThreadWaiting(juce::Thread* thread) const
   return waitingThreads.find(thread) != waitingThreads.end();
 }
 
-#include "Context/ThreadOwnedExecutionContext.h"
+//#include "Context/ThreadOwnedExecutionContext.h"
 
 void ThreadPool::startThreadForWorkUnit(WorkUnitPtr workUnit)
 {
-  ScopedLock _(threadsLock);
-  Thread* res = new ThreadOwnedExecutionContext(singleThreadedExecutionContext(), workUnit);
-  res->startThread();
-  threads.push_back(res);
+  jassert(false); // broken !
+  //ScopedLock _(threadsLock);
+  //Thread* res = new ThreadOwnedExecutionContext(singleThreadedExecutionContext(), workUnit);
+  //res->startThread();
+  //threads.push_back(res);
 }
 
 void ThreadPool::writeCurrentState(std::ostream& ostr)
@@ -247,10 +248,11 @@ void ThreadPool::writeCurrentState(std::ostream& ostr)
 
   for (size_t i = 0; i < threads.size(); ++i)
   {
-    ThreadOwnedExecutionContext* thread = dynamic_cast<ThreadOwnedExecutionContext* >(threads[i]);
+    /*ThreadOwnedExecutionContext* thread = dynamic_cast<ThreadOwnedExecutionContext* >(threads[i]);
     jassert(thread);
     WorkUnitPtr workUnit = thread->getWorkUnit();
-    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << workUnit->getName() << std::endl << std::endl;
+    ostr << (isThreadWaiting(thread) ? "W" : "A") << " " << workUnit->getName() << std::endl << std::endl;*/
+    jassert(false); // Broken !
   }
   if (numWaitingWorkUnits)
   {
