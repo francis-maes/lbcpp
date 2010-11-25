@@ -22,7 +22,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticDecoratorInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const StaticDecoratorInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticDecoratorInference>();
@@ -33,8 +33,8 @@ public:
     InferencePtr targetSubInference = targetInference->getSubInference();
     if (targetSubInference && targetSubInference->getBatchLearner())
     {
-      InferenceBatchLearnerInputPtr subLearnerInput = createSubLearnerInput(context, learnerInput, returnCode);
-      if (returnCode != finishedReturnCode)
+      InferenceBatchLearnerInputPtr subLearnerInput = createSubLearnerInput(context, learnerInput);
+      if (!subLearnerInput)
         return DecoratorInferenceStatePtr();
 
       res->setSubInference(targetSubInference->getBatchLearner(), subLearnerInput, Variable());
@@ -43,7 +43,7 @@ public:
   }
 
 protected:
-  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input) const
   {
     const StaticDecoratorInferencePtr& targetInference = input->getTargetInference().staticCast<StaticDecoratorInference>();
     const InferencePtr& targetSubInference = targetInference->getSubInference();
@@ -53,9 +53,8 @@ protected:
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<Variable, Variable>& example = input->getExample(i);
-      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      DecoratorInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second, returnCode);
-      if (returnCode != Inference::finishedReturnCode)
+      DecoratorInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second);
+      if (!state)
         return InferenceBatchLearnerInputPtr();
       res->setExample(i, state->getSubInput(), state->getSubSupervision());
     }
@@ -66,7 +65,7 @@ protected:
 class PostProcessInferenceLearner : public DecoratorInferenceLearner
 {
 protected:
-  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input) const
   {
     const InferencePtr& targetSubInference = input->getTargetInference().staticCast<StaticDecoratorInference>()->getSubInference();
     return new InferenceBatchLearnerInput(targetSubInference, input->getTrainingExamples(), input->getValidationExamples());

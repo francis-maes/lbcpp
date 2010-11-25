@@ -21,7 +21,7 @@ public:
   RunSequentialInferenceStepOnExamples(SequentialInferencePtr inference, std::vector<SequentialInferenceStatePtr>& currentStates)
     : ParallelInference(T("RunSequentialInferenceStepOnExamples")), inference(inference), currentStates(currentStates) {}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
 
@@ -36,15 +36,13 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
   {
     for (size_t i = 0; i < state->getNumSubInferences(); ++i)
     {
       currentStates[i]->setSubOutput(state->getSubOutput(i));
-      if (!inference->updateInference(context, currentStates[i], returnCode))
+      if (!inference->updateInference(context, currentStates[i]))
         currentStates[i]->setFinalState();
-      if (returnCode != finishedReturnCode)
-        break;
     }
     return Variable();
   }
@@ -68,7 +66,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticSequentialInferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const StaticSequentialInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticSequentialInference>();
@@ -87,7 +85,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
-      SequentialInferenceStatePtr targetState = targetInference->prepareInference(context, example.first, example.second, returnCode);
+      SequentialInferenceStatePtr targetState = targetInference->prepareInference(context, example.first, example.second);
       if (!targetState)
         return SequentialInferenceStatePtr();
       res->targetStates[i] = targetState;
@@ -99,7 +97,7 @@ public:
   }
 
   // returns false if the final state is reached
-  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr s, ReturnCode& returnCode)
+  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr s) const
   {
     StatePtr state = s.staticCast<State>();
     const InferenceBatchLearnerInputPtr& input = state->getInput().getObjectAndCast<InferenceBatchLearnerInput>(context);
@@ -137,7 +135,7 @@ private:
   };
   typedef ReferenceCountedObjectPtr<State> StatePtr;
 
-  void setSubLearningInference(const StaticSequentialInferencePtr& targetInference, const StatePtr& state, size_t index)
+  void setSubLearningInference(const StaticSequentialInferencePtr& targetInference, const StatePtr& state, size_t index) const
   {
     // get sub-learner
     InferencePtr targetSubInference = targetInference->getSubInference(index);

@@ -25,7 +25,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return sharedParallelInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const SharedParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<SharedParallelInference>();
@@ -45,7 +45,7 @@ public:
 private:
   bool filterUnsupervisedExamples;
 
-  InferenceBatchLearnerInputPtr computeSubLearnerInput(ExecutionContext& context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples)
+  InferenceBatchLearnerInputPtr computeSubLearnerInput(ExecutionContext& context, const SharedParallelInferencePtr& targetInference, const InferenceBatchLearnerInputPtr& examples) const
   {
     const InferencePtr& targetSubInference = targetInference->getSubInference();
 
@@ -57,9 +57,8 @@ private:
       const std::pair<Variable, Variable>& example = examples->getExample(i);
       bool isValidationExample = i >= examples->getNumTrainingExamples();
 
-      ReturnCode returnCode = finishedReturnCode;
-      ParallelInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second, returnCode);
-      if (returnCode != finishedReturnCode)
+      ParallelInferenceStatePtr state = targetInference->prepareInference(context, example.first, example.second);
+      if (!state)
         return InferenceBatchLearnerInputPtr();
 
       for (size_t j = 0; j < state->getNumSubInferences(); ++j)

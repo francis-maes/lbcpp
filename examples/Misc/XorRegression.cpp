@@ -69,7 +69,6 @@ int main(int argc, char* argv[])
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
-  Inference::ReturnCode returnCode = Inference::finishedReturnCode;
   Variable myPrediction = predict(*context, regressor, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;

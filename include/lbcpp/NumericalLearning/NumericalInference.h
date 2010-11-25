@@ -83,7 +83,7 @@ public:
   void updateParametersType(ExecutionContext& context); // this function is called when the type of Perception changes
 
 protected:
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
     {return predict(context, input);}
 };
 

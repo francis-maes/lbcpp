@@ -78,18 +78,18 @@ public:
   /*
   ** Abstract
   */
-  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
 
   // returns false if the final state is reached
-  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const = 0;
 
-  virtual Variable finalizeInference(ExecutionContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, SequentialInferenceStatePtr finalState) const
     {return finalState->getSubOutput();}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 };
 
 extern ClassPtr sequentialInferenceClass;
@@ -117,13 +117,13 @@ public:
   virtual TypePtr getInputType() const
     {return subInferences.size() ? subInferences[0]->getInputType() : anyType;}
 
-  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
+  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const;
 
-  virtual void finalizeSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  virtual void finalizeSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
     {}
 
-  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
     {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : state->getSubOutput(), state->getSupervision());}
 
   virtual size_t getNumSubInferences() const

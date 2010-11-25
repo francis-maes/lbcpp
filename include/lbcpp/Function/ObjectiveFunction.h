@@ -10,7 +10,6 @@
 # define LBCPP_FUNCTION_OBJECTIVE_H_
 
 # include "Function.h"
-# include "../Execution/ThreadPool.h"
 # include "../Execution/WorkUnit.h"
 
 namespace lbcpp

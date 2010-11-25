@@ -16,7 +16,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -36,12 +36,12 @@ public:
 
       if (firstResult > secondResult)
       {
-        maxValue = mean;
+        const_cast<DichotomicOptimizer* >(this)->maxValue = mean;
         res = firstResult;
       }
       else
       {
-        minValue = mean;
+        const_cast<DichotomicOptimizer* >(this)->minValue = mean;
         res = secondResult;
       }
     }
@@ -67,7 +67,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
   
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -98,8 +98,8 @@ public:
         }
       }
       jassert(bestPart != -1);
-      minValue = minValue + (bestPart * 2) * step;
-      maxValue = minValue + 2 * step;
+      const_cast<PolychotomicOptimizer* >(this)->minValue = minValue + (bestPart * 2) * step;
+      const_cast<PolychotomicOptimizer* >(this)->maxValue = minValue + 2 * step;
       res = bestScore;
       //std::cout << "BestPart: " << bestPart << " BestScore: " << res << " minValue: " << minValue << " maxValue: " << maxValue << std::endl;
     }

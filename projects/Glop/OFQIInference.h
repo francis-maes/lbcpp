@@ -31,7 +31,7 @@ public:
   virtual TypePtr getOutputType() const
     {return doubleType;}  
 
-  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
   {
     Variable supervision;
     if (state->getSupervision().exists())

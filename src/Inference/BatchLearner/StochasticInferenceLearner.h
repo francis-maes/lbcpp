@@ -12,9 +12,9 @@
 # include <lbcpp/Data/Pair.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Inference/SequentialInference.h>
-# include <lbcpp/Inference/InferenceStack.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
+# include <lbcpp/Execution/FunctionStack.h>
 
 namespace lbcpp
 {
@@ -44,7 +44,7 @@ protected:
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
     {
       const InferencePtr& inference = stack->getCurrentInference();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
@@ -70,7 +70,7 @@ protected:
     InferencePtr targetInference;
   };
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();
@@ -121,7 +121,7 @@ protected:
     return finishPass(context, learnerInput);
   }
 
-  void finishEpisode(ExecutionContext& context)
+  void finishEpisode(ExecutionContext& context) const
   {
     for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
@@ -132,7 +132,7 @@ protected:
     }
   }
 
-  bool finishPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) // returns false when learning is finished
+  bool finishPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) const // returns false when learning is finished
   {
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
@@ -158,7 +158,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();
@@ -171,7 +171,7 @@ public:
   }
 
   // returns false if the final state is reached
-  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+  virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const
     {return state->getSubOutput().getBoolean();} // repeat passes until a pass returns "false"
 
 protected:
@@ -179,7 +179,7 @@ protected:
 
   bool randomizeExamples;
 
-  InferencePtr createLearningPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput)
+  InferencePtr createLearningPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) const
   {
     // enumerate learners
     std::vector<InferencePtr> inferencesThatHaveALearner;

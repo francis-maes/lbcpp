@@ -39,7 +39,7 @@ protected:
   EvaluatorPtr evaluator;
   InferencePtr inferenceModel;
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>(context);
@@ -76,7 +76,7 @@ public:
       String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getName() + T("s");
   }
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const ContainerPtr& trainingData = input.getObjectAndCast<Container>(context);
 
@@ -90,7 +90,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
     {return Variable();}
 
 protected:

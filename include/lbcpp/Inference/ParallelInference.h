@@ -77,13 +77,13 @@ public:
   virtual bool useMultiThreading() const
     {return true;}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const = 0;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 };
 
 extern ClassPtr parallelInferenceClass;
@@ -165,7 +165,7 @@ public:
 protected:
   friend class SharedParallelInferenceClass;
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
   InferencePtr subInference;
 };

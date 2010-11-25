@@ -42,7 +42,7 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return classes;}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     res->reserve(subInferences.size());
@@ -52,7 +52,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
   {
     double bestScore = -DBL_MAX;
     int bestClass = -1;

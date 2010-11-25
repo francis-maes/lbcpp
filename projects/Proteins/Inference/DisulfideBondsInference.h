@@ -32,7 +32,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return symmetricMatrixClass(probabilityType);}
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
   {
     size_t n = state.staticCast<State>()->dimension;
     size_t minDistance = state.staticCast<State>()->minDistance;
@@ -82,7 +82,7 @@ public:
   virtual TypePtr getInputType() const
     {return proteinClass;}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>(context);
     const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>(context);

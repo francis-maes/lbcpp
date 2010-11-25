@@ -49,7 +49,7 @@ public:
     {setParameters(bias);}
 
 protected:
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
     {return Variable(input.getDouble() + getBias(), input.getType());}
 };
 

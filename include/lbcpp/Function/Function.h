@@ -29,8 +29,11 @@ namespace lbcpp
 class Function : public Object
 {
 public:
-  virtual TypePtr getInputType() const = 0;
-  virtual TypePtr getOutputType(TypePtr inputType) const = 0;
+  virtual TypePtr getInputType() const
+    {return anyType;}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return anyType;}
 
   /**
   ** Computes the function
