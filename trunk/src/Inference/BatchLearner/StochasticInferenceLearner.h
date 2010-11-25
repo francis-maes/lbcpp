@@ -104,7 +104,7 @@ protected:
       {
         // make an episode
         Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-        context.run(targetInference,  example.first, example.second, returnCode);
+        context.runInference(targetInference, example.first, example.second, returnCode);
         finishEpisode(context);
       }
     }

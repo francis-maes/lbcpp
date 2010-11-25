@@ -34,7 +34,7 @@ public:
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     customizeLearner(context, input, onlineLearner);
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    ((InferenceContext& )context).run(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    ((InferenceContext& )context).runInference(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
     return onlineLearner->getLastLearner()->getDefaultScore();
   }
 
@@ -83,14 +83,13 @@ public:
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
     std::vector<WorkUnitPtr> workUnits(7);
-    std::vector<double> scores(7);
+    std::vector<double> scores(workUnits.size());
     for (size_t i = 0; i < workUnits.size(); ++i)
     {
       double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
       workUnits[i] = evaluateObjectiveFunctionWorkUnit(T("LearningRate"), objective, learningRate, scores[i]);
     }
-    ThreadPoolPtr pool = new ThreadPool(7);
-    pool->addWorkUnitsAndWaitExecution(workUnits, 0, true);
+    context.run(workUnits);
     double bestScore = -DBL_MAX;
     double res = 0.0;
     for (size_t i = 0; i < scores.size(); ++i)
@@ -119,12 +118,12 @@ public:
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
     EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
     
-    Variable optimizedValue = context.run(optimizer, objective, Variable(), returnCode);
+    Variable optimizedValue = context.runInference(optimizer, objective, Variable(), returnCode);
     
     InferencePtr targetInference = learnerInput->getTargetInference();
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     objective->customizeLearner(context, optimizedValue, onlineLearner);
-    context.run(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    context.runInference(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
     return Variable();
   }
 
@@ -399,7 +398,7 @@ private:
 VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 10;
+  size_t maxCount = 3;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -438,7 +437,7 @@ int main(int argc, char** argv)
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
   ContainerPtr testProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
-  ContainerPtr validationProteins = trainProteins->fold(0, 10);
+  ContainerPtr validationProteins = trainProteins->fold(0, 3);
   trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "

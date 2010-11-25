@@ -223,7 +223,8 @@ struct AddWeightedOperation : public DoubleAssignmentOperation
 void addWeighted(ExecutionContext& context, ObjectPtr& target, const PerceptionPtr& perception, const Variable& input, double weight)
 {
   context.checkInheritance(input.getType(), perception->getInputType());
-  context.checkInheritance((TypePtr)target->getClass(), perception->getOutputType());
+  if (target)
+    context.checkInheritance((TypePtr)target->getClass(), perception->getOutputType());
 
   jassert(input.exists());
   if (!weight)

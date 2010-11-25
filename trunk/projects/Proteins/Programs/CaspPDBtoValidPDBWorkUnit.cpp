@@ -15,7 +15,7 @@ bool CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)
   if (pdbDirectory == File::nonexistent || fastaFile == File::nonexistent)
   {
     context.errorCallback(T("CaspPDBtoValidPDBProgram::run"), T("pdbDirectory or fastaFile not specified"));
-    return -1;
+    return false;
   }
 
   FASTAFileParser fastaParser(context, fastaFile);

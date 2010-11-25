@@ -8,9 +8,7 @@
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
 
-    <class name="InferenceContext" abstract="yes">
-      <variable type="ObjectVector[InferenceCallback]" name="callbacks"/>
-    </class>
+    <class name="InferenceContext" base="ExecutionContext" abstract="yes"/>
 
     <class name="SingleThreadedInferenceContext" base="InferenceContext">
       <constructor/>

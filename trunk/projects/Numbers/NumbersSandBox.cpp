@@ -146,7 +146,7 @@ public:
     DenseDoubleObjectPtr denseObject = object.staticCast<DenseDoubleObject>();
     std::vector<double>& featureValues = denseObject->getValues();
     
-    jassert(featureValues.size() == statistics.size());
+    jassert(featureValues.size() <= statistics.size());
     for (size_t i = 0; i < featureValues.size(); ++i)
     {
       if (doubleType->isMissingValue(featureValues[i]))
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
   PerceptionPtr perception = flattenPerception(enrichedNumberSequencePerception(numbersPerception, pairsPerception, tripletsPerception));
 
   // Random Number Sequences
-  ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 10000);
+  ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 1000);
   FeaturesInformation featuresInfo(perception);
   featuresInfo.compute(*context, randomInputs);
   //featuresInfo.print();

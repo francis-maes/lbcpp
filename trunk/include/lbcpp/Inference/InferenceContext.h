@@ -24,26 +24,13 @@ class InferenceContext : public ExecutionContext
 public:
   typedef Inference::ReturnCode ReturnCode;
 
-  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable runInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   ReturnCode train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples);
   ReturnCode train(InferencePtr inference, const InferenceBatchLearnerInputPtr& learnerInput);
   ReturnCode evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator);
   ReturnCode crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds);
   Variable predict(InferencePtr inference, const Variable& input);
-
-  /*
-  ** Inference Callbacks
-  */
-  void appendCallback(InferenceCallbackPtr callback);
-  void removeCallback(InferenceCallbackPtr callback);
-  void clearCallbacks();
-
-  const std::vector<InferenceCallbackPtr>& getCallbacks() const
-    {return callbacks;}
-
-  void setCallbacks(const std::vector<InferenceCallbackPtr>& callbacks)
-    {this->callbacks = callbacks;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -63,11 +50,6 @@ protected:
   
   void callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
   void callPostInference(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode);
-
-private:
-  friend class InferenceContextClass;
-
-  std::vector<InferenceCallbackPtr> callbacks;
 };
 
 extern InferenceContextPtr singleThreadedInferenceContext();
