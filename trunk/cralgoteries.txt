@@ -1,13 +1,9 @@
- * Use ExecutionContext in Function
+ * compile linux
+ * Finish to remove MessageCallback everywhere
+ * Faire l'etat des lieux
  
- * Use ExecutionContext in ObjectiveFunction
- * Use ExecutionContext in Predicate
- * Use ExecutionContext in Perception
- 
- 
- * Replace MessageCallback everywhere
  * MultiThreadedExecutionContext
- * Inherit InferenceCallback from ExecutionCallback and InferenceContext from ExecutionContext
+ * Imbrication du InferenceContext et du ExecutionContext
  * Unify also with Boinc
 
 Program:

@@ -28,6 +28,7 @@
 # define LBCPP_DATA_TYPE_H_
 
 # include "Object.h"
+# include "../Execution/ExecutionContext.h"
 # include "impl/VariableValue.hpp"
 
 namespace lbcpp
