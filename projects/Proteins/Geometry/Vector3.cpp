@@ -14,13 +14,13 @@ namespace impl {
 /*
 ** Vector3
 */
-Vector3 Vector3::fromString(const String& str, MessageCallback& callback)
+Vector3 Vector3::fromString(ExecutionContext& context, const String& str)
 {
   StringArray tokens;
   tokens.addTokens(str, T(" "), NULL);
   if (tokens.size() != 3)
   {
-    callback.errorMessage(T("Vector3::fromString"), T("Invalid format: ") + str.quoted());
+    context.errorCallback(T("Vector3::fromString"), T("Invalid format: ") + str.quoted());
     return Vector3();
   }
   return Vector3(tokens[0].getDoubleValue(), tokens[1].getDoubleValue(), tokens[2].getDoubleValue());

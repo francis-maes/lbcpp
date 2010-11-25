@@ -82,7 +82,7 @@ inline void Variable::clear()
   {type->destroy(value); type = nilType;}
 
 inline Variable Variable::create(TypePtr type)
-  {jassert(type && type->isInitialized()); return Variable(type, type->create());}
+  {jassert(type && type->isInitialized()); return Variable(type, type->create(*silentExecutionContext));}
 
 inline Variable Variable::missingValue(TypePtr type)
   {jassert(type); return Variable(type, type->getMissingValue());}
@@ -282,21 +282,21 @@ inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedT
 */
 #ifdef JUCE_DEBUG
 // old
-inline bool checkInheritance(TypePtr type, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
+inline bool checkInheritance(TypePtr type, TypePtr baseType)
 {
   jassert(baseType);
   if (!type || !type->inheritsFrom(baseType))
   {
-    callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
+    //callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
     return false;
   }
   return true;
 }
-inline bool checkInheritance(const Variable& variable, TypePtr baseType, MessageCallback& callback = MessageCallback::getInstance())
-  {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType, callback);}
+inline bool checkInheritance(const Variable& variable, TypePtr baseType)
+  {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType);}
 
 #else
-#define checkInheritance(context, type, baseType) true
+#define checkInheritance(type, baseType) true
 #endif // JUCE_DEBUG
 
 }; /* namespace lbcpp */

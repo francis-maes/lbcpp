@@ -398,8 +398,8 @@ bool Type::isMissingValue(const VariableValue& value) const
   return value.getInteger() == missing.getInteger();
 }
 
-VariableValue Type::create() const
-  {jassert(baseType); return baseType->create();}
+VariableValue Type::create(ExecutionContext& context) const
+  {jassert(baseType); return baseType->create(context);}
 
 VariableValue Type::createFromString(ExecutionContext& context, const String& value) const
   {jassert(baseType); return baseType->createFromString(context, value);}

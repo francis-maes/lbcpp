@@ -42,7 +42,7 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue create() const
+  virtual VariableValue create(ExecutionContext& context) const
     {return VariableValue(String::empty);}
 
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const

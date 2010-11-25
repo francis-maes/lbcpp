@@ -15,7 +15,7 @@ static Variable getInputVariableFromExample(const Variable& example, size_t vari
   return example[0].getObject()->getVariable(variableIndex);
 }
 
-double BinaryDecisionTreeSplitter::computeSplitScore(ContainerPtr data, PredicatePtr predicate, size_t variableIndex) const
+double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context, ContainerPtr data, PredicatePtr predicate, size_t variableIndex) const
 {
   VectorPtr left = vector(data->getElementsType());
   VectorPtr right = vector(data->getElementsType());
@@ -23,17 +23,19 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ContainerPtr data, Predicat
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
     Variable example = data->getElement(i);
-    if (predicate->computePredicate(getInputVariableFromExample(example, variableIndex)))
+    if (predicate->computePredicate(context, getInputVariableFromExample(example, variableIndex)))
       left->append(example);
     else
       right->append(example);
   }
 
-  return scoringFunction->compute(Variable::pair(left, right));
+  return 0.0;
+//  return scoringFunction->compute(Variable::pair(left, right));
 }
 
 Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
 {
+#if 0
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
@@ -50,10 +52,13 @@ Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
   double res = random->sampleDouble(minValue, maxValue);
   jassert(res >= minValue && res < maxValue);
   return Variable(res, doubleType);
+#endif
+  return Variable();
 }
 
 Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
 {
+#if 0
   int minValue = 0x7FFFFFFF;
   int maxValue = -minValue;
   size_t n = trainingData->getNumElements();
@@ -71,10 +76,13 @@ Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) cons
   jassert(minValue != 0x7FFFFFFF && maxValue != -0x7FFFFFFF);
   jassert(maxValue > minValue);
   return random->sampleInt(minValue, maxValue);
+#endif // 0
+  return Variable();
 }
 
 Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
 {
+#if 0
   jassert(data->getNumElements() > 0);
   size_t n = data->getElement(i)->getType()->getNumElements();
   
@@ -109,6 +117,8 @@ Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) c
     mask->set(i, bitValue);
   }
   return mask;
+#endif // 0
+  return Variable();
 }
 
 class BelongsToMaskPredicate : public Predicate

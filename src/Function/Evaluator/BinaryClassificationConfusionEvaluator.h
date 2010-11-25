@@ -21,7 +21,7 @@ public:
     : Evaluator(name) {}
   BinaryClassificationConfusionEvaluator() {}
 
-  static bool convertToBoolean(const Variable& variable, bool& res)
+  static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
   {
     if (!variable.exists())
       return false;
@@ -32,7 +32,7 @@ public:
       res = variable.getDouble() > 0.5;
     else
     {
-      MessageCallback::error(T("BinaryClassificationConfusionEvaluator::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
+      context.errorCallback(T("BinaryClassificationConfusionEvaluator::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
       jassert(false);
       return false;
     }
@@ -42,7 +42,7 @@ public:
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
   {
     bool predicted, correct;
-    if (convertToBoolean(predictedObject, predicted) && convertToBoolean(correctObject, correct))
+    if (convertToBoolean(context, predictedObject, predicted) && convertToBoolean(context, correctObject, correct))
       confusionMatrix.addPrediction(predicted, correct);
   }
 

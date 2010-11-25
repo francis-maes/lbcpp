@@ -52,17 +52,17 @@ Variable Residue::getDistanceBetweenAtoms(const String& name1, ResiduePtr residu
     : Variable::missingValue(angstromDistanceType);
 }
 
-AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom() const
+AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom(ExecutionContext& context) const
 {
   if (isCBetaAtomMissing())
   {
-    MessageCallback::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
+    context.errorCallback(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-beta atom in residue ") + getName());
     return AtomPtr();
   }
   if (!hasCAlphaAtom())
   {
-    MessageCallback::error(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
+    context.errorCallback(T("Residue::checkAndGetCBetaOrCAlphaAtom"),
       T("No C-alpha atom in residue ") + getName());
     return AtomPtr();
   }

@@ -35,10 +35,10 @@ namespace lbcpp
 class XmlExporter
 {
 public:
-  XmlExporter(const String& rootTag = T("lbcpp"), int version = 100);
+  XmlExporter(ExecutionContext& context, const String& rootTag = T("lbcpp"), int version = 100);
   ~XmlExporter();
 
-  bool saveToFile(ExecutionContext& context, const File& file);
+  bool saveToFile(const File& file);
 
   XmlElement* getCurrentElement();
 
@@ -61,7 +61,11 @@ public:
 
   void flushSave();
 
+  ExecutionContext& getContext()
+    {return context;}
+
 private:
+  ExecutionContext& context;
   XmlElement* root;
   std::vector<XmlElement* > currentStack;
 

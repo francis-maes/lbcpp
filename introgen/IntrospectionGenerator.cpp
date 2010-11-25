@@ -182,12 +182,12 @@ protected:
   /*
   ** Enumeration
   */
-  void generateEnumValueInConstructor(XmlElement* xml)
+  void generateEnumValueInInitialize(XmlElement* xml)
   {
     String name = xml->getStringAttribute(T("name"), T("???"));
     String oneLetterCode = xml->getStringAttribute(T("oneLetterCode"), String::empty);
     String threeLettersCode = xml->getStringAttribute(T("threeLettersCode"), String::empty);
-    writeLine(T("addElement(T(") + name.quoted() + T("), T(") + oneLetterCode.quoted() + T("), T(") + threeLettersCode.quoted() + T("));"));
+    writeLine(T("addElement(context, T(") + name.quoted() + T("), T(") + oneLetterCode.quoted() + T("), T(") + threeLettersCode.quoted() + T("));"));
   }
 
   void generateEnumerationDeclaration(XmlElement* xml)
@@ -207,10 +207,18 @@ protected:
 
     // constructor
     openScope(className + T("() : Enumeration(T(") + enumName.quoted() + T("))"));
-    forEachXmlChildElementWithTagName(*xml, elt, T("value"))
-      generateEnumValueInConstructor(elt);
     closeScope();
 
+    newLine();
+
+    openScope(T("virtual bool initialize(ExecutionContext& context)"));
+      forEachXmlChildElementWithTagName(*xml, elt, T("value"))
+        generateEnumValueInInitialize(elt);
+      writeLine(T("return Enumeration::initialize(context);"));
+    closeScope();
+    newLine();
+
+    
     // custom code
     forEachXmlChildElementWithTagName(*xml, elt, T("code"))
       {generateCode(elt); newLine();}
@@ -269,7 +277,7 @@ protected:
     // create() function
     if (!isAbstract && !hasAutoImplementation)
     {
-      openScope(T("virtual VariableValue create() const"));
+      openScope(T("virtual VariableValue create(ExecutionContext& context) const"));
         writeLine(className + T("* res = new ") + className + T("();"));
         writeLine(T("res->setThisClass(nativePointerFromThis(this));"));
         writeLine(T("return res;"));

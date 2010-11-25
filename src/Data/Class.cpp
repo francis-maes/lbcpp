@@ -44,7 +44,7 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
 
 VariableValue Class::createFromString(ExecutionContext& context, const String& value) const
 {
-  VariableValue res = create();
+  VariableValue res = create(context);
   if (isMissingValue(res))
   {
     context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
@@ -55,7 +55,7 @@ VariableValue Class::createFromString(ExecutionContext& context, const String& v
 
 VariableValue Class::createFromXml(XmlImporter& importer) const
 {
-  VariableValue res = create();
+  VariableValue res = create(importer.getContext());
   if (isMissingValue(res))
   {
     importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());

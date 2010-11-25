@@ -142,8 +142,6 @@ SET(LBCPP_EXECUTION_SOURCES
   ../include/lbcpp/Execution/ExecutionCallback.h
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp
-  ../include/lbcpp/Execution/MessageCallback.h
-  Execution/MessageCallback.cpp
   ../include/lbcpp/Execution/ThreadPool.h
   Execution/ThreadPool.cpp
   Execution/ExecutionClasses.xml

@@ -27,7 +27,7 @@ public:
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const = 0;
 
-  virtual double computeSplitScore(ContainerPtr data, PredicatePtr predicate) const;
+  virtual double computeSplitScore(ExecutionContext& context, ContainerPtr data, PredicatePtr predicate, size_t variableIndex) const;
   
 protected:
   friend class BinaryDecisionTreeSplitterClass;

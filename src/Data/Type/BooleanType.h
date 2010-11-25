@@ -51,7 +51,7 @@ public:
     }
   }
 
-  virtual VariableValue create() const
+  virtual VariableValue create(ExecutionContext& context) const
     {return VariableValue(false);}
 
   virtual void destroy(VariableValue& value) const

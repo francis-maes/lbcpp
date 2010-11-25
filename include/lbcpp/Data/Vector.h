@@ -153,7 +153,7 @@ public:
   ReferenceCountedObjectPtr<T> getAndCast(size_t index) const
   {
     ObjectPtr res = get(index);
-    return res.checkCast<T>(T("ObjectVector::getAndCast"));
+    return res.staticCast<T>();
   }
 
   void set(size_t index, ObjectPtr object)

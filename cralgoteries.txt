@@ -1,4 +1,3 @@
- * compile linux
  * Finish to remove MessageCallback everywhere
  * Faire l'etat des lieux
  

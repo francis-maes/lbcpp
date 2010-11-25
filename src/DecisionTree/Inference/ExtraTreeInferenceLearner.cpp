@@ -43,7 +43,7 @@ Variable SingleExtraTreeInferenceLearner::computeInference(InferenceContext& con
   BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, newTrainingData);
   if (tree)
   {
-    MessageCallback::info(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
+    context.informationCallback(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
           T(" k = ") + String((int)numAttributeSamplesPerSplit) +
           T(" numExamples = ") + String((int)learnerInput->getNumTrainingExamples()) +
           T(" numNodes = ") + String((int)tree->getNumNodes()));
@@ -82,7 +82,7 @@ static bool isInputVariableConstant(ContainerPtr trainingData, size_t variableIn
 static bool isOutputConstant(ContainerPtr trainingData, Variable& value)
   {return isVariableConstant(trainingData, 1, -1, value);}
 
-bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
+bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
 {
   size_t n = trainingData->getNumElements();
   jassert(n);
@@ -138,7 +138,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ContainerPtr trainingData
   }
   else
   {
-    MessageCallback::error(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
+    context.errorCallback(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
     leafValue = trainingData->getElement(0)[1];
   }
   /*
@@ -256,7 +256,7 @@ PredicatePtr sampleSplit(ExecutionContext& context, RandomGeneratorPtr random, C
   }
   else
   {
-    MessageCallback::error(T("sampleSplit"), T("Type ") + variableType->getClassName().quoted() + (" not yet implemented"));
+    context.errorCallback(T("sampleSplit"), T("Type ") + variableType->getClassName().quoted() + (" not yet implemented"));
     return PredicatePtr();
   }
   
@@ -369,7 +369,7 @@ double computeSplitScore(ExecutionContext& context, ContainerPtr examples, size_
   if (outputType->inheritsFrom(doubleType))
     return computeRegressionSplitScore(examples, negativeExamples, positiveExamples);
 
-  MessageCallback::getInstance().errorMessage(T("computeSplitScore"), T("Type: ") + outputType->toString());
+  context.errorCallback(T("computeSplitScore"), T("Type: ") + outputType->toString());
   jassert(false);
   return 0.0;
 }
@@ -391,7 +391,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   }
 
   Variable leafValue;
-  if (shouldCreateLeaf(trainingData, nonConstantVariables, outputType, leafValue))
+  if (shouldCreateLeaf(context, trainingData, nonConstantVariables, outputType, leafValue))
   {
     tree->createLeaf(nodeIndex, leafValue);
     return;

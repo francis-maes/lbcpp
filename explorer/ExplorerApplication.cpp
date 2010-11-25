@@ -14,16 +14,16 @@ using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
-class ExplorerMessageCallback : public MessageCallback
+class ExplorerExecutionCallback : public ExecutionCallback
 {
 public:
-  virtual void errorMessage(const String& where, const String& what)
+  virtual void errorCallback(const String& where, const String& what)
     {addMessage(T("Error in ") + where + T(": ") + what);}
   
-  virtual void warningMessage(const String& where, const String& what)
+  virtual void warningCallback(const String& where, const String& what)
     {addMessage(T("Warning in ") + where + T(": ") + what);}
 
-  virtual void infoMessage(const String& where, const String& what)
+  virtual void informationCallback(const String& where, const String& what)
     {}
 
   void flushMessages(const String& title)
@@ -48,10 +48,10 @@ private:
   }
 };
 
-static ExplorerMessageCallback explorerMessageCallback;
+static ExplorerExecutionCallback explorerExecutionCallback;
 
 void flushErrorAndWarningMessages(const String& title)
-  {explorerMessageCallback.flushMessages(title);}
+  {explorerExecutionCallback.flushMessages(title);}
 
 class ExplorerContentTabs : public TabbedComponent
 {
@@ -245,9 +245,9 @@ public:
 
   virtual void initialise(const String& commandLine)
   {    
-    MessageCallback::setInstance(explorerMessageCallback);
     lbcpp::initialize();
     context = defaultConsoleExecutionContext(); // FIXME
+    context->appendCallback(&explorerExecutionCallback);
     declareProteinClasses(*context);
     declareExplorerClasses(*context);
 

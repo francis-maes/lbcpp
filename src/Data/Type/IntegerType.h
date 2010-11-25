@@ -39,7 +39,7 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
-  virtual VariableValue create() const
+  virtual VariableValue create(ExecutionContext& context) const
     {return VariableValue(0);}
 
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const

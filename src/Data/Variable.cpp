@@ -49,9 +49,9 @@ void Variable::saveToXml(XmlExporter& exporter) const
 
 bool Variable::saveToFile(ExecutionContext& context, const File& file) const
 {
-  XmlExporter exporter;
+  XmlExporter exporter(context);
   exporter.saveVariable(String::empty, *this, TypePtr());
-  return exporter.saveToFile(context, file);
+  return exporter.saveToFile(file);
 }
 
 int Variable::compare(const Variable& otherValue) const

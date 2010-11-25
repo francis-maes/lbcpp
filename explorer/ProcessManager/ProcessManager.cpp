@@ -86,13 +86,15 @@ public:
  
   virtual bool start()
   {
+    ExecutionContextPtr context = defaultConsoleExecutionContext();
+
     jassert(!process);
-    File exe = getCopyFile(executableFile);
+    File exe = getCopyFile(*context, executableFile);
     if (!exe.exists())
       executableFile.copyFileTo(exe);
     if (!exe.exists())
     {
-      MessageCallback::error(T("LocalProcess::start"), T("Could not copy executable"));
+      context->errorCallback(T("LocalProcess::start"), T("Could not copy executable"));
       return false;
     }
     process = juce::ConsoleProcess::create(exe.getFullPathName(), arguments, workingDirectory.getFullPathName());
@@ -145,10 +147,10 @@ public:
 private:
   juce::ConsoleProcess* process;
 
-  File getCopyFile(const File& executable)
+  File getCopyFile(ExecutionContext& context, const File& executable)
   {
     Time lastModificationTime = executable.getLastModificationTime();
-    File applicationData = ExplorerConfiguration::getApplicationDataDirectory();
+    File applicationData = ExplorerConfiguration::getApplicationDataDirectory(context);
     String name = executable.getFileNameWithoutExtension();
     String date = lastModificationTime.toString(true, true, true, true);
     name += T("_");

@@ -93,7 +93,7 @@ bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 
 ObjectPtr ExecutionContext::createObject(ClassPtr objectClass)
 {
-  ObjectPtr res = objectClass->create().getObject();
+  ObjectPtr res = objectClass->create(*this).getObject();
   jassert(res);
   jassert(res->getReferenceCount() == 2);
   res->decrementReferenceCounter();
@@ -103,7 +103,7 @@ ObjectPtr ExecutionContext::createObject(ClassPtr objectClass)
 Variable ExecutionContext::createVariable(TypePtr type)
 {
   jassert(type && type->isInitialized());
-  return Variable(type, type->create());
+  return Variable(type, type->create(*this));
 }
 
 EnumerationPtr ExecutionContext::getEnumeration(const String& className)

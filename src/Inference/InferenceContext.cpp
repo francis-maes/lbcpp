@@ -27,7 +27,7 @@ Variable InferenceContext::run(const InferencePtr& inference, const Variable& in
   preInference(inference, input, supervision, output, returnCode);
   if (returnCode == Inference::errorReturnCode)
   {
-    MessageCallback::warning(T("InferenceContext::run"), T("pre-inference failed"));
+    warningCallback(T("InferenceContext::run"), T("pre-inference failed"));
     jassert(false);
     return Variable();
   }
