@@ -33,7 +33,7 @@ protected:
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData);
 

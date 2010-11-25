@@ -45,7 +45,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return voteInferenceModel->getOutputType(inputType);}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = new ParallelInferenceState(input, supervision);
     state->reserve(subInferences.size());
@@ -54,7 +54,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     if (!n)
@@ -84,7 +84,7 @@ public:
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType));}
   MeanScalarParallelVoteInference() {}
 
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     double sum = 0.0;
@@ -112,7 +112,7 @@ public:
     {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType()).dynamicCast<Enumeration>());}
   MajorityClassParallelVoteInference() {}
 
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     EnumerationPtr enumType = getOutputType(getInputType());
     size_t n = state->getNumSubInferences();

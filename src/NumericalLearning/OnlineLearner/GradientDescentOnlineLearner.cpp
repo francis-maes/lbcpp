@@ -23,7 +23,7 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
-void GradientDescentOnlineLearner::startLearningCallback(InferenceContext& context)
+void GradientDescentOnlineLearner::startLearningCallback(ExecutionContext& context)
 {
   numberOfActiveFeatures.clear();
   epoch = 0;
@@ -34,7 +34,7 @@ void GradientDescentOnlineLearner::startLearningCallback(InferenceContext& conte
   InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void GradientDescentOnlineLearner::stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   checkRegularizerAfterStep(context, inference);
 
@@ -55,14 +55,14 @@ void GradientDescentOnlineLearner::stepFinishedCallback(InferenceContext& contex
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
   
-void GradientDescentOnlineLearner::episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
+void GradientDescentOnlineLearner::episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
     applyRegularizer(context, inference);
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void GradientDescentOnlineLearner::passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(context, inference);
@@ -83,7 +83,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(InferenceContext& contex
   InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 
-void GradientDescentOnlineLearner::updateParameters(InferenceContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
+void GradientDescentOnlineLearner::updateParameters(ExecutionContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
   const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
@@ -94,7 +94,7 @@ void GradientDescentOnlineLearner::updateParameters(InferenceContext& context, c
     pred = numericalInference->predict(context, input);
   else
     // special case for ranking
-    pred = context.predict(inference, input);
+    pred = predict(context, inference, input);
   numericalInference->computeAndAddGradient(context, - weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);

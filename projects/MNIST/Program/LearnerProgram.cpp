@@ -86,9 +86,6 @@ bool LearnerProgram::run(ExecutionContext& context)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
   
-  InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
-//  InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(10, false));
-
   if (!loadData(context))
     return false;
   
@@ -114,18 +111,18 @@ bool LearnerProgram::run(ExecutionContext& context)
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
-  inferenceContext->train(inference, learningData, ContainerPtr());
+  train(context, inference, learningData, ContainerPtr());
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
-  inferenceContext->evaluate(inference, learningData, evaluator);
+  evaluate(context, inference, learningData, evaluator);
   std::cout << evaluator->toString() << std::endl;
 
   if (testingData && testingData->getNumElements())
   {
     std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
-    inferenceContext->evaluate(inference, testingData, evaluator);
+    evaluate(context, inference, testingData, evaluator);
     std::cout << evaluator->toString() << std::endl;
   }
 

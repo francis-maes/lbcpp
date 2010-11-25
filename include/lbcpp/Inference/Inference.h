@@ -107,13 +107,13 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 
+    // todo: move this in protected
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 protected:
   friend class InferenceClass;
-  friend class InferenceContext;
 
   virtual void parametersChangedCallback() {}
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
@@ -122,8 +122,6 @@ protected:
 };
 
 extern ClassPtr inferenceClass;
-
-extern WorkUnitPtr inferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output);
 
 // Decorator
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);

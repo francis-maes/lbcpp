@@ -25,7 +25,7 @@ public:
 
   virtual const PerceptionPtr& getPerception(const InferencePtr& targetInference) const = 0;
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const InferencePtr& targetInference = learnerInput->getTargetInference();

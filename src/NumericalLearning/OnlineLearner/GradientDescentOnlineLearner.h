@@ -25,10 +25,10 @@ public:
   GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
 
 
-  virtual void startLearningCallback(InferenceContext& context);
-  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference);
-  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void startLearningCallback(ExecutionContext& context);
+  virtual void stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference);
+  virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
     {res.push_back(std::make_pair(T("empiricalRisk"), lastEmpiricalRisk));}
@@ -55,7 +55,7 @@ protected:
   double lastEmpiricalRisk;
   size_t lastApplyRegularizerEpoch;
 
-  void updateParameters(InferenceContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
+  void updateParameters(ExecutionContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target = NULL);
 
   bool shouldApplyRegularizerAfterStep(size_t epoch) const;
   void applyRegularizer(ExecutionContext& context, const InferencePtr& inference);

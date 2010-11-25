@@ -33,8 +33,7 @@ public:
     InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     customizeLearner(context, input, onlineLearner);
-    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    ((InferenceContext& )context).runInference(inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    runInference(context, inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
     return onlineLearner->getLastLearner()->getDefaultScore();
   }
 
@@ -78,7 +77,7 @@ public:
   virtual TypePtr getOutputType(TypePtr input) const
     {return doubleType;}
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
@@ -113,17 +112,19 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
     EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
     
-    Variable optimizedValue = context.runInference(optimizer, objective, Variable(), returnCode);
+    Variable optimizedValue;
+    if (!runInference(context, optimizer, objective, Variable(), optimizedValue))
+      return Variable();
     
     InferencePtr targetInference = learnerInput->getTargetInference();
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     objective->customizeLearner(context, optimizedValue, onlineLearner);
-    context.runInference(baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable(), returnCode);
+    runInference(context, baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
     return Variable();
   }
 
@@ -134,9 +135,9 @@ protected:
 
 ///////////////////////////////////////////////
 
-InferenceContextPtr createInferenceContext()
+ExecutionContextPtr createInferenceContext()
 {
-  return multiThreadedInferenceContext(new ThreadPool(7, false));
+  return defaultConsoleExecutionContext();
 }
 
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
@@ -311,7 +312,7 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -335,7 +336,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     String inferenceName = stack->getCurrentInference()->getName();
 
@@ -364,8 +365,6 @@ public:
         }
       }
 /*
-      //singleThreadedInferenceContext();
-      //InferenceContextPtr context = multiThreadedInferenceContext(7);
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
       context->evaluate(inference, trainingData, evaluator);
       processResults(evaluator, true);
@@ -420,8 +419,7 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize();
 
-  ThreadPoolPtr pool = new ThreadPool(7);
-  InferenceContextPtr context = multiThreadedInferenceContext(pool);
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
   context->appendCallback(consoleExecutionCallback());
   context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
   context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
@@ -520,10 +518,10 @@ int main(int argc, char** argv)
   return 0;*/
 
   {
-    InferenceContextPtr context = singleThreadedInferenceContext();
+    ExecutionContextPtr context = defaultConsoleExecutionContext(true);
     InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context->appendCallback(trainingCallback);
-    context->train(inference, trainProteins, validationProteins);
+    train(*context, inference, trainProteins, validationProteins);
     context->removeCallback(trainingCallback);
   }
 
@@ -537,17 +535,17 @@ int main(int argc, char** argv)
   {
     std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    context->evaluate(inference, trainProteins, evaluator);
+    evaluate(*context, inference, trainProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Validation Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    context->evaluate(inference, validationProteins, evaluator);
+    evaluate(*context, inference, validationProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
-    context->evaluate(inference, testProteins, evaluator);
+    evaluate(*context, inference, testProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
   return 0;
@@ -565,9 +563,9 @@ int main(int argc, char** argv)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
-    InferenceContextPtr context = multiThreadedInferenceContext(new ThreadPool(i ? i : 1, false));
+    ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
     context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
-    context->evaluate(inference, trainProteins, evaluator);
+    evaluate(*context, inference, trainProteins, evaluator);
   //  context->crossValidate(inference, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;

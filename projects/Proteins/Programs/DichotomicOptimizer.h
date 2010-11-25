@@ -16,7 +16,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -67,7 +67,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return doubleType;}
   
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     jassert(stoppingCriterion);
     jassert(minValue <= maxValue);
@@ -134,11 +134,7 @@ public:
   {
     //InferencePtr optimizer = new DichotomicOptimizer(-5, 10, maxIterationsStoppingCriterion(11));
     InferencePtr optimizer = new PolychotomicOptimizer(2, -5, 10, maxIterationsStoppingCriterion(11));
-
-    InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
-    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    inferenceContext->runInference(optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable(), returnCode);
-    return true;
+    return runInference(context, optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable());
   }
 };
 

@@ -107,7 +107,7 @@ DecoratorInference::DecoratorInference(const String& name)
   setBatchLearner(decoratorInferenceLearner());
 }
 
-Variable DecoratorInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable DecoratorInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   DecoratorInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
   jassert(state);
@@ -117,8 +117,8 @@ Variable DecoratorInference::computeInference(InferenceContext& context, const V
   const InferencePtr& subInference = state->getSubInference();
   if (subInference)
   {
-    Variable subOutput = context.runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
-    if (returnCode != Inference::finishedReturnCode)
+    Variable subOutput;
+    if (!runInference(context, subInference, state->getSubInput(), state->getSubSupervision(), subOutput))
       return Variable();
     state->setSubOutput(subOutput);
   }
@@ -149,13 +149,13 @@ PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr p
 TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
   {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
 
-Variable PostProcessInference::finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+Variable PostProcessInference::finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {return postProcessingFunction->computeFunction(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
 
 /*
 ** ParallelInference
 */
-Variable ParallelInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable ParallelInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   ParallelInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
   if (returnCode != Inference::finishedReturnCode)
@@ -180,9 +180,7 @@ Variable ParallelInference::computeInference(InferenceContext& context, const Va
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
       {
-        returnCode = Inference::finishedReturnCode;
-        subOutput = context.runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
-        if (returnCode == Inference::errorReturnCode)
+        if (!runInference(context, subInference, state->getSubInput(i), state->getSubSupervision(i), subOutput))
         {
           context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
           return Variable(); 
@@ -206,7 +204,7 @@ SharedParallelInference::SharedParallelInference(const String& name, InferencePt
   setBatchLearner(sharedParallelInferenceLearner());
 }
 
-Variable SharedParallelInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SharedParallelInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   subInference->beginRunSession();
   Variable res = ParallelInference::computeInference(context, input, supervision, returnCode);
@@ -232,7 +230,7 @@ void VectorParallelInference::clone(ExecutionContext& context, const ObjectPtr& 
 /*
 ** SequentialInference
 */
-Variable SequentialInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SequentialInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
   if (!state)
@@ -240,8 +238,8 @@ Variable SequentialInference::computeInference(InferenceContext& context, const 
 
   while (!state->isFinal())
   {
-    Variable subOutput = context.runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
-    if (returnCode != Inference::finishedReturnCode)
+    Variable subOutput;
+    if (!runInference(context, state->getSubInference(), state->getSubInput(), state->getSubSupervision(), subOutput))
       return state->getInput();
 
     state->setSubOutput(subOutput);
@@ -263,7 +261,7 @@ StaticSequentialInference::StaticSequentialInference(const String& name)
 VectorSequentialInference::VectorSequentialInference(const String& name)
   : StaticSequentialInference(name) {}
 
-SequentialInferenceStatePtr VectorSequentialInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr VectorSequentialInference::prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
   if (subInferences.size())
@@ -271,7 +269,7 @@ SequentialInferenceStatePtr VectorSequentialInference::prepareInference(Inferenc
   return state;
 }
 
-bool VectorSequentialInference::updateInference(InferenceContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
+bool VectorSequentialInference::updateInference(ExecutionContext& context, SequentialInferenceStatePtr state, ReturnCode& returnCode)
 {
   int index = state->getStepNumber(); 
   jassert(index >= 0);

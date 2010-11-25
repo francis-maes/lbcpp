@@ -38,7 +38,7 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     ScalarFunctionPtr lossFunction;
@@ -68,7 +68,7 @@ public:
     return res;
   }
    
-  virtual Variable finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     static const double temperature = 1.0;
     Variable subInferenceOutput = finalState->getSubOutput();

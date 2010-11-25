@@ -46,10 +46,9 @@ public:
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
   
-  virtual bool run(ExecutionContext& c)
+  virtual bool run(ExecutionContext& context)
   {
     File input(T("/Users/jbecker/Documents/Workspace/Data/x3TestData/waveform.txt"));
-    InferenceContext& context = (InferenceContext& )c;
     
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data);
@@ -60,14 +59,14 @@ public:
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
     InferencePtr inference = classificationExtraTreeInference(context, T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
     
-    context.train(inference, learningData, ContainerPtr());
+    train(context, inference, learningData, ContainerPtr());
     
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    context.evaluate(inference, learningData, evaluator);
+    evaluate(context, inference, learningData, evaluator);
     std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    context.evaluate(inference, testingData, evaluator);
+    evaluate(context, inference, testingData, evaluator);
     std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
     return true;
   }

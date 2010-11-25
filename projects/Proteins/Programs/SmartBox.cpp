@@ -195,7 +195,7 @@ public:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     ScopedLock _(lock);
     const InferencePtr& currentInference = stack->getCurrentInference();
@@ -210,7 +210,7 @@ public:
     context.informationCallback(line);
   }
   
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     return;
     ScopedLock _(lock);
@@ -250,7 +250,7 @@ public:
     }
   }
   
-  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getDepth() == 1)
     {
@@ -277,7 +277,7 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     //String inferenceName = stack->getCurrentInference()->getName();
 
@@ -293,7 +293,7 @@ public:
       context.informationCallback(T("================== Train Evaluation ==================  ")
                             + String((Time::getMillisecondCounter() - startingTime) / 1000)
                             + T(" s"));
-      context.evaluate(inference, trainingData, learningEvaluator);
+      evaluate(context, inference, trainingData, learningEvaluator);
       context.informationCallback(learningEvaluator->toString());
 
       if (testingData && testingData->getNumElements())
@@ -301,7 +301,7 @@ public:
         context.informationCallback(T("=================== Test Evaluation ==================  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        context.evaluate(inference, testingData, testingEvaluator);
+        evaluate(context, inference, testingData, testingEvaluator);
         context.informationCallback(testingEvaluator->toString());
       }
 
@@ -310,7 +310,7 @@ public:
         context.informationCallback(T("============== Validation Evaluation ===============  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        context.evaluate(inference, validationData, validationEvaluator);
+        evaluate(context, inference, validationData, validationEvaluator);
         context.informationCallback(validationEvaluator->toString());
       }
 
@@ -641,9 +641,9 @@ bool SnowBox::run(ExecutionContext& context)
     previousInference = inferencePass;
   }
   
-  InferenceContextPtr inferenceContext = (numberOfThreads == 1)
-                              ? singleThreadedInferenceContext()
-                              : multiThreadedInferenceContext(new ThreadPool(numberOfThreads, false));
+  ExecutionContextPtr inferenceContext = (numberOfThreads == 1)
+                              ? singleThreadedExecutionContext()
+                              : multiThreadedExecutionContext(numberOfThreads);
   
   if (useCrossValidation)
   {
@@ -655,7 +655,7 @@ bool SnowBox::run(ExecutionContext& context)
   {
     inferenceContext->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
     //context->appendCallback(new StackPrinterCallback());
-    inferenceContext->train(inference, learningData, validationData);
+    train(*inferenceContext, inference, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
     inference->saveToFile(context, outputInferenceFile);

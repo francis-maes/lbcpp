@@ -34,7 +34,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return containerClass(doubleType);} // score vector
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const ContainerPtr& inputContainer = input.getObjectAndCast<Container>(context);
     jassert(inputContainer);
@@ -47,7 +47,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
   {
     size_t n = state->getNumSubInferences();
     VectorPtr res = vector(doubleType, n);
@@ -78,7 +78,7 @@ public:
   virtual void setName(const String& name)
     {StaticDecoratorInference::setName(name); decorated->setName(name + T(" scores"));}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     RankingLossFunctionPtr lossFunction;
