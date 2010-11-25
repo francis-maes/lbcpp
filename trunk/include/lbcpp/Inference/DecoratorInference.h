@@ -69,8 +69,7 @@ public:
   /*
   ** Inference
   */
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context.runDecoratorInference(this, input, supervision, returnCode);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   lbcpp_UseDebuggingNewOperator
 };

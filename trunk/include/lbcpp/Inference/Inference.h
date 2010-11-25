@@ -123,6 +123,8 @@ protected:
 
 extern ClassPtr inferenceClass;
 
+extern WorkUnitPtr inferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output);
+
 // Decorator
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 

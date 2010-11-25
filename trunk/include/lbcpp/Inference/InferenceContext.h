@@ -19,6 +19,14 @@ namespace lbcpp
 class Evaluator;
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 
+extern Variable runInference(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision);
+
+extern bool train(ExecutionContext& context, const InferencePtr& inference, ContainerPtr trainingExamples, ContainerPtr validationExamples);
+extern bool train(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& learnerInput);
+extern bool evaluate(ExecutionContext& context, const InferencePtr& inference, ContainerPtr examples, EvaluatorPtr evaluator);
+extern bool crossValidate(ExecutionContext& context, const InferencePtr& inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds);
+extern Variable predict(ExecutionContext& context, const InferencePtr& inference, const Variable& input);
+
 class InferenceContext : public ExecutionContext
 {
 public:
@@ -42,10 +50,6 @@ protected:
   virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode) = 0;
   virtual void postInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode) = 0;
 
-  virtual Variable runDecoratorInference(DecoratorInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable runSequentialInference(SequentialInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  
   Variable callRunInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
   
   void callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode);
@@ -53,9 +57,10 @@ protected:
 };
 
 extern InferenceContextPtr singleThreadedInferenceContext();
-extern InferenceContextPtr multiThreadedInferenceContext(ThreadPoolPtr threadPool);
+inline InferenceContextPtr multiThreadedInferenceContext(ThreadPoolPtr threadPool)
+  {return singleThreadedInferenceContext();} // FIXME
 inline InferenceContextPtr multiThreadedInferenceContext(size_t numCpus)
-  {return multiThreadedInferenceContext(new ThreadPool(numCpus));}
+  {return singleThreadedInferenceContext();} // FIXME
 
 }; /* namespace lbcpp */
 

@@ -1,7 +1,8 @@
- * Faire l'etat des lieux
- 
- * MultiThreadedExecutionContext
+
  * Imbrication du InferenceContext et du ExecutionContext
+ * Faire sauter les Inference::ReturnCode
+ 
+ 
  * Unify also with Boinc
 
 Program:

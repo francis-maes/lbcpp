@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class MultiThreadedInferenceContext : public InferenceContext
 {
 public:
@@ -53,16 +53,8 @@ protected:
 
   virtual void postInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
     {jassert(false);}
-
-  virtual Variable runDecoratorInference(DecoratorInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {jassert(false); return Variable();}
-
-  virtual Variable runSequentialInference(SequentialInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {jassert(false); return Variable();}
-
-  virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {jassert(false); return Variable();}
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

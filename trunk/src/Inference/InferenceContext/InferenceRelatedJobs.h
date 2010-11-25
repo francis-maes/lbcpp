@@ -19,6 +19,41 @@
 namespace lbcpp
 {
 
+// NEW
+class InferenceWorkUnit : public WorkUnit
+{
+public:
+  InferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output)
+    : WorkUnit(name), inference(inference), input(input), supervision(supervision), output(output)
+  {
+  }
+
+  InferenceWorkUnit() : output(*(Variable* )0) {}
+
+  virtual String toShortString() const
+    {return getName();}
+
+  virtual String toString() const
+    {return getName();}
+ 
+  virtual bool run(ExecutionContext& context)
+  {
+    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+    output = ((InferenceContext& )context).runInference(inference, input, supervision, returnCode);
+    return returnCode == Inference::finishedReturnCode;
+  }
+
+protected:
+  friend class InferenceWorkUnitClass;
+
+  InferencePtr inference;
+  Variable input;
+  Variable supervision;
+  Variable& output;
+};
+
+#if 0
+// OLD
 class InferenceRelatedWorkUnit : public WorkUnit
 {
 public:
@@ -147,6 +182,7 @@ private:
 
 WorkUnitPtr parallelInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic)
   {return WorkUnitPtr(new RunParallelInferencesWorkUnit(parentContext, pool, stack, inference, state, beginIndex, endIndex, areSubJobsAtomic));}
+#endif // 0
 
 }; /* namespace lbcpp */
 

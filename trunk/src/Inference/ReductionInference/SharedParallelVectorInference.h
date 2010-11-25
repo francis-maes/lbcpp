@@ -26,6 +26,9 @@ public:
     : SharedParallelInference(name, elementInference), sizeFunction(sizeFunction) {}
   SharedParallelVectorInference() {}
 
+  virtual bool useMultiThreading() const
+    {return false;}
+
   virtual TypePtr getInputType() const
     {return getSubInference()->getInputType()->getTemplateArgument(0);}
 

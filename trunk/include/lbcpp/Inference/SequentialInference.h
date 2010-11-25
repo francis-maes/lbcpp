@@ -90,11 +90,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  /*
-  ** Inference
-  */
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context.runSequentialInference(this, input, supervision, returnCode);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 };
 
 extern ClassPtr sequentialInferenceClass;

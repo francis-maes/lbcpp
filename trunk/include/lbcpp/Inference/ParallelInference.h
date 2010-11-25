@@ -43,6 +43,9 @@ public:
 
   const Variable& getSubOutput(size_t index) const
     {jassert(index < subInferences.size()); return subInferences[index].output;}
+  
+  Variable& getSubOutput(size_t index)
+    {jassert(index < subInferences.size()); return subInferences[index].output;}
 
   void setSubOutput(size_t index, const Variable& subOutput)
     {jassert(index < subInferences.size()); subInferences[index].output = subOutput;}
@@ -72,14 +75,16 @@ public:
   ParallelInference(const String& name) : Inference(name) {}
   ParallelInference() {}
 
+  virtual bool useMultiThreading() const
+    {return true;}
+
   virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
   virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return context.runParallelInference(this, input, supervision, returnCode);}
+  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 };
 
 extern ClassPtr parallelInferenceClass;

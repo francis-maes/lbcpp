@@ -20,6 +20,8 @@ class ExecutionContext : public ExecutionCallback
 public:
   ExecutionContext();
 
+  virtual bool isMultiThread() const = 0;
+
   /*
   ** ExecutionCallback
   */
