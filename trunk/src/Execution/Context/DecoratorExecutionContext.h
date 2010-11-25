@@ -9,6 +9,7 @@
 #ifndef LBCPP_EXECUTION_CONTEXT_DECORATOR_H_
 # define LBCPP_EXECUTION_CONTEXT_DECORATOR_H_
 
+# include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Execution/ExecutionContext.h>
 
 namespace lbcpp
@@ -19,7 +20,13 @@ class DecoratorExecutionContext : public ExecutionContext
 public:
   DecoratorExecutionContext(ExecutionContextPtr decorated)
     : decorated(decorated)
-    {if (decorated) appendCallback(decorated);}
+  {
+    if (decorated)
+    {
+      appendCallback(decorated);
+      stack = ExecutionStackPtr(new ExecutionStack(*decorated->getStack()));
+    }
+  }
 
   DecoratorExecutionContext() {}
 

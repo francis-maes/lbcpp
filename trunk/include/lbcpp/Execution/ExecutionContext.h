@@ -77,6 +77,12 @@ public:
   virtual bool isCanceled() const = 0;
   virtual bool isPaused() const = 0;
 
+  ExecutionStackPtr getStack() const
+    {return stack;}
+
+  size_t getStackDepth() const;
+  const FunctionPtr& getCurrentFunction() const;
+
   /*
   ** Work Units
   */
@@ -106,6 +112,7 @@ protected:
   friend class ExecutionContextClass;
 
   std::vector<ExecutionCallbackPtr> callbacks;
+  ExecutionStackPtr stack;
 };
 
 extern ExecutionContextPtr silentExecutionContext;

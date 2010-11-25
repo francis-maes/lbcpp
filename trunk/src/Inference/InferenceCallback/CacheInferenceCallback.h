@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_CACHE_CALLBACK_H_
 
 # include <lbcpp/Inference/InferenceCallback.h>
-# include <lbcpp/Execution/FunctionStack.h>
+# include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Inference/InferenceResultCache.h>
 
 namespace lbcpp
@@ -23,18 +23,18 @@ public:
     : cache(cache), parentStep(parentStep) {}
   CacheInferenceCallback() {}
 
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
-    if (!output.exists() && stack->getParentInference() == parentStep)
-      output = Variable(cache->get(stack->getCurrentInference(), input.getObject()));
+    if (!output.exists() && context.getStack()->getParentInference() == parentStep)
+      output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
-    if (stack->getParentInference() == parentStep)
+    if (context.getStack()->getParentInference() == parentStep)
     {
-      cache->add(stack->getCurrentInference(), input.getObject(), output.getObject());
-      jassert(cache->get(stack->getCurrentInference(), input.getObject()));
+      cache->add(context.getCurrentFunction(), input.getObject(), output.getObject());
+      jassert(cache->get(context.getCurrentFunction(), input.getObject()));
     }
   }
 

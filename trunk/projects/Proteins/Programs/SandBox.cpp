@@ -312,9 +312,9 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
-    if (stack->getDepth() == 1)
+    if (context.getStackDepth() == 1)
     {
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
@@ -336,9 +336,9 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
-    String inferenceName = stack->getCurrentInference()->getName();
+    String inferenceName = context.getCurrentFunction()->getName();
 
     //if (stack->getDepth() == 1) // 
     //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
@@ -376,7 +376,7 @@ public:
       //context.informationCallback(T("====================================================="));
     }
     
-    if (stack->getDepth() == 1)
+    if (context.getStackDepth() == 1)
     {
       context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }

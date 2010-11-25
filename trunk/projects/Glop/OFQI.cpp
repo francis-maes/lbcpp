@@ -9,7 +9,7 @@ extern void declareGlopClasses(ExecutionContext& context);
 class MyInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
@@ -22,7 +22,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
   }
 };

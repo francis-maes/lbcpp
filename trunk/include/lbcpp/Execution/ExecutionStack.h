@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: FunctionStack.h                | Function Stack                  |
+| Filename: ExecutionStack.h                | Function Stack                  |
 | Author  : Francis Maes                   |                                 |
 | Started : 16/04/2010 18:23               |                                 |
 `------------------------------------------/                                 |
@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-class FunctionStack : public Object
+class ExecutionStack : public Object
 {
 public:
   const FunctionPtr& getTopLevelInference() const
@@ -62,7 +62,7 @@ public:
     {return index >= 0 && index < (int)stack.size() ? stack[index] : nullFunction;}
 
 private:
-  friend class FunctionStackClass;
+  friend class ExecutionStackClass;
 
   std::vector<FunctionPtr> stack;
 };

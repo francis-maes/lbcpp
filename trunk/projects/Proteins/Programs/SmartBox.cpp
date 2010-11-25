@@ -195,32 +195,32 @@ public:
 class StackPrinterCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
     ScopedLock _(lock);
-    const InferencePtr& currentInference = stack->getCurrentInference();
-    if (stack->getDepth() > 4
+    const FunctionPtr& currentInference = context.getCurrentFunction();
+    if (context.getStackDepth() > 4
         || currentInference->getClassName() == T("BinaryLinearSVMInference")
         || currentInference->getClassName() == T("OneAgainstAllClassificationInference"))
       return;
     String line(T("#"));
-    for (size_t i = 1; i < stack->getDepth(); ++i)
+    for (size_t i = 1; i < context.getStackDepth(); ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
     context.informationCallback(line);
   }
   
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
     return;
     ScopedLock _(lock);
-    const InferencePtr& currentInference = stack->getCurrentInference();
-    if (stack->getDepth() > 2
+    const FunctionPtr& currentInference = context.getCurrentFunction();
+    if (context.getStackDepth() > 2
         || currentInference->getClassName() == T("BinaryLinearSVMInference")
         || currentInference->getClassName() == T("OneAgainstAllClassificationInference"))
       return;
     String line = T("END ");
-    for (size_t i = 0; i < stack->getDepth() - 1; ++i)
+    for (size_t i = 0; i < context.getStackDepth() - 1; ++i)
       line += T("    ");
     line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
     context.informationCallback(line);
@@ -250,9 +250,9 @@ public:
     }
   }
   
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
-    if (stack->getDepth() == 1)
+    if (context.getStackDepth() == 1)
     {
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
@@ -277,12 +277,13 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
     //String inferenceName = stack->getCurrentInference()->getName();
+    FunctionPtr currentInference = context.getCurrentFunction();
 
-    if (stack->getDepth() == 2 && (stack->getCurrentInference()->getClassName() == T("StaticParallelInferenceLearner")
-                                   || stack->getCurrentInference()->getClassName() == T("MultiPassInferenceLearner")))
+    if (context.getStackDepth() == 2 && (currentInference->getClassName() == T("StaticParallelInferenceLearner")
+                                   || currentInference->getClassName() == T("MultiPassInferenceLearner")))
     {
       context.informationCallback(T("===================== EVALUATION ====================="));
 
@@ -365,7 +366,7 @@ public:
       ++passNumber;
     }
 
-    if (stack->getDepth() == 1)
+    if (context.getStackDepth() == 1)
     {
       context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }

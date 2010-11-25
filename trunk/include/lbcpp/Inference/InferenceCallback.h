@@ -20,10 +20,10 @@ class InferenceCallback : public ExecutionCallback
 public:
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
-  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
+  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
     {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
     {}
 };
 
