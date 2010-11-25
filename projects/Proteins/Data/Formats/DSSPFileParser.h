@@ -23,7 +23,7 @@ public:
   {
     jassert(protein->getPrimaryStructure());
     primarySequence = protein->getPrimaryStructure();
-    std::cout << "AA: " << primarySequence->toString() << std::endl;
+    context.informationCallback(T("DSSPFileParser"), T("AA: ") + primarySequence->toString());
   }
   
   virtual TypePtr getElementsType() const
@@ -126,7 +126,6 @@ public:
     // jassert(normalizedSolventAccessibility <= 1.0); FIXME: IT FAILS !
     if (normalizedSolventAccessibility > 1.0)
     {
-      std::cout << "Solvent Accessibility Exeeded: " << aminoAcidCode << " > " << absoluteSolventAccesiblity << " of " << maximumSolventAccissibilityValue[aminoAcidType] << std::endl;
       normalizedSolventAccessibility = 1.0;
     }
     solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType));
@@ -140,8 +139,6 @@ public:
       context.errorCallback(T("DSSPFileParser::parseEnd"), T("No residues in dssp file"));
       return false;
     }
-
-    std::cout << "SS: " << dsspSecondaryStructureSequence->toString() << std::endl;
 
     setResult(dsspSecondaryStructureSequence);
     protein->setDSSPSecondaryStructure(dsspSecondaryStructureSequence);

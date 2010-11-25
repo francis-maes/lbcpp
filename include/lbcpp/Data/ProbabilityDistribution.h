@@ -65,6 +65,8 @@ public:
 
   void increment(const Variable& value);
 
+  void normalize();
+
   // ProbabilityDistribution
   virtual double compute(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
@@ -95,6 +97,7 @@ private:
   std::vector<double> values;
   CriticalSection cachedEntropyLock;
   Variable cachedEntropy;
+  size_t count;
 };
 
 typedef ReferenceCountedObjectPtr<DiscreteProbabilityDistribution> DiscreteProbabilityDistributionPtr;

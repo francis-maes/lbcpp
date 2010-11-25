@@ -40,7 +40,7 @@ double BernoulliDistribution::computeEntropy() const
 ** DiscreteProbabilityDistribution
 */
 DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
-  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0) {}
+  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
 
 String DiscreteProbabilityDistribution::toString() const
 {
@@ -109,7 +109,17 @@ void DiscreteProbabilityDistribution::increment(const Variable& value)
     index = (size_t)value.getInteger();
   else
     return;
+  ++count;
   setProbability(index, getProbability(index) + 1.0);
+}
+
+void DiscreteProbabilityDistribution::normalize()
+{
+  if (count <= 1)
+    return;
+  for (size_t i = 0; i < values.size(); ++i)
+    setProbability(i, getProbability(i) / (double)count);
+  count = 0;
 }
 
 void DiscreteProbabilityDistribution::saveToXml(XmlExporter& exporter) const
