@@ -28,9 +28,9 @@
 # define LBCPP_OBJECT_VARIABLE_H_
 
 # include "Object.h"
+# include "../Execution/ExecutionContext.h"
 # include "Type.h"
 # include "TemplateType.h"
-# include "../Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
