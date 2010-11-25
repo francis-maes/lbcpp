@@ -11,13 +11,13 @@
       <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
       <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
     </class>
-    
+
     <class name="NumericalLearningParameter" base="Object">
       <variable type="Double" name="learningRate"/>
       <variable type="Double" name="learningRateDecrease"/>
       <variable type="Double" name="regularizer"/>
     </class>
-    
+
     <class name="ProteinTarget" base="Object">
       <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
     </class>
@@ -41,18 +41,27 @@
       <variable type="ProteinTarget" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
       <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
     </class>
-    
-    <class name="ProteinInferenceEvaluatorProgram" base="WorkUnit">
+
+    <class name="ProteinInferenceEvaluatorWorkUnit" base="WorkUnit">
       <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
       <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
       <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
       <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
     </class>
-    
-    <class name="ClientProgram" base="WorkUnit"/>
-    
-    <class name="ServerProgram" base="WorkUnit"/>
-    
+
+    <class name="CaspPDBtoValidPDBWorkUnit" base="WorkUnit">
+      <variable type="File" name="pdbDirectory" description="Input CASP PDB directory" shortName="in"/>
+      <variable type="File" name="fastaFile" description="Input FASTA file (comments line must be the CASP PDB file name and the sequence must exactly be the same sequence that the tertiary structure of the CASP PDB file)" shortName="f"/>
+      <variable type="File" name="outputDirectory" description="Output directory" shortName="o"/>
+    </class>
+
+    <class name="CompileProteinsWorkUnit" base="WorkUnit">
+      <variable type="File" name="inputProteinFile" description="Input protein file" shortName="in"/>
+      <variable type="File" name="pssmFile" description="PSSM file" shortName="pssm"/>
+      <variable type="File" name="dsspFile" description="DSSP file" shortName="dssp"/>
+      <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
+    </class>
+
     <class name="DumbOptimizerProgram" base="WorkUnit"/>
     <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
   </namespace>

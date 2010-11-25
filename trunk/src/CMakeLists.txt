@@ -460,6 +460,10 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   DecisionTree/Inference/ExtraTreeInference.h
   DecisionTree/Inference/ExtraTreeInferenceLearner.h
   DecisionTree/Inference/ExtraTreeInferenceLearner.cpp
+  DecisionTree/Inference/SplitScoringFunction.h
+  DecisionTree/Inference/SplitScoringFunction.cpp
+  DecisionTree/Inference/BinaryDecisionTreeSplitter.h
+  DecisionTree/Inference/BinaryDecisionTreeSplitter.cpp
   DecisionTree/Inference/DecisionTreeInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
 )

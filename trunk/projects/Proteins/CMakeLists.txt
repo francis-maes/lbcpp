@@ -122,23 +122,19 @@ MACRO(ADD_SINGLE_CPP_EXECUTABLE NAME)
   TARGET_LINK_LIBRARIES(${NAME} proteins)
 ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
 
-ADD_SINGLE_CPP_EXECUTABLE(CASPPredictor)
-ADD_SINGLE_CPP_EXECUTABLE(ConvertPDBToProtein)
-ADD_SINGLE_CPP_EXECUTABLE(ConvertPDBToCASPTS)
-ADD_SINGLE_CPP_EXECUTABLE(ComputePSSMs)
-ADD_SINGLE_CPP_EXECUTABLE(CompileProteins)
-ADD_SINGLE_CPP_EXECUTABLE(ProteinInferenceEvaluator)
-ADD_SINGLE_CPP_EXECUTABLE(ConvertCASPToValidPDB)
-ADD_SINGLE_CPP_EXECUTABLE(MoonBox)
-
 ADD_EXECUTABLE(RunProgram
   Programs/RunProgram.cpp
   Programs/ProgramDeclarations.h
-  Programs/ProteinInferenceEvaluatorProgram.h
   Programs/SmartBox.cpp
-  Programs/ClientServer.h
-  Programs/ClientServer.cpp
   Programs/DichotomicOptimizer.h
+  Programs/ProteinInferenceEvaluatorWorkUnit.h
+  Programs/ProteinInferenceEvaluatorWorkUnit.cpp
+  Programs/CaspPDBtoValidPDBWorkUnit.h
+  Programs/CaspPDBtoValidPDBWorkUnit.cpp
+  Programs/CompileProteinsWorkUnit.h
+  Programs/CompileProteinsWorkUnit.cpp
+  Programs/ConvertPDBToProteinWorkUnit.h
+  Programs/ConvertPDBToProteinWorkUnit.cpp
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

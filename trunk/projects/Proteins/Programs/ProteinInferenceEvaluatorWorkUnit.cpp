@@ -1,14 +1,22 @@
+/*-----------------------------------------.---------------------------------.
+ | Filename: ProteinInferenceEvaluat...cpp  | ProteinInferenceEvaluator       |
+ | Author  : Julien Becker                  | WorkUnit                        |
+ | Started : 25/11/2010 11:20               |                                 |
+ `------------------------------------------/                                 |
+                                |                                             |
+                                `--------------------------------------------*/
 
-#include <lbcpp/lbcpp.h>
+#include "ProteinInferenceEvaluatorWorkUnit.h"
+#include "../Data/Protein.h"
 
-namespace lbcpp {
+using namespace lbcpp;
 
 // Variable -> File
 class SaveToFileFunction : public Function
 {
 public:
   SaveToFileFunction(const File& directory = File::getCurrentWorkingDirectory()) : directory(directory) {}
-
+  
   virtual TypePtr getInputType() const
     {return anyType;}
   
@@ -32,14 +40,14 @@ public:
 protected:
   File directory;
 };
-  
+
 // input -> predicted output
 class PredictFunction : public Function
 {
 public:
   PredictFunction(InferencePtr inference)
-    : inference(inference)
-    {jassert(inference);}
+    : inference(inference), context(context)
+    {jassert(inference && context);}
   
   virtual TypePtr getInputType() const
     {return inference->getInputType();}
@@ -48,10 +56,11 @@ public:
     {return inference->getOutputType(inputType);}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return ((InferenceContext& )context).predict(inference, input);}
+    {return this->context->predict(inference, input);}
   
 protected:
   InferencePtr inference;
+  InferenceContextPtr context;
 };
 
 // Protein -> Protein (with input data only)
@@ -71,59 +80,36 @@ public:
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
+    
     return inputProtein;
   }
 };
-  
-class ProteinInferenceEvaluatorProgram : public WorkUnit
+
+bool ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
 {
-public:
-  ProteinInferenceEvaluatorProgram() : numThreads(1) {}
-  
-  virtual String toString() const
-    {return T("Take an learned inference and save prediction \
-              from an input protein directory to an output directory.");}
-  
-  virtual bool run(ExecutionContext& context)
+  if (!inputDirectory.exists()
+      || !outputDirectory.exists()
+      || !inferenceFile.exists())
   {
-    if (!inputDirectory.exists()
-        || !outputDirectory.exists()
-        || !inferenceFile.exists())
-    {
-      context.errorCallback(T("ProteinInferenceEvaluatorProgram::run"), getUsageString());
-      return false;
-    }
-
-    InferencePtr inference = Inference::createFromFile(context, inferenceFile);
-    if (!inference)
-    {
-      context.errorCallback(T("ProteinInferenceEvaluatorProgram::run"), T("Sorry, the inference file is not correct !"));
-      return false;
-    }
-
-    ThreadPoolPtr pool = new ThreadPool(numThreads, false);
-    std::cout << "Threads      : " << numThreads << std::endl;
-
-    ContainerPtr data = directoryFileStream(inputDirectory, T("*.xml"))
-      ->load(context)
-      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
-      ->apply(context, FunctionPtr(new InputProteinFunction()));
-    std::cout << "Data         : " << data->getNumElements() << std::endl;
-
-    data->apply(context, FunctionPtr(new PredictFunction(inference)))
-      ->apply(context, FunctionPtr(new SaveToFileFunction(outputDirectory)), Container::sequentialApply);
-
-    return true;
+    context.errorCallback(T("ProteinInferenceEvaluatorWorkUnit::run"), getUsageString());
+    return false;
   }
 
-protected:
-  friend class ProteinInferenceEvaluatorProgramClass;
-  
-  File inputDirectory;
-  File outputDirectory;
-  File inferenceFile;
-  
-  size_t numThreads;
-};
+  InferencePtr inference = Inference::createFromFile(context, inferenceFile);
+  if (!inference)
+  {
+    context.errorCallback(T("ProteinInferenceEvaluatorWorkUnit::run"), T("Sorry, the inference file is not correct !"));
+    return false;
+  }
 
-};
+  ContainerPtr data = directoryFileStream(inputDirectory, T("*.xml"))
+      ->load(context)
+      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
+      ->apply(context, FunctionPtr(new InputProteinFunction()), Container::parallelApply);
+  std::cout << "Data         : " << data->getNumElements() << std::endl;
+
+  data->apply(context, FunctionPtr(new PredictFunction(inference)))
+      ->apply(context, FunctionPtr(new SaveToFileFunction(outputDirectory)), Container::parallelApply);
+
+  return true;
+}

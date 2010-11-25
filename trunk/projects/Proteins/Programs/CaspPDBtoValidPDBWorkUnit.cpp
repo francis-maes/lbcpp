@@ -1,54 +1,44 @@
-
-#include <lbcpp/lbcpp.h>
+/*-----------------------------------------.---------------------------------.
+ | Filename: CaspPDBtoValidPDBWorkUnit.cpp  | CaspPDBtoValidPDBWorkUnit       |
+ | Author  : Julien Becker                  |                                 |
+ | Started : 25/11/2010 11:01               |                                 |
+ `------------------------------------------/                                 |
+                                |                                             |
+                                `--------------------------------------------*/
+#include "CaspPDBtoValidPDBWorkUnit.h"
 #include "../Data/Formats/FASTAFileParser.h"
-#include "../Programs/ArgumentSet.h"
 
 using namespace lbcpp;
 
-extern void declareProteinClasses(ExecutionContext& context);
-
-int main(int argc, char** argv)
+bool CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)
 {
-  lbcpp::initialize();
-  
-  ExecutionContextPtr context = defaultConsoleExecutionContext();
-  declareProteinClasses(*context);
-  
-  File pdbDirectoryFile;
-  File fastaFile;
-  File outputDirectoryFile;
-  
-  ArgumentSet arguments;
-  arguments.insert(new FileArgument(T("pdbDirectory"), pdbDirectoryFile, true, true), true);
-  arguments.insert(new FileArgument(T("fastaFile"), fastaFile, true), true);
-  arguments.insert(new FileArgument(T("outputDirectory"), outputDirectoryFile, true, true), true);
-  
-  if (!arguments.parse(argv, 1, argc-1)) {
-    std::cout << "Usage: " << argv[0] << " " << arguments.toString() << std::endl;
-    return 1;
+  if (pdbDirectory == File::nonexistent || fastaFile == File::nonexistent)
+  {
+    context.errorCallback(T("CaspPDBtoValidPDBProgram::run"), T("pdbDirectory or fastaFile not specified"));
+    return -1;
   }
 
-  FASTAFileParser fastaParser(*context, fastaFile);
+  FASTAFileParser fastaParser(context, fastaFile);
   while (true)
   {
-    Variable variable = fastaParser.next(*context);
+    Variable variable = fastaParser.next(context);
     if (!variable.exists())
       break;
 
-    const ProteinPtr& protein = variable.getObjectAndCast<Protein>(*context);
+    const ProteinPtr& protein = variable.getObjectAndCast<Protein>();
     
     String name = protein->getName().substring(0, 5);
     VectorPtr primaryStructure = protein->getPrimaryStructure();
 
     std::cout << name << " > " << primaryStructure->toString() << std::endl;
-    File pdbFile = pdbDirectoryFile.getChildFile(name + T(".pdb"));
+    File pdbFile = pdbDirectory.getChildFile(name + T(".pdb"));
     if (!pdbFile.exists())
     {
       std::cout << "File not found: " << pdbFile.getFullPathName() << std::endl;
       continue;
     }
 
-    File outputFile = outputDirectoryFile.getChildFile(name + T(".pdb"));
+    File outputFile = outputDirectory.getChildFile(name + T(".pdb"));
     OutputStream* o = outputFile.createOutputStream();
     
     // Write SEQRES record

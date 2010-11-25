@@ -2,9 +2,6 @@ Paper ESANN:
  * Finir
 
 Programmes Proteines:
- * Enlever le MoonBox, ArgumentSet
- * Enlever ProteinInferenceEvaluator
- * Faire deriver les anciens progs de Program
  * segfault en fin d'exécution.
 
 Network:
