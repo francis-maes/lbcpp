@@ -10,7 +10,7 @@
 
 using namespace lbcpp;
 
-double RegressionIGSplitScoringFunction::compute(const Variable& input) const
+double RegressionIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
 {
   ContainerPtr leftData = input[0].getObjectAndCast<Container>();
   ContainerPtr rightData = input[1].getObjectAndCast<Container>();
@@ -35,11 +35,10 @@ double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr da
     double delta = data->getElement(i)[1].getDouble() - mean;
     leastSquare += delta * delta;
   }
-
   return leastSquare;
 }
 
-double ClassificationIGSplitScoringFunction::compute(const Variable& input) const
+double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
 {
   ContainerPtr leftData = input[0].getObjectAndCast<Container>();
   ContainerPtr rightData = input[1].getObjectAndCast<Container>();
@@ -54,31 +53,24 @@ double ClassificationIGSplitScoringFunction::compute(const Variable& input) cons
   for (size_t i = 0; i < enumeration->getNumElements(); ++i)
     priorDistribution->setProbability(i, (leftDistribution->getProbability(i) + rightDistribution->getProbability(i)) / 2);
 
-#if 0
-  double probOfTrue = positiveExamples->getNumElements() / (double)examples->getNumElements();
+  double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
   double informationGain = priorDistribution->computeEntropy()
-  - probOfTrue * positiveDistribution->computeEntropy() 
-  - (1 - probOfTrue) * negativeDistribution->computeEntropy(); 
+                          - probOfTrue * leftDistribution->computeEntropy() 
+                          - (1 - probOfTrue) * rightDistribution->computeEntropy(); 
   return informationGain;
-#endif // 0
-  return 0.0;
 }
 
 DiscreteProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ContainerPtr data) const
 {
-#if 0
-  EnumerationPtr enumeration = examples->getElementsType()->getTemplateArgument(1);
+  EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
   DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);
   
   for (size_t i = 0; i < enumeration->getNumElements(); ++i)
   {
-    Variable output = examples->getElement(i)[1];
+    Variable output = data->getElement(i)[1];
     jassert(output.exists());
     res->increment(output);
   }
   res->normalize();
   return res;
-
-#endif // 0
-  return DiscreteProbabilityDistributionPtr();
 }

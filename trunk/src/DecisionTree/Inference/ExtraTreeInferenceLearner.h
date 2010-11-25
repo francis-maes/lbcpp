@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_EXTRA_TREE_LEARNER_H_
 
 # include "ExtraTreeInference.h"
+# include "BinaryDecisionTreeSplitter.h"
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
@@ -32,13 +33,28 @@ protected:
 
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
+  
+  struct Split
+  {
+    size_t       variableIndex;
+    Variable     argument;
+    ContainerPtr positive;
+    ContainerPtr negative;
+  };
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData);
 
-  void sampleTreeRecursively(ExecutionContext& context, BinaryDecisionTreePtr tree, size_t nodeIndex, TypePtr inputType, TypePtr outputType, ContainerPtr trainingData, const std::vector<size_t>& variables);
+  void sampleTreeRecursively(ExecutionContext& context,
+                             BinaryDecisionTreePtr tree, size_t nodeIndex,
+                             TypePtr inputType, TypePtr outputType,
+                             ContainerPtr trainingData, const std::vector<size_t>& variables,
+                             std::vector<Split>& bestSplits);
+
   bool shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
+
+  BinaryDecisionTreeSplitterPtr getBinaryDecisionTreeSplitter(TypePtr inputType, TypePtr outputType) const;
 };
 
 }; /* namespace lbcpp */
