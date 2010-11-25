@@ -158,7 +158,7 @@ SET(LBCPP_EXECUTION_CALLBACK_SOURCES
 SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h
   Execution/Context/DecoratorExecutionContext.h
-  Execution/Context/ThreadOwnedExecutionContext.h
+  Execution/Context/MultiThreadedExecutionContext.h
   Execution/Context/ExecutionContextClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
 )

@@ -131,10 +131,9 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext()
 {
   int numCpus = juce::SystemStats::getNumCpus();
-  ExecutionContextPtr res = singleThreadedExecutionContext(); // todo: multi-threaded execution context
+  ExecutionContextPtr res = numCpus > 1 ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext();
   res->appendCallback(consoleExecutionCallback());
   return res;
 }
-
 
 ExecutionContextPtr lbcpp::silentExecutionContext = singleThreadedExecutionContext();

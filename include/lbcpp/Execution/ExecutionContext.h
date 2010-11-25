@@ -103,7 +103,7 @@ protected:
 extern ExecutionContextPtr silentExecutionContext;
 
 extern ExecutionContextPtr singleThreadedExecutionContext();
-extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr context, WorkUnitPtr workUnit);
+extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 
 extern ExecutionContextPtr defaultConsoleExecutionContext();
 

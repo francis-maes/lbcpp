@@ -9,10 +9,12 @@
     </class>
     
     <class name="DecoratorExecutionContext" base="ExecutionContext" abstract="yes"/>
-    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext">
-      <constructor arguments="ExecutionContextPtr context, WorkUnitPtr workUnit" returnType="ExecutionContext"/>
+    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext"/>
+
+    <class name="MultiThreadedExecutionContext" base="ExecutionContext">
+      <constructor arguments="size_t numThreads"/>
     </class>
-    
+   
   </namespace>
 
 </file>
