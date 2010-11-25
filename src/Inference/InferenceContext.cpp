@@ -45,46 +45,6 @@ Variable InferenceContext::runInference(const InferencePtr& inference, const Var
 Variable InferenceContext::callRunInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {return inference->computeInference(*this, input, supervision, returnCode);}
 
-Variable InferenceContext::runDecoratorInference(DecoratorInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-{
-  DecoratorInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
-  jassert(state);
-  if (returnCode != Inference::finishedReturnCode)
-    return Variable();
-
-  const InferencePtr& subInference = state->getSubInference();
-  if (subInference)
-  {
-    Variable subOutput = runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return Variable();
-    state->setSubOutput(subOutput);
-  }
-
-  return inference->finalizeInference(*this, state, returnCode);
-}
-
-Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-{
-  SequentialInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
-  if (!state)
-    return Variable();
-  while (!state->isFinal())
-  {
-    Variable subOutput = runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return state->getInput();
-
-    state->setSubOutput(subOutput);
-    bool res = inference->updateInference(*this, state, returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return state->getInput();
-    if (!res)
-      state->setFinalState();
-  }
-  return inference->finalizeInference(*this, state, returnCode);
-}
-
 Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
   {return train(inference, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples));}
 

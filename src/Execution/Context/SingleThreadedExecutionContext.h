@@ -17,6 +17,9 @@ namespace lbcpp
 class SingleThreadedExecutionContext : public ExecutionContext
 {
 public:
+  virtual bool isMultiThread() const
+    {return false;}
+
   virtual bool isCanceled() const
     {return false;}
 

@@ -17,6 +17,7 @@
 namespace lbcpp
 {
 
+#if 0
 extern WorkUnitPtr parallelInferenceWorkUnit(InferenceContextPtr parentContext, ThreadPoolPtr pool, InferenceStackPtr stack, ParallelInferencePtr inference, ParallelInferenceStatePtr state, size_t beginIndex, size_t endIndex, bool areSubJobsAtomic);
 
 class ThreadOwnedInferenceContext : public InferenceContext
@@ -69,6 +70,7 @@ public:
     stack->pop();
   }
 
+#if 0
   virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     ParallelInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
@@ -154,6 +156,7 @@ public:
     }
     return inference->finalizeInference(*this, state, returnCode);
   }
+#endif // 0
 
   String describeCurrentState()
   {
@@ -182,6 +185,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ThreadOwnedInferenceContext> ThreadOwnedInferenceContextPtr;
+#endif // 0
 
 }; /* namespace lbcpp */
 

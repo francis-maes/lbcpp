@@ -24,6 +24,9 @@ public:
   virtual String getName() const
     {return T("SingleThreadedInferenceContext");}
 
+  virtual bool isMultiThread() const
+    {return false;}
+
   // FIXME
   virtual bool isCanceled() const
     {return false;}
@@ -50,32 +53,6 @@ public:
     jassert(inference == stack->getCurrentInference().get());
     callPostInference(*this, stack, input, supervision, output, returnCode);
     stack->pop();
-  }
-
-  virtual Variable runParallelInference(ParallelInferenceWeakPtr inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {
-    ParallelInferenceStatePtr state = inference->prepareInference(*this, input, supervision, returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return Variable();
-    
-    size_t n = state->getNumSubInferences();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subOutput;
-      InferencePtr subInference = state->getSubInference(i);
-      if (subInference)
-      {
-        returnCode = Inference::finishedReturnCode;
-        subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
-        if (returnCode == Inference::errorReturnCode)
-        {
-          errorCallback("InferenceContext::runParallelInferences", "Could not finish sub inference");
-          return Variable(); 
-        }
-      }
-      state->setSubOutput(i, subOutput);
-    }
-    return inference->finalizeInference(*this, state, returnCode);
   }
 
 private:

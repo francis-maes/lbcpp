@@ -4,6 +4,13 @@
 
   <namespace name="lbcpp">
 
+    <class name="InferenceWorkUnit" base="WorkUnit">
+      <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable&amp; output"/>
+      <variable type="Inference" name="inference"/>
+      <variable type="Variable" name="input"/>
+      <variable type="Variable" name="supervision"/>
+    </class>
+    
     <class name="InferenceStack">
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
@@ -14,7 +21,7 @@
       <constructor/>
       <variable type="InferenceStack" name="stack"/>
     </class>
-
+<!--
     <class name="ThreadOwnedInferenceContext" base="InferenceContext">
       <constructor arguments="Thread* thread, ThreadPoolPtr pool, InferenceStackPtr stack"/>
       <variable type="ThreadPool" name="pool"/>
@@ -25,7 +32,7 @@
       <constructor arguments="ThreadPoolPtr pool"/>
       <variable type="ThreadPool" name="pool"/>
     </class>
-
+ -->
   </namespace>
   
 </file>

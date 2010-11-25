@@ -107,6 +107,25 @@ DecoratorInference::DecoratorInference(const String& name)
   setBatchLearner(decoratorInferenceLearner());
 }
 
+Variable DecoratorInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  DecoratorInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
+  jassert(state);
+  if (returnCode != Inference::finishedReturnCode)
+    return Variable();
+
+  const InferencePtr& subInference = state->getSubInference();
+  if (subInference)
+  {
+    Variable subOutput = context.runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return Variable();
+    state->setSubOutput(subOutput);
+  }
+
+  return finalizeInference(context, state, returnCode);
+}
+
 String StaticDecoratorInference::toString() const
   {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
 
@@ -136,6 +155,45 @@ Variable PostProcessInference::finalizeInference(InferenceContext& context, cons
 /*
 ** ParallelInference
 */
+Variable ParallelInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  ParallelInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
+  if (returnCode != Inference::finishedReturnCode)
+    return Variable();
+
+  size_t n = state->getNumSubInferences();
+  
+  if (context.isMultiThread() && useMultiThreading())
+  {
+    std::vector<WorkUnitPtr> workUnits(n);
+    String description = getDescription(context, input, supervision) + T(" ");
+    for (size_t i = 0; i < n; ++i)
+      workUnits[i] = inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),
+        state->getSubInput(i), state->getSubSupervision(i), state->getSubOutput(i));
+    context.run(workUnits);
+  }
+  else
+  {
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable subOutput;
+      InferencePtr subInference = state->getSubInference(i);
+      if (subInference)
+      {
+        returnCode = Inference::finishedReturnCode;
+        subOutput = context.runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        if (returnCode == Inference::errorReturnCode)
+        {
+          context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
+          return Variable(); 
+        }
+      }
+      state->setSubOutput(i, subOutput);
+    }
+  }
+  return finalizeInference(context, state, returnCode);
+}
+
 StaticParallelInference::StaticParallelInference(const String& name)
   : ParallelInference(name)
 {
@@ -174,6 +232,28 @@ void VectorParallelInference::clone(ExecutionContext& context, const ObjectPtr& 
 /*
 ** SequentialInference
 */
+Variable SequentialInference::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+{
+  SequentialInferenceStatePtr state = prepareInference(context, input, supervision, returnCode);
+  if (!state)
+    return Variable();
+
+  while (!state->isFinal())
+  {
+    Variable subOutput = context.runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return state->getInput();
+
+    state->setSubOutput(subOutput);
+    bool res = updateInference(context, state, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return state->getInput();
+    if (!res)
+      state->setFinalState();
+  }
+  return finalizeInference(context, state, returnCode);
+}
+
 StaticSequentialInference::StaticSequentialInference(const String& name)
   : SequentialInference(name)
 {

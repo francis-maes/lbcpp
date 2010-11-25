@@ -23,6 +23,9 @@ public:
     : SharedParallelInference(name, probabilityInference) {}
   SymmetricProbabilityMatrixInference() {}
   
+  virtual bool useMultiThreading() const
+    {return false;}
+
   virtual TypePtr getSupervisionType() const
     {return symmetricMatrixClass(probabilityType);}
 

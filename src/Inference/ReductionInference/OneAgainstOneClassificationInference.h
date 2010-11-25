@@ -35,6 +35,9 @@ public:
 
   OneAgainstOneClassificationInference() {}
 
+  virtual bool useMultiThreading() const
+    {return false;}
+
   virtual TypePtr getInputType() const
     {return binaryClassifierModel->getInputType();}
 

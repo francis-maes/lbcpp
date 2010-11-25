@@ -222,6 +222,9 @@ public:
   }
   MultiThreadedExecutionContext() {}
 
+  virtual bool isMultiThread() const
+    {return true;}
+
   virtual bool isCanceled() const
     {return false;}
 

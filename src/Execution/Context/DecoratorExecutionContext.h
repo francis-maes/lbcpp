@@ -23,6 +23,9 @@ public:
 
   DecoratorExecutionContext() {}
 
+  virtual bool isMultiThread() const
+    {return decorated->isMultiThread();}
+
   virtual bool isCanceled() const
     {return decorated && decorated->isCanceled();}
 
