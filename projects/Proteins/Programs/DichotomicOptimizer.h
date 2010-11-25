@@ -137,7 +137,7 @@ public:
 
     InferenceContextPtr inferenceContext = singleThreadedInferenceContext();
     Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    inferenceContext->run(optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable(), returnCode);
+    inferenceContext->runInference(optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable(), returnCode);
     return true;
   }
 };

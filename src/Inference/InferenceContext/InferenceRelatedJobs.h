@@ -65,7 +65,7 @@ public:
   {
     if (!InferenceRelatedWorkUnit::run(executionContext))
       return false;
-    output = context->run(inference, input, supervision, returnCode);
+    output = context->runInference(inference, input, supervision, returnCode);
     return true;
   }
 
@@ -115,7 +115,7 @@ public:
         //juce::uint32 checkDebug = Time::getMillisecondCounter();
         
         returnCode = Inference::finishedReturnCode;
-        subOutput = context->run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        subOutput = context->runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
           executionContext.errorCallback(T("RunParallelInferencesWorkUnit"), T("Could not finish sub inference"));

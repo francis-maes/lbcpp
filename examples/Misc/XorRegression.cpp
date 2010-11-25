@@ -40,7 +40,10 @@ public:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-
+  InferenceContextPtr context = singleThreadedInferenceContext();
+  context->appendCallback(consoleExecutionCallback());
+  context->declareType(TypePtr(new DefaultClass(T("XorExamplePerception"), T("Perception"))));
+ 
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
   InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(
@@ -59,7 +62,6 @@ int main(int argc, char* argv[])
   trainingSet->append(Variable::pair(Variable::pair(1.0, 1.0), 1.0));
 
   // create context and train
-  InferenceContextPtr context = multiThreadedInferenceContext(8);
   context->train(regressor, trainingSet, ContainerPtr());
 
   // evaluate
@@ -69,7 +71,7 @@ int main(int argc, char* argv[])
 
   // test evaluator on one example
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  Variable myPrediction = context->run(regressor, Variable::pair(1.0, 0.0), Variable(), returnCode);
+  Variable myPrediction = context->predict(regressor, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

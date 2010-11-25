@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(GlopClasses.xml GlopClasses.cpp)
 
 SET(LBCPP_GLOP_SOURCES
   OFQI.cpp  
+  OFQIInference.h
   GlopClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/GlopClasses.cpp
 )

@@ -94,7 +94,7 @@ public:
   void setCallbacks(const std::vector<ExecutionCallbackPtr>& callbacks)
     {this->callbacks = callbacks;}
 
-private:
+protected:
   friend class ExecutionContextClass;
 
   std::vector<ExecutionCallbackPtr> callbacks;

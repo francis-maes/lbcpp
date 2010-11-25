@@ -22,7 +22,7 @@ public:
     : pool(pool) {}
   MultiThreadedInferenceContext() {}
 
-  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable runInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     Variable output;
     returnCode = Inference::finishedReturnCode;
@@ -38,7 +38,10 @@ public:
     {return false;}
 
   virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
-    {jassert(false); return false;}
+  {
+    pool->addWorkUnitsAndWaitExecution(workUnits, 0, true);
+    return true;
+  }
   // -
 protected:
   friend class MultiThreadedInferenceContextClass;

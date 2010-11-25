@@ -32,11 +32,12 @@ public:
     {return false;}
 
   virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
-    {jassert(false); return false;}
-
-  virtual Variable run(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-    {return InferenceContext::run(inference, input, supervision, returnCode);}
-  // -
+  {
+    for (size_t i = 0; i < workUnits.size(); ++i)
+      if (!InferenceContext::run(workUnits[i]))
+        return false;
+    return true;
+  }
 
   virtual void preInference(const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
@@ -65,7 +66,7 @@ public:
       if (subInference)
       {
         returnCode = Inference::finishedReturnCode;
-        subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
+        subOutput = runInference(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
           errorCallback("InferenceContext::runParallelInferences", "Could not finish sub inference");

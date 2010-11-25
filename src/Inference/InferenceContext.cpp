@@ -16,7 +16,7 @@ using namespace lbcpp;
 
 InferencePtr InferenceStack::nullInference;
 
-Variable InferenceContext::run(const InferencePtr& inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
+Variable InferenceContext::runInference(const InferencePtr& inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
 {
   jassert(!in.isNil());
   jassert(inference);
@@ -55,7 +55,7 @@ Variable InferenceContext::runDecoratorInference(DecoratorInferenceWeakPtr infer
   const InferencePtr& subInference = state->getSubInference();
   if (subInference)
   {
-    Variable subOutput = run(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
+    Variable subOutput = runInference(subInference, state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return Variable();
     state->setSubOutput(subOutput);
@@ -71,7 +71,7 @@ Variable InferenceContext::runSequentialInference(SequentialInferenceWeakPtr inf
     return Variable();
   while (!state->isFinal())
   {
-    Variable subOutput = run(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
+    Variable subOutput = runInference(state->getSubInference(), state->getSubInput(), state->getSubSupervision(), returnCode);
     if (returnCode != Inference::finishedReturnCode)
       return state->getInput();
 
@@ -95,7 +95,7 @@ Inference::ReturnCode InferenceContext::train(InferencePtr inference, const Infe
   if (!learner)
     return Inference::errorReturnCode;
   ReturnCode res = Inference::finishedReturnCode;
-  run(learner, learnerInput, Variable(), res);
+  runInference(learner, learnerInput, Variable(), res);
   return res;
 }
 
@@ -104,7 +104,7 @@ Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, Contain
   ReturnCode res = Inference::finishedReturnCode;
   InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
   appendCallback(evaluationCallback);
-  run(runOnSupervisedExamplesInference(inference, true), examples, Variable(), res);
+  runInference(runOnSupervisedExamplesInference(inference, true), examples, Variable(), res);
   removeCallback(evaluationCallback);
   return res;
 }
@@ -113,40 +113,32 @@ Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceMode
 {
   ReturnCode res = Inference::finishedReturnCode;
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, inferenceModel, numFolds));
-  run(cvInference, examples, Variable(), res);
+  runInference(cvInference, examples, Variable(), res);
   return res;
 }
 
 Variable InferenceContext::predict(InferencePtr inference, const Variable& input)
 {
   ReturnCode returnCode = Inference::finishedReturnCode;
-  return run(inference, input, Variable(), returnCode);
+  return runInference(inference, input, Variable(), returnCode);
 }
 
 void InferenceContext::callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->preInferenceCallback(context, stack, input, supervision, output, returnCode);
+  {
+    InferenceCallbackPtr callback = callbacks[i].dynamicCast<InferenceCallback>();
+    if (callback)
+      callback->preInferenceCallback(context, stack, input, supervision, output, returnCode);
+  }
 }
 
 void InferenceContext::callPostInference(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
 {
   for (int i = (int)callbacks.size() - 1; i >= 0; --i)
-    callbacks[i]->postInferenceCallback(context, stack, input, supervision, output, returnCode);
+  {
+    InferenceCallbackPtr callback = callbacks[i].dynamicCast<InferenceCallback>();
+    if (callback)
+     callback->postInferenceCallback(context, stack, input, supervision, output, returnCode);
+  }
 }
-
-void InferenceContext::appendCallback(InferenceCallbackPtr callback)
-  {jassert(callback); callbacks.push_back(callback);}
-
-void InferenceContext::removeCallback(InferenceCallbackPtr callback)
-{
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    if (callbacks[i] == callback)
-    {
-      callbacks.erase(callbacks.begin() + i);
-      break;
-    }
-}
-
-void InferenceContext::clearCallbacks()
-  {callbacks.clear();}

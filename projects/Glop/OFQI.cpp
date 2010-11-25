@@ -32,6 +32,7 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize();
   InferenceContextPtr context = multiThreadedInferenceContext(8);
+  context->appendCallback(consoleExecutionCallback());
   declareGlopClasses(*context);
 
   // create linear regressor
@@ -65,7 +66,7 @@ int main(int argc, char* argv[])
 
   // test evaluator on one example
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  Variable myPrediction = context->run(regressor, Variable::pair(1.0, 0.0), Variable(), returnCode);
+  Variable myPrediction = context->predict(regressor, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

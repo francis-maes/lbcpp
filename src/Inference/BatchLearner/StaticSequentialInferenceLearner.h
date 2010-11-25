@@ -115,7 +115,7 @@ public:
     {
        // evaluate sub-inference and update currentObjects
       InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
-      context.run(evaluateStepOnSubTrainingData, subInput, ObjectPtr(), returnCode);
+      context.runInference(evaluateStepOnSubTrainingData, subInput, ObjectPtr(), returnCode);
 
       setSubLearningInference(targetInference, state, index);
       return true;
