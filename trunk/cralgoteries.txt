@@ -1,14 +1,14 @@
-
- * Imbrication du ExecutionContext et du ExecutionContext
- * Faire sauter les Inference::ReturnCode
- 
- 
- * Unify also with Boinc
-
-Program:
+Execution:
+ * ExecutionStack: linked list of stacks
+ * MultiThreadedExecutionContext: fix ExecutionStack chaining
+ * New directory lbcpp/core with Variable, Object, Type, Utilites, Function
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
  * SandBox: dériver de WorkUnit
  * SandBoxNewFeatures: enlever (?)
+
+Boinc:
+ * New class BoincExecutionContext
+ * Fix bugs reported by Arnaud
 
 AutoTune:
  * Optimizers, ...
@@ -20,6 +20,8 @@ From Julien:
    When I want to load it, it doesn't work because of lack of the attribute "type".
    I had added manually "type="PerceptionRewriter"" and it worked.
 
+=====================
+
 More Features:
  * Probabilities for SS3, SS8 and STAL
  * Segments for SS3, SS8, SA and DR
@@ -30,7 +32,6 @@ Cleaning:
  * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
 
 Explorer:
- * Verifier la stabilité
  * Mettre à jour le ProcessManager pour qu'il utilise les classes Job et ThreadPool
 
 Types:
