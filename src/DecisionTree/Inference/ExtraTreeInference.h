@@ -96,7 +96,7 @@ public:
     {return classes;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return classes;}//(classes);}
+    {return classes;}
 
 protected:
   friend class ClassificationBinaryDecisionTreeInferenceClass;

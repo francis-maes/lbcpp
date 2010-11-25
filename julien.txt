@@ -11,22 +11,9 @@ Network:
  * void variableReceived(const Variable& variable)
  
 Extra-trees:
- * Revoir le design
-     - SplitScoringFunction (dérive de ObjectiveFunction, entrée: +/- sorties à gauche et sorties à droites, sortie: scalaire)
-         - ClassificationIGSplitScoringFunction
-         - RegressionIGSplitScoringFunction
-     
-     - BinaryDecisionTreeSplitter
-        - Constructeur: SplitScoringFunction en argument
-        - Variable findBestSplit(data)
-        - Variable sampleSplit(data), valeur de retour: "argument" du split (threshold, bitmask)
-        - PredicatePtr getSplitPredicate(const Variable& ): "argument" => "Predicate"
-        - classes dérivés: BooleanBinaryDecisionTreeSplitter, DoubleDecisionTreeSplitter, ...
-        
-     - tableau std::vector<BinaryDecisionTreeSplitterPtr> construit au moment de la construction des arbres
-     
- * Rajouter void DiscreteProbabilityDistribution::normalize()
- 
+ * GaussianDistribution : ContinuousProbabilityDistribution : ProbabilityDistribution
+    - Nouveau dossier: include/lbcpp/ProbabilityDistribution
+
  * ProbabilityDistributionBuilder:
      - virtual TypePtr getInputType() const
      - virtual void clear()

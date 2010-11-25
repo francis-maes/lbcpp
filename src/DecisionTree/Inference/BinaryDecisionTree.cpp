@@ -5,70 +5,29 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+
 #include "BinaryDecisionTree.h"
+
 using namespace lbcpp;
 
 Variable BinaryDecisionTree::makePrediction(ExecutionContext& context, const Variable& input, size_t nodeIndex) const
 {
   jassert(nodeIndex < nodes.size());
   const Node& node = nodes[nodeIndex];
-  return node.isLeaf() ? node.getLeafValue() : makePrediction(context, input, node.getChildNodeIndex(context, input));
+  return isLeaf(node) ? getLeafValue(node) : makePrediction(context, input, getChildNodeIndex(context, node, input));
 }
 
-#include <lbcpp/Function/Predicate.h>
-#include <lbcpp/Data/Vector.h>
-class BelongsToMaskPredicate : public Predicate
+PredicatePtr BinaryDecisionTree::getSplitPredicate(const Node& node) const
 {
-public:
-  BelongsToMaskPredicate(BooleanVectorPtr mask)
-    : mask(mask) {}
-
-  virtual String toString() const
-    {return T("BelongsToMask(") + mask->toString() + T(")");}
-
-  virtual TypePtr getInputType() const
-    {return integerType;}
-
-  virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
-  {
-    if (value.isMissingValue())
-      return mask->get(mask->getNumElements() - 1);
-    size_t i = (size_t)value.getInteger();
-    jassert(i < mask->getNumElements() - 1);
-    return mask->get(i);
- }
-
-private:
-  BooleanVectorPtr mask;
-};
-
-PredicatePtr BinaryDecisionTree::getSplitPredicate(const Variable& argument)
-{
-  if (argument.isDouble() || argument.isInteger())
-    return lessThanOrEqualToPredicate(argument);
-
-  if (argument.isBoolean())
-    return equalToPredicate(argument);
-  
-  jassert(argument.isObject());
-
-  PredicatePtr predicate = argument.dynamicCast<Predicate>();
-  if (predicate)
-    return predicate;
-    
-  BooleanVectorPtr mask = argument.dynamicCast<BooleanVector>();
-  if (mask)
-    return new BelongsToMaskPredicate(mask);
-
-  jassert(false);
-  return PredicatePtr();
+  BinaryDecisionTreeSplitterPtr splitter = getSplitter(node.splitVariable);
+  return splitter->getSplitPredicate(node.argument);
 }
 
-bool BinaryDecisionTree::Node::test(ExecutionContext& context, const Variable& variable) const
+bool BinaryDecisionTree::test(ExecutionContext& context, const Node& node, const Variable& variable) const
 {
-  jassert(isInternalNode());
-  jassert(splitVariable >= 0 && splitVariable < (int)variable.getObject()->getNumVariables());
-  return getSplitPredicate(argument)->computePredicate(context, variable.getObject()->getVariable(splitVariable));
+  jassert(isInternalNode(node));
+  jassert(node.splitVariable >= 0 && node.splitVariable < (int)variable.getObject()->getNumVariables());
+  return getSplitPredicate(node)->computePredicate(context, variable.getObject()->getVariable(node.splitVariable));
 }
 
 String BinaryDecisionTree::toString() const
@@ -77,15 +36,15 @@ String BinaryDecisionTree::toString() const
   return T("BinaryDecisionTree ") + String((int)nodes.size()) + T(" nodes\n") + toStringRecursive(); 
 }
 
-String BinaryDecisionTree::Node::toString() const
+String BinaryDecisionTree::toString(const Node& node) const
 {
-  if (isLeaf())
-    return T("Value: ") + argument.toString();
+  if (isLeaf(node))
+    return T("Value: ") + node.argument.toString();
   else
   {
-    PredicatePtr predicate = getSplitPredicate(argument);
+    PredicatePtr predicate = getSplitPredicate(node);
     jassert(predicate);
-    return T("SplitVariable ") + String(splitVariable)
+    return T("SplitVariable ") + String(node.splitVariable)
       + T(" Predicate = ") + predicate->toString();
   }
 }
@@ -95,13 +54,12 @@ String BinaryDecisionTree::toStringRecursive(size_t index, String indent) const
   jassert(index >= 0);
   const Node currentNode = nodes[index];
   
-  String res = indent + String((int)index) + T(" ") + currentNode.toString() + T("\n");
-  if (currentNode.isLeaf())
+  String res = indent + String((int)index) + T(" ") + toString(currentNode) + T("\n");
+  if (isLeaf(currentNode))
     return res;
   
   indent = indent.replaceCharacter('-', ' ') + T("|- ");
   return res
-       + toStringRecursive(currentNode.getIndexOfLeftChild(), indent)
-       + toStringRecursive(currentNode.getIndexOfRightChild(), indent);
+       + toStringRecursive(getIndexOfLeftChild(currentNode), indent)
+       + toStringRecursive(getIndexOfRightChild(currentNode), indent);
 } 
-

@@ -18,7 +18,7 @@ class SplitScoringFunction : public ObjectiveFunction
 {
 public:
   SplitScoringFunction(TypePtr elementType = anyType) : elementType(elementType) {}
-  
+
   virtual TypePtr getInputType() const
     {return pairClass(containerClass(elementType), containerClass(elementType));}
 
@@ -30,8 +30,8 @@ class RegressionIGSplitScoringFunction : public SplitScoringFunction
 {
 public:
   RegressionIGSplitScoringFunction() : SplitScoringFunction(pairClass(anyType, doubleType)) {}
-  
-  virtual double compute(const Variable& input) const;
+
+  virtual double compute(ExecutionContext& context, const Variable& input) const;
 
 protected:
   double getLeastSquareDeviation(ContainerPtr data) const;
@@ -42,7 +42,7 @@ class ClassificationIGSplitScoringFunction :public SplitScoringFunction
 public:
   ClassificationIGSplitScoringFunction() : SplitScoringFunction(pairClass(anyType, enumerationClass)) {}
 
-  virtual double compute(const Variable& input) const;
+  virtual double compute(ExecutionContext& context, const Variable& input) const;
 
 protected:
   DiscreteProbabilityDistributionPtr getDiscreteOutputDistribution(ContainerPtr data) const;

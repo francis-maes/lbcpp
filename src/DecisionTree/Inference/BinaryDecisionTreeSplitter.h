@@ -7,7 +7,7 @@
                                 `-------------------------------------------*/
 
 #ifndef LBCPP_DECISION_TREE_INFERENCE_SPLITTER_H_
-# define LBCPP_DECISION_TREE_SPLITTER_H_
+# define LBCPP_DECISION_TREE_INFERENCE_SPLITTER_H_
 
 # include <lbcpp/lbcpp.h>
 # include "SplitScoringFunction.h"
@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class BinaryDecisionTreeSplitter : public ObjectiveFunction
+class BinaryDecisionTreeSplitter : public Object
 {
 public:
-  BinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction = SplitScoringFunctionPtr(), RandomGeneratorPtr random = RandomGeneratorPtr())
-    : scoringFunction(scoringFunction), random(random) {}
+  BinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction = SplitScoringFunctionPtr(), RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+    : scoringFunction(scoringFunction), random(random), variableIndex(variableIndex) {}
   
   virtual Variable findBestSplit(ContainerPtr data) const = 0;
   
@@ -27,20 +27,25 @@ public:
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const = 0;
 
-  virtual double computeSplitScore(ExecutionContext& context, ContainerPtr data, PredicatePtr predicate, size_t variableIndex) const;
+  virtual double computeSplitScore(ExecutionContext& context,
+                                   ContainerPtr data, ContainerPtr& positiveExamples, ContainerPtr& negativeExamples,
+                                   PredicatePtr predicate) const;
   
 protected:
   friend class BinaryDecisionTreeSplitterClass;
   
   SplitScoringFunctionPtr scoringFunction;
   RandomGeneratorPtr random;
+  size_t variableIndex;
 };
+
+typedef ReferenceCountedObjectPtr<BinaryDecisionTreeSplitter> BinaryDecisionTreeSplitterPtr;
 
 class BooleanBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
-  BooleanBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr())
-  : BinaryDecisionTreeSplitter(scoringFunction, random) {}
+  BooleanBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
   virtual Variable findBestSplit(ContainerPtr data) const
     {jassertfalse; return Variable();}
@@ -55,8 +60,8 @@ public:
 class DoubleBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
-  DoubleBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr())
-  : BinaryDecisionTreeSplitter(scoringFunction, random) {}
+  DoubleBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
   virtual Variable findBestSplit(ContainerPtr data) const
     {jassertfalse; return Variable();}
@@ -70,8 +75,8 @@ public:
 class IntegereBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
-  IntegereBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr())
-  : BinaryDecisionTreeSplitter(scoringFunction, random) {}
+  IntegereBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
   
   virtual Variable findBestSplit(ContainerPtr data) const
   {jassertfalse; return Variable();}
@@ -85,8 +90,8 @@ public:
 class EnumerationBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
-  EnumerationBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr())
-  : BinaryDecisionTreeSplitter(scoringFunction, random) {}
+  EnumerationBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
   virtual Variable findBestSplit(ContainerPtr data) const
     {jassertfalse; return Variable();}
@@ -98,4 +103,4 @@ public:
 
 };
 
-#endif //!LBCPP_DECISION_TREE_SPLITTER_H_
+#endif //!LBCPP_DECISION_TREE_INFERENCE_SPLITTER_H_
