@@ -7,8 +7,11 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/Execution/FunctionStack.h>
 #include <lbcpp/Data/Variable.h>
 using namespace lbcpp;
+
+FunctionPtr FunctionStack::nullFunction;
 
 ExecutionContext::ExecutionContext()
 {

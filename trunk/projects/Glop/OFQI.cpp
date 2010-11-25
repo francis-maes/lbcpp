@@ -9,7 +9,7 @@ extern void declareGlopClasses(ExecutionContext& context);
 class MyInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
   {
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
@@ -22,7 +22,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
   {
   }
 };
@@ -64,7 +64,6 @@ int main(int argc, char* argv[])
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
-  Inference::ReturnCode returnCode = Inference::finishedReturnCode;
   Variable myPrediction = predict(*context, regressor, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;

@@ -12,6 +12,7 @@
 # include "ExtraTreeInference.h"
 # include "BinaryDecisionTreeSplitter.h"
 # include <lbcpp/Inference/ParallelInference.h>
+# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
@@ -20,11 +21,16 @@ namespace lbcpp
 // Input: InferenceBatchLearnerInput
 // Supervision: None
 // Output: BinaryDecisionTree
-class SingleExtraTreeInferenceLearner : public Inference
+class SingleExtraTreeInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting);
   SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0) {}
+
+  typedef InferenceBatchLearner<Inference> BaseClass;
+
+  virtual ClassPtr getTargetInferenceClass() const
+    {return binaryDecisionTreeInferenceClass;}
 
 protected:
   friend class SingleExtraTreeInferenceLearnerClass;
@@ -42,15 +48,15 @@ protected:
     ContainerPtr negative;
   };
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
-  BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData);
+  BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const;
 
   void sampleTreeRecursively(ExecutionContext& context,
                              BinaryDecisionTreePtr tree, size_t nodeIndex,
                              TypePtr inputType, TypePtr outputType,
                              ContainerPtr trainingData, const std::vector<size_t>& variables,
-                             std::vector<Split>& bestSplits);
+                             std::vector<Split>& bestSplits) const;
 
   bool shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
 

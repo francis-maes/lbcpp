@@ -17,11 +17,11 @@ using namespace lbcpp;
 ** SingleExtraTreeInferenceLearner
 */
 SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : Inference(T("SingleExtraTreeInferenceLearner")), random(new RandomGenerator),
+  : random(new RandomGenerator),
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting) {}
 
-Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
 {
   const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
   jassert(learnerInput);
@@ -150,7 +150,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
                                                             BinaryDecisionTreePtr tree, size_t nodeIndex,
                                                             TypePtr inputType, TypePtr outputType,
                                                             ContainerPtr trainingData, const std::vector<size_t>& variables,
-                                                            std::vector<Split>& bestSplits)
+                                                            std::vector<Split>& bestSplits) const
 {
   jassert(trainingData->getNumElements());
 
@@ -230,7 +230,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, bestSplits[bestIndex].positive, nonConstantVariables, bestSplits);
 }
 
-BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData)
+BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const
 {
   size_t n = trainingData->getNumElements();
   if (!n)

@@ -38,7 +38,7 @@ public:
     decorated->setName(name + T(" score"));
   }
 
-  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     ScalarFunctionPtr lossFunction;
@@ -53,7 +53,7 @@ public:
         jassert(false);
 
       bool isPositive = supervisionValue > 0.0;
-      ScalarFunctionPtr* f = isPositive ? &positiveLoss : &negativeLoss;
+      ScalarFunctionPtr* f = const_cast<ScalarFunctionPtr* >(isPositive ? &positiveLoss : &negativeLoss);
       if (!*f)
         *f = createLossFunction(isPositive);
       lossFunction = *f;
@@ -68,7 +68,7 @@ public:
     return res;
   }
    
-  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
   {
     static const double temperature = 1.0;
     Variable subInferenceOutput = finalState->getSubOutput();

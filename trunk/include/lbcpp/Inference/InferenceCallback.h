@@ -18,15 +18,12 @@ namespace lbcpp
 class InferenceCallback : public ExecutionCallback
 {
 public:
-  typedef Inference::ReturnCode ReturnCode;
-
   // this function may modify the input or the supervision
   // it may also set an output, which causes the current inference step to be skipped
-  // the function may also set a returnCode != Inference::finishedReturnCode to skip the inference step
-  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, Variable& input, Variable& supervision, Variable& output)
     {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
     {}
 };
 

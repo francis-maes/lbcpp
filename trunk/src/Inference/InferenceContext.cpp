@@ -9,12 +9,9 @@
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
-#include <lbcpp/Inference/InferenceStack.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
 #include <lbcpp/Data/Container.h>
 using namespace lbcpp;
-
-InferencePtr InferenceStack::nullInference;
 
 /*
 ** InferenceWorkUnit
@@ -47,12 +44,7 @@ static bool internalPreInference(ExecutionContext& context, const InferencePtr& 
   {
     InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
     if (callback)
-    {
-      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      callback->preInferenceCallback(context, InferenceStackPtr(), input, supervision, output, returnCode);
-      if (returnCode != Inference::finishedReturnCode)
-        return false;
-    }
+      callback->preInferenceCallback(context, FunctionStackPtr(), input, supervision, output);
   }
   return true;
 }
@@ -63,12 +55,7 @@ static bool internalPostInference(ExecutionContext& context, const InferencePtr&
   {
     InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
     if (callback)
-    {
-      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-      callback->postInferenceCallback(context, InferenceStackPtr(), input, supervision, output, returnCode);
-      if (returnCode != Inference::finishedReturnCode)
-        return false;
-    }
+      callback->postInferenceCallback(context, FunctionStackPtr(), input, supervision, output);
   }
   return true;
 }
@@ -88,12 +75,7 @@ static bool internalRunInference(ExecutionContext& context, const InferencePtr& 
   }
 
   if (!output.exists())
-  {
-    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-    output = inference->computeInference(context, input, supervision, returnCode);
-    if (returnCode != Inference::finishedReturnCode)
-      return false;
-  }
+    output = inference->computeInference(context, input, supervision);
 
   internalPostInference(context, inference, input, supervision, output);
   if (out)

@@ -41,7 +41,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return vectorClass(getOutputElementsType(inputType));}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     size_t n = (size_t)sizeFunction->computeFunction(context, input).getInteger();
     
@@ -60,7 +60,7 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
   {
     size_t n = state->getNumSubInferences();
     VectorPtr res = vector(getOutputElementsType(state->getInput().getType()), n);

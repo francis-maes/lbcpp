@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_CONTEXT_H_
 
 # include "Inference.h"
-# include "../Execution/ThreadPool.h"
 # include "../Execution/ExecutionContext.h"
 
 namespace lbcpp

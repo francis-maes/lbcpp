@@ -23,7 +23,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticParallelInferenceClass;}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const StaticParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticParallelInference>();
@@ -37,8 +37,8 @@ public:
     for (size_t i = 0; i < currentStates.size(); ++i)
     {
       const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
-      currentStates[i] = targetInference->prepareInference(context, example.first, example.second, returnCode);
-      if (returnCode != Inference::finishedReturnCode)
+      currentStates[i] = targetInference->prepareInference(context, example.first, example.second);
+      if (!currentStates[i])
         return ParallelInferenceStatePtr();
       jassert(currentStates[i]->getNumSubInferences() == numSubInferences);
     }
@@ -61,14 +61,14 @@ public:
     return res;
   }
 
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
     {return Variable();}
 };
 
 class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner 
 {
 public:
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const StaticParallelInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticParallelInference>();

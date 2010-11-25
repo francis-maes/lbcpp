@@ -138,11 +138,10 @@ SET(LBCPP_EXECUTION_SOURCES
   ../include/lbcpp/Execution/predeclarations.h
   ../include/lbcpp/Execution/WorkUnit.h
   Execution/WorkUnit.cpp
+  ../include/lbcpp/Execution/FunctionStack.h
   ../include/lbcpp/Execution/ExecutionCallback.h
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp
-  ../include/lbcpp/Execution/ThreadPool.h
-  Execution/ThreadPool.cpp
   Execution/ExecutionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
 )
@@ -293,7 +292,6 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
   Inference/Inference.cpp
-  ../include/lbcpp/Inference/InferenceStack.h
   ../include/lbcpp/Inference/InferenceContext.h
   Inference/InferenceContext.cpp
   ../include/lbcpp/Inference/InferenceCallback.h

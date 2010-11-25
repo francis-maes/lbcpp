@@ -40,23 +40,17 @@ protected:
 /*
 ** Inference
 */
-class Inference : public NameableObject
+class Inference : public Function
 {
 public:
   Inference(const String& name = T("Unnamed"))
-    : NameableObject(name) {}
+    : name(name) {}
   virtual ~Inference();
 
   /*
   ** Types
   */
-  virtual TypePtr getInputType() const
-    {return anyType;}
-
   virtual TypePtr getSupervisionType() const
-    {return anyType;}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType;}
 
   virtual TypePtr getParametersType() const
@@ -64,13 +58,6 @@ public:
 
   // description
   virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
-
-  enum ReturnCode
-  {
-    finishedReturnCode = 0,
-    canceledReturnCode,
-    errorReturnCode,
-  };
 
   // Used in SharedParallelInference before and after a block of many run() calls
   virtual void beginRunSession() {}
@@ -103,18 +90,28 @@ public:
   /*
   ** Object
   */
+  virtual String getName() const
+    {return name;}
+
+  virtual void setName(const String& name)
+    {this->name = name;}
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return computeInference(context, input, Variable());}
+
+    // todo: move this in protected
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
 
   lbcpp_UseDebuggingNewOperator
 
-    // todo: move this in protected
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
 protected:
   friend class InferenceClass;
 
   virtual void parametersChangedCallback() {}
 
-
+  String name;
   InferenceOnlineLearnerPtr onlineLearner;
   InferencePtr batchLearner;
   juce::ReadWriteLock parametersLock;

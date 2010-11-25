@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 
 # include <lbcpp/Function/Evaluator.h>
-# include <lbcpp/Inference/InferenceStack.h>
+# include <lbcpp/Execution/FunctionStack.h>
 # include <lbcpp/Inference/InferenceContext.h>
 
 namespace lbcpp
@@ -23,7 +23,7 @@ public:
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
   {
     if (stack->getCurrentInference() == inference)
     {

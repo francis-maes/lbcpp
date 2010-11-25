@@ -28,6 +28,9 @@ public:
   virtual TypePtr getInputType() const
     {return perception->getInputType();}
 
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return anyType;}
+
   BinaryDecisionTreePtr getTree() const
     {return tree;}
 
@@ -51,10 +54,11 @@ protected:
   PerceptionPtr perception;
   BinaryDecisionTreePtr tree;
 
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
     {return tree && tree->getNumNodes() ? tree->makePrediction(context, perception->computeFunction(context, input)) : Variable::missingValue(getOutputType(input.getType()));}
 };
 
+extern ClassPtr binaryDecisionTreeInferenceClass;
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTreeInferencePtr;
 
 class RegressionBinaryDecisionTreeInference : public BinaryDecisionTreeInference

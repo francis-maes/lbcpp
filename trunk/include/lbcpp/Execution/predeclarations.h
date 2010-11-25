@@ -16,7 +16,10 @@ namespace lbcpp
 
 class ExecutionCallback;
 typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;
-  
+
+class ExecutionStack;
+typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
+
 class ExecutionContext;
 typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 

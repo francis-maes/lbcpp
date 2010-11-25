@@ -62,14 +62,14 @@ public:
   DecoratorInference(const String& name);
   DecoratorInference() {}
  
-  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
     {return finalState->getSubOutput();}
 
   /*
   ** Inference
   */
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -98,7 +98,7 @@ public:
   virtual void endRunSession()
     {decorated->endRunSession();}
 
-  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     res->setSubInference(decorated, input, supervision);
@@ -135,7 +135,7 @@ public:
   PostProcessInference() {}
 
   virtual TypePtr getOutputType(TypePtr inputType) const;
-  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const;
 
 protected:
   friend class PostProcessInferenceClass;

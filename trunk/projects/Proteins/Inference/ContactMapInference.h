@@ -27,7 +27,7 @@ public:
   virtual TypePtr getInputType() const
     {return proteinClass;}
 
-  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const ProteinPtr& inputProtein = input.getObjectAndCast<Protein>(context);
     const SymmetricMatrixPtr& supervisionMap = supervision.getObjectAndCast<SymmetricMatrix>(context);

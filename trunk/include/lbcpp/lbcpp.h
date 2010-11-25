@@ -43,6 +43,10 @@
 # include "Data/RandomVariable.h"
 # include "Data/Cache.h"
 
+# include "Execution/FunctionStack.h"
+# include "Execution/ExecutionContext.h"
+# include "Execution/WorkUnit.h"
+
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
@@ -56,7 +60,6 @@
 # include "Perception/PerceptionRewriter.h"
 
 # include "Inference/Inference.h"
-# include "Inference/InferenceStack.h"
 # include "Inference/InferenceResultCache.h"
 # include "Inference/InferenceContext.h"
 # include "Inference/InferenceCallback.h"
@@ -69,12 +72,5 @@
 # include "NumericalLearning/NumericalLearning.h"
 
 # include "DecisionTree/DecisionTree.h"
-
-// new
-# include "Execution/ExecutionContext.h"
-# include "Execution/WorkUnit.h"
-
-// old
-# include "Execution/ThreadPool.h"
 
 #endif // !LBCPP_LBCPP_H_

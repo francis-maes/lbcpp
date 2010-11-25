@@ -23,7 +23,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return addBiasInferenceClass;}
   
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     ROCAnalyse roc;
