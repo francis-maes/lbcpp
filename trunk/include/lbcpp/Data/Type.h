@@ -94,7 +94,7 @@ public:
   virtual VariableValue getMissingValue() const;
   virtual bool isMissingValue(const VariableValue& value) const;
 
-  virtual VariableValue create() const;
+  virtual VariableValue create(ExecutionContext& context) const;
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
@@ -187,7 +187,7 @@ public:
 
   virtual ClassPtr getClass() const;
 
-  virtual VariableValue create() const;
+  virtual VariableValue create(ExecutionContext& context) const;
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
   virtual VariableValue createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
@@ -216,7 +216,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  void addElement(const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
+  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
 
 private:
   friend class EnumerationClass;

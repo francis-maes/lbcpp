@@ -59,14 +59,14 @@ class ExplorerConfiguration : public VariableVector
 public:
   ExplorerConfiguration() : VariableVector() {}
 
-  static File getApplicationDataDirectory();
-  static File getConfigurationFile();
+  static File getApplicationDataDirectory(ExecutionContext& context);
+  static File getConfigurationFile(ExecutionContext& context);
 
   static VariableVectorPtr& getInstancePtr();
   static VariableVectorPtr getInstance();
 
   static void save(ExecutionContext& context)
-    {Variable(getInstance()).saveToFile(context, getConfigurationFile());}
+    {getInstance()->saveToFile(context, getConfigurationFile(context));}
 
   static Variable& getConfiguration(ExecutionContext& context, const String& typeName)
   {

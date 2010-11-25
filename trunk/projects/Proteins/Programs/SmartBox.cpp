@@ -320,9 +320,9 @@ public:
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)
       {
         std::vector< std::pair<String, double> > learningScores, testingScores, validationScores;
-        learningEvaluator->getScoresForTarget(it->first, learningScores);
-        testingEvaluator->getScoresForTarget(it->first, testingScores);
-        validationEvaluator->getScoresForTarget(it->first, validationScores);
+        learningEvaluator->getScoresForTarget(context, it->first, learningScores);
+        testingEvaluator->getScoresForTarget(context, it->first, testingScores);
+        validationEvaluator->getScoresForTarget(context, it->first, validationScores);
         jassert(learningScores.size() == testingScores.size() && learningScores.size() == validationScores.size());
         // Header
         OutputStream* o = it->second.createOutputStream();
@@ -358,7 +358,7 @@ public:
           String info;
           for (size_t i = 0; i < scores.size(); ++i)
             info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
-          MessageCallback::info(info);
+          context.informationCallback(info);
         }
       }*/
 

@@ -84,7 +84,7 @@ public:
   bool isCBetaAtomMissing() const
     {return aminoAcidType != glycine && !getCBetaAtom();}
 
-  AtomPtr checkAndGetCBetaOrCAlphaAtom() const;
+  AtomPtr checkAndGetCBetaOrCAlphaAtom(ExecutionContext& context) const;
 
   void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 

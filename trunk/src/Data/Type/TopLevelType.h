@@ -38,8 +38,8 @@ public:
   TopLevelType(const String& name)
     : Type(name, TypePtr()) {}
 
-  virtual VariableValue create() const
-    {MessageCallback::error(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}
+  virtual VariableValue create(ExecutionContext& context) const
+    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}
 
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
     {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
@@ -48,49 +48,49 @@ public:
     {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
 
   virtual void destroy(VariableValue& value) const
-    {MessageCallback::error(T("Type::destroy()"), T("Not implemented"));}
+    {jassert(false);}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {MessageCallback::error(T("Type::copy()"), T("Not implemented"));}
+    {jassert(false);}
 
   virtual String toString(const VariableValue& value) const
-    {MessageCallback::error(T("Type::toString()"), T("Not implemented")); return String::empty;}
+    {jassert(false); return String::empty;}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
-    {MessageCallback::error(T("Type::saveToXml()"), T("Not implemented"));}
+    {exporter.getContext().errorCallback(T("Type::saveToXml()"), T("Not implemented"));}
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
-    {MessageCallback::error(T("Type::compare()"), T("Not implemented")); return 0;}
+    {jassert(false); return 0;}
 
   virtual size_t getObjectNumVariables() const
     {return 0;}
 
   virtual TypePtr getObjectVariableType(size_t index) const
-    {MessageCallback::error(T("Type::getObjectVariableType()"), T("Not implemented")); return TypePtr();}
+    {jassert(false); return TypePtr();}
 
   virtual String getObjectVariableName(size_t index) const
-    {MessageCallback::error(T("Type::getObjectVariableName()"), T("Not implemented")); return String::empty;}
+    {jassert(false); return String::empty;}
 
   virtual String getObjectVariableShortName(size_t index) const
-    {MessageCallback::error(T("Type::getObjectVariableShortName()"), T("Not implemented")); return String::empty;}
+    {jassert(false); return String::empty;}
 
   virtual String getObjectVariableDescription(size_t index) const
-    {MessageCallback::error(T("Type::getObjectVariableDescription()"), T("Not implemented")); return String::empty;}
+    {jassert(false); return String::empty;}
 
   virtual int findObjectVariable(const String& name) const
     {return -1;}
 
   virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
-    {MessageCallback::error(T("Type::getObjectVariable()"), T("Not implemented")); return Variable();}
+    {jassert(false); return Variable();}
 
   virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}
 
   virtual Variable getElement(const VariableValue& value, size_t index) const
-    {MessageCallback::error(T("Type::getElement()"), T("Not implemented")); return Variable();}
+    {jassert(false); return Variable();}
 
   virtual String getElementName(const VariableValue& value, size_t index) const
-    {MessageCallback::error(T("Type::getElementName()"), T("Not implemented")); return String::empty;}
+    {jassert(false); return String::empty;}
 
   lbcpp_UseDebuggingNewOperator
 };

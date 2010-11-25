@@ -127,7 +127,7 @@ size_t ThreadPool::getNumRunningThreads() const
 size_t ThreadPool::getNumThreads() const
   {ScopedLock _(threadsLock); return threads.size();}
 
-void ThreadPool::update()
+void ThreadPool::update(ExecutionContext& context)
 {
   ScopedLock _(threadsLock);
   for (size_t i = 0; i < threads.size(); )
@@ -146,7 +146,7 @@ void ThreadPool::update()
     if (workUnit)
     {
       if (verbose)
-        MessageCallback::info(T("Start Work Unit: ") + workUnit->getName());
+        context.informationCallback(T("Start Work Unit: ") + workUnit->getName());
       startThreadForWorkUnit(workUnit);
     }
     else
@@ -158,9 +158,9 @@ void ThreadPool::update()
     static int counter = 0;
     if (++counter % 1000 == 0)
     {
-      MessageCallback::info(T("\n==============="));
+      context.informationCallback(T("\n==============="));
       writeCurrentState(std::cout);
-      MessageCallback::info(String::empty);
+      context.informationCallback(String::empty);
     }
   }
 }
@@ -171,7 +171,7 @@ void ThreadPool::addWorkUnitAndWaitExecution(WorkUnitPtr workUnit, size_t priori
   addWorkUnit(workUnit, priority, event);
   if (callUpdateWhileWaiting)
     while (!event->wait(1, 1))
-      update();
+      update(*silentExecutionContext);
   else
     event->wait(1);
 }
@@ -196,7 +196,7 @@ void ThreadPool::addWorkUnitsAndWaitExecution(const std::vector<WorkUnitPtr>& wo
 
   if (callUpdateWhileWaiting)
     while (!event->wait(workUnits.size(), 1))
-      update();
+      update(*silentExecutionContext);
   else
     event->wait(workUnits.size());
   
@@ -204,7 +204,7 @@ void ThreadPool::addWorkUnitsAndWaitExecution(const std::vector<WorkUnitPtr>& wo
     ScopedLock _(threadsLock);
     if (currentThread)
       waitingThreads.erase(currentThread);
-    update();
+    update(*silentExecutionContext);
     if (getNumRunningThreads() == 0 && getNumWaitingThreads() > 1)
     {
       std::cerr << std::endl << "Fatal Error: Not any running thread, Probable Dead Lock!!!" << std::endl;

@@ -71,12 +71,12 @@ public:
     }
   }
 
-  EvaluatorPtr getEvaluatorForTarget(const String& targetName) const
+  EvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, const String& targetName) const
   {
     int variableIndex = proteinClass->findObjectVariable(targetName);
     if (variableIndex < 0)
     {
-      MessageCallback::error(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
+      context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
       return EvaluatorPtr();
     }
 
@@ -84,7 +84,7 @@ public:
       if (evaluators[i].first == (size_t)variableIndex)
         return evaluators[i].second;
     
-    MessageCallback::error(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator for target ") + targetName);
+    context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator for target ") + targetName);
     return EvaluatorPtr();
   }
   
@@ -104,9 +104,9 @@ public:
     }
   }
   
-  void getScoresForTarget(const String& targetName, std::vector< std::pair<String, double> >& res) const
+  void getScoresForTarget(ExecutionContext& context, const String& targetName, std::vector< std::pair<String, double> >& res) const
   {
-    EvaluatorPtr evaluator = getEvaluatorForTarget(targetName);
+    EvaluatorPtr evaluator = getEvaluatorForTarget(context, targetName);
     jassert(evaluator);
     evaluator->getScores(res);
   }

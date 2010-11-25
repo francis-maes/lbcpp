@@ -35,7 +35,7 @@ public:
   String toString() const
     {return String(x) + T(" ") + String(y) + T(" ") + String(z);}
 
-  static Vector3 fromString(const String& str, MessageCallback& callback);
+  static Vector3 fromString(ExecutionContext& context, const String& str);
 
   double getX() const
     {return x;}
@@ -193,8 +193,8 @@ public:
   virtual String toString() const
     {return value.toString();}
 
-  virtual bool loadFromString(const String& str, MessageCallback& callback)
-    {value = impl::Vector3::fromString(str, callback); return true;}
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+    {value = impl::Vector3::fromString(context, str); return true;}
 
 private:
   friend class Vector3Class;

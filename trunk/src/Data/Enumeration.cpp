@@ -17,7 +17,7 @@ Enumeration::Enumeration(const String& name, const juce::tchar** elements, const
 {
   jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
-    addElement(elements[index]);
+    addElement(*silentExecutionContext, elements[index]);
 }
 
 Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
@@ -28,7 +28,7 @@ Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
   {
     String str;
     str += oneLetterCodes[i];
-    addElement(str);
+    addElement(*silentExecutionContext, str);
   }
 }
 
@@ -40,11 +40,11 @@ Enumeration::Enumeration(const String& name)
 ClassPtr Enumeration::getClass() const
   {return enumerationClass;}
 
-void Enumeration::addElement(const String& elementName, const String& oneLetterCode, const String& threeLettersCode)
+void Enumeration::addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode, const String& threeLettersCode)
 {
   if (findElement(elementName) >= 0)
   {
-    MessageCallback::error(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
+    context.errorCallback(T("Enumeration::addElement"), T("Element '") + elementName + T("' already exists"));
     return;
   }
   elements.push_back(elementName);
@@ -62,7 +62,7 @@ int Enumeration::findElement(const String& name) const
   return -1;
 }
 
-VariableValue Enumeration::create() const
+VariableValue Enumeration::create(ExecutionContext& context) const
   {return getMissingValue();}
 
 VariableValue Enumeration::getMissingValue() const

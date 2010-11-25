@@ -36,20 +36,20 @@ void ExplorerRecentFiles::addRecentFile(const File& file)
 /*
 ** ExplorerConfiguration
 */
-File ExplorerConfiguration::getApplicationDataDirectory()
+File ExplorerConfiguration::getApplicationDataDirectory(ExecutionContext& context)
 {
   //return File(T("C:\\temp"));
   File directory = File::getSpecialLocation(File::userApplicationDataDirectory).getChildFile(T("LBC++"));
   if (!directory.exists() && !directory.createDirectory())
   {
-    MessageCallback::error(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
+    context.errorCallback(T("ExplorerConfiguration::getApplicationDataDirectory"), T("Could not create application data directory"));
     return File::nonexistent;
   }
   return directory;
 }
 
-File ExplorerConfiguration::getConfigurationFile()
-  {return getApplicationDataDirectory().getChildFile(T("config.xml"));}
+File ExplorerConfiguration::getConfigurationFile(ExecutionContext& context)
+  {return getApplicationDataDirectory(context).getChildFile(T("config.xml"));}
 
 VariableVectorPtr& ExplorerConfiguration::getInstancePtr()
 {
@@ -62,7 +62,7 @@ VariableVectorPtr ExplorerConfiguration::getInstance()
   VariableVectorPtr& configuration = getInstancePtr();
   if (!configuration)
   {
-    File configurationFile = getConfigurationFile();
+    File configurationFile = getConfigurationFile(*silentExecutionContext);
     if (configurationFile.exists())
       configuration = Variable::createFromFile(*silentExecutionContext, configurationFile).getObjectAndCast<VariableVector>();
     if (!configuration)

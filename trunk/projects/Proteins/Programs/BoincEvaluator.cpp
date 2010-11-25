@@ -113,7 +113,7 @@ private:
 
   bool generateOutputFile(ExecutionContext& context, const File& file)
   {
-    XmlExporter exporter(T("result"), 0);
+    XmlExporter exporter(context, T("result"), 0);
 
     // parameters
     exporter.enter(T("parameters"));
@@ -144,7 +144,7 @@ private:
     }
     exporter.leave();
 
-    return exporter.saveToFile(context, file);
+    return exporter.saveToFile(file);
   }
 };
 
@@ -274,7 +274,7 @@ public:
     }
     else
     {
-      MessageCallback::error(T("createMultiClassClassifier"), T("Unrecognized classifier name: ") + multiClassClassifier);
+      context.errorCallback(T("createMultiClassClassifier"), T("Unrecognized classifier name: ") + multiClassClassifier);
       return InferencePtr();
     }
   }
@@ -287,7 +287,7 @@ protected:
     std::map<String, String>::const_iterator it = parameters.find(name);
     if (it == parameters.end())
     {
-      MessageCallback::error(T("getParameterValue"), T("Missing parameter ") + name);
+      context.errorCallback(T("getParameterValue"), T("Missing parameter ") + name);
       return String::empty;
     }
     return it->second;
@@ -323,7 +323,7 @@ protected:
       return perPass;
     else
     {
-      MessageCallback::error(T("getUpdateFrequencyParameter"), T("Unrecognized value: ") + value);
+      context.errorCallback(T("getUpdateFrequencyParameter"), T("Unrecognized value: ") + value);
       return never;
     }
   }
@@ -401,7 +401,7 @@ protected:
     context.evaluate(inference, testingProteins, evaluator);
     context.informationCallback(T("Evaluation: ") + evaluator->toString());
 
-    testAccuracy = evaluator->getEvaluatorForTarget(T("secondaryStructure"))->getDefaultScore();
+    testAccuracy = evaluator->getEvaluatorForTarget(context, T("secondaryStructure"))->getDefaultScore();
     return true;
   }
 

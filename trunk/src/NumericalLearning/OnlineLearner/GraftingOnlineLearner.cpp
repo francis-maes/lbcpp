@@ -10,7 +10,7 @@
 using namespace lbcpp;
 
 GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& inferences)
-  : learningStopped(false), inferences(inferences), perception(perception.checkCast<SelectAndMakeProductsPerception>(T("GraftingOnlineLearner")))
+  : learningStopped(false), inferences(inferences), perception(perception.staticCast<SelectAndMakeProductsPerception>())
 {
   // create empty perception for candidates
   candidatesPerception = selectAndMakeProductsPerception(
@@ -38,7 +38,7 @@ GraftingOnlineLearner::GraftingOnlineLearner(PerceptionPtr perception, const std
 void GraftingOnlineLearner::startLearningCallback(InferenceContext& context)
 {
   learningStopped = false;
-  generateCandidates(SortedConjunctions(), SortedConjunctions());
+  generateCandidates(context, SortedConjunctions(), SortedConjunctions());
   resetCandidateScores();
   InferenceOnlineLearner::startLearningCallback(context);
 }
@@ -80,16 +80,16 @@ void GraftingOnlineLearner::passFinishedCallback(InferenceContext& context, cons
     sortedCandidateScores.insert(std::make_pair(candidateScores[i], std::make_pair(i, candidatesPerception->getConjunction(i))));
 
   // prune parameters
-  pruneParameters(sortedActiveScores);
+  pruneParameters(context, sortedActiveScores);
 
   // accept candidate and re-generate candidates set
-  if (!acceptCandidates(bestCandidate, bestCandidateScore, sortedCandidateScores))
+  if (!acceptCandidates(context, bestCandidate, bestCandidateScore, sortedCandidateScores))
   {
-    MessageCallback::info(T("Grafting"), T("Finished!"));
+    context.informationCallback(T("Grafting"), T("Finished!"));
     learningStopped = true;
     return;
   }
-  generateCandidates(sortedActiveScores, sortedCandidateScores);
+  generateCandidates(context, sortedActiveScores, sortedCandidateScores);
   resetCandidateScores();
 
   // update parameters type
@@ -97,8 +97,8 @@ void GraftingOnlineLearner::passFinishedCallback(InferenceContext& context, cons
     inferences[i]->updateParametersType(context);
 
   // display some informations
-  MessageCallback::info(String::empty);
-  MessageCallback::info(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
+  context.informationCallback(String::empty);
+  context.informationCallback(T("Grafting"), T("=== ") + String((int)perception->getNumConjunctions()) + T(" active, ")
     + String((int)candidatesPerception->getNumConjunctions()) + T(" candidates ==="));
   InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
@@ -111,7 +111,7 @@ static inline void makeSetFromVector(std::set<Type>& res, const std::vector<Type
     res.insert(source[i]);
 }
 
-void GraftingOnlineLearner::generateCandidates(const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores)
+void GraftingOnlineLearner::generateCandidates(ExecutionContext& context, const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores)
 {
   std::set<Conjunction> conjunctions;
   makeSetFromVector(conjunctions, perception->getConjunctions());
@@ -179,7 +179,7 @@ String GraftingOnlineLearner::conjunctionToString(const Conjunction& conjunction
   return res;
 }
 
-bool GraftingOnlineLearner::acceptCandidates(const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores)
+bool GraftingOnlineLearner::acceptCandidates(ExecutionContext& context, const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores)
 {
   static const double threshold = 0.0001;
 
@@ -190,7 +190,7 @@ bool GraftingOnlineLearner::acceptCandidates(const Conjunction& bestCandidate, d
   {
     if (it->first < threshold)
       break;
-    MessageCallback::info(T("Grafting"), T("Incorporating ") + conjunctionToString(it->second.second) + T(" (") + String(it->first) + T(")"));
+    context.informationCallback(T("Grafting"), T("Incorporating ") + conjunctionToString(it->second.second) + T(" (") + String(it->first) + T(")"));
     perception->addConjunction(it->second.second);
     res = true;
   }
@@ -201,11 +201,11 @@ bool GraftingOnlineLearner::acceptCandidates(const Conjunction& bestCandidate, d
   String info = T("At the end: ") + String((int)sortedScores.size()) + T(" sorted scores");
   if (sortedScores.size())
     info += T(", range: ") + String(sortedScores.begin()->first) + T(" .. ") + String(sortedScores.rbegin()->first);
-  MessageCallback::info(T("Grafting"), info);
+  context.informationCallback(T("Grafting"), info);
   return false;
 }
 
-void GraftingOnlineLearner::pruneParameters(const SortedConjunctions& sortedActiveScores)
+void GraftingOnlineLearner::pruneParameters(ExecutionContext& context, const SortedConjunctions& sortedActiveScores)
 {
   static const double threshold = 0.001;
   size_t i = 0;
@@ -213,7 +213,7 @@ void GraftingOnlineLearner::pruneParameters(const SortedConjunctions& sortedActi
   for (SortedConjunctions::const_iterator it = sortedActiveScores.begin(); it != sortedActiveScores.end() && it->first <= threshold; ++i, ++it)
   {
     conjunctionsToRemove.insert(it->second.first);
-    MessageCallback::info(T("Grafting"), T("Removing ") + String((int)i + 1)
+    context.informationCallback(T("Grafting"), T("Removing ") + String((int)i + 1)
       + T(": ") + conjunctionToString(it->second.second) + T(" (") + String(it->first) + T(")"));
   }
   if (conjunctionsToRemove.size())

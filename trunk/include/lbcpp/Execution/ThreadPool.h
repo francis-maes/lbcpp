@@ -27,7 +27,7 @@ public:
   ThreadPool(size_t numCpus = 1, bool verbose = false);
   virtual ~ThreadPool();
 
-  void update();
+  void update(ExecutionContext& context);
 
   size_t getNumCpus() const
     {return numCpus;}

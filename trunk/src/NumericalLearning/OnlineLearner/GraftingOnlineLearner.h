@@ -40,9 +40,9 @@ public:
 protected:
   typedef std::multimap<double, std::pair<size_t, Conjunction> > SortedConjunctions;
 
-  void pruneParameters(const SortedConjunctions& activeScores);
-  bool acceptCandidates(const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores);
-  void generateCandidates(const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores);
+  void pruneParameters(ExecutionContext& context, const SortedConjunctions& activeScores);
+  bool acceptCandidates(ExecutionContext& context, const Conjunction& bestCandidate, double bestCandidateScore, const SortedConjunctions& sortedScores);
+  void generateCandidates(ExecutionContext& context, const SortedConjunctions& activeScores, const SortedConjunctions& candidateScores);
   void resetCandidateScores();
 
   void updateCandidateScores(ExecutionContext& context, const NumericalInferencePtr& numericalInference, size_t firstScoreIndex, const Variable& input, const Variable& supervision, const Variable& prediction);

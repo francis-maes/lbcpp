@@ -346,9 +346,9 @@ public:
     {
       // end of learning iteration
       context.informationCallback(String::empty);
-      //MessageCallback::info(T("====================================================="));
-      //MessageCallback::info(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
-      //MessageCallback::info(T("====================================================="));
+      //context.informationCallback(T("====================================================="));
+      //context.informationCallback(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
+      //context.informationCallback(T("====================================================="));
 
       InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
       if (learnerInput)
@@ -375,7 +375,7 @@ public:
       context->evaluate(inference, testingData, evaluator);
       processResults(evaluator, false);*/
 
-      //MessageCallback::info(T("====================================================="));
+      //context.informationCallback(T("====================================================="));
     }
     
     if (stack->getDepth() == 1)

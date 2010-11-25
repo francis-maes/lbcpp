@@ -81,7 +81,7 @@ private:
   virtual void update(InferenceContext& context, const InferencePtr& inference)
   {
     double defaultScore = UpdatableOnlineLearner::getDefaultScore();
-    //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
+    //context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy(context);
     if (parameters.exists() && restoreBestParametersWhenLearningStops && defaultScore > bestDefaultScore)
     {
@@ -89,15 +89,15 @@ private:
       bestDefaultScore = defaultScore;
       bestScores.clear();
       UpdatableOnlineLearner::getScores(bestScores);
-      //MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String(bestScore));
+      //context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String(bestScore));
     }
     if (criterion->shouldStop(defaultScore))
     {
-      MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(defaultScore) + T(" best score = ") + String(bestDefaultScore));
+      context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(defaultScore) + T(" best score = ") + String(bestDefaultScore));
       learningStopped = true;
       if (bestParameters.exists() && bestDefaultScore > defaultScore)
       {
-        MessageCallback::info(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String(bestDefaultScore));
+        context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Restoring parameters that led to score ") + String(bestDefaultScore));
         inference->setParameters(bestParameters);
       }
     }

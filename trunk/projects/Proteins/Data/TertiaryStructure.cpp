@@ -107,7 +107,7 @@ CartesianPositionVectorPtr TertiaryStructure::makeCAlphaTrace() const
     AtomPtr atom = residue->getCAlphaAtom();
 /*    if (!atom)
     {
-      MessageCallback::error(T("CartesianCoordinatesSequence::createCAlphaTrace"),
+      context.errorCallback(T("CartesianCoordinatesSequence::createCAlphaTrace"),
           T("No C-alpha atom in residue ") + residue->getName() + T(" ") + String((int)(i + 1)));
         return CartesianPositionVectorPtr();
     }*/
@@ -208,14 +208,14 @@ SymmetricMatrixPtr TertiaryStructure::makeCAlphaDistanceMatrix() const
   return makeDistanceMatrix(positions);
 }
 
-SymmetricMatrixPtr TertiaryStructure::makeCBetaDistanceMatrix() const
+SymmetricMatrixPtr TertiaryStructure::makeCBetaDistanceMatrix(ExecutionContext& context) const
 {
   size_t n = getNumResidues();
   std::vector<impl::Vector3> positions(n);
   for (size_t i = 0; i < n; ++i)
   {
     ResiduePtr residue = getResidue(i);
-    AtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom() : AtomPtr();
+    AtomPtr atom = residue ? residue->checkAndGetCBetaOrCAlphaAtom(context) : AtomPtr();
     if (atom && atom->getPosition())
       positions[i] = atom->getPosition()->getValue();
   }

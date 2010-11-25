@@ -34,7 +34,7 @@ public:
   virtual double compute(const Variable& input) const;
 
 protected:
-  double getLeastSquareDeviation(ContainerPtr data);
+  double getLeastSquareDeviation(ContainerPtr data) const;
 };
   
 class ClassificationIGSplitScoringFunction :public SplitScoringFunction

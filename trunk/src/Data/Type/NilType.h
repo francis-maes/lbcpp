@@ -39,7 +39,7 @@ public:
     : Type(name, baseType) {}
   virtual ~NilType() {}
 
-  virtual VariableValue create() const
+  virtual VariableValue create(ExecutionContext& context) const
     {return VariableValue();}
 
   virtual VariableValue createFromXml(XmlImporter& importer) const

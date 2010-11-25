@@ -39,7 +39,7 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual VariableValue create() const
+  virtual VariableValue create(ExecutionContext& context) const
     {return VariableValue(0.0);}
 
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const

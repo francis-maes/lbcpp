@@ -187,13 +187,13 @@ SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
   if (betweenCBetaAtoms)
   {
     if (!distanceMapCb && tertiaryStructure && tertiaryStructure->hasBackboneAndCBetaAtoms())
-      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(tertiaryStructure, true);
+      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(*silentExecutionContext, tertiaryStructure, true);
     return distanceMapCb;
   }
   else
   {
     if (!distanceMapCa && tertiaryStructure && tertiaryStructure->hasCAlphaAtoms())
-      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(tertiaryStructure, false);
+      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(*silentExecutionContext, tertiaryStructure, false);
     return distanceMapCa;
   }
 }
@@ -345,7 +345,6 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std:
   }
 #endif // JUCE_DEBUG
 
- // MessageCallback::info(T("NumResidues: ") + String((int)distanceMap->getDimension()) + T(" NumCysteines: ") + String((int)cysteines.size()) + T(" NumBonds: ") + String((int)numBonds));
   return res;
 }
 

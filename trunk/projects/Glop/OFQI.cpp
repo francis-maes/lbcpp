@@ -9,20 +9,20 @@ extern void declareGlopClasses(ExecutionContext& context);
 class MyInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
       jassert(trainingExamplesType->getNumTemplateArguments() == 2);
       String inputTypeName = trainingExamplesType->getTemplateArgument(0)->getName();
-      MessageCallback::info(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
+      context.informationCallback(T("=== Learning ") + input[0].getObject()->getName() + T(" with ") + String((int)input[1].size()) + T(" ") + inputTypeName + T("(s) ==="));
       //std::cout << "  learner: " << inferenceClassName << " static type: " << input[1].getTypeName() << std::endl
       //  << "  first example type: " << input[1][0].getTypeName() << std::endl << std::endl;
     }
   }
 
-  virtual void postInferenceCallback(const InferenceContextPtr& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
   }
 };

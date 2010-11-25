@@ -41,9 +41,6 @@ public:
   */
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const = 0;
 
-  //Variable compute(const Variable& input, MessageCallback& callback = MessageCallback::getInstance()) const
-  //  {return checkInheritance(input, getInputType()) ? computeFunction(input, callback) : Variable();}
-
   lbcpp_UseDebuggingNewOperator
 };
 

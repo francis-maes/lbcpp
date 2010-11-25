@@ -31,7 +31,7 @@ public:
   ** Class
   */
   virtual bool initialize(ExecutionContext& context);
-  virtual VariableValue create() const;
+  virtual VariableValue create(ExecutionContext& context) const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
   virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
 

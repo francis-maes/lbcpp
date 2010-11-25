@@ -46,7 +46,7 @@ bool DynamicClass::initialize(ExecutionContext& context)
   return DefaultClass::initialize(context);
 }
 
-VariableValue DynamicClass::create() const
+VariableValue DynamicClass::create(ExecutionContext& context) const
   {return createDenseObject();}
 
 ObjectPtr DynamicClass::createDenseObject() const

@@ -194,8 +194,8 @@ protected:
   static CartesianPositionVectorPtr computeCAlphaTraceFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
     {return tertiaryStructure->makeCAlphaTrace();}
 
-  static SymmetricMatrixPtr computeDistanceMapFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure, bool betweenCBetaAtoms)
-    {return betweenCBetaAtoms ? tertiaryStructure->makeCBetaDistanceMatrix() : tertiaryStructure->makeCAlphaDistanceMatrix();}
+  static SymmetricMatrixPtr computeDistanceMapFromTertiaryStructure(ExecutionContext& context, TertiaryStructurePtr tertiaryStructure, bool betweenCBetaAtoms)
+    {return betweenCBetaAtoms ? tertiaryStructure->makeCBetaDistanceMatrix(context) : tertiaryStructure->makeCAlphaDistanceMatrix();}
 };
 
 extern ClassPtr proteinClass;

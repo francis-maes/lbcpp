@@ -13,7 +13,8 @@ using namespace lbcpp;
 /*
 ** XmlExporter
 */
-XmlExporter::XmlExporter(const String& rootTag, int version)
+XmlExporter::XmlExporter(ExecutionContext& context, const String& rootTag, int version)
+  : context(context)
 {
   root = new XmlElement(rootTag);
   if (version)
@@ -24,7 +25,7 @@ XmlExporter::XmlExporter(const String& rootTag, int version)
 XmlExporter::~XmlExporter()
   {delete root;}
 
-bool XmlExporter::saveToFile(ExecutionContext& context, const File& file)
+bool XmlExporter::saveToFile(const File& file)
 {
   flushSave();
   if (file.exists())
@@ -212,7 +213,7 @@ void XmlExporter::makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjec
   
   if (todo.empty())
     return;
-  MessageCallback::error(T("XmlExporter::makeSharedObjectsSaveOrder"), T("Cyclic dependancy between shared objects"));
+  context.errorCallback(T("XmlExporter::makeSharedObjectsSaveOrder"), T("Cyclic dependancy between shared objects"));
 }
 
 void XmlExporter::resolveSingleObjectReference(SavedObject& savedObject)

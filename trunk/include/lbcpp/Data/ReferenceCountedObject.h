@@ -27,7 +27,7 @@
 #ifndef LBCPP_REFERENCE_COUNTED_OBJECT_H_
 # define LBCPP_REFERENCE_COUNTED_OBJECT_H_
 
-# include "../Execution/MessageCallback.h"
+# include "Utilities.h"
 
 namespace lbcpp
 {
@@ -311,31 +311,6 @@ public:
     jassert(!ptr || dynamic_cast<O* >(ptr));
     return *(const ReferenceCountedObjectPtr<O>* )this;
   }
-
-  /** Checks if a cast is valid and throw an error if not.
-  **
-  ** @param where : a description of the caller function
-  ** that will be used in case of an error.
-  ** @param object : to object to cast.
-  ** @return false is the loading fails, true otherwise. If loading fails,
-  ** load() is responsible for declaring an error to the ErrorManager.
-  */
-  template<class O>
-  inline const ReferenceCountedObjectPtr<O>& checkCast(const juce::tchar* where, MessageCallback& callback = MessageCallback::getInstance())
-  {
-  #ifdef JUCE_DEBUG
-    static ReferenceCountedObjectPtr<O> empty;
-    if (!ptr)
-      return empty;
-    if (!dynamicCast<O>())
-    {
-      callback.errorMessage(where, T("Could not cast object from '") + getTypeName(typeid(*ptr)) + T("' to '") + getTypeName(typeid(O)) + T("'"));
-      return empty;
-    }
-  #endif
-    return staticCast<O>();
-  }
-
 
   /** Returns true if the object that this pointer references is an instance of the given class. */
   template<class O>

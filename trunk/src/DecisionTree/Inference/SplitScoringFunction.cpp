@@ -19,7 +19,7 @@ double RegressionIGSplitScoringFunction::compute(const Variable& input) const
   return -getLeastSquareDeviation(leftData) - getLeastSquareDeviation(rightData);
 }
 
-double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr data)
+double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr data) const
 {
   size_t n = data->getNumElements();
   jassert(n);
@@ -39,7 +39,7 @@ double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr da
   return leastSquare;
 }
 
-virtual double ClassificationIGSplitScoringFunction::compute(const Variable& input) const
+double ClassificationIGSplitScoringFunction::compute(const Variable& input) const
 {
   ContainerPtr leftData = input[0].getObjectAndCast<Container>();
   ContainerPtr rightData = input[1].getObjectAndCast<Container>();
@@ -53,16 +53,20 @@ virtual double ClassificationIGSplitScoringFunction::compute(const Variable& inp
   
   for (size_t i = 0; i < enumeration->getNumElements(); ++i)
     priorDistribution->setProbability(i, (leftDistribution->getProbability(i) + rightDistribution->getProbability(i)) / 2);
-  
+
+#if 0
   double probOfTrue = positiveExamples->getNumElements() / (double)examples->getNumElements();
   double informationGain = priorDistribution->computeEntropy()
   - probOfTrue * positiveDistribution->computeEntropy() 
   - (1 - probOfTrue) * negativeDistribution->computeEntropy(); 
   return informationGain;
+#endif // 0
+  return 0.0;
 }
 
 DiscreteProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ContainerPtr data) const
 {
+#if 0
   EnumerationPtr enumeration = examples->getElementsType()->getTemplateArgument(1);
   DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);
   
@@ -74,4 +78,7 @@ DiscreteProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDisc
   }
   res->normalize();
   return res;
+
+#endif // 0
+  return DiscreteProbabilityDistributionPtr();
 }

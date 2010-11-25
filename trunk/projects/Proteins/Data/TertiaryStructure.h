@@ -34,7 +34,7 @@ public:
   CartesianPositionVectorPtr makeCBetaTrace() const;
   //ProteinBackboneBondSequencePtr makeBackbone() const;
   SymmetricMatrixPtr makeCAlphaDistanceMatrix() const;
-  SymmetricMatrixPtr makeCBetaDistanceMatrix() const;
+  SymmetricMatrixPtr makeCBetaDistanceMatrix(ExecutionContext& context) const;
 
   size_t getNumResidues() const
     {return residues->getNumElements();}

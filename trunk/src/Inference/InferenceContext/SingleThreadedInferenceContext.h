@@ -68,7 +68,7 @@ public:
         subOutput = run(subInference, state->getSubInput(i), state->getSubSupervision(i), returnCode);
         if (returnCode == Inference::errorReturnCode)
         {
-          MessageCallback::error("InferenceContext::runParallelInferences", "Could not finish sub inference");
+          errorCallback("InferenceContext::runParallelInferences", "Could not finish sub inference");
           return Variable(); 
         }
       }
