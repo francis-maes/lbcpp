@@ -1,4 +1,4 @@
-#include <lbcpp/Inference/InferenceContext.h>
+#include <lbcpp/lbcpp.h>
 #include "XorExamplePerception.h"
 #include "OFQIInference.h"
 
