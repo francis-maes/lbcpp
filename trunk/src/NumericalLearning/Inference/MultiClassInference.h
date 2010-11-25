@@ -35,7 +35,7 @@ public:
   virtual void setName(const String& name)
     {DecoratorInference::setName(name); decorated->setName(name + T(" scores"));}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
     ScalarObjectFunctionPtr lossFunction;
@@ -50,7 +50,7 @@ public:
   }
 
   // todo: return probability distribution
-  virtual Variable finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
   {
     Variable subInferenceOutput = finalState->getSubOutput();
     if (!subInferenceOutput.exists())

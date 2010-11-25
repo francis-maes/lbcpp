@@ -12,7 +12,7 @@ using namespace lbcpp;
 /*
 ** InferenceOnlineLearner
 */
-void InferenceOnlineLearner::startLearningCallback(InferenceContext& context)
+void InferenceOnlineLearner::startLearningCallback(ExecutionContext& context)
 {
   if (nextLearner)
   {
@@ -21,16 +21,16 @@ void InferenceOnlineLearner::startLearningCallback(InferenceContext& context)
   }
 }
 
-void InferenceOnlineLearner::subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void InferenceOnlineLearner::subStepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {if (nextLearner) nextLearner->subStepFinishedCallback(context, inference, input, supervision, prediction);}
 
-void InferenceOnlineLearner::stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void InferenceOnlineLearner::stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {if (nextLearner) nextLearner->stepFinishedCallback(context, inference, input, supervision, prediction);}
 
-void InferenceOnlineLearner::episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
+void InferenceOnlineLearner::episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
   {if (nextLearner) nextLearner->episodeFinishedCallback(context, inference);}
 
-void InferenceOnlineLearner::passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void InferenceOnlineLearner::passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (nextLearner)
   {
@@ -89,7 +89,7 @@ InferenceOnlineLearnerPtr InferenceOnlineLearner::getLastLearner() const
 UpdatableOnlineLearner::UpdatableOnlineLearner(LearnerUpdateFrequency updateFrequency)
   : epoch(0), updateFrequency(updateFrequency) {}
 
-void UpdatableOnlineLearner::updateAfterStep(InferenceContext& context, const InferencePtr& inference)
+void UpdatableOnlineLearner::updateAfterStep(ExecutionContext& context, const InferencePtr& inference)
 {
   ++epoch;
   if (updateFrequency == perStep)
@@ -102,20 +102,20 @@ void UpdatableOnlineLearner::updateAfterStep(InferenceContext& context, const In
   }
 }
 
-void UpdatableOnlineLearner::stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void UpdatableOnlineLearner::stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   updateAfterStep(context, inference);
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
 
-void UpdatableOnlineLearner::episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
+void UpdatableOnlineLearner::episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
 {
   if (updateFrequency == perEpisode)
     update(context, inference);
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void UpdatableOnlineLearner::passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void UpdatableOnlineLearner::passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (updateFrequency == perPass)
     update(context, inference);

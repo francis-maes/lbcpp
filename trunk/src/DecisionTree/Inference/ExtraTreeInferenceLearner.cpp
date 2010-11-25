@@ -21,7 +21,7 @@ SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttri
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting) {}
 
-Variable SingleExtraTreeInferenceLearner::computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
   jassert(learnerInput);

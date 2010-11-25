@@ -39,17 +39,16 @@ protected:
   EvaluatorPtr evaluator;
   InferencePtr inferenceModel;
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>(context);
     const ContainerPtr& trainingData = pair->getFirst().getObjectAndCast<Container>(context);
     const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>(context);
     InferencePtr inference = inferenceModel->cloneAndCast<Inference>(context);
     jassert(trainingData && evaluationData && inference);
-    returnCode = context.train(inference, trainingData, ContainerPtr());
-    if (returnCode != finishedReturnCode)
+    if (!train(context, inference, trainingData, ContainerPtr()))
       return Variable();
-    returnCode = context.evaluate(inference, evaluationData, evaluator);
+    evaluate(context, inference, evaluationData, evaluator);
     return Variable();
   }
 };
@@ -77,7 +76,7 @@ public:
       String((int)trainingData->getNumElements()) + T(" ") + trainingData->getElementsType()->getName() + T("s");
   }
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const ContainerPtr& trainingData = input.getObjectAndCast<Container>(context);
 
@@ -91,7 +90,7 @@ public:
     return state;
   }
 
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
     {return Variable();}
 
 protected:

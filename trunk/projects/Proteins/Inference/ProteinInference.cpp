@@ -65,14 +65,14 @@ ProteinSequentialInference::ProteinSequentialInference(const String& name)
 {
 }
 
-SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+SequentialInferenceStatePtr ProteinSequentialInference::prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   if (supervision.exists())
     prepareSupervisionProtein(context, supervision.getObjectAndCast<Protein>(context));
   return VectorSequentialInference::prepareInference(context, cloneInputProtein(context, input), supervision, returnCode);
 }
 
-void ProteinSequentialInference::prepareSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+void ProteinSequentialInference::prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   // we keep the same input and supervision for sub-inferences
   Variable inputProtein;
@@ -84,7 +84,7 @@ void ProteinSequentialInference::prepareSubInference(InferenceContext& context, 
   state->setSubInference(getSubInference(index), inputProtein, state->getSupervision());
 }
 
-void ProteinSequentialInference::finalizeSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
+void ProteinSequentialInference::finalizeSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode)
 {
   if (state->getSubOutput().exists())
   {
@@ -94,7 +94,7 @@ void ProteinSequentialInference::finalizeSubInference(InferenceContext& context,
   }
 }
 
-Variable ProteinSequentialInference::finalizeInference(InferenceContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
+Variable ProteinSequentialInference::finalizeInference(ExecutionContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode)
   {return finalState->getSubOutput();} // latest version of the working protein
 
 /*
@@ -105,7 +105,7 @@ ProteinParallelInference::ProteinParallelInference(const String& name)
 {
 }
 
-ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+ParallelInferenceStatePtr ProteinParallelInference::prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   if (supervision.exists())
     prepareSupervisionProtein(context, supervision.getObjectAndCast<Protein>(context));
@@ -119,7 +119,7 @@ ParallelInferenceStatePtr ProteinParallelInference::prepareInference(InferenceCo
   return state;
 }
 
-Variable ProteinParallelInference::finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
+Variable ProteinParallelInference::finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode)
 {
   const ProteinPtr& initialProtein = state->getInput().getObjectAndCast<Protein>(context);
   ProteinPtr finalProtein = initialProtein->cloneAndCast<Protein>(context);
@@ -166,7 +166,7 @@ ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePt
   //checkInheritance(targetInference->getOutputType(proteinClass), getTargetType());
 }
 
-DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
 {
   DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
   Variable targetSupervision;
@@ -179,7 +179,7 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(InferenceConte
   return res;
 }
 
-Variable ProteinInferenceStep::finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
+Variable ProteinInferenceStep::finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode)
 {
   const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>(context);
   Variable prediction = finalState->getSubOutput();

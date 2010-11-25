@@ -1,5 +1,5 @@
 
- * Imbrication du InferenceContext et du ExecutionContext
+ * Imbrication du ExecutionContext et du ExecutionContext
  * Faire sauter les Inference::ReturnCode
  
  

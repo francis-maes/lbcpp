@@ -249,8 +249,6 @@ int main(int argc, char* argv[])
 
   InferencePtr rankingInference = createRankingInference(perception);
 
-  InferenceContextPtr context = singleThreadedInferenceContext();
-
   std::cout << "Training..." << std::endl;
   context->train(rankingInference, trainingData);
 

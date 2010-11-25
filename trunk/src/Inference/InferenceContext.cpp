@@ -16,89 +16,124 @@ using namespace lbcpp;
 
 InferencePtr InferenceStack::nullInference;
 
-Variable InferenceContext::runInference(const InferencePtr& inference, const Variable& in, const Variable& sup, ReturnCode& returnCode)
+/*
+** InferenceWorkUnit
+*/
+InferenceWorkUnit::InferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output)
+  : WorkUnit(name), inference(inference), input(input), supervision(supervision), output(output)
+{
+}
+
+InferenceWorkUnit::InferenceWorkUnit()
+  : output(*(Variable* )0)
+{
+}
+
+String InferenceWorkUnit::toShortString() const
+  {return getName();}
+
+String InferenceWorkUnit::toString() const
+  {return getName();}
+
+bool InferenceWorkUnit::run(ExecutionContext& context)
+  {return runInference(context, inference, input, supervision, output);}
+
+/*
+** InferenceContext
+*/
+static bool internalPreInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
+{
+  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
+  {
+    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
+    if (callback)
+    {
+      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+      callback->preInferenceCallback(context, InferenceStackPtr(), input, supervision, output, returnCode);
+      if (returnCode != Inference::finishedReturnCode)
+        return false;
+    }
+  }
+  return true;
+}
+
+static bool internalPostInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
+{
+  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
+  {
+    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
+    if (callback)
+    {
+      Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+      callback->postInferenceCallback(context, InferenceStackPtr(), input, supervision, output, returnCode);
+      if (returnCode != Inference::finishedReturnCode)
+        return false;
+    }
+  }
+  return true;
+}
+
+static bool internalRunInference(ExecutionContext& context, const InferencePtr& inference, const Variable& in, const Variable& sup, Variable* out)
 {
   jassert(!in.isNil());
   jassert(inference);
   Variable input(in);
   Variable supervision(sup);
   Variable output;
-  returnCode = Inference::finishedReturnCode;
-  preInference(inference, input, supervision, output, returnCode);
-  if (returnCode == Inference::errorReturnCode)
+  if (!internalPreInference(context, inference, input, supervision, output))
   {
-    warningCallback(T("InferenceContext::run"), T("pre-inference failed"));
+    context.warningCallback(T("ExecutionContext::run"), T("pre-inference failed"));
     jassert(false);
-    return Variable();
+    return false;
   }
 
-  if (returnCode == Inference::canceledReturnCode)
-    {jassert(output.exists());}
-  else if (!output.exists())
-    output = callRunInference(inference, input, supervision, returnCode);
+  if (!output.exists())
+  {
+    Inference::ReturnCode returnCode = Inference::finishedReturnCode;
+    output = inference->computeInference(context, input, supervision, returnCode);
+    if (returnCode != Inference::finishedReturnCode)
+      return false;
+  }
 
-  postInference(inference, input, supervision, output, returnCode);
-
-  return output;
+  internalPostInference(context, inference, input, supervision, output);
+  if (out)
+    *out = output;
+  return true;
 }
 
-Variable InferenceContext::callRunInference(const InferencePtr& inference, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
-  {return inference->computeInference(*this, input, supervision, returnCode);}
+bool lbcpp::runInference(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, Variable& output)
+  {return internalRunInference(context, inference, input, supervision, &output);}
 
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
-  {return train(inference, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples));}
+bool lbcpp::runInference(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision)
+  {return internalRunInference(context, inference, input, supervision, NULL);}
 
-Inference::ReturnCode InferenceContext::train(InferencePtr inference, const InferenceBatchLearnerInputPtr& learnerInput)
+bool lbcpp::train(ExecutionContext& context, const InferencePtr& inference, ContainerPtr trainingExamples, ContainerPtr validationExamples)
+  {return lbcpp::train(context, inference, new InferenceBatchLearnerInput(inference, trainingExamples, validationExamples));}
+
+bool lbcpp::train(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& learnerInput)
 {
   const InferencePtr& learner = inference->getBatchLearner();
   jassert(learner);
-  if (!learner)
-    return Inference::errorReturnCode;
-  ReturnCode res = Inference::finishedReturnCode;
-  runInference(learner, learnerInput, Variable(), res);
-  return res;
+  return learner && runInference(context, learner, learnerInput, Variable());
 }
 
-Inference::ReturnCode InferenceContext::evaluate(InferencePtr inference, ContainerPtr examples, EvaluatorPtr evaluator)
+bool lbcpp::evaluate(ExecutionContext& context, const InferencePtr& inference, ContainerPtr examples, EvaluatorPtr evaluator)
 {
-  ReturnCode res = Inference::finishedReturnCode;
   InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
-  appendCallback(evaluationCallback);
-  runInference(runOnSupervisedExamplesInference(inference, true), examples, Variable(), res);
-  removeCallback(evaluationCallback);
-  return res;
+  context.appendCallback(evaluationCallback);
+  bool res = runInference(context, runOnSupervisedExamplesInference(inference, true), examples, Variable());
+  context.removeCallback(evaluationCallback);
+  return true;
 }
 
-Inference::ReturnCode InferenceContext::crossValidate(InferencePtr inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds)
+bool lbcpp::crossValidate(ExecutionContext& context, const InferencePtr& inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds)
 {
-  ReturnCode res = Inference::finishedReturnCode;
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, inferenceModel, numFolds));
-  runInference(cvInference, examples, Variable(), res);
-  return res;
+  return runInference(context, cvInference, examples, Variable());
 }
 
-Variable InferenceContext::predict(InferencePtr inference, const Variable& input)
+Variable lbcpp::predict(ExecutionContext& context, const InferencePtr& inference, const Variable& input)
 {
-  ReturnCode returnCode = Inference::finishedReturnCode;
-  return runInference(inference, input, Variable(), returnCode);
-}
-
-void InferenceContext::callPreInference(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
-{
-  for (size_t i = 0; i < callbacks.size(); ++i)
-  {
-    InferenceCallbackPtr callback = callbacks[i].dynamicCast<InferenceCallback>();
-    if (callback)
-      callback->preInferenceCallback(context, stack, input, supervision, output, returnCode);
-  }
-}
-
-void InferenceContext::callPostInference(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
-{
-  for (int i = (int)callbacks.size() - 1; i >= 0; --i)
-  {
-    InferenceCallbackPtr callback = callbacks[i].dynamicCast<InferenceCallback>();
-    if (callback)
-     callback->postInferenceCallback(context, stack, input, supervision, output, returnCode);
-  }
+  Variable output;
+  return runInference(context, inference, input, Variable(), output) ? output : Variable();
 }

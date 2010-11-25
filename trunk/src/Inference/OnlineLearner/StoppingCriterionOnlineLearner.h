@@ -29,7 +29,7 @@ public:
 
   StoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
 
-  virtual void startLearningCallback(InferenceContext& context)
+  virtual void startLearningCallback(ExecutionContext& context)
   {
     UpdatableOnlineLearner::startLearningCallback(context);
     learningStopped = false;
@@ -78,7 +78,7 @@ private:
   double bestDefaultScore;
   std::vector< std::pair<String, double> > bestScores;
 
-  virtual void update(InferenceContext& context, const InferencePtr& inference)
+  virtual void update(ExecutionContext& context, const InferencePtr& inference)
   {
     double defaultScore = UpdatableOnlineLearner::getDefaultScore();
     //context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));

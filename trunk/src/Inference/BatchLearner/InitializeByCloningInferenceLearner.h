@@ -24,7 +24,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     context.informationCallback(T("InitializeByCloningInferenceLearner"), T("Cloning Inference ") + inferenceToClone->getName());

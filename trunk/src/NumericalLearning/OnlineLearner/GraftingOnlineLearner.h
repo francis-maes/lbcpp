@@ -25,11 +25,11 @@ public:
 
   typedef std::vector<size_t> Conjunction;
 
-  virtual void startLearningCallback(InferenceContext& context);
-  virtual void subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
-  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference) {}
-  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
+  virtual void startLearningCallback(ExecutionContext& context);
+  virtual void subStepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction);
+  virtual void episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference) {}
+  virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual bool isLearningStopped() const
     {return learningStopped;}

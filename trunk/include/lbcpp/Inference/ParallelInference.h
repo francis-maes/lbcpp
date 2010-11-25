@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_PARALLEL_H_
 
 # include "Inference.h"
-# include "InferenceContext.h"
 # include "InferenceCallback.h"
 # include "../Data/Vector.h"
 
@@ -78,13 +77,13 @@ public:
   virtual bool useMultiThreading() const
     {return true;}
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode) = 0;
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode) = 0;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 };
 
 extern ClassPtr parallelInferenceClass;
@@ -166,7 +165,7 @@ public:
 protected:
   friend class SharedParallelInferenceClass;
 
-  virtual Variable computeInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
 
   InferencePtr subInference;
 };

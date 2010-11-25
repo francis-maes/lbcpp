@@ -30,7 +30,6 @@ GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionClasses.xml 
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/InferenceContext/InferenceContextClasses.xml InferenceContextClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/BatchLearner/InferenceBatchLearnerClasses.xml InferenceBatchLearnerClasses.cpp)
@@ -316,15 +315,6 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceCallbackClasses.cpp  
 )
 
-SET(LBCPP_INFERENCE_CONTEXT_SOURCES
-  Inference/InferenceContext/SingleThreadedInferenceContext.h
-  Inference/InferenceContext/InferenceRelatedJobs.h
-  Inference/InferenceContext/ThreadOwnedInferenceContext.h
-  Inference/InferenceContext/MultiThreadedInferenceContext.h
-  Inference/InferenceContext/InferenceContextClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/InferenceContextClasses.cpp
-)
-
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
   Inference/ReductionInference/OneAgainstOneClassificationInference.h
@@ -511,7 +501,6 @@ SET(LBCPP_CORE
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
-  ${LBCPP_INFERENCE_CONTEXT_SOURCES}
   ${LBCPP_INFERENCE_INFERENCE_SOURCES}
     ${LBCPP_INFERENCE_REDUCTION_SOURCES}
     ${LBCPP_INFERENCE_META_SOURCES}
@@ -566,7 +555,6 @@ SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES
 ## Inference
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
-SOURCE_SUB_GROUP(Inference Context FILES ${LBCPP_INFERENCE_CONTEXT_SOURCES})
 SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
 SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
 SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})

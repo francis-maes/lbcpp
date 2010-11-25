@@ -26,7 +26,7 @@ public:
 
   BatchGradientDescentOnlineLearner() {}
 
-  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     updateParameters(context, inference, 1.0, input, supervision, prediction, &gradientSum);
     ++epoch;
@@ -40,14 +40,14 @@ public:
     GradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
   }
 
-  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
+  virtual void episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
   {
     if (learningUpdateFrequency == perEpisode)
       applyGradientSum(context, inference);
     GradientDescentOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+  virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
     {applyGradientSum(context, inference); GradientDescentOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);}
 
 protected:

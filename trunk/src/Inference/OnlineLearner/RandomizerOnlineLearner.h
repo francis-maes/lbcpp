@@ -22,18 +22,18 @@ public:
     : UpdatableOnlineLearner(randomizationFrequency) {}
   RandomizerOnlineLearner() {}
  
-  virtual void subStepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void subStepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     jassert(false); // not supported yet
   }
 
-  virtual void stepFinishedCallback(InferenceContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+  virtual void stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     storeExample(input, supervision, prediction);
     updateAfterStep(context, inference);
   }
  
-  virtual void episodeFinishedCallback(InferenceContext& context, const InferencePtr& inference)
+  virtual void episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
   {
     if (updateFrequency >= perStepMiniBatch + 1)
       update(context, inference); // flush remaining examples
@@ -41,7 +41,7 @@ public:
       UpdatableOnlineLearner::episodeFinishedCallback(context, inference);
   }
 
-  virtual void passFinishedCallback(InferenceContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+  virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {
     if (updateFrequency == perPass)
     {
@@ -51,7 +51,7 @@ public:
     InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
   }
 
-  virtual void update(InferenceContext& context, const InferencePtr& inference)
+  virtual void update(ExecutionContext& context, const InferencePtr& inference)
   {
     std::vector<Example> examples;
     getExamplesAndClear(examples);

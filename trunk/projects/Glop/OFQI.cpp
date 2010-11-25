@@ -9,7 +9,7 @@ extern void declareGlopClasses(ExecutionContext& context);
 class MyInferenceCallback : public InferenceCallback
 {
 public:
-  virtual void preInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void preInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, Variable& input, Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
@@ -22,7 +22,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
   }
 };
@@ -31,8 +31,7 @@ public:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize();
-  InferenceContextPtr context = multiThreadedInferenceContext(8);
-  context->appendCallback(consoleExecutionCallback());
+  ExecutionContextPtr context = defaultConsoleExecutionContext();
   declareGlopClasses(*context);
 
   // create linear regressor
@@ -57,16 +56,16 @@ int main(int argc, char* argv[])
 
   // create context and train
   context->appendCallback(new MyInferenceCallback());
-  context->train(ofqiInference, trainingSet, ContainerPtr());
+  train(*context, ofqiInference, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));
-  context->evaluate(ofqiInference, trainingSet, evaluator);
+  evaluate(*context, ofqiInference, trainingSet, evaluator);
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
   Inference::ReturnCode returnCode = Inference::finishedReturnCode;
-  Variable myPrediction = context->predict(regressor, Variable::pair(1.0, 0.0));
+  Variable myPrediction = predict(*context, regressor, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

@@ -15,7 +15,7 @@ using namespace lbcpp;
 class SavePredictionFunction : public Function
 {
 public:
-  SavePredictionFunction(const InferencePtr inference, const File& output) : inference(inference), context(singleThreadedInferenceContext())
+  SavePredictionFunction(const InferencePtr inference, const File& output) : inference(inference)
   {
     if (output.exists())
       output.deleteFile();
@@ -34,16 +34,13 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::cout << "." << std::flush;
-    Variable res = this->context->predict(inference, input);
+    Variable res = predict(context, inference, input);
     *o << res.toShortString() << "\n";
     return input;
   }
 
 protected:
   InferencePtr inference;
-
-private:
-  InferenceContextPtr context;
   OutputStream* o;
 };
 

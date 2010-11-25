@@ -23,7 +23,7 @@ public:
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
   {
     if (stack->getCurrentInference() == inference)
     {

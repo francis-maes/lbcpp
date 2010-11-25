@@ -22,7 +22,7 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return staticDecoratorInferenceClass;}
 
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode)
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
     const StaticDecoratorInferencePtr& targetInference = learnerInput->getTargetInference().staticCast<StaticDecoratorInference>();
@@ -43,7 +43,7 @@ public:
   }
 
 protected:
-  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(InferenceContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
   {
     const StaticDecoratorInferencePtr& targetInference = input->getTargetInference().staticCast<StaticDecoratorInference>();
     const InferencePtr& targetSubInference = targetInference->getSubInference();
@@ -66,7 +66,7 @@ protected:
 class PostProcessInferenceLearner : public DecoratorInferenceLearner
 {
 protected:
-  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(InferenceContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
+  virtual InferenceBatchLearnerInputPtr createSubLearnerInput(ExecutionContext& context, const InferenceBatchLearnerInputPtr& input, ReturnCode& returnCode)
   {
     const InferencePtr& targetSubInference = input->getTargetInference().staticCast<StaticDecoratorInference>()->getSubInference();
     return new InferenceBatchLearnerInput(targetSubInference, input->getTrainingExamples(), input->getValidationExamples());

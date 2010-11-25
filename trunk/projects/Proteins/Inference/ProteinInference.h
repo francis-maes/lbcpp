@@ -49,10 +49,10 @@ class ProteinSequentialInference : public VectorSequentialInference, public Prot
 public:
   ProteinSequentialInference(const String& name = T("Protein"));
 
-  virtual SequentialInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual void prepareSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
-  virtual void finalizeSubInference(InferenceContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode);
+  virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
+  virtual void finalizeSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index, ReturnCode& returnCode);
+  virtual Variable finalizeInference(ExecutionContext& context, SequentialInferenceStatePtr finalState, ReturnCode& returnCode);
 };
 
 typedef ReferenceCountedObjectPtr<ProteinSequentialInference> ProteinSequentialInferencePtr;
@@ -64,8 +64,8 @@ class ProteinParallelInference : public VectorParallelInference, public ProteinI
 public:
   ProteinParallelInference(const String& name = T("Protein"));
 
-  virtual ParallelInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
+  virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state, ReturnCode& returnCode);
 };
 
 typedef ReferenceCountedObjectPtr<ProteinParallelInference> ProteinParallelInferencePtr;
@@ -88,8 +88,8 @@ public:
     {return decorated;}
 
   // DecoratorInference
-  virtual DecoratorInferenceStatePtr prepareInference(InferenceContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
-  virtual Variable finalizeInference(InferenceContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision, ReturnCode& returnCode);
+  virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState, ReturnCode& returnCode);
 
   // Inference
   virtual TypePtr getInputType() const

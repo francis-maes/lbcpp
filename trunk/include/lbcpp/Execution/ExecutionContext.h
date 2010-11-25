@@ -96,6 +96,12 @@ public:
   void setCallbacks(const std::vector<ExecutionCallbackPtr>& callbacks)
     {this->callbacks = callbacks;}
 
+  size_t getNumCallbacks() const
+    {return callbacks.size();}
+
+  ExecutionCallbackPtr getCallback(size_t index) const
+    {jassert(index < callbacks.size()); return callbacks[index];}
+
 protected:
   friend class ExecutionContextClass;
 
@@ -107,7 +113,7 @@ extern ExecutionContextPtr silentExecutionContext;
 extern ExecutionContextPtr singleThreadedExecutionContext();
 extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 
-extern ExecutionContextPtr defaultConsoleExecutionContext();
+extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
 }; /* namespace lbcpp */
 

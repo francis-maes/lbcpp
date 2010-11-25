@@ -46,8 +46,7 @@ class PredictFunction : public Function
 {
 public:
   PredictFunction(InferencePtr inference)
-    : inference(inference), context(context)
-    {jassert(inference && context);}
+    : inference(inference) {}
   
   virtual TypePtr getInputType() const
     {return inference->getInputType();}
@@ -56,11 +55,10 @@ public:
     {return inference->getOutputType(inputType);}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return this->context->predict(inference, input);}
+    {return predict(context, inference, input);}
   
 protected:
   InferencePtr inference;
-  InferenceContextPtr context;
 };
 
 // Protein -> Protein (with input data only)

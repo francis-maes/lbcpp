@@ -372,7 +372,7 @@ protected:
     ExampleBoincWorker* worker;
     size_t counter;
 
-    virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+    virtual void postInferenceCallback(ExecutionContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
     {
       String inferenceName = stack->getCurrentInference()->getName();
       if (inferenceName.startsWith(T("LearningPass")))
@@ -390,15 +390,13 @@ protected:
     }
   };
 
-  virtual bool runWorker(ExecutionContext& c)
+  virtual bool runWorker(ExecutionContext& context)
   {
-    InferenceContext& context = (InferenceContext& )c;
-
     context.appendCallback(new Callback(this));
-    context.train(inference, trainingProteins, ContainerPtr());
+    train(context, inference, trainingProteins, ContainerPtr());
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    context.evaluate(inference, testingProteins, evaluator);
+    evaluate(context, inference, testingProteins, evaluator);
     context.informationCallback(T("Evaluation: ") + evaluator->toString());
 
     testAccuracy = evaluator->getEvaluatorForTarget(context, T("secondaryStructure"))->getDefaultScore();
@@ -429,7 +427,7 @@ int main(int argc, char* argv[])
   }
 
   lbcpp::initialize();
-  InferenceContextPtr context = singleThreadedExecutionContext();
+  ExecutionContextPtr context = defaultConsoleExecutionContext(true);
   declareProteinClasses(*context);
 
   File workingDirectory = File::getCurrentWorkingDirectory();
