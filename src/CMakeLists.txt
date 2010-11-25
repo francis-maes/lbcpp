@@ -138,7 +138,7 @@ SET(LBCPP_EXECUTION_SOURCES
   ../include/lbcpp/Execution/predeclarations.h
   ../include/lbcpp/Execution/WorkUnit.h
   Execution/WorkUnit.cpp
-  ../include/lbcpp/Execution/FunctionStack.h
+  ../include/lbcpp/Execution/ExecutionStack.h
   ../include/lbcpp/Execution/ExecutionCallback.h
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp

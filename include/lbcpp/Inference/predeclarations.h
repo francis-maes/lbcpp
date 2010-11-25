@@ -62,8 +62,8 @@ typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInfer
 class InferenceCallback;
 typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
 
-class FunctionStack;
-typedef ReferenceCountedObjectPtr<FunctionStack> FunctionStackPtr;
+class ExecutionStack;
+typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
 
 class InferenceResultCache;
 typedef ReferenceCountedObjectPtr<InferenceResultCache> InferenceResultCachePtr;

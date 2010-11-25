@@ -6,11 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/Data/Container.h>
+#include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
-#include <lbcpp/Data/Container.h>
 using namespace lbcpp;
 
 /*
@@ -40,11 +41,12 @@ bool InferenceWorkUnit::run(ExecutionContext& context)
 */
 static bool internalPreInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
 {
+  context.getStack()->push(inference);
   for (size_t i = 0; i < context.getNumCallbacks(); ++i)
   {
     InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
     if (callback)
-      callback->preInferenceCallback(context, FunctionStackPtr(), input, supervision, output);
+      callback->preInferenceCallback(context, input, supervision, output);
   }
   return true;
 }
@@ -55,8 +57,9 @@ static bool internalPostInference(ExecutionContext& context, const InferencePtr&
   {
     InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
     if (callback)
-      callback->postInferenceCallback(context, FunctionStackPtr(), input, supervision, output);
+      callback->postInferenceCallback(context, input, supervision, output);
   }
+  context.getStack()->pop();
   return true;
 }
 

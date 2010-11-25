@@ -5,7 +5,7 @@
   <include file="lbcpp/Data/Vector.h"/>
   <include file="lbcpp/Execution/ExecutionContext.h"/>
   <include file="lbcpp/Execution/WorkUnit.h"/>
-  <include file="lbcpp/Execution/FunctionStack.h"/>
+  <include file="lbcpp/Execution/ExecutionStack.h"/>
   <import name="ExecutionCallback"/>
   <import name="ExecutionContext"/>
 
@@ -18,7 +18,7 @@
     </class>
 
     <!-- Function Stack -->
-    <class name="FunctionStack">
+    <class name="ExecutionStack">
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
 

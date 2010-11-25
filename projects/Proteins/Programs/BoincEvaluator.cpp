@@ -372,9 +372,9 @@ protected:
     ExampleBoincWorker* worker;
     size_t counter;
 
-    virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+    virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
     {
-      String inferenceName = stack->getCurrentInference()->getName();
+      String inferenceName = context.getCurrentFunction()->getName();
       if (inferenceName.startsWith(T("LearningPass")))
       {
         ++counter;

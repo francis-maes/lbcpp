@@ -14,7 +14,7 @@
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/Execution/FunctionStack.h>
+# include <lbcpp/Execution/ExecutionStack.h>
 
 namespace lbcpp
 {
@@ -44,9 +44,9 @@ protected:
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+    virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
     {
-      const InferencePtr& inference = stack->getCurrentInference();
+      InferencePtr inference = context.getCurrentFunction().staticCast<Inference>();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
       if (!onlineLearner || onlineLearner->isLearningStopped() || !supervision.exists())
         return;
@@ -55,9 +55,9 @@ protected:
       onlineLearner->stepFinishedCallback(context, inference, input, supervision, output);
 
       // call subStepFinishedCallback
-      for (int i = (int)stack->getDepth() - 2; i >= 0; --i)
+      for (int i = (int)context.getStackDepth() - 2; i >= 0; --i)
       {
-        const InferencePtr& parentInference = stack->getInference(i);
+        const InferencePtr& parentInference = context.getStack()->getInference(i);
         const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
         if (parentLearner && !parentLearner->isLearningStopped())
           parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);

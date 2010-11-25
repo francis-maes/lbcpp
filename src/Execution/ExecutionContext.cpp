@@ -7,13 +7,14 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/ExecutionContext.h>
-#include <lbcpp/Execution/FunctionStack.h>
+#include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Data/Variable.h>
 using namespace lbcpp;
 
-FunctionPtr FunctionStack::nullFunction;
+FunctionPtr ExecutionStack::nullFunction;
 
 ExecutionContext::ExecutionContext()
+  : stack(new ExecutionStack())
 {
   context = this;
 }
@@ -86,6 +87,12 @@ void ExecutionContext::removeCallback(const ExecutionCallbackPtr& callback)
 void ExecutionContext::clearCallbacks()
   {callbacks.clear();}
 
+size_t ExecutionContext::getStackDepth() const
+  {return stack->getDepth();}
+
+const FunctionPtr& ExecutionContext::getCurrentFunction() const
+  {return stack->getCurrentInference();}
+
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(workUnit);
@@ -130,6 +137,8 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
   return variable.isNil() || checkInheritance(variable.getType(), baseType);
 }
 #endif // JUCE_DEBUG
+
+///////////////////////////
 
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
 {

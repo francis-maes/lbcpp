@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+class Function;
+typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
+
 class ExecutionCallback;
 typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;
 

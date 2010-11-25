@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_CONTEXT_CANCEL_AFTER_STEP_CALLBACK_H_
 
 # include <lbcpp/Inference/InferenceCallback.h>
-# include <lbcpp/Execution/FunctionStack.h>
+# include <lbcpp/Execution/ExecutionStack.h>
 
 namespace lbcpp
 {
@@ -22,7 +22,7 @@ public:
     : stepName(step->getName()) {}
   CancelAfterStepCallback() {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const FunctionStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
     jassert(false); // not implemented anymore
     //if (stack->getCurrentInference()->getName() == stepName)

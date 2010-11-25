@@ -168,7 +168,7 @@ public:
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
     int numRemainingWorkUnits = workUnits.size();
     for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], numRemainingWorkUnits, 0);
+      queue->push(workUnits[i], numRemainingWorkUnits, getStackDepth());
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }
