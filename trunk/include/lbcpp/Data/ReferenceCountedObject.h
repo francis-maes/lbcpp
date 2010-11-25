@@ -86,6 +86,7 @@ protected:
   template<class T>
   friend struct StaticallyAllocatedReferenceCountedObjectPtr; /*!< */
   friend struct VariableValue;
+  friend class ExecutionContext;
 
   enum {staticAllocationRefCountValue = -0x7FFFFFFF};
 
