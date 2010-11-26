@@ -54045,6 +54045,9 @@ public:
 
     juce_UseDebuggingNewOperator
 
+      // francis: public 
+      static void clearDefaultLookAndFeel() throw(); // called at shutdown
+
 protected:
     // xxx the following methods are only here to cause a compiler error, because they've been
     // deprecated or their parameters have changed. Hopefully these definitions should cause an
@@ -54057,7 +54060,6 @@ protected:
 
 private:
     friend void JUCE_PUBLIC_FUNCTION shutdownJuce_GUI();
-    static void clearDefaultLookAndFeel() throw(); // called at shutdown
 
     Array <int> colourIds;
     Array <Colour> colours;

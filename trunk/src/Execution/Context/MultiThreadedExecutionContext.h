@@ -10,6 +10,8 @@
 # define LBCPP_EXECUTION_CONTEXT_MULTI_THREADED_H_
 
 # include <lbcpp/Execution/ExecutionContext.h>
+# include <lbcpp/Execution/ExecutionStack.h>
+# include "SubExecutionContext.h"
 # include <list>
 
 namespace lbcpp
@@ -74,7 +76,7 @@ WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
 }
 
 class WorkUnitThread;
-extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr parentContext, WorkUnitThread* thread);
+extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContext& parentContext, WorkUnitThread* thread);
 
 /*
 ** WorkUnitThread
@@ -82,8 +84,8 @@ extern ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr paren
 class WorkUnitThread : public Thread
 {
 public:
-  WorkUnitThread(ExecutionContextPtr parentContext, size_t number, WaitingWorkUnitQueuePtr waitingQueue)
-    : Thread(T("WorkUnitThread ") + String((int)number + 1)), parentContext(parentContext), waitingQueue(waitingQueue)
+  WorkUnitThread(ExecutionContext& parentContext, size_t number, WaitingWorkUnitQueuePtr waitingQueue)
+    : Thread(T("WorkUnitThread ") + String((int)number + 1)), waitingQueue(waitingQueue)
   {
     context = threadOwnedExecutionContext(parentContext, this);
   }
@@ -109,7 +111,6 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 private:
-  ExecutionContextPtr parentContext;
   ExecutionContextPtr context;
   WaitingWorkUnitQueuePtr waitingQueue;
 
@@ -170,11 +171,11 @@ typedef ReferenceCountedObjectPtr<WorkUnitThreadVector> WorkUnitThreadVectorPtr;
 /*
 ** ThreadOwnedExecutionContext
 */
-class ThreadOwnedExecutionContext : public DecoratorExecutionContext
+class ThreadOwnedExecutionContext : public SubExecutionContext
 {
 public:
-  ThreadOwnedExecutionContext(ExecutionContextPtr parentContext, WorkUnitThread* thread)
-    : DecoratorExecutionContext(parentContext), thread(thread) {}
+  ThreadOwnedExecutionContext(ExecutionContext& parentContext, WorkUnitThread* thread)
+    : SubExecutionContext(parentContext), thread(thread) {}
   ThreadOwnedExecutionContext() : thread(NULL) {}
 
   virtual bool isMultiThread() const
@@ -182,6 +183,9 @@ public:
 
   virtual bool isCanceled() const
     {return thread->threadShouldExit();}
+
+  virtual bool isPaused() const
+    {return false;}
  
   virtual bool run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
@@ -202,7 +206,7 @@ protected:
   WorkUnitThread* thread;
 };
 
-ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr parentContext, WorkUnitThread* thread)
+ExecutionContextPtr threadOwnedExecutionContext(ExecutionContext& parentContext, WorkUnitThread* thread)
   {return ExecutionContextPtr(new ThreadOwnedExecutionContext(parentContext, thread));}
 
 /*
@@ -211,7 +215,7 @@ ExecutionContextPtr threadOwnedExecutionContext(ExecutionContextPtr parentContex
 class WorkUnitThreadPool : public Object
 {
 public:
-  WorkUnitThreadPool(ExecutionContextPtr parentContext, size_t numThreads)
+  WorkUnitThreadPool(ExecutionContext& parentContext, size_t numThreads)
     : queue(new WaitingWorkUnitQueue()), threads(new WorkUnitThreadVector(numThreads))
   {
     for (size_t i = 0; i < numThreads; ++i)
@@ -246,8 +250,7 @@ class MultiThreadedExecutionContext : public ExecutionContext
 {
 public:
   MultiThreadedExecutionContext(size_t numThreads)
-    {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(refCountedPointerFromThis(this), numThreads));}
-
+    {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));}
   MultiThreadedExecutionContext() {}
 
   virtual bool isMultiThread() const

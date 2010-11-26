@@ -8,8 +8,8 @@
       <constructor/>
     </class>
     
-    <class name="DecoratorExecutionContext" base="ExecutionContext" abstract="yes"/>
-    <class name="ThreadOwnedExecutionContext" base="DecoratorExecutionContext"/>
+    <class name="SubExecutionContext" base="ExecutionContext" abstract="yes"/>
+    <class name="ThreadOwnedExecutionContext" base="SubExecutionContext"/>
 
     <class name="MultiThreadedExecutionContext" base="ExecutionContext">
       <constructor arguments="size_t numThreads"/>

@@ -40,6 +40,8 @@ class UserInterfaceThread : public Thread
 public:
   UserInterfaceThread()
     : Thread(T("Juce Message Thread")), commandManager(NULL), initialized(false) {}
+  virtual ~UserInterfaceThread()
+    {}
 
   virtual void run()
   {
@@ -54,8 +56,18 @@ public:
       if (!messageManager->runDispatchLoopUntil(100) && juce::Desktop::getInstance().getNumComponents() == 0)
         break;
 
+    juce::Desktop& desktop = juce::Desktop::getInstance();
+    jassert(!desktop.getNumComponents());
+
     deleteAndZero(commandManager);
-    juce::shutdownJuce_GUI();
+#if JUCE_MAC
+    const ScopedAutoReleasePool pool;
+#endif
+    {
+      juce::DeletedAtShutdown::deleteAll();
+      juce::LookAndFeel::clearDefaultLookAndFeel();
+    }
+    delete juce::MessageManager::getInstance();
   }
 
   juce::ApplicationCommandManager& getCommandManager()
@@ -96,7 +108,7 @@ void UserInterfaceManager::shutdown()
 
 void* UserInterfaceManager::callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData)
 {
-  ensureIsInitialized();
+  jassert(isRunning());
   return juce::MessageManager::getInstance()->callFunctionOnMessageThread(callback, userData);
 }
 
@@ -171,7 +183,7 @@ public:
   }
   
   virtual void closeButtonPressed()
-    {delete this;}
+    {setVisible(false);}
 };
 
 class UserInterfaceExecutionCallback : public CompositeExecutionCallback
@@ -184,11 +196,12 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     ExecutionCallback::initialize(context);
+    userInterfaceManager.ensureIsInitialized();
     userInterfaceManager.callFunctionOnMessageThread(createWindowFunction, this);
   }
 
   void shutdown()
-    {userInterfaceManager.callFunctionOnMessageThread(destroyWindowFunction, this);}
+    {if (mainWindow) userInterfaceManager.callFunctionOnMessageThread(destroyWindowFunction, this);}
 
 private:
   LBCppMainWindow* mainWindow;
@@ -210,11 +223,14 @@ private:
   {
     UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
     pthis->clearCallbacks();
-    jassert(pthis->mainWindow);
-    deleteAndZero(pthis->mainWindow);
+    if (pthis->mainWindow)
+      deleteAndZero(pthis->mainWindow);
+    pthis->content = NULL;
     return NULL;
   }
 };
+
+typedef ReferenceCountedObjectPtr<UserInterfaceExecutionCallback> UserInterfaceExecutionCallbackPtr;
 
 //////////////////////////////////////
 //////////////////////////////////////
@@ -229,13 +245,13 @@ public:
   {
     context.statusCallback(T("Working..."));
 
-    context.errorCallback(T("My Error"));
+    //context.errorCallback(T("My Error"));
     context.warningCallback(T("My Warning"));
     context.informationCallback(T("My Information"));
 
     for (size_t i = 0; i < 10; ++i)
     {
-      Thread::sleep(1000);
+      Thread::sleep(10);
       context.progressCallback(i + 1.0, 10.0, T("epochs"));
     }
 
@@ -244,10 +260,12 @@ public:
   }
 };
 
+UserInterfaceExecutionCallbackPtr userInterfaceCallback;
+
 ExecutionContextPtr createExecutionContext()
 {
   ExecutionContextPtr res = defaultConsoleExecutionContext();
-  res->appendCallback(new UserInterfaceExecutionCallback());
+  res->appendCallback(userInterfaceCallback = UserInterfaceExecutionCallbackPtr(new UserInterfaceExecutionCallback()));
   return res;
 }
 
@@ -257,6 +275,10 @@ int main(int argc, char* argv[])
   ExecutionContextPtr context = createExecutionContext();
   context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
   int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
+  userInterfaceCallback->shutdown();
   userInterfaceManager.shutdown();
+  context = ExecutionContextPtr();
+  juce::shutdownJuce_NonGUI();
+  lbcpp::deinitialize();
   return res;
 }
