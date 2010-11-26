@@ -129,7 +129,7 @@
     <class name="Protein" base="NameableObject">
       <!-- Primary Structure -->
       <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
-      <variable type="ObjectVector[DiscreteProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+      <variable type="ObjectVector[EnumerationProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
       
       <!-- Secondary Structure -->
       <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
