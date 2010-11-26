@@ -1,93 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Data" directory="Data">
-  <import name="Type" pre="yes"/>
   <import name="Stream"/>
   <import name="Container"/>
 
-  <include file="lbcpp/Data/Pair.h"/>
-  <include file="lbcpp/Data/DynamicObject.h"/>
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
   <include file="lbcpp/Data/Cache.h"/>
 
   <namespace name="lbcpp">
     
-    <!-- Pair -->
-    <template name="Pair" base="Object">
-      <parameter name="firstType" type="Variable"/>
-      <parameter name="secondType" type="Variable"/>
-
-      <variable type="firstType" name="first"/>
-      <variable type="secondType" name="second"/>
-
-      <code>
-        virtual size_t getNumElements(const VariableValue&amp; value) const
-          {return 2;}
-        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
-        {
-          const PairPtr&amp; pair = value.getObjectAndCast&lt;Pair&gt;();
-          return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
-        }
-        virtual String getElementName(const VariableValue&amp; value, size_t index) const
-          {return index ? T("second") : T("first");}
-      </code>
-  
-    </template>
-    
-    <!-- Dynamic Object -->
-    <class name="DynamicClass" base="DefaultClass" abstract="yes">
-      <code>
-      virtual void destroy(VariableValue&amp; value) const
-        {Type::destroy(value);}
-
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {Type::copy(dest, source);}
-      </code>
-    </class>
-    
-    <class name="UnnamedDynamicClass" base="DynamicClass">
-      <code>
-      virtual void destroy(VariableValue&amp; value) const
-        {Type::destroy(value);}
-
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {Type::copy(dest, source);}
-      </code>
-    </class>
-
-    <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
-      <parameter name="enumeration" type="EnumValue"/>
-      <code>
-        virtual void createObjectVariables()
-        {
-          jassert(getNumTemplateArguments() == 1);
-          EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
-          jassert(enumeration);
-          size_t n = enumeration->getNumElements();
-          for (size_t i = 0; i &lt; n; ++i)
-            addVariable(*silentExecutionContext, doubleType, enumeration->getElementName(i));
-        }
-      </code>
-    </template>
-
-    <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
-      <parameter name="inputClass" type="Object"/>
-      <parameter name="outputVariablesType" type="Variable"/>
-      <code>
-        virtual void createObjectVariables()
-        {
-          jassert(getNumTemplateArguments() == 2);
-          ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
-          TypePtr outputVariablesType = getTemplateArgument(1);
-          jassert(inputClass);
-          size_t n = inputClass->getObjectNumVariables();
-          for (size_t i = 0; i &lt; n; ++i)
-            addVariable(*silentExecutionContext, outputVariablesType, inputClass->getObjectVariableName(i));
-        }
-      </code>
-    </template>
-
     <!-- Random Generator -->
     <class name="RandomGenerator">
       <variable type="Integer" name="seed"/>

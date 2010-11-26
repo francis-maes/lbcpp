@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Type.h>
-#include <lbcpp/Data/Variable.h>
+#include <lbcpp/Core/Type.h>
+#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/Vector.h>
-#include <lbcpp/Data/XmlSerialisation.h>
 #include <map>
 using namespace lbcpp;
 

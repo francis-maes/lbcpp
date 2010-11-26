@@ -9,8 +9,8 @@
 #ifndef LBCPP_DATA_OBJECT_OBJECT_DOUBLE_H_
 # define LBCPP_DATA_OBJECT_OBJECT_DOUBLE_H_
 
-# include <lbcpp/Data/DynamicObject.h>
-# include <lbcpp/Data/XmlSerialisation.h>
+# include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
 {

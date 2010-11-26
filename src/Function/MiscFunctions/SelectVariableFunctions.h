@@ -10,7 +10,7 @@
 # define LBCPP_DATA_FUNCTION_SELECT_PAIR_FIELDS_H_
 
 # include <lbcpp/Function/Function.h>
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 
 namespace lbcpp
 {

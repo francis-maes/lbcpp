@@ -27,8 +27,8 @@
 #ifndef LBCPP_ITERATION_FUNCTION_H_
 # define LBCPP_ITERATION_FUNCTION_H_
 
-# include "../Data/predeclarations.h"
-# include "../Data/Variable.h"
+# include "predeclarations.h"
+# include "../Core/Variable.h"
 
 namespace lbcpp
 {

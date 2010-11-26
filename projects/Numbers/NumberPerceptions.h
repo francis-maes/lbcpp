@@ -10,7 +10,7 @@
 # define LBCPP_NUMBERS_PERCEPTION_H_
 
 # include <lbcpp/Data/RandomGenerator.h>
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 

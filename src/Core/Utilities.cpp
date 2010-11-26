@@ -6,8 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Utilities.h>
-#include <lbcpp/Function/IterationFunction.h>
+#include <lbcpp/Core/Utilities.h>
 #include <iostream>
 #include <fstream>
 using namespace lbcpp;

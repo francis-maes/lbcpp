@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_TEMPLATE_TYPE_H_
-# define LBCPP_DATA_TEMPLATE_TYPE_H_
+#ifndef LBCPP_CORE_TEMPLATE_TYPE_H_
+# define LBCPP_CORE_TEMPLATE_TYPE_H_
 
 # include "Type.h"
 
@@ -109,4 +109,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_TEMPLATE_TYPE_H_
+#endif // !LBCPP_CORE_TEMPLATE_TYPE_H_

@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_CONTAINER_H_
 # define LBCPP_OBJECT_CONTAINER_H_
 
-# include "Variable.h"
+# include "../Core/Variable.h"
 # include "../Function/Function.h"
 
 namespace lbcpp

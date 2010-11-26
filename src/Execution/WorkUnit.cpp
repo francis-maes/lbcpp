@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Variable.h>
+#include <lbcpp/Core/Variable.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;

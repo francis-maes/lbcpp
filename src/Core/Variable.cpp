@@ -5,10 +5,10 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Data/Variable.h>
-#include <lbcpp/Data/Pair.h>
+#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Pair.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/Container.h>
-#include <lbcpp/Data/XmlSerialisation.h>
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)

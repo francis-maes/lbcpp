@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_SECONDARY_STRUCTURE_H_
 # define LBCPP_PROTEINS_SECONDARY_STRUCTURE_H_
 
-# include <lbcpp/Data/Type.h>
+# include <lbcpp/Core/Type.h>
 
 namespace lbcpp
 {

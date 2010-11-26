@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_XML_SERIALISATION_H_
-# define LBCPP_DATA_XML_SERIALISATION_H_
+#ifndef LBCPP_CORE_XML_SERIALISATION_H_
+# define LBCPP_CORE_XML_SERIALISATION_H_
 
 # include "Variable.h"
 
@@ -158,4 +158,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_XML_SERIALISATION_H_
+#endif // !LBCPP_CORE_XML_SERIALISATION_H_

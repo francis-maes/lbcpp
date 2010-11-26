@@ -10,7 +10,7 @@
 # define LBCPP_DATA_PERCEPTION_H_
 
 # include "../Data/Vector.h"
-# include "../Data/DynamicObject.h"
+# include "../Core/DynamicObject.h"
 # include "../Data/RandomVariable.h"
 # include "../Function/Function.h"
 

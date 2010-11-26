@@ -21,12 +21,12 @@ public:
   struct Entry
   {
     Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone)
-      : workUnit(workUnit), stack(stack), counterToDecrementWhenDone(counterToDecrementWhenDone) {}
-    Entry() : counterToDecrementWhenDone(*(int* )0) {}
+      : workUnit(workUnit), stack(stack), counterToDecrementWhenDone(&counterToDecrementWhenDone) {}
+    Entry() : counterToDecrementWhenDone(NULL) {}
 
     WorkUnitPtr workUnit;
     ExecutionStackPtr stack;
-    int& counterToDecrementWhenDone;
+    int* counterToDecrementWhenDone;
 
     bool exists() const
       {return workUnit;}
@@ -120,7 +120,7 @@ private:
 
     context->setStack(ExecutionStackPtr(new ExecutionStack(entry.stack)));
     context->run(entry.workUnit);
-    juce::atomicDecrement(entry.counterToDecrementWhenDone);
+    juce::atomicDecrement(*entry.counterToDecrementWhenDone);
     return true;
   }
 };

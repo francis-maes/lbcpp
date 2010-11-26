@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Pair.h>
+#include <lbcpp/Core/Pair.h>
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>

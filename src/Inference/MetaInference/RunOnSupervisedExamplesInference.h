@@ -12,7 +12,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 
 namespace lbcpp
 {

@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_VARIABLE_H_
-# define LBCPP_OBJECT_VARIABLE_H_
+#ifndef LBCPP_CORE_VARIABLE_H_
+# define LBCPP_CORE_VARIABLE_H_
 
 # include "Object.h"
 # include "../Execution/ExecutionContext.h"
@@ -240,4 +240,4 @@ inline Variable probability(double p)
 
 # include "impl/Variable.hpp"
 
-#endif // !LBCPP_OBJECT_VARIABLE_H_
+#endif // !LBCPP_CORE_VARIABLE_H_

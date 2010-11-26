@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_STOCHASTIC_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>

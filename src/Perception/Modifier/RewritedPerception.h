@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_REWRITED_H_
 
 # include <lbcpp/Perception/PerceptionRewriter.h>
-# include <lbcpp/Data/XmlSerialisation.h>
+# include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
 {

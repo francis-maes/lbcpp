@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/TemplateType.h>
-#include <lbcpp/Data/Variable.h>
+#include <lbcpp/Core/TemplateType.h>
+#include <lbcpp/Core/Variable.h>
 #include <lbcpp/Data/Vector.h>
 using namespace lbcpp;
 

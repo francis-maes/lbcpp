@@ -8,7 +8,7 @@
 
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/NumericalLearning/LossFunctions.h>
-#include "../Data/Object/DenseDoubleObject.h"
+#include "../Core/Object/DenseDoubleObject.h"
 #include <algorithm>
 using namespace lbcpp;
 

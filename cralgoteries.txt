@@ -1,8 +1,14 @@
 
+* ProteinInferenceEvaluatorProgram.cpp il y a peut-être des classes utiles à importer dans lbcpp
+
 Execution:
  * New directory lbcpp/core with Variable, Object, Type, Utilites, Function
  
  * Faire que train/evaluate/predict soit des fonctions de Inference
+ 
+ * UserInterfaceExecutionContext
+     - single thread
+     - multi thread
  
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
  * SandBox: dériver de WorkUnit

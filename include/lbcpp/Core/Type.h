@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_TYPE_H_
-# define LBCPP_DATA_TYPE_H_
+#ifndef LBCPP_CORE_TYPE_H_
+# define LBCPP_CORE_TYPE_H_
 
 # include "Object.h"
 # include "../Execution/ExecutionContext.h"
@@ -318,4 +318,4 @@ typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_TYPE_H_
+#endif // !LBCPP_CORE_TYPE_H_

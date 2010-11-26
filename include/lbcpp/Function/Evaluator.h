@@ -9,7 +9,7 @@
 #ifndef LBCPP_EVALUATOR_H_
 # define LBCPP_EVALUATOR_H_
 
-# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Core/Variable.h>
 # include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp

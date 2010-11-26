@@ -8,7 +8,7 @@
 
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
-#include <lbcpp/Data/Variable.h>
+#include <lbcpp/Core/Variable.h>
 using namespace lbcpp;
 
 /*

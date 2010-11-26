@@ -17,48 +17,52 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: predeclarations.h              | Data Predeclarations            |
+| Filename: NilType.h                      | Nil Type                        |
 | Author  : Francis Maes                   |                                 |
-| Started : 13/03/2009 00:01               |                                 |
+| Started : 23/08/2010 17:27               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_PREDECLARATIONS_H_
-# define LBCPP_DATA_PREDECLARATIONS_H_
+#ifndef LBCPP_DATA_TYPE_NIL_H_
+# define LBCPP_DATA_TYPE_NIL_H_
 
-# include "../Core/predeclarations.h"
+# include <lbcpp/Core/Variable.h>
 
 namespace lbcpp
 {
 
-class Pair;
-typedef ReferenceCountedObjectPtr<Pair> PairPtr;
+class NilType : public Type
+{
+public:
+  NilType(const String& name, TypePtr baseType)
+    : Type(name, baseType) {}
+  virtual ~NilType() {}
 
-class Stream;
-typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
+  virtual VariableValue create(ExecutionContext& context) const
+    {return VariableValue();}
 
-class Container;
-typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
+  virtual VariableValue createFromXml(XmlImporter& importer) const
+    {return VariableValue();}
 
-class Vector;
-typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
+  virtual void destroy(VariableValue& value) const
+    {}
 
-class SymmetricMatrix;
-typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
+  virtual void copy(VariableValue& dest, const VariableValue& source) const
+    {dest = VariableValue();}
 
-class Consumer;
-typedef ReferenceCountedObjectPtr<Consumer> ConsumerPtr;
+  virtual String toString(const VariableValue& value) const
+    {return T("Nil");}
 
-class RandomGenerator;
-typedef ReferenceCountedObjectPtr<RandomGenerator> RandomGeneratorPtr;
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
+    {}
 
-class Cache;
-typedef ReferenceCountedObjectPtr<Cache> CachePtr;
+  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+    {return 0;}
 
-class AverageValuesCache;
-typedef ReferenceCountedObjectPtr<AverageValuesCache> AverageValuesCachePtr;
+  lbcpp_UseDebuggingNewOperator
+};
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_PREDECLARATIONS_H_
+#endif // !LBCPP_DATA_TYPE_NIL_H_

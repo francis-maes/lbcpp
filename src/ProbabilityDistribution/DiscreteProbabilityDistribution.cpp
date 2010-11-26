@@ -6,10 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/RandomGenerator.h>
-#include <lbcpp/Data/XmlSerialisation.h>
-
+#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 using namespace lbcpp;
 
 /*

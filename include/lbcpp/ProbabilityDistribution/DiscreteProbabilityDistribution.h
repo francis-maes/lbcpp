@@ -9,9 +9,9 @@
 #ifndef LBCPP_DISCRETE_PROBABILITY_DISTRIBUTION_H_
 # define LBCPP_DISCRETE_PROBABILITY_DISTRIBUTION_H_
 
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
-# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Core/Variable.h>
 # include <lbcpp/Data/RandomVariable.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 
 namespace lbcpp
 {
@@ -22,6 +22,7 @@ public:
   DiscreteProbabilityDistribution(ClassPtr thisClass) : ProbabilityDistribution(thisClass) {}
   DiscreteProbabilityDistribution() : ProbabilityDistribution() {}
 
+  juce_UseDebuggingNewOperator
 };
 
 class BernoulliDistribution : public DiscreteProbabilityDistribution

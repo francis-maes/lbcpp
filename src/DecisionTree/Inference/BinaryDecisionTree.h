@@ -9,8 +9,8 @@
 #ifndef LBCPP_INFERENCE_EXTRA_TREE_BINARY_DECISION_TREE_H_
 # define LBCPP_INFERENCE_EXTRA_TREE_BINARY_DECISION_TREE_H_
 
-# include <lbcpp/Data/Object.h>
-# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Core/Object.h>
+# include <lbcpp/Core/Variable.h>
 # include <lbcpp/Function/Predicate.h>
 # include "BinaryDecisionTreeSplitter.h"
 

@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include "CartesianPositionVector.h"
-#include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 using namespace lbcpp;
 
 void CartesianPositionVector::movePosition(size_t index, const impl::Vector3& delta)

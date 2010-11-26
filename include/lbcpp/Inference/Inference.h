@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_H_
 
 # include "predeclarations.h"
-# include "../Data/Variable.h"
+# include "../Core/Variable.h"
 # include "../Data/Container.h"
 # include "../Data/RandomVariable.h"
 

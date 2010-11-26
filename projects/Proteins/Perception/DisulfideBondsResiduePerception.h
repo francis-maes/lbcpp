@@ -10,7 +10,7 @@
 # define LBCPP_PROTEIN_PERCEPTION_DISULFIDE_BONDS_RESIDUE_H_
 
 # include "ProteinPerception.h"
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 
 namespace lbcpp
 {
