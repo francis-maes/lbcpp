@@ -2,7 +2,6 @@
 
 <file name="Inference" directory="Inference">
   <include file="lbcpp/Inference/Inference.h"/>
-  <include file="lbcpp/Inference/InferenceContext.h"/>
   <include file="lbcpp/Inference/DecoratorInference.h"/>
   <include file="lbcpp/Inference/SequentialInference.h"/>
   <include file="lbcpp/Inference/ParallelInference.h"/>
