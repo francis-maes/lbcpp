@@ -2,6 +2,9 @@ Execution:
  * ExecutionStack: linked list of stacks
  * MultiThreadedExecutionContext: fix ExecutionStack chaining
  * New directory lbcpp/core with Variable, Object, Type, Utilites, Function
+ 
+ * Faire que train/evaluate/predict soit des fonctions de Inference
+ 
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
  * SandBox: dériver de WorkUnit
  * SandBoxNewFeatures: enlever (?)

@@ -281,22 +281,21 @@ inline void nativeToVariable(Variable& dest, const TT& source, TypePtr expectedT
 ** Inheritance check
 */
 #ifdef JUCE_DEBUG
-// old
 inline bool checkInheritance(TypePtr type, TypePtr baseType)
 {
   jassert(baseType);
-  if (!type || !type->inheritsFrom(baseType))
-  {
-    //callback.errorMessage(T("checkInheritance"), T("Invalid type, Expected ") + baseType->getName().quoted() + T(" found ") + (type ? type->getName().quoted() : T("Nil")));
-    return false;
-  }
-  return true;
+  bool res = type && type->inheritsFrom(baseType);
+  jassert(res);
+  return res;
 }
 inline bool checkInheritance(const Variable& variable, TypePtr baseType)
   {jassert(baseType); return variable.isNil() || checkInheritance(variable.getType(), baseType);}
-
 #else
-#define checkInheritance(type, baseType) true
+inline bool checkInheritance(TypePtr type, TypePtr baseType)
+  {return true;}
+
+inline bool checkInheritance(const Variable& variable, TypePtr baseType)
+  {return true;}
 #endif // JUCE_DEBUG
 
 }; /* namespace lbcpp */

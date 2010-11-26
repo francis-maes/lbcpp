@@ -188,7 +188,7 @@ void DiscreteProbabilityDistribution::setProbability(size_t index, double probab
 ** GaussianProbabilityDistribution
 */
 double GaussianProbabilityDistribution::computeEntropy() const
-  {return 0.5 * log(2 * M_PI * exp(1) * values->getVariance());}
+  {return 0.5 * log(2 * M_PI * exp(1.0) * values->getVariance());}
 
 double GaussianProbabilityDistribution::compute(const Variable& value) const
 {
