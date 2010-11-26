@@ -11,6 +11,7 @@
 #include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 #include <lbcpp/Data/Vector.h>
 #include "ExtraTreeInferenceLearner.h"
+
 using namespace lbcpp;
 
 /*

@@ -13,6 +13,7 @@ GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionClasses.xml ProbabilityDistributionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml ProbabilityDistributionBuilderClasses.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackClasses.xml ExecutionCallbackClasses.cpp)
@@ -152,6 +153,16 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
   ProbabilityDistribution/ProbabilityDistributionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionClasses.cpp
+)
+
+SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
+  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
+  ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.h
+  ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.cpp
+  ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.h
+  ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.cpp
+  ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderClasses.cpp
 )
 
 #### Execution ####
@@ -506,6 +517,7 @@ SET(LBCPP_CORE
   
   # ProbabilityDistribution
   ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
+    ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES}
 
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -566,6 +578,7 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 
 ## ProbabilityDistribution
 SOURCE_GROUP(ProbabilityDistribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})
+SOURCE_SUB_GROUP(ProbabilityDistribution Builder FILES ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

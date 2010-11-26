@@ -38,12 +38,12 @@ public:
 
   size_t getNumNodes() const
     {return nodes.size();}
-  
+
   String toString() const;
-  
+
   BinaryDecisionTreeSplitterPtr getSplitter(size_t variableIndex) const
     {jassert(variableIndex < splitters.size()); return splitters[variableIndex];}
-  
+
   void setSplitter(size_t variableIndex, BinaryDecisionTreeSplitterPtr splitter)
     {jassert(variableIndex < splitters.size()); splitters[variableIndex] = splitter;}
 

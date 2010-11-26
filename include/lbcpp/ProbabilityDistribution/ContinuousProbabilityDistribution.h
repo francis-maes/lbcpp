@@ -10,7 +10,6 @@
 # define LBCPP_CONTINUOUS_PROBABILITY_DISTRIBUTION_H_
 
 # include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
-# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -18,34 +17,34 @@ namespace lbcpp
 class ContinuousProbabilityDistribution : public ProbabilityDistribution
 {
 public:
-
   juce_UseDebuggingNewOperator
 };
 
 class GaussianProbabilityDistribution : public ContinuousProbabilityDistribution
 {
 public:
-  GaussianProbabilityDistribution() : values(new ScalarVariableMeanAndVariance) {}
-  
+  GaussianProbabilityDistribution(double mean = 0.0, double variance = 0.0)
+    : mean(mean), variance(variance) {}
+
   virtual double computeEntropy() const;
+
   virtual double compute(ExecutionContext& context, const Variable& value) const;
+
   virtual Variable sample(RandomGeneratorPtr random) const;
-  
-  void push(double value)
-    {values->push(value);}
-  
+
   double getMean() const
-    {return values->getMean();}
-  
+    {return mean;}
+
   double getVariance() const
-    {return values->getVariance();}
-  
+    {return variance;}
+
   juce_UseDebuggingNewOperator
 
 protected:
   friend class GaussianProbabilityDistributionClass;
 
-  ScalarVariableMeanAndVariancePtr values;
+  double mean;
+  double variance;
 };
 
 typedef ReferenceCountedObjectPtr<GaussianProbabilityDistribution> GaussianProbabilityDistributionPtr;

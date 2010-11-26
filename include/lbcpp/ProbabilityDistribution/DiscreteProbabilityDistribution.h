@@ -59,7 +59,7 @@ public:
   EnumerationPtr getEnumeration() const
     {return getClass()->getTemplateArgument(0).dynamicCast<Enumeration>();}
   
-  void increment(const Variable& value);
+  void increment(const Variable& value, double weight = 1.0);
   
   void normalize();
   
@@ -80,7 +80,7 @@ public:
   
   void setProbability(size_t index, double probability);
   void setMissingProbability(double probability)
-  {setProbability(values.size() - 1, probability);}
+    {setProbability(values.size() - 1, probability);}
   
   double getProbability(size_t index) const
     {jassert(index < values.size()); return values[index];}
@@ -90,10 +90,10 @@ public:
 private:
   friend class EnumerationProbabilityDistributionClass;
   
-  std::vector<double> values;
+  std::vector<double> values; // FIXME: Serializable ??
   CriticalSection cachedEntropyLock;
   Variable cachedEntropy;
-  size_t count;
+  size_t count;               // FIXME: idem
 };
 
 typedef ReferenceCountedObjectPtr<EnumerationProbabilityDistribution> EnumerationProbabilityDistributionPtr;

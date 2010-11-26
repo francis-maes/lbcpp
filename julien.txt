@@ -29,6 +29,10 @@ Extra-trees:
 
  * Delocker les arbres
 
+Consumer:
+ - Consumer::comsuneContainer()
+ - SaveToFileConsumer dans src/Data/Stream
+
 MNIST:
  * Features
  * Tester les extra-trees
