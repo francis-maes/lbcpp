@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_REFERENCE_COUNTED_OBJECT_H_
-# define LBCPP_REFERENCE_COUNTED_OBJECT_H_
+#ifndef LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_
+# define LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_
 
 # include "Utilities.h"
 
@@ -467,4 +467,4 @@ inline NativePtr<T> nativePointerFromThis(const T* pthis)
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_REFERENCE_COUNTED_OBJECT_H_
+#endif // !LBCPP_CORE_REFERENCE_COUNTED_OBJECT_H_

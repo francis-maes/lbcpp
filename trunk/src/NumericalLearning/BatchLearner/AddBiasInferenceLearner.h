@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_ADD_BIAS_H_
 
 # include "../Inference/AddBiasInference.h"
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 

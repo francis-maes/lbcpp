@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_CACHE_H_
 # define LBCPP_DATA_CACHE_H_
 
-# include "Variable.h"
+# include "../Core/Variable.h"
 
 namespace lbcpp
 {

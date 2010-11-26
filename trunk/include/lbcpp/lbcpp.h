@@ -27,13 +27,14 @@
 #ifndef LBCPP_LBCPP_H_
 # define LBCPP_LBCPP_H_
 
-# include "Data/Utilities.h"
-# include "Data/Object.h"
-# include "Data/Type.h"
-# include "Data/Variable.h"
-# include "Data/Pair.h"
-# include "Data/XmlSerialisation.h"
-# include "Data/DynamicObject.h"
+# include "Core/Utilities.h"
+# include "Core/Object.h"
+# include "Core/Type.h"
+# include "Core/Variable.h"
+# include "Core/Pair.h"
+# include "Core/XmlSerialisation.h"
+# include "Core/DynamicObject.h"
+
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
 # include "Data/Vector.h"

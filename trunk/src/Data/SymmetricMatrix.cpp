@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Data/SymmetricMatrix.h>
-#include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 using namespace lbcpp;
 
 SymmetricMatrix::SymmetricMatrix(TypePtr contentType, size_t dimension) 

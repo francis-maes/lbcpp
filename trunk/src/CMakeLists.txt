@@ -5,7 +5,9 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(LBCppClasses.xml LBCppClasses.cpp)
 
-GENERATE_INTROSPECTION_CODE(Data/Type/TypeClasses.xml TypeClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Core/Type/TypeClasses.xml TypeClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Core/CoreClasses.xml CoreClasses.cpp)
+
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
@@ -47,28 +49,62 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
 
+#### Core ####
+
+SET(LBCPP_CORE_SOURCES
+  ../include/lbcpp/Core/Utilities.h  
+  Core/Utilities.cpp
+  ../include/lbcpp/Core/ReferenceCountedObject.h
+  ../include/lbcpp/Core/predeclarations.h
+  ../include/lbcpp/Core/Object.h
+  Core/Object.cpp
+  ../include/lbcpp/Core/Type.h
+  Core/Type.cpp
+  Core/Enumeration.cpp
+  Core/Class.cpp
+  ../include/lbcpp/Core/TemplateType.h
+  Core/TemplateType.cpp
+  ../include/lbcpp/Core/Variable.h
+  Core/Variable.cpp
+  ../include/lbcpp/Core/Pair.h
+  ../include/lbcpp/Core/XmlSerialisation.h  
+  Core/XmlSerialisation.cpp
+  ../include/lbcpp/Core/DynamicObject.h
+  Core/DynamicObject.cpp
+  Core/CoreClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/CoreClasses.cpp
+)
+
+SET(LBCPP_CORE_IMPL_HEADERS
+  ../include/lbcpp/Core/impl/VariableValue.hpp
+  ../include/lbcpp/Core/impl/Variable.hpp
+)
+
+SET(LBCPP_CORE_TYPE_SOURCES
+  Core/Type/TopLevelType.h
+  Core/Type/NilType.h
+  Core/Type/BuiltinType.h
+  Core/Type/BooleanType.h
+  Core/Type/IntegerType.h
+  Core/Type/DoubleType.h
+  Core/Type/StringType.h
+  Core/Type/FileType.h
+  Core/Type/TypeClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/TypeClasses.cpp
+)
+
+SET(LBCPP_CORE_OBJECT_SOURCES
+  Core/Object/SparseGenericObject.h
+  Core/Object/SparseDoubleObject.h
+  Core/Object/DenseGenericObject.h
+  Core/Object/DenseDoubleObject.h
+  Core/Object/DenseObjectObject.h
+)
+
 #### Data ####
 
 SET(LBCPP_DATA_SOURCES
-  ../include/lbcpp/Data/Utilities.h  
-  Data/Utilities.cpp
-  ../include/lbcpp/Data/ReferenceCountedObject.h
   ../include/lbcpp/Data/predeclarations.h
-  ../include/lbcpp/Data/Object.h
-  Data/Object.cpp
-  ../include/lbcpp/Data/Type.h
-  Data/Type.cpp
-  Data/Enumeration.cpp
-  Data/Class.cpp
-  ../include/lbcpp/Data/TemplateType.h
-  Data/TemplateType.cpp
-  ../include/lbcpp/Data/Variable.h
-  Data/Variable.cpp
-  ../include/lbcpp/Data/Pair.h
-  ../include/lbcpp/Data/XmlSerialisation.h  
-  Data/XmlSerialisation.cpp
-  ../include/lbcpp/Data/DynamicObject.h
-  Data/DynamicObject.cpp
   ../include/lbcpp/Data/Stream.h
   Data/Stream.cpp
   ../include/lbcpp/Data/Container.h
@@ -87,32 +123,6 @@ SET(LBCPP_DATA_SOURCES
   Data/DataClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
 )  
-
-SET(LBCPP_DATA_IMPL_HEADERS
-  ../include/lbcpp/Data/impl/VariableValue.hpp
-  ../include/lbcpp/Data/impl/Variable.hpp
-)
-
-SET(LBCPP_DATA_TYPE_SOURCES
-  Data/Type/TopLevelType.h
-  Data/Type/NilType.h
-  Data/Type/BuiltinType.h
-  Data/Type/BooleanType.h
-  Data/Type/IntegerType.h
-  Data/Type/DoubleType.h
-  Data/Type/StringType.h
-  Data/Type/FileType.h
-  Data/Type/TypeClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/TypeClasses.cpp
-)
-
-SET(LBCPP_DATA_OBJECT_SOURCES
-  Data/Object/SparseGenericObject.h
-  Data/Object/SparseDoubleObject.h
-  Data/Object/DenseGenericObject.h
-  Data/Object/DenseDoubleObject.h
-  Data/Object/DenseObjectObject.h
-)
 
 SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
@@ -479,13 +489,16 @@ SET(LBCPP_MAIN_SOURCES
 SET(LBCPP_CORE
   ${LBCPP_MAIN_SOURCES}
 
+  # Core
+  ${LBCPP_CORE_SOURCES}
+    ${LBCPP_CORE_IMPL_HEADERS}
+    ${LBCPP_CORE_TYPE_SOURCES}
+    ${LBCPP_CORE_OBJECT_SOURCES}
+
   # Data
   ${LBCPP_DATA_SOURCES}
-    ${LBCPP_DATA_TYPE_SOURCES}
-    ${LBCPP_DATA_OBJECT_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
-    ${LBCPP_DATA_IMPL_HEADERS}
   
   # ProbabilityDistribution
   ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
@@ -536,11 +549,14 @@ SET(LBCPP_CORE
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
 
+## Core
+SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
+SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
+SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
+SOURCE_SUB_GROUP(Core Object FILES ${LBCPP_CORE_OBJECT_SOURCES})
+
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
-SOURCE_SUB_GROUP(Data impl FILES ${LBCPP_DATA_IMPL_HEADERS})
-SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
-SOURCE_SUB_GROUP(Data Object FILES ${LBCPP_DATA_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 

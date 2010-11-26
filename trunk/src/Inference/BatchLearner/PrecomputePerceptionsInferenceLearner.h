@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_PRECOMPUTE_PERCEPTIONS_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_PRECOMPUTE_PERCEPTIONS_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 

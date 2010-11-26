@@ -12,7 +12,7 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
-# include "../../Data/Object/DenseDoubleObject.h"
+# include "../../Core/Object/DenseDoubleObject.h"
 
 namespace lbcpp
 {

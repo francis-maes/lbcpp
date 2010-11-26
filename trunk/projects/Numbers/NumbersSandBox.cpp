@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-#include "../../src/Data/Object/DenseDoubleObject.h"
+#include "../../src/Core/Object/DenseDoubleObject.h"
 #include "NumberPerceptions.h"
 using namespace lbcpp;
 

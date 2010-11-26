@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_UTILITIES_H_
-# define LBCPP_DATA_UTILITIES_H_
+#ifndef LBCPP_CORE_UTILITIES_H_
+# define LBCPP_CORE_UTILITIES_H_
 
 # include "../common.h"
 # include <cmath>
@@ -75,5 +75,4 @@ extern String getTypeName(const std::type_info& info);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_UTILITIES_H_
-
+#endif // !LBCPP_CORE_UTILITIES_H_

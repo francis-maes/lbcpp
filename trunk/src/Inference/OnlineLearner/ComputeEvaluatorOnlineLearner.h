@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_ONLINE_LEARNER_COMPUTE_EVALUATOR_H_
 # define LBCPP_INFERENCE_ONLINE_LEARNER_COMPUTE_EVALUATOR_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>

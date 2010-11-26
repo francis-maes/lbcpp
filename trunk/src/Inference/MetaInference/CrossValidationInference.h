@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_META_CROSS_VALIDATION_H_
 # define LBCPP_INFERENCE_META_CROSS_VALIDATION_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Inference/ParallelInference.h>
 

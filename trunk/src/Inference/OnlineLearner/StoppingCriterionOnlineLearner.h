@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_ONLINE_LEARNER_STOPPING_CRITERION_H_
 # define LBCPP_INFERENCE_ONLINE_LEARNER_STOPPING_CRITERION_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Data/Container.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>

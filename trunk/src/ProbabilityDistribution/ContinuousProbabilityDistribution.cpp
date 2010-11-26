@@ -6,16 +6,15 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/Core/Variable.h>
 #include <lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h>
-#include <lbcpp/Data/Variable.h>
-
 using namespace lbcpp;
 
 /*
  ** GaussianProbabilityDistribution
  */
 double GaussianProbabilityDistribution::computeEntropy() const
-  {return 0.5 * log(2 * M_PI * exp(1) * values->getVariance());}
+  {return 0.5 * log(2 * M_PI * exp(1.0) * values->getVariance());}
 
 double GaussianProbabilityDistribution::compute(ExecutionContext& context, const Variable& value) const
 {

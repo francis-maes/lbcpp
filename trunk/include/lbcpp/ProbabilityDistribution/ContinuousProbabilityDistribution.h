@@ -13,9 +13,14 @@
 # include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
-{  
+{
+
 class ContinuousProbabilityDistribution : public ProbabilityDistribution
-{};
+{
+public:
+
+  juce_UseDebuggingNewOperator
+};
 
 class GaussianProbabilityDistribution : public ContinuousProbabilityDistribution
 {
@@ -23,9 +28,7 @@ public:
   GaussianProbabilityDistribution() : values(new ScalarVariableMeanAndVariance) {}
   
   virtual double computeEntropy() const;
-  
   virtual double compute(ExecutionContext& context, const Variable& value) const;
-  
   virtual Variable sample(RandomGeneratorPtr random) const;
   
   void push(double value)
@@ -37,6 +40,8 @@ public:
   double getVariance() const
     {return values->getVariance();}
   
+  juce_UseDebuggingNewOperator
+
 protected:
   friend class GaussianProbabilityDistributionClass;
 

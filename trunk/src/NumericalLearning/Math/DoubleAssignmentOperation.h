@@ -10,9 +10,9 @@
 # define LBCPP_NUMERICAL_LEARNING_MATH_DOUBLE_ASSIGNMENT_OPERATION_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
-# include "../../Data/Object/DenseObjectObject.h"
-# include "../../Data/Object/DenseDoubleObject.h"
-# include "../../Data/Object/SparseDoubleObject.h"
+# include "../../Core/Object/DenseObjectObject.h"
+# include "../../Core/Object/DenseDoubleObject.h"
+# include "../../Core/Object/SparseDoubleObject.h"
 
 namespace lbcpp
 {

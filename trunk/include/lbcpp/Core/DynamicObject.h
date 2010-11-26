@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_DYNAMIC_OBJECT_H_
-# define LBCPP_DATA_DYNAMIC_OBJECT_H_
+#ifndef LBCPP_CORE_DYNAMIC_OBJECT_H_
+# define LBCPP_CORE_DYNAMIC_OBJECT_H_
 
 # include "Variable.h"
 
@@ -77,4 +77,4 @@ typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_DYNAMIC_OBJECT_H_
+#endif // !LBCPP_CORE_DYNAMIC_OBJECT_H_

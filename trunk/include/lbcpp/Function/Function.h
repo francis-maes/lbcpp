@@ -9,7 +9,7 @@
 #ifndef LBCPP_FUNCTION_FUNCTION_H_
 # define LBCPP_FUNCTION_FUNCTION_H_
 
-# include "../Data/Variable.h"
+# include "../Core/Variable.h"
 # include "../Execution/ExecutionContext.h"
 # include "predeclarations.h"
 

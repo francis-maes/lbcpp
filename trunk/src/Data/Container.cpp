@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Data/Container.h>
 #include <lbcpp/Data/RandomGenerator.h>
-#include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
 using namespace lbcpp;

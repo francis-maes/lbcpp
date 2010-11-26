@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Perception/Perception.h>
-#include "../Data/Object/SparseDoubleObject.h"
+#include "../Core/Object/SparseDoubleObject.h"
 using namespace lbcpp;
 
 /*

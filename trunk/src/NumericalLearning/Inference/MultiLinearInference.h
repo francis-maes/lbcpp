@@ -11,8 +11,8 @@
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 # include <lbcpp/Function/ScalarObjectFunction.h>
-# include "../../Data/Object/DenseObjectObject.h"
-# include "../../Data/Object/DenseDoubleObject.h"
+# include "../../Core/Object/DenseObjectObject.h"
+# include "../../Core/Object/DenseDoubleObject.h"
 
 namespace lbcpp
 {

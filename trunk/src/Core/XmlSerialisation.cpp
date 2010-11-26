@@ -5,8 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Data/XmlSerialisation.h>
-#include <lbcpp/Data/DynamicObject.h>
+#include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 

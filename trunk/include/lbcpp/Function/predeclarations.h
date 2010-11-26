@@ -17,6 +17,12 @@ namespace lbcpp
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 
+class IterationFunction;
+typedef ReferenceCountedObjectPtr<IterationFunction> IterationFunctionPtr;
+
+class StoppingCriterion;
+typedef ReferenceCountedObjectPtr<StoppingCriterion> StoppingCriterionPtr;
+
 class ScalarFunction;
 typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
 

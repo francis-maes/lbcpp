@@ -6,9 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Object.h>
-#include <lbcpp/Data/Variable.h>
-#include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Core/Object.h>
+#include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <fstream>
 using namespace lbcpp;

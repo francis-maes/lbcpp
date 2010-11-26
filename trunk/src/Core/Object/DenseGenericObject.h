@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_OBJECT_DENSE_GENERIC_H_
 # define LBCPP_DATA_OBJECT_DENSE_GENERIC_H_
 
-# include <lbcpp/Data/DynamicObject.h>
+# include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
 {

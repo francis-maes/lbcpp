@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_INPUT_LABEL_PAIR_H_
 
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 
 namespace lbcpp
 {

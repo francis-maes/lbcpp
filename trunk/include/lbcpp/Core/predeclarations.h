@@ -15,43 +15,45 @@
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 /*-----------------------------------------.---------------------------------.
-| Filename: BuiltinType.h                  | BuiltinType classes             |
+| Filename: predeclarations.h              | Data Predeclarations            |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/06/2010 15:57               |                                 |
+| Started : 13/03/2009 00:01               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_TYPE_BUILTIN_H_
-# define LBCPP_OBJECT_TYPE_BUILTIN_H_
+#ifndef LBCPP_CORE_PREDECLARATIONS_H_
+# define LBCPP_CORE_PREDECLARATIONS_H_
 
-# include <lbcpp/Data/Variable.h>
-# include <lbcpp/Data/XmlSerialisation.h>
+# include "ReferenceCountedObject.h"
 
 namespace lbcpp
 {
 
-class BuiltinType : public Type
-{
-public:
-  BuiltinType(const String& name, TypePtr baseType = topLevelType)
-    : Type(name, baseType) {}
-  BuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
-    : Type(templateType, templateArguments, baseType) {}
+class Variable;
+class XmlExporter;
+class XmlImporter;
 
-  virtual VariableValue createFromXml(XmlImporter& importer) const
-    {return createFromString(importer.getContext(), importer.getAllSubText());}
+class Object;
+typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
-  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
-    {exporter.addTextElement(toString(value));}
+class Type;
+typedef NativePtr<Type> TypePtr;
 
-  virtual size_t getNumElements(const VariableValue& value) const
-    {return 0;}
+class Class;
+typedef NativePtr<Class> ClassPtr;
 
-  lbcpp_UseDebuggingNewOperator
-};
+class Enumeration;
+typedef NativePtr<Enumeration> EnumerationPtr;
+
+class TemplateType;
+typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
+
+class Pair;
+typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_TYPE_BUILTIN_H_
+#endif // !LBCPP_CORE_PREDECLARATIONS_H_

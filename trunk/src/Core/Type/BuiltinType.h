@@ -15,49 +15,38 @@
 ** You should have received a copy of the GNU General Public License
 ** along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 /*-----------------------------------------.---------------------------------.
-| Filename: NilType.h                      | Nil Type                        |
+| Filename: BuiltinType.h                  | BuiltinType classes             |
 | Author  : Francis Maes                   |                                 |
-| Started : 23/08/2010 17:27               |                                 |
+| Started : 26/06/2010 15:57               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_TYPE_NIL_H_
-# define LBCPP_DATA_TYPE_NIL_H_
+#ifndef LBCPP_OBJECT_TYPE_BUILTIN_H_
+# define LBCPP_OBJECT_TYPE_BUILTIN_H_
 
-# include <lbcpp/Data/Variable.h>
+# include <lbcpp/Core/Variable.h>
+# include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
 {
 
-class NilType : public Type
+class BuiltinType : public Type
 {
 public:
-  NilType(const String& name, TypePtr baseType)
+  BuiltinType(const String& name, TypePtr baseType = topLevelType)
     : Type(name, baseType) {}
-  virtual ~NilType() {}
-
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue();}
+  BuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
+    : Type(templateType, templateArguments, baseType) {}
 
   virtual VariableValue createFromXml(XmlImporter& importer) const
-    {return VariableValue();}
-
-  virtual void destroy(VariableValue& value) const
-    {}
-
-  virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest = VariableValue();}
-
-  virtual String toString(const VariableValue& value) const
-    {return T("Nil");}
+    {return createFromString(importer.getContext(), importer.getAllSubText());}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
-    {}
+    {exporter.addTextElement(toString(value));}
 
-  virtual int compare(const VariableValue& value1, const VariableValue& value2) const
+  virtual size_t getNumElements(const VariableValue& value) const
     {return 0;}
 
   lbcpp_UseDebuggingNewOperator
@@ -65,4 +54,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_TYPE_NIL_H_
+#endif // !LBCPP_OBJECT_TYPE_BUILTIN_H_

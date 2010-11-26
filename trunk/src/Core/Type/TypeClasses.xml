@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Type" directory="Data/Type">
-  <include file="lbcpp/Data/Pair.h"/>
+<file name="Type" directory="Core/Type">
+  <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Data/Vector.h"/>
   <namespace name="lbcpp">
 

@@ -27,7 +27,8 @@
 #ifndef LBCPP_DATA_RANDOM_GENERATOR_H_
 # define LBCPP_DATA_RANDOM_GENERATOR_H_
 
-# include "Object.h"
+# include "../Core/Object.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {

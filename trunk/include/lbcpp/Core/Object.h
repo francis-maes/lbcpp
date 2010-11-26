@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_OBJECT_H_
-# define LBCPP_DATA_OBJECT_H_
+#ifndef LBCPP_CORE_OBJECT_H_
+# define LBCPP_CORE_OBJECT_H_
 
 # include "predeclarations.h"
 
@@ -222,4 +222,4 @@ typedef ReferenceCountedObjectPtr<NameableObject> NameableObjectPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_OBJECT_H_
+#endif // !LBCPP_CORE_OBJECT_H_

@@ -106,7 +106,7 @@ protected:
     // header
     ostr << "/* ====== Introspection for file '" << fileName << "', generated on "
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
-    writeLine(T("#include <lbcpp/Data/Variable.h>"));
+    writeLine(T("#include <lbcpp/Core/Variable.h>"));
 
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();

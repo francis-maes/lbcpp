@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_OBJECT_SPARSE_DOUBLE_H_
 # define LBCPP_DATA_OBJECT_SPARSE_DOUBLE_H_
 
-# include <lbcpp/Data/DynamicObject.h>
+# include <lbcpp/Core/DynamicObject.h>
 # include <lbcpp/Data/Stream.h>
 
 namespace lbcpp

@@ -14,7 +14,7 @@
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 
 namespace lbcpp
 {

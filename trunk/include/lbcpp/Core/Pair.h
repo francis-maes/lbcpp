@@ -24,8 +24,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_PAIR_H_
-# define LBCPP_DATA_PAIR_H_
+#ifndef LBCPP_CORE_PAIR_H_
+# define LBCPP_CORE_PAIR_H_
 
 # include "Variable.h"
 
@@ -115,4 +115,4 @@ inline void nativeToVariable(Variable& dest, const std::pair<T1, T2>& source, Ty
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_PAIR_H_
+#endif // !LBCPP_CORE_PAIR_H_

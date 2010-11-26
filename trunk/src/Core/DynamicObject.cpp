@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/DynamicObject.h>
-#include <lbcpp/Data/XmlSerialisation.h>
+#include <lbcpp/Core/DynamicObject.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 #include "Object/SparseGenericObject.h"
 #include "Object/SparseDoubleObject.h"
 #include "Object/DenseGenericObject.h"

@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
 # define LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
 
-# include <lbcpp/Data/Pair.h>
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Function/Function.h>
 
 namespace lbcpp
