@@ -46,9 +46,9 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
   
   EnumerationPtr enumeration = leftData->getElementsType()->getTemplateArgument(1);
   
-  DiscreteProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(leftData);
-  DiscreteProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(rightData);
-  DiscreteProbabilityDistributionPtr priorDistribution = new DiscreteProbabilityDistribution(enumeration);
+  EnumerationProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(leftData);
+  EnumerationProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(rightData);
+  EnumerationProbabilityDistributionPtr priorDistribution = new EnumerationProbabilityDistribution(enumeration);
   
   for (size_t i = 0; i < enumeration->getNumElements(); ++i)
     priorDistribution->setProbability(i, (leftDistribution->getProbability(i) + rightDistribution->getProbability(i)) / 2);
@@ -60,10 +60,10 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
   return informationGain;
 }
 
-DiscreteProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ContainerPtr data) const
+EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ContainerPtr data) const
 {
   EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
-  DiscreteProbabilityDistributionPtr res = new DiscreteProbabilityDistribution(enumeration);
+  EnumerationProbabilityDistributionPtr res = new EnumerationProbabilityDistribution(enumeration);
   
   for (size_t i = 0; i < enumeration->getNumElements(); ++i)
   {

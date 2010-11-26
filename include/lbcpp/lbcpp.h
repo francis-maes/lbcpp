@@ -43,6 +43,8 @@
 # include "Data/Cache.h"
 
 # include "ProbabilityDistribution/ProbabilityDistribution.h"
+# include "ProbabilityDistribution/DiscreteProbabilityDistribution.h"
+# include "ProbabilityDistribution/ContinuousProbabilityDistribution.h"
 
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
