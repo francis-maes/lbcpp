@@ -31,6 +31,9 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
       right->append(example);
   }
 
+  positiveExamples = left;
+  negativeExamples = right;
+  
   return scoringFunction->compute(context, Variable::pair(left, right));
 }
 

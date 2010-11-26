@@ -65,7 +65,7 @@ EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getD
   EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
   EnumerationProbabilityDistributionPtr res = new EnumerationProbabilityDistribution(enumeration);
   
-  for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+  for (size_t i = 0; i < data->getNumElements(); ++i)
   {
     Variable output = data->getElement(i)[1];
     jassert(output.exists());
