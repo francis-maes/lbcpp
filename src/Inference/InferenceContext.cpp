@@ -108,7 +108,7 @@ bool lbcpp::evaluate(ExecutionContext& context, const InferencePtr& inference, C
   context.appendCallback(evaluationCallback);
   bool res = runInference(context, runOnSupervisedExamplesInference(inference, true), examples, Variable());
   context.removeCallback(evaluationCallback);
-  return true;
+  return res;
 }
 
 bool lbcpp::crossValidate(ExecutionContext& context, const InferencePtr& inferenceModel, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds)
