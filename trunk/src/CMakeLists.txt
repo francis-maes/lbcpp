@@ -151,12 +151,12 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ProbabilityDistribution/DiscreteProbabilityDistribution.cpp
   ../include/lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h
   ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
+  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
   ProbabilityDistribution/ProbabilityDistributionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionClasses.cpp
 )
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
-  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
   ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.h
   ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.cpp
   ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.h

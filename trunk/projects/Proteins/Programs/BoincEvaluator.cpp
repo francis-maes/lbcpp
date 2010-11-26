@@ -426,7 +426,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext(true);
   declareProteinClasses(*context);
 

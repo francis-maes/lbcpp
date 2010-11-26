@@ -23,11 +23,12 @@
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
 
-    <!-- Execution Context -->
+    <!-- Execution Callback and Context -->
     <class name="ExecutionCallback" base="Object" abstract="yes"/>
-    <class name="ExecutionContext" base="ExecutionCallback" abstract="yes">
+    <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
       <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
     </class>
+    <class name="ExecutionContext" base="CompositeExecutionCallback" abstract="yes"/>
 
   </namespace>
 

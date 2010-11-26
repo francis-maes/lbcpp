@@ -252,8 +252,15 @@ inline TypeManager& getTypeManagerInstance()
 TypePtr lbcpp::topLevelType;
 TypePtr lbcpp::anyType;
 
-void lbcpp::initialize()
+namespace juce
 {
+  extern void juce_setCurrentExecutableFileName(const String& filename) throw();
+};
+
+void lbcpp::initialize(const char* executableName)
+{
+  juce::initialiseJuce_NonGUI();
+  juce::juce_setCurrentExecutableFileName(String::fromUTF8((const juce::uint8* )executableName));
   getTypeManagerInstance().ensureStandardClassesAreLoaded(*silentExecutionContext);
   topLevelType = anyType = variableType;
 }

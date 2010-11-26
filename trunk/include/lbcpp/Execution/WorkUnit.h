@@ -27,7 +27,9 @@ public:
   virtual String toString() const
     {return T("No description available !");}
  
-  static int main(WorkUnitPtr workUnit, int argc, char* argv[]);
+  static int main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[]);
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExecutionContext;

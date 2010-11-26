@@ -47,70 +47,65 @@ const FunctionPtr& ExecutionStack::getParentFunction() const
   {return getFunction((int)getDepth() - 2);}
 
 /*
-** ExecutionContext
+** CompositeExecutionCallback
 */
-ExecutionContext::ExecutionContext()
-  : stack(new ExecutionStack())
-{
-  context = this;
-}
 
-void ExecutionContext::informationCallback(const String& where, const String& what)
+void CompositeExecutionCallback::informationCallback(const String& where, const String& what)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->informationCallback(where, what);
 }
 
-void ExecutionContext::warningCallback(const String& where, const String& what)
+void CompositeExecutionCallback::warningCallback(const String& where, const String& what)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->warningCallback(where, what);
 }
 
-void ExecutionContext::errorCallback(const String& where, const String& what)
+void CompositeExecutionCallback::errorCallback(const String& where, const String& what)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->errorCallback(where, what);
 }
 
-void ExecutionContext::statusCallback(const String& status)
+void CompositeExecutionCallback::statusCallback(const String& status)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->statusCallback(status);
 }
 
-void ExecutionContext::progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+void CompositeExecutionCallback::progressCallback(double progression, double progressionTotal, const String& progressionUnit)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->progressCallback(progression, progressionTotal, progressionUnit);
 }
 
-void ExecutionContext::preExecutionCallback(const WorkUnitPtr& workUnit)
+void CompositeExecutionCallback::preExecutionCallback(const WorkUnitPtr& workUnit)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->preExecutionCallback(workUnit);
 }
 
-void ExecutionContext::postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
+void CompositeExecutionCallback::postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->postExecutionCallback(workUnit, result);
 }
 
-void ExecutionContext::resultCallback(const String& name, const Variable& value)
+void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->resultCallback(name, value);
 }
 
-void ExecutionContext::appendCallback(const ExecutionCallbackPtr& callback)
+void CompositeExecutionCallback::appendCallback(const ExecutionCallbackPtr& callback)
 {
   jassert(callback);
-  callback->setContext(*this);
+  callback->initialize(*context);
   callbacks.push_back(callback);
 }
 
-void ExecutionContext::removeCallback(const ExecutionCallbackPtr& callback)
+void CompositeExecutionCallback::removeCallback(const ExecutionCallbackPtr& callback)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     if (callbacks[i] == callback)
@@ -120,8 +115,18 @@ void ExecutionContext::removeCallback(const ExecutionCallbackPtr& callback)
     }
 }
 
-void ExecutionContext::clearCallbacks()
+void CompositeExecutionCallback::clearCallbacks()
   {callbacks.clear();}
+
+
+/*
+** ExecutionContext
+*/
+ExecutionContext::ExecutionContext()
+  : stack(new ExecutionStack())
+{
+  initialize(*this);
+}
 
 size_t ExecutionContext::getStackDepth() const
   {return stack->getDepth();}

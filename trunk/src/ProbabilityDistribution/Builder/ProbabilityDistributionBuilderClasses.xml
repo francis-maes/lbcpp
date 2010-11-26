@@ -8,11 +8,13 @@
     <class name="ProbabilityDistributionBuilder" base="Object" abstract="yes"/>
 
     <class name="EnumerationProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">
+      <constructor arguments="TypePtr elementType"/>
       <variable type="Type" name="elementType"/>
       <variable type="EnumerationProbabilityDistribution" name="distribution"/>
     </class>
 
     <class name="GaussianProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">
+      <constructor/>
       <variable type="ScalarVariableMean" name="means"/>
       <variable type="ScalarVariableMean" name="variances"/>
       <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>

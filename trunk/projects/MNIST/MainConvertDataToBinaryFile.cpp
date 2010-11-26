@@ -15,8 +15,8 @@ extern void declareMNISTClasses(ExecutionContext& context);
 
 int main(int argc, char* argv[])
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
   declareMNISTClasses(*context);
-  return WorkUnit::main(new BinarizerProgram(), argc, argv);
+  return WorkUnit::main(*context, new BinarizerProgram(), argc, argv);
 }

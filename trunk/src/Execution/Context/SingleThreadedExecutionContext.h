@@ -33,6 +33,8 @@ public:
         return false;
     return true;
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */
