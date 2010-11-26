@@ -96,6 +96,8 @@ private:
     {return x * x;}
 };
 
+typedef ReferenceCountedObjectPtr<ScalarVariableMeanAndVariance> ScalarVariableMeanAndVariancePtr;
+
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
 public:

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ProbabilityDistribution" directory="ProbabilityDistribution">
+
+  <include file="lbcpp/ProbabilityDistribution/ProbabilityDistribution.h"/>
+
+  <namespace name="lbcpp">
+
+    <!-- Probability Distribution -->
+    <class name="ProbabilityDistribution" abstract="yes"/>
+    <class name="BernoulliDistribution" base="ProbabilityDistribution">
+      <variable type="Double" name="pTrue"/>
+      <variable type="Double" name="pFalse"/>
+    </class>
+    <template name="DiscreteProbabilityDistribution" base="ProbabilityDistribution">
+      <parameter name="enumeration" type="EnumValue"/>
+
+      <code>
+      EnumerationPtr getEnumeration() const
+        {return getTemplateArgument(0).staticCast&lt;Enumeration&gt;();}
+
+      virtual size_t getObjectNumVariables() const
+        {return getEnumeration()->getNumElements() + 1;}
+
+      virtual Variable getObjectVariable(const Object* pthis, size_t index) const
+      {
+        const DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;const DiscreteProbabilityDistribution* &gt;(pthis);
+        return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
+      }
+
+      virtual void setObjectVariable(ExecutionContext&amp; context, Object* pthis, size_t index, const Variable&amp; subValue) const
+      {
+        DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;DiscreteProbabilityDistribution* &gt;(pthis);
+        if (distribution)
+        {
+          if (!distribution->values.size())
+            distribution->values.resize(distribution->getEnumeration()->getNumElements() + 1, 0.0);
+
+          jassert(subValue.isDouble());
+          jassert(index &lt; distribution->values.size());
+          distribution->values[index] = subValue.getDouble();
+        }
+      }
+
+      virtual TypePtr getObjectVariableType(size_t index) const
+        {return probabilityType;}
+
+      virtual String getObjectVariableName(size_t index) const
+        {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+      </code>
+    </template>
+    
+  </namespace>
+  
+</file>

@@ -8,7 +8,7 @@
 
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Function/Predicate.h>
-#include <lbcpp/Data/ProbabilityDistribution.h>
+#include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 #include <lbcpp/Data/Vector.h>
 #include "ExtraTreeInferenceLearner.h"
 using namespace lbcpp;

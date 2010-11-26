@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_CONTAINER_HISTOGRAM_H_
 
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 # include <lbcpp/Data/Cache.h>
 # include <lbcpp/Data/Pair.h>
 

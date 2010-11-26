@@ -256,7 +256,7 @@ public:
   /** Samples a double value from a normal Gaussian distribution.
   **
   ** @return a double value sampled from a Gaussian
-  ** distribution which mean is 0 and which standart deviation is 1.
+  ** distribution which mean is 0 and which standard deviation is 1.
   */
   double sampleDoubleFromGaussian();
 

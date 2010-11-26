@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 
 # include <lbcpp/Function/Evaluator.h>
-# include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
 # include "../../Data/Object/DenseDoubleObject.h"
 

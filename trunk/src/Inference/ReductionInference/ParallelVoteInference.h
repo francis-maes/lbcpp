@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 

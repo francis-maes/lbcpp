@@ -38,10 +38,11 @@
 # include "Data/Consumer.h"
 # include "Data/Vector.h"
 # include "Data/SymmetricMatrix.h"
-# include "Data/ProbabilityDistribution.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
 # include "Data/Cache.h"
+
+# include "ProbabilityDistribution/ProbabilityDistribution.h"
 
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
