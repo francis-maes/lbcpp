@@ -113,7 +113,7 @@ class ContinuousProbabilityDistribution : public ProbabilityDistribution
 
 };
   
-class GaussianProbabilityDistribution : public ProbabilityDistribution
+class GaussianProbabilityDistribution : public ContinuousProbabilityDistribution
 {
 public:
   GaussianProbabilityDistribution() : values(new ScalarVariableMeanAndVariance) {}
@@ -134,6 +134,8 @@ public:
     {return values->getVariance();}
   
 protected:
+  friend class GaussianProbabilityDistributionClass;
+  
   ScalarVariableMeanAndVariancePtr values;
 };
 

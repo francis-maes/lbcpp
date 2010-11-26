@@ -50,6 +50,12 @@
       </code>
     </template>
     
+    <class name="ContinuousProbabilityDistribution" base="ProbabilityDistribution" abstract="yes"/>
+    
+    <class name="GaussianProbabilityDistribution" base="ContinuousProbabilityDistribution">
+      <variable type="ScalarVariableMeanAndVariance" name="values"/>
+    </class>
+    
   </namespace>
   
 </file>
