@@ -23,11 +23,6 @@ using namespace lbcpp;
 /*
 ** Perception
 */
-namespace lbcpp
-{
-  extern FunctionPtr multiplyDoubleFunction();
-};
-
 PerceptionPtr lbcpp::defaultPositiveIntegerFeatures(size_t numIntervals, double maxPowerOfTen)
   {return softDiscretizedLogNumberFeatures(positiveIntegerType, 0.0, maxPowerOfTen, numIntervals, true);}
 

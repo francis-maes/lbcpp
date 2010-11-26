@@ -3,6 +3,15 @@
 <file name="MiscFunctions" directory="Function/MiscFunctions">
   <namespace name="lbcpp">
 
+    <class name="IdentityFunction" base="Function">
+      <constructor arguments="TypePtr type"/>
+      <variable type="Type" name="type"/>
+    </class>
+
+    <class name="MultiplyDoubleFunction" base="Function">
+      <constructor/>
+    </class>
+    
     <class name="LoadFromFileFunction" base="Function">
       <constructor arguments="TypePtr expectedType"/>
       <variable type="Type" name="expectedType"/>

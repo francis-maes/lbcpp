@@ -1,9 +1,6 @@
 * Split Inference.cpp => DecoratorInference.cpp, SequentialInference.cpp, ParallelInference.cpp
 
-
 Execution:
- * Faire que train/evaluate/predict soit des fonctions de Inference
- 
  * UserInterfaceExecutionContext
      - single thread
      - multi thread

@@ -15,19 +15,6 @@
 namespace lbcpp
 {
 
-class MultiplyDoubleFunction : public Function
-{
-public:
-  virtual TypePtr getInputType() const
-    {return pairClass(doubleType, doubleType);}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return doubleType;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input[0].getDouble() * input[1].getDouble();}
-};
-
 class ProductPerception;
 typedef ReferenceCountedObjectPtr<ProductPerception> ProductPerceptionPtr;
 

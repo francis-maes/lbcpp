@@ -28,9 +28,6 @@
     </class>
 
     <!-- Product Perception -->
-    <class name="MultiplyDoubleFunction" base="Function">
-      <constructor/>
-    </class>
     <class name="ProductPerception" base="Perception">
       <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions"/>
       <variable type="Function" name="multiplyFunction"/>
