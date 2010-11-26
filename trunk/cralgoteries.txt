@@ -1,6 +1,5 @@
+
 Execution:
- * ExecutionStack: linked list of stacks
- * MultiThreadedExecutionContext: fix ExecutionStack chaining
  * New directory lbcpp/core with Variable, Object, Type, Utilites, Function
  
  * Faire que train/evaluate/predict soit des fonctions de Inference

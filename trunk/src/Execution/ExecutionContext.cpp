@@ -11,8 +11,44 @@
 #include <lbcpp/Data/Variable.h>
 using namespace lbcpp;
 
+/*
+** ExecutionStack
+*/
 FunctionPtr ExecutionStack::nullFunction;
 
+size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
+  {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
+
+const FunctionPtr& ExecutionStack::getFunction(int index) const
+{
+  if (index < 0)
+    return nullFunction;
+  if (parentStack)
+  {
+    size_t pd = parentStack->getDepth();
+    if (index < (int)pd)
+      return parentStack->getFunction(index);
+    index -= (int)pd;
+  }
+  return index < (int)stack.size() ? stack[index] : nullFunction;
+}
+
+const FunctionPtr& ExecutionStack::getCurrentFunction() const
+{
+  if (stack.size())
+    return stack.back();
+  else if (parentStack)
+    return parentStack->getCurrentFunction();
+  else
+    return nullFunction;
+}
+
+const FunctionPtr& ExecutionStack::getParentFunction() const
+  {return getFunction((int)getDepth() - 2);}
+
+/*
+** ExecutionContext
+*/
 ExecutionContext::ExecutionContext()
   : stack(new ExecutionStack())
 {
@@ -91,7 +127,10 @@ size_t ExecutionContext::getStackDepth() const
   {return stack->getDepth();}
 
 const FunctionPtr& ExecutionContext::getCurrentFunction() const
-  {return stack->getCurrentInference();}
+  {return stack->getCurrentFunction();}
+
+const FunctionPtr& ExecutionContext::getParentFunction() const
+  {return stack->getParentFunction();}
 
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
@@ -138,8 +177,9 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 }
 #endif // JUCE_DEBUG
 
-///////////////////////////
-
+/*
+** Execution Context constructor functions
+*/
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
 {
   int numCpus = juce::SystemStats::getNumCpus();

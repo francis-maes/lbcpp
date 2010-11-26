@@ -57,7 +57,7 @@ protected:
       // call subStepFinishedCallback
       for (int i = (int)context.getStackDepth() - 2; i >= 0; --i)
       {
-        const InferencePtr& parentInference = context.getStack()->getInference(i);
+        const InferencePtr& parentInference = context.getStack()->getFunction(i);
         const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
         if (parentLearner && !parentLearner->isLearningStopped())
           parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);

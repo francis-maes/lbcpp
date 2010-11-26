@@ -19,6 +19,7 @@
 
     <!-- Function Stack -->
     <class name="ExecutionStack">
+      <variable type="ExecutionStack" name="parentStack"/>
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
 
