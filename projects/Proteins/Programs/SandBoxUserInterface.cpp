@@ -9,121 +9,11 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-namespace lbcpp
-{
-
-class UserInterfaceThread;
-
-class UserInterfaceManager
-{
-public:
-  UserInterfaceManager() : userInterfaceThread(NULL) {}
-  ~UserInterfaceManager()
-    {shutdown();}
-
-  void ensureIsInitialized();
-  bool isRunning() const;
-  void shutdown();
-
-  typedef void* (MessageCallbackFunction) (void* userData);
-
-  void* callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData);
-
-private:
-  UserInterfaceThread* userInterfaceThread;
-};
-
-////////////////
-
-class UserInterfaceThread : public Thread
-{
-public:
-  UserInterfaceThread()
-    : Thread(T("Juce Message Thread")), commandManager(NULL), initialized(false) {}
-  virtual ~UserInterfaceThread()
-    {}
-
-  virtual void run()
-  {
-    juce::initialiseJuce_GUI();
-
-    juce::MessageManager* messageManager = juce::MessageManager::getInstance();
-    messageManager->setCurrentMessageThread(getThreadId());
-    commandManager = new juce::ApplicationCommandManager();
-
-    initialized = true;
-    while (!threadShouldExit())
-      if (!messageManager->runDispatchLoopUntil(100) && juce::Desktop::getInstance().getNumComponents() == 0)
-        break;
-
-    juce::Desktop& desktop = juce::Desktop::getInstance();
-    jassert(!desktop.getNumComponents());
-
-    deleteAndZero(commandManager);
-#if JUCE_MAC
-    const ScopedAutoReleasePool pool;
-#endif
-    {
-      juce::DeletedAtShutdown::deleteAll();
-      juce::LookAndFeel::clearDefaultLookAndFeel();
-    }
-    delete juce::MessageManager::getInstance();
-  }
-
-  juce::ApplicationCommandManager& getCommandManager()
-    {jassert(commandManager); return *commandManager;}
-
-  bool isInitialized() const
-    {return initialized;}
-
-protected:
-  juce::ApplicationCommandManager* commandManager;
-  bool mutable initialized;
-};
-
-void UserInterfaceManager::ensureIsInitialized()
-{
-  if (!userInterfaceThread)
-    userInterfaceThread = new UserInterfaceThread();
-
-  if (!userInterfaceThread->isThreadRunning())
-  {
-    userInterfaceThread->startThread();
-    while (!userInterfaceThread->isInitialized())
-      Thread::sleep(1);
-  }
-}
-
-bool UserInterfaceManager::isRunning() const
-  {return userInterfaceThread && userInterfaceThread->isThreadRunning();}
-
-void UserInterfaceManager::shutdown()
-{
-  if (isRunning())
-  {
-    userInterfaceThread->stopThread(2000);
-    deleteAndZero(userInterfaceThread);
-  }
-}
-
-void* UserInterfaceManager::callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData)
-{
-  jassert(isRunning());
-  return juce::MessageManager::getInstance()->callFunctionOnMessageThread(callback, userData);
-}
-
-}; /* namespace lbcpp */
-
-//////////////////////////////////
-
-UserInterfaceManager userInterfaceManager;
-
 using juce::Component;
 using juce::DocumentWindow;
 
 using juce::Colours;
 using juce::Justification;
-
 
 class UserInterfaceExecutionCallbackMainComponent : public Component, public ExecutionCallback
 {
@@ -196,12 +86,12 @@ public:
   virtual void initialize(ExecutionContext& context)
   {
     ExecutionCallback::initialize(context);
-    userInterfaceManager.ensureIsInitialized();
-    userInterfaceManager.callFunctionOnMessageThread(createWindowFunction, this);
+    userInterfaceManager().ensureIsInitialized(context);
+    userInterfaceManager().callFunctionOnMessageThread(createWindowFunction, this);
   }
 
   void shutdown()
-    {if (mainWindow) userInterfaceManager.callFunctionOnMessageThread(destroyWindowFunction, this);}
+    {if (mainWindow) userInterfaceManager().callFunctionOnMessageThread(destroyWindowFunction, this);}
 
 private:
   LBCppMainWindow* mainWindow;
@@ -276,9 +166,7 @@ int main(int argc, char* argv[])
   context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
   int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
   userInterfaceCallback->shutdown();
-  userInterfaceManager.shutdown();
   context = ExecutionContextPtr();
-  juce::shutdownJuce_NonGUI();
   lbcpp::deinitialize();
   return res;
 }
