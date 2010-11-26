@@ -100,7 +100,7 @@ public:
       jassert(false); // unrecognized loss function
   }
 
-  virtual Variable predict(ExecutionContext& context, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
     const ObjectPtr& weights = getParameters()->getWeights();

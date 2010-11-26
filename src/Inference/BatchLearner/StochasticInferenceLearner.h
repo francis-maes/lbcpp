@@ -103,7 +103,7 @@ protected:
       else
       {
         // make an episode
-        if (!runInference(context, targetInference, example.first, example.second))
+        if (!targetInference->run(context, example.first, example.second))
           return Variable();
         finishEpisode(context);
       }

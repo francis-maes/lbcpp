@@ -113,7 +113,7 @@ public:
     {
        // evaluate sub-inference and update currentObjects
       InferencePtr evaluateStepOnSubTrainingData = new RunSequentialInferenceStepOnExamples(targetInference, state->targetStates);
-      if (!runInference(context, evaluateStepOnSubTrainingData, subInput, ObjectPtr()))
+      if (!evaluateStepOnSubTrainingData->run(context, subInput, ObjectPtr()))
         return false;
 
       setSubLearningInference(targetInference, state, index);

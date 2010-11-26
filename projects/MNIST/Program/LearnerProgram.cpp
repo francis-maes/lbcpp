@@ -111,18 +111,18 @@ bool LearnerProgram::run(ExecutionContext& context)
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
-  train(context, inference, learningData, ContainerPtr());
+  inference->train(context, learningData, ContainerPtr());
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
-  evaluate(context, inference, learningData, evaluator);
+  inference->evaluate(context, learningData, evaluator);
   std::cout << evaluator->toString() << std::endl;
 
   if (testingData && testingData->getNumElements())
   {
     std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
-    evaluate(context, inference, testingData, evaluator);
+    inference->evaluate(context, testingData, evaluator);
     std::cout << evaluator->toString() << std::endl;
   }
 

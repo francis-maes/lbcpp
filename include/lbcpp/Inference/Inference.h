@@ -56,7 +56,19 @@ public:
   virtual TypePtr getParametersType() const
     {return nilType;}
 
-  // description
+  /*
+  ** High level operations
+  */
+  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
+  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output) const;
+  bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples);
+  bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput);
+  bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const;
+  bool crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds) const;
+
+  /*
+  ** Description
+  */
   virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
   // Used in SharedParallelInference before and after a block of many run() calls
@@ -101,7 +113,6 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return computeInference(context, input, Variable());}
 
-    // todo: move this in protected
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
 
   lbcpp_UseDebuggingNewOperator
@@ -119,6 +130,9 @@ protected:
 };
 
 extern ClassPtr inferenceClass;
+
+// WorkUnit
+extern WorkUnitPtr inferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output);
 
 // Decorator
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);

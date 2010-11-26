@@ -10,7 +10,6 @@
 # define LBCPP_INFERENCE_DECORATOR_H_
 
 # include "Inference.h"
-# include "InferenceContext.h"
 # include "InferenceCallback.h"
 # include "../Function/Function.h"
 

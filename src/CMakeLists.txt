@@ -314,8 +314,7 @@ SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/SequentialInference.h
   ../include/lbcpp/Inference/ParallelInference.h
   Inference/Inference.cpp
-  ../include/lbcpp/Inference/InferenceContext.h
-  Inference/InferenceContext.cpp
+  Inference/InferenceWorkUnit.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceResultCache.h
   Inference/InferenceCallback.cpp

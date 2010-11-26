@@ -34,7 +34,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     std::cout << "." << std::flush;
-    Variable res = predict(context, inference, input);
+    Variable res = inference->computeFunction(context, input);
     *o << res.toShortString() << "\n";
     return input;
   }

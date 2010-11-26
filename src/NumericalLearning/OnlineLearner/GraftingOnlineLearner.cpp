@@ -324,7 +324,7 @@ void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, con
 
   Variable prediction = pred;
   if (prediction.isNil())
-    prediction = numericalInference->predict(context, input);
+    prediction = numericalInference->computeFunction(context, input);
 
   if (numericalInference.dynamicCast<LinearInference>())
   {

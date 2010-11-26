@@ -56,15 +56,15 @@ int main(int argc, char* argv[])
 
   // create context and train
   context->appendCallback(new MyInferenceCallback());
-  train(*context, ofqiInference, trainingSet, ContainerPtr());
+  ofqiInference->train(*context, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));
-  evaluate(*context, ofqiInference, trainingSet, evaluator);
+  ofqiInference->evaluate(*context, trainingSet, evaluator);
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
-  Variable myPrediction = predict(*context, regressor, Variable::pair(1.0, 0.0));
+  Variable myPrediction = regressor->computeFunction(*context, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

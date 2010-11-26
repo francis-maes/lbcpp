@@ -293,7 +293,7 @@ public:
       context.informationCallback(T("================== Train Evaluation ==================  ")
                             + String((Time::getMillisecondCounter() - startingTime) / 1000)
                             + T(" s"));
-      evaluate(context, inference, trainingData, learningEvaluator);
+      inference->evaluate(context, trainingData, learningEvaluator);
       context.informationCallback(learningEvaluator->toString());
 
       if (testingData && testingData->getNumElements())
@@ -301,7 +301,7 @@ public:
         context.informationCallback(T("=================== Test Evaluation ==================  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        evaluate(context, inference, testingData, testingEvaluator);
+        inference->evaluate(context, testingData, testingEvaluator);
         context.informationCallback(testingEvaluator->toString());
       }
 
@@ -310,7 +310,7 @@ public:
         context.informationCallback(T("============== Validation Evaluation ===============  ")
                               + String((Time::getMillisecondCounter() - startingTime) / 1000)
                               + T(" s"));
-        evaluate(context, inference, validationData, validationEvaluator);
+        inference->evaluate(context, validationData, validationEvaluator);
         context.informationCallback(validationEvaluator->toString());
       }
 
@@ -647,7 +647,7 @@ bool SnowBox::run(ExecutionContext& context)
   
   if (useCrossValidation)
   {
-    //context->crossValidate(inference, learningData, evaluator, numberOfFolds);
+    //inference->crossValidate(*context, learningData, evaluator, numberOfFolds);
     context.errorCallback(T("SnowBox::run"), T("CrossValidation not yet implemented (missing appropriate evaluator)"));
     return false;
   }
@@ -655,7 +655,7 @@ bool SnowBox::run(ExecutionContext& context)
   {
     inferenceContext->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
     //context->appendCallback(new StackPrinterCallback());
-    train(*inferenceContext, inference, learningData, validationData);
+    inference->train(*inferenceContext, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
     inference->saveToFile(context, outputInferenceFile);

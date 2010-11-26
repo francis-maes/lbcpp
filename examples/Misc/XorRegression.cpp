@@ -61,15 +61,15 @@ int main(int argc, char* argv[])
   trainingSet->append(Variable::pair(Variable::pair(1.0, 1.0), 1.0));
 
   // create context and train
-  train(*context, regressor, trainingSet, ContainerPtr());
+  regressor->train(*context, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));
-  evaluate(*context, regressor, trainingSet, evaluator);
+  regressor->evaluate(*context, trainingSet, evaluator);
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
-  Variable myPrediction = predict(*context, regressor, Variable::pair(1.0, 0.0));
+  Variable myPrediction = regressor->computeFunction(*context, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

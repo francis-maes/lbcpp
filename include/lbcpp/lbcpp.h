@@ -65,7 +65,6 @@
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceResultCache.h"
-# include "Inference/InferenceContext.h"
 # include "Inference/InferenceCallback.h"
 # include "Inference/DecoratorInference.h"
 # include "Inference/SequentialInference.h"

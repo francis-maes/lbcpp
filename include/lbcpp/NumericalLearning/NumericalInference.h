@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_H_
 
 # include "../Perception/Perception.h"
-# include "../Inference/InferenceContext.h"
+# include "../Inference/Inference.h"
 
 namespace lbcpp
 {
@@ -67,8 +67,6 @@ public:
   const ObjectPtr& getWeights() const;
   void setWeights(const ObjectPtr& newWeights);
   
-  virtual Variable predict(ExecutionContext& context, const Variable& input) const = 0;
-
   // if target == NULL, target is this parameters
   // supervision is the loss function
   //   ScalarFunction for single output machines
@@ -84,7 +82,7 @@ public:
 
 protected:
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-    {return predict(context, input);}
+    {return computeFunction(context, input);}
 };
 
 typedef ReferenceCountedObjectPtr<NumericalInference> NumericalInferencePtr;

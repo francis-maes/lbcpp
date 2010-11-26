@@ -11,7 +11,7 @@
 
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Execution/ExecutionStack.h>
-# include <lbcpp/Inference/InferenceContext.h>
+# include <lbcpp/Inference/Inference.h>
 
 namespace lbcpp
 {
