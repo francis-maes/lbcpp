@@ -1,4 +1,3 @@
-* Split Inference.cpp => DecoratorInference.cpp, SequentialInference.cpp, ParallelInference.cpp
 
 Execution:
  * UserInterfaceExecutionContext

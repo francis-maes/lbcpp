@@ -9,9 +9,8 @@
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Inference/Inference.h>
-#include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
-#include <lbcpp/Inference/SequentialInference.h>
+#include <lbcpp/Inference/InferenceCallback.h>
 #include <lbcpp/Inference/InferenceOnlineLearner.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
@@ -48,6 +47,9 @@ void Inference::clone(ExecutionContext& context, const ObjectPtr& t) const
   }
 }
 
+/*
+** Parameters
+*/
 Variable Inference::getParameters() const
 {
   ScopedReadLock _(parametersLock);
@@ -70,6 +72,9 @@ void Inference::setParameters(const Variable& parameters)
   parametersChangedCallback();
 }
 
+/*
+** Learners
+*/
 void Inference::setBatchLearner(InferencePtr batchLearner)
 {
   if (batchLearner->getName() == T("Unnamed"))
@@ -174,198 +179,6 @@ bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, 
 {
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, refCountedPointerFromThis(this), numFolds));
   return cvInference->run(context, examples, Variable());
-}
-
-/*
-** DecoratorInference
-*/
-DecoratorInference::DecoratorInference(const String& name)
-  : Inference(name)
-{
-  setBatchLearner(decoratorInferenceLearner());
-}
-
-Variable DecoratorInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-{
-  DecoratorInferenceStatePtr state = prepareInference(context, input, supervision);
-  if (!state)
-    return Variable();
-
-  const InferencePtr& subInference = state->getSubInference();
-  if (subInference)
-  {
-    Variable subOutput;
-    if (!subInference->run(context, state->getSubInput(), state->getSubSupervision(), subOutput))
-      return Variable();
-    state->setSubOutput(subOutput);
-  }
-
-  return finalizeInference(context, state);
-}
-
-String StaticDecoratorInference::toString() const
-  {return getClassName() + T("(") + (decorated ? decorated->toString() : T("<null>")) + T(")");}
-
-void StaticDecoratorInference::clone(ExecutionContext& context, const ObjectPtr& target) const
-{
-  DecoratorInference::clone(context, target);
-  if (decorated)
-    target.staticCast<StaticDecoratorInference>()->decorated = decorated->cloneAndCast<Inference>(context);
-}
-
-/*
-** PostProcessInference
-*/
-PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)
-  : StaticDecoratorInference(postProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
-    postProcessingFunction(postProcessingFunction)
-{
-  setBatchLearner(postProcessInferenceLearner());
-}
-
-TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
-  {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
-
-Variable PostProcessInference::finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
-  {return postProcessingFunction->computeFunction(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
-
-/*
-** ParallelInference
-*/
-Variable ParallelInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-{
-  ParallelInferenceStatePtr state = prepareInference(context, input, supervision);
-  if (!state)
-    return Variable();
-
-  size_t n = state->getNumSubInferences();
-  
-  if (context.isMultiThread() && useMultiThreading())
-  {
-    std::vector<WorkUnitPtr> workUnits(n);
-    String description = getDescription(context, input, supervision) + T(" ");
-    for (size_t i = 0; i < n; ++i)
-      workUnits[i] = inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),
-        state->getSubInput(i), state->getSubSupervision(i), state->getSubOutput(i));
-    context.run(workUnits);
-  }
-  else
-  {
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable subOutput;
-      InferencePtr subInference = state->getSubInference(i);
-      if (subInference)
-      {
-        if (!subInference->run(context, state->getSubInput(i), state->getSubSupervision(i), subOutput))
-        {
-          context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
-          return Variable(); 
-        }
-      }
-      state->setSubOutput(i, subOutput);
-    }
-  }
-  return finalizeInference(context, state);
-}
-
-StaticParallelInference::StaticParallelInference(const String& name)
-  : ParallelInference(name)
-{
-  setBatchLearner(staticParallelInferenceLearner());
-}
-
-SharedParallelInference::SharedParallelInference(const String& name, InferencePtr subInference)
-  : StaticParallelInference(name), subInference(subInference)
-{
-  setBatchLearner(sharedParallelInferenceLearner());
-}
-
-Variable SharedParallelInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-{
-  subInference->beginRunSession();
-  Variable res = ParallelInference::computeInference(context, input, supervision);
-  subInference->endRunSession();
-  return res;
-}
-
-String SharedParallelInference::toString() const
-{
-  jassert(subInference);
-  return getClassName() + T("(") + subInference->toString() + T(")");
-}
-
-void VectorParallelInference::clone(ExecutionContext& context, const ObjectPtr& t) const
-{
-  ReferenceCountedObjectPtr<VectorParallelInference> target = t.staticCast<VectorParallelInference>();
-  StaticParallelInference::clone(context, target);
-  jassert(target->subInferences.size() == subInferences.size());
-  for (size_t i = 0; i < subInferences.size(); ++i)
-    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>(context);
-}
-
-/*
-** SequentialInference
-*/
-Variable SequentialInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-{
-  SequentialInferenceStatePtr state = prepareInference(context, input, supervision);
-  if (!state)
-    return Variable();
-
-  while (!state->isFinal())
-  {
-    Variable subOutput;
-    if (!state->getSubInference()->run(context, state->getSubInput(), state->getSubSupervision(), subOutput))
-      return state->getInput();
-
-    state->setSubOutput(subOutput);
-    if (!updateInference(context, state))
-      state->setFinalState();
-  }
-  return finalizeInference(context, state);
-}
-
-StaticSequentialInference::StaticSequentialInference(const String& name)
-  : SequentialInference(name)
-{
-  setBatchLearner(staticSequentialInferenceLearner());
-}
-
-VectorSequentialInference::VectorSequentialInference(const String& name)
-  : StaticSequentialInference(name) {}
-
-SequentialInferenceStatePtr VectorSequentialInference::prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-{
-  SequentialInferenceStatePtr state = new SequentialInferenceState(input, supervision);
-  if (subInferences.size())
-    prepareSubInference(context, state, 0);
-  return state;
-}
-
-bool VectorSequentialInference::updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const
-{
-  int index = state->getStepNumber(); 
-  jassert(index >= 0);
-  finalizeSubInference(context, state, (size_t)index);
-  jassert(state->getSubInference() == getSubInference(index));
-  ++index;
-  if (index < (int)subInferences.size())
-  {
-    prepareSubInference(context, state, (size_t)index);
-    return true;
-  }
-  else
-    return false;
-}
-
-void VectorSequentialInference::clone(ExecutionContext& context, const ObjectPtr& t) const
-{
-  ReferenceCountedObjectPtr<VectorSequentialInference> target = t.staticCast<VectorSequentialInference>();
-  StaticSequentialInference::clone(context, target);
-  jassert(target->subInferences.size() == subInferences.size());
-  for (size_t i = 0; i < subInferences.size(); ++i)
-    target->subInferences[i] = subInferences[i]->cloneAndCast<Inference>(context);
 }
 
 /*
