@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="ProbabilityDistributionBuilder" directory="ProbabilityDistribution/Builder">
+
+  <namespace name="lbcpp">
+
+    <!-- Probability Distribution Builder -->
+    <class name="ProbabilityDistributionBuilder" base="Object" abstract="yes"/>
+
+    <class name="EnumerationProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">
+      <variable type="Type" name="elementType"/>
+      <variable type="EnumerationProbabilityDistribution" name="distribution"/>
+    </class>
+
+    <class name="GaussianProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">
+      <variable type="ScalarVariableMean" name="means"/>
+      <variable type="ScalarVariableMean" name="variances"/>
+      <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
+    </class>
+
+  </namespace>
+
+</file>
