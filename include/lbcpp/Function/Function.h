@@ -49,6 +49,9 @@ public:
 
 extern ClassPtr functionClass;
 
+extern FunctionPtr identityFunction(TypePtr type);
+extern FunctionPtr multiplyDoubleFunction();
+
 extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
 extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass);
 

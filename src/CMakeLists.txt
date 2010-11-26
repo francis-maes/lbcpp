@@ -202,6 +202,8 @@ SET(LBCPP_FUNCTION_SOURCES
 )
 
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
+  Function/MiscFunctions/IdentityFunction.h
+  Function/MiscFunctions/MultiplyFunction.h
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/SelectVariableFunctions.h
