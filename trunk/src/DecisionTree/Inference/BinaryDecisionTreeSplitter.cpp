@@ -16,7 +16,7 @@ static Variable getInputVariableFromExample(const Variable& example, size_t vari
 }
 
 double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context, 
-                                                     ContainerPtr data, ContainerPtr& positiveExamples, ContainerPtr& negativeExamples,
+                                                     ContainerPtr data, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples,
                                                      PredicatePtr predicate) const
 {
   VectorPtr left = vector(data->getElementsType());
@@ -31,8 +31,8 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
       right->append(example);
   }
 
-  positiveExamples = left;
   negativeExamples = right;
+  positiveExamples = left;
   
   return scoringFunction->compute(context, Variable::pair(left, right));
 }

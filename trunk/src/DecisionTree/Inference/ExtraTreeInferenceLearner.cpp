@@ -145,10 +145,9 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   else
     RandomGenerator::getInstance()->sampleSubset(nonConstantVariables, numAttributeSamplesPerSplit, splitVariables); 
   size_t K = splitVariables.size();
-  
+
   // generate split predicates, score them, and keep the best one
   double bestSplitScore = -DBL_MAX;
-  bestSplits.clear(); // Not necessary, it will be done at first iteration
   for (size_t i = 0; i < K; ++i)
   {
     BinaryDecisionTreeSplitterPtr splitter = tree->getSplitter(splitVariables[i]);
@@ -156,16 +155,14 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
     PredicatePtr splitPredicate = splitter->getSplitPredicate(splitArgument);
 
     ContainerPtr negativeExamples, positiveExamples;
-    double splitScore = splitter->computeSplitScore(context, trainingData, positiveExamples, negativeExamples, splitPredicate);
+    double splitScore = splitter->computeSplitScore(context, trainingData, negativeExamples, positiveExamples, splitPredicate);
 
     jassert(negativeExamples->getNumElements() + positiveExamples->getNumElements() == trainingData->getNumElements());
  
-/*    std::cout << splitPredicate->toString() << "\t score: " << splitScore << std::endl;
-    DiscreteProbabilityDistributionPtr dis = computeDiscreteOutputDistribution(positiveExamples);
-    std::cout << "   nbPos: " << positiveExamples->getNumElements() << " distri Pos: " << dis->toString() << std::endl;
-    dis = computeDiscreteOutputDistribution(negativeExamples);
-    std::cout << "   nbNeg: " << negativeExamples->getNumElements() << " distri Neg: " << dis->toString() << std::endl;
-*/
+    /*std::cout << splitPredicate->toString() << "\t score: " << splitScore;
+    std::cout << "   nbPos: " << positiveExamples->getNumElements();
+    std::cout << "   nbNeg: " << negativeExamples->getNumElements() << std::endl;*/
+
     if (splitScore > bestSplitScore)
     {
       bestSplits.clear();
@@ -185,16 +182,17 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   }
   jassert(bestSplits.size());
   int bestIndex = RandomGenerator::getInstance()->sampleInt(0, (int)bestSplits.size());
-
+  Split selectedSplit = bestSplits[bestIndex];
+  //std::cout << "Best: " << selectedSplit.argument.toString() << std::endl;
   // allocate child nodes
   size_t leftChildIndex = tree->allocateNodes(2);
 
   // create the node
-  tree->createInternalNode(nodeIndex, bestSplits[bestIndex].variableIndex, bestSplits[bestIndex].argument, leftChildIndex);
+  tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
   
   // call recursively
-  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, bestSplits[bestIndex].negative, nonConstantVariables, bestSplits);
-  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, bestSplits[bestIndex].positive, nonConstantVariables, bestSplits);
+  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, selectedSplit.negative, nonConstantVariables, bestSplits);
+  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, selectedSplit.positive, nonConstantVariables, bestSplits);
 }
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const
