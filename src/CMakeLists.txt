@@ -312,10 +312,13 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
 SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/predeclarations.h
   ../include/lbcpp/Inference/Inference.h
-  ../include/lbcpp/Inference/DecoratorInference.h
-  ../include/lbcpp/Inference/SequentialInference.h
-  ../include/lbcpp/Inference/ParallelInference.h
   Inference/Inference.cpp
+  ../include/lbcpp/Inference/DecoratorInference.h
+  Inference/DecoratorInference.cpp
+  ../include/lbcpp/Inference/SequentialInference.h
+  Inference/SequentialInference.cpp
+  ../include/lbcpp/Inference/ParallelInference.h
+  Inference/ParallelInference.cpp
   Inference/InferenceWorkUnit.h
   ../include/lbcpp/Inference/InferenceCallback.h
   ../include/lbcpp/Inference/InferenceResultCache.h
