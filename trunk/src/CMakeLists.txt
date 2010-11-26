@@ -145,6 +145,37 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
 )
 
+#### Execution ####
+
+SET(LBCPP_EXECUTION_SOURCES
+  ../include/lbcpp/Execution/predeclarations.h
+  ../include/lbcpp/Execution/WorkUnit.h
+  Execution/WorkUnit.cpp
+  ../include/lbcpp/Execution/ExecutionStack.h
+  ../include/lbcpp/Execution/ExecutionCallback.h
+  ../include/lbcpp/Execution/ExecutionContext.h
+  Execution/ExecutionContext.cpp
+  ../include/lbcpp/Execution/Notification.h
+  Execution/ExecutionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
+)
+
+SET(LBCPP_EXECUTION_CALLBACK_SOURCES
+  Execution/Callback/SilentExecutionCallback.h
+  Execution/Callback/ConsoleExecutionCallback.h
+  Execution/Callback/NotifierExecutionCallback.h
+  Execution/Callback/ExecutionCallbackClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
+)
+
+SET(LBCPP_EXECUTION_CONTEXT_SOURCES
+  Execution/Context/SingleThreadedExecutionContext.h
+  Execution/Context/SubExecutionContext.h
+  Execution/Context/MultiThreadedExecutionContext.h
+  Execution/Context/ExecutionContextClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
+)
+
 #### ProbabilityDistribution ####
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
@@ -165,35 +196,6 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
   ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.cpp
   ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderClasses.cpp
-)
-
-#### Execution ####
-
-SET(LBCPP_EXECUTION_SOURCES
-  ../include/lbcpp/Execution/predeclarations.h
-  ../include/lbcpp/Execution/WorkUnit.h
-  Execution/WorkUnit.cpp
-  ../include/lbcpp/Execution/ExecutionStack.h
-  ../include/lbcpp/Execution/ExecutionCallback.h
-  ../include/lbcpp/Execution/ExecutionContext.h
-  Execution/ExecutionContext.cpp
-  Execution/ExecutionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
-)
-
-SET(LBCPP_EXECUTION_CALLBACK_SOURCES
-  Execution/Callback/SilentExecutionCallback.h
-  Execution/Callback/ConsoleExecutionCallback.h
-  Execution/Callback/ExecutionCallbackClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
-)
-
-SET(LBCPP_EXECUTION_CONTEXT_SOURCES
-  Execution/Context/SingleThreadedExecutionContext.h
-  Execution/Context/SubExecutionContext.h
-  Execution/Context/MultiThreadedExecutionContext.h
-  Execution/Context/ExecutionContextClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
 )
 
 #### Function ####

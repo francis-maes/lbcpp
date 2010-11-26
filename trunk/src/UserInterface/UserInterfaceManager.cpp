@@ -16,8 +16,8 @@ namespace lbcpp
 class UserInterfaceThread : public Thread
 {
 public:
-  UserInterfaceThread()
-    : Thread(T("Juce Message Thread")), commandManager(NULL), initialized(false) {}
+  UserInterfaceThread(NotificationQueuePtr notifications)
+    : Thread(T("Juce Message Thread")), notifications(notifications), commandManager(NULL), initialized(false) {}
   virtual ~UserInterfaceThread()
     {}
 
@@ -31,8 +31,12 @@ public:
 
     initialized = true;
     while (!threadShouldExit())
+    {
       if (!messageManager->runDispatchLoopUntil(100) && juce::Desktop::getInstance().getNumComponents() == 0)
         break;
+      notifications->flush();
+    }
+    notifications->flush();
 
     juce::Desktop& desktop = juce::Desktop::getInstance();
     jassert(!desktop.getNumComponents());
@@ -55,16 +59,24 @@ public:
     {return initialized;}
 
 protected:
+  NotificationQueuePtr notifications;
   juce::ApplicationCommandManager* commandManager;
   bool mutable initialized;
 };
 
 }; /* namespace lbcpp */
 
+UserInterfaceManager::UserInterfaceManager() : userInterfaceThread(NULL), notifications(new NotificationQueue())
+{
+}
+
+UserInterfaceManager::~UserInterfaceManager()
+  {shutdown();}
+
 void UserInterfaceManager::ensureIsInitialized(ExecutionContext& context)
 {
   if (!userInterfaceThread)
-    userInterfaceThread = new UserInterfaceThread();
+    userInterfaceThread = new UserInterfaceThread(notifications);
 
   if (!userInterfaceThread->isThreadRunning())
   {

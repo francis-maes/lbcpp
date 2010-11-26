@@ -23,6 +23,8 @@
       <variable type="ObjectVector[Inference]" name="stack"/>
     </class>
 
+    <class name="Notification" abstract="yes"/>
+
     <!-- Execution Callback and Context -->
     <class name="ExecutionCallback" base="Object" abstract="yes"/>
     <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
