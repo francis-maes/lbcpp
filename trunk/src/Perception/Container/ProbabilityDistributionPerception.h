@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_PERCEPTION_PROBABILITY_DISTRIBUTION_H_
 
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 
 namespace lbcpp
 {
@@ -25,11 +25,11 @@ public:
   DiscreteProbabilityDistributionPerception() {}
 
   virtual TypePtr getInputType() const
-    {return discreteProbabilityDistributionClass(enumeration);}
+    {return enumerationProbabilityDistributionClass(enumeration);}
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const DiscreteProbabilityDistributionPtr& distribution = input.getObjectAndCast<DiscreteProbabilityDistribution>(context);
+    const EnumerationProbabilityDistributionPtr& distribution = input.getObjectAndCast<EnumerationProbabilityDistribution>(context);
     jassert(distribution);
     size_t n = enumeration->getNumElements();
     for (size_t i = 0; i <= n; ++i)

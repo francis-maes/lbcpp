@@ -24,13 +24,13 @@ public:
     {}
   
   virtual TypePtr getElementsType() const
-    {return vectorClass(vectorClass(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration)));}
+    {return vectorClass(vectorClass(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration)));}
 
   virtual void parseBegin(ExecutionContext& context)
   {
     currentPosition = -3;
 
-    pssm = vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
+    pssm = vector(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(ExecutionContext& context, const String& line)
@@ -77,7 +77,7 @@ public:
       return false;
     }
 
-    DiscreteProbabilityDistributionPtr scores = new DiscreteProbabilityDistribution(aminoAcidTypeEnumeration);
+    EnumerationProbabilityDistributionPtr scores = new EnumerationProbabilityDistribution(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + (int)i * 3;

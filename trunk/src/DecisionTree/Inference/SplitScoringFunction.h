@@ -45,7 +45,7 @@ public:
   virtual double compute(ExecutionContext& context, const Variable& input) const;
 
 protected:
-  DiscreteProbabilityDistributionPtr getDiscreteOutputDistribution(ContainerPtr data) const;
+  EnumerationProbabilityDistributionPtr getDiscreteOutputDistribution(ContainerPtr data) const;
 };
 
 typedef ReferenceCountedObjectPtr<SplitScoringFunction> SplitScoringFunctionPtr;

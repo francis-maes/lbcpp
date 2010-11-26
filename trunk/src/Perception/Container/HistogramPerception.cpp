@@ -6,7 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 #include "HistogramPerception.h"
+
 using namespace lbcpp;
 
 namespace lbcpp {
@@ -28,7 +30,7 @@ public:
       computeForEnumeration(enumeration, container);
     else if (type->inheritsFrom(doubleType))
       computeForDouble(container);
-    else if (type->inheritsFrom(discreteProbabilityDistributionClass(anyType)))
+    else if (type->inheritsFrom(enumerationProbabilityDistributionClass(anyType)))
     {
       EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
       jassert(enumeration);
@@ -87,10 +89,10 @@ private:
       std::vector<double>& scores = accumulators[i];
       if (i > 0)
         scores = accumulators[i - 1];
-      DiscreteProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<DiscreteProbabilityDistribution>(context);
+      EnumerationProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationProbabilityDistribution>(context);
       jassert(distribution);
       for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
-        scores[j] += distribution->compute(Variable(j, enumeration));
+        scores[j] += distribution->compute(context, Variable(j, enumeration));
     }
   }
 };
@@ -135,7 +137,7 @@ void HistogramPerception::computeOutputType()
     reserveOutputVariables(3);
     addOutputVariable(T("average"), elementsType);
   }
-  else if (elementsType->inheritsFrom(discreteProbabilityDistributionClass(anyType)))
+  else if (elementsType->inheritsFrom(enumerationProbabilityDistributionClass(anyType)))
   {
     enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
     reserveOutputVariables(enumeration->getNumElements() + 2);

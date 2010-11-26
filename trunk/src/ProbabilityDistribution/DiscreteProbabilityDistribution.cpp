@@ -1,20 +1,21 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProbabilityDistribution.cpp    | Probability Distributions       |
-| Author  : Francis Maes                   |                                 |
-| Started : 06/07/2010 15:16               |                                 |
+| Filename: DiscreteProbabilityDistrib..cpp| Discrete Probability            |
+| Author  : Julien Becker                  | Distributions                   |
+| Started : 26/11/2010 11:36               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Data/XmlSerialisation.h>
+
 using namespace lbcpp;
 
 /*
-** BernoulliDistribution
-*/
-double BernoulliDistribution::compute(const Variable& value) const
+ ** BernoulliDistribution
+ */
+double BernoulliDistribution::compute(ExecutionContext& context, const Variable& value) const
 {
   if (!value.isNil() && checkInheritance(value, booleanType))
     return value.getBoolean() ? getProbabilityOfTrue() : getProbabilityOfFalse();
@@ -23,7 +24,7 @@ double BernoulliDistribution::compute(const Variable& value) const
 
 Variable BernoulliDistribution::sample(RandomGeneratorPtr random) const
   {return random->sampleBool(getProbabilityOfTrue());}
-  
+
 double BernoulliDistribution::computeEntropy() const
 {
   double p = getProbabilityOfTrue();
@@ -37,12 +38,12 @@ double BernoulliDistribution::computeEntropy() const
 }
 
 /*
-** DiscreteProbabilityDistribution
-*/
-DiscreteProbabilityDistribution::DiscreteProbabilityDistribution(EnumerationPtr enumeration)
-  : ProbabilityDistribution(discreteProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
+ ** EnumerationProbabilityDistribution
+ */
+EnumerationProbabilityDistribution::EnumerationProbabilityDistribution(EnumerationPtr enumeration)
+: DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
 
-String DiscreteProbabilityDistribution::toString() const
+String EnumerationProbabilityDistribution::toString() const
 {
   EnumerationPtr enumeration = getEnumeration();
   String str;
@@ -63,7 +64,7 @@ String DiscreteProbabilityDistribution::toString() const
   return str;
 }
 
-Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) const
+Variable EnumerationProbabilityDistribution::sample(RandomGeneratorPtr random) const
 {
   EnumerationPtr enumeration = getEnumeration();
   int res = (int)random->sampleWithProbabilities(values);
@@ -73,7 +74,7 @@ Variable DiscreteProbabilityDistribution::sample(RandomGeneratorPtr random) cons
     return Variable();
 }
 
-double DiscreteProbabilityDistribution::compute(const Variable& value) const
+double EnumerationProbabilityDistribution::compute(ExecutionContext& context, const Variable& value) const
 {
   if (value.isNil())
     return values.back();
@@ -84,7 +85,7 @@ double DiscreteProbabilityDistribution::compute(const Variable& value) const
   return values[index];
 }
 
-double DiscreteProbabilityDistribution::computeEntropy() const
+double EnumerationProbabilityDistribution::computeEntropy() const
 {
   ScopedLock _(cachedEntropyLock);
   if (cachedEntropy.exists())
@@ -96,11 +97,11 @@ double DiscreteProbabilityDistribution::computeEntropy() const
       double p = values[i];
       res -= p * log2(p);
     }
-  const_cast<DiscreteProbabilityDistribution* >(this)->cachedEntropy = Variable(res);
+  const_cast<EnumerationProbabilityDistribution* >(this)->cachedEntropy = Variable(res);
   return res;
 }
 
-void DiscreteProbabilityDistribution::increment(const Variable& value)
+void EnumerationProbabilityDistribution::increment(const Variable& value)
 {
   size_t index;
   if (value.isNil())
@@ -113,7 +114,7 @@ void DiscreteProbabilityDistribution::increment(const Variable& value)
   setProbability(index, getProbability(index) + 1.0);
 }
 
-void DiscreteProbabilityDistribution::normalize()
+void EnumerationProbabilityDistribution::normalize()
 {
   if (count <= 1)
     return;
@@ -122,10 +123,10 @@ void DiscreteProbabilityDistribution::normalize()
   count = 0;
 }
 
-void DiscreteProbabilityDistribution::saveToXml(XmlExporter& exporter) const
+void EnumerationProbabilityDistribution::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
-bool DiscreteProbabilityDistribution::loadFromString(ExecutionContext& context, const String& str)
+bool EnumerationProbabilityDistribution::loadFromString(ExecutionContext& context, const String& str)
 {
   EnumerationPtr enumeration = getEnumeration();
   jassert(enumeration);
@@ -172,35 +173,14 @@ bool DiscreteProbabilityDistribution::loadFromString(ExecutionContext& context, 
   return true;
 }
 
-bool DiscreteProbabilityDistribution::loadFromXml(XmlImporter& importer)
+bool EnumerationProbabilityDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
-void DiscreteProbabilityDistribution::setProbability(size_t index, double probability)
+void EnumerationProbabilityDistribution::setProbability(size_t index, double probability)
 {
   jassert(index < values.size());
   values[index] = probability;
-
+  
   ScopedLock _(cachedEntropyLock);
   cachedEntropy.clear();
 }
-
-/*
-** GaussianProbabilityDistribution
-*/
-double GaussianProbabilityDistribution::computeEntropy() const
-  {return 0.5 * log(2 * M_PI * exp(1.0) * values->getVariance());}
-
-double GaussianProbabilityDistribution::compute(const Variable& value) const
-{
-  jassert(value.isDouble());
-  double mean = values->getMean();
-  double variance = values->getVariance(); // FIXME: Variance or Standard Deviation ?????
-  double squaredNumerator = value.getDouble() - mean;
-  squaredNumerator *= squaredNumerator;
-  double squaredDenominator = 2 * variance;
-  squaredDenominator *= squaredDenominator;
-  return 1 / sqrt(variance * 2 * M_PI) * exp(-squaredNumerator/squaredDenominator);
-}
-
-Variable GaussianProbabilityDistribution::sample(RandomGeneratorPtr random) const
-  {return Variable(random->sampleDoubleFromGaussian(values->getMean(), values->getStandardDeviation()), doubleType);}

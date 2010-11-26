@@ -136,7 +136,10 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ../include/lbcpp/ProbabilityDistribution/ProbabilityDistribution.h
-  ProbabilityDistribution/ProbabilityDistribution.cpp
+  ../include/lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h
+  ProbabilityDistribution/DiscreteProbabilityDistribution.cpp
+  ../include/lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h
+  ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
   ProbabilityDistribution/ProbabilityDistributionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionClasses.cpp
 )

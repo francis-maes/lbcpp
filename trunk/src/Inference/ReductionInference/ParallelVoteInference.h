@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
@@ -116,7 +116,7 @@ public:
   {
     EnumerationPtr enumType = getOutputType(getInputType());
     size_t n = state->getNumSubInferences();
-    DiscreteProbabilityDistributionPtr distribution = new DiscreteProbabilityDistribution(enumType); 
+    EnumerationProbabilityDistributionPtr distribution = new EnumerationProbabilityDistribution(enumType); 
     for (size_t i = 0; i < n; ++i)
     {
       Variable vote = state->getSubOutput(i);

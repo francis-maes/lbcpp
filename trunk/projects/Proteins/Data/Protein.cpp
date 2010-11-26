@@ -5,11 +5,14 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+
 #include "Protein.h"
 #include "Formats/PDBFileParser.h"
 #include "Formats/PDBFileGenerator.h"
 #include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
+#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+
 using namespace lbcpp;
 
 ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant)
@@ -434,7 +437,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
 ** Create Empty Targets
 */
 VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-  {return vector(discreteProbabilityDistributionClass(aminoAcidTypeEnumeration), getLength());}
+  {return vector(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
   {return vector(secondaryStructureElementEnumeration, getLength());}

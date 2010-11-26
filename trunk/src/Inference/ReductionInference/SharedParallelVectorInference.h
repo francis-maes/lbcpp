@@ -72,7 +72,7 @@ public:
       {
         if (result.isObject())
         {
-          DiscreteProbabilityDistributionPtr distribution = result.dynamicCast<DiscreteProbabilityDistribution>();
+          EnumerationProbabilityDistributionPtr distribution = result.dynamicCast<EnumerationProbabilityDistribution>();
           if (distribution)
             result = distribution->sample(RandomGenerator::getInstance());
         }

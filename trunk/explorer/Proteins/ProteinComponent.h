@@ -142,7 +142,7 @@ public:
       {
         TypePtr type = proteinClass->getObjectVariableType(i);
         if (type->inheritsFrom(genericVectorClass(anyType))
-         || type->inheritsFrom(objectVectorClass(discreteProbabilityDistributionClass(anyType))))
+         || type->inheritsFrom(objectVectorClass(enumerationProbabilityDistributionClass(anyType))))
         {
           String friendlyName = proteinClass->getObjectVariableDescription(i);
           addObjectNameIfExists(friendlyName, i, sequenceIndex);

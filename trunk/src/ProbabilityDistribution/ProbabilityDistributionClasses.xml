@@ -3,6 +3,8 @@
 <file name="ProbabilityDistribution" directory="ProbabilityDistribution">
 
   <include file="lbcpp/ProbabilityDistribution/ProbabilityDistribution.h"/>
+  <include file="lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h"/>
+  <include file="lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h"/>
 
   <namespace name="lbcpp">
 
@@ -12,7 +14,10 @@
       <variable type="Double" name="pTrue"/>
       <variable type="Double" name="pFalse"/>
     </class>
-    <template name="DiscreteProbabilityDistribution" base="ProbabilityDistribution">
+    
+    <class name="DiscreteProbabilityDistribution" base="ProbabilityDistribution" abstract="yes"/>
+    
+    <template name="EnumerationProbabilityDistribution" base="DiscreteProbabilityDistribution">
       <parameter name="enumeration" type="EnumValue"/>
 
       <code>
@@ -24,13 +29,13 @@
 
       virtual Variable getObjectVariable(const Object* pthis, size_t index) const
       {
-        const DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;const DiscreteProbabilityDistribution* &gt;(pthis);
+        const EnumerationProbabilityDistribution* distribution = dynamic_cast&lt;const EnumerationProbabilityDistribution* &gt;(pthis);
         return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
       }
 
       virtual void setObjectVariable(ExecutionContext&amp; context, Object* pthis, size_t index, const Variable&amp; subValue) const
       {
-        DiscreteProbabilityDistribution* distribution = dynamic_cast&lt;DiscreteProbabilityDistribution* &gt;(pthis);
+        EnumerationProbabilityDistribution* distribution = dynamic_cast&lt;EnumerationProbabilityDistribution* &gt;(pthis);
         if (distribution)
         {
           if (!distribution->values.size())

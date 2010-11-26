@@ -11,8 +11,10 @@ Network:
  * void variableReceived(const Variable& variable)
  
 Extra-trees:
- * GaussianDistribution : ContinuousProbabilityDistribution : ProbabilityDistribution
-    - Nouveau dossier: include/lbcpp/ProbabilityDistribution
+ + GaussianDistribution : ContinuousProbabilityDistribution : ProbabilityDistribution
+     + Nouveau dossier: include/lbcpp/ProbabilityDistribution
+     - Splitter le fichier en Discrete et Continuous
+     - Donner ExecutionContext à compute
 
  * ProbabilityDistributionBuilder:
      - virtual TypePtr getInputType() const
