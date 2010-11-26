@@ -43,7 +43,7 @@ public:
 
     deleteAndZero(commandManager);
 #if JUCE_MAC
-    const ScopedAutoReleasePool pool;
+    const juce::ScopedAutoReleasePool pool;
 #endif
     {
       juce::DeletedAtShutdown::deleteAll();
