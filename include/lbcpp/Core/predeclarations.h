@@ -54,6 +54,8 @@ typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 
+class ExecutionContext;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_PREDECLARATIONS_H_
