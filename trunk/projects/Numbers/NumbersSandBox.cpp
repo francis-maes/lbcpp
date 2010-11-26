@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
   InferencePtr rankingInference = createRankingInference(perception);
 
   std::cout << "Training..." << std::endl;
-  context->train(rankingInference, trainingData);
+  rankingInference->train(*context, trainingData);
 
   std::cout << "Testing: " << std::endl;
   ContainerPtr predictedScores = context->predict(rankingInference, testingExample[0]).getObjectAndCast<Container>();

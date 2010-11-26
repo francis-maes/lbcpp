@@ -393,10 +393,10 @@ protected:
   virtual bool runWorker(ExecutionContext& context)
   {
     context.appendCallback(new Callback(this));
-    train(context, inference, trainingProteins, ContainerPtr());
+    inference->train(context, trainingProteins, ContainerPtr());
 
     ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluate(context, inference, testingProteins, evaluator);
+    inference->evaluate(context, testingProteins, evaluator);
     context.informationCallback(T("Evaluation: ") + evaluator->toString());
 
     testAccuracy = evaluator->getEvaluatorForTarget(context, T("secondaryStructure"))->getDefaultScore();

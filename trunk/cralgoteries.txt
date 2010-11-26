@@ -1,9 +1,7 @@
+* Split Inference.cpp => DecoratorInference.cpp, SequentialInference.cpp, ParallelInference.cpp
 
-* ProteinInferenceEvaluatorProgram.cpp il y a peut-être des classes utiles à importer dans lbcpp
 
 Execution:
- * New directory lbcpp/core with Variable, Object, Type, Utilites, Function
- 
  * Faire que train/evaluate/predict soit des fonctions de Inference
  
  * UserInterfaceExecutionContext

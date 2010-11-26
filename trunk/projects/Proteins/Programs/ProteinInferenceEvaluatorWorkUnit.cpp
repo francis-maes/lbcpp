@@ -55,7 +55,7 @@ public:
     {return inference->getOutputType(inputType);}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return predict(context, inference, input);}
+    {return inference->computeFunction(context, input);}
   
 protected:
   InferencePtr inference;

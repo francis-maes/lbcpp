@@ -79,7 +79,7 @@ public:
       parametersLock.exitWrite();
   }
 
-  virtual Variable predict(ExecutionContext& context, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     ScopedReadLock _(parametersLock);
     const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>(context);

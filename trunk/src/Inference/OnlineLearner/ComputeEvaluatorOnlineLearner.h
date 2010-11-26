@@ -14,7 +14,6 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/Inference/InferenceContext.h>
 
 namespace lbcpp
 {
@@ -30,7 +29,7 @@ public:
   {
     EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>(context);
     InferenceExampleVectorPtr examples = computeOnValidationData ? batchLearnerInput->getValidationExamples() : batchLearnerInput->getTrainingExamples();
-    evaluate(context, inference, examples, eval);
+    inference->evaluate(context, examples, eval);
     lastScores.clear();
     eval->getScores(lastScores);
     lastDefaultScore = eval->getDefaultScore();

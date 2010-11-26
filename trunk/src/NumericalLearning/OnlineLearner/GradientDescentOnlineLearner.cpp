@@ -8,7 +8,6 @@
 
 #include "GradientDescentOnlineLearner.h"
 #include <lbcpp/Function/ScalarFunction.h>
-#include <lbcpp/Inference/InferenceContext.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 using namespace lbcpp;
@@ -90,11 +89,8 @@ void GradientDescentOnlineLearner::updateParameters(ExecutionContext& context, c
   Variable pred;
   if (prediction.exists())
     pred = prediction;
-  else if (inference == numericalInference) 
-    pred = numericalInference->predict(context, input);
   else
-    // special case for ranking
-    pred = predict(context, inference, input);
+    pred = inference->computeFunction(context, input);
   numericalInference->computeAndAddGradient(context, - weight * computeLearningRate(), input, supervision, pred, exampleLossValue, target);
 
   ScopedLock _(lossValueLock);

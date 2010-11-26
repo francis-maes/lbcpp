@@ -134,7 +134,7 @@ public:
   {
     //InferencePtr optimizer = new DichotomicOptimizer(-5, 10, maxIterationsStoppingCriterion(11));
     InferencePtr optimizer = new PolychotomicOptimizer(2, -5, 10, maxIterationsStoppingCriterion(11));
-    return runInference(context, optimizer, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable());
+    return optimizer->run(context, Variable(ObjectiveFunctionPtr(new DumbObjectiveFunction()), objectiveFunctionClass), Variable());
   }
 };
 

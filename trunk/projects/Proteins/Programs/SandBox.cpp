@@ -33,7 +33,7 @@ public:
     InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     customizeLearner(context, input, onlineLearner);
-    runInference(context, inferenceLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
+    inferenceLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
     return onlineLearner->getLastLearner()->getDefaultScore();
   }
 
@@ -118,13 +118,13 @@ public:
     EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
     
     Variable optimizedValue;
-    if (!runInference(context, optimizer, objective, Variable(), optimizedValue))
+    if (!optimizer->run(context, objective, Variable(), optimizedValue))
       return Variable();
     
     InferencePtr targetInference = learnerInput->getTargetInference();
     const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
     objective->customizeLearner(context, optimizedValue, onlineLearner);
-    runInference(context, baseLearner, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
+    baseLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
     return Variable();
   }
 
@@ -366,11 +366,11 @@ public:
       }
 /*
       ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-      context->evaluate(inference, trainingData, evaluator);
+      inference->evaluate(context, trainingData, evaluator);
       processResults(evaluator, true);
 
       evaluator = new ProteinEvaluator();
-      context->evaluate(inference, testingData, evaluator);
+      inference->evaluate(context, testingData, evaluator);
       processResults(evaluator, false);*/
 
       //context.informationCallback(T("====================================================="));
@@ -521,31 +521,31 @@ int main(int argc, char** argv)
     ExecutionContextPtr context = defaultConsoleExecutionContext(true);
     InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context->appendCallback(trainingCallback);
-    train(*context, inference, trainProteins, validationProteins);
+    inference->train(*context, trainProteins, validationProteins);
     context->removeCallback(trainingCallback);
   }
 
   /*
   std::cout << "Making and saving train predicions..." << std::endl;
-  context->evaluate(inference, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
+  inference->evaluate(*context, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
   std::cout << "Making and saving test predicions..." << std::endl;
-  context->evaluate(inference, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
+  inference->evaluate(*context, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
   */
 
   {
     std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    evaluate(*context, inference, trainProteins, evaluator);
+    inference->evaluate(*context, trainProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Validation Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    evaluate(*context, inference, validationProteins, evaluator);
+    inference->evaluate(*context, validationProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
-    evaluate(*context, inference, testProteins, evaluator);
+    inference->evaluate(*context, testProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
   return 0;
@@ -565,8 +565,8 @@ int main(int argc, char** argv)
     EvaluatorPtr evaluator = new ProteinEvaluator();
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
     context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
-    evaluate(*context, inference, trainProteins, evaluator);
-  //  context->crossValidate(inference, proteins, evaluator, 2);
+    inference->evaluate(*context, trainProteins, evaluator);
+  //  inference->crossValidate(*context, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
@@ -584,7 +584,7 @@ int main(int argc, char** argv)
 
   std::cout << "Re-evaluating..." << std::endl;
   evaluator = new ProteinEvaluator();
-  context->evaluate(loadedInference, trainProteins, evaluator);
+  loadedInference->evaluate(*context, trainProteins, evaluator);
   std::cout << "ok." << std::endl;
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;

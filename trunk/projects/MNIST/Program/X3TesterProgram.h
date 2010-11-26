@@ -59,14 +59,14 @@ public:
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
     InferencePtr inference = classificationExtraTreeInference(context, T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
     
-    train(context, inference, learningData, ContainerPtr());
+    inference->train(context, learningData, ContainerPtr());
     
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    evaluate(context, inference, learningData, evaluator);
+    inference->evaluate(context, learningData, evaluator);
     std::cout << "Evaluation (Train)" << std::endl << evaluator->toString() << std::endl;
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    evaluate(context, inference, testingData, evaluator);
+    inference->evaluate(context, testingData, evaluator);
     std::cout << "Evaluation (Test)" << std::endl << evaluator->toString() << std::endl;
     return true;
   }

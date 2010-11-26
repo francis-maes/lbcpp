@@ -46,9 +46,9 @@ protected:
     const ContainerPtr& evaluationData = pair->getSecond().getObjectAndCast<Container>(context);
     InferencePtr inference = inferenceModel->cloneAndCast<Inference>(context);
     jassert(trainingData && evaluationData && inference);
-    if (!train(context, inference, trainingData, ContainerPtr()))
+    if (!inference->train(context, trainingData, ContainerPtr()))
       return Variable();
-    evaluate(context, inference, evaluationData, evaluator);
+    inference->evaluate(context, evaluationData, evaluator);
     return Variable();
   }
 };

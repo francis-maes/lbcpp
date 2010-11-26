@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Core/Pair.h>
+#include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/ParallelInference.h>
@@ -98,6 +99,84 @@ InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
   {return onlineLearner->getLastLearner();}
 
 /*
+** High Level functions
+*/
+static bool internalPreInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
+{
+  context.getStack()->push(inference);
+  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
+  {
+    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
+    if (callback)
+      callback->preInferenceCallback(context, input, supervision, output);
+  }
+  return true;
+}
+
+static bool internalPostInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
+{
+  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
+  {
+    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
+    if (callback)
+      callback->postInferenceCallback(context, input, supervision, output);
+  }
+  context.getStack()->pop();
+  return true;
+}
+
+static bool internalRunInference(ExecutionContext& context, const InferencePtr& inference, const Variable& in, const Variable& sup, Variable* out)
+{
+  jassert(!in.isNil());
+  jassert(inference);
+  Variable input(in);
+  Variable supervision(sup);
+  Variable output;
+  if (!internalPreInference(context, inference, input, supervision, output))
+  {
+    context.warningCallback(T("ExecutionContext::run"), T("pre-inference failed"));
+    jassert(false);
+    return false;
+  }
+
+  if (!output.exists())
+    output = inference->computeInference(context, input, supervision);
+
+  internalPostInference(context, inference, input, supervision, output);
+  if (out)
+    *out = output;
+  return true;
+}
+
+bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision) const
+  {return internalRunInference(context, refCountedPointerFromThis(this), input, supervision, NULL);}
+
+bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output) const
+  {return internalRunInference(context, refCountedPointerFromThis(this), input, supervision, &output);}
+
+bool Inference::train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples)
+  {return train(context, new InferenceBatchLearnerInput(refCountedPointerFromThis(this), trainingExamples, validationExamples));}
+
+bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput)
+  {return batchLearner && batchLearner->run(context, learnerInput, Variable());}
+
+bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const
+{
+  InferencePtr inference = refCountedPointerFromThis(this);
+  InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
+  context.appendCallback(evaluationCallback);
+  bool res = runOnSupervisedExamplesInference(inference, true)->run(context, examples, Variable());
+  context.removeCallback(evaluationCallback);
+  return res;
+}
+
+bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds) const
+{
+  InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, refCountedPointerFromThis(this), numFolds));
+  return cvInference->run(context, examples, Variable());
+}
+
+/*
 ** DecoratorInference
 */
 DecoratorInference::DecoratorInference(const String& name)
@@ -116,7 +195,7 @@ Variable DecoratorInference::computeInference(ExecutionContext& context, const V
   if (subInference)
   {
     Variable subOutput;
-    if (!runInference(context, subInference, state->getSubInput(), state->getSubSupervision(), subOutput))
+    if (!subInference->run(context, state->getSubInput(), state->getSubSupervision(), subOutput))
       return Variable();
     state->setSubOutput(subOutput);
   }
@@ -178,7 +257,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
       {
-        if (!runInference(context, subInference, state->getSubInput(i), state->getSubSupervision(i), subOutput))
+        if (!subInference->run(context, state->getSubInput(i), state->getSubSupervision(i), subOutput))
         {
           context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
           return Variable(); 
@@ -237,7 +316,7 @@ Variable SequentialInference::computeInference(ExecutionContext& context, const 
   while (!state->isFinal())
   {
     Variable subOutput;
-    if (!runInference(context, state->getSubInference(), state->getSubInput(), state->getSubSupervision(), subOutput))
+    if (!state->getSubInference()->run(context, state->getSubInput(), state->getSubSupervision(), subOutput))
       return state->getInput();
 
     state->setSubOutput(subOutput);
