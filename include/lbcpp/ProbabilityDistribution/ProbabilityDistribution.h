@@ -9,7 +9,9 @@
 #ifndef LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 # define LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 
-# include "Variable.h"
+# include "../Data/Variable.h"
+# include "../Data/RandomGenerator.h"
+# include "../Data/RandomVariable.h"
 
 namespace lbcpp
 {
@@ -105,6 +107,35 @@ typedef ReferenceCountedObjectPtr<DiscreteProbabilityDistribution> DiscreteProba
 extern ClassPtr discreteProbabilityDistributionClass(TypePtr type);
 inline ClassPtr discreteProbabilityDistributionClass(EnumerationPtr enumeration)
   {return discreteProbabilityDistributionClass((TypePtr)enumeration);}
+
+class ContinuousProbabilityDistribution : public ProbabilityDistribution
+{
+
+};
+  
+class GaussianProbabilityDistribution : public ProbabilityDistribution
+{
+public:
+  GaussianProbabilityDistribution() : values(new ScalarVariableMeanAndVariance) {}
+  
+  virtual double computeEntropy() const;
+
+  virtual double compute(const Variable& value) const;
+
+  virtual Variable sample(RandomGeneratorPtr random) const;
+
+  void push(double value)
+    {values->push(value);}
+  
+  double getMean() const
+    {return values->getMean();}
+  
+  double getVariance() const
+    {return values->getVariance();}
+  
+protected:
+  ScalarVariableMeanAndVariancePtr values;
+};
 
 }; /* namespace lbcpp */
 

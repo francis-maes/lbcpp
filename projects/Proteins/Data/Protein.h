@@ -11,7 +11,7 @@
 
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
-# include <lbcpp/Data/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 
 # include "AminoAcid.h"
 # include "SecondaryStructure.h"

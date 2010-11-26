@@ -10,6 +10,8 @@ GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
+GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionClasses.xml ProbabilityDistributionClasses.cpp)
+
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackClasses.xml ExecutionCallbackClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextClasses.xml ExecutionContextClasses.cpp)
@@ -75,10 +77,8 @@ SET(LBCPP_DATA_SOURCES
   Data/Vector.cpp
   ../include/lbcpp/Data/SymmetricMatrix.h
   Data/SymmetricMatrix.cpp
-  ../include/lbcpp/Data/ProbabilityDistribution.h
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
-  Data/ProbabilityDistribution.cpp
   ../include/lbcpp/Data/RandomVariable.h  
   ../include/lbcpp/Data/Consumer.h
   Data/Consumer.cpp
@@ -130,6 +130,15 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/ExcludeRangeContainer.h
   Data/Container/ContainerClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
+)
+
+#### ProbabilityDistribution ####
+
+SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
+  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistribution.h
+  ProbabilityDistribution/ProbabilityDistribution.cpp
+  ProbabilityDistribution/ProbabilityDistributionClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionClasses.cpp
 )
 
 #### Execution ####
@@ -474,6 +483,9 @@ SET(LBCPP_CORE
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
     ${LBCPP_DATA_IMPL_HEADERS}
+  
+  # ProbabilityDistribution
+  ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
 
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -528,6 +540,9 @@ SOURCE_SUB_GROUP(Data Type FILES ${LBCPP_DATA_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Data Object FILES ${LBCPP_DATA_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
+
+## ProbabilityDistribution
+SOURCE_GROUP(ProbabilityDistribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

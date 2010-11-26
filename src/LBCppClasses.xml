@@ -3,6 +3,7 @@
 <file name="LBCpp">
 
   <import name="Data"/>
+  <import name="ProbabilityDistribution"/>
   <import name="Execution"/>
   <import name="Function"/>
   
