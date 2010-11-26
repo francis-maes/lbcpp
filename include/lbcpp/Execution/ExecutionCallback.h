@@ -124,6 +124,7 @@ protected:
 
 extern ExecutionCallbackPtr silentExecutionCallback();
 extern ExecutionCallbackPtr consoleExecutionCallback();
+extern ExecutionCallbackPtr notifierExecutionCallback(ExecutionContext& context, ConsumerPtr notificationsConsumer, ExecutionCallbackPtr target);
 
 }; /* namespace lbcpp */
 

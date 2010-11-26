@@ -9,6 +9,42 @@
     <class name="ConsoleExecutionCallback" base="ExecutionCallback">
       <constructor/>
     </class>
+
+    <!-- NotifierExecutionCallback -->
+    <class name="ExecutionNotification" base="Notification">
+      <variable type="ExecutionCallback" name="target"/>
+    </class>
+
+    <class name="ExecutionProgressNotification" base="ExecutionNotification">
+      <variable type="Double" name="progression"/>
+      <variable type="Double" name="progressionTotal"/>
+      <variable type="String" name="progressionUnit"/>
+    </class>
+
+    <class name="ExecutionResultNotification" base="ExecutionNotification">
+      <variable type="String" name="name"/>
+      <variable type="Variable" name="value"/>
+    </class>
+
+    <enumeration name="ExecutionMessageType">
+      <value name="informationMessageType"/>
+      <value name="warningMessageType"/>
+      <value name="errorMessageType"/>
+      <value name="statusMessageType"/>
+    </enumeration>
+
+    <class name="ExecutionMessageNotification" base="ExecutionNotification">
+      <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
+      <variable type="String" name="what"/>
+      <variable type="String" name="where"/>
+    </class>
+
+    <class name="NotifierExecutionCallback" base="ExecutionCallback">
+      <constructor arguments="ExecutionContext&amp; context, ConsumerPtr notificationsConsumer, ExecutionCallbackPtr target"/>
+      <variable type="Consumer" name="notificationsConsumer"/>
+      <variable type="ExecutionCallback" name="target"/>
+    </class>
+   
   </namespace>
 
 </file>

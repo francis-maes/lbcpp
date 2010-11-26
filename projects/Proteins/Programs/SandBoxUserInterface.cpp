@@ -15,48 +15,58 @@ using juce::DocumentWindow;
 using juce::Colours;
 using juce::Justification;
 
-class UserInterfaceExecutionCallbackMainComponent : public Component, public ExecutionCallback
+class UserInterfaceExecutionCallbackMainComponent : public Component
 {
 public:
-  UserInterfaceExecutionCallbackMainComponent() : progressionValue(0.0) {}
+  UserInterfaceExecutionCallbackMainComponent(CompositeExecutionCallback* parentCallback) : progressionValue(0.0)
+  {
+    parentCallback->appendCallback(notifierExecutionCallback(parentCallback->getContext(),
+        userInterfaceManager().getNotificationQueue(), callback = new Callback(this)));
+  }
+
+  virtual ~UserInterfaceExecutionCallbackMainComponent()
+  {
+    callback->owner = NULL;
+  }
 
   virtual void paint(juce::Graphics& g)
   {
-    String progressionString;
-    double progressionValue = getProgression(progressionString);
+    g.setColour(Colours::red);
     g.fillRect(0, 0, (int)(getWidth() * progressionValue), getHeight());
     g.setColour(Colours::black);
     g.drawText(progressionString, 0, 0, getWidth(), getHeight(), Justification::centred, false);
   }
 
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
-  {
-    {
-      ScopedLock _(progressionLock);
-      progressionString = String(progression);
-      if (progressionTotal != 0.0)
-        progressionString += T(" / ") + String(progressionTotal);
-      if (progressionUnit.isNotEmpty())
-        progressionString += T(" ") + progressionUnit;
-      progressionValue = progressionTotal ? progression / progressionTotal : -1.0;
-    }
-    juce::MessageManagerLock _;
-    repaint();
-  }
-
   lbcpp_UseDebuggingNewOperator
 
 private:
-  CriticalSection progressionLock;
   String progressionString;
   double progressionValue;
 
-  double getProgression(String& string) const
+  struct Callback : public ExecutionCallback
   {
-    ScopedLock _(progressionLock);
-    string = progressionString;
-    return progressionValue;
-  }
+    Callback(UserInterfaceExecutionCallbackMainComponent* owner)
+      : owner(owner) {}
+
+    UserInterfaceExecutionCallbackMainComponent* owner;
+      
+    virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+    {
+      if (!owner)
+        return;
+      String str = String(progression);
+      if (progressionTotal != 0.0)
+        str += T(" / ") + String(progressionTotal);
+      if (progressionUnit.isNotEmpty())
+        str += T(" ") + progressionUnit;
+      owner->progressionString = str;
+      owner->progressionValue = progressionTotal ? progression / progressionTotal : -1.0;
+      owner->repaint();
+    }
+  };
+
+  typedef ReferenceCountedObjectPtr<Callback> CallbackPtr;
+  CallbackPtr callback;
 };
 
 class LBCppMainWindow : public DocumentWindow
@@ -101,10 +111,7 @@ private:
   {
     UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
     jassert(!pthis->content && !pthis->mainWindow);
-    pthis->content = new UserInterfaceExecutionCallbackMainComponent();
-    pthis->content->setStaticAllocationFlag();
-    pthis->appendCallback(ExecutionCallbackPtr(pthis->content));
-
+    pthis->content = new UserInterfaceExecutionCallbackMainComponent(pthis);
     pthis->mainWindow = new LBCppMainWindow(pthis->content);
     return NULL;
   }
@@ -141,7 +148,7 @@ public:
 
     for (size_t i = 0; i < 10; ++i)
     {
-      Thread::sleep(10);
+      Thread::sleep(100);
       context.progressCallback(i + 1.0, 10.0, T("epochs"));
     }
 
@@ -150,12 +157,10 @@ public:
   }
 };
 
-UserInterfaceExecutionCallbackPtr userInterfaceCallback;
-
 ExecutionContextPtr createExecutionContext()
 {
   ExecutionContextPtr res = defaultConsoleExecutionContext();
-  res->appendCallback(userInterfaceCallback = UserInterfaceExecutionCallbackPtr(new UserInterfaceExecutionCallback()));
+  res->appendCallback(new UserInterfaceExecutionCallback());
   return res;
 }
 
@@ -165,8 +170,7 @@ int main(int argc, char* argv[])
   ExecutionContextPtr context = createExecutionContext();
   context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
   int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
-  userInterfaceCallback->shutdown();
-  context = ExecutionContextPtr();
+  context->clearCallbacks();
   lbcpp::deinitialize();
   return res;
 }
