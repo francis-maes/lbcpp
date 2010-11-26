@@ -34,9 +34,6 @@
 namespace lbcpp
 {
 
-extern void initialize(const char* executableName);
-extern void deinitialize();
-
 class Type : public NameableObject
 {
 public:

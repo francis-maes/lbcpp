@@ -29,6 +29,7 @@
 
 # include "Core/Utilities.h"
 # include "Core/Object.h"
+# include "Core/TypeManager.h"
 # include "Core/Type.h"
 # include "Core/Variable.h"
 # include "Core/Pair.h"
@@ -75,5 +76,21 @@
 # include "NumericalLearning/NumericalLearning.h"
 
 # include "DecisionTree/DecisionTree.h"
+
+# include "UserInterface/UserInterfaceManager.h"
+
+namespace lbcpp
+{
+  struct ApplicationContext;
+
+  extern void initialize(const char* executableName);
+  extern void deinitialize();
+
+  extern UserInterfaceManager& userInterfaceManager();
+  extern TypeManager& typeManager();
+
+  extern ApplicationContext* applicationContext;
+
+}; /* namespace lbcpp */
 
 #endif // !LBCPP_LBCPP_H_

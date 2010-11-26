@@ -59,6 +59,8 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/predeclarations.h
   ../include/lbcpp/Core/Object.h
   Core/Object.cpp
+  ../include/lbcpp/Core/TypeManager.h
+  Core/TypeManager.cpp
   ../include/lbcpp/Core/Type.h
   Core/Type.cpp
   Core/Enumeration.cpp
@@ -491,12 +493,19 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
 )
 
+#### UserInterface ####
+
+SET(LBCPP_USER_INTERFACE_SOURCES
+  ../include/lbcpp/UserInterface/UserInterfaceManager.h
+  UserInterface/UserInterfaceManager.cpp
+)
 
 ##### MAIN ####
 
 SET(LBCPP_MAIN_SOURCES
   ../include/lbcpp/common.h
   ../include/lbcpp/lbcpp.h
+  lbcpp.cpp
   LBCppClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
 )
@@ -561,6 +570,9 @@ SET(LBCPP_CORE
   # DecisionTree
   ${LBCPP_DECISION_TREE_SOURCES}
   ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
+  
+  # User Interface
+  ${LBCPP_USER_INTERFACE_SOURCES}
 )
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
@@ -621,6 +633,9 @@ SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNIN
 ## DecisionTree
 SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
+
+## UserInterface
+SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 TARGET_LINK_LIBRARIES(lbcpp-core juce)

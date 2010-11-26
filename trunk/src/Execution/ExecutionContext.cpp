@@ -9,6 +9,7 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
 /*
@@ -127,6 +128,24 @@ ExecutionContext::ExecutionContext()
 {
   initialize(*this);
 }
+
+void ExecutionContext::finishTypeDeclarations()
+  {typeManager().finishDeclarations(*this);}
+
+void ExecutionContext::declareType(TypePtr typeInstance)
+  {typeManager().declare(*this, typeInstance);}
+
+void ExecutionContext::declareTemplateType(TemplateTypePtr templateTypeInstance)
+  {typeManager().declare(*this, templateTypeInstance);}
+
+TypePtr ExecutionContext::getType(const String& typeName)
+  {return typeManager().getType(*this, typeName);}
+
+TypePtr ExecutionContext::getType(const String& name, const std::vector<TypePtr>& arguments)
+  {return typeManager().getType(*this, name, arguments);}
+
+bool ExecutionContext::doTypeExists(const String& typeName)
+  {return typeManager().doTypeExists(typeName);}
 
 size_t ExecutionContext::getStackDepth() const
   {return stack->getDepth();}
