@@ -18,7 +18,7 @@ using namespace lbcpp;
 ** SingleExtraTreeInferenceLearner
 */
 SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, ProbabilityDistributionBuilderPtr builder)
-  : random(new RandomGenerator),
+  : random(new RandomGenerator()),
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting), builder(builder) {}
 
@@ -216,7 +216,7 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
   jassert(nodeIndex == 0);
 
   for (size_t i = 0; i < numInputVariables; ++i)
-    res->setSplitter(i, getBinaryDecisionTreeSplitter(inputClass->getObjectVariableType(i), outputClass));
+    res->setSplitter(i, getBinaryDecisionTreeSplitter(inputClass->getObjectVariableType(i), outputClass, i));
 
   // sample tree recursively
   std::vector<Split> bestSplits;
@@ -224,7 +224,7 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
   return res;
 }
 
-BinaryDecisionTreeSplitterPtr SingleExtraTreeInferenceLearner::getBinaryDecisionTreeSplitter(TypePtr inputType, TypePtr outputType) const
+BinaryDecisionTreeSplitterPtr SingleExtraTreeInferenceLearner::getBinaryDecisionTreeSplitter(TypePtr inputType, TypePtr outputType, size_t variableIndex) const
 {
   SplitScoringFunctionPtr scoringFunction;
   if (outputType->inheritsFrom(enumValueType))
@@ -238,13 +238,13 @@ BinaryDecisionTreeSplitterPtr SingleExtraTreeInferenceLearner::getBinaryDecision
   }
   
   if (inputType->inheritsFrom(enumValueType))
-    return new EnumerationBinaryDecisionTreeSplitter(scoringFunction);
+    return new EnumerationBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
   else if (inputType->inheritsFrom(booleanType))
-    return new BooleanBinaryDecisionTreeSplitter(scoringFunction);
+    return new BooleanBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
   else if (inputType->inheritsFrom(integerType))
-    return new IntegereBinaryDecisionTreeSplitter(scoringFunction);
+    return new IntegereBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
   else if (inputType->inheritsFrom(doubleType))
-    return new DoubleBinaryDecisionTreeSplitter(scoringFunction);
+    return new DoubleBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
 
   jassertfalse;
   return BinaryDecisionTreeSplitterPtr();

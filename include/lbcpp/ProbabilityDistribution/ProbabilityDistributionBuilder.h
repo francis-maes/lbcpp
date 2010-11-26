@@ -30,7 +30,7 @@ extern ClassPtr probabilityDistributionBuilderClass;
 
 extern ProbabilityDistributionBuilderPtr gaussianProbabilityDistributionBuilder();
 extern ProbabilityDistributionBuilderPtr enumerationProbabilityDistributionBuilder(TypePtr elementType);
-      
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_H_

@@ -2,6 +2,8 @@
 
 <file name="DecisionTreeInference" directory="DecisionTree/Inference">
 
+  <include file="lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h"/>
+    
   <namespace name="lbcpp">
 
     <class name="BinaryDecisionTree"/>
