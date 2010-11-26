@@ -120,8 +120,9 @@ struct ComputeDotProductWithDenseDoubleCallback : public PerceptionCallback
 
 double dotProduct(ExecutionContext& context, const ObjectPtr& object, const PerceptionPtr& perception, const Variable& input)
 {
-  checkInheritance(input.getType(), perception->getInputType());
-  checkInheritance((TypePtr)object->getClass(), perception->getOutputType());
+  if (!context.checkInheritance(input.getType(), perception->getInputType()) ||
+      !context.checkInheritance((TypePtr)object->getClass(), perception->getOutputType()))
+    return 0.0;
 
   jassert(input.exists());
   if (!object)

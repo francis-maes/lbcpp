@@ -20,7 +20,7 @@ public:
   OneAgainstOneClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
-    checkInheritance(binaryClassifierModel->getOutputType(getInputType()), probabilityType);
+    context.checkInheritance(binaryClassifierModel->getOutputType(getInputType()), probabilityType);
     size_t n = classes->getNumElements();
     subInferences.resize(n * (n - 1) / 2);
 
