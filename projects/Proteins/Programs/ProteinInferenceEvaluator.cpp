@@ -106,7 +106,7 @@ public:
 
 int main(int argc, char** argv)
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   InferenceContextPtr context = singleThreadedInferenceContext();
   declareProteinClasses(*context);
 

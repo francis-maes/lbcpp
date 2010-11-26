@@ -33,7 +33,7 @@ public:
   const FunctionPtr& getCurrentFunction() const;
   const FunctionPtr& getParentFunction() const;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class ExecutionStackClass;

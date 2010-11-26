@@ -417,7 +417,7 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
 
 int main(int argc, char** argv)
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
 
   ExecutionContextPtr context = defaultConsoleExecutionContext();
   context->appendCallback(consoleExecutionCallback());

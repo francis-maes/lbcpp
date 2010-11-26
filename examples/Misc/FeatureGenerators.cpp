@@ -19,7 +19,7 @@ void testPerception(ExecutionContext& context, const String& name, PerceptionPtr
 
 int main(int argc, char** argv)
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
 
   Variable myBoolean(true);

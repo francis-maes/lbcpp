@@ -11,11 +11,8 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
-int WorkUnit::main(WorkUnitPtr workUnit, int argc, char* argv[])
+int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[])
 {
-  ExecutionContextPtr context = singleThreadedExecutionContext();
-  context->appendCallback(consoleExecutionCallback());
-
   std::vector<String> arguments(argc - 1);
   for (size_t i = 1; i < (size_t)argc; ++i)
   {
@@ -23,12 +20,12 @@ int WorkUnit::main(WorkUnitPtr workUnit, int argc, char* argv[])
     arguments[i - 1] = arg;
     if (arg == T("-h") || arg == T("--help"))
     {
-      context->informationCallback(workUnit->getUsageString());
+      context.informationCallback(workUnit->getUsageString());
       return 0;
     }
   }
 
-  return workUnit->parseArguments(*context, arguments) && context->run(workUnit) ? 0 : 1;
+  return workUnit->parseArguments(context, arguments) && context.run(workUnit) ? 0 : 1;
 }
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)

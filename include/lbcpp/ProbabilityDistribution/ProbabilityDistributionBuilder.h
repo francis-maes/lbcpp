@@ -18,7 +18,7 @@ class ProbabilityDistributionBuilder : public Object
 {
 public:
   virtual TypePtr getInputType() const = 0;
-  virtual void clear();
+  virtual void clear() = 0;
   virtual void addElement(const Variable& element, double weight = 1.0) = 0;
   virtual void addDistribution(const ProbabilityDistributionPtr& distribution, double weight) = 0;
   virtual ProbabilityDistributionPtr build() const = 0;
@@ -27,7 +27,10 @@ public:
 typedef ReferenceCountedObjectPtr<ProbabilityDistributionBuilder> ProbabilityDistributionBuilderPtr;
 
 extern ClassPtr probabilityDistributionBuilderClass;
-  
+
+extern ProbabilityDistributionBuilderPtr gaussianProbabilityDistributionBuilder();
+extern ProbabilityDistributionBuilderPtr enumerationProbabilityDistributionBuilder(TypePtr elementType);
+      
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_H_

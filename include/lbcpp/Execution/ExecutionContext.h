@@ -15,34 +15,13 @@
 namespace lbcpp
 {
 
-class ExecutionContext : public ExecutionCallback
+class ExecutionContext : public CompositeExecutionCallback
 {
 public:
   ExecutionContext();
 
   virtual bool isMultiThread() const = 0;
 
-  /*
-  ** ExecutionCallback
-  */
-  virtual void informationCallback(const String& where, const String& what);
-  virtual void warningCallback(const String& where, const String& what);
-  virtual void errorCallback(const String& where, const String& what);
-  virtual void statusCallback(const String& status);
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
-  virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
-  virtual void resultCallback(const String& name, const Variable& value);
-
-  // shortcuts
-  void informationCallback(const String& what)
-    {informationCallback(String::empty, what);}
-
-  void warningCallback(const String& what)
-    {warningCallback(String::empty, what);}
-
-  void errorCallback(const String& what)
-    {errorCallback(String::empty, what);}
 
   /*
   ** Checks
@@ -93,29 +72,11 @@ public:
   virtual bool run(const WorkUnitPtr& workUnit);
   virtual bool run(const std::vector<WorkUnitPtr>& workUnits) = 0;
 
-  /*
-  ** Callbacks
-  */
-  void appendCallback(const ExecutionCallbackPtr& callback);
-  void removeCallback(const ExecutionCallbackPtr& callback);
-  void clearCallbacks();
-
-  const std::vector<ExecutionCallbackPtr>& getCallbacks() const
-    {return callbacks;}
-
-  void setCallbacks(const std::vector<ExecutionCallbackPtr>& callbacks)
-    {this->callbacks = callbacks;}
-
-  size_t getNumCallbacks() const
-    {return callbacks.size();}
-
-  ExecutionCallbackPtr getCallback(size_t index) const
-    {jassert(index < callbacks.size()); return callbacks[index];}
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExecutionContextClass;
 
-  std::vector<ExecutionCallbackPtr> callbacks;
   ExecutionStackPtr stack;
 };
 

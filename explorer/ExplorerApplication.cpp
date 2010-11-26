@@ -245,7 +245,7 @@ public:
 
   virtual void initialise(const String& commandLine)
   {    
-    lbcpp::initialize();
+    lbcpp::initialize(NULL);
     context = defaultConsoleExecutionContext(); // FIXME
     context->appendCallback(&explorerExecutionCallback);
     declareProteinClasses(*context);

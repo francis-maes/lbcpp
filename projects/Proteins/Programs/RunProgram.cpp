@@ -13,7 +13,7 @@ extern void declareProgramClasses(ExecutionContext& context);
 
 int main(int argc, char** argv)
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
   declareProteinClasses(*context);
   declareProgramClasses(*context);
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
       arguments[i - 1] = argv[i];
     arguments[0] = argv[0];
 
-    int exitCode = WorkUnit::main(obj.staticCast<WorkUnit>(), argc - 1, arguments);
+    int exitCode = WorkUnit::main(*context, obj.staticCast<WorkUnit>(), argc - 1, arguments);
     delete[] arguments;
     lbcpp::deinitialize();
     return exitCode;

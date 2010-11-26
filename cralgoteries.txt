@@ -6,7 +6,6 @@ Execution:
  
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main
  * SandBox: dériver de WorkUnit
- * SandBoxNewFeatures: enlever (?)
 
 Boinc:
  * New class BoincExecutionContext

@@ -35,6 +35,8 @@ public:
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone);
   Entry pop();
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   CriticalSection lock;
   typedef std::list<Entry> EntryList;
@@ -104,6 +106,8 @@ public:
   WaitingWorkUnitQueuePtr getWaitingQueue() const
     {return waitingQueue;}
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   ExecutionContextPtr parentContext;
   ExecutionContextPtr context;
@@ -151,6 +155,11 @@ public:
         threads[i] = NULL;
       }
   }
+
+  size_t getNumThreads() const
+    {return threads.size();}
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   std::vector<WorkUnitThread* > threads;
@@ -218,6 +227,11 @@ public:
   WaitingWorkUnitQueuePtr getWaitingQueue() const
     {return queue;}
 
+  size_t getNumThreads() const
+    {return threads->getNumThreads();}
+
+  lbcpp_UseDebuggingNewOperator
+
 private:
   WaitingWorkUnitQueuePtr queue;
   WorkUnitThreadVectorPtr threads;
@@ -237,7 +251,7 @@ public:
   MultiThreadedExecutionContext() {}
 
   virtual bool isMultiThread() const
-    {return true;}
+    {return threadPool->getNumThreads() > 1;}
 
   virtual bool isCanceled() const
     {return false;}
@@ -263,6 +277,8 @@ public:
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   WorkUnitThreadPoolPtr threadPool;

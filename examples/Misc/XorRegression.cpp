@@ -39,7 +39,7 @@ public:
 
 int main(int argc, char* argv[])
 {
-  lbcpp::initialize();
+  lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
   context->declareType(TypePtr(new DefaultClass(T("XorExamplePerception"), T("Perception"))));
  
