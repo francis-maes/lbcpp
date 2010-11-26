@@ -17,10 +17,10 @@ using namespace lbcpp;
 /*
 ** SingleExtraTreeInferenceLearner
 */
-SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, ProbabilityDistributionBuilderPtr builder)
   : random(new RandomGenerator),
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-    minimumSizeForSplitting(minimumSizeForSplitting) {}
+    minimumSizeForSplitting(minimumSizeForSplitting), builder(builder) {}
 
 Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
 {
@@ -84,65 +84,31 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
 {
   size_t n = trainingData->getNumElements();
   jassert(n);
-  
+
   if (n <= 1)
   {
-    leafValue = trainingData->getElement(0)[1];
+    builder->clear();
+    builder->addElement(trainingData->getElement(0)[1]);
+    leafValue = builder->build();
     return true;
   }
 
   if (n >= minimumSizeForSplitting && variables.size())
-    return isOutputConstant(trainingData, leafValue);
+  {
+    if (isOutputConstant(trainingData, leafValue))
+    {
+      builder->clear();
+      builder->addElement(leafValue);
+      leafValue = builder->build();
+      return true;
+    }
+    return false;
+  }
 
-  if (outputType->inheritsFrom(doubleType))
-  {
-    double sum = 0;
-    size_t count = 0;
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable vote = trainingData->getElement(i)[1];
-      if (vote.exists())
-      {
-        ++count;
-        sum += vote.getDouble();
-      }
-    }
-    leafValue = count ? Variable(sum / (double)count, doubleType) : Variable::missingValue(doubleType);
-  }
-  else if (outputType->inheritsFrom(enumValueType))
-  {
-    EnumerationPtr enumeration = outputType.dynamicCast<Enumeration>();
-    std::vector<size_t> vote(enumeration->getNumElements(), 0);
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable output = trainingData->getElement(i)[1];
-      if (output.isMissingValue())
-        continue;
-      ++vote[output.getInteger()];
-    }
-    
-    int bestClass = -1;
-    int bestVote = -1;
-    for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-    {
-      if ((int)vote[i] > bestVote)
-      {
-        bestVote = vote[i];
-        bestClass = i;
-      }
-    }
-    leafValue = Variable(bestClass, outputType);
-  }
-  else
-  {
-    context.errorCallback(T("SingleExtraTreeInferenceLearner::shouldCreateLeaf"), T("Type ") + outputType->getClassName().quoted() + (" not yet implemented"));
-    leafValue = trainingData->getElement(0)[1];
-  }
-  /*
-  jassert(n > 1);
-  double weight = 1.0 / (double)n;
+  builder->clear();
   for (size_t i = 0; i < n; ++i)
-    leafValue.addWeighted(trainingData->getElement(i)[1], weight);*/
+    builder->addElement(trainingData->getElement(i)[1]);
+  leafValue = builder->build();
   
   return true;
 }

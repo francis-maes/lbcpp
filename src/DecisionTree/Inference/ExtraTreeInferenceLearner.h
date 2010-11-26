@@ -14,6 +14,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
 
 namespace lbcpp 
 {
@@ -24,7 +25,7 @@ namespace lbcpp
 class SingleExtraTreeInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
-  SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting);
+  SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, ProbabilityDistributionBuilderPtr builder);
   SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0) {}
 
   typedef InferenceBatchLearner<Inference> BaseClass;
@@ -39,6 +40,7 @@ protected:
 
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
+  ProbabilityDistributionBuilderPtr builder;
   
   struct Split
   {
