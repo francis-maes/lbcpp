@@ -18,43 +18,57 @@ namespace lbcpp
 class WaitingWorkUnitQueue : public Object
 {
 public:
-  void push(WorkUnitPtr workUnit, int& counterToDecrementWhenDone, size_t priority);
-  std::pair<WorkUnitPtr, int* > pop();
+  struct Entry
+  {
+    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone)
+      : workUnit(workUnit), stack(stack), counterToDecrementWhenDone(counterToDecrementWhenDone) {}
+    Entry() : counterToDecrementWhenDone(*(int* )0) {}
+
+    WorkUnitPtr workUnit;
+    ExecutionStackPtr stack;
+    int& counterToDecrementWhenDone;
+
+    bool exists() const
+      {return workUnit;}
+  };
+
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone);
+  Entry pop();
 
 private:
   CriticalSection lock;
-  std::vector< std::list< std::pair<WorkUnitPtr, int* > > > workUnits;
+  typedef std::list<Entry> EntryList;
+  std::vector<EntryList> entries;
 };
 
 typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
 
-struct ThreadVector;
-
 /*
 ** WaitingWorkUnitQueue
 */
-void WaitingWorkUnitQueue::push(WorkUnitPtr workUnit, int& counterToDecrementWhenDone, size_t priority)
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone)
 {
   ScopedLock _(lock);
-  if (workUnits.size() <= priority)
-    workUnits.resize(priority + 1);
-  workUnits[priority].push_back(std::make_pair(workUnit, &counterToDecrementWhenDone));
+  size_t priority = stack->getDepth();
+  if (entries.size() <= priority)
+    entries.resize(priority + 1);
+  entries[priority].push_back(Entry(workUnit, stack, counterToDecrementWhenDone));
 }
 
-std::pair<WorkUnitPtr, int* > WaitingWorkUnitQueue::pop()
+WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
 {
   ScopedLock _(lock);
-  for (int i = (int)workUnits.size() - 1; i >= 0; --i)
+  for (int i = (int)entries.size() - 1; i >= 0; --i)
   {
-    std::list< std::pair<WorkUnitPtr, int* > >& l = workUnits[i];
+    EntryList& l = entries[i];
     if (l.size())
     {
-      std::pair<WorkUnitPtr, int* > res = l.front();
+      Entry res = l.front();
       l.pop_front();
       return res;
     }
   }
-  return std::make_pair(WorkUnitPtr(), (int* )0);
+  return Entry();
 }
 
 class WorkUnitThread;
@@ -72,38 +86,20 @@ public:
     context = threadOwnedExecutionContext(parentContext, this);
   }
 
-  bool processOneWorkUnit()
-  {
-    std::pair<WorkUnitPtr, int* > workUnit = waitingQueue->pop();
-    if (!workUnit.first)
-    {
-      Thread::sleep(10);
-      return false;
-    }
-
-    context->run(workUnit.first);
-    jassert(workUnit.second);
-    juce::atomicDecrement(*workUnit.second);
-    return true;
-  }
-
-  void work()
+  virtual void run()
   {
     while (!threadShouldExit())
       processOneWorkUnit();
   }
 
-  void workUntilWorkUnitsAreDone(int& count)
+  void workUntilWorkUnitsAreDone(int& counter)
   {
-    while (!threadShouldExit() && count)
+    while (!threadShouldExit() && counter)
     {
       bool ok = processOneWorkUnit();
       jassert(ok);
     }
   }
-
-  virtual void run()
-    {work();}
 
   WaitingWorkUnitQueuePtr getWaitingQueue() const
     {return waitingQueue;}
@@ -112,6 +108,21 @@ private:
   ExecutionContextPtr parentContext;
   ExecutionContextPtr context;
   WaitingWorkUnitQueuePtr waitingQueue;
+
+  bool processOneWorkUnit()
+  {
+    WaitingWorkUnitQueue::Entry entry = waitingQueue->pop();
+    if (!entry.exists())
+    {
+      Thread::sleep(10);
+      return false;
+    }
+
+    context->setStack(ExecutionStackPtr(new ExecutionStack(entry.stack)));
+    context->run(entry.workUnit);
+    juce::atomicDecrement(entry.counterToDecrementWhenDone);
+    return true;
+  }
 };
 
 /*
@@ -157,6 +168,9 @@ public:
     : DecoratorExecutionContext(parentContext), thread(thread) {}
   ThreadOwnedExecutionContext() : thread(NULL) {}
 
+  virtual bool isMultiThread() const
+    {return true;}
+
   virtual bool isCanceled() const
     {return thread->threadShouldExit();}
  
@@ -168,7 +182,7 @@ public:
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
     int numRemainingWorkUnits = workUnits.size();
     for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], numRemainingWorkUnits, getStackDepth());
+      queue->push(workUnits[i], getStack(), numRemainingWorkUnits);
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }
@@ -211,15 +225,15 @@ private:
 
 typedef ReferenceCountedObjectPtr<WorkUnitThreadPool> WorkUnitThreadPoolPtr;
 
-///////////////////////////////////////////
-//////////////////////////////////////////
+/*
+** MultiThreadedExecutionContext
+*/
 class MultiThreadedExecutionContext : public ExecutionContext
 {
 public:
   MultiThreadedExecutionContext(size_t numThreads)
-  {
-    threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(refCountedPointerFromThis(this), numThreads));
-  }
+    {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(refCountedPointerFromThis(this), numThreads));}
+
   MultiThreadedExecutionContext() {}
 
   virtual bool isMultiThread() const
@@ -235,7 +249,7 @@ public:
   {
     int remainingWorkUnits = 1;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
-    queue->push(workUnit, remainingWorkUnits, 0);
+    queue->push(workUnit, stack, remainingWorkUnits);
     threadPool->waitUntilWorkUnitsAreDone(remainingWorkUnits);
     return true;
   }
@@ -245,7 +259,7 @@ public:
     int numRemainingWorkUnits = workUnits.size();
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
     for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], numRemainingWorkUnits, 0);
+      queue->push(workUnits[i], stack, numRemainingWorkUnits);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }

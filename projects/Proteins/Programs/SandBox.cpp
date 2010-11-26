@@ -341,7 +341,7 @@ public:
     String inferenceName = context.getCurrentFunction()->getName();
 
     //if (stack->getDepth() == 1) // 
-    //if (stack->getCurrentInference()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
+    //if (context.getCurrentFunction()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
     if (inferenceName.startsWith(T("LearningPass")))
     {
       // end of learning iteration

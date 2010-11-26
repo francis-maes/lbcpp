@@ -279,7 +279,6 @@ public:
   
   virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
-    //String inferenceName = stack->getCurrentInference()->getName();
     FunctionPtr currentInference = context.getCurrentFunction();
 
     if (context.getStackDepth() == 2 && (currentInference->getClassName() == T("StaticParallelInferenceLearner")

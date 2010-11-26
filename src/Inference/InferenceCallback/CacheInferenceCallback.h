@@ -25,13 +25,13 @@ public:
 
   virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
   {
-    if (!output.exists() && context.getStack()->getParentInference() == parentStep)
+    if (!output.exists() && context.getParentFunction() == parentStep)
       output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
   }
 
   virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
   {
-    if (context.getStack()->getParentInference() == parentStep)
+    if (context.getParentFunction() == parentStep)
     {
       cache->add(context.getCurrentFunction(), input.getObject(), output.getObject());
       jassert(cache->get(context.getCurrentFunction(), input.getObject()));
