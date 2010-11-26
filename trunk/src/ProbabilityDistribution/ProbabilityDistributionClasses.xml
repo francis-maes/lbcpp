@@ -9,7 +9,7 @@
   <namespace name="lbcpp">
 
     <!-- Probability Distribution -->
-    <class name="ProbabilityDistribution" abstract="yes"/>
+    <class name="ProbabilityDistribution" base="Object" abstract="yes"/>
     <class name="BernoulliDistribution" base="ProbabilityDistribution">
       <variable type="Double" name="pTrue"/>
       <variable type="Double" name="pFalse"/>
@@ -58,9 +58,12 @@
     <class name="ContinuousProbabilityDistribution" base="ProbabilityDistribution" abstract="yes"/>
     
     <class name="GaussianProbabilityDistribution" base="ContinuousProbabilityDistribution">
-      <variable type="ScalarVariableMeanAndVariance" name="values"/>
+      <variable type="Double" name="mean"/>
+      <variable type="Double" name="variance"/>
     </class>
     
   </namespace>
+  
+  <import name="ProbabilityDistributionBuilder"/>
   
 </file>

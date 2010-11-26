@@ -100,7 +100,7 @@ double EnumerationProbabilityDistribution::computeEntropy() const
   return res;
 }
 
-void EnumerationProbabilityDistribution::increment(const Variable& value)
+void EnumerationProbabilityDistribution::increment(const Variable& value, double weight)
 {
   size_t index;
   if (value.isNil())
@@ -110,7 +110,7 @@ void EnumerationProbabilityDistribution::increment(const Variable& value)
   else
     return;
   ++count;
-  setProbability(index, getProbability(index) + 1.0);
+  setProbability(index, getProbability(index) + weight);
 }
 
 void EnumerationProbabilityDistribution::normalize()

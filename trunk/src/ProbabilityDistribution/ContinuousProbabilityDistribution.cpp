@@ -14,13 +14,13 @@ using namespace lbcpp;
  ** GaussianProbabilityDistribution
  */
 double GaussianProbabilityDistribution::computeEntropy() const
-  {return 0.5 * log(2 * M_PI * exp(1.0) * values->getVariance());}
+  {return 0.5 * log(2 * M_PI * exp(1.0) * getVariance());}
 
 double GaussianProbabilityDistribution::compute(ExecutionContext& context, const Variable& value) const
 {
   jassert(value.isDouble());
-  double mean = values->getMean();
-  double variance = values->getVariance(); // FIXME: Variance or Standard Deviation ?????
+  double mean = getMean();
+  double variance = getVariance(); // FIXME: Variance or Standard Deviation ?????
   double squaredNumerator = value.getDouble() - mean;
   squaredNumerator *= squaredNumerator;
   double squaredDenominator = 2 * variance;
@@ -29,4 +29,4 @@ double GaussianProbabilityDistribution::compute(ExecutionContext& context, const
 }
 
 Variable GaussianProbabilityDistribution::sample(RandomGeneratorPtr random) const
-  {return Variable(random->sampleDoubleFromGaussian(values->getMean(), values->getStandardDeviation()), doubleType);}
+  {return Variable(random->sampleDoubleFromGaussian(getMean(), getVariance()), doubleType);} // FIXME: variance or stddev ?
