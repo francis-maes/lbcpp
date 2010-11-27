@@ -40,7 +40,11 @@ double BernoulliDistribution::computeEntropy() const
  ** EnumerationProbabilityDistribution
  */
 EnumerationProbabilityDistribution::EnumerationProbabilityDistribution(EnumerationPtr enumeration)
-: DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
+  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
+
+EnumerationProbabilityDistribution::EnumerationProbabilityDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities)
+  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(probabilities), count(0)
+  {jassert(probabilities.size() == enumeration->getNumElements() + 1);}
 
 String EnumerationProbabilityDistribution::toString() const
 {

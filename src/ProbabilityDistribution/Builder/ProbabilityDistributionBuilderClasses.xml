@@ -8,9 +8,10 @@
     <class name="ProbabilityDistributionBuilder" base="Object" abstract="yes"/>
 
     <class name="EnumerationProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">
-      <constructor arguments="TypePtr elementType"/>
-      <variable type="Type" name="elementType"/>
-      <variable type="EnumerationProbabilityDistribution" name="distribution"/>
+      <constructor arguments="EnumerationPtr enumeration"/>
+      <variable type="Enumeration" name="enumeration"/>
+      <variable type="GenericVector[Double]" name="elementValues"/>
+      <variable type="GenericVector[Double]" name="distributionValues"/>
     </class>
 
     <class name="GaussianProbabilityDistributionBuilder" base="ProbabilityDistributionBuilder">

@@ -191,9 +191,7 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
   ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.h
-  ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.cpp
   ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.h
-  ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.cpp
   ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderClasses.cpp
 )

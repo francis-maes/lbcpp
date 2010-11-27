@@ -12,7 +12,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Data/Vector.h>
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Core/Pair.h>
 
