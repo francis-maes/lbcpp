@@ -29,7 +29,7 @@ typedef ReferenceCountedObjectPtr<ProbabilityDistributionBuilder> ProbabilityDis
 extern ClassPtr probabilityDistributionBuilderClass;
 
 extern ProbabilityDistributionBuilderPtr gaussianProbabilityDistributionBuilder();
-extern ProbabilityDistributionBuilderPtr enumerationProbabilityDistributionBuilder(TypePtr elementType);
+extern ProbabilityDistributionBuilderPtr enumerationProbabilityDistributionBuilder(EnumerationPtr enumeration);
 
 }; /* namespace lbcpp */
 
