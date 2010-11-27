@@ -31,8 +31,9 @@
       InferencePtr regressionExtraTreeInference(ExecutionContext&amp; context, const String&amp; name, PerceptionPtr perception, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
       {
         InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name, perception);
-        return new MeanScalarParallelVoteInference(context, name, numTrees, decisionTreeModel,
-            extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, gaussianProbabilityDistributionBuilder()));
+        ProbabilityDistributionBuilderPtr probabilityBuilder = gaussianProbabilityDistributionBuilder();
+        InferencePtr x3Inference = extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, probabilityBuilder);
+        return new ParallelVoteInference(context, name, numTrees, decisionTreeModel, x3Inference, probabilityBuilder);
       }
       
       InferencePtr binaryClassificationExtraTreeInference(ExecutionContext&amp; context, const String&amp; name, PerceptionPtr perception, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
@@ -46,8 +47,9 @@
       InferencePtr classificationExtraTreeInference(ExecutionContext&amp; context, const String&amp; name, PerceptionPtr perception, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
       {
         InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, perception, classes);
-        return new MajorityClassParallelVoteInference(context, name, numTrees, decisionTreeModel,
-          extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, enumerationProbabilityDistributionBuilder(classes)));
+        ProbabilityDistributionBuilderPtr probabilityBuilder = enumerationProbabilityDistributionBuilder(classes);
+        InferencePtr x3Inference = extraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, probabilityBuilder);
+        return new ParallelVoteInference(context, name, numTrees, decisionTreeModel, x3Inference, probabilityBuilder);
       }
     </code>
     

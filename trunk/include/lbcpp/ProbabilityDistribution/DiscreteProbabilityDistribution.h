@@ -53,6 +53,7 @@ class EnumerationProbabilityDistribution : public DiscreteProbabilityDistributio
 {
 public:
   EnumerationProbabilityDistribution(EnumerationPtr enumeration);
+  EnumerationProbabilityDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities);
   EnumerationProbabilityDistribution() {}
   
   // DiscreteProbabilityDistribution
@@ -90,7 +91,7 @@ public:
 private:
   friend class EnumerationProbabilityDistributionClass;
   
-  std::vector<double> values; // FIXME: Serializable ??
+  std::vector<double> values;
   CriticalSection cachedEntropyLock;
   Variable cachedEntropy;
   size_t count;               // FIXME: idem
@@ -101,6 +102,9 @@ typedef ReferenceCountedObjectPtr<EnumerationProbabilityDistribution> Enumeratio
 extern ClassPtr enumerationProbabilityDistributionClass(TypePtr type);
 inline ClassPtr enumerationProbabilityDistributionClass(EnumerationPtr enumeration)
   {return enumerationProbabilityDistributionClass((TypePtr)enumeration);}
+
+inline EnumerationProbabilityDistributionPtr enumerationProbabilityDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities)
+  {return new EnumerationProbabilityDistribution((TypePtr)enumeration, probabilities);}
 
 }; /* namespace lbcpp */
 

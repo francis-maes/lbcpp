@@ -20,7 +20,7 @@ public:
   virtual TypePtr getInputType() const = 0;
   virtual void clear() = 0;
   virtual void addElement(const Variable& element, double weight = 1.0) = 0;
-  virtual void addDistribution(const ProbabilityDistributionPtr& distribution, double weight) = 0;
+  virtual void addDistribution(const ProbabilityDistributionPtr& distribution, double weight = 1.0) = 0;
   virtual ProbabilityDistributionPtr build() const = 0;
 };
 

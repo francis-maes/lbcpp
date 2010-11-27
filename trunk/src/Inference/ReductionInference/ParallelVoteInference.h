@@ -11,7 +11,8 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
@@ -20,8 +21,8 @@ namespace lbcpp
 class ParallelVoteInference : public VectorParallelInference
 {
 public:
-  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : VectorParallelInference(name), voteInferenceModel(voteInferenceModel)
+  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, ProbabilityDistributionBuilderPtr probabilityBuilder)
+    : VectorParallelInference(name), voteInferenceModel(voteInferenceModel), probabilityBuilder(probabilityBuilder)
   {
     jassert(numVoters);
     subInferences.resize(numVoters);
@@ -59,86 +60,25 @@ public:
     size_t n = state->getNumSubInferences();
     if (!n)
       return Variable();
-    jassert(false); // FIXME
-    /*
-    Variable res;
-    double weight = 1.0 / (double)n;
+    
+    probabilityBuilder->clear();
     for (size_t i = 0; i < n; ++i)
-      res.addWeighted(state->getSubOutput(i), weight);*/
-    return Variable();
+    {
+      ProbabilityDistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<ProbabilityDistribution>();
+      jassert(distribution);
+      probabilityBuilder->addDistribution(distribution);
+    }
+    return probabilityBuilder->build();
   }
 
 protected:
   friend class ParallelVoteInferenceClass;
 
   InferencePtr voteInferenceModel;
+  ProbabilityDistributionBuilderPtr probabilityBuilder;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePtr;
-
-class MeanScalarParallelVoteInference : public ParallelVoteInference
-{
-public:
-  MeanScalarParallelVoteInference(ExecutionContext& context, const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : ParallelVoteInference(context, name, numVotes, voteInferenceModel, voterLearner)
-    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType())->inheritsFrom(doubleType));}
-  MeanScalarParallelVoteInference() {}
-
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
-  {
-    size_t n = state->getNumSubInferences();
-    double sum = 0.0;
-    size_t count = 0;
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable vote = state->getSubOutput(i);
-      jassert(vote.isDouble());
-      if (vote.exists())
-      {
-        ++count;
-        sum += vote.getDouble();
-      }
-    }
-    TypePtr type = getOutputType(getInputType());
-    return count ? Variable(sum / (double)count, type) : Variable::missingValue(type);
-  }
-};
-
-class MajorityClassParallelVoteInference : public ParallelVoteInference
-{
-public:
-  MajorityClassParallelVoteInference(ExecutionContext& context, const String& name, size_t numVotes, InferencePtr voteInferenceModel, InferencePtr voterLearner)
-    : ParallelVoteInference(context, name, numVotes, voteInferenceModel, voterLearner)
-    {jassert(voteInferenceModel->getOutputType(voteInferenceModel->getInputType()).dynamicCast<Enumeration>());}
-  MajorityClassParallelVoteInference() {}
-
-  virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
-  {
-    EnumerationPtr enumType = getOutputType(getInputType());
-    size_t n = state->getNumSubInferences();
-    EnumerationProbabilityDistributionPtr distribution = new EnumerationProbabilityDistribution(enumType); 
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable vote = state->getSubOutput(i);
-      jassert(vote.getType()->inheritsFrom(enumType));
-      jassert(vote.exists());
-      if (vote.exists())
-        distribution->increment(vote);
-    }
-    
-    double bestVote = DBL_MIN;
-    int bestClass = -1;
-    for (size_t i = 0; i < enumType->getNumElements(); ++i)
-      if (distribution->getProbability(i) > bestVote)
-      {
-        bestVote = distribution->getProbability(i);
-        bestClass = i;
-      }
-    
-    return Variable(bestClass, enumType);
-    //return distribution->sample(RandomGenerator::getInstance()); // FIXME: replace by a sampling of argmaxs 
-  }
-};
 
 }; /* namespace lbcpp */
 

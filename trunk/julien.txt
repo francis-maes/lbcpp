@@ -11,18 +11,7 @@ Network:
  * void variableReceived(const Variable& variable)
  
 Extra-trees:
- + GaussianDistribution : ContinuousProbabilityDistribution : ProbabilityDistribution
-     + Nouveau dossier: include/lbcpp/ProbabilityDistribution
-     - Splitter le fichier en Discrete et Continuous
-     - Donner ExecutionContext à compute
-
- * ProbabilityDistributionBuilder:
-     - virtual TypePtr getInputType() const
-     - virtual void clear()
-     - virtual void add(const Variable& variable, double weight)  (=> checkInheritance)
-     - virtual ProbabilityDistributionPtr build() const
-     - classes dérivés: DiscreteProbabilityDistributionBuilder, GaussianProbabilityDistributionBuilder, ...
-     
+   - Revisiter EnumerationProbabilityDistribution : Utiliser uniquement le builder pour en obtenir la distribution 
    => Utiliser dans ParallelVote (en parametre à la construction; enlever les classes qui dérive de ParallelVote; mettre des checkInheritance)
    => Utiliser dans les ExtraTree si plusieurs labels de sortie dans la feuille
    => Render les ExtraTree generique sur le type de sortie
