@@ -42,34 +42,49 @@ public:
   {
     ExecutionCallback::initialize(context);
     userInterfaceManager().ensureIsInitialized(context);
-    userInterfaceManager().callFunctionOnMessageThread(createWindowFunction, this);
+    userInterfaceManager().getNotificationQueue()->push(new CreateWindowNotification(this));
   }
 
   void shutdown()
-    {if (mainWindow) userInterfaceManager().callFunctionOnMessageThread(destroyWindowFunction, this);}
-
+  {
+    if (mainWindow)
+      userInterfaceManager().getNotificationQueue()->push(new DestroyWindowNotification(this));
+  }
+  
 private:
   Component* mainWindow;
   Component* content;
-
-  static void* createWindowFunction(void* userData)
+  
+  struct CreateWindowNotification : public Notification
   {
-    UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
-    jassert(!pthis->content && !pthis->mainWindow);
-    pthis->content =  new ExecutionTraceTreeView(pthis);
-    pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
-    return NULL;
-  }
+    CreateWindowNotification(UserInterfaceExecutionCallback* pthis)
+      : pthis(pthis) {}
+      
+    UserInterfaceExecutionCallback* pthis;
+  
+    virtual void notify()
+    {
+      jassert(!pthis->content && !pthis->mainWindow);
+      pthis->content = new ExecutionTraceTreeView(pthis);
+      pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
+    }
+  };
 
-  static void* destroyWindowFunction(void* userData)
+  struct DestroyWindowNotification : public Notification
   {
-    UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
-    pthis->clearCallbacks();
-    if (pthis->mainWindow)
-      deleteAndZero(pthis->mainWindow);
-    pthis->content = NULL;
-    return NULL;
-  }
+    DestroyWindowNotification(UserInterfaceExecutionCallback* pthis)
+      : pthis(pthis) {}
+      
+    UserInterfaceExecutionCallback* pthis;
+  
+    virtual void notify()
+    {
+      pthis->clearCallbacks();
+      if (pthis->mainWindow)
+        deleteAndZero(pthis->mainWindow);
+      pthis->content = NULL;
+    }
+  };
 };
 
 typedef ReferenceCountedObjectPtr<UserInterfaceExecutionCallback> UserInterfaceExecutionCallbackPtr;
