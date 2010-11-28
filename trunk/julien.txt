@@ -12,8 +12,6 @@ Network:
  
 Extra-trees:
    - Revisiter EnumerationProbabilityDistribution : Utiliser uniquement le builder pour en obtenir la distribution 
-   => Utiliser dans ParallelVote (en parametre à la construction; enlever les classes qui dérive de ParallelVote; mettre des checkInheritance)
-   => Utiliser dans les ExtraTree si plusieurs labels de sortie dans la feuille
    => Render les ExtraTree generique sur le type de sortie
 
  * Delocker les arbres

@@ -31,7 +31,7 @@ public:
     int correctLabel = getCorrectLabel(correct);
     if (correctLabel < 0)
       return;
-
+    
     if (predicted.isEnumeration())
     {
       accuracy->push(predicted.getInteger() == correctLabel);
@@ -56,7 +56,19 @@ public:
       EnumerationProbabilityDistributionPtr distribution = predicted.dynamicCast<EnumerationProbabilityDistribution>();
       if (distribution)
       {
-        accuracy->push(distribution->compute(context, correctLabel));
+        size_t n = distribution->getEnumeration()->getNumElements() + 1;
+        size_t bestClass = n + 1;
+        double bestProb = -DBL_MAX;
+        for (size_t i = 0; i < n; ++i)
+        {
+          if (distribution->getProbability(i) > bestProb)
+          {
+            bestProb = distribution->getProbability(i);
+            bestClass = i;
+          }
+        }
+        jassert(bestClass <= n);
+        accuracy->push(bestClass == (size_t)correctLabel);
         return;
       }
     }
