@@ -46,6 +46,9 @@ public:
       notifications[i]->notify();
   }
 
+  bool isEmpty() const
+    {ScopedLock _(lock); return notifications.empty();}
+
 protected:
   CriticalSection lock;
   std::vector<NotificationPtr> notifications;

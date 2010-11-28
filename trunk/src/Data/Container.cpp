@@ -119,7 +119,7 @@ class ApplyFunctionInContainerWorkUnit : public WorkUnit
 {
 public:
   ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
-    : WorkUnit(T("apply ") + function->toString() + T(" ") + String((int)index)), source(source), function(function), target(target), index(index) {}
+    : WorkUnit(function->getDescription(source->getElement(index))), source(source), function(function), target(target), index(index) {}
 
 protected:
   ContainerPtr source;

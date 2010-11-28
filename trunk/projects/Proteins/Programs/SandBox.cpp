@@ -397,7 +397,7 @@ private:
 VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 3;
+  size_t maxCount = 7;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -419,8 +419,9 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
 
-  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  ExecutionContextPtr context = singleThreadedExecutionContext();
   context->appendCallback(consoleExecutionCallback());
+  context->appendCallback(userInterfaceExecutionCallback());
   context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
   context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
   context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
@@ -434,9 +435,8 @@ int main(int argc, char** argv)
 #endif
 
   bool inputOnly = true;
-  ExecutionContextPtr testContext = defaultConsoleExecutionContext();
-  ContainerPtr trainProteins = loadProteins(*testContext, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
-  ContainerPtr testProteins = loadProteins(*testContext, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
+  ContainerPtr trainProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
+  ContainerPtr testProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 3);
   trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "
@@ -518,7 +518,6 @@ int main(int argc, char** argv)
   return 0;*/
 
   {
-    ExecutionContextPtr context = defaultConsoleExecutionContext(true);
     InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context->appendCallback(trainingCallback);
     inference->train(*context, trainProteins, validationProteins);
