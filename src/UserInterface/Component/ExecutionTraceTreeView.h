@@ -1,14 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SandBoxUserInterface.cpp       | Sand Box                        |
+| Filename: ExecutionTraceTreeView.h       | Execution Trace TreeView        |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/11/2010 15:02               |                                 |
+| Started : 28/11/2010 23:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/lbcpp.h>
-#include "../../../explorer/Utilities/SimpleTreeViewItem.h"
-using namespace lbcpp;
+#ifndef LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
+# define LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
+
+#include "../../../explorer/Utilities/SimpleTreeViewItem.h" // FIXME! move utilities inside lbcpp-core
 
 using juce::Component;
 using juce::DocumentWindow;
@@ -20,7 +21,8 @@ using juce::Justification;
 using juce::TreeView;
 using juce::TreeViewItem;
 
-/////////////////////////////////////////////////////////
+namespace lbcpp
+{
 
 class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 {
@@ -281,113 +283,6 @@ protected:
   }
 };
 
-///////////////////////////
+}; /* namespace lbcpp */
 
-class UserInterfaceExecutionCallbackMainWindow : public DocumentWindow
-{
-public:
-  UserInterfaceExecutionCallbackMainWindow(Component* content) 
-    : DocumentWindow("LBC++", Colours::whitesmoke, allButtons)
-  {
-    setVisible(true);
-    setContentComponent(content);
-    //setMenuBar(this);
-    setResizable(true, true);
-    centreWithSize(700, 600);
-  }
-  
-  virtual void closeButtonPressed()
-    {setVisible(false);}
-};
-
-class UserInterfaceExecutionCallback : public CompositeExecutionCallback
-{
-public:
-  UserInterfaceExecutionCallback() : mainWindow(NULL), content(NULL) {}
-  virtual ~UserInterfaceExecutionCallback()
-    {shutdown();}
-
-  virtual void initialize(ExecutionContext& context)
-  {
-    ExecutionCallback::initialize(context);
-    userInterfaceManager().ensureIsInitialized(context);
-    userInterfaceManager().callFunctionOnMessageThread(createWindowFunction, this);
-  }
-
-  void shutdown()
-    {if (mainWindow) userInterfaceManager().callFunctionOnMessageThread(destroyWindowFunction, this);}
-
-private:
-  Component* mainWindow;
-  Component* content;
-
-  static void* createWindowFunction(void* userData)
-  {
-    UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
-    jassert(!pthis->content && !pthis->mainWindow);
-    pthis->content =  new ExecutionTraceTreeView(pthis);
-    pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
-    return NULL;
-  }
-
-  static void* destroyWindowFunction(void* userData)
-  {
-    UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
-    pthis->clearCallbacks();
-    if (pthis->mainWindow)
-      deleteAndZero(pthis->mainWindow);
-    pthis->content = NULL;
-    return NULL;
-  }
-};
-
-typedef ReferenceCountedObjectPtr<UserInterfaceExecutionCallback> UserInterfaceExecutionCallbackPtr;
-
-//////////////////////////////////////
-//////////////////////////////////////
-
-class MyWorkUnit : public WorkUnit
-{
-public:
-  virtual String toString() const
-    {return T("My Work Unit !");}
- 
-  virtual bool run(ExecutionContext& context)
-  {
-    context.statusCallback(T("Working..."));
-
-    //context.errorCallback(T("My Error"));
-    context.warningCallback(T("My Warning"));
-    context.informationCallback(T("My Information"));
-
-    for (size_t i = 0; i < 10; ++i)
-    {
-      Thread::sleep(500);
-      context.progressCallback(i + 1.0, 10.0, T("epochs"));
-    }
-
-    context.informationCallback(T("Finished."));
-    return true;
-  }
-};
-
-ExecutionContextPtr createExecutionContext()
-{
-  ExecutionContextPtr res = defaultConsoleExecutionContext();
-  res->appendCallback(new UserInterfaceExecutionCallback());
-  return res;
-}
-
-int main(int argc, char* argv[])
-{
-  lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = createExecutionContext();
-  context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
-  int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
-  
-  userInterfaceManager().waitUntilAllWindowsAreClosed();
-
-  context->clearCallbacks();
-  lbcpp::deinitialize();
-  return res;
-}
+#endif // !LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
