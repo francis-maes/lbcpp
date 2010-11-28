@@ -27,6 +27,9 @@ public:
   bool isRunning() const;
   void shutdown();
 
+  bool hasAtLeastOneVisibleWindowOnDesktop() const;
+  void waitUntilAllWindowsAreClosed();
+
   typedef void* (MessageCallbackFunction) (void* userData);
 
   void* callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData);
