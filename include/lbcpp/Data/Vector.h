@@ -301,7 +301,8 @@ template<class TT>
 inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, TypePtr expectedType)
 {
   dest = Variable::create(expectedType);
-  const VectorPtr& destVector = dest.getObject().staticCast<Vector>();
+  const ObjectPtr& destObject = dest.getObject();
+  const VectorPtr& destVector = destObject.staticCast<Vector>();
   jassert(destVector);
   destVector->resize(source.size());
   TypePtr elementsType = destVector->getElementsType();
