@@ -17,7 +17,7 @@ extern void declareMNISTClasses(ExecutionContext& context);
 int main(int argc, char* argv[])
 {
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  ExecutionContextPtr context = singleThreadedExecutionContext();
   declareMNISTClasses(*context);
   return WorkUnit::main(*context, new X3TesterProgram(), argc, argv);
 }

@@ -30,7 +30,9 @@ public:
   virtual void clear()
   {
     elementValues.clear();
+    elementValues.resize(enumeration->getNumElements() + 1, 0.0);
     distributionValues.clear();
+    distributionValues.resize(enumeration->getNumElements() + 1, 0.0);
   }
 
   virtual void addElement(const Variable& element, double weight)
@@ -56,8 +58,8 @@ public:
     normalize(elementValues, res);
     for (size_t i = 0; i < res.size(); ++i)
       res[i] += distributionValues[i];
-
     normalize(res, res);
+    
     return enumerationProbabilityDistribution(enumeration, res);
   }
   
@@ -74,6 +76,8 @@ protected:
     double sum = 0.0;
     for (size_t i = 0; i < values.size(); ++i)
       sum += values[i];
+    if (sum == 0.0)
+      return;
     for (size_t i = 0; i < values.size(); ++i)
       results[i] = values[i] / sum;
   }
