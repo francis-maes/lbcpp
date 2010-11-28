@@ -10,6 +10,10 @@
       <constructor/>
     </class>
 
+    <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
+      <constructor/>
+    </class>
+    
     <!-- NotifierExecutionCallback -->
     <class name="ExecutionNotification" base="Notification">
       <variable type="ExecutionCallback" name="target"/>

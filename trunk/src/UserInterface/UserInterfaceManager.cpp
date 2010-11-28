@@ -8,12 +8,13 @@
 
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
-#include "UserInterfaceData.h"
 using namespace lbcpp;
 
 using juce::Desktop;
 using juce::Image;
 using juce::ImageCache;
+
+namespace UserInterfaceData {extern const char* get(const String& fileName, int& size);};
 
 namespace lbcpp
 {

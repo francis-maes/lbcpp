@@ -163,6 +163,7 @@ SET(LBCPP_EXECUTION_SOURCES
 SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/SilentExecutionCallback.h
   Execution/Callback/ConsoleExecutionCallback.h
+  Execution/Callback/UserInterfaceExecutionCallback.h
   Execution/Callback/NotifierExecutionCallback.h
   Execution/Callback/ExecutionCallbackClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
@@ -534,6 +535,10 @@ SET(LBCPP_USER_INTERFACE_SOURCES
   ${LBCPP_USER_INTEFACE_GENERATED_FILES}
 )
 
+SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
+  UserInterface/Component/ExecutionTraceTreeView.h
+)
+
 
 ##### MAIN ####
 
@@ -608,6 +613,7 @@ SET(LBCPP_CORE
   
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
+    ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
     ${LBCPP_USER_INTERFACE_DATA_FILES}
 )
 
@@ -672,6 +678,7 @@ SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SO
 
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
+SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
