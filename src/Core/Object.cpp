@@ -208,7 +208,7 @@ String Object::toString() const
   for (size_t i = 0; i < n; ++i)
   {
     String name = getVariableName(i);
-    res += name + T(" = ") + getVariable(i).toString();
+    res += name + T(" = ") + getVariable(i).toShortString();
     if (i < n - 1)
       res += T(", ");
   }

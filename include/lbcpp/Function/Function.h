@@ -44,6 +44,9 @@ public:
   */
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const = 0;
 
+  virtual String getDescription(const Variable& input) const
+    {return getClassName() + T("(") + input.toShortString() + T(")");}
+
   lbcpp_UseDebuggingNewOperator
 };
 

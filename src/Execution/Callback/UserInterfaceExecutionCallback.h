@@ -43,6 +43,8 @@ public:
     ExecutionCallback::initialize(context);
     userInterfaceManager().ensureIsInitialized(context);
     userInterfaceManager().getNotificationQueue()->push(new CreateWindowNotification(this));
+    while (!userInterfaceManager().getNotificationQueue()->isEmpty())
+      Thread::sleep(100);
   }
 
   void shutdown()

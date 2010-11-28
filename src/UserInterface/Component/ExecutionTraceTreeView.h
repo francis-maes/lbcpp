@@ -37,20 +37,34 @@ public:
     minWidthToDisplayTimes = 300,
     timeColumnWidth = 100,
   };
+ 
+  void paintIconAndText(Graphics& g, int width, int height)
+  {
+    g.setColour(Colours::black);
+    int x1 = 0;
+    if (iconToUse)
+    {
+      g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
+      x1 += iconToUse->getWidth() + 5;
+    }
+    g.drawText(getUniqueName(), x1, 0, width - x1, height, Justification::centredLeft, true);
+  }
 
   virtual void paintItem(Graphics& g, int width, int height)
   {
+    if (isSelected())
+      g.fillAll(Colours::darkgrey);
     if (width > minWidthToDisplayTimes)
     {
       int w = width - 2 * timeColumnWidth;
-      SimpleTreeViewItem::paintItem(g, w, height);
-      g.setColour(Colours::grey);
+      paintIconAndText(g, w, height);
+      g.setColour(Colours::lightgrey);
       g.setFont(12);
       g.drawText(absoluteTime, w, 0, timeColumnWidth, height, Justification::centredRight, false);
       g.drawText(relativeTime, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
     else
-      SimpleTreeViewItem::paintItem(g, width, height);
+      paintIconAndText(g, width, height);
   }
 
   void setTimes(double absoluteTime, double relativeTime)
@@ -108,7 +122,7 @@ class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
   WorkUnitExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit)
-    : ExecutionTraceTreeViewItem(workUnit->toString(), T("WorkUnit-32.png"), true)
+    : ExecutionTraceTreeViewItem(workUnit->getName(), T("WorkUnit-32.png"), true)
   {
     setOpen(true);
   }
@@ -169,6 +183,8 @@ public:
     root->setOpen(true);
     setRootItemVisible(false);
     initialTime = Time::getMillisecondCounterHiRes() / 1000.0;
+
+    setColour(backgroundColourId, Colours::white);
   }
 
   virtual ~ExecutionTraceTreeView()
