@@ -29,7 +29,7 @@ public:
     for (size_t i = 0; i < numVoters; ++i)
     {
       InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>(context);
-      voteInference->setBatchLearner(voterLearner);
+      voteInference->setBatchLearner(voterLearner->cloneAndCast<Inference>(context));
       subInferences[i] = voteInference;
     }
     setBatchLearner(parallelVoteInferenceLearner());

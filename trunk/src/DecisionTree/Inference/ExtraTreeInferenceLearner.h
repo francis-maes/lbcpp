@@ -32,6 +32,13 @@ public:
 
   virtual ClassPtr getTargetInferenceClass() const
     {return binaryDecisionTreeInferenceClass;}
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    InferenceBatchLearner<Inference>::clone(context, target);
+    target.staticCast<SingleExtraTreeInferenceLearner>()->random = new RandomGenerator(random->sampleInt());
+    target.staticCast<SingleExtraTreeInferenceLearner>()->builder = builder->cloneAndCast<ProbabilityDistributionBuilder>(context);
+  }
 
 protected:
   friend class SingleExtraTreeInferenceLearnerClass;
