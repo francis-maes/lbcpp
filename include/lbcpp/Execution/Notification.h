@@ -27,9 +27,12 @@ class NotificationQueue : public Consumer
 {
 public:
   virtual void consume(ExecutionContext& context, const Variable& variable)
+    {push(variable.getObjectAndCast<Notification>());}
+  
+  void push(const NotificationPtr& notification) 
   {
     ScopedLock _(lock);
-    notifications.push_back(variable.getObjectAndCast<Notification>());
+    notifications.push_back(notification);
   }
 
   void flush()
