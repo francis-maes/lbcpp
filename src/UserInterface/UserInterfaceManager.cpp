@@ -9,6 +9,7 @@
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
+using juce::Desktop;
 
 namespace lbcpp
 {
@@ -38,7 +39,7 @@ public:
     }
     notifications->flush();
 
-    juce::Desktop& desktop = juce::Desktop::getInstance();
+    Desktop& desktop = Desktop::getInstance();
     jassert(!desktop.getNumComponents());
 
     deleteAndZero(commandManager);
@@ -88,6 +89,25 @@ void UserInterfaceManager::ensureIsInitialized(ExecutionContext& context)
 
 bool UserInterfaceManager::isRunning() const
   {return userInterfaceThread && userInterfaceThread->isThreadRunning();}
+
+bool UserInterfaceManager::hasAtLeastOneVisibleWindowOnDesktop() const
+{
+  if (!isRunning())
+    return false;
+
+  Desktop& desktop = Desktop::getInstance();
+  for (int i = 0; i < desktop.getNumComponents(); ++i)
+    if (desktop.getComponent(i)->isVisible())
+      return true;
+
+  return false;
+}
+
+void UserInterfaceManager::waitUntilAllWindowsAreClosed()
+{
+  while (hasAtLeastOneVisibleWindowOnDesktop())
+    Thread::sleep(100);
+}
 
 void UserInterfaceManager::shutdown()
 {

@@ -42,7 +42,7 @@ public:
     g.drawText(getUniqueName(), x1, 0, width - x1, height, Justification::centredLeft, true);
   }
 
-  virtual void createSubItems() = 0;
+  virtual void createSubItems() {}
 
   virtual void itemOpennessChanged(bool isNowOpen)
   {

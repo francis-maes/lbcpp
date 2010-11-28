@@ -7,13 +7,89 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
+#include "../../../explorer/Utilities/SimpleTreeViewItem.h"
 using namespace lbcpp;
 
 using juce::Component;
 using juce::DocumentWindow;
 
+using juce::Image;
 using juce::Colours;
 using juce::Justification;
+
+using juce::TreeView;
+using juce::TreeViewItem;
+
+class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
+{
+public:
+  ExecutionTraceTreeViewItem(const String& name, Image* iconToUse, bool mightContainSubItems)
+    : SimpleTreeViewItem(name, iconToUse, mightContainSubItems)
+  {
+  }
+};
+
+class ExecutionTraceMessageTreeViewItem : public ExecutionTraceTreeViewItem
+{
+public:
+  ExecutionTraceMessageTreeViewItem(const String& what, const String& where = String::empty, Image* iconToUse = 0)
+    : ExecutionTraceTreeViewItem(what + (where.isNotEmpty() ? T(" (") + where + T(")") : String::empty), iconToUse, false) {}
+};
+
+
+class ExecutionTraceTreeView : public TreeView
+{
+public:
+  ExecutionTraceTreeView(CompositeExecutionCallback* parentCallback)
+  {
+    parentCallback->appendCallback(notifierExecutionCallback(parentCallback->getContext(),
+        userInterfaceManager().getNotificationQueue(), callback = new Callback(this)));
+    setRootItem(root = new SimpleTreeViewItem(T("root"), 0, true));
+    root->setOpen(true);
+    setRootItemVisible(true);
+  }
+
+  virtual ~ExecutionTraceTreeView()
+  {
+    callback->owner = NULL;
+    deleteRootItem();
+  }
+
+protected:
+  struct Callback : public ExecutionCallback
+  {
+    Callback(ExecutionTraceTreeView* owner)
+      : owner(owner) {}
+
+    virtual void informationCallback(const String& where, const String& what)
+      {if (owner) owner->addItem(new ExecutionTraceMessageTreeViewItem(what, where));}
+
+    virtual void warningCallback(const String& where, const String& what)
+      {if (owner) owner->addItem(new ExecutionTraceMessageTreeViewItem(what, where));}
+
+    virtual void errorCallback(const String& where, const String& what)
+      {if (owner) owner->addItem(new ExecutionTraceMessageTreeViewItem(what, where));}
+
+    virtual void statusCallback(const String& status)
+      {if (owner) owner->addItem(new ExecutionTraceMessageTreeViewItem(status));}
+
+    virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+      {if (owner) owner->addItem(new ExecutionTraceMessageTreeViewItem(String(progression)));}
+
+    ExecutionTraceTreeView* owner;
+  };
+  typedef ReferenceCountedObjectPtr<Callback> CallbackPtr;
+
+  CallbackPtr callback;
+  TreeViewItem* root;
+
+  void addItem(ExecutionTraceTreeViewItem* newItem)
+  {
+    root->addSubItem(newItem);
+    scrollToKeepItemVisible(newItem);
+    
+  }
+};
 
 class UserInterfaceExecutionCallbackMainComponent : public Component
 {
@@ -105,13 +181,14 @@ public:
 
 private:
   LBCppMainWindow* mainWindow;
-  UserInterfaceExecutionCallbackMainComponent* content;
+  Component* content;
 
   static void* createWindowFunction(void* userData)
   {
     UserInterfaceExecutionCallback* pthis = (UserInterfaceExecutionCallback* )userData;
     jassert(!pthis->content && !pthis->mainWindow);
-    pthis->content = new UserInterfaceExecutionCallbackMainComponent(pthis);
+    pthis->content =  new ExecutionTraceTreeView(pthis);
+      //new UserInterfaceExecutionCallbackMainComponent(pthis);
     pthis->mainWindow = new LBCppMainWindow(pthis->content);
     return NULL;
   }
@@ -170,6 +247,9 @@ int main(int argc, char* argv[])
   ExecutionContextPtr context = createExecutionContext();
   context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
   int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
+  
+  userInterfaceManager().waitUntilAllWindowsAreClosed();
+
   context->clearCallbacks();
   lbcpp::deinitialize();
   return res;
