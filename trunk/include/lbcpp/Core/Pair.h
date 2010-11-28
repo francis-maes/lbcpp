@@ -107,7 +107,8 @@ inline void nativeToVariable(Variable& dest, const std::pair<T1, T2>& source, Ty
 {
   jassert(expectedType->getNumTemplateArguments() == 2);
   dest = Variable::create(expectedType);
-  const PairPtr& destPair = dest.getObject().staticCast<Pair>();
+  const ObjectPtr& destObject = dest.getObject();
+  const PairPtr& destPair = destObject.staticCast<Pair>();
   jassert(destPair);
   nativeToVariable(destPair->getFirst(), source.first, expectedType->getTemplateArgument(0));
   nativeToVariable(destPair->getSecond(), source.second, expectedType->getTemplateArgument(1));
