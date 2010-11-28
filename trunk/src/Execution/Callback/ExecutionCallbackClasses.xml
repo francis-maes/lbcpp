@@ -26,6 +26,13 @@
       <variable type="Variable" name="value"/>
     </class>
 
+    <class name="ExecutionWorkUnitNotification" base="ExecutionNotification">
+      <variable type="ExecutionCallback" name="target"/>
+      <variable type="WorkUnit" name="workUnit"/>
+      <variable type="Boolean" name="isPostExecution"/>
+      <variable type="Boolean" name="executionResult"/>
+    </class>
+
     <enumeration name="ExecutionMessageType">
       <value name="informationMessageType"/>
       <value name="warningMessageType"/>

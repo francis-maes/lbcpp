@@ -31,11 +31,13 @@ public:
   void waitUntilAllWindowsAreClosed();
 
   typedef void* (MessageCallbackFunction) (void* userData);
-
   void* callFunctionOnMessageThread(MessageCallbackFunction* callback, void* userData);
 
   const NotificationQueuePtr& getNotificationQueue() const
     {return notifications;}
+
+  juce::Image* getImage(const String& fileName);
+  juce::Image* getImage(const String& fileName, int width, int height);
 
 private:
   UserInterfaceThread* userInterfaceThread;

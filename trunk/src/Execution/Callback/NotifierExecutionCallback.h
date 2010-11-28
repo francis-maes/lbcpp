@@ -108,6 +108,30 @@ protected:
   String where;
 };
 
+class ExecutionWorkUnitNotification : public ExecutionNotification
+{
+public:
+  ExecutionWorkUnitNotification(ExecutionCallbackPtr target, const WorkUnitPtr& workUnit, bool isPostExecution, bool executionResult = false)
+    : target(target), workUnit(workUnit), isPostExecution(isPostExecution), executionResult(executionResult) {}
+  ExecutionWorkUnitNotification() {}
+
+  virtual void notify()
+  {
+    if (isPostExecution)
+      target->postExecutionCallback(workUnit, executionResult);
+    else
+      target->preExecutionCallback(workUnit);
+  }
+
+protected:
+  friend class ExecutionWorkUnitNotificationClass;
+
+  ExecutionCallbackPtr target;
+  WorkUnitPtr workUnit;
+  bool isPostExecution;
+  bool executionResult;
+};
+
 class NotifierExecutionCallback : public ExecutionCallback
 {
 public:
@@ -132,6 +156,12 @@ public:
 
   virtual void resultCallback(const String& name, const Variable& value)
     {notify(new ExecutionResultNotification(target, name, value));}
+
+  virtual void preExecutionCallback(const WorkUnitPtr& workUnit)
+    {notify(new ExecutionWorkUnitNotification(target, workUnit, false));}
+
+  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
+    {notify(new ExecutionWorkUnitNotification(target, workUnit, true, result));}
 
 private:
   friend class NotifierExecutionCallbackClass;
