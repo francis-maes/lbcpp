@@ -8,8 +8,12 @@
 
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
 #include <lbcpp/Execution/ExecutionContext.h>
+#include "UserInterfaceData.h"
 using namespace lbcpp;
+
 using juce::Desktop;
+using juce::Image;
+using juce::ImageCache;
 
 namespace lbcpp
 {
@@ -122,4 +126,27 @@ void* UserInterfaceManager::callFunctionOnMessageThread(MessageCallbackFunction*
 {
   jassert(isRunning());
   return juce::MessageManager::getInstance()->callFunctionOnMessageThread(callback, userData);
+}
+
+Image* UserInterfaceManager::getImage(const String& fileName)
+{
+  int size;
+  const char* data = UserInterfaceData::get(fileName, size);
+  return data ? ImageCache::getFromMemory(data, size) : NULL;
+}
+
+Image* UserInterfaceManager::getImage(const String& fileName, int width, int height)
+{
+  juce::int64 hashCode = (fileName.hashCode64() * 101 + (juce::int64)width) * 101 + (juce::int64)height;
+  Image* res = ImageCache::getFromHashCode(hashCode);
+  if (!res)
+  {
+    res = getImage(fileName);
+    if (!res)
+      return NULL;
+    res = res->createCopy(width, height);
+    jassert(res);
+    ImageCache::addImageToCache(res, hashCode);
+  }
+  return res;
 }

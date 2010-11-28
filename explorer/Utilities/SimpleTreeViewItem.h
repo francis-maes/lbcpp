@@ -19,9 +19,16 @@ class SimpleTreeViewItem : public juce::TreeViewItem
 public:
   SimpleTreeViewItem(const String& uniqueName, juce::Image* iconToUse = 0, bool mightContainSubItems = false)
     : uniqueName(uniqueName), iconToUse(iconToUse), mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
+
+  SimpleTreeViewItem(const String& uniqueName, const String& iconToUse, bool mightContainSubItems = false)
+    : uniqueName(uniqueName), iconToUse(userInterfaceManager().getImage(iconToUse, 18, 18)),
+      mightContainSubItemsFlag(mightContainSubItems), hasBeenOpened(false) {}
      
   virtual bool mightContainSubItems()
     {return mightContainSubItemsFlag;}
+
+  void setUniqueName(const String& name)
+    {this->uniqueName = name;}
 
   virtual const String getUniqueName() const
     {return uniqueName;}
@@ -53,6 +60,9 @@ public:
     }
   }
   
+  void setIcon(const String& name)
+    {iconToUse = userInterfaceManager().getImage(name, 18, 18);}
+
 protected:
   String uniqueName;
   juce::Image* iconToUse;
