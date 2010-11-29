@@ -25,6 +25,21 @@ public:
 
   virtual const PerceptionPtr& getPerception(const InferencePtr& targetInference) const = 0;
 
+  struct PrecomputePerceptionWorkUnit : public WorkUnit
+  {
+    PrecomputePerceptionWorkUnit(const PerceptionPtr& perception, const std::pair<Variable, Variable>& example, const InferenceBatchLearnerInputPtr& subLearnerInput, size_t index)
+      : WorkUnit(T("Precompute Perception ") + String((int)index)), perception(perception), example(example), subLearnerInput(subLearnerInput), index(index) {}
+
+    virtual bool run(ExecutionContext& context)
+      {subLearnerInput->setExample(index, perception->computeFunction(context, example.first), example.second); return true;}
+
+  protected:
+    PerceptionPtr perception;
+    std::pair<Variable, Variable> example;
+    InferenceBatchLearnerInputPtr subLearnerInput;
+    size_t index;
+  };
+
   virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
@@ -33,10 +48,21 @@ public:
 
     InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(targetInference, learnerInput->getNumTrainingExamples(), learnerInput->getNumValidationExamples());
     size_t n = learnerInput->getNumExamples();
-    for (size_t i = 0; i < n; ++i)
+
+    if (context.isMultiThread())
     {
-      const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
-      subLearnerInput->setExample(i, perception->computeFunction(context, example.first), example.second);
+      std::vector<WorkUnitPtr> workUnits(n);
+      for (size_t i = 0; i < n; ++i)
+        workUnits[i] = new PrecomputePerceptionWorkUnit(perception, learnerInput->getExample(i), subLearnerInput, i);
+      context.run(workUnits);
+    }
+    else
+    {
+      for (size_t i = 0; i < n; ++i)
+      {
+        const std::pair<Variable, Variable>& example = learnerInput->getExample(i);
+        subLearnerInput->setExample(i, perception->computeFunction(context, example.first), example.second);
+      }
     }
 
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);

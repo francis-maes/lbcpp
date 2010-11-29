@@ -101,7 +101,8 @@ public:
     while (!threadShouldExit() && counter)
     {
       bool ok = processOneWorkUnit();
-      jassert(ok);
+      if (!ok)
+        Thread::sleep(100); // waiting that the other threads are finished
     }
   }
 

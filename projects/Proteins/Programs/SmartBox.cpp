@@ -33,6 +33,12 @@ public:
   NumericalProteinInferenceFactory(ExecutionContext& context)
     : ProteinInferenceFactory(context), maxIterations(0) {} 
   
+  virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
+  {
+    PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
+    return res ? flattenPerception(res) : PerceptionPtr();
+  }
+
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -499,7 +505,7 @@ ContainerPtr SnowBox::loadProteins(ExecutionContext& context, const File& f, siz
   return directoryFileStream(f, T("*.xml"))
     ->load(context, maxToLoad)
     ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
-    ->apply(context, proteinToInputOutputPairFunction(false))
+    ->apply(context, proteinToInputOutputPairFunction(false), Container::parallelApply)
     ->randomize();
 }
 
@@ -658,8 +664,8 @@ bool SnowBox::run(ExecutionContext& context)
     inference->train(*inferenceContext, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
-    inference->saveToFile(context, outputInferenceFile);
     std::cout << "Save inference : " << outputInferenceFile.getFullPathName() << std::endl;
+    inference->saveToFile(context, outputInferenceFile);
   }
   return true;
 }

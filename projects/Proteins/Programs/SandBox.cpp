@@ -252,9 +252,9 @@ public:
     NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
     svm->setStochasticLearner(createOnlineLearner(targetName, 0.5, classificationAccuracyEvaluator()), true, true);
   
-    svm->getSubInference()->setBatchLearner(
+    /*svm->getSubInference()->setBatchLearner(
       precomputePerceptionsNumericalInferenceLearner(
-            new OptimizerInferenceLearner(new AlaRacheOptimizer(), stochasticInferenceLearner(true))));
+            new OptimizerInferenceLearner(new AlaRacheOptimizer(), stochasticInferenceLearner(true))));*/
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);

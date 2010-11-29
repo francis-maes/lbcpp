@@ -37,7 +37,7 @@ void GradientDescentOnlineLearner::stepFinishedCallback(ExecutionContext& contex
 {
   checkRegularizerAfterStep(context, inference);
 
-  PerceptionPtr perception = getPerception(inference);
+  const PerceptionPtr& perception = getPerception(inference);
   if (input.isObject() && input.dynamicCast<Container>())
   {
     // composite inputs (e.g. ranking)

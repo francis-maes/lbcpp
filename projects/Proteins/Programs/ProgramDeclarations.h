@@ -107,14 +107,9 @@ typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningP
 class ProteinTarget : public Object
 {
 public:
-  ProteinTarget()
-  {
-    jassert(false); // FIXME
-    /*loadFromString(T("(SS3-DR)2"));*/ /* TODO test serialisation and remove*/
-  }
-
   ProteinTarget(ExecutionContext& context, const String& targets)
     {loadFromString(context, targets);}
+  ProteinTarget() {}
   
   size_t getNumPasses() const
     {return tasks.size();}
