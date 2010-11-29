@@ -35,6 +35,8 @@ int main(int argc, char** argv)
     {
       WorkUnitPtr workUnit = obj.staticCast<WorkUnit>();
       bool ok = context->run(workUnit);
+      workUnit = WorkUnitPtr();
+      obj = ObjectPtr();
       lbcpp::deinitialize();
       return ok ? 0 : 1;
     }
@@ -51,6 +53,7 @@ int main(int argc, char** argv)
 
     int exitCode = WorkUnit::main(*context, obj.staticCast<WorkUnit>(), argc - 1, arguments);
     delete[] arguments;
+    obj = ObjectPtr();
     lbcpp::deinitialize();
     return exitCode;
   }
