@@ -21,8 +21,8 @@ namespace lbcpp
 class ParallelVoteInference : public VectorParallelInference
 {
 public:
-  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, ProbabilityDistributionBuilderPtr probabilityBuilder)
-    : VectorParallelInference(name), voteInferenceModel(voteInferenceModel), probabilityBuilder(probabilityBuilder)
+  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, ProbabilityDistributionBuilderPtr probabilityBuilderModel)
+    : VectorParallelInference(name), voteInferenceModel(voteInferenceModel), probabilityBuilderModel(probabilityBuilderModel)
   {
     jassert(numVoters);
     subInferences.resize(numVoters);
@@ -61,7 +61,7 @@ public:
     if (!n)
       return Variable();
     
-    probabilityBuilder->clear();
+    ProbabilityDistributionBuilderPtr probabilityBuilder = probabilityBuilderModel->cloneAndCast<ProbabilityDistributionBuilder>(context);
     for (size_t i = 0; i < n; ++i)
     {
       ProbabilityDistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<ProbabilityDistribution>();
@@ -75,7 +75,7 @@ protected:
   friend class ParallelVoteInferenceClass;
 
   InferencePtr voteInferenceModel;
-  ProbabilityDistributionBuilderPtr probabilityBuilder;
+  ProbabilityDistributionBuilderPtr probabilityBuilderModel;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePtr;

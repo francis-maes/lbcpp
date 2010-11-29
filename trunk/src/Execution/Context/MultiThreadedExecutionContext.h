@@ -124,9 +124,11 @@ private:
       return false;
     }
 
+    ExecutionStackPtr previousStack = context->getStack();
     context->setStack(ExecutionStackPtr(new ExecutionStack(entry.stack)));
     context->run(entry.workUnit);
     juce::atomicDecrement(*entry.counterToDecrementWhenDone);
+    context->setStack(previousStack);
     return true;
   }
 };
@@ -195,8 +197,9 @@ public:
   {
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
     int numRemainingWorkUnits = workUnits.size();
+    ExecutionStackPtr stack = getStack()->cloneAndCast<ExecutionStack>(*this);
     for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], getStack(), numRemainingWorkUnits);
+      queue->push(workUnits[i], stack, numRemainingWorkUnits);
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }

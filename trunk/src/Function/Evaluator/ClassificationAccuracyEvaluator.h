@@ -38,6 +38,25 @@ public:
       return;
     }
     
+    EnumerationProbabilityDistributionPtr distribution = predicted.dynamicCast<EnumerationProbabilityDistribution>();
+    if (distribution)
+    {
+      size_t n = distribution->getEnumeration()->getNumElements() + 1;
+      size_t bestClass = n + 1;
+      double bestProb = -DBL_MAX;
+      for (size_t i = 0; i < n; ++i)
+      {
+        if (distribution->getProbability(i) > bestProb)
+        {
+          bestProb = distribution->getProbability(i);
+          bestClass = i;
+        }
+      }
+      jassert(bestClass <= n);
+      accuracy->push(bestClass == (size_t)correctLabel);
+      return;
+    }    
+    
     if (predicted.isObject())
     {
       DenseDoubleObjectPtr scores = predicted.dynamicCast<DenseDoubleObject>();
@@ -50,25 +69,6 @@ public:
           if (scoreValues[i] > bestScore)
             bestScore = scoreValues[i], bestIndex = (int)i;
         accuracy->push(bestIndex == correctLabel);
-        return;
-      }
-
-      EnumerationProbabilityDistributionPtr distribution = predicted.dynamicCast<EnumerationProbabilityDistribution>();
-      if (distribution)
-      {
-        size_t n = distribution->getEnumeration()->getNumElements() + 1;
-        size_t bestClass = n + 1;
-        double bestProb = -DBL_MAX;
-        for (size_t i = 0; i < n; ++i)
-        {
-          if (distribution->getProbability(i) > bestProb)
-          {
-            bestProb = distribution->getProbability(i);
-            bestClass = i;
-          }
-        }
-        jassert(bestClass <= n);
-        accuracy->push(bestClass == (size_t)correctLabel);
         return;
       }
     }
