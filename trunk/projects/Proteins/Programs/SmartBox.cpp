@@ -650,7 +650,8 @@ bool SnowBox::run(ExecutionContext& context)
   ExecutionContextPtr inferenceContext = (numberOfThreads == 1)
                               ? singleThreadedExecutionContext()
                               : multiThreadedExecutionContext(numberOfThreads);
-  
+  inferenceContext->appendCallback(consoleExecutionCallback());
+
   if (useCrossValidation)
   {
     //inference->crossValidate(*context, learningData, evaluator, numberOfFolds);
