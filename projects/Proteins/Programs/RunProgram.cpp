@@ -28,8 +28,7 @@ int main(int argc, char** argv)
   {
     // load from serialization
     File parametersFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
-    //MuteMessageCallback muteCallback; // FIXME: mute is not mute anymore
-    ObjectPtr obj = Object::createFromFile(*context, parametersFile);//, muteCallback);
+    ObjectPtr obj = Object::createFromFile(*context, parametersFile);
     
     if (obj && obj->getClass()->inheritsFrom(workUnitClass))
     {

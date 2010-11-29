@@ -84,7 +84,7 @@ public:
     {setProbability(values.size() - 1, probability);}
   
   double getProbability(size_t index) const
-    {jassert(index < values.size()); return values[index];}
+    {jassert(index < values.size() + 1); return values[index];}
   
   lbcpp_UseDebuggingNewOperator
   

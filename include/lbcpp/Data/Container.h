@@ -53,9 +53,9 @@ public:
   ** Applies a @a function to all item contained into the object container.
   **
   ** @param function : function to apply to the current object container.
-  ** @param lazyCompute : specify if the function is applicated
-  ** immediately on all container items (True), or at each call
-  ** to get() or getAndCast() (False).
+  ** @param computeMode : specify if the function is applicated
+  ** immediately on all container items (parallelApply or sequentialApply),
+  ** or at each call to get() or getAndCast() (lazyApply).
   **
   ** @return an object container pointer.
   ** @see Function

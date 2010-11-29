@@ -20,6 +20,18 @@ FunctionPtr ExecutionStack::nullFunction;
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
+void ExecutionStack::push(const FunctionPtr& function)
+{
+  jassert(function);
+  stack.push_back(function);
+}
+
+void ExecutionStack::pop()
+{
+  jassert(stack.size());
+  stack.pop_back();
+}
+
 const FunctionPtr& ExecutionStack::getFunction(int index) const
 {
   if (index < 0)

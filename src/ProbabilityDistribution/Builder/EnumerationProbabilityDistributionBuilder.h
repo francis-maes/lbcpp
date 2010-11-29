@@ -47,7 +47,7 @@ public:
     EnumerationProbabilityDistributionPtr enumDistribution = value.staticCast<EnumerationProbabilityDistribution>();
     jassert(enumDistribution && enumDistribution->getEnumeration() == enumeration);
 
-    for (size_t i = 0; i < distributionValues.size(); ++i)
+    for (size_t i = 0; i < enumeration->getNumElements() + 1; ++i)
       distributionValues[i] += enumDistribution->getProbability(i) * weight;
   }
 

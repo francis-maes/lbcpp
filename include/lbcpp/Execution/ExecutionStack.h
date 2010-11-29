@@ -22,12 +22,9 @@ public:
     : parentStack(parentStack) {}
   ExecutionStack() {}
 
-  void push(const FunctionPtr& function)
-    {jassert(function); stack.push_back(function);}
-
-  void pop()
-    {jassert(stack.size()); stack.pop_back();}
-
+  void push(const FunctionPtr& function);
+  void pop();
+  
   size_t getDepth() const;
   const FunctionPtr& getFunction(int index) const;
   const FunctionPtr& getCurrentFunction() const;
