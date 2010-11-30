@@ -132,6 +132,7 @@ public:
 
 StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 StreamPtr directoryPairFileStream(const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+ConsumerPtr saveToFileConsumer(const File& outputDirectory = File::getCurrentWorkingDirectory());
 
 /**
  ** @class TextObjectParser

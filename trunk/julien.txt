@@ -11,14 +11,9 @@ Network:
  * void variableReceived(const Variable& variable)
  
 Extra-trees:
-   - Revisiter EnumerationProbabilityDistribution : Utiliser uniquement le builder pour en obtenir la distribution 
-   => Render les ExtraTree generique sur le type de sortie
-
+ * Probability: ensureScalarVectorsAreInitialized au lieu de créer les ScalarVector en constructeur
  * Delocker les arbres
-
-Consumer:
- - Consumer::comsuneContainer()
- - SaveToFileConsumer dans src/Data/Stream
+   - Source du problème: Grand nombre d'acces au TypeManager (création de pair, création vector, enumeration)
 
 MNIST:
  * Features

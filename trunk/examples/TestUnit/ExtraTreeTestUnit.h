@@ -63,7 +63,7 @@ protected:
   
   void runClassification(ExecutionContext& context)
   {    
-    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../../examples/Data/ExtraTrees/classification.csv")));
+    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../examples/Data/ExtraTrees/classification.csv")));
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, true);
     
@@ -88,7 +88,7 @@ protected:
   
   void runRegression(ExecutionContext& context)
   {
-    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../../examples/Data/ExtraTrees/regression.csv")));
+    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../examples/Data/ExtraTrees/regression.csv")));
 
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, false);
