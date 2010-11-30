@@ -18,13 +18,14 @@ int main(int argc, char** argv)
   declareProteinClasses(*context);
   declareProgramClasses(*context);
 
+  int exitCode;
+
   if (argc == 1)
   {
     usage();
-    return 0;
+    exitCode = 0;
   }
-  
-  if (argc == 2)
+  else if (argc == 2)
   {
     // load from serialization
     File parametersFile = File::getCurrentWorkingDirectory().getChildFile(argv[1]);
@@ -33,30 +34,35 @@ int main(int argc, char** argv)
     if (obj && obj->getClass()->inheritsFrom(workUnitClass))
     {
       WorkUnitPtr workUnit = obj.staticCast<WorkUnit>();
-      bool ok = context->run(workUnit);
-      workUnit = WorkUnitPtr();
-      obj = ObjectPtr();
-      lbcpp::deinitialize();
-      return ok ? 0 : 1;
+      exitCode = context->run(workUnit) ? 0 : 1;
     }
   }
-
-  // load program from string
-  ObjectPtr obj = context->createObject(context->getType(argv[1]));
-  if (obj && obj->getClass()->inheritsFrom(workUnitClass)) 
+  else if (argc > 2)
   {
-    char** arguments = new char*[argc - 1];
-    for (size_t i = 2; i < (size_t)argc; ++i)
-      arguments[i - 1] = argv[i];
-    arguments[0] = argv[0];
-
-    int exitCode = WorkUnit::main(*context, obj.staticCast<WorkUnit>(), argc - 1, arguments);
-    delete[] arguments;
-    obj = ObjectPtr();
-    lbcpp::deinitialize();
-    return exitCode;
+    // load program from string
+    TypePtr type = context->getType(argv[1]);
+    if (!type)
+      exitCode = 1;
+    else
+    {
+      ObjectPtr obj = context->createObject(type);
+      if (obj && obj->getClass()->inheritsFrom(workUnitClass)) 
+      {
+        char** arguments = new char*[argc - 1];
+        for (size_t i = 2; i < (size_t)argc; ++i)
+          arguments[i - 1] = argv[i];
+        arguments[0] = argv[0];
+        exitCode = WorkUnit::main(*context, obj.staticCast<WorkUnit>(), argc - 1, arguments);
+        delete[] arguments;
+      }
+    }
   }
-  
-  usage();
-  return -1;
+  else
+  {
+    usage();
+    exitCode = 1;
+  }
+
+  lbcpp::deinitialize();
+  return exitCode;
 }

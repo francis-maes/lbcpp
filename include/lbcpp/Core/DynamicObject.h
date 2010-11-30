@@ -40,6 +40,8 @@ public:
   */
   virtual bool loadFromXml(XmlImporter& importer);
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   virtual void createObjectVariables() = 0;
 

@@ -38,8 +38,8 @@ PerceptionPtr lbcpp::defaultPositiveDoubleFeatures(size_t numIntervals, double m
 PerceptionPtr lbcpp::defaultDoubleFeatures(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
   {return signedNumberFeatures(defaultPositiveDoubleFeatures(numIntervals, minPowerOfTen, maxPowerOfTen));}
 
-PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2)
-  {jassert(perception1 && perception2); return productPerception(multiplyDoubleFunction(), perception1, perception2, true, true);}
+PerceptionPtr lbcpp::conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2, bool singleInputForBothPerceptions)
+  {jassert(perception1 && perception2); return productPerception(multiplyDoubleFunction(), perception1, perception2, true, singleInputForBothPerceptions);}
 
 PerceptionPtr lbcpp::selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const std::vector< std::vector<size_t> >& selectedConjunctions)
   {return selectAndMakeProductsPerception(decorated, multiplyDoubleFunction(), selectedConjunctions);}
