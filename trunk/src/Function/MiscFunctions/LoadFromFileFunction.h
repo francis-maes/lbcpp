@@ -31,6 +31,9 @@ public:
   virtual String toString() const
     {return T("Load ") + expectedType->getName() + T(" From File");}
 
+  virtual String getDescription(const Variable& input) const
+    {return T("Load ") + input.toShortString();}
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     File file = input.getFile();
