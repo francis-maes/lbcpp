@@ -40,7 +40,7 @@
       <variable type="ObjectVector[Type]" name="templateArguments"/>
       <code>
         virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-          {return VariableValue(context.getType(value), false);}
+          {return VariableValue(context.getType(value));}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {
@@ -48,14 +48,14 @@
           if (text.isNotEmpty())
             return createFromString(importer.getContext(), importer.getAllSubText());
           else
-            return VariableValue(Type::loadUnnamedTypeFromXml(importer), false);
+            return VariableValue(Type::loadUnnamedTypeFromXml(importer));
         }
 
         virtual void destroy(VariableValue&amp; value) const
-          {value.clearObject(isUnnamedType());}
+          {value.clearObject();}
 
         virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-          {dest.setObject(source.getObjectPointer(), isUnnamedType());}
+          {dest.setObject(source.getObjectPointer());}
       </code>
     </class>
 

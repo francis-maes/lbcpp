@@ -76,6 +76,8 @@ public:
 
   void setStaticAllocationFlag()
     {jassert(!refCount); refCount = staticAllocationRefCountValue;}
+  bool hasStaticAllocationFlag() const
+    {return refCount < 0;}
 
   static void resetRefCountDebugInfo();
   static void displayRefCountDebugInfo(std::ostream& ostr);

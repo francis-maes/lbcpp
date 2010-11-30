@@ -548,7 +548,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
   return true;
-
+  
   std::cout << "Loading..." << std::flush;
   inference = Inference::createFromFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;

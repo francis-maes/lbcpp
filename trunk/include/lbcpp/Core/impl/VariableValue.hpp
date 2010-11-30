@@ -51,19 +51,24 @@ struct VariableValue
     {u.stringValue = new String(stringValue);}
 
   template<class T>
-  VariableValue(const ReferenceCountedObjectPtr<T>& objectValue);
+  VariableValue(const ReferenceCountedObjectPtr<T>& objectValue)
+    {setObject(objectValue.get());}
+
+  template<class T>
+  VariableValue(const NativePtr<T>& objectValue)
+    {setObject(objectValue.get());}
 
 #ifdef LBCPP_ENABLE_CPP0X_RVALUES
   template<class T>
   VariableValue(ReferenceCountedObjectPtr<T>&& objectValue)
   {
-    u.objectValue = objectValue.get();
+    setObject(objectValue.get());
     objectValue.setPointerToNull();
   }
 #endif // LBCPP_ENABLE_CPP0X_RVALUES
 
-  VariableValue(Object* objectValue, bool incrementRefCount = true)
-    {u.objectValue = objectValue; if (incrementRefCount && objectValue) objectValue->incrementReferenceCounter();}
+  VariableValue(Object* objectValue)
+    {setObject(objectValue);}
   
   VariableValue(char* rawData)
     {u.rawDataValue = rawData;}
@@ -75,7 +80,7 @@ struct VariableValue
     {jassert(sizeof (*this) == sizeof (u.intValue));  u.intValue = 0;}
 
   void clearBuiltin();
-  void clearObject(bool decrementRefCount = true);
+  void clearObject();
   void clearString();
   void clearRawData();
 
@@ -140,8 +145,8 @@ struct VariableValue
   Object* getObjectPointer() const
     {return u.objectValue;}
 
-  void setObject(Object* pointer, bool incrementRefCount = true)
-    {u.objectValue = pointer; if (incrementRefCount && pointer) pointer->incrementReferenceCounter();}
+  void setObject(Object* pointer)
+    {u.objectValue = pointer; if (pointer && !pointer->hasStaticAllocationFlag()) pointer->incrementReferenceCounter();}
   
   void setObject(ObjectPtr pointer)
     {setObject(pointer.get());}
@@ -167,22 +172,14 @@ private:
   } u;
 };
 
-template<class ObjectType>
-inline VariableValue::VariableValue(const ReferenceCountedObjectPtr<ObjectType>& objectValue)
-{
-  u.objectValue = objectValue.get();
-  if (u.objectValue)
-    u.objectValue->incrementReferenceCounter();
-}
-
 inline void VariableValue::clearBuiltin()
   {u.intValue = 0;}
 
-inline void VariableValue::clearObject(bool decrementRefCount)
+inline void VariableValue::clearObject()
 {
   if (u.objectValue)
   {
-    if (decrementRefCount)
+    if (!u.objectValue->hasStaticAllocationFlag()) 
       u.objectValue->decrementReferenceCounter();
     u.objectValue = NULL;
   }

@@ -61,7 +61,7 @@ inline Variable::Variable(Object* object)
 
 template<class T>
 inline Variable::Variable(NativePtr<T> object, TypePtr expectedType)
-  : type(object ? (TypePtr)object->getClass() : expectedType), value(object, false) {jassert(type || !object);}
+  : type(object ? (TypePtr)object->getClass() : expectedType), value(object) {jassert(type || !object);}
 
 template<class T>
 inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType)

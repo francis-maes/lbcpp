@@ -42,6 +42,6 @@ public:
     {checkIsTrue(context, !a);}
 };
 
-};
+}; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_TEST_UNIT_H_
