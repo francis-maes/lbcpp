@@ -42,6 +42,6 @@ int main(int argc, char** argv)
   // Product and conjunction
   FunctionPtr makePairFunction = identityFunction(pairClass(anyType, anyType));
   testPerception(*context, T("pair (I1,I2)"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), myIntegerPair);
-  testPerception(*context, T("pair (I1,I2) features"), conjunctionFeatures(composite, composite), myIntegerPair);
+  testPerception(*context, T("pair (I1,I2) features"), conjunctionFeatures(composite, composite, false), myIntegerPair);
   return 0;
 }

@@ -53,7 +53,7 @@ extern void addWeighted(ExecutionContext& context, ObjectPtr& target, const Perc
 extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
 
 // product perceptions
-extern PerceptionPtr conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2);
+extern PerceptionPtr conjunctionFeatures(PerceptionPtr perception1, PerceptionPtr perception2, bool singleInputForBothPerceptions = true);
 
 // boolean / enumeration features
 extern PerceptionPtr booleanFeatures();
