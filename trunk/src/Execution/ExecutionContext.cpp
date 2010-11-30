@@ -104,6 +104,18 @@ void CompositeExecutionCallback::progressCallback(double progression, double pro
     callbacks[i]->progressCallback(progression, progressionTotal, progressionUnit);
 }
 
+void CompositeExecutionCallback::preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->preExecutionCallback(workUnits);
+}
+
+void CompositeExecutionCallback::postExecutionCallback(const WorkUnitVectorPtr& workUnits)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->postExecutionCallback(workUnits);
+}
+
 void CompositeExecutionCallback::preExecutionCallback(const WorkUnitPtr& workUnit)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)

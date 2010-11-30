@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_CONTEXT_SINGLE_THREADED_H_
 
 # include <lbcpp/Execution/ExecutionContext.h>
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {
@@ -26,10 +27,11 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+  virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    for (size_t i = 0; i < workUnits.size(); ++i)
-      if (!ExecutionContext::run(workUnits[i]))
+    size_t n = workUnits->getNumWorkUnits();
+    for (size_t i = 0; i < n; ++i)
+      if (!ExecutionContext::run(workUnits->getWorkUnit(i)))
         return false;
     return true;
   }

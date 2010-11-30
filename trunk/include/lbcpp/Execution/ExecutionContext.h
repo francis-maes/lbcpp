@@ -10,7 +10,6 @@
 # define LBCPP_EXECUTION_CONTEXT_H_
 
 # include "ExecutionCallback.h"
-# include "WorkUnit.h"
 
 namespace lbcpp
 {
@@ -70,7 +69,7 @@ public:
   ** Work Units
   */
   virtual bool run(const WorkUnitPtr& workUnit);
-  virtual bool run(const std::vector<WorkUnitPtr>& workUnits) = 0;
+  virtual bool run(const WorkUnitVectorPtr& workUnits) = 0;
 
   lbcpp_UseDebuggingNewOperator
 

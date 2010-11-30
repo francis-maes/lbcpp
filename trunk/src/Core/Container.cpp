@@ -10,6 +10,7 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
+#include <lbcpp/Execution/WorkUnit.h>
 using namespace lbcpp;
 
 VectorPtr Container::toVector() const
@@ -146,9 +147,9 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
     }
     else if (computeMode == parallelApply)
     {
-      std::vector<WorkUnitPtr> workUnits(n);
+      WorkUnitVectorPtr workUnits(new WorkUnitVector(n));
       for (size_t i = 0; i < n; ++i)
-        workUnits[i] = new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i);
+        workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
       context.run(workUnits);
     }
     else

@@ -81,12 +81,12 @@ public:
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
-    std::vector<WorkUnitPtr> workUnits(7);
-    std::vector<double> scores(workUnits.size());
-    for (size_t i = 0; i < workUnits.size(); ++i)
+    WorkUnitVectorPtr workUnits(new WorkUnitVector(5));
+    std::vector<double> scores(workUnits->getNumWorkUnits());
+    for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
     {
       double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
-      workUnits[i] = evaluateObjectiveFunctionWorkUnit(T("LearningRate"), objective, learningRate, scores[i]);
+      workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(T("LearningRate"), objective, learningRate, scores[i]));
     }
     context.run(workUnits);
     double bestScore = -DBL_MAX;
@@ -396,34 +396,33 @@ private:
 
 /////////////////////////////////////////
 
-VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
-{
-#ifdef JUCE_DEBUG
-  size_t maxCount = 3;
-#else
-  size_t maxCount = 500;
-#endif // JUCE_DEBUG
-  if (inputDirectory.exists())
-    return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
-      ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)->randomize();
-  else
-    return directoryFileStream(supervisionDirectory)->load(context, maxCount)
-      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
-      ->apply(context, proteinToInputOutputPairFunction(false), Container::sequentialApply)->randomize();
-}
-
-void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
-{
-  inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
-}
-
 class SandBoxWorkUnit : public WorkUnit
 {
 public:
   SandBoxWorkUnit() : WorkUnit(T("SandBox")) {}
 
-protected:
   virtual bool run(ExecutionContext& context);
+
+  VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
+  {
+  #ifdef JUCE_DEBUG
+    size_t maxCount = 3;
+  #else
+    size_t maxCount = 500;
+  #endif // JUCE_DEBUG
+    if (inputDirectory.exists())
+      return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
+        ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)->randomize();
+    else
+      return directoryFileStream(supervisionDirectory)->load(context, maxCount)
+        ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
+        ->apply(context, proteinToInputOutputPairFunction(false), Container::sequentialApply)->randomize();
+  }
+
+  void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
+  {
+    inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
+  }
 };
 
 bool SandBoxWorkUnit::run(ExecutionContext& context)
@@ -596,7 +595,7 @@ int main(int argc, char** argv)
   {
     ExecutionContextPtr context = singleThreadedExecutionContext();
     context->appendCallback(consoleExecutionCallback());
-    //context->appendCallback(userInterfaceExecutionCallback());
+    context->appendCallback(userInterfaceExecutionCallback());
     context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));

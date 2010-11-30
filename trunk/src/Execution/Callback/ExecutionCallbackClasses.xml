@@ -30,12 +30,6 @@
       <variable type="Variable" name="value"/>
     </class>
 
-    <class name="ExecutionWorkUnitNotification" base="ExecutionNotification">
-      <variable type="ExecutionCallback" name="target"/>
-      <variable type="WorkUnit" name="workUnit"/>
-      <variable type="Boolean" name="isPostExecution"/>
-      <variable type="Boolean" name="executionResult"/>
-    </class>
 
     <enumeration name="ExecutionMessageType">
       <value name="informationMessageType"/>
@@ -49,7 +43,18 @@
       <variable type="String" name="what"/>
       <variable type="String" name="where"/>
     </class>
+
+    <class name="WorkUnitsExecutionWorkUnitNotification" base="ExecutionNotification">
+      <variable type="WorkUnitVector" name="workUnits"/>
+    </class>
     
+    <class name="WorkUnitExecutionWorkUnitNotification" base="ExecutionNotification">
+      <variable type="ExecutionCallback" name="target"/>
+      <variable type="WorkUnit" name="workUnit"/>
+      <variable type="Boolean" name="isPostExecution"/>
+      <variable type="Boolean" name="executionResult"/>
+    </class>
+
     <class name="FunctionExecutionWorkUnitNotification" base="ExecutionNotification">
       <variable type="Variable" name="input"/>
       <variable type="Boolean" name="isPostExecution"/>

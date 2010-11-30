@@ -9,8 +9,9 @@
 #ifndef LBCPP_EXECUTION_WORK_UNIT_H_
 # define LBCPP_EXECUTION_WORK_UNIT_H_
 
-# include "../Core/Object.h"
 # include "predeclarations.h"
+# include "../Core/Variable.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 {
@@ -60,6 +61,37 @@ protected:
 
   virtual bool run(ExecutionContext& context)
     {return !decorated || decorated->run(context);}
+};
+
+class WorkUnitVector : public ObjectVector
+{
+public:
+  WorkUnitVector(size_t initialSize)
+    : ObjectVector(workUnitClass, initialSize) {}
+  WorkUnitVector() {}
+
+  virtual TypePtr getElementsType() const
+    {return workUnitClass;}
+
+  virtual String getName() const
+    {return name;}
+
+  virtual void setName(const String& name)
+    {this->name = name;}
+
+  size_t getNumWorkUnits() const
+    {return getNumElements();}
+
+  const WorkUnitPtr& getWorkUnit(size_t index) const
+    {return getAndCast<WorkUnit>(index);}
+
+  void setWorkUnit(size_t index, const WorkUnitPtr& workUnit)
+    {set(index, workUnit);}
+
+protected:
+  friend class WorkUnitVectorClass;
+
+  String name;
 };
 
 }; /* namespace lbcpp */
