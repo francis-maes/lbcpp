@@ -29,6 +29,9 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
 class WorkUnit;
 typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
+  
+class TestUnit;
+typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
 
 }; /* namespace lbcpp */
 

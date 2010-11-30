@@ -16,6 +16,9 @@
     <class name="DecoratorWorkUnit" base="WorkUnit">
       <variable type="WorkUnit" name="decorated"/>
     </class>
+    
+    <!-- Test Unit -->
+    <class name="TestUnit" base="WorkUnit" abstract="yes"/>
 
     <!-- Function Stack -->
     <class name="ExecutionStack">

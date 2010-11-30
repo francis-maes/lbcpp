@@ -1,9 +1,8 @@
-#ifndef LBCPP_MNIST_x3_H_
-# define LBCPP_MNIST_x3_H_
+#ifndef LBCPP_TEST_UNIT_EXTRA_TREES_H_
+# define LBCPP_TEST_UNIT_EXTRA_TREES_H_
 
 # include <lbcpp/lbcpp.h>
-
-//# define DEBUG_EXTRA_TREE_CLASSIFICATION
+# include <lbcpp/Execution/TestUnit.h>
 
 namespace lbcpp
 {
@@ -40,10 +39,10 @@ protected:
   TypePtr elementType;
 };
   
-class X3TesterProgram : public WorkUnit
+class ExtraTreeTestUnit : public TestUnit
 {
 public:
-  X3TesterProgram() : numTrees(100), numAttributes(21), minSplitSize(1) {}
+  ExtraTreeTestUnit() : numTrees(100), numAttributes(21), minSplitSize(1) {}
   
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
@@ -56,7 +55,7 @@ public:
   }
 
 protected:
-  friend class X3TesterProgramClass;
+  friend class ExtraTreeTestUnitClass;
   
   size_t numTrees;
   size_t numAttributes;
@@ -79,15 +78,12 @@ protected:
     
     inference->evaluate(context, learningData, evaluator);
     context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
-    if (evaluator->getDefaultScore() != 1.0)
-      context.errorCallback(T("X3TesterProgram::runClassification"), T("Results must be 100.0"));
+    checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator);
     context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
-    
-    if (abs(0.85 - evaluator->getDefaultScore()) > 0.03)
-      context.errorCallback(T("X3TesterProgram::runClassification"), T("Accuracy must be close to 85.0"));
+    checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
   }
   
   void runRegression(ExecutionContext& context)
@@ -108,14 +104,12 @@ protected:
     EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, learningData, evaluator);
     context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
-    if (evaluator->getDefaultScore() > 0.0001)
-      context.errorCallback(T("X3TesterProgram::runRegression"), T("Results must be 0.0"));
+    checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
 
     evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator);
     context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
-    if (abs(2.2 + evaluator->getDefaultScore()) > 0.3)
-      context.errorCallback(T("X3TesterProgram::runRegression"), T("RMSE must be close to 2.2"));
+    checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
   }
 
 private:  
@@ -160,4 +154,4 @@ private:
 
 };
 
-#endif // !LBCPP_MNIST_x3_H_
+#endif // !LBCPP_TEST_UNIT_EXTRA_TREES_H_
