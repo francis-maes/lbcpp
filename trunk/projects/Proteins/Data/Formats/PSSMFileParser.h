@@ -12,6 +12,7 @@
 # include "../Protein.h"
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/lbcpp.h>
+# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
 
 namespace lbcpp
 {
@@ -77,7 +78,7 @@ public:
       return false;
     }
 
-    EnumerationProbabilityDistributionPtr scores = new EnumerationProbabilityDistribution(aminoAcidTypeEnumeration);
+    ProbabilityDistributionBuilderPtr scores = enumerationProbabilityDistributionBuilder(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + (int)i * 3;
@@ -94,14 +95,16 @@ public:
         context.errorCallback(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
         return false;
       }
-      jassert(false); // FIXME
+
+      scores->addElement(Variable(index, aminoAcidTypeEnumeration), scoreI);
       //scores->setProbability(index, normalize(scoreI));
     }
 
     String gapScore = line.substring(153, 157).trim();
-    jassert(false); // FIXME
+    
+    scores->addElement(Variable::missingValue(aminoAcidTypeEnumeration), gapScore.getDoubleValue());
     //scores->setMissingProbability(gapScore.getDoubleValue());
-    pssm->setElement(currentPosition, scores);
+    pssm->setElement(currentPosition, scores->build());
 
     ++currentPosition;
     return true;
