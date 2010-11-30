@@ -19,7 +19,13 @@ namespace lbcpp
 class Notification : public Object
 {
 public:
-  virtual void notify() = 0;
+  Notification();
+
+  virtual void notify(const ObjectPtr& target) = 0;
+
+private:
+  Thread::ThreadID sourceThreadId;
+  Time constructionTime;
 };
 
 typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
@@ -30,29 +36,17 @@ public:
   virtual void consume(ExecutionContext& context, const Variable& variable)
     {push(variable.getObjectAndCast<Notification>());}
   
-  void push(const NotificationPtr& notification) 
-  {
-    ScopedLock _(lock);
-    notifications.push_back(notification);
-  }
+  void setTarget(const ObjectPtr& target)
+    {this->target = target;}
 
-  void flush()
-  {
-    std::vector<NotificationPtr> notifications;
-    {
-      ScopedLock _(lock);
-      this->notifications.swap(notifications);
-    }
-    for (size_t i = 0; i < notifications.size(); ++i)
-      notifications[i]->notify();
-  }
-
-  bool isEmpty() const
-    {ScopedLock _(lock); return notifications.empty();}
+  void push(const NotificationPtr& notification);
+  void flush();
+  bool isEmpty() const;
 
 protected:
   CriticalSection lock;
   std::vector<NotificationPtr> notifications;
+  ObjectPtr target;
 };
 
 typedef ReferenceCountedObjectPtr<NotificationQueue> NotificationQueuePtr;

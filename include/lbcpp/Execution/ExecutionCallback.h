@@ -21,6 +21,8 @@ class ExecutionCallback : public Object
 public:
   ExecutionCallback() : context(NULL) {}
 
+  virtual void notificationCallback(const NotificationPtr& notification);
+
   /*
   ** Informations, warnings and Errors
   */
@@ -85,24 +87,11 @@ protected:
 class CompositeExecutionCallback : public ExecutionCallback
 {
 public:
-  /*
-  ** Default implementations: dispatch callback on children
-  */
+  virtual void notificationCallback(const NotificationPtr& notification);
+
   virtual void informationCallback(const String& where, const String& what);
   virtual void warningCallback(const String& where, const String& what);
   virtual void errorCallback(const String& where, const String& what);
-  virtual void statusCallback(const String& status);
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
-  virtual void resultCallback(const String& name, const Variable& value);
-
-  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits);
-  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result);
-  virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input);
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output);
-  virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision);
-  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
 
   // shortcuts
   void informationCallback(const String& what)
@@ -114,9 +103,21 @@ public:
   void errorCallback(const String& what)
     {errorCallback(String::empty, what);}
 
-  /*
-  ** Manage Callbacks
-  */
+  virtual void statusCallback(const String& status);
+  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
+
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits);
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result);
+  virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
+  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input);
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output);
+  virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision);
+  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
+
+  virtual void resultCallback(const String& name, const Variable& value);
+
+
   void appendCallback(const ExecutionCallbackPtr& callback);
   void removeCallback(const ExecutionCallbackPtr& callback);
   void clearCallbacks();
@@ -139,10 +140,11 @@ protected:
   std::vector<ExecutionCallbackPtr> callbacks;
 };
 
+typedef ReferenceCountedObjectPtr<CompositeExecutionCallback> CompositeExecutionCallbackPtr;
+
 extern ExecutionCallbackPtr silentExecutionCallback();
 extern ExecutionCallbackPtr consoleExecutionCallback();
 extern ExecutionCallbackPtr userInterfaceExecutionCallback();
-extern ExecutionCallbackPtr notifierExecutionCallback(ExecutionContext& context, ConsumerPtr notificationsConsumer, ExecutionCallbackPtr target);
 
 }; /* namespace lbcpp */
 

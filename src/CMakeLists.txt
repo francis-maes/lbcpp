@@ -155,18 +155,20 @@ SET(LBCPP_EXECUTION_SOURCES
   ../include/lbcpp/Execution/TestUnit.h
   ../include/lbcpp/Execution/ExecutionStack.h
   ../include/lbcpp/Execution/ExecutionCallback.h
+  Execution/ExecutionCallback.cpp
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp
   ../include/lbcpp/Execution/Notification.h
+  Execution/Notification.cpp
   Execution/ExecutionClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
 )
 
 SET(LBCPP_EXECUTION_CALLBACK_SOURCES
+  Execution/Callback/ExecutionNotifications.h
   Execution/Callback/SilentExecutionCallback.h
   Execution/Callback/ConsoleExecutionCallback.h
   Execution/Callback/UserInterfaceExecutionCallback.h
-  Execution/Callback/NotifierExecutionCallback.h
   Execution/Callback/ExecutionCallbackClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
 )

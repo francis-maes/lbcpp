@@ -34,14 +34,22 @@ public:
 class UserInterfaceExecutionCallback : public CompositeExecutionCallback
 {
 public:
-  UserInterfaceExecutionCallback() : mainWindow(NULL), content(NULL) {}
+  UserInterfaceExecutionCallback() : mainWindow(NULL), content(NULL)
+  {
+  }
+
   virtual ~UserInterfaceExecutionCallback()
     {shutdown();}
 
   virtual void initialize(ExecutionContext& context)
   {
     ExecutionCallback::initialize(context);
+
+    uiCompositeCallback = CompositeExecutionCallbackPtr(new CompositeExecutionCallback());
+    uiCompositeCallback->initialize(context);
+
     userInterfaceManager().ensureIsInitialized(context);
+    userInterfaceManager().getNotificationQueue()->setTarget(uiCompositeCallback);
     userInterfaceManager().getNotificationQueue()->push(new CreateWindowNotification(this));
     waitUntilNotificationQueueIsEmpty();
   }
@@ -61,7 +69,12 @@ public:
       Thread::sleep(100);
   }
 
+  virtual void notificationCallback(const NotificationPtr& notification)
+    {userInterfaceManager().getNotificationQueue()->push(notification);}
+
 private:
+  CompositeExecutionCallbackPtr uiCompositeCallback;
+
   Component* mainWindow;
   Component* content;
   
@@ -72,10 +85,16 @@ private:
       
     UserInterfaceExecutionCallback* pthis;
   
-    virtual void notify()
+    virtual void notify(const ObjectPtr& target)
     {
       jassert(!pthis->content && !pthis->mainWindow);
-      pthis->content = new ExecutionTraceTreeView(pthis);
+      pthis->content = new ExecutionTraceTreeView();
+      ExecutionCallback* callback = dynamic_cast<ExecutionCallback* >(pthis->content);
+      if (callback)
+      {
+        callback->setStaticAllocationFlag();
+        pthis->uiCompositeCallback->appendCallback(callback);
+      }
       pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
     }
   };
@@ -87,9 +106,9 @@ private:
       
     UserInterfaceExecutionCallback* pthis;
   
-    virtual void notify()
+    virtual void notify(const ObjectPtr& target)
     {
-      pthis->clearCallbacks();
+      pthis->uiCompositeCallback->clearCallbacks();
       if (pthis->mainWindow)
         deleteAndZero(pthis->mainWindow);
       pthis->content = NULL;
