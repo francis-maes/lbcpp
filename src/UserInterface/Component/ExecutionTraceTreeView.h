@@ -234,62 +234,22 @@ class ProgressExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 public:
   ProgressExecutionTraceTreeViewItem()
     : ExecutionTraceTreeViewItem(T("progression"), T("Progress-32.png"), false) {}
-
 };
 
-class ExecutionTraceTreeView : public TreeView, public ExecutionCallback
+class ExecutionTraceTreeViewBuilder : public ExecutionCallback
 {
 public:
-  ExecutionTraceTreeView() : root(NULL), lastCreatedItem(NULL)
+  ExecutionTraceTreeViewBuilder(TreeView* tree = NULL)
+    : tree(tree), root(NULL), lastCreatedItem(NULL)
   {
-    setRootItem(root = new SimpleTreeViewItem(T("root"), 0, true));
-    root->setOpen(true);
-    setRootItemVisible(false);
-    initialTime = Time::getMillisecondCounterHiRes() / 1000.0;
-
-    setColour(backgroundColourId, Colours::white);
+    initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
   }
 
-  virtual ~ExecutionTraceTreeView()
-    {deleteRootItem();}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  TreeViewItem* root;
-  double initialTime;
-  std::vector< std::pair<TreeViewItem* , double> > stack;
-  TreeViewItem* lastCreatedItem;
-  String currentStatus;
-
-  void setStatus(const String& status)
+  virtual void notificationCallback(const NotificationPtr& notification)
   {
-    currentStatus = status;
-  }
-
-  void setTimes(ExecutionTraceTreeViewItem* item)
-  {
-    double time = Time::getMillisecondCounterHiRes() / 1000.0;
-    item->setTimes(time - initialTime, time - (stack.empty() ? initialTime : stack.back().second));
-  }
-
-  TreeViewItem* getCurrentParent() const
-    {return stack.empty() ? root : stack.back().first;}
-
-  void addItem(ExecutionTraceTreeViewItem* newItem)
-  {
-    setTimes(newItem);
-    lastCreatedItem = newItem;
-    getCurrentParent()->addSubItem(newItem);
-    scrollToKeepItemVisible(newItem);
-  }
-
-  ProgressExecutionTraceTreeViewItem* getOrCreateProgressTreeViewItem()
-  {
-    ProgressExecutionTraceTreeViewItem* res = dynamic_cast<ProgressExecutionTraceTreeViewItem* >(lastCreatedItem);
-    if (!res)
-      addItem(res = new ProgressExecutionTraceTreeViewItem());
-    return res;
+    currentNotificationConstructionTime = notification->getConstructionTime();
+    currentNotificationSourceThreadId = notification->getSourceThreadId();
+    ExecutionCallback::notificationCallback(notification);
   }
 
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
@@ -306,7 +266,7 @@ protected:
   {
     ExecutionTraceTreeViewItem* node = new WorkUnitExecutionTraceTreeViewItem(workUnit);
     addItem(node);
-    stack.push_back(std::make_pair(node, Time::getMillisecondCounterHiRes() / 1000.0));
+    stack.push_back(std::make_pair(node, currentNotificationConstructionTime.toMilliseconds() / 1000.0));
   }
 
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
@@ -329,7 +289,7 @@ protected:
   {
     ExecutionTraceTreeViewItem* node = new WorkUnitVectorExecutionTraceTreeViewItem(workUnits);
     addItem(node);
-    stack.push_back(std::make_pair(node, Time::getMillisecondCounterHiRes() / 1000.0));
+    stack.push_back(std::make_pair(node, currentNotificationConstructionTime.toMilliseconds() / 1000.0));
   }
 
   virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
@@ -353,7 +313,61 @@ protected:
     {addItem(new ErrorExecutionTraceTreeViewItem(what, where));}
 
   virtual void statusCallback(const String& status)
-    {setStatus(status);}
+    {currentStatus = status;}
+
+protected:
+  TreeView* tree;
+  TreeViewItem* root;
+  double initialTime;
+  std::vector< std::pair<TreeViewItem* , double> > stack;
+  TreeViewItem* lastCreatedItem;
+  String currentStatus;
+
+  Time currentNotificationConstructionTime;
+  Thread::ThreadID currentNotificationSourceThreadId;
+
+  void setTimes(ExecutionTraceTreeViewItem* item)
+  {
+    double time = currentNotificationConstructionTime.toMilliseconds() / 1000.0;
+    item->setTimes(time - initialTime, time - (stack.empty() ? initialTime : stack.back().second));
+  }
+
+  TreeViewItem* getCurrentParent() const
+    {return stack.empty() ? root : stack.back().first;}
+
+  void addItem(ExecutionTraceTreeViewItem* newItem)
+  {
+    setTimes(newItem);
+    lastCreatedItem = newItem;
+    getCurrentParent()->addSubItem(newItem);
+    tree->scrollToKeepItemVisible(newItem);
+  }
+
+  ProgressExecutionTraceTreeViewItem* getOrCreateProgressTreeViewItem()
+  {
+    ProgressExecutionTraceTreeViewItem* res = dynamic_cast<ProgressExecutionTraceTreeViewItem* >(lastCreatedItem);
+    if (!res)
+      addItem(res = new ProgressExecutionTraceTreeViewItem());
+    return res;
+  }
+};
+
+class ExecutionTraceTreeView : public TreeView, public ExecutionTraceTreeViewBuilder
+{
+public:
+  ExecutionTraceTreeView()
+  {
+    ExecutionTraceTreeViewBuilder::tree = this;
+    setRootItem(root = new SimpleTreeViewItem(T("root"), 0, true));
+    root->setOpen(true);
+    setRootItemVisible(false);
+    setColour(backgroundColourId, Colours::white);
+  }
+
+  virtual ~ExecutionTraceTreeView()
+    {deleteRootItem();}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */

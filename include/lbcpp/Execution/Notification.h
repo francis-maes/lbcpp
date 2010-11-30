@@ -23,6 +23,12 @@ public:
 
   virtual void notify(const ObjectPtr& target) = 0;
 
+  const Time& getConstructionTime() const
+    {return constructionTime;}
+
+  Thread::ThreadID getSourceThreadId() const
+    {return sourceThreadId;}
+
 private:
   Thread::ThreadID sourceThreadId;
   Time constructionTime;

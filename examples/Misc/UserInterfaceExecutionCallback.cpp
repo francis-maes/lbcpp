@@ -12,8 +12,7 @@ using namespace lbcpp;
 class MySubWorkUnit : public WorkUnit
 {
 public:
-  virtual String toString() const
-    {return T("My Sub Work Unit !");}
+  MySubWorkUnit() : WorkUnit(T("My Sub Work")) {}
  
   virtual bool run(ExecutionContext& context)
   {
@@ -32,8 +31,7 @@ public:
 class MyWorkUnit : public WorkUnit
 {
 public:
-  virtual String toString() const
-    {return T("My Work Unit !");}
+  MyWorkUnit() : WorkUnit(T("My Work Unit !")) {}
  
   virtual bool run(ExecutionContext& context)
   {
