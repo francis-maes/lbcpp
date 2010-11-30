@@ -10,7 +10,7 @@
 # define LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
 
 # include <lbcpp/Core/Pair.h>
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

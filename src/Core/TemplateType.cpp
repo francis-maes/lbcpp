@@ -8,7 +8,7 @@
 
 #include <lbcpp/Core/TemplateType.h>
 #include <lbcpp/Core/Variable.h>
-#include <lbcpp/Data/Vector.h>
+#include <lbcpp/Core/Vector.h>
 using namespace lbcpp;
 
 bool TemplateType::isInstanciatedTypeName(const String& name)

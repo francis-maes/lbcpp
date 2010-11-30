@@ -106,58 +106,21 @@ InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
 /*
 ** High Level functions
 */
-static bool internalPreInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
+bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& out) const
 {
-  context.getStack()->push(inference);
-  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
-  {
-    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
-    if (callback)
-      callback->preInferenceCallback(context, input, supervision, output);
-  }
-  return true;
-}
+  jassert(!input.isNil());
+  InferencePtr pthis = refCountedPointerFromThis(this);
 
-static bool internalPostInference(ExecutionContext& context, const InferencePtr& inference, Variable& input, Variable& supervision, Variable& output)
-{
-  for (size_t i = 0; i < context.getNumCallbacks(); ++i)
-  {
-    InferenceCallbackPtr callback = context.getCallback(i).dynamicCast<InferenceCallback>();
-    if (callback)
-      callback->postInferenceCallback(context, input, supervision, output);
-  }
+  context.getStack()->push(pthis);
+  context.preExecutionCallback(pthis, input, supervision);
+  Variable output = computeInference(context, input, supervision);
+  context.postExecutionCallback(pthis, input, supervision, output);
   context.getStack()->pop();
+
+  if (&out)
+    out = output;
   return true;
 }
-
-static bool internalRunInference(ExecutionContext& context, const InferencePtr& inference, const Variable& in, const Variable& sup, Variable* out)
-{
-  jassert(!in.isNil());
-  jassert(inference);
-  Variable input(in);
-  Variable supervision(sup);
-  Variable output;
-  if (!internalPreInference(context, inference, input, supervision, output))
-  {
-    context.warningCallback(T("ExecutionContext::run"), T("pre-inference failed"));
-    jassert(false);
-    return false;
-  }
-
-  if (!output.exists())
-    output = inference->computeInference(context, input, supervision);
-
-  internalPostInference(context, inference, input, supervision, output);
-  if (out)
-    *out = output;
-  return true;
-}
-
-bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-  {return internalRunInference(context, refCountedPointerFromThis(this), input, supervision, NULL);}
-
-bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output) const
-  {return internalRunInference(context, refCountedPointerFromThis(this), input, supervision, &output);}
 
 bool Inference::train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples)
   {return train(context, new InferenceBatchLearnerInput(refCountedPointerFromThis(this), trainingExamples, validationExamples));}
@@ -168,7 +131,7 @@ bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInpu
 bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
-  InferenceCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
+  ExecutionCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
   context.appendCallback(evaluationCallback);
   bool res = runOnSupervisedExamplesInference(inference, true)->run(context, examples, Variable());
   context.removeCallback(evaluationCallback);

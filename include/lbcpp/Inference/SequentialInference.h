@@ -12,7 +12,7 @@
 # include "Inference.h"
 # include "InferenceCallback.h"
 # include <lbcpp/Core/Pair.h>
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 
 namespace lbcpp
 {

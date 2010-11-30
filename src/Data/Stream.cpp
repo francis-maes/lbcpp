@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Data/Stream.h>
-#include <lbcpp/Data/Vector.h>
+#include <lbcpp/Core/Vector.h>
 using namespace lbcpp;
 
 /*

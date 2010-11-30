@@ -10,7 +10,7 @@
 # define LBCPP_EXECUTION_FUNCTION_STACK_H_
 
 # include "predeclarations.h"
-# include "../Function/Function.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {

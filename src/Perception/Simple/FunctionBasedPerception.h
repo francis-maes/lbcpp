@@ -9,7 +9,7 @@
 #ifndef LBCPP_FUNCTION_PERCEPTION_FUNCTION_BASED_H_
 # define LBCPP_FUNCTION_PERCEPTION_FUNCTION_BASED_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Perception/Perception.h>
 
 namespace lbcpp

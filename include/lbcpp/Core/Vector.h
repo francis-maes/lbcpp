@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_VECTOR_H_
-# define LBCPP_OBJECT_VECTOR_H_
+#ifndef LBCPP_CORE_VECTOR_H_
+# define LBCPP_CORE_VECTOR_H_
 
 # include "Container.h"
 
@@ -317,4 +317,4 @@ inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, Type
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_VECTOR_H_
+#endif // !LBCPP_CORE_VECTOR_H_

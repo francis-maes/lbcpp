@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OBJECT_CONTAINER_H_
-# define LBCPP_OBJECT_CONTAINER_H_
+#ifndef LBCPP_CORE_CONTAINER_H_
+# define LBCPP_CORE_CONTAINER_H_
 
 # include "../Core/Variable.h"
-# include "../Function/Function.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {
@@ -278,4 +278,4 @@ extern ContainerPtr segmentedContainer(ContainerPtr container);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OBJECT_CONTAINER_H_
+#endif // !LBCPP_CORE_CONTAINER_H_

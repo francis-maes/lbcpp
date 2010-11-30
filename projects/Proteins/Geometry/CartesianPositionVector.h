@@ -9,7 +9,7 @@
 #ifndef LBCPP_GEOMETRY_CARTESIAN_POSITION_VECTOR_H_
 # define LBCPP_GEOMETRY_CARTESIAN_POSITION_VECTOR_H_
 
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 # include "Vector3.h"
 # include "Matrix4.h"
 

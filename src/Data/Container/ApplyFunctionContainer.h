@@ -9,8 +9,8 @@
 #ifndef LBCPP_DATA_CONTAINER_APPLY_FUNCTION_H_
 # define LBCPP_DATA_CONTAINER_APPLY_FUNCTION_H_
 
-# include <lbcpp/Data/Container.h>
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Container.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

@@ -34,7 +34,7 @@
     </class>
     
     <class name="CallbackBasedDecoratorInference" base="StaticDecoratorInference">
-      <constructor arguments="const String&amp; name, InferencePtr decoratedInference, InferenceCallbackPtr callback"/>
+      <constructor arguments="const String&amp; name, InferencePtr decoratedInference, ExecutionCallbackPtr callback"/>
     </class>
 
   </namespace>

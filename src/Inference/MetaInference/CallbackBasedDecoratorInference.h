@@ -17,7 +17,7 @@ namespace lbcpp
 class CallbackBasedDecoratorInference : public StaticDecoratorInference
 {
 public:
-  CallbackBasedDecoratorInference(const String& name, InferencePtr decorated, InferenceCallbackPtr callback)
+  CallbackBasedDecoratorInference(const String& name, InferencePtr decorated, ExecutionCallbackPtr callback)
     : StaticDecoratorInference(name, decorated), callback(callback) {}
   CallbackBasedDecoratorInference() {}
   
@@ -35,7 +35,7 @@ public:
   }
 
 protected:
-  InferenceCallbackPtr callback;
+  ExecutionCallbackPtr callback;
 };
 
 }; /* namespace lbcpp */

@@ -15,14 +15,14 @@
 namespace lbcpp
 {
 
-class CancelAfterStepCallback : public InferenceCallback
+class CancelAfterStepCallback : public ExecutionCallback
 {
 public:
   CancelAfterStepCallback(InferencePtr step)
     : stepName(step->getName()) {}
   CancelAfterStepCallback() {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     jassert(false); // not implemented anymore
     //if (stack->getCurrentInference()->getName() == stepName)

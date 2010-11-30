@@ -9,7 +9,7 @@
 #ifndef LBCPP_FUNCTION_MULTIPLY_H_
 # define LBCPP_FUNCTION_MULTIPLY_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

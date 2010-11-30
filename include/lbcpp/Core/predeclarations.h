@@ -54,6 +54,13 @@ typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 
+class Container;
+typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
+
+class Vector;
+typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
+
+
 class ExecutionContext;
 
 }; /* namespace lbcpp */

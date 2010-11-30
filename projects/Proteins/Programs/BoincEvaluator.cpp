@@ -361,7 +361,7 @@ protected:
     return true;
   }
 
-  struct Callback : public InferenceCallback
+  struct Callback : public ExecutionCallback
   {
     Callback(ExampleBoincWorker* worker)
       : worker(worker), counter(0)
@@ -372,8 +372,9 @@ protected:
     ExampleBoincWorker* worker;
     size_t counter;
 
-    virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+    virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
     {
+      ExecutionContext& context = getContext();
       String inferenceName = context.getCurrentFunction()->getName();
       if (inferenceName.startsWith(T("LearningPass")))
       {

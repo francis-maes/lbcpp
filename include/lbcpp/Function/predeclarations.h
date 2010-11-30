@@ -29,9 +29,6 @@ typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
 class ScalarObjectFunction;
 typedef ReferenceCountedObjectPtr<ScalarObjectFunction> ScalarObjectFunctionPtr;
 
-class Perception;
-typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
-
 class Evaluator;
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 

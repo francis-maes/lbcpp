@@ -8,7 +8,7 @@
 
 #include <lbcpp/Data/Consumer.h>
 #include <lbcpp/Data/Stream.h>
-#include <lbcpp/Data/Container.h>
+#include <lbcpp/Core/Container.h>
 #include <fstream>
 using namespace lbcpp;
 

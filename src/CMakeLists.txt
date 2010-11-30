@@ -70,10 +70,15 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Variable.h
   Core/Variable.cpp
   ../include/lbcpp/Core/Pair.h
-  ../include/lbcpp/Core/XmlSerialisation.h  
-  Core/XmlSerialisation.cpp
+  ../include/lbcpp/Core/Container.h
+  Core/Container.cpp
+  ../include/lbcpp/Core/Vector.h
+  Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
+  ../include/lbcpp/Core/Function.h  
+  ../include/lbcpp/Core/XmlSerialisation.h  
+  Core/XmlSerialisation.cpp
   Core/CoreClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreClasses.cpp
 )
@@ -110,10 +115,6 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/predeclarations.h
   ../include/lbcpp/Data/Stream.h
   Data/Stream.cpp
-  ../include/lbcpp/Data/Container.h
-  Data/Container.cpp
-  ../include/lbcpp/Data/Vector.h
-  Data/Vector.cpp
   ../include/lbcpp/Data/SymmetricMatrix.h
   Data/SymmetricMatrix.cpp
   ../include/lbcpp/Data/RandomGenerator.h
@@ -201,7 +202,6 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
 
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/predeclarations.h
-  ../include/lbcpp/Function/Function.h
   ../include/lbcpp/Function/ScalarFunction.h
   ../include/lbcpp/Function/ScalarObjectFunction.h
   Function/ScalarFunction.cpp

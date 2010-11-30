@@ -220,6 +220,12 @@ protected:
     virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
       {if (owner) owner->postExecutionCallback(workUnit, result);}
 
+    virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+      {} // FIXME
+
+    virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+      {} // FIXME
+
     ExecutionTraceTreeView* owner;
   };
   typedef ReferenceCountedObjectPtr<Callback> CallbackPtr;

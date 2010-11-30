@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_ONLINE_LEARNER_COMPUTE_SCORE_H_
 # define LBCPP_INFERENCE_ONLINE_LEARNER_COMPUTE_SCORE_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 
 namespace lbcpp

@@ -40,7 +40,7 @@ ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory
 InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
   {return callbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, cancelAfterStepCallback(lastStepBeforeBreak));}
 
-class SaveOutputInferenceCallback : public InferenceCallback
+class SaveOutputInferenceCallback : public ExecutionCallback
 {
 public:
   SaveOutputInferenceCallback(const File& directory, const String& extension)
@@ -62,7 +62,7 @@ private:
   String extension;
 };
 
-class SaveProteinPairInferenceCallback : public InferenceCallback
+class SaveProteinPairInferenceCallback : public ExecutionCallback
 {
 public:
   SaveProteinPairInferenceCallback(const File& directory, const String& extension)
@@ -94,12 +94,12 @@ private:
   String extension;
 };
 
-class PrintDotForEachExampleInferenceCallback : public InferenceCallback
+class PrintDotForEachExampleInferenceCallback : public ExecutionCallback
 {
 public:
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
-    if (stack->getDepth() == 1)
+    if (getContext().getStackDepth() == 1)
       std::cout << "." << std::flush;
   }
 };

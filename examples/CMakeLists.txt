@@ -11,7 +11,7 @@ ADD_CPP_EXAMPLE(Misc XorRegression)
 ADD_CPP_EXAMPLE(Misc FeatureGenerators)
 ADD_CPP_EXAMPLE(Misc UserInterfaceExecutionCallback)
 
-ADD_CPP_EXAMPLE(TestUnit TestUnit)
+#ADD_CPP_EXAMPLE(TestUnit TestUnit)
 
 GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)
 ADD_EXECUTABLE(SimpleIntrospection Misc/SimpleIntrospection.xml ${CMAKE_CURRENT_BINARY_DIR}/SimpleIntrospection.cpp)
