@@ -1,4 +1,6 @@
-INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include)
+INCLUDE_DIRECTORIES(
+  ${LBCpp_SOURCE_DIR}/include
+)
 
 MACRO(ADD_CPP_EXAMPLE CATEGORY FILENAME)
   SET(NAME ${CATEGORY}-${FILENAME})
@@ -11,7 +13,17 @@ ADD_CPP_EXAMPLE(Misc XorRegression)
 ADD_CPP_EXAMPLE(Misc FeatureGenerators)
 ADD_CPP_EXAMPLE(Misc UserInterfaceExecutionCallback)
 
-#ADD_CPP_EXAMPLE(TestUnit TestUnit)
+GENERATE_INTROSPECTION_CODE(TestUnit/TestUnitClasses.xml TestUnitClasses.cpp)
+
+SET(TEST_UNIT_SOURCES
+  TestUnit/MainWorkUnit.cpp
+  TestUnit/ExtraTreeTestUnit.h
+  TestUnit/TestUnitClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/TestUnitClasses.cpp
+)
+
+ADD_EXECUTABLE(MainTestUnit ${TEST_UNIT_SOURCES})
+TARGET_LINK_LIBRARIES(MainTestUnit lbcpp-core)
 
 GENERATE_INTROSPECTION_CODE(Misc/SimpleIntrospection.xml SimpleIntrospection.cpp)
 ADD_EXECUTABLE(SimpleIntrospection Misc/SimpleIntrospection.xml ${CMAKE_CURRENT_BINARY_DIR}/SimpleIntrospection.cpp)
