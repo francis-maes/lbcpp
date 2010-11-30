@@ -51,7 +51,7 @@ public:
   ** Execution
   */
   virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits) {}
-  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits) {}
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result) {}
 
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit) {}
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result) {}
@@ -96,7 +96,7 @@ public:
   virtual void resultCallback(const String& name, const Variable& value);
 
   virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits);
-  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits);
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result);
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
   virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input);

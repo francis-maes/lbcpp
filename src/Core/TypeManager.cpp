@@ -196,6 +196,7 @@ TypePtr TypeManager::findType(const String& name) const
 bool TypeManager::doTypeExists(const String& type) const
   {return findType(type);}
 
+extern void declareCoreClasses(ExecutionContext& context);
 extern void declareLBCppClasses(ExecutionContext& context);
 
 void TypeManager::ensureIsInitialized(ExecutionContext& context)
@@ -203,6 +204,8 @@ void TypeManager::ensureIsInitialized(ExecutionContext& context)
   if (!standardTypesAreDeclared)
   {
     standardTypesAreDeclared = true;
+    declareCoreClasses(context);
+    finishDeclarations(context);
     declareLBCppClasses(context);
     topLevelType = anyType = variableType;
   }

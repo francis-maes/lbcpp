@@ -29,11 +29,13 @@ public:
 
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
+    bool res = true;
+    preExecutionCallback(workUnits);
     size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
-      if (!ExecutionContext::run(workUnits->getWorkUnit(i)))
-        return false;
-    return true;
+      res &= ExecutionContext::run(workUnits->getWorkUnit(i));
+    postExecutionCallback(workUnits, res);
+    return res;
   }
 
   lbcpp_UseDebuggingNewOperator

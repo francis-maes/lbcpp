@@ -46,6 +46,8 @@
 
     <class name="WorkUnitsExecutionWorkUnitNotification" base="ExecutionNotification">
       <variable type="WorkUnitVector" name="workUnits"/>
+      <variable type="Boolean" name="isPostExecution"/>
+      <variable type="Boolean" name="executionResult"/>
     </class>
     
     <class name="WorkUnitExecutionWorkUnitNotification" base="ExecutionNotification">

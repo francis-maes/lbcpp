@@ -66,8 +66,8 @@ protected:
 class WorkUnitVector : public ObjectVector
 {
 public:
-  WorkUnitVector(size_t initialSize)
-    : ObjectVector(workUnitClass, initialSize) {}
+  WorkUnitVector(const String& name, size_t initialSize)
+    : ObjectVector(workUnitClass, initialSize), name(name) {}
   WorkUnitVector() {}
 
   virtual TypePtr getElementsType() const

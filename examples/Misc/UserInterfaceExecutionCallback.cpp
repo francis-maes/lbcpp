@@ -51,7 +51,7 @@ public:
       context.progressCallback(i + 1.0, 10.0, T("epochs"));
     }
 
-    WorkUnitVectorPtr subWorkUnits(new WorkUnitVector(5));
+    WorkUnitVectorPtr subWorkUnits(new WorkUnitVector(T("My 5 Sub Work Units"), 5));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
       subWorkUnits->setWorkUnit(i, new MySubWorkUnit());
     context.run(subWorkUnits);

@@ -147,7 +147,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
     }
     else if (computeMode == parallelApply)
     {
-      WorkUnitVectorPtr workUnits(new WorkUnitVector(n));
+      WorkUnitVectorPtr workUnits(new WorkUnitVector(function->toString(), n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
       context.run(workUnits);
