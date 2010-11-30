@@ -2,7 +2,7 @@ Paper ESANN:
  * Finir
 
 Programmes Proteines:
- * segfault en fin d'exécution.
+ * Mieux parser TargetProtein
 
 Network:
  * Tester les ports sur le NIC3 (port 1664)

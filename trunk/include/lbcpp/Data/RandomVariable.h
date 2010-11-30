@@ -74,6 +74,9 @@ public:
   ScalarVariableMeanAndVariance(const String& name = T("Unnamed"))
     : ScalarVariableMean(name) {}
 
+  void clear()
+    {ScalarVariableMean::clear(); meansqr.clear();}
+  
   void push(double val)
     {ScalarVariableMean::push(val); meansqr.push(sqr(val));}
 

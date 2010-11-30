@@ -59,11 +59,7 @@ public:
   // DiscreteProbabilityDistribution
   EnumerationPtr getEnumeration() const
     {return getClass()->getTemplateArgument(0).dynamicCast<Enumeration>();}
-  
-  void increment(const Variable& value, double weight = 1.0);
-  
-  void normalize();
-  
+
   // ProbabilityDistribution
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
@@ -78,11 +74,7 @@ public:
   
   virtual int compare(ObjectPtr otherObject) const
     {return compareVariables(otherObject);}
-  
-  void setProbability(size_t index, double probability);
-  void setMissingProbability(double probability)
-    {setProbability(values.size() - 1, probability);}
-  
+
   double getProbability(size_t index) const
     {jassert(index < values.size() + 1); return values[index];}
   
@@ -94,7 +86,6 @@ private:
   std::vector<double> values;
   CriticalSection cachedEntropyLock;
   Variable cachedEntropy;
-  size_t count;               // FIXME: idem
 };
 
 typedef ReferenceCountedObjectPtr<EnumerationProbabilityDistribution> EnumerationProbabilityDistributionPtr;

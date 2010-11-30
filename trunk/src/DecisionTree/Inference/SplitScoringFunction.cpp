@@ -7,16 +7,18 @@
                                 `-------------------------------------------*/
 
 #include "SplitScoringFunction.h"
+#include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
 
 using namespace lbcpp;
 
+/** RegressionIGSplitScoringFunction **/
 double RegressionIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
 {
   ContainerPtr leftData = input[0].getObjectAndCast<Container>();
   ContainerPtr rightData = input[1].getObjectAndCast<Container>();
   jassert(leftData && rightData);
   
-  return -getLeastSquareDeviation(leftData) - getLeastSquareDeviation(rightData);
+  return - getLeastSquareDeviation(leftData) - getLeastSquareDeviation(rightData);
 }
 
 double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr data) const
@@ -38,20 +40,23 @@ double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr da
   return leastSquare;
 }
 
+/** ClassificationIGSplitScoringFunction **/
 double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
 {
   ContainerPtr leftData = input[0].getObjectAndCast<Container>();
   ContainerPtr rightData = input[1].getObjectAndCast<Container>();
   jassert(leftData && rightData);
-  
+
   EnumerationPtr enumeration = leftData->getElementsType()->getTemplateArgument(1);
-  
-  EnumerationProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(leftData);
-  EnumerationProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(rightData);
-  EnumerationProbabilityDistributionPtr priorDistribution = new EnumerationProbabilityDistribution(enumeration);
-  
-  for (size_t i = 0; i < enumeration->getNumElements(); ++i)
-    priorDistribution->setProbability(i, (leftDistribution->getProbability(i) + rightDistribution->getProbability(i)) / 2);
+
+  EnumerationProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, leftData);
+  EnumerationProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, rightData);
+  ProbabilityDistributionBuilderPtr probabilityBuilder = enumerationProbabilityDistributionBuilder(enumeration);
+
+  probabilityBuilder->addDistribution(leftDistribution);
+  probabilityBuilder->addDistribution(rightDistribution);
+
+  EnumerationProbabilityDistributionPtr priorDistribution = probabilityBuilder->build();
 
   double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
   double informationGain = priorDistribution->computeEntropy()
@@ -60,17 +65,15 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
   return informationGain;
 }
 
-EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ContainerPtr data) const
+EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const
 {
   EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
-  EnumerationProbabilityDistributionPtr res = new EnumerationProbabilityDistribution(enumeration);
-  
+  ProbabilityDistributionBuilderPtr probabilityBuilder = enumerationProbabilityDistributionBuilder(enumeration);  
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
     Variable output = data->getElement(i)[1];
     jassert(output.exists());
-    res->increment(output);
+    probabilityBuilder->addElement(output);
   }
-  res->normalize();
-  return res;
+  return probabilityBuilder->build();
 }

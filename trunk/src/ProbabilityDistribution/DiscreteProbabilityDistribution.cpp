@@ -40,10 +40,10 @@ double BernoulliDistribution::computeEntropy() const
  ** EnumerationProbabilityDistribution
  */
 EnumerationProbabilityDistribution::EnumerationProbabilityDistribution(EnumerationPtr enumeration)
-  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0), count(0) {}
+  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(enumeration->getNumElements() + 1, 0.0) {}
 
 EnumerationProbabilityDistribution::EnumerationProbabilityDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities)
-  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(probabilities), count(0)
+  : DiscreteProbabilityDistribution(enumerationProbabilityDistributionClass(enumeration)), values(probabilities)
   {jassert(probabilities.size() == enumeration->getNumElements() + 1);}
 
 String EnumerationProbabilityDistribution::toString() const
@@ -104,28 +104,6 @@ double EnumerationProbabilityDistribution::computeEntropy() const
   return res;
 }
 
-void EnumerationProbabilityDistribution::increment(const Variable& value, double weight)
-{
-  size_t index;
-  if (value.isNil())
-    index = values.size() - 1;
-  else if (checkInheritance(value, getEnumeration()))
-    index = (size_t)value.getInteger();
-  else
-    return;
-  ++count;
-  setProbability(index, getProbability(index) + weight);
-}
-
-void EnumerationProbabilityDistribution::normalize()
-{
-  if (count <= 1)
-    return;
-  for (size_t i = 0; i < values.size(); ++i)
-    setProbability(i, getProbability(i) / (double)count);
-  count = 0;
-}
-
 void EnumerationProbabilityDistribution::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
@@ -171,19 +149,10 @@ bool EnumerationProbabilityDistribution::loadFromString(ExecutionContext& contex
         return false;
       }
     }
-    setProbability((size_t)index, value);
+    values[index] = value;
   }
   return true;
 }
 
 bool EnumerationProbabilityDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
-
-void EnumerationProbabilityDistribution::setProbability(size_t index, double probability)
-{
-  jassert(index < values.size());
-  values[index] = probability;
-  
-  ScopedLock _(cachedEntropyLock);
-  cachedEntropy.clear();
-}

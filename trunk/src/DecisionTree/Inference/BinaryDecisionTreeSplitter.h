@@ -37,6 +37,9 @@ protected:
   SplitScoringFunctionPtr scoringFunction;
   RandomGeneratorPtr random;
   size_t variableIndex;
+  
+  VectorPtr cacheVector;
+  Variable cachePair;
 };
 
 typedef ReferenceCountedObjectPtr<BinaryDecisionTreeSplitter> BinaryDecisionTreeSplitterPtr;
