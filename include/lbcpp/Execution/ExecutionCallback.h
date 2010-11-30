@@ -50,6 +50,9 @@ public:
   /*
   ** Execution
   */
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits) {}
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits) {}
+
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit) {}
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result) {}
 
@@ -90,13 +93,16 @@ public:
   virtual void errorCallback(const String& where, const String& what);
   virtual void statusCallback(const String& status);
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
+  virtual void resultCallback(const String& name, const Variable& value);
+
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits);
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits);
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
   virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input);
   virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output);
   virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision);
   virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
-  virtual void resultCallback(const String& name, const Variable& value);
 
   // shortcuts
   void informationCallback(const String& what)

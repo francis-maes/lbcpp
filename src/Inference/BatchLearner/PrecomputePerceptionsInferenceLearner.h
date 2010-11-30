@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {
@@ -51,9 +52,9 @@ public:
 
     if (context.isMultiThread())
     {
-      std::vector<WorkUnitPtr> workUnits(n);
+      WorkUnitVectorPtr workUnits(new WorkUnitVector(n));
       for (size_t i = 0; i < n; ++i)
-        workUnits[i] = new PrecomputePerceptionWorkUnit(perception, learnerInput->getExample(i), subLearnerInput, i);
+        workUnits->setWorkUnit(i, new PrecomputePerceptionWorkUnit(perception, learnerInput->getExample(i), subLearnerInput, i));
       context.run(workUnits);
     }
     else

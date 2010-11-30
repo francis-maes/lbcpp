@@ -8,6 +8,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/DecoratorInference.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
+#include <lbcpp/Execution/WorkUnit.h>
 using namespace lbcpp;
 
 /*
@@ -23,11 +24,11 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
   
   if (context.isMultiThread() && useMultiThreading())
   {
-    std::vector<WorkUnitPtr> workUnits(n);
+    WorkUnitVectorPtr workUnits(new WorkUnitVector(n));
     String description = getDescription(context, input, supervision) + T(" ");
     for (size_t i = 0; i < n; ++i)
-      workUnits[i] = inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),
-        state->getSubInput(i), state->getSubSupervision(i), state->getSubOutput(i));
+      workUnits->setWorkUnit(i, inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),
+        state->getSubInput(i), state->getSubSupervision(i), state->getSubOutput(i)));
     context.run(workUnits);
   }
   else

@@ -29,7 +29,10 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
 class WorkUnit;
 typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
-  
+
+class WorkUnitVector;
+typedef ReferenceCountedObjectPtr<WorkUnitVector> WorkUnitVectorPtr;
+
 class TestUnit;
 typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
 

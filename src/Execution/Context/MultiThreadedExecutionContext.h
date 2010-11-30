@@ -11,6 +11,7 @@
 
 # include <lbcpp/Execution/ExecutionContext.h>
 # include <lbcpp/Execution/ExecutionStack.h>
+# include <lbcpp/Execution/WorkUnit.h>
 # include "SubExecutionContext.h"
 # include <list>
 
@@ -193,13 +194,14 @@ public:
   virtual bool run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
 
-  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+  virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
     WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
-    int numRemainingWorkUnits = workUnits.size();
+    size_t n = workUnits->getNumWorkUnits();
+    int numRemainingWorkUnits = (int)n;
     ExecutionStackPtr stack = getStack()->cloneAndCast<ExecutionStack>(*this);
-    for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], stack, numRemainingWorkUnits);
+    for (size_t i = 0; i < n; ++i)
+      queue->push(workUnits->getWorkUnit(i), stack, numRemainingWorkUnits);
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }
@@ -275,12 +277,13 @@ public:
     return true;
   }
 
-  virtual bool run(const std::vector<WorkUnitPtr>& workUnits)
+  virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    int numRemainingWorkUnits = workUnits.size();
+    size_t n = workUnits->getNumWorkUnits();
+    int numRemainingWorkUnits = (int)n;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
-    for (size_t i = 0; i < workUnits.size(); ++i)
-      queue->push(workUnits[i], stack, numRemainingWorkUnits);
+    for (size_t i = 0; i < n; ++i)
+      queue->push(workUnits->getWorkUnit(i), stack, numRemainingWorkUnits);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
     return true;
   }

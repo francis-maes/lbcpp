@@ -16,6 +16,10 @@
     <class name="DecoratorWorkUnit" base="WorkUnit">
       <variable type="WorkUnit" name="decorated"/>
     </class>
+
+    <class name="WorkUnitVector" base="ObjectVector[WorkUnit]">
+      <variable type="String" name="name"/>
+    </class>
     
     <!-- Test Unit -->
     <class name="TestUnit" base="WorkUnit" abstract="yes"/>

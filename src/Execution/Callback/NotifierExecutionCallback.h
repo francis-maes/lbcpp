@@ -108,12 +108,34 @@ protected:
   String where;
 };
 
-class ExecutionWorkUnitNotification : public ExecutionNotification
+class WorkUnitsExecutionWorkUnitNotification : public ExecutionNotification
 {
 public:
-  ExecutionWorkUnitNotification(ExecutionCallbackPtr target, const WorkUnitPtr& workUnit, bool isPostExecution, bool executionResult = false)
+  WorkUnitsExecutionWorkUnitNotification(ExecutionCallbackPtr target, const WorkUnitVectorPtr& workUnits, bool isPostExecution)
+    : ExecutionNotification(target), workUnits(workUnits), isPostExecution(isPostExecution) {}
+  WorkUnitsExecutionWorkUnitNotification() {}
+
+  virtual void notify()
+  {
+    if (isPostExecution)
+      target->postExecutionCallback(workUnits);
+    else
+      target->preExecutionCallback(workUnits);
+  }
+
+protected:
+  friend class WorkUnitsExecutionWorkUnitNotificationClass;
+
+  WorkUnitVectorPtr workUnits;
+  bool isPostExecution;
+};
+
+class WorkUnitExecutionWorkUnitNotification : public ExecutionNotification
+{
+public:
+  WorkUnitExecutionWorkUnitNotification(ExecutionCallbackPtr target, const WorkUnitPtr& workUnit, bool isPostExecution, bool executionResult = false)
     : ExecutionNotification(target), workUnit(workUnit), isPostExecution(isPostExecution), executionResult(executionResult) {}
-  ExecutionWorkUnitNotification() {}
+  WorkUnitExecutionWorkUnitNotification() {}
 
   virtual void notify()
   {
@@ -124,7 +146,7 @@ public:
   }
 
 protected:
-  friend class ExecutionWorkUnitNotificationClass;
+  friend class WorkUnitExecutionWorkUnitNotificationClass;
 
   WorkUnitPtr workUnit;
   bool isPostExecution;
@@ -180,11 +202,17 @@ public:
   virtual void resultCallback(const String& name, const Variable& value)
     {notify(new ExecutionResultNotification(target, name, value));}
 
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+    {notify(new WorkUnitsExecutionWorkUnitNotification(target, workUnits, false));}
+
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits)
+    {notify(new WorkUnitsExecutionWorkUnitNotification(target, workUnits, true));}
+
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit)
-    {notify(new ExecutionWorkUnitNotification(target, workUnit, false));}
+    {notify(new WorkUnitExecutionWorkUnitNotification(target, workUnit, false));}
 
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
-    {notify(new ExecutionWorkUnitNotification(target, workUnit, true, result));}
+    {notify(new WorkUnitExecutionWorkUnitNotification(target, workUnit, true, result));}
 
   virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
     {notify(new FunctionExecutionWorkUnitNotification(target, function, input, false));}

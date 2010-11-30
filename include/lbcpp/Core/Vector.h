@@ -146,15 +146,12 @@ public:
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
 
-  ObjectPtr get(size_t index) const
+  const ObjectPtr& get(size_t index) const
     {jassert(index < objects.size()); return objects[index];}
 
   template<class T>
-  ReferenceCountedObjectPtr<T> getAndCast(size_t index) const
-  {
-    ObjectPtr res = get(index);
-    return res.staticCast<T>();
-  }
+  const ReferenceCountedObjectPtr<T>& getAndCast(size_t index) const
+    {return get(index).staticCast<T>();}
 
   void set(size_t index, ObjectPtr object)
     {objects[index] = object;}
