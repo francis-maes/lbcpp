@@ -1,6 +1,3 @@
- * Integrer Container, Vector et Function dans core
- * InferenceCallback: renommer les callbacks en Function
- * Fusion InferenceCallback et ExecutionCallback
 
 Boinc:
  * New class BoincExecutionContext
