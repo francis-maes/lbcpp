@@ -237,13 +237,11 @@ public:
 
 };
 
-class ExecutionTraceTreeView : public TreeView
+class ExecutionTraceTreeView : public TreeView, public ExecutionCallback
 {
 public:
-  ExecutionTraceTreeView(CompositeExecutionCallback* parentCallback) : root(NULL), lastCreatedItem(NULL)
+  ExecutionTraceTreeView() : root(NULL), lastCreatedItem(NULL)
   {
-    parentCallback->appendCallback(notifierExecutionCallback(parentCallback->getContext(),
-        userInterfaceManager().getNotificationQueue(), callback = new Callback(this)));
     setRootItem(root = new SimpleTreeViewItem(T("root"), 0, true));
     root->setOpen(true);
     setRootItemVisible(false);
@@ -253,55 +251,11 @@ public:
   }
 
   virtual ~ExecutionTraceTreeView()
-  {
-    callback->owner = NULL;
-    deleteRootItem();
-  }
+    {deleteRootItem();}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
-  struct Callback : public ExecutionCallback
-  {
-    Callback(ExecutionTraceTreeView* owner)
-      : owner(owner) {}
-
-    virtual void informationCallback(const String& where, const String& what)
-      {if (owner) owner->addItem(new InformationExecutionTraceTreeViewItem(what, where));}
-
-    virtual void warningCallback(const String& where, const String& what)
-      {if (owner) owner->addItem(new WarningExecutionTraceTreeViewItem(what, where));}
-
-    virtual void errorCallback(const String& where, const String& what)
-      {if (owner) owner->addItem(new ErrorExecutionTraceTreeViewItem(what, where));}
-
-    virtual void statusCallback(const String& status)
-      {if (owner) owner->setStatus(status);}
-
-    virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
-      {if (owner) owner->setProgression(progression, progressionTotal, progressionUnit);}
-
-    virtual void preExecutionCallback(const WorkUnitPtr& workUnit)
-      {if (owner) owner->preExecutionCallback(workUnit);}
-
-    virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
-      {if (owner) owner->postExecutionCallback(workUnit, result);}
-
-    virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
-      {if (owner) owner->preExecutionCallback(workUnits);}
-
-    virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
-      {if (owner) owner->postExecutionCallback(workUnits, result);}
-
-    virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
-      {} // FIXME
-
-    virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
-      {} // FIXME
-
-    ExecutionTraceTreeView* owner;
-  };
-  typedef ReferenceCountedObjectPtr<Callback> CallbackPtr;
-
-  CallbackPtr callback;
   TreeViewItem* root;
   double initialTime;
   std::vector< std::pair<TreeViewItem* , double> > stack;
@@ -338,7 +292,7 @@ protected:
     return res;
   }
 
-  void setProgression(double progression, double progressionTotal, const String& progressionUnit)
+  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {
     ProgressExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
     jassert(item);
@@ -348,14 +302,14 @@ protected:
     item->treeHasChanged();
   }
 
-  void preExecutionCallback(const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const WorkUnitPtr& workUnit)
   {
     ExecutionTraceTreeViewItem* node = new WorkUnitExecutionTraceTreeViewItem(workUnit);
     addItem(node);
     stack.push_back(std::make_pair(node, Time::getMillisecondCounterHiRes() / 1000.0));
   }
 
-  void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
   {
     jassert(stack.size());
     WorkUnitExecutionTraceTreeViewItem* treeItem = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(stack.back().first);
@@ -371,14 +325,14 @@ protected:
     lastCreatedItem = NULL;
   }
 
-  void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
   {
     ExecutionTraceTreeViewItem* node = new WorkUnitVectorExecutionTraceTreeViewItem(workUnits);
     addItem(node);
     stack.push_back(std::make_pair(node, Time::getMillisecondCounterHiRes() / 1000.0));
   }
 
-  void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
   {
     jassert(stack.size());
     WorkUnitVectorExecutionTraceTreeViewItem* treeItem = dynamic_cast<WorkUnitVectorExecutionTraceTreeViewItem* >(stack.back().first);
@@ -388,6 +342,18 @@ protected:
     stack.pop_back();
     lastCreatedItem = NULL;
   }
+  
+  virtual void informationCallback(const String& where, const String& what)
+    {addItem(new InformationExecutionTraceTreeViewItem(what, where));}
+
+  virtual void warningCallback(const String& where, const String& what)
+    {addItem(new WarningExecutionTraceTreeViewItem(what, where));}
+
+  virtual void errorCallback(const String& where, const String& what)
+    {addItem(new ErrorExecutionTraceTreeViewItem(what, where));}
+
+  virtual void statusCallback(const String& status)
+    {setStatus(status);}
 };
 
 }; /* namespace lbcpp */

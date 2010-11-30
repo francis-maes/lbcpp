@@ -36,6 +36,9 @@ typedef ReferenceCountedObjectPtr<WorkUnitVector> WorkUnitVectorPtr;
 class TestUnit;
 typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
 
+class Notification;
+typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_PREDECLARATIONS_H_

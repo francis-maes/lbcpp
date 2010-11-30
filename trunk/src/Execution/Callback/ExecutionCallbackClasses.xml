@@ -15,9 +15,7 @@
     </class>
     
     <!-- NotifierExecutionCallback -->
-    <class name="ExecutionNotification" base="Notification">
-      <variable type="ExecutionCallback" name="target"/>
-    </class>
+    <class name="ExecutionNotification" base="Notification" abstract="yes"/>
 
     <class name="ExecutionProgressNotification" base="ExecutionNotification">
       <variable type="Double" name="progression"/>
@@ -29,7 +27,6 @@
       <variable type="String" name="name"/>
       <variable type="Variable" name="value"/>
     </class>
-
 
     <enumeration name="ExecutionMessageType">
       <value name="informationMessageType"/>
@@ -51,7 +48,6 @@
     </class>
     
     <class name="WorkUnitExecutionWorkUnitNotification" base="ExecutionNotification">
-      <variable type="ExecutionCallback" name="target"/>
       <variable type="WorkUnit" name="workUnit"/>
       <variable type="Boolean" name="isPostExecution"/>
       <variable type="Boolean" name="executionResult"/>
@@ -62,11 +58,12 @@
       <variable type="Boolean" name="isPostExecution"/>
       <variable type="Variable" name="output"/>
     </class>
-    
-    <class name="NotifierExecutionCallback" base="ExecutionCallback">
-      <constructor arguments="ExecutionContext&amp; context, ConsumerPtr notificationsConsumer, ExecutionCallbackPtr target"/>
-      <variable type="Consumer" name="notificationsConsumer"/>
-      <variable type="ExecutionCallback" name="target"/>
+
+    <class name="InferenceExecutionWorkUnitNotification" base="ExecutionNotification">
+      <variable type="Variable" name="input"/>
+      <variable type="Variable" name="supervision"/>
+      <variable type="Boolean" name="isPostExecution"/>
+      <variable type="Variable" name="output"/>
     </class>
    
   </namespace>
