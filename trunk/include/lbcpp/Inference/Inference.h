@@ -11,7 +11,7 @@
 
 # include "predeclarations.h"
 # include "../Core/Variable.h"
-# include "../Data/Container.h"
+# include "../Core/Container.h"
 # include "../Data/RandomVariable.h"
 
 namespace lbcpp
@@ -59,8 +59,7 @@ public:
   /*
   ** High level operations
   */
-  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
-  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output) const;
+  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output = *(Variable* )0) const;
   bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples);
   bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput);
   bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const;
@@ -146,7 +145,7 @@ extern SharedParallelInferencePtr sharedParallelVectorInference(const String& na
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
 extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
-extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, InferenceCallbackPtr callback);
+extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
 
 }; /* namespace lbcpp */
 

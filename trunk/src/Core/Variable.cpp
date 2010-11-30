@@ -8,7 +8,7 @@
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Data/Container.h>
+#include <lbcpp/Core/Container.h>
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)

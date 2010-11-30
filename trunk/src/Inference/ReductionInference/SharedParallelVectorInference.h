@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_REDUCTION_SHARED_PARALLEL_VECTOR_H_
 
 # include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>

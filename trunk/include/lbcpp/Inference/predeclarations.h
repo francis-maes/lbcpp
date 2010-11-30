@@ -10,6 +10,7 @@
 # define LBCPP_INFERENCE_PREDECLARATIONS_H_
 
 # include "../Data/predeclarations.h"
+# include "../Function/predeclarations.h"
 
 namespace lbcpp
 {
@@ -59,9 +60,6 @@ typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInfer
 /*
 ** InferenceContext
 */
-class InferenceCallback;
-typedef ReferenceCountedObjectPtr<InferenceCallback> InferenceCallbackPtr;
-
 class ExecutionStack;
 typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
 

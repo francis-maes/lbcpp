@@ -6,11 +6,12 @@ using namespace lbcpp;
 
 extern void declareGlopClasses(ExecutionContext& context);
 
-class MyInferenceCallback : public InferenceCallback
+class MyInferenceCallback : public ExecutionCallback
 {
 public:
-  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
   {
+    ExecutionContext& context = getContext();
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
@@ -22,7 +23,7 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
   }
 };

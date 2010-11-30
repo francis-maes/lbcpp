@@ -38,7 +38,7 @@
 
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
-# include "Data/Vector.h"
+# include "Core/Vector.h"
 # include "Data/SymmetricMatrix.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
@@ -52,7 +52,7 @@
 # include "Execution/ExecutionContext.h"
 # include "Execution/WorkUnit.h"
 
-# include "Function/Function.h"
+# include "Core/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
 # include "Function/Predicate.h"

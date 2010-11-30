@@ -9,7 +9,7 @@
 #ifndef LBCPP_OBJECT_SYMMETRIC_MATRIX_H_
 # define LBCPP_OBJECT_SYMMETRIC_MATRIX_H_
 
-# include "Vector.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 {

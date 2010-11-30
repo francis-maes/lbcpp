@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Data/Vector.h>
+#include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 using namespace lbcpp;

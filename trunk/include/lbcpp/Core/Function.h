@@ -6,16 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_FUNCTION_H_
-# define LBCPP_FUNCTION_FUNCTION_H_
+#ifndef LBCPP_CORE_FUNCTION_H_
+# define LBCPP_CORE_FUNCTION_H_
 
-# include "../Core/Variable.h"
-# include "../Execution/ExecutionContext.h"
-# include "predeclarations.h"
+# include "Variable.h"
 
 namespace lbcpp
 {
-
   
 /**
 ** @class Function
@@ -64,4 +61,4 @@ extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1,
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_FUNCTION_H_
+#endif // !LBCPP_CORE_FUNCTION_H_

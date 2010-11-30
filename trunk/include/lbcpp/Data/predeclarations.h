@@ -32,17 +32,8 @@
 namespace lbcpp
 {
 
-class Pair;
-typedef ReferenceCountedObjectPtr<Pair> PairPtr;
-
 class Stream;
 typedef ReferenceCountedObjectPtr<Stream> StreamPtr;
-
-class Container;
-typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
-
-class Vector;
-typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 class SymmetricMatrix;
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;

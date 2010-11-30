@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Data/Vector.h>
+#include <lbcpp/Core/Vector.h>
 #include <lbcpp/NumericalLearning/LossFunctions.h>
 #include "../Core/Object/DenseDoubleObject.h"
 #include <algorithm>

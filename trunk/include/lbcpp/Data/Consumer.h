@@ -27,7 +27,8 @@
 #ifndef LBCPP_DATA_CONSUMER_H_
 # define LBCPP_DATA_CONSUMER_H_
 
-# include "../Function/Function.h"
+# include "../Core/Object.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {

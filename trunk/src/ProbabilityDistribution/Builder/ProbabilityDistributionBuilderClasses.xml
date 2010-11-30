@@ -2,7 +2,7 @@
 
 <file name="ProbabilityDistributionBuilder" directory="ProbabilityDistribution/Builder">
 
-  <include file="lbcpp/Data/Vector.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
 
   <namespace name="lbcpp">
 

@@ -10,6 +10,7 @@
 # define LBCPP_DECISION_TREE_H_
 
 # include "../Inference/Inference.h"
+# include "../Perception/Perception.h"
 
 namespace lbcpp
 {

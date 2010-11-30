@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_CONTAINER_SUBSET_H_
 # define LBCPP_DATA_CONTAINER_SUBSET_H_
 
-# include <lbcpp/Data/Container.h>
+# include <lbcpp/Core/Container.h>
 
 namespace lbcpp
 {

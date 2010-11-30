@@ -11,7 +11,7 @@
 
 # include "Inference.h"
 # include "InferenceCallback.h"
-# include "../Function/Function.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {

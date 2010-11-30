@@ -9,6 +9,8 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Function.h>
+#include <lbcpp/Inference/Inference.h>
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
@@ -59,10 +61,19 @@ const FunctionPtr& ExecutionStack::getCurrentFunction() const
 const FunctionPtr& ExecutionStack::getParentFunction() const
   {return getFunction((int)getDepth() - 2);}
 
+
 /*
 ** CompositeExecutionCallback
 */
+void ExecutionCallback::preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision)
+  {preExecutionCallback(inference, input);}
 
+void ExecutionCallback::postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+  {postExecutionCallback(inference, input, output);}
+
+/*
+** CompositeExecutionCallback
+*/
 void CompositeExecutionCallback::informationCallback(const String& where, const String& what)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
@@ -103,6 +114,30 @@ void CompositeExecutionCallback::postExecutionCallback(const WorkUnitPtr& workUn
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->postExecutionCallback(workUnit, result);
+}
+
+void CompositeExecutionCallback::preExecutionCallback(const FunctionPtr& function, const Variable& input)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->preExecutionCallback(function, input);
+}
+
+void CompositeExecutionCallback::postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->postExecutionCallback(function, input, output);
+}
+
+void CompositeExecutionCallback::preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->preExecutionCallback(inference, input, supervision);
+}
+
+void CompositeExecutionCallback::postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+{
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->postExecutionCallback(inference, input, supervision, output);
 }
 
 void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)

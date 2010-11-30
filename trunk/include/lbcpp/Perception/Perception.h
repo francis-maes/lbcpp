@@ -9,13 +9,16 @@
 #ifndef LBCPP_DATA_PERCEPTION_H_
 # define LBCPP_DATA_PERCEPTION_H_
 
-# include "../Data/Vector.h"
+# include "../Core/Vector.h"
 # include "../Core/DynamicObject.h"
+# include "../Core/Function.h"
 # include "../Data/RandomVariable.h"
-# include "../Function/Function.h"
 
 namespace lbcpp
 {
+
+class Perception;
+typedef ReferenceCountedObjectPtr<Perception> PerceptionPtr;
 
 class PerceptionCallback
 {

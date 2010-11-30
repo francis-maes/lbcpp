@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_DECORATOR_LEARNER_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_DECORATOR_LEARNER_H_
 
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 

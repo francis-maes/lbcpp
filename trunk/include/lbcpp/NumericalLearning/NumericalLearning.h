@@ -14,6 +14,7 @@
 # include "NumericalSupervisedInference.h"
 # include "../Perception/PerceptionRewriter.h"
 # include "../Inference/InferenceOnlineLearner.h"
+# include "../Function/IterationFunction.h"
 
 namespace lbcpp
 {

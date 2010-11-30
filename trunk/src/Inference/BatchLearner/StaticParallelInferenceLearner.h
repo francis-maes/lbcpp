@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
 # define LBCPP_INFERENCE_BATCH_LEARNER_STATIC_PARALLEL_H_
 
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>

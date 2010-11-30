@@ -198,11 +198,13 @@ public:
 
 /********** InferenceClallback **********/
 
-class StackPrinterCallback : public InferenceCallback
+class StackPrinterCallback : public ExecutionCallback
 {
 public:
-  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
   {
+    ExecutionContext& context = getContext();
+
     ScopedLock _(lock);
     const FunctionPtr& currentInference = context.getCurrentFunction();
     if (context.getStackDepth() > 4
@@ -216,9 +218,10 @@ public:
     context.informationCallback(line);
   }
   
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     return;
+    ExecutionContext& context = getContext();
     ScopedLock _(lock);
     const FunctionPtr& currentInference = context.getCurrentFunction();
     if (context.getStackDepth() > 2
@@ -236,7 +239,7 @@ private:
   CriticalSection lock;
 };
 
-class MyInferenceCallback : public InferenceCallback
+class MyInferenceCallback : public ExecutionCallback
 {
 public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, ContainerPtr validationData, ProteinTargetPtr target, File output)
@@ -256,8 +259,9 @@ public:
     }
   }
   
-  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
   {
+    ExecutionContext& context = getContext();
     if (context.getStackDepth() == 1)
     {
       // top-level learning is beginning
@@ -283,8 +287,9 @@ public:
     }
   }
   
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+    ExecutionContext& context = getContext();
     FunctionPtr currentInference = context.getCurrentFunction();
 
     if (context.getStackDepth() == 2 && (currentInference->getClassName() == T("StaticParallelInferenceLearner")

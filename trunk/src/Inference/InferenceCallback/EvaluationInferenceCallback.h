@@ -16,22 +16,19 @@
 namespace lbcpp
 {
 
-class EvaluationInferenceCallback : public InferenceCallback
+class EvaluationInferenceCallback : public ExecutionCallback
 {
 public:
   EvaluationInferenceCallback(InferencePtr inference, EvaluatorPtr evaluator)
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
-    if (context.getCurrentFunction() == inference)
+    if (inference == this->inference && output.exists() && supervision.exists())
     {
-      if (output.exists() && supervision.exists())
-      {
-        ScopedLock _(evaluatorLock);
-        evaluator->addPrediction(context, output, supervision);
-      }
+      ScopedLock _(evaluatorLock);
+      evaluator->addPrediction(getContext(), output, supervision);
     }
   }
 

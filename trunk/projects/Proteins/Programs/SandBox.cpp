@@ -168,7 +168,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
-    return res;// ? flattenPerception(res) : PerceptionPtr();
+    return res ? flattenPerception(res) : PerceptionPtr();
   }
 /*
   virtual InferencePtr createTargetInference(const String& targetName) const
@@ -178,7 +178,6 @@ public:
     return res;
   }*/
  
-#if 0 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -191,11 +190,10 @@ public:
     // all other features
     rewriter->addRule(doubleType, identityPerception());
   }
-#endif // 0
 
+/*
   std::vector<size_t> makeBinaryConjunction(size_t index1, size_t index2) const
     {std::vector<size_t> res(2); res[0] = index1; res[1] = index2; return res;}
-/*
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     static int count = 1;
@@ -308,14 +306,15 @@ protected:
 
 /////////////////////////////////////////
 
-class MyInferenceCallback : public InferenceCallback
+class MyInferenceCallback : public ExecutionCallback
 {
 public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
   {
+    ExecutionContext& context = getContext();
     if (context.getStackDepth() == 1)
     {
       // top-level learning is beginning
@@ -338,8 +337,9 @@ public:
     }
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+    ExecutionContext& context = getContext();
     String inferenceName = context.getCurrentFunction()->getName();
 
     //if (stack->getDepth() == 1) // 
@@ -433,8 +433,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
 #else
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
-  ContainerPtr trainProteins, testProteins, validationProteins;
-#if 0
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
   ContainerPtr testProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
@@ -443,7 +441,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
-#endif // 0
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);
 
@@ -473,12 +470,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   //inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
   //inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
 //  inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
-
-  std::cout << "Saving inference ..." << std::flush;
-  //factory->createPerception(T("secondaryStructure"), ProteinInferenceFactory::residuePerception)->saveToFile(context, workingDirectory.getChildFile(T("NewStylePerception.xml")));
-  inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
-  std::cout << "ok." << std::endl;
-  return true;
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
@@ -523,7 +514,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   return true;*/
 
   {
-    InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
+    ExecutionCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context.appendCallback(trainingCallback);
     inference->train(context, trainProteins, validationProteins);
     context.removeCallback(trainingCallback);

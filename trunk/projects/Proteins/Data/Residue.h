@@ -12,7 +12,7 @@
 # include "AminoAcid.h"
 # include "Atom.h"
 # include "../Geometry/Matrix4.h"
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 
 namespace lbcpp
 {

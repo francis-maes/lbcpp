@@ -112,7 +112,7 @@ class ExecutionWorkUnitNotification : public ExecutionNotification
 {
 public:
   ExecutionWorkUnitNotification(ExecutionCallbackPtr target, const WorkUnitPtr& workUnit, bool isPostExecution, bool executionResult = false)
-    : target(target), workUnit(workUnit), isPostExecution(isPostExecution), executionResult(executionResult) {}
+    : ExecutionNotification(target), workUnit(workUnit), isPostExecution(isPostExecution), executionResult(executionResult) {}
   ExecutionWorkUnitNotification() {}
 
   virtual void notify()
@@ -126,10 +126,33 @@ public:
 protected:
   friend class ExecutionWorkUnitNotificationClass;
 
-  ExecutionCallbackPtr target;
   WorkUnitPtr workUnit;
   bool isPostExecution;
   bool executionResult;
+};
+
+class FunctionExecutionWorkUnitNotification : public ExecutionNotification
+{
+public:
+  FunctionExecutionWorkUnitNotification(ExecutionCallbackPtr target, const FunctionPtr& function, const Variable& input, bool isPostExecution, const Variable& output = Variable())
+    : ExecutionNotification(target), function(function), input(input), isPostExecution(isPostExecution), output(output) {}
+  FunctionExecutionWorkUnitNotification() {}
+
+  virtual void notify()
+  {
+    if (isPostExecution)
+      target->postExecutionCallback(function, input, output);
+    else
+      target->preExecutionCallback(function, input);
+  }
+
+protected:
+  friend class FunctionExecutionWorkUnitNotificationClass;
+
+  FunctionPtr function;
+  Variable input;
+  bool isPostExecution;
+  Variable output;
 };
 
 class NotifierExecutionCallback : public ExecutionCallback
@@ -162,6 +185,12 @@ public:
 
   virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
     {notify(new ExecutionWorkUnitNotification(target, workUnit, true, result));}
+
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+    {notify(new FunctionExecutionWorkUnitNotification(target, function, input, false));}
+
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+    {notify(new FunctionExecutionWorkUnitNotification(target, function, input, true, output));}
 
 private:
   friend class NotifierExecutionCallbackClass;

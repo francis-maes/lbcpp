@@ -40,13 +40,13 @@ protected:
   std::vector<InferencePtr> learnedInferences;
   bool randomizeExamples;
 
-  struct Callback : public InferenceCallback
+  struct Callback : public ExecutionCallback
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+    virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
     {
-      InferencePtr inference = context.getCurrentFunction().staticCast<Inference>();
+      ExecutionContext& context = getContext();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
       if (!onlineLearner || onlineLearner->isLearningStopped() || !supervision.exists())
         return;

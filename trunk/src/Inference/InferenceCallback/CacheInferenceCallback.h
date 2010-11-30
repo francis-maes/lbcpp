@@ -16,21 +16,23 @@
 namespace lbcpp
 {
 
-class CacheInferenceCallback : public InferenceCallback
+class CacheInferenceCallback : public ExecutionCallback
 {
 public:
   CacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep)
     : cache(cache), parentStep(parentStep) {}
   CacheInferenceCallback() {}
 
-  virtual void preInferenceCallback(ExecutionContext& context, Variable& input, Variable& supervision, Variable& output)
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
   {
-    if (!output.exists() && context.getParentFunction() == parentStep)
-      output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
+    jassert(false); // broken
+    //if (!output.exists() && context.getParentFunction() == parentStep)
+    //  output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
   }
 
-  virtual void postInferenceCallback(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output)
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+    ExecutionContext& context = getContext();
     if (context.getParentFunction() == parentStep)
     {
       cache->add(context.getCurrentFunction(), input.getObject(), output.getObject());

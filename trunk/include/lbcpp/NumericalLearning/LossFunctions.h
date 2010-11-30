@@ -27,7 +27,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTIONS_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTIONS_H_
 
-# include "../Data/Container.h"
+# include "../Core/Container.h"
 # include "../Core/DynamicObject.h"
 # include "../Function/ScalarFunction.h"
 # include "../Function/ScalarObjectFunction.h"

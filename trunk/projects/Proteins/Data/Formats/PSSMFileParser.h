@@ -94,11 +94,13 @@ public:
         context.errorCallback(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
         return false;
       }
-      scores->setProbability(index, normalize(scoreI));
+      jassert(false); // FIXME
+      //scores->setProbability(index, normalize(scoreI));
     }
 
     String gapScore = line.substring(153, 157).trim();
-    scores->setMissingProbability(gapScore.getDoubleValue());
+    jassert(false); // FIXME
+    //scores->setMissingProbability(gapScore.getDoubleValue());
     pssm->setElement(currentPosition, scores);
 
     ++currentPosition;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Container" directory="Data/Container">
-  <include file="lbcpp/Data/Vector.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   <namespace name="lbcpp">
     

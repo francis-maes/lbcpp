@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_PROTEIN_H_
 # define LBCPP_PROTEINS_PROTEIN_H_
 
-# include <lbcpp/Data/Vector.h>
+# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
 

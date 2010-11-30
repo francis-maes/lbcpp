@@ -2,7 +2,7 @@
 
 <file name="Type" directory="Core/Type">
   <include file="lbcpp/Core/Pair.h"/>
-  <include file="lbcpp/Data/Vector.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
   <namespace name="lbcpp">
 
     <type name="Variable" base="" implementation="TopLevelType"/>

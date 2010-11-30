@@ -11,7 +11,7 @@
 
 # include "Inference.h"
 # include "InferenceCallback.h"
-# include "../Data/Vector.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 {

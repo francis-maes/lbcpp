@@ -9,13 +9,14 @@
 #ifndef LBCPP_EXECUTION_PREDECLARATIONS_H_
 # define LBCPP_EXECUTION_PREDECLARATIONS_H_
 
-# include "../Data/predeclarations.h"
-
 namespace lbcpp
 {
 
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
+
+class Inference;
+typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
 
 class ExecutionCallback;
 typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;

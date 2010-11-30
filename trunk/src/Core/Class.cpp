@@ -9,7 +9,7 @@
 #include <lbcpp/Core/Type.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/Data/Vector.h>
+#include <lbcpp/Core/Vector.h>
 #include <map>
 using namespace lbcpp;
 

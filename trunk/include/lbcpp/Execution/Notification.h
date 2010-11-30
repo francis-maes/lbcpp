@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_NOTIFICATION_H_
 
 # include "ExecutionContext.h"
+# include "../Core/Variable.h"
 # include "../Data/Consumer.h"
 
 namespace lbcpp
