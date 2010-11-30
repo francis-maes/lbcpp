@@ -20,23 +20,24 @@ namespace lbcpp
 class GaussianProbabilityDistributionBuilder : public ProbabilityDistributionBuilder
 {
 public:
-  GaussianProbabilityDistributionBuilder()
-    : means(new ScalarVariableMean), variances(new ScalarVariableMean), meanAndVariances(new ScalarVariableMeanAndVariance) {}
-
   virtual TypePtr getInputType() const
     {return doubleType;}
   
   virtual void clear()
   {
-    means->clear();
-    variances->clear();
-    meanAndVariances->clear();
+    if (means)
+      means->clear();
+    if (variances)
+      variances->clear();
+    if (meanAndVariances)
+      meanAndVariances->clear();
   }
   
   virtual void addElement(const Variable& element, double weight)
   {
     if (!checkInheritance(element.getType(), doubleType))
       return;
+    ensureScalarMeanAndVarianceIsInitialized();
     meanAndVariances->push(element.getDouble());
   }
   
@@ -44,31 +45,31 @@ public:
   {
     GaussianProbabilityDistributionPtr valueDistribution = value.staticCast<GaussianProbabilityDistribution>();
     jassert(valueDistribution);
+    ensureScalarMeanAreInitialized();
     means->push(valueDistribution->getMean());
     variances->push(valueDistribution->getVariance());
   }
   
   virtual ProbabilityDistributionPtr build() const
   {
-    double mean = means->getMean();
-    double variance = variances->getMean();
+    jassert((means && variances) xor meanAndVariances);
 
-    if (meanAndVariances->getCount() != 0.0) // consider added elements as a unique distribution 
-    {
-      double count = means->getCount();
-      mean = (count * mean + meanAndVariances->getMean()) / (count + 1);
-      variance = (count * variance + meanAndVariances->getVariance()) / (count + 1);
-    }
-    return new GaussianProbabilityDistribution(mean, variance);
+    if (means)
+      return new GaussianProbabilityDistribution(means->getMean(), variances->getMean());
+    if (meanAndVariances)
+      return new GaussianProbabilityDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
+
+    jassertfalse;
+    return GaussianProbabilityDistributionPtr();
   }
   
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     ProbabilityDistributionBuilder::clone(context, target);
     ReferenceCountedObjectPtr<GaussianProbabilityDistributionBuilder> targ = target.staticCast<GaussianProbabilityDistributionBuilder>();
-    targ->means = new ScalarVariableMean();
-    targ->variances = new ScalarVariableMean();
-    targ->meanAndVariances = new ScalarVariableMeanAndVariance();
+    targ->means = ScalarVariableMeanPtr();
+    targ->variances = ScalarVariableMeanPtr();
+    targ->meanAndVariances = ScalarVariableMeanAndVariancePtr();
   }
   
 protected:
@@ -78,6 +79,23 @@ protected:
   ScalarVariableMeanPtr variances;
   // from elements
   ScalarVariableMeanAndVariancePtr meanAndVariances;
+  
+private:
+  void ensureScalarMeanAreInitialized()
+  {
+    jassert((means && !variances) || (!means && variances));
+    if (!means)
+    {
+      means = new ScalarVariableMean();
+      variances = new ScalarVariableMean();
+    }
+  }
+  
+  void ensureScalarMeanAndVarianceIsInitialized()
+  {
+    if (!meanAndVariances)
+      meanAndVariances = new ScalarVariableMeanAndVariance();
+  }
 };
   
 }; /* namespace lbcpp */
