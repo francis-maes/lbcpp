@@ -603,6 +603,8 @@ int main(int argc, char** argv)
     declareProteinClasses(*context);
     WorkUnitPtr workUnit(new SandBoxWorkUnit());
     exitCode = context->run(workUnit) ? 0 : 1;
+  
+    userInterfaceManager().waitUntilAllWindowsAreClosed();
   }
   lbcpp::deinitialize();
   return exitCode;
