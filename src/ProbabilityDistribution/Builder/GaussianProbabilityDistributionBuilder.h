@@ -21,15 +21,16 @@ class GaussianProbabilityDistributionBuilder : public ProbabilityDistributionBui
 {
 public:
   GaussianProbabilityDistributionBuilder()
-    : means(new ScalarVariableMean), variances(new ScalarVariableMean) {}
+    : means(new ScalarVariableMean), variances(new ScalarVariableMean), meanAndVariances(new ScalarVariableMeanAndVariance) {}
 
   virtual TypePtr getInputType() const
     {return doubleType;}
   
   virtual void clear()
   {
-    means = new ScalarVariableMean();
-    variances = new ScalarVariableMean();
+    means->clear();
+    variances->clear();
+    meanAndVariances->clear();
   }
   
   virtual void addElement(const Variable& element, double weight)
@@ -59,6 +60,15 @@ public:
       variance = (count * variance + meanAndVariances->getVariance()) / (count + 1);
     }
     return new GaussianProbabilityDistribution(mean, variance);
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    ProbabilityDistributionBuilder::clone(context, target);
+    ReferenceCountedObjectPtr<GaussianProbabilityDistributionBuilder> targ = target.staticCast<GaussianProbabilityDistributionBuilder>();
+    targ->means = new ScalarVariableMean();
+    targ->variances = new ScalarVariableMean();
+    targ->meanAndVariances = new ScalarVariableMeanAndVariance();
   }
   
 protected:

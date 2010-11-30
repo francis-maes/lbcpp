@@ -91,7 +91,10 @@ public:
     {res.push_back(std::make_pair(T("Accuracy"), accuracy->getMean()));}
   
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-    {Evaluator::clone(context, target); target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>(context);}
+  {
+    Evaluator::clone(context, target);
+    target.staticCast<ClassificationAccuracyEvaluator>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>(context);
+  }
 
 protected:
   friend class ClassificationAccuracyEvaluatorClass;

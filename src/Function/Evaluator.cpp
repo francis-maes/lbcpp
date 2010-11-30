@@ -7,6 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Function/Evaluator.h>
+#include <lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h>
+
 using namespace lbcpp;
 
 /*
@@ -19,8 +21,18 @@ RegressionErrorEvaluator::RegressionErrorEvaluator(const String& name)
   
 void RegressionErrorEvaluator::addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
 {
-  if (predicted.exists() && correct.exists())
-    addDelta(predicted.getDouble() - correct.getDouble());
+  if (!predicted.exists() || !correct.exists())
+    return;
+  
+  double predictedValue = DBL_MAX;
+  GaussianProbabilityDistributionPtr distribution = predicted.dynamicCast<GaussianProbabilityDistribution>();
+  if (distribution)
+    predictedValue = distribution->getMean();
+  else if (predicted.isDouble())
+    predictedValue = predicted.getDouble();
+
+  jassert(predictedValue != DBL_MAX);
+  addDelta(predictedValue - correct.getDouble());
 }
 
 void RegressionErrorEvaluator::addDelta(double delta)

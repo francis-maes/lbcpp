@@ -19,8 +19,10 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
                                                      ContainerPtr data, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples,
                                                      PredicatePtr predicate) const
 {
-  VectorPtr left = vector(data->getElementsType());
-  VectorPtr right = vector(data->getElementsType());
+  if (!cacheVector)
+    const_cast<BinaryDecisionTreeSplitter*>(this)->cacheVector = vector(data->getElementsType());
+  VectorPtr left = cacheVector->cloneAndCast<Vector>(context);
+  VectorPtr right = cacheVector->cloneAndCast<Vector>(context);
   
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {

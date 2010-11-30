@@ -107,19 +107,6 @@ protected:
   EnumerationPtr classes;
 };
 
-class ExtraTreeInference : public ParallelVoteInference
-{
-public:
-  ExtraTreeInference(const String& name,
-                      BinaryDecisionTreeInferencePtr decisionTreeModel,
-                      size_t numTrees = 100,
-                      size_t numAttributeSamplesPerSplit = 10,
-                      size_t minimumSizeForSplitting = 0);
-  ExtraTreeInference() {}
-};
-
-typedef ReferenceCountedObjectPtr<ExtraTreeInference> ExtraTreeInferencePtr;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_INFERENCE_EXTRA_TREE_H_
