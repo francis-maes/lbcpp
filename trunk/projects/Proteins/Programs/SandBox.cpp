@@ -168,7 +168,7 @@ public:
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
     PerceptionPtr res = ProteinInferenceFactory::createPerception(targetName, type);
-    return res ? flattenPerception(res) : PerceptionPtr();
+    return res;// ? flattenPerception(res) : PerceptionPtr();
   }
 /*
   virtual InferencePtr createTargetInference(const String& targetName) const
@@ -178,6 +178,7 @@ public:
     return res;
   }*/
  
+#if 0 
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const
   {
     rewriter->addRule(booleanType, booleanFeatures());
@@ -190,6 +191,7 @@ public:
     // all other features
     rewriter->addRule(doubleType, identityPerception());
   }
+#endif // 0
 
   std::vector<size_t> makeBinaryConjunction(size_t index1, size_t index2) const
     {std::vector<size_t> res(2); res[0] = index1; res[1] = index2; return res;}
@@ -295,7 +297,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(2), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(1), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -397,7 +399,7 @@ private:
 VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 7;
+  size_t maxCount = 3;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
@@ -431,16 +433,17 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
 #else
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
-
+  ContainerPtr trainProteins, testProteins, validationProteins;
+#if 0
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
   ContainerPtr testProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 3);
-  trainProteins = trainProteins->invFold(0, 10);
+  trainProteins = trainProteins->invFold(0, 3);
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
-
+#endif // 0
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);
 
@@ -448,8 +451,8 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
   //inference->appendInference(factory->createInferenceStep(T("contactMap8Ca")));
 
-  /*inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
-  inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
+  //inference->appendInference(factory->createInferenceStep(T("secondaryStructure")));
+  /*inference->appendInference(factory->createInferenceStep(T("dsspSecondaryStructure")));
   inference->appendInference(factory->createInferenceStep(T("solventAccessibilityAt20p")));
   inference->appendInference(factory->createInferenceStep(T("disorderRegions")));
   inference->appendInference(factory->createInferenceStep(T("structuralAlphabetSequence")));*/
@@ -471,6 +474,11 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   //inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
 //  inference->appendInference(factory->createInferenceStep(T("disulfideBonds")));
 
+  std::cout << "Saving inference ..." << std::flush;
+  //factory->createPerception(T("secondaryStructure"), ProteinInferenceFactory::residuePerception)->saveToFile(context, workingDirectory.getChildFile(T("NewStylePerception.xml")));
+  inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  std::cout << "ok." << std::endl;
+  return true;
 
   //inference->appendInference(inferencePass);
   //inference->appendInference(inferencePass->cloneAndCast<Inference>());
@@ -504,7 +512,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
 
 /*  std::cout << "Inference: " << std::endl;
   Variable(inference).printRecursively(std::cout, 2);*/
-
 
   ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
 
@@ -545,12 +552,11 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
     inference->evaluate(context, testProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
-  return true;
-  
 
   std::cout << "Saving inference ..." << std::flush;
   inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
+  return true;
 
   std::cout << "Loading..." << std::flush;
   inference = Inference::createFromFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
@@ -599,7 +605,7 @@ int main(int argc, char** argv)
   {
     ExecutionContextPtr context = singleThreadedExecutionContext();
     context->appendCallback(consoleExecutionCallback());
-    context->appendCallback(userInterfaceExecutionCallback());
+    //context->appendCallback(userInterfaceExecutionCallback());
     context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));

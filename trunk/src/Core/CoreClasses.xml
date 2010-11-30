@@ -43,11 +43,11 @@
     
     <class name="UnnamedDynamicClass" base="DynamicClass">
       <code>
-      virtual void destroy(VariableValue&amp; value) const
-        {Type::destroy(value);}
+        virtual void destroy(VariableValue&amp; value) const
+          {value.clearObject(true);}
 
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {Type::copy(dest, source);}
+        virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+          {dest.setObject(source.getObjectPointer(), true);}
       </code>
     </class>
 

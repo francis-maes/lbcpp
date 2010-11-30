@@ -398,7 +398,7 @@ bool Object::loadFromString(ExecutionContext& context, const String& str)
 }
 
 void Object::saveToFile(ExecutionContext& context, const File& file) const
-  {Variable(refCountedPointerFromThis(this)).saveToFile(context, file);}
+  {Variable(const_cast<Object* >(this)).saveToFile(context, file);}
 
 ObjectPtr Object::createFromFile(ExecutionContext& context, const File& file)
   {return Variable::createFromFile(context, file).getObject();}

@@ -71,6 +71,8 @@ public:
   virtual bool isUnnamedType() const
     {return true;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   virtual void createObjectVariables() {}
 };

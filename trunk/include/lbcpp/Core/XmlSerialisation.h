@@ -71,6 +71,9 @@ private:
 
   struct SavedObject
   {
+    SavedObject(const SavedObject& other)
+      : identifier(other.identifier), object(other.object), elt(other.elt),
+        references(other.references), dependencies(other.dependencies), ordered(other.ordered) {}
     SavedObject() : elt(NULL), ordered(true) {}
 
     String identifier;
