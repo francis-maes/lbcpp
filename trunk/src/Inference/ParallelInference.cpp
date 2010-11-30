@@ -24,7 +24,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
   
   if (context.isMultiThread() && useMultiThreading())
   {
-    WorkUnitVectorPtr workUnits(new WorkUnitVector(n));
+    WorkUnitVectorPtr workUnits(new WorkUnitVector(getName(), n));
     String description = getDescription(context, input, supervision) + T(" ");
     for (size_t i = 0; i < n; ++i)
       workUnits->setWorkUnit(i, inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),

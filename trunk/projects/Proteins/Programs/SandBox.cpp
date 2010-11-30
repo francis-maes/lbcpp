@@ -81,7 +81,7 @@ public:
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
-    WorkUnitVectorPtr workUnits(new WorkUnitVector(5));
+    WorkUnitVectorPtr workUnits(new WorkUnitVector(T("Optimizer"), 5));
     std::vector<double> scores(workUnits->getNumWorkUnits());
     for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
     {
@@ -406,7 +406,7 @@ public:
   VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
   {
   #ifdef JUCE_DEBUG
-    size_t maxCount = 3;
+    size_t maxCount = 7;
   #else
     size_t maxCount = 500;
   #endif // JUCE_DEBUG
@@ -543,9 +543,8 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
 
-  std::cout << "Saving inference ..." << std::flush;
+  context.informationCallback(T("Saving inference"));
   inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
-  std::cout << "ok." << std::endl;
   return true;
   
   std::cout << "Loading..." << std::flush;

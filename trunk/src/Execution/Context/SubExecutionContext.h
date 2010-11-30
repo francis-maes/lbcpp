@@ -57,6 +57,20 @@ public:
     ExecutionContext::progressCallback(progression, progressionTotal, progressionUnit);
   }
 
+  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+  {
+    if (parent)
+      parent->preExecutionCallback(workUnits);
+    ExecutionContext::preExecutionCallback(workUnits);
+  }
+
+  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
+  {
+    if (parent)
+      parent->postExecutionCallback(workUnits, result);
+    ExecutionContext::postExecutionCallback(workUnits, result);
+  }
+
   virtual void preExecutionCallback(const WorkUnitPtr& workUnit)
   {
     if (parent)
@@ -69,6 +83,35 @@ public:
     if (parent)
       parent->postExecutionCallback(workUnit, result);
     ExecutionContext::postExecutionCallback(workUnit, result);
+  }
+
+  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+  {
+    if (parent)
+      parent->preExecutionCallback(function, input);
+    preExecutionCallback(function, input);
+  }
+
+  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  {
+    if (parent)
+      parent->postExecutionCallback(function, input, output);
+    postExecutionCallback(function, input, output);
+  }
+
+
+  virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision)
+  {
+    if (parent)
+      parent->preExecutionCallback(inference, input, supervision);
+    preExecutionCallback(inference, input, supervision);
+  }
+
+  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+  {
+    if (parent)
+      parent->postExecutionCallback(inference, input, supervision, output);
+    postExecutionCallback(inference, input, supervision, output);
   }
 
   virtual void resultCallback(const String& name, const Variable& value)

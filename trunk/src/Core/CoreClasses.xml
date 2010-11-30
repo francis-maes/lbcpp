@@ -4,6 +4,7 @@
   <import name="Type" pre="yes"/>
 
   <include file="lbcpp/Core/Pair.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
 
   <namespace name="lbcpp">
@@ -29,6 +30,51 @@
       </code>
   
     </template>
+    
+    <!-- Container -->
+    <template name="Container" base="Object" abstract="yes">
+      <parameter name="elementsType"/>
+      <code>
+        virtual size_t getNumElements(const VariableValue&amp; value) const
+        {
+        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+        return container ? container->getNumElements() : 0;
+        }
+
+        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
+        {
+        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+        jassert(container);
+        return container->getElement(index);
+        }
+
+        virtual String getElementName(const VariableValue&amp; value, size_t index) const
+        {return T("[") + String((int)index) + T("]");}
+      </code>
+    </template>
+    
+    <!-- Vector -->
+    <template name="Vector" base="Container[elementsType]" abstract="yes">
+      <parameter name="elementsType"/>
+    </template>
+
+    <template name="GenericVector" base="Vector[elementsType]">
+      <parameter name="elementsType"/>
+      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    </template>
+
+    <template name="ObjectVector" base="Vector[elementsType]">
+      <parameter name="elementsType"/>
+      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+    </template>
+
+    <class name="BooleanVector" base="Vector[Boolean]">
+      <constructor arguments="size_t initialSize"/>
+    </class>
+
+    <class name="VariableVector" base="Vector[Variable]">
+      <constructor arguments="size_t initialSize"/>
+    </class>
     
     <!-- Dynamic Object -->
     <class name="DynamicClass" base="DefaultClass" abstract="yes">

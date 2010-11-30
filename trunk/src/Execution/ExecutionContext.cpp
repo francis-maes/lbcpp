@@ -110,10 +110,10 @@ void CompositeExecutionCallback::preExecutionCallback(const WorkUnitVectorPtr& w
     callbacks[i]->preExecutionCallback(workUnits);
 }
 
-void CompositeExecutionCallback::postExecutionCallback(const WorkUnitVectorPtr& workUnits)
+void CompositeExecutionCallback::postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
 {
   for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->postExecutionCallback(workUnits);
+    callbacks[i]->postExecutionCallback(workUnits, result);
 }
 
 void CompositeExecutionCallback::preExecutionCallback(const WorkUnitPtr& workUnit)

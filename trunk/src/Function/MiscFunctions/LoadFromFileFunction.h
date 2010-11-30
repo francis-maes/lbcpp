@@ -28,6 +28,9 @@ public:
   virtual TypePtr getOutputType(TypePtr ) const
     {return expectedType;}
 
+  virtual String toString() const
+    {return T("Load ") + expectedType->getName() + T(" From File");}
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     File file = input.getFile();

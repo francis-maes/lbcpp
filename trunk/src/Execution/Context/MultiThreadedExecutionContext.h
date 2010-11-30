@@ -36,6 +36,8 @@ public:
   };
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone);
+  void push(const WorkUnitVectorPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter);
+
   Entry pop();
 
   lbcpp_UseDebuggingNewOperator
@@ -58,6 +60,19 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   if (entries.size() <= priority)
     entries.resize(priority + 1);
   entries[priority].push_back(Entry(workUnit, stack, counterToDecrementWhenDone));
+}
+
+void WaitingWorkUnitQueue::push(const WorkUnitVectorPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter)
+{
+  ScopedLock _(lock);
+  size_t priority = stack->getDepth();
+  if (entries.size() <= priority)
+    entries.resize(priority + 1);
+  
+  size_t n = workUnits->getNumWorkUnits();
+  numRemainingWorkUnitsCounter = (int)n;
+  for (size_t i = 0; i < n; ++i)
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, numRemainingWorkUnitsCounter));
 }
 
 WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
@@ -193,16 +208,14 @@ public:
  
   virtual bool run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
-
+  
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    WaitingWorkUnitQueuePtr queue = thread->getWaitingQueue();
-    size_t n = workUnits->getNumWorkUnits();
-    int numRemainingWorkUnits = (int)n;
-    ExecutionStackPtr stack = getStack()->cloneAndCast<ExecutionStack>(*this);
-    for (size_t i = 0; i < n; ++i)
-      queue->push(workUnits->getWorkUnit(i), stack, numRemainingWorkUnits);
+    preExecutionCallback(workUnits);
+    int numRemainingWorkUnits;
+    thread->getWaitingQueue()->push(workUnits, getStack()->cloneAndCast<ExecutionStack>(*this), numRemainingWorkUnits);
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
+    postExecutionCallback(workUnits, true); // FIXME: result is not implemented
     return true;
   }
 
@@ -279,12 +292,11 @@ public:
 
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    size_t n = workUnits->getNumWorkUnits();
-    int numRemainingWorkUnits = (int)n;
-    WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
-    for (size_t i = 0; i < n; ++i)
-      queue->push(workUnits->getWorkUnit(i), stack, numRemainingWorkUnits);
+    preExecutionCallback(workUnits);
+    int numRemainingWorkUnits;
+    threadPool->getWaitingQueue()->push(workUnits, getStack()->cloneAndCast<ExecutionStack>(*this), numRemainingWorkUnits);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
+    postExecutionCallback(workUnits, true); // FIXME: result is not implemented
     return true;
   }
 

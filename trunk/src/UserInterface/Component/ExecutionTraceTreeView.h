@@ -28,49 +28,97 @@ class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 {
 public:
   ExecutionTraceTreeViewItem(const String& name, const String& iconToUse, bool mightContainSubItems)
-    : SimpleTreeViewItem(name, iconToUse, mightContainSubItems)
+    : SimpleTreeViewItem(name, iconToUse, mightContainSubItems), hasProgression(false), progression(0.0)
   {
   }
 
   enum
   {
     minWidthToDisplayTimes = 300,
+    minWidthToDisplayProgression = 150,
+    progressionColumnWidth = 150,
+    labelX = 23,
     timeColumnWidth = 100,
   };
  
-  void paintIconAndText(Graphics& g, int width, int height)
+  void paintProgression(Graphics& g, int x, int width, int height)
   {
-    g.setColour(Colours::black);
-    int x1 = 0;
-    if (iconToUse)
+    juce::GradientBrush brush(Colour(200, 220, 240), (float)x, -(float)width / 3.f, Colours::white, (float)width, (float)width, true);
+
+    g.setBrush(&brush);
+    if (progression > 0.0)
     {
-      g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
-      x1 += iconToUse->getWidth() + 5;
+      jassert(progression <= 1.0);
+      g.fillRect(x, 0, (int)(width * progression + 0.5), height);
     }
-    g.drawText(getUniqueName(), x1, 0, width - x1, height, Justification::centredLeft, true);
+    else if (progression < 0.0)
+    {
+      double p = (-progression / 1000.0);
+      p -= (int)p;
+      jassert(p >= 0.0 && p <= 1.0);
+      g.fillRect(x + (int)(width * p + 0.5) - 3, 0, 6, height);
+    }
+    g.setBrush(NULL);
+
+    g.setColour(Colours::black);
+    g.drawText(progressionString, x, 0, width, height, Justification::centred, true);
+
+    g.setColour(Colour(180, 180, 180));
+    g.drawRect(x, 0, width, height, 1);
+  }
+
+  void paintIcon(Graphics& g, int width, int height)
+    {g.setColour(Colours::black); g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);}
+
+  void paintIconTextAndProgression(Graphics& g, int width, int height)
+  {
+    paintIcon(g, width, height);
+    width -= labelX;
+    int textWidth = width;
+
+    if (hasProgression && width > minWidthToDisplayProgression)
+    {
+      textWidth -= progressionColumnWidth;
+      paintProgression(g, labelX + textWidth, progressionColumnWidth, height);
+    }
+    
+    g.setColour(Colours::black);
+    g.drawText(getUniqueName(), labelX, 0, textWidth, height, Justification::centredLeft, true);
   }
 
   virtual void paintItem(Graphics& g, int width, int height)
   {
     if (isSelected())
       g.fillAll(Colours::darkgrey);
+    --height; // 1 px margin
     if (width > minWidthToDisplayTimes)
     {
       int w = width - 2 * timeColumnWidth;
-      paintIconAndText(g, w, height);
-      g.setColour(Colours::lightgrey);
+      paintIconTextAndProgression(g, w, height);
+      g.setColour(Colours::grey);
       g.setFont(12);
       g.drawText(absoluteTime, w, 0, timeColumnWidth, height, Justification::centredRight, false);
       g.drawText(relativeTime, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
     else
-      paintIconAndText(g, width, height);
+      paintIconTextAndProgression(g, width, height);
   }
 
   void setTimes(double absoluteTime, double relativeTime)
   {
     this->absoluteTime = formatTime(absoluteTime);
     this->relativeTime = formatTime(relativeTime);
+  }
+
+  void setProgression(double progression, double progressionTotal, const String& unit)
+  {
+    progressionString = String(progression);
+    if (progressionTotal)
+      progressionString += T(" / ") + String(progressionTotal);
+    if (unit.isNotEmpty())
+      progressionString += T(" ") + unit;
+    this->progression = progressionTotal ? progression / progressionTotal : -progression;
+    hasProgression = true;
   }
 
   static String formatTime(double timeInSeconds)
@@ -116,6 +164,10 @@ public:
 protected:
   String absoluteTime;
   String relativeTime;
+
+  bool hasProgression;
+  double progression;
+  String progressionString;
 };
 
 class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
@@ -126,6 +178,27 @@ public:
   {
     setOpen(true);
   }
+};
+
+class WorkUnitVectorExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
+{
+public:
+  WorkUnitVectorExecutionTraceTreeViewItem(const WorkUnitVectorPtr& workUnits)
+    : ExecutionTraceTreeViewItem(workUnits->getName(), T("WorkUnit-32.png"), true), numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0)
+    {setOpen(true);}
+
+  virtual void paintItem(Graphics& g, int width, int height)
+  {
+    setProgression((double)numWorkUnitsDone, (double)numWorkUnits, T("Work Units"));
+    ExecutionTraceTreeViewItem::paintItem(g, width, height);
+  }
+
+  void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
+    {++numWorkUnitsDone;}
+
+private:
+  size_t numWorkUnits;
+  size_t numWorkUnitsDone;
 };
 
 class MessageExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
@@ -162,14 +235,6 @@ public:
   ProgressExecutionTraceTreeViewItem()
     : ExecutionTraceTreeViewItem(T("progression"), T("Progress-32.png"), false) {}
 
-  void setFiniteProgression(double normalizedProgression)
-  {
-  }
-
-  void setInfiniteProgression(double progression)
-  {
-
-  }
 };
 
 class ExecutionTraceTreeView : public TreeView
@@ -220,6 +285,12 @@ protected:
     virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
       {if (owner) owner->postExecutionCallback(workUnit, result);}
 
+    virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+      {if (owner) owner->preExecutionCallback(workUnits);}
+
+    virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
+      {if (owner) owner->postExecutionCallback(workUnits, result);}
+
     virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
       {} // FIXME
 
@@ -248,12 +319,14 @@ protected:
     item->setTimes(time - initialTime, time - (stack.empty() ? initialTime : stack.back().second));
   }
 
+  TreeViewItem* getCurrentParent() const
+    {return stack.empty() ? root : stack.back().first;}
+
   void addItem(ExecutionTraceTreeViewItem* newItem)
   {
     setTimes(newItem);
     lastCreatedItem = newItem;
-    TreeViewItem* parent = stack.empty() ? root : stack.back().first;
-    parent->addSubItem(newItem);
+    getCurrentParent()->addSubItem(newItem);
     scrollToKeepItemVisible(newItem);
   }
 
@@ -267,22 +340,11 @@ protected:
 
   void setProgression(double progression, double progressionTotal, const String& progressionUnit)
   {
-    String progressionString = currentStatus;
-    if (progressionString.isNotEmpty())
-      progressionString += ' ';
-    progressionString += String(progression);
-    if (progressionTotal)
-      progressionString += T(" / ") + String(progressionTotal);
-    if (progressionUnit.isNotEmpty())
-      progressionString += T(" ") + progressionUnit;
     ProgressExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
     jassert(item);
     setTimes(item);
-    item->setUniqueName(progressionString);
-    if (progressionTotal)
-      item->setFiniteProgression(progression / progressionTotal);
-    else
-      item->setInfiniteProgression(progression);
+    item->setUniqueName(currentStatus);
+    item->setProgression(progression, progressionTotal, progressionUnit);
     item->treeHasChanged();
   }
 
@@ -297,6 +359,29 @@ protected:
   {
     jassert(stack.size());
     WorkUnitExecutionTraceTreeViewItem* treeItem = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(stack.back().first);
+    jassert(treeItem);
+    if (!result)
+      treeItem->setIcon(T("Error-32.png"));
+    stack.pop_back();
+
+    WorkUnitVectorExecutionTraceTreeViewItem* parentTreeItem = dynamic_cast<WorkUnitVectorExecutionTraceTreeViewItem* >(getCurrentParent());
+    if (parentTreeItem)
+      parentTreeItem->postExecutionCallback(workUnit, result);
+
+    lastCreatedItem = NULL;
+  }
+
+  void preExecutionCallback(const WorkUnitVectorPtr& workUnits)
+  {
+    ExecutionTraceTreeViewItem* node = new WorkUnitVectorExecutionTraceTreeViewItem(workUnits);
+    addItem(node);
+    stack.push_back(std::make_pair(node, Time::getMillisecondCounterHiRes() / 1000.0));
+  }
+
+  void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
+  {
+    jassert(stack.size());
+    WorkUnitVectorExecutionTraceTreeViewItem* treeItem = dynamic_cast<WorkUnitVectorExecutionTraceTreeViewItem* >(stack.back().first);
     jassert(treeItem);
     if (!result)
       treeItem->setIcon(T("Error-32.png"));
