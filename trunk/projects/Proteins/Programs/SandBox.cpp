@@ -295,7 +295,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(100), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(2), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -415,19 +415,17 @@ void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceTo
   inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
 }
 
-int main(int argc, char** argv)
+class SandBoxWorkUnit : public WorkUnit
 {
-  lbcpp::initialize(argv[0]);
+public:
+  SandBoxWorkUnit() : WorkUnit(T("SandBox")) {}
 
-  ExecutionContextPtr context = singleThreadedExecutionContext();
-  context->appendCallback(consoleExecutionCallback());
-  context->appendCallback(userInterfaceExecutionCallback());
-  context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
-  context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
-  context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
-  context->declareType(TypePtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
-  declareProteinClasses(*context);
+protected:
+  virtual bool run(ExecutionContext& context);
+};
 
+bool SandBoxWorkUnit::run(ExecutionContext& context)
+{
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
 #else
@@ -435,16 +433,16 @@ int main(int argc, char** argv)
 #endif
 
   bool inputOnly = true;
-  ContainerPtr trainProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
-  ContainerPtr testProteins = loadProteins(*context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
+  ContainerPtr trainProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
+  ContainerPtr testProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 3);
   trainProteins = trainProteins->invFold(0, 10);
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
 
-  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(*context);
-  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(*context);
+  //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
+  ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);
 
   //ProteinParallelInferencePtr inference = new ProteinParallelInference();
   //inference->setProteinDebugDirectory(workingDirectory.getChildFile(T("proteins")));
@@ -515,47 +513,47 @@ int main(int argc, char** argv)
   context->crossValidate(inference, proteins, evaluator, 2);
   std::cout << evaluator->toString() << std::endl;
   ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
-  return 0;*/
+  return true;*/
 
   {
     InferenceCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
-    context->appendCallback(trainingCallback);
-    inference->train(*context, trainProteins, validationProteins);
-    context->removeCallback(trainingCallback);
+    context.appendCallback(trainingCallback);
+    inference->train(context, trainProteins, validationProteins);
+    context.removeCallback(trainingCallback);
   }
 
   /*
   std::cout << "Making and saving train predicions..." << std::endl;
-  inference->evaluate(*context, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
+  inference->evaluate(context, trainProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("trainCO"))));
   std::cout << "Making and saving test predicions..." << std::endl;
-  inference->evaluate(*context, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
+  inference->evaluate(context, testProteins, saveToDirectoryEvaluator(workingDirectory.getChildFile(T("testCO"))));
   */
 
   {
     std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    inference->evaluate(*context, trainProteins, evaluator);
+    inference->evaluate(context, trainProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Validation Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    inference->evaluate(*context, validationProteins, evaluator);
+    inference->evaluate(context, validationProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
 
     std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
-    inference->evaluate(*context, testProteins, evaluator);
+    inference->evaluate(context, testProteins, evaluator);
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
-  return 0;
+  return true;
   
 
   std::cout << "Saving inference ..." << std::flush;
-  inference->saveToFile(*context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  inference->saveToFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
   std::cout << "Loading..." << std::flush;
-  inference = Inference::createFromFile(*context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
+  inference = Inference::createFromFile(context, workingDirectory.getChildFile(T("NewStyleInference.xml")));
   std::cout << "ok." << std::endl;
 
   for (size_t i = 7; i <= 7; i += 1)
@@ -565,7 +563,7 @@ int main(int argc, char** argv)
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
     context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
     inference->evaluate(*context, trainProteins, evaluator);
-  //  inference->crossValidate(*context, proteins, evaluator, 2);
+  //  inference->crossValidate(context, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
@@ -583,12 +581,34 @@ int main(int argc, char** argv)
 
   std::cout << "Re-evaluating..." << std::endl;
   evaluator = new ProteinEvaluator();
-  loadedInference->evaluate(*context, trainProteins, evaluator);
+  loadedInference->evaluate(context, trainProteins, evaluator);
   std::cout << "ok." << std::endl;
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
 #endif // 0
 
   std::cout << "Tchao." << std::endl;
-  return 0;
+  return true;
+}
+
+int main(int argc, char** argv)
+{
+  lbcpp::initialize(argv[0]);
+
+  int exitCode;
+  {
+    ExecutionContextPtr context = singleThreadedExecutionContext();
+    context->appendCallback(consoleExecutionCallback());
+    context->appendCallback(userInterfaceExecutionCallback());
+    context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
+    context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
+    context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
+    context->declareType(TypePtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
+
+    declareProteinClasses(*context);
+    WorkUnitPtr workUnit(new SandBoxWorkUnit());
+    exitCode = context->run(workUnit) ? 0 : 1;
+  }
+  lbcpp::deinitialize();
+  return exitCode;
 }

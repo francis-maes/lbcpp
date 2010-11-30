@@ -43,16 +43,24 @@ public:
     ExecutionCallback::initialize(context);
     userInterfaceManager().ensureIsInitialized(context);
     userInterfaceManager().getNotificationQueue()->push(new CreateWindowNotification(this));
-    while (!userInterfaceManager().getNotificationQueue()->isEmpty())
-      Thread::sleep(100);
+    waitUntilNotificationQueueIsEmpty();
   }
 
   void shutdown()
   {
     if (mainWindow)
+    {
       userInterfaceManager().getNotificationQueue()->push(new DestroyWindowNotification(this));
+      waitUntilNotificationQueueIsEmpty();
+    }
   }
   
+  void waitUntilNotificationQueueIsEmpty()
+  {
+    while (!userInterfaceManager().getNotificationQueue()->isEmpty())
+      Thread::sleep(100);
+  }
+
 private:
   Component* mainWindow;
   Component* content;
