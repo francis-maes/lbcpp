@@ -21,7 +21,7 @@ template<class BaseClass>
 class RunOnSupervisedExamplesInference : public BaseClass
 {
 public:
-  RunOnSupervisedExamplesInference(InferencePtr inference)
+  RunOnSupervisedExamplesInference(const InferencePtr& inference)
     : BaseClass(T("RunOnSupervisedExamples")), inference(inference) {}
   RunOnSupervisedExamplesInference() {}
 
@@ -50,7 +50,7 @@ class RunOnSupervisedExamplesSequentialInference : public RunOnSupervisedExample
 public:
   typedef RunOnSupervisedExamplesInference<SequentialInference> BaseClass;
 
-  RunOnSupervisedExamplesSequentialInference(InferencePtr inference)
+  RunOnSupervisedExamplesSequentialInference(const InferencePtr& inference)
     : BaseClass(inference) {}
   RunOnSupervisedExamplesSequentialInference() {}
 
@@ -86,7 +86,7 @@ class RunOnSupervisedExamplesParallelInference : public RunOnSupervisedExamplesI
 public:
   typedef RunOnSupervisedExamplesInference<ParallelInference> BaseClass;
 
-  RunOnSupervisedExamplesParallelInference(InferencePtr inference)
+  RunOnSupervisedExamplesParallelInference(const InferencePtr& inference)
     : BaseClass(inference) {}
   RunOnSupervisedExamplesParallelInference() {}
 

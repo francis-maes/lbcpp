@@ -85,7 +85,12 @@ public:
     
     g.setColour(Colours::black);
     g.setFont(12);
-    g.drawText(getUniqueName(), labelX, 0, textWidth, height, Justification::centredLeft, true);
+    
+    String str = getUniqueName();
+    StringArray lines;
+    lines.addTokens(str, T("\n"), NULL);
+    for (int i = 0; i < lines.size(); ++i)
+      g.drawText(lines[i], labelX, 20 * i, textWidth, 20, Justification::centredLeft, true);
   }
 
   virtual void paintItem(Graphics& g, int width, int height)
@@ -226,7 +231,20 @@ class MessageExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
   MessageExecutionTraceTreeViewItem(const String& what, const String& where = String::empty, const String& iconToUse = String::empty)
-    : ExecutionTraceTreeViewItem(what + (where.isNotEmpty() ? T(" (") + where + T(")") : String::empty), iconToUse, false) {}
+    : ExecutionTraceTreeViewItem(what + (where.isNotEmpty() ? T(" (") + where + T(")") : String::empty), iconToUse, false)
+  {
+    String str = getUniqueName();
+    numLines = 1;
+    for (int i = 0; i < str.length() - 1; ++i)
+      if (str[i] == '\n')
+        ++numLines;
+  }
+
+  virtual int getItemHeight() const
+    {return 20 * numLines;}
+
+private:
+  size_t numLines;
 };
 
 class WarningExecutionTraceTreeViewItem : public MessageExecutionTraceTreeViewItem

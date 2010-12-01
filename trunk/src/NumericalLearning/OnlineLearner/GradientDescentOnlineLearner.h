@@ -31,7 +31,7 @@ public:
   virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput);
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {res.push_back(std::make_pair(T("empiricalRisk"), lastEmpiricalRisk));}
+    {res.push_back(std::make_pair(T("Empirical Risk"), lastEmpiricalRisk));}
 
   virtual double getDefaultScore() const
     {return -lastEmpiricalRisk;}

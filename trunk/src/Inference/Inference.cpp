@@ -136,13 +136,10 @@ bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInpu
 bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
-  ExecutionCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
-  context.appendCallback(evaluationCallback);
-  InferencePtr runInference = runOnSupervisedExamplesInference(inference, true);
+  InferencePtr evaluatorInference = evaluationInference(inference, evaluator);
   if (workUnitName.isNotEmpty())
-    runInference->setName(workUnitName);
-  runInference->computeInference(context, examples, Variable());
-  context.removeCallback(evaluationCallback);
+    evaluatorInference->setName(workUnitName);
+  evaluatorInference->computeInference(context, examples, Variable());
   return true;
 }
 

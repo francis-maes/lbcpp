@@ -348,10 +348,9 @@ public:
 
     //if (stack->getDepth() == 1) // 
     //if (context.getCurrentFunction()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName.startsWith(T("LearningPass")))
+    if (inferenceName.startsWith(T("Learning Iteration")))
     {
       // end of learning iteration
-      context.informationCallback(String::empty);
       //context.informationCallback(T("====================================================="));
       //context.informationCallback(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
       //context.informationCallback(T("====================================================="));
@@ -579,8 +578,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   std::cout << "============================" << std::endl << std::endl;
   std::cout << evaluator->toString() << std::endl << std::endl;
 #endif // 0
-
-  std::cout << "Tchao." << std::endl;
   return true;
 }
 
@@ -603,7 +600,9 @@ int main(int argc, char** argv)
     WorkUnitPtr workUnit(new SandBoxWorkUnit());
     exitCode = context->run(workUnit) ? 0 : 1;
   
+    std::cout << "Waiting for GUI to close..." << std::endl;
     userInterfaceManager().waitUntilAllWindowsAreClosed();
+    std::cout << "Tchao." << std::endl;
   }
   lbcpp::deinitialize();
   return exitCode;

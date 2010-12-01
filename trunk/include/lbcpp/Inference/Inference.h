@@ -142,6 +142,7 @@ extern SharedParallelInferencePtr sharedParallelVectorInference(const String& na
 
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
+extern ParallelInferencePtr evaluationInference(const InferencePtr& inference, const EvaluatorPtr& evaluator);
 extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
 

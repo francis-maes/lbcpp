@@ -35,6 +35,8 @@ public:
     inference->evaluate(context, examples, eval, workUnitName);
     lastScores.clear();
     eval->getScores(lastScores);
+    for (size_t i = 0; i < lastScores.size(); ++i)
+      lastScores[i].first = (computeOnValidationData ? T("Validation ") : T("Training ")) + lastScores[i].first;
     lastDefaultScore = eval->getDefaultScore();
     InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
   }

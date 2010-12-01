@@ -58,7 +58,7 @@ public:
       jassert(!bestScores.size() || bestScores.size() == n);
       for (size_t i = 0; i < n; ++i)
       {
-        res[i + n].first = T("best ") + res[i].first;
+        res[i + n].first = T("Best ") + res[i].first;
         res[i + n].second = bestScores.size() ? bestScores[i].second : res[i].second;
       }
     }
