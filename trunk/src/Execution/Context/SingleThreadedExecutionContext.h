@@ -28,18 +28,8 @@ public:
     {return false;}
 
   virtual bool run(const CompositeWorkUnitPtr& workUnits)
-  {
-    bool res = true;
-    preExecutionCallback(stack, workUnits);
-    stack->push(workUnits);
-    size_t n = workUnits->getNumWorkUnits();
-    for (size_t i = 0; i < n; ++i)
-      res &= ExecutionContext::run(workUnits->getWorkUnit(i));
-    stack->pop();
-    postExecutionCallback(stack, workUnits, res);
-    return res;
-  }
-
+    {return run((WorkUnitPtr)workUnits);}
+    
   lbcpp_UseDebuggingNewOperator
 };
 
