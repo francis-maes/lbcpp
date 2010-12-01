@@ -52,7 +52,7 @@ public:
   
   virtual ProbabilityDistributionPtr build() const
   {
-    jassert((means && variances) xor meanAndVariances);
+    jassert((means && variances) != meanAndVariances);
 
     if (means)
       return new GaussianProbabilityDistribution(means->getMean(), variances->getMean());
