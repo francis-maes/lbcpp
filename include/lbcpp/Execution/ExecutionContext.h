@@ -75,8 +75,6 @@ protected:
   ExecutionStackPtr stack;
 };
 
-extern ExecutionContextPtr silentExecutionContext;
-
 extern ExecutionContextPtr singleThreadedExecutionContext();
 extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 

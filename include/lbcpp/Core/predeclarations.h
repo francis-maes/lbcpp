@@ -60,8 +60,10 @@ typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
 class Vector;
 typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
-
 class ExecutionContext;
+typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
+
+extern ExecutionContextPtr silentExecutionContext;
 
 }; /* namespace lbcpp */
 
