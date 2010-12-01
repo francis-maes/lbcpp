@@ -162,7 +162,7 @@ public:
     FeaturesByScoreMap featuresByRelevance;
     getRelevanceScores(context, input, featuresByRelevance);
     int i = 0;
-    for (FeaturesByScoreMap::const_reverse_iterator it = featuresByRelevance.rbegin(); it != featuresByRelevance.rend() && i < 10; ++it, ++i)
+    for (FeaturesByScoreMap::reverse_iterator it = featuresByRelevance.rbegin(); it != featuresByRelevance.rend() && i < 10; ++it, ++i)
       std::cout << "Top " << (i+1) << ": " << perception->getOutputVariableName(it->second) << " (" << it->first << ")" << std::endl;
   }
 
