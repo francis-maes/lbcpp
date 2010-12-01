@@ -403,7 +403,7 @@ public:
 
   virtual bool run(ExecutionContext& context);
 
-  VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
+  VectorPtr loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
   {
   #ifdef JUCE_DEBUG
     size_t maxCount = 100;
@@ -412,11 +412,11 @@ public:
   #endif // JUCE_DEBUG
     if (inputDirectory.exists())
       return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
-        ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)->randomize();
+        ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply, workUnitName)->randomize();
     else
       return directoryFileStream(supervisionDirectory)->load(context, maxCount)
-        ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
-        ->apply(context, proteinToInputOutputPairFunction(false), Container::sequentialApply)->randomize();
+        ->apply(context, composeFunction(loadFromFileFunction(proteinClass), proteinToInputOutputPairFunction(false)), Container::parallelApply, workUnitName)
+        ->randomize();
   }
 
   void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
@@ -433,15 +433,14 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   File workingDirectory(T("/data/PDB/PDB30Medium"));
 #endif
   bool inputOnly = true;
-  ContainerPtr trainProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
-  ContainerPtr testProteins = loadProteins(context, inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
+  ContainerPtr trainProteins = loadProteins(context, T("Loading training proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
+  ContainerPtr testProteins = loadProteins(context, T("Loading testing proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
   ContainerPtr validationProteins = trainProteins->fold(0, 3);
   trainProteins = trainProteins->invFold(0, 3);
-  std::cout << trainProteins->getNumElements() << " training proteins, "
-            << validationProteins->getNumElements() << " validation proteins "
-            << testProteins->getNumElements() << " testing proteins" << std::endl;
 
-  return true;
+  context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ")  +
+    String((int)validationProteins->getNumElements()) + T(" validation proteins, ")  +
+    String((int)testProteins->getNumElements()) + T(" testing proteins, "));
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);

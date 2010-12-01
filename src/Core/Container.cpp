@@ -132,7 +132,7 @@ protected:
     {target->setElement(index, function->computeFunction(context, source->getElement(index))); return true;}
 };
 
-ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode) const
+ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode, const String& workUnitName) const
 {
   if (computeMode == lazyApply)
     return applyFunctionContainer(refCountedPointerFromThis(this), function);
@@ -147,7 +147,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
     }
     else if (computeMode == parallelApply)
     {
-      WorkUnitVectorPtr workUnits(new WorkUnitVector(function->toString(), n));
+      WorkUnitVectorPtr workUnits(new WorkUnitVector(workUnitName.isEmpty() ? function->toString() : workUnitName, n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
       context.run(workUnits);

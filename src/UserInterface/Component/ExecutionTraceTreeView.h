@@ -61,6 +61,7 @@ public:
     g.setBrush(NULL);
 
     g.setColour(Colours::black);
+    g.setFont(10);
     g.drawText(progressionString, x, 0, width, height, Justification::centred, true);
 
     g.setColour(Colour(180, 180, 180));
@@ -83,6 +84,7 @@ public:
     }
     
     g.setColour(Colours::black);
+    g.setFont(12);
     g.drawText(getUniqueName(), labelX, 0, textWidth, height, Justification::centredLeft, true);
   }
 
@@ -102,12 +104,6 @@ public:
     }
     else
       paintIconTextAndProgression(g, width, height);
-  }
-
-  void setTimes(double absoluteTime, double relativeTime)
-  {
-    this->absoluteTime = formatTime(absoluteTime);
-    this->relativeTime = formatTime(relativeTime);
   }
 
   void setProgression(double progression, double progressionTotal, const String& unit)
@@ -161,7 +157,18 @@ public:
     return res;
   }
 
+  void setStartTime(double time)
+  {
+    creationTime = time;
+    this->absoluteTime = formatTime(creationTime);
+  }
+
+  void setEndTime(double time)
+    {this->relativeTime = formatTime(time - creationTime);}
+
 protected:
+  double creationTime;
+
   String absoluteTime;
   String relativeTime;
 
@@ -173,9 +180,9 @@ protected:
 class NodeExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  NodeExecutionTraceTreeViewItem(const ObjectPtr& object, const String& iconToUse)
+  NodeExecutionTraceTreeViewItem(const ObjectPtr& object, const String& iconToUse, bool open = true)
     : ExecutionTraceTreeViewItem(object ? object->getName() : String::empty, iconToUse, true), object(object)
-    {setOpen(true);}
+    {setOpen(open);}
 
   const ObjectPtr& getObject() const
     {return object;}
@@ -195,7 +202,7 @@ class WorkUnitVectorExecutionTraceTreeViewItem : public NodeExecutionTraceTreeVi
 {
 public:
   WorkUnitVectorExecutionTraceTreeViewItem(const WorkUnitVectorPtr& workUnits)
-    : NodeExecutionTraceTreeViewItem(workUnits, T("WorkUnit-32.png")),
+    : NodeExecutionTraceTreeViewItem(workUnits, T("WorkUnit-32.png"), workUnits->getNumWorkUnits() < 10),
       numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0) {}
 
   virtual void paintItem(Graphics& g, int width, int height)
@@ -252,6 +259,7 @@ class ExecutionTraceTreeView : public TreeView, public ExecutionCallback
 public:
   ExecutionTraceTreeView()
   {
+    initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
     setRootItem(new NodeExecutionTraceTreeViewItem(ObjectPtr(), String::empty));
     setRootItemVisible(false);
     setColour(backgroundColourId, Colours::white);
@@ -298,12 +306,16 @@ public:
     return item;
   }
 
+  double getInitialTime() const
+    {return initialTime;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   typedef std::map<Thread::ThreadID, ExecutionCallbackPtr> CallbackByThreadMap;
   CallbackByThreadMap callbackByThread;
 
+  double initialTime;
   ExecutionCallbackPtr createBuilderCallback();
 };
 
@@ -311,12 +323,12 @@ class ExecutionTraceTreeViewBuilderCallback : public ExecutionCallback
 {
 public:
   ExecutionTraceTreeViewBuilderCallback(ExecutionTraceTreeView* tree)
-    : tree(tree)
-    {initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;}
+    : tree(tree) {}
 
   virtual void notificationCallback(const NotificationPtr& notification)
   {
-    currentNotificationConstructionTime = notification->getConstructionTime();
+    Time creationTime = notification->getConstructionTime();
+    currentNotificationTime = creationTime.toMilliseconds() / 1000.0 - tree->getInitialTime();
     ExecutionCallback::notificationCallback(notification);
   }
 
@@ -324,7 +336,7 @@ public:
   {
     ProgressExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
     jassert(item);
-    setTimes(item);
+    item->setEndTime(currentNotificationTime);
     item->setUniqueName(currentStatus);
     item->setProgression(progression, progressionTotal, progressionUnit);
     item->treeHasChanged();
@@ -338,7 +350,10 @@ public:
     TreeViewItem* treeItem = popPositionIntoTree(!result);
     WorkUnitVectorExecutionTraceTreeViewItem* parentTreeItem = dynamic_cast<WorkUnitVectorExecutionTraceTreeViewItem* >(treeItem->getParentItem());
     if (parentTreeItem)
+    {
       parentTreeItem->postExecutionCallback(stack, workUnit, result);
+      parentTreeItem->setEndTime(currentNotificationTime);
+    }
   }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits)
@@ -361,23 +376,15 @@ public:
 
 protected:
   ExecutionTraceTreeView* tree;
-  double initialTime;
   String currentStatus;
-
-  Time currentNotificationConstructionTime;
-
-  void setTimes(ExecutionTraceTreeViewItem* item)
-  {
-    //double time = currentNotificationConstructionTime.toMilliseconds() / 1000.0;
-    item->setTimes(0.0, 0.0); // time - initialTime, time - (stack.empty() ? initialTime : stack.back().second));
-  }
+  double currentNotificationTime;
 
   void addItem(ExecutionTraceTreeViewItem* newItem)
     {addItem(getCurrentPositionInTree(), newItem);}
 
   void addItem(TreeViewItem* parentItem, ExecutionTraceTreeViewItem* newItem)
   {
-    setTimes(newItem);
+    newItem->setStartTime(currentNotificationTime);
     parentItem->addSubItem(newItem);
     tree->scrollToKeepItemVisible(newItem);
   }
@@ -415,9 +422,11 @@ protected:
   { 
     jassert(positions.size());
     ExecutionTraceTreeViewItem* res = positions.back();
+    res->setEndTime(currentNotificationTime);
     if (setErrorFlag)
       res->setIcon(T("Error-32.png"));
     positions.pop_back();
+    res->treeHasChanged();
     return res;
   }
 

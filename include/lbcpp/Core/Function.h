@@ -50,6 +50,7 @@ public:
 extern ClassPtr functionClass;
 
 extern FunctionPtr identityFunction(TypePtr type);
+extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 extern FunctionPtr multiplyDoubleFunction();
 
 extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
