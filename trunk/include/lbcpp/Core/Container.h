@@ -66,7 +66,7 @@ public:
     parallelApply,
     sequentialApply,
   };
-  ContainerPtr apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode = lazyApply) const;
+  ContainerPtr apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode = lazyApply, const String& workUnitName = String::empty) const;
 
   /**
   ** Creates a randomized version of a dataset.

@@ -8,6 +8,12 @@
       <variable type="Type" name="type"/>
     </class>
 
+    <class name="ComposeFunction" base="Function">
+      <constructor arguments="const FunctionPtr&amp; f, const FunctionPtr&amp; g"/>
+      <variable type="Function" name="f"/>
+      <variable type="Function" name="g"/>
+    </class>
+    
     <class name="MultiplyDoubleFunction" base="Function">
       <constructor/>
     </class>
