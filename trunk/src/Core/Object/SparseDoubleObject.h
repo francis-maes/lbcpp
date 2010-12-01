@@ -21,6 +21,9 @@ public:
   SparseDoubleObject(DynamicClassSharedPtr thisClass)
     : Object((Class* )thisClass.get()), thisClass(thisClass), lastIndex(-1)  {}
   
+  virtual String toShortString() const
+    {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getObjectNumVariables()) + T(")");}
+
   virtual Variable getVariable(size_t index) const
   {
     jassert(false); // not implemented yet

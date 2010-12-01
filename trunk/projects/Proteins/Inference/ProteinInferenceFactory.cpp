@@ -26,7 +26,11 @@ ProteinInferenceFactory::~ProteinInferenceFactory()
   {if (perceptionRewriter) perceptionRewriter->clearCache();}
 
 InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
-  {return new ProteinInferenceStep(targetName, createTargetInference(targetName));}
+{
+  InferencePtr res = new ProteinInferenceStep(targetName, createTargetInference(targetName));
+  res->getBatchLearner()->setPushIntoStackFlag(true);
+  return res;
+}
 
 InferencePtr ProteinInferenceFactory::createTargetInference(const String& targetName) const
 {

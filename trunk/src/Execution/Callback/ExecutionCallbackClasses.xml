@@ -43,17 +43,13 @@
 
     <class name="PreExecutionNotification" base="ExecutionNotification">
       <variable type="ExecutionStack" name="stack"/>
-      <variable type="Object" name="object"/>
-      <variable type="Variable" name="input"/>
-      <variable type="Variable" name="supervision"/>
+      <variable type="WorkUnit" name="workUnit"/>
     </class>
 
     <class name="PostExecutionNotification" base="ExecutionNotification">
       <variable type="ExecutionStack" name="stack"/>
-      <variable type="Object" name="object"/>
-      <variable type="Variable" name="input"/>
-      <variable type="Variable" name="supervision"/>
-      <variable type="Variable" name="output"/>
+      <variable type="WorkUnit" name="workUnit"/>
+      <variable type="Boolean" name="result"/>
     </class>
 
   </namespace>

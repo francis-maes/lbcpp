@@ -20,11 +20,17 @@ public:
   ComposeFunction(const FunctionPtr& f, const FunctionPtr& g) : f(f), g(g) {}
   ComposeFunction() {}
 
+  virtual String toString() const
+    {return f->toString() + T(" -> ") + g->toString();}
+
   virtual TypePtr getInputType() const
     {return f->getInputType();}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return g->getOutputType(f->getOutputType(inputType));}
+
+  virtual String getDescription(const Variable& input) const
+    {return f->getDescription(input);}
 
   // return g(f(x))
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const

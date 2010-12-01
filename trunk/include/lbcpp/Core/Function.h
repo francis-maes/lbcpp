@@ -26,6 +26,8 @@ namespace lbcpp
 class Function : public Object
 {
 public:
+  Function() : pushIntoStack(false) {}
+
   virtual TypePtr getInputType() const
     {return anyType;}
 
@@ -44,7 +46,19 @@ public:
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
 
+  // push into stack
+  void setPushIntoStackFlag(bool value)
+    {pushIntoStack = value;}
+
+  bool hasPushIntoStackFlag() const
+    {return pushIntoStack;}
+
   lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class FunctionClass;
+
+  bool pushIntoStack;
 };
 
 extern ClassPtr functionClass;

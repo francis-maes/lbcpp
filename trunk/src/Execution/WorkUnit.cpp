@@ -127,3 +127,15 @@ String WorkUnit::getUsageString() const
     + T("The arguments are as follows :\n\n")
     + argumentDescriptions;
 }
+
+bool CompositeWorkUnit::run(ExecutionContext& context)
+{
+  size_t n = getNumWorkUnits();
+  bool res = true;
+  for (size_t i = 0; i < n; ++i)
+  {
+    WorkUnitPtr workUnit = getWorkUnit(i);
+    res &= context.run(workUnit);
+  }
+  return res;
+}

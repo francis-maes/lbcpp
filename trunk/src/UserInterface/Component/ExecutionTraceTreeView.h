@@ -180,15 +180,18 @@ protected:
 class NodeExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  NodeExecutionTraceTreeViewItem(const ObjectPtr& object, const String& iconToUse, bool open = true)
-    : ExecutionTraceTreeViewItem(object ? object->getName() : String::empty, iconToUse, true), object(object)
+  NodeExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit, const String& iconToUse, bool open = true)
+    : ExecutionTraceTreeViewItem(workUnit ? workUnit->getName() : String::empty, iconToUse, false), workUnit(workUnit)
     {setOpen(open);}
 
-  const ObjectPtr& getObject() const
-    {return object;}
+  const WorkUnitPtr& getWorkUnit() const
+    {return workUnit;}
+
+  virtual bool mightContainSubItems()
+    {return getNumSubItems() > 0;}
 
 protected:
-  ObjectPtr object; // WorkUnitVector, WorkUnit, Inference, ...
+  WorkUnitPtr workUnit;
 };
 
 class WorkUnitExecutionTraceTreeViewItem : public NodeExecutionTraceTreeViewItem
@@ -198,10 +201,10 @@ public:
     : NodeExecutionTraceTreeViewItem(workUnit, T("WorkUnit-32.png")) {}
 };
 
-class WorkUnitVectorExecutionTraceTreeViewItem : public NodeExecutionTraceTreeViewItem
+class CompositeWorkUnitExecutionTraceTreeViewItem : public NodeExecutionTraceTreeViewItem
 {
 public:
-  WorkUnitVectorExecutionTraceTreeViewItem(const WorkUnitVectorPtr& workUnits)
+  CompositeWorkUnitExecutionTraceTreeViewItem(const CompositeWorkUnitPtr& workUnits)
     : NodeExecutionTraceTreeViewItem(workUnits, T("WorkUnit-32.png"), workUnits->getNumWorkUnits() < 10),
       numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0) {}
 
@@ -286,21 +289,17 @@ public:
     size_t n = stack->getDepth();
     for (size_t i = 0; i < n; ++i)
     {
-      const ObjectPtr& element = stack->getElement(i);
-      if (element.dynamicCast<WorkUnit>() || element.dynamicCast<WorkUnitVector>())
+      const WorkUnitPtr& workUnit = stack->getWorkUnit(i);
+      bool ok = false;
+      for (int i = 0; i < item->getNumSubItems(); ++i)
       {
-        bool ok = false;
-        for (int i = 0; i < item->getNumSubItems(); ++i)
+        NodeExecutionTraceTreeViewItem* subItem = dynamic_cast<NodeExecutionTraceTreeViewItem* >(item->getSubItem(i));
+        if (subItem && subItem->getWorkUnit() == workUnit)
         {
-          NodeExecutionTraceTreeViewItem* subItem = dynamic_cast<NodeExecutionTraceTreeViewItem* >(item->getSubItem(i));
-          if (subItem && subItem->getObject() == element)
-          {
-            item = subItem;
-            ok = true;
-            break;
-          }
+          item = subItem;
+          ok = true;
+          break;
         }
-        jassert(ok);
       }
     }
     return item;
@@ -343,27 +342,28 @@ public:
   }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-    {addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(workUnit));}
+  {
+    ExecutionTraceTreeViewItem* item;
+    if (workUnit.dynamicCast<CompositeWorkUnit>())
+      item = new CompositeWorkUnitExecutionTraceTreeViewItem(workUnit.dynamicCast<CompositeWorkUnit>());
+    else
+      item = new WorkUnitExecutionTraceTreeViewItem(workUnit);
+    addItemAndPushPosition(stack, item);
+  }
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
     TreeViewItem* treeItem = popPositionIntoTree(!result);
-    WorkUnitVectorExecutionTraceTreeViewItem* parentTreeItem = dynamic_cast<WorkUnitVectorExecutionTraceTreeViewItem* >(treeItem->getParentItem());
+    CompositeWorkUnitExecutionTraceTreeViewItem* parentTreeItem = dynamic_cast<CompositeWorkUnitExecutionTraceTreeViewItem* >(treeItem->getParentItem());
     if (parentTreeItem)
     {
       parentTreeItem->postExecutionCallback(stack, workUnit, result);
       parentTreeItem->setEndTime(currentNotificationTime);
     }
   }
-
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits)
-    {addItemAndPushPosition(stack, new WorkUnitVectorExecutionTraceTreeViewItem(workUnits));}
-
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits, bool result)
-    {popPositionIntoTree(!result);}
   
   virtual void informationCallback(const String& where, const String& what)
-    {addItem(new InformationExecutionTraceTreeViewItem(what, where));}
+    {jassert(what.trim().isNotEmpty()); addItem(new InformationExecutionTraceTreeViewItem(what, where));}
 
   virtual void warningCallback(const String& where, const String& what)
     {addItem(new WarningExecutionTraceTreeViewItem(what, where));}

@@ -81,7 +81,7 @@ public:
   {
     const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
 
-    WorkUnitVectorPtr workUnits(new WorkUnitVector(T("Optimizer"), 5));
+    CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimizer"), 5));
     std::vector<double> scores(workUnits->getNumWorkUnits());
     for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
     {
@@ -118,7 +118,7 @@ public:
     EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
     
     Variable optimizedValue;
-    if (!optimizer->run(context, objective, Variable(), optimizedValue))
+    if (!optimizer->run(context, objective, Variable(), &optimizedValue))
       return Variable();
     
     InferencePtr targetInference = learnerInput->getTargetInference();
@@ -295,7 +295,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(1), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(3), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -310,22 +310,19 @@ class MyInferenceCallback : public ExecutionCallback
 {
 public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
-    : inference(inference), trainingData(trainingData), testingData(testingData) {}
+    : inference(inference), trainingData(trainingData), testingData(testingData), iterationNumber(0) {}
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
   {
-    ExecutionContext& context = getContext();
-    if (stack->getDepth() == 1) // FIXME: test probably broken
-    {
-      // top-level learning is beginning
-      startingTime = Time::getMillisecondCounter();
-      iterationNumber = 0;
-    }
+/*
+    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+    if (!inferenceWorkUnit)
+      return;
 
-    InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
+    InferenceBatchLearnerInputPtr learnerInput = inferenceWorkUnit->getInput().dynamicCast<InferenceBatchLearnerInput>();
     if (learnerInput)
     {
-      String inputTypeName = learnerInput->getTrainingExamples()->computeElementsCommonBaseType()->getTemplateArgument(0)->getName();
+      String inputTypeName = learnerInput->getTrainingExamples()->getElementsType()->getTemplateArgument(0)->getName();
 
       String info = T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ");
       info += String((int)learnerInput->getNumTrainingExamples());
@@ -333,14 +330,21 @@ public:
         info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
 
       info += T(" ") + inputTypeName + T("(s) ===");
-      context.informationCallback(info);
-    }
+      getContext().informationCallback(info);
+    }*/
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
     ExecutionContext& context = getContext();
-    String inferenceName = function->getName();
+    
+    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+    if (!inferenceWorkUnit)
+      return;
+    const InferencePtr& inference = inferenceWorkUnit->getInference();
+    const Variable& input = inferenceWorkUnit->getInput();
+
+    String inferenceName = inference->getName();
 
     //if (stack->getDepth() == 1) // 
     //if (context.getCurrentFunction()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
@@ -377,11 +381,7 @@ public:
 
       //context.informationCallback(T("====================================================="));
     }
-    
-    if (stack->getDepth() == 1)
-    {
-      context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
-    }
+
   }
 
   void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
@@ -391,7 +391,6 @@ private:
   InferencePtr inference;
   ContainerPtr trainingData, testingData;
   size_t iterationNumber;
-  juce::uint32 startingTime;
 };
 
 /////////////////////////////////////////
@@ -406,7 +405,7 @@ public:
   VectorPtr loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
   {
   #ifdef JUCE_DEBUG
-    size_t maxCount = 100;
+    size_t maxCount = 7;
   #else
     size_t maxCount = 500;
   #endif // JUCE_DEBUG
@@ -440,7 +439,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
 
   context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ")  +
     String((int)validationProteins->getNumElements()) + T(" validation proteins, ")  +
-    String((int)testProteins->getNumElements()) + T(" testing proteins, "));
+    String((int)testProteins->getNumElements()) + T(" testing proteins"));
 
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);
@@ -517,7 +516,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   {
     ExecutionCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
     context.appendCallback(trainingCallback);
-    inference->train(context, trainProteins, validationProteins);
+    inference->train(context, trainProteins, validationProteins, T("Training"));
     context.removeCallback(trainingCallback);
   }
 
@@ -529,19 +528,16 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   */
 
   {
-    std::cout << "================== Train Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    inference->evaluate(context, trainProteins, evaluator);
+    inference->evaluate(context, trainProteins, evaluator, T("Evaluating on training data"));
     std::cout << evaluator->toString() << std::endl << std::endl;
 
-    std::cout << "================== Validation Evaluation ==================" << std::endl << std::endl;
     evaluator = new ProteinEvaluator();
-    inference->evaluate(context, validationProteins, evaluator);
+    inference->evaluate(context, validationProteins, evaluator, T("Evaluating on validation data"));
     std::cout << evaluator->toString() << std::endl << std::endl;
 
-    std::cout << "================== Test Evaluation ==================" << std::endl << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
-    inference->evaluate(context, testProteins, evaluator);
+    inference->evaluate(context, testProteins, evaluator, T("Evaluating on testing data"));
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
 

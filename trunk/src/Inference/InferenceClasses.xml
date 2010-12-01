@@ -67,7 +67,7 @@
 
     <!-- Work Unit -->
     <class name="InferenceWorkUnit" base="WorkUnit">
-      <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable&amp; output"/>
+      <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable* output"/>
       <variable type="Inference" name="inference"/>
       <variable type="Variable" name="input"/>
       <variable type="Variable" name="supervision"/>

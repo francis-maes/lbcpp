@@ -4,7 +4,9 @@
   <include file="lbcpp/Function/ObjectiveFunction.h"/>
 
   <namespace name="lbcpp">
-    <class name="Function" abstract="yes"/>
+    <class name="Function" abstract="yes">
+      <variable type="Boolean" name="pushIntoStack"/>
+    </class>
 
     <!-- Objective Function -->
     <class name="ObjectiveFunction" base="Function" abstract="yes"/>

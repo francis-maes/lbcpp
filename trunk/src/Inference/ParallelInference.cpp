@@ -24,11 +24,12 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
   
   if (context.isMultiThread() && useMultiThreading())
   {
-    WorkUnitVectorPtr workUnits(new WorkUnitVector(getName(), n));
-    String description = getDescription(context, input, supervision) + T(" ");
+    CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(getName(), n));
     for (size_t i = 0; i < n; ++i)
-      workUnits->setWorkUnit(i, inferenceWorkUnit(description + String((int)i + 1), state->getSubInference(i),
-        state->getSubInput(i), state->getSubSupervision(i), state->getSubOutput(i)));
+    {
+      String description = state->getSubInference(i)->getDescription(context, state->getSubInput(i), state->getSubSupervision(i));
+      workUnits->setWorkUnit(i, new InferenceWorkUnit(description, state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), &state->getSubOutput(i)));
+    }
     context.run(workUnits);
   }
   else
@@ -39,7 +40,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
       {
-        if (!subInference->run(context, state->getSubInput(i), state->getSubSupervision(i), subOutput))
+        if (!subInference->run(context, state->getSubInput(i), state->getSubSupervision(i), &subOutput))
         {
           context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
           return Variable(); 

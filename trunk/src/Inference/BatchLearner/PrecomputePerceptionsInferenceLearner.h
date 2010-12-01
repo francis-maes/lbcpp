@@ -52,7 +52,7 @@ public:
 
     if (context.isMultiThread())
     {
-      WorkUnitVectorPtr workUnits(new WorkUnitVector(T("Precompute Perceptions"), n));
+      CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Precompute perceptions"), n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new PrecomputePerceptionWorkUnit(perception, learnerInput->getExample(i), subLearnerInput, i));
       context.run(workUnits);

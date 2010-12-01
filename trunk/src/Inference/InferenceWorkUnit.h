@@ -15,34 +15,6 @@
 namespace lbcpp
 {
 
-class InferenceWorkUnit : public WorkUnit
-{
-public:
-  InferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output)
-    : WorkUnit(name), inference(inference), input(input), supervision(supervision), output(output)
-    {}
-
-  InferenceWorkUnit()
-    : output(*(Variable* )0)
-    {}
-
-  virtual String toShortString() const
-    {return getName();}
-
-  virtual String toString() const
-    {return getName();}
-
-  virtual bool run(ExecutionContext& context)
-    {return inference->run(context, input, supervision, output);}
-
-protected:
-  friend class InferenceWorkUnitClass;
-
-  InferencePtr inference;
-  Variable input;
-  Variable supervision;
-  Variable& output;
-};
 
 }; /* namespace lbcpp */
 

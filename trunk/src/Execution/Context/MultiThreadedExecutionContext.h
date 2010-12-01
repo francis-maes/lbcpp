@@ -36,7 +36,7 @@ public:
   };
 
   void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int& counterToDecrementWhenDone);
-  void push(const WorkUnitVectorPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter);
+  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter);
 
   Entry pop();
 
@@ -62,7 +62,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   entries[priority].push_back(Entry(workUnit, stack, counterToDecrementWhenDone));
 }
 
-void WaitingWorkUnitQueue::push(const WorkUnitVectorPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int& numRemainingWorkUnitsCounter)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
@@ -209,7 +209,7 @@ public:
   virtual bool run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
   
-  virtual bool run(const WorkUnitVectorPtr& workUnits)
+  virtual bool run(const CompositeWorkUnitPtr& workUnits)
   {
     preExecutionCallback(stack, workUnits);
     stack->push(workUnits);
@@ -292,7 +292,7 @@ public:
     return true;
   }
 
-  virtual bool run(const WorkUnitVectorPtr& workUnits)
+  virtual bool run(const CompositeWorkUnitPtr& workUnits)
   {
     preExecutionCallback(stack, workUnits);
     stack->push(workUnits);
