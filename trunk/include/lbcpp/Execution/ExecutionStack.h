@@ -10,7 +10,7 @@
 # define LBCPP_EXECUTION_FUNCTION_STACK_H_
 
 # include "predeclarations.h"
-# include "../Core/Function.h"
+# include "../Core/Variable.h"
 
 namespace lbcpp
 {
@@ -22,13 +22,13 @@ public:
     : parentStack(parentStack) {}
   ExecutionStack() {}
 
-  void push(const FunctionPtr& function);
+  void push(const ObjectPtr& object); // WorkUnitVector, WorkUnit, Function, Inference
   void pop();
   
   size_t getDepth() const;
-  const FunctionPtr& getFunction(int index) const;
-  const FunctionPtr& getCurrentFunction() const;
-  const FunctionPtr& getParentFunction() const;
+  const ObjectPtr& getElement(size_t depth) const;
+
+  FunctionPtr findParentFunction() const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -36,8 +36,8 @@ private:
   friend class ExecutionStackClass;
 
   ExecutionStackPtr parentStack;
-  std::vector<FunctionPtr> stack;
-  static FunctionPtr nullFunction;
+  std::vector<ObjectPtr> stack;
+  static ObjectPtr nullObject;
 };
 
 }; /* namespace lbcpp */

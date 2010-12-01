@@ -10,7 +10,10 @@
 # define LBCPP_EXECUTION_CALLBACK_NOTIFICATIONS_H_
 
 # include <lbcpp/Execution/ExecutionCallback.h>
+# include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Execution/Notification.h>
+# include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Inference/Inference.h>
 
 namespace lbcpp
 {
@@ -102,98 +105,104 @@ protected:
   String where;
 };
 
-class WorkUnitExecutionWorkUnitNotification : public ExecutionNotification
+class PreExecutionNotification : public ExecutionNotification
 {
 public:
-  WorkUnitExecutionWorkUnitNotification(const WorkUnitPtr& workUnit, bool isPostExecution, bool executionResult = false)
-    : workUnit(workUnit), isPostExecution(isPostExecution), executionResult(executionResult) {}
-  WorkUnitExecutionWorkUnitNotification() {}
+  PreExecutionNotification(const ExecutionStackPtr& stack, const ObjectPtr& object, const Variable& input = Variable(), const Variable& supervision = Variable())
+    : stack(stack->cloneAndCast<ExecutionStack>()), object(object), input(input), supervision(supervision) {}
+  PreExecutionNotification() {}
 
   virtual void notify(const ExecutionCallbackPtr& target)
   {
-    if (isPostExecution)
-      target->postExecutionCallback(workUnit, executionResult);
-    else
-      target->preExecutionCallback(workUnit);
+    WorkUnitVectorPtr workUnitVector = object.dynamicCast<WorkUnitVector>();
+    if (workUnitVector)
+    {
+      target->preExecutionCallback(stack, workUnitVector);
+      return;
+    }
+
+    WorkUnitPtr workUnit = object.dynamicCast<WorkUnit>();
+    if (workUnit)
+    {
+      target->preExecutionCallback(stack, workUnit);
+      return;
+    }
+
+    InferencePtr inference = object.dynamicCast<Inference>();
+    if (inference)
+    {
+      target->preExecutionCallback(stack, inference, input, supervision);
+      return;
+    }
+
+    FunctionPtr function = object.dynamicCast<Function>();
+    if (function)
+    {
+      target->preExecutionCallback(stack, function, input);
+      return;
+    }
+    jassert(false);
   }
 
-protected:
-  friend class WorkUnitExecutionWorkUnitNotificationClass;
-
-  WorkUnitPtr workUnit;
-  bool isPostExecution;
-  bool executionResult;
-};
-
-class WorkUnitsExecutionWorkUnitNotification : public ExecutionNotification
-{
-public:
-  WorkUnitsExecutionWorkUnitNotification(const WorkUnitVectorPtr& workUnits, bool isPostExecution, bool executionResult = false)
-    : workUnits(workUnits), isPostExecution(isPostExecution), executionResult(executionResult) {}
-  WorkUnitsExecutionWorkUnitNotification() {}
-
-  virtual void notify(const ExecutionCallbackPtr& target)
-  {
-    if (isPostExecution)
-      target->postExecutionCallback(workUnits, executionResult);
-    else
-      target->preExecutionCallback(workUnits);
-  }
+  lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class WorkUnitsExecutionWorkUnitNotificationClass;
+  friend class PreExecutionNotificationClass;
 
-  WorkUnitVectorPtr workUnits;
-  bool isPostExecution;
-  bool executionResult;
-};
-
-class FunctionExecutionWorkUnitNotification : public ExecutionNotification
-{
-public:
-  FunctionExecutionWorkUnitNotification(const FunctionPtr& function, const Variable& input, bool isPostExecution, const Variable& output = Variable())
-    : function(function), input(input), isPostExecution(isPostExecution), output(output) {}
-  FunctionExecutionWorkUnitNotification() {}
-
-  virtual void notify(const ExecutionCallbackPtr& target)
-  {
-    if (isPostExecution)
-      target->postExecutionCallback(function, input, output);
-    else
-      target->preExecutionCallback(function, input);
-  }
-
-protected:
-  friend class FunctionExecutionWorkUnitNotificationClass;
-
-  FunctionPtr function;
-  Variable input;
-  bool isPostExecution;
-  Variable output;
-};
-
-class InferenceExecutionWorkUnitNotification : public ExecutionNotification
-{
-public:
-  InferenceExecutionWorkUnitNotification(const InferencePtr& inference, const Variable& input, const Variable& supervision, bool isPostExecution, const Variable& output = Variable())
-    : inference(inference), input(input), supervision(supervision), isPostExecution(isPostExecution), output(output) {}
-  InferenceExecutionWorkUnitNotification () {}
-
-  virtual void notify(const ExecutionCallbackPtr& target)
-  {
-    if (isPostExecution)
-      target->postExecutionCallback(inference, input, supervision, output);
-    else
-      target->preExecutionCallback(inference, input, supervision);
-  }
-
-protected:
-  friend class InferenceExecutionWorkUnitNotificationClass;
-
-  InferencePtr inference;
+  ExecutionStackPtr stack;
+  ObjectPtr object;
   Variable input;
   Variable supervision;
-  bool isPostExecution;
+};
+
+class PostExecutionNotification : public ExecutionNotification
+{
+public:
+  PostExecutionNotification(const ExecutionStackPtr& stack, const ObjectPtr& object, const Variable& output, const Variable& input = Variable(), const Variable& supervision = Variable())
+    : stack(stack->cloneAndCast<ExecutionStack>()), object(object), input(input), supervision(supervision), output(output) {}
+  PostExecutionNotification() {}
+
+  virtual void notify(const ExecutionCallbackPtr& target)
+  {
+    WorkUnitVectorPtr workUnitVector = object.dynamicCast<WorkUnitVector>();
+    if (workUnitVector)
+    {
+      target->postExecutionCallback(stack, workUnitVector, output.getBoolean());
+      return;
+    }
+
+    WorkUnitPtr workUnit = object.dynamicCast<WorkUnit>();
+    if (workUnit)
+    {
+      target->postExecutionCallback(stack, workUnit, output.getBoolean());
+      return;
+    }
+
+    InferencePtr inference = object.dynamicCast<Inference>();
+    if (inference)
+    {
+      target->postExecutionCallback(stack, inference, input, supervision, output);
+      return;
+    }
+
+    FunctionPtr function = object.dynamicCast<Function>();
+    if (function)
+    {
+      target->postExecutionCallback(stack, function, input, output);
+      return;
+    }
+    jassert(false);
+  }
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class PostExecutionNotificationClass;
+
+  ExecutionStackPtr stack;
+  ObjectPtr object;
+  Variable input;
+  Variable supervision;
   Variable output;
 };
 

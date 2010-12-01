@@ -23,7 +23,7 @@ public:
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
-  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
   {
     if (inference == this->inference && output.exists() && supervision.exists())
     {

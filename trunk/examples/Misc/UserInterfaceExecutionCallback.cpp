@@ -12,7 +12,8 @@ using namespace lbcpp;
 class MySubWorkUnit : public WorkUnit
 {
 public:
-  MySubWorkUnit() : WorkUnit(T("My Sub Work")) {}
+  MySubWorkUnit(const String& name)
+    : WorkUnit(name) {}
  
   virtual bool run(ExecutionContext& context)
   {
@@ -51,7 +52,7 @@ public:
 
     WorkUnitVectorPtr subWorkUnits(new WorkUnitVector(T("My 5 Sub Work Units"), 5));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-      subWorkUnits->setWorkUnit(i, new MySubWorkUnit());
+      subWorkUnits->setWorkUnit(i, new MySubWorkUnit(T("SubWU ") + String((int)i)));
     context.run(subWorkUnits);
 
     context.informationCallback(T("Finished."));
@@ -61,7 +62,7 @@ public:
 
 ExecutionContextPtr createExecutionContext()
 {
-  ExecutionContextPtr res = singleThreadedExecutionContext();
+  ExecutionContextPtr res = multiThreadedExecutionContext(2);
   res->appendCallback(userInterfaceExecutionCallback());
   res->appendCallback(consoleExecutionCallback());
   return res;

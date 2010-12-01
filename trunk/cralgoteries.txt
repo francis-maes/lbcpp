@@ -1,11 +1,10 @@
+* Multi-threaded creation of the ExecutionTraceTreeView
+* More GUI for the SandBox
+* AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 
 Boinc:
  * New class BoincExecutionContext
  * Fix bugs reported by Arnaud
-
-AutoTune:
- * Optimizers, ...
- * Partir du DichotomicOptimizer de julien
  
 From Julien:
  * Commande mainFunction="true" pour generer un fichier .cpp qui contient le Main ?

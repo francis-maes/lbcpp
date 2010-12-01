@@ -44,7 +44,7 @@ protected:
   {
     Callback(InferencePtr targetInference) : targetInference(targetInference) {}
 
-    virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+    virtual void postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
     {
       ExecutionContext& context = getContext();
       const InferenceOnlineLearnerPtr& onlineLearner = inference->getOnlineLearner();
@@ -55,14 +55,18 @@ protected:
       onlineLearner->stepFinishedCallback(context, inference, input, supervision, output);
 
       // call subStepFinishedCallback
-      for (int i = (int)context.getStackDepth() - 2; i >= 0; --i)
+      for (int i = (int)stack->getDepth() - 1; i >= 0; --i)
       {
-        const InferencePtr& parentInference = context.getStack()->getFunction(i);
-        const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
-        if (parentLearner && !parentLearner->isLearningStopped())
-          parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);
-        if (parentInference == targetInference)
-          break;
+        const ObjectPtr& stackElement = stack->getElement(i);
+        InferencePtr parentInference = stackElement.dynamicCast<Inference>();
+        if (parentInference)
+        {
+          const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
+          if (parentLearner && !parentLearner->isLearningStopped())
+            parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);
+          if (parentInference == targetInference)
+            break;
+        }
       }
     }
 

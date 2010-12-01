@@ -111,12 +111,11 @@ bool Inference::run(ExecutionContext& context, const Variable& input, const Vari
   jassert(!input.isNil());
   InferencePtr pthis = refCountedPointerFromThis(this);
 
+  context.preExecutionCallback(context.getStack(), pthis, input, supervision);
   context.getStack()->push(pthis);
-  context.preExecutionCallback(pthis, input, supervision);
   Variable output = computeInference(context, input, supervision);
-  context.postExecutionCallback(pthis, input, supervision, output);
   context.getStack()->pop();
-
+  context.postExecutionCallback(context.getStack(), pthis, input, supervision, output);
   if (&out)
     out = output;
   return true;

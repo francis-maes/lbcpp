@@ -18,11 +18,11 @@ using namespace lbcpp;
 void ExecutionCallback::notificationCallback(const NotificationPtr& notification)
   {notification->notify(refCountedPointerFromThis(this));}
 
-void ExecutionCallback::preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision)
-  {preExecutionCallback(inference, input);}
+void ExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision)
+  {preExecutionCallback(stack, inference, input);}
 
-void ExecutionCallback::postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
-  {postExecutionCallback(inference, input, output);}
+void ExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+  {postExecutionCallback(stack, inference, input, output);}
 
 /*
 ** CompositeExecutionCallback
@@ -51,29 +51,29 @@ void CompositeExecutionCallback::progressCallback(double progression, double pro
 void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}
 
-void CompositeExecutionCallback::preExecutionCallback(const WorkUnitVectorPtr& workUnits)
-  {notificationCallback(new WorkUnitsExecutionWorkUnitNotification(workUnits, false));}
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits)
+  {notificationCallback(new PreExecutionNotification(stack, workUnits));}
 
-void CompositeExecutionCallback::postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result)
-  {notificationCallback(new WorkUnitsExecutionWorkUnitNotification(workUnits, true, result));}
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits, bool result)
+  {notificationCallback(new PostExecutionNotification(stack, workUnits, result));}
 
-void CompositeExecutionCallback::preExecutionCallback(const WorkUnitPtr& workUnit)
-  {notificationCallback(new WorkUnitExecutionWorkUnitNotification(workUnit, false));}
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
+  {notificationCallback(new PreExecutionNotification(stack, workUnit));}
 
-void CompositeExecutionCallback::postExecutionCallback(const WorkUnitPtr& workUnit, bool result)
-  {notificationCallback(new WorkUnitExecutionWorkUnitNotification(workUnit, true, result));}
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+  {notificationCallback(new PostExecutionNotification(stack, workUnit, result));}
 
-void CompositeExecutionCallback::preExecutionCallback(const FunctionPtr& function, const Variable& input)
-  {notificationCallback(new FunctionExecutionWorkUnitNotification(function, input, false));}
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
+  {notificationCallback(new PreExecutionNotification(stack, function, input));}
 
-void CompositeExecutionCallback::postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
-  {notificationCallback(new FunctionExecutionWorkUnitNotification(function, input, true, output));}
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
+  {notificationCallback(new PostExecutionNotification(stack, function, output, input));}
 
-void CompositeExecutionCallback::preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision)
-  {notificationCallback(new InferenceExecutionWorkUnitNotification(inference, input, supervision, false));}
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision)
+  {notificationCallback(new PreExecutionNotification(stack, inference, input, supervision));}
 
-void CompositeExecutionCallback::postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
-  {notificationCallback(new InferenceExecutionWorkUnitNotification(inference, input, supervision, true, output));}
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output)
+  {notificationCallback(new PostExecutionNotification(stack, inference, output, input, supervision));}
 
 void CompositeExecutionCallback::appendCallback(const ExecutionCallbackPtr& callback)
 {

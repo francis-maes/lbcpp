@@ -9,6 +9,8 @@
 #ifndef LBCPP_EXECUTION_PREDECLARATIONS_H_
 # define LBCPP_EXECUTION_PREDECLARATIONS_H_
 
+# include "../Core/predeclarations.h"
+
 namespace lbcpp
 {
 

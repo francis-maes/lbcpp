@@ -201,37 +201,35 @@ public:
 class StackPrinterCallback : public ExecutionCallback
 {
 public:
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
   {
     ExecutionContext& context = getContext();
 
     ScopedLock _(lock);
-    const FunctionPtr& currentInference = context.getCurrentFunction();
-    if (context.getStackDepth() > 4
-        || currentInference->getClassName() == T("BinaryLinearSVMInference")
-        || currentInference->getClassName() == T("OneAgainstAllClassificationInference"))
+    if (stack->getDepth() > 3
+        || function->getClassName() == T("BinaryLinearSVMInference")
+        || function->getClassName() == T("OneAgainstAllClassificationInference"))
       return;
     String line(T("#"));
-    for (size_t i = 1; i < context.getStackDepth(); ++i)
+    for (size_t i = 0; i < stack->getDepth(); ++i)
       line += T("    ");
-    line += currentInference->getClassName() + T(" -> ") + currentInference->getName();
+    line += function->getClassName() + T(" -> ") + function->getName();
     context.informationCallback(line);
   }
   
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     return;
     ExecutionContext& context = getContext();
     ScopedLock _(lock);
-    const FunctionPtr& currentInference = context.getCurrentFunction();
-    if (context.getStackDepth() > 2
-        || currentInference->getClassName() == T("BinaryLinearSVMInference")
-        || currentInference->getClassName() == T("OneAgainstAllClassificationInference"))
+    if (stack->getDepth() > 1
+        || function->getClassName() == T("BinaryLinearSVMInference")
+        || function->getClassName() == T("OneAgainstAllClassificationInference"))
       return;
     String line = T("END ");
-    for (size_t i = 0; i < context.getStackDepth() - 1; ++i)
+    for (size_t i = 0; i < stack->getDepth(); ++i)
       line += T("    ");
-    line += currentInference->getClassName() + T(" -> ") + currentInference->getName() + T("\n");
+    line += function->getClassName() + T(" -> ") + function->getName() + T("\n");
     context.informationCallback(line);
   }
   
@@ -259,10 +257,10 @@ public:
     }
   }
   
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
   {
     ExecutionContext& context = getContext();
-    if (context.getStackDepth() == 1)
+    if (stack->getDepth() == 1) // FIXME: this test probably do not work anymore
     {
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
@@ -287,13 +285,13 @@ public:
     }
   }
   
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     ExecutionContext& context = getContext();
-    FunctionPtr currentInference = context.getCurrentFunction();
 
-    if (context.getStackDepth() == 2 && (currentInference->getClassName() == T("StaticParallelInferenceLearner")
-                                   || currentInference->getClassName() == T("MultiPassInferenceLearner")))
+    // FIXME: probably broken test
+    if (stack->getDepth() == 2 && (function->getClassName() == T("StaticParallelInferenceLearner")
+                                   || function->getClassName() == T("MultiPassInferenceLearner")))
     {
       context.informationCallback(T("===================== EVALUATION ====================="));
 
@@ -376,7 +374,7 @@ public:
       ++passNumber;
     }
 
-    if (context.getStackDepth() == 1)
+    if (stack->getDepth() == 1)
     {
       context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }

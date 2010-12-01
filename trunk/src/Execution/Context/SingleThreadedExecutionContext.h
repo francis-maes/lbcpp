@@ -30,11 +30,13 @@ public:
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
     bool res = true;
-    preExecutionCallback(workUnits);
+    preExecutionCallback(stack, workUnits);
+    stack->push(workUnits);
     size_t n = workUnits->getNumWorkUnits();
     for (size_t i = 0; i < n; ++i)
       res &= ExecutionContext::run(workUnits->getWorkUnit(i));
-    postExecutionCallback(workUnits, res);
+    stack->pop();
+    postExecutionCallback(stack, workUnits, res);
     return res;
   }
 
