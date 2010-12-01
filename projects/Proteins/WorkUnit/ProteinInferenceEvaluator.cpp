@@ -7,8 +7,9 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/lbcpp.h>
-
+#include "ProteinInferenceEvaluatorWorkUnit.h"
 #include "Inference/ProteinInference.h"
+
 using namespace lbcpp;
 
 extern void declareProteinClasses(ExecutionContext& context);
@@ -46,8 +47,9 @@ public:
   SaveOutputInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+#if 0
     if (stack->getDepth() == 2)
     {
       ObjectPtr object = output.getObject();
@@ -55,6 +57,7 @@ public:
       std::cout << "Save " << f.getFileName() << "." << std::endl;
       object->saveToFile(context, f);
     }
+#endif
   }
 
 private:
@@ -68,8 +71,9 @@ public:
   SaveProteinPairInferenceCallback(const File& directory, const String& extension)
     : directory(directory), extension(extension) {}
 
-  virtual void postInferenceCallback(InferenceContext& context, const InferenceStackPtr& stack, const Variable& input, const Variable& supervision, Variable& output, ReturnCode& returnCode)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+#if 0
     if (stack->getDepth() == 2)
     {
       ObjectPtr object = output.getObject();
@@ -87,6 +91,7 @@ public:
 
       Variable::pair(inputProtein, supervision).saveToFile(context, f);
     }
+#endif
   }
 
 private:
@@ -97,15 +102,18 @@ private:
 class PrintDotForEachExampleInferenceCallback : public ExecutionCallback
 {
 public:
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
+#if 0
     if (getContext().getStackDepth() == 1)
       std::cout << "." << std::flush;
+#endif
   }
 };
 
 int main(int argc, char** argv)
 {
+#if 0
   lbcpp::initialize(argv[0]);
   InferenceContextPtr context = singleThreadedInferenceContext();
   declareProteinClasses(*context);
@@ -211,5 +219,6 @@ int main(int argc, char** argv)
     std::cerr << "Unrecognized mode: " << mode.quoted() << std::endl;
     return 1;
   }
+#endif
   return 0;
 }

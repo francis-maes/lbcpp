@@ -1,6 +1,6 @@
 
 #include <lbcpp/lbcpp.h>
-#include "Programs/ProgramDeclarations.h"
+#include "SnowBox.h"
 #include "Inference/ProteinInference.h"
 #include "Evaluator/ProteinEvaluator.h"
 

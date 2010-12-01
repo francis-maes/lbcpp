@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Program" directory="Programs">
+<file name="WorkUnit" directory="WorkUnit">
   <namespace name="lbcpp">
-
-    <class name="HelloWorldProgram" base="WorkUnit">
-      <variable type="Integer" name="myInt" desc="An arbitrary integer !" shortName="i"/>
-    </class>
     
     <class name="SaveObjectProgram" base="WorkUnit">
       <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
@@ -61,9 +57,6 @@
       <variable type="File" name="dsspFile" description="DSSP file" shortName="dssp"/>
       <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
     </class>
-
-    <class name="DumbOptimizerProgram" base="WorkUnit"/>
-    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
   </namespace>
 
   <declarationCode>
