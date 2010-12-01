@@ -6,24 +6,6 @@
 
 namespace lbcpp {
 
-class HelloWorldProgram : public WorkUnit
-{
-public:
-  HelloWorldProgram()
-    {myInt = 4;}
-  
-  virtual String toString() const
-    {return T("It's just a test program ! Don't worry about it !");}
-  
-  virtual bool run(ExecutionContext& context)
-    {std::cout << "Hello World : " << myInt << std::endl; return true;}
-
-protected:
-  friend class HelloWorldProgramClass;
-  
-  int myInt;
-};
-  
 class SaveObjectProgram : public WorkUnit
 {
   virtual String toString() const

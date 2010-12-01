@@ -7,7 +7,7 @@ GENERATE_INTROSPECTION_CODE(Geometry/GeometryClasses.xml GeometryClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Programs/ProgramClasses.xml ProgramClasses.cpp)
+GENERATE_INTROSPECTION_CODE(WorkUnit/WorkUnitClasses.xml WorkUnitClasses.cpp)
 GENERATE_INTROSPECTION_CODE(ProteinClasses.xml ProteinClasses.cpp)
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
@@ -87,6 +87,22 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/ProteinEvaluator.h
 )
 
+SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
+  WorkUnit/CaspPDBtoValidPDBWorkUnit.cpp
+  WorkUnit/CaspPDBtoValidPDBWorkUnit.h
+  WorkUnit/CompileProteinsWorkUnit.cpp
+  WorkUnit/CompileProteinsWorkUnit.h
+  WorkUnit/ConvertPDBToProteinWorkUnit.cpp
+  WorkUnit/ConvertPDBToProteinWorkUnit.h
+  WorkUnit/ProteinInferenceEvaluator.cpp
+  WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
+  WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
+  WorkUnit/SnowBox.cpp
+  WorkUnit/SnowBox.h
+  WorkUnit/WorkUnitClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitClasses.cpp
+)
+
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}
   ${LBCPP_PROTEIN_DATA_SOURCES}
@@ -94,6 +110,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_PERCEPTION_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
+  ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
   
   ProteinClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
@@ -113,6 +130,7 @@ SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
 SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
 SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
+SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
 
 ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
@@ -124,24 +142,12 @@ ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
 
 ADD_EXECUTABLE(RunProgram
   Programs/RunProgram.cpp
-  Programs/ProgramDeclarations.h
-  Programs/SmartBox.cpp
   Programs/DichotomicOptimizer.h
-  Programs/ProteinInferenceEvaluatorWorkUnit.h
-  Programs/ProteinInferenceEvaluatorWorkUnit.cpp
-  Programs/CaspPDBtoValidPDBWorkUnit.h
-  Programs/CaspPDBtoValidPDBWorkUnit.cpp
-  Programs/CompileProteinsWorkUnit.h
-  Programs/CompileProteinsWorkUnit.cpp
-  Programs/ConvertPDBToProteinWorkUnit.h
-  Programs/ConvertPDBToProteinWorkUnit.cpp
   Programs/NetworkClient.h
   Programs/NetworkClient.cpp
   Programs/NetworkCallback.h
   Programs/NetworkServer.h
   Programs/NetworkServer.cpp
-  Programs/ProgramClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )
 TARGET_LINK_LIBRARIES(RunProgram proteins)
 
