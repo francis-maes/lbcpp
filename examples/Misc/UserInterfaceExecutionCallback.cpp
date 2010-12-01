@@ -37,7 +37,7 @@ public:
   {
     context.statusCallback(T("Working..."));
 
-    context.errorCallback(T("My Error"));
+//    context.errorCallback(T("My Error"));
     Thread::sleep(100);
     context.warningCallback(T("My Warning"));
     Thread::sleep(500);
