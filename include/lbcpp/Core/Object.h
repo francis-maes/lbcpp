@@ -96,6 +96,10 @@ public:
     return res.staticCast<Type>();
   }
 
+  template<class Type>
+  ReferenceCountedObjectPtr<Type> cloneAndCast() const
+    {ObjectPtr res = clone(*silentExecutionContext); return res.staticCast<Type>();}
+
   /*
   ** Compare
   */

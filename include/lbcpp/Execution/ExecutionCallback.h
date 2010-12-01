@@ -9,9 +9,8 @@
 #ifndef LBCPP_EXECUTION_CALLBACK_H_
 # define LBCPP_EXECUTION_CALLBACK_H_
 
-# include "../Core/Object.h"
-# include "../Data/Consumer.h"
 # include "predeclarations.h"
+# include "../Core/Object.h"
 
 namespace lbcpp
 {
@@ -52,17 +51,17 @@ public:
   /*
   ** Execution
   */
-  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits) {}
-  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result) {}
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits, bool result) {}
 
-  virtual void preExecutionCallback(const WorkUnitPtr& workUnit) {}
-  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result) {}
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result) {}
 
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input) {}
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output) {}
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output) {}
 
-  virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision);
-  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
 
   /*
   ** Results
@@ -106,14 +105,14 @@ public:
   virtual void statusCallback(const String& status);
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
 
-  virtual void preExecutionCallback(const WorkUnitVectorPtr& workUnits);
-  virtual void postExecutionCallback(const WorkUnitVectorPtr& workUnits, bool result);
-  virtual void preExecutionCallback(const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const WorkUnitPtr& workUnit, bool result);
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input);
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output);
-  virtual void preExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision);
-  virtual void postExecutionCallback(const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitVectorPtr& workUnits, bool result);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output);
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& output);
 
   virtual void resultCallback(const String& name, const Variable& value);
 

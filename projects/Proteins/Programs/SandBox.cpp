@@ -312,10 +312,10 @@ public:
   MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData) {}
 
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
   {
     ExecutionContext& context = getContext();
-    if (context.getStackDepth() == 1)
+    if (stack->getDepth() == 1) // FIXME: test probably broken
     {
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
@@ -337,10 +337,10 @@ public:
     }
   }
 
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     ExecutionContext& context = getContext();
-    String inferenceName = context.getCurrentFunction()->getName();
+    String inferenceName = function->getName();
 
     //if (stack->getDepth() == 1) // 
     //if (context.getCurrentFunction()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
@@ -378,7 +378,7 @@ public:
       //context.informationCallback(T("====================================================="));
     }
     
-    if (context.getStackDepth() == 1)
+    if (stack->getDepth() == 1)
     {
       context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }
@@ -406,7 +406,7 @@ public:
   VectorPtr loadProteins(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory)
   {
   #ifdef JUCE_DEBUG
-    size_t maxCount = 7;
+    size_t maxCount = 100;
   #else
     size_t maxCount = 500;
   #endif // JUCE_DEBUG
@@ -440,6 +440,9 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   std::cout << trainProteins->getNumElements() << " training proteins, "
             << validationProteins->getNumElements() << " validation proteins "
             << testProteins->getNumElements() << " testing proteins" << std::endl;
+
+  return true;
+
   //ProteinInferenceFactoryPtr factory = new ExtraTreeProteinInferenceFactory(context);
   ProteinInferenceFactoryPtr factory = new NumericalProteinInferenceFactory(context);
 
@@ -592,13 +595,14 @@ int main(int argc, char** argv)
 
   int exitCode;
   {
-    ExecutionContextPtr context = singleThreadedExecutionContext();
+    ExecutionContextPtr context = multiThreadedExecutionContext(8);
     context->appendCallback(consoleExecutionCallback());
     context->appendCallback(userInterfaceExecutionCallback());
     context->declareType(TypePtr(new DefaultClass(T("EvaluateOnlineLearnerObjectiveFunction"), T("ObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("EvaluateLearningRateObjectiveFunction"), T("EvaluateOnlineLearnerObjectiveFunction"))));
     context->declareType(TypePtr(new DefaultClass(T("AlaRacheOptimizer"), T("Inference"))));
     context->declareType(TypePtr(new DefaultClass(T("OptimizerInferenceLearner"), T("Inference"))));
+    context->declareType(TypePtr(new DefaultClass(T("SandBoxWorkUnit"), T("WorkUnit"))));
 
     declareProteinClasses(*context);
     WorkUnitPtr workUnit(new SandBoxWorkUnit());

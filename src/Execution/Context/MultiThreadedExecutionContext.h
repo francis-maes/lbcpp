@@ -211,11 +211,13 @@ public:
   
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    preExecutionCallback(workUnits);
+    preExecutionCallback(stack, workUnits);
+    stack->push(workUnits);
     int numRemainingWorkUnits;
     thread->getWaitingQueue()->push(workUnits, getStack()->cloneAndCast<ExecutionStack>(*this), numRemainingWorkUnits);
     thread->workUntilWorkUnitsAreDone(numRemainingWorkUnits);
-    postExecutionCallback(workUnits, true); // FIXME: result is not implemented
+    stack->pop();
+    postExecutionCallback(stack, workUnits, true); // FIXME: result is not implemented
     return true;
   }
 
@@ -292,11 +294,13 @@ public:
 
   virtual bool run(const WorkUnitVectorPtr& workUnits)
   {
-    preExecutionCallback(workUnits);
+    preExecutionCallback(stack, workUnits);
+    stack->push(workUnits);
     int numRemainingWorkUnits;
     threadPool->getWaitingQueue()->push(workUnits, getStack()->cloneAndCast<ExecutionStack>(*this), numRemainingWorkUnits);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
-    postExecutionCallback(workUnits, true); // FIXME: result is not implemented
+    stack->pop();
+    postExecutionCallback(stack, workUnits, true); // FIXME: result is not implemented
     return true;
   }
 

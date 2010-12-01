@@ -41,20 +41,13 @@ TypePtr ExecutionContext::getType(const String& name, const std::vector<TypePtr>
 bool ExecutionContext::doTypeExists(const String& typeName)
   {return typeManager().doTypeExists(typeName);}
 
-size_t ExecutionContext::getStackDepth() const
-  {return stack->getDepth();}
-
-const FunctionPtr& ExecutionContext::getCurrentFunction() const
-  {return stack->getCurrentFunction();}
-
-const FunctionPtr& ExecutionContext::getParentFunction() const
-  {return stack->getParentFunction();}
-
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
-  preExecutionCallback(workUnit);
+  preExecutionCallback(stack, workUnit);
+  stack->push(workUnit);
   bool res = workUnit->run(*this);
-  postExecutionCallback(workUnit, res);
+  stack->pop();
+  postExecutionCallback(stack, workUnit, res);
   return res;
 }
 
@@ -98,15 +91,15 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 /*
 ** ExecutionStack
 */
-FunctionPtr ExecutionStack::nullFunction;
+ObjectPtr ExecutionStack::nullObject;
 
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
-void ExecutionStack::push(const FunctionPtr& function)
+void ExecutionStack::push(const ObjectPtr& object)
 {
-  jassert(function);
-  stack.push_back(function);
+  jassert(object);
+  stack.push_back(object);
 }
 
 void ExecutionStack::pop()
@@ -115,32 +108,26 @@ void ExecutionStack::pop()
   stack.pop_back();
 }
 
-const FunctionPtr& ExecutionStack::getFunction(int index) const
+FunctionPtr ExecutionStack::findParentFunction() const
 {
-  if (index < 0)
-    return nullFunction;
-  if (parentStack)
+  for (int i = (int)stack.size() - 1; i >= 0; --i)
   {
-    size_t pd = parentStack->getDepth();
-    if (index < (int)pd)
-      return parentStack->getFunction(index);
-    index -= (int)pd;
+    FunctionPtr res = stack[i].dynamicCast<Function>();
+    if (res)
+      return res;
   }
-  return index < (int)stack.size() ? stack[index] : nullFunction;
+  return FunctionPtr();
 }
 
-const FunctionPtr& ExecutionStack::getCurrentFunction() const
+const ObjectPtr& ExecutionStack::getElement(size_t depth) const
 {
-  if (stack.size())
-    return stack.back();
-  else if (parentStack)
-    return parentStack->getCurrentFunction();
-  else
-    return nullFunction;
+  size_t parentDepth = parentStack ? parentStack->getDepth() : 0;
+  if (depth < parentDepth)
+    return parentStack->getElement(depth);
+  depth -= parentDepth;
+  jassert(depth < stack.size());
+  return stack[depth];
 }
-
-const FunctionPtr& ExecutionStack::getParentFunction() const
-  {return getFunction((int)getDepth() - 2);}
 
 /*
 ** Execution Context constructor functions

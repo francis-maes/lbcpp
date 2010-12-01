@@ -41,31 +41,21 @@
       <variable type="String" name="where"/>
     </class>
 
-    <class name="WorkUnitsExecutionWorkUnitNotification" base="ExecutionNotification">
-      <variable type="WorkUnitVector" name="workUnits"/>
-      <variable type="Boolean" name="isPostExecution"/>
-      <variable type="Boolean" name="executionResult"/>
-    </class>
-    
-    <class name="WorkUnitExecutionWorkUnitNotification" base="ExecutionNotification">
-      <variable type="WorkUnit" name="workUnit"/>
-      <variable type="Boolean" name="isPostExecution"/>
-      <variable type="Boolean" name="executionResult"/>
-    </class>
-
-    <class name="FunctionExecutionWorkUnitNotification" base="ExecutionNotification">
-      <variable type="Variable" name="input"/>
-      <variable type="Boolean" name="isPostExecution"/>
-      <variable type="Variable" name="output"/>
-    </class>
-
-    <class name="InferenceExecutionWorkUnitNotification" base="ExecutionNotification">
+    <class name="PreExecutionNotification" base="ExecutionNotification">
+      <variable type="ExecutionStack" name="stack"/>
+      <variable type="Object" name="object"/>
       <variable type="Variable" name="input"/>
       <variable type="Variable" name="supervision"/>
-      <variable type="Boolean" name="isPostExecution"/>
+    </class>
+
+    <class name="PostExecutionNotification" base="ExecutionNotification">
+      <variable type="ExecutionStack" name="stack"/>
+      <variable type="Object" name="object"/>
+      <variable type="Variable" name="input"/>
+      <variable type="Variable" name="supervision"/>
       <variable type="Variable" name="output"/>
     </class>
-   
+
   </namespace>
 
 </file>

@@ -375,7 +375,7 @@ protected:
     virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
     {
       ExecutionContext& context = getContext();
-      String inferenceName = context.getCurrentFunction()->getName();
+      String inferenceName = function->getName();
       if (inferenceName.startsWith(T("LearningPass")))
       {
         ++counter;

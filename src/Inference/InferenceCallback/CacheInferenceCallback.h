@@ -23,20 +23,19 @@ public:
     : cache(cache), parentStep(parentStep) {}
   CacheInferenceCallback() {}
 
-  virtual void preExecutionCallback(const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
   {
     jassert(false); // broken
-    //if (!output.exists() && context.getParentFunction() == parentStep)
+    //if (!output.exists() && context.findParentFunction() == parentStep)
     //  output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
   }
 
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
-    ExecutionContext& context = getContext();
-    if (context.getParentFunction() == parentStep)
+    if (stack->findParentFunction() == parentStep)
     {
-      cache->add(context.getCurrentFunction(), input.getObject(), output.getObject());
-      jassert(cache->get(context.getCurrentFunction(), input.getObject()));
+      cache->add(function, input.getObject(), output.getObject());
+      jassert(cache->get(function, input.getObject()));
     }
   }
 

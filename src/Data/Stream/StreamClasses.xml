@@ -27,7 +27,7 @@
       <variable type="Stream[Variable]" name="stream"/>
       <variable type="Function" name="function"/>
     </template>
-    
+
     <!-- Consumer -->
     <class name="SaveToFileConsumer" base="Consumer">
       <constructor arguments="const File&amp; outputDirectory"/>

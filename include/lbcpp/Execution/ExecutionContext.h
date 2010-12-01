@@ -61,10 +61,6 @@ public:
   void setStack(const ExecutionStackPtr& stack)
     {this->stack = stack;}
 
-  size_t getStackDepth() const;
-  const FunctionPtr& getCurrentFunction() const;
-  const FunctionPtr& getParentFunction() const;
-
   /*
   ** Work Units
   */

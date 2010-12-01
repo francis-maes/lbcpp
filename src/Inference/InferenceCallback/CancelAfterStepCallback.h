@@ -22,7 +22,7 @@ public:
     : stepName(step->getName()) {}
   CancelAfterStepCallback() {}
 
-  virtual void postExecutionCallback(const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
   {
     jassert(false); // not implemented anymore
     //if (stack->getCurrentInference()->getName() == stepName)
