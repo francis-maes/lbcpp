@@ -9,9 +9,16 @@ extern void declareGlopClasses(ExecutionContext& context);
 class MyInferenceCallback : public ExecutionCallback
 {
 public:
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
   {
     ExecutionContext& context = getContext();
+
+    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+    if (!inferenceWorkUnit)
+      return;
+
+    const Variable& input = inferenceWorkUnit->getInput();
+
     if (input.size() == 2 && input[0].getType()->inheritsFrom(inferenceClass))
     {
       TypePtr trainingExamplesType = input[1].getObjectAndCast<Container>()->getElementsType();
@@ -23,7 +30,7 @@ public:
     }
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
   }
 };

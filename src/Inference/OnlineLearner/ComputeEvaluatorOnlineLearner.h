@@ -29,7 +29,10 @@ public:
   {
     EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>(context);
     InferenceExampleVectorPtr examples = computeOnValidationData ? batchLearnerInput->getValidationExamples() : batchLearnerInput->getTrainingExamples();
-    inference->evaluate(context, examples, eval);
+    String workUnitName(T("Evaluate on "));
+    workUnitName += (computeOnValidationData ? T("validation") : T("training"));
+    workUnitName += T(" data");
+    inference->evaluate(context, examples, eval, workUnitName);
     lastScores.clear();
     eval->getScores(lastScores);
     lastDefaultScore = eval->getDefaultScore();

@@ -23,10 +23,10 @@ public:
   WorkUnit() {}
 
   virtual String toShortString() const
-    {return getClassName();}
+    {return getName();}
 
   virtual String toString() const
-    {return T("No description available !");}
+    {return getName();}
  
   static int main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[]);
 
@@ -63,35 +63,28 @@ protected:
     {return !decorated || decorated->run(context);}
 };
 
-class WorkUnitVector : public ObjectVector
+class CompositeWorkUnit : public WorkUnit
 {
 public:
-  WorkUnitVector(const String& name, size_t initialSize)
-    : ObjectVector(workUnitClass, initialSize), name(name) {}
-  WorkUnitVector() {}
-
-  virtual TypePtr getElementsType() const
-    {return workUnitClass;}
-
-  virtual String getName() const
-    {return name;}
-
-  virtual void setName(const String& name)
-    {this->name = name;}
+  CompositeWorkUnit(const String& name, size_t initialSize)
+    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)) {}
+  CompositeWorkUnit() {}
 
   size_t getNumWorkUnits() const
-    {return getNumElements();}
+    {return workUnits->getNumElements();}
 
   const WorkUnitPtr& getWorkUnit(size_t index) const
-    {return getAndCast<WorkUnit>(index);}
+    {return workUnits->getAndCast<WorkUnit>(index);}
 
   void setWorkUnit(size_t index, const WorkUnitPtr& workUnit)
-    {set(index, workUnit);}
+    {workUnits->set(index, workUnit);}
 
 protected:
-  friend class WorkUnitVectorClass;
+  friend class CompositeWorkUnitClass;
 
-  String name;
+  ObjectVectorPtr workUnits;
+
+  virtual bool run(ExecutionContext& context);
 };
 
 }; /* namespace lbcpp */

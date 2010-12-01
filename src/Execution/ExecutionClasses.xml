@@ -17,8 +17,8 @@
       <variable type="WorkUnit" name="decorated"/>
     </class>
 
-    <class name="WorkUnitVector" base="ObjectVector[WorkUnit]">
-      <variable type="String" name="name"/>
+    <class name="CompositeWorkUnit" base="WorkUnit">
+      <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
     </class>
     
     <!-- Test Unit -->
@@ -27,7 +27,7 @@
     <!-- Function Stack -->
     <class name="ExecutionStack">
       <variable type="ExecutionStack" name="parentStack"/>
-      <variable type="ObjectVector[Inference]" name="stack"/>
+      <variable type="ObjectVector[WorkUnit]" name="stack"/>
     </class>
 
     <class name="Notification" abstract="yes"/>

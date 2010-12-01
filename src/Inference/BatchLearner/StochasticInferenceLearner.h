@@ -34,6 +34,9 @@ public:
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
 
+  virtual String getDescription(ExecutionContext& context, const Variable& input, const Variable& supervision) const
+    {return getName();}
+
 protected:
   friend class StochasticPassInferenceLearnerClass;
 
@@ -57,14 +60,14 @@ protected:
       // call subStepFinishedCallback
       for (int i = (int)stack->getDepth() - 1; i >= 0; --i)
       {
-        const ObjectPtr& stackElement = stack->getElement(i);
-        InferencePtr parentInference = stackElement.dynamicCast<Inference>();
-        if (parentInference)
+        const WorkUnitPtr& workUnit = stack->getWorkUnit(i);
+        InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+        if (inferenceWorkUnit)
         {
-          const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
+          const InferenceOnlineLearnerPtr& parentLearner = inferenceWorkUnit->getInference()->getOnlineLearner();
           if (parentLearner && !parentLearner->isLearningStopped())
             parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);
-          if (parentInference == targetInference)
+          if (inferenceWorkUnit->getInference() == targetInference)
             break;
         }
       }
@@ -169,14 +172,20 @@ public:
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
     InferencePtr learningPass = createLearningPass(context, learnerInput);
-    learningPass->setName(T("LearningPass ") + targetInference->getName());
+    learningPass->setPushIntoStackFlag(true);
     res->setSubInference(learningPass, learnerInput, Variable());
+    updateInference(context, res);
     return res;
   }
 
   // returns false if the final state is reached
   virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const
-    {return state->getSubOutput().getBoolean();} // repeat passes until a pass returns "false"
+  {
+    state->incrementStepNumber();
+    state->getSubInference()->setName(T("Learning Iteration ") + String((int)state->getStepNumber()));
+    // repeat passes until a pass returns "false"
+    return state->getSubOutput().getBoolean();
+  }
 
 protected:
   friend class StochasticInferenceLearnerClass;

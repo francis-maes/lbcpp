@@ -1,4 +1,8 @@
-* Multi-threaded creation of the ExecutionTraceTreeView
+ - CompositeWorkUnit => CompositeWorkUnit
+ * Stack: uniquement des WorkUnit dans la stack
+ * Inference::run, option pour faire un WorkUnit
+ 
+
 * More GUI for the SandBox
 * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 

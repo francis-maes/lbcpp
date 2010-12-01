@@ -27,7 +27,7 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual bool run(const WorkUnitVectorPtr& workUnits)
+  virtual bool run(const CompositeWorkUnitPtr& workUnits)
   {
     bool res = true;
     preExecutionCallback(stack, workUnits);

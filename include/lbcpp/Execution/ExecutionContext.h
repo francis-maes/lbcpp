@@ -65,7 +65,7 @@ public:
   ** Work Units
   */
   virtual bool run(const WorkUnitPtr& workUnit);
-  virtual bool run(const WorkUnitVectorPtr& workUnits) = 0;
+  virtual bool run(const CompositeWorkUnitPtr& workUnits) = 0;
 
   lbcpp_UseDebuggingNewOperator
 

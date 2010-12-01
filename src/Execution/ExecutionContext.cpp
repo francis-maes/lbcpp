@@ -91,15 +91,15 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 /*
 ** ExecutionStack
 */
-ObjectPtr ExecutionStack::nullObject;
+//ObjectPtr ExecutionStack::nullObject;
 
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
-void ExecutionStack::push(const ObjectPtr& object)
+void ExecutionStack::push(const WorkUnitPtr& workUnit)
 {
-  jassert(object);
-  stack.push_back(object);
+  jassert(workUnit);
+  stack.push_back(workUnit);
 }
 
 void ExecutionStack::pop()
@@ -107,7 +107,7 @@ void ExecutionStack::pop()
   jassert(stack.size());
   stack.pop_back();
 }
-
+/*
 FunctionPtr ExecutionStack::findParentFunction() const
 {
   for (int i = (int)stack.size() - 1; i >= 0; --i)
@@ -117,13 +117,13 @@ FunctionPtr ExecutionStack::findParentFunction() const
       return res;
   }
   return FunctionPtr();
-}
+}*/
 
-const ObjectPtr& ExecutionStack::getElement(size_t depth) const
+const WorkUnitPtr& ExecutionStack::getWorkUnit(size_t depth) const
 {
   size_t parentDepth = parentStack ? parentStack->getDepth() : 0;
   if (depth < parentDepth)
-    return parentStack->getElement(depth);
+    return parentStack->getWorkUnit(depth);
   depth -= parentDepth;
   jassert(depth < stack.size());
   return stack[depth];

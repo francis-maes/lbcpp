@@ -106,41 +106,50 @@ InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
 /*
 ** High Level functions
 */
-bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& out) const
+bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable* output, const String& workUnitName) const
 {
   jassert(!input.isNil());
-  InferencePtr pthis = refCountedPointerFromThis(this);
 
-  context.preExecutionCallback(context.getStack(), pthis, input, supervision);
-  context.getStack()->push(pthis);
-  Variable output = computeInference(context, input, supervision);
-  context.getStack()->pop();
-  context.postExecutionCallback(context.getStack(), pthis, input, supervision, output);
-  if (&out)
-    out = output;
-  return true;
+  if (workUnitName.isNotEmpty() || hasPushIntoStackFlag())
+  {
+    InferencePtr pthis = refCountedPointerFromThis(this);
+    String name = workUnitName;
+    if (name.isEmpty())
+      name = getDescription(context, input, supervision);
+    return context.run(new InferenceWorkUnit(name, pthis, input, supervision, output));
+  }
+  else
+  {
+    Variable out = computeInference(context, input, supervision);
+    if (output)
+      *output = out;
+    return true;
+  }
 }
 
-bool Inference::train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples)
-  {return train(context, new InferenceBatchLearnerInput(refCountedPointerFromThis(this), trainingExamples, validationExamples));}
+bool Inference::train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples, const String& workUnitName)
+  {return train(context, new InferenceBatchLearnerInput(refCountedPointerFromThis(this), trainingExamples, validationExamples), workUnitName);}
 
-bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput)
-  {return batchLearner && batchLearner->run(context, learnerInput, Variable());}
+bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput, const String& workUnitName)
+  {return batchLearner && batchLearner->run(context, learnerInput, Variable(), NULL, workUnitName);}
 
-bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const
+bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
   ExecutionCallbackPtr evaluationCallback = evaluationInferenceCallback(inference, evaluator);
   context.appendCallback(evaluationCallback);
-  bool res = runOnSupervisedExamplesInference(inference, true)->run(context, examples, Variable());
+  InferencePtr runInference = runOnSupervisedExamplesInference(inference, true);
+  if (workUnitName.isNotEmpty())
+    runInference->setName(workUnitName);
+  runInference->computeInference(context, examples, Variable());
   context.removeCallback(evaluationCallback);
-  return res;
+  return true;
 }
 
-bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds) const
+bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName) const
 {
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, refCountedPointerFromThis(this), numFolds));
-  return cvInference->run(context, examples, Variable());
+  return cvInference->run(context, examples, Variable(), NULL, workUnitName);
 }
 
 /*

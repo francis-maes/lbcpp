@@ -12,6 +12,7 @@
 # include "predeclarations.h"
 # include "../Core/Variable.h"
 # include "../Core/Container.h"
+# include "../Execution/WorkUnit.h"
 # include "../Data/RandomVariable.h"
 
 namespace lbcpp
@@ -59,11 +60,11 @@ public:
   /*
   ** High level operations
   */
-  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable& output = *(Variable* )0) const;
-  bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples);
-  bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput);
-  bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator) const;
-  bool crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds) const;
+  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable* output = NULL, const String& workUnitName = String::empty) const;
+  bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples, const String& workUnitName = String::empty);
+  bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput, const String& workUnitName = String::empty);
+  bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName = String::empty) const;
+  bool crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName = String::empty) const;
 
   /*
   ** Description
@@ -130,9 +131,6 @@ protected:
 
 extern ClassPtr inferenceClass;
 
-// WorkUnit
-extern WorkUnitPtr inferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable& output);
-
 // Decorator
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
@@ -146,6 +144,39 @@ extern SharedParallelInferencePtr sharedParallelVectorInference(const String& na
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
 extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
+
+class InferenceWorkUnit : public WorkUnit
+{
+public:
+  InferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable* output)
+    : WorkUnit(name), inference(inference), input(input), supervision(supervision), output(output) {}
+  InferenceWorkUnit() : output(NULL) {}
+
+  virtual bool run(ExecutionContext& context)
+    {Variable out = inference->computeInference(context, input, supervision); if (output) *output = out; return true;}
+
+  const InferencePtr& getInference() const
+    {return inference;}
+
+  const Variable& getInput() const
+    {return input;}
+
+  const Variable& getSupervision() const
+    {return supervision;}
+
+  Variable* getOutput() const
+    {return output;}
+
+protected:
+  friend class InferenceWorkUnitClass;
+
+  InferencePtr inference;
+  Variable input;
+  Variable supervision;
+  Variable* output;
+};
+
+typedef ReferenceCountedObjectPtr<InferenceWorkUnit> InferenceWorkUnitPtr;
 
 }; /* namespace lbcpp */
 

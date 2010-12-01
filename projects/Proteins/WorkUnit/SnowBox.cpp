@@ -201,40 +201,11 @@ public:
 class StackPrinterCallback : public ExecutionCallback
 {
 public:
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
-  {
-    ExecutionContext& context = getContext();
-
-    ScopedLock _(lock);
-    if (stack->getDepth() > 3
-        || function->getClassName() == T("BinaryLinearSVMInference")
-        || function->getClassName() == T("OneAgainstAllClassificationInference"))
-      return;
-    String line(T("#"));
-    for (size_t i = 0; i < stack->getDepth(); ++i)
-      line += T("    ");
-    line += function->getClassName() + T(" -> ") + function->getName();
-    context.informationCallback(line);
-  }
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
+    {getContext().informationCallback(workUnit->getName());}
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
-  {
-    return;
-    ExecutionContext& context = getContext();
-    ScopedLock _(lock);
-    if (stack->getDepth() > 1
-        || function->getClassName() == T("BinaryLinearSVMInference")
-        || function->getClassName() == T("OneAgainstAllClassificationInference"))
-      return;
-    String line = T("END ");
-    for (size_t i = 0; i < stack->getDepth(); ++i)
-      line += T("    ");
-    line += function->getClassName() + T(" -> ") + function->getName() + T("\n");
-    context.informationCallback(line);
-  }
-  
-private:
-  CriticalSection lock;
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+    {getContext().informationCallback(workUnit->getName() + T(" END"));}
 };
 
 class MyInferenceCallback : public ExecutionCallback
@@ -257,23 +228,25 @@ public:
     }
   }
   
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
   {
     ExecutionContext& context = getContext();
-    if (stack->getDepth() == 1) // FIXME: this test probably do not work anymore
+    if (stack->getDepth() == 0)
     {
       // top-level learning is beginning
       startingTime = Time::getMillisecondCounter();
       passNumber = 0;
     }
     
-    if (!input.isObject())
+    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+
+    if (!inferenceWorkUnit || !inferenceWorkUnit->getInput().isObject())
       return;
 
-    InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
+    InferenceBatchLearnerInputPtr learnerInput = inferenceWorkUnit->getInput().dynamicCast<InferenceBatchLearnerInput>();
     if (learnerInput)
     {
-      String inputTypeName = learnerInput->getTrainingExamples()->computeElementsCommonBaseType()->getTemplateArgument(0)->getName();
+      String inputTypeName = learnerInput->getTrainingExamples()->getElementsType()->getTemplateArgument(0)->getName();
       
       String info = T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ");
       info += String((int)learnerInput->getNumTrainingExamples());
@@ -285,13 +258,18 @@ public:
     }
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const FunctionPtr& function, const Variable& input, const Variable& output)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
     ExecutionContext& context = getContext();
 
+    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+    if (!inferenceWorkUnit)
+      return;
+    const InferencePtr& inference = inferenceWorkUnit->getInference();
+
     // FIXME: probably broken test
-    if (stack->getDepth() == 2 && (function->getClassName() == T("StaticParallelInferenceLearner")
-                                   || function->getClassName() == T("MultiPassInferenceLearner")))
+    if (stack->getDepth() == 2 && (inference->getClassName() == T("StaticParallelInferenceLearner")
+                                   || inference->getClassName() == T("MultiPassInferenceLearner")))
     {
       context.informationCallback(T("===================== EVALUATION ====================="));
 

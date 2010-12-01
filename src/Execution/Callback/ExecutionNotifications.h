@@ -108,41 +108,12 @@ protected:
 class PreExecutionNotification : public ExecutionNotification
 {
 public:
-  PreExecutionNotification(const ExecutionStackPtr& stack, const ObjectPtr& object, const Variable& input = Variable(), const Variable& supervision = Variable())
-    : stack(stack->cloneAndCast<ExecutionStack>()), object(object), input(input), supervision(supervision) {}
+  PreExecutionNotification(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
+    : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit) {}
   PreExecutionNotification() {}
 
   virtual void notify(const ExecutionCallbackPtr& target)
-  {
-    WorkUnitVectorPtr workUnitVector = object.dynamicCast<WorkUnitVector>();
-    if (workUnitVector)
-    {
-      target->preExecutionCallback(stack, workUnitVector);
-      return;
-    }
-
-    WorkUnitPtr workUnit = object.dynamicCast<WorkUnit>();
-    if (workUnit)
-    {
-      target->preExecutionCallback(stack, workUnit);
-      return;
-    }
-
-    InferencePtr inference = object.dynamicCast<Inference>();
-    if (inference)
-    {
-      target->preExecutionCallback(stack, inference, input, supervision);
-      return;
-    }
-
-    FunctionPtr function = object.dynamicCast<Function>();
-    if (function)
-    {
-      target->preExecutionCallback(stack, function, input);
-      return;
-    }
-    jassert(false);
-  }
+    {target->preExecutionCallback(stack, workUnit);}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -150,49 +121,18 @@ protected:
   friend class PreExecutionNotificationClass;
 
   ExecutionStackPtr stack;
-  ObjectPtr object;
-  Variable input;
-  Variable supervision;
+  WorkUnitPtr workUnit;
 };
 
 class PostExecutionNotification : public ExecutionNotification
 {
 public:
-  PostExecutionNotification(const ExecutionStackPtr& stack, const ObjectPtr& object, const Variable& output, const Variable& input = Variable(), const Variable& supervision = Variable())
-    : stack(stack->cloneAndCast<ExecutionStack>()), object(object), input(input), supervision(supervision), output(output) {}
+  PostExecutionNotification(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+    : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
   virtual void notify(const ExecutionCallbackPtr& target)
-  {
-    WorkUnitVectorPtr workUnitVector = object.dynamicCast<WorkUnitVector>();
-    if (workUnitVector)
-    {
-      target->postExecutionCallback(stack, workUnitVector, output.getBoolean());
-      return;
-    }
-
-    WorkUnitPtr workUnit = object.dynamicCast<WorkUnit>();
-    if (workUnit)
-    {
-      target->postExecutionCallback(stack, workUnit, output.getBoolean());
-      return;
-    }
-
-    InferencePtr inference = object.dynamicCast<Inference>();
-    if (inference)
-    {
-      target->postExecutionCallback(stack, inference, input, supervision, output);
-      return;
-    }
-
-    FunctionPtr function = object.dynamicCast<Function>();
-    if (function)
-    {
-      target->postExecutionCallback(stack, function, input, output);
-      return;
-    }
-    jassert(false);
-  }
+    {target->postExecutionCallback(stack, workUnit, result);}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -200,10 +140,8 @@ protected:
   friend class PostExecutionNotificationClass;
 
   ExecutionStackPtr stack;
-  ObjectPtr object;
-  Variable input;
-  Variable supervision;
-  Variable output;
+  WorkUnitPtr workUnit;
+  bool result;
 };
 
 }; /* namespace lbcpp */

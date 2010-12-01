@@ -29,8 +29,8 @@ typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
 class WorkUnit;
 typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
 
-class WorkUnitVector;
-typedef ReferenceCountedObjectPtr<WorkUnitVector> WorkUnitVectorPtr;
+class CompositeWorkUnit;
+typedef ReferenceCountedObjectPtr<CompositeWorkUnit> CompositeWorkUnitPtr;
 
 class TestUnit;
 typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
