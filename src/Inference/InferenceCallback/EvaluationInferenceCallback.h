@@ -19,7 +19,7 @@ namespace lbcpp
 class EvaluationInferenceCallback : public ExecutionCallback
 {
 public:
-  EvaluationInferenceCallback(InferencePtr inference, EvaluatorPtr evaluator)
+  EvaluationInferenceCallback(const InferencePtr& inference, const EvaluatorPtr& evaluator)
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 

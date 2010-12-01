@@ -22,6 +22,11 @@
       }
     </code>
 
+    <class name="EvaluationInference" base="RunOnSupervisedExamplesParallelInference">
+      <constructor arguments="const InferencePtr&amp; inference, const EvaluatorPtr&amp; evaluator" returnType="ParallelInference"/>
+      <variable type="Evaluator" name="evaluator"/>
+    </class>
+
     <class name="CrossValidateStepInference" base="Inference">
       <variable type="Evaluator" name="evaluator"/>
       <variable type="Inference" name="inferenceModel"/>

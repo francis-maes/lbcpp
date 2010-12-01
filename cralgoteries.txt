@@ -1,9 +1,9 @@
- - CompositeWorkUnit => CompositeWorkUnit
- * Stack: uniquement des WorkUnit dans la stack
- * Inference::run, option pour faire un WorkUnit
- 
+* Faire marcher le SandBox
+  - reparation de l'evaluation
+  
+* Refaire marcher l'optimisation dans le SandBox
 
-* More GUI for the SandBox
+
 * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 
 Boinc:

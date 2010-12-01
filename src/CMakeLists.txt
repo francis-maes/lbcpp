@@ -370,6 +370,7 @@ SET(LBCPP_INFERENCE_REDUCTION_SOURCES
 SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/CallbackBasedDecoratorInference.h
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
+  Inference/MetaInference/EvaluationInference.h
   Inference/MetaInference/CrossValidationInference.h
   Inference/MetaInference/MetaInferenceClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp

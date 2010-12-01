@@ -184,7 +184,7 @@ public:
     state->incrementStepNumber();
     state->getSubInference()->setName(T("Learning Iteration ") + String((int)state->getStepNumber()));
     // repeat passes until a pass returns "false"
-    return state->getSubOutput().getBoolean();
+    return state->getSubOutput().isNil() || state->getSubOutput().getBoolean();
   }
 
 protected:
