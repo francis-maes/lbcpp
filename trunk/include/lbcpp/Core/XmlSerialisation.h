@@ -39,6 +39,7 @@ public:
   ~XmlExporter();
 
   bool saveToFile(const File& file);
+  String toString();
 
   XmlElement* getCurrentElement();
 
@@ -106,6 +107,7 @@ class XmlImporter
 {
 public:
   XmlImporter(ExecutionContext& context, const File& file);
+  XmlImporter(ExecutionContext& context, juce::XmlDocument& document);
   ~XmlImporter()
     {if (root) delete root;}
 

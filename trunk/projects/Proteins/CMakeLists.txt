@@ -135,6 +135,11 @@ ADD_EXECUTABLE(RunProgram
   Programs/CompileProteinsWorkUnit.cpp
   Programs/ConvertPDBToProteinWorkUnit.h
   Programs/ConvertPDBToProteinWorkUnit.cpp
+  Programs/NetworkClient.h
+  Programs/NetworkClient.cpp
+  Programs/NetworkCallback.h
+  Programs/NetworkServer.h
+  Programs/NetworkServer.cpp
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

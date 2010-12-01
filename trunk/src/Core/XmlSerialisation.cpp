@@ -56,6 +56,17 @@ bool XmlExporter::saveToFile(const File& file)
   return ok;
 }
 
+String XmlExporter::toString()
+{
+  flushSave();
+  if (!root)
+  {
+    context.errorCallback(T("XmlExporter::toString"), T("No root xml element"));
+    return String::empty;
+  }
+  return root->createDocument(String::empty);
+}
+
 XmlElement* XmlExporter::getCurrentElement()
   {return currentStack.back();}
 
@@ -308,6 +319,23 @@ XmlImporter::XmlImporter(ExecutionContext& context, const File& file)
 
   if (lastParseError.isNotEmpty())
     context.warningCallback(T("Variable::createFromFile"), lastParseError);
+}
+
+XmlImporter::XmlImporter(ExecutionContext& context, juce::XmlDocument& document)
+  : context(context), root(document.getDocumentElement())
+{
+  String lastParseError = document.getLastParseError();
+  if (!root)
+  {
+    context.errorCallback(T("NetworkClient::messageReceived"), 
+                          lastParseError.isEmpty() ? T("Could not parse message") : lastParseError);
+    return;
+  }
+  else
+    enter(root);
+  
+  if (lastParseError.isNotEmpty())
+    context.warningCallback(T("NetworkClient::messageReceived"), lastParseError);
 }
 
 void XmlImporter::errorMessage(const String& where, const String& what) const
