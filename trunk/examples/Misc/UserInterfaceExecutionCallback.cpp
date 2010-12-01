@@ -73,11 +73,9 @@ int main(int argc, char* argv[])
   ExecutionContextPtr context = createExecutionContext();
   context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
   context->declareType(new DefaultClass(T("MySubWorkUnit"), T("WorkUnit")));
-  int res = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
-  
+  int exitCode = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
   userInterfaceManager().waitUntilAllWindowsAreClosed();
-
   context->clearCallbacks();
   lbcpp::deinitialize();
-  return res;
+  return exitCode;
 }
