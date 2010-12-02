@@ -8,7 +8,7 @@ using namespace lbcpp;
 bool NetworkClient::sendVariable(const Variable& variable)
 {
   XmlExporter exporter(context);
-  variable.saveToXml(exporter);
+  exporter.saveVariable(String::empty, variable, TypePtr());
   String text = exporter.toString();
   if (text == String::empty)
     return false;

@@ -41,12 +41,6 @@ Variable Variable::createFromFile(ExecutionContext& context, const File& file)
   return importer.isOpened() ? importer.load() : Variable();
 }
 
-void Variable::saveToXml(XmlExporter& exporter) const
-{
-  if (!type->isMissingValue(value))
-    type->saveToXml(exporter, value);
-}
-
 bool Variable::saveToFile(ExecutionContext& context, const File& file) const
 {
   XmlExporter exporter(context);
