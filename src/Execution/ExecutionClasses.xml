@@ -2,7 +2,8 @@
 
 <file name="Execution" directory="Execution">
 
-<include file="lbcpp/Core/Vector.h"/>
+  <include file="lbcpp/Core/Pair.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Execution/ExecutionContext.h"/>
   <include file="lbcpp/Execution/WorkUnit.h"/>
   <include file="lbcpp/Execution/ExecutionStack.h"/>
