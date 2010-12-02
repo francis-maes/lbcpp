@@ -104,7 +104,7 @@ public:
     
     scores->addElement(Variable::missingValue(aminoAcidTypeEnumeration), gapScore.getDoubleValue());
     //scores->setMissingProbability(gapScore.getDoubleValue());
-    pssm->setElement(currentPosition, scores->build());
+    pssm->setElement(currentPosition, scores->build(context));
 
     ++currentPosition;
     return true;
