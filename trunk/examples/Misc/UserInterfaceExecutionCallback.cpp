@@ -50,7 +50,7 @@ public:
       context.progressCallback(i + 1.0, 10.0, T("epochs"));
     }
 
-    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 5 Sub Work Units"), 5));
+    CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
       subWorkUnits->setWorkUnit(i, new MySubWorkUnit(T("SubWU ") + String((int)i)));
     context.run(subWorkUnits);
@@ -62,7 +62,7 @@ public:
 
 ExecutionContextPtr createExecutionContext()
 {
-  ExecutionContextPtr res = multiThreadedExecutionContext(2);
+  ExecutionContextPtr res = multiThreadedExecutionContext(8);
   res->appendCallback(userInterfaceExecutionCallback());
   res->appendCallback(consoleExecutionCallback());
   return res;

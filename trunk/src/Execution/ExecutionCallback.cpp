@@ -16,7 +16,10 @@ using namespace lbcpp;
 ** ExecutionCallback
 */
 void ExecutionCallback::notificationCallback(const NotificationPtr& notification)
-  {notification->notify(refCountedPointerFromThis(this));}
+{
+  ExecutionNotificationPtr executionNotification = notification.staticCast<ExecutionNotification>();
+  executionNotification->notifyCallback(refCountedPointerFromThis(this));
+}
 
 
 /*
