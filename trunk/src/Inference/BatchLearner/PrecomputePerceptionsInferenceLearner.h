@@ -55,6 +55,7 @@ public:
       CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Precompute perceptions"), n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new PrecomputePerceptionWorkUnit(perception, learnerInput->getExample(i), subLearnerInput, i));
+      workUnits->setProgressionUnit(perception->getInputType()->getName() + T("s"));
       context.run(workUnits);
     }
     else
