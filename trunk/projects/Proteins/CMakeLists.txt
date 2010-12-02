@@ -152,6 +152,9 @@ ADD_EXECUTABLE(RunProgram
   Programs/NetworkCallback.cpp
   Programs/NetworkServer.h
   Programs/NetworkServer.cpp
+  Programs/Command.h
+  Programs/Command.cpp
+  Programs/ClientServerWorkUnit.h
   Programs/ProgramClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )

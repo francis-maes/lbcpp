@@ -1,3 +1,10 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: NetworkServer.cpp              | Network Server                  |
+| Author  : Julien Becker                  |                                 |
+| Started : 01/12/2010 18:54               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include "NetworkServer.h"
 
@@ -14,7 +21,8 @@ public:
   virtual bool startClient(const String& host, int port)
     {jassertfalse; return false;}
   
-  virtual void stopClient() {}
+  virtual void stopClient()
+    {disconnect();}
 };
   
 }; /* namespace */
@@ -26,7 +34,8 @@ bool NetworkServer::startServer(int port)
   return beginWaitingForSocket(port);
 }
 
-void NetworkServer::stopServer() {}
+void NetworkServer::stopServer()
+  {stop();}
 
 InterprocessConnection* NetworkServer::createConnectionObject()
 {

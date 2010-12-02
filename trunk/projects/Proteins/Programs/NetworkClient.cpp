@@ -1,4 +1,10 @@
-
+/*-----------------------------------------.---------------------------------.
+| Filename: NetworkClient.cpp              | Network Client                  |
+| Author  : Julien Becker                  |                                 |
+| Started : 01/12/2010 18:54               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include "NetworkClient.h"
 
@@ -46,7 +52,8 @@ void NetworkClient::connectionMade()
 
 void NetworkClient::connectionLost()
 {
-  // transmit to callbacks ?
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->disconnected();
 }
 
 void NetworkClient::messageReceived(const juce::MemoryBlock& message)
@@ -77,7 +84,8 @@ public:
     return false;
   }
 
-  virtual void stopClient() {}
+  virtual void stopClient()
+    {disconnect();}
   
 protected:
   size_t numAttempts;
@@ -145,6 +153,7 @@ public:
       connectionThread->stopThread(2000);
     if (connectionThread)
       connectionThread = NetworkConnectionThreadPtr();
+    disconnect();
   }
 
   virtual void connectionLost()
