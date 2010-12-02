@@ -140,9 +140,11 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   }
   else
   {
-    if (variable.getType() != expectedType)
-      writeType(variable.getType());
-    variable.saveToXml(*this);
+    TypePtr type = variable.getType();
+    if (type != expectedType)
+      writeType(type);
+    if (!type->isMissingValue(variable.value))
+      type->saveToXml(*this, variable.value);
   }
 }
 

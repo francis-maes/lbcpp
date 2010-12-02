@@ -174,8 +174,6 @@ public:
   String toShortString() const;
   Variable clone(ExecutionContext& context) const;
 
-  void saveToXml(XmlExporter& exporter) const;
-
   /**
   ** Saves variable to a file
   **
@@ -225,6 +223,7 @@ public:
 
 private:
   friend class ExecutionContext;
+  friend class XmlExporter;
 
   Variable(TypePtr type, const VariableValue& value)
     : type(type), value(value) {}
