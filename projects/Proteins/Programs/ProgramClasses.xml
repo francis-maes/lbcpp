@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<file name="Program" directory="Programs">
+  <namespace name="lbcpp">
+    
+    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
+    <class name="DumbOptimizerProgram" base="WorkUnit"/>
+    
+    <class name="ServerWorkUnit" base="WorkUnit"/>
+    <class name="ClientWorkUnit" base="WorkUnit"/>
+
+    
+
+  </namespace>
+
+  <declarationCode>
+    context.finishTypeDeclarations();
+  </declarationCode>
+
+</file>

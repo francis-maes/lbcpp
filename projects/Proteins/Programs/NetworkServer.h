@@ -33,7 +33,33 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<NetworkServer> NetworkServerPtr;
+  
+class ServerWorkUnit : public WorkUnit
+{
+public:
+  virtual bool run(ExecutionContext& context)
+  {
+    NetworkServerPtr server = new NetworkServer(context);
+    server->startServer(1664);
 
+    NetworkClientPtr client = server->acceptClient(true);
+    std::cout << "* New client: " << client->getConnectedHostName() << std::endl;
+
+    BufferedNetworkCallbackPtr callback = new BufferedNetworkCallback();
+    client->appendCallback(callback);
+    
+    client->sendVariable(String(T("Welcome :-)")));
+    
+    std::cout << "> " << callback->receiveVariable(true).toString() << std::endl;
+    
+    client->stopClient();
+    server->stopServer();
+
+    return true;
+  }
+};
+  
+  
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_NETWORK_SERVER_H_
