@@ -86,9 +86,9 @@ extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading 
 class ExecutionTrace : public Object
 {
 public:
-  ExecutionTrace(ExecutionContext& context)
-    : context(&context) {}
-  ExecutionTrace() : context(NULL) {}
+  ExecutionTrace(ExecutionContextPtr context)
+    : context(context) {}
+  ExecutionTrace() {}
 
   virtual juce::Component* createComponent() const;
 
@@ -96,7 +96,7 @@ public:
     {jassert(context); return *context;}
 
 protected:
-  ExecutionContext* context;
+  ExecutionContextPtr context;
 };
 
 typedef ReferenceCountedObjectPtr<ExecutionTrace> ExecutionTracePtr;

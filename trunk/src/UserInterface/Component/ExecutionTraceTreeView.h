@@ -91,11 +91,11 @@ class CompositeWorkUnitExecutionTraceTreeViewItem : public NodeExecutionTraceTre
 public:
   CompositeWorkUnitExecutionTraceTreeViewItem(const CompositeWorkUnitPtr& workUnits)
     : NodeExecutionTraceTreeViewItem(workUnits, T("WorkUnit-32.png"), workUnits->getNumWorkUnits() < 10),
-      numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0) {}
+      progressionUnit(workUnits->getProgressionUnit()), numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0) {}
 
   virtual void paintItem(Graphics& g, int width, int height)
   {
-    setProgression((double)numWorkUnitsDone, (double)numWorkUnits, T("Work Units"));
+    setProgression((double)numWorkUnitsDone, (double)numWorkUnits, progressionUnit);
     ExecutionTraceTreeViewItem::paintItem(g, width, height);
   }
 
@@ -103,6 +103,7 @@ public:
     {++numWorkUnitsDone;}
 
 private:
+  String progressionUnit;
   size_t numWorkUnits;
   size_t numWorkUnitsDone;
 };

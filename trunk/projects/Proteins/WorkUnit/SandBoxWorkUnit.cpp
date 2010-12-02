@@ -179,10 +179,10 @@ protected:
 
 /////////////////////////////////////////
 
-class MyInferenceCallback : public ExecutionCallback
+class SandBoxInferenceCallback : public ExecutionCallback
 {
 public:
-  MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
+  SandBoxInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
     : inference(inference), trainingData(trainingData), testingData(testingData), iterationNumber(0) {}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
@@ -376,7 +376,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   return true;*/
 
   {
-    ExecutionCallbackPtr trainingCallback = new MyInferenceCallback(inference, trainProteins, testProteins);
+    ExecutionCallbackPtr trainingCallback = new SandBoxInferenceCallback(inference, trainProteins, testProteins);
     context.appendCallback(trainingCallback);
     inference->train(context, trainProteins, validationProteins, T("Training"));
     context.removeCallback(trainingCallback);
@@ -416,7 +416,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
-    context->appendCallback(new MyInferenceCallback(inference, trainProteins, testProteins));
+    context->appendCallback(new SandBoxInferenceCallback(inference, trainProteins, testProteins));
     inference->evaluate(*context, trainProteins, evaluator);
   //  inference->crossValidate(context, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;

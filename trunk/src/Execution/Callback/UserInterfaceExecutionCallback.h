@@ -84,7 +84,7 @@ private:
     virtual void notify(const ObjectPtr& target)
     {
       jassert(!pthis->content && !pthis->mainWindow);
-      pthis->content = new ExecutionTraceTreeView(new ExecutionTrace(pthis->getContext()));
+      pthis->content = new ExecutionTraceTreeView(new ExecutionTrace(refCountedPointerFromThis(&pthis->getContext())));
       pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
     }
   };

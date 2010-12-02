@@ -202,7 +202,7 @@ public:
         if (NewWorkUnitDialogWindow::run(workUnitName, arguments, workingDirectory))
         {
           RecentWorkUnitsConfiguration::getInstance()->addRecent(workUnitName, arguments, workingDirectory);
-          ExecutionContextPtr workUnitContext = defaultExecutionContext();
+          ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
 
           TypePtr workUnitType = context.getType(workUnitName);
           if (workUnitType)
@@ -212,7 +212,7 @@ public:
               context.errorCallback(T("Create Work Unit"), T("Could not create ") + workUnitName);
             else if (workUnit->parseArguments(context, arguments))
             {
-              ExecutionTracePtr trace(new ExecutionTrace(*workUnitContext));
+              ExecutionTracePtr trace(new ExecutionTrace(workUnitContext));
               contentTabs->addVariable(context, trace, workUnitName);
               workUnitContext->pushWorkUnit(workUnit);
             }
