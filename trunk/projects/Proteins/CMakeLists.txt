@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/WorkUnitClasses.xml WorkUnitClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Programs/ProgramClasses.xml ProgramClasses.cpp)
 GENERATE_INTROSPECTION_CODE(ProteinClasses.xml ProteinClasses.cpp)
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
@@ -146,8 +147,11 @@ ADD_EXECUTABLE(RunProgram
   Programs/NetworkClient.h
   Programs/NetworkClient.cpp
   Programs/NetworkCallback.h
+  Programs/NetworkCallback.cpp
   Programs/NetworkServer.h
   Programs/NetworkServer.cpp
+  Programs/ProgramClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
 )
 TARGET_LINK_LIBRARIES(RunProgram proteins)
 

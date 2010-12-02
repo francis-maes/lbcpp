@@ -168,7 +168,7 @@ public:
   virtual SequentialInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
-    const InferencePtr& targetInference = learnerInput->getTargetInference();
+    //const InferencePtr& targetInference = learnerInput->getTargetInference();
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
     InferencePtr learningPass = createLearningPass(context, learnerInput);

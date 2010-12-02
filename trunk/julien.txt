@@ -3,6 +3,7 @@ Paper ESANN:
 
 Programmes Proteines:
  * Mieux parser TargetProtein
+ * ProteinInferenceEvaluator.cpp broken !
 
 Network:
  * Tester les ports sur le NIC3 (port 1664)

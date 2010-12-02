@@ -70,8 +70,10 @@ public:
   virtual bool startClient(const String& host, int port)
   {
     for (size_t i = 0; i < numAttempts || !numAttempts; ++i)
-      if (connectToSocket(host, port, 1000))
+    {
+      if (connectToSocket(host, port, 10000))
         return true;
+    }
     return false;
   }
 

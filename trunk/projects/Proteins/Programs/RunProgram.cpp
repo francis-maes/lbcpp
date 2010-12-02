@@ -9,12 +9,14 @@ void usage()
 }
 
 extern void declareProteinClasses(ExecutionContext& context);
+extern void declareProgramClasses(ExecutionContext& context);
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
   declareProteinClasses(*context);
+  declareProgramClasses(*context);
 
   int exitCode;
 

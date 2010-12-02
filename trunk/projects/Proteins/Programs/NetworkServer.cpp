@@ -14,8 +14,7 @@ public:
   virtual bool startClient(const String& host, int port)
     {jassertfalse; return false;}
   
-  virtual void stopClient()
-    {jassertfalse;}
+  virtual void stopClient() {}
 };
   
 }; /* namespace */
@@ -37,9 +36,6 @@ InterprocessConnection* NetworkServer::createConnectionObject()
   return res.get();
 }
 
-static void visualStudioWorkAroundSleep(int milliseconds)
-  {Thread::sleep(milliseconds);}
-
 NetworkClientPtr NetworkServer::acceptClient(bool blocking)
 {
   
@@ -52,7 +48,7 @@ NetworkClientPtr NetworkServer::acceptClient(bool blocking)
     res = lockedPop();
     if (res)
       return res;
-    visualStudioWorkAroundSleep(1000);
+    juce::Thread::sleep(1000);
   } while (true);
 }
 

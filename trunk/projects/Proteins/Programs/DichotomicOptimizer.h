@@ -103,7 +103,7 @@ public:
       res = bestScore;
       //std::cout << "BestPart: " << bestPart << " BestScore: " << res << " minValue: " << minValue << " maxValue: " << maxValue << std::endl;
     }
-    //std::cout << "Result : " << res << std::endl;
+    std::cout << "Result : " << res << std::endl;
     return res;
   }
 
