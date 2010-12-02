@@ -40,9 +40,9 @@ public:
     {
       if (!messageManager->runDispatchLoopUntil(100) && juce::Desktop::getInstance().getNumComponents() == 0)
         break;
-      notifications->flush();
+      notifications->flush(ObjectPtr());
     }
-    notifications->flush();
+    notifications->flush(ObjectPtr());
 
     Desktop& desktop = Desktop::getInstance();
     jassert(!desktop.getNumComponents());

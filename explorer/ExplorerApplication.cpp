@@ -8,7 +8,7 @@
 
 #include "Utilities/SplittedLayout.h"
 #include "Utilities/FileType.h"
-#include "ProcessManager/ProcessManager.h"
+#include "WorkUnitManager/NewWorkUnitDialogWindow.h"
 #include "ExplorerConfiguration.h"
 using namespace lbcpp;
 
@@ -147,10 +147,8 @@ public:
         openRecentFilesMenu.addItem(100, T("Clear Menu"));
         menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);
       }
-
-      menu.addItem(3, "Close", contentTabs->getCurrentTabIndex() >= 0);
-      menu.addSeparator();
-      menu.addItem(4, "Process Manager");
+      menu.addItem(3, "Start Work Unit");
+      menu.addItem(4, "Close", contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
       menu.addItem(5, "Quit");
       return menu;
@@ -197,9 +195,33 @@ public:
       else if (menuItemID == 100)
         configuration->clearRecentFiles();
       else if (menuItemID == 3)
-        contentTabs->closeCurrentTab();
+      {
+        String workUnitName;
+        String arguments;
+        File workingDirectory;
+        if (NewWorkUnitDialogWindow::run(workUnitName, arguments, workingDirectory))
+        {
+          RecentWorkUnitsConfiguration::getInstance()->addRecent(workUnitName, arguments, workingDirectory);
+          ExecutionContextPtr workUnitContext = defaultExecutionContext();
+
+          TypePtr workUnitType = context.getType(workUnitName);
+          if (workUnitType)
+          {
+            WorkUnitPtr workUnit = context.createObject(workUnitType);
+            if (!workUnit)
+              context.errorCallback(T("Create Work Unit"), T("Could not create ") + workUnitName);
+            else if (workUnit->parseArguments(context, arguments))
+            {
+              ExecutionTracePtr trace(new ExecutionTrace(*workUnitContext));
+              contentTabs->addVariable(context, trace, workUnitName);
+              workUnitContext->pushWorkUnit(workUnit);
+            }
+          }
+        }
+        flushErrorAndWarningMessages(T("Start Work Unit"));
+      }
       else if (menuItemID == 4)
-        contentTabs->addVariable(*silentExecutionContext, localProcessManager(), T("Process Manager"));
+        contentTabs->closeCurrentTab();
       else if (menuItemID == 5)
         JUCEApplication::quit();
     }

@@ -66,6 +66,8 @@ public:
   */
   virtual bool run(const WorkUnitPtr& workUnit);
   virtual bool run(const CompositeWorkUnitPtr& workUnits) = 0;
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
+    {jassert(isMultiThread());}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -78,7 +80,26 @@ protected:
 extern ExecutionContextPtr singleThreadedExecutionContext();
 extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 
+extern ExecutionContextPtr defaultExecutionContext(bool noMultiThreading = false);
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
+
+class ExecutionTrace : public Object
+{
+public:
+  ExecutionTrace(ExecutionContext& context)
+    : context(&context) {}
+  ExecutionTrace() : context(NULL) {}
+
+  virtual juce::Component* createComponent() const;
+
+  ExecutionContext& getContext() const
+    {jassert(context); return *context;}
+
+protected:
+  ExecutionContext* context;
+};
+
+typedef ReferenceCountedObjectPtr<ExecutionTrace> ExecutionTracePtr;
 
 }; /* namespace lbcpp */
 

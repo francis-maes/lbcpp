@@ -574,12 +574,15 @@ void SnowBox::printInformation() const
     std::cout << "Separated part of training set (fold " << (currentFold+1) << " over " << numberOfFolds << ")";
   std::cout << std::endl;
   
-  std::cout << "* ------------------ Model ---------------- *" << std::endl;
-  for (size_t i = 0; i < target->getNumPasses(); ++i)
+  if (target)
   {
-    std::cout << "Pass " << i << std::endl;
-    for (size_t j = 0; j < target->getNumTasks(i); ++j)
-      std::cout << "|-> " << target->getTask(i, j) << std::endl;
+    std::cout << "* ------------------ Model ---------------- *" << std::endl;
+    for (size_t i = 0; i < target->getNumPasses(); ++i)
+    {
+      std::cout << "Pass " << i << std::endl;
+      for (size_t j = 0; j < target->getNumTasks(i); ++j)
+        std::cout << "|-> " << target->getTask(i, j) << std::endl;
+    }
   }
   std::cout << "* ----------------------------------------- *" << std::endl;
   std::cout << std::endl;
@@ -631,6 +634,7 @@ bool SnowBox::run(ExecutionContext& context)
   ExecutionContextPtr inferenceContext = (numberOfThreads == 1)
                               ? singleThreadedExecutionContext()
                               : multiThreadedExecutionContext(numberOfThreads);
+  // ExecutionContextPtr inferenceContext = refCountedPointerFromThis(&context); // FIXME !
   inferenceContext->appendCallback(consoleExecutionCallback());
 
   if (useCrossValidation)

@@ -20,7 +20,10 @@ class WorkUnit : public NameableObject
 {
 public:
   WorkUnit(const String& name) : NameableObject(name) {}
-  WorkUnit() {}
+  WorkUnit() : NameableObject(String::empty) {}
+
+  virtual String getName() const
+    {return name.isEmpty() ? getClassName() : name;}
 
   virtual String toShortString() const
     {return getName();}
@@ -30,6 +33,11 @@ public:
  
   static int main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[]);
 
+  String getUsageString() const;
+
+  bool parseArguments(ExecutionContext& context, const String& arguments);
+  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -37,10 +45,6 @@ protected:
   friend class DecoratorWorkUnit;
 
   virtual bool run(ExecutionContext& context) = 0;
-
-protected:
-  String getUsageString() const;
-  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 };
 
 extern ClassPtr workUnitClass;

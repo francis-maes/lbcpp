@@ -39,6 +39,8 @@
     </class>
     <class name="ExecutionContext" base="CompositeExecutionCallback" abstract="yes"/>
 
+    <class name="ExecutionTrace" base="Object"/>
+    
   </namespace>
 
 </file>

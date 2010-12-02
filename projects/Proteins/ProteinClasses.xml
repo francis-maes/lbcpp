@@ -6,6 +6,7 @@
   <import name="ProteinData"/>
   <import name="ProteinPerception"/>
   <import name="ProteinInference"/>
+  <import name="WorkUnit"/>
 
   <include file="Data/Protein.h"/>
   
