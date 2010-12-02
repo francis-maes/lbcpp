@@ -62,10 +62,10 @@ protected:
   String progressionString;
 };
 
-class NodeExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
+class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  NodeExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit, const String& iconToUse, bool open = true)
+  WorkUnitExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit, const String& iconToUse = T("WorkUnit-32.png"), bool open = true)
     : ExecutionTraceTreeViewItem(workUnit ? workUnit->getName() : String::empty, iconToUse, false), workUnit(workUnit)
     {setOpen(open);}
 
@@ -77,35 +77,6 @@ public:
 
 protected:
   WorkUnitPtr workUnit;
-};
-
-class WorkUnitExecutionTraceTreeViewItem : public NodeExecutionTraceTreeViewItem
-{
-public:
-  WorkUnitExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit)
-    : NodeExecutionTraceTreeViewItem(workUnit, T("WorkUnit-32.png")) {}
-};
-
-class CompositeWorkUnitExecutionTraceTreeViewItem : public NodeExecutionTraceTreeViewItem
-{
-public:
-  CompositeWorkUnitExecutionTraceTreeViewItem(const CompositeWorkUnitPtr& workUnits)
-    : NodeExecutionTraceTreeViewItem(workUnits, T("WorkUnit-32.png"), workUnits->getNumWorkUnits() < 10),
-      progressionUnit(workUnits->getProgressionUnit()), numWorkUnits(workUnits->getNumWorkUnits()), numWorkUnitsDone(0) {}
-
-  virtual void paintItem(Graphics& g, int width, int height)
-  {
-    setProgression((double)numWorkUnitsDone, (double)numWorkUnits, progressionUnit);
-    ExecutionTraceTreeViewItem::paintItem(g, width, height);
-  }
-
-  void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-    {++numWorkUnitsDone;}
-
-private:
-  String progressionUnit;
-  size_t numWorkUnits;
-  size_t numWorkUnitsDone;
 };
 
 class MessageExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
@@ -180,7 +151,7 @@ public:
   ExecutionTraceTreeView(ExecutionTracePtr trace);
   virtual ~ExecutionTraceTreeView();
 
-  NodeExecutionTraceTreeViewItem* getItemFromStack(const ExecutionStackPtr& stack) const;
+  WorkUnitExecutionTraceTreeViewItem* getItemFromStack(const ExecutionStackPtr& stack) const;
 
   double getInitialTime() const
     {return initialTime;}

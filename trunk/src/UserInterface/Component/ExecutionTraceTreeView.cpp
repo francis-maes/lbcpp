@@ -157,7 +157,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   trace->getContext().appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new NodeExecutionTraceTreeViewItem(ObjectPtr(), String::empty));
+  setRootItem(new WorkUnitExecutionTraceTreeViewItem(ObjectPtr(), String::empty));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
 }
@@ -168,9 +168,9 @@ ExecutionTraceTreeView::~ExecutionTraceTreeView()
   deleteRootItem();
 }
 
-NodeExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(const ExecutionStackPtr& stack) const
+WorkUnitExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(const ExecutionStackPtr& stack) const
 {
-  NodeExecutionTraceTreeViewItem* item = (NodeExecutionTraceTreeViewItem* )getRootItem();
+  WorkUnitExecutionTraceTreeViewItem* item = (WorkUnitExecutionTraceTreeViewItem* )getRootItem();
   size_t n = stack->getDepth();
   for (size_t i = 0; i < n; ++i)
   {
@@ -178,7 +178,7 @@ NodeExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(const E
     bool ok = false;
     for (int i = 0; i < item->getNumSubItems(); ++i)
     {
-      NodeExecutionTraceTreeViewItem* subItem = dynamic_cast<NodeExecutionTraceTreeViewItem* >(item->getSubItem(i));
+      WorkUnitExecutionTraceTreeViewItem* subItem = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(item->getSubItem(i));
       if (subItem && subItem->getWorkUnit() == workUnit)
       {
         item = subItem;
@@ -210,33 +210,22 @@ public:
 
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {
-    ProgressExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
+    ExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
     jassert(item);
     item->setEndTime(currentNotificationTime);
-    item->setUniqueName(currentStatus);
+    if (dynamic_cast<ProgressExecutionTraceTreeViewItem* >(item) && currentStatus.isNotEmpty())
+      item->setUniqueName(currentStatus);
     item->setProgression(progression, progressionTotal, progressionUnit);
     item->treeHasChanged();
   }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-  {
-    ExecutionTraceTreeViewItem* item;
-    if (workUnit.dynamicCast<CompositeWorkUnit>())
-      item = new CompositeWorkUnitExecutionTraceTreeViewItem(workUnit.dynamicCast<CompositeWorkUnit>());
-    else
-      item = new WorkUnitExecutionTraceTreeViewItem(workUnit);
-    addItemAndPushPosition(stack, item);
-  }
+    {addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(workUnit));}
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
     TreeViewItem* treeItem = popPositionIntoTree(!result);
-    CompositeWorkUnitExecutionTraceTreeViewItem* parentTreeItem = dynamic_cast<CompositeWorkUnitExecutionTraceTreeViewItem* >(treeItem->getParentItem());
-    if (parentTreeItem)
-    {
-      parentTreeItem->postExecutionCallback(stack, workUnit, result);
-      parentTreeItem->setEndTime(currentNotificationTime);
-    }
+    currentStatus = String::empty;
   }
   
   virtual void informationCallback(const String& where, const String& what)
@@ -263,15 +252,23 @@ protected:
   {
     newItem->setStartTime(currentNotificationTime);
     parentItem->addSubItem(newItem);
-    tree->scrollToKeepItemVisible(newItem);
+    if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
+      tree->scrollToKeepItemVisible(newItem);
   }
 
-  ProgressExecutionTraceTreeViewItem* getOrCreateProgressTreeViewItem()
+  static WorkUnitPtr getWorkUnit(ExecutionTraceTreeViewItem* item)
   {
-    TreeViewItem* parent = getCurrentPositionInTree();
+    WorkUnitExecutionTraceTreeViewItem* workUnitItem = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(item);
+    return workUnitItem ? workUnitItem->getWorkUnit() : WorkUnitPtr();
+  }
+
+  ExecutionTraceTreeViewItem* getOrCreateProgressTreeViewItem()
+  {
+    ExecutionTraceTreeViewItem* parent = getCurrentPositionInTree();
     jassert(parent);
-    if (!parent->getNumSubItems())
-      return NULL;
+    if (getWorkUnit(parent).dynamicCast<CompositeWorkUnit>())
+      return parent;
+
     ProgressExecutionTraceTreeViewItem* res = dynamic_cast<ProgressExecutionTraceTreeViewItem* >(parent->getSubItem(parent->getNumSubItems() - 1));
     if (!res)
       addItem(res = new ProgressExecutionTraceTreeViewItem());

@@ -150,7 +150,10 @@ bool CompositeWorkUnit::run(ExecutionContext& context)
   for (size_t i = 0; i < n; ++i)
   {
     WorkUnitPtr workUnit = getWorkUnit(i);
-    res &= context.run(workUnit);
+    if (pushChildrenIntoStack)
+      res &= context.run(workUnit);
+    else
+      res &= workUnit->run(context);
   }
   return res;
 }

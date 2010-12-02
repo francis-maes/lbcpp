@@ -19,6 +19,8 @@
 
     <class name="CompositeWorkUnit" base="WorkUnit">
       <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
+      <variable type="String" name="progressionUnit"/>
+      <variable type="Boolean" name="pushChildrenIntoStack"/>
     </class>
     
     <!-- Test Unit -->
