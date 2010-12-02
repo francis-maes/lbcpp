@@ -159,6 +159,8 @@ SET(LBCPP_EXECUTION_SOURCES
   Execution/ExecutionCallback.cpp
   ../include/lbcpp/Execution/ExecutionContext.h
   Execution/ExecutionContext.cpp
+  ../include/lbcpp/Execution/ExecutionTrace.h
+  Execution/ExecutionTrace.cpp
   ../include/lbcpp/Execution/Notification.h
   Execution/Notification.cpp
   Execution/ExecutionClasses.xml

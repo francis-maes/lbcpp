@@ -12,14 +12,21 @@ using namespace lbcpp;
 /*
 ** ExecutionTraceTreeViewItem
 */
-ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(const String& name, const String& iconToUse, bool mightContainSubItems)
-  : SimpleTreeViewItem(name, iconToUse, mightContainSubItems), hasProgression(false), progression(0.0)
+ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(const ExecutionTraceItemPtr& trace)
+  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), trace(trace)
 {
+  String str = getUniqueName();
+  numLines = 1;
+  for (int i = 0; i < str.length() - 1; ++i)
+    if (str[i] == '\n')
+      ++numLines;
 }
 
-void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, int x, int width, int height)
+void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height)
 {
   juce::GradientBrush brush(Colour(200, 220, 240), (float)x, -(float)width / 3.f, Colours::white, (float)width, (float)width, true);
+
+  double progression = workUnitTrace->getProgression();
 
   g.setBrush(&brush);
   if (progression > 0.0)
@@ -38,7 +45,7 @@ void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, int x, int width,
 
   g.setColour(Colours::black);
   g.setFont(10);
-  g.drawText(progressionString, x, 0, width, height, Justification::centred, true);
+  g.drawText(workUnitTrace->getProgressionString(), x, 0, width, height, Justification::centred, true);
 
   g.setColour(Colour(180, 180, 180));
   g.drawRect(x, 0, width, height, 1);
@@ -53,10 +60,11 @@ void ExecutionTraceTreeViewItem::paintIconTextAndProgression(Graphics& g, int wi
   width -= labelX;
   int textWidth = width;
 
-  if (hasProgression && width > minWidthToDisplayProgression)
+  WorkUnitExecutionTraceItemPtr workUnitTrace = getTrace().dynamicCast<WorkUnitExecutionTraceItem>();
+  if (workUnitTrace && workUnitTrace->isProgressionAvailable() && width > minWidthToDisplayProgression)
   {
     textWidth -= progressionColumnWidth;
-    paintProgression(g, labelX + textWidth, progressionColumnWidth, height);
+    paintProgression(g, workUnitTrace, labelX + textWidth, progressionColumnWidth, height);
   }
   
   g.setColour(Colours::black);
@@ -80,22 +88,15 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     paintIconTextAndProgression(g, w, height);
     g.setColour(Colours::grey);
     g.setFont(12);
-    g.drawText(absoluteTime, w, 0, timeColumnWidth, height, Justification::centredRight, false);
-    g.drawText(relativeTime, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
+
+    
+    g.drawText(formatTime(trace->getTime()), w, 0, timeColumnWidth, height, Justification::centredRight, false);
+    WorkUnitExecutionTraceItemPtr workUnitTrace = trace.dynamicCast<WorkUnitExecutionTraceItem>();
+    if (workUnitTrace)
+      g.drawText(formatTime(workUnitTrace->getTimeLength()), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
   }
   else
     paintIconTextAndProgression(g, width, height);
-}
-
-void ExecutionTraceTreeViewItem::setProgression(double progression, double progressionTotal, const String& unit)
-{
-  progressionString = String(progression);
-  if (progressionTotal)
-    progressionString += T(" / ") + String(progressionTotal);
-  if (unit.isNotEmpty())
-    progressionString += T(" ") + unit;
-  this->progression = progressionTotal ? progression / progressionTotal : -progression;
-  hasProgression = true;
 }
 
 String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
@@ -138,15 +139,6 @@ String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
   return res;
 }
 
-void ExecutionTraceTreeViewItem::setStartTime(double time)
-{
-  creationTime = time;
-  this->absoluteTime = formatTime(creationTime);
-}
-
-void ExecutionTraceTreeViewItem::setEndTime(double time)
-  {this->relativeTime = formatTime(time - creationTime);}
-
 /*
 ** ExecutionTraceTreeView
 */
@@ -157,7 +149,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   trace->getContext().appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new WorkUnitExecutionTraceTreeViewItem(ObjectPtr(), String::empty));
+  setRootItem(new WorkUnitExecutionTraceTreeViewItem(new WorkUnitExecutionTraceItem(WorkUnitPtr(), initialTime)));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
 }
@@ -210,17 +202,22 @@ public:
 
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {
-    ExecutionTraceTreeViewItem* item = getOrCreateProgressTreeViewItem();
-    jassert(item);
-    item->setEndTime(currentNotificationTime);
-    if (dynamic_cast<ProgressExecutionTraceTreeViewItem* >(item) && currentStatus.isNotEmpty())
-      item->setUniqueName(currentStatus);
-    item->setProgression(progression, progressionTotal, progressionUnit);
-    item->treeHasChanged();
+    WorkUnitExecutionTraceTreeViewItem* item = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(getCurrentPositionInTree());
+    if (item)
+    {
+      WorkUnitExecutionTraceItemPtr trace = item->getTrace();
+      jassert(trace);
+      trace->setEndTime(currentNotificationTime);
+      trace->setProgression(progression, progressionTotal, progressionUnit);
+      item->treeHasChanged();
+    }
   }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-    {addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(workUnit));}
+  {
+    WorkUnitExecutionTraceItemPtr trace(new WorkUnitExecutionTraceItem(workUnit, currentNotificationTime));
+    addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(trace));
+  }
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
@@ -229,13 +226,13 @@ public:
   }
   
   virtual void informationCallback(const String& where, const String& what)
-    {jassert(what.trim().isNotEmpty()); addItem(new InformationExecutionTraceTreeViewItem(what, where));}
+    {addItem(new MessageExecutionTraceItem(currentNotificationTime, informationMessageType, what, where));}
 
   virtual void warningCallback(const String& where, const String& what)
-    {addItem(new WarningExecutionTraceTreeViewItem(what, where));}
+    {addItem(new MessageExecutionTraceItem(currentNotificationTime, warningMessageType, what, where));}
 
   virtual void errorCallback(const String& where, const String& what)
-    {addItem(new ErrorExecutionTraceTreeViewItem(what, where));}
+    {addItem(new MessageExecutionTraceItem(currentNotificationTime, errorMessageType, what, where));}
 
   virtual void statusCallback(const String& status)
     {currentStatus = status;}
@@ -245,43 +242,24 @@ protected:
   String currentStatus;
   double currentNotificationTime;
 
-  void addItem(ExecutionTraceTreeViewItem* newItem)
-    {addItem(getCurrentPositionInTree(), newItem);}
-
-  void addItem(TreeViewItem* parentItem, ExecutionTraceTreeViewItem* newItem)
-  {
-    newItem->setStartTime(currentNotificationTime);
-    parentItem->addSubItem(newItem);
-    if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
-      tree->scrollToKeepItemVisible(newItem);
-  }
-
-  static WorkUnitPtr getWorkUnit(ExecutionTraceTreeViewItem* item)
-  {
-    WorkUnitExecutionTraceTreeViewItem* workUnitItem = dynamic_cast<WorkUnitExecutionTraceTreeViewItem* >(item);
-    return workUnitItem ? workUnitItem->getWorkUnit() : WorkUnitPtr();
-  }
-
-  ExecutionTraceTreeViewItem* getOrCreateProgressTreeViewItem()
-  {
-    ExecutionTraceTreeViewItem* parent = getCurrentPositionInTree();
-    jassert(parent);
-    if (getWorkUnit(parent).dynamicCast<CompositeWorkUnit>())
-      return parent;
-
-    ProgressExecutionTraceTreeViewItem* res = dynamic_cast<ProgressExecutionTraceTreeViewItem* >(parent->getSubItem(parent->getNumSubItems() - 1));
-    if (!res)
-      addItem(res = new ProgressExecutionTraceTreeViewItem());
-    return res;
-  }
 
 protected:
   /*
   ** Positions Into Tree
   */
-  std::vector<ExecutionTraceTreeViewItem* > positions;
+  std::vector<WorkUnitExecutionTraceTreeViewItem* > positions;
 
-  void addItemAndPushPosition(const ExecutionStackPtr& stack, ExecutionTraceTreeViewItem* item)
+  void addItem(ExecutionTraceItemPtr trace)
+    {addItem(getCurrentPositionInTree(), new ExecutionTraceTreeViewItem(trace));}
+
+  void addItem(TreeViewItem* parentItem, ExecutionTraceTreeViewItem* newItem)
+  {
+    parentItem->addSubItem(newItem);
+    if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
+      tree->scrollToKeepItemVisible(newItem);
+  }
+
+  void addItemAndPushPosition(const ExecutionStackPtr& stack, WorkUnitExecutionTraceTreeViewItem* item)
   {
     ExecutionTraceTreeViewItem* parentItem = tree->getItemFromStack(stack);
     jassert(parentItem);
@@ -289,14 +267,14 @@ protected:
     pushPositionIntoTree(item);
   }
 
-  void pushPositionIntoTree(ExecutionTraceTreeViewItem* item)
+  void pushPositionIntoTree(WorkUnitExecutionTraceTreeViewItem* item)
     {positions.push_back(item);}
 
   ExecutionTraceTreeViewItem* popPositionIntoTree(bool setErrorFlag = false)
   { 
     jassert(positions.size());
-    ExecutionTraceTreeViewItem* res = positions.back();
-    res->setEndTime(currentNotificationTime);
+    WorkUnitExecutionTraceTreeViewItem* res = positions.back();
+    res->getTrace()->setEndTime(currentNotificationTime);
     if (setErrorFlag)
       res->setIcon(T("Error-32.png"));
     positions.pop_back();

@@ -27,7 +27,7 @@ namespace lbcpp
 class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewItem(const String& name, const String& iconToUse, bool mightContainSubItems);
+  ExecutionTraceTreeViewItem(const ExecutionTraceItemPtr& trace);
 
   enum
   {
@@ -38,93 +38,40 @@ public:
     timeColumnWidth = 100,
   };
  
-  void paintProgression(Graphics& g, int x, int width, int height);
+  void paintProgression(Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height);
   void paintIcon(Graphics& g, int width, int height);
   void paintIconTextAndProgression(Graphics& g, int width, int height);
 
   virtual void paintItem(Graphics& g, int width, int height);
 
-  void setProgression(double progression, double progressionTotal, const String& unit);
-
   static String formatTime(double timeInSeconds);
   
-  void setStartTime(double time);
-  void setEndTime(double time);
+  virtual int getItemHeight() const
+    {return 20 * numLines;}
+
+  const ExecutionTraceItemPtr& getTrace() const
+    {return trace;}
 
 protected:
-  double creationTime;
-
-  String absoluteTime;
-  String relativeTime;
-
-  bool hasProgression;
-  double progression;
-  String progressionString;
+  ExecutionTraceItemPtr trace;
+  int numLines;
 };
 
 class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  WorkUnitExecutionTraceTreeViewItem(const WorkUnitPtr& workUnit, const String& iconToUse = T("WorkUnit-32.png"), bool open = true)
-    : ExecutionTraceTreeViewItem(workUnit ? workUnit->getName() : String::empty, iconToUse, false), workUnit(workUnit)
+  WorkUnitExecutionTraceTreeViewItem(const WorkUnitExecutionTraceItemPtr& trace, bool open = true)
+    : ExecutionTraceTreeViewItem(trace)
     {setOpen(open);}
-
-  const WorkUnitPtr& getWorkUnit() const
-    {return workUnit;}
 
   virtual bool mightContainSubItems()
     {return getNumSubItems() > 0;}
 
-protected:
-  WorkUnitPtr workUnit;
-};
+  const WorkUnitExecutionTraceItemPtr& getTrace() const
+    {return trace.staticCast<WorkUnitExecutionTraceItem>();}
 
-class MessageExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
-{
-public:
-  MessageExecutionTraceTreeViewItem(const String& what, const String& where = String::empty, const String& iconToUse = String::empty)
-    : ExecutionTraceTreeViewItem(what + (where.isNotEmpty() ? T(" (") + where + T(")") : String::empty), iconToUse, false)
-  {
-    String str = getUniqueName();
-    numLines = 1;
-    for (int i = 0; i < str.length() - 1; ++i)
-      if (str[i] == '\n')
-        ++numLines;
-  }
-
-  virtual int getItemHeight() const
-    {return 20 * numLines;}
-
-private:
-  size_t numLines;
-};
-
-class WarningExecutionTraceTreeViewItem : public MessageExecutionTraceTreeViewItem
-{
-public:
-  WarningExecutionTraceTreeViewItem(const String& what, const String& where = String::empty)
-    : MessageExecutionTraceTreeViewItem(what, where, T("Warning-32.png")) {}
-};
-
-class ErrorExecutionTraceTreeViewItem : public MessageExecutionTraceTreeViewItem
-{
-public:
-  ErrorExecutionTraceTreeViewItem(const String& what, const String& where = String::empty)
-    : MessageExecutionTraceTreeViewItem(what, where, T("Error-32.png")) {}
-};
-
-class InformationExecutionTraceTreeViewItem : public MessageExecutionTraceTreeViewItem
-{
-public:
-  InformationExecutionTraceTreeViewItem(const String& what, const String& where = String::empty)
-    : MessageExecutionTraceTreeViewItem(what, where, T("Information-32.png")) {}
-};
-
-class ProgressExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
-{
-public:
-  ProgressExecutionTraceTreeViewItem()
-    : ExecutionTraceTreeViewItem(T("progression"), T("Progress-32.png"), false) {}
+  const WorkUnitPtr& getWorkUnit() const
+    {return getTrace()->getWorkUnit();}
 };
 
 class DelayToUserInterfaceExecutionCallback : public ExecutionCallback, public juce::Timer

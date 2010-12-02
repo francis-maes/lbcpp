@@ -42,6 +42,7 @@ protected:
   virtual bool run(ExecutionContext& context)
   {
     result = objective->compute(context, input);
+    context.resultCallback(name, result);
     return true;
   }
 

@@ -28,13 +28,6 @@
       <variable type="Variable" name="value"/>
     </class>
 
-    <enumeration name="ExecutionMessageType">
-      <value name="informationMessageType"/>
-      <value name="warningMessageType"/>
-      <value name="errorMessageType"/>
-      <value name="statusMessageType"/>
-    </enumeration>
-
     <class name="ExecutionMessageNotification" base="ExecutionNotification">
       <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
       <variable type="String" name="what"/>

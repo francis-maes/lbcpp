@@ -15,6 +15,14 @@
 namespace lbcpp
 {
 
+enum ExecutionMessageType
+{
+  informationMessageType,
+  warningMessageType,
+  errorMessageType,
+  statusMessageType
+};
+
 class ExecutionCallback : public Object
 {
 public:

@@ -1,11 +1,8 @@
-1) Optimisation GUI: ne pas créer les sous-noeux des gros Parallel WorkUnit
-    - CompositeWorkUnit/ExecutionContext responsable d'appeler la progression
-    
-2) Nouvelle Collone "Output", améliorer le système des collones
+* ExecutionTrace
+* Seul les WorkUnit ont une progression
+* Gerer les resultCallback
 
-  
-* Refaire marcher l'optimisation dans le SandBox
-
+* Nouvelle Collone "Output", améliorer le système des collones
 
 * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 

@@ -83,24 +83,6 @@ extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 extern ExecutionContextPtr defaultExecutionContext(bool noMultiThreading = false);
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
-class ExecutionTrace : public Object
-{
-public:
-  ExecutionTrace(ExecutionContextPtr context)
-    : context(context) {}
-  ExecutionTrace() {}
-
-  virtual juce::Component* createComponent() const;
-
-  ExecutionContext& getContext() const
-    {jassert(context); return *context;}
-
-protected:
-  ExecutionContextPtr context;
-};
-
-typedef ReferenceCountedObjectPtr<ExecutionTrace> ExecutionTracePtr;
-
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_CONTEXT_H_
