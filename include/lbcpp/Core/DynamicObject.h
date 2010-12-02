@@ -63,6 +63,8 @@ extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr out
 class UnnamedDynamicClass : public DynamicClass
 {
 public:
+  UnnamedDynamicClass(const String& name, TypePtr baseClass = objectClass)
+    : DynamicClass(name, baseClass) {}
   UnnamedDynamicClass() {}
 
   virtual ClassPtr getClass() const

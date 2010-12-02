@@ -155,6 +155,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   setRootItem(new WorkUnitExecutionTraceTreeViewItem(this, new WorkUnitExecutionTraceItem(WorkUnitPtr(), initialTime)));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
+  setMultiSelectEnabled(true);
 }
 
 ExecutionTraceTreeView::~ExecutionTraceTreeView()
@@ -200,9 +201,9 @@ void ExecutionTraceTreeView::timerCallback()
         WorkUnitExecutionTraceItemPtr trace = item->getTrace().dynamicCast<WorkUnitExecutionTraceItem>();
         if (trace)
         {
-          const std::vector< std::pair<String, Variable> >& results = trace->getResults();
-          for (size_t i = 0; i < results.size(); ++i)
-            selectedVariables.push_back(results[i].second);
+          ObjectPtr results = trace->getResultsObject(*silentExecutionContext);
+          if (results)
+            selectedVariables.push_back(results);
         }
       }
     }

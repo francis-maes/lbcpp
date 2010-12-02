@@ -179,95 +179,6 @@ protected:
 
 /////////////////////////////////////////
 
-class SandBoxInferenceCallback : public ExecutionCallback
-{
-public:
-  SandBoxInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData)
-    : inference(inference), trainingData(trainingData), testingData(testingData), iterationNumber(0) {}
-
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-  {
-/*
-    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
-    if (!inferenceWorkUnit)
-      return;
-
-    InferenceBatchLearnerInputPtr learnerInput = inferenceWorkUnit->getInput().dynamicCast<InferenceBatchLearnerInput>();
-    if (learnerInput)
-    {
-      String inputTypeName = learnerInput->getTrainingExamples()->getElementsType()->getTemplateArgument(0)->getName();
-
-      String info = T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ");
-      info += String((int)learnerInput->getNumTrainingExamples());
-      if (learnerInput->getNumValidationExamples())
-        info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
-
-      info += T(" ") + inputTypeName + T("(s) ===");
-      getContext().informationCallback(info);
-    }*/
-  }
-
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-  {
-    ExecutionContext& context = getContext();
-    
-    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
-    if (!inferenceWorkUnit)
-      return;
-    const InferencePtr& inference = inferenceWorkUnit->getInference();
-    const Variable& input = inferenceWorkUnit->getInput();
-
-    String inferenceName = inference->getName();
-
-    //if (stack->getDepth() == 1) // 
-    //if (context.getCurrentFunction()->getClassName() == T("RunSequentialInferenceStepOnExamples"))
-    if (inferenceName.startsWith(T("Learning Iteration")))
-    {
-      // end of learning iteration
-      //context.informationCallback(T("====================================================="));
-      //context.informationCallback(T("================ EVALUATION =========================  ") + String((Time::getMillisecondCounter() - startingTime) / 1000) + T(" s"));
-      //context.informationCallback(T("====================================================="));
-
-      InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
-      if (learnerInput)
-      {
-        const InferencePtr& targetInference = learnerInput->getTargetInference();
-        if (targetInference && targetInference->getOnlineLearner())
-        {
-          std::vector< std::pair<String, double> > scores;
-          targetInference->getLastOnlineLearner()->getScores(scores);
-          String info;
-          for (size_t i = 0; i < scores.size(); ++i)
-          {
-            info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
-            context.resultCallback(scores[i].first, scores[i].second);
-          }
-          //context.informationCallback(info);
-        }
-      }
-/*
-      ProteinEvaluatorPtr evaluator = new ProteinEvaluator();
-      inference->evaluate(context, trainingData, evaluator);
-      processResults(evaluator, true);
-
-      evaluator = new ProteinEvaluator();
-      inference->evaluate(context, testingData, evaluator);
-      processResults(evaluator, false);*/
-
-      //context.informationCallback(T("====================================================="));
-    }
-
-  }
-
-  void processResults(ProteinEvaluatorPtr evaluator, bool isTrainingData)
-    {std::cout << " == " << (isTrainingData ? "Training" : "Testing") << " Scores == " << std::endl << evaluator->toString() << std::endl;}
-
-private:
-  InferencePtr inference;
-  ContainerPtr trainingData, testingData;
-  size_t iterationNumber;
-};
-
 VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
@@ -378,12 +289,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   ReferenceCountedObject::displayRefCountDebugInfo(std::cout);
   return true;*/
 
-  {
-    ExecutionCallbackPtr trainingCallback = new SandBoxInferenceCallback(inference, trainProteins, testProteins);
-    context.appendCallback(trainingCallback);
-    inference->train(context, trainProteins, validationProteins, T("Training"));
-    context.removeCallback(trainingCallback);
-  }
+  inference->train(context, trainProteins, validationProteins, T("Training"));
 
   /*
   std::cout << "Making and saving train predicions..." << std::endl;
@@ -419,7 +325,6 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
     EvaluatorPtr evaluator = new ProteinEvaluator();
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
-    context->appendCallback(new SandBoxInferenceCallback(inference, trainProteins, testProteins));
     inference->evaluate(*context, trainProteins, evaluator);
   //  inference->crossValidate(context, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;

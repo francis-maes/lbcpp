@@ -65,3 +65,30 @@ void WorkUnitExecutionTraceItem::setResult(const String& name, const Variable& v
     }
   results.push_back(std::make_pair(name, value));
 }
+
+ObjectPtr WorkUnitExecutionTraceItem::getResultsObject(ExecutionContext& context)
+{
+  if (results.empty())
+    return ObjectPtr();
+  bool classHasChanged = false;
+  if (!resultsClass)
+    resultsClass = new UnnamedDynamicClass(workUnit->getName() + T(" results"));
+  std::vector<size_t> variableIndices(results.size());
+  for (size_t i = 0; i < results.size(); ++i)
+  {
+    int index = resultsClass->findObjectVariable(results[i].first);
+    if (index < 0)
+    {
+      resultsClass->addVariable(context, results[i].second.getType(), results[i].first);
+      index = (int)resultsClass->getObjectNumVariables() - 1;
+      classHasChanged = true;
+    }
+    variableIndices[i] = (size_t)index;
+  }
+  if (classHasChanged)
+    resultsClass->initialize(context);
+  ObjectPtr res = resultsClass->createDenseObject();
+  for (size_t i = 0; i < results.size(); ++i)
+    res->setVariable(context, variableIndices[i], results[i].second);
+  return res;
+}
