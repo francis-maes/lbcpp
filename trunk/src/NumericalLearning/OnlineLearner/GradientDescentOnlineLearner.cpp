@@ -69,12 +69,16 @@ void GradientDescentOnlineLearner::passFinishedCallback(ExecutionContext& contex
   ObjectPtr parameters = getNumericalInference(inference)->getWeightsCopy(context);
   size_t l0norm = lbcpp::l0norm(context, parameters);
   double l2norm = lbcpp::l2norm(context, parameters);
-  context.informationCallback(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
+  context.resultCallback(T("Epoch"), (int)epoch);
+  context.resultCallback(T("NumParameters"), (int)l0norm);
+  context.resultCallback(T("Parameters L2"), l2norm);
+  //context.informationCallback(inference->getName() + T(" Epoch ") + String((int)epoch) + T(", ") + String((int)l0norm) + T(" parameters, L2 = ") + String(l2norm, 3));
   //Variable(parameters).printRecursively(std::cout, -1, false, false);
   if (lossValue.getCount())
   {
     double mean = lossValue.getMean();
-    context.informationCallback(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
+    context.resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
+    //context.informationCallback(lossValue.toString() + T(" meanFeaturesL1 = ") + String(numberOfActiveFeatures.getMean()) + T("\n"));
     lastEmpiricalRisk = mean;
     lossValue.clear();
     //lossValue.push(mean); // hack: we push the previous mean loss as a first sample, in order to have a correct estimate before the first example arrives

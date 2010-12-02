@@ -23,7 +23,7 @@ class StochasticPassInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   StochasticPassInferenceLearner(const std::vector<InferencePtr>& learnedInferences, bool randomizeExamples)
-    : learnedInferences(learnedInferences), randomizeExamples(randomizeExamples)
+    : learnedInferences(learnedInferences), randomizeExamples(randomizeExamples), iteration(0)
     {}
 
   StochasticPassInferenceLearner() {}
@@ -42,6 +42,7 @@ protected:
 
   std::vector<InferencePtr> learnedInferences;
   bool randomizeExamples;
+  size_t iteration;
 
   struct Callback : public ExecutionCallback
   {
@@ -125,6 +126,7 @@ protected:
       finishEpisode(context);
     }
 
+    ++(const_cast<StochasticPassInferenceLearner* >(this)->iteration);
     return finishPass(context, learnerInput);
   }
 
@@ -141,6 +143,8 @@ protected:
 
   bool finishPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) const // returns false when learning is finished
   {
+    context.resultCallback(T("Iteration"), (int)iteration);
+
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
     {
@@ -152,6 +156,11 @@ protected:
         wantsMoreIterations |= learner->wantsMoreIterations();
       }
     }
+    // send results
+    std::vector< std::pair<String, double> > scores;
+    learnerInput->getTargetInference()->getLastOnlineLearner()->getScores(scores);
+    for (size_t i = 0; i < scores.size(); ++i)
+      context.resultCallback(scores[i].first, scores[i].second);
     return wantsMoreIterations;
   }
 };

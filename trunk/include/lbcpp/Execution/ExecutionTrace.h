@@ -12,6 +12,7 @@
 # include "ExecutionContext.h"
 # include "../Core/Vector.h"
 # include "../Core/Pair.h"
+# include "../Core/DynamicObject.h"
 
 namespace lbcpp
 {
@@ -88,10 +89,13 @@ public:
   const std::vector< std::pair<String, Variable> >& getResults() const
     {return results;}
 
+  ObjectPtr getResultsObject(ExecutionContext& context);
+
 protected:
   friend class WorkUnitExecutionTraceItemClass;
 
   WorkUnitPtr workUnit;
+  UnnamedDynamicClassPtr resultsClass;
   std::vector< std::pair<String, Variable> > results;
   double endTime;
 

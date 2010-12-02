@@ -24,7 +24,7 @@ public:
   StoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency)
     : UpdatableOnlineLearner(criterionTestFrequency), 
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
-        learningStopped(false), bestDefaultScore(-DBL_MAX)
+        learningStopped(false), bestDefaultScore(-DBL_MAX), iteration(0)
      {criterion->reset();}
 
   StoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
@@ -36,6 +36,7 @@ public:
     bestParameters = ObjectPtr();
     bestDefaultScore = -DBL_MAX;
     bestScores.clear();
+    iteration = 0;
   }
 
   virtual bool isLearningStopped() const
@@ -77,6 +78,7 @@ private:
   Variable bestParameters;
   double bestDefaultScore;
   std::vector< std::pair<String, double> > bestScores;
+  size_t iteration;
 
   virtual void update(ExecutionContext& context, const InferencePtr& inference)
   {
