@@ -21,6 +21,11 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
 {
   if (!cacheVector)
     const_cast<BinaryDecisionTreeSplitter*>(this)->cacheVector = vector(data->getElementsType());
+  if (!pairOutputType)
+  {
+    TypePtr type = data->getElementsType();
+    const_cast<BinaryDecisionTreeSplitter*>(this)->pairOutputType = pairClass(type, type);
+  }
   VectorPtr left = cacheVector->cloneAndCast<Vector>(context);
   VectorPtr right = cacheVector->cloneAndCast<Vector>(context);
   
@@ -36,7 +41,7 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
   negativeExamples = right;
   positiveExamples = left;
   
-  return scoringFunction->compute(context, Variable::pair(left, right));
+  return scoringFunction->compute(context, Variable::pair(left, right, pairOutputType));
 }
 
 Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const

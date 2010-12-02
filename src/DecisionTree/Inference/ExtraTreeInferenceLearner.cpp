@@ -34,11 +34,12 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
 
   TypePtr outputType = learnerInput->getTrainingExample(0).second.getType();
   PerceptionPtr perception = inference->getPerception();
-  VectorPtr newTrainingData = vector(pairClass(perception->getOutputType(), outputType), learnerInput->getNumTrainingExamples());
+  TypePtr pairType = pairClass(perception->getOutputType(), outputType);
+  VectorPtr newTrainingData = vector(pairType, learnerInput->getNumTrainingExamples());
   for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
   {
     const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
-    newTrainingData->setElement(i, Variable::pair(perception->computeFunction(context, example.first), example.second));
+    newTrainingData->setElement(i, Variable::pair(perception->computeFunction(context, example.first), example.second, pairType));
   }
 
   BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, newTrainingData);
@@ -189,7 +190,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
 
   // create the node
   tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
-  
+
   // call recursively
   sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, selectedSplit.negative, nonConstantVariables, bestSplits);
   sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, selectedSplit.positive, nonConstantVariables, bestSplits);

@@ -83,7 +83,7 @@ protected:
 private:
   void ensureScalarMeanAreInitialized()
   {
-    jassert((means && !variances) || (!means && variances));
+    jassert((!means && !variances) || (means && variances));
     if (!means)
     {
       means = new ScalarVariableMean();

@@ -6,11 +6,8 @@ Programmes Proteines:
  * ProteinInferenceEvaluator.cpp broken !
 
 Network:
- * Tester les ports sur le NIC3 (port 1664)
- * Classes NetworkClient (dérive de InterprocessConnection), NetworkServer (dérive de InterprocessConnectionServer)
- * void sendVariable(const Variable& variable)
- * void variableReceived(const Variable& variable)
- 
+ * Test approfondis
+
 Extra-trees:
  * Delocker les arbres
    - Source du problème: Grand nombre d'acces au TypeManager (création de pair, création vector, enumeration)
