@@ -2,10 +2,12 @@
 
 <file name="Execution" directory="Execution">
 
-  <include file="lbcpp/Core/Vector.h"/>
+<include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Execution/ExecutionContext.h"/>
   <include file="lbcpp/Execution/WorkUnit.h"/>
   <include file="lbcpp/Execution/ExecutionStack.h"/>
+  <include file="lbcpp/Execution/ExecutionTrace.h"/>
+
   <import name="ExecutionCallback"/>
   <import name="ExecutionContext"/>
 
@@ -35,12 +37,41 @@
     <class name="Notification" abstract="yes"/>
 
     <!-- Execution Callback and Context -->
+    <enumeration name="ExecutionMessageType">
+      <value name="informationMessageType"/>
+      <value name="warningMessageType"/>
+      <value name="errorMessageType"/>
+      <value name="statusMessageType"/>
+    </enumeration>
+
     <class name="ExecutionCallback" base="Object" abstract="yes"/>
     <class name="CompositeExecutionCallback" base="ExecutionCallback" abstract="yes">
       <variable type="ObjectVector[ExecutionCallback]" name="callbacks"/>
     </class>
     <class name="ExecutionContext" base="CompositeExecutionCallback" abstract="yes"/>
 
+
+    <!--
+      -- ExecutionTrace
+      -->
+    <class name="ExecutionTraceItem" base="Object" abstract="yes">
+      <variable type="Double" name="time"/>
+    </class>
+
+    <class name="MessageExecutionTraceItem" base="ExecutionTraceItem">
+      <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
+      <variable type="String" name="what"/>
+      <variable type="String" name="where"/>
+    </class>
+
+    <class name="WorkUnitExecutionTraceItem" base="ExecutionTraceItem">
+      <variable type="WorkUnit" name="workUnit"/>
+      <variable type="ObjectVector[Pair[String,Variable]]" name="results"/>
+      <variable type="Double" name="endTime"/>
+      <variable type="Boolean" name="hasProgression"/>
+      <variable type="String" name="progressionString"/>
+    </class>
+    
     <class name="ExecutionTrace" base="Object"/>
     
   </namespace>

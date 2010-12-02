@@ -26,6 +26,15 @@ typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;
 class ExecutionStack;
 typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
 
+class ExecutionTraceItem;
+typedef ReferenceCountedObjectPtr<ExecutionTraceItem> ExecutionTraceItemPtr;
+
+class WorkUnitExecutionTraceItem;
+typedef ReferenceCountedObjectPtr<WorkUnitExecutionTraceItem> WorkUnitExecutionTraceItemPtr;
+
+class ExecutionTrace;
+typedef ReferenceCountedObjectPtr<ExecutionTrace> ExecutionTracePtr;
+
 class WorkUnit;
 typedef ReferenceCountedObjectPtr<WorkUnit> WorkUnitPtr;
 

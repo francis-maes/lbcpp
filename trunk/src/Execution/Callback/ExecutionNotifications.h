@@ -71,14 +71,6 @@ protected:
   Variable value;
 };
 
-enum ExecutionMessageType
-{
-  informationMessageType,
-  warningMessageType,
-  errorMessageType,
-  statusMessageType
-};
-
 class ExecutionMessageNotification : public ExecutionNotification
 {
 public:
