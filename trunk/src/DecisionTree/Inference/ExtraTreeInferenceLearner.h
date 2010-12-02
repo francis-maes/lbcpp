@@ -47,7 +47,7 @@ protected:
 
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
-  ProbabilityDistributionBuilderPtr builder; // FIXME: Need to be cloned in multi thread context ?
+  ProbabilityDistributionBuilderPtr builder;
   
   struct Split
   {

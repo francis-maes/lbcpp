@@ -17,13 +17,17 @@ namespace lbcpp
 class SplitScoringFunction : public ObjectiveFunction
 {
 public:
-  SplitScoringFunction(TypePtr elementType = anyType) : elementType(elementType) {}
+  SplitScoringFunction(TypePtr elementType = anyType)
+    : elementType(elementType), pairInputType(pairClass(containerClass(elementType), containerClass(elementType))) {}
 
   virtual TypePtr getInputType() const
-    {return pairClass(containerClass(elementType), containerClass(elementType));}
+    {return pairInputType;}
 
 protected:
   TypePtr elementType;
+
+private:
+  TypePtr pairInputType; // avoid re-calculation
 };
 
 class RegressionIGSplitScoringFunction : public SplitScoringFunction
