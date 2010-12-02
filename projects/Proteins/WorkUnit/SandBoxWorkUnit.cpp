@@ -268,7 +268,7 @@ private:
 VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
-  size_t maxCount = 2;
+  size_t maxCount = 100;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG

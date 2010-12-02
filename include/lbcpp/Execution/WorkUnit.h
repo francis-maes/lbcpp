@@ -38,13 +38,13 @@ public:
   bool parseArguments(ExecutionContext& context, const String& arguments);
   bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 
+  virtual bool run(ExecutionContext& context) = 0;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExecutionContext;
   friend class DecoratorWorkUnit;
-
-  virtual bool run(ExecutionContext& context) = 0;
 };
 
 extern ClassPtr workUnitClass;
@@ -71,7 +71,7 @@ class CompositeWorkUnit : public WorkUnit
 {
 public:
   CompositeWorkUnit(const String& name, size_t initialSize)
-    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")) {}
+    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false) {}
   CompositeWorkUnit() {}
 
   size_t getNumWorkUnits() const
@@ -88,12 +88,20 @@ public:
 
   void setProgressionUnit(const String& progressionUnit)
     {this->progressionUnit = progressionUnit;}
+  
+  // push into stack
+  void setPushChildrenIntoStackFlag(bool value)
+    {pushChildrenIntoStack = value;}
+
+  bool hasPushChildrenIntoStackFlag() const
+    {return pushChildrenIntoStack;}
 
 protected:
   friend class CompositeWorkUnitClass;
 
   ObjectVectorPtr workUnits;
   String progressionUnit;
+  bool pushChildrenIntoStack;
 
   virtual bool run(ExecutionContext& context);
 };

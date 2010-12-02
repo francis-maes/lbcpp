@@ -93,6 +93,7 @@ public:
       double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
       workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(learningRate), objective, learningRate, scores[i]));
     }
+    workUnits->setPushChildrenIntoStackFlag(true);
     context.run(workUnits);
     double bestScore = -DBL_MAX;
     double res = 0.0;
@@ -103,7 +104,6 @@ public:
       if (scores[i] > bestScore)
         bestScore = scores[i], res = learningRate;
     }
-
     return res;
   }
 };

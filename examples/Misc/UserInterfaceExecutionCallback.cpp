@@ -53,6 +53,7 @@ public:
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
       subWorkUnits->setWorkUnit(i, new MySubWorkUnit(T("SubWU ") + String((int)i)));
+    subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
     context.informationCallback(T("Finished."));
