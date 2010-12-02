@@ -275,11 +275,33 @@ public:
     : ExecutionTraceTreeViewItem(T("progression"), T("Progress-32.png"), false) {}
 };
 
-class ExecutionTraceTreeView : public TreeView, public ExecutionCallback
+class DelayToUserInterfaceExecutionCallback : public ExecutionCallback, public juce::Timer
 {
 public:
-  ExecutionTraceTreeView()
+  DelayToUserInterfaceExecutionCallback(ExecutionCallbackPtr target = ExecutionCallbackPtr())
+    : notifications(new NotificationQueue()), target(target)
+    {startTimer(100);}
+
+  virtual void notificationCallback(const NotificationPtr& notification)
+    {notifications->push(notification);}
+
+  virtual void timerCallback()
+    {notifications->flush(target);}
+
+protected:
+  NotificationQueuePtr notifications;
+  ExecutionCallbackPtr target;
+};
+ 
+class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback
+{
+public:
+  ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace)
   {
+    DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
+    DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
+    trace->getContext().appendCallback(refCountedPointerFromThis(this));
+
     initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
     setRootItem(new NodeExecutionTraceTreeViewItem(ObjectPtr(), String::empty));
     setRootItemVisible(false);
@@ -287,18 +309,9 @@ public:
   }
 
   virtual ~ExecutionTraceTreeView()
-    {deleteRootItem();}
-
-  virtual void notificationCallback(const NotificationPtr& notification)
   {
-    Thread::ThreadID threadId = notification->getSourceThreadId();
-    CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
-    ExecutionCallbackPtr threadCallback;
-    if (it == callbackByThread.end())
-      threadCallback = callbackByThread[threadId] = createBuilderCallback();
-    else
-      threadCallback = it->second;
-    threadCallback->notificationCallback(notification);
+    trace->getContext().removeCallback(refCountedPointerFromThis(this));
+    deleteRootItem();
   }
 
   NodeExecutionTraceTreeViewItem* getItemFromStack(const ExecutionStackPtr& stack) const
@@ -329,11 +342,10 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  typedef std::map<Thread::ThreadID, ExecutionCallbackPtr> CallbackByThreadMap;
-  CallbackByThreadMap callbackByThread;
-
+  ExecutionTracePtr trace;
   double initialTime;
-  ExecutionCallbackPtr createBuilderCallback();
+
+  ExecutionCallbackPtr createTreeBuilderCallback();
 };
 
 class ExecutionTraceTreeViewBuilderCallback : public ExecutionCallback
@@ -452,8 +464,46 @@ protected:
     {return positions.size() ? positions.back() : (ExecutionTraceTreeViewItem* )tree->getRootItem();}
 };
 
-ExecutionCallbackPtr ExecutionTraceTreeView::createBuilderCallback()
-  {return new ExecutionTraceTreeViewBuilderCallback(this);}
+class DispatchByThreadExecutionCallback : public CompositeExecutionCallback // to have default implementations that redirect to notificationCallback
+{
+public:
+  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId) = 0;
+
+  virtual void notificationCallback(const NotificationPtr& notification)
+  {
+    Thread::ThreadID threadId = notification->getSourceThreadId();
+    CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
+    ExecutionCallbackPtr threadCallback;
+    if (it == callbackByThread.end())
+      threadCallback = callbackByThread[threadId] = createCallbackForThread(threadId);
+    else
+      threadCallback = it->second;
+    threadCallback->notificationCallback(notification);
+  }
+
+protected:
+  typedef std::map<Thread::ThreadID, ExecutionCallbackPtr> CallbackByThreadMap;
+  CallbackByThreadMap callbackByThread;
+};
+
+class ExecutionTraceTreeViewBuilderExecutionCallback : public DispatchByThreadExecutionCallback
+{
+public:
+  ExecutionTraceTreeViewBuilderExecutionCallback(ExecutionTraceTreeView* tree)
+    : tree(tree) {}
+
+  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId)
+    {return new ExecutionTraceTreeViewBuilderCallback(tree);}
+
+protected:
+  ExecutionTraceTreeView* tree;
+};
+
+ExecutionCallbackPtr ExecutionTraceTreeView::createTreeBuilderCallback()
+  {return new ExecutionTraceTreeViewBuilderExecutionCallback(this);}
+
+juce::Component* ExecutionTrace::createComponent() const
+  {return new ExecutionTraceTreeView(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */
 

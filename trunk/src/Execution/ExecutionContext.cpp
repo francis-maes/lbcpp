@@ -132,10 +132,15 @@ const WorkUnitPtr& ExecutionStack::getWorkUnit(size_t depth) const
 /*
 ** Execution Context constructor functions
 */
-ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
+ExecutionContextPtr lbcpp::defaultExecutionContext(bool noMultiThreading)
 {
   int numCpus = juce::SystemStats::getNumCpus();
-  ExecutionContextPtr res = numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext();
+  return numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext();
+}
+
+ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
+{
+  ExecutionContextPtr res = defaultExecutionContext(noMultiThreading);
   res->appendCallback(consoleExecutionCallback());
   return res;
 }

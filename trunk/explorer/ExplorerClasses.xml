@@ -2,6 +2,7 @@
 
 <file name="Explorer">
   <include file="ProcessManager/RecentProcesses.h"/>
+  <import name="WorkUnitManager"/>
 
   <namespace name="lbcpp">
 

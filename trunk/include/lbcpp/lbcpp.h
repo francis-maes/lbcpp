@@ -50,6 +50,7 @@
 
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
+# include "Execution/Notification.h"
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 

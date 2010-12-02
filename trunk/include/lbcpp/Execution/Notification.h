@@ -42,17 +42,13 @@ public:
   virtual void consume(ExecutionContext& context, const Variable& variable)
     {push(variable.getObjectAndCast<Notification>());}
   
-  void setTarget(const ObjectPtr& target)
-    {this->target = target;}
-
   void push(const NotificationPtr& notification);
-  void flush();
+  void flush(const ObjectPtr& target);
   bool isEmpty() const;
 
 protected:
   CriticalSection lock;
   std::vector<NotificationPtr> notifications;
-  ObjectPtr target;
 };
 
 typedef ReferenceCountedObjectPtr<NotificationQueue> NotificationQueuePtr;

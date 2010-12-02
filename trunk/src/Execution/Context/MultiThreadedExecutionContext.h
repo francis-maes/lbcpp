@@ -283,6 +283,13 @@ public:
   virtual bool isPaused() const
     {return false;}
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
+  {
+    static int remainingWorkUnits;
+    WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
+    queue->push(workUnit, stack, remainingWorkUnits);
+  }
+
   virtual bool run(const WorkUnitPtr& workUnit)
   {
     int remainingWorkUnits = 1;

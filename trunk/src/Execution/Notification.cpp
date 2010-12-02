@@ -26,7 +26,7 @@ void NotificationQueue::push(const NotificationPtr& notification)
   notifications.push_back(notification);
 }
 
-void NotificationQueue::flush()
+void NotificationQueue::flush(const ObjectPtr& target)
 {
   std::vector<NotificationPtr> notifications;
   {

@@ -28,6 +28,16 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   return workUnit->parseArguments(context, arguments) && context.run(workUnit) ? 0 : 1;
 }
 
+bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)
+{
+  StringArray tokens;
+  tokens.addTokens(arguments, true);
+  std::vector<String> toks(tokens.size());
+  for (size_t i = 0; i < toks.size(); ++i)
+    toks[i] = tokens[i].isQuotedString() ? tokens[i].unquoted() : tokens[i];
+  return parseArguments(context, toks);
+}
+
 bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
 {
   /* shortcut */

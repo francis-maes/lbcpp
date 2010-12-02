@@ -45,11 +45,7 @@ public:
   {
     ExecutionCallback::initialize(context);
 
-    uiCompositeCallback = CompositeExecutionCallbackPtr(new CompositeExecutionCallback());
-    uiCompositeCallback->initialize(context);
-
     userInterfaceManager().ensureIsInitialized(context);
-    userInterfaceManager().getNotificationQueue()->setTarget(uiCompositeCallback);
     userInterfaceManager().getNotificationQueue()->push(new CreateWindowNotification(this));
     waitUntilNotificationQueueIsEmpty();
   }
@@ -69,12 +65,7 @@ public:
       Thread::sleep(100);
   }
 
-  virtual void notificationCallback(const NotificationPtr& notification)
-    {userInterfaceManager().getNotificationQueue()->push(notification);}
-
 private:
-  CompositeExecutionCallbackPtr uiCompositeCallback;
-
   Component* mainWindow;
   Component* content;
   
@@ -88,13 +79,7 @@ private:
     virtual void notify(const ObjectPtr& target)
     {
       jassert(!pthis->content && !pthis->mainWindow);
-      pthis->content = new ExecutionTraceTreeView();
-      ExecutionCallback* callback = dynamic_cast<ExecutionCallback* >(pthis->content);
-      if (callback)
-      {
-        callback->setStaticAllocationFlag();
-        pthis->uiCompositeCallback->appendCallback(callback);
-      }
+      pthis->content = new ExecutionTraceTreeView(new ExecutionTrace(pthis->getContext()));
       pthis->mainWindow = new UserInterfaceExecutionCallbackMainWindow(pthis->content);
     }
   };
@@ -108,7 +93,7 @@ private:
   
     virtual void notify(const ObjectPtr& target)
     {
-      pthis->uiCompositeCallback->clearCallbacks();
+      pthis->clearCallbacks();
       if (pthis->mainWindow)
         deleteAndZero(pthis->mainWindow);
       pthis->content = NULL;
