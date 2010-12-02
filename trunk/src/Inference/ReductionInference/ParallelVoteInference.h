@@ -68,7 +68,7 @@ public:
       jassert(distribution);
       probabilityBuilder->addDistribution(distribution);
     }
-    return probabilityBuilder->build();
+    return probabilityBuilder->build(context);
   }
 
 protected:

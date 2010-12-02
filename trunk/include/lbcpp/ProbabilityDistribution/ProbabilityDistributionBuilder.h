@@ -21,7 +21,7 @@ public:
   virtual void clear() = 0;
   virtual void addElement(const Variable& element, double weight = 1.0) = 0;
   virtual void addDistribution(const ProbabilityDistributionPtr& distribution, double weight = 1.0) = 0;
-  virtual ProbabilityDistributionPtr build() const = 0;
+  virtual ProbabilityDistributionPtr build(ExecutionContext& context) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProbabilityDistributionBuilder> ProbabilityDistributionBuilderPtr;

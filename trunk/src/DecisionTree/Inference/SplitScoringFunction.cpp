@@ -51,12 +51,12 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
 
   EnumerationProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, leftData);
   EnumerationProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, rightData);
-  ProbabilityDistributionBuilderPtr probabilityBuilder = enumerationProbabilityDistributionBuilder(enumeration);
+  ProbabilityDistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);
 
   probabilityBuilder->addDistribution(leftDistribution);
   probabilityBuilder->addDistribution(rightDistribution);
 
-  EnumerationProbabilityDistributionPtr priorDistribution = probabilityBuilder->build();
+  EnumerationProbabilityDistributionPtr priorDistribution = probabilityBuilder->build(context);
 
   double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
   double informationGain = priorDistribution->computeEntropy()
@@ -68,12 +68,19 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
 EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const
 {
   EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
-  ProbabilityDistributionBuilderPtr probabilityBuilder = enumerationProbabilityDistributionBuilder(enumeration);  
+  ProbabilityDistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);  
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
     Variable output = data->getElement(i)[1];
     jassert(output.exists());
     probabilityBuilder->addElement(output);
   }
-  return probabilityBuilder->build();
+  return probabilityBuilder->build(context);
+}
+
+ProbabilityDistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBuilder(EnumerationPtr enumeration) const
+{
+  if (!cacheBuilder)
+    const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationProbabilityDistributionBuilder(enumeration);
+  return cacheBuilder->cloneAndCast<ProbabilityDistributionBuilder>();
 }

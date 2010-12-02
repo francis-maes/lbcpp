@@ -50,7 +50,7 @@ public:
   virtual bool run(ExecutionContext& context)
   {
     runClassification(context);
-    runRegression(context);
+    //runRegression(context);
     return true;
   }
 
