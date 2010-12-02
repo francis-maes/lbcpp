@@ -197,12 +197,14 @@ class ExecutionTraceTreeViewBuilderCallback : public ExecutionCallback
 {
 public:
   ExecutionTraceTreeViewBuilderCallback(ExecutionTraceTreeView* tree)
-    : tree(tree) {}
+    : tree(tree), currentNotificationTime(0) {}
 
   virtual void notificationCallback(const NotificationPtr& notification)
   {
     Time creationTime = notification->getConstructionTime();
-    currentNotificationTime = creationTime.toMilliseconds() / 1000.0 - tree->getInitialTime();
+    double time = creationTime.toMilliseconds() / 1000.0 - tree->getInitialTime();
+    jassert(time >= currentNotificationTime);
+    currentNotificationTime = time;
     ExecutionCallback::notificationCallback(notification);
   }
 
@@ -317,6 +319,7 @@ public:
   virtual void notificationCallback(const NotificationPtr& notification)
   {
     Thread::ThreadID threadId = notification->getSourceThreadId();
+    DBG(String((int)threadId) + T(" ") + notification->getClassName());
     CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
     ExecutionCallbackPtr threadCallback;
     if (it == callbackByThread.end())

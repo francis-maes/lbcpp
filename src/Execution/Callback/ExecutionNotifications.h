@@ -21,10 +21,13 @@ namespace lbcpp
 class ExecutionNotification : public Notification
 {
 public:
-  virtual void notify(const ExecutionCallbackPtr& target) = 0;
+  virtual void notifyCallback(const ExecutionCallbackPtr& target) = 0;
 
   virtual void notify(const ObjectPtr& target)
-    {notify(target.staticCast<ExecutionCallback>());}
+  {
+    const ExecutionCallbackPtr& callback = target.staticCast<ExecutionCallback>();
+    callback->notificationCallback(refCountedPointerFromThis(this));
+  }
 };
 
 typedef ReferenceCountedObjectPtr<ExecutionNotification> ExecutionNotificationPtr;
@@ -36,7 +39,7 @@ public:
     : progression(progression), progressionTotal(progressionTotal), progressionUnit(progressionUnit) {}
   ExecutionProgressNotification() : progression(0.0), progressionTotal(0.0) {}
 
-  virtual void notify(const ExecutionCallbackPtr& target)
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
     {target->progressCallback(progression, progressionTotal, progressionUnit);}
 
   lbcpp_UseDebuggingNewOperator
@@ -56,7 +59,7 @@ public:
     : name(name), value(value) {}
   ExecutionResultNotification() {}
 
-  virtual void notify(const ExecutionCallbackPtr& target)
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
     {target->resultCallback(name, value);}
 
   lbcpp_UseDebuggingNewOperator
@@ -83,7 +86,7 @@ public:
     : messageType(messageType), what(what), where(where) {}
   ExecutionMessageNotification() : messageType(errorMessageType) {}
 
-  virtual void notify(const ExecutionCallbackPtr& target)
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
   {
     switch (messageType)
     {
@@ -112,7 +115,7 @@ public:
     : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit) {}
   PreExecutionNotification() {}
 
-  virtual void notify(const ExecutionCallbackPtr& target)
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
     {target->preExecutionCallback(stack, workUnit);}
 
   lbcpp_UseDebuggingNewOperator
@@ -131,7 +134,7 @@ public:
     : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
-  virtual void notify(const ExecutionCallbackPtr& target)
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
     {target->postExecutionCallback(stack, workUnit, result);}
 
   lbcpp_UseDebuggingNewOperator
