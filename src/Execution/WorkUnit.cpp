@@ -32,9 +32,14 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
 {
   StringArray tokens;
   tokens.addTokens(arguments, true);
-  std::vector<String> toks(tokens.size());
-  for (size_t i = 0; i < toks.size(); ++i)
-    toks[i] = tokens[i].isQuotedString() ? tokens[i].unquoted() : tokens[i];
+  std::vector<String> toks;
+  toks.reserve(tokens.size());
+  for (int i = 0; i < tokens.size(); ++i)
+  {
+    String str = tokens[i].isQuotedString() ? tokens[i].unquoted() : tokens[i];
+    if (str.isNotEmpty())
+      toks.push_back(str);
+  }
   return parseArguments(context, toks);
 }
 

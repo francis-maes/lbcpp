@@ -70,10 +70,15 @@ public:
       {
         clear();
         RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
-        std::vector<String> arguments = recent->getWorkUnit(comboBoxThatHasChanged->getText())->getArguments();
-        for (size_t i = 0; i < arguments.size(); ++i)
-          addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
-        setSelectedItemIndex(0);
+        RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
+        if (workUnit)
+        {
+          std::vector<String> arguments = workUnit->getArguments();
+          for (size_t i = 0; i < arguments.size(); ++i)
+            addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
+          if (arguments.size())
+            setSelectedItemIndex(0);
+        }
       }
     }
 
@@ -164,10 +169,15 @@ public:
       {
         comboBox->clear();
         RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
-        std::vector<File> arguments = recent->getWorkUnit(comboBoxThatHasChanged->getText())->getWorkingDirectories();
-        for (size_t i = 0; i < arguments.size(); ++i)
-          comboBox->addItem(arguments[i].getFullPathName(), (int)i + 1);
-        comboBox->setSelectedItemIndex(0);
+        RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
+        if (workUnit)
+        {
+          std::vector<File> arguments = workUnit->getWorkingDirectories();
+          for (size_t i = 0; i < arguments.size(); ++i)
+            comboBox->addItem(arguments[i].getFullPathName(), (int)i + 1);
+          if (arguments.size())
+            comboBox->setSelectedItemIndex(0);
+        }
       }
       else
         FileSelector::comboBoxChanged(comboBoxThatHasChanged);

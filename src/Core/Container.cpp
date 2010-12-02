@@ -120,13 +120,18 @@ class ApplyFunctionInContainerWorkUnit : public WorkUnit
 {
 public:
   ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
-    : WorkUnit(function->getDescription(source->getElement(index))), source(source), function(function), target(target), index(index) {}
+    : WorkUnit(function->getDescription(source->getElement(index))), source(source),
+      function(function), target(target), index(index), progressionUnit(function->getInputType()->getName() + T("s")){}
+
+  virtual String getProgressionUnit() const
+    {return progressionUnit;}
 
 protected:
   ContainerPtr source;
   FunctionPtr function;
   ContainerPtr target;
   size_t index;
+  String progressionUnit;
 
   virtual bool run(ExecutionContext& context)
     {target->setElement(index, function->computeFunction(context, source->getElement(index))); return true;}

@@ -28,7 +28,7 @@ public:
   }
   
   virtual void closeButtonPressed()
-    {setVisible(false);}
+    {delete this;}
 };
 
 class UserInterfaceExecutionCallback : public CompositeExecutionCallback
@@ -52,11 +52,16 @@ public:
 
   void shutdown()
   {
-    if (mainWindow)
+   /* if (mainWindow)
     {
-      userInterfaceManager().getNotificationQueue()->push(new DestroyWindowNotification(this));
-      waitUntilNotificationQueueIsEmpty();
-    }
+      if (Thread::getCurrentThread() == juce::MessageManager::getInstance()->getCurrentMessageThread())
+        destroyWindow();
+      else
+      {
+        userInterfaceManager().getNotificationQueue()->push(new DestroyWindowNotification(this));
+        //waitUntilNotificationQueueIsEmpty();
+      }
+    }*/
   }
   
   void waitUntilNotificationQueueIsEmpty()
@@ -84,6 +89,14 @@ private:
     }
   };
 
+  void destroyWindow()
+  {
+    clearCallbacks();
+    if (mainWindow)
+      deleteAndZero(mainWindow);
+    content = NULL;
+  }
+
   struct DestroyWindowNotification : public Notification
   {
     DestroyWindowNotification(UserInterfaceExecutionCallback* pthis)
@@ -92,12 +105,7 @@ private:
     UserInterfaceExecutionCallback* pthis;
   
     virtual void notify(const ObjectPtr& target)
-    {
-      pthis->clearCallbacks();
-      if (pthis->mainWindow)
-        deleteAndZero(pthis->mainWindow);
-      pthis->content = NULL;
-    }
+      {pthis->destroyWindow();}
   };
 };
 

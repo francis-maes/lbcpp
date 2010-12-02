@@ -67,13 +67,17 @@ void RecentWorkUnitsConfiguration::addRecentWorkUnit(const String& workUnitName)
   ExplorerConfiguration::save(*silentExecutionContext);
 }
 
-RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const String& name) const
+RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const String& name)
 {
   if (name.isEmpty())
     return RecentWorkUnitConfigurationPtr();
   int index = findRecentWorkUnit(name);
-  jassert(index >= 0);
-  return index >= 0 ? recents[index] : RecentWorkUnitConfigurationPtr();
+  if (index < 0)
+  {
+    addRecentWorkUnit(name);
+    index = 0;
+  }
+  return recents[index];
 }
 
 void RecentWorkUnitsConfiguration::addRecent(const String& workUnit, const String& arguments, const File& workingDirectory)

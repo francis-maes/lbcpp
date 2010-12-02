@@ -62,8 +62,12 @@ protected:
   size_t minSplitSize;
   
   void runClassification(ExecutionContext& context)
-  {    
+  {  
+#ifdef JUCE_WIN32
+    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../examples/Data/ExtraTrees/classification.csv")));
+#else
     File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../examples/Data/ExtraTrees/classification.csv")));
+#endif
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, true);
     

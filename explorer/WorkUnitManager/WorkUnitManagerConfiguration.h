@@ -59,7 +59,7 @@ public:
   
   RecentWorkUnitConfigurationPtr getRecentWorkUnit(size_t index) const
     {return recents[index];}
-  RecentWorkUnitConfigurationPtr getWorkUnit(const String& name) const;
+  RecentWorkUnitConfigurationPtr getWorkUnit(const String& name);
 
   void addRecentWorkUnit(const String& workUnitName);
   void addRecent(const String& workUnitName, const String& arguments, const File& workingDirectory);

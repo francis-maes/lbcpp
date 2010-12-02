@@ -57,6 +57,14 @@
       <variable type="File" name="dsspFile" description="DSSP file" shortName="dssp"/>
       <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
     </class>
+    
+    <!-- SandBox -->
+    <class name="EvaluateOnlineLearnerObjectiveFunction" base="ObjectiveFunction" abstract="yes"/>
+    <class name="EvaluateLearningRateObjectiveFunction" base="EvaluateOnlineLearnerObjectiveFunction"/>
+    <class name="AlaRacheOptimizer" base="Inference"/>
+    <class name="OptimizerInferenceLearner" base="Inference"/>
+    <class name="SandBoxWorkUnit" base="WorkUnit"/>
+    
   </namespace>
 
   <declarationCode>

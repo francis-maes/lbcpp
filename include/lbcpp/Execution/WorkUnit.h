@@ -83,6 +83,9 @@ public:
   void setWorkUnit(size_t index, const WorkUnitPtr& workUnit)
     {workUnits->set(index, workUnit);}
 
+  virtual String getProgressionUnit() const
+    {return T("Work Units");}
+
 protected:
   friend class CompositeWorkUnitClass;
 
