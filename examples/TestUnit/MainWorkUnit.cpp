@@ -9,7 +9,7 @@ extern void declareTestUnitClasses(ExecutionContext& context);
 int main(int argc, char* argv[])
 {
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = defaultConsoleExecutionContext(false);
+  ExecutionContextPtr context = multiThreadedExecutionContext(10); //defaultConsoleExecutionContext(false);
   context->appendCallback(consoleExecutionCallback());
   declareTestUnitClasses(*context);
   

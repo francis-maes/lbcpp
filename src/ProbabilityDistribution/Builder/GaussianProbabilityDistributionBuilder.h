@@ -50,7 +50,7 @@ public:
     variances->push(valueDistribution->getVariance());
   }
   
-  virtual ProbabilityDistributionPtr build() const
+  virtual ProbabilityDistributionPtr build(ExecutionContext& context) const
   {
     jassert((means && variances) != meanAndVariances);
 

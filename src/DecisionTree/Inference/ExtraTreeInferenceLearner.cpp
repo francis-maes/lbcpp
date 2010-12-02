@@ -90,7 +90,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   {
     builder->clear();
     builder->addElement(trainingData->getElement(0)[1]);
-    leafValue = builder->build();
+    leafValue = builder->build(context);
     return true;
   }
 
@@ -100,7 +100,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
     {
       builder->clear();
       builder->addElement(leafValue);
-      leafValue = builder->build();
+      leafValue = builder->build(context);
       return true;
     }
     return false;
@@ -109,7 +109,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   builder->clear();
   for (size_t i = 0; i < n; ++i)
     builder->addElement(trainingData->getElement(i)[1]);
-  leafValue = builder->build();
+  leafValue = builder->build(context);
   
   return true;
 }

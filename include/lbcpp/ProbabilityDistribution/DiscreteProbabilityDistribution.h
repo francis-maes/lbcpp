@@ -82,6 +82,7 @@ public:
   
 private:
   friend class EnumerationProbabilityDistributionClass;
+  friend class EnumerationProbabilityDistributionBuilder;
   
   std::vector<double> values;
   CriticalSection cachedEntropyLock;
@@ -95,7 +96,7 @@ inline ClassPtr enumerationProbabilityDistributionClass(EnumerationPtr enumerati
   {return enumerationProbabilityDistributionClass((TypePtr)enumeration);}
 
 inline EnumerationProbabilityDistributionPtr enumerationProbabilityDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities)
-  {return new EnumerationProbabilityDistribution((TypePtr)enumeration, probabilities);}
+  {return enumerationProbabilityDistribution((TypePtr)enumeration, probabilities);}
 
 }; /* namespace lbcpp */
 

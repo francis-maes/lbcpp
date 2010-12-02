@@ -19,7 +19,10 @@ class EnumerationProbabilityDistributionBuilder : public ProbabilityDistribution
 {
 public:
   EnumerationProbabilityDistributionBuilder(EnumerationPtr enumeration)
-    : enumeration(enumeration), elementValues(enumeration->getNumElements() + 1, 0.0), distributionValues(enumeration->getNumElements() + 1, 0.0)
+    : enumeration(enumeration)
+  , elementValues(enumeration->getNumElements() + 1, 0.0)
+  , distributionValues(enumeration->getNumElements() + 1, 0.0)
+  , cacheDistribution(new EnumerationProbabilityDistribution(enumeration))
     {}
 
   EnumerationProbabilityDistributionBuilder() {}
@@ -51,16 +54,25 @@ public:
       distributionValues[i] += enumDistribution->getProbability(i) * weight;
   }
 
-  virtual ProbabilityDistributionPtr build() const
+  virtual ProbabilityDistributionPtr build(ExecutionContext& context) const
   {
-    std::vector<double> res(enumeration->getNumElements() + 1, 0.0);
+    std::vector<double> values(enumeration->getNumElements() + 1, 0.0);
     // consider added elements as a unique distribution
-    normalize(elementValues, res);
-    for (size_t i = 0; i < res.size(); ++i)
-      res[i] += distributionValues[i];
-    normalize(res, res);
+    normalize(elementValues, values);
+    for (size_t i = 0; i < values.size(); ++i)
+      values[i] += distributionValues[i];
+    normalize(values, values);
+    jassert(cacheDistribution);
+    EnumerationProbabilityDistributionPtr res = cacheDistribution->cloneAndCast<EnumerationProbabilityDistribution>(context);
+    res->values = values;
     
-    return enumerationProbabilityDistribution(enumeration, res);
+    return res;
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    ProbabilityDistributionBuilder::clone(context, target);
+    target.staticCast<EnumerationProbabilityDistributionBuilder>()->cacheDistribution = cacheDistribution;
   }
   
 protected:
@@ -81,6 +93,9 @@ protected:
     for (size_t i = 0; i < values.size(); ++i)
       results[i] = values[i] / sum;
   }
+  
+private:
+  EnumerationProbabilityDistributionPtr cacheDistribution;
 };
   
 }; /* namespace lbcpp */
