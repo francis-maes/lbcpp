@@ -238,8 +238,11 @@ public:
           targetInference->getLastOnlineLearner()->getScores(scores);
           String info;
           for (size_t i = 0; i < scores.size(); ++i)
+          {
             info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
-          context.informationCallback(info);
+            context.resultCallback(scores[i].first, scores[i].second);
+          }
+          //context.informationCallback(info);
         }
       }
 /*
