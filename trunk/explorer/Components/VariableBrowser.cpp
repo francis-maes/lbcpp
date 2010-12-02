@@ -198,8 +198,10 @@ public:
       delete rows[i].first;
       rows.erase(rows.begin() + i);
     }
-    Variable variable = selector->createMultiSelectionVariable(selectedVariables);
+    Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
     Component* component = selector->createComponentForVariable(*silentExecutionContext, variable, variable.toShortString());
+    if (!component)
+      component = lbcpp::createComponentForVariable(*silentExecutionContext, variable, variable.toShortString());
     if (component)
       appendVariable(variable, component);
 

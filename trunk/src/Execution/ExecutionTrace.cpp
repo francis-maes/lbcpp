@@ -54,3 +54,14 @@ void WorkUnitExecutionTraceItem::setProgression(double progression, double progr
   this->progression = progressionTotal ? progression / progressionTotal : -progression;
   hasProgression = true;
 }
+
+void WorkUnitExecutionTraceItem::setResult(const String& name, const Variable& value)
+{
+  for (size_t i = 0; i < results.size(); ++i)
+    if (results[i].first == name)
+    {
+      results[i].second = value;
+      return;
+    }
+  results.push_back(std::make_pair(name, value));
+}

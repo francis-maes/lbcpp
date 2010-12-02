@@ -12,8 +12,8 @@ using namespace lbcpp;
 /*
 ** ExecutionTraceTreeViewItem
 */
-ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(const ExecutionTraceItemPtr& trace)
-  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), trace(trace)
+ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace)
+  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), owner(owner), trace(trace)
 {
   String str = getUniqueName();
   numLines = 1;
@@ -21,6 +21,9 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(const ExecutionTraceItemP
     if (str[i] == '\n')
       ++numLines;
 }
+
+void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
+  {owner->invalidateSelection();}
 
 void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height)
 {
@@ -142,14 +145,14 @@ String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
 /*
 ** ExecutionTraceTreeView
 */
-ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace)
+ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace), isSelectionUpToDate(false)
 {
   DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
   trace->getContext().appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new WorkUnitExecutionTraceTreeViewItem(new WorkUnitExecutionTraceItem(WorkUnitPtr(), initialTime)));
+  setRootItem(new WorkUnitExecutionTraceTreeViewItem(this, new WorkUnitExecutionTraceItem(WorkUnitPtr(), initialTime)));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
 }
@@ -181,6 +184,39 @@ WorkUnitExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(con
   }
   return item;
 }
+
+void ExecutionTraceTreeView::timerCallback()
+{
+  DelayToUserInterfaceExecutionCallback::timerCallback();
+  if (!isSelectionUpToDate)
+  {
+    std::vector<Variable> selectedVariables;
+    selectedVariables.reserve(getNumSelectedItems());
+    for (int i = 0; i < getNumSelectedItems(); ++i)
+    {
+      ExecutionTraceTreeViewItem* item = dynamic_cast<ExecutionTraceTreeViewItem* >(getSelectedItem(i));
+      if (item && item != getRootItem())
+      {
+        WorkUnitExecutionTraceItemPtr trace = item->getTrace().dynamicCast<WorkUnitExecutionTraceItem>();
+        if (trace)
+        {
+          const std::vector< std::pair<String, Variable> >& results = trace->getResults();
+          for (size_t i = 0; i < results.size(); ++i)
+            selectedVariables.push_back(results[i].second);
+        }
+      }
+    }
+    sendSelectionChanged(selectedVariables);
+    isSelectionUpToDate = true;
+  }
+}
+
+void ExecutionTraceTreeView::invalidateSelection()
+  {isSelectionUpToDate = false;}
+
+int ExecutionTraceTreeView::getDefaultWidth() const
+  {return 600;}
+
 
 /*
 ** ExecutionTraceTreeViewBuilderCallback
@@ -216,7 +252,7 @@ public:
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
   {
     WorkUnitExecutionTraceItemPtr trace(new WorkUnitExecutionTraceItem(workUnit, currentNotificationTime));
-    addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(trace));
+    addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(tree, trace));
   }
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
@@ -237,6 +273,13 @@ public:
   virtual void statusCallback(const String& status)
     {currentStatus = status;}
 
+  virtual void resultCallback(const String& name, const Variable& value)
+  {
+    WorkUnitExecutionTraceItemPtr trace = getCurrentPositionInTree()->getTrace().dynamicCast<WorkUnitExecutionTraceItem>();
+    jassert(trace);
+    trace->setResult(name, value);
+  }
+
 protected:
   ExecutionTraceTreeView* tree;
   String currentStatus;
@@ -250,7 +293,7 @@ protected:
   std::vector<WorkUnitExecutionTraceTreeViewItem* > positions;
 
   void addItem(ExecutionTraceItemPtr trace)
-    {addItem(getCurrentPositionInTree(), new ExecutionTraceTreeViewItem(trace));}
+    {addItem(getCurrentPositionInTree(), new ExecutionTraceTreeViewItem(tree, trace));}
 
   void addItem(TreeViewItem* parentItem, ExecutionTraceTreeViewItem* newItem)
   {

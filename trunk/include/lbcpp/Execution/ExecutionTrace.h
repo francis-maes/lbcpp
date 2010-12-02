@@ -83,6 +83,11 @@ public:
   double getTimeLength() const
     {return endTime - time;}
 
+  void setResult(const String& name, const Variable& value);
+
+  const std::vector< std::pair<String, Variable> >& getResults() const
+    {return results;}
+
 protected:
   friend class WorkUnitExecutionTraceItemClass;
 
@@ -106,6 +111,9 @@ public:
 
   ExecutionContext& getContext() const
     {jassert(context); return *context;}
+
+  virtual String toString() const
+    {return context->getClassName() + T(" Execution Trace");}
 
 protected:
   ExecutionContextPtr context;

@@ -10,6 +10,8 @@
 # define LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
 
 #include "../../../explorer/Utilities/SimpleTreeViewItem.h" // FIXME! move utilities inside lbcpp-core
+#include "../../../explorer/Utilities/VariableSelector.h"
+#include "../../../explorer/Utilities/ComponentWithPreferedSize.h"
 
 using juce::Component;
 using juce::DocumentWindow;
@@ -24,10 +26,11 @@ using juce::TreeViewItem;
 namespace lbcpp
 {
 
+class ExecutionTraceTreeView;
 class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewItem(const ExecutionTraceItemPtr& trace);
+  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
 
   enum
   {
@@ -52,7 +55,10 @@ public:
   const ExecutionTraceItemPtr& getTrace() const
     {return trace;}
 
+  virtual void itemSelectionChanged(bool isNowSelected);
+  
 protected:
+  ExecutionTraceTreeView* owner;
   ExecutionTraceItemPtr trace;
   int numLines;
 };
@@ -60,8 +66,8 @@ protected:
 class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  WorkUnitExecutionTraceTreeViewItem(const WorkUnitExecutionTraceItemPtr& trace, bool open = true)
-    : ExecutionTraceTreeViewItem(trace)
+  WorkUnitExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const WorkUnitExecutionTraceItemPtr& trace, bool open = true)
+    : ExecutionTraceTreeViewItem(owner, trace)
     {setOpen(open);}
 
   virtual bool mightContainSubItems()
@@ -92,7 +98,7 @@ protected:
   ExecutionCallbackPtr target;
 };
  
-class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback
+class ExecutionTraceTreeView : public TreeView, public DelayToUserInterfaceExecutionCallback, public VariableSelector, public ComponentWithPreferedSize
 {
 public:
   ExecutionTraceTreeView(ExecutionTracePtr trace);
@@ -103,11 +109,17 @@ public:
   double getInitialTime() const
     {return initialTime;}
 
+  virtual void timerCallback();
+  void invalidateSelection();
+
+  virtual int getDefaultWidth() const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   ExecutionTracePtr trace;
   double initialTime;
+  bool isSelectionUpToDate;
 
   ExecutionCallbackPtr createTreeBuilderCallback();
 };
