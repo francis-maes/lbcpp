@@ -197,7 +197,7 @@ protected:
   
   size_t blockSize;
   
-  double squareMin(ImagePtr image, size_t startX, size_t startY, size_t endX, size_t endY) const
+  double squareMin(const ImagePtr& image, size_t startX, size_t startY, size_t endX, size_t endY) const
   {
     double res = DBL_MAX;
     for (size_t i = startX; i < endX; ++i)
@@ -246,7 +246,7 @@ protected:
   
   size_t blockSize;
   
-  double squareMax(ImagePtr image, size_t startX, size_t startY, size_t endX, size_t endY) const
+  double squareMax(const ImagePtr& image, size_t startX, size_t startY, size_t endX, size_t endY) const
   {
     double res = -DBL_MAX;
     for (size_t i = startX; i < endX; ++i)
