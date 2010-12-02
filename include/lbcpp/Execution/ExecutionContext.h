@@ -21,7 +21,6 @@ public:
 
   virtual bool isMultiThread() const = 0;
 
-
   /*
   ** Checks
   */

@@ -338,7 +338,7 @@ public:
   virtual void notificationCallback(const NotificationPtr& notification)
   {
     Thread::ThreadID threadId = notification->getSourceThreadId();
-    DBG(String((int)threadId) + T(" ") + notification->getClassName());
+    //DBG(String((int)threadId) + T(" ") + notification->getClassName());
     CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
     ExecutionCallbackPtr threadCallback;
     if (it == callbackByThread.end())
