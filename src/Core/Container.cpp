@@ -123,9 +123,6 @@ public:
     : WorkUnit(function->getDescription(source->getElement(index))), source(source),
       function(function), target(target), index(index), progressionUnit(function->getInputType()->getName() + T("s")){}
 
-  virtual String getProgressionUnit() const
-    {return progressionUnit;}
-
 protected:
   ContainerPtr source;
   FunctionPtr function;
@@ -155,6 +152,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
       CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(workUnitName.isEmpty() ? function->toString() : workUnitName, n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
+      workUnits->setProgressionUnit(function->getInputType()->getName() + T("s"));
       context.run(workUnits);
     }
     else

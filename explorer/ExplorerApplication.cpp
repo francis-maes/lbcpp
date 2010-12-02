@@ -48,10 +48,12 @@ private:
   }
 };
 
-static ExplorerExecutionCallback explorerExecutionCallback;
+typedef ReferenceCountedObjectPtr<ExplorerExecutionCallback> ExplorerExecutionCallbackPtr;
+
+static ExplorerExecutionCallbackPtr explorerExecutionCallback = new ExplorerExecutionCallback();
 
 void flushErrorAndWarningMessages(const String& title)
-  {explorerExecutionCallback.flushMessages(title);}
+  {explorerExecutionCallback->flushMessages(title);}
 
 class ExplorerContentTabs : public TabbedComponent
 {
@@ -269,7 +271,7 @@ public:
   {    
     lbcpp::initialize(NULL);
     context = defaultConsoleExecutionContext(); // FIXME
-    context->appendCallback(&explorerExecutionCallback);
+    context->appendCallback(explorerExecutionCallback);
     declareProteinClasses(*context);
     declareExplorerClasses(*context);
 
@@ -287,6 +289,7 @@ public:
     mainWindow = 0;
     deleteAndZero(theCommandManager); 
     ExplorerConfiguration::getInstancePtr() = VariableVectorPtr();
+    explorerExecutionCallback = ExecutionCallbackPtr();
     lbcpp::deinitialize();
   }
 

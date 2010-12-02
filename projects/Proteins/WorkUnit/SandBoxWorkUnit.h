@@ -57,6 +57,9 @@ public:
   virtual TypePtr getInputType() const
     {return doubleType;}
 
+  virtual String getDescription(const Variable& input) const
+    {return T("Evaluating learning rate ") + String(input.getDouble());}
+
   virtual void customizeLearner(ExecutionContext& context, const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const
   {
     int index = onlineLearner->getClass()->findObjectVariable(T("learningRate"));
@@ -88,7 +91,7 @@ public:
     for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
     {
       double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
-      workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(T("LearningRate"), objective, learningRate, scores[i]));
+      workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(learningRate), objective, learningRate, scores[i]));
     }
     context.run(workUnits);
     double bestScore = -DBL_MAX;

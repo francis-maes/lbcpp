@@ -71,7 +71,7 @@ class CompositeWorkUnit : public WorkUnit
 {
 public:
   CompositeWorkUnit(const String& name, size_t initialSize)
-    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)) {}
+    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")) {}
   CompositeWorkUnit() {}
 
   size_t getNumWorkUnits() const
@@ -84,12 +84,16 @@ public:
     {workUnits->set(index, workUnit);}
 
   virtual String getProgressionUnit() const
-    {return T("Work Units");}
+    {return progressionUnit;}
+
+  void setProgressionUnit(const String& progressionUnit)
+    {this->progressionUnit = progressionUnit;}
 
 protected:
   friend class CompositeWorkUnitClass;
 
   ObjectVectorPtr workUnits;
+  String progressionUnit;
 
   virtual bool run(ExecutionContext& context);
 };
