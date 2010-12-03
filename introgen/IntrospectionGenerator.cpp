@@ -32,6 +32,11 @@ public:
     newLine();
     generateFooter();
     newLine();
+    if (xml->getBoolAttribute(T("library")))
+    {
+      generateDynamicLibraryFunctions();
+      newLine();
+    }
   }
 
 protected:
@@ -589,6 +594,31 @@ protected:
     }
    
     closeScope();
+  }
+
+  void generateDynamicLibraryFunctions()
+  {
+    openScope(T("extern \"C\""));
+
+    newLine();
+    writeLine(T("# ifdef WIN32"));
+    writeLine(T("#  define LBCPP_EXPORT  __declspec( dllexport )"));
+    writeLine(T("# else"));
+    writeLine(T("#  define LBCPP_EXPORT"));
+    writeLine(T("# endif"));
+    newLine();
+
+    openScope(T("LBCPP_EXPORT void lbcppInitializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, lbcpp::ExecutionContext& executionContext)"));
+    writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext, executionContext);"));
+    writeLine(T("declare") + fileName + T("Classes(executionContext);"));
+    closeScope();
+    
+    newLine();
+    openScope(T("LBCPP_EXPORT void lbcppDeinitializeDynamicLibrary()"));
+    writeLine(T("lbcpp::deinitializeDynamicLibrary();"));
+    closeScope();
+
+    closeScope(); // extern "C"
   }
 
 private:
