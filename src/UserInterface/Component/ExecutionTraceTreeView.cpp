@@ -34,7 +34,8 @@ void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, WorkUnitExecution
   g.setBrush(&brush);
   if (progression > 0.0)
   {
-    jassert(progression <= 1.0);
+    if (progression > 1.0)
+      progression = 1.0;
     g.fillRect(x, 0, (int)(width * progression + 0.5), height);
   }
   else if (progression < 0.0)
@@ -145,7 +146,7 @@ String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
 /*
 ** ExecutionTraceTreeView
 */
-ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace), isSelectionUpToDate(false)
+ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
   DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
@@ -210,10 +211,18 @@ void ExecutionTraceTreeView::timerCallback()
     sendSelectionChanged(selectedVariables);
     isSelectionUpToDate = true;
   }
+  if (!isTreeUpToDate)
+  {
+    repaint();
+    isTreeUpToDate = true;
+  }
 }
 
 void ExecutionTraceTreeView::invalidateSelection()
   {isSelectionUpToDate = false;}
+
+void ExecutionTraceTreeView::invalidateTree()
+  {isTreeUpToDate = false;}
 
 int ExecutionTraceTreeView::getDefaultWidth() const
   {return 600;}
@@ -246,7 +255,7 @@ public:
       jassert(trace);
       trace->setEndTime(currentNotificationTime);
       trace->setProgression(progression, progressionTotal, progressionUnit);
-      item->treeHasChanged();
+      tree->invalidateTree();
     }
   }
 
@@ -322,7 +331,7 @@ protected:
     if (setErrorFlag)
       res->setIcon(T("Error-32.png"));
     positions.pop_back();
-    res->treeHasChanged();
+    tree->invalidateTree();
     return res;
   }
 

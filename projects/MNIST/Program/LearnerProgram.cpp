@@ -20,12 +20,14 @@ extern ContainerPtr parseDataFile(ExecutionContext& context, const File& f);
 
 bool LearnerProgram::loadData(ExecutionContext& context)
 {
+  
   if (learningFile == File::nonexistent)
   {
     context.errorCallback(T("Error - No learning file found !"));
     return false;
   }
 
+  context.informationCallback(T("Loading learning data from ") + learningFile.getFileName() + T("..."));
   learningData = parseDataFile(context, learningFile);
   if (!learningData || !learningData->getNumElements())
   {
@@ -41,6 +43,7 @@ bool LearnerProgram::loadData(ExecutionContext& context)
     return true;
   }
 
+  context.informationCallback(T("Loading testing data from ") + testingFile.getFileName() + T("..."));
   testingData = parseDataFile(context, testingFile);
   if (!testingData->getNumElements())
   {
@@ -116,14 +119,14 @@ bool LearnerProgram::run(ExecutionContext& context)
 
   std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
-  inference->evaluate(context, learningData, evaluator);
+  inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
   std::cout << evaluator->toString() << std::endl;
 
   if (testingData && testingData->getNumElements())
   {
     std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
-    inference->evaluate(context, testingData, evaluator);
+    inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     std::cout << evaluator->toString() << std::endl;
   }
 

@@ -47,11 +47,11 @@ public:
 
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {
-    ScopedLock _(lock);
+/*    ScopedLock _(lock);
     std::cout << "Progression: " << progression;
     if (progressionTotal)
       std::cout << " / " << progressionTotal;
-    std::cout << " " << progressionUnit << std::endl;
+    std::cout << " " << progressionUnit << std::endl;*/
   }
 
   virtual void resultCallback(const String& name, const Variable& value)
