@@ -157,4 +157,13 @@ TARGET_LINK_LIBRARIES(RunProgram proteins)
 ADD_SINGLE_CPP_EXECUTABLE(SandBox)
 ADD_SINGLE_CPP_EXECUTABLE(BoincEvaluator)
 
+ADD_EXECUTABLE(MainClientWorkUnit
+  Programs/MainClientWorkUnit.cpp
+  Programs/Command.h
+  Programs/Command.cpp
+  Programs/ProgramClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
+)
+TARGET_LINK_LIBRARIES(MainClientWorkUnit proteins)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
