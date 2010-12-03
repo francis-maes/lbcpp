@@ -8,7 +8,7 @@ namespace lbcpp
 class SgeExecutionContext : public ExecutionContext
 {
 public:
-  SgeExecutionContext(const File& workUnitDirectory)
+  SgeExecutionContext(const File& workUnitDirectory = File::getCurrentWorkingDirectory())
   : workUnitDirectory(workUnitDirectory), lastFileID(0) {}
   
   virtual bool isMultiThread() const
@@ -64,7 +64,7 @@ extern void declareProgramClasses(ExecutionContext& context);
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = new SgeExecutionContext(T("/u/jbecker/.WorkUnit/Waiting"));
+  ExecutionContextPtr context = new SgeExecutionContext(File(T("/u/jbecker/.WorkUnit/Waiting")));
   declareProteinClasses(*context);
   declareProgramClasses(*context);
   
