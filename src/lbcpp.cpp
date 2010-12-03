@@ -72,7 +72,6 @@ UserInterfaceManager& lbcpp::userInterfaceManager()
 
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext)
 {
-  jassert(!lbcpp::context);
   lbcpp::applicationContext = &applicationContext;
 }
 
