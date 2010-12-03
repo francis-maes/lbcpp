@@ -7,7 +7,9 @@
     <class name="DumbOptimizerProgram" base="WorkUnit"/>
     
     <class name="ServerWorkUnit" base="WorkUnit"/>
-    <class name="ClientWorkUnit" base="WorkUnit"/>
+    <class name="ClientWorkUnit" base="WorkUnit">
+      <variable type="String" name="hostname"/>
+    </class>
 
 
     <class name="DumbWorkUnit" base="WorkUnit"/>

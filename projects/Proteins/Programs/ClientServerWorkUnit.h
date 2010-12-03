@@ -68,13 +68,15 @@ public:
 class ClientWorkUnit : public WorkUnit
 {
 public:
+  ClientWorkUnit() : hostname(T("192.168.1.3")) {}
+  
   virtual bool run(ExecutionContext& context)
   {
     NetworkClientPtr client = blockingNetworkClient(context, 3);
     BufferedNetworkCallbackPtr callback = new BufferedNetworkCallback();
     client->appendCallback(callback);
     
-    if (!client->startClient("192.168.1.3", 1664))
+    if (!client->startClient(hostname, 1664))
     {
       context.informationCallback(T("ClientWorkUnit::Networking"), T("Connection fail !"));
       client->stopClient();
@@ -102,7 +104,7 @@ public:
     while (units.size())
     {
       context.informationCallback(T("ClientWorkUnit::run"), T("Job remaining: ") + String((int)units.size()));
-      context.run(units.front());
+      context.pushWorkUnit(units.front());
       units.pop_front();
     }
     
@@ -110,6 +112,9 @@ public:
   }
   
 protected:
+  friend class ClientWorkUnitClass;
+  String hostname;
+  
   std::deque<WorkUnitPtr> units;
 };
   
