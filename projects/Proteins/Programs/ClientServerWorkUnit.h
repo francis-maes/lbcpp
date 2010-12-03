@@ -2,8 +2,6 @@
  ! WARNING !   Test Zone - Do not enter !
  *******************************************************************************/
 
-#include "NetworkClient.h"
-#include "NetworkServer.h"
 #include "Command.h"
 
 namespace lbcpp
@@ -33,7 +31,7 @@ public:
     NetworkServerPtr server = new NetworkServer(context);
     server->startServer(1664);
     
-    NetworkClientPtr client = server->acceptClient(true);
+    NetworkClientPtr client = server->acceptClient(true); // TODO timeout
     std::cout << "* New client: " << client->getConnectedHostName() << std::endl;
     
     BufferedNetworkCallbackPtr callback = new BufferedNetworkCallback();
@@ -46,7 +44,7 @@ public:
     v.getObjectAndCast<Command>(context)->runCommand(context, client);
     
     client->sendVariable(systemStatCommand());
-    v = callback->receiveVariable(true);
+    v = callback->receiveVariable(true); // TODO timeout
     SystemStatsPtr stats = v.getObjectAndCast<SystemStats>(context);
     jassert(stats);
     context.informationCallback(client->getConnectedHostName(), stats->toString());
@@ -104,7 +102,7 @@ public:
     while (units.size())
     {
       context.informationCallback(T("ClientWorkUnit::run"), T("Job remaining: ") + String((int)units.size()));
-      context.pushWorkUnit(units.front());
+      context.run(units.front());
       units.pop_front();
     }
     

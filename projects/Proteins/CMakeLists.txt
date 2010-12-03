@@ -146,12 +146,6 @@ ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
 ADD_EXECUTABLE(RunProgram
   Programs/RunProgram.cpp
   Programs/DichotomicOptimizer.h
-  Programs/NetworkClient.h
-  Programs/NetworkClient.cpp
-  Programs/NetworkCallback.h
-  Programs/NetworkCallback.cpp
-  Programs/NetworkServer.h
-  Programs/NetworkServer.cpp
   Programs/Command.h
   Programs/Command.cpp
   Programs/ClientServerWorkUnit.h

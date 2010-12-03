@@ -9,12 +9,13 @@
 #ifndef LBCPP_NETWORK_CALLBACK_H_
 # define LBCPP_NETWORK_CALLBACK_H_
 
-# include <lbcpp/lbcpp.h>
+# include <lbcpp/Core/Variable.h>
+# include <deque>
 
 namespace lbcpp
 {
 
-class NetworkCallback
+class NetworkCallback : public Object
 {
 public:
   virtual ~NetworkCallback() {}
@@ -26,7 +27,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<NetworkCallback> NetworkCallbackPtr;
 
-  class BufferedNetworkCallback : public NetworkCallback
+class BufferedNetworkCallback : public NetworkCallback
 {
 public:
   BufferedNetworkCallback() : connected(true) {}

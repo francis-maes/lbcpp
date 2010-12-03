@@ -12,6 +12,8 @@ GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
 
+GENERATE_INTROSPECTION_CODE(Network/NetworkClasses.xml NetworkClasses.cpp)
+
 GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionClasses.xml ProbabilityDistributionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml ProbabilityDistributionBuilderClasses.cpp)
 
@@ -182,6 +184,19 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/MultiThreadedExecutionContext.h
   Execution/Context/ExecutionContextClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
+)
+
+### Network ###
+
+SET(LBCPP_NETWORK_SOURCES
+  ../include/lbcpp/Network/NetworkClient.h
+  Network/NetworkClient.cpp
+  ../include/lbcpp/Network/NetworkServer.h
+  Network/NetworkServer.cpp
+  ../include/lbcpp/Network/NetworkCallback.h
+  Network/NetworkCallback.cpp
+  Network/NetworkClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NetworkClasses.cpp
 )
 
 #### ProbabilityDistribution ####
@@ -572,6 +587,9 @@ SET(LBCPP_CORE
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
   
+  # Network
+  ${LBCPP_NETWORK_SOURCES}
+  
   # ProbabilityDistribution
   ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
     ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES}
@@ -637,6 +655,9 @@ SOURCE_SUB_GROUP(Core Object FILES ${LBCPP_CORE_OBJECT_SOURCES})
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
+
+## Network
+SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
 
 ## ProbabilityDistribution
 SOURCE_GROUP(ProbabilityDistribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})

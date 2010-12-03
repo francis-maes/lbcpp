@@ -9,12 +9,12 @@
 #ifndef LBCPP_NETWORK_CLIENT_H_
 # define LBCPP_NETWORK_CLIENT_H_
 
-# include "NetworkCallback.h"
+# include <lbcpp/Network/NetworkCallback.h>
 
 namespace lbcpp
 {
 
-class NetworkClient : public InterprocessConnection
+class NetworkClient : public InterprocessConnection, public Object
 {
 public:
   NetworkClient(ExecutionContext& context)
