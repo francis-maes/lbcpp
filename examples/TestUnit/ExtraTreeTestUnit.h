@@ -80,13 +80,15 @@ protected:
     inference->train(context, learningData, ContainerPtr());
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     
-    inference->evaluate(context, learningData, evaluator);
-    context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
+    inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
+    context.resultCallback(T("Train Evaluation"), evaluator->toString());
+    //context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
     checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    inference->evaluate(context, testingData, evaluator);
-    context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
+    inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
+    context.resultCallback(T("Test Evaluation"), evaluator->toString());
+    //context.informationCallback(T("Evaluation (Test)") + evaluator->toString(), T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
   }
   

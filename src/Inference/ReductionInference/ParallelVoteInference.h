@@ -36,7 +36,10 @@ public:
   }
 
   ParallelVoteInference() {}
- 
+  
+  virtual bool useMultiThreading() const
+    {return false;}
+
   virtual TypePtr getInputType() const
     {return voteInferenceModel->getInputType();}
 

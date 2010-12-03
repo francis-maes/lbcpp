@@ -136,9 +136,8 @@ bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInpu
 bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
-  InferencePtr evaluatorInference = evaluationInference(inference, evaluator);
-  if (workUnitName.isNotEmpty())
-    evaluatorInference->setName(workUnitName);
+  ParallelInferencePtr evaluatorInference = evaluationInference(inference, evaluator);
+  evaluatorInference->setName(workUnitName.isEmpty() ? T("Evaluating") : workUnitName);
   evaluatorInference->computeInference(context, examples, Variable());
   return true;
 }
