@@ -71,7 +71,7 @@ typedef ReferenceCountedObjectPtr<ParallelInferenceState> ParallelInferenceState
 class ParallelInference : public Inference
 {
 public:
-  ParallelInference(const String& name) : Inference(name) {}
+  ParallelInference(const String& name) : Inference(name), pushChildrenIntoStack(false) {}
   ParallelInference() {}
 
   virtual bool useMultiThreading() const
@@ -80,10 +80,24 @@ public:
   virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const = 0;
   virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const = 0;
 
+  // push into stack
+  void setPushChildrenIntoStackFlag(bool value)
+    {pushChildrenIntoStack = value;}
+
+  bool hasPushChildrenIntoStackFlag() const
+    {return pushChildrenIntoStack;}
+
+  virtual String getProgressionUnit() const
+    {return T("Inferences");}
+
+  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
+  friend class ParallelInferenceClass;
+
+  bool pushChildrenIntoStack;
 };
 
 extern ClassPtr parallelInferenceClass;

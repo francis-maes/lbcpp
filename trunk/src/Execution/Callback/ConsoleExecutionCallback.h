@@ -54,6 +54,12 @@ public:
     std::cout << " " << progressionUnit << std::endl;
   }
 
+  virtual void resultCallback(const String& name, const Variable& value)
+  {
+    ScopedLock _(lock);
+    std::cout << name << " = " << value.toShortString() << std::endl;
+  }
+
 private:
   CriticalSection lock;
 };

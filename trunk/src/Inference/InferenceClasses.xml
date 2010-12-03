@@ -30,7 +30,9 @@
     </class>
 
     <!-- Parallel Inference -->
-    <class name="ParallelInference" base="Inference" abstract="yes"/>
+    <class name="ParallelInference" base="Inference" abstract="yes">
+      <variable type="Boolean" name="pushChildrenIntoStack"/>
+    </class>
     <class name="StaticParallelInference" base="ParallelInference" abstract="yes"/>
 
     <class name="SharedParallelInference" base="StaticParallelInference" abstract="yes">

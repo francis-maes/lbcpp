@@ -30,7 +30,8 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
       String description = state->getSubInference(i)->getDescription(context, state->getSubInput(i), state->getSubSupervision(i));
       workUnits->setWorkUnit(i, new InferenceWorkUnit(description, state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), &state->getSubOutput(i)));
     }
-    workUnits->setProgressionUnit(T("Inferences"));
+    workUnits->setPushChildrenIntoStackFlag(hasPushChildrenIntoStackFlag());
+    workUnits->setProgressionUnit(getProgressionUnit());
     context.run(workUnits);
   }
   else

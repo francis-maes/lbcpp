@@ -39,6 +39,9 @@ public:
     return evaluator->getDefaultScore();
   }
 
+  virtual String getProgressionUnit() const
+    {return T("Examples");}
+
 protected:
   friend class EvaluationInferenceClass;
 

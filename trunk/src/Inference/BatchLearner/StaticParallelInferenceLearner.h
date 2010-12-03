@@ -21,7 +21,10 @@ class StaticParallelInferenceLearner : public InferenceBatchLearner<ParallelInfe
 {
 public:
   StaticParallelInferenceLearner()
-    {setPushIntoStackFlag(true);}
+  {
+    setPushIntoStackFlag(true);
+    setPushChildrenIntoStackFlag(true);
+  }
 
   virtual ClassPtr getTargetInferenceClass() const
     {return staticParallelInferenceClass;}
@@ -90,6 +93,9 @@ public:
     }
     return res;
   }
+
+  virtual String getProgressionUnit() const
+    {return T("Voters");}
 };
 
 }; /* namespace lbcpp */
