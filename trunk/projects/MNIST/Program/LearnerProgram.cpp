@@ -22,16 +22,17 @@ bool LearnerProgram::loadData(ExecutionContext& context)
 {
   if (learningFile == File::nonexistent)
   {
-    std::cerr << "Error - No learning file found !" << std::endl;
+    context.errorCallback(T("Error - No learning file found !"));
     return false;
   }
 
   learningData = parseDataFile(context, learningFile);
   if (!learningData || !learningData->getNumElements())
   {
-    std::cerr << "Error - No training data found in " << learningFile.getFullPathName().quoted() << std::endl;
+    context.errorCallback(T("Error - No training data found in ") + learningFile.getFullPathName().quoted());
     return false;
   }
+  context.informationCallback(String((int)learningData->getNumElements()) + T(" learning examples"));
 
   if (testingFile == File::nonexistent)
   {
@@ -43,7 +44,7 @@ bool LearnerProgram::loadData(ExecutionContext& context)
   testingData = parseDataFile(context, testingFile);
   if (!testingData->getNumElements())
   {
-    std::cerr << "Error - No testing data found in " << testingFile.getFullPathName().quoted() << std::endl;
+    context.errorCallback(T("Error - No testing data found in ") + testingFile.getFullPathName().quoted());
     return false;
   }
 
@@ -104,10 +105,10 @@ bool LearnerProgram::run(ExecutionContext& context)
 //  perception->addPerception(T("minima x8"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 8)));
 
   /* Inference */
-  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
-  inference->setStochasticLearner(createOnlineLearner());
+  //  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
+  //inference->setStochasticLearner(createOnlineLearner());
 
-//  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
+  InferencePtr inference = classificationExtraTreeInference(context, T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */
   std::cout << "---------- Learning ----------" << std::endl;
