@@ -93,6 +93,9 @@ namespace lbcpp
   extern void initialize(const char* executableName);
   extern void deinitialize();
 
+  extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext);
+  extern void deinitializeDynamicLibrary();
+
   extern UserInterfaceManager& userInterfaceManager();
   extern TypeManager& typeManager();
 

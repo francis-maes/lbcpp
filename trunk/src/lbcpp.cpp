@@ -69,3 +69,15 @@ TypeManager& lbcpp::typeManager()
 
 UserInterfaceManager& lbcpp::userInterfaceManager()
   {jassert(applicationContext); return applicationContext->userInterfaceManager;}
+
+void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext)
+{
+  jassert(!lbcpp::context);
+  lbcpp::applicationContext = &applicationContext;
+}
+
+void lbcpp::deinitializeDynamicLibrary()
+{
+  jassert(lbcpp::applicationContext);
+  lbcpp::applicationContext = NULL;
+}
