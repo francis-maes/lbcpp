@@ -38,7 +38,7 @@ public:
     client->appendCallback(callback);
     
     client->sendVariable(informationContextCommand(T("PING PONG!")));
-    
+  
     client->sendVariable(echoCommand(T("PING PONG!")));
     Variable v = callback->receiveVariable(true);
     v.getObjectAndCast<Command>(context)->runCommand(context, client);
@@ -63,6 +63,10 @@ public:
   }
 };
 
+/*******************************************************************************
+              ! WARNING !         >> Client Side <<
+*******************************************************************************/
+  
 class ClientWorkUnit : public WorkUnit
 {
 public:
@@ -80,9 +84,9 @@ public:
       client->stopClient();
       return false;
     }
-    
+
     context.informationCallback(T("ClientWorkUnit::Networking"), T("Connected to ") + client->getConnectedHostName());
-    
+
     while (true)
     {
       Variable v = callback->receiveVariable(true);
@@ -95,16 +99,9 @@ public:
       if (cmd->callOnCurrentThread())
         cmd->runCommand(context, client);
       else
-        units.push_back(cmd);
+        context.pushWorkUnit(cmd);
     }
     client->stopClient();
-    
-    while (units.size())
-    {
-      context.informationCallback(T("ClientWorkUnit::run"), T("Job remaining: ") + String((int)units.size()));
-      context.run(units.front());
-      units.pop_front();
-    }
     
     return true;
   }
@@ -115,5 +112,9 @@ protected:
   
   std::deque<WorkUnitPtr> units;
 };
+
+/*******************************************************************************
+                ! WARNING !         >>  <<
+*******************************************************************************/
   
 }; /* namespace lbcpp */
