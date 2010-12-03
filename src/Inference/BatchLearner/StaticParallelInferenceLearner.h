@@ -20,6 +20,9 @@ namespace lbcpp
 class StaticParallelInferenceLearner : public InferenceBatchLearner<ParallelInference>
 {
 public:
+  StaticParallelInferenceLearner()
+    {setPushIntoStackFlag(true);}
+
   virtual ClassPtr getTargetInferenceClass() const
     {return staticParallelInferenceClass;}
 

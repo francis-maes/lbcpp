@@ -205,7 +205,7 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
 #else
-  File workingDirectory(T("/data/PDB/PDB30Medium"));
+  File workingDirectory(T("/data/PDB/PSIPRED"));
 #endif
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(context, T("Loading training proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
