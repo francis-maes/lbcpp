@@ -25,6 +25,6 @@ int main(int argc, char* argv[])
     userInterfaceManager().waitUntilAllWindowsAreClosed();
     std::cout << "Tchao." << std::endl;
   }
-  lbcpp:deinitialize();
+  lbcpp::deinitialize();
   return exitCode;
 }

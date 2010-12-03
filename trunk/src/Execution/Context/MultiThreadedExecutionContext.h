@@ -42,6 +42,8 @@ public:
 
   Entry pop();
 
+  bool isEmpty() const;
+
   lbcpp_UseDebuggingNewOperator
 
 private:
@@ -92,6 +94,15 @@ WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
     }
   }
   return Entry();
+}
+
+bool WaitingWorkUnitQueue::isEmpty() const
+{
+  ScopedLock _(lock); 
+  for (int i = (int)entries.size() - 1; i >= 0; --i)
+    if (entries[i].size())
+      return false;
+  return true;
 }
 
 class WorkUnitThread;
@@ -273,6 +284,12 @@ public:
       Thread::sleep(10);
   }
  
+  void waitUntilAllWorkUnitsAreDone()
+  {
+    while (!queue->isEmpty())
+      Thread::sleep(10);
+  }
+
   WaitingWorkUnitQueuePtr getWaitingQueue() const
     {return queue;}
 
@@ -313,6 +330,9 @@ public:
     queue->push(workUnit, stack);
   }
 
+  virtual void waitUntilAllWorkUnitsAreDone()
+    {threadPool->waitUntilAllWorkUnitsAreDone();}
+    
   virtual bool run(const WorkUnitPtr& workUnit)
   {
     int remainingWorkUnits = 1;

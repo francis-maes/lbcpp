@@ -65,7 +65,11 @@ public:
   */
   virtual bool run(const WorkUnitPtr& workUnit);
   virtual bool run(const CompositeWorkUnitPtr& workUnits) = 0;
+
+  // multi-thread
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
+    {jassert(isMultiThread());}
+  virtual void waitUntilAllWorkUnitsAreDone()
     {jassert(isMultiThread());}
 
   lbcpp_UseDebuggingNewOperator
