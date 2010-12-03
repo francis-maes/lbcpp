@@ -123,7 +123,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
                                                             BinaryDecisionTreePtr tree, size_t nodeIndex,
                                                             TypePtr inputType, TypePtr outputType,
                                                             ContainerPtr trainingData, const std::vector<size_t>& variables,
-                                                            std::vector<Split>& bestSplits) const
+                                                            std::vector<Split>& bestSplits,
+                                                            size_t& numLeaves, size_t numExamples) const
 {
   jassert(trainingData->getNumElements());
 
@@ -141,6 +142,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   if (shouldCreateLeaf(context, trainingData, nonConstantVariables, outputType, leafValue))
   {
     tree->createLeaf(nodeIndex, leafValue);
+    ++numLeaves;
+    context.progressCallback((double)numLeaves, (double)numExamples, T("Leaves"));
     return;
   }
 
@@ -197,8 +200,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
 
   // call recursively
-  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, selectedSplit.negative, nonConstantVariables, bestSplits);
-  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, selectedSplit.positive, nonConstantVariables, bestSplits);
+  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, selectedSplit.negative, nonConstantVariables, bestSplits, numLeaves, numExamples);
+  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, selectedSplit.positive, nonConstantVariables, bestSplits, numLeaves, numExamples);
 }
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const
@@ -224,7 +227,9 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
 
   // sample tree recursively
   std::vector<Split> bestSplits;
-  sampleTreeRecursively(context, res, nodeIndex, inputClass, outputClass, trainingData, variables, bestSplits);
+  size_t numLeaves = 0;
+  size_t numExamples = n;
+  sampleTreeRecursively(context, res, nodeIndex, inputClass, outputClass, trainingData, variables, bestSplits, numLeaves, numExamples);
   return res;
 }
 

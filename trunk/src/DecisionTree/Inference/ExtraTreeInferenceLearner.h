@@ -65,7 +65,8 @@ protected:
                              BinaryDecisionTreePtr tree, size_t nodeIndex,
                              TypePtr inputType, TypePtr outputType,
                              ContainerPtr trainingData, const std::vector<size_t>& variables,
-                             std::vector<Split>& bestSplits) const;
+                             std::vector<Split>& bestSplits,
+                             size_t& numLeaves, size_t numExamples) const;
 
   bool shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
 

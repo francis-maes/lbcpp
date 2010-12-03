@@ -113,6 +113,8 @@ public:
     {return initialTime;}
 
   virtual void timerCallback();
+
+  void invalidateTree();
   void invalidateSelection();
 
   virtual int getDefaultWidth() const;
@@ -123,6 +125,7 @@ protected:
   ExecutionTracePtr trace;
   double initialTime;
   bool isSelectionUpToDate;
+  bool isTreeUpToDate;
 
   ExecutionCallbackPtr createTreeBuilderCallback();
 };
