@@ -26,7 +26,7 @@ public:
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
   {
     /* Save work unit */
-    File workUnitFile(String(getFileID()) + T(".workUnit"));
+    File workUnitFile = workUnitDirectory.getChildFile(String(getFileID()) + T(".workUnit"));
     if (workUnitFile.exists())
     {
       warningCallback(T("SgeExecutionContext::pushWorkUnit"), T("File ") + workUnitFile.getFileName().quoted() + T(" already exists"));

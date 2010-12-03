@@ -99,7 +99,10 @@ public:
       if (cmd->callOnCurrentThread())
         cmd->runCommand(context, client);
       else
+      {
         context.pushWorkUnit(cmd);
+        client->sendVariable(informationContextCommand(T("Work unit ") + cmd->getName().quoted() + T(" correctly received")));
+      }
     }
     client->stopClient();
     
