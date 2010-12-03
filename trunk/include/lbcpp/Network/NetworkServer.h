@@ -9,12 +9,12 @@
 #ifndef LBCPP_NETWORK_SERVER_H_
 # define LBCPP_NETWORK_SERVER_H_
 
-# include "NetworkClient.h"
+# include <lbcpp/Network/NetworkClient.h>
 
 namespace lbcpp
 {
 
-class NetworkServer : public InterprocessConnectionServer
+class NetworkServer : public InterprocessConnectionServer, public Object
 {
 public:
   NetworkServer(ExecutionContext& context) : context(context) {}

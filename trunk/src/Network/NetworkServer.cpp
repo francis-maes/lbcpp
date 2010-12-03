@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "NetworkServer.h"
+#include <lbcpp/Network/NetworkServer.h>
 
 using namespace lbcpp;
 

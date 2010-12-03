@@ -10,7 +10,6 @@
 # define LBCPP_NETWORK_COMMAND_H_
 
 # include <lbcpp/lbcpp.h>
-# include "NetworkClient.h"
 
 namespace lbcpp
 {
@@ -54,7 +53,7 @@ protected:
   String text;
   
   virtual bool run(ExecutionContext& context)
-  {context.informationCallback(client->getConnectedHostName(), text); return true;}
+    {context.informationCallback(client->getConnectedHostName(), text); return true;}
 };
 
 /** EchoCommand **/
@@ -68,7 +67,7 @@ protected:
   String echo;
   
   virtual bool run(ExecutionContext& context)
-  {client->sendVariable(new InformationContextCommand(echo)); return true;}
+    {client->sendVariable(new InformationContextCommand(echo)); return true;}
 };
 
 /** SystemCommand **/
@@ -81,7 +80,7 @@ protected:
   String command;
   
   virtual bool run(ExecutionContext& context)
-  {return system(command.toUTF8()) == 0;}
+    {return system(command.toUTF8()) == 0;}
 };
 
 /** SystemStatCommand **/
@@ -113,10 +112,10 @@ public:
   WorkUnitCommand() {}
   
   virtual bool callOnCurrentThread() const
-  {return false;}
+    {return false;}
   
   virtual bool run(ExecutionContext& context)
-  {return unit->run(context);}
+    {return unit->run(context);}
   
 protected:
   friend class WorkUnitCommandClass;

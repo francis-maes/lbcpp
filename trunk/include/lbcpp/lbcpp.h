@@ -44,6 +44,10 @@
 # include "Data/RandomVariable.h"
 # include "Data/Cache.h"
 
+# include "Network/NetworkClient.h"
+# include "Network/NetworkServer.h"
+# include "Network/NetworkCallback.h"
+
 # include "ProbabilityDistribution/ProbabilityDistribution.h"
 # include "ProbabilityDistribution/DiscreteProbabilityDistribution.h"
 # include "ProbabilityDistribution/ContinuousProbabilityDistribution.h"

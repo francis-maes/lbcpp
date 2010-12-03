@@ -42,7 +42,7 @@ protected:
   double getLeastSquareDeviation(ContainerPtr data) const;
 };
   
-class ClassificationIGSplitScoringFunction :public SplitScoringFunction
+class ClassificationIGSplitScoringFunction : public SplitScoringFunction
 {
 public:
   ClassificationIGSplitScoringFunction() : SplitScoringFunction(pairClass(anyType, enumerationClass)) {}

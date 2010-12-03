@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "NetworkCallback.h"
+#include <lbcpp/Network/NetworkCallback.h>
 
 using namespace lbcpp;
 
