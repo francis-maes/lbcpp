@@ -9,8 +9,6 @@
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
-extern void declareGlopClasses(ExecutionContext& context);
-
 class XorExamplePerception : public Perception
 {
 public:
@@ -41,6 +39,7 @@ int main(int argc, char* argv[])
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
+  
   context->declareType(TypePtr(new DefaultClass(T("XorExamplePerception"), T("Perception"))));
  
   // create linear regressor
