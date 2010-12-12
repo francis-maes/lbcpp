@@ -267,7 +267,7 @@ public:
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
-    TreeViewItem* treeItem = popPositionIntoTree(!result);
+  //  TreeViewItem* treeItem = popPositionIntoTree(!result);
     currentStatus = String::empty;
   }
   

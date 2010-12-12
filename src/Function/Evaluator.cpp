@@ -24,14 +24,17 @@ void RegressionErrorEvaluator::addPrediction(ExecutionContext& context, const Va
   if (!predicted.exists() || !correct.exists())
     return;
   
-  double predictedValue = DBL_MAX;
-  GaussianProbabilityDistributionPtr distribution = predicted.dynamicCast<GaussianProbabilityDistribution>();
-  if (distribution)
-    predictedValue = distribution->getMean();
-  else if (predicted.isDouble())
+  double predictedValue;
+  if (predicted.isDouble())
     predictedValue = predicted.getDouble();
-
-  jassert(predictedValue != DBL_MAX);
+  else if (predicted.isObject())
+  {
+    GaussianProbabilityDistributionPtr distribution = predicted.dynamicCast<GaussianProbabilityDistribution>();
+    if (distribution)
+      predictedValue = distribution->getMean();
+    else
+      jassert(false);
+  }
   addDelta(predictedValue - correct.getDouble());
 }
 
