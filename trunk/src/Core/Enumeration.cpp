@@ -17,7 +17,7 @@ Enumeration::Enumeration(const String& name, const juce::tchar** elements, const
 {
   jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
   for (size_t index = 0; elements[index]; ++index)
-    addElement(*silentExecutionContext, elements[index]);
+    addElement(defaultExecutionContext(), elements[index]);
 }
 
 Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
@@ -28,7 +28,7 @@ Enumeration::Enumeration(const String& name, const String& oneLetterCodes)
   {
     String str;
     str += oneLetterCodes[i];
-    addElement(*silentExecutionContext, str);
+    addElement(defaultExecutionContext(), str);
   }
 }
 

@@ -3,7 +3,7 @@
 <file name="ScalarObjectFunction" directory="Function/ScalarObjectFunction">
   <include file="lbcpp/Function/ScalarObjectFunction.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="ScalarObjectFunction" base="Function" abstract="yes"/>
 
@@ -19,5 +19,5 @@
       <variable type="Double" name="scalar"/>
     </class>
 
-  </namespace> 
+   
 </file>

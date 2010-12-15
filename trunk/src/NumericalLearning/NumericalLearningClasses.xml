@@ -9,7 +9,7 @@
   <import name="NumericalLearningBatchLearner"/>
   <import name="NumericalLearningOnlineLearner"/>
 
-  <namespace name="lbcpp">
-  </namespace>
+  
+  
 
 </file>

@@ -83,7 +83,7 @@ DefaultClass::DefaultClass(const String& name, TypePtr baseClass)
 }
 
 DefaultClass::DefaultClass(const String& name, const String& baseClass)
-  : Class(name, silentExecutionContext->getType(baseClass))
+: Class(name, lbcpp::getType(baseClass))
 {
 }
 
@@ -101,7 +101,7 @@ void DefaultClass::addVariable(ExecutionContext& context, const String& typeName
   if (templateType)
     type = templateType->instantiateTypeName(context, typeName, templateArguments);
   else
-    type = context.getType(typeName);
+    type = typeManager().getType(context, typeName);
   if (type)
     addVariable(context, type, name, shortName, description);
 }

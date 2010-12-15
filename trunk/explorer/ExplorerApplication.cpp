@@ -139,7 +139,7 @@ public:
       menu.addItem(1, "Open");
       menu.addItem(2, "Open Directory");
       
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(*silentExecutionContext);
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(defaultExecutionContext());
       if (configuration->getNumRecentFiles())
       {
         PopupMenu openRecentFilesMenu;
@@ -168,7 +168,7 @@ public:
   {
     if (topLevelMenuIndex == 0)
     {
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(*silentExecutionContext);
+      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(defaultExecutionContext());
 
       if (menuItemID == 1 || menuItemID == 2)
       {
@@ -206,7 +206,7 @@ public:
           RecentWorkUnitsConfiguration::getInstance()->addRecent(workUnitName, arguments, workingDirectory);
           ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
 
-          TypePtr workUnitType = context.getType(workUnitName);
+          TypePtr workUnitType = typeManager().getType(context, workUnitName);
           if (workUnitType)
           {
             WorkUnitPtr workUnit = context.createObject(workUnitType);
@@ -259,8 +259,11 @@ private:
   ExplorerContentTabs* contentTabs;
 };
 
-extern void declareProteinClasses(ExecutionContext& context);
-extern void declareExplorerClasses(ExecutionContext& context);
+namespace lbcpp
+{
+  extern LibraryPtr proteinLibrary;
+  extern LibraryPtr explorerLibrary;
+};
 
 class ExplorerApplication : public JUCEApplication
 {
@@ -270,16 +273,15 @@ public:
   virtual void initialise(const String& commandLine)
   {    
     lbcpp::initialize(NULL);
-    context = defaultConsoleExecutionContext(); // FIXME
-    context->appendCallback(explorerExecutionCallback);
-    //lbcpp::setDefaultContext(context);
-    lbcpp::loadDynamicLibraries(*context, File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
-    declareProteinClasses(*context);
-    declareExplorerClasses(*context);
+    defaultExecutionContext().appendCallback(explorerExecutionCallback);
+
+    lbcpp::importLibrariesFromDirectory(File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
+    lbcpp::importLibrary(proteinLibrary);
+    lbcpp::importLibrary(explorerLibrary);
 
     theCommandManager = new ApplicationCommandManager();
 
-    mainWindow = new ExplorerMainWindow(*context);
+    mainWindow = new ExplorerMainWindow(defaultExecutionContext());
     mainWindow->setVisible(true);
 
     flushErrorAndWarningMessages(T("Explorer Start-up"));

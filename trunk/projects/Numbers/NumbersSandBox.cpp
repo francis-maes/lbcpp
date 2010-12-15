@@ -91,7 +91,7 @@ double binomialProbability(double numSuccess, double numTrials, double probabili
   return log(binomialProbability(featureValue, 
 }*/
 
-extern void declareNumbersClasses(ExecutionContext& context);
+namespace lbcpp {extern LibraryPtr numbersLibrary;};
 
 ObjectPtr estimateFeaturesExpectation(ExecutionContext& context, PerceptionPtr perception, ContainerPtr inputs)
 {
@@ -208,9 +208,9 @@ private:
 int main(int argc, char* argv[])
 {
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = defaultConsoleExecutionContext();
+  lbcpp::importLibrary(numbersLibrary);
 
-  declareNumbersClasses(*context);
+  ExecutionContext& context = defaultExecutionContext();
 
   // Perception
   PerceptionPtr numberPerception = twoDigitNumberFeatures();
@@ -228,12 +228,12 @@ int main(int argc, char* argv[])
   // Random Number Sequences
   ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 1000);
   FeaturesInformation featuresInfo(perception);
-  featuresInfo.compute(*context, randomInputs);
+  featuresInfo.compute(context, randomInputs);
   //featuresInfo.print();
 
   ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
   EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
-  featuresInfo.printMostRelevantFeatures(*context, enrichedProblem);
+  featuresInfo.printMostRelevantFeatures(context, enrichedProblem);
   return 0;
 
   /*

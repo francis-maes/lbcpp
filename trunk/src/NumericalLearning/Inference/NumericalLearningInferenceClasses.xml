@@ -2,7 +2,7 @@
 
 <file name="NumericalLearningInference" directory="NumericalLearning/Inference">
 
-  <namespace name="lbcpp">
+  
 
     <!--
       -  Atomic Inference
@@ -113,5 +113,5 @@
       <variable type="ScalarFunction" name="transferFunction"/>
     </class>
 
-  </namespace>
+  
 </file>

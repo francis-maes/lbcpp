@@ -64,7 +64,7 @@ void RecentWorkUnitsConfiguration::addRecentWorkUnit(const String& workUnitName)
   }
   else
     recents.insert(recents.begin(), new RecentWorkUnitConfiguration(workUnitName));
-  ExplorerConfiguration::save(*silentExecutionContext);
+  ExplorerConfiguration::save(defaultExecutionContext());
 }
 
 RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const String& name)
@@ -86,7 +86,7 @@ void RecentWorkUnitsConfiguration::addRecent(const String& workUnit, const Strin
   recents[0]->addRecentArguments(arguments);
   if (workingDirectory.exists())
     recents[0]->addRecentWorkingDirectory(workingDirectory);
-  ExplorerConfiguration::save(*silentExecutionContext);
+  ExplorerConfiguration::save(defaultExecutionContext());
 }
 
 int RecentWorkUnitsConfiguration::findRecentWorkUnit(const String& workUnit) const

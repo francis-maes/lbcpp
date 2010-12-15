@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="MiscFunctions" directory="Function/MiscFunctions">
-  <namespace name="lbcpp">
+  
 
     <class name="IdentityFunction" base="Function">
       <constructor arguments="TypePtr type"/>
@@ -44,6 +44,6 @@
       <variable type="Integer" name="index2"/>
       <variable type="Type" name="inputPairClass"/>
     </class>
-  </namespace>
+  
   
 </file>

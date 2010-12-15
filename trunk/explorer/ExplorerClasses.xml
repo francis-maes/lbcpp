@@ -4,7 +4,7 @@
   <include file="ProcessManager/RecentProcesses.h"/>
   <import name="WorkUnitManager"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="ExplorerConfiguration" base="Object"/>
 
@@ -17,10 +17,5 @@
     <class name="RecentProcesses"/>
     <class name="ProcessConsoleSettings"/>
     <class name="ProcessConsoleFilter"/>
-  </namespace>
-  
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
 
 </file>

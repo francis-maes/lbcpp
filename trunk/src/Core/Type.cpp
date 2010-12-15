@@ -83,10 +83,10 @@ TypePtr Type::loadUnnamedTypeFromXml(XmlImporter& importer)
         return TypePtr();
       importer.leave();
     }
-    return importer.getContext().getType(templateType, templateArguments);
+    return typeManager().getType(importer.getContext(), templateType, templateArguments);
   }
   else
-    return importer.getContext().getType(importer.getStringAttribute(T("typeName")));
+    return typeManager().getType(importer.getContext(), importer.getStringAttribute(T("typeName")));
 }
 
 bool Type::inheritsFrom(TypePtr baseType) const

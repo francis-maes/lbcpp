@@ -3,7 +3,7 @@
 <file name="Predicate" directory="Function/Predicate">
   <include file="lbcpp/Function/Predicate.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="Predicate" base="Function" abstract="yes"/>
 
@@ -47,5 +47,5 @@
     <class name="GreaterThanPredicate" base="UnaryComparisonPredicate">
       <constructor arguments="const Variable&amp; operand"/>
     </class>
-  </namespace> 
+   
 </file>

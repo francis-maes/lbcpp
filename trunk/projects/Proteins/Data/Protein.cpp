@@ -190,13 +190,13 @@ SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
   if (betweenCBetaAtoms)
   {
     if (!distanceMapCb && tertiaryStructure && tertiaryStructure->hasBackboneAndCBetaAtoms())
-      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(*silentExecutionContext, tertiaryStructure, true);
+      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(defaultExecutionContext(), tertiaryStructure, true);
     return distanceMapCb;
   }
   else
   {
     if (!distanceMapCa && tertiaryStructure && tertiaryStructure->hasCAlphaAtoms())
-      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(*silentExecutionContext, tertiaryStructure, false);
+      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(defaultExecutionContext(), tertiaryStructure, false);
     return distanceMapCa;
   }
 }

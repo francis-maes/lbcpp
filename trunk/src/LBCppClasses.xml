@@ -15,8 +15,4 @@
   <import name="NumericalLearning"/>
   <import name="DecisionTree"/>
 
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-  
 </file>

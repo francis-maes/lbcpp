@@ -78,7 +78,7 @@ public:
       if (variable.getTypeName() == typeName)
         return variable;
     }
-    TypePtr type = context.getType(typeName);
+    TypePtr type = typeManager().getType(context, typeName);
     jassert(type);
     object->append(context.createVariable(type));
     return object->getElement(object->getNumElements() - 1);

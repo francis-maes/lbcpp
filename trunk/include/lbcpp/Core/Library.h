@@ -35,6 +35,9 @@ namespace lbcpp
 class Library : public NameableObject
 {
 public:
+  Library(const String& name) : NameableObject(name) {}
+  Library() {}
+
   const std::vector<TypePtr>& getTypes() const
     {return types;}
 
@@ -43,41 +46,24 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 
+protected:
+  friend bool importLibrary(ExecutionContext& context, LibraryPtr library);
+
+  virtual bool initialize(ExecutionContext& context) = 0;
+  
+  bool declareType(ExecutionContext& context, TypePtr type);
+  bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
+  bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
+
 private:
   friend class LibraryClass;
 
   std::vector<TypePtr> types;
   std::vector<TemplateTypePtr> templateTypes;
+  std::vector<LibraryPtr> subLibraries;
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
-
-class DynamicLibrary : public Library
-{
-public:
-  DynamicLibrary() : handle(NULL) {}
-  virtual ~DynamicLibrary()
-    {freeDynamicLibrary();}
-
-  bool loadDynamicLibrary(ExecutionContext& context, const File& file);
-  void freeDynamicLibrary();
-
-  bool isLoaded() const
-    {return handle != NULL;}
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class DynamicLibraryClass;
-  File file;
-
-  typedef void (*InitializeFunction)(lbcpp::ApplicationContext& applicationContext, lbcpp::ExecutionContext& executionContext);
-  typedef void (*DeinitializeFunction)();
-
-  void* handle;
-  InitializeFunction initializeFunction;
-  DeinitializeFunction deinitializeFunction;
-};
 
 }; /* namespace lbcpp */
 

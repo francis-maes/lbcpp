@@ -9,18 +9,12 @@
   <import name="WorkUnit"/>
 
   <include file="Data/Protein.h"/>
-  
-  <namespace name="lbcpp">
-    <type name="AngstromDistance" base="Double">
-      <code>
-      virtual String toString(const VariableValue&amp; value) const
-        {return String(value.getDouble(), 2) + T(" A");}
-      </code>
-    </type>
-  </namespace>
 
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-  
+  <type name="AngstromDistance" base="Double">
+    <code>
+    virtual String toString(const VariableValue&amp; value) const
+      {return String(value.getDouble(), 2) + T(" A");}
+    </code>
+  </type>
+
 </file>

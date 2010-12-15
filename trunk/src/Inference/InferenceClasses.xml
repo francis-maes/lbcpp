@@ -14,7 +14,7 @@
   <import name="InferenceBatchLearner"/>
   <import name="InferenceOnlineLearner"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="Inference" base="Function" abstract="yes">
       <variable type="String" name="name"/>
@@ -75,6 +75,6 @@
       <variable type="Variable" name="supervision"/>
     </class>
     
-  </namespace>
+  
 
 </file>

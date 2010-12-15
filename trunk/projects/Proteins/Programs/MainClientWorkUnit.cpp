@@ -58,15 +58,18 @@ protected:
 
 using namespace lbcpp;
 
-extern void declareProteinClasses(ExecutionContext& context);
-extern void declareProgramClasses(ExecutionContext& context);
+namespace lbcpp
+{
+  extern LibraryPtr proteinLibrary;
+  extern LibraryPtr programLibrary;
+};
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = new SgeExecutionContext(File(T("/u/jbecker/.WorkUnit/Waiting")));
-  declareProteinClasses(*context);
-  declareProgramClasses(*context);
+  lbcpp::importLibrary(proteinLibrary);
+  lbcpp::importLibrary(programLibrary);
   
   int exitCode;
   {

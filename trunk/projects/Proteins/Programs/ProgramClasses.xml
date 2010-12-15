@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Program" directory="Programs">
-  <namespace name="lbcpp">
+  
 
     <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
     <class name="DumbOptimizerProgram" base="WorkUnit"/>
@@ -42,11 +42,5 @@
       <constructor arguments="WorkUnitPtr unit"/>
       <variable type="WorkUnit" name="unit"/>
     </class>
-
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
 
 </file>

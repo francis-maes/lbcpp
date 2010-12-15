@@ -4,7 +4,7 @@
 
   <include file="lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h"/>
     
-  <namespace name="lbcpp">
+  
 
     <class name="BinaryDecisionTree"/>
 
@@ -53,6 +53,6 @@
       }
     </code>
     
-  </namespace>
+  
   
 </file>

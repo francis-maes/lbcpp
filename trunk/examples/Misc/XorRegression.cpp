@@ -37,11 +37,11 @@ public:
 
 int main(int argc, char* argv[])
 {
+  // initialize
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = defaultConsoleExecutionContext();
-  
-  context->declareType(TypePtr(new DefaultClass(T("XorExamplePerception"), T("Perception"))));
- 
+  lbcpp::declareType(TypePtr(new DefaultClass(T("XorExamplePerception"), T("Perception"))));
+  ExecutionContext& context = defaultExecutionContext();
+
   // create linear regressor
   PerceptionPtr perception = new XorExamplePerception();
   InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(
@@ -60,15 +60,15 @@ int main(int argc, char* argv[])
   trainingSet->append(Variable::pair(Variable::pair(1.0, 1.0), 1.0));
 
   // create context and train
-  regressor->train(*context, trainingSet, ContainerPtr());
+  regressor->train(context, trainingSet, ContainerPtr());
 
   // evaluate
   EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));
-  regressor->evaluate(*context, trainingSet, evaluator);
+  regressor->evaluate(context, trainingSet, evaluator);
   std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
   // test evaluator on one example
-  Variable myPrediction = regressor->computeFunction(*context, Variable::pair(1.0, 0.0));
+  Variable myPrediction = regressor->computeFunction(context, Variable::pair(1.0, 0.0));
   std::cout << "MyPrediction: " << myPrediction << std::endl;
   return 0;
 }

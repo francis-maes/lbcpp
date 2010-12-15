@@ -10,7 +10,7 @@
 #include "WorkUnit/SandBoxWorkUnit.h"
 using namespace lbcpp;
 
-extern void declareProteinClasses(ExecutionContext& context);
+namespace lbcpp { extern LibraryPtr proteinLibrary; };
    
 int main(int argc, char** argv)
 {
@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     ExecutionContextPtr context = multiThreadedExecutionContext(8);
     context->appendCallback(consoleExecutionCallback());
     context->appendCallback(userInterfaceExecutionCallback());
-    declareProteinClasses(*context);
+    lbcpp::importLibrary(proteinLibrary);
     WorkUnitPtr workUnit(new SandBoxWorkUnit());
     exitCode = context->run(workUnit) ? 0 : 1;
   

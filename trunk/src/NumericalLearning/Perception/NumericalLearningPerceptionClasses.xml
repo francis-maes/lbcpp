@@ -2,7 +2,7 @@
 
 <file name="NumericalLearningPerception" directory="NumericalLearning/Perception">
 
-  <namespace name="lbcpp">
+  
 
     <!-- Discrete Value Features -->
     <class name="BooleanFeatures" base="Perception">
@@ -46,5 +46,5 @@
       <constructor/>
     </class>
 
-  </namespace>
+  
 </file>

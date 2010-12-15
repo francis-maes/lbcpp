@@ -2,7 +2,7 @@
 
 <file name="SimpleIntrospection">
   <include file="lbcpp/lbcpp.h"/>
-  <namespace name="lbcpp">
+  
     <code>
       class A : public Object
       {
@@ -32,9 +32,10 @@
       <variable type="Object" name="myObject"/>
       <variable type="Variable" name="myVariable"/>
     </class>
-  </namespace>
+  
   
   <code>
+    }; /* namespace lbcpp */
     using namespace lbcpp;
     
     int main(int argc, char** argv)
@@ -55,6 +56,7 @@
       std::cout &lt;&lt; "LoadedA = " &lt;&lt; std::endl &lt;&lt; loadedA->toString() &lt;&lt; std::endl;
       return 0;
     }
+    namespace lbcpp {
   </code>
   
 </file>

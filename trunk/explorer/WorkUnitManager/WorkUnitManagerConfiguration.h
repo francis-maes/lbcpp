@@ -52,7 +52,7 @@ public:
   virtual String getName() const
     {return T("RecentWorkUnitsConfiguration");}
 
-  static RecentWorkUnitsConfigurationPtr getInstance(ExecutionContext& context = *silentExecutionContext);
+  static RecentWorkUnitsConfigurationPtr getInstance(ExecutionContext& context = defaultExecutionContext());
 
   size_t getNumRecentWorkUnits() const
     {return recents.size();}

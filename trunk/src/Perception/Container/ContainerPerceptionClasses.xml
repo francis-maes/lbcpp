@@ -2,7 +2,7 @@
 
 <file name="ContainerPerception" directory="Perception/Container">
 
-  <namespace name="lbcpp">
+  
 
     <!-- Container Perceptions -->
     <class name="WindowPerception" base="Perception">
@@ -47,6 +47,6 @@
       <variable type="Perception" name="inputPerception"/>
       <variable type="Enumeration" name="classes"/>
     </class>
-  </namespace>
+  
 
 </file>

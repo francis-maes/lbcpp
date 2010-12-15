@@ -2,7 +2,7 @@
 
 <file name="WorkUnitManager" directory="WorkUnitManager">
 
-  <namespace name="lbcpp">
+  
     <class name="RecentWorkUnitConfiguration" base="Object">
       <variable type="String" name="workUnitName"/>
       <variable type="GenericVector[String]" name="arguments"/>
@@ -11,6 +11,6 @@
     <class name="RecentWorkUnitsConfiguration" base="Object">
       <variable type="ObjectVector[RecentWorkUnitConfiguration]" name="recents"/>
     </class>
-  </namespace>  
+    
 
 </file>

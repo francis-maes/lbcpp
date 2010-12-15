@@ -20,8 +20,8 @@ public:
   TypeManager();
   ~TypeManager();
 
-  void declare(ExecutionContext& context, TypePtr type);
-  void declare(ExecutionContext& context, TemplateTypePtr templateType);
+  bool declare(ExecutionContext& context, TypePtr type);
+  bool declare(ExecutionContext& context, TemplateTypePtr templateType);
 
   void finishDeclarations(ExecutionContext& context);
 
@@ -31,7 +31,6 @@ public:
   TypePtr findType(const String& name) const;
   bool doTypeExists(const String& type) const;
 
-  void ensureIsInitialized(ExecutionContext& context);
   void shutdown();
 
 private:
@@ -42,14 +41,17 @@ private:
   TypeMap types;
   TemplateTypeMap templateTypes;
  
-  bool standardTypesAreDeclared;
-
   TemplateTypeCache* getTemplateType(ExecutionContext& context, const String& templateTypeName) const;
 
   static String removeAllSpaces(const String& str);
 };
 
 extern TypeManager& typeManager();
+
+extern TypePtr getType(const String& typeName);
+extern TypePtr getType(const String& name, const std::vector<TypePtr>& arguments);
+extern bool doTypeExists(const String& typeName);
+extern bool declareType(TypePtr type);
 
 }; /* namespace lbcpp */
 

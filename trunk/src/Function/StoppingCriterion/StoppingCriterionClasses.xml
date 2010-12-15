@@ -3,7 +3,7 @@
 <file name="StoppingCriterion" directory="Function/StoppingCriterion">
   <include file="lbcpp/Function/StoppingCriterion.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="StoppingCriterion" base="Function" abstract="yes"/>
     <class name="MaxIterationsStoppingCriterion" base="StoppingCriterion">
@@ -27,5 +27,5 @@
       <variable type="StoppingCriterion" name="criterion1"/>
       <variable type="StoppingCriterion" name="criterion2"/>
     </class>
-  </namespace> 
+   
 </file>

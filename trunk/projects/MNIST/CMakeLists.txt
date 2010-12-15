@@ -35,18 +35,18 @@ SET(LBCPP_MNIST_SOURCES
 SOURCE_GROUP(Image FILES ${LBCPP_MNIST_IMAGE_SOURCES})
 SOURCE_GROUP(Program FILES ${LBCPP_MNIST_PROGRAM_SOURCES})
 
-ADD_LIBRARY(mnist
+ADD_LIBRARY(mnist SHARED 
   ${LBCPP_MNIST_SOURCES}
   ${LBCPP_MNIST_IMAGE_SOURCES}
   ${LBCPP_MNIST_PROGRAM_SOURCES}
 )
 TARGET_LINK_LIBRARIES(mnist lbcpp-core)
 
-ADD_EXECUTABLE(mnistLearner MainLearner.cpp)
-TARGET_LINK_LIBRARIES(mnistLearner mnist)
+#ADD_EXECUTABLE(mnistLearner MainLearner.cpp)
+#TARGET_LINK_LIBRARIES(mnistLearner mnist)
 
-ADD_EXECUTABLE(mnistPredictor MainPredictor.cpp)
-TARGET_LINK_LIBRARIES(mnistPredictor mnist)
+#ADD_EXECUTABLE(mnistPredictor MainPredictor.cpp)
+#TARGET_LINK_LIBRARIES(mnistPredictor mnist)
 
-ADD_EXECUTABLE(mnistConvertDataToBinaryFile MainConvertDataToBinaryFile.cpp)
-TARGET_LINK_LIBRARIES(mnistConvertDataToBinaryFile mnist)
+#ADD_EXECUTABLE(mnistConvertDataToBinaryFile MainConvertDataToBinaryFile.cpp)
+#TARGET_LINK_LIBRARIES(mnistConvertDataToBinaryFile mnist)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="ProteinData" directory="Data">
-  <namespace name="lbcpp">
+  
 
     <!-- Enumerations -->
     <enumeration name="AminoAcidType">
@@ -161,6 +161,6 @@
       <constructor arguments="bool keepTertiaryStructure"/>
       <variable type="Boolean" name="keepTertiaryStructure"/>
     </class>
-  </namespace>
+  
   
 </file>

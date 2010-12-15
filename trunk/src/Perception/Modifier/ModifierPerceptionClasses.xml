@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="ModifierPerception" directory="Perception/Modifier">
-  <namespace name="lbcpp">
+  
 
     <!-- perception Modifiers -->
     <class name="ComposePerception" base="Perception">
@@ -53,5 +53,5 @@
       <variable type="GenericVector[String]" name="stack"/>
     </class>
 
-  </namespace>
+  
 </file>

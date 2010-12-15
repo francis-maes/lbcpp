@@ -42,12 +42,6 @@ public:
   void declareTemplateType(TemplateTypePtr templateTypeInstance);
   void finishTypeDeclarations();
 
-  bool doTypeExists(const String& typeName);
-
-  TypePtr getType(const String& typeName);
-  TypePtr getType(const String& name, const std::vector<TypePtr>& arguments);
-  EnumerationPtr getEnumeration(const String& className);
-
   /*
   ** Current State
   */
@@ -80,10 +74,12 @@ protected:
   ExecutionStackPtr stack;
 };
 
+extern ExecutionContext& defaultExecutionContext();
+extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
+
 extern ExecutionContextPtr singleThreadedExecutionContext();
 extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
 
-extern ExecutionContextPtr defaultExecutionContext(bool noMultiThreading = false);
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
 }; /* namespace lbcpp */

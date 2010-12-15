@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="ProteinPerception" directory="Perception">
-  <namespace name="lbcpp">
+  
 
     <!-- Protein Perception -->
     <class name="ProteinCompositePerception" base="CompositePerception"/>
@@ -29,5 +29,5 @@
 
     <class name="ResiduePairCompositePerception" base="CompositePerception"/>
 
-  </namespace>  
+    
 </file>

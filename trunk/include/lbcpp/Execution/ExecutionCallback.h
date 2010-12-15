@@ -134,7 +134,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositeExecutionCallback> CompositeExecutionCallbackPtr;
 
-extern ExecutionCallbackPtr silentExecutionCallback();
 extern ExecutionCallbackPtr consoleExecutionCallback();
 extern ExecutionCallbackPtr userInterfaceExecutionCallback();
 

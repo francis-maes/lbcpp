@@ -2,7 +2,7 @@
 
 <file name="NumericalLearningOnlineLearner" directory="NumericalLearning/OnlineLearner">
 
-  <namespace name="lbcpp">
+  
 
     <!-- Gradient Descent -->
     <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
@@ -34,5 +34,5 @@
         {return graftingOnlineLearner(perception, std::vector&lt;NumericalInferencePtr&gt;(1, targetInference));}
     </code>
 
-  </namespace>
+  
 </file>

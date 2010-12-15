@@ -2,7 +2,7 @@
 
 <file name="ExecutionContext" directory="Execution/Context">
 
-  <namespace name="lbcpp">
+  
     
     <class name="SingleThreadedExecutionContext" base="ExecutionContext">
       <constructor/>
@@ -15,6 +15,6 @@
       <constructor arguments="size_t numThreads"/>
     </class>
    
-  </namespace>
+  
 
 </file>

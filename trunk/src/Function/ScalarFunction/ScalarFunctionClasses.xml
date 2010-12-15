@@ -3,7 +3,7 @@
 <file name="ScalarFunction" directory="Function/ScalarFunction">
   <include file="lbcpp/Function/ScalarFunction.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="ScalarFunction" base="Function" abstract="yes"/>
 
@@ -43,6 +43,6 @@
       <variable type="Double" name="constant"/>
     </class>
 
-  </namespace>
+  
   
 </file>

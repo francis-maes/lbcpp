@@ -170,7 +170,7 @@ ClassPtr Object::getClass() const
   if (!thisClass)
   {
     //jassert(false);
-    const_cast<Object* >(this)->thisClass = silentExecutionContext->getType(getTypeName(typeid(*this)));
+    const_cast<Object* >(this)->thisClass = lbcpp::getType(getTypeName(typeid(*this)));
     jassert(thisClass);
   }
   return thisClass;

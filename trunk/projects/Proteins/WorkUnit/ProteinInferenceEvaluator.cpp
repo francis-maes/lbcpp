@@ -12,7 +12,7 @@
 
 using namespace lbcpp;
 
-extern void declareProteinClasses(ExecutionContext& context);
+namespace lbcpp { extern LibraryPtr proteinLibrary; };
 
 ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory, size_t maxCount = 0)
 {
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 #if 0
   lbcpp::initialize(argv[0]);
   InferenceContextPtr context = singleThreadedInferenceContext();
-  declareProteinClasses(*context);
+  lbcpp::importLibrary(proteinLibrary);
 
   if (argc < 4)
   {

@@ -2,10 +2,7 @@
 
 <file name="ExecutionCallback" directory="Execution/Callback">
 
-  <namespace name="lbcpp">
-    <class name="SilentExecutionCallback" base="ExecutionCallback">
-      <constructor/>
-    </class>
+  
     <class name="ConsoleExecutionCallback" base="ExecutionCallback">
       <constructor/>
     </class>
@@ -45,6 +42,6 @@
       <variable type="Boolean" name="result"/>
     </class>
 
-  </namespace>
+  
 
 </file>

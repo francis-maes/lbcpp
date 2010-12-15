@@ -12,7 +12,7 @@
   <import name="ExecutionCallback"/>
   <import name="ExecutionContext"/>
 
-  <namespace name="lbcpp">
+  
 
     <!-- Work Unit -->
     <class name="WorkUnit" base="NameableObject" abstract="yes"/>
@@ -75,6 +75,6 @@
     
     <class name="ExecutionTrace" base="Object"/>
     
-  </namespace>
+  
 
 </file>

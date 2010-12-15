@@ -2,7 +2,7 @@
 
 <file name="Image" directory="Image">
 
-  <namespace name="lbcpp">
+  
     
     <!-- Image Data -->
     <class name="Image" base="Object">
@@ -56,11 +56,5 @@
       <constructor arguments="ImageFunctionPtr function"/>
       <variable type="ImageFunction" name="function"/>
     </class>
-    
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-  
+   
 </file>

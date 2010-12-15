@@ -8,15 +8,18 @@ void usage()
   std::cout << "Usage ..." << std::endl;
 }
 
-extern void declareProteinClasses(ExecutionContext& context);
-extern void declareProgramClasses(ExecutionContext& context);
+namespace lbcpp
+{
+  extern LibraryPtr proteinLibrary;
+  extern LibraryPtr programLibrary;
+};
 
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = defaultConsoleExecutionContext();
-  declareProteinClasses(*context);
-  declareProgramClasses(*context);
+  lbcpp::importLibrary(proteinLibrary);
+  lbcpp::importLibrary(programLibrary);
 
   int exitCode;
 
@@ -40,7 +43,7 @@ int main(int argc, char** argv)
   else if (argc > 2)
   {
     // load program from string
-    TypePtr type = context->getType(argv[1]);
+    TypePtr type = typeManager().getType(*context, argv[1]);
     if (!type)
       exitCode = 1;
     else

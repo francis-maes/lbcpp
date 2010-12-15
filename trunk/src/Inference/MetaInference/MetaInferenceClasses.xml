@@ -2,7 +2,7 @@
 
 <file name="MetaInference" directory="Inference/MetaInference">
 
-  <namespace name="lbcpp">
+  
 
     <class name="RunOnSupervisedExamplesSequentialInference" base="SequentialInference">
       <constructor arguments="InferencePtr inference"/>
@@ -42,6 +42,6 @@
       <constructor arguments="const String&amp; name, InferencePtr decoratedInference, ExecutionCallbackPtr callback"/>
     </class>
 
-  </namespace>
+  
   
 </file>

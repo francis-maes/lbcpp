@@ -2,7 +2,7 @@
 
 <file name="NumericalLearningBatchLearner" directory="NumericalLearning/BatchLearner">
 
-  <namespace name="lbcpp">
+  
 
     <class name="PrecomputePerceptionsNumericalInferenceLearner" base="PrecomputePerceptionsInferenceLearner">
       <constructor arguments="InferencePtr baseLearner" returnType="StaticDecoratorInference"/>
@@ -12,5 +12,5 @@
       <constructor/>
     </class>
 
-  </namespace>
+  
 </file>
