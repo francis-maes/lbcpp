@@ -3,7 +3,7 @@
 <file name="Type" directory="Core/Type">
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
-  <namespace name="lbcpp">
+  
 
     <type name="Variable" base="" implementation="TopLevelType"/>
 
@@ -40,7 +40,7 @@
       <variable type="ObjectVector[Type]" name="templateArguments"/>
       <code>
         virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-          {return VariableValue(context.getType(value));}
+          {return VariableValue(typeManager().getType(context, value));}
 
         virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {
@@ -105,5 +105,5 @@
     <!-- Template Type -->
     <class name="TemplateType" base="NameableObject" abstract="yes"/>
     
-  </namespace>
+  
 </file>

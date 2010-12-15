@@ -1,10 +1,13 @@
-* ExecutionTrace
-* Seul les WorkUnit ont une progression
-* Gerer les resultCallback
 
-* Nouvelle Collone "Output", améliorer le système des collones
+ * Faire marcher MnistLearner/Predictor depuis l'explorer
+ * Reparer les executables MnistLearner/Predictor
 
-* AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
+
+En plan:
+ * ExecutionTrace
+ * Gerer les resultCallback
+ * Nouvelle Collone "Output", améliorer le système des collones
+ * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 
 Boinc:
  * New class BoincExecutionContext

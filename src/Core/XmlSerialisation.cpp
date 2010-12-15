@@ -383,7 +383,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   XmlElement* elt = getCurrentElement();
   String typeName = elt->getStringAttribute(T("type"), String::empty).replaceCharacters(T("[]"), T("<>"));
   if (typeName.isNotEmpty())
-    return context.getType(typeName);
+    return typeManager().getType(context, typeName);
   else
   {
     XmlElement* child = elt->getChildByName(T("type"));

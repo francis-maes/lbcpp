@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="Geometry" directory="Geometry">
-  <namespace name="lbcpp">
+  
 
     <class name="Vector3">
       <variable type="Double" name="x" var="value.x"/>
@@ -11,5 +11,5 @@
 
     <class name="CartesianPositionVector" base="Vector[Vector3]"/>
     
-  </namespace>  
+    
 </file>

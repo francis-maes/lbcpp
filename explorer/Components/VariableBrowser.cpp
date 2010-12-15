@@ -199,9 +199,9 @@ public:
       rows.erase(rows.begin() + i);
     }
     Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
-    Component* component = selector->createComponentForVariable(*silentExecutionContext, variable, variable.toShortString());
+    Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, variable.toShortString());
     if (!component)
-      component = lbcpp::createComponentForVariable(*silentExecutionContext, variable, variable.toShortString());
+      component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, variable.toShortString());
     if (component)
       appendVariable(variable, component);
 

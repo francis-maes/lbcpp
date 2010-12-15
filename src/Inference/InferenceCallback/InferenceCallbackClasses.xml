@@ -2,7 +2,7 @@
 
 <file name="InferenceCallback" directory="Inference/InferenceCallback">
 
-  <namespace name="lbcpp">
+  
 
     <class name="CacheInferenceCallback" base="ExecutionCallback">
       <constructor arguments="InferenceResultCachePtr cache, InferencePtr parentStep"/>
@@ -18,6 +18,6 @@
       <variable type="Evaluator" name="evaluator"/>
     </class>
 
-  </namespace>
+  
 
 </file>

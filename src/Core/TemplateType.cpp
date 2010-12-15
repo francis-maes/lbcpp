@@ -81,7 +81,7 @@ bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const St
   templateArguments.resize(arguments.size());
   for (size_t i = 0; i < templateArguments.size(); ++i)
   {
-    templateArguments[i] = context.getType(arguments[i]);
+    templateArguments[i] = typeManager().getType(context, arguments[i]);
     if (!templateArguments[i])
       return false;
   }
@@ -126,7 +126,7 @@ void DefaultTemplateType::addParameter(const String& name, TypePtr baseType)
 
 void DefaultTemplateType::addParameter(ExecutionContext& context, const String& name, const String& baseTypeName)
 {
-  TypePtr baseType = context.getType(baseTypeName);
+  TypePtr baseType = typeManager().getType(context, baseTypeName);
   if (baseType)
     addParameter(name, baseType);
 }
@@ -155,14 +155,14 @@ TypePtr DefaultTemplateType::instantiateTypeName(ExecutionContext& context, cons
       if (!templateArgumentTypes[i])
         return false;
     }
-    return context.getType(templateType, templateArgumentTypes);
+    return typeManager().getType(context, templateType, templateArgumentTypes);
   }
   else
   {
     String name = typeExpr.trim();
     jassert(arguments.size() == parameters.size());
     int index = findParameter(name);
-    return index >= 0 ? arguments[index] : context.getType(name);
+    return index >= 0 ? arguments[index] : typeManager().getType(context, name);
   }
 }
 

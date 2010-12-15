@@ -8,7 +8,7 @@
   <import name="ModifierPerception"/>
   <import name="ContainerPerception"/>
   
-  <namespace name="lbcpp">
+  
     
     <!-- Perception Base Classes -->
     <class name="Perception" base="Function" abstract="yes">
@@ -42,5 +42,5 @@
       <variable type="Boolean" name="useCache"/>
     </class>
 
-  </namespace>
+  
 </file>

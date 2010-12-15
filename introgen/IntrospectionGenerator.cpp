@@ -28,15 +28,25 @@ public:
     indentation = 0;
     generateHeader();
     newLine();
+
+    String namespaceName = xml->getStringAttribute(T("namespace"), T("lbcpp"));
+    newLine();
+    openScope(T("namespace ") + namespaceName);
+
     generateCodeForChildren(xml);
     newLine();
-    generateFooter();
+    generateLibraryClass();
+    //generateFooter();
     newLine();
+
     if (xml->getBoolAttribute(T("library")))
     {
       generateDynamicLibraryFunctions();
       newLine();
     }
+
+    newLine();
+    closeScope(T("; /* namespace ") + namespaceName + T(" */"));
   }
 
 protected:
@@ -78,9 +88,7 @@ protected:
     for (XmlElement* elt = xml->getFirstChildElement(); elt; elt = elt->getNextElement())
     {
       String tag = elt->getTagName();
-      if (tag == T("include"))
-        generateInclude(elt);
-      else if (tag == T("type") || tag == T("templateType"))
+      if (tag == T("type") || tag == T("templateType"))
         generateTypeDeclaration(elt);
       else if (tag == T("class"))
         generateClassDeclaration(elt, false);
@@ -92,11 +100,9 @@ protected:
       }
       else if (tag == T("enumeration"))
         generateEnumerationDeclaration(elt);
-      else if (tag == T("namespace"))
-        generateNamespaceDeclaration(elt);
       else if (tag == T("code"))
         generateCode(elt);
-      else if (tag == T("import") || tag == T("declarationCode"))
+      else if (tag == T("import") || tag == T("declarationCode") || tag == T("include"))
         continue;
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
@@ -112,6 +118,7 @@ protected:
     ostr << "/* ====== Introspection for file '" << fileName << "', generated on "
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
     writeLine(T("#include <lbcpp/Core/Variable.h>"));
+    writeLine(T("#include <lbcpp/Core/Library.h>"));
 
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();
@@ -127,6 +134,9 @@ protected:
     }
     for (std::set<String>::const_iterator it = sortedFiles.begin(); it != sortedFiles.end(); ++it)
       writeLine(T("#include ") + it->quoted());
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("include"))
+      generateInclude(elt);
   }
 
   /*
@@ -162,20 +172,21 @@ protected:
     }
 
     String currentScope = getCurrentScopeFullName();
-    String fullName = currentScope + T("::") + implementation + T("(T(") + typeName.quoted() + T(")");
+    if (currentScope.isNotEmpty())
+      currentScope += T("::");
+    String fullName = currentScope + implementation + T("(T(") + typeName.quoted() + T(")");
     if (baseTypeName.isNotEmpty())
     {
       fullName += T(", ");
       if (xml->getTagName() == T("type"))
-        fullName += T("context.getType(T(") + baseTypeName.quoted() + T("))");
+        fullName += T("lbcpp::getType(T(") + baseTypeName.quoted() + T("))");
       else
         fullName += T("T(") + baseTypeName.quoted() + T(")");
     }
     fullName += T(")");
 
     String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
-
-    types.push_back(std::make_pair(currentScope + T("::") + singletonVariableName, fullName));
+    types.push_back(std::make_pair(currentScope + singletonVariableName, fullName));
 
     // Type declarator
     if (xml->getTagName() == T("type"))
@@ -473,11 +484,11 @@ protected:
       std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
     else if (parameters.size() == 1)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
-        T("return silentExecutionContext->getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
+      T("return lbcpp::getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
           //T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
     else if (parameters.size() == 2)
       writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type1, TypePtr type2)"),
-        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return silentExecutionContext->getType(T(") + className.quoted() + T("), types);"));
+        T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
           //T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
     else
       std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
@@ -493,22 +504,6 @@ protected:
     String type = xmlTypeToCppType(xml->getStringAttribute(T("type"), T("Variable")));
     String name = xml->getStringAttribute(T("name"), T("???"));
     writeLine(T("addParameter(context, T(") + name.quoted() + T("), T(") + type.quoted() + T("));"));
-  }
-
-  /*
-  ** Namespace
-  */
-  void generateNamespaceDeclaration(XmlElement* xml)
-  {
-    String name = xml->getStringAttribute(T("name"), T("???"));
-    newLine();
-    openScope(T("namespace ") + name);
-
-    currentScopes.push_back(name);
-    generateCodeForChildren(xml);
-    currentScopes.pop_back();
-
-    closeScope(T("; /* namespace ") + name + T(" */"));
   }
 
   /*
@@ -539,6 +534,65 @@ protected:
   /*
   ** Footer
   */
+  void generateLibraryClass()
+  {
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(T("extern lbcpp::LibraryPtr ") + replaceFirstLettersByLowerCase(name) + T("Library;"));
+    }
+
+    openClass(fileName + T("Library"), T("Library"));
+    
+    // constructor
+    openScope(fileName + T("Library() : Library(T(") + fileName.quoted() + T("))"));
+    closeScope();
+    newLine();
+
+    // initialize function
+    openScope(T("virtual bool initialize(ExecutionContext& context)"));
+    writeLine(T("bool __ok__ = true;"));
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+      if (elt->getBoolAttribute(T("pre"), false))
+      {
+        String name = elt->getStringAttribute(T("name"), T("???"));
+        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
+      }
+ 
+    for (size_t i = 0; i < types.size(); ++i)
+    {
+      String classVariableName = types[i].first;
+      String typeName = types[i].second;
+      String code;
+      if (classVariableName.isNotEmpty())
+        code = T("__ok__ &= declareType(context, ") + classVariableName + T(" = ");
+      else
+        code = T("__ok__ &= declareTemplateType(context, ");
+      code += T("new ") + typeName + T(");");
+      writeLine(code);
+    }
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+      if (!elt->getBoolAttribute(T("pre"), false))
+      {
+        String name = elt->getStringAttribute(T("name"), T("???"));
+        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
+      }
+
+    forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))
+    {
+      writeLine(elt->getAllSubText());
+    }
+
+    // todo
+    writeLine(T("return __ok__;"));
+    closeScope();
+
+    closeClass();
+    writeLine(T("lbcpp::LibraryPtr ") + replaceFirstLettersByLowerCase(fileName) + T("Library = new ") + fileName + T("Library();"));
+  }
+/*
   void generateFooter()
   {
     bool hasImports = false;
@@ -594,7 +648,7 @@ protected:
     }
    
     closeScope();
-  }
+  }*/
 
   void generateDynamicLibraryFunctions()
   {
@@ -608,14 +662,9 @@ protected:
     writeLine(T("# endif"));
     newLine();
 
-    openScope(T("LBCPP_EXPORT void lbcppInitializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, lbcpp::ExecutionContext& executionContext)"));
-    writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext, executionContext);"));
-    writeLine(T("declare") + fileName + T("Classes(executionContext);"));
-    closeScope();
-    
-    newLine();
-    openScope(T("LBCPP_EXPORT void lbcppDeinitializeDynamicLibrary()"));
-    writeLine(T("lbcpp::deinitializeDynamicLibrary();"));
+    openScope(T("LBCPP_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
+    writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext);"));
+    writeLine(T("return ") + replaceFirstLettersByLowerCase(fileName) + T("Library.get();"));
     closeScope();
 
     closeScope(); // extern "C"

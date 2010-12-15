@@ -8,7 +8,7 @@
   <include file="lbcpp/Data/RandomVariable.h"/>
   <include file="lbcpp/Data/Cache.h"/>
 
-  <namespace name="lbcpp">
+  
     
     <!-- Random Generator -->
     <class name="RandomGenerator">
@@ -31,6 +31,6 @@
     <class name="Cache" base="Object" abstract="yes"/>
     <class name="AverageValuesCache" base="Cache"/>
     
-  </namespace>
+  
   
 </file>

@@ -68,7 +68,7 @@ private:
 };
 
 juce::Component* ProcessConsoleFilter::createComponent() const
-  {return new ProcessConsoleFilterComponent(*silentExecutionContext, ProcessConsoleFilterPtr(const_cast<ProcessConsoleFilter* >(this)));}
+  {return new ProcessConsoleFilterComponent(defaultExecutionContext(), ProcessConsoleFilterPtr(const_cast<ProcessConsoleFilter* >(this)));}
 
 class ProcessConsoleSettingsComponent : public Component
 {

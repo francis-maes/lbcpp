@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="ProteinInference" directory="Inference">
-  <namespace name="lbcpp">
+  
 
     <!-- Task-specific inferences -->
     <class name="ContactMapInference" base="SharedParallelInference"/>
@@ -16,5 +16,5 @@
     <class name="ProteinSequentialInference" base="VectorSequentialInference"/>
     <class name="ProteinParallelInference" base="VectorParallelInference"/>
 
-  </namespace>  
+    
 </file>

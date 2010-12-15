@@ -67,25 +67,22 @@ private:
 /*
 ** TypeManager
 */
-TypeManager::TypeManager()
-  : standardTypesAreDeclared(false)
-{
-}
+TypeManager::TypeManager() {}
 
 TypeManager::~TypeManager()
   {shutdown();}
 
-void TypeManager::declare(ExecutionContext& context, TypePtr type)
+bool TypeManager::declare(ExecutionContext& context, TypePtr type)
 {
   if (!type || type->getName().isEmpty())
   {
     context.errorCallback(T("TypeManager::declare"), T("Empty class name"));
-    return;
+    return false;
   }
   if (type->isUnnamedType())
   {
     context.errorCallback(T("TypeManager::declare"), T("Trying to declare an unnamed type"));
-    return;
+    return false;
   }
 
   ScopedLock _(typesLock);
@@ -93,13 +90,14 @@ void TypeManager::declare(ExecutionContext& context, TypePtr type)
   if (doTypeExists(typeName))
   {
     context.errorCallback(T("TypeManager::declare"), T("Type '") + typeName + T("' has already been declared"));
-    return;
+    return false;
   }
   type->setStaticAllocationFlag();
   types[typeName] = type;
+  return true;
 }
 
-void TypeManager::declare(ExecutionContext& context, TemplateTypePtr templateType)
+bool TypeManager::declare(ExecutionContext& context, TemplateTypePtr templateType)
 {
   if (!templateType || templateType->getName().isEmpty())
     context.errorCallback(T("TypeManager::declare"), T("Empty template class name"));
@@ -110,9 +108,10 @@ void TypeManager::declare(ExecutionContext& context, TemplateTypePtr templateTyp
   if (it != templateTypes.end())
   {
     context.errorCallback(T("TypeManager::declare"), T("Template type '") + typeName + T("' has already been declared"));
-    return;
+    return false;
   }
   templateTypes[typeName].definition = templateType;
+  return true;
 }
 
 void TypeManager::finishDeclarations(ExecutionContext& context)
@@ -198,21 +197,6 @@ TypePtr TypeManager::findType(const String& name) const
 bool TypeManager::doTypeExists(const String& type) const
   {return findType(type);}
 
-extern void declareCoreClasses(ExecutionContext& context);
-extern void declareLBCppClasses(ExecutionContext& context);
-
-void TypeManager::ensureIsInitialized(ExecutionContext& context)
-{
-  if (!standardTypesAreDeclared)
-  {
-    standardTypesAreDeclared = true;
-    declareCoreClasses(context);
-    finishDeclarations(context);
-    declareLBCppClasses(context);
-    topLevelType = anyType = variableType;
-  }
-}
-
 void TypeManager::shutdown()
 {
   ScopedLock _(typesLock);
@@ -244,46 +228,47 @@ TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const
 }
 
 /*
-** DynamicLibrary
+** Library
 */
-bool DynamicLibrary::loadDynamicLibrary(ExecutionContext& context, const File& file)
+bool Library::declareType(ExecutionContext& context, TypePtr type)
 {
-  this->file = file;
-  setName(file.getFileName());
-
-  jassert(!handle);
-  handle = juce::PlatformUtilities::loadDynamicLibrary(file.getFullPathName());
-  if (!handle)
-  {
-    context.errorCallback(T("Could not open dynamic library ") + file.getFullPathName());
+  if (!typeManager().declare(context, type))
     return false;
-  }
-
-  initializeFunction = (InitializeFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("initializeDynamicLibrary"));
-  if (!initializeFunction)
-    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find initialize function"));
-
-  deinitializeFunction = (DeinitializeFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppDeinitializeDynamicLibrary"));
-  if (!deinitializeFunction)
-    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find deinitialize function"));
-
-  if (initializeFunction && deinitializeFunction)
-  {
-    initializeFunction(*applicationContext, context);
-    return true;
-  }
-  else
-  {
-    freeDynamicLibrary();
-    return false;
-  }
+  types.push_back(type);
+  return true;
 }
 
-void DynamicLibrary::freeDynamicLibrary()
+bool Library::declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType)
 {
-  if (handle)
-  {
-    juce::PlatformUtilities::freeDynamicLibrary(handle);
-    handle = NULL;
-  }
+  if (!typeManager().declare(context, templateType))
+    return false;
+  templateTypes.push_back(templateType);
+  return true;
 }
+
+bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary)
+{
+  if (!subLibrary->initialize(context))
+    return false;
+  subLibraries.push_back(subLibrary);
+  return true;
+}
+
+/*
+** Global
+*/
+namespace lbcpp
+{
+  TypePtr getType(const String& typeName)
+    {return typeManager().getType(defaultExecutionContext(), typeName);}
+
+  TypePtr getType(const String& name, const std::vector<TypePtr>& arguments)
+    {return typeManager().getType(defaultExecutionContext(), name, arguments);}
+
+  bool doTypeExists(const String& typeName)
+    {return typeManager().doTypeExists(typeName);}
+
+  bool declareType(TypePtr type)
+    {return typeManager().declare(defaultExecutionContext(), type);}
+
+};

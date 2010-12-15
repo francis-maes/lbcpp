@@ -2,7 +2,7 @@
 
 <file name="Numbers">
 
-  <namespace name="lbcpp">
+  
     
     <!-- New -->
     <class name="EnrichedNumberSequence">
@@ -66,11 +66,5 @@
       <constructor arguments="PerceptionPtr directionalPerception"/>
       <variable type="Perception" name="directionalPerception"/>
     </class>
-    
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-  
+ 
 </file>

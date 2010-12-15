@@ -202,7 +202,7 @@ void ExecutionTraceTreeView::timerCallback()
         WorkUnitExecutionTraceItemPtr trace = item->getTrace().dynamicCast<WorkUnitExecutionTraceItem>();
         if (trace)
         {
-          ObjectPtr results = trace->getResultsObject(*silentExecutionContext);
+          ObjectPtr results = trace->getResultsObject(defaultExecutionContext());
           if (results)
             selectedVariables.push_back(results);
         }

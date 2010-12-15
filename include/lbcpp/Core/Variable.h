@@ -31,6 +31,7 @@
 # include "../Execution/ExecutionContext.h"
 # include "Type.h"
 # include "TemplateType.h"
+# include "TypeManager.h"
 
 namespace lbcpp
 {

@@ -62,9 +62,9 @@ VariableVectorPtr ExplorerConfiguration::getInstance()
   VariableVectorPtr& configuration = getInstancePtr();
   if (!configuration)
   {
-    File configurationFile = getConfigurationFile(*silentExecutionContext);
+    File configurationFile = getConfigurationFile(defaultExecutionContext());
     if (configurationFile.exists())
-      configuration = Variable::createFromFile(*silentExecutionContext, configurationFile).getObjectAndCast<VariableVector>();
+      configuration = Variable::createFromFile(defaultExecutionContext(), configurationFile).getObjectAndCast<VariableVector>();
     if (!configuration)
       configuration = new ExplorerConfiguration();
   }

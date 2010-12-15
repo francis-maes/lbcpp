@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="WorkUnit" directory="WorkUnit">
-  <namespace name="lbcpp">
+  
     
     <class name="SaveObjectProgram" base="WorkUnit">
       <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
@@ -64,11 +64,5 @@
     <class name="AlaRacheOptimizer" base="Inference"/>
     <class name="OptimizerInferenceLearner" base="Inference"/>
     <class name="SandBoxWorkUnit" base="WorkUnit"/>
-    
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
 
 </file>

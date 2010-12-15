@@ -5,7 +5,7 @@
   <import name="Image"/>
   <import name="Program"/>
 
-  <namespace name="lbcpp">
+  
     
     <!-- Enumeration -->
     <enumeration name="DigitType">
@@ -52,11 +52,5 @@
     return StreamPtr(new MatlabFileParser(context, file))-&gt;load(context);
   }
   </code>
-  
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
   
 </file>

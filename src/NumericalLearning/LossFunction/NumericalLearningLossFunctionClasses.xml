@@ -3,7 +3,7 @@
 <file name="NumericalLearningLossFunction" directory="NumericalLearning/LossFunction">
   <include file="lbcpp/NumericalLearning/LossFunctions.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <!-- Binary Loss Functions -->
     <class name="BinaryClassificationLossFunction" base="ScalarFunction" abstract="yes">
@@ -72,5 +72,5 @@
       <variable type="Double" name="weight"/>
     </class>
 
-  </namespace> 
+   
 </file>

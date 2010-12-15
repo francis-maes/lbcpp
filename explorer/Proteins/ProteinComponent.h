@@ -79,7 +79,7 @@ public:
   ResiduePerceptionComponent(const Variable& proteinAndPosition)
     : PerceptionComponent(proteinAndPosition)
   {
-    ProteinInferenceFactory factory(*silentExecutionContext);
+    ProteinInferenceFactory factory(defaultExecutionContext());
     perception = factory.createResiduePerception(String::empty);
   }
 };
@@ -90,7 +90,7 @@ public:
   ResiduePairPerceptionComponent(const Variable& proteinAndPositions)
     : PerceptionComponent(proteinAndPositions)
   {
-    ProteinInferenceFactory factory(*silentExecutionContext);
+    ProteinInferenceFactory factory(defaultExecutionContext());
     perception = factory.createResiduePairPerception(String::empty);
   }
 };
@@ -101,7 +101,7 @@ public:
   ProteinPerceptionComponent(const Variable& protein)
     : PerceptionComponent(protein)
   {
-    ProteinInferenceFactory factory(*silentExecutionContext);
+    ProteinInferenceFactory factory(defaultExecutionContext());
     perception = factory.createProteinPerception(String::empty);
   }
 };

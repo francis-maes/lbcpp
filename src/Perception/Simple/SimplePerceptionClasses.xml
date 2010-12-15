@@ -2,7 +2,7 @@
 
 <file name="SimplePerception" directory="Perception/Simple">
 
-  <namespace name="lbcpp">
+  
     <class name="NullPerception" base="Perception">
       <constructor/>
     </class>
@@ -16,6 +16,6 @@
       <constructor arguments="FunctionPtr function"/>
       <variable type="Function" name="function"/>
     </class>
-  </namespace>
+  
 
 </file>

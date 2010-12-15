@@ -2,7 +2,7 @@
 
 <file name="InferenceBatchLearner" directory="Inference/BatchLearner">
 
-  <namespace name="lbcpp">
+  
 
     <!-- Dummy Inference Learner -->
     <class name="DummyInferenceLearner" base="Inference">
@@ -71,6 +71,6 @@
       <variable type="Inference" name="inferenceToClone"/>
     </class>
 
-  </namespace>
+  
   
 </file>

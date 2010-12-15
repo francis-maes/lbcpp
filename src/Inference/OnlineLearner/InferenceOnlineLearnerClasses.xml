@@ -2,7 +2,7 @@
 
 <file name="InferenceOnlineLearner" directory="Inference/OnlineLearner">
 
-  <namespace name="lbcpp">
+  
 
     <enumeration name="LearnerUpdateFrequency">
       <value name="never"/>
@@ -75,5 +75,5 @@
       <constructor arguments="const File&amp; outputFile, LearnerUpdateFrequency updateFrequency"/>
     </class>
 
-  </namespace>
+  
 </file>

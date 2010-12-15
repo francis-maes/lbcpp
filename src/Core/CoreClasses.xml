@@ -7,7 +7,7 @@
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
 
-  <namespace name="lbcpp">
+  
     
     <!-- Pair -->
     <template name="Pair" base="Object">
@@ -99,7 +99,7 @@
           jassert(enumeration);
           size_t n = enumeration->getNumElements();
           for (size_t i = 0; i &lt; n; ++i)
-            addVariable(*silentExecutionContext, doubleType, enumeration->getElementName(i));
+            addVariable(defaultExecutionContext(), doubleType, enumeration->getElementName(i));
         }
       </code>
     </template>
@@ -116,11 +116,11 @@
           jassert(inputClass);
           size_t n = inputClass->getObjectNumVariables();
           for (size_t i = 0; i &lt; n; ++i)
-            addVariable(*silentExecutionContext, outputVariablesType, inputClass->getObjectVariableName(i));
+            addVariable(defaultExecutionContext(), outputVariablesType, inputClass->getObjectVariableName(i));
         }
       </code>
     </template>
 
-  </namespace>
+  
   
 </file>

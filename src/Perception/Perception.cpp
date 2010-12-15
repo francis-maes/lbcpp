@@ -113,7 +113,7 @@ void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionP
   v.subPerception = subPerception;
   outputVariables.push_back(v);
   if (outputType && outputType->getBaseType())
-    outputType->addVariable(*silentExecutionContext, type, name);
+    outputType->addVariable(defaultExecutionContext(), type, name);
 }
 
 Variable Perception::computeFunction(ExecutionContext& context, const Variable& input) const
@@ -174,9 +174,9 @@ void Perception::computeOutputType()
     for (size_t i = 0; i < n; ++i)
     {
       const OutputVariable& v = outputVariables[i];
-      outputType->addVariable(*silentExecutionContext, v.type, v.name);
+      outputType->addVariable(defaultExecutionContext(), v.type, v.name);
     }
-    outputType->initialize(*silentExecutionContext); // FIXME: context
+    outputType->initialize(defaultExecutionContext()); // FIXME: context
   }
 }
 

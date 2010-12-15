@@ -2,7 +2,7 @@
 
 <file name="Program" directory="Program">
 
-  <namespace name="lbcpp">
+  
     
     <!-- Program -->
     <class name="LearnerProgram" base="WorkUnit">
@@ -45,10 +45,4 @@
     </class>
     -->
 
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-  
 </file>

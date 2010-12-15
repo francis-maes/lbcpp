@@ -40,21 +40,31 @@ namespace lbcpp
   {
     TypeManager typeManager;
     UserInterfaceManager userInterfaceManager;
-    std::map<String, LibraryPtr> libraries;
+    ExecutionContextPtr defaultExecutionContext;
   };
 
-  ApplicationContext globalContext;
   ApplicationContext* applicationContext = NULL;
+
+  extern lbcpp::LibraryPtr coreLibrary;
+  extern lbcpp::LibraryPtr lbCppLibrary;
 
 }; /* namespace lbcpp */ 
 
 void lbcpp::initialize(const char* executableName)
 {
-  jassert(!applicationContext);
-  applicationContext = &globalContext;
+  // juce
   juce::initialiseJuce_NonGUI();
   juce::juce_setCurrentExecutableFileName(String::fromUTF8((const juce::uint8* )executableName));
-  typeManager().ensureIsInitialized(*silentExecutionContext);
+
+  // application context
+  jassert(!applicationContext);
+  applicationContext = new ApplicationContext();
+  applicationContext->defaultExecutionContext = defaultConsoleExecutionContext();
+  
+  // types
+  importLibrary(coreLibrary);
+  importLibrary(lbCppLibrary);
+  topLevelType = anyType = variableType;
 }
 
 void lbcpp::deinitialize()
@@ -63,7 +73,7 @@ void lbcpp::deinitialize()
   {
     typeManager().shutdown();
     userInterfaceManager().shutdown();
-    applicationContext = NULL;
+    deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
 }
@@ -74,17 +84,61 @@ TypeManager& lbcpp::typeManager()
 UserInterfaceManager& lbcpp::userInterfaceManager()
   {jassert(applicationContext); return applicationContext->userInterfaceManager;}
 
-bool lbcpp::loadDynamicLibraries(ExecutionContext& executionContext, const File& directory)
+ExecutionContext& lbcpp::defaultExecutionContext()
+  {jassert(applicationContext); return *applicationContext->defaultExecutionContext;}
+
+void lbcpp::setDefaultExecutionContext(ExecutionContextPtr defaultContext)
+  {jassert(applicationContext); applicationContext->defaultExecutionContext = defaultContext;}
+
+bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory)
 {
+  juce::OwnedArray<File> files;
+  directory.findChildFiles(files, File::findFiles, false, T("*.dll;*.so;*.dylib"));
+  bool ok = true;
+  for (int i = 0; i < files.size(); ++i)
+  {
+    File file = *files[i];
+    executionContext.informationCallback(T("Loading dynamic library ") + file.getFullPathName());
+    executionContext.progressCallback((double)i, (double)files.size(), T("Dynamic Libraries"));
+    ok |= importLibraryFromFile(executionContext, file);
+  }
+  return ok;
+}
+
+LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& file)
+{
+  void* handle = juce::PlatformUtilities::loadDynamicLibrary(file.getFullPathName());
+  if (!handle)
+  {
+    context.errorCallback(T("Could not open dynamic library ") + file.getFullPathName());
+    return LibraryPtr();
+  }
+ 
+  typedef Library* (*InitializeLibraryFunction)(lbcpp::ApplicationContext& applicationContext);
+
+  InitializeLibraryFunction initializeFunction = (InitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppInitializeLibrary"));
+  if (!initializeFunction)
+  {
+    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find initialize function"));
+    juce::PlatformUtilities::freeDynamicLibrary(handle);
+    return LibraryPtr();
+  }
+
+  LibraryPtr res = (*initializeFunction)(*applicationContext);
+  juce::PlatformUtilities::freeDynamicLibrary(handle); // FIXME: is this correct ??
+  return importLibrary(res) ? res : LibraryPtr();
+}
+
+bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library)
+{
+  if (!library->initialize(context))
+    return false;
+  typeManager().finishDeclarations(context);
   return true;
 }
 
-bool lbcpp::loadDynamicLibrary(ExecutionContext& executionContext, const File& file)
-{
-  return true;
-}
-
-void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext)
+// called from dynamic library
+void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext)
 {
   lbcpp::applicationContext = &applicationContext;
 }

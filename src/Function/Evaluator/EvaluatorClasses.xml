@@ -3,7 +3,7 @@
 <file name="Evaluator" directory="Function/Evaluator">
   <include file="lbcpp/Function/Evaluator.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="BinaryClassificationConfusionMatrix"/>
     <class name="ROCAnalyse"/>
@@ -42,5 +42,5 @@
       <variable type="String" name="extension"/>
     </class>
     
-  </namespace> 
+   
 </file>

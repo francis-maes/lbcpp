@@ -172,7 +172,6 @@ SET(LBCPP_EXECUTION_SOURCES
 
 SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionNotifications.h
-  Execution/Callback/SilentExecutionCallback.h
   Execution/Callback/ConsoleExecutionCallback.h
   Execution/Callback/UserInterfaceExecutionCallback.h
   Execution/Callback/ExecutionCallbackClasses.xml

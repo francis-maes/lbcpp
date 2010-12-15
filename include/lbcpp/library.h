@@ -28,6 +28,7 @@
 # define LBCPP_LIBRARY_H_
 
 # include "Core/predeclarations.h"
+# include "Execution/ExecutionContext.h"
 
 namespace lbcpp
 {
@@ -38,11 +39,21 @@ namespace lbcpp
   extern void initialize(const char* executableName);
   extern void deinitialize();
 
-  extern bool loadDynamicLibraries(ExecutionContext& executionContext, const File& directory);
-  extern bool loadDynamicLibrary(ExecutionContext& executionContext, const File& file);
+  extern bool importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory);
+  extern LibraryPtr importLibraryFromFile(ExecutionContext& executionContext, const File& file);
+  extern bool importLibrary(ExecutionContext& executionContext, LibraryPtr library);
+
+  inline bool importLibrariesFromDirectory(const File& directory)
+    {return importLibrariesFromDirectory(defaultExecutionContext(), directory);}
+
+  inline LibraryPtr importLibraryFromFile(const File& file)
+    {return importLibraryFromFile(defaultExecutionContext(), file);}
+
+  inline bool importLibrary(LibraryPtr library)
+    {return importLibrary(defaultExecutionContext(), library);}
 
  // called from dynamic libraries
-  extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext);
+  extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
   extern void deinitializeDynamicLibrary();
 
 }; /* namespace lbcpp */

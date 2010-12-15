@@ -417,7 +417,7 @@ protected:
   double testAccuracy;
 };
 
-extern void declareProteinClasses(ExecutionContext& context);
+namespace lbcpp {extern LibraryPtr proteinLibrary;};
 
 int main(int argc, char* argv[])
 {
@@ -428,16 +428,16 @@ int main(int argc, char* argv[])
   }
 
   lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = defaultConsoleExecutionContext(true);
-  declareProteinClasses(*context);
+  lbcpp::setDefaultExecutionContext(defaultConsoleExecutionContext(true));
+  lbcpp::importLibrary(proteinLibrary);
 
   File workingDirectory = File::getCurrentWorkingDirectory();
   File dataDirectory = workingDirectory.getChildFile(argv[1]);
 
 
   ExampleBoincWorker worker;
-  if (!worker.initialize(*context, workingDirectory, dataDirectory))
+  if (!worker.initialize(defaultExecutionContext(), workingDirectory, dataDirectory))
     return 1;
 
-  return worker.run(*context) ? 0 : 1;
+  return worker.run(defaultExecutionContext()) ? 0 : 1;
 }

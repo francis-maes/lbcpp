@@ -6,7 +6,7 @@
   <include file="lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h"/>
   <include file="lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <!-- Probability Distribution -->
     <class name="ProbabilityDistribution" base="Object" abstract="yes"/>
@@ -62,7 +62,7 @@
       <variable type="Double" name="variance"/>
     </class>
     
-  </namespace>
+  
   
   <import name="ProbabilityDistributionBuilder"/>
   

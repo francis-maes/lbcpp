@@ -32,15 +32,6 @@ void ExecutionContext::declareType(TypePtr typeInstance)
 void ExecutionContext::declareTemplateType(TemplateTypePtr templateTypeInstance)
   {typeManager().declare(*this, templateTypeInstance);}
 
-TypePtr ExecutionContext::getType(const String& typeName)
-  {return typeManager().getType(*this, typeName);}
-
-TypePtr ExecutionContext::getType(const String& name, const std::vector<TypePtr>& arguments)
-  {return typeManager().getType(*this, name, arguments);}
-
-bool ExecutionContext::doTypeExists(const String& typeName)
-  {return typeManager().doTypeExists(typeName);}
-
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(stack, workUnit);
@@ -65,9 +56,6 @@ Variable ExecutionContext::createVariable(TypePtr type)
   jassert(type && type->isInitialized());
   return Variable(type, type->create(*this));
 }
-
-EnumerationPtr ExecutionContext::getEnumeration(const String& className)
-  {return (EnumerationPtr)getType(className);}
 
 #ifdef JUCE_DEBUG
 bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
@@ -132,17 +120,10 @@ const WorkUnitPtr& ExecutionStack::getWorkUnit(size_t depth) const
 /*
 ** Execution Context constructor functions
 */
-ExecutionContextPtr lbcpp::defaultExecutionContext(bool noMultiThreading)
-{
-  int numCpus = juce::SystemStats::getNumCpus();
-  return numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext();
-}
-
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
 {
-  ExecutionContextPtr res = defaultExecutionContext(noMultiThreading);
+  int numCpus = juce::SystemStats::getNumCpus();
+  ExecutionContextPtr res = (numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext());
   res->appendCallback(consoleExecutionCallback());
   return res;
 }
-
-ExecutionContextPtr lbcpp::silentExecutionContext = singleThreadedExecutionContext();

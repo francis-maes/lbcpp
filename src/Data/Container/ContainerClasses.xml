@@ -3,7 +3,7 @@
 <file name="Container" directory="Data/Container">
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
-  <namespace name="lbcpp">
+  
     
     <!-- DecoratorContainer -->
     <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
@@ -62,9 +62,4 @@
       <parameter name="elementsType"/>
     </template>
 
-  </namespace>
-
-  <!--<declarationCode>
-    lbcpp::Type::declare(new BooleanVector(), T("Vector[Boolean]"));
-  </declarationCode>-->
 </file>

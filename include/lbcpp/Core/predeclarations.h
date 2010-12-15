@@ -53,6 +53,9 @@ typedef NativePtr<Enumeration> EnumerationPtr;
 class TemplateType;
 typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
 
+class Library;
+typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
+
 class Pair;
 typedef ReferenceCountedObjectPtr<Pair> PairPtr;
 
@@ -64,8 +67,6 @@ typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 
 class ExecutionContext;
 typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
-
-extern ExecutionContextPtr silentExecutionContext;
 
 }; /* namespace lbcpp */
 

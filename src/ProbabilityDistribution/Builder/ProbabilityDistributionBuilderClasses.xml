@@ -4,7 +4,7 @@
 
   <include file="lbcpp/Core/Vector.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <!-- Probability Distribution Builder -->
     <class name="ProbabilityDistributionBuilder" base="Object" abstract="yes"/>
@@ -23,6 +23,6 @@
       <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
     </class>
 
-  </namespace>
+  
 
 </file>

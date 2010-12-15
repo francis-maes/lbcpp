@@ -27,7 +27,7 @@ void RecentProcesses::addRecentExecutable(const File& file)
   }
   else
     v.insert(v.begin(), RecentExecutable(file));
-  ExplorerConfiguration::save(*silentExecutionContext);
+  ExplorerConfiguration::save(defaultExecutionContext());
 }
 
 std::vector<String> RecentProcesses::getRecentArguments(const File& executable) const
@@ -61,7 +61,7 @@ void RecentProcesses::addRecent(const File& executable, const String& arguments,
   v[0].addRecentArguments(arguments);
   if (workingDirectory.exists())
     v[0].addRecentWorkingDirectory(workingDirectory);
-  ExplorerConfiguration::save(*silentExecutionContext);
+  ExplorerConfiguration::save(defaultExecutionContext());
 }
 
 RecentProcesses::RecentExecutable::RecentExecutable(const File& executable)

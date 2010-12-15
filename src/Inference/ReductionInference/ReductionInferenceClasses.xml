@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <file name="ReductionInference" directory="Inference/ReductionInference">
-  <namespace name="lbcpp">
+  
 
     <class name="OneAgainstAllClassificationInference" base="VectorParallelInference">
       <constructor arguments="ExecutionContext&amp; context, const String&amp; name, EnumerationPtr classes, InferencePtr binaryClassifierModel"/>
@@ -31,6 +31,6 @@
       <variable type="Function" name="sizeFunction"/>
     </class>
 
-  </namespace>
+  
   
 </file>

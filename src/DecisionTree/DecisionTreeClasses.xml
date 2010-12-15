@@ -5,6 +5,6 @@
 
   <import name="DecisionTreeInference"/>
 
-  <namespace name="lbcpp">
-  </namespace>
+  
+  
 </file>

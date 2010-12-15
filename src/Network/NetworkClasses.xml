@@ -2,14 +2,4 @@
 
 <file name="Network" directory="Network">
 
-  <namespace name="lbcpp">
-
-    
-
-  </namespace>
-
-  <declarationCode>
-    context.finishTypeDeclarations();
-  </declarationCode>
-
 </file>

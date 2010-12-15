@@ -3,7 +3,7 @@
 <file name="IterationFunction" directory="Function/IterationFunction">
   <include file="lbcpp/Function/IterationFunction.h"/>
 
-  <namespace name="lbcpp">
+  
 
     <class name="IterationFunction" base="Function" abstract="yes"/>
     
@@ -18,5 +18,5 @@
       <variable type="Integer" name="numberIterationsToReachHalfInitialValue"/>
     </class>
     
-  </namespace> 
+   
 </file>
