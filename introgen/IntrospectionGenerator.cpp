@@ -171,10 +171,7 @@ protected:
       closeClass();
     }
 
-    String currentScope = getCurrentScopeFullName();
-    if (currentScope.isNotEmpty())
-      currentScope += T("::");
-    String fullName = currentScope + implementation + T("(T(") + typeName.quoted() + T(")");
+    String fullName = implementation + T("(T(") + typeName.quoted() + T(")");
     if (baseTypeName.isNotEmpty())
     {
       fullName += T(", ");
@@ -185,14 +182,15 @@ protected:
     }
     fullName += T(")");
 
-    String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
-    types.push_back(std::make_pair(currentScope + singletonVariableName, fullName));
+    Declaration declaration = Declaration::makeType(typeName, T("Type"));
+    declaration.implementationClassName = fullName;
+    declarations.push_back(declaration);
+    // String singletonVariableName = replaceFirstLettersByLowerCase(typeName) + T("Type");
+    //  std::make_pair(currentScope + singletonVariableName, fullName));
 
     // Type declarator
     if (xml->getTagName() == T("type"))
-      writeLine(T("TypePtr ") + singletonVariableName + T(";"));
-      //writeShortFunction(T("TypePtr ") + replaceFirstLettersByLowerCase(typeName) + T("Type()"),
-      //    T("static TypeCache cache(T(") + typeName.quoted() + T(")); return cache();"));
+      writeLine(T("TypePtr ") + declaration.cacheVariableName + T(";"));
   }
 
   /*
@@ -209,20 +207,14 @@ protected:
   void generateEnumerationDeclaration(XmlElement* xml)
   {
     String enumName = xml->getStringAttribute(T("name"), T("???"));
-    String declaratorName = replaceFirstLettersByLowerCase(enumName) + T("Enumeration");
-    String className = enumName + T("Enumeration");
 
-    String currentScope = getCurrentScopeFullName();
-    if (currentScope.isNotEmpty())
-      currentScope += T("::");
-
-    currentScopes.push_back(enumName);
+    Declaration declaration = Declaration::makeType(enumName, T("Enumeration"));
+    declarations.push_back(declaration);
     
-    types.push_back(std::make_pair(currentScope + declaratorName, currentScope + className));
-    openClass(className, T("Enumeration"));
+    openClass(declaration.implementationClassName, T("Enumeration"));
 
     // constructor
-    openScope(className + T("() : Enumeration(T(") + enumName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + T("() : Enumeration(T(") + enumName.quoted() + T("))"));
     closeScope();
 
     newLine();
@@ -240,10 +232,9 @@ protected:
       {generateCode(elt); newLine();}
 
     closeClass();
-    currentScopes.pop_back();
 
     // enum declarator
-    writeLine(T("EnumerationPtr ") + declaratorName + T(";"));
+    writeLine(T("EnumerationPtr ") + declaration.cacheVariableName + T(";"));
     //writeShortFunction(T("EnumerationPtr ") + declaratorName + T("()"),
     //  T("static TypeCache cache(T(") + enumName.quoted() + T(")); return (EnumerationPtr)cache();"));
   }
@@ -257,26 +248,21 @@ protected:
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
     bool hasAutoImplementation = xml->getBoolAttribute(T("autoimpl"), false);
-    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
     String classBaseClass = hasAutoImplementation ? T("DynamicClass") : T("DefaultClass");
 
-    String currentScope = getCurrentScopeFullName();
-    if (currentScope.isNotEmpty())
-      currentScope += T("::");
-
-    currentScopes.push_back(className);
+    Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, T("Class")) : Declaration::makeType(className, T("Class"));
     if (!isTemplate)
-      types.push_back(std::make_pair(currentScope + classNameWithFirstLowerCase + T("Class"), currentScope + className + T("Class()")));
+      declarations.push_back(declaration);
 
-    openClass(className + T("Class"), classBaseClass);
+    openClass(declaration.implementationClassName, classBaseClass);
 
     // constructor
     std::vector<XmlElement* > variables;
     if (isTemplate)
-      openScope(className + T("Class(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
+      openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
-      openScope(className + T("Class() : ") + classBaseClass + T("(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+      openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     closeScope();
     newLine();
 
@@ -370,14 +356,11 @@ protected:
       {generateCode(elt); newLine();}
 
     closeClass();
-    currentScopes.pop_back();
 
     // class declarator
     if (!isTemplate)
     {
-      writeLine(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class;"));
-      //writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class()"),
-      //  T("static TypeCache cache(T(") + className.quoted() + T(")); return cache();"));
+      writeLine(T("ClassPtr ") + declaration.cacheVariableName + T(";"));
 
       // class constructors
       forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))
@@ -447,13 +430,13 @@ protected:
     String className = xml->getStringAttribute(T("name"), T("???"));
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     
-    currentScopes.push_back(className);
-    types.push_back(std::make_pair(String::empty, getCurrentScopeFullName() + T("TemplateClass()")));
+    Declaration declaration = Declaration::makeTemplateType(className, T("TemplateClass"));
+    declarations.push_back(declaration);
 
-    openClass(className + T("TemplateClass"), T("DefaultTemplateType"));
+    openClass(declaration.implementationClassName, T("DefaultTemplateType"));
 
     // constructor
-    openScope(className + T("TemplateClass() : DefaultTemplateType(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + T("() : DefaultTemplateType(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
     closeScope();
     newLine();
 
@@ -476,7 +459,6 @@ protected:
     newLine();
 
     closeClass();
-    currentScopes.pop_back();
 
     // class declarator
     String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
@@ -560,16 +542,13 @@ protected:
         writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
       }
  
-    for (size_t i = 0; i < types.size(); ++i)
+    for (size_t i = 0; i < declarations.size(); ++i)
     {
-      String classVariableName = types[i].first;
-      String typeName = types[i].second;
-      String code;
-      if (classVariableName.isNotEmpty())
-        code = T("__ok__ &= declareType(context, ") + classVariableName + T(" = ");
-      else
-        code = T("__ok__ &= declareTemplateType(context, ");
-      code += T("new ") + typeName + T(");");
+      const Declaration& declaration = declarations[i];
+      String code = T("__ok__ &= declare");
+      if (declaration.isTemplateType())
+        code += T("Template");
+      code += T("Type(context, new ") + declaration.implementationClassName + T(");");
       writeLine(code);
     }
 
@@ -585,70 +564,24 @@ protected:
       writeLine(elt->getAllSubText());
     }
 
-    // todo
     writeLine(T("return __ok__;"));
+    closeScope();
+
+  // initialize function
+    newLine();
+    openScope(T("virtual void cacheTypes(ExecutionContext& context)"));
+    writeLine(T("Library::cacheTypes(context);"));
+    for (size_t i = 0; i < declarations.size(); ++i)
+    {
+      const Declaration& declaration = declarations[i];
+      if (declaration.cacheVariableName.isNotEmpty())
+        writeLine(declaration.cacheVariableName + T(" = typeManager().getType(context, T(") + declaration.name.quoted() + T("));"));
+    }
     closeScope();
 
     closeClass();
     writeLine(T("lbcpp::LibraryPtr ") + replaceFirstLettersByLowerCase(fileName) + T("Library = new ") + fileName + T("Library();"));
   }
-/*
-  void generateFooter()
-  {
-    bool hasImports = false;
-    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-    {
-      String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(T("extern void declare") + name + T("Classes(lbcpp::ExecutionContext& context);"));
-      hasImports = true;
-    }
-    if (hasImports)
-      newLine();
-
-    openScope(T("void declare") + fileName + T("Classes(lbcpp::ExecutionContext& context)"));
-    
-    if (hasImports)
-    {
-      newLine();
-      forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-        if (elt->getBoolAttribute(T("pre"), false))
-        {
-          String name = elt->getStringAttribute(T("name"), T("???"));
-          writeLine(T("declare") + name + T("Classes(context);"));
-        }
-    }
-
-    for (size_t i = 0; i < types.size(); ++i)
-    {
-      String classVariableName = types[i].first;
-      String typeName = types[i].second;
-      String code;
-      if (classVariableName.isNotEmpty())
-        code = T("context.declareType(") + classVariableName + T(" = ");
-      else
-        code = T("context.declareTemplateType(");
-      code += T("new ") + typeName + T(");");
-      writeLine(code);
-    }
-
-    if (hasImports)
-    {
-      newLine();
-      forEachXmlChildElementWithTagName(*xml, elt, T("import"))
-        if (!elt->getBoolAttribute(T("pre"), false))
-        {
-          String name = elt->getStringAttribute(T("name"), T("???"));
-          writeLine(T("declare") + name + T("Classes(context);"));
-        }
-    }
-
-    forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))
-    {
-      writeLine(elt->getAllSubText());
-    }
-   
-    closeScope();
-  }*/
 
   void generateDynamicLibraryFunctions()
   {
@@ -676,23 +609,35 @@ private:
   String fileName;
   String directoryName;
   int indentation;
-  
-  std::vector<String> currentScopes;
 
-  std::vector<std::pair<String, String> > types;
-  
-  String getCurrentScopeFullName() const
+  struct Declaration
   {
-    String res;
-    for (size_t i = 0; i < currentScopes.size(); ++i)
+    static Declaration makeType(const String& typeName, const String& kind)
     {
-      if (res.isNotEmpty())
-        res += T("::");
-      res += currentScopes[i];
+      Declaration res;
+      res.name = typeName;
+      res.implementationClassName = typeName + kind;
+      res.cacheVariableName = replaceFirstLettersByLowerCase(typeName) + kind;
+      return res;
     }
-    return res;
-  }
 
+    static Declaration makeTemplateType(const String& typeName, const String& kind)
+    {
+      Declaration res;
+      res.name = typeName;
+      res.implementationClassName = typeName + kind;
+      return res;
+    }
+
+    String name;
+    String implementationClassName;
+    String cacheVariableName;
+
+    bool isTemplateType() const
+      {return cacheVariableName.isEmpty();}
+  };
+
+  std::vector<Declaration> declarations;
 
   void newLine(int indentationOffset = 0)
   {
@@ -728,7 +673,7 @@ private:
   }
 
   void closeClass()
-    {writeLine(T("juce_UseDebuggingNewOperator")); closeScope(T(";")); newLine();}
+    {newLine(); writeLine(T("lbcpp_UseDebuggingNewOperator")); closeScope(T(";")); newLine();}
 
   void writeShortFunction(const String& declaration, const String& oneLineBody)
   {

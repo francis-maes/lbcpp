@@ -1,7 +1,7 @@
-
+ * Library: stoquer les libraries dans l'application context ou dans le type manager
+ * Virer les variables globales qui stoque les libraries
  * Faire marcher MnistLearner/Predictor depuis l'explorer
  * Reparer les executables MnistLearner/Predictor
-
 
 En plan:
  * ExecutionTrace
