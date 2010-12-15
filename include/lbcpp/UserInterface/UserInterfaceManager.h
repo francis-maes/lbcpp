@@ -44,6 +44,8 @@ private:
   NotificationQueuePtr notifications;
 };
 
+extern UserInterfaceManager& userInterfaceManager();
+
 }; /* namespace smode */
 
 #endif // !LBCPP_USER_INTERFACE_MANAGER_H_

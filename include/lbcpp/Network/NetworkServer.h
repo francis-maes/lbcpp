@@ -24,7 +24,7 @@ public:
 
   NetworkClientPtr acceptClient(bool blocking);
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   /* InterprocessConnectionServer */

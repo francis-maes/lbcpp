@@ -11,7 +11,7 @@
 using namespace lbcpp;
 
 extern void declareProteinClasses(ExecutionContext& context);
-
+   
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);

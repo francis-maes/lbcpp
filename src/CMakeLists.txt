@@ -69,6 +69,7 @@ SET(LBCPP_CORE_SOURCES
   Core/Class.cpp
   ../include/lbcpp/Core/TemplateType.h
   Core/TemplateType.cpp
+  ../include/lbcpp/Core/Library.h
   ../include/lbcpp/Core/Variable.h
   Core/Variable.cpp
   ../include/lbcpp/Core/Pair.h
@@ -568,7 +569,8 @@ SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
 SET(LBCPP_MAIN_SOURCES
   ../include/lbcpp/common.h
   ../include/lbcpp/lbcpp.h
-  lbcpp.cpp
+  ../include/lbcpp/library.h
+  library.cpp
   LBCppClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
 )
