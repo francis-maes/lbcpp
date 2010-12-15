@@ -44,12 +44,17 @@ public:
   const std::vector<TemplateTypePtr>& getTemplateTypes() const
     {return templateTypes;}
 
+  const std::vector<LibraryPtr>& getSubLibraries() const
+    {return subLibraries;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend bool importLibrary(ExecutionContext& context, LibraryPtr library);
+  friend void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
 
   virtual bool initialize(ExecutionContext& context) = 0;
+  virtual void cacheTypes(ExecutionContext& context);
   
   bool declareType(ExecutionContext& context, TypePtr type);
   bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);

@@ -41,6 +41,7 @@ namespace lbcpp
     TypeManager typeManager;
     UserInterfaceManager userInterfaceManager;
     ExecutionContextPtr defaultExecutionContext;
+    std::vector<void*> dynamicLibraryHandles;
   };
 
   ApplicationContext* applicationContext = NULL;
@@ -73,6 +74,9 @@ void lbcpp::deinitialize()
   {
     typeManager().shutdown();
     userInterfaceManager().shutdown();
+    std::vector<void* >& handles = applicationContext->dynamicLibraryHandles;
+    for (size_t i = 0; i < handles.size(); ++i)
+      juce::PlatformUtilities::freeDynamicLibrary(handles[i]);
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
@@ -93,7 +97,9 @@ void lbcpp::setDefaultExecutionContext(ExecutionContextPtr defaultContext)
 bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory)
 {
   juce::OwnedArray<File> files;
-  directory.findChildFiles(files, File::findFiles, false, T("*.dll;*.so;*.dylib"));
+  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dll"));
+  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.so"));
+  directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dylib"));
   bool ok = true;
   for (int i = 0; i < files.size(); ++i)
   {
@@ -125,14 +131,29 @@ LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& f
   }
 
   LibraryPtr res = (*initializeFunction)(*applicationContext);
-  juce::PlatformUtilities::freeDynamicLibrary(handle); // FIXME: is this correct ??
-  return importLibrary(res) ? res : LibraryPtr();
+  if (!res)
+  {
+    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find create library"));
+    return LibraryPtr();
+  }
+
+  if (importLibrary(context, res))
+  {
+    applicationContext->dynamicLibraryHandles.push_back(handle);
+    return res;
+  }
+  else
+  {
+    juce::PlatformUtilities::freeDynamicLibrary(handle);
+    return LibraryPtr();
+  }
 }
 
 bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library)
 {
   if (!library->initialize(context))
     return false;
+  library->cacheTypes(context);
   typeManager().finishDeclarations(context);
   return true;
 }
@@ -141,6 +162,9 @@ bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library)
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext)
 {
   lbcpp::applicationContext = &applicationContext;
+  ExecutionContext& context = defaultExecutionContext();
+  coreLibrary->cacheTypes(context);
+  lbCppLibrary->cacheTypes(context);
 }
 
 void lbcpp::deinitializeDynamicLibrary()
