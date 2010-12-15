@@ -1,6 +1,6 @@
 /*
 ** This file is part of the LBC++ library - "Learning Based C++"
-** Copyright (C) 2009 by Francis Maes, francis.maes@lip6.fr.
+** Copyright (C) 2010 by Francis Maes, francis.maes@lip6.fr.
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -17,56 +17,34 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: predeclarations.h              | Data Predeclarations            |
+| Filename: library.h                      | library init/deinit functions   |
 | Author  : Francis Maes                   |                                 |
-| Started : 13/03/2009 00:01               |                                 |
+| Started : 15/12/2010 16:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_PREDECLARATIONS_H_
-# define LBCPP_CORE_PREDECLARATIONS_H_
+#ifndef LBCPP_LIBRARY_H_
+# define LBCPP_LIBRARY_H_
 
-# include "ReferenceCountedObject.h"
+# include "Core/predeclarations.h"
 
 namespace lbcpp
 {
+  struct ApplicationContext;
+  extern ApplicationContext* applicationContext;
 
-struct ApplicationContext;
+  // called from the main program
+  extern void initialize(const char* executableName);
+  extern void deinitialize();
 
-class Variable;
-class XmlExporter;
-class XmlImporter;
+  extern bool loadDynamicLibraries(ExecutionContext& executionContext, const File& directory);
+  extern bool loadDynamicLibrary(ExecutionContext& executionContext, const File& file);
 
-class Object;
-typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
-
-class Type;
-typedef NativePtr<Type> TypePtr;
-
-class Class;
-typedef NativePtr<Class> ClassPtr;
-
-class Enumeration;
-typedef NativePtr<Enumeration> EnumerationPtr;
-
-class TemplateType;
-typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
-
-class Pair;
-typedef ReferenceCountedObjectPtr<Pair> PairPtr;
-
-class Container;
-typedef ReferenceCountedObjectPtr<Container> ContainerPtr;
-
-class Vector;
-typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
-
-class ExecutionContext;
-typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
-
-extern ExecutionContextPtr silentExecutionContext;
+ // called from dynamic libraries
+  extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext);
+  extern void deinitializeDynamicLibrary();
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_CORE_PREDECLARATIONS_H_
+#endif // !LBCPP_LIBRARY_H_

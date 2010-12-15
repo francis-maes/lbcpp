@@ -8,10 +8,10 @@
 
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/Execution/ExecutionStack.h>
+#include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Inference/Inference.h>
-#include <lbcpp/lbcpp.h> // for typeManager() global
 using namespace lbcpp;
 
 /*

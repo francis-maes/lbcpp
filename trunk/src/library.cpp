@@ -17,13 +17,16 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: lbcpp.cpp                      | LBcpp application functions     |
+| Filename: lirbary.cpp                    | LBcpp library functions         |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/11/2010 18:34               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/lbcpp.h>
+#include <lbcpp/library.h>
+#include <lbcpp/Core/TypeManager.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/UserInterface/UserInterfaceManager.h>
 using namespace lbcpp;
 
 namespace juce
@@ -37,6 +40,7 @@ namespace lbcpp
   {
     TypeManager typeManager;
     UserInterfaceManager userInterfaceManager;
+    std::map<String, LibraryPtr> libraries;
   };
 
   ApplicationContext globalContext;
@@ -69,6 +73,16 @@ TypeManager& lbcpp::typeManager()
 
 UserInterfaceManager& lbcpp::userInterfaceManager()
   {jassert(applicationContext); return applicationContext->userInterfaceManager;}
+
+bool lbcpp::loadDynamicLibraries(ExecutionContext& executionContext, const File& directory)
+{
+  return true;
+}
+
+bool lbcpp::loadDynamicLibrary(ExecutionContext& executionContext, const File& file)
+{
+  return true;
+}
 
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext)
 {

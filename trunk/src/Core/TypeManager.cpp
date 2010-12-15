@@ -8,6 +8,8 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Type.h>
 #include <lbcpp/Core/TemplateType.h>
+#include <lbcpp/Core/Library.h>
+#include <lbcpp/library.h>
 using namespace lbcpp;
 
 /*
@@ -239,4 +241,49 @@ TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const
     return NULL;
   }
   return &it->second;
+}
+
+/*
+** DynamicLibrary
+*/
+bool DynamicLibrary::loadDynamicLibrary(ExecutionContext& context, const File& file)
+{
+  this->file = file;
+  setName(file.getFileName());
+
+  jassert(!handle);
+  handle = juce::PlatformUtilities::loadDynamicLibrary(file.getFullPathName());
+  if (!handle)
+  {
+    context.errorCallback(T("Could not open dynamic library ") + file.getFullPathName());
+    return false;
+  }
+
+  initializeFunction = (InitializeFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("initializeDynamicLibrary"));
+  if (!initializeFunction)
+    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find initialize function"));
+
+  deinitializeFunction = (DeinitializeFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppDeinitializeDynamicLibrary"));
+  if (!deinitializeFunction)
+    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find deinitialize function"));
+
+  if (initializeFunction && deinitializeFunction)
+  {
+    initializeFunction(*applicationContext, context);
+    return true;
+  }
+  else
+  {
+    freeDynamicLibrary();
+    return false;
+  }
+}
+
+void DynamicLibrary::freeDynamicLibrary()
+{
+  if (handle)
+  {
+    juce::PlatformUtilities::freeDynamicLibrary(handle);
+    handle = NULL;
+  }
 }

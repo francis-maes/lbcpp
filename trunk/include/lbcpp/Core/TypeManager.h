@@ -49,6 +49,8 @@ private:
   static String removeAllSpaces(const String& str);
 };
 
+extern TypeManager& typeManager();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_TYPE_MANAGER_H_

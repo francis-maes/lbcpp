@@ -27,6 +27,8 @@
 #ifndef LBCPP_LBCPP_H_
 # define LBCPP_LBCPP_H_
 
+# include "library.h"
+
 # include "Core/Utilities.h"
 # include "Core/Object.h"
 # include "Core/TypeManager.h"
@@ -85,22 +87,5 @@
 # include "DecisionTree/DecisionTree.h"
 
 # include "UserInterface/UserInterfaceManager.h"
-
-namespace lbcpp
-{
-  struct ApplicationContext;
-
-  extern void initialize(const char* executableName);
-  extern void deinitialize();
-
-  extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext, ExecutionContext& executionContext);
-  extern void deinitializeDynamicLibrary();
-
-  extern UserInterfaceManager& userInterfaceManager();
-  extern TypeManager& typeManager();
-
-  extern ApplicationContext* applicationContext;
-
-}; /* namespace lbcpp */
 
 #endif // !LBCPP_LBCPP_H_

@@ -272,6 +272,8 @@ public:
     lbcpp::initialize(NULL);
     context = defaultConsoleExecutionContext(); // FIXME
     context->appendCallback(explorerExecutionCallback);
+    //lbcpp::setDefaultContext(context);
+    lbcpp::loadDynamicLibraries(*context, File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
     declareProteinClasses(*context);
     declareExplorerClasses(*context);
 

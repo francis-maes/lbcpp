@@ -35,6 +35,8 @@ public:
   virtual void connectionLost();
   virtual void messageReceived(const juce::MemoryBlock& message);
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   enum {magicNumber = 0xdeadface};
   ExecutionContext& context;

@@ -22,7 +22,7 @@ public:
   virtual void variableReceived(const Variable& variable) = 0;
   virtual void disconnected() = 0;
 
-  juce_UseDebuggingNewOperator
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<NetworkCallback> NetworkCallbackPtr;
@@ -38,6 +38,8 @@ public:
   virtual void variableReceived(const Variable& variable);
   
   virtual void disconnected();
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   std::deque<Variable> variables;
