@@ -1,15 +1,23 @@
+
+* Creer un projet "examples" pour mettre les examples dans une .dll
+* Creer un projet "testunit"
+
+* Passer proteins en .dll
+    - nouveau repertoire proteins/UserInterface
+    - bouger des trucs de Explorer vers lbcpp/UserInterface
+    - Mettre juce en dynamique (?)
    
-* Passer tous les projets en .dll
 * Virer les variables globales qui stoque les libraries
 
-* Enlever la dependance de RunProgram sur proteins, rendre le programme generique et le deplacer 
-
-* Explorer: combo-box de choix des WorkUnits
-* Explorer: ligne de commande pour "StartWorkUnit"
-
-En plan:
+Explorer:
+ * Explorer: combo-box de choix des WorkUnits
+ * Explorer: ligne de commande pour "StartWorkUnit"
  * Nouvelle Collone "Output", améliorer le système des collones
- * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
+ 
+ 
+!!!
+* AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
+!!
 
 Boinc:
  * New class BoincExecutionContext

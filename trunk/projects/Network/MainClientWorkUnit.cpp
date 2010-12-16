@@ -58,22 +58,19 @@ protected:
 
 using namespace lbcpp;
 
-namespace lbcpp
-{
-  extern LibraryPtr proteinLibrary;
-  extern LibraryPtr programLibrary;
-};
-
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = new SgeExecutionContext(File(T("/u/jbecker/.WorkUnit/Waiting")));
-  lbcpp::importLibrary(proteinLibrary);
-  lbcpp::importLibrary(programLibrary);
-  
+
+  // load dynamic libraries
+  lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
+  if (File::isAbsolutePath(argv[0]))
+    lbcpp::importLibrariesFromDirectory(File(argv[0]).getParentDirectory());
+ 
   int exitCode;
   {
-    exitCode = WorkUnit::main(*context, new ClientWorkUnit(), argc, argv);
+    exitCode = WorkUnit::main(*context, context->createObject(getType(T("ClientWorkUnit"))).staticCast<WorkUnit>(), argc, argv);
   }
 
   lbcpp::deinitialize();
