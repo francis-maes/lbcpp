@@ -6,13 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_PROTEIN_MULTI_1D_COMPONENT_H_
-# define EXPLORER_PROTEIN_MULTI_1D_COMPONENT_H_
+#ifndef LBCPP_PROTEINS_USER_INTERFACE_MULTI_1D_H_
+# define LBCPP_PROTEINS_USER_INTERFACE_MULTI_1D_H_
 
 # include "MultiSequenceComponent.h"
-# include "../Utilities/SplittedLayout.h"
-# include "../../projects/Proteins/Data/Protein.h"
-# include "../../projects/Proteins/Inference/ProteinInferenceFactory.h"
+# include "../../../explorer/Utilities/SplittedLayout.h"
+# include "../Data/Protein.h"
+# include "../Inference/ProteinInferenceFactory.h"
 
 namespace lbcpp
 {
@@ -240,5 +240,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_PROTEIN_MULTI_1D_COMPONENT_H_
-
+#endif // !LBCPP_PROTEINS_USER_INTERFACE_MULTI_1D_H_

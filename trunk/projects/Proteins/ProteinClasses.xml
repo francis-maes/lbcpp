@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Protein">
+<file name="Protein" library="yes">
 
   <import name="Geometry"/>
   <import name="ProteinData"/>
   <import name="ProteinPerception"/>
   <import name="ProteinInference"/>
-  <import name="WorkUnit"/>
+  <import name="ProteinWorkUnit"/>
+  <import name="ProteinUserInterface"/>
 
   <include file="Data/Protein.h"/>
 

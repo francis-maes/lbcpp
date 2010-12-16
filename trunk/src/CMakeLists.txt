@@ -558,6 +558,8 @@ SET(LBCPP_USER_INTERFACE_SOURCES
 )
 
 SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
+  UserInterface/Component/VariableTreeView.h
+  UserInterface/Component/VariableTreeView.cpp
   UserInterface/Component/ExecutionTraceTreeView.h
   UserInterface/Component/ExecutionTraceTreeView.cpp
 )

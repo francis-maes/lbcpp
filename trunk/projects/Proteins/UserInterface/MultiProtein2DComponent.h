@@ -9,8 +9,8 @@
 #ifndef EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 # define EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 
-# include "../Utilities/SplittedLayout.h"
-# include "../../projects/Proteins/Data/Protein.h"
+# include "../../../explorer/Utilities/SplittedLayout.h"
+# include "../Data/Protein.h"
 
 namespace lbcpp
 {

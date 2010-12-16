@@ -6,8 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/UserInterface/UserInterfaceManager.h>
+#include <lbcpp/Core/Library.h>
 #include <lbcpp/Execution/ExecutionContext.h>
+#include <lbcpp/UserInterface/UserInterfaceManager.h>
+#include <lbcpp/library.h>
 using namespace lbcpp;
 
 using juce::Desktop;
@@ -150,4 +152,24 @@ Image* UserInterfaceManager::getImage(const String& fileName, int width, int hei
     ImageCache::addImageToCache(res, hashCode);
   }
   return res;
+}
+
+juce::Component* UserInterfaceManager::createComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name) const
+{
+  size_t n = lbcpp::getNumLibraries();
+  for (size_t i = 0; i < n; ++i)
+  {
+    juce::Component* res = lbcpp::getLibrary(i)->createUIComponentIfExists(context, object, name);
+    if (res)
+      return res;
+  }
+  return NULL;
+}
+
+#include "Component/VariableTreeView.h"
+
+juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name,
+                                                              bool showTypes, bool showShortSummaries, bool showMissingVariables) const
+{
+  return new VariableTreeView(variable, name, VariableTreeOptions(showTypes, showShortSummaries, showMissingVariables));
 }

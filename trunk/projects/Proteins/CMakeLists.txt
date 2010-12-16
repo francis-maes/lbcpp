@@ -8,8 +8,8 @@ GENERATE_INTROSPECTION_CODE(Geometry/GeometryClasses.xml GeometryClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(WorkUnit/WorkUnitClasses.xml WorkUnitClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Programs/ProgramClasses.xml ProgramClasses.cpp)
+GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitClasses.xml ProteinWorkUnitClasses.cpp)
+GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceClasses.xml ProteinUserInterfaceClasses.cpp)
 GENERATE_INTROSPECTION_CODE(ProteinClasses.xml ProteinClasses.cpp)
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
@@ -103,8 +103,18 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/SandBoxWorkUnit.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
-  WorkUnit/WorkUnitClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitClasses.cpp
+  WorkUnit/ProteinWorkUnitClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitClasses.cpp
+)
+
+SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
+  UserInterface/MultiSequenceComponent.h
+  UserInterface/MultiProtein1DComponent.h
+  UserInterface/MultiProtein2DComponent.h
+  UserInterface/ProteinPerceptionComponent.h
+  UserInterface/MultiProteinComponent.h
+  UserInterface/ProteinUserInterfaceClasses.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceClasses.cpp
 )
 
 SET(PROTEINS_CPP_SOURCES
@@ -115,6 +125,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
+  ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
   
   ProteinClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
@@ -135,14 +146,10 @@ SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
 SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
+SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 
-ADD_LIBRARY(proteins ${PROTEINS_SOURCES})
+ADD_LIBRARY(proteins SHARED ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins lbcpp-core)
 
-MACRO(ADD_SINGLE_CPP_EXECUTABLE NAME)
-  ADD_EXECUTABLE(${NAME} Programs/${NAME}.cpp)
-  TARGET_LINK_LIBRARIES(${NAME} proteins)
-ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
-
-ADD_SINGLE_CPP_EXECUTABLE(SandBox)
-ADD_SINGLE_CPP_EXECUTABLE(BoincEvaluator)
+#ADD_EXECUTABLE(BoincEvaluator Programs/BoincEvaluator.cpp)
+#TARGET_LINK_LIBRARIES(BoincEvaluator} proteins)

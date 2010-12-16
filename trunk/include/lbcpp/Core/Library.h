@@ -49,6 +49,8 @@ public:
   const std::vector<LibraryPtr>& getSubLibraries() const
     {return subLibraries;}
 
+  juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -62,15 +64,27 @@ protected:
   bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
   bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
 
+  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
+
+  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
+
 private:
   friend class LibraryClass;
 
   std::vector<TypePtr> types;
   std::vector<TemplateTypePtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
+  std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
+
+template<class ComponentClass>
+struct MakeUIComponentConstructor
+{
+  static juce::Component* ctor(const ObjectPtr& object, const String& name)
+    {return new ComponentClass(object, name);}
+};
 
 }; /* namespace lbcpp */
 

@@ -9,10 +9,8 @@
 #include "VariableProxyComponent.h"
 #include "ContainerSelectorComponent.h"
 #include "StringComponent.h"
-#include "VariableTreeComponent.h"
 #include "VariableBrowser.h"
 #include "HexadecimalFileComponent.h"
-#include "../Proteins/ProteinComponent.h"
 #include "../Utilities/FileType.h"
 using namespace lbcpp;
 
@@ -24,10 +22,24 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
 
   if (!object)
     return NULL;
+
+  // old
   Component* res = object->createComponent();
   if (res)
     return res;
 
+  // new
+  res = userInterfaceManager().createComponentIfExists(context, object, explicitName);
+  if (res)
+    return res;
+
+
+/*  if (object->getClass() == pairClass(proteinClass, positiveIntegerType))
+    return new ResiduePerceptionComponent(object);
+
+  if (object->getClass() == pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType)))
+    return new ResiduePairPerceptionComponent(object); 
+*/
   ContainerPtr container = object.dynamicCast<Container>();
   if (container)
   {
@@ -37,35 +49,21 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
       ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
       return createComponentForObject(context, loadedContainer, explicitName);
     }
-
+/*
     if (elementsType->inheritsFrom(proteinClass))
     {
-      std::vector<ProteinPtr> proteins;
-      std::vector<String> names;
-
-      size_t n = container->getNumElements();
-      proteins.reserve(n);
-      names.reserve(n);
-      for (size_t i = 0; i < n; ++i)
-      {
-        const ProteinPtr& protein = container->getElement(i).getObjectAndCast<Protein>();
-        if (protein)
-        {
-          proteins.push_back(protein);
-          names.push_back(String((int)i) + T(" - ") + protein->getName());
-        }
-      }
+     
       return new MultiProteinComponent(proteins, names);      
     }
-
+*/
     return new ContainerSelectorComponent(container);
   }
-
+/*
   if (object.dynamicCast<Protein>())
   {
     ProteinPtr protein = object.dynamicCast<Protein>();
     return new ProteinComponent(protein, name);
-  }
+  }*/
 
   return NULL;
 }
@@ -92,16 +90,10 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
         Variable v = Variable::createFromFile(context, file);
         return v.exists() ? createComponentForVariableImpl(context, v, file.getFileName()) : NULL;
       }
-    case directory: return new VariableTreeComponent(variable, explicitName, VariableTreeOptions(false, false));
+    case directory: return userInterfaceManager().createVariableTreeView(context, variable, explicitName, false, false);
     default: return NULL;
     };
   }
-
-  if (variable.getType() == pairClass(proteinClass, positiveIntegerType))
-    return new ResiduePerceptionComponent(variable);
-
-  if (variable.getType() == pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType)))
-    return new ResiduePairPerceptionComponent(variable); 
 
   if (variable.isObject())
   {
@@ -110,7 +102,7 @@ Component* createComponentForVariableImpl(ExecutionContext& context, const Varia
   }
 
   if (!res)
-    res = new VariableTreeComponent(variable, explicitName, VariableTreeOptions(true, true, false)); 
+    res = userInterfaceManager().createVariableTreeView(context, variable, explicitName, true, true, false);
   return res;
 }
 

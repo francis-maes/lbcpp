@@ -4,18 +4,16 @@
   <include file="ProcessManager/RecentProcesses.h"/>
   <import name="WorkUnitManager"/>
 
-  
+  <class name="ExplorerConfiguration" base="Object"/>
 
-    <class name="ExplorerConfiguration" base="Object"/>
+  <class name="ExplorerRecentFiles">
+    <variable type="File" name="recentDirectory"/>
+    <variable type="GenericVector[File]" name="recentFiles"/>
+  </class>
 
-    <class name="ExplorerRecentFiles">
-      <variable type="File" name="recentDirectory"/>
-      <variable type="GenericVector[File]" name="recentFiles"/>
-    </class>
-
-    <!-- FIXME: add introspection to these classes -->
-    <class name="RecentProcesses"/>
-    <class name="ProcessConsoleSettings"/>
-    <class name="ProcessConsoleFilter"/>
+  <!-- FIXME: add introspection to these classes -->
+  <class name="RecentProcesses"/>
+  <class name="ProcessConsoleSettings"/>
+  <class name="ProcessConsoleFilter"/>
 
 </file>

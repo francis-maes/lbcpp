@@ -258,6 +258,24 @@ bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary
   return true;
 }
 
+bool Library::declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor)
+{
+  TypePtr type = typeManager().getType(context, typeName);
+  if (!type)
+    return false;
+  uiComponents.push_back(std::make_pair(type, constructor));
+  return true;
+}
+
+juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name)
+{
+  ClassPtr type = object->getClass();
+  for (size_t i = 0; i < uiComponents.size(); ++i)
+    if (type->inheritsFrom(uiComponents[i].first))
+      return uiComponents[i].second(object, name);
+  return NULL;
+}
+
 std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
 {
   std::vector<TypePtr> res;

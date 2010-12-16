@@ -1,10 +1,9 @@
 
-* Passer proteins en .dll
-    - nouveau repertoire proteins/UserInterface
-    - bouger des trucs de Explorer vers lbcpp/UserInterface
-    - Mettre juce en dynamique (?)
-   
 * Virer les variables globales qui stoque les libraries
+* Tester proteins    
+    
+* Mettre juce en dynamique (?)
+   
 * Renomer <file> en <library> dans les xml
 
 Explorer:
