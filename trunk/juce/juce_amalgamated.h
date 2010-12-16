@@ -13445,7 +13445,8 @@ public:
     */
     static void fpuReset();
 
-#if JUCE_LINUX || JUCE_WIN32
+//francis: add macosx:
+//#if JUCE_LINUX || JUCE_WIN32
 
     /** Loads a dynamically-linked library into the process's address space.
 
@@ -13472,7 +13473,7 @@ public:
     */
     static void* getProcedureEntryPoint (void* libraryHandle,
                                          const String& procedureName);
-#endif
+// #endif // francis
 
 #if JUCE_LINUX || DOXYGEN
 
