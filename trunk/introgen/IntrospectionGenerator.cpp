@@ -121,6 +121,7 @@ protected:
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
     writeLine(T("#include <lbcpp/Core/Variable.h>"));
     writeLine(T("#include <lbcpp/Core/Library.h>"));
+    writeLine(T("#include <lbcpp/library.h>"));
 
     OwnedArray<File> headerFiles;
     File directory = inputFile.getParentDirectory();
