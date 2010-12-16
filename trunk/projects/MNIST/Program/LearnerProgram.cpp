@@ -20,7 +20,6 @@ extern ContainerPtr parseDataFile(ExecutionContext& context, const File& f);
 
 bool LearnerProgram::loadData(ExecutionContext& context)
 {
-  
   if (learningFile == File::nonexistent)
   {
     context.errorCallback(T("Error - No learning file found !"));
@@ -114,23 +113,23 @@ bool LearnerProgram::run(ExecutionContext& context)
   InferencePtr inference = classificationExtraTreeInference(context, T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */
-  std::cout << "---------- Learning ----------" << std::endl;
+  //context.informationCallback(T("---------- Learning ----------"));
   inference->train(context, learningData, ContainerPtr());
 
-  std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+  //std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
   inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
-  std::cout << evaluator->toString() << std::endl;
+  context.resultCallback(T("Train Evaluation"), evaluator->getDefaultScore());
 
   if (testingData && testingData->getNumElements())
   {
-    std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+    //std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-    std::cout << evaluator->toString() << std::endl;
+    context.resultCallback(T("Test Evaluation"), evaluator->getDefaultScore());
   }
 
   inference->saveToFile(context, output.getFullPathName() + T(".inference"));
-  std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+  //std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   return true;
 }

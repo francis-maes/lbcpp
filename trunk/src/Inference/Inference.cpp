@@ -8,6 +8,7 @@
 
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Execution/ExecutionStack.h>
+#include <lbcpp/Function/Evaluator.h>
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceCallback.h>

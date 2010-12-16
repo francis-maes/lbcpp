@@ -266,10 +266,7 @@ public:
   }
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-  {
-  //  TreeViewItem* treeItem = popPositionIntoTree(!result);
-    currentStatus = String::empty;
-  }
+    {popPositionFromTree(!result);}
   
   virtual void informationCallback(const String& where, const String& what)
     {addItem(new MessageExecutionTraceItem(currentNotificationTime, informationMessageType, what, where));}
@@ -323,7 +320,7 @@ protected:
   void pushPositionIntoTree(WorkUnitExecutionTraceTreeViewItem* item)
     {positions.push_back(item);}
 
-  ExecutionTraceTreeViewItem* popPositionIntoTree(bool setErrorFlag = false)
+  ExecutionTraceTreeViewItem* popPositionFromTree(bool setErrorFlag = false)
   { 
     jassert(positions.size());
     WorkUnitExecutionTraceTreeViewItem* res = positions.back();
