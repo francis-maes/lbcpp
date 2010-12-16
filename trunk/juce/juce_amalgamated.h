@@ -41,11 +41,13 @@
   ==============================================================================
 */
 
+// francis
+#define DONT_AUTOLINK_TO_JUCE_LIBRARY 1
+#define JUCE_DLL
+
 #ifndef __JUCE_AMALGAMATED_TEMPLATE_JUCEHEADER__
 #define __JUCE_AMALGAMATED_TEMPLATE_JUCEHEADER__
 
-#define DONT_AUTOLINK_TO_JUCE_LIBRARY 1
-#define JUCE_DLL
 
 /********* Start of inlined file: juce.h *********/
 #ifndef __JUCE_JUCEHEADER__

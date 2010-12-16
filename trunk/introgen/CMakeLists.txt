@@ -1,23 +1,4 @@
-IF(WIN32)
-  ADD_DEFINITIONS(-DDONT_AUTOLINK_TO_JUCE_LIBRARY)
-ELSE(WIN32)
-  IF(UNIX)
-    IF(APPLE)
-    ELSE(APPLE)
-      SET(JUCEBINBUILD_PLATFORM_SPECIFIC_LIBRARIES dl pthread)
-      ADD_DEFINITIONS(-DLINUX)
-    ENDIF(APPLE)
-  ENDIF(UNIX)
-ENDIF(WIN32)
-
-ADD_EXECUTABLE(IntrospectionGenerator
-  IntrospectionGenerator.cpp
-)
-
+ADD_EXECUTABLE(IntrospectionGenerator IntrospectionGenerator.cpp)
 SET_TARGET_PROPERTIES(IntrospectionGenerator PROPERTIES PROJECT_LABEL "TOOL Introspection Generator")
-
-TARGET_LINK_LIBRARIES(IntrospectionGenerator
-  juce
-  ${JUCEBINBUILD_PLATFORM_SPECIFIC_LIBRARIES}
-)
+TARGET_LINK_LIBRARIES(IntrospectionGenerator juce)
 

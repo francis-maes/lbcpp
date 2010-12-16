@@ -18,7 +18,7 @@ class PerceptionComponent : public TabbedVariableSelectorComponent
 {
 public:
   PerceptionComponent(const Variable& input, const String& name)
-    : TabbedVariableSelectorComponent(input)
+    : TabbedVariableSelectorComponent(input), input(input)
   {
     addTab(T("Perception"), Colours::white);
     addTab(T("Attributes"), Colours::white);

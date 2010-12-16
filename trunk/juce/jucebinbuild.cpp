@@ -13,6 +13,7 @@
 #define JUCE_DLL
 #include "juce_amalgamated.h"
 #include <map>
+using namespace juce;
 
 //==============================================================================
 static std::map<String, String> dataFiles;

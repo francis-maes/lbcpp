@@ -22,9 +22,23 @@ public:
     if (variable.exists() && variable.isObject())
     {
       ObjectPtr object = variable.getObject();
-      subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
-      for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
-        addSubVariable(type->getObjectVariableName(i), object->getVariable(i));
+      if (options.showMissingVariables)
+      {
+        subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
+        for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+          addSubVariable(type->getObjectVariableName(i), object->getVariable(i));
+      }
+      else
+      {
+        Object::VariableIterator* iterator = object->createVariablesIterator();
+        for (; iterator->exists(); iterator->next())
+        {
+          size_t variableIndex;
+          Variable subVariable = iterator->getCurrentVariable(variableIndex);
+          if (subVariable.exists())
+            addSubVariable(type->getObjectVariableName(variableIndex), subVariable);
+        }
+      }
     }
 
     subVariables.reserve(subVariables.size() + variable.size());
@@ -103,10 +117,7 @@ protected:
   std::vector< std::pair<String, Variable> > subVariables;
 
   void addSubVariable(const String& name, const Variable& variable)
-  {
-    if (variable.exists() || options.showMissingVariables)
-      subVariables.push_back(std::make_pair(name, variable));
-  }
+    {subVariables.push_back(std::make_pair(name, variable));}
 };
 
 /*
