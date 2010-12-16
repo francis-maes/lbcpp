@@ -46,8 +46,11 @@ public:
   void shutdown()
   {
     for (size_t i = 0; i < libraries.size(); ++i)
+    {
+      libraries[i].first = LibraryPtr();
       if (libraries[i].second)
         juce::PlatformUtilities::freeDynamicLibrary(libraries[i].second);
+    }
     libraries.clear();
   }
 
