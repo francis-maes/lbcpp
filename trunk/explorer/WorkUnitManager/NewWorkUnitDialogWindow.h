@@ -24,17 +24,36 @@ public:
     {
       setEditableText(true);
       setSize(600, 22);
+      setName(T("WorkUnit"));
       addListener(this);
+
+      int id = 1;
 
       RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
       size_t numRecents = recent->getNumRecentWorkUnits();
-      for (size_t i = 0; i < numRecents; ++i)
+      if (numRecents)
       {
-        String str = recent->getRecentWorkUnit(i)->getWorkUnitName();
-        if (str.isNotEmpty())
-          addItem(str, (int)i + 1);
+        addSectionHeading(T("Recent"));
+        if (numRecents > 8) numRecents = 8;
+        for (size_t i = 0; i < numRecents; ++i)
+        {
+          String str = recent->getRecentWorkUnit(i)->getWorkUnitName();
+          addItem(str, id++);
+        }
       }
-      setName(T("WorkUnit"));
+
+      size_t numLibraries = lbcpp::getNumLibraries();
+      for (size_t i = 0; i < numLibraries; ++i)
+      {
+        LibraryPtr library = lbcpp::getLibrary(i);
+        std::vector<TypePtr> workUnits = library->getTypesInheritingFrom(workUnitClass);
+        if (workUnits.size())
+        {
+          addSectionHeading(library->getName());
+          for (size_t j = 0; j < workUnits.size(); ++j)
+            addItem(workUnits[j]->getName(), id++);
+        }
+      }
     }
 
     virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)

@@ -1,18 +1,23 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: UserInterfaceExecutionCallback.cpp  | User Interface Callback    |
+| Filename: WorkUnitExample.h              | Illustrates Work Units          |
 | Author  : Francis Maes                   |                                 |
-| Started : 26/11/2010 15:02               |                                 |
+| Started : 16/12/2010 14:55               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/lbcpp.h>
-using namespace lbcpp;
+#ifndef LBCPP_EXAMPLES_WORK_UNIT_H_
+# define LBCPP_EXAMPLES_WORK_UNIT_H_
 
-class MySubWorkUnit : public WorkUnit
+# include <lbcpp/Execution/WorkUnit.h>
+
+namespace lbcpp
+{
+
+class SubWorkUnitExample : public WorkUnit
 {
 public:
-  MySubWorkUnit(const String& name)
+  SubWorkUnitExample(const String& name = T("SubWorkUnitExample"))
     : WorkUnit(name) {}
  
   virtual bool run(ExecutionContext& context)
@@ -29,10 +34,10 @@ public:
   }
 };
 
-class MyWorkUnit : public WorkUnit
+class WorkUnitExample : public WorkUnit
 {
 public:
-  MyWorkUnit() : WorkUnit(T("My Work Unit !")) {}
+  WorkUnitExample() : WorkUnit(T("My Work Unit !")) {}
  
   virtual bool run(ExecutionContext& context)
   {
@@ -52,7 +57,7 @@ public:
 
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-      subWorkUnits->setWorkUnit(i, new MySubWorkUnit(T("SubWU ") + String((int)i)));
+      subWorkUnits->setWorkUnit(i, new SubWorkUnitExample(T("SubWU ") + String((int)i)));
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
@@ -61,23 +66,6 @@ public:
   }
 };
 
-ExecutionContextPtr createExecutionContext()
-{
-  ExecutionContextPtr res = multiThreadedExecutionContext(8);
-  res->appendCallback(userInterfaceExecutionCallback());
-  res->appendCallback(consoleExecutionCallback());
-  return res;
-}
+}; /* namespace lbcpp */
 
-int main(int argc, char* argv[])
-{
-  lbcpp::initialize(argv[0]);
-  ExecutionContextPtr context = createExecutionContext();
-  context->declareType(new DefaultClass(T("MyWorkUnit"), T("WorkUnit")));
-  context->declareType(new DefaultClass(T("MySubWorkUnit"), T("WorkUnit")));
-  int exitCode = WorkUnit::main(*context, new MyWorkUnit(), argc, argv);
-  userInterfaceManager().waitUntilAllWindowsAreClosed();
-  context->clearCallbacks();
-  lbcpp::deinitialize();
-  return exitCode;
-}
+#endif // !LBCPP_EXAMPLES_WORK_UNIT_H_

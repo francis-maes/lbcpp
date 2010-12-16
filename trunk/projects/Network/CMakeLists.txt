@@ -6,15 +6,15 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(NetworkClasses.xml NetworkClasses.cpp)
 
-ADD_LIBRARY(Network SHARED
+ADD_LIBRARY(network SHARED
   Command.h
   Command.cpp
   ClientServerWorkUnit.h
   NetworkClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkClasses.cpp
 )
-TARGET_LINK_LIBRARIES(Network lbcpp-core)
+TARGET_LINK_LIBRARIES(network lbcpp-core)
 
-ADD_EXECUTABLE(Network-MainClientWorkUnit MainClientWorkUnit.cpp)
-TARGET_LINK_LIBRARIES(Network-MainClientWorkUnit lbcpp-core)
+ADD_EXECUTABLE(network-MainClientWorkUnit MainClientWorkUnit.cpp)
+TARGET_LINK_LIBRARIES(network-MainClientWorkUnit lbcpp-core)
 

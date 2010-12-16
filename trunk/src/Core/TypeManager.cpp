@@ -258,6 +258,15 @@ bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary
   return true;
 }
 
+std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
+{
+  std::vector<TypePtr> res;
+  for (size_t i = 0; i < types.size(); ++i)
+    if (types[i]->inheritsFrom(baseType))
+      res.push_back(types[i]);
+  return res;
+}
+
 /*
 ** Global
 */
