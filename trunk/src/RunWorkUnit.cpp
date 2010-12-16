@@ -117,7 +117,11 @@ int mainImpl(int argc, char** argv)
   // load dynamic libraries
   lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
   if (File::isAbsolutePath(argv[0]))
-    lbcpp::importLibrariesFromDirectory(File(argv[0]).getParentDirectory());
+  {
+    File executablePath = File(argv[0]).getParentDirectory();
+    if (executablePath != File::getCurrentWorkingDirectory())
+      lbcpp::importLibrariesFromDirectory(executablePath);
+  }
 
   // parse top level arguments
   std::vector<String> arguments;
