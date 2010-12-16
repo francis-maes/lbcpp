@@ -1,16 +1,13 @@
 
-* Creer un projet "examples" pour mettre les examples dans une .dll
-* Creer un projet "testunit"
-
 * Passer proteins en .dll
     - nouveau repertoire proteins/UserInterface
     - bouger des trucs de Explorer vers lbcpp/UserInterface
     - Mettre juce en dynamique (?)
    
 * Virer les variables globales qui stoque les libraries
+* Renomer <file> en <library> dans les xml
 
 Explorer:
- * Explorer: combo-box de choix des WorkUnits
  * Explorer: ligne de commande pour "StartWorkUnit"
  * Nouvelle Collone "Output", améliorer le système des collones
  

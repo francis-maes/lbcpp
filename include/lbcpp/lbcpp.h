@@ -35,6 +35,7 @@
 # include "Core/Type.h"
 # include "Core/Variable.h"
 # include "Core/Pair.h"
+# include "Core/Library.h"
 # include "Core/XmlSerialisation.h"
 # include "Core/DynamicObject.h"
 

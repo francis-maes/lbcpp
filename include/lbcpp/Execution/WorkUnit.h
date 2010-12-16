@@ -70,7 +70,7 @@ protected:
 class CompositeWorkUnit : public WorkUnit
 {
 public:
-  CompositeWorkUnit(const String& name, size_t initialSize)
+  CompositeWorkUnit(const String& name, size_t initialSize = 0)
     : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false) {}
   CompositeWorkUnit() {}
 

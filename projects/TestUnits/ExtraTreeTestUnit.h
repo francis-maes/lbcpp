@@ -1,8 +1,18 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: ExtraTreeTestUnit.h            | ExtraTree Test Unit             |
+| Author  : Julien Becker                  |                                 |
+| Started : 16/12/2010 15:13               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 #ifndef LBCPP_TEST_UNIT_EXTRA_TREES_H_
 # define LBCPP_TEST_UNIT_EXTRA_TREES_H_
 
-# include <lbcpp/lbcpp.h>
 # include <lbcpp/Execution/TestUnit.h>
+# include <lbcpp/Perception/Perception.h>
+# include <lbcpp/DecisionTree/DecisionTree.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
@@ -63,11 +73,7 @@ protected:
   
   void runClassification(ExecutionContext& context)
   {  
-#ifdef JUCE_WIN32
-    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../examples/Data/ExtraTrees/classification.csv")));
-#else
-    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../examples/Data/ExtraTrees/classification.csv")));
-#endif
+    File input(File::getSpecialLocation(File::currentExecutableFile).getChildFile(T("../../../../projects/Examples/Data/ExtraTrees/classification.csv")));
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, true);
     
@@ -94,7 +100,7 @@ protected:
   
   void runRegression(ExecutionContext& context)
   {
-    File input(File::getCurrentWorkingDirectory().getChildFile(T("../../../../examples/Data/ExtraTrees/regression.csv")));
+    File input(File::getSpecialLocation(File::currentExecutableFile).getChildFile(T("../../../../projects/Examples/Data/ExtraTrees/regression.csv")));
 
     std::vector<std::vector<double> > data;
     parseDataFile(context, input, data, false);

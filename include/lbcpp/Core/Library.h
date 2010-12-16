@@ -41,6 +41,8 @@ public:
   const std::vector<TypePtr>& getTypes() const
     {return types;}
 
+  std::vector<TypePtr> getTypesInheritingFrom(TypePtr baseType) const;
+
   const std::vector<TemplateTypePtr>& getTemplateTypes() const
     {return templateTypes;}
 

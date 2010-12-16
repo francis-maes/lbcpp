@@ -81,6 +81,12 @@ public:
     return empty;
   }
 
+  size_t getNumLibraries() const
+    {return libraries.size();}
+
+  LibraryPtr getLibrary(size_t index) const
+    {jassert(index < libraries.size()); return libraries[index].first;}
+
 private:
   std::vector< std::pair<LibraryPtr, void* > > libraries;
 };
@@ -140,6 +146,12 @@ ExecutionContext& lbcpp::defaultExecutionContext()
 
 void lbcpp::setDefaultExecutionContext(ExecutionContextPtr defaultContext)
   {jassert(applicationContext); applicationContext->defaultExecutionContext = defaultContext;}
+
+size_t lbcpp::getNumLibraries()
+  {jassert(applicationContext); return applicationContext->libraryManager.getNumLibraries();}
+  
+LibraryPtr lbcpp::getLibrary(size_t index)
+  {jassert(applicationContext); return applicationContext->libraryManager.getLibrary(index);}
 
 bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory)
 {
