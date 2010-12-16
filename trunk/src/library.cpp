@@ -218,14 +218,7 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
 
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);
-  /*
-  LibraryPtr library = coreLibrary;//applicationContext.libraryManager.getLibrary(context, T("Core"));
-  jassert(library);
-  library->cacheTypes(context);
-
-  library = lbCppLibrary;//applicationContext.libraryManager.getLibrary(context, T("LBCpp"));
-  jassert(library);
-  library->cacheTypes(context);*/
+  topLevelType = anyType = variableType;
 }
 
 void lbcpp::deinitializeDynamicLibrary()

@@ -1,9 +1,11 @@
    
-* Virer les variables globales qui stoque les libraries
 * Passer tous les projets en .dll
+* Virer les variables globales qui stoque les libraries
+
+* Enlever la dependance de RunProgram sur proteins, rendre le programme generique et le deplacer 
+
 * Explorer: combo-box de choix des WorkUnits
 * Explorer: ligne de commande pour "StartWorkUnit"
-* Enlever la dependance de RunProgram sur proteins, rendre le programme generique et le deplacer 
 
 En plan:
  * Nouvelle Collone "Output", améliorer le système des collones

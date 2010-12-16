@@ -1,15 +1,19 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NumbersSandBox.cpp             | Numbers Sand Box                |
+| Filename: NumbersSandBox.h               | Numbers Sand Box                |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/10/2010 18:45               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#ifndef LBCPP_NUMBERS_SAND_BOX_H_
+# define LBCPP_NUMBERS_SAND_BOX_H_
 
-#include <lbcpp/lbcpp.h>
-#include "../../src/Core/Object/DenseDoubleObject.h"
-#include "NumberPerceptions.h"
-using namespace lbcpp;
+# include <lbcpp/lbcpp.h>
+# include "../../src/Core/Object/DenseDoubleObject.h"
+# include "NumberPerceptions.h"
+
+namespace lbcpp
+{
 
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
@@ -91,8 +95,6 @@ double binomialProbability(double numSuccess, double numTrials, double probabili
   return log(binomialProbability(featureValue, 
 }*/
 
-namespace lbcpp {extern LibraryPtr numbersLibrary;};
-
 ObjectPtr estimateFeaturesExpectation(ExecutionContext& context, PerceptionPtr perception, ContainerPtr inputs)
 {
   if (!context.checkInheritance(inputs->getElementsType(), perception->getInputType()))
@@ -102,7 +104,7 @@ ObjectPtr estimateFeaturesExpectation(ExecutionContext& context, PerceptionPtr p
   ObjectPtr mean;
   double invK = 1.0 / (double)n;
   for (size_t i = 0; i < n; ++i)
-    lbcpp::addWeighted(context, mean, perception, inputs->getElement(i), invK);
+    addWeighted(context, mean, perception, inputs->getElement(i), invK);
   return mean;
 }
 
@@ -163,7 +165,7 @@ public:
     getRelevanceScores(context, input, featuresByRelevance);
     int i = 0;
     for (FeaturesByScoreMap::reverse_iterator it = featuresByRelevance.rbegin(); it != featuresByRelevance.rend() && i < 10; ++it, ++i)
-      std::cout << "Top " << (i+1) << ": " << perception->getOutputVariableName(it->second) << " (" << it->first << ")" << std::endl;
+      context.informationCallback(T("Top ") + String(i + 1) + T(": ") + perception->getOutputVariableName(it->second) + T(" (") + String(it->first) + T(")"));
   }
 
 private:
@@ -204,37 +206,42 @@ private:
   }
 };
 
-
-int main(int argc, char* argv[])
+class NumbersSandBoxWorkUnit : public WorkUnit
 {
-  lbcpp::initialize(argv[0]);
-  lbcpp::importLibrary(numbersLibrary);
+public:
+  NumbersSandBoxWorkUnit() : WorkUnit(T("NumbersSandBox")) {}
 
-  ExecutionContext& context = defaultExecutionContext();
+  virtual bool run(ExecutionContext& context)
+  {
+    // Perception
+    PerceptionPtr numberPerception = twoDigitNumberFeatures();
+    PerceptionPtr numberPairPerception = pairBidirectionalPerception(numberPairIsMultipleFeatures(2, 10));
+    PerceptionPtr numberTripletPerception = nullPerception();
 
-  // Perception
-  PerceptionPtr numberPerception = twoDigitNumberFeatures();
-  PerceptionPtr numberPairPerception = pairBidirectionalPerception(numberPairIsMultipleFeatures(2, 10));
-  PerceptionPtr numberTripletPerception = nullPerception();
+    CompositePerceptionPtr numbersPerception = new CompositePerception(containerClass(integerType), T("numbers"));
+    numbersPerception->addPerception(T("isConstant"), new ContainerIsConstantFeature());
+    numbersPerception->addPerception(T("sum"), containerSumFeatures(numberPerception));
 
-  CompositePerceptionPtr numbersPerception = new CompositePerception(containerClass(doubleType), T("numbers"));
-  numbersPerception->addPerception(T("isConstant"), new ContainerIsConstantFeature());
-  numbersPerception->addPerception(T("sum"), containerSumFeatures(numberPerception));
+    PerceptionPtr pairsPerception = containerSumFeatures(numberPairPerception);
+    PerceptionPtr tripletsPerception = containerSumFeatures(numberTripletPerception);
+    PerceptionPtr perception = flattenPerception(enrichedNumberSequencePerception(numbersPerception, pairsPerception, tripletsPerception));
 
-  PerceptionPtr pairsPerception = containerSumFeatures(numberPairPerception);
-  PerceptionPtr tripletsPerception = containerSumFeatures(numberTripletPerception);
-  PerceptionPtr perception = flattenPerception(enrichedNumberSequencePerception(numbersPerception, pairsPerception, tripletsPerception));
+    // Random Number Sequences
+    context.informationCallback(T("Generating random number sequences"));
+    ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 1000);
 
-  // Random Number Sequences
-  ContainerPtr randomInputs = sampleNumberSequences(RandomGenerator::getInstance(), 0, 100, 6, 1000);
-  FeaturesInformation featuresInfo(perception);
-  featuresInfo.compute(context, randomInputs);
-  //featuresInfo.print();
+    context.informationCallback(T("Computing feature informations"));
+    FeaturesInformation featuresInfo(perception);
+    featuresInfo.compute(context, randomInputs);
+    //featuresInfo.print();
 
-  ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
-  EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
-  featuresInfo.printMostRelevantFeatures(context, enrichedProblem);
-  return 0;
+    ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
+    EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
+    featuresInfo.printMostRelevantFeatures(context, enrichedProblem);
+    return true;
+  }
+};
+
 
   /*
   ContainerPtr trainingData = problem->createRankingDataForAllSubProblems();
@@ -275,5 +282,7 @@ int main(int argc, char* argv[])
   for (std::set<int>::const_iterator it = bestNumbers.begin(); it != bestNumbers.end(); ++it)
     std::cout << *it << " ";
   std::cout << std::endl;*/
-  return 0;
-}
+
+}; /* namespace lbcpp */
+
+#endif // !LBCPP_NUMBERS_SAND_BOX_H_
