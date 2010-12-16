@@ -13,6 +13,7 @@
 #define JUCE_DLL
 #include "juce_amalgamated.h"
 #include <map>
+#include <iostream>
 using namespace juce;
 
 //==============================================================================
@@ -96,7 +97,7 @@ int main (int argc, char* argv[])
         String error ("Source directory doesn't exist: ");
         error << sourceDirectory.getFullPathName() << "\n\n";
 
-        printf ((const char*) error);
+        std::cerr << (const char*) error;
         return 0;
     }
 
@@ -107,7 +108,7 @@ int main (int argc, char* argv[])
         String error ("Destination directory doesn't exist: ");
         error << destDirectory.getFullPathName() << "\n\n";
 
-        printf ((const char*) error);
+        std::cerr << (const char*) error;
         return 0;
     }
 
@@ -132,7 +133,7 @@ int main (int argc, char* argv[])
     {
         String error ("Didn't find any source files in: ");
         error << sourceDirectory.getFullPathName() << "\n\n";
-        printf ((const char*) error);
+        std::cerr << (const char*) error;
         return 0;
     }
 
@@ -145,7 +146,7 @@ int main (int argc, char* argv[])
     {
         String error ("Couldn't open ");
         error << headerFile.getFullPathName() << " for writing\n\n";
-        printf ((const char*) error);
+        std::cerr << (const char*) error;
         return 0;
     }
 
@@ -155,7 +156,7 @@ int main (int argc, char* argv[])
     {
         String error ("Couldn't open ");
         error << cppFile.getFullPathName() << " for writing\n\n";
-        printf ((const char*) error);
+        std::cerr << (const char*) error;
         return 0;
     }
 

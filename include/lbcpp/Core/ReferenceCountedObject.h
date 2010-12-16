@@ -94,10 +94,7 @@ protected:
 
   int refCount;              /*!< The object's reference count */
 
-#ifdef JUCE_WIN32 // msvc compiler bug: the template friend class ReferenceCountedObjectPtr does not work
 public:
-#endif
-
 #ifdef LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
   /** Increments the object's reference count.  */
   void incrementReferenceCounter();
