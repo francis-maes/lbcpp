@@ -10,7 +10,7 @@
 
   ==============================================================================
 */
-
+#define JUCE_DLL
 #include "juce_amalgamated.h"
 #include <map>
 

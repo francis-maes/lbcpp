@@ -7,7 +7,6 @@
 #ifndef SMODE_PROJECT_REPOSITORY_WIN32_CONSOLE_PROCESS_H_
 # define SMODE_PROJECT_REPOSITORY_WIN32_CONSOLE_PROCESS_H_
 
-# include <windows.h>
 # include "ConsoleProcess.h"
 
 namespace juce

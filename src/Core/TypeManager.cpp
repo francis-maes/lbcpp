@@ -273,6 +273,12 @@ juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, c
   for (size_t i = 0; i < uiComponents.size(); ++i)
     if (type->inheritsFrom(uiComponents[i].first))
       return uiComponents[i].second(object, name);
+  for (size_t i = 0; i < subLibraries.size(); ++i)
+  {
+    juce::Component* res = subLibraries[i]->createUIComponentIfExists(context, object, name);
+    if (res)
+      return res;
+  }
   return NULL;
 }
 

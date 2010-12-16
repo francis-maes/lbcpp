@@ -97,7 +97,8 @@ public:
       context->errorCallback(T("LocalProcess::start"), T("Could not copy executable"));
       return false;
     }
-    process = juce::ConsoleProcess::create(exe.getFullPathName(), arguments, workingDirectory.getFullPathName());
+    jassert(false); // FIXME
+    process = NULL;//juce::ConsoleProcess::create(exe.getFullPathName(), arguments, workingDirectory.getFullPathName());
     return process != NULL;
   }
 

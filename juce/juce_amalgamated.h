@@ -45,6 +45,7 @@
 #define __JUCE_AMALGAMATED_TEMPLATE_JUCEHEADER__
 
 #define DONT_AUTOLINK_TO_JUCE_LIBRARY 1
+#define JUCE_DLL
 
 /********* Start of inlined file: juce.h *********/
 #ifndef __JUCE_JUCEHEADER__
@@ -140,7 +141,7 @@
     installed, and its header files will need to be on your include path.
 */
 #if ! (defined (JUCE_QUICKTIME) || defined (LINUX) || (defined (_WIN32) && ! defined (_MSC_VER)))
-  #define JUCE_QUICKTIME 1
+  #define JUCE_QUICKTIME 0
 #endif
 
 /** Comment out this macro if you don't want to enable OpenGL or if you don't
@@ -157,11 +158,11 @@
     avoid bloating your codebase with them.
 */
 #ifndef JUCE_USE_FLAC
-  #define JUCE_USE_FLAC 1
+  #define JUCE_USE_FLAC 0
 #endif
 
 #ifndef JUCE_USE_OGGVORBIS
-  #define JUCE_USE_OGGVORBIS 1
+  #define JUCE_USE_OGGVORBIS 0
 #endif
 
 /** This flag lets you enable support for CD-burning. You might want to disable

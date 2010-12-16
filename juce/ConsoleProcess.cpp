@@ -5,13 +5,15 @@
 ` --------------------------------------- . --------------------------------- */
 
 #ifdef WIN32
+# include <windows.h>
+#endif // WIN32
+
+#include "ConsoleProcess.h"
+#ifdef WIN32
 # include "Win32ConsoleProcess.h"
 #else
 # include "PosixConsoleProcess.h"
 #endif // WIN32
-#include "juce_amalgamated.h"
-#include "ConsoleProcess.h"
-
 using namespace juce;
 
 ConsoleProcess* ConsoleProcess::create(const String& executable, const String& parameters /* = String::empty */, const String& workingDirectory /*= String::empty*/)
