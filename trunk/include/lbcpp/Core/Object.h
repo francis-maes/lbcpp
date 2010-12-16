@@ -98,7 +98,7 @@ public:
 
   template<class Type>
   ReferenceCountedObjectPtr<Type> cloneAndCast() const
-    {ObjectPtr res = clone(defaultExecutionContext()); return res.staticCast<Type>();}
+    {ObjectPtr res = clone(lbcpp::defaultExecutionContext()); return res.staticCast<Type>();}
 
   /*
   ** Compare
