@@ -136,7 +136,11 @@ void TypeManager::finishDeclarations(ExecutionContext& context)
 
 TypePtr TypeManager::getType(ExecutionContext& context, const String& typeName, const std::vector<TypePtr>& arguments) const
 {
+#ifdef JUCE_DEBUG
   jassert(arguments.size());
+  for (size_t i = 0; i < arguments.size(); ++i)
+    jassert(arguments[i]);
+#endif // JUCE_DEBUG
 
   jassert(!typeName.containsAnyOf(T(" \t\r\n")));
   if (typeName.isEmpty())

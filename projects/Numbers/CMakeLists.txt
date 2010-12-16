@@ -7,13 +7,13 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(NumbersClasses.xml NumbersClasses.cpp)
 
 SET(LBCPP_NUMBERS_SOURCES
-  NumbersSandBox.cpp  
+  NumbersSandBox.h  
   NumberPerceptions.h
   NumbersClasses.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumbersClasses.cpp
 )
 
-ADD_EXECUTABLE(numbers ${LBCPP_NUMBERS_SOURCES})
+ADD_LIBRARY(numbers SHARED ${LBCPP_NUMBERS_SOURCES})
 TARGET_LINK_LIBRARIES(numbers lbcpp-core)
 
 

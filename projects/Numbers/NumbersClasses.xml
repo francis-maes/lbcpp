@@ -1,70 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Numbers">
-
+<file name="Numbers" library="yes">
   
-    
-    <!-- New -->
-    <class name="EnrichedNumberSequence">
-      <constructor arguments="ContainerPtr numbers"/>
-      <variable type="GenericVector[Integer]" name="numbers"/>
-      <variable type="ObjectVector[Pair[Integer, Integer]]" name="pairs"/>
-      <variable type="ObjectVector[Pair[Pair[Integer, Integer], Integer]]" name="triplets"/>
-      <variable type="GenericVector[Integer]" name="differences"/>
-      <variable type="ObjectVector[Pair[Integer, Integer]]" name="differencesPairs"/>
-    </class>
+  <!-- New -->
+  <class name="EnrichedNumberSequence">
+    <constructor arguments="ContainerPtr numbers"/>
+    <variable type="GenericVector[Integer]" name="numbers"/>
+    <variable type="ObjectVector[Pair[Integer, Integer]]" name="pairs"/>
+    <variable type="ObjectVector[Pair[Pair[Integer, Integer], Integer]]" name="triplets"/>
+    <variable type="GenericVector[Integer]" name="differences"/>
+    <variable type="ObjectVector[Pair[Integer, Integer]]" name="differencesPairs"/>
+  </class>
 
-    <class name="EnrichedNumberSequencePerception" base="Perception">
-      <constructor arguments="PerceptionPtr numbersPerception, PerceptionPtr pairsPerception, PerceptionPtr tripletsPerception"/>
-      <variable type="Perception" name="numbersPerception"/>
-      <variable type="Perception" name="pairsPerception"/>
-      <variable type="Perception" name="tripletsPerception"/>
-    </class>
-    
-    <!-- Numbers Serie Problem -->
-    <class name="NumbersSerieProblem" base="Object">
-      <constructor arguments="const std::vector&lt;int&gt;&amp; numbers, int target"/>
-      <constructor arguments="const String&amp; description"/>
-      <variable type="GenericVector[Integer]" name="previousNumbers"/>
-      <variable type="Integer" name="target"/>
-    </class>
+  <class name="EnrichedNumberSequencePerception" base="Perception">
+    <constructor arguments="PerceptionPtr numbersPerception, PerceptionPtr pairsPerception, PerceptionPtr tripletsPerception"/>
+    <variable type="Perception" name="numbersPerception"/>
+    <variable type="Perception" name="pairsPerception"/>
+    <variable type="Perception" name="tripletsPerception"/>
+  </class>
+  
+  <!-- Numbers Serie Problem -->
+  <class name="NumbersSerieProblem" base="Object">
+    <constructor arguments="const std::vector&lt;int&gt;&amp; numbers, int target"/>
+    <constructor arguments="const String&amp; description"/>
+    <variable type="GenericVector[Integer]" name="previousNumbers"/>
+    <variable type="Integer" name="target"/>
+  </class>
 
-    <class name="NumbersSerieProblemGetNumbersPairFunction" base="Function"/>
+  <class name="NumbersSerieProblemGetNumbersPairFunction" base="Function"/>
 
-    <!-- Number Features -->
-    <class name="NumberPairIsMultipleFeatures" base="Perception">
-      <constructor arguments="int firstMultiple, int lastMultiple"/>
-      <variable type="Integer" name="firstMultiple"/>
-      <variable type="Integer" name="lastMultiple"/>
-    </class>
+  <!-- Number Features -->
+  <class name="NumberPairIsMultipleFeatures" base="Perception">
+    <constructor arguments="int firstMultiple, int lastMultiple"/>
+    <variable type="Integer" name="firstMultiple"/>
+    <variable type="Integer" name="lastMultiple"/>
+  </class>
 
-    <class name="NumberPairDifferencePerception" base="Perception">
-      <constructor arguments="PerceptionPtr differencePerception"/>
-      <variable type="Perception" name="differencePerception"/>
-    </class>
+  <class name="NumberPairDifferencePerception" base="Perception">
+    <constructor arguments="PerceptionPtr differencePerception"/>
+    <variable type="Perception" name="differencePerception"/>
+  </class>
 
-    <class name="SingleDigitNumberFeatures" base="Perception">
-      <constructor/>
-    </class>
-    
-    <class name="TwoDigitNumberFeatures" base="Perception">
-      <constructor/>
-    </class>
-    
+  <class name="SingleDigitNumberFeatures" base="Perception">
+    <constructor/>
+  </class>
+  
+  <class name="TwoDigitNumberFeatures" base="Perception">
+    <constructor/>
+  </class>
+  
 
-    <!-- Generic Perceptions -->
-    <class name="ContainerIsConstantFeature" base="Perception">
-      <constructor/>
-    </class>
-    <class name="ContainerSumFeatures" base="Perception">
-      <constructor arguments="PerceptionPtr elementFeatures"/>
-      <variable type="Perception" name="elementFeatures"/>
-    </class>
+  <!-- Generic Perceptions -->
+  <class name="ContainerIsConstantFeature" base="Perception">
+    <constructor/>
+  </class>
+  <class name="ContainerSumFeatures" base="Perception">
+    <constructor arguments="PerceptionPtr elementFeatures"/>
+    <variable type="Perception" name="elementFeatures"/>
+  </class>
 
 
-    <class name="PairBidirectionalPerception" base="Perception">
-      <constructor arguments="PerceptionPtr directionalPerception"/>
-      <variable type="Perception" name="directionalPerception"/>
-    </class>
+  <class name="PairBidirectionalPerception" base="Perception">
+    <constructor arguments="PerceptionPtr directionalPerception"/>
+    <variable type="Perception" name="directionalPerception"/>
+  </class>
+
+  <!-- WorkUnit -->
+  <class name="NumbersSandBoxWorkUnit" base="WorkUnit"/>
  
 </file>
