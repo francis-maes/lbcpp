@@ -39,7 +39,7 @@ public:
     //generateFooter();
     newLine();
 
-    if (xml->getBoolAttribute(T("library")))
+    if (xml->getBoolAttribute(T("dynamic")))
     {
       generateDynamicLibraryFunctions();
       newLine();

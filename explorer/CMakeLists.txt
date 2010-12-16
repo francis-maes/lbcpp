@@ -3,8 +3,8 @@ INCLUDE_DIRECTORIES(${LBCpp_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 #FIND_PACKAGE(OpenGL REQUIRED)
 #INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 
-GENERATE_INTROSPECTION_CODE(ExplorerClasses.xml ExplorerClasses.cpp)
-GENERATE_INTROSPECTION_CODE(WorkUnitManager/WorkUnitManagerClasses.xml WorkUnitManagerClasses.cpp)
+GENERATE_INTROSPECTION_CODE(ExplorerLibrary.xml ExplorerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(WorkUnitManager/WorkUnitManagerLibrary.xml WorkUnitManagerLibrary.cpp)
 
 SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SplittedLayout.h
@@ -42,16 +42,16 @@ SET(EXPLORER_WORK_UNIT_MANAGER_SOURCES
   WorkUnitManager/NewWorkUnitDialogWindow.h
   WorkUnitManager/WorkUnitManagerConfiguration.h
   WorkUnitManager/WorkUnitManagerConfiguration.cpp
-  WorkUnitManager/WorkUnitManagerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitManagerClasses.cpp
+  WorkUnitManager/WorkUnitManagerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitManagerLibrary.cpp
 )
 
 SET(EXPLORER_APPLICATION_SOURCES
   ExplorerConfiguration.h
   ExplorerConfiguration.cpp
   ExplorerApplication.cpp
-  ExplorerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExplorerClasses.cpp
+  ExplorerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExplorerLibrary.cpp
 )
 
 SET(LBCPP_EXPLORER_SOURCES

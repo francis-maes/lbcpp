@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LBCpp">
+
+  <!-- <import name="Core"/> -->
+  <import name="Execution"/>
+
+  <import name="Data"/>
+  <import name="Function"/>
+  <import name="ProbabilityDistribution"/>
+
+  <import name="Perception"/>
+  <import name="Inference"/>
+  
+  <import name="NumericalLearning"/>
+  <import name="DecisionTree"/>
+
+</library>

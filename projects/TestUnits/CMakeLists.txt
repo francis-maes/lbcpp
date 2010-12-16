@@ -3,13 +3,13 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(TestUnitsClasses.xml TestUnitsClasses.cpp)
+GENERATE_INTROSPECTION_CODE(TestUnitsLibrary.xml TestUnitsLibrary.cpp)
 
 SET(LBCPP_TEST_UNITS_SOURCES
   ExtraTreeTestUnit.h
   AllTestUnits.h
-  TestUnitsClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/TestUnitsClasses.cpp
+  TestUnitsLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/TestUnitsLibrary.cpp
 )
 
 ADD_LIBRARY(lbcpp-testunits SHARED ${LBCPP_TEST_UNITS_SOURCES})

@@ -4,14 +4,14 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(NetworkClasses.xml NetworkClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NetworkLibrary.xml NetworkLibrary.cpp)
 
 ADD_LIBRARY(network SHARED
   Command.h
   Command.cpp
   ClientServerWorkUnit.h
-  NetworkClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NetworkClasses.cpp
+  NetworkLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
 TARGET_LINK_LIBRARIES(network lbcpp-core)
 

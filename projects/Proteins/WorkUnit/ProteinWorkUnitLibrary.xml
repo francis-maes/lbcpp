@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinWorkUnit" directory="WorkUnit">
+  
+  <class name="SaveObjectProgram" base="WorkUnit">
+    <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
+    <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
+  </class>
+
+  <class name="NumericalLearningParameter" base="Object">
+    <variable type="Double" name="learningRate"/>
+    <variable type="Double" name="learningRateDecrease"/>
+    <variable type="Double" name="regularizer"/>
+  </class>
+
+  <class name="ProteinTarget" base="Object">
+    <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
+  </class>
+
+  <class name="SnowBox" base ="WorkUnit">
+    <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
+    <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
+    <variable type="File" name="validationDirectory" description="The path to the validation set directory" shortName="vs"/>
+    <variable type="File" name="output" description="The prefix path to the outputs" shortName="o"/>
+    <variable type="File" name="inferenceFile" description="Use a saved inference as a starting point" shortName="inf"/>
+    <variable type="File" name="inputDirectory" description="Pre-learned protein directory" shortName="in"/>
+    <variable type="PositiveInteger" name="maxProteinsToLoad" description="Maximum number of learning proteins to load" shortName="max"/>
+    <variable type="PositiveInteger" name="numberOfFolds" description="The number of fold of the training set" shortName="n"/>
+    <variable type="PositiveInteger" name="currentFold" description="The current fold" shortName="c"/>
+    <variable type="Boolean" name="useCrossValidation" description="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
+    <variable type="PositiveInteger" name="partAsValidation" description="The part of learning proteins to use as validation proteins." shortName="vpart"/>
+    <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
+    <variable type="PositiveInteger" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
+    <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" description="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
+    <variable type="NumericalLearningParameter" name="defaultParameter" description="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
+    <variable type="ProteinTarget" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
+    <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
+  </class>
+
+  <class name="ProteinInferenceEvaluatorWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputDirectory" description="Input protein directory" shortName="in"/>
+    <variable type="File" name="outputDirectory" description="Output protein directory" shortName="o"/>
+    <variable type="File" name="inferenceFile" description="File of the inference to use" shortName="inf"/>
+    <variable type="PositiveInteger" name="numThreads" description="The number of thread" shortName="t"/>
+  </class>
+
+  <class name="CaspPDBtoValidPDBWorkUnit" base="WorkUnit">
+    <variable type="File" name="pdbDirectory" description="Input CASP PDB directory" shortName="in"/>
+    <variable type="File" name="fastaFile" description="Input FASTA file (comments line must be the CASP PDB file name and the sequence must exactly be the same sequence that the tertiary structure of the CASP PDB file)" shortName="f"/>
+    <variable type="File" name="outputDirectory" description="Output directory" shortName="o"/>
+  </class>
+
+  <class name="CompileProteinsWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputProteinFile" description="Input protein file" shortName="in"/>
+    <variable type="File" name="pssmFile" description="PSSM file" shortName="pssm"/>
+    <variable type="File" name="dsspFile" description="DSSP file" shortName="dssp"/>
+    <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
+  </class>
+  
+  <!-- SandBox -->
+  <class name="EvaluateOnlineLearnerObjectiveFunction" base="ObjectiveFunction" abstract="yes"/>
+  <class name="EvaluateLearningRateObjectiveFunction" base="EvaluateOnlineLearnerObjectiveFunction"/>
+  <class name="AlaRacheOptimizer" base="Inference"/>
+  <class name="OptimizerInferenceLearner" base="Inference"/>
+  <class name="SandBoxWorkUnit" base="WorkUnit"/>
+
+</library>
