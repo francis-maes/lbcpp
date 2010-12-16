@@ -128,7 +128,11 @@ private:
   void parseDataFile(ExecutionContext& context, const File& file, std::vector<std::vector<double> >& results, bool isClassification)
   {
     InputStream* is = file.createInputStream();
-    jassert(is);
+    if (!is)
+    {
+      context.errorCallback(T("Could not open file ") + file.getFullPathName());
+      return;
+    }
     while (!is->isExhausted())
     {
       std::vector<double> example;

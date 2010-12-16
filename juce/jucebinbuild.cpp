@@ -124,7 +124,7 @@ int main (int argc, char* argv[])
             << " from files in " << sourceDirectory.getFullPathName() 
             << "...\n\n";
 
-    printf ((const char*) message);
+    std::cout << (const char*) message;
 
     OwnedArray<File> files;
     sourceDirectory.findChildFiles (files, File::findFiles, false, "*");
