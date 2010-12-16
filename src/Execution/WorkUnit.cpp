@@ -76,7 +76,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
       defaultMap = variableShortNames;
     }
 
-    if (!defaultMap.count(argumentName))
+    if (defaultMap.find(argumentName) == defaultMap.end())
     {
       context.informationCallback(getUsageString());
       context.errorCallback(T("WorkUnit::parseArguments"), T("Unexpected expression : ") + arguments[i]);
@@ -137,8 +137,8 @@ String WorkUnit::getUsageString() const
   }
   
   return toString() + T("\n\n")
-    + T("Usage : ") + toShortString() + T(" file.xml\n")
-    + T("   or : ") + toShortString() + T(" [argument ...]\n\n")
+    + T("Usage : ") + getClassName() + T(" file.xml\n")
+    + T("   or : ") + getClassName() + T(" [argument ...]\n\n")
     + T("The arguments are as follows :\n\n")
     + argumentDescriptions;
 }

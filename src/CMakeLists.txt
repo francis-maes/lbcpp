@@ -713,3 +713,7 @@ SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
 
 ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 TARGET_LINK_LIBRARIES(lbcpp-core juce)
+
+
+ADD_EXECUTABLE(RunWorkUnit RunWorkUnit.cpp)
+TARGET_LINK_LIBRARIES(RunWorkUnit lbcpp-core)
