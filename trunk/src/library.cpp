@@ -17,7 +17,7 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: lirbary.cpp                    | LBcpp library functions         |
+| Filename: library.cpp                    | LBcpp library functions         |
 | Author  : Francis Maes                   |                                 |
 | Started : 26/11/2010 18:34               |                                 |
 `------------------------------------------/                                 |
