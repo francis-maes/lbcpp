@@ -131,8 +131,8 @@ void lbcpp::deinitialize()
 {
   if (applicationContext)
   {
-    applicationContext->libraryManager.shutdown();
     applicationContext->typeManager.shutdown();
+    applicationContext->libraryManager.shutdown();
     applicationContext->userInterfaceManager.shutdown();
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
