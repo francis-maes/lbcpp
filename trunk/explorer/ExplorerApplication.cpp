@@ -261,7 +261,7 @@ private:
 
 namespace lbcpp
 {
-  extern LibraryPtr explorerLibrary;
+  extern LibraryPtr explorerLibrary();
 };
 
 class ExplorerApplication : public JUCEApplication
@@ -275,7 +275,7 @@ public:
     defaultExecutionContext().appendCallback(explorerExecutionCallback);
 
     lbcpp::importLibrariesFromDirectory(File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
-    lbcpp::importLibrary(explorerLibrary);
+    lbcpp::importLibrary(explorerLibrary());
 
     theCommandManager = new ApplicationCommandManager();
 

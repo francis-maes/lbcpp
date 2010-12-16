@@ -526,7 +526,7 @@ protected:
     {
       String name = elt->getStringAttribute(T("name"), T("???"));
       name = replaceFirstLettersByLowerCase(name) + T("Library");
-      writeLine(T("extern lbcpp::LibraryPtr ") + name + T(";"));
+      writeLine(T("extern lbcpp::LibraryPtr ") + name + T("();"));
       writeLine(T("extern void ") + name + T("CacheTypes(ExecutionContext& context);"));
     }
 
@@ -561,7 +561,7 @@ protected:
       if (elt->getBoolAttribute(T("pre"), false))
       {
         String name = elt->getStringAttribute(T("name"), T("???"));
-        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
+        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
       }
  
     for (size_t i = 0; i < declarations.size(); ++i)
@@ -588,7 +588,7 @@ protected:
       if (!elt->getBoolAttribute(T("pre"), false))
       {
         String name = elt->getStringAttribute(T("name"), T("???"));
-        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
+        writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library());"));
       }
 
     writeLine(T("return __ok__;"));
@@ -599,7 +599,7 @@ protected:
 
     closeClass();
     
-    writeLine(T("lbcpp::LibraryPtr ") + variableName + T(" = new ") + fileName + T("Library();"));
+    writeShortFunction(T("lbcpp::LibraryPtr ") + variableName + T("()"), T("return new ") + fileName + T("Library();"));
   }
 
   void generateDynamicLibraryFunctions()
@@ -616,7 +616,9 @@ protected:
 
     openScope(T("LBCPP_EXPORT Library* lbcppInitializeLibrary(lbcpp::ApplicationContext& applicationContext)"));
     writeLine(T("lbcpp::initializeDynamicLibrary(applicationContext);"));
-    writeLine(T("return ") + replaceFirstLettersByLowerCase(fileName) + T("Library.get();"));
+    writeLine(T("LibraryPtr res = ") + replaceFirstLettersByLowerCase(fileName) + T("Library();"));
+    writeLine(T("res->incrementReferenceCounter();"));
+    writeLine(T("return res.get();"));
     closeScope();
 
     closeScope(); // extern "C"

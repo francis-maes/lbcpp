@@ -101,8 +101,8 @@ struct ApplicationContext
 
 ApplicationContext* applicationContext = NULL;
 
-extern lbcpp::LibraryPtr coreLibrary;
-extern lbcpp::LibraryPtr lbCppLibrary;
+extern lbcpp::LibraryPtr coreLibrary();
+extern lbcpp::LibraryPtr lbCppLibrary();
 
 }; /* namespace lbcpp */ 
 
@@ -110,7 +110,8 @@ void lbcpp::initialize(const char* executableName)
 {
   // juce
   juce::initialiseJuce_NonGUI();
-  juce::juce_setCurrentExecutableFileName(String::fromUTF8((const juce::uint8* )executableName));
+  // FIXME:
+  //juce::juce_setCurrentExecutableFileName(String::fromUTF8((const juce::uint8* )executableName));
 
   // application context
   jassert(!applicationContext);
@@ -118,8 +119,8 @@ void lbcpp::initialize(const char* executableName)
   applicationContext->defaultExecutionContext = defaultConsoleExecutionContext();
   
   // types
-  importLibrary(coreLibrary);
-  importLibrary(lbCppLibrary);
+  importLibrary(coreLibrary());
+  importLibrary(lbCppLibrary());
   topLevelType = anyType = variableType;
 }
 
@@ -159,15 +160,14 @@ bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, con
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dll"));
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.so"));
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dylib"));
-  bool ok = true;
   for (int i = 0; i < files.size(); ++i)
   {
     File file = *files[i];
     executionContext.informationCallback(T("Loading dynamic library ") + file.getFullPathName());
     executionContext.progressCallback((double)i, (double)files.size(), T("Dynamic Libraries"));
-    ok |= importLibraryFromFile(executionContext, file);
+    importLibraryFromFile(executionContext, file);
   }
-  return ok;
+  return true;
 }
 
 LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& file)
@@ -184,19 +184,21 @@ LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& f
   InitializeLibraryFunction initializeFunction = (InitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppInitializeLibrary"));
   if (!initializeFunction)
   {
-    context.errorCallback(T("Load ") + file.getFileName(), T("Could not find initialize function"));
+    context.informationCallback(T("Skipping ") + file.getFileName());
     juce::PlatformUtilities::freeDynamicLibrary(handle);
     return LibraryPtr();
   }
 
   LibraryPtr res = (*initializeFunction)(*applicationContext);
+  res->decrementReferenceCounter();
+  jassert(res->getReferenceCount() == 1);
   if (!res)
   {
     context.errorCallback(T("Load ") + file.getFileName(), T("Could not find create library"));
     return LibraryPtr();
   }
 
-  if (!importLibrary(context, res))
+  if (!importLibrary(context, res, handle))
   {
     juce::PlatformUtilities::freeDynamicLibrary(handle);
     return LibraryPtr();

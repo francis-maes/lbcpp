@@ -6,15 +6,15 @@
    
 * Renomer <file> en <library> dans les xml
 
-Explorer:
- * Explorer: ligne de commande pour "StartWorkUnit"
- * Nouvelle Collone "Output", améliorer le système des collones
- 
  
 !!!
 * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 !!
 
+Explorer:
+ * Explorer: ligne de commande pour "StartWorkUnit"
+ * Nouvelle Collone "Output", améliorer le système des collones
+ 
 Boinc:
  * New class BoincExecutionContext
  * Fix bugs reported by Arnaud
