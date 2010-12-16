@@ -48,23 +48,25 @@ InterprocessConnection* NetworkServer::createConnectionObject()
 static void visualStudioWorkAroundSleep(int milliseconds)
   {juce::Thread::sleep(milliseconds);}
 
-NetworkClientPtr NetworkServer::acceptClient(bool blocking)
+NetworkClientPtr NetworkServer::acceptClient(juce::int64 timeout)
 {
-  
-  if (!blocking)
-    return lockedPop();
-
-  NetworkClientPtr res;
-  do
+  juce::int64 startTime = Time::getMillisecondCounter();
+  while (true)
   {
-    res = lockedPop();
+    NetworkClientPtr res = popClient();
     if (res)
       return res;
-    visualStudioWorkAroundSleep(1000);
-  } while (true);
+
+    juce::int64 elapsedTime = Time::getMillisecondCounter() - startTime;
+    if (elapsedTime > timeout)
+      return NetworkClientPtr();
+
+    juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
+    juce::Thread::sleep(timeToSleep);
+  }
 }
 
-NetworkClientPtr NetworkServer::lockedPop()
+NetworkClientPtr NetworkServer::popClient()
 {
   ScopedLock _(lock);
   NetworkClientPtr res;

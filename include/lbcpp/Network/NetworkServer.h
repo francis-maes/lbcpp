@@ -22,7 +22,7 @@ public:
   bool startServer(int port);
   void stopServer();
 
-  NetworkClientPtr acceptClient(bool blocking);
+  NetworkClientPtr acceptClient(juce::int64 timeout);
 
   lbcpp_UseDebuggingNewOperator
 
@@ -36,7 +36,7 @@ protected:
   std::deque<NetworkClientPtr> acceptedClients;
   CriticalSection lock;
   
-  NetworkClientPtr lockedPop();
+  NetworkClientPtr popClient();
 };
 
 typedef ReferenceCountedObjectPtr<NetworkServer> NetworkServerPtr;

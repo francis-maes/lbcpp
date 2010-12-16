@@ -23,10 +23,68 @@ bool NetworkClient::sendVariable(const Variable& variable)
   return sendMessage(block);
 }
 
-void NetworkClient::variableReceived(const Variable& variable)
+bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
 {
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i]->variableReceived(variable);
+  std::cout << "NetworkClient - receiveVariable" << std::endl;
+  juce::int64 startTime = Time::getMillisecondCounter();
+  while (true)
+  {
+    Variable res;
+    if (popVariable(res))
+    {
+      result = res;
+      return true;
+    }
+    
+    juce::int64 elapsedTime = Time::getMillisecondCounter() - startTime;
+    if (elapsedTime >= timeout || disconnected)
+      return false;
+    std::cout << "NetworkClient - time left: " << timeout - elapsedTime << std::endl;
+    juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
+    if (!timeToSleep)
+      return false;
+    juce::Thread::sleep(timeToSleep);
+  }
+}
+
+template<class O>
+bool NetworkClient::receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result)
+{
+  Variable v;
+  if (!receiveVariable(timeout, v))
+    return false;
+  
+  if (!v.isObject())
+    return false;
+  
+  result = v.getObjectAndCast<O>();
+  return true;
+}
+
+bool NetworkClient::receiveBoolean(juce::int64 timeout, bool& result)
+{
+  Variable v;
+  if (!receiveVariable(timeout, v))
+    return false;
+  
+  if (!v.isBoolean())
+    return false;
+  
+  result = v.getBoolean();
+  return true;
+}
+
+bool NetworkClient::receiveString(juce::int64 timeout, String& result)
+{
+  Variable v;
+  if (!receiveVariable(timeout, v))
+    return false;
+  
+  if (!v.isString())
+    return false;
+  
+  result = v.getString();
+  return true;
 }
 
 void NetworkClient::appendCallback(NetworkCallbackPtr callback)
@@ -48,11 +106,12 @@ void NetworkClient::removeCallback(NetworkCallbackPtr callback)
 
 void NetworkClient::connectionMade()
 {
-  // transmit to callbacks
+  disconnected = false;
 }
 
 void NetworkClient::connectionLost()
 {
+  disconnected = true;
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->disconnected();
 }
@@ -62,6 +121,30 @@ void NetworkClient::messageReceived(const juce::MemoryBlock& message)
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);
   variableReceived(importer.isOpened() ? importer.load() : Variable());
+}
+
+void NetworkClient::variableReceived(const Variable& variable)
+{
+  std::cout << "Variable received: " << variable.toString() << std::endl;
+  pushVariable(variable);
+  for (size_t i = 0; i < callbacks.size(); ++i)
+    callbacks[i]->variableReceived(variable);
+}
+
+bool NetworkClient::popVariable(Variable& result)
+{
+  ScopedLock _(lock);
+  if (!variables.size())
+    return false;
+  result = variables.front();
+  variables.pop_front();
+  return true;
+}
+
+void NetworkClient::pushVariable(const Variable& variable)
+{
+  ScopedLock _(lock);
+  variables.push_back(variable);
 }
 
 namespace lbcpp
@@ -79,7 +162,7 @@ public:
   {
     for (size_t i = 0; i < numAttempts || !numAttempts; ++i)
     {
-      if (connectToSocket(host, port, 10000))
+      if (connectToSocket(host, port, 5000))
         return true;
     }
     return false;

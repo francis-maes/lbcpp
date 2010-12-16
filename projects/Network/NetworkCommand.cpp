@@ -6,17 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "Command.h"
+#include "NetworkCommand.h"
 
 using namespace lbcpp;
 
-/** Command **/
-bool Command::runCommand(ExecutionContext& context, NetworkClientPtr client)
-{
-  jassert(client);
-  this->client = client;
-  return run(context);
-}
 
 namespace lbcpp
 {

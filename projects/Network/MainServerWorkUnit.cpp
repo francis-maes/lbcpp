@@ -1,6 +1,6 @@
 
 #include <lbcpp/lbcpp.h>
-#include "ClientServerWorkUnit.h"
+#include "ServerWorkUnit.h"
 
 namespace lbcpp
 {
@@ -62,15 +62,11 @@ int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
   ExecutionContextPtr context = new SgeExecutionContext(File(T("/u/jbecker/.WorkUnit/Waiting")));
-
-  // load dynamic libraries
-  lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
-  if (File::isAbsolutePath(argv[0]))
-    lbcpp::importLibrariesFromDirectory(File(argv[0]).getParentDirectory());
- 
+  context->appendCallback(consoleExecutionCallback());
+  
   int exitCode;
   {
-    exitCode = WorkUnit::main(*context, context->createObject(getType(T("ClientWorkUnit"))).staticCast<WorkUnit>(), argc, argv);
+    exitCode = WorkUnit::main(*context, new ServerWorkUnit(), argc, argv);
   }
 
   lbcpp::deinitialize();

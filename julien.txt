@@ -7,7 +7,6 @@ Programmes Proteines:
 
 Network:
  * Test approfondis
- * Timeout au lieu de des options de blocking
 
 Extra-trees:
  * Delocker les arbres
