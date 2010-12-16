@@ -230,12 +230,6 @@ TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const
 /*
 ** Library
 */
-void Library::cacheTypes(ExecutionContext& context)
-{
-  for (size_t i = 0; i < subLibraries.size(); ++i)
-    subLibraries[i]->cacheTypes(context);
-}
-
 bool Library::declareType(ExecutionContext& context, TypePtr type)
 {
   if (!typeManager().declare(context, type))

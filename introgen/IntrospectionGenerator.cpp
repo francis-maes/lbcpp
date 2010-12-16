@@ -102,7 +102,7 @@ protected:
         generateEnumerationDeclaration(elt);
       else if (tag == T("code"))
         generateCode(elt);
-      else if (tag == T("import") || tag == T("declarationCode") || tag == T("include"))
+      else if (tag == T("import") || tag == T("include"))
         continue;
       else
         std::cerr << "Warning: unrecognized tag: " << (const char* )tag << std::endl;
@@ -518,11 +518,31 @@ protected:
   */
   void generateLibraryClass()
   {
+    String variableName = replaceFirstLettersByLowerCase(fileName) + T("Library");
+
     forEachXmlChildElementWithTagName(*xml, elt, T("import"))
     {
       String name = elt->getStringAttribute(T("name"), T("???"));
-      writeLine(T("extern lbcpp::LibraryPtr ") + replaceFirstLettersByLowerCase(name) + T("Library;"));
+      name = replaceFirstLettersByLowerCase(name) + T("Library");
+      writeLine(T("extern lbcpp::LibraryPtr ") + name + T(";"));
+      writeLine(T("extern void ") + name + T("CacheTypes(ExecutionContext& context);"));
     }
+
+    // cacheTypes function
+    openScope(T("void ") + variableName + T("CacheTypes(ExecutionContext& context)"));
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(replaceFirstLettersByLowerCase(name) + T("LibraryCacheTypes(context);"));
+    }
+    for (size_t i = 0; i < declarations.size(); ++i)
+    {
+      const Declaration& declaration = declarations[i];
+      if (declaration.cacheVariableName.isNotEmpty())
+        writeLine(declaration.cacheVariableName + T(" = typeManager().getType(context, T(") + declaration.name.quoted() + T("));"));
+    }
+    closeScope();
+
 
     openClass(fileName + T("Library"), T("Library"));
     
@@ -559,28 +579,15 @@ protected:
         writeLine(T("__ok__ &= declareSubLibrary(context, ") + replaceFirstLettersByLowerCase(name) + T("Library);"));
       }
 
-    forEachXmlChildElementWithTagName(*xml, elt, T("declarationCode"))
-    {
-      writeLine(elt->getAllSubText());
-    }
-
     writeLine(T("return __ok__;"));
     closeScope();
-
-  // initialize function
+    
     newLine();
-    openScope(T("virtual void cacheTypes(ExecutionContext& context)"));
-    writeLine(T("Library::cacheTypes(context);"));
-    for (size_t i = 0; i < declarations.size(); ++i)
-    {
-      const Declaration& declaration = declarations[i];
-      if (declaration.cacheVariableName.isNotEmpty())
-        writeLine(declaration.cacheVariableName + T(" = typeManager().getType(context, T(") + declaration.name.quoted() + T("));"));
-    }
-    closeScope();
+    writeShortFunction(T("virtual void cacheTypes(ExecutionContext& context)"), variableName + T("CacheTypes(context);"));
 
     closeClass();
-    writeLine(T("lbcpp::LibraryPtr ") + replaceFirstLettersByLowerCase(fileName) + T("Library = new ") + fileName + T("Library();"));
+    
+    writeLine(T("lbcpp::LibraryPtr ") + variableName + T(" = new ") + fileName + T("Library();"));
   }
 
   void generateDynamicLibraryFunctions()

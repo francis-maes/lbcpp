@@ -36,18 +36,67 @@ namespace juce
 
 namespace lbcpp
 {
-  struct ApplicationContext
+
+class LibraryManager
+{
+public:
+  ~LibraryManager()
+    {shutdown();}
+
+  void shutdown()
   {
-    TypeManager typeManager;
-    UserInterfaceManager userInterfaceManager;
-    ExecutionContextPtr defaultExecutionContext;
-    std::vector<void*> dynamicLibraryHandles;
-  };
+    for (size_t i = 0; i < libraries.size(); ++i)
+      if (libraries[i].second)
+        juce::PlatformUtilities::freeDynamicLibrary(libraries[i].second);
+    libraries.clear();
+  }
 
-  ApplicationContext* applicationContext = NULL;
+  bool addLibrary(ExecutionContext& context, const LibraryPtr& library, void* handle)
+  {
+    if (library->getName().isEmpty())
+    {
+      context.errorCallback(T("Cannot add an unnamed library"));
+      return false;
+    }
 
-  extern lbcpp::LibraryPtr coreLibrary;
-  extern lbcpp::LibraryPtr lbCppLibrary;
+    for (size_t i = 0; i < libraries.size(); ++i)
+      if (libraries[i].first->getName() == library->getName())
+      {
+        context.errorCallback(T("The library called ") + library->getName() + T(" already exists"));
+        return false;
+      }
+
+    libraries.push_back(std::make_pair(library, handle));
+    return true;
+  }
+
+  const LibraryPtr& getLibrary(ExecutionContext& context, const String& name) const
+  {
+    for (size_t i = 0; i < libraries.size(); ++i)
+      if (libraries[i].first->getName() == name)
+        return libraries[i].first;
+
+    static LibraryPtr empty;
+    context.errorCallback(T("Could not find library ") + name.quoted());
+    return empty;
+  }
+
+private:
+  std::vector< std::pair<LibraryPtr, void* > > libraries;
+};
+
+struct ApplicationContext
+{
+  LibraryManager libraryManager;
+  TypeManager typeManager;
+  UserInterfaceManager userInterfaceManager;
+  ExecutionContextPtr defaultExecutionContext;
+};
+
+ApplicationContext* applicationContext = NULL;
+
+extern lbcpp::LibraryPtr coreLibrary;
+extern lbcpp::LibraryPtr lbCppLibrary;
 
 }; /* namespace lbcpp */ 
 
@@ -72,11 +121,9 @@ void lbcpp::deinitialize()
 {
   if (applicationContext)
   {
-    typeManager().shutdown();
-    userInterfaceManager().shutdown();
-    std::vector<void* >& handles = applicationContext->dynamicLibraryHandles;
-    for (size_t i = 0; i < handles.size(); ++i)
-      juce::PlatformUtilities::freeDynamicLibrary(handles[i]);
+    applicationContext->libraryManager.shutdown();
+    applicationContext->typeManager.shutdown();
+    applicationContext->userInterfaceManager.shutdown();
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
@@ -137,34 +184,48 @@ LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& f
     return LibraryPtr();
   }
 
-  if (importLibrary(context, res))
-  {
-    applicationContext->dynamicLibraryHandles.push_back(handle);
-    return res;
-  }
-  else
+  if (!importLibrary(context, res))
   {
     juce::PlatformUtilities::freeDynamicLibrary(handle);
     return LibraryPtr();
   }
+
+  return res;
 }
 
-bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library)
+bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library, void* dynamicLibraryHandle)
 {
   if (!library->initialize(context))
+    return false;
+  if (!applicationContext->libraryManager.addLibrary(context, library, dynamicLibraryHandle))
     return false;
   library->cacheTypes(context);
   typeManager().finishDeclarations(context);
   return true;
 }
 
+namespace lbcpp
+{
+  extern void coreLibraryCacheTypes(ExecutionContext& context);
+  extern void lbCppLibraryCacheTypes(ExecutionContext& context);
+};
+
 // called from dynamic library
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext)
 {
   lbcpp::applicationContext = &applicationContext;
   ExecutionContext& context = defaultExecutionContext();
-  coreLibrary->cacheTypes(context);
-  lbCppLibrary->cacheTypes(context);
+
+  coreLibraryCacheTypes(context);
+  lbCppLibraryCacheTypes(context);
+  /*
+  LibraryPtr library = coreLibrary;//applicationContext.libraryManager.getLibrary(context, T("Core"));
+  jassert(library);
+  library->cacheTypes(context);
+
+  library = lbCppLibrary;//applicationContext.libraryManager.getLibrary(context, T("LBCpp"));
+  jassert(library);
+  library->cacheTypes(context);*/
 }
 
 void lbcpp::deinitializeDynamicLibrary()
