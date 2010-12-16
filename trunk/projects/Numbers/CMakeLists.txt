@@ -4,13 +4,13 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(NumbersClasses.xml NumbersClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumbersLibrary.xml NumbersLibrary.cpp)
 
 SET(LBCPP_NUMBERS_SOURCES
   NumbersSandBox.h  
   NumberPerceptions.h
-  NumbersClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumbersClasses.cpp
+  NumbersLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumbersLibrary.cpp
 )
 
 ADD_LIBRARY(numbers SHARED ${LBCPP_NUMBERS_SOURCES})

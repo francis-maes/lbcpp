@@ -3,54 +3,54 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(LBCppClasses.xml LBCppClasses.cpp)
+GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Core/Type/TypeClasses.xml TypeClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Core/CoreClasses.xml CoreClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Core/Type/TypeLibrary.xml TypeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Data/Stream/StreamClasses.xml StreamClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/Container/ContainerClasses.xml ContainerClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/DataClasses.xml DataClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Network/NetworkClasses.xml NetworkClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionClasses.xml ProbabilityDistributionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml ProbabilityDistributionBuilderClasses.cpp)
+GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionLibrary.xml ProbabilityDistributionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/Builder/ProbabilityDistributionBuilderLibrary.xml ProbabilityDistributionBuilderLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Execution/ExecutionClasses.xml ExecutionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackClasses.xml ExecutionCallbackClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextClasses.xml ExecutionContextClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Function/FunctionClasses.xml FunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsClasses.xml MiscFunctionsClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionClasses.xml ScalarFunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml ScalarObjectFunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionClasses.xml IterationFunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionClasses.xml StoppingCriterionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateClasses.xml PredicateClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorClasses.xml EvaluatorClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsLibrary.xml MiscFunctionsLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml ScalarObjectFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.xml StoppingCriterionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Perception/PerceptionClasses.xml PerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionClasses.xml SimplePerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionClasses.xml ModifierPerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionClasses.xml ContainerPerceptionClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionLibrary.xml SimplePerceptionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionLibrary.xml ModifierPerceptionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionLibrary.xml ContainerPerceptionLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Inference/InferenceClasses.xml InferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackClasses.xml InferenceCallbackClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceClasses.xml ReductionInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceClasses.xml MetaInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/BatchLearner/InferenceBatchLearnerClasses.xml InferenceBatchLearnerClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml InferenceOnlineLearnerClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceLibrary.xml InferenceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackLibrary.xml InferenceCallbackLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceLibrary.xml ReductionInferenceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceLibrary.xml MetaInferenceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/BatchLearner/InferenceBatchLearnerLibrary.xml InferenceBatchLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerLibrary.xml InferenceOnlineLearnerLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningClasses.xml NumericalLearningClasses.cpp)
-GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml NumericalLearningLossFunctionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml NumericalLearningPerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceClasses.xml NumericalLearningInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(NumericalLearning/BatchLearner/NumericalLearningBatchLearnerClasses.xml NumericalLearningBatchLearnerClasses.cpp)
-GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml NumericalLearningOnlineLearnerClasses.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionLibrary.xml NumericalLearningLossFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionLibrary.xml NumericalLearningPerceptionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceLibrary.xml NumericalLearningInferenceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/BatchLearner/NumericalLearningBatchLearnerLibrary.xml NumericalLearningBatchLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerLibrary.xml NumericalLearningOnlineLearnerLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeClasses.xml DecisionTreeClasses.cpp)
-GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceClasses.xml DecisionTreeInferenceClasses.cpp)
+GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceLibrary.xml DecisionTreeInferenceLibrary.cpp)
 
 #### Core ####
 
@@ -82,8 +82,8 @@ SET(LBCPP_CORE_SOURCES
   ../include/lbcpp/Core/Function.h  
   ../include/lbcpp/Core/XmlSerialisation.h  
   Core/XmlSerialisation.cpp
-  Core/CoreClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/CoreClasses.cpp
+  Core/CoreLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/CoreLibrary.cpp
 )
 
 SET(LBCPP_CORE_IMPL_HEADERS
@@ -100,8 +100,8 @@ SET(LBCPP_CORE_TYPE_SOURCES
   Core/Type/DoubleType.h
   Core/Type/StringType.h
   Core/Type/FileType.h
-  Core/Type/TypeClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/TypeClasses.cpp
+  Core/Type/TypeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/TypeLibrary.cpp
 )
 
 SET(LBCPP_CORE_OBJECT_SOURCES
@@ -127,8 +127,8 @@ SET(LBCPP_DATA_SOURCES
   Data/Consumer.cpp
   ../include/lbcpp/Data/Cache.h
   Data/Cache.cpp
-  Data/DataClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DataClasses.cpp
+  Data/DataLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
 )  
 
 SET(LBCPP_DATA_STREAM_SOURCES
@@ -136,8 +136,8 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
   Data/Stream/SaveToFileConsumer.h
-  Data/Stream/StreamClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/StreamClasses.cpp
+  Data/Stream/StreamLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
 )
 
 SET(LBCPP_DATA_CONTAINER_SOURCES
@@ -146,8 +146,8 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/DuplicatedContainer.h
   Data/Container/RangeContainer.h
   Data/Container/ExcludeRangeContainer.h
-  Data/Container/ContainerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ContainerClasses.cpp
+  Data/Container/ContainerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )
 
 #### Execution ####
@@ -166,24 +166,24 @@ SET(LBCPP_EXECUTION_SOURCES
   Execution/ExecutionTrace.cpp
   ../include/lbcpp/Execution/Notification.h
   Execution/Notification.cpp
-  Execution/ExecutionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionClasses.cpp
+  Execution/ExecutionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionLibrary.cpp
 )
 
 SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionNotifications.h
   Execution/Callback/ConsoleExecutionCallback.h
   Execution/Callback/UserInterfaceExecutionCallback.h
-  Execution/Callback/ExecutionCallbackClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackClasses.cpp
+  Execution/Callback/ExecutionCallbackLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackLibrary.cpp
 )
 
 SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h
   Execution/Context/SubExecutionContext.h
   Execution/Context/MultiThreadedExecutionContext.h
-  Execution/Context/ExecutionContextClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextClasses.cpp
+  Execution/Context/ExecutionContextLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExecutionContextLibrary.cpp
 )
 
 ### Network ###
@@ -195,8 +195,8 @@ SET(LBCPP_NETWORK_SOURCES
   Network/NetworkServer.cpp
   ../include/lbcpp/Network/NetworkCallback.h
   Network/NetworkCallback.cpp
-  Network/NetworkClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NetworkClasses.cpp
+  Network/NetworkLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
 
 #### ProbabilityDistribution ####
@@ -208,15 +208,15 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ../include/lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h
   ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
   ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
-  ProbabilityDistribution/ProbabilityDistributionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionClasses.cpp
+  ProbabilityDistribution/ProbabilityDistributionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionLibrary.cpp
 )
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
   ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.h
   ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.h
-  ProbabilityDistribution/Builder/ProbabilityDistributionBuilderClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderClasses.cpp
+  ProbabilityDistribution/Builder/ProbabilityDistributionBuilderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderLibrary.cpp
 )
 
 #### Function ####
@@ -232,8 +232,8 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/ObjectiveFunction.h
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
-  Function/FunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FunctionClasses.cpp
+  Function/FunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
@@ -243,8 +243,8 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/SelectVariableFunctions.h
-  Function/MiscFunctions/MiscFunctionsClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsClasses.cpp
+  Function/MiscFunctions/MiscFunctionsLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_SCALAR_SOURCES
@@ -254,22 +254,22 @@ SET(LBCPP_FUNCTION_SCALAR_SOURCES
   Function/ScalarFunction/SquareFunction.h
   Function/ScalarFunction/AddConstantScalarFunction.h
   Function/ScalarFunction/AngleDifferenceFunction.h
-  Function/ScalarFunction/ScalarFunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ScalarFunctionClasses.cpp
+  Function/ScalarFunction/ScalarFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ScalarFunctionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
   Function/ScalarObjectFunction/BinarySumScalarObjectFunction.h
   Function/ScalarObjectFunction/MultiplyByScalarObjectFunction.h
-  Function/ScalarObjectFunction/ScalarObjectFunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionClasses.cpp
+  Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_ITERATION_SOURCES
   Function/IterationFunction/ConstantIterationFunction.h
   Function/IterationFunction/InvLinearIterationFunction.h
-  Function/IterationFunction/IterationFunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionClasses.cpp
+  Function/IterationFunction/IterationFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/IterationFunctionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES
@@ -277,15 +277,15 @@ SET(LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES
   Function/StoppingCriterion/MaxIterationsWithoutImprovementStoppingCriterion.h
   Function/StoppingCriterion/AverageImprovementStoppingCriterion.h
   Function/StoppingCriterion/LogicalOrStoppingCriterion.h
-  Function/StoppingCriterion/StoppingCriterionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/StoppingCriterionClasses.cpp
+  Function/StoppingCriterion/StoppingCriterionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/StoppingCriterionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_PREDICATE_SOURCES
   Function/Predicate/BinaryPredicate.h
   Function/Predicate/UnaryComparisonPredicate.h
-  Function/Predicate/PredicateClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PredicateClasses.cpp
+  Function/Predicate/PredicateLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PredicateLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
@@ -294,8 +294,8 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/ClassificationAccuracyEvaluator.h
   Function/Evaluator/RegressionErrorEvaluator.h
   Function/Evaluator/SaveToDirectoryEvaluator.h
-  Function/Evaluator/EvaluatorClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorClasses.cpp
+  Function/Evaluator/EvaluatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
 
 #### Perception ####
@@ -306,16 +306,16 @@ SET(LBCPP_PERCEPTION_SOURCES
   ../include/lbcpp/Perception/PerceptionRewriter.h
   Perception/PerceptionRewriter.cpp
   Perception/PerceptionRewriterRules.h
-  Perception/PerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionClasses.cpp
+  Perception/PerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/PerceptionLibrary.cpp
 )
 
 SET(LBCPP_PERCEPTION_SIMPLE_SOURCES
   Perception/Simple/NullPerception.h
   Perception/Simple/IdentityPerception.h
   Perception/Simple/FunctionBasedPerception.h
-  Perception/Simple/SimplePerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/SimplePerceptionClasses.cpp
+  Perception/Simple/SimplePerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SimplePerceptionLibrary.cpp
 )
 
 SET(LBCPP_PERCEPTION_MODIFIER_SOURCES
@@ -326,8 +326,8 @@ SET(LBCPP_PERCEPTION_MODIFIER_SOURCES
   Perception/Modifier/FlattenPerception.h
   Perception/Modifier/CollapsePerception.h
   Perception/Modifier/SelectAndMakeProductsPerception.h
-  Perception/Modifier/ModifierPerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ModifierPerceptionClasses.cpp
+  Perception/Modifier/ModifierPerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ModifierPerceptionLibrary.cpp
 )
 
 SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
@@ -339,8 +339,8 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   Perception/Container/BoundsProximityPerception.h
   Perception/Container/ProbabilityDistributionPerception.h
   Perception/Container/InputLabelPairPerception.h
-  Perception/Container/ContainerPerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionClasses.cpp
+  Perception/Container/ContainerPerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionLibrary.cpp
 )
 
 #### Inference ####
@@ -362,16 +362,16 @@ SET(LBCPP_INFERENCE_SOURCES
   Inference/InferenceBatchLearner.cpp
   ../include/lbcpp/Inference/InferenceOnlineLearner.h
   Inference/InferenceOnlineLearner.cpp
-  Inference/InferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/InferenceClasses.cpp
+  Inference/InferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceLibrary.cpp
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
   Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
   Inference/InferenceCallback/EvaluationInferenceCallback.h
-  Inference/InferenceCallback/InferenceCallbackClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/InferenceCallbackClasses.cpp  
+  Inference/InferenceCallback/InferenceCallbackLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceCallbackLibrary.cpp  
 )
 
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
@@ -380,8 +380,8 @@ SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/RankingBasedClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
   Inference/ReductionInference/SharedParallelVectorInference.h
-  Inference/ReductionInference/ReductionInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ReductionInferenceClasses.cpp
+  Inference/ReductionInference/ReductionInferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ReductionInferenceLibrary.cpp
 )
 
 SET(LBCPP_INFERENCE_META_SOURCES
@@ -389,8 +389,8 @@ SET(LBCPP_INFERENCE_META_SOURCES
   Inference/MetaInference/RunOnSupervisedExamplesInference.h
   Inference/MetaInference/EvaluationInference.h
   Inference/MetaInference/CrossValidationInference.h
-  Inference/MetaInference/MetaInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceClasses.cpp
+  Inference/MetaInference/MetaInferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/MetaInferenceLibrary.cpp
 )
 
 SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
@@ -402,8 +402,8 @@ SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
   Inference/BatchLearner/StochasticInferenceLearner.h
   Inference/BatchLearner/InitializeByCloningInferenceLearner.h
   Inference/BatchLearner/PrecomputePerceptionsInferenceLearner.h
-  Inference/BatchLearner/InferenceBatchLearnerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/InferenceBatchLearnerClasses.cpp
+  Inference/BatchLearner/InferenceBatchLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceBatchLearnerLibrary.cpp
 )
 
 SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
@@ -412,8 +412,8 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   Inference/OnlineLearner/RandomizerOnlineLearner.h
   Inference/OnlineLearner/StoppingCriterionOnlineLearner.h
   Inference/OnlineLearner/SaveScoresToGnuPlotFileOnlineLearner.h
-  Inference/OnlineLearner/InferenceOnlineLearnerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerClasses.cpp
+  Inference/OnlineLearner/InferenceOnlineLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerLibrary.cpp
 )
 
 #### NumericalLearning ####
@@ -425,8 +425,8 @@ SET(LBCPP_NUMERICAL_LEARNING_SOURCES
   ../include/lbcpp/NumericalLearning/NumericalSupervisedInference.h
   ../include/lbcpp/NumericalLearning/NumericalLearning.h
   NumericalLearning/NumericalLearning.cpp
-  NumericalLearning/NumericalLearningClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningClasses.cpp
+  NumericalLearning/NumericalLearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
@@ -441,8 +441,8 @@ SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
   NumericalLearning/LossFunction/BestAgainstAllRankingLossFunction.h
   NumericalLearning/LossFunction/BinaryClassificationRankingLossFunction.h
   NumericalLearning/LossFunction/L2RegularizerFunction.h
-  NumericalLearning/LossFunction/NumericalLearningLossFunctionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLossFunctionClasses.cpp
+  NumericalLearning/LossFunction/NumericalLearningLossFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLossFunctionLibrary.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_MATH_SOURCES
@@ -459,8 +459,8 @@ SET(LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES
   NumericalLearning/Perception/HardDiscretizedNumberFeatures.h
   NumericalLearning/Perception/SoftDiscretizedNumberFeatures.h
   NumericalLearning/Perception/SignedNumberFeatures.h
-  NumericalLearning/Perception/NumericalLearningPerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningPerceptionClasses.cpp
+  NumericalLearning/Perception/NumericalLearningPerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningPerceptionLibrary.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
@@ -472,15 +472,15 @@ SET(LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES
   NumericalLearning/Inference/RankingInference.h
   NumericalLearning/Inference/AddBiasInference.h
   NumericalLearning/Inference/TransferFunctionDecoratorInference.h
-  NumericalLearning/Inference/NumericalLearningInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceClasses.cpp  
+  NumericalLearning/Inference/NumericalLearningInferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningInferenceLibrary.cpp  
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES
   NumericalLearning/BatchLearner/PrecomputePerceptionsNumericalInferenceLearner.h
   NumericalLearning/BatchLearner/AddBiasInferenceLearner.h
-  NumericalLearning/BatchLearner/NumericalLearningBatchLearnerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningBatchLearnerClasses.cpp
+  NumericalLearning/BatchLearner/NumericalLearningBatchLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningBatchLearnerLibrary.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
@@ -490,16 +490,16 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
   NumericalLearning/OnlineLearner/BatchGradientDescentOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.h
   NumericalLearning/OnlineLearner/GraftingOnlineLearner.cpp
-  NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerClasses.cpp
+  NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerLibrary.cpp
 )
 
 #### DecisionTree ####
 
 SET(LBCPP_DECISION_TREE_SOURCES
   ../include/lbcpp/DecisionTree/DecisionTree.h
-  DecisionTree/DecisionTreeClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeClasses.cpp
+  DecisionTree/DecisionTreeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
 )
 
 SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
@@ -512,8 +512,8 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   DecisionTree/Inference/SplitScoringFunction.cpp
   DecisionTree/Inference/BinaryDecisionTreeSplitter.h
   DecisionTree/Inference/BinaryDecisionTreeSplitter.cpp
-  DecisionTree/Inference/DecisionTreeInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceClasses.cpp  
+  DecisionTree/Inference/DecisionTreeInferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceLibrary.cpp  
 )
 
 #### UserInterface ####
@@ -572,8 +572,8 @@ SET(LBCPP_MAIN_SOURCES
   ../include/lbcpp/lbcpp.h
   ../include/lbcpp/library.h
   library.cpp
-  LBCppClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/LBCppClasses.cpp
+  LBCppLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LBCppLibrary.cpp
 )
 
 SET(LBCPP_CORE

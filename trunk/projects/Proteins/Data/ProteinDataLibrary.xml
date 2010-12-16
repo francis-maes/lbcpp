@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinData" directory="Data">
+  
+
+    <!-- Enumerations -->
+    <enumeration name="AminoAcidType">
+      <value name="alanine"             oneLetterCode="A" threeLettersCode="ALA"/>
+      <value name="arginine"            oneLetterCode="R" threeLettersCode="ARG"/>
+      <value name="asparagine"          oneLetterCode="N" threeLettersCode="ASN"/>
+      <value name="asparticAcid"        oneLetterCode="D" threeLettersCode="ASP"/>
+      <value name="cysteine"            oneLetterCode="C" threeLettersCode="CYS"/>
+
+      <value name="glutamicAcid"        oneLetterCode="E" threeLettersCode="GLU"/>
+      <value name="glutamine"           oneLetterCode="Q" threeLettersCode="GLN"/>
+      <value name="glycine"             oneLetterCode="G" threeLettersCode="GLY"/>
+      <value name="histidine"           oneLetterCode="H" threeLettersCode="HIS"/>
+      <value name="isoleucine"          oneLetterCode="I" threeLettersCode="ILE"/>
+
+      <value name="leucine"             oneLetterCode="L" threeLettersCode="LEU"/>
+      <value name="lysine"              oneLetterCode="K" threeLettersCode="LYS"/>
+      <value name="methionine"          oneLetterCode="M" threeLettersCode="MET"/>
+      <value name="phenylalanine"       oneLetterCode="F" threeLettersCode="PHE"/>
+      <value name="proline"             oneLetterCode="P" threeLettersCode="PRO"/>
+
+      <value name="serine"              oneLetterCode="S" threeLettersCode="SER"/>
+      <value name="threonine"           oneLetterCode="T" threeLettersCode="THR"/>
+      <value name="tryptophan"          oneLetterCode="W" threeLettersCode="TRP"/>
+      <value name="tyrosine"            oneLetterCode="Y" threeLettersCode="TYR"/>
+      <value name="valine"              oneLetterCode="V" threeLettersCode="VAL"/>
+
+      <value name="asparagineOrAsparticAcid" oneLetterCode="B" threeLettersCode="ASX"/>
+      <value name="glutamineOrGlutamicAcid"  oneLetterCode="Z" threeLettersCode="GLX"/>
+      <value name="lecineOrIsoleucine"       oneLetterCode="J" threeLettersCode="XLE"/>
+      
+      <!-- missingvalue: name="unknown" oneLetterCode="X" threeLettersCode="XAA"-->
+    </enumeration>
+
+    <enumeration name="AminoAcidCategory1">
+      <value name="nonPolar"/>
+      <value name="polar"/>
+      <value name="acidic"/>
+      <value name="basic"/>
+    </enumeration>
+
+    <enumeration name="SecondaryStructureElement">
+      <value name="helix" oneLetterCode="H"/>
+      <value name="sheet" oneLetterCode="E"/>
+      <value name="other" oneLetterCode="C"/>
+    </enumeration>
+
+    <enumeration name="DSSPSecondaryStructureElement">
+      <value name="threeTurnHelix"          oneLetterCode="G"/>
+      <value name="alphaHelix"              oneLetterCode="H"/>
+      <value name="piHelix"                 oneLetterCode="I"/>
+      <value name="hydrogenBondedTurn"      oneLetterCode="T"/>
+      <value name="extendedStrandInSheet"   oneLetterCode="E"/>
+      <value name="residueInIsolatedBridge" oneLetterCode="B"/>
+      <value name="bend"                    oneLetterCode="S"/>
+      <value name="coil"                    oneLetterCode="C"/>
+    </enumeration>
+    
+    <code>
+      SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSPSecondaryStructureElement element)
+      {
+        if (element == threeTurnHelix || element == alphaHelix)
+          return helix;
+        if (element == residueInIsolatedBridge || element == extendedStrandInSheet)
+          return sheet;
+        return other;
+      }
+    </code>
+
+    <enumeration name="StructuralAlphabetElement">
+      <value name="A" oneLetterCode="A"/>
+      <value name="B" oneLetterCode="B"/>
+      <value name="C" oneLetterCode="C"/>
+      <value name="D" oneLetterCode="D"/>
+      <value name="E" oneLetterCode="E"/>
+      <value name="F" oneLetterCode="F"/>
+      <value name="G" oneLetterCode="G"/>
+      <value name="H" oneLetterCode="H"/>
+      <value name="I" oneLetterCode="I"/>
+      <value name="J" oneLetterCode="J"/>
+      <value name="K" oneLetterCode="K"/>
+      <value name="L" oneLetterCode="L"/>
+      <value name="M" oneLetterCode="M"/>
+      <value name="N" oneLetterCode="N"/>
+      <value name="O" oneLetterCode="O"/>
+      <value name="P" oneLetterCode="P"/>
+      <value name="Q" oneLetterCode="Q"/>
+      <value name="R" oneLetterCode="R"/>
+      <value name="S" oneLetterCode="S"/>
+      <value name="T" oneLetterCode="T"/>
+      <value name="U" oneLetterCode="U"/>
+      <value name="V" oneLetterCode="V"/>
+      <value name="W" oneLetterCode="W"/>
+      <value name="X" oneLetterCode="X"/>
+      <value name="Y" oneLetterCode="Y"/>
+      <value name="Z" oneLetterCode="Z"/>
+      <value name="a" oneLetterCode="a"/>
+    </enumeration>
+
+    <!-- Amino Acid Class -->      
+    <class name="AminoAcid" manualAccessors="yes">
+      <variable type="AminoAcidType" name="type" enumeration="yes"/>
+      <variable type="String" name="oneLetterCode"/>
+      <variable type="String" name="threeLettersCode"/>
+      <variable type="AminoAcidCategory1" name="category1"/>
+    </class>
+    
+    <!-- Tertiary Structure Classes -->
+    <class name="Atom" base="NameableObject">
+      <variable type="String" name="elementSymbol"/>
+      <variable type="Vector3" name="position"/>
+      <variable type="Double" name="occupancy"/>
+      <variable type="Double" name="temperatureFactor"/>
+    </class>
+
+    <class name="Residue">
+      <variable type="AminoAcidType" name="aminoAcidType" enumeration="yes"/>
+      <variable type="ObjectVector[Atom]" name="atoms"/>
+    </class>
+    
+    <class name="TertiaryStructure">
+      <variable type="ObjectVector[Residue]" name="residues"/>
+    </class>
+    
+    <class name="Protein" base="NameableObject">
+      <!-- Primary Structure -->
+      <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
+      <variable type="ObjectVector[EnumerationProbabilityDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+      
+      <!-- Secondary Structure -->
+      <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
+      <variable type="GenericVector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
+      <variable type="GenericVector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
+
+      <variable type="GenericVector[Probability]" name="solventAccessibility" shortName="sa" description="Solvent Accessibility"/>
+      <variable type="GenericVector[Probability]" name="solventAccessibilityAt20p" shortName="sa20" description="Solvent Accessibility at 20%"/>
+      <variable type="GenericVector[Probability]" name="disorderRegions" shortName="dr" description="Disorder Regions"/>
+      
+      <!-- Contact Maps -->
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortName="cma8" description="Contact Map C-alpha 8"/>
+      <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortName="cmb8" description="Contact Map C-beta 8"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
+      <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
+      <variable type="SymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
+
+      <!-- Tertiary Structure -->
+      <variable type="CartesianPositionVector" name="calphaTrace" shortName="cat" description="C-alpha Trace"/>
+      <variable type="TertiaryStructure" name="tertiaryStructure" shortName="ts" description="Tertiary Structure"/>
+    </class>
+    
+    <!-- Protein Functions -->
+    <class name="ProteinLengthFunction" base="Function">
+      <constructor/>
+    </class>
+    
+    <class name="ProteinToInputOutputPairFunction" base="Function">
+      <constructor arguments="bool keepTertiaryStructure"/>
+      <variable type="Boolean" name="keepTertiaryStructure"/>
+    </class>
+  
+  
+</library>

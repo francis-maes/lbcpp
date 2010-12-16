@@ -3,7 +3,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(ExamplesClasses.xml ExamplesClasses.cpp)
+GENERATE_INTROSPECTION_CODE(ExamplesLibrary.xml ExamplesLibrary.cpp)
 
 SET(LBCPP_EXAMPLES_SOURCES
   FeatureGeneratorsExample.h
@@ -11,8 +11,8 @@ SET(LBCPP_EXAMPLES_SOURCES
   SimpleIntrospectionExample.h
   WorkUnitExample.h
   XorRegressionExample.h
-  ExamplesClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ExamplesClasses.cpp
+  ExamplesLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )
 
 ADD_LIBRARY(lbcpp-examples SHARED ${LBCPP_EXAMPLES_SOURCES})

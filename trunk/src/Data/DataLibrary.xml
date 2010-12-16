@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Data" directory="Data">
+  <import name="Stream"/>
+  <import name="Container"/>
+
+  <include file="lbcpp/Data/RandomGenerator.h"/>
+  <include file="lbcpp/Data/RandomVariable.h"/>
+  <include file="lbcpp/Data/Cache.h"/>
+
+  
+    
+    <!-- Random Generator -->
+    <class name="RandomGenerator">
+      <variable type="Integer" name="seed"/>
+    </class>
+    
+    <!-- Random Variable -->
+    <class name="ScalarVariableMean" base="NameableObject"/>
+    <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean"/>
+    <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance"/>
+
+    <class name="ScalarVariableRecentMean" base="NameableObject"/>
+    <class name="ScalarVariableRecentMeanAndVariance" base="ScalarVariableRecentMean"/>
+
+    <!-- Consumer -->
+    <class name="Consumer" base="Object" abstract="yes"/>
+    <class name="TextPrinter" base="Consumer" abstract="yes"/>
+    
+    <!-- Cache -->
+    <class name="Cache" base="Object" abstract="yes"/>
+    <class name="AverageValuesCache" base="Cache"/>
+    
+  
+  
+</library>

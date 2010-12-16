@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="MNIST" dynamic="yes">
+
+  <import name="Image"/>
+  <import name="Program"/>
+
+  
+    
+    <!-- Enumeration -->
+    <enumeration name="DigitType">
+      <value name="0" oneLetterCode="0"/>
+      <value name="1" oneLetterCode="1"/>
+      <value name="2" oneLetterCode="2"/>
+      <value name="3" oneLetterCode="3"/>
+      <value name="4" oneLetterCode="4"/>
+      <value name="5" oneLetterCode="5"/>
+      <value name="6" oneLetterCode="6"/>
+      <value name="7" oneLetterCode="7"/>
+      <value name="8" oneLetterCode="8"/>
+      <value name="9" oneLetterCode="9"/>
+    </enumeration>
+    
+    <!-- Data -->
+    <class name="MNISTImage">
+      <variable type="GenericVector[Double]" name="pixels"/>
+      <variable type="DigitType" name="digit"/>
+    </class>
+    
+  <code>
+  ContainerPtr parseDataFile(ExecutionContext&amp; context, const File&amp; file)
+  {
+    if (file.getFileExtension().toLowerCase() == T(".bin"))
+    {
+      VectorPtr res = vector(pairClass(imageClass, digitTypeEnumeration));
+      InputStream* is = file.createInputStream();
+      while (!is-&gt;isExhausted())
+      {
+        bool hasSupervision = is-&gt;readBool();
+        ImagePtr image = new Image(28, 28);
+        for (size_t i = 0; i &lt; 28; ++i)
+          for (size_t j = 0; j &lt; 28; ++j)
+            image-&gt;setValue(i, j, is-&gt;readDouble());
+        size_t digit = Variable::missingValue(digitTypeEnumeration).getInteger();
+        if (hasSupervision)
+          digit = is-&gt;readInt();
+        res-&gt;append(Variable::pair(Variable(image, imageClass), Variable(digit, digitTypeEnumeration)));
+      }
+      return res;
+    }
+    
+    return StreamPtr(new MatlabFileParser(context, file))-&gt;load(context);
+  }
+  </code>
+  
+</library>

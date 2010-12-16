@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ModifierPerception" directory="Perception/Modifier">
+  
+
+    <!-- perception Modifiers -->
+    <class name="ComposePerception" base="Perception">
+      <constructor arguments="FunctionPtr function, PerceptionPtr perception"/>
+      <variable type="Function" name="function"/>
+      <variable type="Perception" name="perception"/>
+    </class>
+
+    <class name="FlattenPerception" base="Perception">
+      <constructor arguments="PerceptionPtr perception"/>
+      <variable type="Perception" name="decorated"/>
+    </class>
+
+    <class name="CollapsePerception" base="Perception">
+      <constructor arguments="PerceptionPtr perception"/>
+      <variable type="Perception" name="decorated"/>
+    </class>
+
+    <class name="SelectAndMakeProductsPerception" base="Perception">
+      <constructor arguments="PerceptionPtr decorated, FunctionPtr multiplyFunction, const std::vector&lt; std::vector&lt;size_t&gt; &gt; &amp; selectedConjunctions"/>
+      <variable type="Perception" name="decorated"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="ObjectVector[GenericVector[PositiveInteger]]" name="selectedConjunctions"/>
+    </class>
+
+    <!-- Product Perception -->
+    <class name="ProductPerception" base="Perception">
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception1, PerceptionPtr perception2, bool symmetricFunction, bool singleInputForBothPerceptions"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Boolean" name="symmetricFunction"/>
+      <variable type="Perception" name="perception1"/>
+      <variable type="Perception" name="perception2"/>
+      <variable type="Boolean" name="singleInputForBothPerceptions"/>
+    </class>
+
+    <class name="ProductWithVariablePerception" base="Perception">
+      <constructor arguments="FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables"/>
+      <variable type="Function" name="multiplyFunction"/>
+      <variable type="Perception" name="perception"/>
+      <variable type="Type" name="variableType"/>
+      <variable type="Boolean" name="swapVariables"/>
+    </class>
+
+    <!-- Perception Rewriter -->
+    <class name="RewritedPerception" base="Perception">
+      <constructor arguments="PerceptionPtr decorated, PerceptionRewriterPtr rewriter, const std::vector<String>&amp; stack"/>
+      <variable type="Perception" name="decorated"/>
+      <variable type="PerceptionRewriter" name="rewriter"/>
+      <variable type="GenericVector[String]" name="stack"/>
+    </class>
+
+  
+</library>

@@ -4,13 +4,13 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-GENERATE_INTROSPECTION_CODE(Geometry/GeometryClasses.xml GeometryClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Data/ProteinDataClasses.xml ProteinDataClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionClasses.xml ProteinPerceptionClasses.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceClasses.xml ProteinInferenceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitClasses.xml ProteinWorkUnitClasses.cpp)
-GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceClasses.xml ProteinUserInterfaceClasses.cpp)
-GENERATE_INTROSPECTION_CODE(ProteinClasses.xml ProteinClasses.cpp)
+GENERATE_INTROSPECTION_CODE(Geometry/GeometryLibrary.xml GeometryLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionLibrary.xml ProteinPerceptionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
 
 SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/DihedralAngle.h
@@ -24,8 +24,8 @@ SET(LBCPP_PROTEIN_GEOMETRY_SOURCES
   Geometry/kdtree_lib.c
   Geometry/CartesianPositionVector.h
   Geometry/CartesianPositionVector.cpp
-  Geometry/GeometryClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/GeometryClasses.cpp
+  Geometry/GeometryLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/GeometryLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_DATA_SOURCES
@@ -41,8 +41,8 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
   Data/Protein.h
   Data/Protein.cpp
   Data/ProteinFunctions.h
-  Data/ProteinDataClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinDataClasses.cpp
+  Data/ProteinDataLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinDataLibrary.cpp
 )
 
 
@@ -68,8 +68,8 @@ SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   Perception/ResidueToResiduePairPerception.h
   Perception/DisulfideBondsResiduePerception.h
   Perception/SeparationDistanceResiduePairPerception.h
-  Perception/ProteinPerceptionClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionClasses.cpp
+  Perception/ProteinPerceptionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
@@ -79,8 +79,8 @@ SET(LBCPP_PROTEIN_INFERENCE_SOURCES
   Inference/ProteinInference.cpp
   Inference/ProteinInferenceFactory.h
   Inference/ProteinInferenceFactory.cpp
-  Inference/ProteinInferenceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinInferenceClasses.cpp
+  Inference/ProteinInferenceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinInferenceLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
@@ -103,8 +103,8 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/SandBoxWorkUnit.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
-  WorkUnit/ProteinWorkUnitClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitClasses.cpp
+  WorkUnit/ProteinWorkUnitLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
@@ -113,8 +113,8 @@ SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
   UserInterface/MultiProtein2DComponent.h
   UserInterface/ProteinPerceptionComponent.h
   UserInterface/MultiProteinComponent.h
-  UserInterface/ProteinUserInterfaceClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceClasses.cpp
+  UserInterface/ProteinUserInterfaceLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceLibrary.cpp
 )
 
 SET(PROTEINS_CPP_SOURCES
@@ -127,8 +127,8 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
   ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
   
-  ProteinClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinClasses.cpp
+  ProteinLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinLibrary.cpp
 )
 
 SET(PROTEINS_SOURCES

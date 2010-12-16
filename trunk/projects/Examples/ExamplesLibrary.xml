@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Examples" dynamic="yes">
+
+  <!-- Xor Regression Example -->
+  <class name="XorPerception" base="Perception"/>
+  <class name="XorRegressionExample" base="WorkUnit"/>
+
+  <!-- WorkUnit Example -->
+  <class name="SubWorkUnitExample" base="WorkUnit"/>
+  <class name="WorkUnitExample" base="WorkUnit"/>
+ 
+  <!-- Simple Introspection Example -->
+  <class name="SimpleClass">
+    <variable type="Boolean" name="myBool"/>
+    <variable type="Integer" name="myInt"/>
+    <variable type="Double" name="myDouble"/>
+    <variable type="String" name="myString"/>
+    <variable type="Object" name="myObject"/>
+    <variable type="Variable" name="myVariable"/>
+  </class>
+  <class name="SimpleIntrospectionExample" base="WorkUnit"/>
+
+  <!-- Missing Values Example -->
+  <class name="VerySimpleClass" base="Object"/>
+  <class name="MissingValuesExample" base="WorkUnit"/>
+
+  <!-- Feature Generators -->
+  <class name="FeatureGeneratorsExample" base="WorkUnit"/>
+
+</library>

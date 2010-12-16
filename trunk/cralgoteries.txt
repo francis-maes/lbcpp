@@ -1,6 +1,6 @@
 
-* Renomer <file> en <library> dans les xml
-
+* Tester sur Linux
+* Tester sur Mac
  
 !!!
 * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)

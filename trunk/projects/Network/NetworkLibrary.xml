@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Network" dynamic="yes">
+  
+
+<!--    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
+    <class name="DumbOptimizerProgram" base="WorkUnit"/> -->
+
+    <class name="ServerWorkUnit" base="WorkUnit"/>
+
+    <class name="ClientWorkUnit" base="WorkUnit">
+      <variable type="String" name="hostname"/>
+    </class>
+
+    <class name="DumbWorkUnit" base="WorkUnit"/>
+
+    <!-- Command -->
+    <class name="Command" base="WorkUnit" abstract="yes"/>
+
+    <class name="EchoCommand" base="Command">
+      <constructor arguments="const String&amp; echo"/>
+      <variable type="String" name="echo"/>
+    </class>
+
+    <class name="InformationContextCommand" base="Command">
+      <constructor arguments="const String&amp; text"/>
+      <variable type="String" name="text"/>
+    </class>
+
+    <class name="SystemStatCommand" base="Command">
+      <constructor/>
+    </class>
+
+    <class name="SystemStats" base="Object">
+      <variable type="PositiveInteger" name="numCpus"/>
+      <variable type="PositiveInteger" name="freeCpus"/>
+      <variable type="PositiveInteger" name="memory"/>
+      <variable type="PositiveInteger" name="freeMemory"/>
+    </class>
+
+    <class name="WorkUnitCommand" base="Command">
+      <constructor arguments="WorkUnitPtr unit"/>
+      <variable type="WorkUnit" name="unit"/>
+    </class>
+
+</library>
