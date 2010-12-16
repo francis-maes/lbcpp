@@ -143,27 +143,5 @@ MACRO(ADD_SINGLE_CPP_EXECUTABLE NAME)
   TARGET_LINK_LIBRARIES(${NAME} proteins)
 ENDMACRO(ADD_SINGLE_CPP_EXECUTABLE)
 
-ADD_EXECUTABLE(RunProgram
-  Programs/RunProgram.cpp
-  Programs/DichotomicOptimizer.h
-  Programs/Command.h
-  Programs/Command.cpp
-  Programs/ClientServerWorkUnit.h
-  Programs/ProgramClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
-)
-TARGET_LINK_LIBRARIES(RunProgram proteins)
-
 ADD_SINGLE_CPP_EXECUTABLE(SandBox)
 ADD_SINGLE_CPP_EXECUTABLE(BoincEvaluator)
-
-ADD_EXECUTABLE(MainClientWorkUnit
-  Programs/MainClientWorkUnit.cpp
-  Programs/Command.h
-  Programs/Command.cpp
-  Programs/ProgramClasses.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProgramClasses.cpp
-)
-TARGET_LINK_LIBRARIES(MainClientWorkUnit proteins)
-
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})

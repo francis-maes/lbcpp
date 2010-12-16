@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<file name="Program" directory="Programs">
+<file name="Network" directory=".">
   
 
-    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
-    <class name="DumbOptimizerProgram" base="WorkUnit"/>
+<!--    <class name="DumbObjectiveFunction" base="ObjectiveFunction"/>
+    <class name="DumbOptimizerProgram" base="WorkUnit"/> -->
 
     <class name="ServerWorkUnit" base="WorkUnit"/>
 
