@@ -100,6 +100,8 @@ protected:
       }
       else if (tag == T("enumeration"))
         generateEnumerationDeclaration(elt);
+      else if (tag == T("uicomponent"))
+        declarations.push_back(Declaration::makeUIComponent(elt->getStringAttribute(T("name")), xmlTypeToCppType(elt->getStringAttribute(T("type")))));
       else if (tag == T("code"))
         generateCode(elt);
       else if (tag == T("import") || tag == T("include"))
@@ -565,11 +567,21 @@ protected:
     for (size_t i = 0; i < declarations.size(); ++i)
     {
       const Declaration& declaration = declarations[i];
-      String code = T("__ok__ &= declare");
-      if (declaration.isTemplateType())
-        code += T("Template");
-      code += T("Type(context, new ") + declaration.implementationClassName + T(");");
-      writeLine(code);
+      if (declaration.type == Declaration::uiComponentDeclaration)
+      {
+        writeLine(T("__ok__ &= declareUIComponent(context, T(") + declaration.name.quoted() +
+          T("), MakeUIComponentConstructor< ") + declaration.implementationClassName + T(">::ctor);"));
+      }
+      else
+      {
+        String code = T("__ok__ &= declare");
+        if (declaration.type == Declaration::templateTypeDeclaration)
+          code += T("TemplateType");
+        else if (declaration.type == Declaration::typeDeclaration)
+          code += T("Type");
+        code += T("(context, new ") + declaration.implementationClassName + T(");");
+        writeLine(code);
+      }
     }
 
     forEachXmlChildElementWithTagName(*xml, elt, T("import"))
@@ -619,9 +631,17 @@ private:
 
   struct Declaration
   {
+    enum Type
+    {
+      typeDeclaration,
+      templateTypeDeclaration,
+      uiComponentDeclaration,
+    } type;
+
     static Declaration makeType(const String& typeName, const String& kind)
     {
       Declaration res;
+      res.type = typeDeclaration;
       res.name = typeName;
       res.implementationClassName = typeName + kind;
       res.cacheVariableName = replaceFirstLettersByLowerCase(typeName) + kind;
@@ -631,17 +651,24 @@ private:
     static Declaration makeTemplateType(const String& typeName, const String& kind)
     {
       Declaration res;
+      res.type = templateTypeDeclaration;
       res.name = typeName;
       res.implementationClassName = typeName + kind;
+      return res;
+    }
+
+    static Declaration makeUIComponent(const String& className, const String& typeName)
+    {
+      Declaration res;
+      res.type = uiComponentDeclaration;
+      res.implementationClassName = className;
+      res.name = typeName;
       return res;
     }
 
     String name;
     String implementationClassName;
     String cacheVariableName;
-
-    bool isTemplateType() const
-      {return cacheVariableName.isEmpty();}
   };
 
   std::vector<Declaration> declarations;

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableTreeComponent.h        | Variable Tree component         |
+| Filename: VariableTreeView.h             | Variable Tree component         |
 | Author  : Francis Maes                   |                                 |
 | Started : 14/06/2010 12:05               |                                 |
 `------------------------------------------/                                 |
@@ -9,10 +9,9 @@
 #ifndef EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 # define EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 
-# include "common.h"
-# include "../Utilities/VariableSelector.h"
-# include "../Utilities/SimpleTreeViewItem.h"
-# include "../Utilities/ComponentWithPreferedSize.h"
+# include "../../../explorer/Utilities/VariableSelector.h" // FIXME! move utilities inside lbcpp-core
+# include "../../../explorer/Utilities/SimpleTreeViewItem.h"
+# include "../../../explorer/Utilities/ComponentWithPreferedSize.h"
 
 class VariableTreeViewItem;
 
@@ -29,11 +28,11 @@ struct VariableTreeOptions
   bool showMissingVariables;
 };
 
-class VariableTreeComponent : public juce::TreeView, public VariableSelector, public juce::Timer, public ComponentWithPreferedSize
+class VariableTreeView : public juce::TreeView, public VariableSelector, public juce::Timer, public ComponentWithPreferedSize
 {
 public:
-  VariableTreeComponent(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions());
-  virtual ~VariableTreeComponent();
+  VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options = VariableTreeOptions());
+  virtual ~VariableTreeView();
 
   virtual bool keyPressed(const juce::KeyPress& key);
 

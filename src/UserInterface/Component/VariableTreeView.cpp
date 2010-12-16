@@ -1,12 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: VariableTreeComponent.cpp      | Variable Tree component         |
+| Filename: VariableTreeView.cpp           | Variable Tree component         |
 | Author  : Francis Maes                   |                                 |
 | Started : 20/08/2010 16:10               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include "VariableTreeComponent.h"
+#include "VariableTreeView.h"
 using namespace lbcpp;
 
 class VariableTreeViewItem : public SimpleTreeViewItem
@@ -36,7 +36,7 @@ public:
 
   virtual void itemSelectionChanged(bool isNowSelected)
   {
-    VariableTreeComponent* owner = dynamic_cast<VariableTreeComponent* >(getOwnerView());
+    VariableTreeView* owner = dynamic_cast<VariableTreeView* >(getOwnerView());
     jassert(owner);
     owner->invalidateSelection();
   }
@@ -110,9 +110,9 @@ protected:
 };
 
 /*
-** VariableTreeComponent
+** VariableTreeView
 */
-VariableTreeComponent::VariableTreeComponent(const Variable& variable, const String& name, const VariableTreeOptions& options)
+VariableTreeView::VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options)
   : variable(variable), name(name), options(options), root(NULL), isSelectionUpToDate(false)
 {
   setRootItemVisible(true);
@@ -123,10 +123,10 @@ VariableTreeComponent::VariableTreeComponent(const Variable& variable, const Str
   startTimer(100);  
 }
 
-VariableTreeComponent::~VariableTreeComponent()
+VariableTreeView::~VariableTreeView()
   {clearTree();}
 
-bool VariableTreeComponent::keyPressed(const juce::KeyPress& key)
+bool VariableTreeView::keyPressed(const juce::KeyPress& key)
 {
   if (key.getKeyCode() == juce::KeyPress::F5Key)
   {
@@ -136,7 +136,7 @@ bool VariableTreeComponent::keyPressed(const juce::KeyPress& key)
   return juce::TreeView::keyPressed(key);
 }
 
-void VariableTreeComponent::clearTree()
+void VariableTreeView::clearTree()
 {
   if (root)
   {
@@ -145,20 +145,20 @@ void VariableTreeComponent::clearTree()
   }    
 }
 
-void VariableTreeComponent::buildTree()
+void VariableTreeView::buildTree()
 {
   root = new VariableTreeViewItem(name, variable, options);
   setRootItem(root);
   root->setOpen(true);
 }
 
-void VariableTreeComponent::paint(Graphics& g)
+void VariableTreeView::paint(Graphics& g)
 {
   g.fillAll(Colours::white);
   juce::TreeView::paint(g);
 }
 
-void VariableTreeComponent::timerCallback()
+void VariableTreeView::timerCallback()
 {
   if (!isSelectionUpToDate)
   {
@@ -175,10 +175,10 @@ void VariableTreeComponent::timerCallback()
   }
 }
 
-void VariableTreeComponent::invalidateSelection()
+void VariableTreeView::invalidateSelection()
   {isSelectionUpToDate = false;}
 
-int VariableTreeComponent::getDefaultWidth() const
+int VariableTreeView::getDefaultWidth() const
 {
   int numFields = 1;
   if (options.showTypes) ++numFields;

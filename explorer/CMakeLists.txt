@@ -22,8 +22,6 @@ SET(EXPLORER_COMPONENTS_SOURCES
   Components/VariableProxyComponent.h
   Components/VariableBrowser.h
   Components/VariableBrowser.cpp
-  Components/VariableTreeComponent.h
-  Components/VariableTreeComponent.cpp
   Components/HexadecimalFileComponent.h
   Components/VariableComponents.cpp
 )
@@ -48,13 +46,6 @@ SET(EXPLORER_WORK_UNIT_MANAGER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitManagerClasses.cpp
 )
 
-SET(EXPLORER_PROTEINS_SOURCES
-  Proteins/MultiSequenceComponent.h
-  Proteins/MultiProtein1DComponent.h
-  Proteins/MultiProtein2DComponent.h
-  Proteins/ProteinComponent.h
-)
-
 SET(EXPLORER_APPLICATION_SOURCES
   ExplorerConfiguration.h
   ExplorerConfiguration.cpp
@@ -69,7 +60,6 @@ SET(LBCPP_EXPLORER_SOURCES
  ${EXPLORER_APPLICATION_SOURCES}
  ${EXPLORER_WORK_UNIT_MANAGER_SOURCES}
  ${EXPLORER_PROCESS_MANAGER_SOURCES}
- ${EXPLORER_PROTEINS_SOURCES}
 )
 
 SOURCE_GROUP(Utilities FILES ${EXPLORER_UTILITIES_SOURCES})
@@ -77,7 +67,6 @@ SOURCE_GROUP(Components FILES ${EXPLORER_COMPONENTS_SOURCES})
 SOURCE_GROUP(Explorer FILES ${EXPLORER_APPLICATION_SOURCES})
 SOURCE_GROUP(WorkUnitManager FILES ${EXPLORER_WORK_UNIT_MANAGER_SOURCES})
 SOURCE_GROUP(ProcessManager FILES ${EXPLORER_PROCESS_MANAGER_SOURCES})
-SOURCE_GROUP(Proteins FILES ${EXPLORER_PROTEINS_SOURCES})
 
 IF(APPLE)
        SET(MACOSX_BUNDLE_INFO_STRING "LBC++ Explorer")
@@ -95,4 +84,4 @@ ELSE(APPLE)
   ADD_EXECUTABLE(lbcpp-explorer ${LBCPP_EXPLORER_SOURCES})
 ENDIF(APPLE)
 
-TARGET_LINK_LIBRARIES(lbcpp-explorer proteins lbcpp-core)
+TARGET_LINK_LIBRARIES(lbcpp-explorer lbcpp-core)

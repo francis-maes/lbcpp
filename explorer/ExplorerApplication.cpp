@@ -261,7 +261,6 @@ private:
 
 namespace lbcpp
 {
-  extern LibraryPtr proteinLibrary;
   extern LibraryPtr explorerLibrary;
 };
 
@@ -276,7 +275,6 @@ public:
     defaultExecutionContext().appendCallback(explorerExecutionCallback);
 
     lbcpp::importLibrariesFromDirectory(File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
-    lbcpp::importLibrary(proteinLibrary);
     lbcpp::importLibrary(explorerLibrary);
 
     theCommandManager = new ApplicationCommandManager();
