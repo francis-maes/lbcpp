@@ -1,17 +1,11 @@
- '''Dynamic Libraries'''
- 
-   * LibraryManager stored inside the ApplicationContext
    
-   * Generer une fonction cacheTypeVariables() pour chaque Library;
-   * Virer les variables globales qui stoque les libraries
- 
- 
- * Faire marcher MnistLearner/Predictor depuis l'explorer
- * Reparer les executables MnistLearner/Predictor
+* Virer les variables globales qui stoque les libraries
+* Passer tous les projets en .dll
+* Explorer: combo-box de choix des WorkUnits
+* Explorer: ligne de commande pour "StartWorkUnit"
+* Enlever la dependance de RunProgram sur proteins, rendre le programme generique et le deplacer 
 
 En plan:
- * ExecutionTrace
- * Gerer les resultCallback
  * Nouvelle Collone "Output", améliorer le système des collones
  * AutoTune (Optimizers, Use the DichotomicOptimizer of julient)
 
