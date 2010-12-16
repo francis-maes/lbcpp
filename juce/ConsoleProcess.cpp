@@ -4,6 +4,7 @@
 | Started  : 29/01/2010 12:34             | redirection                        |
 ` --------------------------------------- . --------------------------------- */
 
+#define JUCE_DLL_BUILD
 #ifdef WIN32
 # include <windows.h>
 #endif // WIN32

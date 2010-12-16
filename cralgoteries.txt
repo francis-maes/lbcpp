@@ -1,9 +1,4 @@
 
-* Virer les variables globales qui stoque les libraries
-* Tester proteins    
-    
-* Mettre juce en dynamique (?)
-   
 * Renomer <file> en <library> dans les xml
 
  
