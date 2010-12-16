@@ -41,7 +41,7 @@ namespace lbcpp
 
   extern bool importLibrariesFromDirectory(ExecutionContext& executionContext, const File& directory);
   extern LibraryPtr importLibraryFromFile(ExecutionContext& executionContext, const File& file);
-  extern bool importLibrary(ExecutionContext& executionContext, LibraryPtr library);
+  extern bool importLibrary(ExecutionContext& executionContext, LibraryPtr library, void* dynamicLibraryHandle = NULL);
 
   inline bool importLibrariesFromDirectory(const File& directory)
     {return importLibrariesFromDirectory(defaultExecutionContext(), directory);}
@@ -49,8 +49,8 @@ namespace lbcpp
   inline LibraryPtr importLibraryFromFile(const File& file)
     {return importLibraryFromFile(defaultExecutionContext(), file);}
 
-  inline bool importLibrary(LibraryPtr library)
-    {return importLibrary(defaultExecutionContext(), library);}
+  inline bool importLibrary(LibraryPtr library, void* dynamicLibraryHandle = NULL)
+    {return importLibrary(defaultExecutionContext(), library, dynamicLibraryHandle);}
 
  // called from dynamic libraries
   extern void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);

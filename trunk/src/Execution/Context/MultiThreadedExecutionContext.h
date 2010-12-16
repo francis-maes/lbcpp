@@ -194,6 +194,7 @@ public:
         delete threads[i];
         threads[i] = NULL;
       }
+    threads.clear();
   }
 
   size_t getNumThreads() const
@@ -290,6 +291,9 @@ public:
       Thread::sleep(10);
   }
 
+  void stopAndDestroyAllThreads()
+    {threads->stopAndDestroyAllThreads();}
+
   WaitingWorkUnitQueuePtr getWaitingQueue() const
     {return queue;}
 
@@ -314,6 +318,12 @@ public:
   MultiThreadedExecutionContext(size_t numThreads)
     {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));}
   MultiThreadedExecutionContext() {}
+
+  virtual ~MultiThreadedExecutionContext()
+  {
+    if (threadPool)
+      threadPool->stopAndDestroyAllThreads();
+  }
 
   virtual bool isMultiThread() const
     {return threadPool->getNumThreads() > 1;}
