@@ -18,14 +18,18 @@ class NetworkClient : public InterprocessConnection, public Object
 {
 public:
   NetworkClient(ExecutionContext& context)
-    : InterprocessConnection(false, magicNumber), context(context) {}
+    : InterprocessConnection(false, magicNumber), context(context), disconnected(true) {}
   virtual ~NetworkClient() {}
 
   virtual bool startClient(const String& host, int port) = 0;
   virtual void stopClient() = 0;
 
   bool sendVariable(const Variable& variable);
-  void variableReceived(const Variable& variable);
+  bool receiveVariable(juce::int64 timeout, Variable& result);
+  template<class O>
+  bool receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result);
+  bool receiveBoolean(juce::int64 timeout, bool& result);
+  bool receiveString(juce::int64 timeout, String& result);
 
   void appendCallback(NetworkCallbackPtr callback);
   void removeCallback(NetworkCallbackPtr callback);
@@ -40,8 +44,15 @@ public:
 protected:
   enum {magicNumber = 0xdeadface};
   ExecutionContext& context;
+  std::deque<Variable> variables;
   std::vector<NetworkCallbackPtr> callbacks;
+  bool disconnected;
   CriticalSection lock;
+  
+  void variableReceived(const Variable& variable);
+
+  bool popVariable(Variable& result);
+  void pushVariable(const Variable& variable);
 };
 
 typedef ReferenceCountedObjectPtr<NetworkClient> NetworkClientPtr;

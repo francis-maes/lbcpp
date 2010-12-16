@@ -194,7 +194,6 @@ SET(LBCPP_NETWORK_SOURCES
   ../include/lbcpp/Network/NetworkServer.h
   Network/NetworkServer.cpp
   ../include/lbcpp/Network/NetworkCallback.h
-  Network/NetworkCallback.cpp
   Network/NetworkLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )

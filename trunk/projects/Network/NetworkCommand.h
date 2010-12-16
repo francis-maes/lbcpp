@@ -1,0 +1,171 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Command.h                      | Network Command                 |
+| Author  : Julien Becker                  |                                 |
+| Started : 02/12/2010 18:52               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#ifndef LBCPP_NETWORK_COMMAND_H_
+# define LBCPP_NETWORK_COMMAND_H_
+
+# include <lbcpp/lbcpp.h>
+
+namespace lbcpp
+{
+
+extern ClassPtr clientNetworkContextClass;
+extern ClassPtr serverNetworkContextClass;
+
+class NetworkContext;
+typedef ReferenceCountedObjectPtr<NetworkContext> NetworkContextPtr;
+  
+class NetworkCommand : public Object
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<NetworkCommand> NetworkCommandPtr;
+
+class ClientNetworkContext;
+typedef ReferenceCountedObjectPtr<ClientNetworkContext> ClientNetworkContextPtr;
+
+class NetworkContext : public WorkUnit
+{
+public:
+  NetworkContext(const String& identity, const String& hostname, int port)
+  : identity(identity), hostname(hostname), port(port) {}
+  NetworkContext() {}
+  
+  virtual bool run(ExecutionContext& context)
+  {
+    /* Establishing a connection */
+    client = blockingNetworkClient(context, 3);
+
+    if (!client->startClient(hostname, port))
+    {
+      context.warningCallback(T("NetworkContext::run"), T("Connection fail !"));
+      client->stopClient();
+      return false;
+    }
+    context.informationCallback(T("NetworkContext::run"), T("Connected to ") + hostname + T(":") + String(port));
+    
+    /* Slave mode - Execute received commands */
+    while (client->isConnected())
+    {
+      NetworkCommandPtr command;
+      if (!client->receiveObject<NetworkCommand>(10000, command) || !command)
+      {
+        context.warningCallback(T("NetworkContext::run"), T("No command received"));
+        return false;
+      }
+      
+      command->runCommand(context, NetworkContextPtr(this));
+    }
+    return true;
+  }
+  
+  NetworkClientPtr getNetworkClient() const
+    {return client;}
+  
+  void stopClient()
+    {client->stopClient();}
+  
+  String getIdentity() const
+    {return identity;}
+
+protected:
+  String identity;
+  String hostname;
+  int port;
+  
+  NetworkClientPtr client;
+};
+
+class GetIdentityNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+    {return network->getNetworkClient()->sendVariable(network->getIdentity());}
+};
+
+class CloseConnectionNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    network->stopClient();
+    return true;
+  }
+};
+
+class GetConnectionTypeNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    if (network->getClass()->inheritsFrom(clientNetworkContextClass))
+      return network->getNetworkClient()->sendVariable(String(T("Client")));
+    if (network->getClass()->inheritsFrom(serverNetworkContextClass))
+      return network->getNetworkClient()->sendVariable(String(T("Server")));
+    context.errorCallback(T("GetConnectionTypeNetworkCommand::runCommand"), T("Unknown NetworkContext"));
+    return false;
+  }
+};
+
+class ClientNetworkContext : public NetworkContext
+{
+public:
+  ClientNetworkContext(const String& identity, const String& hostname, int port)
+  : NetworkContext(identity, hostname, port) {}
+  ClientNetworkContext() {}
+  
+  void pushWorkUnit(WorkUnitPtr workUnit)
+  {
+    ScopedLock _(lock);
+    workUnits.push_back(workUnit);
+  }
+  
+  WorkUnitPtr popWorkUnit()
+  {
+    ScopedLock _(lock);
+    WorkUnitPtr res = workUnits.front();
+    workUnits.pop_front();
+    return res;
+  }
+
+protected:
+  std::deque<WorkUnitPtr> workUnits;
+  CriticalSection lock;
+};
+
+class GetWorkUnitNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    ClientNetworkContextPtr clientNetwork = network.staticCast<ClientNetworkContext>();
+    if (!clientNetwork)
+    {
+      context.errorCallback(T("GetWorkUnitNetworkCommand::runCommand"), T("Must be execute in a ClientNetworkContext only"));
+      return false;
+    }
+    WorkUnitPtr workUnit = clientNetwork->popWorkUnit();
+    clientNetwork->getNetworkClient()->sendVariable(workUnit);
+    
+    if (!workUnit)
+      return true;
+    
+    // FIXME
+    return true;
+  }
+};
+
+class ServerNetworkContext : public NetworkContext
+{
+};
+
+}; /* namespace lbcpp */
+
+#endif //!LBCPP_NETWORK_COMMAND_H_

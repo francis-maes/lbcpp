@@ -27,30 +27,6 @@ public:
 
 typedef ReferenceCountedObjectPtr<NetworkCallback> NetworkCallbackPtr;
 
-class BufferedNetworkCallback : public NetworkCallback
-{
-public:
-  BufferedNetworkCallback() : connected(true) {}
-  
-  Variable receiveVariable(bool blocking = true);
-  
-  /** NetworkConnect **/
-  virtual void variableReceived(const Variable& variable);
-  
-  virtual void disconnected();
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  std::deque<Variable> variables;
-  bool connected;
-  CriticalSection lock;
-  
-  Variable lockedPop();
-};
-
-typedef ReferenceCountedObjectPtr<BufferedNetworkCallback> BufferedNetworkCallbackPtr;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_NETWORK_CALLBACK_H_
