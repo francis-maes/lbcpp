@@ -68,6 +68,8 @@ typedef ReferenceCountedObjectPtr<Vector> VectorPtr;
 class ExecutionContext;
 typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
+extern ExecutionContext& defaultExecutionContext();
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_PREDECLARATIONS_H_
