@@ -31,6 +31,8 @@ public:
   bool receiveBoolean(juce::int64 timeout, bool& result);
   bool receiveString(juce::int64 timeout, String& result);
 
+  bool hasVariableInQueue();
+
   void appendCallback(NetworkCallbackPtr callback);
   void removeCallback(NetworkCallbackPtr callback);
 
@@ -64,8 +66,18 @@ template<class O>
 inline bool NetworkClient::receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result)
 {
   Variable v;
-  if (!receiveVariable(timeout, v) || !v.isObject())
+  if (!receiveVariable(timeout, v))
     return false;
+  
+  if (v.isNil())
+  {
+    result = ReferenceCountedObjectPtr<O>();
+    return true;
+  }
+  
+  if (!v.isObject())
+    return false;
+
   result = v.getObjectAndCast<O>();
   return true;
 }

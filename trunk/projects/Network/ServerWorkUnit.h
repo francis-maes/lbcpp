@@ -10,7 +10,7 @@ public:
   
   virtual bool run(ExecutionContext& context)
   {
-    NetworkContextPtr networkContext = new NetworkContext(T("jbecker-server-mac"), hostname, 1664);    
+    ServerNetworkContextPtr networkContext = new ServerNetworkContext(T("jbecker-server-mac"), hostname, 1664);    
     networkContext->run(context);
     return true;
   }

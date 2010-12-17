@@ -61,9 +61,12 @@ using namespace lbcpp;
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
+
   ExecutionContextPtr context = new SgeExecutionContext(File(T("/u/jbecker/.WorkUnit/Waiting")));
   context->appendCallback(consoleExecutionCallback());
-  
+
+  lbcpp::importLibraryFromFile(*context, File::getCurrentWorkingDirectory().getChildFile(T("libnetwork.dylib")));
+
   int exitCode;
   {
     exitCode = WorkUnit::main(*context, new ServerWorkUnit(), argc, argv);

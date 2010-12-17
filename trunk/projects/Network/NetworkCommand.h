@@ -55,7 +55,7 @@ public:
     context.informationCallback(T("NetworkContext::run"), T("Connected to ") + hostname + T(":") + String(port));
     
     /* Slave mode - Execute received commands */
-    while (client->isConnected())
+    while (client->isConnected() || client->hasVariableInQueue())
     {
       NetworkCommandPtr command;
       if (!client->receiveObject<NetworkCommand>(10000, command) || !command)
@@ -133,13 +133,21 @@ public:
   WorkUnitPtr popWorkUnit()
   {
     ScopedLock _(lock);
+    if (!workUnits.size())
+      return WorkUnitPtr();
     WorkUnitPtr res = workUnits.front();
     workUnits.pop_front();
     return res;
   }
+  
+  void submittedWorkUnit(juce::int64 workUnitId, WorkUnitPtr workUnit)
+  {
+    submittedWorkUnits.push_back(std::make_pair<juce::int64, WorkUnitPtr>(workUnitId, workUnit));
+  }
 
 protected:
   std::deque<WorkUnitPtr> workUnits;
+  std::vector<std::pair<juce::int64, WorkUnitPtr> > submittedWorkUnits;
   CriticalSection lock;
 };
 
@@ -148,6 +156,7 @@ class GetWorkUnitNetworkCommand : public NetworkCommand
 public:
   virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
   {
+    String hostname = network->getNetworkClient()->getConnectedHostName();
     ClientNetworkContextPtr clientNetwork = network.staticCast<ClientNetworkContext>();
     if (!clientNetwork)
     {
@@ -156,11 +165,21 @@ public:
     }
     WorkUnitPtr workUnit = clientNetwork->popWorkUnit();
     clientNetwork->getNetworkClient()->sendVariable(workUnit);
-    
+
     if (!workUnit)
       return true;
-    
-    // FIXME
+
+    String stringId;
+    if (!network->getNetworkClient()->receiveString(10000, stringId))
+    {
+      context.warningCallback(T("GetWorkUnitNetworkCommand::runCommand"), T("Fail - WorkUnitId"));
+      return false;
+    }
+
+    juce::int64 workUnitId = stringId.getLargeIntValue();
+    clientNetwork->submittedWorkUnit(workUnitId, workUnit);
+    context.informationCallback(hostname, T("WorkUnit Submitted - ID: ") + stringId);
+
     return true;
   }
 };
@@ -168,6 +187,10 @@ public:
 class ServerNetworkContext : public NetworkContext
 {
 public:
+  ServerNetworkContext(const String& identity, const String& hostname, int port)
+  : NetworkContext(identity, hostname, port) {}
+  ServerNetworkContext() {}
+  
   String getWorkUnitStatus(juce::int64 workUnitId)
   {
     return T("IDontHaveThisWorkUnit");
@@ -233,7 +256,7 @@ class PushWorkUnitNetworkCommand : public NetworkCommand
 {
 public:
   PushWorkUnitNetworkCommand(juce::int64 workUnitId, WorkUnitPtr workUnit)
-  : workUnitId(workUnitId), workUnit(workUnit) {}
+  : workUnitIdString(workUnitId), workUnit(workUnit) {}
   PushWorkUnitNetworkCommand() {}
   
   virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
@@ -244,7 +267,7 @@ public:
       context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
       return false;
     }
-   
+    juce::int64 workUnitId = workUnitIdString.getLargeIntValue();
     serverNetwork->pushWorkUnit(workUnitId, workUnit);
     return true;
   }
@@ -252,7 +275,7 @@ public:
 protected:
   friend class PushWorkUnitNetworkCommandClass;
   
-  juce::int64 workUnitId;
+  String workUnitIdString;
   WorkUnitPtr workUnit;
 };
 
