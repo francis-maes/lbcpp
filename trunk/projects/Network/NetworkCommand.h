@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Command.h                      | Network Command                 |
+| Filename: NetworkCommand.h               | Network Command                 |
 | Author  : Julien Becker                  |                                 |
 | Started : 02/12/2010 18:52               |                                 |
 `------------------------------------------/                                 |
@@ -10,15 +10,10 @@
 # define LBCPP_NETWORK_COMMAND_H_
 
 # include <lbcpp/lbcpp.h>
+# include "NetworkContext.h"
 
 namespace lbcpp
 {
-
-extern ClassPtr clientNetworkContextClass;
-extern ClassPtr serverNetworkContextClass;
-
-class NetworkContext;
-typedef ReferenceCountedObjectPtr<NetworkContext> NetworkContextPtr;
   
 class NetworkCommand : public Object
 {
@@ -27,64 +22,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<NetworkCommand> NetworkCommandPtr;
-
-class ClientNetworkContext;
-typedef ReferenceCountedObjectPtr<ClientNetworkContext> ClientNetworkContextPtr;
-
-class ServerNetworkContext;
-typedef ReferenceCountedObjectPtr<ServerNetworkContext> ServerNetworkContextPtr;
-
-class NetworkContext : public WorkUnit
-{
-public:
-  NetworkContext(const String& identity, const String& hostname, int port)
-  : identity(identity), hostname(hostname), port(port) {}
-  NetworkContext() {}
-  
-  virtual bool run(ExecutionContext& context)
-  {
-    /* Establishing a connection */
-    client = blockingNetworkClient(context, 3);
-
-    if (!client->startClient(hostname, port))
-    {
-      context.warningCallback(T("NetworkContext::run"), T("Connection fail !"));
-      client->stopClient();
-      return false;
-    }
-    context.informationCallback(T("NetworkContext::run"), T("Connected to ") + hostname + T(":") + String(port));
-    
-    /* Slave mode - Execute received commands */
-    while (client->isConnected() || client->hasVariableInQueue())
-    {
-      NetworkCommandPtr command;
-      if (!client->receiveObject<NetworkCommand>(10000, command) || !command)
-      {
-        context.warningCallback(T("NetworkContext::run"), T("No command received"));
-        return false;
-      }
-      
-      command->runCommand(context, NetworkContextPtr(this));
-    }
-    return true;
-  }
-  
-  NetworkClientPtr getNetworkClient() const
-    {return client;}
-  
-  void stopClient()
-    {client->stopClient();}
-  
-  String getIdentity() const
-    {return identity;}
-
-protected:
-  String identity;
-  String hostname;
-  int port;
-  
-  NetworkClientPtr client;
-};
 
 class GetIdentityNetworkCommand : public NetworkCommand
 {
@@ -117,40 +54,6 @@ public:
   }
 };
 
-class ClientNetworkContext : public NetworkContext
-{
-public:
-  ClientNetworkContext(const String& identity, const String& hostname, int port)
-  : NetworkContext(identity, hostname, port) {}
-  ClientNetworkContext() {}
-  
-  void pushWorkUnit(WorkUnitPtr workUnit)
-  {
-    ScopedLock _(lock);
-    workUnits.push_back(workUnit);
-  }
-  
-  WorkUnitPtr popWorkUnit()
-  {
-    ScopedLock _(lock);
-    if (!workUnits.size())
-      return WorkUnitPtr();
-    WorkUnitPtr res = workUnits.front();
-    workUnits.pop_front();
-    return res;
-  }
-  
-  void submittedWorkUnit(juce::int64 workUnitId, WorkUnitPtr workUnit)
-  {
-    submittedWorkUnits.push_back(std::make_pair<juce::int64, WorkUnitPtr>(workUnitId, workUnit));
-  }
-
-protected:
-  std::deque<WorkUnitPtr> workUnits;
-  std::vector<std::pair<juce::int64, WorkUnitPtr> > submittedWorkUnits;
-  CriticalSection lock;
-};
-
 class GetWorkUnitNetworkCommand : public NetworkCommand
 {
 public:
@@ -181,24 +84,6 @@ public:
     context.informationCallback(hostname, T("WorkUnit Submitted - ID: ") + stringId);
 
     return true;
-  }
-};
-
-class ServerNetworkContext : public NetworkContext
-{
-public:
-  ServerNetworkContext(const String& identity, const String& hostname, int port)
-  : NetworkContext(identity, hostname, port) {}
-  ServerNetworkContext() {}
-  
-  String getWorkUnitStatus(juce::int64 workUnitId)
-  {
-    return T("IDontHaveThisWorkUnit");
-  }
-  
-  void pushWorkUnit(juce::int64 workUnitId, WorkUnitPtr workUnit)
-  {
-    std::cout << "Server - Work unit received: " << workUnitId << std::endl;
   }
 };
 
@@ -268,7 +153,7 @@ public:
       return false;
     }
     juce::int64 workUnitId = workUnitIdString.getLargeIntValue();
-    serverNetwork->pushWorkUnit(workUnitId, workUnit);
+    serverNetwork->pushWorkUnit(context, workUnitId, workUnit);
     return true;
   }
   

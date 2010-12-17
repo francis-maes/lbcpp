@@ -39,6 +39,12 @@ public:
   bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 
   virtual bool run(ExecutionContext& context) = 0;
+  
+  virtual size_t getNumRequiredCpus() const
+    {return 0;}
+  
+  virtual size_t getRequiredMemory() const // in Megabytes
+    {return 0;}
 
   lbcpp_UseDebuggingNewOperator
 
