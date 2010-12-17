@@ -60,6 +60,16 @@ typedef ReferenceCountedObjectPtr<NetworkClient> NetworkClientPtr;
 extern NetworkClientPtr nonBlockingNetworkClient(ExecutionContext& context, bool autoReconnect = false);
 extern NetworkClientPtr blockingNetworkClient(ExecutionContext& context, size_t numAttempts = 3);
 
+template<class O>
+inline bool NetworkClient::receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result)
+{
+  Variable v;
+  if (!receiveVariable(timeout, v) || !v.isObject())
+    return false;
+  result = v.getObjectAndCast<O>();
+  return true;
+}
+
 };
 
 #endif //!LBCPP_NETWORK_CLIENT_H_

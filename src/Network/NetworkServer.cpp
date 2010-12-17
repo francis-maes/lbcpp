@@ -61,8 +61,8 @@ NetworkClientPtr NetworkServer::acceptClient(juce::int64 timeout)
     if (elapsedTime > timeout)
       return NetworkClientPtr();
 
-    juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
-    juce::Thread::sleep(timeToSleep);
+    int timeToSleep = juce::jlimit(0, 1000, (int)(timeout - elapsedTime));
+    visualStudioWorkAroundSleep(timeToSleep);
   }
 }
 

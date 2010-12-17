@@ -43,22 +43,8 @@ bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
     juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
     if (!timeToSleep)
       return false;
-    juce::Thread::sleep(timeToSleep);
+    juce::Thread::sleep((int)timeToSleep);
   }
-}
-
-template<class O>
-bool NetworkClient::receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result)
-{
-  Variable v;
-  if (!receiveVariable(timeout, v))
-    return false;
-  
-  if (!v.isObject())
-    return false;
-  
-  result = v.getObjectAndCast<O>();
-  return true;
 }
 
 bool NetworkClient::receiveBoolean(juce::int64 timeout, bool& result)

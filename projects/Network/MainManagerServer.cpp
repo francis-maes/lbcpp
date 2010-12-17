@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
   int exitCode;
   {
-    exitCode = WorkUnit::main(*context, new ManagerServer(), argc, argv);
+    exitCode = WorkUnit::main(*context, context->createObject(getType(T("ManagerServer"))).staticCast<WorkUnit>(), argc, argv);
   }
 
   lbcpp::deinitialize();
