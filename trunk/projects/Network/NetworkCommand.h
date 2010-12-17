@@ -31,6 +31,9 @@ typedef ReferenceCountedObjectPtr<NetworkCommand> NetworkCommandPtr;
 class ClientNetworkContext;
 typedef ReferenceCountedObjectPtr<ClientNetworkContext> ClientNetworkContextPtr;
 
+class ServerNetworkContext;
+typedef ReferenceCountedObjectPtr<ServerNetworkContext> ServerNetworkContextPtr;
+
 class NetworkContext : public WorkUnit
 {
 public:
@@ -164,6 +167,93 @@ public:
 
 class ServerNetworkContext : public NetworkContext
 {
+public:
+  String getWorkUnitStatus(juce::int64 workUnitId)
+  {
+    return T("IDontHaveThisWorkUnit");
+  }
+  
+  void pushWorkUnit(juce::int64 workUnitId, WorkUnitPtr workUnit)
+  {
+    std::cout << "Server - Work unit received: " << workUnitId << std::endl;
+  }
+};
+
+class GetWorkUnitStatusNetworkCommand : public NetworkCommand
+{
+public:
+  GetWorkUnitStatusNetworkCommand(juce::int64 workUnitId = 0) : workUnitId(workUnitId) {}
+  
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    ServerNetworkContextPtr serverNetwork = network.staticCast<ServerNetworkContext>();
+    if (!serverNetwork)
+    {
+      context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
+      return false;
+    }
+    
+    network->getNetworkClient()->sendVariable(serverNetwork->getWorkUnitStatus(workUnitId));
+    return true;
+  }
+
+protected:
+  friend class GetWorkUnitStatusNetworkCommandClass;
+  
+  juce::int64 workUnitId;
+};
+
+class SystemResource : public Object
+{
+public:
+  bool isSufficient(WorkUnitPtr workUnit) const
+    {return true;} // FIXME
+};
+
+typedef ReferenceCountedObjectPtr<SystemResource> SystemResourcePtr;
+
+class GetSystemResourceNetworkCommand : public NetworkCommand
+{
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    ServerNetworkContextPtr serverNetwork = network.staticCast<ServerNetworkContext>();
+    if (!serverNetwork)
+    {
+      context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
+      return false;
+    }
+
+    // FIXME
+    serverNetwork->getNetworkClient()->sendVariable(SystemResourcePtr(new SystemResource()));
+    return true;
+  }
+};
+
+class PushWorkUnitNetworkCommand : public NetworkCommand
+{
+public:
+  PushWorkUnitNetworkCommand(juce::int64 workUnitId, WorkUnitPtr workUnit)
+  : workUnitId(workUnitId), workUnit(workUnit) {}
+  PushWorkUnitNetworkCommand() {}
+  
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    ServerNetworkContextPtr serverNetwork = network.staticCast<ServerNetworkContext>();
+    if (!serverNetwork)
+    {
+      context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
+      return false;
+    }
+   
+    serverNetwork->pushWorkUnit(workUnitId, workUnit);
+    return true;
+  }
+  
+protected:
+  friend class PushWorkUnitNetworkCommandClass;
+  
+  juce::int64 workUnitId;
+  WorkUnitPtr workUnit;
 };
 
 }; /* namespace lbcpp */

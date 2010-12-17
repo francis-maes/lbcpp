@@ -3,36 +3,106 @@
 
 namespace lbcpp
 {
-  
-class ClientManager : public Object
+
+class WorkUnitManager;
+
+class Job : public Object
 {
 public:
-  ClientManager(const String& clientName = String::empty) : clientName(clientName), nextJobIdentifier(0) {}
+  Job(WorkUnitPtr workUnit, juce::int64 workUnitId, String client) 
+    : workUnit(workUnit), workUnitId(workUnitId), client(client), status(T("WaitingForAServer")) {}
+  Job() {}
   
-  size_t appendWorkUnit(WorkUnitPtr workunit)
-  {
-    ScopedLock _(lock);
-    waiting.push_back(workunit);
-    return getNextJobIdentifier();
-  }
+  WorkUnitPtr getWorkUnit() const
+    {return workUnit;}
   
-  String getClientName() const
-    {return clientName;}
+  juce::int64 getWorkUnitId() const
+    {return workUnitId;}
   
 protected:
-  String clientName;
-  size_t nextJobIdentifier;
-  std::vector<WorkUnitPtr> waiting;
-  std::vector<WorkUnitPtr> inProgress;
-  std::vector<WorkUnitPtr> finised;
+  friend class WorkUnitManager;
   
-  CriticalSection lock;
-  
-  size_t getNextJobIdentifier()
-    {return nextJobIdentifier++;}
+  WorkUnitPtr workUnit;
+  juce::int64 workUnitId;
+  String client;
+  String server;
+  String status;
 };
 
-typedef ReferenceCountedObjectPtr<ClientManager> ClientManagerPtr;
+typedef ReferenceCountedObjectPtr<Job> JobPtr;
+
+class WorkUnitManager : public Object
+{
+public:
+  WorkUnitManager() : lastWorkUnitId(0) {}
+  
+  juce::int64 pushWorkUnit(WorkUnitPtr workUnit, const String& client)
+  {
+    juce::int64 workUnitId = generateWorkUnitId();
+    waitingJobs[workUnitId] = new Job(workUnit, workUnitId, client);
+    return workUnitId;
+  }
+  
+  void setStatus(JobPtr job, const String& status)
+  {
+    job->status = status;
+    
+    if (status == T("Finished"))
+    {
+      waitingJobs.erase(job->getWorkUnitId());
+      inProgressJobs.erase(job->getWorkUnitId());
+      finishedJobs[job->getWorkUnitId()] = job;
+    }
+  }
+  
+  void jobSubmittedTo(JobPtr job, const String& server)
+  {
+    job->status = T("JobSubmittedToServer: ") + server;
+    job->server = server;
+    
+    waitingJobs.erase(job->getWorkUnitId());
+    inProgressJobs[job->getWorkUnitId()] = job;
+  }
+  
+  std::vector<JobPtr> jobsAssignedTo(String server) const
+  {
+    std::vector<JobPtr> res;
+    for (std::map<juce::int64, JobPtr>::const_iterator it = inProgressJobs.begin(); it != inProgressJobs.end(); ++it)
+      if (it->second->server == server)
+        res.push_back(it->second);
+    return res;
+  }
+  
+  std::vector<JobPtr> getWaitingJobs() const
+  {
+    std::vector<JobPtr> res;
+    for (std::map<juce::int64, JobPtr>::const_iterator it = waitingJobs.begin(); it != waitingJobs.end(); ++it)
+      res.push_back(it->second);
+    return res;
+  }
+
+protected:
+  //File workUnitsDirectory;
+  juce::int64 lastWorkUnitId;
+
+  std::map<juce::int64, JobPtr> waitingJobs;
+  std::map<juce::int64, JobPtr> inProgressJobs;
+  std::map<juce::int64, JobPtr> finishedJobs;
+
+  juce::int64 generateWorkUnitId()
+  {
+    juce::int64 res = Time::currentTimeMillis();
+    if (res != lastWorkUnitId)
+    {
+      lastWorkUnitId = res;
+      return res;
+    }
+    juce::Thread::sleep(1);
+    return generateWorkUnitId();
+  }
+};
+
+typedef ReferenceCountedObjectPtr<WorkUnitManager> WorkUnitManagerPtr;
 
 class ManagerServer : public WorkUnit
 {
@@ -79,8 +149,7 @@ public:
 
 protected:
   int port;
-  std::vector<WorkUnitPtr> waitingJobs;
-  std::vector<ClientManagerPtr> clientManagers;
+  WorkUnitManagerPtr workUnitManager;
   
   void closeConnection(ExecutionContext& context, NetworkClientPtr client)
   {
@@ -117,22 +186,16 @@ protected:
         context.warningCallback(hostname, T("Fail - GetWorkUnit"));
         return false;
       }
-      
+
       if (!workUnit)
         break;
 
       /* Generate an identifier */
-      ClientManagerPtr manager;
-      for (size_t i = 0; i < clientManagers.size(); ++i)
-        if (clientManagers[i]->getClientName() == identity)
-          manager = clientManagers[i];
-      if (!manager)
-        manager = new ClientManager(identity);
-      size_t identifier = manager->appendWorkUnit(workUnit);
+      juce::int64 workUnitId = workUnitManager->pushWorkUnit(workUnit, identity);
       /* Return the identifier */
-      client->sendVariable(Variable((int)identifier, positiveIntegerType));
-      
-      context.informationCallback(hostname, T("WorkUnit ID: ") + String((int)identifier));
+      client->sendVariable(workUnitId);
+
+      context.informationCallback(hostname, T("WorkUnit ID: ") + String(workUnitId));
     }
 
     return true;
@@ -141,35 +204,66 @@ protected:
   bool serverCommunication(ExecutionContext& context, NetworkClientPtr client)
   {
     std::cout << "Communicate - ServerContextInformation" << std::endl;
-#if 0
-    /* Get job status */
-    
-    /* Send job */
+    String hostname = client->getConnectedHostName();
+
+    /* Get server identifier */
+    client->sendVariable(new GetIdentityNetworkCommand());
+    String identity;
+    if (!client->receiveString(10000, identity))
+    {
+      context.warningCallback(hostname, T("Fail - Identity"));
+      return false;
+    }
+    context.informationCallback(hostname, T("Name: ") + identity);
+
+    /* Get status of jobs submitted to the server */
+    std::vector<JobPtr> assignedJobs = workUnitManager->jobsAssignedTo(identity);
+    for (size_t i = 0; i < assignedJobs.size(); ++i)
+    {
+      client->sendVariable(new GetWorkUnitStatusNetworkCommand(assignedJobs[i]->getWorkUnitId()));
+      String status;
+      if (!client->receiveString(10000, status))
+      {
+        context.warningCallback(hostname, T("Fail - Status of work unit: ") + String(assignedJobs[i]->getWorkUnitId()));
+        return false;
+      }
+      
+      workUnitManager->setStatus(assignedJobs[i], status);
+      
+      if (status == T("IDontHaveThisWorkUnit"))
+      {
+        client->sendVariable(new PushWorkUnitNetworkCommand(assignedJobs[i]->getWorkUnitId(), assignedJobs[i]->getWorkUnit()));
+        context.informationCallback(hostname, T("WorkUnit ") + String(assignedJobs[i]->getWorkUnitId()) + T(" has been sent"));
+      }
+    }
+
+    /* Send not yet assigned job to server */
+    std::vector<JobPtr> waitingJobs = workUnitManager->getWaitingJobs();
     if (!waitingJobs.size())
       return true;
-    
+
     SystemResourcePtr resource;
     for (size_t i = 0; i < waitingJobs.size(); ++i)
     {
       /* Get availability ressouces */
       if (!resource)
       {
-        client->sendVariable(new GetResourceCommand());
-        resource = receiveVariable<SystemResource>(context, client, true);
-        if (!resource)
+        client->sendVariable(new GetSystemResourceNetworkCommand());
+        if (!client->receiveObject<SystemResource>(10000, resource))
+        {
+          context.warningCallback(hostname, T("Fail - SystemResource"));
           return false;
+        }
       }
       /* Check if ressouces compatible */
-      if (resource->isSufficient(waitingJobs[i]))
+      if (resource->isSufficient(waitingJobs[i]->getWorkUnit()))
       {
-        client->sendVariable(waitingJobs[i]);
-        waitingJobs[i] = WorkUnitPtr();
-        // TODO add job to manager
+        client->sendVariable(new PushWorkUnitNetworkCommand(waitingJobs[i]->getWorkUnitId(), waitingJobs[i]->getWorkUnit()));
+        workUnitManager->jobSubmittedTo(assignedJobs[i], identity);
       }
-      // TODO remove empty job from list
     }
-#endif
-    return false;
+
+    return true;
   }
 };
 
