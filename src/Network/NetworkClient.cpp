@@ -35,7 +35,7 @@ bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
       result = res;
       return true;
     }
-    
+
     juce::int64 elapsedTime = Time::getMillisecondCounter() - startTime;
     if (elapsedTime >= timeout || disconnected)
       return false;
@@ -71,6 +71,12 @@ bool NetworkClient::receiveString(juce::int64 timeout, String& result)
   
   result = v.getString();
   return true;
+}
+
+bool NetworkClient::hasVariableInQueue()
+{
+  ScopedLock _(lock);
+  return variables.size();
 }
 
 void NetworkClient::appendCallback(NetworkCallbackPtr callback)

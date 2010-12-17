@@ -23,12 +23,13 @@
     <class name="GetIdentityNetworkCommand" base="NetworkCommand"/>
     <class name="CloseConnectionNetworkCommand" base="NetworkCommand"/>
     <class name="GetConnectionTypeNetworkCommand" base="NetworkCommand"/>
+    <class name="GetWorkUnitNetworkCommand" base="NetworkCommand"/>
     <class name="GetWorkUnitStatusNetworkCommand" base="NetworkCommand">
       <variable type="Integer" name="workUnitId"/>
     </class>
     <class name="GetSystemResourceNetworkCommand" base="NetworkCommand"/>
     <class name="PushWorkUnitNetworkCommand" base="NetworkCommand">
-      <variable type="Integer" name="workUnitId"/>
+      <variable type="String" name="workUnitIdString"/>
       <variable type="WorkUnit" name="workUnit"/>
     </class>
     

@@ -107,8 +107,8 @@ typedef ReferenceCountedObjectPtr<WorkUnitManager> WorkUnitManagerPtr;
 class ManagerServer : public WorkUnit
 {
 public:
-  ManagerServer() : port(1664) {}
-  
+  ManagerServer() : port(1664), workUnitManager(new WorkUnitManager()) {}
+
   bool run(ExecutionContext& context)
   {
     NetworkServerPtr server = new NetworkServer(context);
@@ -164,8 +164,8 @@ protected:
 
   bool clientCommunication(ExecutionContext& context, NetworkClientPtr client)
   {
-    std::cout << "Communicate - ClientContextInformation" << std::endl;
     String hostname = client->getConnectedHostName();
+
     /* Get client identifier */
     client->sendVariable(new GetIdentityNetworkCommand());
     String identity;
@@ -193,7 +193,7 @@ protected:
       /* Generate an identifier */
       juce::int64 workUnitId = workUnitManager->pushWorkUnit(workUnit, identity);
       /* Return the identifier */
-      client->sendVariable(workUnitId);
+      client->sendVariable(String(workUnitId));
 
       context.informationCallback(hostname, T("WorkUnit ID: ") + String(workUnitId));
     }
@@ -203,7 +203,6 @@ protected:
   
   bool serverCommunication(ExecutionContext& context, NetworkClientPtr client)
   {
-    std::cout << "Communicate - ServerContextInformation" << std::endl;
     String hostname = client->getConnectedHostName();
 
     /* Get server identifier */
@@ -245,7 +244,7 @@ protected:
     SystemResourcePtr resource;
     for (size_t i = 0; i < waitingJobs.size(); ++i)
     {
-      /* Get availability ressouces */
+      /* Get available ressouces */
       if (!resource)
       {
         client->sendVariable(new GetSystemResourceNetworkCommand());
@@ -259,7 +258,8 @@ protected:
       if (resource->isSufficient(waitingJobs[i]->getWorkUnit()))
       {
         client->sendVariable(new PushWorkUnitNetworkCommand(waitingJobs[i]->getWorkUnitId(), waitingJobs[i]->getWorkUnit()));
-        workUnitManager->jobSubmittedTo(assignedJobs[i], identity);
+        workUnitManager->jobSubmittedTo(waitingJobs[i], identity);
+        resource = SystemResourcePtr();
       }
     }
 
