@@ -2,37 +2,50 @@
 
 <library name="Network" dynamic="yes">
 
-    <class name="ClientWorkUnit" base="WorkUnit">
-      <variable type="String" name="hostname"/>
-    </class>
+  <!-- Network Context -->
+  <class name="NetworkContext" base="WorkUnit">
+    <variable type="String" name="identity"/>
+    <variable type="String" name="hostname"/>
+    <variable type="Integer" name="port"/>
+  </class>
 
-    <class name="ServerWorkUnit" base="WorkUnit">
-      <variable type="String" name="hostname"/>
-    </class>
+  <class name="ClientNetworkContext" base="NetworkContext"/>
 
-    <class name="DumbWorkUnit" base="WorkUnit"/>
-    
-    <class name="ManagerServer" base="WorkUnit"/>
+  <class name="ServerNetworkContext" base="NetworkContext" abstract="yes"/>
 
-    <!-- Command -->
-    <class name="NetworkContext" base="WorkUnit"/>
-    <class name="ClientNetworkContext" base="NetworkContext"/>
-    <class name="ServerNetworkContext" base="NetworkContext"/>
+  <class name="SgeServerNetworkContext" base="ServerNetworkContext">
+    <variable type="File" name="workUnitDirectory"/>
+  </class>
+  
+  <!-- Network Command -->
 
-    <class name="NetworkCommand" base="Object" abstract="yes"/>
-    <class name="GetIdentityNetworkCommand" base="NetworkCommand"/>
-    <class name="CloseConnectionNetworkCommand" base="NetworkCommand"/>
-    <class name="GetConnectionTypeNetworkCommand" base="NetworkCommand"/>
-    <class name="GetWorkUnitNetworkCommand" base="NetworkCommand"/>
-    <class name="GetWorkUnitStatusNetworkCommand" base="NetworkCommand">
-      <variable type="Integer" name="workUnitId"/>
-    </class>
-    <class name="GetSystemResourceNetworkCommand" base="NetworkCommand"/>
-    <class name="PushWorkUnitNetworkCommand" base="NetworkCommand">
-      <variable type="String" name="workUnitIdString"/>
-      <variable type="WorkUnit" name="workUnit"/>
-    </class>
-    
-    <class name="SystemResource" base="Object"/>
+  <class name="NetworkCommand" base="Object" abstract="yes"/>
+  <class name="GetIdentityNetworkCommand" base="NetworkCommand"/>
+  <class name="CloseConnectionNetworkCommand" base="NetworkCommand"/>
+  <class name="GetConnectionTypeNetworkCommand" base="NetworkCommand"/>
+  <class name="GetWorkUnitNetworkCommand" base="NetworkCommand"/>
+  <class name="GetWorkUnitStatusNetworkCommand" base="NetworkCommand">
+    <variable type="Integer" name="workUnitId"/>
+  </class>
+  <class name="GetSystemResourceNetworkCommand" base="NetworkCommand"/>
+  <class name="PushWorkUnitNetworkCommand" base="NetworkCommand">
+    <variable type="String" name="workUnitIdString"/>
+    <variable type="WorkUnit" name="workUnit"/>
+  </class>
+  
+  <class name="SystemResource" base="Object"/>
+
+  <!-- Work Unit -->
+  <class name="ClientWorkUnit" base="WorkUnit">
+    <variable type="String" name="hostname"/>
+  </class>
+
+  <class name="ServerWorkUnit" base="WorkUnit">
+    <variable type="String" name="hostname"/>
+  </class>
+
+  <class name="DumbWorkUnit" base="WorkUnit"/>
+
+  <class name="ManagerServer" base="WorkUnit"/>
 
 </library>
