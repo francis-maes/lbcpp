@@ -10,8 +10,6 @@ ADD_LIBRARY(network SHARED
   NetworkCommand.h
   NetworkCommand.cpp
   ClientServerWorkUnit.h
-  MainManagerServer.cpp
-  MainServerWorkUnit.cpp
   ManagerServer.h
   ServerWorkUnit.h
   NetworkLibrary.xml
