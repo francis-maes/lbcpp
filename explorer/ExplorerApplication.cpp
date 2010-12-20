@@ -274,7 +274,11 @@ public:
     lbcpp::initialize(NULL);
     defaultExecutionContext().appendCallback(explorerExecutionCallback);
 
-    lbcpp::importLibrariesFromDirectory(File::getSpecialLocation(File::currentExecutableFile).getParentDirectory());
+    File currentExecutableDirectory = File::getSpecialLocation(File::currentExecutableFile).getParentDirectory();
+#ifdef JUCE_MAC
+    currentExecutableDirectory = currentExecutableDirectory.getChildFile("../../..");
+#endif // JUCE_MAC
+    lbcpp::importLibrariesFromDirectory(currentExecutableDirectory);
     lbcpp::importLibrary(explorerLibrary());
 
     theCommandManager = new ApplicationCommandManager();
