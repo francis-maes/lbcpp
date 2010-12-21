@@ -32,7 +32,7 @@ protected:
   File dsspFile;
   File outputProteinFile;
 };
-  
+
 };
 
 

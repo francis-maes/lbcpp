@@ -457,6 +457,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(ExecutionContext& context, cha
     tertiaryStructure = new TertiaryStructure(n);
 
     String primaryAminoAcids = primaryStructure->toString();
+    std::cout << primaryAminoAcids << std::endl;
     jassert((size_t)primaryAminoAcids.length() == n);
 
     // align each tertiary structure block with the primary sequence and fill the corresponding part of the tertiary structure
