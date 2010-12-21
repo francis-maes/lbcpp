@@ -11,7 +11,7 @@
 #include "Formats/PDBFileGenerator.h"
 #include "Formats/FASTAFileParser.h"
 #include "Formats/FASTAFileGenerator.h"
-#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+#include <lbcpp/Distribution/DiscreteDistribution.h>
 
 using namespace lbcpp;
 
@@ -437,7 +437,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
 ** Create Empty Targets
 */
 VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-  {return vector(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration), getLength());}
+  {return vector(enumerationDistributionClass(aminoAcidTypeEnumeration), getLength());}
 
 VectorPtr Protein::createEmptySecondaryStructure() const
   {return vector(secondaryStructureElementEnumeration, getLength());}

@@ -13,7 +13,7 @@
 #include "../Perception/ProteinPerception.h"
 #include <lbcpp/Perception/Perception.h>
 #include <lbcpp/Inference/DecoratorInference.h>
-#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+#include <lbcpp/Distribution/DiscreteDistribution.h>
 
 using namespace lbcpp;
 
@@ -107,8 +107,8 @@ PerceptionPtr ProteinInferenceFactory::createProbabilitySequencePerception(const
 
 PerceptionPtr ProteinInferenceFactory::createPositionSpecificScoringMatrixPerception() const
 {
-  PerceptionPtr pssmRowPerception = discreteProbabilityDistributionPerception(aminoAcidTypeEnumeration);
-  ClassPtr aaDistributionClass = enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration);
+  PerceptionPtr pssmRowPerception = discreteDistributionPerception(aminoAcidTypeEnumeration);
+  ClassPtr aaDistributionClass = enumerationDistributionClass(aminoAcidTypeEnumeration);
 
   String targetName(T("positionSpecificScoringMatrix"));
   CompositePerceptionPtr res = new ResidueCompositePerception();
