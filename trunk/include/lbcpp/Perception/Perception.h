@@ -190,7 +190,7 @@ extern PerceptionPtr boundsProximityPerception();
 extern PerceptionPtr inputLabelPairPerception(PerceptionPtr inputPerception, EnumerationPtr classes);
 
 // probability distribution perceptions
-extern PerceptionPtr discreteProbabilityDistributionPerception(EnumerationPtr enumeration);
+extern PerceptionPtr discreteDistributionPerception(EnumerationPtr enumeration);
 
 // modifier perceptions
 extern PerceptionPtr functionBasedPerception(FunctionPtr function);

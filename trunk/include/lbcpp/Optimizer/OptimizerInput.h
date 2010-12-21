@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_INPUT_H_
 
 # include "../Core/Variable.h"
-# include "../ProbabilityDistribution/ProbabilityDistribution.h"
+# include "../Distribution/Distribution.h"
 # include "../Function/ObjectiveFunction.h"
 
 namespace lbcpp
@@ -19,14 +19,14 @@ namespace lbcpp
 class OptimizerInput : public Object
 {
 public:
-  OptimizerInput(const ObjectiveFunctionPtr& objective, const ProbabilityDistributionPtr& aprioriDistribution, const Variable& initialGuess)
+  OptimizerInput(const ObjectiveFunctionPtr& objective, const DistributionPtr& aprioriDistribution, const Variable& initialGuess)
     : objective(objective), aprioriDistribution(aprioriDistribution), initialGuess(initialGuess) {}
   OptimizerInput() {}
 
   const ObjectiveFunctionPtr& getObjective() const
     {return objective;}
 
-  const ProbabilityDistributionPtr& getAprioriDistribution() const
+  const DistributionPtr& getAprioriDistribution() const
     {return aprioriDistribution;}
 
   const Variable& getInitialGuess() const
@@ -36,7 +36,7 @@ protected:
   friend class OptimizerInputClass;
 
   ObjectiveFunctionPtr objective;
-  ProbabilityDistributionPtr aprioriDistribution;
+  DistributionPtr aprioriDistribution;
   Variable initialGuess;
 };
 
