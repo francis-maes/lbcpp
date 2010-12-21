@@ -12,7 +12,7 @@
 # include "../Protein.h"
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/lbcpp.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
+# include <lbcpp/Distribution/DistributionBuilder.h>
 
 namespace lbcpp
 {
@@ -25,13 +25,13 @@ public:
     {}
   
   virtual TypePtr getElementsType() const
-    {return vectorClass(vectorClass(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration)));}
+    {return vectorClass(vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)));}
 
   virtual void parseBegin(ExecutionContext& context)
   {
     currentPosition = -3;
 
-    pssm = vector(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
+    pssm = vector(enumerationDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(ExecutionContext& context, const String& line)
@@ -78,7 +78,7 @@ public:
       return false;
     }
 
-    ProbabilityDistributionBuilderPtr scores = enumerationProbabilityDistributionBuilder(aminoAcidTypeEnumeration);
+    DistributionBuilderPtr scores = enumerationDistributionBuilder(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + (int)i * 3;

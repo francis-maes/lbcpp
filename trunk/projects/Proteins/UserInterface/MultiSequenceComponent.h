@@ -257,9 +257,9 @@ private:
       return;
     }
 
-    if (type->canBeCastedTo(enumerationProbabilityDistributionClass(aminoAcidTypeEnumeration)))
+    if (type->canBeCastedTo(enumerationDistributionClass(aminoAcidTypeEnumeration)))
     {
-      EnumerationProbabilityDistributionPtr probs = sequence->getElement(index).getObjectAndCast<EnumerationProbabilityDistribution>();
+      EnumerationDistributionPtr probs = sequence->getElement(index).getObjectAndCast<EnumerationDistribution>();
       size_t numVariables = probs->getEnumeration()->getNumElements();
       for (int i = 0; i < (int)numVariables; ++i)
       {
