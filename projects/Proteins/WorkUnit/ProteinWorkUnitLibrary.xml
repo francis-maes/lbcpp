@@ -57,6 +57,11 @@
     <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
   </class>
   
+  <class name="ConvertPDBToProteinWorkUnit" base="WorkUnit">
+    <variable type="File" name="inputFile" description="The PDB (resp. Protein) input file" shortName="in"/>
+    <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
+  </class>
+  
   <!-- SandBox -->
   <class name="EvaluateOnlineLearnerObjectiveFunction" base="ObjectiveFunction" abstract="yes"/>
   <class name="EvaluateLearningRateObjectiveFunction" base="EvaluateOnlineLearnerObjectiveFunction"/>

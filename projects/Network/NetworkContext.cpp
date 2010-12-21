@@ -11,7 +11,7 @@ bool NetworkContext::run(ExecutionContext& context)
   
   if (!client->startClient(hostname, port))
   {
-    context.warningCallback(T("NetworkContext::run"), T("Connection fail !"));
+    context.warningCallback(T("NetworkContext::run"), T("Connection to ") + hostname.quoted() + ("fail !"));
     client->stopClient();
     return false;
   }
