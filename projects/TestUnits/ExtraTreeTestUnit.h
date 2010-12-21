@@ -150,6 +150,8 @@ private:
   
   ContainerPtr loadDataToContainer(const std::vector<std::vector<double> >& data, size_t from, size_t to, bool isClassification)
   {
+    if (data.empty())
+      return ContainerPtr();
     jassert(from <= to && to <= data.size());
     TypePtr outputType = isClassification ? (TypePtr)waveFormTypeEnumeration : doubleType;
     ContainerPtr res = vector(pairClass(vectorClass(doubleType), outputType), to - from);
