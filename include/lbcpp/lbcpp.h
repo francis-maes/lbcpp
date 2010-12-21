@@ -52,10 +52,10 @@
 # include "Network/NetworkServer.h"
 # include "Network/NetworkCallback.h"
 
-# include "ProbabilityDistribution/ProbabilityDistribution.h"
-# include "ProbabilityDistribution/DiscreteProbabilityDistribution.h"
-# include "ProbabilityDistribution/ContinuousProbabilityDistribution.h"
-# include "ProbabilityDistribution/MultiVariateProbabilityDistribution.h"
+# include "Distribution/Distribution.h"
+# include "Distribution/DiscreteDistribution.h"
+# include "Distribution/ContinuousDistribution.h"
+# include "Distribution/MultiVariateDistribution.h"
 
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
