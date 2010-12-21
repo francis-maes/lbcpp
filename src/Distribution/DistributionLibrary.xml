@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Distribution" directory="Distribution">
+
+  <include file="lbcpp/Distribution/Distribution.h"/>
+  <include file="lbcpp/Distribution/DiscreteDistribution.h"/>
+  <include file="lbcpp/Distribution/ContinuousDistribution.h"/>
+  <include file="lbcpp/Distribution/MultiVariateDistribution.h"/>
+
+  <!-- Probability Distribution -->
+  <class name="Distribution" base="Object" abstract="yes"/>
+
+  <!-- Discrete Probability Distribution -->
+  <class name="DiscreteDistribution" base="Distribution" abstract="yes"/>
+
+  <class name="BernoulliDistribution" base="DiscreteDistribution">
+    <variable type="Double" name="pTrue"/>
+    <variable type="Double" name="pFalse"/>
+  </class>
+  
+  <template name="EnumerationDistribution" base="DiscreteDistribution">
+    <parameter name="enumeration" type="EnumValue"/>
+
+    <code>
+    EnumerationPtr getEnumeration() const
+      {return getTemplateArgument(0).staticCast&lt;Enumeration&gt;();}
+
+    virtual size_t getObjectNumVariables() const
+      {return getEnumeration()->getNumElements() + 1;}
+
+    virtual Variable getObjectVariable(const Object* pthis, size_t index) const
+    {
+      const EnumerationDistribution* distribution = dynamic_cast&lt;const EnumerationDistribution* &gt;(pthis);
+      return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
+    }
+
+    virtual void setObjectVariable(ExecutionContext&amp; context, Object* pthis, size_t index, const Variable&amp; subValue) const
+    {
+      EnumerationDistribution* distribution = dynamic_cast&lt;EnumerationDistribution* &gt;(pthis);
+      if (distribution)
+      {
+        if (!distribution->values.size())
+          distribution->values.resize(distribution->getEnumeration()->getNumElements() + 1, 0.0);
+
+        jassert(subValue.isDouble());
+        jassert(index &lt; distribution->values.size());
+        distribution->values[index] = subValue.getDouble();
+      }
+    }
+
+    virtual TypePtr getObjectVariableType(size_t index) const
+      {return probabilityType;}
+
+    virtual String getObjectVariableName(size_t index) const
+      {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+    </code>
+  </template>
+  
+  <!-- Continuous Probability Distribution -->
+  <class name="ContinuousDistribution" base="Distribution" abstract="yes"/>
+
+  <class name="UniformDistribution" base="ContinuousDistribution">
+    <variable type="Double" name="minimum"/>
+    <variable type="Double" name="maximum"/>
+  </class>
+
+  <class name="GaussianDistribution" base="ContinuousDistribution">
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="variance"/>
+  </class>
+  
+  <!-- MultiVariate Probability Distribution -->
+  <class name="MultiVariateDistribution" base="Distribution" abstract="yes"/>
+  
+  <template name="IndependentMultiVariateDistribution" base="MultiVariateDistribution">
+    <parameter name="variableClass" type="Object"/>
+    
+    <variable type="ObjectVector[Distribution]" name="distributions"/>
+  </template>
+    
+  <import name="DistributionBuilder"/>
+  
+</library>
