@@ -80,7 +80,7 @@ public:
     }
     TypePtr type = typeManager().getType(context, typeName);
     jassert(type);
-    object->append(context.createVariable(type));
+    object->append(Variable::create(type));
     return object->getElement(object->getNumElements() - 1);
   }
 };

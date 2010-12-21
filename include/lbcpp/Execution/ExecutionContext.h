@@ -35,12 +35,9 @@ public:
   /*
   ** Utilities
   */
-  ObjectPtr createObject(ClassPtr objectClass);
-  Variable createVariable(TypePtr type);
-
-  void declareType(TypePtr typeInstance);
-  void declareTemplateType(TemplateTypePtr templateTypeInstance);
-  void finishTypeDeclarations();
+  //void declareType(TypePtr typeInstance);
+  //void declareTemplateType(TemplateTypePtr templateTypeInstance);
+  //void finishTypeDeclarations();
 
   /*
   ** Current State

@@ -2,78 +2,77 @@
 
 <library name="InferenceOnlineLearner" directory="Inference/OnlineLearner">
 
-  
+  <enumeration name="LearnerUpdateFrequency">
+    <value name="never"/>
+    <value name="perStep"/>
+    <value name="perEpisode"/>
+    <value name="perPass"/>
+    <value name="perStepMiniBatch"/>
 
-    <enumeration name="LearnerUpdateFrequency">
-      <value name="never"/>
-      <value name="perStep"/>
-      <value name="perEpisode"/>
-      <value name="perPass"/>
-      <value name="perStepMiniBatch"/>
+    <code>
+      VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      {
+        String str = value.trim();
+        if (str.startsWith(T("perStepMiniBatch")))
+          return VariableValue(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
+        else
+          return Enumeration::createFromString(context, value);
+      }
+      
+      virtual String toString(const VariableValue&amp; value) const
+      {
+        juce::int64 val = value.getInteger();
+        if (val >= perStepMiniBatch)
+          return T("perStepMiniBatch") + String(val - perStepMiniBatch);
+        else
+          return Enumeration::toString(value);
+      }
+    </code>
 
-      <code>
-        VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {
-          String str = value.trim();
-          if (str.startsWith(T("perStepMiniBatch")))
-            return VariableValue(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
-          else
-            return Enumeration::createFromString(context, value);
-        }
-        
-        virtual String toString(const VariableValue&amp; value) const
-        {
-          juce::int64 val = value.getInteger();
-          if (val >= perStepMiniBatch)
-            return T("perStepMiniBatch") + String(val - perStepMiniBatch);
-          else
-            return Enumeration::toString(value);
-        }
-      </code>
+  </enumeration>
 
-    </enumeration>
+  <class name="InferenceOnlineLearner" abstract="yes">
+    <variable type="InferenceOnlineLearner" name="nextLearner"/>
+  </class>
 
-    <class name="InferenceOnlineLearner" abstract="yes">
-      <variable type="InferenceOnlineLearner" name="nextLearner"/>
-    </class>
+  <class name="UpdatableOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
+    <variable type="PositiveInteger" name="epoch"/>
+    <variable type="LearnerUpdateFrequency" name="updateFrequency" enumeration="yes"/>
+  </class>
 
-    <class name="UpdatableOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
-      <variable type="PositiveInteger" name="epoch"/>
-      <variable type="LearnerUpdateFrequency" name="updateFrequency" enumeration="yes"/>
-    </class>
+  <class name="ComputeScoreOnlineLearner" base="UpdatableOnlineLearner">
+    <constructor arguments="const String&amp; scoreName, FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency"/>
+    <variable type="Function" name="scoreFunction"/>
+  </class>
 
-    <class name="ComputeScoreOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="const String&amp; scoreName, FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency"/>
-      <variable type="Function" name="scoreFunction"/>
-    </class>
+  <class name="ComputeEvaluatorOnlineLearner" base="InferenceOnlineLearner">
+    <constructor arguments="EvaluatorPtr evaluator, bool computeOnValidationData"/>
+    <variable type="Evaluator" name="evaluator"/>
+    <variable type="Boolean" name="computeOnValidationData"/>
+    <variable type="ObjectVector[Pair[String,Double]]" name="lastScores"/>
+    <variable type="Double" name="lastDefaultScore"/>
+  </class>
 
-    <class name="ComputeEvaluatorOnlineLearner" base="InferenceOnlineLearner">
-      <constructor arguments="EvaluatorPtr evaluator, bool computeOnValidationData"/>
-      <variable type="Evaluator" name="evaluator"/>
-      <variable type="Boolean" name="computeOnValidationData"/>
-      <variable type="ObjectVector[Pair[String,Double]]" name="lastScores"/>
-      <variable type="Double" name="lastDefaultScore"/>
-    </class>
+  <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
+    <constructor arguments="StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency"/>
 
-    <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency"/>
+    <variable type="StoppingCriterion" name="criterion"/>
+    <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
 
-      <variable type="StoppingCriterion" name="criterion"/>
-      <variable type="Boolean" name="restoreBestParametersWhenLearningStops"/>
+    <variable type="Boolean" name="learningStopped"/>
+    <variable type="Variable" name="bestParameters"/>
+    <variable type="Double" name="bestDefaultScore"/>
+    <variable type="ObjectVector[Pair[String,Double]]" name="bestScores"/>
+  </class>
 
-      <variable type="Boolean" name="learningStopped"/>
-      <variable type="Variable" name="bestParameters"/>
-      <variable type="Double" name="bestDefaultScore"/>
-      <variable type="ObjectVector[Pair[String,Double]]" name="bestScores"/>
-    </class>
+  <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">
+    <constructor arguments="LearnerUpdateFrequency randomizationFrequency"/>
+  </class>
 
-    <class name="RandomizerOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="LearnerUpdateFrequency randomizationFrequency"/>
-    </class>
+  <class name="SaveScoresToGnuPlotFileOnlineLearner" base="UpdatableOnlineLearner">
+    <constructor arguments="const File&amp; outputFile, LearnerUpdateFrequency updateFrequency"/>
+  </class>
 
-    <class name="SaveScoresToGnuPlotFileOnlineLearner" base="UpdatableOnlineLearner">
-      <constructor arguments="const File&amp; outputFile, LearnerUpdateFrequency updateFrequency"/>
-    </class>
-
+  <class name="InferenceOnlineLearnerParameters" base="Object" abstract="yes"/>
   
 </library>

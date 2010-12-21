@@ -14,67 +14,67 @@
   <import name="InferenceBatchLearner"/>
   <import name="InferenceOnlineLearner"/>
 
+  <class name="Inference" base="Function" abstract="yes">
+    <variable type="String" name="name"/>
+    <variable type="InferenceOnlineLearner" name="onlineLearner"/>
+    <variable type="Inference" name="batchLearner"/>
+    <variable type="Variable" name="parameters"/>
+  </class>
+
+  <!-- Decorator Inference -->
+  <class name="DecoratorInference" base="Inference" abstract="yes"/>
+  <class name="StaticDecoratorInference" base="DecoratorInference" abstract="yes">
+    <variable type="Inference" name="decorated"/>
+  </class>
+
+  <!-- Parallel Inference -->
+  <class name="ParallelInference" base="Inference" abstract="yes">
+    <variable type="Boolean" name="pushChildrenIntoStack"/>
+  </class>
+  <class name="StaticParallelInference" base="ParallelInference" abstract="yes"/>
+
+  <class name="SharedParallelInference" base="StaticParallelInference" abstract="yes">
+    <variable type="Inference" name="subInference"/>
+  </class>
+
+  <class name="VectorParallelInference" base="StaticParallelInference" abstract="yes">
+    <variable type="ObjectVector[Inference]" name="subInferences"/>
+  </class>
   
-
-    <class name="Inference" base="Function" abstract="yes">
-      <variable type="String" name="name"/>
-      <variable type="InferenceOnlineLearner" name="onlineLearner"/>
-      <variable type="Inference" name="batchLearner"/>
-      <variable type="Variable" name="parameters"/>
-    </class>
-
-    <!-- Decorator Inference -->
-    <class name="DecoratorInference" base="Inference" abstract="yes"/>
-    <class name="StaticDecoratorInference" base="DecoratorInference" abstract="yes">
-      <variable type="Inference" name="decorated"/>
-    </class>
-
-    <!-- Parallel Inference -->
-    <class name="ParallelInference" base="Inference" abstract="yes">
-      <variable type="Boolean" name="pushChildrenIntoStack"/>
-    </class>
-    <class name="StaticParallelInference" base="ParallelInference" abstract="yes"/>
-
-    <class name="SharedParallelInference" base="StaticParallelInference" abstract="yes">
-      <variable type="Inference" name="subInference"/>
-    </class>
-
-    <class name="VectorParallelInference" base="StaticParallelInference" abstract="yes">
-      <variable type="ObjectVector[Inference]" name="subInferences"/>
-    </class>
-    
-    <!-- Sequential Inference -->
-    <class name="SequentialInference" base="Inference" abstract="yes"/>
-    <class name="StaticSequentialInference" base="SequentialInference" abstract="yes"/>
-    
-    <class name="VectorSequentialInference" base="StaticSequentialInference">
-      <variable type="ObjectVector[Inference]" name="subInferences"/>
-    </class>
-
-    <class name="PostProcessInference" base="DecoratorInference">
-      <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
-      <variable type="Function" name="postProcessingFunction"/>
-    </class>
-    
-    <!-- Batch Learner -->
-    <class name="InferenceExampleVector" base="Vector[Pair[Variable,Variable]]"/>
-
-    <template name="InferenceBatchLearnerInput" base="Object">
-      <parameter name="targetInferenceType" type="Inference"/>
-      
-      <variable type="targetInferenceType" name="targetInference"/>
-      <variable type="InferenceExampleVector" name="trainingData"/>
-      <variable type="InferenceExampleVector" name="validationData"/>
-    </template>
-
-    <!-- Work Unit -->
-    <class name="InferenceWorkUnit" base="WorkUnit">
-      <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable* output"/>
-      <variable type="Inference" name="inference"/>
-      <variable type="Variable" name="input"/>
-      <variable type="Variable" name="supervision"/>
-    </class>
-    
+  <!-- Sequential Inference -->
+  <class name="SequentialInference" base="Inference" abstract="yes"/>
+  <class name="StaticSequentialInference" base="SequentialInference" abstract="yes"/>
   
+  <class name="VectorSequentialInference" base="StaticSequentialInference">
+    <variable type="ObjectVector[Inference]" name="subInferences"/>
+  </class>
+
+  <class name="PostProcessInference" base="DecoratorInference">
+    <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
+    <variable type="Function" name="postProcessingFunction"/>
+  </class>
+  
+  <!-- Batch Learner -->
+  <class name="InferenceExampleVector" base="Vector[Pair[Variable,Variable]]"/>
+
+  <template name="InferenceBatchLearnerInput" base="Object">
+    <parameter name="targetInferenceType" type="Inference"/>
+    
+    <variable type="targetInferenceType" name="targetInference"/>
+    <variable type="InferenceExampleVector" name="trainingData"/>
+    <variable type="InferenceExampleVector" name="validationData"/>
+  </template>
+
+  <class name="EvaluateBatchLearnerObjectiveFunction" base="ObjectiveFunction" abstract="yes">
+    <variable type="InferenceBatchLearnerInput[Inference]" name="learnerInput"/>
+  </class>
+
+  <!-- Work Unit -->
+  <class name="InferenceWorkUnit" base="WorkUnit">
+    <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable* output"/>
+    <variable type="Inference" name="inference"/>
+    <variable type="Variable" name="input"/>
+    <variable type="Variable" name="supervision"/>
+  </class>
 
 </library>

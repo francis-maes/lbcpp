@@ -20,53 +20,53 @@
 namespace lbcpp
 {
 
-class EvaluateOnlineLearnerObjectiveFunction : public ObjectiveFunction
+class MyLearningParameters : public InferenceOnlineLearnerParameters
 {
 public:
-  EvaluateOnlineLearnerObjectiveFunction(const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
-    : inferenceLearner(inferenceLearner), learnerInput(learnerInput) {}
-  EvaluateOnlineLearnerObjectiveFunction() {}
+  MyLearningParameters() : logLearningRate(1.0), logLearningRateDecrease(3.0), logRegularizer(-7.0) {}
 
-  virtual void customizeLearner(ExecutionContext& context, const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const = 0;
+  double getLogLearningRate() const
+    {return logLearningRate;}
 
-  virtual double compute(ExecutionContext& context, const Variable& input) const
+  double getLogLearningRateDecrease() const
+    {return logLearningRateDecrease;}
+
+  double getLogRegularizer() const
+    {return logRegularizer;}
+
+  virtual InferenceOnlineLearnerPtr createLearner() const
   {
-    InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
-    const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
-    customizeLearner(context, input, onlineLearner);
-    inferenceLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
-    return onlineLearner->getLastLearner()->getDefaultScore();
+    InferenceOnlineLearnerPtr res, lastLearner;
+    res = lastLearner = gradientDescentOnlineLearner(
+          perStep, invLinearIterationFunction(pow(10.0, logLearningRate), (size_t)(pow(10.0, logLearningRateDecrease))), true,
+          perStepMiniBatch20, l2RegularizerFunction(pow(10.0, logRegularizer)));
+
+    EvaluatorPtr evaluator = classificationAccuracyEvaluator();
+
+    EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
+    trainEvaluator->setName(T("trainScore"));
+    lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(trainEvaluator, false));
+
+    EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>();
+    validationEvaluator->setName(T("validationScore"));
+    lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
+
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);
+    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
+    return res;
   }
 
 protected:
-  friend class EvaluateOnlineLearnerObjectiveFunctionClass;
+  friend class MyLearningParametersClass;
 
-  InferencePtr inferenceLearner;
-  InferenceBatchLearnerInputPtr learnerInput;
+  double logLearningRate;
+  double logLearningRateDecrease;
+  double logRegularizer;
 };
 
-typedef ReferenceCountedObjectPtr<EvaluateOnlineLearnerObjectiveFunction> EvaluateOnlineLearnerObjectiveFunctionPtr;
+typedef ReferenceCountedObjectPtr<MyLearningParameters> MyLearningParametersPtr;
 
-class EvaluateLearningRateObjectiveFunction : public EvaluateOnlineLearnerObjectiveFunction
-{
-public:
-  EvaluateLearningRateObjectiveFunction(const InferencePtr& inferenceLearner, const InferenceBatchLearnerInputPtr& learnerInput)
-    : EvaluateOnlineLearnerObjectiveFunction(inferenceLearner, learnerInput) {}
-  EvaluateLearningRateObjectiveFunction() {}
-
-  virtual TypePtr getInputType() const
-    {return doubleType;}
-
-  virtual String getDescription(const Variable& input) const
-    {return T("Evaluating learning rate ") + String(input.getDouble());}
-
-  virtual void customizeLearner(ExecutionContext& context, const Variable& input, const InferenceOnlineLearnerPtr& onlineLearner) const
-  {
-    int index = onlineLearner->getClass()->findObjectVariable(T("learningRate"));
-    jassert(index >= 0);
-    onlineLearner->setVariable(context, index, constantIterationFunction(input.getDouble()));
-  }
-};
+extern ClassPtr myLearningParametersClass;
 
 ///////////////////////////////////////////////
 
@@ -84,7 +84,7 @@ public:
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
-    const EvaluateOnlineLearnerObjectiveFunctionPtr& objective = input.getObjectAndCast<EvaluateOnlineLearnerObjectiveFunction>();
+    const ObjectiveFunctionPtr& objective = input.getObjectAndCast<ObjectiveFunction>();
 
     CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimizer"), 5));
     std::vector<double> scores(workUnits->getNumWorkUnits());
@@ -106,37 +106,6 @@ public:
     }
     return res;
   }
-};
-
-class OptimizerInferenceLearner : public InferenceBatchLearner<Inference>
-{
-public:
-  OptimizerInferenceLearner(InferencePtr optimizer, InferencePtr baseLearner)
-    : optimizer(optimizer), baseLearner(baseLearner) {}
-  OptimizerInferenceLearner() {}
-
-  virtual ClassPtr getTargetInferenceClass() const
-    {return inferenceClass;}
-
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-  {
-    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
-    EvaluateOnlineLearnerObjectiveFunctionPtr objective = new EvaluateLearningRateObjectiveFunction(baseLearner, learnerInput);
-    
-    Variable optimizedValue;
-    if (!optimizer->run(context, objective, Variable(), &optimizedValue))
-      return Variable();
-    
-    InferencePtr targetInference = learnerInput->getTargetInference();
-    const InferenceOnlineLearnerPtr& onlineLearner = targetInference->getOnlineLearner();
-    objective->customizeLearner(context, optimizedValue, onlineLearner);
-    baseLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
-    return Variable();
-  }
-
-protected:
-  InferencePtr optimizer;
-  InferencePtr baseLearner;
 };
 
 class SandBoxWorkUnit : public WorkUnit

@@ -63,10 +63,13 @@
   </class>
   
   <!-- SandBox -->
-  <class name="EvaluateOnlineLearnerObjectiveFunction" base="ObjectiveFunction" abstract="yes"/>
-  <class name="EvaluateLearningRateObjectiveFunction" base="EvaluateOnlineLearnerObjectiveFunction"/>
+  <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
+    <variable type="Double" name="logLearningRate"/>
+    <variable type="Double" name="logLearningRateDecrease"/>
+    <variable type="Double" name="logRegularizer"/>
+  </class>
+
   <class name="AlaRacheOptimizer" base="Inference"/>
-  <class name="OptimizerInferenceLearner" base="Inference"/>
   <class name="SandBoxWorkUnit" base="WorkUnit"/>
 
 </library>

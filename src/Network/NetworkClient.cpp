@@ -76,7 +76,7 @@ bool NetworkClient::receiveString(juce::int64 timeout, String& result)
 bool NetworkClient::hasVariableInQueue()
 {
   ScopedLock _(lock);
-  return variables.size();
+  return variables.size() > 0;
 }
 
 void NetworkClient::appendCallback(NetworkCallbackPtr callback)

@@ -47,6 +47,8 @@ class Object : public ReferenceCountedObject
 public:
   Object(ClassPtr thisClass = ClassPtr());
   virtual ~Object();
+  
+  static ObjectPtr create(ClassPtr objectClass);
 
   static void displayObjectAllocationInfo(std::ostream& ostr);
 

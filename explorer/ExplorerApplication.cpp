@@ -209,7 +209,7 @@ public:
           TypePtr workUnitType = typeManager().getType(context, workUnitName);
           if (workUnitType)
           {
-            WorkUnitPtr workUnit = context.createObject(workUnitType);
+            WorkUnitPtr workUnit = Object::create(workUnitType);
             if (!workUnit)
               context.errorCallback(T("Create Work Unit"), T("Could not create ") + workUnitName);
             else if (workUnit->parseArguments(context, arguments))

@@ -35,6 +35,8 @@ GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionLibrary.xml Simple
 GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionLibrary.xml ModifierPerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionLibrary.xml ContainerPerceptionLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
+
 GENERATE_INTROSPECTION_CODE(Inference/InferenceLibrary.xml InferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackLibrary.xml InferenceCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ReductionInference/ReductionInferenceLibrary.xml ReductionInferenceLibrary.cpp)
@@ -206,6 +208,8 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ProbabilityDistribution/DiscreteProbabilityDistribution.cpp
   ../include/lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h
   ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
+  ../include/lbcpp/ProbabilityDistribution/MultiVariateProbabilityDistribution.h
+  ProbabilityDistribution/MultiVariateProbabilityDistribution.cpp
   ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
   ProbabilityDistribution/ProbabilityDistributionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionLibrary.cpp
@@ -229,6 +233,7 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/StoppingCriterion.h
   ../include/lbcpp/Function/Predicate.h
   ../include/lbcpp/Function/ObjectiveFunction.h
+  Function/ObjectiveFunction.cpp
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
   Function/FunctionLibrary.xml
@@ -342,6 +347,17 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionLibrary.cpp
 )
 
+#### Optimizer ####
+
+SET(LBCPP_OPTIMIZER_SOURCES
+  ../include/lbcpp/Optimizer/OptimizerInput.h
+  ../include/lbcpp/Optimizer/Optimizer.h
+  Optimizer/UniformSampleAndPickBestOptimizer.h
+  Optimizer/IterativeBracketingOptimizer.h
+  Optimizer/OptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
+)
+
 #### Inference ####
 
 SET(LBCPP_INFERENCE_SOURCES
@@ -401,6 +417,7 @@ SET(LBCPP_INFERENCE_BATCH_LEARNER_SOURCES
   Inference/BatchLearner/StochasticInferenceLearner.h
   Inference/BatchLearner/InitializeByCloningInferenceLearner.h
   Inference/BatchLearner/PrecomputePerceptionsInferenceLearner.h
+  Inference/BatchLearner/AutoTuneInferenceLearner.h
   Inference/BatchLearner/InferenceBatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceBatchLearnerLibrary.cpp
 )
@@ -617,6 +634,9 @@ SET(LBCPP_CORE
     ${LBCPP_PERCEPTION_MODIFIER_SOURCES}
     ${LBCPP_PERCEPTION_CONTAINER_SOURCES}
 
+  # Optimizer
+  ${LBCPP_OPTIMIZER_SOURCES}
+
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
   ${LBCPP_INFERENCE_CALLBACK_SOURCES}
@@ -685,6 +705,9 @@ SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})
 SOURCE_SUB_GROUP(Perception Simple FILES ${LBCPP_PERCEPTION_SIMPLE_SOURCES})
 SOURCE_SUB_GROUP(Perception Modifier FILES ${LBCPP_PERCEPTION_MODIFIER_SOURCES})
 SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES})
+
+## Optimizer
+SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 
 ## Inference
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})

@@ -12,9 +12,13 @@
 # include "Inference.h"
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Core/Vector.h>
+# include <lbcpp/Function/ObjectiveFunction.h>
 
 namespace lbcpp
 {
+
+class EvaluateBatchLearnerObjectiveFunction;
+typedef ReferenceCountedObjectPtr<EvaluateBatchLearnerObjectiveFunction> EvaluateBatchLearnerObjectiveFunctionPtr;
 
 extern ClassPtr inferenceExampleVectorClass;
 
@@ -146,6 +150,29 @@ extern VectorSequentialInferencePtr multiPassInferenceLearner();
 extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);
 
 extern InferencePtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
+
+extern EvaluateBatchLearnerObjectiveFunctionPtr evaluateStochasticLearnerObjectiveFunction();
+extern InferencePtr autoTuneInferenceLearner(const InferencePtr& optimizer, const EvaluateBatchLearnerObjectiveFunctionPtr& objective);
+
+class EvaluateBatchLearnerObjectiveFunction : public ObjectiveFunction
+{
+public:
+  virtual InferencePtr createLearner(ExecutionContext& context, const Variable& parameters, const InferencePtr& targetInference) const = 0;
+  virtual double getObjective(ExecutionContext& context, const InferencePtr& targetInference) const = 0;
+
+  virtual String getDescription(const Variable& input) const;
+  virtual double compute(ExecutionContext& context, const Variable& parameters) const;
+
+  void setLearnerInput(const InferenceBatchLearnerInputPtr& learnerInput)
+    {this->learnerInput = learnerInput;}
+
+protected:
+  friend class EvaluateBatchLearnerObjectiveFunctionClass;
+
+  InferenceBatchLearnerInputPtr learnerInput;
+};
+
+typedef ReferenceCountedObjectPtr<EvaluateBatchLearnerObjectiveFunction> EvaluateBatchLearnerObjectiveFunctionPtr;
 
 }; /* namespace lbcpp */
 

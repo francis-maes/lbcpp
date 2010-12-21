@@ -136,7 +136,7 @@ Variable Perception::computeFunction(ExecutionContext& context, const Variable& 
   }
   if (!res)
   {
-    res = context.createObject(outputType);
+    res = Object::create(outputType);
     jassert(res);
   }
 

@@ -38,10 +38,11 @@
 # include "Core/Library.h"
 # include "Core/XmlSerialisation.h"
 # include "Core/DynamicObject.h"
+# include "Core/Vector.h"
+# include "Core/Function.h"
 
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
-# include "Core/Vector.h"
 # include "Data/SymmetricMatrix.h"
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
@@ -54,6 +55,7 @@
 # include "ProbabilityDistribution/ProbabilityDistribution.h"
 # include "ProbabilityDistribution/DiscreteProbabilityDistribution.h"
 # include "ProbabilityDistribution/ContinuousProbabilityDistribution.h"
+# include "ProbabilityDistribution/MultiVariateProbabilityDistribution.h"
 
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
@@ -62,7 +64,6 @@
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 
-# include "Core/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
 # include "Function/Predicate.h"
@@ -73,6 +74,8 @@
 
 # include "Perception/Perception.h"
 # include "Perception/PerceptionRewriter.h"
+
+# include "Optimizer/Optimizer.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceResultCache.h"
