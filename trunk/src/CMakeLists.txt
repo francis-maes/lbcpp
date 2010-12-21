@@ -14,8 +14,8 @@ GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/ProbabilityDistributionLibrary.xml ProbabilityDistributionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(ProbabilityDistribution/Builder/ProbabilityDistributionBuilderLibrary.xml ProbabilityDistributionBuilderLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Distribution/Builder/DistributionBuilderLibrary.xml DistributionBuilderLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
@@ -200,26 +200,26 @@ SET(LBCPP_NETWORK_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
 
-#### ProbabilityDistribution ####
+#### Distribution ####
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
-  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistribution.h
-  ../include/lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h
-  ProbabilityDistribution/DiscreteProbabilityDistribution.cpp
-  ../include/lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h
-  ProbabilityDistribution/ContinuousProbabilityDistribution.cpp
-  ../include/lbcpp/ProbabilityDistribution/MultiVariateProbabilityDistribution.h
-  ProbabilityDistribution/MultiVariateProbabilityDistribution.cpp
-  ../include/lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h
-  ProbabilityDistribution/ProbabilityDistributionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionLibrary.cpp
+  ../include/lbcpp/Distribution/Distribution.h
+  ../include/lbcpp/Distribution/DiscreteDistribution.h
+  Distribution/DiscreteDistribution.cpp
+  ../include/lbcpp/Distribution/ContinuousDistribution.h
+  Distribution/ContinuousDistribution.cpp
+  ../include/lbcpp/Distribution/MultiVariateDistribution.h
+  Distribution/MultiVariateDistribution.cpp
+  ../include/lbcpp/Distribution/DistributionBuilder.h
+  Distribution/DistributionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DistributionLibrary.cpp
 )
 
 SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
-  ProbabilityDistribution/Builder/EnumerationProbabilityDistributionBuilder.h
-  ProbabilityDistribution/Builder/GaussianProbabilityDistributionBuilder.h
-  ProbabilityDistribution/Builder/ProbabilityDistributionBuilderLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProbabilityDistributionBuilderLibrary.cpp
+  Distribution/Builder/EnumerationDistributionBuilder.h
+  Distribution/Builder/GaussianDistributionBuilder.h
+  Distribution/Builder/DistributionBuilderLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
 )
 
 #### Function ####
@@ -341,7 +341,7 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   Perception/Container/SegmentsPerception.h
   Perception/Container/SegmentsPerception.cpp
   Perception/Container/BoundsProximityPerception.h
-  Perception/Container/ProbabilityDistributionPerception.h
+  Perception/Container/DistributionPerception.h
   Perception/Container/InputLabelPairPerception.h
   Perception/Container/ContainerPerceptionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionLibrary.cpp
@@ -609,7 +609,7 @@ SET(LBCPP_CORE
   # Network
   ${LBCPP_NETWORK_SOURCES}
   
-  # ProbabilityDistribution
+  # Distribution
   ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
     ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES}
 
@@ -681,9 +681,9 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 ## Network
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
 
-## ProbabilityDistribution
-SOURCE_GROUP(ProbabilityDistribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})
-SOURCE_SUB_GROUP(ProbabilityDistribution Builder FILES ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES})
+## Distribution
+SOURCE_GROUP(Distribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})
+SOURCE_SUB_GROUP(Distribution Builder FILES ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})

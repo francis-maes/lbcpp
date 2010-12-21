@@ -36,7 +36,7 @@
     </class>
 
     <!-- Probability Distribution Perception -->
-    <class name="DiscreteProbabilityDistributionPerception" base="Perception">
+    <class name="DiscreteDistributionPerception" base="Perception">
       <constructor arguments="EnumerationPtr enumeration"/>
       <variable type="Enumeration" name="enumeration"/>
     </class>

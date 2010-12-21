@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+#include <lbcpp/Distribution/DiscreteDistribution.h>
 #include "HistogramPerception.h"
 
 using namespace lbcpp;
@@ -30,7 +30,7 @@ public:
       computeForEnumeration(enumeration, container);
     else if (type->inheritsFrom(doubleType))
       computeForDouble(container);
-    else if (type->inheritsFrom(enumerationProbabilityDistributionClass(anyType)))
+    else if (type->inheritsFrom(enumerationDistributionClass(anyType)))
     {
       EnumerationPtr enumeration = type->getTemplateArgument(0).dynamicCast<Enumeration>();
       jassert(enumeration);
@@ -89,7 +89,7 @@ private:
       std::vector<double>& scores = accumulators[i];
       if (i > 0)
         scores = accumulators[i - 1];
-      EnumerationProbabilityDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationProbabilityDistribution>(context);
+      EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>(context);
       jassert(distribution);
       for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
         scores[j] += distribution->compute(context, Variable(j, enumeration));
@@ -137,7 +137,7 @@ void HistogramPerception::computeOutputType()
     reserveOutputVariables(3);
     addOutputVariable(T("average"), elementsType);
   }
-  else if (elementsType->inheritsFrom(enumerationProbabilityDistributionClass(anyType)))
+  else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
   {
     enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
     reserveOutputVariables(enumeration->getNumElements() + 2);
@@ -177,7 +177,7 @@ void HistogramPerception::computePerception(ExecutionContext& context, const Var
   
   size_t numScores = startScores.size();
 
-  // FIXME! This Perception should output a DiscreteProbabilityDistribution directly
+  // FIXME! This Perception should output a DiscreteDistribution directly
   double invK = 1.0 / (endPosition - startPosition - 1.0);
   double entropy = 0.0;
   for (size_t i = 0; i < numScores; ++i)

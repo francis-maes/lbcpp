@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-#include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+#include <lbcpp/Distribution/Distribution.h>
 using namespace lbcpp;
 
 /*

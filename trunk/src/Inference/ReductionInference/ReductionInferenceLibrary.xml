@@ -21,9 +21,9 @@
     </class>
 
     <class name="ParallelVoteInference" base="VectorParallelInference">
-      <constructor arguments="ExecutionContext&amp; context, const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner, ProbabilityDistributionBuilderPtr probabilityBuilder"/>
+      <constructor arguments="ExecutionContext&amp; context, const String&amp; name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner, DistributionBuilderPtr probabilityBuilder"/>
       <variable type="Inference" name="voteInferenceModel"/>
-      <variable type="ProbabilityDistributionBuilder" name="probabilityBuilderModel"/>
+      <variable type="DistributionBuilder" name="probabilityBuilderModel"/>
     </class>
 
     <class name="SharedParallelVectorInference" base="SharedParallelInference">

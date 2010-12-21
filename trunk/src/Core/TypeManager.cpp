@@ -219,8 +219,8 @@ void TypeManager::shutdown()
 TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const
 {
   String name = templateTypeName;
-  if (name == T("DiscreteProbabilityDistribution"))
-    name = T("EnumerationProbabilityDistribution");
+  if (name == T("DiscreteDistribution"))
+    name = T("EnumerationDistribution");
   ScopedLock _(typesLock);
   TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(name);
   if (it == templateTypes.end())

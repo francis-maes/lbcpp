@@ -11,8 +11,8 @@
 
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
+# include <lbcpp/Distribution/Distribution.h>
+# include <lbcpp/Distribution/DistributionBuilder.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
@@ -21,7 +21,7 @@ namespace lbcpp
 class ParallelVoteInference : public VectorParallelInference
 {
 public:
-  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, ProbabilityDistributionBuilderPtr probabilityBuilderModel)
+  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, DistributionBuilderPtr probabilityBuilderModel)
     : VectorParallelInference(name), voteInferenceModel(voteInferenceModel), probabilityBuilderModel(probabilityBuilderModel)
   {
     jassert(numVoters);
@@ -64,10 +64,10 @@ public:
     if (!n)
       return Variable();
     
-    ProbabilityDistributionBuilderPtr probabilityBuilder = probabilityBuilderModel->cloneAndCast<ProbabilityDistributionBuilder>(context);
+    DistributionBuilderPtr probabilityBuilder = probabilityBuilderModel->cloneAndCast<DistributionBuilder>(context);
     for (size_t i = 0; i < n; ++i)
     {
-      ProbabilityDistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<ProbabilityDistribution>();
+      DistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<Distribution>();
       jassert(distribution);
       probabilityBuilder->addDistribution(distribution);
     }
@@ -78,7 +78,7 @@ protected:
   friend class ParallelVoteInferenceClass;
 
   InferencePtr voteInferenceModel;
-  ProbabilityDistributionBuilderPtr probabilityBuilderModel;
+  DistributionBuilderPtr probabilityBuilderModel;
 };
 
 typedef ReferenceCountedObjectPtr<ParallelVoteInference> ParallelVoteInferencePtr;

@@ -10,7 +10,7 @@
 # define LBCPP_DECISION_TREE_SPLIT_SCORING_FUNCTION_H_
 
 # include <lbcpp/lbcpp.h>
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
+# include <lbcpp/Distribution/DistributionBuilder.h>
 
 namespace lbcpp
 {
@@ -50,11 +50,11 @@ public:
   virtual double compute(ExecutionContext& context, const Variable& input) const;
 
 protected:
-  EnumerationProbabilityDistributionPtr getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const;
+  EnumerationDistributionPtr getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const;
   
 private:
-  ProbabilityDistributionBuilderPtr cacheBuilder;
-  ProbabilityDistributionBuilderPtr createProbabilityBuilder(EnumerationPtr enumeration) const;
+  DistributionBuilderPtr cacheBuilder;
+  DistributionBuilderPtr createProbabilityBuilder(EnumerationPtr enumeration) const;
 };
 
 typedef ReferenceCountedObjectPtr<SplitScoringFunction> SplitScoringFunctionPtr;

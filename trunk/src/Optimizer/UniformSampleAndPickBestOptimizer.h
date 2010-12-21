@@ -10,13 +10,13 @@
 # define LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h>
+# include <lbcpp/Distribution/ContinuousDistribution.h>
 
 namespace lbcpp
 {
 
 // works for "double" arguments
-// uses a ContinuousProbabilityDistribution apriori
+// uses a ContinuousDistribution apriori
 // do not use the initial guess
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
@@ -28,7 +28,7 @@ public:
   {
     const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
     const ObjectiveFunctionPtr& objective = input->getObjective();
-    ContinuousProbabilityDistributionPtr apriori = input->getAprioriDistribution().dynamicCast<ContinuousProbabilityDistribution>();
+    ContinuousDistributionPtr apriori = input->getAprioriDistribution().dynamicCast<ContinuousDistribution>();
     jassert(apriori);
 
     std::vector<double> values;
