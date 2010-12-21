@@ -6,7 +6,7 @@
 
   <class name="OptimizerInput" base="Object">
     <variable type="ObjectiveFunction" name="objective"/>
-    <variable type="ProbabilityDistribution" name="aprioriDistribution"/>
+    <variable type="Distribution" name="aprioriDistribution"/>
     <variable type="Variable" name="initialGuess"/>
   </class>
 

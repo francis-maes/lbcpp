@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Function/Evaluator.h>
-#include <lbcpp/ProbabilityDistribution/ContinuousProbabilityDistribution.h>
+#include <lbcpp/Distribution/ContinuousDistribution.h>
 
 using namespace lbcpp;
 
@@ -29,7 +29,7 @@ void RegressionErrorEvaluator::addPrediction(ExecutionContext& context, const Va
     predictedValue = predicted.getDouble();
   else if (predicted.isObject())
   {
-    GaussianProbabilityDistributionPtr distribution = predicted.dynamicCast<GaussianProbabilityDistribution>();
+    GaussianDistributionPtr distribution = predicted.dynamicCast<GaussianDistribution>();
     if (distribution)
       predictedValue = distribution->getMean();
     else

@@ -8,7 +8,7 @@
 
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Function/Predicate.h>
-#include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+#include <lbcpp/Distribution/Distribution.h>
 #include <lbcpp/Core/Vector.h>
 #include "ExtraTreeInferenceLearner.h"
 
@@ -17,7 +17,7 @@ using namespace lbcpp;
 /*
 ** SingleExtraTreeInferenceLearner
 */
-SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, ProbabilityDistributionBuilderPtr builder)
+SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, DistributionBuilderPtr builder)
   : random(new RandomGenerator()),
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting), builder(builder) {}

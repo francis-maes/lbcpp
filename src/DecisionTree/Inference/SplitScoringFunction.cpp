@@ -7,7 +7,7 @@
                                 `-------------------------------------------*/
 
 #include "SplitScoringFunction.h"
-#include <lbcpp/ProbabilityDistribution/ProbabilityDistributionBuilder.h>
+#include <lbcpp/Distribution/DistributionBuilder.h>
 
 using namespace lbcpp;
 
@@ -49,14 +49,14 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
 
   EnumerationPtr enumeration = leftData->getElementsType()->getTemplateArgument(1);
 
-  EnumerationProbabilityDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, leftData);
-  EnumerationProbabilityDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, rightData);
-  ProbabilityDistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);
+  EnumerationDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, leftData);
+  EnumerationDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, rightData);
+  DistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);
 
   probabilityBuilder->addDistribution(leftDistribution);
   probabilityBuilder->addDistribution(rightDistribution);
 
-  EnumerationProbabilityDistributionPtr priorDistribution = probabilityBuilder->build(context);
+  EnumerationDistributionPtr priorDistribution = probabilityBuilder->build(context);
 
   double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
   double informationGain = priorDistribution->computeEntropy()
@@ -65,10 +65,10 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
   return informationGain;
 }
 
-EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const
+EnumerationDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const
 {
   EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
-  ProbabilityDistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);  
+  DistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);  
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
     Variable output = data->getElement(i)[1];
@@ -78,9 +78,9 @@ EnumerationProbabilityDistributionPtr ClassificationIGSplitScoringFunction::getD
   return probabilityBuilder->build(context);
 }
 
-ProbabilityDistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBuilder(EnumerationPtr enumeration) const
+DistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBuilder(EnumerationPtr enumeration) const
 {
   if (!cacheBuilder)
-    const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationProbabilityDistributionBuilder(enumeration);
-  return cacheBuilder->cloneAndCast<ProbabilityDistributionBuilder>();
+    const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationDistributionBuilder(enumeration);
+  return cacheBuilder->cloneAndCast<DistributionBuilder>();
 }

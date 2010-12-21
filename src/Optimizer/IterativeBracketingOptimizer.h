@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_ITERATIVE_BRACKETING_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/ProbabilityDistribution/MultiVariateProbabilityDistribution.h>
+# include <lbcpp/Distribution/MultiVariateDistribution.h>
 
 namespace lbcpp
 {
@@ -22,7 +22,7 @@ public:
   {
     const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
     const ObjectiveFunctionPtr& objective = input->getObjective();
-    MultiVariateProbabilityDistributionPtr apriori = input->getAprioriDistribution().dynamicCast<MultiVariateProbabilityDistribution>();
+    MultiVariateDistributionPtr apriori = input->getAprioriDistribution().dynamicCast<MultiVariateDistribution>();
     jassert(apriori);
 
     // FIXME !

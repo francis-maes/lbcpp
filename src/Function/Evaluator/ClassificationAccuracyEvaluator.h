@@ -10,7 +10,7 @@
 # define LBCPP_FUNCTION_EVALUATOR_CLASSIFICATION_ACCURACY_H_
 
 # include <lbcpp/Function/Evaluator.h>
-# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+# include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
 # include "../../Core/Object/DenseDoubleObject.h"
 
@@ -38,7 +38,7 @@ public:
       return;
     }
     
-    EnumerationProbabilityDistributionPtr distribution = predicted.dynamicCast<EnumerationProbabilityDistribution>();
+    EnumerationDistributionPtr distribution = predicted.dynamicCast<EnumerationDistribution>();
     if (distribution)
     {
       size_t n = distribution->getEnumeration()->getNumElements() + 1;

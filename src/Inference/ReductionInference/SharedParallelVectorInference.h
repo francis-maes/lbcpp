@@ -12,7 +12,7 @@
 # include <lbcpp/Inference/ParallelInference.h>
 # include <lbcpp/Core/Vector.h>
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+# include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Core/Pair.h>
 
@@ -72,7 +72,7 @@ public:
       {
         if (result.isObject())
         {
-          EnumerationProbabilityDistributionPtr distribution = result.dynamicCast<EnumerationProbabilityDistribution>();
+          EnumerationDistributionPtr distribution = result.dynamicCast<EnumerationDistribution>();
           if (distribution)
             result = distribution->sample(RandomGenerator::getInstance());
         }

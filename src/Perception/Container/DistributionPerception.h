@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ProbabilityDistributionPerc...h| Probability Distribution        |
+| Filename: DistributionPerc...h| Probability Distribution        |
 | Author  : Francis Maes                   |  Perception                     |
 | Started : 05/10/2010 17:30               |                                 |
 `------------------------------------------/                                 |
@@ -10,26 +10,26 @@
 # define LBCPP_FUNCTION_PERCEPTION_PROBABILITY_DISTRIBUTION_H_
 
 # include <lbcpp/Perception/Perception.h>
-# include <lbcpp/ProbabilityDistribution/DiscreteProbabilityDistribution.h>
+# include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
 {
 
-class DiscreteProbabilityDistributionPerception : public Perception
+class DiscreteDistributionPerception : public Perception
 {
 public:
-  DiscreteProbabilityDistributionPerception(EnumerationPtr enumeration)
+  DiscreteDistributionPerception(EnumerationPtr enumeration)
     : enumeration(enumeration)
     {computeOutputType();}
 
-  DiscreteProbabilityDistributionPerception() {}
+  DiscreteDistributionPerception() {}
 
   virtual TypePtr getInputType() const
-    {return enumerationProbabilityDistributionClass(enumeration);}
+    {return enumerationDistributionClass(enumeration);}
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    const EnumerationProbabilityDistributionPtr& distribution = input.getObjectAndCast<EnumerationProbabilityDistribution>(context);
+    const EnumerationDistributionPtr& distribution = input.getObjectAndCast<EnumerationDistribution>(context);
     jassert(distribution);
     size_t n = enumeration->getNumElements();
     for (size_t i = 0; i <= n; ++i)
@@ -44,7 +44,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class DiscreteProbabilityDistributionPerceptionClass;
+  friend class DiscreteDistributionPerceptionClass;
 
   EnumerationPtr enumeration;
 

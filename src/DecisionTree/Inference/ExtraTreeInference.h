@@ -11,7 +11,7 @@
 
 # include "BinaryDecisionTree.h"
 # include "../../Inference/ReductionInference/ParallelVoteInference.h"
-# include <lbcpp/ProbabilityDistribution/ProbabilityDistribution.h>
+# include <lbcpp/Distribution/Distribution.h>
 # include <lbcpp/Perception/Perception.h>
 
 namespace lbcpp 
