@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Optimizer" directory="Optimizer">
+
+  <include file="lbcpp/Optimizer/Optimizer.h"/>
+
+  <class name="OptimizerInput" base="Object">
+    <variable type="ObjectiveFunction" name="objective"/>
+    <variable type="ProbabilityDistribution" name="aprioriDistribution"/>
+    <variable type="Variable" name="initialGuess"/>
+  </class>
+
+  <class name="Optimizer" base="Function" abstract="yes"/>
+
+  <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
+    <constructor arguments="size_t numSamples"/>
+    <variable type="PositiveInteger" name="numSamples"/>
+  </class>
+  
+</library>

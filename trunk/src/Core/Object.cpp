@@ -176,6 +176,15 @@ ClassPtr Object::getClass() const
   return thisClass;
 }
 
+ObjectPtr Object::create(ClassPtr objectClass)
+{
+  ObjectPtr res = objectClass->create(defaultExecutionContext()).getObject();
+  jassert(res);
+  jassert(res->getReferenceCount() == 2);
+  res->decrementReferenceCounter();
+  return res;
+}
+
 size_t Object::getNumVariables() const
   {return getClass()->getObjectNumVariables();}
 
@@ -261,7 +270,7 @@ int Object::compareVariables(ObjectPtr otherObject) const
 */
 ObjectPtr Object::clone(ExecutionContext& context) const
 {
-  ObjectPtr res = context.createObject(getClass());
+  ObjectPtr res = Object::create(getClass());
   jassert(res);
   clone(context, res);
   return res;
@@ -298,7 +307,7 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
   if (newType == thisClass)
     return clone(context);
 
-  ObjectPtr res = context.createObject(newType);
+  ObjectPtr res = Object::create(newType);
   size_t n = newType->getObjectNumVariables();
   for (size_t i = 0; i < n; ++i)
   {

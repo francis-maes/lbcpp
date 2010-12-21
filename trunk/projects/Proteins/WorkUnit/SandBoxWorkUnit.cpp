@@ -127,7 +127,7 @@ public:
   
     svm->getSubInference()->setBatchLearner(
       precomputePerceptionsNumericalInferenceLearner(
-            new OptimizerInferenceLearner(new AlaRacheOptimizer(), stochasticInferenceLearner(true))));
+            autoTuneInferenceLearner(new AlaRacheOptimizer(), evaluateStochasticLearnerObjectiveFunction())));
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);
@@ -184,7 +184,7 @@ VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String&
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 100;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)

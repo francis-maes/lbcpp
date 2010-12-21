@@ -89,7 +89,7 @@ bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitC
     return false;
 
   // create the work unit
-  ObjectPtr object = context.createObject(type);
+  ObjectPtr object = Object::create(type);
   if (!object || !checkIsAWorkUnit(context, object))
     return false;
 

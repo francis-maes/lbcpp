@@ -22,7 +22,7 @@ ExecutionContext::ExecutionContext()
 {
   initialize(*this);
 }
-
+/*
 void ExecutionContext::finishTypeDeclarations()
   {typeManager().finishDeclarations(*this);}
 
@@ -31,7 +31,7 @@ void ExecutionContext::declareType(TypePtr typeInstance)
 
 void ExecutionContext::declareTemplateType(TemplateTypePtr templateTypeInstance)
   {typeManager().declare(*this, templateTypeInstance);}
-
+*/
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(stack, workUnit);
@@ -40,21 +40,6 @@ bool ExecutionContext::run(const WorkUnitPtr& workUnit)
   stack->pop();
   postExecutionCallback(stack, workUnit, res);
   return res;
-}
-
-ObjectPtr ExecutionContext::createObject(ClassPtr objectClass)
-{
-  ObjectPtr res = objectClass->create(*this).getObject();
-  jassert(res);
-  jassert(res->getReferenceCount() == 2);
-  res->decrementReferenceCounter();
-  return res;
-}
-
-Variable ExecutionContext::createVariable(TypePtr type)
-{
-  jassert(type && type->isInitialized());
-  return Variable(type, type->create(*this));
 }
 
 #ifdef JUCE_DEBUG

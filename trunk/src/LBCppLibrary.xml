@@ -10,8 +10,9 @@
   <import name="ProbabilityDistribution"/>
 
   <import name="Perception"/>
+  <import name="Optimizer"/>
   <import name="Inference"/>
-  
+
   <import name="NumericalLearning"/>
   <import name="DecisionTree"/>
 

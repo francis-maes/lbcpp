@@ -32,7 +32,7 @@ class SaveObjectProgram : public WorkUnit
       return false;
     }
 
-    ObjectPtr obj = context.createObject(type);
+    ObjectPtr obj = Object::create(type);
     if (!obj)
     {
       std::cout << "Fail" << std::endl;

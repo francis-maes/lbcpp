@@ -9,6 +9,9 @@
 #include <lbcpp/Inference/InferenceBatchLearner.h>
 using namespace lbcpp;
 
+/*
+** InferenceBatchLearnerInput
+*/
 static void convert(const ContainerPtr& examples, InferenceExampleVectorPtr& res)
 {
   if (!examples)
@@ -72,4 +75,18 @@ void InferenceBatchLearnerInput::setExample(size_t i, const Variable& input, con
   std::pair<Variable, Variable>& e = getExample(i);
   e.first = input;
   e.second = supervision;
+}
+
+/*
+** EvaluateBatchLearnerObjectiveFunction
+*/
+String EvaluateBatchLearnerObjectiveFunction::getDescription(const Variable& input) const
+  {return T("Evaluating learning parameters ") + input.toShortString();}
+
+double EvaluateBatchLearnerObjectiveFunction::compute(ExecutionContext& context, const Variable& parameters) const
+{
+  InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
+  InferencePtr inferenceLearner = createLearner(context, parameters, targetInference);
+  inferenceLearner->run(context, learnerInput, Variable());
+  return getObjective(context, targetInference);
 }

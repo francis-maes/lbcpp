@@ -60,7 +60,7 @@ public:
     }
     DenseObjectObjectPtr& weights = *(DenseObjectObjectPtr* )target;
     if (!weights)
-      weights = context.createObject(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
+      weights = Object::create(getWeightsType(perception->getOutputType())).staticCast<DenseObjectObject>();
     
     ObjectPtr perceivedInput;
     if (input.getType() == perception->getOutputType())

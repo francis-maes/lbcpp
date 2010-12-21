@@ -34,17 +34,11 @@ extern ClassPtr objectiveFunctionClass;
 class EvaluateObjectiveFunctionWorkUnit : public WorkUnit
 {
 public:
-  EvaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result)
-    : WorkUnit(name), objective(objective), input(input), result(result) {}
-  EvaluateObjectiveFunctionWorkUnit() : result(*(double* )0) {}
+  EvaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result);
+  EvaluateObjectiveFunctionWorkUnit();
 
 protected:
-  virtual bool run(ExecutionContext& context)
-  {
-    result = objective->compute(context, input);
-    context.resultCallback(name, result);
-    return true;
-  }
+  virtual bool run(ExecutionContext& context);
 
   friend class EvaluateObjectiveFunctionWorkUnitClass;
 

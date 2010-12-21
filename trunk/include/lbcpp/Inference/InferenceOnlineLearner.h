@@ -109,6 +109,15 @@ extern InferenceOnlineLearnerPtr computeEvaluatorOnlineLearner(EvaluatorPtr eval
 
 extern UpdatableOnlineLearnerPtr saveScoresToGnuPlotFileOnlineLearner(const File& outputFile, LearnerUpdateFrequency updateFrequency = perPass);
 
+class InferenceOnlineLearnerParameters : public Object
+{
+public:
+  virtual InferenceOnlineLearnerPtr createLearner() const = 0;
+};
+
+extern ClassPtr inferenceOnlineLearnerParametersClass;
+typedef ReferenceCountedObjectPtr<InferenceOnlineLearnerParameters> InferenceOnlineLearnerParametersPtr;
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_ONLINE_LEARNER_H_
