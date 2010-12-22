@@ -129,7 +129,7 @@ public:
     IndependentMultiVariateDistributionPtr aprioriDistribution = new IndependentMultiVariateDistribution(myLearningParametersClass);
     aprioriDistribution->setSubDistribution(0, new UniformDistribution(-5, 5)); // learning rate
     aprioriDistribution->setSubDistribution(1, new UniformDistribution(1, 10)); // learning rate decrease
-    aprioriDistribution->setSubDistribution(2, new UniformDistribution(-8, 2)); // regularizer
+    aprioriDistribution->setSubDistribution(2, new UniformDistribution(-8, -2)); // regularizer
     MyLearningParametersPtr initialGuess(new MyLearningParameters());
     InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, initialGuess);
 
@@ -190,7 +190,7 @@ VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String&
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 100;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
     return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
@@ -216,8 +216,8 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(context, T("Loading training proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
   ContainerPtr testProteins = loadProteins(context, T("Loading testing proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
-  ContainerPtr validationProteins = trainProteins->fold(0, 3);
-  trainProteins = trainProteins->invFold(0, 3);
+  ContainerPtr validationProteins = trainProteins->fold(0, 10);
+  //trainProteins = trainProteins->invFold(0, 3);
 
   context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ")  +
     String((int)validationProteins->getNumElements()) + T(" validation proteins, ")  +

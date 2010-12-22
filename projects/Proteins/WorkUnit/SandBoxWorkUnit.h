@@ -23,7 +23,7 @@ namespace lbcpp
 class MyLearningParameters : public InferenceOnlineLearnerParameters
 {
 public:
-  MyLearningParameters() : logLearningRate(1.0), logLearningRateDecrease(3.0), logRegularizer(-7.0) {}
+  MyLearningParameters() : logLearningRate(0.0), logLearningRateDecrease(8.0), logRegularizer(-8.0) {}
 
   double getLogLearningRate() const
     {return logLearningRate;}
@@ -51,7 +51,7 @@ public:
     validationEvaluator->setName(T("validationScore"));
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
 
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(3);
+    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
     return res;
   }
