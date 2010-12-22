@@ -119,14 +119,12 @@ bool LearnerProgram::run(ExecutionContext& context)
   //std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
   EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
   inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
-  context.resultCallback(T("Train Evaluation"), evaluator->getDefaultScore());
 
   if (testingData && testingData->getNumElements())
   {
     //std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
     evaluator = classificationAccuracyEvaluator(T("digit"));
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-    context.resultCallback(T("Test Evaluation"), evaluator->getDefaultScore());
   }
 
   inference->saveToFile(context, output.getFullPathName() + T(".inference"));

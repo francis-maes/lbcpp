@@ -250,19 +250,12 @@ public:
       ProteinEvaluatorPtr validationEvaluator = new ProteinEvaluator();
 
       inference->evaluate(context, trainingData, learningEvaluator, T("Evaluating on training data"));
-      context.resultCallback(T("Train"), learningEvaluator->toString());
 
       if (testingData && testingData->getNumElements())
-      {
         inference->evaluate(context, testingData, testingEvaluator, T("Evaluating on testing data"));
-        context.resultCallback(T("Test"), testingEvaluator->toString());
-      }
 
       if (validationData && validationData->getNumElements())
-      {
         inference->evaluate(context, validationData, validationEvaluator, T("Evaluating on validation data"));
-        context.resultCallback(T("Validation"), validationEvaluator->toString());
-      }
 
       /* GnuPlot File Generation */
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)

@@ -139,8 +139,7 @@ bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, Evalu
   InferencePtr inference = refCountedPointerFromThis(this);
   ParallelInferencePtr evaluatorInference = evaluationInference(inference, evaluator);
   evaluatorInference->setName(workUnitName.isEmpty() ? T("Evaluating") : workUnitName);
-  evaluatorInference->computeInference(context, examples, Variable());
-  return true;
+  return evaluatorInference->run(context, examples, Variable(), NULL, workUnitName);
 }
 
 bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName) const
