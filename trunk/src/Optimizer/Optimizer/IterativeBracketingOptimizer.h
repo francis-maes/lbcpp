@@ -39,6 +39,8 @@ public:
     {
       for (size_t j = 0; j < numVariables; ++j)
       {
+        //Object::displayObjectAllocationInfo(std::cerr);
+
         DistributionPtr marginalDistribution = distribution->getSubDistribution(j);
         if (!marginalDistribution)
           continue;
@@ -78,10 +80,10 @@ private:
     double maximum = uniform->getMaximum();
 
     double halfRange = (maximum - minimum) / (2.0 * reductionFactor);
-    double newMinimum = juce::jmax(minimum, newGuess.getDouble() - halfRange);
-    double newMaximum = juce::jmin(maximum, newGuess.getDouble() + halfRange);
-    jassert(newMinimum <= newMaximum);
-    return newMinimum == newMaximum ? DistributionPtr() : new UniformDistribution(newMinimum, newMaximum);
+    double newMinimum = newGuess.getDouble() - halfRange;
+    double newMaximum = newGuess.getDouble() + halfRange;
+    jassert(newMinimum < newMaximum);
+    return new UniformDistribution(newMinimum, newMaximum);
   }
 };
 

@@ -50,7 +50,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<ExplorerExecutionCallback> ExplorerExecutionCallbackPtr;
 
-static ExplorerExecutionCallbackPtr explorerExecutionCallback = new ExplorerExecutionCallback();
+static ExplorerExecutionCallbackPtr explorerExecutionCallback;
 
 void flushErrorAndWarningMessages(const String& title)
   {explorerExecutionCallback->flushMessages(title);}
@@ -272,6 +272,7 @@ public:
   virtual void initialise(const String& commandLine)
   {    
     lbcpp::initialize(NULL);
+    explorerExecutionCallback = new ExplorerExecutionCallback();
     defaultExecutionContext().appendCallback(explorerExecutionCallback);
 
     File currentExecutableDirectory = File::getSpecialLocation(File::currentExecutableFile).getParentDirectory();
