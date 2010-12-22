@@ -484,25 +484,25 @@ void SnowBox::printInformation(ExecutionContext& context) const
 {
   String txt;
 
-  context.informationCallback(T("SnowBox::Directories"), T("Learning Directory : ") + learningDirectory.getFullPathName());
+  context.resultCallback(T("Learning Directory"), learningDirectory.getFullPathName());
   if (testingDirectory != File::nonexistent)
-    context.informationCallback(T("SnowBox::Directories"), T("Testing Directory : ") + testingDirectory.getFullPathName());
+    context.resultCallback(T("Testing Directory"), testingDirectory.getFullPathName());
   if (validationDirectory != File::nonexistent)
-    context.informationCallback(T("SnowBox::Directories"), T("Validation Directory : ") + validationDirectory.getFullPathName());
-  context.informationCallback(T("SnowBox::Directories"), T("Output : ") + output.getFullPathName());
+    context.resultCallback(T("Validation Directory"), validationDirectory.getFullPathName());
+  context.resultCallback(T("Output"), output.getFullPathName());
   
-  context.informationCallback(T("SnowBox::Data"), T("Learning Proteins : ") + String((int)learningData->getNumElements()));
+  context.resultCallback(T("Learning Proteins"), String((int)learningData->getNumElements()));
   txt = String(testingData ? (int)testingData->getNumElements() : 0);
   if (testingDirectory == File::nonexistent && !useCrossValidation)
     txt += T(" (") + String((int)currentFold + 1) + T("/") + String((int)numberOfFolds) + T(")");
-  context.informationCallback(T("SnowBox::Data"), T("Testing Proteins : ") + txt);
+  context.resultCallback(T("Testing Proteins"), txt);
 
   txt = String(validationData ? (int)validationData->getNumElements() : 0);
   if (validationDirectory == File::nonexistent && partAsValidation)
     txt = T(" (1/") + String((int)partAsValidation) + T(")");
-  context.informationCallback(T("SnowBox::Data"), T("Validation Proteins : ") + txt);
+  context.resultCallback(T("Validation Protein"), txt);
 
-  context.informationCallback(T("SnowBox::Method"), T("Base Learner : ") + baseLearner);
+  context.resultCallback(T("Base Learner"), baseLearner);
 
   if (useCrossValidation)
     txt = String((int)numberOfFolds) + T("-fold cross validation");
@@ -510,13 +510,13 @@ void SnowBox::printInformation(ExecutionContext& context) const
     txt = "Independent testing set";
   else
     txt = T("Separated part of training set (fold ") + String((int)currentFold + 1) + T(" over ") + String((int)numberOfFolds) + T(")");
-  context.informationCallback(T("SnowBox::Method"), T("Validation Protocol : ") + txt);
+  context.resultCallback(T("Validation Protocol"), txt);
 
   if (target)
   {
     for (size_t i = 0; i < target->getNumPasses(); ++i)
       for (size_t j = 0; j < target->getNumTasks(i); ++j)
-        context.informationCallback(T("SnowBox::Model"), T("Pass ") + String((int)i) + (" - Task : ") + target->getTask(i, j));
+        context.resultCallback(T("Pass ") + String((int)i) + T(" - Task ") + String((int)j), target->getTask(i, j));
   }
 }
 
