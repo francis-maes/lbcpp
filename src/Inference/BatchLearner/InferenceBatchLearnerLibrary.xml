@@ -53,9 +53,9 @@
   </class>
   
   <class name="AutoTuneInferenceLearner" base="Inference">
-    <constructor arguments="const InferencePtr&amp; optimizer, const EvaluateBatchLearnerObjectiveFunctionPtr&amp; objective"/>
-    <variable type="Inference" name="optimizer"/>
-    <variable type="EvaluateBatchLearnerObjectiveFunction" name="objective"/>
+    <constructor arguments="const OptimizerPtr&amp; optimizer, const OptimizerInputPtr&amp; optimizerInput"/>
+    <variable type="Optimizer" name="optimizer"/>
+    <variable type="OptimizerInput" name="optimizerInput"/>
   </class>
   
   <!-- Misc-->

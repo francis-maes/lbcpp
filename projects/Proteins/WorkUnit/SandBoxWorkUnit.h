@@ -68,46 +68,6 @@ typedef ReferenceCountedObjectPtr<MyLearningParameters> MyLearningParametersPtr;
 
 extern ClassPtr myLearningParametersClass;
 
-///////////////////////////////////////////////
-
-// Optimizer: ObjectiveFunction x Aprioris -> Variable
-// OptimizerInferenceLearner: decorates the optimizer
-
-class AlaRacheOptimizer : public Inference
-{
-public:
-  virtual TypePtr getInputType() const
-    {return objectiveFunctionClass;}
-
-  virtual TypePtr getOutputType(TypePtr input) const
-    {return doubleType;}
-
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-  {
-    const ObjectiveFunctionPtr& objective = input.getObjectAndCast<ObjectiveFunction>();
-
-    CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimizer"), 5));
-    std::vector<double> scores(workUnits->getNumWorkUnits());
-    for (size_t i = 0; i < workUnits->getNumWorkUnits(); ++i)
-    {
-      double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
-      workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(learningRate), objective, learningRate, scores[i]));
-    }
-    workUnits->setPushChildrenIntoStackFlag(true);
-    context.run(workUnits);
-    double bestScore = -DBL_MAX;
-    double res = 0.0;
-    for (size_t i = 0; i < scores.size(); ++i)
-    {
-      double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
-      std::cout << "Score for LR = " << learningRate << ": " << scores[i] << std::endl;
-      if (scores[i] > bestScore)
-        bestScore = scores[i], res = learningRate;
-    }
-    return res;
-  }
-};
-
 class SandBoxWorkUnit : public WorkUnit
 {
 public:

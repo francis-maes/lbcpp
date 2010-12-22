@@ -17,6 +17,9 @@ namespace lbcpp
 class ContinuousDistribution : public Distribution
 {
 public:
+  virtual TypePtr getElementsType() const
+    {return doubleType;}
+
   virtual void sampleUniformly(size_t numSamples, std::vector<double>& res) const = 0;
 
   juce_UseDebuggingNewOperator
@@ -50,6 +53,8 @@ protected:
   double minimum;
   double maximum;
 };
+
+typedef ReferenceCountedObjectPtr<UniformDistribution> UniformDistributionPtr;
 
 class GaussianDistribution : public ContinuousDistribution
 {

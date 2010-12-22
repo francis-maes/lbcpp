@@ -11,7 +11,7 @@
 
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Function/ObjectiveFunction.h>
+# include <lbcpp/Optimizer/Optimizer.h>
 
 namespace lbcpp
 {
@@ -37,8 +37,8 @@ public:
 class AutoTuneInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
-  AutoTuneInferenceLearner(const InferencePtr& optimizer, const EvaluateBatchLearnerObjectiveFunctionPtr& objective)
-    : optimizer(optimizer), objective(objective) {}
+  AutoTuneInferenceLearner(const OptimizerPtr& optimizer, const OptimizerInputPtr& optimizerInput)
+    : optimizer(optimizer), optimizerInput(optimizerInput) {}
   AutoTuneInferenceLearner() {}
 
   virtual ClassPtr getTargetInferenceClass() const
@@ -48,11 +48,14 @@ public:
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
 
-    // optimize parameters
-    EvaluateBatchLearnerObjectiveFunctionPtr objective = this->objective->cloneAndCast<EvaluateBatchLearnerObjectiveFunction>(context);
+    // clone the objective and set the batch learner input
+    EvaluateBatchLearnerObjectiveFunctionPtr objective = optimizerInput->getObjective()->cloneAndCast<EvaluateBatchLearnerObjectiveFunction>(context);
     objective->setLearnerInput(learnerInput);
-    Variable optimizedParameters;
-    if (!optimizer->run(context, objective, Variable(), &optimizedParameters))
+    OptimizerInputPtr optimizerInput(new OptimizerInput(objective, this->optimizerInput->getAprioriDistribution(), this->optimizerInput->getInitialGuess()));
+    
+    // optimize the parameters
+    Variable optimizedParameters = optimizer->computeFunction(context, optimizerInput);
+    if (optimizedParameters.isNil())
       return Variable();
     
     // learn with optimized parameters
@@ -65,8 +68,8 @@ public:
 protected:
   friend class AutoTuneInferenceLearnerClass;
 
-  InferencePtr optimizer;
-  EvaluateBatchLearnerObjectiveFunctionPtr objective;
+  OptimizerPtr optimizer;
+  OptimizerInputPtr optimizerInput;
 };
 
 }; /* namespace lbcpp */

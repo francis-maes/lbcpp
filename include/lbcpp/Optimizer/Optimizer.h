@@ -27,6 +27,7 @@ public:
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 
 extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples);
+extern OptimizerPtr iterativeBracketingOptimizer(size_t numPasses, double reductionFactor, const OptimizerPtr& baseOptimizer);
 
 }; /* namespace lbcpp */
 

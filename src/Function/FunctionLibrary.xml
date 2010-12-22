@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Function" directory="Function">
-  <include file="lbcpp/Function/ObjectiveFunction.h"/>
+  <include file="lbcpp/Core/Function.h"/>
 
   <class name="Function" abstract="yes">
     <variable type="Boolean" name="pushIntoStack"/>
-  </class>
-
-  <!-- Objective Function -->
-  <class name="ObjectiveFunction" base="Function" abstract="yes"/>
-
-  <class name="EvaluateObjectiveFunctionWorkUnit" base="WorkUnit">
-    <constructor arguments="const String&amp; name, ObjectiveFunctionPtr objective, const Variable&amp; input, double&amp; result"/>
-    <variable type="ObjectiveFunction" name="objective"/>
-    <variable type="Variable" name="input"/>
   </class>
 
   <import name="MiscFunctions"/>

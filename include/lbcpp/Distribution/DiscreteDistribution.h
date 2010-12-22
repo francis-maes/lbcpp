@@ -31,6 +31,9 @@ public:
   BernoulliDistribution(double pTrue) : pTrue(pTrue), pFalse(1.0 - pTrue) {}
   BernoulliDistribution() : pTrue(0.0), pFalse(0.0) {}
   
+  virtual TypePtr getElementsType() const
+    {return booleanType;}
+
   double getProbabilityOfTrue() const
     {return pTrue ? pTrue / (pTrue + pFalse) : 0.0;}
   
@@ -57,6 +60,9 @@ public:
   EnumerationDistribution() {}
   
   // DiscreteDistribution
+  virtual TypePtr getElementsType() const
+    {return getEnumeration();}
+
   EnumerationPtr getEnumeration() const
     {return getClass()->getTemplateArgument(0).dynamicCast<Enumeration>();}
 

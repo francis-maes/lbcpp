@@ -69,7 +69,6 @@
 # include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
 # include "Function/StoppingCriterion.h"
-# include "Function/ObjectiveFunction.h"
 # include "Function/Evaluator.h"
 
 # include "Perception/Perception.h"
