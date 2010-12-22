@@ -36,6 +36,11 @@ public:
         evaluator->addPrediction(context, output, supervision);
     }
 
+    std::vector< std::pair<String, double> > results;
+    evaluator->getScores(results);
+    for (size_t i = 0; i < results.size(); ++i)
+      context.resultCallback(results[i].first, results[i].second);
+
     return evaluator->getDefaultScore();
   }
 

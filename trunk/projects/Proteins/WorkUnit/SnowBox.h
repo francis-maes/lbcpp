@@ -176,7 +176,7 @@ private:
   
   ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context) const;
   
-  void printInformation() const;
+  void printInformation(ExecutionContext& context) const;
 };
 
 };

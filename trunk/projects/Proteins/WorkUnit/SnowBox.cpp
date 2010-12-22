@@ -87,8 +87,8 @@ protected:
     if (!parameters.count(targetName))
     {
       jassert(defaultParameter);
-      std::cout << "Default learning parameter used for " << targetName.quoted()
-                << " on " << ((contentOnly) ? "Content-Only" : "MultiPass") << " context" << std::endl;
+      context.informationCallback(T("Default learning parameter used for ") + targetName.quoted()
+                + T(" on ") + ((contentOnly) ? T("Content-Only") : T("MultiPass")) + T(" context"));
       return defaultParameter;
     }
 
@@ -96,8 +96,8 @@ protected:
     if (!res)
     {
       jassert(defaultParameter);
-      std::cout << "Default learning parameter used for " << targetName.quoted()
-                << " on " << ((contentOnly) ? "Content-Only" : "MultiPass") << " context" << std::endl;
+      context.informationCallback(T("Default learning parameter used for ") + targetName.quoted()
+                + T(" on ") + ((contentOnly) ? T("Content-Only") : T("MultiPass")) + T(" context"));
       return defaultParameter;
     }
     return res;
@@ -202,17 +202,21 @@ class StackPrinterCallback : public ExecutionCallback
 {
 public:
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-    {getContext().informationCallback(workUnit->getName());}
+  {
+    for (size_t i = 0; i < stack->getDepth(); ++i)
+      std::cout << "  ";
+    std::cout << workUnit->getClassName() << std::endl;
+  }
   
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-    {getContext().informationCallback(workUnit->getName() + T(" END"));}
+  {}
 };
 
-class MyInferenceCallback : public ExecutionCallback
+class EvaluationInferenceCallback : public ExecutionCallback
 {
 public:
-  MyInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, ContainerPtr validationData, ProteinTargetPtr target, File output)
-    : inference(inference), trainingData(trainingData), testingData(testingData)
+  EvaluationInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, ContainerPtr validationData, ProteinTargetPtr target, File output)
+    : inference(inference), trainingData(trainingData), testingData(testingData), passNumber(0), startingTime(Time::getMillisecondCounter())
   {
     for (size_t i = 0; i < target->getNumPasses(); ++i)
     {
@@ -228,80 +232,37 @@ public:
     }
   }
   
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-  {
-    ExecutionContext& context = getContext();
-    if (stack->getDepth() == 0)
-    {
-      // top-level learning is beginning
-      startingTime = Time::getMillisecondCounter();
-      passNumber = 0;
-    }
-    
-    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
-
-    if (!inferenceWorkUnit || !inferenceWorkUnit->getInput().isObject())
-      return;
-
-    InferenceBatchLearnerInputPtr learnerInput = inferenceWorkUnit->getInput().dynamicCast<InferenceBatchLearnerInput>();
-    if (learnerInput)
-    {
-      String inputTypeName = learnerInput->getTrainingExamples()->getElementsType()->getTemplateArgument(0)->getName();
-      
-      String info = T("=== Learning ") + learnerInput->getTargetInference()->getName() + T(" with ");
-      info += String((int)learnerInput->getNumTrainingExamples());
-      if (learnerInput->getNumValidationExamples())
-        info += T(" + ") + String((int)learnerInput->getNumValidationExamples());
-      
-      info += T(" ") + inputTypeName + T("(s) ===");
-      context.informationCallback(info);
-    }
-  }
-  
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {
     ExecutionContext& context = getContext();
 
-    InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
-    if (!inferenceWorkUnit)
-      return;
-    const InferencePtr& inference = inferenceWorkUnit->getInference();
-
-    // FIXME: probably broken test
-    if (stack->getDepth() == 2 && (inference->getClassName() == T("StaticParallelInferenceLearner")
-                                   || inference->getClassName() == T("MultiPassInferenceLearner")))
+    if (stack->getDepth() == 1 && workUnit->getName().startsWith(T("Learning Passsssssss")))
     {
-      context.informationCallback(T("===================== EVALUATION ====================="));
+      InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
+      if (!inferenceWorkUnit || !inferenceWorkUnit->getInput().isObject())
+      {
+        context.errorCallback(T("EvaluationInferenceCallback::preExecutionCallback"), T("Callback is incorrectly calibrate"));
+        return;
+      }
 
       ProteinEvaluatorPtr learningEvaluator = new ProteinEvaluator();
       ProteinEvaluatorPtr testingEvaluator = new ProteinEvaluator();
       ProteinEvaluatorPtr validationEvaluator = new ProteinEvaluator();
-      
-      context.informationCallback(T("================== Train Evaluation ==================  ")
-                            + String((Time::getMillisecondCounter() - startingTime) / 1000)
-                            + T(" s"));
-      inference->evaluate(context, trainingData, learningEvaluator);
-      context.informationCallback(learningEvaluator->toString());
+
+      inference->evaluate(context, trainingData, learningEvaluator, T("Evaluating on training data"));
+      context.resultCallback(T("Train"), learningEvaluator->toString());
 
       if (testingData && testingData->getNumElements())
       {
-        context.informationCallback(T("=================== Test Evaluation ==================  ")
-                              + String((Time::getMillisecondCounter() - startingTime) / 1000)
-                              + T(" s"));
-        inference->evaluate(context, testingData, testingEvaluator);
-        context.informationCallback(testingEvaluator->toString());
+        inference->evaluate(context, testingData, testingEvaluator, T("Evaluating on testing data"));
+        context.resultCallback(T("Test"), testingEvaluator->toString());
       }
 
       if (validationData && validationData->getNumElements())
       {
-        context.informationCallback(T("============== Validation Evaluation ===============  ")
-                              + String((Time::getMillisecondCounter() - startingTime) / 1000)
-                              + T(" s"));
-        inference->evaluate(context, validationData, validationEvaluator);
-        context.informationCallback(validationEvaluator->toString());
+        inference->evaluate(context, validationData, validationEvaluator, T("Evaluating on validation data"));
+        context.resultCallback(T("Validation"), validationEvaluator->toString());
       }
-
-      context.informationCallback(T("======================================================"));
 
       /* GnuPlot File Generation */
       for (std::map<String, File>::iterator it = outputs.begin(); it != outputs.end(); ++it)
@@ -333,26 +294,10 @@ public:
         delete o;
       }
 
-      // Mouais ... -_-"
-      /*InferenceBatchLearnerInputPtr learnerInput = input.dynamicCast<InferenceBatchLearnerInput>();
-      if (learnerInput)
-      {
-        const InferencePtr& targetInference = learnerInput->getTargetInference();
-        if (targetInference && targetInference->getOnlineLearner())
-        {
-          std::vector< std::pair<String, double> > scores;
-          targetInference->getLastOnlineLearner()->getScores(scores);
-          String info;
-          for (size_t i = 0; i < scores.size(); ++i)
-            info += T("Score ") + scores[i].first + T(": ") + String(scores[i].second) + T("\n");
-          context.informationCallback(info);
-        }
-      }*/
-
       ++passNumber;
     }
 
-    if (stack->getDepth() == 1)
+    if (stack->getDepth() == 0)
     {
       context.informationCallback(T("Bye: ") + String((Time::getMillisecondCounter() - startingTime) / 1000.0) + T(" seconds"));
     }
@@ -542,50 +487,44 @@ bool SnowBox::loadData(ExecutionContext& context)
   return true;
 }
 
-void SnowBox::printInformation() const
+void SnowBox::printInformation(ExecutionContext& context) const
 {
-  std::cout << "* -------------- Directories -------------- *" << std::endl;
-  std::cout << "learningDirectory   : " << learningDirectory.getFullPathName() << std::endl;
+  String txt;
+
+  context.informationCallback(T("SnowBox::Directories"), T("Learning Directory : ") + learningDirectory.getFullPathName());
   if (testingDirectory != File::nonexistent)
-    std::cout << "testingDirectory    : " << testingDirectory.getFullPathName() << std::endl;
+    context.informationCallback(T("SnowBox::Directories"), T("Testing Directory : ") + testingDirectory.getFullPathName());
   if (validationDirectory != File::nonexistent)
-    std::cout << "validationDirectory : " << validationDirectory.getFullPathName() << std::endl;
-  std::cout << "output              : " << output.getFullPathName() << std::endl;
+    context.informationCallback(T("SnowBox::Directories"), T("Validation Directory : ") + validationDirectory.getFullPathName());
+  context.informationCallback(T("SnowBox::Directories"), T("Output : ") + output.getFullPathName());
   
-  std::cout << "* ----------------- Data ------------------ *" << std::endl;
-  std::cout << "Learning proteins   : " << learningData->getNumElements() << std::endl;
-  std::cout << "Testing proteins    : " << ((testingData) ? testingData->getNumElements() : 0);
+  context.informationCallback(T("SnowBox::Data"), T("Learning Proteins : ") + String((int)learningData->getNumElements()));
+  txt = String(testingData ? (int)testingData->getNumElements() : 0);
   if (testingDirectory == File::nonexistent && !useCrossValidation)
-    std::cout << " (" << (currentFold+1) << "/" << numberOfFolds << ")";
-  std::cout << std::endl;
-  std::cout << "Validation proteins : " << ((validationData) ? validationData->getNumElements() : 0);
+    txt += T(" (") + String((int)currentFold + 1) + T("/") + String((int)numberOfFolds) + T(")");
+  context.informationCallback(T("SnowBox::Data"), T("Testing Proteins : ") + txt);
+
+  txt = String(validationData ? (int)validationData->getNumElements() : 0);
   if (validationDirectory == File::nonexistent && partAsValidation)
-    std::cout << " (1/" << partAsValidation << ")";
-  std::cout << std::endl;
-  
-  std::cout << "* ---------------- Method ----------------- *" << std::endl;
-  std::cout << "baseLearner         : " << baseLearner << std::endl;
-  std::cout << "Validation protocol : ";
+    txt = T(" (1/") + String((int)partAsValidation) + T(")");
+  context.informationCallback(T("SnowBox::Data"), T("Validation Proteins : ") + txt);
+
+  context.informationCallback(T("SnowBox::Method"), T("Base Learner : ") + baseLearner);
+
   if (useCrossValidation)
-    std::cout << numberOfFolds << "-fold cross validation";
+    txt = String((int)numberOfFolds) + T("-fold cross validation");
   else if (testingDirectory != File::nonexistent)
-    std::cout << "Independent testing set";
+    txt = "Independent testing set";
   else
-    std::cout << "Separated part of training set (fold " << (currentFold+1) << " over " << numberOfFolds << ")";
-  std::cout << std::endl;
-  
+    txt = T("Separated part of training set (fold ") + String((int)currentFold + 1) + T(" over ") + String((int)numberOfFolds) + T(")");
+  context.informationCallback(T("SnowBox::Method"), T("Validation Protocol : ") + txt);
+
   if (target)
   {
-    std::cout << "* ------------------ Model ---------------- *" << std::endl;
     for (size_t i = 0; i < target->getNumPasses(); ++i)
-    {
-      std::cout << "Pass " << i << std::endl;
       for (size_t j = 0; j < target->getNumTasks(i); ++j)
-        std::cout << "|-> " << target->getTask(i, j) << std::endl;
-    }
+        context.informationCallback(T("SnowBox::Model"), T("Pass ") + String((int)i) + (" - Task : ") + target->getTask(i, j));
   }
-  std::cout << "* ----------------------------------------- *" << std::endl;
-  std::cout << std::endl;
 }
 
 ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference(ExecutionContext& context) const
@@ -614,7 +553,7 @@ bool SnowBox::run(ExecutionContext& context)
     return false;
   }
 
-  printInformation();
+  printInformation(context);
 
   ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference(context);
   InferencePtr previousInference;
@@ -630,13 +569,13 @@ bool SnowBox::run(ExecutionContext& context)
     inference->appendInference(inferencePass);
     previousInference = inferencePass;
   }
-  
+  /*
   ExecutionContextPtr inferenceContext = (numberOfThreads == 1)
                               ? singleThreadedExecutionContext()
                               : multiThreadedExecutionContext(numberOfThreads);
   // ExecutionContextPtr inferenceContext = refCountedPointerFromThis(&context); // FIXME !
   inferenceContext->appendCallback(consoleExecutionCallback());
-
+  */
   if (useCrossValidation)
   {
     //inference->crossValidate(*context, learningData, evaluator, numberOfFolds);
@@ -645,12 +584,12 @@ bool SnowBox::run(ExecutionContext& context)
   }
   else
   {
-    inferenceContext->appendCallback(new MyInferenceCallback(inference, learningData, testingData, validationData, target, output));
-    //context->appendCallback(new StackPrinterCallback());
-    inference->train(*inferenceContext, learningData, validationData);
+    context.appendCallback(new EvaluationInferenceCallback(inference, learningData, testingData, validationData, target, output));
+    //context.appendCallback(new StackPrinterCallback());
+    inference->train(context, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
-    std::cout << "Save inference : " << outputInferenceFile.getFullPathName() << std::endl;
+    context.informationCallback(T("SnowBox::InferenceSavedTo"), outputInferenceFile.getFullPathName());
     inference->saveToFile(context, outputInferenceFile);
   }
   return true;
