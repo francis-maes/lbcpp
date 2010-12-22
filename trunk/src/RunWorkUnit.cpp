@@ -54,7 +54,8 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
       if (!lbcpp::importLibraryFromFile(defaultExecutionContext(), dynamicLibraryFile))
         return false;
     }
-    remainingArguments.push_back(argument);
+    else
+      remainingArguments.push_back(argument);
   }
 
   if (remainingArguments.empty())
