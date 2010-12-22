@@ -9,9 +9,8 @@
 #ifndef LBCPP_OPTIMIZER_INPUT_H_
 # define LBCPP_OPTIMIZER_INPUT_H_
 
-# include "../Core/Variable.h"
+# include "ObjectiveFunction.h"
 # include "../Distribution/Distribution.h"
-# include "../Function/ObjectiveFunction.h"
 
 namespace lbcpp
 {

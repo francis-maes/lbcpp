@@ -12,7 +12,8 @@ using namespace lbcpp;
 /*
 ** IndependentMultiVariateDistribution
 */
-IndependentMultiVariateDistribution::IndependentMultiVariateDistribution(ClassPtr variableClass)
+IndependentMultiVariateDistribution::IndependentMultiVariateDistribution(ClassPtr elementsType)
+  : MultiVariateDistribution(independentMultiVariateDistributionClass(elementsType)), distributions(elementsType->getObjectNumVariables())
 {
 }
 
@@ -31,7 +32,7 @@ double IndependentMultiVariateDistribution::compute(ExecutionContext& context, c
 
 Variable IndependentMultiVariateDistribution::sample(RandomGeneratorPtr random) const
 {
-  ClassPtr vclass = getVariableClass();
+  ClassPtr vclass = getElementsType();
   ObjectPtr res = Object::create(vclass);
   for (size_t i = 0; i < distributions.size(); ++i)
     res->setVariable(defaultExecutionContext(), i, distributions[i]->sample(random));

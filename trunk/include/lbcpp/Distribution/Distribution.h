@@ -20,6 +20,8 @@ public:
   Distribution(ClassPtr thisClass) : Object(thisClass) {}
   Distribution() : Object() {}
   
+  virtual TypePtr getElementsType() const = 0;
+
   virtual double computeEntropy() const = 0;
   virtual double compute(ExecutionContext& context, const Variable& value) const = 0;
   virtual Variable sample(RandomGeneratorPtr random) const = 0;

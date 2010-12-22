@@ -36,6 +36,8 @@ GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionLibrary.xml Mo
 GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionLibrary.xml ContainerPerceptionLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceLibrary.xml InferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackLibrary.xml InferenceCallbackLibrary.cpp)
@@ -232,8 +234,6 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/IterationFunction.h
   ../include/lbcpp/Function/StoppingCriterion.h
   ../include/lbcpp/Function/Predicate.h
-  ../include/lbcpp/Function/ObjectiveFunction.h
-  Function/ObjectiveFunction.cpp
   ../include/lbcpp/Function/Evaluator.h  
   Function/Evaluator.cpp
   Function/FunctionLibrary.xml
@@ -352,10 +352,23 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
 SET(LBCPP_OPTIMIZER_SOURCES
   ../include/lbcpp/Optimizer/OptimizerInput.h
   ../include/lbcpp/Optimizer/Optimizer.h
-  Optimizer/UniformSampleAndPickBestOptimizer.h
-  Optimizer/IterativeBracketingOptimizer.h
+  ../include/lbcpp/Optimizer/ObjectiveFunction.h
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
+)
+
+SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
+  Optimizer/ObjectiveFunction/EvaluateObjectFunctionWorkUnit.h
+  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
+  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
+)
+
+SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
+  Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
+  Optimizer/Optimizer/IterativeBracketingOptimizer.h
+  Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
 
 #### Inference ####
@@ -636,6 +649,8 @@ SET(LBCPP_CORE
 
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
+    ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES}
+    ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
@@ -708,6 +723,8 @@ SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 
 ## Inference
 SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})

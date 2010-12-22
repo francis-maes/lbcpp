@@ -44,6 +44,7 @@ public:
     workUnits->setPushChildrenIntoStackFlag(true);
     context.run(workUnits);
     double bestScore = -DBL_MAX;
+    double worstScore = DBL_MAX;
     double res = 0.0;
     for (size_t i = 0; i < scores.size(); ++i)
     {
@@ -51,7 +52,10 @@ public:
       //std::cout << "Score for LR = " << learningRate << ": " << scores[i] << std::endl;
       if (scores[i] > bestScore)
         bestScore = scores[i], res = values[i];
+      if (scores[i] < worstScore)
+        worstScore = scores[i];
     }
+    std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
     return res;
   }
 

@@ -31,23 +31,8 @@ typedef ReferenceCountedObjectPtr<ObjectiveFunction> ObjectiveFunctionPtr;
 
 extern ClassPtr objectiveFunctionClass;
 
-class EvaluateObjectiveFunctionWorkUnit : public WorkUnit
-{
-public:
-  EvaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result);
-  EvaluateObjectiveFunctionWorkUnit();
-
-protected:
-  virtual bool run(ExecutionContext& context);
-
-  friend class EvaluateObjectiveFunctionWorkUnitClass;
-
-  ObjectiveFunctionPtr objective;
-  Variable input;
-  double& result;
-};
-
 extern WorkUnitPtr evaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result);
+extern ObjectiveFunctionPtr marginalObjectiveFunction(const ObjectiveFunctionPtr& objective, const ObjectPtr& referenceValue, size_t variableIndex);
 
 }; /* namespace lbcpp */
 

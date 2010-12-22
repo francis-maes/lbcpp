@@ -69,7 +69,6 @@
     <variable type="Double" name="logRegularizer"/>
   </class>
 
-  <class name="AlaRacheOptimizer" base="Inference"/>
   <class name="SandBoxWorkUnit" base="WorkUnit"/>
 
 </library>

@@ -12,7 +12,7 @@
 # include "Inference.h"
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Core/Vector.h>
-# include <lbcpp/Function/ObjectiveFunction.h>
+# include <lbcpp/Optimizer/Optimizer.h>
 
 namespace lbcpp
 {
@@ -151,8 +151,8 @@ extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr first
 
 extern InferencePtr initializeByCloningInferenceLearner(InferencePtr inferenceToClone);
 
-extern EvaluateBatchLearnerObjectiveFunctionPtr evaluateStochasticLearnerObjectiveFunction();
-extern InferencePtr autoTuneInferenceLearner(const InferencePtr& optimizer, const EvaluateBatchLearnerObjectiveFunctionPtr& objective);
+extern InferencePtr autoTuneInferenceLearner(const OptimizerPtr& optimizer, const OptimizerInputPtr& optimizerInput);
+extern InferencePtr autoTuneStochasticInferenceLearner(const OptimizerPtr& optimizer, const DistributionPtr& aprioriDistribution, const Variable& initialGuess);
 
 class EvaluateBatchLearnerObjectiveFunction : public ObjectiveFunction
 {
@@ -173,6 +173,8 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<EvaluateBatchLearnerObjectiveFunction> EvaluateBatchLearnerObjectiveFunctionPtr;
+
+extern EvaluateBatchLearnerObjectiveFunctionPtr evaluateStochasticLearnerObjectiveFunction();
 
 }; /* namespace lbcpp */
 

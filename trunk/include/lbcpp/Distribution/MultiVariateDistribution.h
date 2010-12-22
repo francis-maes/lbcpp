@@ -19,6 +19,11 @@ namespace lbcpp
 class MultiVariateDistribution : public Distribution
 {
 public:
+  MultiVariateDistribution(ClassPtr thisClass)
+    : Distribution(thisClass) {}
+  MultiVariateDistribution() {}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<MultiVariateDistribution> MultiVariateDistributionPtr;
@@ -26,11 +31,11 @@ typedef ReferenceCountedObjectPtr<MultiVariateDistribution> MultiVariateDistribu
 class IndependentMultiVariateDistribution : public MultiVariateDistribution
 {
 public:
-  IndependentMultiVariateDistribution(ClassPtr variableClass);
+  IndependentMultiVariateDistribution(ClassPtr elementsType);
   IndependentMultiVariateDistribution() {}
 
-  ClassPtr getVariableClass() const
-    {return getClass()->getTemplateArgument(0).dynamicCast<Class>();}
+  virtual TypePtr getElementsType() const
+    {return getClass()->getTemplateArgument(0);}
 
   virtual double computeEntropy() const;
   virtual double compute(ExecutionContext& context, const Variable& value) const;
@@ -39,12 +44,18 @@ public:
   const DistributionPtr& getSubDistribution(size_t index) const
     {jassert(index < distributions.size()); return distributions[index];}
 
+  void setSubDistribution(size_t index, const DistributionPtr& distribution)
+    {jassert(index < distributions.size()); distributions[index] = distribution;}
+
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class IndependentMultiVariateDistributionClass;
 
   std::vector<DistributionPtr> distributions;
 };
 
+typedef ReferenceCountedObjectPtr<IndependentMultiVariateDistribution> IndependentMultiVariateDistributionPtr;
 extern ClassPtr independentMultiVariateDistributionClass(TypePtr type);
 
 }; /* namespace lbcpp */

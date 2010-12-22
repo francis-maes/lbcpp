@@ -123,11 +123,17 @@ public:
     
 */
     NumericalSupervisedInferencePtr svm = multiClassLinearSVMInference(targetName, perception, classes);
-    svm->setStochasticLearner(createOnlineLearner(targetName, 0.5, classificationAccuracyEvaluator()), true, true);
-  
-    svm->getSubInference()->setBatchLearner(
-      precomputePerceptionsNumericalInferenceLearner(
-            autoTuneInferenceLearner(new AlaRacheOptimizer(), evaluateStochasticLearnerObjectiveFunction())));
+
+    // create the auto-tune learner
+    OptimizerPtr optimizer = iterativeBracketingOptimizer(4, 2.0, uniformSampleAndPickBestOptimizer(7));
+    IndependentMultiVariateDistributionPtr aprioriDistribution = new IndependentMultiVariateDistribution(myLearningParametersClass);
+    aprioriDistribution->setSubDistribution(0, new UniformDistribution(-5, 5)); // learning rate
+    aprioriDistribution->setSubDistribution(1, new UniformDistribution(1, 10)); // learning rate decrease
+    aprioriDistribution->setSubDistribution(2, new UniformDistribution(-8, 2)); // regularizer
+    MyLearningParametersPtr initialGuess(new MyLearningParameters());
+    InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, initialGuess);
+
+    svm->getSubInference()->setBatchLearner(precomputePerceptionsNumericalInferenceLearner(autoTuneBatchLearner));
     return svm;
   
     /*InferencePtr binaryClassifier = createBinaryClassifier(targetName, perception);

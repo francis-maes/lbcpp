@@ -4,6 +4,9 @@
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
+  <import name="ObjectiveFunction"/>
+  <import name="OptimizerOptimizer"/>
+
   <class name="OptimizerInput" base="Object">
     <variable type="ObjectiveFunction" name="objective"/>
     <variable type="Distribution" name="aprioriDistribution"/>
@@ -12,9 +15,4 @@
 
   <class name="Optimizer" base="Function" abstract="yes"/>
 
-  <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
-    <constructor arguments="size_t numSamples"/>
-    <variable type="PositiveInteger" name="numSamples"/>
-  </class>
-  
 </library>

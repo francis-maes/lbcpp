@@ -85,8 +85,13 @@ String EvaluateBatchLearnerObjectiveFunction::getDescription(const Variable& inp
 
 double EvaluateBatchLearnerObjectiveFunction::compute(ExecutionContext& context, const Variable& parameters) const
 {
+  jassert(learnerInput);
   InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
   InferencePtr inferenceLearner = createLearner(context, parameters, targetInference);
-  inferenceLearner->run(context, learnerInput, Variable());
+
+  inferenceLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
   return getObjective(context, targetInference);
 }
+
+InferencePtr lbcpp::autoTuneStochasticInferenceLearner(const OptimizerPtr& optimizer, const DistributionPtr& aprioriDistribution, const Variable& initialGuess)
+  {return autoTuneInferenceLearner(optimizer, new OptimizerInput(evaluateStochasticLearnerObjectiveFunction(), aprioriDistribution, initialGuess));}
