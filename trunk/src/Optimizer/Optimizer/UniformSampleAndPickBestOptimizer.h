@@ -41,7 +41,7 @@ public:
       double parameterValue = values[i];
       workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(parameterValue), objective, parameterValue, scores[i]));
     }
-    workUnits->setPushChildrenIntoStackFlag(true);
+    workUnits->setPushChildrenIntoStackFlag(false);
     context.run(workUnits);
     double bestScore = -DBL_MAX;
     double worstScore = DBL_MAX;

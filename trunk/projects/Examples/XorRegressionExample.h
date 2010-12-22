@@ -66,11 +66,11 @@ public:
     trainingSet->append(Variable::pair(Variable::pair(1.0, 1.0), 1.0));
 
     // create context and train
-    regressor->train(context, trainingSet, ContainerPtr());
+    regressor->train(context, trainingSet, ContainerPtr(), T("Training"));
 
     // evaluate
     EvaluatorPtr evaluator = regressionErrorEvaluator(T("XOR-error"));
-    regressor->evaluate(context, trainingSet, evaluator);
+    regressor->evaluate(context, trainingSet, evaluator, T("Evaluating"));
     //std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
     // test evaluator on one example
