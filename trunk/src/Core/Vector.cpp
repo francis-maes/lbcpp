@@ -21,17 +21,6 @@ String Vector::toString() const
   TypePtr type = getElementsType();
   size_t n = getNumElements();
   EnumerationPtr enumeration = type.dynamicCast<Enumeration>();
-  if (type->inheritsFrom(enumValueType))
-  {
-    std::cout << "Enum: " << enumeration->getClassName();
-    if (enumeration->hasOneLetterCodes())
-      std::cout << " OneLetterCodes OK";
-    std::cout << std::endl;
-  }
-  else {
-    std::cout << "Type: " << type->getClassName() << std::endl;
-  }
-
   if (enumeration && enumeration->hasOneLetterCodes())
   {
     String value;

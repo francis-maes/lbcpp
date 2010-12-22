@@ -77,7 +77,7 @@ bool PDBFileParser::parseHeaderLine(ExecutionContext& context, const String& lin
 bool PDBFileParser::parseExpDataLine(ExecutionContext& context, const String& line)
 {
   experimentData = getSubString(line, 11, 79).trim();
-  std::cout << "ProteinObject " << proteinName << " Experiment " << experimentData << std::endl;
+  context.informationCallback(T("PDBFileParser::parseExpDataLine"), T("Protein ") + proteinName + T(" Experiment ") + experimentData);
   return true;
 }
 
@@ -92,7 +92,7 @@ bool PDBFileParser::parseRemarkLine(ExecutionContext& context, const String& lin
     {
       static const double highestTolerableResolution = 2.5;
       double resolution = remark.substring(b, n).trim().getDoubleValue();
-      std::cout << "ProteinObject " << proteinName << " Resolution " << resolution << std::endl;
+      context.informationCallback(T("PDBFileParser::parseExpDataLine"), T("Protein ") + proteinName + T(" Resolution ") + String(resolution));
       if (!beTolerant && resolution > highestTolerableResolution)
       {
         context.errorCallback(T("PDBFileParser::parseRemarkLine"), T("Resolution ") + String(resolution) + T(" is not precise enough"));
@@ -457,7 +457,6 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(ExecutionContext& context, cha
     tertiaryStructure = new TertiaryStructure(n);
 
     String primaryAminoAcids = primaryStructure->toString();
-    std::cout << primaryAminoAcids << std::endl;
     jassert((size_t)primaryAminoAcids.length() == n);
 
     // align each tertiary structure block with the primary sequence and fill the corresponding part of the tertiary structure
@@ -514,6 +513,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(ExecutionContext& context, cha
       return TertiaryStructurePtr();
     }
   }
+  jassert(tertiaryStructure);
   return tertiaryStructure;
 }
 
@@ -567,7 +567,10 @@ bool PDBFileParser::parseEnd(ExecutionContext& context)
     ProteinPtr protein = it->second.protein;
     TertiaryStructurePtr tertiaryStructure = finalizeChain(context, it->first, protein, it->second.tertiaryStructureBlocks);
     if (!tertiaryStructure)
+    {
+      context.errorCallback(T("PDBFileParser::parseEnd"), T("No tertiary structure"));
       return false;
+    }
     protein->setTertiaryStructure(tertiaryStructure);
     /* Fonction has been transfered into computeMissingVariable
     VectorPtr disorderSequence = finalizeDisorderSequence(protein);

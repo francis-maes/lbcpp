@@ -23,7 +23,6 @@ public:
   {
     jassert(protein->getPrimaryStructure());
     primarySequence = protein->getPrimaryStructure();
-    context.informationCallback(T("DSSPFileParser"), T("AA: ") + primarySequence->toString());
   }
   
   virtual TypePtr getElementsType() const

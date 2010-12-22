@@ -43,15 +43,15 @@ bool CompileProteinsWorkUnit::run(ExecutionContext& context)
     return false;
   }
   
-  if (pssmFile != File::nonexistent && !loadDSSPFile(protein, pssmFile, context))
+  if (pssmFile != File::nonexistent && !loadPSSMFile(protein, pssmFile, context))
   {
-    context.errorCallback(T("CompileProteinsWorkUnit::run"), T("Invalid pssm file"));
+    context.errorCallback(T("CompileProteinsWorkUnit::run"), T("Invalid pssm file: ") + pssmFile.getFullPathName());
     return false;
   }
   
-  if (dsspFile != File::nonexistent && !loadPSSMFile(protein, dsspFile, context))
+  if (dsspFile != File::nonexistent && !loadDSSPFile(protein, dsspFile, context))
   {
-    context.errorCallback(T("CompileProteinsWorkUnit::run"), T("Invalid dssp file"));
+    context.errorCallback(T("CompileProteinsWorkUnit::run"), T("Invalid dssp file: ") + dsspFile.getFullPathName());
     return false;
   }
   

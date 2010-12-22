@@ -17,7 +17,7 @@ namespace lbcpp
 class ConvertPDBToProteinWorkUnit : public WorkUnit
 {
 public:
-  ConvertPDBToProteinWorkUnit() : outputFile(File::getCurrentWorkingDirectory()) {}
+  ConvertPDBToProteinWorkUnit() : outputFile(File::getCurrentWorkingDirectory().getChildFile(T("output"))) {}
   
   virtual String toString() const
     {return T("Convert a PDB file to a Protein file and vice-versa.");}
