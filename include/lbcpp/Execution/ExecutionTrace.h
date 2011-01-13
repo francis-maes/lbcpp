@@ -10,6 +10,7 @@
 # define LBCPP_EXECUTION_TRACE_H_
 
 # include "ExecutionContext.h"
+# include "WorkUnit.h"
 # include "../Core/Vector.h"
 # include "../Core/Pair.h"
 # include "../Core/DynamicObject.h"

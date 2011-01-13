@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "ProcessManagerComponent.h"
-#include "../Utilities/ComponentWithPreferedSize.h"
+#include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 using namespace lbcpp;
 
 class ProcessConsoleComponent : public Component, public ComponentWithPreferedSize

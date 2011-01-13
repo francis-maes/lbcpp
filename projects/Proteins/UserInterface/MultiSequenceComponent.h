@@ -10,8 +10,8 @@
 # define EXPLORER_COMPONENTS_MULTI_SEQUENCE_COMPONENT_H_
 
 # include "../../../explorer/Components/common.h"
-# include "../../../explorer/Utilities/ComponentWithPreferedSize.h"
-# include "../../../explorer/Utilities/VariableSelector.h"
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/VariableSelector.h>
 # include "../../projects/Proteins/Data/AminoAcid.h"
 
 namespace lbcpp

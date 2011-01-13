@@ -9,9 +9,10 @@
 #ifndef LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
 # define LBCPP_USER_INTERFACE_COMPONENT_EXECUTION_TRACE_TREE_VIEW_H_
 
-#include "../../../explorer/Utilities/SimpleTreeViewItem.h" // FIXME! move utilities inside lbcpp-core
-#include "../../../explorer/Utilities/VariableSelector.h"
-#include "../../../explorer/Utilities/ComponentWithPreferedSize.h"
+# include <lbcpp/UserInterface/SimpleTreeViewItem.h>
+# include <lbcpp/UserInterface/VariableSelector.h>
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 
 using juce::Component;
 using juce::DocumentWindow;
@@ -41,11 +42,11 @@ public:
     timeColumnWidth = 100,
   };
  
-  void paintProgression(Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height);
-  void paintIcon(Graphics& g, int width, int height);
-  void paintIconTextAndProgression(Graphics& g, int width, int height);
+  void paintProgression(juce::Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height);
+  void paintIcon(juce::Graphics& g, int width, int height);
+  void paintIconTextAndProgression(juce::Graphics& g, int width, int height);
 
-  virtual void paintItem(Graphics& g, int width, int height);
+  virtual void paintItem(juce::Graphics& g, int width, int height);
 
   static String formatTime(double timeInSeconds);
   

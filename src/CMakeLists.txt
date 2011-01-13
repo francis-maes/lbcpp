@@ -581,6 +581,9 @@ SET(LBCPP_USER_INTEFACE_GENERATED_FILES
 #IDE_ONLY_SOURCES(LBCPP_USER_INTEFACE_GENERATED_FILES ${LBCPP_USER_INTEFACE_GENERATED_FILES})
 
 SET(LBCPP_USER_INTERFACE_SOURCES
+  ../include/lbcpp/UserInterface/SimpleTreeViewItem.h
+  ../include/lbcpp/UserInterface/VariableSelector.h
+  ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
   ../include/lbcpp/UserInterface/UserInterfaceManager.h
   UserInterface/UserInterfaceManager.cpp
   ${LBCPP_USER_INTEFACE_GENERATED_FILES}
@@ -758,6 +761,3 @@ ELSE (UNIX)
   ADD_LIBRARY(lbcpp-core ${LBCPP_CORE})
 ENDIF (UNIX)
 TARGET_LINK_LIBRARIES(lbcpp-core juce)
-
-ADD_EXECUTABLE(RunWorkUnit RunWorkUnit.cpp)
-TARGET_LINK_LIBRARIES(RunWorkUnit lbcpp-core)

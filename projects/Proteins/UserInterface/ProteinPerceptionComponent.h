@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_USER_INTERFACE_PROTEIN_PERCEPTION_H_
 # define LBCPP_PROTEINS_USER_INTERFACE_PROTEIN_PERCEPTION_H_
 
-# include "../../../explorer/Utilities/VariableSelector.h"
+# include <lbcpp/UserInterface/VariableSelector.h>
 
 namespace lbcpp
 {

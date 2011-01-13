@@ -6,10 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_UTILITIES_SIMPLE_TREE_VIEW_ITEM_H_
-# define EXPLORER_UTILITIES_SIMPLE_TREE_VIEW_ITEM_H_
+#ifndef LBCPP_USER_INTERFACE_SIMPLE_TREE_VIEW_ITEM_H_
+# define LBCPP_USER_INTERFACE_SIMPLE_TREE_VIEW_ITEM_H_
 
-# include "../Components/common.h"
+# include "../common.h"
+# include "UserInterfaceManager.h"
 
 namespace lbcpp
 {
@@ -35,18 +36,18 @@ public:
     
   enum {defaultIconSize = 18};
 
-  virtual void paintItem(Graphics& g, int width, int height)
+  virtual void paintItem(juce::Graphics& g, int width, int height)
   {
     if (isSelected())
-      g.fillAll(Colours::lightgrey);
-    g.setColour(Colours::black);
+      g.fillAll(juce::Colours::lightgrey);
+    g.setColour(juce::Colours::black);
     int x1 = 0;
     if (iconToUse)
     {
       g.drawImageAt(iconToUse, 0, (height - iconToUse->getHeight()) / 2);
       x1 += iconToUse->getWidth() + 5;
     }
-    g.drawText(getUniqueName(), x1, 0, width - x1, height, Justification::centredLeft, true);
+    g.drawText(getUniqueName(), x1, 0, width - x1, height, juce::Justification::centredLeft, true);
   }
 
   virtual void createSubItems() {}
@@ -72,4 +73,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_UTILITIES_SIMPLE_TREE_VIEW_ITEM_H_
+#endif // !LBCPP_USER_INTERFACE_SIMPLE_TREE_VIEW_ITEM_H_

@@ -12,7 +12,7 @@
 namespace juce
 {
 
-class ConsoleProcess
+class JUCE_API ConsoleProcess
 {
 public:
   virtual ~ConsoleProcess() {}

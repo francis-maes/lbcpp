@@ -11,8 +11,8 @@
 
 # include "VariableProxyComponent.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
-# include "../Utilities/ComponentWithPreferedSize.h"
-# include "../Utilities/VariableSelector.h"
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include <lbcpp/UserInterface/VariableSelector.h>
 
 class VariableBrowserContent;
 

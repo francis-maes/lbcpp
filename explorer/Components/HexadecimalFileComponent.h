@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_HEXADECIMAL_FILE_H_
 
 # include "common.h"
-# include "../Utilities/ComponentWithPreferedSize.h"
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 
 namespace lbcpp
 {

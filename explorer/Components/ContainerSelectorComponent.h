@@ -10,7 +10,7 @@
 # define EXPLORER_COMPONENTS_CONTAINER_SELECTOR_H_
 
 # include "common.h"
-# include "../Utilities/VariableSelector.h"
+# include <lbcpp/UserInterface/VariableSelector.h>
 
 namespace lbcpp
 {

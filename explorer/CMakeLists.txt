@@ -8,10 +8,7 @@ GENERATE_INTROSPECTION_CODE(WorkUnitManager/WorkUnitManagerLibrary.xml WorkUnitM
 
 SET(EXPLORER_UTILITIES_SOURCES
   Utilities/SplittedLayout.h
-  Utilities/SimpleTreeViewItem.h
-  Utilities/VariableSelector.h
   Utilities/PropertyListDisplayComponent.h
-  Utilities/ComponentWithPreferedSize.h
   Utilities/FileType.h
 )
 

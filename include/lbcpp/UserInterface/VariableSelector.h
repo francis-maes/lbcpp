@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
-# define EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
+#ifndef LBCPP_USER_INTERFACE_VARIABLE_SELECTOR_H_
+# define LBCPP_USER_INTERFACE_VARIABLE_SELECTOR_H_
 
-# include "../Components/common.h"
 # include "ComponentWithPreferedSize.h"
+# include "../Core/Variable.h"
 
 namespace lbcpp
 {
@@ -41,14 +41,14 @@ public:
       callbacks[i]->selectionChangedCallback(this, selectedVariables);
   }
 
-  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
     {return NULL;}
 
 protected:
   std::vector<VariableSelectorCallback* > callbacks;
 };
 
-class TabbedVariableSelectorComponent : public TabbedButtonBar, public VariableSelector, public juce::ChangeListener, public ComponentWithPreferedSize
+class TabbedVariableSelectorComponent : public juce::TabbedButtonBar, public VariableSelector, public juce::ChangeListener, public ComponentWithPreferedSize
 {
 public:
   TabbedVariableSelectorComponent(const Variable& variable)
@@ -70,4 +70,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_UTILITIES_VARIABLE_SELECTOR_H_
+#endif // !LBCPP_USER_INTERFACE_VARIABLE_SELECTOR_H_

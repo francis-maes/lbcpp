@@ -8,6 +8,11 @@
 
 #include "VariableTreeView.h"
 using namespace lbcpp;
+using juce::Font;
+using juce::Justification;
+using juce::Graphics;
+using juce::Component;
+using juce::Colours;
 
 class VariableTreeViewItem : public SimpleTreeViewItem
 {
