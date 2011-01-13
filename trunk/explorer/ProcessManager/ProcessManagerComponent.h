@@ -12,8 +12,8 @@
 # include "ProcessManager.h"
 # include "../Components/common.h"
 # include "../Utilities/SplittedLayout.h"
-# include "../Utilities/VariableSelector.h"
 # include "../Utilities/PropertyListDisplayComponent.h"
+# include <lbcpp/UserInterface/VariableSelector.h>
 
 class ProcessConsoleComponent;
 

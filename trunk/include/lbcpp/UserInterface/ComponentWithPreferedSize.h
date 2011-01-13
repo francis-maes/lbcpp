@@ -6,8 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_UTILITIES_COMPONENT_WITH_PREFERED_SIZE
-# define EXPLORER_UTILITIES_COMPONENT_WITH_PREFERED_SIZE
+#ifndef LBCPP_USER_INTERFACE_COMPONENT_WITH_PREFERED_SIZE
+# define LBCPP_USER_INTERFACE_COMPONENT_WITH_PREFERED_SIZE
+
+# include "../common.h"
 
 namespace lbcpp
 {
@@ -30,7 +32,7 @@ public:
     {return availableHeight;}
 };
 
-class ViewportComponent : public Viewport
+class ViewportComponent : public juce::Viewport
 {
 public:
   ViewportComponent(Component* component = NULL, bool showVerticalScrollbarIfNeeded = true, bool showHorizontalScrollbarIfNeeded = true)
@@ -53,10 +55,10 @@ public:
       else
         content->setSize(w, h);
     }
-    Viewport::resized();
+    juce::Viewport::resized();
   }  
 };
 
 }; /* namespace lbcpp */
 
-#endif // !EXPLORER_UTILITIES_COMPONENT_WITH_PREFERED_SIZE
+#endif // !LBCPP_USER_INTERFACE_COMPONENT_WITH_PREFERED_SIZE

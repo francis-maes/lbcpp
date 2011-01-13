@@ -9,9 +9,9 @@
 #ifndef EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 # define EXPLORER_COMPONENTS_VARIABLE_TREE_H_
 
-# include "../../../explorer/Utilities/VariableSelector.h" // FIXME! move utilities inside lbcpp-core
-# include "../../../explorer/Utilities/SimpleTreeViewItem.h"
-# include "../../../explorer/Utilities/ComponentWithPreferedSize.h"
+# include <lbcpp/UserInterface/VariableSelector.h>
+# include <lbcpp/UserInterface/SimpleTreeViewItem.h>
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 
 class VariableTreeViewItem;
 
@@ -39,7 +39,7 @@ public:
   void clearTree();
   void buildTree();
 
-  virtual void paint(Graphics& g);
+  virtual void paint(juce::Graphics& g);
   virtual void timerCallback();
   void invalidateSelection();
 

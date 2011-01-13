@@ -10,7 +10,7 @@
 # define EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
 
 # include "../Components/common.h"
-# include "ComponentWithPreferedSize.h"
+# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 
 namespace lbcpp
 {

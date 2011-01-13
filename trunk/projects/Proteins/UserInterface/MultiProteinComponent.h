@@ -12,7 +12,7 @@
 # include "MultiProtein1DComponent.h"
 # include "MultiProtein2DComponent.h"
 # include "ProteinPerceptionComponent.h"
-# include "../../../explorer/Utilities/VariableSelector.h"
+# include <lbcpp/UserInterface/VariableSelector.h>
 
 namespace lbcpp
 {

@@ -7,7 +7,10 @@
                                `--------------------------------------------*/
 
 #include "ExecutionTraceTreeView.h"
+#include <lbcpp/Execution/ExecutionStack.h>
 using namespace lbcpp;
+using juce::Graphics;
+using juce::Colour;
 
 /*
 ** ExecutionTraceTreeViewItem
