@@ -56,9 +56,9 @@ public:
   virtual TypePtr getElementsType() const
     {return mnistImageClass;}
   
-  virtual void parseBegin(ExecutionContext& context) {}
+  virtual void parseBegin() {}
 
-  virtual bool parseLine(ExecutionContext& context, const String& line)
+  virtual bool parseLine(const String& line)
   {
     if (line.trim() == String::empty)
       return true;
@@ -83,7 +83,7 @@ public:
     return true;
   }
   
-  virtual bool parseEnd(ExecutionContext& context)
+  virtual bool parseEnd()
     {return true;}
 };
   

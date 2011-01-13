@@ -21,7 +21,7 @@ bool CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)
   FASTAFileParser fastaParser(context, fastaFile);
   while (true)
   {
-    Variable variable = fastaParser.next(context);
+    Variable variable = fastaParser.next();
     if (!variable.exists())
       break;
 

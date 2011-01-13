@@ -28,10 +28,10 @@ public:
   virtual TypePtr getElementsType() const
     {return proteinClass;}
 
-  virtual void parseBegin(ExecutionContext& context)
+  virtual void parseBegin()
     {serialNumber = 0;}
 
-  virtual bool parseLine(ExecutionContext& context, const String& line)
+  virtual bool parseLine(const String& line)
   {
     if (line.isEmpty())
       return true; // skip empty lines
@@ -131,7 +131,7 @@ public:
     return true;
   }
 
-  virtual bool parseEnd(ExecutionContext& context)
+  virtual bool parseEnd()
   {
     if (!serialNumber)
     {

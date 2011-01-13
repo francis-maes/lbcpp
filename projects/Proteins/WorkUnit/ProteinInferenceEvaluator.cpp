@@ -18,8 +18,8 @@ ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory
 {
   if (fileOrDirectory.isDirectory())
   {
-    ContainerPtr res = directoryFileStream(fileOrDirectory, T("*.xml"))
-      ->load(context, maxCount)
+    ContainerPtr res = directoryFileStream(context, fileOrDirectory, T("*.xml"))
+      ->load(maxCount)
       ->randomize()
       ->apply(context, proteinToInputOutputPairFunction());
 
@@ -28,9 +28,8 @@ ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory
 
   if (fileOrDirectory.getFileExtension() == T(".xml")) 
   {
-    ContainerPtr res = directoryFileStream(fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
-    ->load(context)
-    ->apply(context, proteinToInputOutputPairFunction());
+    ContainerPtr res = directoryFileStream(context, fileOrDirectory.getParentDirectory(), fileOrDirectory.getFileName())
+      ->load()->apply(context, proteinToInputOutputPairFunction());
     if (res->getNumElements())
       return res;
   }

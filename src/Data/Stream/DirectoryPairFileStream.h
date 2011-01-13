@@ -17,8 +17,8 @@ namespace lbcpp
 class DirectoryPairFileStream : public Stream
 {
 public:
-  DirectoryPairFileStream(const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
-    : mainDirectory(mainDirectory), secondDirectory(secondDirectory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
+  DirectoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+    : Stream(context), mainDirectory(mainDirectory), secondDirectory(secondDirectory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
   DirectoryPairFileStream() : nextFilePosition(0) {}
@@ -32,7 +32,7 @@ public:
   virtual bool isExhausted() const
     {return nextFilePosition >= (int)files.size();}
 
-  virtual Variable next(ExecutionContext& context)
+  virtual Variable next()
   {
     if (isExhausted())
       return Variable();

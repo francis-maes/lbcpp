@@ -12,7 +12,7 @@ PDBFileParser::PDBFileParser(ExecutionContext& context, const File& file, bool b
   : TextParser(context, file), beTolerant(beTolerant)
   {}
 
-void PDBFileParser::parseBegin(ExecutionContext& context)
+void PDBFileParser::parseBegin()
 {
   currentSeqResSerialNumber = 0;
   currentModelSerialNumber = 1;
@@ -21,7 +21,7 @@ void PDBFileParser::parseBegin(ExecutionContext& context)
   currentResidueInsertionCode = (char)0;
 }
 
-bool PDBFileParser::parseLine(ExecutionContext& context, const String& line)
+bool PDBFileParser::parseLine(const String& line)
 {
   if (line.isEmpty())
     return true; // ignore empty lines
@@ -554,7 +554,7 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   return res;
 }
 
-bool PDBFileParser::parseEnd(ExecutionContext& context)
+bool PDBFileParser::parseEnd()
 {
   if (!chains.size())
   {

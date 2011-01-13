@@ -17,8 +17,8 @@ namespace lbcpp
 class DirectoryFileStream : public Stream
 {
 public:
-  DirectoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
-    : directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
+  DirectoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false)
+    : Stream(context), directory(directory), wildCardPattern(wildCardPattern), searchFilesRecursively(searchFilesRecursively)
     {initialize();}
 
   DirectoryFileStream() {}
@@ -32,7 +32,7 @@ public:
   virtual bool isExhausted() const
     {return nextFileIterator == files.end();}
 
-  virtual Variable next(ExecutionContext& context)
+  virtual Variable next()
   {
     if (isExhausted())
       return Variable();

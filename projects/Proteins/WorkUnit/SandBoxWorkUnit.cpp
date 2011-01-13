@@ -193,10 +193,10 @@ VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String&
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
   if (inputDirectory.exists())
-    return directoryPairFileStream(inputDirectory, supervisionDirectory)->load(context, maxCount)
+    return directoryPairFileStream(context, inputDirectory, supervisionDirectory)->load(maxCount)
       ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply, workUnitName)->randomize();
   else
-    return directoryFileStream(supervisionDirectory)->load(context, maxCount)
+    return directoryFileStream(context, supervisionDirectory)->load(maxCount)
       ->apply(context, composeFunction(loadFromFileFunction(proteinClass), proteinToInputOutputPairFunction(false)), Container::parallelApply, workUnitName)
       ->randomize();
 }

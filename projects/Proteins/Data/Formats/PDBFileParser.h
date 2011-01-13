@@ -23,9 +23,9 @@ public:
   virtual TypePtr getElementsType() const
     {return proteinClass;}
 
-  virtual void parseBegin(ExecutionContext& context);
-  virtual bool parseLine(ExecutionContext& context, const String& line);
-  virtual bool parseEnd(ExecutionContext& context);
+  virtual void parseBegin();
+  virtual bool parseLine(const String& line);
+  virtual bool parseEnd();
 
   std::vector<ProteinPtr> getAllChains() const;
 

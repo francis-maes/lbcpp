@@ -416,13 +416,13 @@ ProteinInferenceFactoryPtr SnowBox::createFactory(ExecutionContext& context) con
 ContainerPtr SnowBox::loadProteins(ExecutionContext& context, const File& f, size_t maxToLoad) const
 {
   if (inputDirectory != File::nonexistent)
-    return directoryPairFileStream(inputDirectory, f, T("*.xml"))
-      ->load(context, maxToLoad)
+    return directoryPairFileStream(context, inputDirectory, f, T("*.xml"))
+      ->load(maxToLoad)
       ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)
       ->randomize();
   
-  return directoryFileStream(f, T("*.xml"))
-    ->load(context, maxToLoad)
+  return directoryFileStream(context, f, T("*.xml"))
+    ->load(maxToLoad)
     ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
     ->apply(context, proteinToInputOutputPairFunction(false), Container::parallelApply)
     ->randomize();

@@ -18,7 +18,7 @@ using namespace lbcpp;
 ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile, bool beTolerant)
 {
   ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(context, pdbFile, beTolerant));
-  if (!parser->next(context).exists())
+  if (!parser->next().exists())
     return ProteinPtr();
   
   std::vector<ProteinPtr> proteins = parser->getAllChains();
@@ -48,7 +48,7 @@ ProteinPtr Protein::createFromXml(ExecutionContext& context, const File& file)
   {return Variable::createFromFile(context, file).getObjectAndCast<Protein>(context);}
 
 ProteinPtr Protein::createFromFASTA(ExecutionContext& context, const File& file)
-  {return StreamPtr(new FASTAFileParser(context, file))->next(context).getObjectAndCast<Protein>(context);}
+  {return StreamPtr(new FASTAFileParser(context, file))->next().getObjectAndCast<Protein>(context);}
 
 void Protein::saveToPDBFile(ExecutionContext& context, const File& pdbFile) const
   {ConsumerPtr(new PDBFileGenerator(context, pdbFile))->consume(context, refCountedPointerFromThis(this));}
