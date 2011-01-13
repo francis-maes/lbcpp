@@ -49,7 +49,7 @@
       return res;
     }
     
-    return StreamPtr(new MatlabFileParser(context, file))-&gt;load(context);
+    return StreamPtr(new MatlabFileParser(context, file))-&gt;load();
   }
   </code>
   
