@@ -24,10 +24,10 @@ public:
   virtual TypePtr getElementsType() const
     {return proteinClass;}
   
-  virtual void parseBegin(ExecutionContext& context)
+  virtual void parseBegin()
     {}
 
-  virtual bool parseLine(ExecutionContext& context, const String& line)
+  virtual bool parseLine(const String& line)
   {
     String str = line.trim();
     if (str.isEmpty())
@@ -42,7 +42,7 @@ public:
     return true;
   }
   
-  virtual bool parseEnd(ExecutionContext& context)
+  virtual bool parseEnd()
   {
     flush();
     return true;

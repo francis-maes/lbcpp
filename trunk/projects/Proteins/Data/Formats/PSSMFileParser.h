@@ -27,14 +27,14 @@ public:
   virtual TypePtr getElementsType() const
     {return vectorClass(vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)));}
 
-  virtual void parseBegin(ExecutionContext& context)
+  virtual void parseBegin()
   {
     currentPosition = -3;
 
     pssm = vector(enumerationDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
   }
 
-  virtual bool parseLine(ExecutionContext& context, const String& line)
+  virtual bool parseLine(const String& line)
   {
     if (currentPosition <= -2)
     {
@@ -110,7 +110,7 @@ public:
     return true;
   }
 
-  virtual bool parseEnd(ExecutionContext& context)
+  virtual bool parseEnd()
   {
     setResult(pssm);
     return true;

@@ -1,5 +1,8 @@
-* lbcpp-core doit être une librarie dynamique
-
+ * Parsers: LearningDataTextParser
+   * implementations: BinaryClassificationDataTextParser, MultiClassClassificationDataTextParser, RegressionDataTextParser, MultiLabelClassificationDataTextParser
+   * DenseDoubleObject => DoubleDenseVector, SparseDoubleObject => DoubleSparseVector (?)
+   * Find how to store all these training data
+ 
 ExecutionTrace:
  * ExecutionTrace ne doit pas stoquer les pointeurs vers le WorkUnit (ca prend trop trop de mémoire)
  * Callback pour crŽer les ExecutionTrace (multi-thread) => chaque thread ˆ sa sous-trace, et les fusions ne se font qu'a la fin

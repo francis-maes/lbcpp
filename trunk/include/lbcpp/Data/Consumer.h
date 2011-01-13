@@ -42,6 +42,8 @@ public:
   void consumeContainer(ExecutionContext& context, ContainerPtr container);
 };
 
+ConsumerPtr saveToFileConsumer(const File& outputDirectory = File::getCurrentWorkingDirectory());
+
 class TextPrinter : public Consumer
 {
 public:

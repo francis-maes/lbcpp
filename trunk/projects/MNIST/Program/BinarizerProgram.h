@@ -57,7 +57,7 @@ public:
     if (outputFile == File::nonexistent)
       outputFile = File::getCurrentWorkingDirectory().getChildFile(T("data.bin"));
     
-    ContainerPtr data = StreamPtr(new MatlabFileParser(context, inputFile))->load(context)
+    ContainerPtr data = StreamPtr(new MatlabFileParser(context, inputFile))->load()
       ->apply(context, new SaveMNISTImageAsBinaryFunction(outputFile), Container::sequentialApply);
     return true;
   }

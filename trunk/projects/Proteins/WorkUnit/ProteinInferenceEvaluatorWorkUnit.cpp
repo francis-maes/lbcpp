@@ -100,8 +100,8 @@ bool ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
     return false;
   }
 
-  ContainerPtr data = directoryFileStream(inputDirectory, T("*.xml"))
-      ->load(context)
+  ContainerPtr data = directoryFileStream(context, inputDirectory, T("*.xml"))
+      ->load()
       ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
       ->apply(context, FunctionPtr(new InputProteinFunction()), Container::parallelApply);
   std::cout << "Data         : " << data->getNumElements() << std::endl;

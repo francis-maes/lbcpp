@@ -51,7 +51,8 @@ namespace lbcpp
 class Stream : public Object
 {
 public:
-  Stream() {}
+  Stream(ExecutionContext& context) : context(context) {}
+  Stream() : context(*(ExecutionContext* )0) {}
 
   /**
   ** Returns the type of the elements contained by this stream.
@@ -84,7 +85,7 @@ public:
   **
   ** @return a Variable containing the next database element.
   */
-  virtual Variable next(ExecutionContext& context) = 0;
+  virtual Variable next() = 0;
 
 
   /**
@@ -100,7 +101,7 @@ public:
   ** @param maximumCount : iteration steps.
   ** @return False if any errors occurs.
   */
-  bool iterate(ExecutionContext& context, size_t maximumCount = 0);
+  bool iterate(size_t maximumCount = 0);
 
   /**
   ** Loads \a maximumCount items (maximum) from the stream and stores
@@ -113,7 +114,7 @@ public:
   ** @return a Vector containing loaded items.
   ** @see Container
   */
-  VectorPtr load(ExecutionContext& context, size_t maximumCount = 0);
+  VectorPtr load(size_t maximumCount = 0);
 
   /**
   ** Applies an Function to this stream.
@@ -127,12 +128,14 @@ public:
   ** @return a new object stream instance referring to this one.
   ** @see Function
   */
-  StreamPtr apply(ExecutionContext& context, FunctionPtr function) const;
+  StreamPtr apply(FunctionPtr function) const;
+
+protected:
+  ExecutionContext& context;
 };
 
-StreamPtr directoryFileStream(const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
-StreamPtr directoryPairFileStream(const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
-ConsumerPtr saveToFileConsumer(const File& outputDirectory = File::getCurrentWorkingDirectory());
+StreamPtr directoryFileStream(ExecutionContext& context, const File& directory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
+StreamPtr directoryPairFileStream(ExecutionContext& context, const File& mainDirectory, const File& secondDirectory, const String& wildCardPattern = T("*"), bool searchFilesRecursively = false);
 
 /**
  ** @class TextObjectParser
@@ -161,7 +164,7 @@ public:
    **
    ** @return a TextObjectParser.
    */
-  TextParser(InputStream* newInputStream);
+  TextParser(ExecutionContext& context, InputStream* newInputStream);
   
   /**
    ** Destructor.
@@ -178,7 +181,7 @@ public:
    ** This function is called at the begging of parsing.
    **
    */
-  virtual void parseBegin(ExecutionContext& context)
+  virtual void parseBegin()
     {}
   
   /**
@@ -194,7 +197,7 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseLine(ExecutionContext& context, const String& line) = 0;
+  virtual bool parseLine(const String& line) = 0;
   
   /**
    ** This function is called at the end of the parsing.
@@ -207,7 +210,7 @@ public:
    **  to the ErrorManager.
    ** @see setResult
    */
-  virtual bool parseEnd(ExecutionContext& context)
+  virtual bool parseEnd()
     {return true;}
   
   /**
@@ -223,7 +226,7 @@ public:
    ** @return a pointer on the next parsed object or Variable()
    ** if there are no more object in the stream.
    */
-  virtual Variable next(ExecutionContext& context);
+  virtual Variable next();
   
 protected:
   /**
@@ -254,6 +257,138 @@ private:
   InputStream* istr;           /*!< A pointer to the current stream. */
 };
   
+
+/**
+** @class LearningDataTextParser
+** @brief Base class for data parsers using libSVM inspired formats.
+**
+** @see classificationExamplesParser, regressionExamplesParser
+**
+*/
+class LearningDataTextParser : public TextParser
+{
+public:
+  LearningDataTextParser(ExecutionContext& context, const File& file)
+    : TextParser(context, file) {}
+
+  /**
+  ** Constructor
+  **
+  ** @param newInputStream : new input stream. This object is
+  ** responsible for deleting the input stream, when no longer used.
+  ** @param features : feature dictionary.
+  **
+  ** @return a @a LearningDataObjectParser.
+  */
+  LearningDataTextParser(ExecutionContext& context, InputStream* newInputStream)
+    : TextParser(context, newInputStream) {}
+
+  /**
+  ** This function is called to parse an empty line.
+  **
+  ** @return False if parsing failed. In this case
+  **  inherited class are responsible for throwing an error
+  **  to the ErrorManager.
+  */
+  virtual bool parseEmptyLine()
+    {return true;}
+
+  /**
+  ** This function is called to parse a line containing data.
+  **
+  ** @param columns : tokenized data line.
+  **
+  ** @return False if parsing failed. In this case
+  **  inherited class are responsible for throwing an error
+  **  to the ErrorManager.
+  */
+  virtual bool parseDataLine(const std::vector<String>& columns)
+    {return false;}
+
+  /**
+  ** This function is called to parse a comment line (starting by '#').
+  **
+  ** @param comment : the comment (the line without '#')
+  **
+  ** @return False if parsing failed. In this case
+  **  inherited class are responsible for throwing an error
+  **  to the ErrorManager.
+  */
+  virtual bool parseCommentLine(const String& comment)
+    {return true;}
+
+  /**
+  ** This function is called when parsing finishes.
+  **
+  ** By default, end-of-file is considered as an empty line.
+  **
+  ** @return False if parsing failed. In this case
+  **  inherited class are responsible for throwing an error
+  **  to the ErrorManager.
+  */
+  virtual bool parseEnd()
+    {return parseEmptyLine();}
+
+  /**
+  ** Parses one line.
+  **
+  ** The following rules are applied:
+  ** - if the line is empty, parseLine() calls parseEmptyLine()
+  ** - if the line starts by '#', it calls parseCommentLine()
+  ** - otherwise, it tokenizes the line and calls parseDataLine()
+  **
+  ** @param line : text line.
+  **
+  ** @return a boolean.
+  ** @see LearningDataObjectParser::parseEmptyLine
+  ** @see LearningDataObjectParser::parseCommentLine
+  ** @see LearningDataObjectParser::parseDataLine
+  */
+  virtual bool parseLine(const String& line);
+
+protected:
+  /**
+  ** Parses a list of features.
+  **
+  ** Feature lists have the following grammar:
+  ** \verbatim featureList ::= feature featureList | feature \endverbatim
+  **
+  ** @param columns : the columns to parse.
+  ** @param firstColumn : start column number.
+  ** @param res : parse result container.
+  **
+  ** @return False if any error occurs.
+  */
+ // bool parseFeatureList(const std::vector<String>& columns,
+ //                       size_t firstColumn, SparseVectorPtr& res);
+
+  /**
+  ** Parses a feature
+  **
+  ** Features have the following grammar:
+  ** \verbatim feature ::= featureId : featureValue | featureId \endverbatim
+  **
+  ** @param str : the string to parse.
+  ** @param featureId : feature ID container.
+  ** @param featureValue : feature value container.
+  **
+  ** @return False if any error occurs.
+  */
+  //static bool parseFeature(const String& str, String& featureId, double& featureValue);
+
+  /**
+  ** Parses a feature identifier
+  **
+  ** Feature identifiers have the following grammar:
+  ** \verbatim featureId ::= name . featureId  | name \endverbatim
+  **
+  ** @param identifier : the string to parse.
+  ** @param path : feature identifier path container.
+  **
+  ** @return True.
+  */
+  //static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path);
+};
   
 }; /* namespace lbcpp */
 

@@ -19,7 +19,7 @@ void Consumer::consumeStream(ExecutionContext& context, StreamPtr stream, size_t
 {
   for (size_t i = 0; !maximumCount || i < maximumCount; ++i)
   {
-    Variable variable = stream->next(context);
+    Variable variable = stream->next();
     if (!variable.exists())
       break;
     consume(context, variable);

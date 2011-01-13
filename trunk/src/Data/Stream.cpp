@@ -13,12 +13,12 @@ using namespace lbcpp;
 /*
 ** Stream
 */
-VectorPtr Stream::load(ExecutionContext& context, size_t maximumCount)
+VectorPtr Stream::load(size_t maximumCount)
 {
   VectorPtr res = vector(getElementsType());
   while (maximumCount == 0 || res->getNumElements() < maximumCount)
   {
-    Variable variable = next(context);
+    Variable variable = next();
     if (!variable.isNil())
       res->append(variable);
     if (isExhausted())
@@ -27,12 +27,12 @@ VectorPtr Stream::load(ExecutionContext& context, size_t maximumCount)
   return res;
 }
 
-bool Stream::iterate(ExecutionContext& context, size_t maximumCount)
+bool Stream::iterate(size_t maximumCount)
 {
   size_t count = 0;
   while (maximumCount == 0 || count < maximumCount)
   {
-    Variable variable = next(context);
+    Variable variable = next();
     if (variable.exists())
       ++count;
     else
@@ -46,7 +46,7 @@ namespace lbcpp
   extern StreamPtr applyFunctionStream(StreamPtr stream, FunctionPtr function);
 };
 
-StreamPtr Stream::apply(ExecutionContext& context, FunctionPtr function) const
+StreamPtr Stream::apply(FunctionPtr function) const
 {
   return context.checkInheritance(getElementsType(), function->getInputType())
     ? applyFunctionStream(refCountedPointerFromThis(this), function)
@@ -56,11 +56,11 @@ StreamPtr Stream::apply(ExecutionContext& context, FunctionPtr function) const
 /*
 ** TextParser
 */
-TextParser::TextParser(InputStream* newInputStream)
-  : istr(newInputStream) {}
+TextParser::TextParser(ExecutionContext& context, InputStream* newInputStream)
+  : Stream(context), istr(newInputStream) {}
 
 TextParser::TextParser(ExecutionContext& context, const File& file)
-  : istr(NULL)
+  : Stream(context), istr(NULL)
 {
   if (file == File::nonexistent)
   {
@@ -108,21 +108,21 @@ void TextParser::tokenize(const String& line, std::vector<String>& columns, cons
   }
 }
 
-Variable TextParser::next(ExecutionContext& context)
+Variable TextParser::next()
 {
   if (!istr)
     return Variable();
   if (!currentResult.exists())
   {
     //parsingBreaked = false;
-    parseBegin(context);
+    parseBegin();
   }
   currentResult = Variable();
   
   while (!istr->isExhausted()/* && !parsingBreaked*/)
   {
     String line = istr->readNextLine();
-    if (!parseLine(context, line))
+    if (!parseLine(line))
     {
       context.errorCallback(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
       delete istr;
@@ -133,9 +133,66 @@ Variable TextParser::next(ExecutionContext& context)
       return currentResult;
   }
   
-  if (!parseEnd(context))
+  if (!parseEnd())
     context.errorCallback(T("TextParser::next"), T("Error in parse end"));
   delete istr;
   istr = NULL;
   return currentResult;
 }
+
+/*
+** LearningDataTextParser
+*/
+bool LearningDataTextParser::parseLine(const String& line)
+{
+  int begin = indexOfAnyNotOf(line, T(" \t"));
+  bool isEmpty = begin < 0;
+  if (isEmpty)
+    return parseEmptyLine();
+  if (line[begin] == '#')
+    return parseCommentLine(line.substring(begin + 1).trim());
+  std::vector<String> columns;
+  tokenize(line, columns);
+  return parseDataLine(columns);
+}
+/*
+bool LearningDataTextParser::parseFeatureList(const std::vector<String>& columns, size_t firstColumn, SparseVectorPtr& res)
+{
+  jassert(features);
+  res = new SparseVector(features);
+  for (size_t i = firstColumn; i < columns.size(); ++i)
+  {
+    String identifier;
+    double value;
+    if (!parseFeature(columns[i], identifier, value))
+      return false;
+    std::vector<String> path;
+    if (!parseFeatureIdentifier(identifier, path))
+      return false;
+    res->set(path, value);
+  }
+  return true;
+}
+
+bool LearningDataTextParser::parseFeature(const String& str, String& featureId, double& featureValue)
+{
+  int n = str.indexOfChar(':');
+  if (n < 0)
+  {
+    featureId = str;
+    featureValue = 1.0;
+  }
+  else
+  {
+    featureId = str.substring(0, n);
+    featureValue = str.substring(n + 1).getDoubleValue();
+  }
+  return true;
+}
+
+bool LearningDataTextParser::parseFeatureIdentifier(const String& identifier, std::vector<String>& path)
+{
+  tokenize(identifier, path, T("."));
+  return true;
+}
+*/

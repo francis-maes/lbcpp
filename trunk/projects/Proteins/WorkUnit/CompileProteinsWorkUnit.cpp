@@ -17,7 +17,7 @@ bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ExecutionContext& co
 {
   VectorPtr primaryStructure = protein->getPrimaryStructure();
   jassert(primaryStructure);
-  VectorPtr pssm = StreamPtr(new PSSMFileParser(context, pssmFile, primaryStructure))->next(context).getObjectAndCast<Vector>(); 
+  VectorPtr pssm = StreamPtr(new PSSMFileParser(context, pssmFile, primaryStructure))->next().getObjectAndCast<Vector>(); 
   if (!pssm)
     return false;
   protein->setPositionSpecificScoringMatrix(pssm);
@@ -25,7 +25,7 @@ bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ExecutionContext& co
 }
 
 bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, ExecutionContext& context)
-  {StreamPtr(new DSSPFileParser(context, dsspFile, protein))->next(context); return true;}
+  {StreamPtr(new DSSPFileParser(context, dsspFile, protein))->next(); return true;}
 
 
 bool CompileProteinsWorkUnit::run(ExecutionContext& context)

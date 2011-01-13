@@ -12,11 +12,11 @@
     </template>
 
     <class name="DirectoryFileStream" base="Stream[File]">
-      <constructor arguments="const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+      <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
     </class>
 
     <class name="DirectoryPairFileStream" base="Stream[Pair[File,File]]">
-      <constructor arguments="const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+      <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
     </class>
 
     <template name="ApplyFunctionStream" base="Stream[elementsType]">
