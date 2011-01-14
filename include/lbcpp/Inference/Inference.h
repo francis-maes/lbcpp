@@ -138,9 +138,10 @@ extern ClassPtr inferenceClass;
 extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
 // Reductions
-extern VectorParallelInferencePtr oneAgainstAllClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
+extern VectorParallelInferencePtr oneAgainstOneClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
+extern VectorParallelInferencePtr oneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);
 extern StaticDecoratorInferencePtr rankingBasedClassificationInference(const String& name, InferencePtr rankingInference, EnumerationPtr classes);
-extern VectorParallelInferencePtr parallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
+extern VectorParallelInferencePtr parallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voteLearner);
 extern SharedParallelInferencePtr sharedParallelVectorInference(const String& name, FunctionPtr sizeFunction, InferencePtr elementInference);
 
 // Meta

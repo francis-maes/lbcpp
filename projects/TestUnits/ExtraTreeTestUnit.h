@@ -81,7 +81,7 @@ protected:
     ContainerPtr testingData = loadDataToContainer(data, 300, 2300, true);
     
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(21));
-    InferencePtr inference = classificationExtraTreeInference(context, T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
+    InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
 
     inference->train(context, learningData, ContainerPtr());
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
@@ -107,7 +107,7 @@ protected:
     ContainerPtr testingData = loadDataToContainer(data, 300, 2300, false);
     
     PerceptionPtr perception = flattenPerception(new FlattenContainerPerception(10));
-    InferencePtr inference = regressionExtraTreeInference(context, T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
+    InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
 
     inference->train(context, learningData, ContainerPtr());
  

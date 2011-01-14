@@ -110,7 +110,7 @@ bool LearnerProgram::run(ExecutionContext& context)
   //  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
   //inference->setStochasticLearner(createOnlineLearner());
 
-  InferencePtr inference = classificationExtraTreeInference(context, T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
+  InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   
   /* Experiment */
   //context.informationCallback(T("---------- Learning ----------"));

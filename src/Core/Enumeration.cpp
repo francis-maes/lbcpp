@@ -62,6 +62,18 @@ int Enumeration::findElement(const String& name) const
   return -1;
 }
 
+size_t Enumeration::findOrAddElement(ExecutionContext& context, const String& name)
+{
+  int elt = findElement(name);
+  if (elt >= 0)
+    return (size_t)elt;
+  size_t res = elements.size();
+  elements.push_back(name);
+  if (oneLetterCodes.isNotEmpty())
+    oneLetterCodes += ' ';
+  return res;
+}
+
 VariableValue Enumeration::create(ExecutionContext& context) const
   {return getMissingValue();}
 

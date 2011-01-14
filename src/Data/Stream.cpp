@@ -8,6 +8,7 @@
 
 #include <lbcpp/Data/Stream.h>
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Core/DynamicObject.h>
 using namespace lbcpp;
 
 /*
@@ -155,23 +156,21 @@ bool LearningDataTextParser::parseLine(const String& line)
   tokenize(line, columns);
   return parseDataLine(columns);
 }
-/*
-bool LearningDataTextParser::parseFeatureList(const std::vector<String>& columns, size_t firstColumn, SparseVectorPtr& res)
+
+ObjectPtr LearningDataTextParser::parseFeatureList(DynamicClassPtr cl, const std::vector<String>& columns, size_t firstColumn) const
 {
-  jassert(features);
-  res = new SparseVector(features);
+  ObjectPtr res = cl->createSparseObject();
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     String identifier;
     double value;
     if (!parseFeature(columns[i], identifier, value))
       return false;
-    std::vector<String> path;
-    if (!parseFeatureIdentifier(identifier, path))
-      return false;
-    res->set(path, value);
+
+    size_t index = cl->findOrAddObjectVariable(context, identifier, doubleType);
+    res->setVariable(context, index, value);
   }
-  return true;
+  return res;
 }
 
 bool LearningDataTextParser::parseFeature(const String& str, String& featureId, double& featureValue)
@@ -189,10 +188,3 @@ bool LearningDataTextParser::parseFeature(const String& str, String& featureId, 
   }
   return true;
 }
-
-bool LearningDataTextParser::parseFeatureIdentifier(const String& identifier, std::vector<String>& path)
-{
-  tokenize(identifier, path, T("."));
-  return true;
-}
-*/

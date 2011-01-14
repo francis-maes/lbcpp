@@ -190,3 +190,13 @@ int DefaultClass::findObjectVariable(const String& name) const
     return (int)(baseType->getObjectNumVariables() + it->second);
   return baseType->findObjectVariable(name);
 }
+
+size_t DefaultClass::findOrAddObjectVariable(ExecutionContext& context, const String& name, TypePtr type)
+{
+  int idx = findObjectVariable(name);
+  if (idx >= 0)
+    return (size_t)idx;
+  size_t res = getObjectNumVariables();
+  addVariable(context, type, name);
+  return res;
+}

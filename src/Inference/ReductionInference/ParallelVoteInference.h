@@ -21,15 +21,15 @@ namespace lbcpp
 class ParallelVoteInference : public VectorParallelInference
 {
 public:
-  ParallelVoteInference(ExecutionContext& context, const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, DistributionBuilderPtr probabilityBuilderModel)
+  ParallelVoteInference(const String& name, size_t numVoters, InferencePtr voteInferenceModel, InferencePtr voterLearner, DistributionBuilderPtr probabilityBuilderModel)
     : VectorParallelInference(name), voteInferenceModel(voteInferenceModel), probabilityBuilderModel(probabilityBuilderModel)
   {
     jassert(numVoters);
     subInferences.resize(numVoters);
     for (size_t i = 0; i < numVoters; ++i)
     {
-      InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>(context);
-      voteInference->setBatchLearner(voterLearner->cloneAndCast<Inference>(context));
+      InferencePtr voteInference = voteInferenceModel->cloneAndCast<Inference>();
+      voteInference->setBatchLearner(voterLearner->cloneAndCast<Inference>());
       subInferences[i] = voteInference;
     }
     setBatchLearner(parallelVoteInferenceLearner());

@@ -11,6 +11,7 @@ SET(LBCPP_EXAMPLES_SOURCES
   SimpleIntrospectionExample.h
   WorkUnitExample.h
   XorRegressionExample.h
+  TrainTestLearningMachine.h
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )
