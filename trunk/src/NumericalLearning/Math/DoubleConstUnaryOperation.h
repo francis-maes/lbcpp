@@ -10,9 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_MATH_DOUBLE_CONST_UNARY_OPERATION_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
-# include "../../Core/Object/DenseObjectObject.h"
-# include "../../Core/Object/DenseDoubleObject.h"
-# include "../../Core/Object/SparseDoubleObject.h"
+# include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
 {

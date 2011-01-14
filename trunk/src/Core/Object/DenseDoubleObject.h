@@ -14,114 +14,7 @@
 
 namespace lbcpp
 {
-
-class DenseDoubleObject;
-typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
-
-class DenseDoubleObject : public Object
-{
-public:
-  DenseDoubleObject(DynamicClassSharedPtr thisClass)
-    : Object((Class* )thisClass.get()), thisClass(thisClass)
-  {
-    missingValue = doubleType->getMissingValue().getDouble();
-  }
-
-  DenseDoubleObject(DynamicClassSharedPtr thisClass, double initialValue)
-    : Object((Class* )thisClass.get()), thisClass(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
-  {
-    missingValue = doubleType->getMissingValue().getDouble();
-  }
-
-  double& getValueReference(size_t index)
-  {
-    jassert(index < thisClass->getObjectNumVariables());
-    if (values.size() <= index)
-      values.resize(index + 1, missingValue);
-    return values[index];
-  }
-
-  double getValue(size_t index) const
-    {return index < values.size() ? values[index] : missingValue;}
-
-  const std::vector<double>& getValues() const
-    {return values;}
-
-  std::vector<double>& getValues()
-  {
-    /*size_t n = thisClass->getObjectNumVariables();
-    if (values.size() < n)
-      values.resize(n, missingValue);*/
-    return values;
-  }
-
-  bool isMissing(double value) const
-    {return value == missingValue;}
-
-  virtual Variable getVariable(size_t index) const
-  {
-    TypePtr type = thisClass->getObjectVariableType(index);
-    if (index < values.size() && values[index] != missingValue)
-      return Variable(values[index], type);
-    else
-      return Variable::missingValue(type);
-  }
-
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
-    {getValueReference(index) = value.getDouble();}
-
-  virtual VariableIterator* createVariablesIterator() const;
-
-  virtual String toString() const
-  {
-    size_t n = getNumVariables();
-    String res;
-    for (size_t i = 0; i < n; ++i)
-    {
-      if (i >= values.size() || values[i] == missingValue)
-        res += T("_");
-      else
-        res += String(values[i]);
-      if (i < n - 1)
-        res += T(" ");
-    }
-    return res;
-  }
-
-  virtual void saveToXml(XmlExporter& exporter) const
-    {exporter.addTextElement(toString());}
-
-  virtual bool loadFromString(ExecutionContext& context, const String& str)
-  {
-    StringArray tokens;
-    tokens.addTokens(str, false);
-    values.resize(tokens.size());
-    for (int i = 0; i < tokens.size(); ++i)
-    {
-      String str = tokens[i];
-      if (str == T("_"))
-        values[i] = missingValue;
-      else
-        values[i] = str.getDoubleValue();
-    }
-    return true;
-  }
-
-  virtual bool loadFromXml(XmlImporter& importer)
-    {return loadFromString(importer.getContext(), importer.getAllSubText());}
-
-  DenseDoubleObjectPtr createCompatibleNullObject() const
-    {return new DenseDoubleObject(thisClass, 0.0);}
-
-private:
-  friend class DenseDoubleObjectVariableIterator;
   
-  DynamicClassSharedPtr thisClass;
-  std::vector<double> values;
-  double missingValue;
-};
-
-
 class DenseDoubleObjectVariableIterator : public Object::VariableIterator
 {
 public:
@@ -162,7 +55,77 @@ private:
   }
 };
 
-inline Object::VariableIterator* DenseDoubleObject::createVariablesIterator() const
+DenseDoubleObject::DenseDoubleObject(DynamicClassSharedPtr thisClass)
+  : Object((Class* )thisClass.get()), thisClass(thisClass)
+{
+  missingValue = doubleType->getMissingValue().getDouble();
+}
+
+DenseDoubleObject::DenseDoubleObject(DynamicClassSharedPtr thisClass, double initialValue)
+  : Object((Class* )thisClass.get()), thisClass(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
+{
+  missingValue = doubleType->getMissingValue().getDouble();
+}
+
+double& DenseDoubleObject::getValueReference(size_t index)
+{
+  jassert(index < thisClass->getObjectNumVariables());
+  if (values.size() <= index)
+    values.resize(index + 1, missingValue);
+  return values[index];
+}
+
+Variable DenseDoubleObject::getVariable(size_t index) const
+{
+  TypePtr type = thisClass->getObjectVariableType(index);
+  if (index < values.size() && values[index] != missingValue)
+    return Variable(values[index], type);
+  else
+    return Variable::missingValue(type);
+}
+
+void DenseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+  {getValueReference(index) = value.getDouble();}
+
+String DenseDoubleObject::toString() const
+{
+  size_t n = getNumVariables();
+  String res;
+  for (size_t i = 0; i < n; ++i)
+  {
+    if (i >= values.size() || values[i] == missingValue)
+      res += T("_");
+    else
+      res += String(values[i]);
+    if (i < n - 1)
+      res += T(" ");
+  }
+  return res;
+}
+
+void DenseDoubleObject::saveToXml(XmlExporter& exporter) const
+  {exporter.addTextElement(toString());}
+
+bool DenseDoubleObject::loadFromString(ExecutionContext& context, const String& str)
+{
+  StringArray tokens;
+  tokens.addTokens(str, false);
+  values.resize(tokens.size());
+  for (int i = 0; i < tokens.size(); ++i)
+  {
+    String str = tokens[i];
+    if (str == T("_"))
+      values[i] = missingValue;
+    else
+      values[i] = str.getDoubleValue();
+  }
+  return true;
+}
+
+bool DenseDoubleObject::loadFromXml(XmlImporter& importer)
+  {return loadFromString(importer.getContext(), importer.getAllSubText());}
+
+Object::VariableIterator* DenseDoubleObject::createVariablesIterator() const
   {return new DenseDoubleObjectVariableIterator(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */

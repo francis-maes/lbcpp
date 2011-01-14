@@ -9,7 +9,6 @@
 # define LBCPP_NUMBERS_SAND_BOX_H_
 
 # include <lbcpp/lbcpp.h>
-# include "../../src/Core/Object/DenseDoubleObject.h"
 # include "NumberPerceptions.h"
 
 namespace lbcpp

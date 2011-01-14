@@ -12,7 +12,7 @@
 # include <lbcpp/Inference/DecoratorInference.h>
 # include <lbcpp/Inference/SequentialInference.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
-# include "../../Core/Object/DenseDoubleObject.h"
+# include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
 {
