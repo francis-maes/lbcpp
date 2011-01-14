@@ -15,68 +15,6 @@
 namespace lbcpp
 {
 
-class DenseObjectObject : public Object
-{
-public:
-  DenseObjectObject(DynamicClassSharedPtr thisClass)
-    : Object((Class* )thisClass.get()), thisClass(thisClass) {}
-
-  ObjectPtr& getObjectReference(size_t index)
-  {
-    jassert(index < thisClass->getObjectNumVariables());
-    if (values.size() <= index)
-      values.resize(index + 1);
-    return values[index];
-  }
-
-  size_t getNumObjects() const
-    {return values.size();}
-
-  const ObjectPtr& getObject(size_t index) const
-  {
-    static ObjectPtr empty;
-    return index < values.size() ? values[index] : empty;
-  }
-
-  virtual Variable getVariable(size_t index) const
-  {
-    TypePtr type = thisClass->getObjectVariableType(index);
-    if (index < values.size() && values[index])
-      return Variable(values[index], type);
-    else
-      return Variable::missingValue(type);
-  }
-
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
-    {getObjectReference(index) = value.getObject();}
-
-  virtual VariableIterator* createVariablesIterator() const;
-
-  virtual String toString() const
-  {
-    size_t n = getNumVariables();
-    String res;
-    for (size_t i = 0; i < n; ++i)
-    {
-      if (i >= values.size() || !values[i])
-        res += T("_");
-      else
-        res += values[i]->toShortString();
-      if (i < n - 1)
-        res += T(" ");
-    }
-    return res;
-  }
-
-private:
-  friend class DenseObjectObjectVariableIterator;
-
-  std::vector<ObjectPtr> values;
-  DynamicClassSharedPtr thisClass;
-};
-
-typedef ReferenceCountedObjectPtr<DenseObjectObject> DenseObjectObjectPtr;
-
 class DenseObjectObjectVariableIterator : public Object::VariableIterator
 {
 public:
@@ -117,7 +55,46 @@ private:
   }
 };
 
-inline Object::VariableIterator* DenseObjectObject::createVariablesIterator() const
+DenseObjectObject::DenseObjectObject(DynamicClassSharedPtr thisClass)
+  : Object((Class* )thisClass.get()), thisClass(thisClass) {}
+
+ObjectPtr& DenseObjectObject::getObjectReference(size_t index)
+{
+  jassert(index < thisClass->getObjectNumVariables());
+  if (values.size() <= index)
+    values.resize(index + 1);
+  return values[index];
+}
+
+Variable DenseObjectObject::getVariable(size_t index) const
+{
+  TypePtr type = thisClass->getObjectVariableType(index);
+  if (index < values.size() && values[index])
+    return Variable(values[index], type);
+  else
+    return Variable::missingValue(type);
+}
+
+void DenseObjectObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+  {getObjectReference(index) = value.getObject();}
+
+String DenseObjectObject::toString() const
+{
+  size_t n = getNumVariables();
+  String res;
+  for (size_t i = 0; i < n; ++i)
+  {
+    if (i >= values.size() || !values[i])
+      res += T("_");
+    else
+      res += values[i]->toShortString();
+    if (i < n - 1)
+      res += T(" ");
+  }
+  return res;
+}
+
+Object::VariableIterator* DenseObjectObject::createVariablesIterator() const
   {return new DenseObjectObjectVariableIterator(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */

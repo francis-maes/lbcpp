@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/NumericalLearning/LossFunctions.h>
-#include "../Core/Object/DenseDoubleObject.h"
 #include <algorithm>
 using namespace lbcpp;
 

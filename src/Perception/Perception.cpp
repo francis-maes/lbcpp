@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Perception/Perception.h>
-#include "../Core/Object/SparseDoubleObject.h"
+#include <lbcpp/Core/DynamicObject.h>
 using namespace lbcpp;
 
 /*

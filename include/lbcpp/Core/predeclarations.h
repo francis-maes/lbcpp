@@ -70,6 +70,15 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
 extern ExecutionContext& defaultExecutionContext();
 
+class SparseDoubleObject;
+typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
+
+class DenseObjectObject;
+typedef ReferenceCountedObjectPtr<DenseObjectObject> DenseObjectObjectPtr;
+
+class DenseDoubleObject;
+typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_PREDECLARATIONS_H_

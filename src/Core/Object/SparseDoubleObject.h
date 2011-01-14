@@ -15,63 +15,6 @@
 namespace lbcpp
 {
 
-class SparseDoubleObject : public Object
-{
-public:
-  SparseDoubleObject(DynamicClassSharedPtr thisClass)
-    : Object((Class* )thisClass.get()), thisClass(thisClass), lastIndex(-1)  {}
-  
-  virtual String toShortString() const
-    {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getObjectNumVariables()) + T(")");}
-
-  virtual Variable getVariable(size_t index) const
-  {
-    jassert(false); // not implemented yet
-    return Variable();
-  }
-
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
-  {
-    jassert(value.exists() && value.isDouble());
-    if ((int)index > lastIndex)
-    {
-      appendValue(index, value.getDouble());
-      return;
-    }
-    // not implemented
-    jassert(false);
-  }
-
-  VariableIterator* createVariablesIterator() const;
-
-  std::vector< std::pair<size_t, double> >& getValues()
-    {return values;}
-
-  const std::vector< std::pair<size_t, double> >& getValues() const
-    {return values;}
-
-  void reserveValues(size_t count)
-    {values.reserve(count);}
-
-  void appendValue(size_t index, double value)
-  {
-    jassert((int)index > lastIndex);
-    if (value)
-    {
-      values.push_back(std::make_pair(index, value));
-      lastIndex = (int)index;
-    }
-  }
-private:
-  friend class SparseDoubleObjectVariableIterator;
-
-  DynamicClassSharedPtr thisClass;
-  std::vector< std::pair<size_t, double> > values;
-  int lastIndex;
-};
-
-typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
-
 class SparseDoubleObjectVariableIterator : public Object::VariableIterator
 {
 public:
@@ -96,7 +39,41 @@ private:
   size_t currentIndex;
 };
 
-inline Object::VariableIterator* SparseDoubleObject::createVariablesIterator() const
+SparseDoubleObject::SparseDoubleObject(DynamicClassSharedPtr thisClass)
+  : Object((Class* )thisClass.get()), thisClass(thisClass), lastIndex(-1)  {}
+
+String SparseDoubleObject::toShortString() const
+  {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getObjectNumVariables()) + T(")");}
+
+Variable SparseDoubleObject::getVariable(size_t index) const
+{
+  jassert(false); // not implemented yet
+  return Variable();
+}
+
+void SparseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+{
+  jassert(value.exists() && value.isDouble());
+  if ((int)index > lastIndex)
+  {
+    appendValue(index, value.getDouble());
+    return;
+  }
+  // not implemented
+  jassert(false);
+}
+
+void SparseDoubleObject::appendValue(size_t index, double value)
+{
+  jassert((int)index > lastIndex);
+  if (value)
+  {
+    values.push_back(std::make_pair(index, value));
+    lastIndex = (int)index;
+  }
+}
+
+Object::VariableIterator* SparseDoubleObject::createVariablesIterator() const
   {return new SparseDoubleObjectVariableIterator(refCountedPointerFromThis(this));}
 
 }; /* namespace lbcpp */
