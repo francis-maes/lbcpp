@@ -28,4 +28,18 @@
   <!-- Feature Generators -->
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
+  <!-- Train/Test Learning Machine -->
+  <enumeration name="LearningProblemType">
+    <value name="binaryClassificationProblem" oneLetterCode="b" threeLettersCode="bc"/>
+    <value name="multiClassClassificationProblem" oneLetterCode="c" threeLettersCode="mc"/>
+    <value name="multiLabelClassificationProblem" oneLetterCode="m" threeLettersCode="mlc"/>
+  </enumeration>
+
+  <class name="TrainTestLearningMachine" base="WorkUnit">
+    <variable type="LearningProblemType" name="learningProblemType"  enumeration="yes" shortName="t"/>
+    <variable type="String" name="methodToUse" shortName="m"/>
+    <variable type="File" name="trainingFile" shortName="train"/>
+    <variable type="File" name="testingFile" shortName="test"/>
+  </class>
+
 </library>

@@ -166,6 +166,8 @@ public:
    */
   TextParser(ExecutionContext& context, InputStream* newInputStream);
   
+  TextParser() {}
+
   /**
    ** Destructor.
    */
@@ -283,6 +285,7 @@ public:
   LearningDataTextParser(ExecutionContext& context, InputStream* newInputStream)
     : TextParser(context, newInputStream) {}
 
+  LearningDataTextParser() {}
   /**
   ** This function is called to parse an empty line.
   **
@@ -355,12 +358,9 @@ protected:
   **
   ** @param columns : the columns to parse.
   ** @param firstColumn : start column number.
-  ** @param res : parse result container.
-  **
-  ** @return False if any error occurs.
   */
- // bool parseFeatureList(const std::vector<String>& columns,
- //                       size_t firstColumn, SparseVectorPtr& res);
+  ObjectPtr parseFeatureList(DynamicClassPtr cl, const std::vector<String>& columns, size_t firstIndex) const;
+
 
   /**
   ** Parses a feature
@@ -374,7 +374,7 @@ protected:
   **
   ** @return False if any error occurs.
   */
-  //static bool parseFeature(const String& str, String& featureId, double& featureValue);
+  static bool parseFeature(const String& str, String& featureId, double& featureValue);
 
   /**
   ** Parses a feature identifier
@@ -387,9 +387,14 @@ protected:
   **
   ** @return True.
   */
-  //static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path);
+  static bool parseFeatureIdentifier(const String& identifier, std::vector<String>& path)
+    {tokenize(identifier, path, T(".")); return true;}
 };
-  
+
+typedef ReferenceCountedObjectPtr<LearningDataTextParser> LearningDataTextParserPtr;
+
+extern LearningDataTextParserPtr classificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_VARIABLE_STREAM_H_

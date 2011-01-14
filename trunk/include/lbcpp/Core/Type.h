@@ -204,6 +204,9 @@ public:
     {jassert(index < elements.size()); return elements[index];}
 
   int findElement(const String& name) const;
+  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
+  size_t findOrAddElement(ExecutionContext& context, const String& name);
+
   // --
 
   bool hasOneLetterCodes() const;
@@ -211,9 +214,6 @@ public:
   String getOneLetterCodes() const;
 
   lbcpp_UseDebuggingNewOperator
-
-protected:
-  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
 
 private:
   friend class EnumerationClass;
@@ -286,6 +286,8 @@ public:
   virtual String getObjectVariableShortName(size_t index) const;
   virtual String getObjectVariableDescription(size_t index) const;
   virtual int findObjectVariable(const String& name) const;
+
+  size_t findOrAddObjectVariable(ExecutionContext& context, const String& name, TypePtr type);
 
   void reserveVariables(size_t count)
     {variables.reserve(count);}

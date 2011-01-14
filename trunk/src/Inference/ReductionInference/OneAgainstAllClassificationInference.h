@@ -17,13 +17,13 @@ namespace lbcpp
 class OneAgainstAllClassificationInference : public VectorParallelInference
 {
 public:
-  OneAgainstAllClassificationInference(ExecutionContext& context, const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
+  OneAgainstAllClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
     subInferences.resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
-      InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>(context);
+      InferencePtr subInference = binaryClassifierModel->cloneAndCast<Inference>();
       subInference->setName(classes->getElementName(i));
       subInferences[i] = subInference;
     }

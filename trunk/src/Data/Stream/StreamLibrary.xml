@@ -1,37 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Stream" directory="Data/Stream">
+
+  <!-- Abstract classes -->
+  <class name="Stream" abstract="yes"/>
+  <class name="TextParser" base="Stream" abstract="yes"/>
+  <class name="LearningDataTextParser" base="TextParser" abstract="yes"/>
   
+  <!-- Learning Data Parsers -->
+  <class name="ClassificationDataTextParser" base="LearningDataTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, EnumerationPtr outputLabels"/>
+  </class>
 
-    <template name="Stream" abstract="yes">
-      <parameter name="elementsType"/>
-    </template>
-    
-    <template name="TextParser" base="Stream[elementsType]" abstract="yes">
-      <parameter name="elementsType"/>
-    </template>
+  <!-- Directory iterators -->
+  <class name="DirectoryFileStream" base="Stream">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+  </class>
 
-    <class name="DirectoryFileStream" base="Stream[File]">
-      <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
-    </class>
+  <class name="DirectoryPairFileStream" base="Stream">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+  </class>
 
-    <class name="DirectoryPairFileStream" base="Stream[Pair[File,File]]">
-      <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
-    </class>
+  <!-- Apply Function Modifier -->
+  <class name="ApplyFunctionStream" base="Stream">
+    <constructor arguments="StreamPtr stream, FunctionPtr function"/>
 
-    <template name="ApplyFunctionStream" base="Stream[elementsType]">
-      <parameter name="elementsType"/>
+    <variable type="Stream" name="stream"/>
+    <variable type="Function" name="function"/>
+  </template>
 
-      <constructor arguments="StreamPtr stream, FunctionPtr function" parameters="function->getOutputType(stream->getElementsType())"/>
 
-      <variable type="Stream[Variable]" name="stream"/>
-      <variable type="Function" name="function"/>
-    </template>
-
-    <!-- Consumer -->
-    <class name="SaveToFileConsumer" base="Consumer">
-      <constructor arguments="const File&amp; outputDirectory"/>
-    </class>
-    
+ <!-- Consumer -->
+  <class name="SaveToFileConsumer" base="Consumer">
+    <constructor arguments="const File&amp; outputDirectory"/>
+  </class>
    
 </library>

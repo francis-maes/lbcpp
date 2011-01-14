@@ -70,6 +70,10 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 
 extern ExecutionContext& defaultExecutionContext();
 
+class DynamicClass;
+typedef NativePtr<DynamicClass> DynamicClassPtr;
+typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassSharedPtr;
+
 class SparseDoubleObject;
 typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
 
