@@ -27,22 +27,25 @@ void DynamicClass::ensureVariablesTypeIsComputed()
 
 void DynamicClass::computeVariablesType()
 {
-  variablesType = mixedVariableTypes;
-  if (variables.size())
+  size_t n = getObjectNumVariables();
+  if (n)
   {
     bool hasOnlyDoubles = true;
     bool hasOnlyObjects = true;
-    for (size_t i = 0; i < variables.size(); ++i)
+    for (size_t i = 0; i < n; ++i)
     {
-      if (!variables[i].type->inheritsFrom(doubleType))
+      TypePtr type = getObjectVariableType(i);
+      if (!type->inheritsFrom(doubleType))
         hasOnlyDoubles = false;
-      if (!variables[i].type->inheritsFrom(objectClass))
+      if (!type->inheritsFrom(objectClass))
         hasOnlyObjects = false;
     }
     if (hasOnlyDoubles)
       variablesType = onlyDoubleVariables;
     else if (hasOnlyObjects)
       variablesType = onlyObjectVariables;
+    else
+      variablesType = mixedVariableTypes;
   }
 }
 

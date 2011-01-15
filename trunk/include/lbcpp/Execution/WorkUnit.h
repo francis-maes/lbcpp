@@ -55,6 +55,25 @@ protected:
 
 extern ClassPtr workUnitClass;
 
+typedef bool (Object::*ObjectMethod)(ExecutionContext& context); 
+
+class ObjectMethodWorkUnit : public WorkUnit
+{
+public:
+  ObjectMethodWorkUnit(const String& name, ObjectPtr object, ObjectMethod method)
+    : WorkUnit(name), object(object), method(method) {}
+ 
+  virtual bool run(ExecutionContext& context)
+  {
+    Object& obj = *object;
+    return (obj.*method)(context);
+  }
+
+protected:
+  ObjectPtr object;
+  ObjectMethod method;
+};
+
 class DecoratorWorkUnit : public WorkUnit
 {
 public:

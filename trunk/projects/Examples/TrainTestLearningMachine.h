@@ -158,16 +158,14 @@ public:
       return false;
     }
 
-    // load training data
-    ContainerPtr trainingData = loadData(context, learningProblem, trainingFile, T("training data"));
-    if (!trainingData)
+    context.enterScope(T("Loading Data"));
+    bool loadingOk = context.run(new ObjectMethodWorkUnit(T("Loading Training Data"), refCountedPointerFromThis(this), (ObjectMethod)&TrainTestLearningMachine::loadTrainingData)) && 
+      context.run(new ObjectMethodWorkUnit(T("Loading Testing Data"), refCountedPointerFromThis(this), (ObjectMethod)&TrainTestLearningMachine::loadTestingData)) &&
+      trainingData && testingData;
+    context.leaveScope(loadingOk);
+    if (!loadingOk)
       return false;
-
-    // load testing data
-    ContainerPtr testingData = loadData(context, learningProblem, testingFile, T("testing data"));
-    if (!testingData)
-      return false;
-
+  
     // create learning machine
     InferencePtr inference = learningProblem->createInference(context, learningMachineFamily, methodToUse);
     if (!inference)
@@ -198,14 +196,23 @@ protected:
   File testingFile;
   size_t maxExamples;
 
-  ContainerPtr loadData(ExecutionContext& context, LearningProblemPtr problem, const File& file, const String& dataName) const
+  ContainerPtr trainingData;
+  ContainerPtr testingData;
+
+  bool loadTrainingData(ExecutionContext& context)
+    {trainingData = loadData(context, trainingFile, T("Training data")); return trainingData;}
+
+  bool loadTestingData(ExecutionContext& context)
+    {testingData = loadData(context, testingFile, T("Testing data")); return testingData;}
+
+  ContainerPtr loadData(ExecutionContext& context, const File& file, const String& dataName) const
   {
     if (!file.exists())
     {
       context.errorCallback(T("Missing ") + dataName + T(" file"));
       return ContainerPtr();
     }
-    StreamPtr stream = problem->createDataParser(context, file);
+    StreamPtr stream = learningProblem->createDataParser(context, file);
     if (!stream)
       return ContainerPtr();
     ContainerPtr res = stream->load(maxExamples);
@@ -213,6 +220,7 @@ protected:
       return ContainerPtr();
     if (res->getNumElements() == 0)
       context.warningCallback(T("No ") + dataName);
+    context.resultCallback(T("Num Examples"), res->getNumElements());
     return res;
   }
 };

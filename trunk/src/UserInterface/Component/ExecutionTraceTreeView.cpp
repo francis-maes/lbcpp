@@ -156,7 +156,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   trace->getContext().appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new WorkUnitExecutionTraceTreeViewItem(this, new WorkUnitExecutionTraceItem(WorkUnitPtr(), initialTime)));
+  setRootItem(new WorkUnitExecutionTraceTreeViewItem(this, new WorkUnitExecutionTraceItem(T("Root"), WorkUnitPtr(), initialTime)));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
   setMultiSelectEnabled(true);
@@ -262,9 +262,9 @@ public:
     }
   }
 
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
-    WorkUnitExecutionTraceItemPtr trace(new WorkUnitExecutionTraceItem(workUnit, currentNotificationTime));
+    WorkUnitExecutionTraceItemPtr trace(new WorkUnitExecutionTraceItem(description, workUnit, currentNotificationTime));
     addItemAndPushPosition(stack, new WorkUnitExecutionTraceTreeViewItem(tree, trace));
   }
 

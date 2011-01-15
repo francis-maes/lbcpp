@@ -31,10 +31,12 @@ public:
   
   virtual void addElement(const Variable& element, double weight)
   {
-    if (!checkInheritance(element.getType(), booleanType))
-      return;
-    if (element.getBoolean())
-      pTrue += 1.0;
+    if (element.isBoolean())
+      pTrue += element.getBoolean() ? 1.0 : 0.0;
+    else if (element.getType() == probabilityType)
+      pTrue += element.getDouble();
+    else
+      jassert(false);
     ++count;
   }
   

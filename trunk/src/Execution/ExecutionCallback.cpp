@@ -49,8 +49,8 @@ void CompositeExecutionCallback::progressCallback(double progression, double pro
 void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}
 
-void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-  {notificationCallback(new PreExecutionNotification(stack, workUnit));}
+void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+  {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}
 
 void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
   {notificationCallback(new PostExecutionNotification(stack, workUnit, result));}
