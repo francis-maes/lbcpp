@@ -14,6 +14,37 @@
 namespace lbcpp
 {
 
+class AddUnitFeature : public Perception
+{
+public:
+  AddUnitFeature(TypePtr inputType) : inputType(inputType)
+    {computeOutputType();}
+
+  virtual String toString() const
+    {return inputType->getName() + T(" + unit");}
+
+  virtual TypePtr getInputType() const
+    {return inputType;}
+
+  virtual void computeOutputType()
+  {
+    addOutputVariable(T("unit"), doubleType);
+    addOutputVariable(T("features"), inputType);
+    Perception::computeOutputType();
+  }
+
+  virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
+  {
+    callback->sense(0, 1.0);
+    callback->sense(1, input);
+  }
+
+protected:
+  friend class AddUnitFeatureClass;
+
+  TypePtr inputType;
+};
+
 class BooleanFeatures : public Perception
 {
 public:

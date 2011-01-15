@@ -489,6 +489,7 @@ SET(LBCPP_NUMERICAL_LEARNING_MATH_SOURCES
 
 SET(LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES
   NumericalLearning/Perception/BooleanFeatures.h
+  NumericalLearning/Perception/AddUnitFeatures.h
   NumericalLearning/Perception/EnumValueFeatures.h
   NumericalLearning/Perception/DiscretizedNumberFeatures.h
   NumericalLearning/Perception/HardDiscretizedNumberFeatures.h
