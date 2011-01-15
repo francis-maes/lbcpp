@@ -84,3 +84,29 @@ DistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBu
     const_cast<ClassificationIGSplitScoringFunction* >(this)->cacheBuilder = enumerationDistributionBuilder(enumeration);
   return cacheBuilder->cloneAndCast<DistributionBuilder>();
 }
+
+double BinaryIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
+{
+  ContainerPtr leftData = input[0].getObjectAndCast<Container>();
+  ContainerPtr rightData = input[1].getObjectAndCast<Container>();
+  jassert(leftData && rightData);
+  
+  BernoulliDistributionPtr leftDistribution = getProbabilityDistribution(leftData);
+  BernoulliDistributionPtr rightDistribution = getProbabilityDistribution(rightData);
+  BernoulliDistributionPtr priorDistribution = new BernoulliDistribution((leftDistribution->getProbabilityOfTrue() + rightDistribution->getProbabilityOfTrue()) / 2);
+  
+  double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
+  double informationGain = priorDistribution->computeEntropy()
+                          - probOfTrue * leftDistribution->computeEntropy() 
+                          - (1 - probOfTrue) * rightDistribution->computeEntropy(); 
+  return informationGain;
+}
+
+BernoulliDistributionPtr BinaryIGSplitScoringFunction::getProbabilityDistribution(ContainerPtr data) const
+{
+  size_t numOfTrue = 0;
+  for (size_t i = 0; i < data->getNumElements(); ++i)
+    if (data->getElement(i)[1].getBoolean())
+      ++numOfTrue;
+  return new BernoulliDistribution((double)numOfTrue / (double)data->getNumElements());
+}
