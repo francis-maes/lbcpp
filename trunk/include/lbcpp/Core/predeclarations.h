@@ -74,6 +74,9 @@ class DynamicClass;
 typedef NativePtr<DynamicClass> DynamicClassPtr;
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassSharedPtr;
 
+class UnnamedDynamicClass;
+typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
+
 class SparseDoubleObject;
 typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
 

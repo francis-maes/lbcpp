@@ -19,12 +19,14 @@ DynamicClass::~DynamicClass()
 {
 }
 
-bool DynamicClass::initialize(ExecutionContext& context)
+void DynamicClass::ensureVariablesTypeIsComputed()
 {
-  if (!getObjectNumVariables())
-    createObjectVariables();
+  if (variablesType == uncomputedVariableTypes)
+    computeVariablesType();
+}
 
-  // compute variablesType
+void DynamicClass::computeVariablesType()
+{
   variablesType = mixedVariableTypes;
   if (variables.size())
   {
@@ -42,7 +44,13 @@ bool DynamicClass::initialize(ExecutionContext& context)
     else if (hasOnlyObjects)
       variablesType = onlyObjectVariables;
   }
+}
 
+bool DynamicClass::initialize(ExecutionContext& context)
+{
+  if (!getObjectNumVariables())
+    createObjectVariables();
+  computeVariablesType();
   return DefaultClass::initialize(context);
 }
 
@@ -52,7 +60,7 @@ VariableValue DynamicClass::create(ExecutionContext& context) const
 ObjectPtr DynamicClass::createDenseObject() const
 {
   jassert(variables.size());
-  jassert(variablesType != uncomputedVariableTypes)
+  const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
     return new DenseDoubleObject(refCountedPointerFromThis(this));
   else if (variablesType == onlyObjectVariables)
@@ -64,7 +72,7 @@ ObjectPtr DynamicClass::createDenseObject() const
 ObjectPtr DynamicClass::createSparseObject() const
 { 
   jassert(variables.size());
-  jassert(variablesType != uncomputedVariableTypes)
+  const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
     return new SparseDoubleObject(refCountedPointerFromThis(this));
   else

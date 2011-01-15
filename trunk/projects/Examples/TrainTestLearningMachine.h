@@ -16,6 +16,7 @@
 # include <lbcpp/NumericalLearning/NumericalSupervisedInference.h>
 # include <lbcpp/DecisionTree/DecisionTree.h>
 # include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/StoppingCriterion.h>
 
 namespace lbcpp
 {
@@ -43,14 +44,22 @@ public:
   MultiClassClassificationProblem() : inputClass(new UnnamedDynamicClass(T("Features"))), outputLabels(new Enumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return classificationDataTextParser(context, file, inputClass, outputLabels);}
+    {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
 
   virtual InferencePtr createInference(ExecutionContext& context, const String& methodToUse)
   {
+    PerceptionPtr perception = identityPerception(inputClass.get());
+
     if (methodToUse == String::empty || methodToUse == T("linear"))
-      return multiClassLinearSVMInference(T("Classifier"), PerceptionPtr(), outputLabels);
+    {
+      NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("Classifier"), perception, outputLabels);;
+      InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(perStep);
+      learner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(5)));
+      inference->setStochasticLearner(learner, false);
+      return inference;
+    }
     else if (methodToUse == T("extratree"))
-      return classificationExtraTreeInference(T("Classifier"), PerceptionPtr(), outputLabels, 100, 10, 0);
+      return classificationExtraTreeInference(T("Classifier"), perception, outputLabels, 100, 10, 0);
 
     context.errorCallback(T("Unknown learning method ") + methodToUse);
     return InferencePtr();
@@ -60,7 +69,7 @@ public:
     {return classificationAccuracyEvaluator();}
 
 protected:
-  DynamicClassPtr inputClass;
+  UnnamedDynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
 };
 

@@ -216,6 +216,8 @@ public:
   virtual void setName(const String& name)
     {this->name = name;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class NameableObjectClass;
 

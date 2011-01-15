@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/DynamicObject.h>
 # include <lbcpp/Data/Stream.h>
+# include "SparseVectorHelper.h"
 
 namespace lbcpp
 {
@@ -47,8 +48,8 @@ String SparseDoubleObject::toShortString() const
 
 Variable SparseDoubleObject::getVariable(size_t index) const
 {
-  jassert(false); // not implemented yet
-  return Variable();
+  const double* value = SparseDoubleVectorHelper::get(values, index);
+  return value ? Variable(*value) : Variable::missingValue(doubleType);
 }
 
 void SparseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
@@ -59,8 +60,8 @@ void SparseDoubleObject::setVariable(ExecutionContext& context, size_t index, co
     appendValue(index, value.getDouble());
     return;
   }
-  // not implemented
-  jassert(false);
+  else
+    SparseDoubleVectorHelper::set(values, index, value.getDouble());
 }
 
 void SparseDoubleObject::appendValue(size_t index, double value)

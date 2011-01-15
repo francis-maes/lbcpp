@@ -52,6 +52,9 @@ protected:
     onlyObjectVariables,
     mixedVariableTypes
   } variablesType;
+
+  void ensureVariablesTypeIsComputed();
+  void computeVariablesType();
 };
 
 extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
@@ -97,6 +100,8 @@ public:
 
   virtual String toString() const;
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class DenseObjectObjectVariableIterator;
 
@@ -136,6 +141,8 @@ public:
   DenseDoubleObjectPtr createCompatibleNullObject() const
     {return new DenseDoubleObject(thisClass, 0.0);}
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class DenseDoubleObjectVariableIterator;
   
@@ -166,6 +173,8 @@ public:
     {values.reserve(count);}
 
   void appendValue(size_t index, double value);
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class SparseDoubleObjectVariableIterator;

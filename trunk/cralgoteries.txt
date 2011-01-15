@@ -1,14 +1,17 @@
- * Parsers: LearningDataTextParser
-   * implementations: BinaryClassificationDataTextParser, MultiClassClassificationDataTextParser, RegressionDataTextParser, MultiLabelClassificationDataTextParser
-   * DenseDoubleObject => DoubleDenseVector, SparseDoubleObject => DoubleSparseVector (?)
-   * Find how to store all these training data
- 
-ExecutionTrace:
- * ExecutionTrace ne doit pas stoquer les pointeurs vers le WorkUnit (ca prend trop trop de mémoire)
- * Callback pour crŽer les ExecutionTrace (multi-thread) => chaque thread ˆ sa sous-trace, et les fusions ne se font qu'a la fin
- * Serialisation des ExecutionTrace
- * Affichage des ExecutionTrace en offline
+Explorer/ExecutionContext
+ 1- gui pour choisir les parametres dans le "Start Work Unit"
+ 2- serialisation de l'execution trace
+   * ExecutionTrace ne doit pas stoquer les pointeurs vers le WorkUnit (ca prend trop trop de mémoire)
+   * Callback pour crŽer les ExecutionTrace (multi-thread) => chaque thread ˆ sa sous-trace, et les fusions ne se font qu'a la fin
+   * Serialisation des ExecutionTrace
+   * Affichage des ExecutionTrace en offline
+ 3- tableaux et courbes
 
+MultiLabel/MultiTask:
+ * Parseur et stoquage multi-label
+ * Nouveaux evaluators
+ * Baseline et Modele multi-passe
+ 
 Boinc:
  * New class BoincExecutionContext
  * Fix bugs reported by Arnaud
