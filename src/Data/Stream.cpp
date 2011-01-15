@@ -14,14 +14,29 @@ using namespace lbcpp;
 /*
 ** Stream
 */
-VectorPtr Stream::load(size_t maximumCount)
+VectorPtr Stream::load(size_t maximumCount, bool doProgression)
 {
   VectorPtr res = vector(getElementsType());
+  juce::uint32 lastTimeProgressionWasSent = 0;
   while (maximumCount == 0 || res->getNumElements() < maximumCount)
   {
+    if (doProgression)
+    {
+      juce::uint32 t = Time::getApproximateMillisecondCounter();
+      if (!lastTimeProgressionWasSent || (t - lastTimeProgressionWasSent) > 100)
+      {
+        double position, total;
+        String unit;
+        getCurrentPosition(position, total, unit);
+        context.progressCallback(position, total, unit);
+        lastTimeProgressionWasSent = t;
+      }
+    }
+
     Variable variable = next();
     if (!variable.isNil())
       res->append(variable);
+
     if (isExhausted())
       break;
   }
@@ -82,6 +97,21 @@ TextParser::~TextParser()
 {
   if (istr)
     delete istr;
+}
+
+void TextParser::getCurrentPosition(double& position, double& totalSize, String& unit)
+{
+  if (istr)
+  {
+    position = (double)(istr->getPosition() / 1024);
+    totalSize = (double)(istr->getTotalLength() / 1024);
+    unit = T("kb");
+  }
+  else
+  {
+    position = totalSize = 0.0;
+    unit = String::empty;
+  }
 }
 
 inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)

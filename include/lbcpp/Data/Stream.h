@@ -80,6 +80,8 @@ public:
   virtual bool isExhausted() const
     {return true;}
 
+  virtual void getCurrentPosition(double& position, double& totalSize, String& unit) = 0;
+
   /**
   ** Loads and returns the next element from the stream.
   **
@@ -114,7 +116,7 @@ public:
   ** @return a Vector containing loaded items.
   ** @see Container
   */
-  VectorPtr load(size_t maximumCount = 0);
+  VectorPtr load(size_t maximumCount = 0, bool doProgression = true);
 
   /**
   ** Applies an Function to this stream.
@@ -178,6 +180,8 @@ public:
   
   virtual bool isExhausted() const
     {return istr == NULL;}
+
+  virtual void getCurrentPosition(double& position, double& totalSize, String& unit);
   
   /**
    ** This function is called at the begging of parsing.

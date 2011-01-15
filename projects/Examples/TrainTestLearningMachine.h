@@ -159,9 +159,13 @@ public:
     }
 
     context.enterScope(T("Loading Data"));
-    bool loadingOk = context.run(new ObjectMethodWorkUnit(T("Loading Training Data"), refCountedPointerFromThis(this), (ObjectMethod)&TrainTestLearningMachine::loadTrainingData)) && 
-      context.run(new ObjectMethodWorkUnit(T("Loading Testing Data"), refCountedPointerFromThis(this), (ObjectMethod)&TrainTestLearningMachine::loadTestingData)) &&
-      trainingData && testingData;
+    context.enterScope(T("Training Data"));
+    ContainerPtr trainingData = loadData(context, trainingFile);
+    context.leaveScope(trainingData != ContainerPtr());
+    context.enterScope(T("Testing Data"));
+    ContainerPtr testingData = loadData(context, testingFile);
+    context.leaveScope(testingData != ContainerPtr());
+    bool loadingOk = trainingData && testingData;
     context.leaveScope(loadingOk);
     if (!loadingOk)
       return false;
@@ -196,20 +200,11 @@ protected:
   File testingFile;
   size_t maxExamples;
 
-  ContainerPtr trainingData;
-  ContainerPtr testingData;
-
-  bool loadTrainingData(ExecutionContext& context)
-    {trainingData = loadData(context, trainingFile, T("Training data")); return trainingData;}
-
-  bool loadTestingData(ExecutionContext& context)
-    {testingData = loadData(context, testingFile, T("Testing data")); return testingData;}
-
-  ContainerPtr loadData(ExecutionContext& context, const File& file, const String& dataName) const
+  ContainerPtr loadData(ExecutionContext& context, const File& file) const
   {
     if (!file.exists())
     {
-      context.errorCallback(T("Missing ") + dataName + T(" file"));
+      context.errorCallback(T("Missing file"));
       return ContainerPtr();
     }
     StreamPtr stream = learningProblem->createDataParser(context, file);
@@ -219,7 +214,7 @@ protected:
     if (!res)
       return ContainerPtr();
     if (res->getNumElements() == 0)
-      context.warningCallback(T("No ") + dataName);
+      context.warningCallback(T("No examples"));
     context.resultCallback(T("Num Examples"), res->getNumElements());
     return res;
   }
