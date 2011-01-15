@@ -56,7 +56,7 @@ protected:
 class WorkUnitExecutionTraceItem : public ExecutionTraceItem
 {
 public:
-  WorkUnitExecutionTraceItem(const WorkUnitPtr& workUnit, double startTime);
+  WorkUnitExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime);
   WorkUnitExecutionTraceItem() {}
 
   virtual String toString() const;
@@ -95,6 +95,7 @@ public:
 protected:
   friend class WorkUnitExecutionTraceItemClass;
 
+  String description;
   WorkUnitPtr workUnit;
   UnnamedDynamicClassPtr resultsClass;
   std::vector< std::pair<String, Variable> > results;

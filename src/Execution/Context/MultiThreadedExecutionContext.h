@@ -230,31 +230,20 @@ public:
   virtual bool run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
   
-  static bool startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, bool& result)
+  static void startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, bool& result)
   {
-    const ExecutionStackPtr& stack = context.getStack();
-    context.preExecutionCallback(stack, workUnits);
-    stack->push(workUnits);
+    context.enterScope(workUnits);
     waitingQueue->push(workUnits, context.getStack()->cloneAndCast<ExecutionStack>(context), &numRemainingWorkUnits, &result);
-    return true;
-  }
-
-  static bool finishParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits)
-  {
-    const ExecutionStackPtr& stack = context.getStack();
-    stack->pop();
-    context.postExecutionCallback(stack, workUnits, true);
-    return true;
   }
 
   virtual bool run(const CompositeWorkUnitPtr& workUnits)
   {
     bool result;
     int numRemainingWorkUnits;
-    if (!startParallelRun(*this, workUnits, thread->getWaitingQueue(), numRemainingWorkUnits, result))
-      return false;
+    startParallelRun(*this, workUnits, thread->getWaitingQueue(), numRemainingWorkUnits, result);
     thread->workUntilWorkUnitsAreDone(workUnits, numRemainingWorkUnits);
-    return finishParallelRun(*this, workUnits) && result;
+    leaveScope(result);
+    return result;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -357,10 +346,10 @@ public:
   {
     int numRemainingWorkUnits;
     bool result;
-    if (!ThreadOwnedExecutionContext::startParallelRun(*this, workUnits, threadPool->getWaitingQueue(), numRemainingWorkUnits, result))
-      return false;
+    ThreadOwnedExecutionContext::startParallelRun(*this, workUnits, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
-    return ThreadOwnedExecutionContext::finishParallelRun(*this, workUnits) && result;
+    leaveScope(result);
+    return result;
   }
 
   lbcpp_UseDebuggingNewOperator

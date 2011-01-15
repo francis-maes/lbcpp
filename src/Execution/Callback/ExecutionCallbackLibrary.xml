@@ -33,6 +33,7 @@
 
     <class name="PreExecutionNotification" base="ExecutionNotification">
       <variable type="ExecutionStack" name="stack"/>
+      <variable type="String" name="description"/>
       <variable type="WorkUnit" name="workUnit"/>
     </class>
 

@@ -23,13 +23,26 @@ ExecutionContext::ExecutionContext()
   initialize(*this);
 }
 
+void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
+{
+  preExecutionCallback(stack, description, workUnit);
+  stack->push(workUnit);
+}
+
+void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
+  {enterScope(workUnit->getName(), workUnit);}
+
+void ExecutionContext::leaveScope(bool result)
+{
+  WorkUnitPtr workUnit = stack->pop();
+  postExecutionCallback(stack, workUnit, result);
+}
+
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
-  preExecutionCallback(stack, workUnit);
-  stack->push(workUnit);
+  enterScope(workUnit);
   bool res = workUnit->run(*this);
-  stack->pop();
-  postExecutionCallback(stack, workUnit, res);
+  leaveScope(res);
   return res;
 }
 
@@ -55,33 +68,19 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 /*
 ** ExecutionStack
 */
-//ObjectPtr ExecutionStack::nullObject;
-
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
 void ExecutionStack::push(const WorkUnitPtr& workUnit)
-{
-  jassert(workUnit);
-  stack.push_back(workUnit);
-}
+  {stack.push_back(workUnit);}
 
-void ExecutionStack::pop()
+WorkUnitPtr ExecutionStack::pop()
 {
   jassert(stack.size());
+  WorkUnitPtr res = stack.back();
   stack.pop_back();
+  return res;
 }
-/*
-FunctionPtr ExecutionStack::findParentFunction() const
-{
-  for (int i = (int)stack.size() - 1; i >= 0; --i)
-  {
-    FunctionPtr res = stack[i].dynamicCast<Function>();
-    if (res)
-      return res;
-  }
-  return FunctionPtr();
-}*/
 
 const WorkUnitPtr& ExecutionStack::getWorkUnit(size_t depth) const
 {

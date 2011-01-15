@@ -22,12 +22,10 @@ public:
   ExecutionStack() {}
 
   void push(const WorkUnitPtr& object);
-  void pop();
+  WorkUnitPtr pop();
   
   size_t getDepth() const;
   const WorkUnitPtr& getWorkUnit(size_t depth) const;
-
-  //FunctionPtr findParentFunction() const;
 
   lbcpp_UseDebuggingNewOperator
 

@@ -34,12 +34,12 @@ String MessageExecutionTraceItem::getPreferedIcon() const
 /*
 ** WorkUnitExecutionTraceItem
 */
-WorkUnitExecutionTraceItem::WorkUnitExecutionTraceItem(const WorkUnitPtr& workUnit, double startTime)
-  : ExecutionTraceItem(startTime), workUnit(workUnit), endTime(startTime),
+WorkUnitExecutionTraceItem::WorkUnitExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime)
+  : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), endTime(startTime),
     hasProgression(false), progression(0.0) {}
 
 String WorkUnitExecutionTraceItem::toString() const
-  {return workUnit ? workUnit->getName() : T("root");}
+  {return description;}
 
 String WorkUnitExecutionTraceItem::getPreferedIcon() const
   {return T("WorkUnit-32.png");}

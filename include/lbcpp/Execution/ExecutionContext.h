@@ -44,6 +44,10 @@ public:
   void setStack(const ExecutionStackPtr& stack)
     {this->stack = stack;}
 
+  void enterScope(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
+  void enterScope(const WorkUnitPtr& workUnit);
+  void leaveScope(bool result = true);
+
   /*
   ** Work Units
   */

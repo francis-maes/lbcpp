@@ -103,12 +103,12 @@ protected:
 class PreExecutionNotification : public ExecutionNotification
 {
 public:
-  PreExecutionNotification(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
-    : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit) {}
+  PreExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
+    : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit) {}
   PreExecutionNotification() {}
 
   virtual void notifyCallback(const ExecutionCallbackPtr& target)
-    {target->preExecutionCallback(stack, workUnit);}
+    {target->preExecutionCallback(stack, description, workUnit);}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -116,6 +116,7 @@ protected:
   friend class PreExecutionNotificationClass;
 
   ExecutionStackPtr stack;
+  String description;
   WorkUnitPtr workUnit;
 };
 

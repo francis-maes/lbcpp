@@ -21,10 +21,10 @@ public:
   }
   
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(context, targetName, perception, 30, 20, 1);}
+    {return binaryClassificationExtraTreeInference(targetName, perception, 30, 20, 1);}
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(context, targetName, perception, classes, 30, 20, 1);}
+    {return classificationExtraTreeInference(targetName, perception, classes, 30, 20, 1);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -201,11 +201,11 @@ public:
 class StackPrinterCallback : public ExecutionCallback
 {
 public:
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
     for (size_t i = 0; i < stack->getDepth(); ++i)
       std::cout << "  ";
-    std::cout << workUnit->getClassName() << std::endl;
+    std::cout << description << std::endl;
   }
   
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
