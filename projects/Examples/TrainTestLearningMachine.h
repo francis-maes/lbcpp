@@ -130,7 +130,7 @@ public:
   }
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return EvaluatorPtr();}//classificationAccuracyEvaluator();}
+    {return multiLabelClassificationEvaluator();}
 
 protected:
   UnnamedDynamicClassPtr inputClass;
@@ -192,6 +192,7 @@ protected:
   String methodToUse;
   File trainingFile;
   File testingFile;
+  size_t maxExamples;
 
   ContainerPtr loadData(ExecutionContext& context, LearningProblemPtr problem, const File& file, const String& dataName) const
   {
@@ -203,7 +204,7 @@ protected:
     StreamPtr stream = problem->createDataParser(context, file);
     if (!stream)
       return ContainerPtr();
-    ContainerPtr res = stream->load();
+    ContainerPtr res = stream->load(maxExamples);
     if (!res)
       return ContainerPtr();
     if (res->getNumElements() == 0)

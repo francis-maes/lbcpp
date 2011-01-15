@@ -27,6 +27,7 @@ public:
 
   virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const
   {
+    jassert(evaluator);
     size_t n = state->getNumSubInferences();
     for (size_t i = 0; i < n; ++i)
     {

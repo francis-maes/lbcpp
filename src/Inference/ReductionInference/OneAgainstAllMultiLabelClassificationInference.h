@@ -21,7 +21,7 @@ public:
   OneAgainstAllMultiLabelClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel)
     : VectorParallelInference(name), classes(classes), binaryClassifierModel(binaryClassifierModel)
   {
-    outputClass = enumBasedProbabilityVectorClass(classes);
+    outputClass = enumBasedDoubleVectorClass(classes, probabilityType);
     subInferences.resize(classes->getNumElements());
     for (size_t i = 0; i < subInferences.size(); ++i)
     {
@@ -50,7 +50,16 @@ public:
     res->reserve(subInferences.size());
     ObjectPtr supervisionObject = supervision.exists() ? supervision.getObject() : ObjectPtr();
     for (size_t i = 0; i < subInferences.size(); ++i)
-      res->addSubInference(getSubInference(i), input, supervisionObject ? supervisionObject->getVariable(i) : Variable());
+    {
+      Variable sup;
+      if (supervisionObject)
+      {
+        sup = supervisionObject->getVariable(i);
+        if (sup.isMissingValue())
+          sup = Variable(0.0, probabilityType);
+      }
+      res->addSubInference(getSubInference(i), input, sup);
+    }
     return res;
   }
 
@@ -74,7 +83,7 @@ public:
   {
     if (!VectorParallelInference::loadFromXml(importer))
       return false;
-    outputClass = enumBasedProbabilityVectorClass(classes);
+    outputClass = enumBasedDoubleVectorClass(classes, probabilityType);
     return true;
   }
 

@@ -48,8 +48,9 @@ String SparseDoubleObject::toShortString() const
 
 Variable SparseDoubleObject::getVariable(size_t index) const
 {
+  TypePtr type = thisClass->getObjectVariableType(index); 
   const double* value = SparseDoubleVectorHelper::get(values, index);
-  return value ? Variable(*value) : Variable::missingValue(doubleType);
+  return value ? Variable(*value, type) : Variable::missingValue(type);
 }
 
 void SparseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)

@@ -91,31 +91,36 @@
 
     <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
       <parameter name="enumeration" type="EnumValue"/>
+      <parameter name="variablesType" type="Double"/>
       <code>
+        virtual size_t getObjectNumVariables() const
+          {return getEnumeration()->getNumElements();}
+          
+        virtual TypePtr getObjectVariableType(size_t index) const
+          {return getVariablesType();}
+          
+        virtual String getObjectVariableName(size_t index) const
+          {return getEnumeration()->getElementName(index);}
+          
         virtual void createObjectVariables()
         {
-          jassert(getNumTemplateArguments() == 1);
-          EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
-          jassert(enumeration);
+          EnumerationPtr enumeration = getEnumeration();
           size_t n = enumeration->getNumElements();
+          TypePtr variablesType = getVariablesType();
           for (size_t i = 0; i &lt; n; ++i)
-            addVariable(defaultExecutionContext(), doubleType, enumeration->getElementName(i));
+            addVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
         }
-      </code>
-    </template>
-
-    <template name="EnumBasedProbabilityVector" base="EnumBasedDoubleVector[enumeration]" autoimpl="yes">
-      <parameter name="enumeration" type="EnumValue"/>
-      <code>
-        virtual void createObjectVariables()
+         
+        EnumerationPtr getEnumeration() const
         {
-          jassert(getNumTemplateArguments() == 1);
+          jassert(getNumTemplateArguments() == 2);
           EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
           jassert(enumeration);
-          size_t n = enumeration->getNumElements();
-          for (size_t i = 0; i &lt; n; ++i)
-            addVariable(defaultExecutionContext(), probabilityType, enumeration->getElementName(i));
+          return enumeration;
         }
+           
+        TypePtr getVariablesType() const
+          {jassert(getNumTemplateArguments() == 2); return getTemplateArgument(1);}
       </code>
     </template>
     
