@@ -17,10 +17,13 @@ Boinc:
  * Fix bugs reported by Arnaud
  
 From Julien:
- * Bud during the serialization of shared PerceptionRewriter. I
+ * Bug during the serialization of shared PerceptionRewriter. I
    In my case, I got a file containing "<shared identifier="PerceptionRewriter1">".
    When I want to load it, it doesn't work because of lack of the attribute "type".
    I had added manually "type="PerceptionRewriter"" and it worked.
+ * 23th dec.: infinite recursion loop in SingleThreadedExecutionContext::run
+ * 23th dec.: Object.cpp:183 - Assertion fail with objectClass = "residue rewrited flattened" (the reference count equals 3 instead of 2)
+ * Faire le précompute de perception lors du ParallelProteinInference
 
 =====================
 

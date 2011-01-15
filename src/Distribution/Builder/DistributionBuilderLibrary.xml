@@ -23,6 +23,11 @@
       <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
     </class>
 
+    <class name="BernoulliDistributionBuilder" base="DistributionBuilder">
+      <constructor/>
+      <variable type="Double" name="pTrue"/>
+      <variable type="PositiveInteger" name="count"/>
+    </class>
   
 
 </library>

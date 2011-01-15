@@ -223,6 +223,7 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
 SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
   Distribution/Builder/EnumerationDistributionBuilder.h
   Distribution/Builder/GaussianDistributionBuilder.h
+  Distribution/Builder/BernoulliDistributionBuilder.h
   Distribution/Builder/DistributionBuilderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
 )

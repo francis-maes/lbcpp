@@ -30,6 +30,7 @@ extern ClassPtr probabilityDistributionBuilderClass;
 
 extern DistributionBuilderPtr gaussianDistributionBuilder();
 extern DistributionBuilderPtr enumerationDistributionBuilder(EnumerationPtr enumeration);
+extern DistributionBuilderPtr bernoulliDistributionBuilder();
 
 }; /* namespace lbcpp */
 

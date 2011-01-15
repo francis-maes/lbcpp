@@ -91,14 +91,6 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   size_t n = trainingData->getNumElements();
   jassert(n);
 
-  if (n <= 1)
-  {
-    builder->clear();
-    builder->addElement(trainingData->getElement(0)[1]);
-    leafValue = builder->build(context);
-    return true;
-  }
-
   if (n >= minimumSizeForSplitting && variables.size())
   {
     if (isOutputConstant(trainingData, leafValue))
@@ -106,6 +98,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
       builder->clear();
       builder->addElement(leafValue);
       leafValue = builder->build(context);
+      jassert(leafValue.exists());
       return true;
     }
     return false;
@@ -115,7 +108,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   for (size_t i = 0; i < n; ++i)
     builder->addElement(trainingData->getElement(i)[1]);
   leafValue = builder->build(context);
-  
+  jassert(leafValue.exists());
   return true;
 }
 
@@ -230,6 +223,7 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
   size_t numLeaves = 0;
   size_t numExamples = n;
   sampleTreeRecursively(context, res, nodeIndex, inputClass, outputClass, trainingData, variables, bestSplits, numLeaves, numExamples);
+
   return res;
 }
 

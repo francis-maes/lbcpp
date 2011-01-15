@@ -65,7 +65,7 @@ public:
     jassert(cacheDistribution);
     EnumerationDistributionPtr res = cacheDistribution->cloneAndCast<EnumerationDistribution>(context);
     res->values = values;
-    
+    jassert(res);
     return res;
   }
   
