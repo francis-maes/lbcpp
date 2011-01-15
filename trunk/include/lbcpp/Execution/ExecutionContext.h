@@ -33,13 +33,6 @@ public:
 #endif // JUCE_DEBUG
 
   /*
-  ** Utilities
-  */
-  //void declareType(TypePtr typeInstance);
-  //void declareTemplateType(TemplateTypePtr templateTypeInstance);
-  //void finishTypeDeclarations();
-
-  /*
   ** Current State
   */
   virtual bool isCanceled() const = 0;

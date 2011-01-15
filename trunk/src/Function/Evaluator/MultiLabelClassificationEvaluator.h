@@ -37,7 +37,12 @@ public:
     size_t n = predictedObject->getNumVariables();
     BinaryClassificationConfusionMatrix confusionMatrix;
     for (size_t i = 0; i < n; ++i)
-      confusionMatrix.addPredictionIfExists(context, predictedObject->getVariable(i), correctObject->getVariable(i));
+    {
+      bool p = false, c = false;
+      confusionMatrix.convertToBoolean(context, predictedObject->getVariable(i), p);
+      confusionMatrix.convertToBoolean(context, correctObject->getVariable(i), c);
+      confusionMatrix.addPrediction(p, c);
+    }
     
     hammingLoss->push(1.0 - confusionMatrix.computeAccuracy());
     accuracy->push(confusionMatrix.getTruePositives() / (double)(confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()));

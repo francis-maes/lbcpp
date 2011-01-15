@@ -62,6 +62,9 @@ public:
 
   virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
 
+  bool getLabel() const
+    {return isPositive;}
+
 protected:
   friend class BinaryClassificationLossFunctionClass;
 
