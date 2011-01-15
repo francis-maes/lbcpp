@@ -38,6 +38,7 @@ public:
       return Variable();
     File file(*nextFileIterator);
     ++nextFileIterator;
+    ++position;
     return file;
   }
 
@@ -49,6 +50,13 @@ public:
       res.insert(files[i]->getFullPathName());
   }
 
+  virtual void getCurrentPosition(double& position, double& totalSize, String& unit)
+  {
+    position = (double)this->position;
+    totalSize = (double)files.size();
+    unit = T("Files");
+  }
+
 private:
   File directory;
   String wildCardPattern;
@@ -56,12 +64,14 @@ private:
 
   std::set<String> files;
   std::set<String>::const_iterator nextFileIterator;
+  size_t position;
 
   void initialize()
   {
     files.clear();    
     findChildFiles(directory, wildCardPattern, searchFilesRecursively, files);
     nextFileIterator = files.begin();
+    position = 0;
   }
 };
 

@@ -42,6 +42,13 @@ public:
     return Variable::pair(res.first, res.second);
   }
 
+  virtual void getCurrentPosition(double& position, double& totalSize, String& unit)
+  {
+    position = (double)nextFilePosition;
+    totalSize = (double)files.size();
+    unit = T("File Pairs");
+  }
+
 private:
   File mainDirectory;
   File secondDirectory;
