@@ -22,16 +22,7 @@ ExecutionContext::ExecutionContext()
 {
   initialize(*this);
 }
-/*
-void ExecutionContext::finishTypeDeclarations()
-  {typeManager().finishDeclarations(*this);}
 
-void ExecutionContext::declareType(TypePtr typeInstance)
-  {typeManager().declare(*this, typeInstance);}
-
-void ExecutionContext::declareTemplateType(TemplateTypePtr templateTypeInstance)
-  {typeManager().declare(*this, templateTypeInstance);}
-*/
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(stack, workUnit);

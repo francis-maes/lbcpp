@@ -50,9 +50,11 @@ class LinearLearningMachineFamily : public LearningMachineFamily
 public:
   InferenceOnlineLearnerPtr createOnlineLearner(const Variable& arguments) const
   {
-    InferenceOnlineLearnerPtr learner = gradientDescentOnlineLearner(perStep);
-    learner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(5)));
-    return learner;
+    InferenceOnlineLearnerPtr lastLearner;
+    InferenceOnlineLearnerPtr res = lastLearner = gradientDescentOnlineLearner(perStep);
+    //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(binaryClassificationConfusionEvaluator(T("binary"))));
+    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(50)));
+    return res;
   }
 
   virtual InferencePtr createBinaryClassifier(PerceptionPtr perception, const Variable& arguments) const
@@ -96,7 +98,7 @@ typedef ReferenceCountedObjectPtr<LearningProblem> LearningProblemPtr;
 class MultiClassClassificationProblem : public LearningProblem
 {
 public:
-  MultiClassClassificationProblem() : inputClass(new UnnamedDynamicClass(T("Features"))), outputLabels(new Enumeration(T("Labels"))) {}
+  MultiClassClassificationProblem() : inputClass(new UnnamedDynamicClass(T("FeatureVector"))), outputLabels(new Enumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
@@ -118,7 +120,7 @@ protected:
 class MultiLabelClassificationProblem : public LearningProblem
 {
 public:
-  MultiLabelClassificationProblem() : inputClass(new UnnamedDynamicClass(T("Features"))), outputLabels(new Enumeration(T("Labels"))) {}
+  MultiLabelClassificationProblem() : inputClass(new UnnamedDynamicClass(T("FeatureVector"))), outputLabels(new Enumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationDataTextParser(context, file, inputClass.get(), outputLabels);}
@@ -136,6 +138,8 @@ protected:
   UnnamedDynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
 };
+
+//class MultiPass
 
 class TrainTestLearningMachine : public WorkUnit
 {
