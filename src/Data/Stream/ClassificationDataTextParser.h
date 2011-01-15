@@ -22,7 +22,7 @@ public:
   ClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels)
     : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
   {
-    elementsType = pairClass(inputClass, enumBasedDoubleVectorClass(outputLabels));
+    elementsType = pairClass(inputClass, outputLabels);
   }
   ClassificationDataTextParser() {}
 
@@ -35,7 +35,7 @@ public:
     ObjectPtr features = parseFeatureList(inputClass, columns, 1);
     if (!features)
       return false;
-    setResult(new Pair(elementsType, features, label));
+    setResult(new Pair(elementsType, features, Variable(label, outputLabels)));
     return true;
   }
 

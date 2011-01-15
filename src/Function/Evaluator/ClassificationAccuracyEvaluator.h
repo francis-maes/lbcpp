@@ -108,9 +108,12 @@ protected:
     if (correct.isEnumeration())
       return correct.getInteger();
 
-    MultiClassLossFunctionPtr lossFunction = correct.dynamicCast<MultiClassLossFunction>();
-    if (lossFunction)
-      return lossFunction->getCorrectClass();
+    if (correct.isObject())
+    {
+      MultiClassLossFunctionPtr lossFunction = correct.dynamicCast<MultiClassLossFunction>();
+      if (lossFunction)
+        return lossFunction->getCorrectClass();
+    }
 
     jassert(false);
     return -1;

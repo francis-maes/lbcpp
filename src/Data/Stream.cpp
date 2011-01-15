@@ -159,7 +159,7 @@ bool LearningDataTextParser::parseLine(const String& line)
 
 ObjectPtr LearningDataTextParser::parseFeatureList(DynamicClassPtr cl, const std::vector<String>& columns, size_t firstColumn) const
 {
-  ObjectPtr res = cl->createSparseObject();
+  ObjectPtr res = new SparseDoubleObject(cl.get());
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     String identifier;

@@ -109,6 +109,7 @@ SET(LBCPP_CORE_TYPE_SOURCES
 )
 
 SET(LBCPP_CORE_OBJECT_SOURCES
+  Core/Object/SparseVectorHelper.h
   Core/Object/SparseGenericObject.h
   Core/Object/SparseDoubleObject.h
   Core/Object/DenseGenericObject.h

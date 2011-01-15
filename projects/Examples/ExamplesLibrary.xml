@@ -36,7 +36,8 @@
   </enumeration>
 
   <class name="TrainTestLearningMachine" base="WorkUnit">
-    <variable type="LearningProblemType" name="learningProblemType"  enumeration="yes" shortName="t"/>
+    <variable type="LearningProblemType" name="learningProblemType"  enumeration="yes" shortName="t"
+              description="Learning Problem Type: binaryClassificationProblem, multiClassClassificationProblem or multiLabelClassificationProblem"/>
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
