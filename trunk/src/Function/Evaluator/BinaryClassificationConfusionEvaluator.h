@@ -21,30 +21,8 @@ public:
     : Evaluator(name) {}
   BinaryClassificationConfusionEvaluator() {}
 
-  static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
-  {
-    if (!variable.exists())
-      return false;
-
-    if (variable.isBoolean())
-      res = variable.getBoolean();
-    else if (variable.inheritsFrom(probabilityType))
-      res = variable.getDouble() > 0.5;
-    else
-    {
-      context.errorCallback(T("BinaryClassificationConfusionEvaluator::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
-      jassert(false);
-      return false;
-    }
-    return true;
-  }
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
-  {
-    bool predicted, correct;
-    if (convertToBoolean(context, predictedObject, predicted) && convertToBoolean(context, correctObject, correct))
-      confusionMatrix.addPrediction(predicted, correct);
-  }
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
+    {confusionMatrix.addPredictionIfExists(context, predicted, correct);}
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
   {

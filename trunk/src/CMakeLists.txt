@@ -299,6 +299,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/ContainerElementsEvaluator.h
   Function/Evaluator/BinaryClassificationConfusionEvaluator.h
   Function/Evaluator/ClassificationAccuracyEvaluator.h
+  Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/RegressionErrorEvaluator.h
   Function/Evaluator/SaveToDirectoryEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml

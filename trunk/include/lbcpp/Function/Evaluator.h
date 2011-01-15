@@ -59,6 +59,9 @@ extern EvaluatorPtr classificationAccuracyEvaluator(const String& name = T("accu
 extern EvaluatorPtr binaryClassificationConfusionEvaluator(const String& name);
 extern EvaluatorPtr rocAnalysisEvaluator(const String& name);
 
+// Multi-label Classification
+extern EvaluatorPtr multiLabelClassificationEvaluator(const String& name = T("multi-label"));
+
 // Regression
 extern EvaluatorPtr regressionErrorEvaluator(const String& name);
 extern RegressionErrorEvaluatorPtr dihedralRegressionErrorEvaluator(const String& name);
@@ -81,10 +84,14 @@ public:
 
   virtual String toString() const;
 
+  static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res);
+
   void clear();
   void set(size_t truePositive, size_t falsePositive, size_t falseNegative, size_t trueNegative);
   void addPrediction(bool predicted, bool correct, size_t count = 1);
   void removePrediction(bool predicted, bool correct, size_t count = 1);
+
+  void addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count = 1);
 
   double computeAccuracy() const;
   double computeF1Score() const;
