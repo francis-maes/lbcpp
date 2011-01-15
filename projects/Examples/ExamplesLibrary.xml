@@ -29,18 +29,49 @@
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
   <!-- Train/Test Learning Machine -->
-  <enumeration name="LearningProblemType">
-    <value name="binaryClassificationProblem" oneLetterCode="b" threeLettersCode="bc"/>
-    <value name="multiClassClassificationProblem" oneLetterCode="c" threeLettersCode="mc"/>
-    <value name="multiLabelClassificationProblem" oneLetterCode="m" threeLettersCode="mlc"/>
-  </enumeration>
+  <class name="LearningProblem" abstract="yes">
+    <code>
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      {
+        if (value == T("MultiClass"))
+          return new MultiClassClassificationProblem();
+        else if (value == T("MultiLabel"))
+          return new MultiLabelClassificationProblem();
+        else
+        {
+          context.errorCallback(T("Could not create learning problem ") + value.quoted());
+          return VariableValue();
+        }
+      }
+    </code>
+  </class>
+  <class name="MultiClassClassificationProblem" base="LearningProblem"/>
+  <class name="MultiLabelClassificationProblem" base="LearningProblem"/>
+
+  <class name="LearningMachineFamily" abstract="yes">
+    <code>
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      {
+        if (value == T("Linear"))
+          return new LinearLearningMachineFamily();
+        else if (value == T("ExtraTree"))
+          return new ExtraTreeLearningMachineFamily();
+        else
+        {
+          context.errorCallback(T("Could not create learning machine family ") + value.quoted());
+          return VariableValue();
+        }
+      }
+    </code>
+  </class>
+  <class name="LinearLearningMachineFamily" base="LearningMachineFamily"/>
+  <class name="ExtraTreeLearningMachineFamily" base="LearningMachineFamily"/>
 
   <class name="TrainTestLearningMachine" base="WorkUnit">
-    <variable type="LearningProblemType" name="learningProblemType"  enumeration="yes" shortName="t"
-              description="Learning Problem Type: binaryClassificationProblem, multiClassClassificationProblem or multiLabelClassificationProblem"/>
+    <variable type="LearningProblem" name="learningProblem" shortName="t"/>
+    <variable type="LearningMachineFamily" name="learningMachineFamily" shortName="f"/>
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
   </class>
-
 </library>

@@ -394,6 +394,7 @@ protected:
 typedef ReferenceCountedObjectPtr<LearningDataTextParser> LearningDataTextParserPtr;
 
 extern LearningDataTextParserPtr classificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels);
+extern LearningDataTextParserPtr multiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels);
 
 }; /* namespace lbcpp */
 

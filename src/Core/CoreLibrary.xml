@@ -104,6 +104,21 @@
       </code>
     </template>
 
+    <template name="EnumBasedProbabilityVector" base="EnumBasedDoubleVector[enumeration]" autoimpl="yes">
+      <parameter name="enumeration" type="EnumValue"/>
+      <code>
+        virtual void createObjectVariables()
+        {
+          jassert(getNumTemplateArguments() == 1);
+          EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
+          jassert(enumeration);
+          size_t n = enumeration->getNumElements();
+          for (size_t i = 0; i &lt; n; ++i)
+            addVariable(defaultExecutionContext(), probabilityType, enumeration->getElementName(i));
+        }
+      </code>
+    </template>
+    
     <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
       <parameter name="inputClass" type="Object"/>
       <parameter name="outputVariablesType" type="Variable"/>
