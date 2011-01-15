@@ -57,6 +57,17 @@ private:
   DistributionBuilderPtr createProbabilityBuilder(EnumerationPtr enumeration) const;
 };
 
+class BinaryIGSplitScoringFunction : public SplitScoringFunction
+{
+public:
+  BinaryIGSplitScoringFunction() : SplitScoringFunction(pairClass(anyType, booleanType)) {}
+  
+  virtual double compute(ExecutionContext& context, const Variable& input) const;
+
+protected:
+  BernoulliDistributionPtr getProbabilityDistribution(ContainerPtr data) const;
+};
+
 typedef ReferenceCountedObjectPtr<SplitScoringFunction> SplitScoringFunctionPtr;
 
 };

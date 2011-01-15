@@ -232,6 +232,8 @@ BinaryDecisionTreeSplitterPtr SingleExtraTreeInferenceLearner::getBinaryDecision
   SplitScoringFunctionPtr scoringFunction;
   if (outputType->inheritsFrom(enumValueType))
     scoringFunction = new ClassificationIGSplitScoringFunction();
+  else if (outputType->inheritsFrom(booleanType))
+    scoringFunction = new BinaryIGSplitScoringFunction();
   else if (outputType->inheritsFrom(doubleType))
     scoringFunction = new RegressionIGSplitScoringFunction();
   else
