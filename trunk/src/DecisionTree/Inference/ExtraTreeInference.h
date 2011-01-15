@@ -83,7 +83,7 @@ public:
   BinaryClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
-    {return booleanType;}
+    {return sumType(booleanType, probabilityType);}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return booleanType;}

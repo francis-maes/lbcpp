@@ -87,7 +87,7 @@ Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) cons
 
 Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
 {
-  EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
+  EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(0)->getObjectVariableType(variableIndex);
   size_t n = enumeration->getNumElements();
   
   // enumerate possible values

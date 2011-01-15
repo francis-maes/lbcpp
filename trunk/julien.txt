@@ -30,3 +30,9 @@ CASP:
  * Télécharger les données de CASP8
  * Entrainer un modèle, tester, comparer
  * De même pour CASP9
+
+Tips:
+dans le common.h tu peux décommenter LBCPP_DEBUG_OBJECT_ALLOCATION
+puis tu appelle Object::displayObjectAllocationInfo
+à interval régulier
+ce qui va permettre de voir ce qui prend la mémoire

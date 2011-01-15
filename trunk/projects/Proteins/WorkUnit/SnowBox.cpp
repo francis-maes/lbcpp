@@ -21,10 +21,10 @@ public:
   }
   
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception, 2, 3);}
+    {return binaryClassificationExtraTreeInference(context, targetName, perception, 30, 20, 1);}
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, 2, 3);}
+    {return classificationExtraTreeInference(context, targetName, perception, classes, 30, 20, 1);}
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
