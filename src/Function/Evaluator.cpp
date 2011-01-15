@@ -102,6 +102,24 @@ String BinaryClassificationConfusionMatrix::toString() const
          toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n");
 }
 
+bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
+{
+  if (!variable.exists())
+    return false;
+
+  if (variable.isBoolean())
+    res = variable.getBoolean();
+  else if (variable.inheritsFrom(probabilityType))
+    res = variable.getDouble() > 0.5;
+  else
+  {
+    context.errorCallback(T("BinaryClassificationConfusionMatrix::convertToBoolean"), T("Given type: ") + variable.getType()->toString());
+    jassert(false);
+    return false;
+  }
+  return true;
+}
+
 void BinaryClassificationConfusionMatrix::clear()
 {
   truePositive = falsePositive = falseNegative = trueNegative = totalCount = 0;
@@ -123,6 +141,13 @@ void BinaryClassificationConfusionMatrix::addPrediction(bool predicted, bool cor
   else
     correct ? (falseNegative += count) : (trueNegative += count);
   totalCount += count;
+}
+
+void BinaryClassificationConfusionMatrix::addPredictionIfExists(ExecutionContext& context, const Variable& predicted, const Variable& correct, size_t count)
+{
+  bool p, c;
+  if (convertToBoolean(context, predicted, p) && convertToBoolean(context, correct, c))
+    addPrediction(p, c, count);
 }
 
 void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool correct, size_t count)
@@ -180,7 +205,7 @@ double BinaryClassificationConfusionMatrix::computeRecall() const
 bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
   {return truePositive == other.truePositive && falsePositive == other.falsePositive && 
     falseNegative == other.falseNegative && trueNegative == other.trueNegative && totalCount == other.totalCount;}
-
+ 
 /*
 ** ROCAnalyse
 */
