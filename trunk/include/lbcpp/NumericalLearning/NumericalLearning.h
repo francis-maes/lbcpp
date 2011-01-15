@@ -51,6 +51,8 @@ extern void addWeighted(ExecutionContext& context, ObjectPtr& target, const Perc
 /*
 ** Perceptions
 */
+extern PerceptionPtr addUnitFeatures(TypePtr inputType);
+
 extern PerceptionPtr selectAndMakeConjunctionFeatures(PerceptionPtr decorated, const ConjunctionVector& selectedConjunctions = ConjunctionVector());
 
 // product perceptions

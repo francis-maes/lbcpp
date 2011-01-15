@@ -51,9 +51,11 @@ public:
   InferenceOnlineLearnerPtr createOnlineLearner(const Variable& arguments) const
   {
     InferenceOnlineLearnerPtr lastLearner;
-    InferenceOnlineLearnerPtr res = lastLearner = gradientDescentOnlineLearner(perStep);
+    InferenceOnlineLearnerPtr res = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(0.1));
     //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(binaryClassificationConfusionEvaluator(T("binary"))));
-    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(50)));
+
+    StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(1000);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
+    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(criterion));
     return res;
   }
 
@@ -105,7 +107,7 @@ public:
 
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, const Variable& arguments)
   {
-    PerceptionPtr perception = identityPerception(inputClass.get());
+    PerceptionPtr perception = addUnitFeatures(inputClass.get());
     return learningMachineFamily->createMultiClassClassifier(perception, outputLabels, arguments);
   }
 
@@ -138,8 +140,6 @@ protected:
   UnnamedDynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
 };
-
-//class MultiPass
 
 class TrainTestLearningMachine : public WorkUnit
 {
