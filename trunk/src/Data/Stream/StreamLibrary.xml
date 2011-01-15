@@ -12,6 +12,10 @@
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, EnumerationPtr outputLabels"/>
   </class>
 
+  <class name="MultiLabelClassificationDataTextParser" base="LearningDataTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, EnumerationPtr outputLabels"/>
+  </class>
+
   <!-- Directory iterators -->
   <class name="DirectoryFileStream" base="Stream">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>

@@ -141,6 +141,7 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
   Data/Stream/ClassificationDataTextParser.h
+  Data/Stream/MultiLabelClassificationDataTextParser.h
   Data/Stream/SaveToFileConsumer.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp
@@ -407,6 +408,7 @@ SET(LBCPP_INFERENCE_CALLBACK_SOURCES
 SET(LBCPP_INFERENCE_REDUCTION_SOURCES
   Inference/ReductionInference/OneAgainstAllClassificationInference.h
   Inference/ReductionInference/OneAgainstOneClassificationInference.h
+  Inference/ReductionInference/OneAgainstAllMultiLabelClassificationInference.h
   Inference/ReductionInference/RankingBasedClassificationInference.h
   Inference/ReductionInference/ParallelVoteInference.h
   Inference/ReductionInference/SharedParallelVectorInference.h

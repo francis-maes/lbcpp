@@ -58,6 +58,7 @@ protected:
 };
 
 extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration);
+extern ClassPtr enumBasedProbabilityVectorClass(TypePtr enumeration);
 extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
 
 class UnnamedDynamicClass : public DynamicClass
