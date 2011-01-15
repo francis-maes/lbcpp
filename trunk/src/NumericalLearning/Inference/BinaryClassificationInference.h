@@ -64,7 +64,7 @@ public:
         lossFunction = lossFunction->multiplyByScalar(supervisionValue);
     }
 
-    res->setSubInference(decorated, input, lossFunction);
+    res->setSubInference(decorated, input, Variable(lossFunction, scalarFunctionClass));
     return res;
   }
    

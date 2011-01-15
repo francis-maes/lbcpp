@@ -59,7 +59,7 @@ VariableValue DynamicClass::create(ExecutionContext& context) const
 
 ObjectPtr DynamicClass::createDenseObject() const
 {
-  jassert(variables.size());
+  jassert(getObjectNumVariables());
   const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
     return new DenseDoubleObject(refCountedPointerFromThis(this));

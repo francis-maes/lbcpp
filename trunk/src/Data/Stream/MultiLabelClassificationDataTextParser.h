@@ -22,7 +22,7 @@ public:
   MultiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels)
     : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
   {
-    elementsType = pairClass(inputClass, enumBasedProbabilityVectorClass(outputLabels));
+    elementsType = pairClass(inputClass, enumBasedDoubleVectorClass(outputLabels, probabilityType));
   }
   MultiLabelClassificationDataTextParser() {}
 
@@ -33,7 +33,7 @@ public:
   {
     StringArray tokens;
     tokens.addTokens(text, T(","), NULL);
-    ObjectPtr res = new SparseDoubleObject(enumBasedProbabilityVectorClass(outputLabels).staticCast<DynamicClass>().get());
+    ObjectPtr res = new SparseDoubleObject(enumBasedDoubleVectorClass(outputLabels, probabilityType).staticCast<DynamicClass>().get());
     for (int i = 0; i < tokens.size(); ++i)
     {
       size_t label = outputLabels->findOrAddElement(context, tokens[i]);
@@ -44,7 +44,7 @@ public:
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    ObjectPtr labels = parseLabelsList(outputLabels, columns[1]);
+    ObjectPtr labels = parseLabelsList(outputLabels, columns[0]);
     ObjectPtr features = parseFeatureList(inputClass, columns, 1);
     if (!labels || !features)
       return false;

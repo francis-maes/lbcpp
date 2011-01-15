@@ -40,11 +40,9 @@ public:
       confusionMatrix.addPredictionIfExists(context, predictedObject->getVariable(i), correctObject->getVariable(i));
     
     hammingLoss->push(1.0 - confusionMatrix.computeAccuracy());
-    double prec, rec, f1;
-    confusionMatrix.computePrecisionRecallAndF1(prec, rec, f1);
-    accuracy->push(f1); // todo: verifier que c'est bien la meme chose
-    precision->push(prec);
-    recall->push(rec);
+    accuracy->push(confusionMatrix.getTruePositives() / (double)(confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()));
+    precision->push(confusionMatrix.computePrecision());
+    recall->push(confusionMatrix.computeRecall());
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const

@@ -73,5 +73,6 @@
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
+    <variable type="PositiveInteger" name="maxExamples" shortName="max"/>
   </class>
 </library>
