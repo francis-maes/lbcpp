@@ -98,7 +98,7 @@ bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
 ** ExecutionTraceNode
 */
 ExecutionTraceNode::ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime)
-  : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), timeLength(0.0)
+  : ExecutionTraceItem(startTime), description(description), timeLength(0.0), workUnit(workUnit)
 {
 }
 

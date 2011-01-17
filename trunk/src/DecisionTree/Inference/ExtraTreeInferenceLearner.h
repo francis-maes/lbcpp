@@ -55,8 +55,8 @@ protected:
   {
     size_t       variableIndex;
     Variable     argument;
-    std::vector<size_t> negative;
-    std::vector<size_t> positive;
+    std::vector<size_t> left;
+    std::vector<size_t> right;
   };
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
