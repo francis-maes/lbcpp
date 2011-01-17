@@ -9,6 +9,12 @@ Network:
  * Test approfondis
 
 Extra-trees:
+ * enlever le bug
+ * IntegereBinaryDecisionTreeSplitter => Integer
+ * .h et .cpp pour DecisionTreeExampleVector
+ * nouvelle classe ExtraTreeBatchLearnerInput qui derive de InferenceBatchLearnerInput
+ * nouvelle classe ExtraTreeInferenceLearner qui dérive de ParallelVoteInferenceLearner, faire un système à base de clone
+ * rendre deterministe
 
 MNIST:
  * Features

@@ -74,6 +74,8 @@ public:
 class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner 
 {
 public:
+  // virtual createBatchLearnerSubInputModel ou quelque chose comme ca
+
   virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
@@ -82,10 +84,10 @@ public:
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     size_t numSubInferences = targetInference->getNumSubInferences();
     res->reserve(numSubInferences);
+
     for (size_t i = 0; i < numSubInferences; ++i)
     {
       InferencePtr subInference = targetInference->getSubInference(i);
-      // FIXME: ref counting on examples vectors
       InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(subInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples());
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)

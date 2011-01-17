@@ -5,96 +5,84 @@
  `------------------------------------------/                                |
                                 |                                            |
                                 `-------------------------------------------*/
-
-# include "BinaryDecisionTreeSplitter.h"
-
+#include "BinaryDecisionTreeSplitter.h"
 using namespace lbcpp;
 
-static Variable getInputVariableFromExample(const Variable& example, size_t variableIndex)
-{
-  return example[0].getObject()->getVariable(variableIndex);
-}
-
 double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context, 
-                                                     ContainerPtr data, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples,
+                                                     const DecisionTreeExampleVector& examples,
+                                                     std::vector<size_t>& negativeExamples,
+                                                     std::vector<size_t>& positiveExamples,
                                                      PredicatePtr predicate) const
 {
-  if (!cacheVector)
-    const_cast<BinaryDecisionTreeSplitter*>(this)->cacheVector = vector(data->getElementsType());
-  if (!pairOutputType)
+  size_t n = examples.getNumExamples();
+  negativeExamples.reserve(n);
+  positiveExamples.reserve(n);
+  for (size_t i = 0; i < n; ++i)
   {
-    TypePtr type = data->getElementsType();
-    const_cast<BinaryDecisionTreeSplitter*>(this)->pairOutputType = pairClass(type, type);
-  }
-  VectorPtr left = cacheVector->cloneAndCast<Vector>(context);
-  VectorPtr right = cacheVector->cloneAndCast<Vector>(context);
-  
-  for (size_t i = 0; i < data->getNumElements(); ++i)
-  {
-    Variable example = data->getElement(i);
-    if (predicate->computePredicate(context, getInputVariableFromExample(example, variableIndex)))
-      left->append(example);
+    if (predicate->computePredicate(context, examples.getAttribute(i, variableIndex)))
+      positiveExamples.push_back(i);
     else
-      right->append(example);
+      negativeExamples.push_back(i);
   }
-
-  negativeExamples = right;
-  positiveExamples = left;
-  
-  return scoringFunction->compute(context, Variable::pair(left, right, pairOutputType));
+  jassert(positiveExamples.size() && negativeExamples.size());
+  return scoringFunction->compute(context, new SplitScoringInput(examples, negativeExamples, positiveExamples));
 }
 
-Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
+Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const
 {
   double minValue = DBL_MAX, maxValue = -DBL_MAX;
-  for (size_t i = 0; i < data->getNumElements(); ++i)
+  size_t n = examples.getNumExamples();
+  for (size_t i = 0; i < n; ++i)
   {
-    Variable variable = getInputVariableFromExample(data->getElement(i), variableIndex);
-    if (variable.isNil())
-      continue;
-    double value = variable.getDouble();
-    if (value < minValue)
-      minValue = value;
-    if (value > maxValue)
-      maxValue = value;
+    const Variable& variable = examples.getAttribute(i, variableIndex);
+    if (variable.exists())
+    {
+      double value = variable.getDouble();
+      if (value < minValue)
+        minValue = value;
+      if (value > maxValue)
+        maxValue = value;
+    }
   }
   jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
   double res = random->sampleDouble(minValue, maxValue);
-  //jassert(res >= minValue && res < maxValue);
+  jassert(res >= minValue && res < maxValue);// || fabs(minValue - maxValue) < 1e-5);
   return Variable(res, doubleType);
 }
 
-Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
+Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const
 {
   int minValue = 0x7FFFFFFF;
   int maxValue = -minValue;
-  size_t n = data->getNumElements();
+  size_t n = examples.getNumExamples();
   for (size_t i = 0; i < n; ++i)
   {
-    Variable variable = getInputVariableFromExample(data->getElement(i), variableIndex);
-    if (!variable.exists())
-      continue;
-    int value = variable.getInteger();
-    if (value < minValue)
-      minValue = value;
-    if (value > maxValue)
-      maxValue = value;
+    const Variable& variable = examples.getAttribute(i, variableIndex);
+    if (variable.exists())
+    {
+      int value = variable.getInteger();
+      if (value < minValue)
+        minValue = value;
+      if (value > maxValue)
+        maxValue = value;
+    }
   }
   jassert(minValue != 0x7FFFFFFF && maxValue != -0x7FFFFFFF);
   jassert(maxValue > minValue);
   return random->sampleInt(minValue, maxValue);
 }
 
-Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
+Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const
 {
-  EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(0)->getObjectVariableType(variableIndex);
-  size_t n = enumeration->getNumElements();
+  EnumerationPtr enumeration = examples.getAttribute(0, variableIndex).getType().staticCast<Enumeration>();
+  size_t numElements = enumeration->getNumElements();
   
   // enumerate possible values
   std::set<size_t> possibleValues;
-  for (size_t i = 0; i < data->getNumElements(); ++i)
+  size_t n = examples.getNumExamples();
+  for (size_t i = 0; i < n; ++i)
   {
-    Variable value = getInputVariableFromExample(data->getElement(i), variableIndex);
+    const Variable& value = examples.getAttribute(i, variableIndex);
     possibleValues.insert((size_t)value.getInteger());
   }
   jassert(possibleValues.size() >= 2);
@@ -110,7 +98,7 @@ Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) c
   random->sampleSubset(possibleValuesVector, possibleValues.size() / 2, selectedValues);
   
   // create mask
-  BooleanVectorPtr mask = new BooleanVector(n + 1);
+  BooleanVectorPtr mask = new BooleanVector(numElements + 1);
   for (size_t i = 0; i < mask->getNumElements(); ++i)
   {
     bool bitValue;
@@ -127,13 +115,13 @@ class BelongsToMaskPredicate : public Predicate
 {
 public:
   BelongsToMaskPredicate(BooleanVectorPtr mask)
-  : mask(mask) {}
+    : mask(mask) {}
   
   virtual String toString() const
-  {return T("BelongsToMask(") + mask->toString() + T(")");}
+    {return T("BelongsToMask(") + mask->toString() + T(")");}
   
   virtual TypePtr getInputType() const
-  {return integerType;}
+    {return integerType;}
   
   virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
   {

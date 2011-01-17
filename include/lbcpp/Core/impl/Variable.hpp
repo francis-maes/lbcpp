@@ -166,6 +166,7 @@ inline const ReferenceCountedObjectPtr<O>& Variable::getObjectAndCast() const
 {
 #ifdef JUCE_DEBUG
   static ReferenceCountedObjectPtr<O> empty;
+  jassert(isNil() || isObject());
   if (isNil() || !isObject())
     return empty;
 #endif
