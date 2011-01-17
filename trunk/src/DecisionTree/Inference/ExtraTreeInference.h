@@ -21,7 +21,7 @@ class BinaryDecisionTreeInference : public Inference
 {
 public:
   BinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
-    : Inference(name), perception(perception) {}
+  : Inference(name), perception(perception) {}
   BinaryDecisionTreeInference()
     {}
 

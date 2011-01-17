@@ -33,6 +33,9 @@
     <variable type="PositiveInteger" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
     <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" description="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
     <variable type="NumericalLearningParameter" name="defaultParameter" description="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
+    <variable type="PositiveInteger" name="numTrees" description="ExtraTree's parameter: Number of trees" shortName="n3"/>
+    <variable type="PositiveInteger" name="numAttributesPerSplit" description="ExtraTree's parameter: Number of sample attributes per split" shortName="k"/>
+    <variable type="PositiveInteger" name="numForSplitting" description="ExtraTree's parameter: Minimum size for splitting" shortName="nmin"/>
     <variable type="ProteinTarget" name="target" description="The target. Format: '(Task1-Task2-...)NumPass1(Tasks ...)NumPass...'" shortName="t"/>
     <variable type="PositiveInteger" name="numberOfThreads" description="The number of threads" shortName="th"/>
   </class>

@@ -55,8 +55,12 @@ public:
     size_t n = classes->getNumElements();
     for (size_t index = 0, i = 0; i < n; ++i)
       for (size_t j = i + 1; j < n; ++j, ++index)
-        // FIXME: derouler sur 2/3 lignes
-        res->addSubInference(getSubInference(index), input, correctClass >= 0 && ((size_t)correctClass == i || (size_t)correctClass == j) ? Variable(i == (size_t)correctClass) : Variable());
+      {
+        if (correctClass >= 0 && ((size_t)correctClass == i || (size_t)correctClass == j))
+          res->addSubInference(getSubInference(index), input, Variable(i == (size_t)correctClass));
+        else
+          res->addSubInference(getSubInference(index), input, Variable());
+      }
     return res;
   }
 

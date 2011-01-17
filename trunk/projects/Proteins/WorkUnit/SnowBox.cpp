@@ -11,8 +11,8 @@ using namespace lbcpp;
 class ExtraTreeProteinInferenceFactory : public ProteinInferenceFactory
 {
 public:
-  ExtraTreeProteinInferenceFactory(ExecutionContext& context)
-    : ProteinInferenceFactory(context) {}
+  ExtraTreeProteinInferenceFactory(ExecutionContext& context, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
+    : ProteinInferenceFactory(context), numTrees(numTrees), numAttributeSamplesPerSplit(numAttributeSamplesPerSplit), minimumSizeForSplitting(minimumSizeForSplitting) {}
 
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const
   {
@@ -21,10 +21,15 @@ public:
   }
   
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
-    {return binaryClassificationExtraTreeInference(targetName, perception, 30, 20, 1);}
+    {return binaryClassificationExtraTreeInference(targetName, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, 30, 20, 1);}
+    {return classificationExtraTreeInference(targetName, perception, classes, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
+  
+protected:
+  size_t numTrees;
+  size_t numAttributeSamplesPerSplit;
+  size_t minimumSizeForSplitting;
 };
 
 class NumericalProteinInferenceFactory : public ProteinInferenceFactory
@@ -393,7 +398,7 @@ bool ProteinTarget::loadFromString(ExecutionContext& context, const String& valu
 ProteinInferenceFactoryPtr SnowBox::createFactory(ExecutionContext& context) const
 {
   if (baseLearner == T("ExtraTree"))
-    return new ExtraTreeProteinInferenceFactory(context);
+    return new ExtraTreeProteinInferenceFactory(context, numTrees, numAttributesPerSplit, numForSplitting);
 
   NumericalProteinInferenceFactoryPtr res;
   if (baseLearner == T("OneAgainstAllLinearSVM"))
@@ -556,7 +561,7 @@ bool SnowBox::run(ExecutionContext& context)
     for (size_t j = 0; j < target->getNumTasks(currentPass); ++j)
       inferencePass->appendInference(factory->createInferenceStep(target->getTask(currentPass, j)));
 
-    if (previousInference)
+    if (baseLearner != T("ExtraTree") && previousInference)
       initializeLearnerByCloning(inferencePass, previousInference);
 
     inference->appendInference(inferencePass);

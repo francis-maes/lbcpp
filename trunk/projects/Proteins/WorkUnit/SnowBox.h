@@ -120,6 +120,7 @@ public:
             , useCrossValidation(false), partAsValidation(0)
             , baseLearner(T("OneAgainstAllLinearSVM")), maxIterations(15)
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
+            , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
             , target(new ProteinTarget(defaultExecutionContext(), T("(SS3-DR)2")))
             , numberOfThreads(1)
             , currentPass(0) {}
@@ -156,6 +157,9 @@ protected:
   size_t maxIterations;
   std::vector<std::pair<String, std::pair<NumericalLearningParameterPtr, NumericalLearningParameterPtr> > > learningParameters;
   NumericalLearningParameterPtr defaultParameter;
+  size_t numTrees;
+  size_t numAttributesPerSplit;
+  size_t numForSplitting;
   
   ProteinTargetPtr target;
 

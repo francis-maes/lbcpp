@@ -67,9 +67,9 @@ public:
     DistributionBuilderPtr probabilityBuilder = probabilityBuilderModel->cloneAndCast<DistributionBuilder>(context);
     for (size_t i = 0; i < n; ++i)
     {
-      //std::cout << "In: " << state->getInput().toString() << " Out: " << state->getSupervision().toString() << " Val:" << state->getSubOutput(i).toString() << std::endl;
       DistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<Distribution>();
-      jassert(distribution);
+      if (!distribution)
+        return Variable();
       probabilityBuilder->addDistribution(distribution);
     }
     return probabilityBuilder->build(context);

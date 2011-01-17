@@ -43,19 +43,15 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   }
 
   BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, newTrainingData);
-  if (tree)
-  {
-    context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
-    context.resultCallback(T("K"), numAttributeSamplesPerSplit);
-    context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());
-    context.resultCallback(T("Num Nodes"), tree->getNumNodes());
-/*
-    context.informationCallback(T("Tree: numAttributes = ") + String((int)perception->getNumOutputVariables()) +
-          T(" k = ") + String((int)numAttributeSamplesPerSplit) +
-          T(" numExamples = ") + String((int)learnerInput->getNumTrainingExamples()) +
-          T(" numNodes = ") + String((int)tree->getNumNodes()));*/
-    inference->setTree(tree);
-  }
+  jassert(tree);
+
+  context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
+  context.resultCallback(T("K"), numAttributeSamplesPerSplit);
+  context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());
+  context.resultCallback(T("Num Nodes"), tree->getNumNodes());
+
+  inference->setTree(tree);
+
   return Variable();
 }
 
