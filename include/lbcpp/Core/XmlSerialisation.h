@@ -136,6 +136,9 @@ public:
   int getIntAttribute(const String& attributeName, int defaultResult = 0) const
     {return getCurrentElement()->getIntAttribute(attributeName, defaultResult);}
 
+  double getDoubleAttribute(const String& attributeName, double defaultResult = 0.0) const
+    {return getCurrentElement()->getDoubleAttribute(attributeName, defaultResult);}
+
   String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 

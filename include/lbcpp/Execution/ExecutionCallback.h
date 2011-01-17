@@ -155,23 +155,10 @@ protected:
 class ProgressionState : public Object
 {
 public:
-  ProgressionState(double value, double total, const String& unit)
-    : value(value), total(total), unit(unit) {}
-  ProgressionState(double value, const String& unit)
-    : value(value), total(0.0), unit(unit) {}
-  ProgressionState(const ProgressionState& other)
-    : value(other.value), total(other.total), unit(other.unit) {}
-  ProgressionState() : value(0.0), total(0.0) {}
-
-  virtual String toString() const
-  {
-    String res(value);
-    if (total)
-      res += T(" / ") + String(total);
-    if (unit.isNotEmpty())
-      res += T(" ") + unit;
-    return res;
-  }
+  ProgressionState(double value, double total, const String& unit);
+  ProgressionState(double value, const String& unit);
+  ProgressionState(const ProgressionState& other);
+  ProgressionState();
 
   double getValue() const
     {return value;}
@@ -191,6 +178,11 @@ public:
   const String& getUnit() const
     {return unit;}
 
+  // Object
+  virtual String toString() const;
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
+
 private:
   friend class ProgressionStateClass;
 
@@ -200,6 +192,7 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<ProgressionState> ProgressionStatePtr;
+extern ClassPtr progressionStateClass;
 
 }; /* namespace lbcpp */
 

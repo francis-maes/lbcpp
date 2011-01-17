@@ -25,10 +25,13 @@ public:
     : time(time) {}
   ExecutionTraceItem() {}
 
+  virtual String getPreferedXmlTag() const = 0;
   virtual String getPreferedIcon() const = 0;
 
   double getTime() const
     {return time;}
+
+  virtual void saveToXml(XmlExporter& exporter) const;
 
 protected:
   friend class ExecutionTraceItemClass;
@@ -43,7 +46,10 @@ public:
   MessageExecutionTraceItem() {}
 
   virtual String toString() const;
+  virtual String getPreferedXmlTag() const;
   virtual String getPreferedIcon() const;
+
+  virtual void saveToXml(XmlExporter& exporter) const;
 
 protected:
   friend class MessageExecutionTraceItemClass;
@@ -60,6 +66,8 @@ public:
   ExecutionTraceNode() {}
 
   virtual String toString() const;
+  virtual String getPreferedXmlTag() const
+    {return T("node");}
   virtual String getPreferedIcon() const;
 
   /*
@@ -108,6 +116,8 @@ public:
   void removeWorkUnit()
     {workUnit = WorkUnitPtr();}
 
+  virtual void saveToXml(XmlExporter& exporter) const;
+
 protected:
   friend class ExecutionTraceNodeClass;
 
@@ -146,6 +156,8 @@ public:
 
   Time getStartTime() const
     {return startTime;}
+
+  virtual void saveToXml(XmlExporter& exporter) const;
 
 protected:
   friend class ExecutionTraceClass;
