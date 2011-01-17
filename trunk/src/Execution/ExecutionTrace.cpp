@@ -8,7 +8,16 @@
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Core/XmlSerialisation.h>
 using namespace lbcpp;
+
+/*
+** ExecutionTraceItem
+*/
+void ExecutionTraceItem::saveToXml(XmlExporter& exporter) const
+{
+  exporter.setAttribute(T("time"), time);
+}
 
 /*
 ** MessageExecutionTraceItem
@@ -18,6 +27,18 @@ MessageExecutionTraceItem::MessageExecutionTraceItem(double time, ExecutionMessa
 
 String MessageExecutionTraceItem::toString() const
   {return what + (where.isEmpty() ? String::empty : (T(" (in ") + where + T(")")));}
+
+String MessageExecutionTraceItem::getPreferedXmlTag() const
+{
+  switch (messageType)
+  {
+  case informationMessageType: return T("info");
+  case warningMessageType:     return T("warning");
+  case errorMessageType:       return T("error");
+  }
+  jassert(false);
+  return String::empty;
+} 
 
 String MessageExecutionTraceItem::getPreferedIcon() const
 {
@@ -30,6 +51,14 @@ String MessageExecutionTraceItem::getPreferedIcon() const
   jassert(false);
   return String::empty;
 } 
+
+void MessageExecutionTraceItem::saveToXml(XmlExporter& exporter) const
+{
+  ExecutionTraceItem::saveToXml(exporter);
+  exporter.setAttribute(T("what"), what);
+  if (where.isNotEmpty())
+    exporter.setAttribute(T("where"), where);
+}
 
 /*
 ** ExecutionTraceNode
@@ -73,6 +102,45 @@ ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description,
     }
   }
   return ExecutionTraceNodePtr();
+}
+
+void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
+{
+  ExecutionTraceItem::saveToXml(exporter);
+  exporter.setAttribute(T("description"), description);
+  exporter.setAttribute(T("timeLength"), timeLength);
+
+  // progression
+  if (progression)
+  {
+    exporter.enter(T("progression"));
+    progression->saveToXml(exporter);
+    exporter.leave();
+  }
+
+  // results
+  {
+    ScopedLock _(resultsLock);
+    for (size_t i = 0; i < results.size(); ++i)
+    {
+      exporter.enter(T("result"));
+      exporter.setAttribute(T("name"), results[i].first);
+      exporter.saveVariable(T("value"), results[i].second, anyType);
+      exporter.leave();
+    }
+  }
+
+  // sub items
+  {
+    ScopedLock _(subItemsLock);
+    for (size_t i = 0; i < subItems.size(); ++i)
+    {
+      const ExecutionTraceItemPtr& item = subItems[i];
+      exporter.enter(item->getPreferedXmlTag());
+      item->saveToXml(exporter);
+      exporter.leave();
+    }
+  }
 }
 
 void ExecutionTraceNode::setResult(const String& name, const Variable& value)
@@ -121,6 +189,7 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
   return res;
 }
 
+
 /*
 ** ExecutionTrace
 */
@@ -142,4 +211,15 @@ ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) c
       break;
   }
   return res;
+}
+
+void ExecutionTrace::saveToXml(XmlExporter& exporter) const
+{
+  exporter.setAttribute(T("hostname"), T("FIXME"));
+  exporter.setAttribute(T("context"), context->toString());
+  exporter.setAttribute(T("startTime"), startTime.toString(true, true, true, true));
+
+  exporter.enter(T("trace"));
+  root->saveToXml(exporter);
+  exporter.leave();
 }

@@ -8,6 +8,7 @@
 
 #include <lbcpp/Execution/ExecutionCallback.h>
 #include <lbcpp/Inference/Inference.h>
+#include <lbcpp/Core/XmlSerialisation.h> // for ProgressionState
 #include "Callback/ExecutionNotifications.h"
 using namespace lbcpp;
 
@@ -107,4 +108,53 @@ void DispatchByThreadExecutionCallback::notificationCallback(const NotificationP
     jassert(callbacks.size());
     callbacks.back()->notificationCallback(notification);
   }
+}
+
+/*
+** ProgressionState
+*/
+ProgressionState::ProgressionState(double value, double total, const String& unit)
+  : value(value), total(total), unit(unit)
+{
+}
+
+ProgressionState::ProgressionState(double value, const String& unit)
+  : value(value), total(0.0), unit(unit)
+{
+}
+
+ProgressionState::ProgressionState(const ProgressionState& other)
+  : value(other.value), total(other.total), unit(other.unit)
+{
+}
+
+ProgressionState::ProgressionState() : value(0.0), total(0.0)
+{
+}
+
+String ProgressionState::toString() const
+{
+  String res(value);
+  if (total)
+    res += T(" / ") + String(total);
+  if (unit.isNotEmpty())
+    res += T(" ") + unit;
+  return res;
+}
+
+void ProgressionState::saveToXml(XmlExporter& exporter) const
+{
+  exporter.setAttribute(T("value"), value);
+  if (total)
+    exporter.setAttribute(T("total"), total);
+  if (unit.isNotEmpty())
+    exporter.setAttribute(T("unit"), unit);
+}
+
+bool ProgressionState::loadFromXml(XmlImporter& importer)
+{
+  value = importer.getDoubleAttribute(T("value"));
+  total = importer.getDoubleAttribute(T("total"));
+  unit = importer.getStringAttribute(T("unit"));
+  return true;
 }
