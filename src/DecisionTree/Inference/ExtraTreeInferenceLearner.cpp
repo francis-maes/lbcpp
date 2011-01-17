@@ -88,17 +88,26 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   size_t n = trainingData->getNumElements();
   jassert(n);
 
-  if (n >= minimumSizeForSplitting && variables.size())
-  {
-    if (isOutputConstant(trainingData, leafValue))
-    {
-      builder->clear();
-      builder->addElement(leafValue);
-      leafValue = builder->build(context);
-      jassert(leafValue.exists());
-      return true;
-    }
+  if (isOutputConstant(trainingData, leafValue))
+    return true;
+  
+  if (n >= minimumSizeForSplitting)
     return false;
+  
+  if (n == 1)
+  {
+    leafValue = trainingData->getElement(0)[1];
+    return true;
+  }
+
+  if (builder->getClass()->inheritsFrom(bernoulliDistributionBuilderClass))
+  {
+    size_t numOfTrue = 0;
+    for (size_t i = 0; i < n; ++i)
+      if (trainingData->getElement(i)[1].getBoolean())
+        ++numOfTrue;
+    leafValue = (double)numOfTrue / (double)n;
+    return true;
   }
 
   builder->clear();

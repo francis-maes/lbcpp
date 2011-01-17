@@ -97,6 +97,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<EnumerationDistribution> EnumerationDistributionPtr;
 
+extern ClassPtr bernoulliDistributionClass;
+
 extern ClassPtr enumerationDistributionClass(TypePtr type);
 inline ClassPtr enumerationDistributionClass(EnumerationPtr enumeration)
   {return enumerationDistributionClass((TypePtr)enumeration);}

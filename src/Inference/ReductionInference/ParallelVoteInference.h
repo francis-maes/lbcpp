@@ -13,6 +13,7 @@
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Distribution/Distribution.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
+# include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp 
@@ -67,12 +68,21 @@ public:
     DistributionBuilderPtr probabilityBuilder = probabilityBuilderModel->cloneAndCast<DistributionBuilder>(context);
     for (size_t i = 0; i < n; ++i)
     {
-      DistributionPtr distribution = state->getSubOutput(i).getObjectAndCast<Distribution>();
-      if (!distribution)
+      Variable subOutput = state->getSubOutput(i);
+      if (!subOutput.exists())
         return Variable();
-      probabilityBuilder->addDistribution(distribution);
+
+      DistributionPtr distribution = subOutput.getObjectAndCast<Distribution>();
+      if (distribution)
+        probabilityBuilder->addDistribution(distribution);
+      else
+        probabilityBuilder->addElement(subOutput);
     }
-    return probabilityBuilder->build(context);
+    
+    DistributionPtr res = probabilityBuilder->build(context);
+    if (res->getClass()->inheritsFrom(bernoulliDistributionClass))
+      return res.staticCast<BernoulliDistribution>()->getProbabilityOfTrue();
+    return res;
   }
 
 protected:
