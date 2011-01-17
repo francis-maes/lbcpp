@@ -5,7 +5,8 @@ Explorer/ExecutionContext
    * Callback pour crŽer les ExecutionTrace (multi-thread) => chaque thread ˆ sa sous-trace, et les fusions ne se font qu'a la fin
    * Serialisation des ExecutionTrace
    * Affichage des ExecutionTrace en offline
- 3- tableaux et courbes
+ 3- Collone resultats, améliorer le système de collones
+ 4- tableaux et courbes
 
 MultiLabel/MultiTask:
  * Parseur et stoquage multi-label

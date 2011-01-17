@@ -400,7 +400,6 @@ SET(LBCPP_INFERENCE_SOURCES
 )
 
 SET(LBCPP_INFERENCE_CALLBACK_SOURCES
-  Inference/InferenceCallback/CancelAfterStepCallback.h
   Inference/InferenceCallback/CacheInferenceCallback.h
   Inference/InferenceCallback/EvaluationInferenceCallback.h
   Inference/InferenceCallback/InferenceCallbackLibrary.xml

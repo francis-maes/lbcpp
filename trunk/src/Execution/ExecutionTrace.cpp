@@ -25,26 +25,25 @@ String MessageExecutionTraceItem::getPreferedIcon() const
   case informationMessageType: return T("Information-32.png");
   case warningMessageType:     return T("Warning-32.png");
   case errorMessageType:       return T("Error-32.png");
-  case statusMessageType:      return T("Information-32.png");
   }
   jassert(false);
   return String::empty;
 } 
 
 /*
-** WorkUnitExecutionTraceItem
+** CompositeExecutionTraceItem
 */
-WorkUnitExecutionTraceItem::WorkUnitExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime)
+CompositeExecutionTraceItem::CompositeExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime)
   : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), endTime(startTime),
     hasProgression(false), progression(0.0) {}
 
-String WorkUnitExecutionTraceItem::toString() const
+String CompositeExecutionTraceItem::toString() const
   {return description;}
 
-String WorkUnitExecutionTraceItem::getPreferedIcon() const
+String CompositeExecutionTraceItem::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
-void WorkUnitExecutionTraceItem::setProgression(double progression, double progressionTotal, const String& unit)
+void CompositeExecutionTraceItem::setProgression(double progression, double progressionTotal, const String& unit)
 {
   progressionString = String(progression);
   if (progressionTotal)
@@ -55,7 +54,7 @@ void WorkUnitExecutionTraceItem::setProgression(double progression, double progr
   hasProgression = true;
 }
 
-void WorkUnitExecutionTraceItem::setResult(const String& name, const Variable& value)
+void CompositeExecutionTraceItem::setResult(const String& name, const Variable& value)
 {
   for (size_t i = 0; i < results.size(); ++i)
     if (results[i].first == name)
@@ -66,7 +65,7 @@ void WorkUnitExecutionTraceItem::setResult(const String& name, const Variable& v
   results.push_back(std::make_pair(name, value));
 }
 
-ObjectPtr WorkUnitExecutionTraceItem::getResultsObject(ExecutionContext& context)
+ObjectPtr CompositeExecutionTraceItem::getResultsObject(ExecutionContext& context)
 {
   if (results.empty())
     return ObjectPtr();

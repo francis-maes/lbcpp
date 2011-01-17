@@ -30,7 +30,7 @@ public:
     //  output = Variable(cache->get(context.getCurrentFunction(), input.getObject()));
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
   {
     jassert(false); // broken
     /*if (stack->findParentFunction() == parentStep)

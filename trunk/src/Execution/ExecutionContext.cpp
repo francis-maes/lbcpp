@@ -26,7 +26,7 @@ ExecutionContext::ExecutionContext()
 void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
 {
   preExecutionCallback(stack, description, workUnit);
-  stack->push(workUnit);
+  stack->push(description, workUnit);
 }
 
 void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
@@ -34,8 +34,8 @@ void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
 
 void ExecutionContext::leaveScope(bool result)
 {
-  WorkUnitPtr workUnit = stack->pop();
-  postExecutionCallback(stack, workUnit, result);
+  std::pair<String, WorkUnitPtr> entry = stack->pop();
+  postExecutionCallback(stack, entry.first, entry.second, result);
 }
 
 bool ExecutionContext::run(const WorkUnitPtr& workUnit)
@@ -71,22 +71,22 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 size_t ExecutionStack::getDepth() const // 0 = not running, 1 = top level
   {return (parentStack ? parentStack->getDepth() : 0) + stack.size();}
 
-void ExecutionStack::push(const WorkUnitPtr& workUnit)
-  {stack.push_back(workUnit);}
+void ExecutionStack::push(const String& description, const WorkUnitPtr& workUnit)
+  {stack.push_back(std::make_pair(description, workUnit));}
 
-WorkUnitPtr ExecutionStack::pop()
+std::pair<String, WorkUnitPtr> ExecutionStack::pop()
 {
   jassert(stack.size());
-  WorkUnitPtr res = stack.back();
+  std::pair<String, WorkUnitPtr> res = stack.back();
   stack.pop_back();
   return res;
 }
 
-const WorkUnitPtr& ExecutionStack::getWorkUnit(size_t depth) const
+const std::pair<String, WorkUnitPtr>& ExecutionStack::getEntry(size_t depth) const
 {
   size_t parentDepth = parentStack ? parentStack->getDepth() : 0;
   if (depth < parentDepth)
-    return parentStack->getWorkUnit(depth);
+    return parentStack->getEntry(depth);
   depth -= parentDepth;
   jassert(depth < stack.size());
   return stack[depth];

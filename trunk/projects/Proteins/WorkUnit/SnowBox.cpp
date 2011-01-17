@@ -213,7 +213,7 @@ public:
     std::cout << description << std::endl;
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
   {}
 };
 
@@ -237,11 +237,11 @@ public:
     }
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
   {
     ExecutionContext& context = getContext();
 
-    if (stack->getDepth() == 1 && workUnit->getName().startsWith(T("Learning Passsssssss")))
+    if (stack->getDepth() == 1 && description.startsWith(T("Learning Passsssssss")))
     {
       InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
       if (!inferenceWorkUnit || !inferenceWorkUnit->getInput().isObject())

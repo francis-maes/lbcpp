@@ -42,7 +42,7 @@ public:
     timeColumnWidth = 100,
   };
  
-  void paintProgression(juce::Graphics& g, WorkUnitExecutionTraceItemPtr workUnitTrace, int x, int width, int height);
+  void paintProgression(juce::Graphics& g, CompositeExecutionTraceItemPtr workUnitTrace, int x, int width, int height);
   void paintIcon(juce::Graphics& g, int width, int height);
   void paintIconTextAndProgression(juce::Graphics& g, int width, int height);
 
@@ -64,10 +64,10 @@ protected:
   int numLines;
 };
 
-class WorkUnitExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
+class CompositeExecutionTraceTreeViewItem : public ExecutionTraceTreeViewItem
 {
 public:
-  WorkUnitExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const WorkUnitExecutionTraceItemPtr& trace)
+  CompositeExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const CompositeExecutionTraceItemPtr& trace)
     : ExecutionTraceTreeViewItem(owner, trace)
   {
     CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
@@ -77,8 +77,8 @@ public:
   virtual bool mightContainSubItems()
     {return getNumSubItems() > 0;}
 
-  const WorkUnitExecutionTraceItemPtr& getTrace() const
-    {return trace.staticCast<WorkUnitExecutionTraceItem>();}
+  const CompositeExecutionTraceItemPtr& getTrace() const
+    {return trace.staticCast<CompositeExecutionTraceItem>();}
 
   const WorkUnitPtr& getWorkUnit() const
     {return getTrace()->getWorkUnit();}
@@ -108,7 +108,7 @@ public:
   ExecutionTraceTreeView(ExecutionTracePtr trace);
   virtual ~ExecutionTraceTreeView();
 
-  WorkUnitExecutionTraceTreeViewItem* getItemFromStack(const ExecutionStackPtr& stack) const;
+  CompositeExecutionTraceTreeViewItem* getItemFromStack(const ExecutionStackPtr& stack) const;
 
   double getInitialTime() const
     {return initialTime;}

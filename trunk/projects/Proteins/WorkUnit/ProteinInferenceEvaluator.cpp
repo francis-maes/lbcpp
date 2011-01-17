@@ -38,7 +38,7 @@ ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory
 }
 
 InferencePtr addBreakToInference(InferencePtr inference, InferencePtr lastStepBeforeBreak)
-  {return callbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, cancelAfterStepCallback(lastStepBeforeBreak));}
+{return InferencePtr();}// callbackBasedDecoratorInference(inference->getName() + T(" breaked"), inference, cancelAfterStepCallback(lastStepBeforeBreak));}
 
 class SaveOutputInferenceCallback : public ExecutionCallback
 {
