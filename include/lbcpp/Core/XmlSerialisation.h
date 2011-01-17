@@ -124,6 +124,9 @@ public:
   XmlElement* getCurrentElement() const
     {return stack.back();}
 
+  String getTagName() const
+    {return getCurrentElement()->getTagName();}
+
   String getAllSubText() const
     {return getCurrentElement()->getAllSubText();}
 

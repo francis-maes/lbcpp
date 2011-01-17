@@ -13,13 +13,14 @@ using namespace lbcpp;
 
 void usage()
 {
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib] WorkUnitFile.xml" << std::endl;
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib] WorkUnitName WorkUnitArguments" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace] WorkUnitFile.xml" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace] WorkUnitName WorkUnitArguments" << std::endl;
   std::cerr << "  --numThreads : the number of threads to use. Default value: n = the number of cpus." << std::endl;
   std::cerr << "  --library : add a dynamic library to load." << std::endl;
+  std::cerr << "  --trace : output file to save the execution trace." << std::endl;
 }
 
-bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads)
+bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads, File& traceOutputFile)
 {
   numThreads = (size_t)juce::SystemStats::getNumCpus();
   
@@ -54,6 +55,18 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
       File dynamicLibraryFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!lbcpp::importLibraryFromFile(defaultExecutionContext(), dynamicLibraryFile))
         return false;
+    }
+    else if (argument == T("--trace"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      traceOutputFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      if (traceOutputFile.exists())
+        traceOutputFile.deleteFile();
     }
     else
       remainingArguments.push_back(argument);
@@ -128,7 +141,8 @@ int mainImpl(int argc, char** argv)
   // parse top level arguments
   std::vector<String> arguments;
   size_t numThreads;
-  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads))
+  File traceOutputFile;
+  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile))
   {
     usage();
     return 1;
@@ -140,9 +154,14 @@ int mainImpl(int argc, char** argv)
   context->appendCallback(consoleExecutionCallback());
 
   // add "make trace" callback
-  ExecutionTracePtr trace = new ExecutionTrace(context);
-  ExecutionCallbackPtr makeTraceCallback = makeTraceExecutionCallback(trace);
-  context->appendCallback(makeTraceCallback);
+  ExecutionCallbackPtr makeTraceCallback;
+  ExecutionTracePtr trace;
+  if (traceOutputFile != File::nonexistent)
+  {
+    trace = new ExecutionTrace(context);
+    makeTraceCallback = makeTraceExecutionCallback(trace);
+    context->appendCallback(makeTraceCallback);
+  }
   
   // run work unit either from file or from arguments
   int result = 0;
@@ -158,8 +177,12 @@ int mainImpl(int argc, char** argv)
   }
 
   // save trace
-  context->removeCallback(makeTraceCallback);
-  trace->saveToFile(*context, File(T("C:/Projets/lbcpp/workspace/trace.xml")));
+  if (makeTraceCallback)
+  {
+    context->removeCallback(makeTraceCallback);
+    context->informationCallback(T("Saving execution trace into ") + traceOutputFile.getFullPathName());
+    trace->saveToFile(*context, traceOutputFile);
+  }
   return result;
 }
 
