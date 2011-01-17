@@ -20,7 +20,7 @@ class ConsoleOutput
 public:
   void print(size_t threadNumber, size_t depth, const String& type, const String& text, bool isError)
   {
-    String line = makeFixedSizeString(T("T") + String((int)threadNumber), 3) + T(" ");
+    String line = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
     line += makeFixedSizeString(type, 8) + T(" ");
     for (size_t i = 0; i < depth; ++i)
       line += T("  ");
@@ -43,6 +43,16 @@ private:
 
   CriticalSection lock;
  
+  static String makeFixedSizeNumber(size_t number, int requiredLength)
+  {
+    String res((int)number);
+    while (res.length() < requiredLength)
+      res = T("0") + res;
+    if (res.length() > requiredLength)
+      res = T("..") + res.substring(res.length() - (requiredLength - 2));
+    return res;
+  }
+
   static String makeFixedSizeString(const String& str, int requiredLength)
   {
     String res = str;
@@ -65,8 +75,8 @@ private:
 class ConsoleThreadExecutionCallback : public ExecutionCallback
 {
 public:
-  ConsoleThreadExecutionCallback(ConsoleOutput& output, size_t threadNumber)
-    : output(output), threadNumber(threadNumber), lastMessageTime(0) {} 
+  ConsoleThreadExecutionCallback(ConsoleOutput& output, size_t threadNumber, size_t depth)
+    : output(output), threadNumber(threadNumber), lastMessageTime(0), depth(depth) {} 
 
   virtual void informationCallback(const String& where, const String& what)
   {
@@ -110,25 +120,19 @@ public:
     {print(T("result"), name + T(" = ") + value.toShortString(), false);}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
-  {
-    depthStack.push_back(stack->getDepth());
-    print(T("start"), description, false, 1);
-  }
+    {print(T("start"), description, false); ++depth;}
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
-    {depthStack.pop_back();}
+    {jassert(depth); --depth;}
 
 private:
   ConsoleOutput& output;
-  std::vector<size_t> depthStack;
+  size_t depth;
   size_t threadNumber;
   juce::uint32 lastMessageTime;
 
-  void print(const String& type, const String& text, bool isError, size_t depthOffset = 0)
+  void print(const String& type, const String& text, bool isError)
   {
-    size_t depth = depthStack.size() ? depthStack.back() : 0;
-    if (depth >= depthOffset)
-      depth -= depthOffset;
     lastMessageTime = Time::getApproximateMillisecondCounter();
     output.print(threadNumber, depth, type, text, isError);
   }
@@ -139,8 +143,8 @@ class ConsoleExecutionCallback : public DispatchByThreadExecutionCallback
 public:
   ConsoleExecutionCallback() : counter(0) {}
 
-  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId)
-    {return new ConsoleThreadExecutionCallback(output, counter++);}
+  virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
+    {return new ConsoleThreadExecutionCallback(output, counter++, stack->getDepth());}
 
 private:
   ConsoleOutput output;

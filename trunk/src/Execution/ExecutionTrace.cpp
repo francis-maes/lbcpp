@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Execution/ExecutionTrace.h>
+#include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>
 using namespace lbcpp;
 
@@ -31,19 +32,42 @@ String MessageExecutionTraceItem::getPreferedIcon() const
 } 
 
 /*
-** CompositeExecutionTraceItem
+** ExecutionTraceNode
 */
-CompositeExecutionTraceItem::CompositeExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime)
+ExecutionTraceNode::ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime)
   : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), endTime(startTime),
     hasProgression(false), progression(0.0) {}
 
-String CompositeExecutionTraceItem::toString() const
+String ExecutionTraceNode::toString() const
   {return description;}
 
-String CompositeExecutionTraceItem::getPreferedIcon() const
+String ExecutionTraceNode::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
-void CompositeExecutionTraceItem::setProgression(double progression, double progressionTotal, const String& unit)
+ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description, const WorkUnitPtr& workUnit) const
+{
+  for (size_t i = 0; i < subItems.size(); ++i)
+  {
+    ExecutionTraceNodePtr res = subItems[i].dynamicCast<ExecutionTraceNode>();
+    if (res)
+    {
+      if (workUnit)
+      {
+        jassert(res->getWorkUnit());
+        if (res->getWorkUnit() == workUnit)
+          return res;
+      }
+      else
+      {
+        if (res->toString() == description)
+          return res;
+      }
+    }
+  }
+  return ExecutionTraceNodePtr();
+}
+
+void ExecutionTraceNode::setProgression(double progression, double progressionTotal, const String& unit)
 {
   progressionString = String(progression);
   if (progressionTotal)
@@ -54,7 +78,7 @@ void CompositeExecutionTraceItem::setProgression(double progression, double prog
   hasProgression = true;
 }
 
-void CompositeExecutionTraceItem::setResult(const String& name, const Variable& value)
+void ExecutionTraceNode::setResult(const String& name, const Variable& value)
 {
   for (size_t i = 0; i < results.size(); ++i)
     if (results[i].first == name)
@@ -65,7 +89,7 @@ void CompositeExecutionTraceItem::setResult(const String& name, const Variable& 
   results.push_back(std::make_pair(name, value));
 }
 
-ObjectPtr CompositeExecutionTraceItem::getResultsObject(ExecutionContext& context)
+ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
 {
   if (results.empty())
     return ObjectPtr();
@@ -89,5 +113,30 @@ ObjectPtr CompositeExecutionTraceItem::getResultsObject(ExecutionContext& contex
   ObjectPtr res = resultsClass->createDenseObject();
   for (size_t i = 0; i < results.size(); ++i)
     res->setVariable(context, variableIndices[i], results[i].second);
+  return res;
+}
+
+/*
+** ExecutionTrace
+*/
+ExecutionTrace::ExecutionTrace(ExecutionContextPtr context)
+  : context(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0))
+{
+  startTime = Time::getCurrentTime();
+  startTimeMs = Time::getApproximateMillisecondCounter();
+}
+
+ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) const
+{
+  jassert(root);
+  ExecutionTraceNodePtr res = root;
+  size_t d = stack->getDepth();
+  for (size_t i = 0; i < d; ++i)
+  {
+    const std::pair<String, WorkUnitPtr>& entry = stack->getEntry(i);
+    res = res->findSubNode(entry.first, entry.second);
+    if (!res)
+      break;
+  }
   return res;
 }

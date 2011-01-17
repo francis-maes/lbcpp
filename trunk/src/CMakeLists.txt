@@ -180,6 +180,7 @@ SET(LBCPP_EXECUTION_SOURCES
 SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionNotifications.h
   Execution/Callback/ConsoleExecutionCallback.h
+  Execution/Callback/MakeTraceExecutionCallback.h
   Execution/Callback/UserInterfaceExecutionCallback.h
   Execution/Callback/ExecutionCallbackLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackLibrary.cpp

@@ -9,7 +9,12 @@
   <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
     <constructor/>
   </class>
-  
+
+  <class name="MakeTraceExecutionCallback" base="DispatchByThreadExecutionCallback">
+    <constructor arguments="ExecutionTracePtr trace" returnType="ExecutionCallback"/>
+    <variable type="ExecutionTrace" name="trace"/>
+  </class>
+
   <!-- NotifierExecutionCallback -->
   <class name="ExecutionNotification" base="Notification" abstract="yes"/>
 
@@ -40,6 +45,11 @@
     <variable type="ExecutionStack" name="stack"/>
     <variable type="WorkUnit" name="workUnit"/>
     <variable type="Boolean" name="result"/>
+  </class>
+  
+  <class name="ThreadExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="Boolean" name="isThreadEnd"/>
   </class>
 
 </library>

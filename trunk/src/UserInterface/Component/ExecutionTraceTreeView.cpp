@@ -28,7 +28,7 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* o
 void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
   {owner->invalidateSelection();}
 
-void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, CompositeExecutionTraceItemPtr workUnitTrace, int x, int width, int height)
+void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, ExecutionTraceNodePtr workUnitTrace, int x, int width, int height)
 {
   juce::GradientBrush brush(Colour(200, 220, 240), (float)x, -(float)width / 3.f, Colours::white, (float)width, (float)width, true);
 
@@ -67,7 +67,7 @@ void ExecutionTraceTreeViewItem::paintIconTextAndProgression(Graphics& g, int wi
   width -= labelX;
   int textWidth = width;
 
-  CompositeExecutionTraceItemPtr workUnitTrace = getTrace().dynamicCast<CompositeExecutionTraceItem>();
+  ExecutionTraceNodePtr workUnitTrace = getTrace().dynamicCast<ExecutionTraceNode>();
   if (workUnitTrace && workUnitTrace->isProgressionAvailable() && width > minWidthToDisplayProgression)
   {
     textWidth -= progressionColumnWidth;
@@ -98,7 +98,7 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
 
     
     g.drawText(formatTime(trace->getTime()), w, 0, timeColumnWidth, height, Justification::centredRight, false);
-    CompositeExecutionTraceItemPtr workUnitTrace = trace.dynamicCast<CompositeExecutionTraceItem>();
+    ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)
       g.drawText(formatTime(workUnitTrace->getTimeLength()), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
   }
@@ -156,7 +156,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   trace->getContext().appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new CompositeExecutionTraceTreeViewItem(this, new CompositeExecutionTraceItem(T("Root"), WorkUnitPtr(), initialTime)));
+  setRootItem(new ExecutionTraceTreeViewNode(this, new ExecutionTraceNode(T("Root"), WorkUnitPtr(), initialTime)));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
   setMultiSelectEnabled(true);
@@ -168,9 +168,9 @@ ExecutionTraceTreeView::~ExecutionTraceTreeView()
   deleteRootItem();
 }
 
-CompositeExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(const ExecutionStackPtr& stack) const
+ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getItemFromStack(const ExecutionStackPtr& stack) const
 {
-  CompositeExecutionTraceTreeViewItem* item = (CompositeExecutionTraceTreeViewItem* )getRootItem();
+  ExecutionTraceTreeViewNode* item = (ExecutionTraceTreeViewNode* )getRootItem();
   size_t n = stack->getDepth();
   for (size_t i = 0; i < n; ++i)
   {
@@ -178,7 +178,7 @@ CompositeExecutionTraceTreeViewItem* ExecutionTraceTreeView::getItemFromStack(co
     bool ok = false;
     for (int i = 0; i < item->getNumSubItems(); ++i)
     {
-      CompositeExecutionTraceTreeViewItem* subItem = dynamic_cast<CompositeExecutionTraceTreeViewItem* >(item->getSubItem(i));
+      ExecutionTraceTreeViewNode* subItem = dynamic_cast<ExecutionTraceTreeViewNode* >(item->getSubItem(i));
       if (subItem && subItem->getWorkUnit() == workUnit)
       {
         item = subItem;
@@ -202,7 +202,7 @@ void ExecutionTraceTreeView::timerCallback()
       ExecutionTraceTreeViewItem* item = dynamic_cast<ExecutionTraceTreeViewItem* >(getSelectedItem(i));
       if (item && item != getRootItem())
       {
-        CompositeExecutionTraceItemPtr trace = item->getTrace().dynamicCast<CompositeExecutionTraceItem>();
+        ExecutionTraceNodePtr trace = item->getTrace().dynamicCast<ExecutionTraceNode>();
         if (trace)
         {
           ObjectPtr results = trace->getResultsObject(defaultExecutionContext());
@@ -251,10 +251,10 @@ public:
 
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {
-    CompositeExecutionTraceTreeViewItem* item = dynamic_cast<CompositeExecutionTraceTreeViewItem* >(getCurrentPositionInTree());
+    ExecutionTraceTreeViewNode* item = dynamic_cast<ExecutionTraceTreeViewNode* >(getCurrentPositionInTree());
     if (item)
     {
-      CompositeExecutionTraceItemPtr trace = item->getTrace();
+      ExecutionTraceNodePtr trace = item->getTrace();
       jassert(trace);
       trace->setEndTime(currentNotificationTime);
       trace->setProgression(progression, progressionTotal, progressionUnit);
@@ -264,12 +264,12 @@ public:
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
-    CompositeExecutionTraceItemPtr trace(new CompositeExecutionTraceItem(description, workUnit, currentNotificationTime));
+    ExecutionTraceNodePtr trace(new ExecutionTraceNode(description, workUnit, currentNotificationTime));
 
     ExecutionTraceTreeViewItem* parentItem = tree->getItemFromStack(stack);
     jassert(parentItem);
 
-    CompositeExecutionTraceTreeViewItem* item = new CompositeExecutionTraceTreeViewItem(tree, trace);
+    ExecutionTraceTreeViewNode* item = new ExecutionTraceTreeViewNode(tree, trace);
     addItem(parentItem, item);
     pushPositionIntoTree(item);
   }
@@ -288,7 +288,7 @@ public:
 
   virtual void resultCallback(const String& name, const Variable& value)
   {
-    CompositeExecutionTraceItemPtr trace = getCurrentPositionInTree()->getTrace().dynamicCast<CompositeExecutionTraceItem>();
+    ExecutionTraceNodePtr trace = getCurrentPositionInTree()->getTrace().dynamicCast<ExecutionTraceNode>();
     jassert(trace);
     trace->setResult(name, value);
   }
@@ -302,7 +302,7 @@ protected:
   /*
   ** Positions Into Tree
   */
-  std::vector<CompositeExecutionTraceTreeViewItem* > positions;
+  std::vector<ExecutionTraceTreeViewNode* > positions;
 
   void addItem(ExecutionTraceItemPtr trace)
     {addItem(getCurrentPositionInTree(), new ExecutionTraceTreeViewItem(tree, trace));}
@@ -314,13 +314,13 @@ protected:
       tree->scrollToKeepItemVisible(newItem);
   }
 
-  void pushPositionIntoTree(CompositeExecutionTraceTreeViewItem* item)
+  void pushPositionIntoTree(ExecutionTraceTreeViewNode* item)
     {positions.push_back(item);}
 
   ExecutionTraceTreeViewItem* popPositionFromTree(bool setErrorFlag = false)
   { 
     jassert(positions.size());
-    CompositeExecutionTraceTreeViewItem* res = positions.back();
+    ExecutionTraceTreeViewNode* res = positions.back();
     res->getTrace()->setEndTime(currentNotificationTime);
     if (setErrorFlag)
       res->setIcon(T("Error-32.png"));
@@ -339,7 +339,7 @@ public:
   ExecutionTraceTreeViewBuilderExecutionCallback(ExecutionTraceTreeView* tree)
     : tree(tree) {}
 
-  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId)
+  virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
     {return new ExecutionTraceTreeViewBuilderCallback(tree);}
 
 protected:

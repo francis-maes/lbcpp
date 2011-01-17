@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
 using namespace lbcpp;
 
@@ -135,20 +136,31 @@ int mainImpl(int argc, char** argv)
 
   // replace default context
   ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext() : multiThreadedExecutionContext(numThreads));
-  context->appendCallback(consoleExecutionCallback());
   setDefaultExecutionContext(context);
+  context->appendCallback(consoleExecutionCallback());
+
+  // add "make trace" callback
+  ExecutionTracePtr trace = new ExecutionTrace(context);
+  ExecutionCallbackPtr makeTraceCallback = makeTraceExecutionCallback(trace);
+  context->appendCallback(makeTraceCallback);
   
   // run work unit either from file or from arguments
+  int result = 0;
   jassert(arguments.size());
   File firstArgumentAsFile = File::getCurrentWorkingDirectory().getChildFile(arguments[0]);
   if (arguments.size() == 1 && firstArgumentAsFile.existsAsFile())
-    return runWorkUnitFromFile(*context, firstArgumentAsFile) ? 0 : 1;
+    result = runWorkUnitFromFile(*context, firstArgumentAsFile) ? 0 : 1;
   else
   {
     String workUnitClassName = arguments[0];
     arguments.erase(arguments.begin());
-    return runWorkUnitFromArguments(*context, workUnitClassName, arguments) ? 0 : 1;
+    result = runWorkUnitFromArguments(*context, workUnitClassName, arguments) ? 0 : 1;
   }
+
+  // save trace
+  context->removeCallback(makeTraceCallback);
+  //trace->saveToFile(*context, File(T("C:/Projets/lbcpp/workspace/trace.xml")));
+  return result;
 }
 
 int main(int argc, char** argv)

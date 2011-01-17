@@ -52,6 +52,12 @@ void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& s
 void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
   {notificationCallback(new PostExecutionNotification(stack, description, workUnit, result));}
 
+void CompositeExecutionCallback::threadBeginCallback(const ExecutionStackPtr& stack)
+  {notificationCallback(new ThreadExecutionNotification(stack, false));}
+
+void CompositeExecutionCallback::threadEndCallback(const ExecutionStackPtr& stack)
+  {notificationCallback(new ThreadExecutionNotification(stack, true));}
+
 void CompositeExecutionCallback::appendCallback(const ExecutionCallbackPtr& callback)
 {
   jassert(callback);
@@ -78,12 +84,27 @@ void CompositeExecutionCallback::clearCallbacks()
 void DispatchByThreadExecutionCallback::notificationCallback(const NotificationPtr& notification)
 {
   Thread::ThreadID threadId = notification->getSourceThreadId();
-  //DBG(String((int)threadId) + T(" ") + notification->getClassName());
-  CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
-  ExecutionCallbackPtr threadCallback;
-  if (it == callbackByThread.end())
-    threadCallback = callbackByThread[threadId] = createCallbackForThread(threadId);
+  std::vector<ExecutionCallbackPtr>& callbacks = callbacksByThread[threadId];
+  
+  ReferenceCountedObjectPtr<ThreadExecutionNotification> threadNotification = notification.dynamicCast<ThreadExecutionNotification>();
+  if (threadNotification)
+  {
+    if (threadNotification->isBeginCallback())
+      callbacks.push_back(createCallbackForThread(threadNotification->getStack(), threadId));
+    else
+    {
+      jassert(callbacks.size());
+      callbacks.pop_back();
+    }
+  }
   else
-    threadCallback = it->second;
-  threadCallback->notificationCallback(notification);
+  {
+    if (callbacks.empty() && mainThreadID == 0)
+    {
+      mainThreadID = threadId;
+      callbacks.push_back(createCallbackForThread(new ExecutionStack(), threadId));
+    }
+    jassert(callbacks.size());
+    callbacks.back()->notificationCallback(notification);
+  }
 }
