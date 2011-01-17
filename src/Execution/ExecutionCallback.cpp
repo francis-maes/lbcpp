@@ -40,8 +40,8 @@ void CompositeExecutionCallback::warningCallback(const String& where, const Stri
 void CompositeExecutionCallback::errorCallback(const String& where, const String& what)
   {notificationCallback(new ExecutionMessageNotification(errorMessageType, what, where));}
 
-void CompositeExecutionCallback::progressCallback(double progression, double progressionTotal, const String& progressionUnit)
-  {notificationCallback(new ExecutionProgressNotification(progression, progressionTotal, progressionUnit));}
+void CompositeExecutionCallback::progressCallback(const ProgressionStatePtr& progression)
+  {notificationCallback(new ExecutionProgressNotification(progression));}
 
 void CompositeExecutionCallback::resultCallback(const String& name, const Variable& value)
   {notificationCallback(new ExecutionResultNotification(name, value));}

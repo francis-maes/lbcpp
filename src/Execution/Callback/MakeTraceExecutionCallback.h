@@ -19,13 +19,13 @@ namespace lbcpp
 class MakeTraceThreadExecutionCallback : public ExecutionCallback
 {
 public:
-  MakeTraceThreadExecutionCallback(ExecutionTraceNodePtr parentItem, double initialTime)
-    : stack(1, parentItem), initialTime(initialTime), currentNotificationTime(0.0) {}
+  MakeTraceThreadExecutionCallback(ExecutionTraceNodePtr parentItem, const Time& startTime)
+    : stack(1, parentItem), startTime(startTime), currentNotificationTime(0.0) {}
 
   virtual void notificationCallback(const NotificationPtr& notification)
   {
-    Time creationTime = notification->getConstructionTime();
-    double time = creationTime.toMilliseconds() / 1000.0 - initialTime;
+    Time notificationTime = notification->getConstructionTime();
+    double time = (notificationTime.toMilliseconds() - startTime.toMilliseconds()) / 1000.0;
     jassert(time >= currentNotificationTime);
     currentNotificationTime = time;
     ExecutionCallback::notificationCallback(notification);
@@ -40,8 +40,8 @@ public:
   virtual void errorCallback(const String& where, const String& what)
     {appendTraceItem(new MessageExecutionTraceItem(currentNotificationTime, errorMessageType, what, where));}
 
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
-    {getCurrentNode()->setProgression(progression, progressionTotal, progressionUnit);}
+  virtual void progressCallback(const ProgressionStatePtr& progression)
+    {getCurrentNode()->setProgression(progression);}
 
   virtual void resultCallback(const String& name, const Variable& value)
     {getCurrentNode()->setResult(name, value);}
@@ -65,7 +65,7 @@ public:
 
 protected:
   std::vector<ExecutionTraceNodePtr> stack;
-  double initialTime;
+  Time startTime;
 
   double currentNotificationTime;
 
@@ -87,7 +87,7 @@ public:
   {
     ExecutionTraceNodePtr item = trace->findNode(stack);
     jassert(item);
-    return new MakeTraceThreadExecutionCallback(item, trace->getInitialTime());
+    return new MakeTraceThreadExecutionCallback(item, trace->getStartTime());
   }
 
 protected:

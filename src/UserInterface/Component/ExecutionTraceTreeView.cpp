@@ -28,22 +28,16 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* o
 void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
   {owner->invalidateSelection();}
 
-void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, ExecutionTraceNodePtr workUnitTrace, int x, int width, int height)
+void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, ProgressionStatePtr progression, int x, int width, int height)
 {
   juce::GradientBrush brush(Colour(200, 220, 240), (float)x, -(float)width / 3.f, Colours::white, (float)width, (float)width, true);
 
-  double progression = workUnitTrace->getProgression();
-
   g.setBrush(&brush);
-  if (progression > 0.0)
+  if (progression->isBounded())
+    g.fillRect(x, 0, (int)(width * progression->getNormalizedValue() + 0.5), height);
+  else
   {
-    if (progression > 1.0)
-      progression = 1.0;
-    g.fillRect(x, 0, (int)(width * progression + 0.5), height);
-  }
-  else if (progression < 0.0)
-  {
-    double p = (-progression / 1000.0);
+    double p = (progression->getValue() / 1000.0);
     p -= (int)p;
     jassert(p >= 0.0 && p <= 1.0);
     g.fillRect(x + (int)(width * p + 0.5) - 3, 0, 6, height);
@@ -52,7 +46,7 @@ void ExecutionTraceTreeViewItem::paintProgression(Graphics& g, ExecutionTraceNod
 
   g.setColour(Colours::black);
   g.setFont(10);
-  g.drawText(workUnitTrace->getProgressionString(), x, 0, width, height, Justification::centred, true);
+  g.drawText(progression->toString(), x, 0, width, height, Justification::centred, true);
 
   g.setColour(Colour(180, 180, 180));
   g.drawRect(x, 0, width, height, 1);
@@ -67,11 +61,11 @@ void ExecutionTraceTreeViewItem::paintIconTextAndProgression(Graphics& g, int wi
   width -= labelX;
   int textWidth = width;
 
-  ExecutionTraceNodePtr workUnitTrace = getTrace().dynamicCast<ExecutionTraceNode>();
-  if (workUnitTrace && workUnitTrace->isProgressionAvailable() && width > minWidthToDisplayProgression)
+  ExecutionTraceNodePtr traceNode = getTrace().dynamicCast<ExecutionTraceNode>();
+  if (trace && traceNode->getProgression() && width > minWidthToDisplayProgression)
   {
     textWidth -= progressionColumnWidth;
-    paintProgression(g, workUnitTrace, labelX + textWidth, progressionColumnWidth, height);
+    paintProgression(g, traceNode->getProgression(), labelX + textWidth, progressionColumnWidth, height);
   }
   
   g.setColour(Colours::black);
@@ -249,7 +243,7 @@ public:
     ExecutionCallback::notificationCallback(notification);
   }
 
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+  virtual void progressCallback(const ProgressionStatePtr& progression)
   {
     ExecutionTraceTreeViewNode* item = dynamic_cast<ExecutionTraceTreeViewNode* >(getCurrentPositionInTree());
     if (item)
@@ -257,7 +251,7 @@ public:
       ExecutionTraceNodePtr trace = item->getTrace();
       jassert(trace);
       trace->setEndTime(currentNotificationTime);
-      trace->setProgression(progression, progressionTotal, progressionUnit);
+      trace->setProgression(progression);
       tree->invalidateTree();
     }
   }

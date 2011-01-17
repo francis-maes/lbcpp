@@ -42,12 +42,8 @@ public:
     return Variable::pair(res.first, res.second);
   }
 
-  virtual void getCurrentPosition(double& position, double& totalSize, String& unit)
-  {
-    position = (double)nextFilePosition;
-    totalSize = (double)files.size();
-    unit = T("File Pairs");
-  }
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState((double)nextFilePosition, (double)files.size(), T("File Pairs"));}
 
 private:
   File mainDirectory;

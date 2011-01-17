@@ -25,10 +25,7 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
       juce::uint32 t = Time::getApproximateMillisecondCounter();
       if (!lastTimeProgressionWasSent || (t - lastTimeProgressionWasSent) > 100)
       {
-        double position, total;
-        String unit;
-        getCurrentPosition(position, total, unit);
-        context.progressCallback(position, total, unit);
+        context.progressCallback(getCurrentPosition());
         lastTimeProgressionWasSent = t;
       }
     }
@@ -99,19 +96,12 @@ TextParser::~TextParser()
     delete istr;
 }
 
-void TextParser::getCurrentPosition(double& position, double& totalSize, String& unit)
+ProgressionStatePtr TextParser::getCurrentPosition() const
 {
   if (istr)
-  {
-    position = (double)(istr->getPosition() / 1024);
-    totalSize = (double)(istr->getTotalLength() / 1024);
-    unit = T("kb");
-  }
+    return new ProgressionState((double)(istr->getPosition() / 1024), (double)(istr->getTotalLength() / 1024), T("kb"));
   else
-  {
-    position = totalSize = 0.0;
-    unit = String::empty;
-  }
+    return ProgressionStatePtr();
 }
 
 inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)

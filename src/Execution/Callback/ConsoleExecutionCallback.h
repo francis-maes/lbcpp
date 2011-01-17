@@ -102,18 +102,11 @@ public:
     print(T("error"), text, false);
   }
 
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit)
+  virtual void progressCallback(const ProgressionStatePtr& progression)
   {
     juce::uint32 time = Time::getApproximateMillisecondCounter();
     if (!lastMessageTime || time > lastMessageTime + 250)
-    {
-      String text = String(progression);
-      if (progressionTotal)
-        text += T(" / ") + String(progressionTotal);
-      if (progressionUnit.isNotEmpty())
-        text += T(" ") + progressionUnit;
-      print(T("progress"), text, false);
-    }
+      print(T("progress"), progression->toString(), false);
   }
 
   virtual void resultCallback(const String& name, const Variable& value)

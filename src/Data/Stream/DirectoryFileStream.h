@@ -50,12 +50,8 @@ public:
       res.insert(files[i]->getFullPathName());
   }
 
-  virtual void getCurrentPosition(double& position, double& totalSize, String& unit)
-  {
-    position = (double)this->position;
-    totalSize = (double)files.size();
-    unit = T("Files");
-  }
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return new ProgressionState((double)this->position, (double)files.size(), T("Files"));}
 
 private:
   File directory;

@@ -80,7 +80,7 @@ public:
   virtual bool isExhausted() const
     {return true;}
 
-  virtual void getCurrentPosition(double& position, double& totalSize, String& unit) = 0;
+  virtual ProgressionStatePtr getCurrentPosition() const = 0;
 
   /**
   ** Loads and returns the next element from the stream.
@@ -181,7 +181,7 @@ public:
   virtual bool isExhausted() const
     {return istr == NULL;}
 
-  virtual void getCurrentPosition(double& position, double& totalSize, String& unit);
+  virtual ProgressionStatePtr getCurrentPosition() const;
   
   /**
    ** This function is called at the begging of parsing.

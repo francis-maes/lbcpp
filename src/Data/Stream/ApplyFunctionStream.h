@@ -38,8 +38,8 @@ public:
     return v.isNil() ? Variable() : function->computeFunction(context, v);
   }
 
-  virtual void getCurrentPosition(double& position, double& totalSize, String& unit)
-    {stream->getCurrentPosition(position, totalSize, unit);}
+  virtual ProgressionStatePtr getCurrentPosition() const
+    {return stream->getCurrentPosition();}
 
 private:
   friend class ApplyFunctionStreamClass;
