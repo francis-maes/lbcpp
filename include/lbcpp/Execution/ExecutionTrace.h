@@ -61,6 +61,8 @@ protected:
   String where;
 };
 
+typedef ReferenceCountedObjectPtr<MessageExecutionTraceItem> MessageExecutionTraceItemPtr;
+
 class ExecutionTraceNode : public ExecutionTraceItem
 {
 public:
@@ -77,6 +79,7 @@ public:
   */
   void appendSubItem(const ExecutionTraceItemPtr& item);
   ExecutionTraceNodePtr findSubNode(const String& description, const WorkUnitPtr& workUnit) const;
+  std::vector<ExecutionTraceItemPtr> getSubItems() const;
 
   /*
   ** Results
@@ -152,12 +155,14 @@ public:
 
   virtual juce::Component* createComponent() const;
 
-  ExecutionContext& getContext() const
-    {jassert(contextPointer); return *contextPointer;}
+  ExecutionContextPtr getContextPointer() const
+    {return contextPointer;}
 
   virtual String toString() const
     {return context + T(" Execution Trace");}
 
+  ExecutionTraceNodePtr getRootNode() const
+    {return root;}
   ExecutionTraceNodePtr findNode(const ExecutionStackPtr& stack) const;
 
   Time getStartTime() const

@@ -147,10 +147,12 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
 {
   DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
-  trace->getContext().appendCallback(refCountedPointerFromThis(this));
+  ExecutionContextPtr context = trace->getContextPointer();
+  if (context)
+    context->appendCallback(refCountedPointerFromThis(this));
 
   initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
-  setRootItem(new ExecutionTraceTreeViewNode(this, new ExecutionTraceNode(T("Root"), WorkUnitPtr(), initialTime)));
+  setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode()));
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
   setMultiSelectEnabled(true);
@@ -158,7 +160,9 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
 
 ExecutionTraceTreeView::~ExecutionTraceTreeView()
 {
-  trace->getContext().removeCallback(refCountedPointerFromThis(this));
+  ExecutionContextPtr context = trace->getContextPointer();
+  if (context)
+    context->removeCallback(refCountedPointerFromThis(this));
   deleteRootItem();
 }
 
@@ -345,3 +349,22 @@ ExecutionCallbackPtr ExecutionTraceTreeView::createTreeBuilderCallback()
 
 juce::Component* ExecutionTrace::createComponent() const
   {return new ExecutionTraceTreeView(refCountedPointerFromThis(this));}
+
+// todo: ranger
+ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace)
+  : ExecutionTraceTreeViewItem(owner, trace)
+{
+  CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
+  setOpen(!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10);
+  
+  std::vector<ExecutionTraceItemPtr> subItems = trace->getSubItems();
+  for (size_t i = 0; i < subItems.size(); ++i)
+  {
+    ExecutionTraceItemPtr item = subItems[i];
+    ExecutionTraceNodePtr node = item.dynamicCast<ExecutionTraceNode>();
+    if (node)
+      addSubItem(new ExecutionTraceTreeViewNode(owner, node));
+    //else
+    //  addSubItem(new ExecutionTraceTreeViewItem(owner, item));
+  }
+}

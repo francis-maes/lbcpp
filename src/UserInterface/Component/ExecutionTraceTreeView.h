@@ -67,12 +67,7 @@ protected:
 class ExecutionTraceTreeViewNode : public ExecutionTraceTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace)
-    : ExecutionTraceTreeViewItem(owner, trace)
-  {
-    CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
-    setOpen(!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10);
-  }
+  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace);
 
   virtual bool mightContainSubItems()
     {return getNumSubItems() > 0;}
