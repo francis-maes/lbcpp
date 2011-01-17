@@ -18,6 +18,9 @@ namespace lbcpp
 class SingleThreadedExecutionContext : public ExecutionContext
 {
 public:
+  virtual String toString() const
+    {return T("SingleThreaded");}
+
   virtual bool isMultiThread() const
     {return false;}
 

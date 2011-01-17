@@ -332,6 +332,9 @@ public:
       threadPool->stopAndDestroyAllThreads();
   }
 
+  virtual String toString() const
+    {return T("MultiThreaded(") + String((int)threadPool->getNumThreads()) + T(")");}
+
   virtual bool isMultiThread() const
     {return threadPool->getNumThreads() > 1;}
 
