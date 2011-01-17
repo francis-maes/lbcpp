@@ -2,22 +2,14 @@
 
 <library name="InferenceCallback" directory="Inference/InferenceCallback">
 
+  <class name="CacheInferenceCallback" base="ExecutionCallback">
+    <constructor arguments="InferenceResultCachePtr cache, InferencePtr parentStep"/>
+  </class>
+
+  <class name="EvaluationInferenceCallback" base="ExecutionCallback">
+    <constructor arguments="InferencePtr inference, EvaluatorPtr evaluator"/>
+    <variable type="Inference" name="inference"/>
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
   
-
-    <class name="CacheInferenceCallback" base="ExecutionCallback">
-      <constructor arguments="InferenceResultCachePtr cache, InferencePtr parentStep"/>
-    </class>
-
-    <class name="CancelAfterStepCallback" base="ExecutionCallback">
-      <constructor arguments="InferencePtr lastStepBeforeBreak"/>
-    </class>
-
-    <class name="EvaluationInferenceCallback" base="ExecutionCallback">
-      <constructor arguments="InferencePtr inference, EvaluatorPtr evaluator"/>
-      <variable type="Inference" name="inference"/>
-      <variable type="Evaluator" name="evaluator"/>
-    </class>
-
-  
-
 </library>

@@ -23,7 +23,6 @@ public:
   virtual bool run(ExecutionContext& context)
   {
     context.informationCallback(T("Before"));
-    context.statusCallback(T("SubWorking..."));
     for (size_t i = 0; i < 100; ++i)
     {
       Thread::sleep(5);
@@ -41,8 +40,6 @@ public:
  
   virtual bool run(ExecutionContext& context)
   {
-    context.statusCallback(T("Working..."));
-
 //    context.errorCallback(T("My Error"));
     Thread::sleep(100);
     context.warningCallback(T("My Warning"));

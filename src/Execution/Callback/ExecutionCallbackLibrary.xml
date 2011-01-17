@@ -2,47 +2,44 @@
 
 <library name="ExecutionCallback" directory="Execution/Callback">
 
+  <class name="ConsoleExecutionCallback" base="DispatchByThreadExecutionCallback">
+    <constructor returnType="ExecutionCallback"/>
+  </class>
+
+  <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
+    <constructor/>
+  </class>
   
-    <class name="ConsoleExecutionCallback" base="ExecutionCallback">
-      <constructor/>
-    </class>
+  <!-- NotifierExecutionCallback -->
+  <class name="ExecutionNotification" base="Notification" abstract="yes"/>
 
-    <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
-      <constructor/>
-    </class>
-    
-    <!-- NotifierExecutionCallback -->
-    <class name="ExecutionNotification" base="Notification" abstract="yes"/>
+  <class name="ExecutionProgressNotification" base="ExecutionNotification">
+    <variable type="Double" name="progression"/>
+    <variable type="Double" name="progressionTotal"/>
+    <variable type="String" name="progressionUnit"/>
+  </class>
 
-    <class name="ExecutionProgressNotification" base="ExecutionNotification">
-      <variable type="Double" name="progression"/>
-      <variable type="Double" name="progressionTotal"/>
-      <variable type="String" name="progressionUnit"/>
-    </class>
+  <class name="ExecutionResultNotification" base="ExecutionNotification">
+    <variable type="String" name="name"/>
+    <variable type="Variable" name="value"/>
+  </class>
 
-    <class name="ExecutionResultNotification" base="ExecutionNotification">
-      <variable type="String" name="name"/>
-      <variable type="Variable" name="value"/>
-    </class>
+  <class name="ExecutionMessageNotification" base="ExecutionNotification">
+    <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
+    <variable type="String" name="what"/>
+    <variable type="String" name="where"/>
+  </class>
 
-    <class name="ExecutionMessageNotification" base="ExecutionNotification">
-      <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
-      <variable type="String" name="what"/>
-      <variable type="String" name="where"/>
-    </class>
+  <class name="PreExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="String" name="description"/>
+    <variable type="WorkUnit" name="workUnit"/>
+  </class>
 
-    <class name="PreExecutionNotification" base="ExecutionNotification">
-      <variable type="ExecutionStack" name="stack"/>
-      <variable type="String" name="description"/>
-      <variable type="WorkUnit" name="workUnit"/>
-    </class>
-
-    <class name="PostExecutionNotification" base="ExecutionNotification">
-      <variable type="ExecutionStack" name="stack"/>
-      <variable type="WorkUnit" name="workUnit"/>
-      <variable type="Boolean" name="result"/>
-    </class>
-
-  
+  <class name="PostExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="WorkUnit" name="workUnit"/>
+    <variable type="Boolean" name="result"/>
+  </class>
 
 </library>

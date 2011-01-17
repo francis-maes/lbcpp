@@ -16,7 +16,6 @@ namespace lbcpp
 {
 
 extern ExecutionCallbackPtr cacheInferenceCallback(InferenceResultCachePtr cache, InferencePtr parentStep);
-extern ExecutionCallbackPtr cancelAfterStepCallback(InferencePtr lastStepBeforeBreak);
 extern ExecutionCallbackPtr evaluationInferenceCallback(InferencePtr inference, EvaluatorPtr evaluator);
 
 }; /* namespace lbcpp */

@@ -40,9 +40,6 @@ void CompositeExecutionCallback::warningCallback(const String& where, const Stri
 void CompositeExecutionCallback::errorCallback(const String& where, const String& what)
   {notificationCallback(new ExecutionMessageNotification(errorMessageType, what, where));}
 
-void CompositeExecutionCallback::statusCallback(const String& status)
-  {notificationCallback(new ExecutionMessageNotification(statusMessageType, status));}
-
 void CompositeExecutionCallback::progressCallback(double progression, double progressionTotal, const String& progressionUnit)
   {notificationCallback(new ExecutionProgressNotification(progression, progressionTotal, progressionUnit));}
 
@@ -52,8 +49,8 @@ void CompositeExecutionCallback::resultCallback(const String& name, const Variab
 void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}
 
-void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-  {notificationCallback(new PostExecutionNotification(stack, workUnit, result));}
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  {notificationCallback(new PostExecutionNotification(stack, description, workUnit, result));}
 
 void CompositeExecutionCallback::appendCallback(const ExecutionCallbackPtr& callback)
 {
@@ -74,3 +71,19 @@ void CompositeExecutionCallback::removeCallback(const ExecutionCallbackPtr& call
 
 void CompositeExecutionCallback::clearCallbacks()
   {callbacks.clear();}
+
+/*
+** DispatchByThreadExecutionCallback
+*/
+void DispatchByThreadExecutionCallback::notificationCallback(const NotificationPtr& notification)
+{
+  Thread::ThreadID threadId = notification->getSourceThreadId();
+  //DBG(String((int)threadId) + T(" ") + notification->getClassName());
+  CallbackByThreadMap::const_iterator it = callbackByThread.find(threadId);
+  ExecutionCallbackPtr threadCallback;
+  if (it == callbackByThread.end())
+    threadCallback = callbackByThread[threadId] = createCallbackForThread(threadId);
+  else
+    threadCallback = it->second;
+  threadCallback->notificationCallback(notification);
+}

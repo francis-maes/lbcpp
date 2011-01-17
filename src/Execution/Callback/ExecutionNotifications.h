@@ -85,7 +85,6 @@ public:
     case informationMessageType:  target->informationCallback(where, what); break;
     case warningMessageType:      target->warningCallback(where, what); break;
     case errorMessageType:        target->errorCallback(where, what); break;
-    case statusMessageType:       target->statusCallback(what); break;
     default: jassert(false);
     };
   }
@@ -123,12 +122,12 @@ protected:
 class PostExecutionNotification : public ExecutionNotification
 {
 public:
-  PostExecutionNotification(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result)
-    : stack(stack->cloneAndCast<ExecutionStack>()), workUnit(workUnit), result(result) {}
+  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+    : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
   virtual void notifyCallback(const ExecutionCallbackPtr& target)
-    {target->postExecutionCallback(stack, workUnit, result);}
+    {target->postExecutionCallback(stack, description, workUnit, result);}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -136,6 +135,7 @@ protected:
   friend class PostExecutionNotificationClass;
 
   ExecutionStackPtr stack;
+  String description;
   WorkUnitPtr workUnit;
   bool result;
 };

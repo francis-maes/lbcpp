@@ -19,8 +19,7 @@ enum ExecutionMessageType
 {
   informationMessageType,
   warningMessageType,
-  errorMessageType,
-  statusMessageType
+  errorMessageType
 };
 
 class ExecutionCallback : public Object
@@ -48,9 +47,8 @@ public:
     {errorCallback(String::empty, what);}
 
   /*
-  ** Status and Progression
+  ** Progression
   */
-  virtual void statusCallback(const String& status) {}
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit) {}
 
   void progressCallback(double normalizedProgression)
@@ -60,7 +58,7 @@ public:
   ** Execution
   */
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit) {}
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result) {}
 
   /*
   ** Results
@@ -82,6 +80,9 @@ protected:
   ExecutionContext* context;
 };
 
+extern ExecutionCallbackPtr consoleExecutionCallback();
+extern ExecutionCallbackPtr userInterfaceExecutionCallback();
+
 class CompositeExecutionCallback : public ExecutionCallback
 {
 public:
@@ -101,11 +102,10 @@ public:
   void errorCallback(const String& what)
     {errorCallback(String::empty, what);}
 
-  virtual void statusCallback(const String& status);
   virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const WorkUnitPtr& workUnit, bool result);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result);
 
   virtual void resultCallback(const String& name, const Variable& value);
 
@@ -134,8 +134,17 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositeExecutionCallback> CompositeExecutionCallbackPtr;
 
-extern ExecutionCallbackPtr consoleExecutionCallback();
-extern ExecutionCallbackPtr userInterfaceExecutionCallback();
+class DispatchByThreadExecutionCallback : public CompositeExecutionCallback
+{
+public:
+  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId) = 0;
+
+  virtual void notificationCallback(const NotificationPtr& notification);
+
+protected:
+  typedef std::map<Thread::ThreadID, ExecutionCallbackPtr> CallbackByThreadMap;
+  CallbackByThreadMap callbackByThread;
+};
 
 }; /* namespace lbcpp */
 

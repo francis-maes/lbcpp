@@ -53,11 +53,11 @@ protected:
   String where;
 };
 
-class WorkUnitExecutionTraceItem : public ExecutionTraceItem
+class CompositeExecutionTraceItem : public ExecutionTraceItem
 {
 public:
-  WorkUnitExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime);
-  WorkUnitExecutionTraceItem() {}
+  CompositeExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime);
+  CompositeExecutionTraceItem() {}
 
   virtual String toString() const;
   virtual String getPreferedIcon() const;
@@ -93,7 +93,7 @@ public:
   ObjectPtr getResultsObject(ExecutionContext& context);
 
 protected:
-  friend class WorkUnitExecutionTraceItemClass;
+  friend class CompositeExecutionTraceItemClass;
 
   String description;
   WorkUnitPtr workUnit;
