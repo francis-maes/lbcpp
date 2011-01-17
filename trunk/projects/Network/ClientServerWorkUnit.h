@@ -16,7 +16,7 @@ public:
   {
     for (size_t i = 0; i < 10; ++i)
     {
-      context.progressCallback(i+1, 10, T("DumbWorkUnit"));
+      context.progressCallback(new ProgressionState(i+1, 10, T("DumbWorkUnit")));
       juce::Thread::sleep(1000);
     }
     return true;

@@ -117,6 +117,7 @@ public:
     {workUnit = WorkUnitPtr();}
 
   virtual void saveToXml(XmlExporter& exporter) const;
+  void saveSubItemsToXml(XmlExporter& exporter) const;
 
 protected:
   friend class ExecutionTraceNodeClass;
