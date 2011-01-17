@@ -19,6 +19,17 @@ void ExecutionTraceItem::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("time"), time);
 }
 
+bool ExecutionTraceItem::loadFromXml(XmlImporter& importer)
+{
+  time = importer.getDoubleAttribute(T("time"), -1);
+  if (time < 0)
+  {
+    importer.getContext().errorCallback(T("Missing time attribute"));
+    return false;
+  }
+  return true;
+}
+
 /*
 ** MessageExecutionTraceItem
 */
@@ -58,6 +69,29 @@ void MessageExecutionTraceItem::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("what"), what);
   if (where.isNotEmpty())
     exporter.setAttribute(T("where"), where);
+}
+
+bool MessageExecutionTraceItem::loadFromXml(XmlImporter& importer)
+{
+  if (!ExecutionTraceItem::loadFromXml(importer))
+    return false;
+
+  String tag = importer.getTagName().toLowerCase();
+  if (tag == T("info"))
+    messageType = informationMessageType;
+  else if (tag == T("warning"))
+    messageType = warningMessageType;
+  else if (tag == T("error"))
+    messageType = errorMessageType;
+  else
+  {
+    importer.getContext().errorCallback(T("Unrecognized message type: ") + tag);
+    return false;
+  }
+
+  what = importer.getStringAttribute(T("what"));
+  where = importer.getStringAttribute(T("where"));
+  return true;
 }
 
 /*
@@ -147,6 +181,65 @@ void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
   saveSubItemsToXml(exporter);
 }
 
+bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
+{
+  ScopedLock _1(resultsLock);
+  ScopedLock _2(subItemsLock);
+
+  bool res = true;
+  forEachXmlChildElement(*importer.getCurrentElement(), xml)
+  {
+    String tagName = xml->getTagName();
+    importer.enter(xml);
+    
+    if (tagName == T("info") || tagName == T("warning") || tagName == T("error") || tagName == T("node"))
+    {
+      ExecutionTraceItemPtr item;
+      if (tagName == T("node"))
+        item = new ExecutionTraceNode();
+      else
+        item = new MessageExecutionTraceItem();
+      if (!item->loadFromXml(importer))
+        res = false;
+      else
+        subItems.push_back(item);
+    }
+    else if (tagName == T("progression"))
+    {
+      jassert(!progression);
+      progression = new ProgressionState();
+      res &= progression->loadFromXml(importer);
+    }
+    else if (tagName == T("result"))
+    {
+      String name = importer.getStringAttribute(T("name"));
+      XmlElement* valueXml = xml->getChildByName(T("value"));
+      if (!valueXml)
+      {
+        importer.getContext().errorCallback(T("No value xml"));
+        res = false;
+      }
+      else
+      {
+        Variable value = importer.loadVariable(valueXml, anyType);
+        results.push_back(std::make_pair(name, value));
+      }
+    }
+
+    importer.leave();
+  }
+  return res;
+}
+
+bool ExecutionTraceNode::loadFromXml(XmlImporter& importer)
+{
+  if (!ExecutionTraceItem::loadFromXml(importer))
+    return false;
+  description = importer.getStringAttribute(T("description"));
+  timeLength = importer.getDoubleAttribute(T("timeLength"));
+  return loadSubItemsFromXml(importer);
+}
+
 void ExecutionTraceNode::setResult(const String& name, const Variable& value)
 {
   ScopedLock _(resultsLock);
@@ -198,8 +291,16 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
 ** ExecutionTrace
 */
 ExecutionTrace::ExecutionTrace(ExecutionContextPtr context)
-  : context(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
+  : contextPointer(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
 {
+  using juce::SystemStats;
+
+  operatingSystem = SystemStats::getOperatingSystemName();
+  is64BitOs = SystemStats::isOperatingSystem64Bit();
+  numCpus = (size_t)SystemStats::getNumCpus();
+  cpuSpeedInMegaherz = SystemStats::getCpuSpeedInMegaherz();
+  memoryInMegabytes = SystemStats::getMemorySizeInMegabytes();
+  this->context = contextPointer->toString();
 }
 
 ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) const
@@ -219,9 +320,29 @@ ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) c
 
 void ExecutionTrace::saveToXml(XmlExporter& exporter) const
 {
-  exporter.setAttribute(T("hostname"), T("FIXME"));
-  exporter.setAttribute(T("context"), context->toString());
+  const_cast<ExecutionTrace* >(this)->saveTime = Time::getCurrentTime();
+  exporter.setAttribute(T("os"), operatingSystem);
+  exporter.setAttribute(T("is64bit"), is64BitOs ? T("yes") : T("no"));
+  exporter.setAttribute(T("numcpus"), (int)numCpus);
+  exporter.setAttribute(T("cpuspeed"), cpuSpeedInMegaherz);
+  exporter.setAttribute(T("memory"), memoryInMegabytes);
+  exporter.setAttribute(T("context"), context);
   exporter.setAttribute(T("startTime"), startTime.toString(true, true, true, true));
+  exporter.setAttribute(T("saveTime"), saveTime.toString(true, true, true, true));
 
   root->saveSubItemsToXml(exporter);
+}
+
+bool ExecutionTrace::loadFromXml(XmlImporter& importer)
+{
+  operatingSystem = importer.getStringAttribute(T("os"));
+  is64BitOs = importer.getBoolAttribute(T("is64bit"));
+  numCpus = (size_t)importer.getIntAttribute(T("numcpus"));
+  cpuSpeedInMegaherz = importer.getIntAttribute(T("cpuspeed"));
+  memoryInMegabytes = importer.getIntAttribute(T("memory"));
+  context = importer.getStringAttribute(T("context"));
+  // FIXME: startTime and saveTime
+  
+  root = new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0);
+  return root->loadSubItemsFromXml(importer);
 }

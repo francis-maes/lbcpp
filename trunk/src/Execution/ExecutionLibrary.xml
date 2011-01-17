@@ -80,6 +80,13 @@
   </class>
 
   <class name="ExecutionTrace" base="Object">
+    <variable type="String" name="operatingSystem"/>
+    <variable type="Boolean" name="is64BitOs"/>
+    <variable type="PositiveInteger" name="numCpus"/>
+    <variable type="Integer" name="cpuSpeedInMegaherz"/>
+    <variable type="Integer" name="memoryInMegabytes"/>
+    <variable type="String" name="context"/>
+
     <variable type="ExecutionTraceNode" name="root"/>
   </class>
 

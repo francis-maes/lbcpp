@@ -32,6 +32,7 @@ public:
     {return time;}
 
   virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class ExecutionTraceItemClass;
@@ -50,6 +51,7 @@ public:
   virtual String getPreferedIcon() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class MessageExecutionTraceItemClass;
@@ -119,6 +121,9 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   void saveSubItemsToXml(XmlExporter& exporter) const;
 
+  virtual bool loadFromXml(XmlImporter& importer);
+  bool loadSubItemsFromXml(XmlImporter& importer);
+
 protected:
   friend class ExecutionTraceNodeClass;
 
@@ -148,10 +153,10 @@ public:
   virtual juce::Component* createComponent() const;
 
   ExecutionContext& getContext() const
-    {jassert(context); return *context;}
+    {jassert(contextPointer); return *contextPointer;}
 
   virtual String toString() const
-    {return context->getClassName() + T(" Execution Trace");}
+    {return context + T(" Execution Trace");}
 
   ExecutionTraceNodePtr findNode(const ExecutionStackPtr& stack) const;
 
@@ -159,14 +164,24 @@ public:
     {return startTime;}
 
   virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class ExecutionTraceClass;
 
-  ExecutionContextPtr context;
+  ExecutionContextPtr contextPointer;
+
+  String operatingSystem;
+  bool is64BitOs;
+  size_t numCpus;
+  int cpuSpeedInMegaherz;
+  int memoryInMegabytes;
+  String context;
+
   ExecutionTraceNodePtr root;
-  
+
   Time startTime;
+  Time saveTime;
 };
 
 }; /* namespace lbcpp */
