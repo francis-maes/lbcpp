@@ -26,7 +26,7 @@ public:
     for (size_t i = 0; i < 100; ++i)
     {
       Thread::sleep(5);
-      context.progressCallback(i + 1.0, 100.0, T("%"));
+      context.progressCallback(new ProgressionState(i + 1.0, 100.0, T("%")));
     }
     context.informationCallback(T("After"));
     return true;
@@ -49,7 +49,7 @@ public:
     for (size_t i = 0; i < 10; ++i)
     {
       Thread::sleep(200);
-      context.progressCallback(i + 1.0, 10.0, T("epochs"));
+      context.progressCallback(new ProgressionState(i + 1.0, 10.0, T("epochs")));
     }
 
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));

@@ -47,6 +47,9 @@ typedef ReferenceCountedObjectPtr<TestUnit> TestUnitPtr;
 class Notification;
 typedef ReferenceCountedObjectPtr<Notification> NotificationPtr;
 
+class ProgressionState;
+typedef ReferenceCountedObjectPtr<ProgressionState> ProgressionStatePtr;
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_PREDECLARATIONS_H_

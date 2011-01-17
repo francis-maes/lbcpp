@@ -163,11 +163,13 @@ bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, con
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dll"));
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.so"));
   directory.findChildFiles(files, File::findFiles | File::ignoreHiddenFiles, false, T("*.dylib"));
+  ProgressionStatePtr progression(new ProgressionState(0.0, (double)files.size(), T("Dynamic Libraries")));
   for (int i = 0; i < files.size(); ++i)
   {
     File file = *files[i];
+    progression->setValue((double)i);
     executionContext.informationCallback(T("Loading dynamic library ") + file.getFullPathName());
-    executionContext.progressCallback((double)i, (double)files.size(), T("Dynamic Libraries"));
+    executionContext.progressCallback(progression);
     importLibraryFromFile(executionContext, file);
   }
   return true;

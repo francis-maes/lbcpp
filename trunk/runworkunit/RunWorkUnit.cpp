@@ -159,7 +159,7 @@ int mainImpl(int argc, char** argv)
 
   // save trace
   context->removeCallback(makeTraceCallback);
-  //trace->saveToFile(*context, File(T("C:/Projets/lbcpp/workspace/trace.xml")));
+  trace->saveToFile(*context, File(T("C:/Projets/lbcpp/workspace/trace.xml")));
   return result;
 }
 

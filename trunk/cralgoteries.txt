@@ -1,3 +1,8 @@
+
+- rendre le trace.xml plus digeste
+- enlever la dependance ExecutionTrace -> ExecutionContext (ne garder qu'un "String contextDescription")
+
+
 Explorer/ExecutionContext
  1- gui pour choisir les parametres dans le "Start Work Unit"
  2- serialisation de l'execution trace
@@ -8,11 +13,6 @@ Explorer/ExecutionContext
  3- Collone resultats, améliorer le système de collones
  4- tableaux et courbes
 
-MultiLabel/MultiTask:
- * Parseur et stoquage multi-label
- * Nouveaux evaluators
- * Baseline et Modele multi-passe
- 
 Boinc:
  * New class BoincExecutionContext
  * Fix bugs reported by Arnaud

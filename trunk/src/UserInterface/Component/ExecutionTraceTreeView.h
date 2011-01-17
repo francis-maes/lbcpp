@@ -42,7 +42,7 @@ public:
     timeColumnWidth = 100,
   };
  
-  void paintProgression(juce::Graphics& g, ExecutionTraceNodePtr workUnitTrace, int x, int width, int height);
+  void paintProgression(juce::Graphics& g, ProgressionStatePtr progression, int x, int width, int height);
   void paintIcon(juce::Graphics& g, int width, int height);
   void paintIconTextAndProgression(juce::Graphics& g, int width, int height);
 

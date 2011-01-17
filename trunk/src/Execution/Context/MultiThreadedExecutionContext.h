@@ -129,14 +129,17 @@ public:
   void workUntilWorkUnitsAreDone(const CompositeWorkUnitPtr& workUnits, int& counter)
   {
     size_t n = workUnits->getNumWorkUnits();
+    ProgressionStatePtr progression(new ProgressionState(0.0, (double)n, workUnits->getProgressionUnit()));
     while (!threadShouldExit() && counter)
     {
-      context->progressCallback((double)(n - counter), (double)n, workUnits->getProgressionUnit());
+      progression->setValue((double)(n - counter));
+      context->progressCallback(progression);
       bool ok = processOneWorkUnit();
       if (!ok)
         Thread::sleep(100); // waiting that the other threads are finished
     }
-    context->progressCallback((double)(n - counter), (double)n, workUnits->getProgressionUnit());
+    progression->setValue((double)(n - counter));
+    context->progressCallback(progression);
   }
 
   WaitingWorkUnitQueuePtr getWaitingQueue() const

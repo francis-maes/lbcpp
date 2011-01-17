@@ -35,8 +35,9 @@ String MessageExecutionTraceItem::getPreferedIcon() const
 ** ExecutionTraceNode
 */
 ExecutionTraceNode::ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime)
-  : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), endTime(startTime),
-    hasProgression(false), progression(0.0) {}
+  : ExecutionTraceItem(startTime), description(description), workUnit(workUnit), timeLength(0.0)
+{
+}
 
 String ExecutionTraceNode::toString() const
   {return description;}
@@ -44,8 +45,15 @@ String ExecutionTraceNode::toString() const
 String ExecutionTraceNode::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
+void ExecutionTraceNode::appendSubItem(const ExecutionTraceItemPtr& item)
+{
+  ScopedLock _(subItemsLock);
+  subItems.push_back(item);
+}
+
 ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description, const WorkUnitPtr& workUnit) const
 {
+  ScopedLock _(subItemsLock);
   for (size_t i = 0; i < subItems.size(); ++i)
   {
     ExecutionTraceNodePtr res = subItems[i].dynamicCast<ExecutionTraceNode>();
@@ -67,19 +75,9 @@ ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description,
   return ExecutionTraceNodePtr();
 }
 
-void ExecutionTraceNode::setProgression(double progression, double progressionTotal, const String& unit)
-{
-  progressionString = String(progression);
-  if (progressionTotal)
-    progressionString += T(" / ") + String(progressionTotal);
-  if (unit.isNotEmpty())
-    progressionString += T(" ") + unit;
-  this->progression = progressionTotal ? progression / progressionTotal : -progression;
-  hasProgression = true;
-}
-
 void ExecutionTraceNode::setResult(const String& name, const Variable& value)
 {
+  ScopedLock _(resultsLock);
   for (size_t i = 0; i < results.size(); ++i)
     if (results[i].first == name)
     {
@@ -89,8 +87,15 @@ void ExecutionTraceNode::setResult(const String& name, const Variable& value)
   results.push_back(std::make_pair(name, value));
 }
 
+std::vector< std::pair<String, Variable> > ExecutionTraceNode::getResults() const
+{
+  ScopedLock _(resultsLock);
+  return results;
+}
+
 ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
 {
+  ScopedLock _(resultsLock);
   if (results.empty())
     return ObjectPtr();
   bool classHasChanged = false;
@@ -120,10 +125,8 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
 ** ExecutionTrace
 */
 ExecutionTrace::ExecutionTrace(ExecutionContextPtr context)
-  : context(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0))
+  : context(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
 {
-  startTime = Time::getCurrentTime();
-  startTimeMs = Time::getApproximateMillisecondCounter();
 }
 
 ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) const

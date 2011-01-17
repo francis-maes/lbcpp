@@ -49,10 +49,7 @@ public:
   /*
   ** Progression
   */
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit) {}
-
-  void progressCallback(double normalizedProgression)
-    {progressCallback(normalizedProgression * 100.0, 100.0, T("%"));}
+  virtual void progressCallback(const ProgressionStatePtr& progression) {}
 
   /*
   ** Execution
@@ -106,7 +103,7 @@ public:
   void errorCallback(const String& what)
     {errorCallback(String::empty, what);}
 
-  virtual void progressCallback(double progression, double progressionTotal, const String& progressionUnit);
+  virtual void progressCallback(const ProgressionStatePtr& progression);
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result);
@@ -154,6 +151,55 @@ protected:
   CallbackByThreadMap callbacksByThread;
   Thread::ThreadID mainThreadID;
 };
+
+class ProgressionState : public Object
+{
+public:
+  ProgressionState(double value, double total, const String& unit)
+    : value(value), total(total), unit(unit) {}
+  ProgressionState(double value, const String& unit)
+    : value(value), total(0.0), unit(unit) {}
+  ProgressionState(const ProgressionState& other)
+    : value(other.value), total(other.total), unit(other.unit) {}
+  ProgressionState() : value(0.0), total(0.0) {}
+
+  virtual String toString() const
+  {
+    String res(value);
+    if (total)
+      res += T(" / ") + String(total);
+    if (unit.isNotEmpty())
+      res += T(" ") + unit;
+    return res;
+  }
+
+  double getValue() const
+    {return value;}
+
+  void setValue(double value)
+    {this->value = value;}
+
+  double getTotal() const
+    {return total;}
+
+  bool isBounded() const
+    {return total > 0.0;}
+
+  double getNormalizedValue() const
+    {jassert(isBounded()); return juce::jlimit(0.0, 1.0, value / total);}
+
+  const String& getUnit() const
+    {return unit;}
+
+private:
+  friend class ProgressionStateClass;
+
+  double value;
+  double total;
+  String unit;
+};
+
+typedef ReferenceCountedObjectPtr<ProgressionState> ProgressionStatePtr;
 
 }; /* namespace lbcpp */
 

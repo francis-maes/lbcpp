@@ -19,9 +19,7 @@
   <class name="ExecutionNotification" base="Notification" abstract="yes"/>
 
   <class name="ExecutionProgressNotification" base="ExecutionNotification">
-    <variable type="Double" name="progression"/>
-    <variable type="Double" name="progressionTotal"/>
-    <variable type="String" name="progressionUnit"/>
+    <variable type="ProgressionState" name="progression"/>
   </class>
 
   <class name="ExecutionResultNotification" base="ExecutionNotification">

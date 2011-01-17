@@ -145,7 +145,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   {
     tree->createLeaf(nodeIndex, leafValue);
     ++numLeaves;
-    context.progressCallback((double)numLeaves, (double)numExamples, T("Leaves"));
+    context.progressCallback(new ProgressionState((double)numLeaves, (double)numExamples, T("Leaves")));
     return;
   }
 

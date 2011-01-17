@@ -35,21 +35,19 @@ typedef ReferenceCountedObjectPtr<ExecutionNotification> ExecutionNotificationPt
 class ExecutionProgressNotification : public ExecutionNotification
 {
 public:
-  ExecutionProgressNotification(double progression, double progressionTotal, const String& progressionUnit)
-    : progression(progression), progressionTotal(progressionTotal), progressionUnit(progressionUnit) {}
-  ExecutionProgressNotification() : progression(0.0), progressionTotal(0.0) {}
+  ExecutionProgressNotification(const ProgressionStatePtr& progression)
+    : progression(new ProgressionState(*progression)) {}
+  ExecutionProgressNotification() {}
 
   virtual void notifyCallback(const ExecutionCallbackPtr& target)
-    {target->progressCallback(progression, progressionTotal, progressionUnit);}
+    {target->progressCallback(progression);}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExecutionProgressNotificationClass;
 
-  double progression;
-  double progressionTotal;
-  String progressionUnit;
+  ProgressionStatePtr progression;
 };
 
 class ExecutionResultNotification : public ExecutionNotification
