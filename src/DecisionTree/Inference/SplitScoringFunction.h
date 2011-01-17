@@ -35,10 +35,10 @@ public:
   const Variable& getAttribute(size_t exampleIndex, size_t variableIndex) const
     {jassert(exampleIndex < indices.size()); return attributes[indices[exampleIndex]][variableIndex];}
 
-  bool isAttributeConstant(size_t variableIndex, Variable& constantValue) const
+  bool isAttributeConstant(size_t variableIndex) const
   {
     size_t n = indices.size();
-    constantValue = Variable();
+    Variable constantValue;
     bool isConstantValueSet = false;
     for (size_t i = 0; i < n; ++i)
     {
@@ -60,24 +60,18 @@ public:
   bool isLabelConstant(Variable& constantValue) const
   {
     size_t n = indices.size();
-    constantValue = Variable();
-    bool isConstantValueSet = false;
-    for (size_t i = 0; i < n; ++i)
+    constantValue = getLabel(0);
+    jassert(constantValue.exists());
+    for (size_t i = 1; i < n; ++i)
     {
-      const Variable& value = getLabel(i);
-      jassert(value.exists());
-      if (!isConstantValueSet)
-      {
-        constantValue = value;
-        isConstantValueSet = true;
-      }
-      else if (constantValue != value)
+      jassert(getLabel(i).exists());
+      if (constantValue != getLabel(i))
         return false;
     }
     return true;
   }
 
-  std::vector<size_t>& getIndices() 
+  const std::vector<size_t>& getIndices() const
     {return indices;}
 
 private:

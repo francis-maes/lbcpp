@@ -29,7 +29,7 @@ public:
 
   /** Numeric - Tolerant egality **/
   void checkIsCloseTo(ExecutionContext& context, double expected, double tolerance, double value) const
-    {if (abs(value - expected) > tolerance) context.errorCallback(T("WorkUnit::checkIsCloseTo"), String(value) + T(" is not enough close to ") + String(expected));}
+    {if (fabs(value - expected) > tolerance) context.errorCallback(T("WorkUnit::checkIsCloseTo"), String(value) + T(" is not enough close to ") + String(expected));}
   
   void checkIsCloseTo(ExecutionContext& context, int expected, double tolerance, int value) const
     {if (abs(value - expected) > tolerance) context.errorCallback(T("WorkUnit::checkIsCloseTo"), String(value) + T(" is not enough close to ") + String(expected));}

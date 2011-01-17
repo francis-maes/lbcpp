@@ -10,22 +10,23 @@ using namespace lbcpp;
 
 double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context, 
                                                      const DecisionTreeExampleVector& examples,
-                                                     std::vector<size_t>& negativeExamples,
-                                                     std::vector<size_t>& positiveExamples,
+                                                     std::vector<size_t>& leftExamples,
+                                                     std::vector<size_t>& rightExamples,
                                                      PredicatePtr predicate) const
 {
   size_t n = examples.getNumExamples();
-  negativeExamples.reserve(n);
-  positiveExamples.reserve(n);
+  leftExamples.reserve(n - 1);
+  rightExamples.reserve(n - 1);
+  const std::vector<size_t>& indices = examples.getIndices();
   for (size_t i = 0; i < n; ++i)
   {
     if (predicate->computePredicate(context, examples.getAttribute(i, variableIndex)))
-      positiveExamples.push_back(i);
+      rightExamples.push_back(indices[i]);
     else
-      negativeExamples.push_back(i);
+      leftExamples.push_back(indices[i]);
   }
-  jassert(positiveExamples.size() && negativeExamples.size());
-  return scoringFunction->compute(context, new SplitScoringInput(examples, negativeExamples, positiveExamples));
+  jassert(rightExamples.size() && leftExamples.size());
+  return scoringFunction->compute(context, new SplitScoringInput(examples, leftExamples, rightExamples));
 }
 
 Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const

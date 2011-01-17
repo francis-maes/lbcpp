@@ -105,7 +105,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
     for (size_t i = 0; i < n; ++i)
       if (examples.getLabel(i).getBoolean())
         ++numOfTrue;
-    leafValue = (double)numOfTrue / (double)n;
+    leafValue = numOfTrue / (double)n;
     return true;
   }
 
@@ -132,8 +132,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   nonConstantVariables.reserve(variables.size());
   for (size_t i = 0; i < variables.size(); ++i)
   {
-    Variable constantValue;
-    if (!examples.isAttributeConstant(variables[i], constantValue))
+    if (!examples.isAttributeConstant(variables[i]))
       nonConstantVariables.push_back(variables[i]);
   }
   
@@ -144,7 +143,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   if (shouldCreateLeaf(context, examples, nonConstantVariables, outputType, leafValue))
   {
     tree->createLeaf(nodeIndex, leafValue);
-    ++numLeaves;
+    numLeaves += examples.getNumExamples();
     context.progressCallback(new ProgressionState((double)numLeaves, (double)numExamples, T("Leaves")));
     return;
   }
@@ -165,15 +164,15 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
     Variable splitArgument = splitter->sampleSplit(examples);
     PredicatePtr splitPredicate = splitter->getSplitPredicate(splitArgument);
 
-    std::vector<size_t> negativeExamples, positiveExamples;
-    double splitScore = splitter->computeSplitScore(context, examples, negativeExamples, positiveExamples, splitPredicate);
+    std::vector<size_t> leftExamples, rightExamples;
+    double splitScore = splitter->computeSplitScore(context, examples, leftExamples, rightExamples, splitPredicate);
 
-    jassert(negativeExamples.size() + positiveExamples.size() == examples.getNumExamples());
+    jassert(leftExamples.size() + rightExamples.size() == examples.getNumExamples());
 
-/*    std::cout << splitPredicate->toString() << "\t score: " << splitScore;
-    std::cout << "   nbPos: " << positiveExamples->getNumElements();
-    std::cout << "   nbNeg: " << negativeExamples->getNumElements() << std::endl;
-*/
+    /*std::cout << splitPredicate->toString() << "\t score: " << splitScore;
+    std::cout << "   nbNeg: " << leftExamples.size();
+    std::cout << "   nbPos: " << rightExamples.size() << std::endl;*/
+
     if (splitScore > bestSplitScore)
     {
       bestSplits.clear();
@@ -184,8 +183,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
       Split s = {
         splitVariables[i],
         splitArgument,
-        negativeExamples,
-        positiveExamples
+        leftExamples,
+        rightExamples
       };
 
       bestSplits.push_back(s);
@@ -202,8 +201,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
 
   // call recursively
-  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, examples.subset(selectedSplit.negative), nonConstantVariables, bestSplits, numLeaves, numExamples);
-  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, examples.subset(selectedSplit.positive), nonConstantVariables, bestSplits, numLeaves, numExamples);
+  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, examples.subset(selectedSplit.left), nonConstantVariables, bestSplits, numLeaves, numExamples);
+  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, examples.subset(selectedSplit.right), nonConstantVariables, bestSplits, numLeaves, numExamples);
 }
 
 BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, const DecisionTreeExampleVector& examples) const
