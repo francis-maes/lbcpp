@@ -104,12 +104,8 @@ ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description,
   return ExecutionTraceNodePtr();
 }
 
-void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
+void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
 {
-  ExecutionTraceItem::saveToXml(exporter);
-  exporter.setAttribute(T("description"), description);
-  exporter.setAttribute(T("timeLength"), timeLength);
-
   // progression
   if (progression)
   {
@@ -141,6 +137,14 @@ void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
       exporter.leave();
     }
   }
+}
+
+void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
+{
+  ExecutionTraceItem::saveToXml(exporter);
+  exporter.setAttribute(T("description"), description);
+  exporter.setAttribute(T("timeLength"), timeLength);
+  saveSubItemsToXml(exporter);
 }
 
 void ExecutionTraceNode::setResult(const String& name, const Variable& value)
@@ -219,5 +223,5 @@ void ExecutionTrace::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("context"), context->toString());
   exporter.setAttribute(T("startTime"), startTime.toString(true, true, true, true));
 
-  root->saveToXml(exporter);
+  root->saveSubItemsToXml(exporter);
 }
