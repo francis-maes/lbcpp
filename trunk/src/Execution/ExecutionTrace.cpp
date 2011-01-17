@@ -130,7 +130,6 @@ ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description,
     {
       if (workUnit)
       {
-        jassert(res->getWorkUnit());
         if (res->getWorkUnit() == workUnit)
           return res;
       }

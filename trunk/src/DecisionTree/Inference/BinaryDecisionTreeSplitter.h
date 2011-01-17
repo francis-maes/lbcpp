@@ -21,14 +21,15 @@ public:
   BinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction = SplitScoringFunctionPtr(), RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
     : scoringFunction(scoringFunction), random(random), variableIndex(variableIndex) {}
   
-  virtual Variable findBestSplit(ContainerPtr data) const = 0;
-  
-  virtual Variable sampleSplit(ContainerPtr data) const = 0;
+  virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const = 0;
+  virtual Variable sampleSplit(const DecisionTreeExampleVector& examples) const = 0;
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const = 0;
 
   double computeSplitScore(ExecutionContext& context,
-                           ContainerPtr data, ContainerPtr& negativeExamples, ContainerPtr& positiveExamples,
+                           const DecisionTreeExampleVector& examples,
+                           std::vector<size_t>& negativeExamples,
+                           std::vector<size_t>& positiveExamples,
                            PredicatePtr predicate) const;
 
 protected:
@@ -49,12 +50,12 @@ class BooleanBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
   BooleanBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
-  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
+    : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
-  virtual Variable findBestSplit(ContainerPtr data) const
+  virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const
     {jassertfalse; return Variable();}
   
-  virtual Variable sampleSplit(ContainerPtr data) const
+  virtual Variable sampleSplit(const DecisionTreeExampleVector& examples) const
     {return Variable(random->sampleBool(), booleanType);}
 
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const
@@ -65,12 +66,12 @@ class DoubleBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
   DoubleBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
-  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
+    : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
-  virtual Variable findBestSplit(ContainerPtr data) const
+  virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const
     {jassertfalse; return Variable();}
   
-  virtual Variable sampleSplit(ContainerPtr data) const;
+  virtual Variable sampleSplit(const DecisionTreeExampleVector& examples) const;
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const
     {return lessThanOrEqualToPredicate(splitArgument);}
@@ -80,12 +81,12 @@ class IntegereBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
   IntegereBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
-  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
+    : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
   
-  virtual Variable findBestSplit(ContainerPtr data) const
-  {jassertfalse; return Variable();}
+  virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const
+    {jassertfalse; return Variable();}
   
-  virtual Variable sampleSplit(ContainerPtr data) const;
+  virtual Variable sampleSplit(const DecisionTreeExampleVector& examples) const;
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const
     {return lessThanOrEqualToPredicate(splitArgument);}
@@ -95,12 +96,12 @@ class EnumerationBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
   EnumerationBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
-  : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
+    : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
 
-  virtual Variable findBestSplit(ContainerPtr data) const
+  virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const
     {jassertfalse; return Variable();}
   
-  virtual Variable sampleSplit(ContainerPtr data) const;
+  virtual Variable sampleSplit(const DecisionTreeExampleVector& examples) const;
   
   virtual PredicatePtr getSplitPredicate(const Variable& splitArgument) const;
 };

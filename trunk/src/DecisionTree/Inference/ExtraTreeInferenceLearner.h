@@ -55,22 +55,26 @@ protected:
   {
     size_t       variableIndex;
     Variable     argument;
-    ContainerPtr positive;
-    ContainerPtr negative;
+    std::vector<size_t> negative;
+    std::vector<size_t> positive;
   };
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
-  BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const;
+  BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, const DecisionTreeExampleVector& examples) const;
 
   void sampleTreeRecursively(ExecutionContext& context,
-                             BinaryDecisionTreePtr tree, size_t nodeIndex,
+                             const BinaryDecisionTreePtr& tree, size_t nodeIndex,
                              TypePtr inputType, TypePtr outputType,
-                             ContainerPtr trainingData, const std::vector<size_t>& variables,
+                             const DecisionTreeExampleVector& examples,
+                             const std::vector<size_t>& variables,
                              std::vector<Split>& bestSplits,
                              size_t& numLeaves, size_t numExamples) const;
 
-  bool shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const;
+  bool shouldCreateLeaf(ExecutionContext& context,
+                        const DecisionTreeExampleVector& examples,
+                        const std::vector<size_t>& variables,
+                        TypePtr outputType, Variable& leafValue) const;
 
   BinaryDecisionTreeSplitterPtr getBinaryDecisionTreeSplitter(TypePtr inputType, TypePtr outputType, size_t variableIndex) const;
 };

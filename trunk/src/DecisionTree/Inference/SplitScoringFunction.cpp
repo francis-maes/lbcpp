@@ -12,45 +12,40 @@
 using namespace lbcpp;
 
 /** RegressionIGSplitScoringFunction **/
-double RegressionIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
+double RegressionIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& i) const
 {
-  ContainerPtr leftData = input[0].getObjectAndCast<Container>();
-  ContainerPtr rightData = input[1].getObjectAndCast<Container>();
-  jassert(leftData && rightData);
-  
-  return - getLeastSquareDeviation(leftData) - getLeastSquareDeviation(rightData);
+  const SplitScoringInputPtr& input = i.getObjectAndCast<SplitScoringInput>();  
+  return -getLeastSquareDeviation(input->getLeftExamples()) - getLeastSquareDeviation(input->getRightExamples());
 }
 
-double RegressionIGSplitScoringFunction::getLeastSquareDeviation(ContainerPtr data) const
+double RegressionIGSplitScoringFunction::getLeastSquareDeviation(const DecisionTreeExampleVector& examples) const
 {
-  size_t n = data->getNumElements();
+  size_t n = examples.getNumExamples();
   jassert(n);
   /* compute mean */
   double sum = 0;
   for (size_t i = 0; i < n; ++i)
-    sum += data->getElement(i)[1].getDouble();
+    sum += examples.getLabel(i).getDouble();
   double mean = sum / (double)n;
   /* compute least square */
   double leastSquare = 0;
   for (size_t i = 0; i < n; ++i)
   {
-    double delta = data->getElement(i)[1].getDouble() - mean;
+    double delta = examples.getLabel(i).getDouble() - mean;
     leastSquare += delta * delta;
   }
   return leastSquare;
 }
 
 /** ClassificationIGSplitScoringFunction **/
-double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
+double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& i) const
 {
-  ContainerPtr leftData = input[0].getObjectAndCast<Container>();
-  ContainerPtr rightData = input[1].getObjectAndCast<Container>();
-  jassert(leftData && rightData);
+  const SplitScoringInputPtr& input = i.getObjectAndCast<SplitScoringInput>();  
 
-  EnumerationPtr enumeration = leftData->getElementsType()->getTemplateArgument(1);
+  EnumerationPtr enumeration = input->examples.getLabel(0).getType();
 
-  EnumerationDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, leftData);
-  EnumerationDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, rightData);
+  EnumerationDistributionPtr leftDistribution = getDiscreteOutputDistribution(context, input->getLeftExamples());
+  EnumerationDistributionPtr rightDistribution = getDiscreteOutputDistribution(context, input->getRightExamples());
   DistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);
 
   probabilityBuilder->addDistribution(leftDistribution);
@@ -58,20 +53,21 @@ double ClassificationIGSplitScoringFunction::compute(ExecutionContext& context, 
 
   EnumerationDistributionPtr priorDistribution = probabilityBuilder->build(context);
 
-  double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
+  double probOfTrue = input->leftIndices.size() / (double)input->examples.getNumExamples();
   double informationGain = priorDistribution->computeEntropy()
                           - probOfTrue * leftDistribution->computeEntropy() 
                           - (1 - probOfTrue) * rightDistribution->computeEntropy(); 
   return informationGain;
 }
 
-EnumerationDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, ContainerPtr data) const
+EnumerationDistributionPtr ClassificationIGSplitScoringFunction::getDiscreteOutputDistribution(ExecutionContext& context, const DecisionTreeExampleVector& examples) const
 {
-  EnumerationPtr enumeration = data->getElementsType()->getTemplateArgument(1);
+  EnumerationPtr enumeration = examples.getLabel(0).getType();
   DistributionBuilderPtr probabilityBuilder = createProbabilityBuilder(enumeration);  
-  for (size_t i = 0; i < data->getNumElements(); ++i)
+  size_t n = examples.getNumExamples();
+  for (size_t i = 0; i < n; ++i)
   {
-    Variable output = data->getElement(i)[1];
+    const Variable& output = examples.getLabel(i);
     jassert(output.exists());
     probabilityBuilder->addElement(output);
   }
@@ -85,28 +81,27 @@ DistributionBuilderPtr ClassificationIGSplitScoringFunction::createProbabilityBu
   return cacheBuilder->cloneAndCast<DistributionBuilder>();
 }
 
-double BinaryIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& input) const
+double BinaryIGSplitScoringFunction::compute(ExecutionContext& context, const Variable& i) const
 {
-  ContainerPtr leftData = input[0].getObjectAndCast<Container>();
-  ContainerPtr rightData = input[1].getObjectAndCast<Container>();
-  jassert(leftData && rightData);
+  const SplitScoringInputPtr& input = i.getObjectAndCast<SplitScoringInput>();  
   
-  BernoulliDistributionPtr leftDistribution = getProbabilityDistribution(leftData);
-  BernoulliDistributionPtr rightDistribution = getProbabilityDistribution(rightData);
+  BernoulliDistributionPtr leftDistribution = getProbabilityDistribution(input->getLeftExamples());
+  BernoulliDistributionPtr rightDistribution = getProbabilityDistribution(input->getRightExamples());
   BernoulliDistributionPtr priorDistribution = new BernoulliDistribution((leftDistribution->getProbabilityOfTrue() + rightDistribution->getProbabilityOfTrue()) / 2);
   
-  double probOfTrue = leftData->getNumElements() / (double)(leftData->getNumElements() + rightData->getNumElements());
+  double probOfTrue = input->leftIndices.size() / (double)input->examples.getNumExamples();
   double informationGain = priorDistribution->computeEntropy()
                           - probOfTrue * leftDistribution->computeEntropy() 
                           - (1 - probOfTrue) * rightDistribution->computeEntropy(); 
   return informationGain;
 }
 
-BernoulliDistributionPtr BinaryIGSplitScoringFunction::getProbabilityDistribution(ContainerPtr data) const
+BernoulliDistributionPtr BinaryIGSplitScoringFunction::getProbabilityDistribution(const DecisionTreeExampleVector& examples) const
 {
   size_t numOfTrue = 0;
-  for (size_t i = 0; i < data->getNumElements(); ++i)
-    if (data->getElement(i)[1].getBoolean())
+  size_t n = examples.getNumExamples();
+  for (size_t i = 0; i < n; ++i)
+    if (examples.getLabel(i).getBoolean())
       ++numOfTrue;
-  return new BernoulliDistribution((double)numOfTrue / (double)data->getNumElements());
+  return new BernoulliDistribution(numOfTrue / (double)n);
 }

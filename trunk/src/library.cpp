@@ -131,6 +131,7 @@ void lbcpp::deinitialize()
 {
   if (applicationContext)
   {
+    applicationContext->defaultExecutionContext = ExecutionContextPtr();
     applicationContext->typeManager.shutdown();
     applicationContext->libraryManager.shutdown();
     applicationContext->userInterfaceManager.shutdown();

@@ -34,15 +34,38 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
 
   TypePtr outputType = learnerInput->getTrainingExample(0).second.getType();
   PerceptionPtr perception = inference->getPerception();
-  TypePtr pairType = pairClass(perception->getOutputType(), outputType);
-  VectorPtr newTrainingData = vector(pairType, learnerInput->getNumTrainingExamples());
-  for (size_t i = 0; i < newTrainingData->getNumElements(); ++i)
+  //TypePtr pairType = pairClass(perception->getOutputType(), outputType);
+
+  // compute perceptions and fill decision tree examples vector
+  size_t numTrainingExamples = learnerInput->getNumTrainingExamples();
+  std::vector< std::vector<Variable> > attributes;
+  std::vector<Variable> labels;
+  std::vector<size_t> indices;
+  attributes.reserve(numTrainingExamples);
+  labels.reserve(numTrainingExamples);
+  indices.reserve(numTrainingExamples);
+
+  size_t numAttributes = perception->getOutputType()->getObjectNumVariables();
+  for (size_t i = 0; i < numTrainingExamples; ++i)
   {
     const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
-    newTrainingData->setElement(i, Variable::pair(perception->computeFunction(context, example.first), example.second, pairType));
+    if (!example.second.exists())
+      continue; // skip examples that do not have supervision
+
+    ObjectPtr object = perception->computeFunction(context, example.first).getObject();
+    std::vector<Variable> attr(numAttributes);
+    jassert(numAttributes == object->getNumVariables());
+    for (size_t j = 0; j < numAttributes; ++j)
+      attr[j] = object->getVariable(j);
+
+    indices.push_back(labels.size());
+    attributes.push_back(attr);
+    labels.push_back(example.second);
   }
 
-  BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, newTrainingData);
+  DecisionTreeExampleVector examples(attributes, labels, indices);
+
+  BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, examples);
   jassert(tree);
 
   context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
@@ -56,39 +79,15 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   return Variable();
 }
 
-static bool isVariableConstant(ContainerPtr container, size_t index1, int index2, Variable& constantValue)
+bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context,
+                                                       const DecisionTreeExampleVector& examples,
+                                                       const std::vector<size_t>& variables,
+                                                       TypePtr outputType, Variable& leafValue) const
 {
-  size_t n = container->getNumElements();
-  if (n <= 1)
-    return true;
-  constantValue = Variable();
-  for (size_t i = 0; i < n; ++i)
-  {
-    Variable value = container->getElement(i)[index1];
-    if (index2 >= 0)
-      value = value.getObject()->getVariable((size_t)index2);
-    if (!value.exists())
-      continue;
-    if (!constantValue.exists())
-      constantValue = value;
-    else if (constantValue != value)
-      return false;
-  }
-  return true;
-}
-
-static bool isInputVariableConstant(ContainerPtr trainingData, size_t variableIndex, Variable& value)
-  {return isVariableConstant(trainingData, 0, (int)variableIndex, value);}
-
-static bool isOutputConstant(ContainerPtr trainingData, Variable& value)
-  {return isVariableConstant(trainingData, 1, -1, value);}
-
-bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context, ContainerPtr trainingData, const std::vector<size_t>& variables, TypePtr outputType, Variable& leafValue) const
-{
-  size_t n = trainingData->getNumElements();
+  size_t n = examples.getNumExamples();
   jassert(n);
 
-  if (isOutputConstant(trainingData, leafValue))
+  if (examples.isLabelConstant(leafValue))
     return true;
   
   if (n >= minimumSizeForSplitting)
@@ -96,7 +95,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   
   if (n == 1)
   {
-    leafValue = trainingData->getElement(0)[1];
+    leafValue = examples.getLabel(0);
     return true;
   }
 
@@ -104,7 +103,7 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
   {
     size_t numOfTrue = 0;
     for (size_t i = 0; i < n; ++i)
-      if (trainingData->getElement(i)[1].getBoolean())
+      if (examples.getLabel(i).getBoolean())
         ++numOfTrue;
     leafValue = (double)numOfTrue / (double)n;
     return true;
@@ -112,28 +111,29 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
 
   builder->clear();
   for (size_t i = 0; i < n; ++i)
-    builder->addElement(trainingData->getElement(i)[1]);
+    builder->addElement(examples.getLabel(i));
   leafValue = builder->build(context);
   jassert(leafValue.exists());
   return true;
 }
 
 void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& context,
-                                                            BinaryDecisionTreePtr tree, size_t nodeIndex,
+                                                            const BinaryDecisionTreePtr& tree, size_t nodeIndex,
                                                             TypePtr inputType, TypePtr outputType,
-                                                            ContainerPtr trainingData, const std::vector<size_t>& variables,
+                                                            const DecisionTreeExampleVector& examples,
+                                                            const std::vector<size_t>& variables,
                                                             std::vector<Split>& bestSplits,
                                                             size_t& numLeaves, size_t numExamples) const
 {
-  jassert(trainingData->getNumElements());
+  jassert(examples.getNumExamples());
 
   // update "non constant variables" set
   std::vector<size_t> nonConstantVariables;
   nonConstantVariables.reserve(variables.size());
   for (size_t i = 0; i < variables.size(); ++i)
   {
-    Variable value;
-    if (!isInputVariableConstant(trainingData, variables[i], value))
+    Variable constantValue;
+    if (!examples.isAttributeConstant(variables[i], constantValue))
       nonConstantVariables.push_back(variables[i]);
   }
   
@@ -141,7 +141,7 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
     const_cast<SingleExtraTreeInferenceLearner* >(this)->numActiveAttributes = nonConstantVariables.size();
 
   Variable leafValue;
-  if (shouldCreateLeaf(context, trainingData, nonConstantVariables, outputType, leafValue))
+  if (shouldCreateLeaf(context, examples, nonConstantVariables, outputType, leafValue))
   {
     tree->createLeaf(nodeIndex, leafValue);
     ++numLeaves;
@@ -162,13 +162,13 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   for (size_t i = 0; i < K; ++i)
   {
     BinaryDecisionTreeSplitterPtr splitter = tree->getSplitter(splitVariables[i]);
-    Variable splitArgument = splitter->sampleSplit(trainingData);
+    Variable splitArgument = splitter->sampleSplit(examples);
     PredicatePtr splitPredicate = splitter->getSplitPredicate(splitArgument);
 
-    ContainerPtr negativeExamples, positiveExamples;
-    double splitScore = splitter->computeSplitScore(context, trainingData, negativeExamples, positiveExamples, splitPredicate);
+    std::vector<size_t> negativeExamples, positiveExamples;
+    double splitScore = splitter->computeSplitScore(context, examples, negativeExamples, positiveExamples, splitPredicate);
 
-    jassert(negativeExamples->getNumElements() + positiveExamples->getNumElements() == trainingData->getNumElements());
+    jassert(negativeExamples.size() + positiveExamples.size() == examples.getNumExamples());
 
 /*    std::cout << splitPredicate->toString() << "\t score: " << splitScore;
     std::cout << "   nbPos: " << positiveExamples->getNumElements();
@@ -184,8 +184,8 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
       Split s = {
         splitVariables[i],
         splitArgument,
-        positiveExamples,
-        negativeExamples
+        negativeExamples,
+        positiveExamples
       };
 
       bestSplits.push_back(s);
@@ -202,13 +202,13 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
   tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
 
   // call recursively
-  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, selectedSplit.negative, nonConstantVariables, bestSplits, numLeaves, numExamples);
-  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, selectedSplit.positive, nonConstantVariables, bestSplits, numLeaves, numExamples);
+  sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, examples.subset(selectedSplit.negative), nonConstantVariables, bestSplits, numLeaves, numExamples);
+  sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, examples.subset(selectedSplit.positive), nonConstantVariables, bestSplits, numLeaves, numExamples);
 }
 
-BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, ContainerPtr trainingData) const
+BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, const DecisionTreeExampleVector& examples) const
 {
-  size_t n = trainingData->getNumElements();
+  size_t n = examples.getNumExamples();
   if (!n)
     return BinaryDecisionTreePtr();
 
@@ -224,6 +224,7 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
   size_t nodeIndex = res->allocateNodes(1);
   jassert(nodeIndex == 0);
 
+  // create splitters
   for (size_t i = 0; i < numInputVariables; ++i)
     res->setSplitter(i, getBinaryDecisionTreeSplitter(inputClass->getObjectVariableType(i), outputClass, i));
 
@@ -231,8 +232,8 @@ BinaryDecisionTreePtr SingleExtraTreeInferenceLearner::sampleTree(ExecutionConte
   std::vector<Split> bestSplits;
   size_t numLeaves = 0;
   size_t numExamples = n;
-  sampleTreeRecursively(context, res, nodeIndex, inputClass, outputClass, trainingData, variables, bestSplits, numLeaves, numExamples);
-
+  sampleTreeRecursively(context, res, nodeIndex, inputClass, outputClass,
+                        examples, variables, bestSplits, numLeaves, numExamples);
   return res;
 }
 

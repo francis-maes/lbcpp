@@ -5,6 +5,7 @@
   <include file="lbcpp/Distribution/DistributionBuilder.h"/>
 
   <class name="BinaryDecisionTree"/>
+  <class name="SplitScoringInput"/>
 
   <class name="BinaryDecisionTreeInference" base="Inference">
     <variable type="Perception" name="perception"/>

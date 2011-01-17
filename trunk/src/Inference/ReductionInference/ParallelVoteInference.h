@@ -72,9 +72,8 @@ public:
       if (!subOutput.exists())
         return Variable();
 
-      DistributionPtr distribution = subOutput.getObjectAndCast<Distribution>();
-      if (distribution)
-        probabilityBuilder->addDistribution(distribution);
+      if (subOutput.isObject() && subOutput.dynamicCast<Distribution>())
+        probabilityBuilder->addDistribution(subOutput.getObjectAndCast<Distribution>());
       else
         probabilityBuilder->addElement(subOutput);
     }
