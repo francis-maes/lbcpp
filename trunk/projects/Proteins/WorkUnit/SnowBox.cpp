@@ -554,6 +554,7 @@ bool SnowBox::run(ExecutionContext& context)
   printInformation(context);
 
   ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference(context);
+  inference->setProteinDebugDirectory(File(output.getFullPathName() + T(".debug")));
   InferencePtr previousInference;
   for (currentPass = 0; currentPass < target->getNumPasses(); ++currentPass)
   {
