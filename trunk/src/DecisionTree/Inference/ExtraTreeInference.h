@@ -86,7 +86,7 @@ public:
     {return sumType(booleanType, probabilityType);}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return booleanType;}
+    {return probabilityType;}
 };
 
 class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference

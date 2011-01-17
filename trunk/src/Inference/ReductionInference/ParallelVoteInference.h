@@ -81,7 +81,7 @@ public:
     
     DistributionPtr res = probabilityBuilder->build(context);
     if (res->getClass()->inheritsFrom(bernoulliDistributionClass))
-      return res.staticCast<BernoulliDistribution>()->getProbabilityOfTrue();
+      return Variable(res.staticCast<BernoulliDistribution>()->getProbabilityOfTrue(), probabilityType);
     return res;
   }
 
