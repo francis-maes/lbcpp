@@ -29,7 +29,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<Distribution> DistributionPtr;
 
-extern ClassPtr probabilityDistributionClass;
+extern ClassPtr distributionClass;
 
 }; /* namespace lbcpp */
 

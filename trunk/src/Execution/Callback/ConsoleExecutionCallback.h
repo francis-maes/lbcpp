@@ -20,7 +20,7 @@ class ConsoleOutput
 public:
   void print(size_t threadNumber, size_t depth, const String& type, const String& text, bool isError)
   {
-    String line = makeFixedSizeString(T("T") + String(threadNumber), 3) + T(" ");
+    String line = makeFixedSizeString(T("T") + String((int)threadNumber), 3) + T(" ");
     line += makeFixedSizeString(type, 8) + T(" ");
     for (size_t i = 0; i < depth; ++i)
       line += T("  ");

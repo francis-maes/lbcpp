@@ -27,6 +27,7 @@ public:
 typedef ReferenceCountedObjectPtr<DistributionBuilder> DistributionBuilderPtr;
 
 extern ClassPtr probabilityDistributionBuilderClass;
+extern ClassPtr bernoulliDistributionBuilderClass;
 
 extern DistributionBuilderPtr gaussianDistributionBuilder();
 extern DistributionBuilderPtr enumerationDistributionBuilder(EnumerationPtr enumeration);
