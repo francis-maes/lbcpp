@@ -13,6 +13,8 @@ Extra-trees:
    - Source du problème: Grand nombre d'acces au TypeManager (création de pair, création vector, enumeration)
    v Les types ont été caché : pair, vector, enumerationProbabilityDistribution
      - Reste de la perde en début d'éxécution: Initialisation des arbres ?
+ * Leaf: mettre la valeur si une donnée ou constant
+ * Utilisé des doubles en cas binaire
 
 MNIST:
  * Features

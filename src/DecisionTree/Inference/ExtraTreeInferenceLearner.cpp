@@ -46,6 +46,7 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   jassert(tree);
 
   context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
+  context.resultCallback(T("Num Active Attributes"), numActiveAttributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());
   context.resultCallback(T("Num Nodes"), tree->getNumNodes());
@@ -126,6 +127,9 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
     if (!isInputVariableConstant(trainingData, variables[i], value))
       nonConstantVariables.push_back(variables[i]);
   }
+  
+  if (nodeIndex == 0)
+    const_cast<SingleExtraTreeInferenceLearner* >(this)->numActiveAttributes = nonConstantVariables.size();
 
   Variable leafValue;
   if (shouldCreateLeaf(context, trainingData, nonConstantVariables, outputType, leafValue))

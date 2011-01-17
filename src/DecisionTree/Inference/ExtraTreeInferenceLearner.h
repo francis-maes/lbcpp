@@ -26,7 +26,7 @@ class SingleExtraTreeInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, DistributionBuilderPtr builder);
-  SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0) {}
+  SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0), numActiveAttributes(0) {}
 
   typedef InferenceBatchLearner<Inference> BaseClass;
 
@@ -48,7 +48,9 @@ protected:
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
   DistributionBuilderPtr builder;
-  
+
+  size_t numActiveAttributes;
+
   struct Split
   {
     size_t       variableIndex;

@@ -36,7 +36,7 @@ public:
       else
       {
         Object::VariableIterator* iterator = object->createVariablesIterator();
-        for (; iterator->exists(); iterator->next())
+        for (; iterator && iterator->exists(); iterator->next())
         {
           size_t variableIndex;
           Variable subVariable = iterator->getCurrentVariable(variableIndex);

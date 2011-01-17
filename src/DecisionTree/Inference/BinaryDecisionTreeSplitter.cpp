@@ -60,7 +60,7 @@ Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(ContainerPtr data) const
   }
   jassert(minValue != DBL_MAX && maxValue != -DBL_MAX);
   double res = random->sampleDouble(minValue, maxValue);
-  jassert(res >= minValue && res < maxValue);
+  //jassert(res >= minValue && res < maxValue);
   return Variable(res, doubleType);
 }
 
