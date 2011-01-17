@@ -29,8 +29,8 @@ typedef ReferenceCountedObjectPtr<ExecutionStack> ExecutionStackPtr;
 class ExecutionTraceItem;
 typedef ReferenceCountedObjectPtr<ExecutionTraceItem> ExecutionTraceItemPtr;
 
-class CompositeExecutionTraceItem;
-typedef ReferenceCountedObjectPtr<CompositeExecutionTraceItem> CompositeExecutionTraceItemPtr;
+class ExecutionTraceNode;
+typedef ReferenceCountedObjectPtr<ExecutionTraceNode> ExecutionTraceNodePtr;
 
 class ExecutionTrace;
 typedef ReferenceCountedObjectPtr<ExecutionTrace> ExecutionTracePtr;

@@ -157,13 +157,28 @@ private:
       return false;
     }
 
+    // set new stack into context
     ExecutionStackPtr previousStack = context->getStack();
     context->setStack(ExecutionStackPtr(new ExecutionStack(entry.stack)));
-    bool result = (entry.pushIntoStack ? context->run(entry.workUnit) : entry.workUnit->run(*context));
+
+    // thread begin callback
+    context->threadBeginCallback(context->getStack());
+
+    // execute work unit
+    if (entry.pushIntoStack)
+      context->enterScope(entry.workUnit);
+    bool result = entry.workUnit->run(*context);
+    if (entry.pushIntoStack)
+      context->leaveScope(result);
+
+    // update result and counterToDecrement
     if (entry.result)
       *entry.result |= result;
     if (entry.counterToDecrementWhenDone)
       juce::atomicDecrement(*entry.counterToDecrementWhenDone);
+
+    // thread end callback and restore previous stack
+    context->threadEndCallback(context->getStack());
     context->setStack(previousStack);
     return true;
   }

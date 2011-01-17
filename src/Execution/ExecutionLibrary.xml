@@ -64,16 +64,18 @@
     <variable type="String" name="where"/>
   </class>
 
-  <class name="CompositeExecutionTraceItem" base="ExecutionTraceItem">
+  <class name="ExecutionTraceNode" base="ExecutionTraceItem">
     <variable type="WorkUnit" name="workUnit"/>
     <variable type="ObjectVector[Pair[String,Variable]]" name="results"/>
     <variable type="Double" name="endTime"/>
     <variable type="Boolean" name="hasProgression"/>
     <variable type="String" name="progressionString"/>
+    <variable type="ObjectVector[ExecutionTraceItem]" name="subItems"/>
   </class>
-  
-  <class name="ExecutionTrace" base="Object"/>
-  
 
+  <class name="ExecutionTrace" base="Object">
+    <variable type="ExecutionContext" name="context"/>
+    <variable type="ExecutionTraceNode" name="root"/>
+  </class>
 
 </library>

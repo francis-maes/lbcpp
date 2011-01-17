@@ -60,6 +60,9 @@ public:
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit) {}
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result) {}
 
+  virtual void threadBeginCallback(const ExecutionStackPtr& stack) {}
+  virtual void threadEndCallback(const ExecutionStackPtr& stack) {}
+
   /*
   ** Results
   */
@@ -82,6 +85,7 @@ protected:
 
 extern ExecutionCallbackPtr consoleExecutionCallback();
 extern ExecutionCallbackPtr userInterfaceExecutionCallback();
+extern ExecutionCallbackPtr makeTraceExecutionCallback(ExecutionTracePtr trace);
 
 class CompositeExecutionCallback : public ExecutionCallback
 {
@@ -106,6 +110,8 @@ public:
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result);
+  virtual void threadBeginCallback(const ExecutionStackPtr& stack);
+  virtual void threadEndCallback(const ExecutionStackPtr& stack);
 
   virtual void resultCallback(const String& name, const Variable& value);
 
@@ -137,13 +143,16 @@ typedef ReferenceCountedObjectPtr<CompositeExecutionCallback> CompositeExecution
 class DispatchByThreadExecutionCallback : public CompositeExecutionCallback
 {
 public:
-  virtual ExecutionCallbackPtr createCallbackForThread(Thread::ThreadID threadId) = 0;
+  DispatchByThreadExecutionCallback() : mainThreadID(0) {}
+
+  virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId) = 0;
 
   virtual void notificationCallback(const NotificationPtr& notification);
 
 protected:
-  typedef std::map<Thread::ThreadID, ExecutionCallbackPtr> CallbackByThreadMap;
-  CallbackByThreadMap callbackByThread;
+  typedef std::map<Thread::ThreadID, std::vector<ExecutionCallbackPtr> > CallbackByThreadMap;
+  CallbackByThreadMap callbacksByThread;
+  Thread::ThreadID mainThreadID;
 };
 
 }; /* namespace lbcpp */

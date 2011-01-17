@@ -53,18 +53,46 @@ protected:
   String where;
 };
 
-class CompositeExecutionTraceItem : public ExecutionTraceItem
+class ExecutionTraceNode : public ExecutionTraceItem
 {
 public:
-  CompositeExecutionTraceItem(const String& description, const WorkUnitPtr& workUnit, double startTime);
-  CompositeExecutionTraceItem() {}
+  ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime);
+  ExecutionTraceNode() {}
 
   virtual String toString() const;
   virtual String getPreferedIcon() const;
 
+  /*
+  ** Sub Items
+  */
+  void appendSubItem(const ExecutionTraceItemPtr& item)
+    {subItems.push_back(item);}
+  ExecutionTraceNodePtr findSubNode(const String& description, const WorkUnitPtr& workUnit) const;
+
+  /*
+  ** Results
+  */
+  void setResult(const String& name, const Variable& value);
+
+  const std::vector< std::pair<String, Variable> >& getResults() const
+    {return results;}
+
+  ObjectPtr getResultsObject(ExecutionContext& context);
+
+  /*
+  ** WorkUnit
+  */
+  // this is only valid during workUnit execution
+  // after execution, the pointer is reset in order to save memory
   const WorkUnitPtr& getWorkUnit() const
     {return workUnit;}
 
+  void removeWorkUnit()
+    {workUnit = WorkUnitPtr();}
+
+  /*
+  ** Progression
+  */
   bool isProgressionAvailable() const
     {return hasProgression;}
 
@@ -76,6 +104,9 @@ public:
 
   void setProgression(double progression, double progressionTotal, const String& unit);
 
+  /*
+  ** Time
+  */
   void setEndTime(double endTime)
     {this->endTime = endTime;}
 
@@ -85,20 +116,17 @@ public:
   double getTimeLength() const
     {return endTime - time;}
 
-  void setResult(const String& name, const Variable& value);
-
-  const std::vector< std::pair<String, Variable> >& getResults() const
-    {return results;}
-
-  ObjectPtr getResultsObject(ExecutionContext& context);
-
 protected:
-  friend class CompositeExecutionTraceItemClass;
+  friend class ExecutionTraceNodeClass;
 
   String description;
   WorkUnitPtr workUnit;
+
+  std::vector<ExecutionTraceItemPtr> subItems;
+
   UnnamedDynamicClassPtr resultsClass;
   std::vector< std::pair<String, Variable> > results;
+
   double endTime;
 
   bool hasProgression;
@@ -106,11 +134,12 @@ protected:
   String progressionString;
 };
 
+typedef ReferenceCountedObjectPtr<ExecutionTraceNode> ExecutionTraceNodePtr;
+
 class ExecutionTrace : public Object
 {
 public:
-  ExecutionTrace(ExecutionContextPtr context)
-    : context(context) {}
+  ExecutionTrace(ExecutionContextPtr context);
   ExecutionTrace() {}
 
   virtual juce::Component* createComponent() const;
@@ -121,8 +150,19 @@ public:
   virtual String toString() const
     {return context->getClassName() + T(" Execution Trace");}
 
+  ExecutionTraceNodePtr findNode(const ExecutionStackPtr& stack) const;
+
+  double getInitialTime() const
+    {return startTimeMs / 1000.0;}
+
 protected:
+  friend class ExecutionTraceClass;
+
   ExecutionContextPtr context;
+  ExecutionTraceNodePtr root;
+  
+  Time startTime;
+  juce::uint32 startTimeMs;
 };
 
 }; /* namespace lbcpp */

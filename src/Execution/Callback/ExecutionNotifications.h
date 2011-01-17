@@ -140,6 +140,38 @@ protected:
   bool result;
 };
 
+class ThreadExecutionNotification : public ExecutionNotification
+{
+public:
+  ThreadExecutionNotification(const ExecutionStackPtr& stack, bool isThreadEnd)
+    : stack(stack->cloneAndCast<ExecutionStack>()), isThreadEnd(isThreadEnd) {}
+  ThreadExecutionNotification() {}
+
+  virtual void notifyCallback(const ExecutionCallbackPtr& target)
+  {
+    if (isThreadEnd)
+      target->threadEndCallback(stack);
+    else
+      target->threadBeginCallback(stack);
+  }
+
+  bool isBeginCallback() const
+    {return !isThreadEnd;}
+
+  bool isEndCallback() const
+    {return isThreadEnd;}
+
+  const ExecutionStackPtr& getStack() const
+    {return stack;}
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class ThreadExecutionNotificationClass;
+  ExecutionStackPtr stack;
+  bool isThreadEnd;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_EXECUTION_CALLBACK_NOTIFIER_H_
