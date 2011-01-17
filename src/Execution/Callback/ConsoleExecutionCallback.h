@@ -76,7 +76,7 @@ class ConsoleThreadExecutionCallback : public ExecutionCallback
 {
 public:
   ConsoleThreadExecutionCallback(ConsoleOutput& output, size_t threadNumber, size_t depth)
-    : output(output), threadNumber(threadNumber), lastMessageTime(0), depth(depth) {} 
+    : output(output), depth(depth), threadNumber(threadNumber), lastMessageTime(0) {} 
 
   virtual void informationCallback(const String& where, const String& what)
   {
