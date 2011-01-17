@@ -219,7 +219,5 @@ void ExecutionTrace::saveToXml(XmlExporter& exporter) const
   exporter.setAttribute(T("context"), context->toString());
   exporter.setAttribute(T("startTime"), startTime.toString(true, true, true, true));
 
-  exporter.enter(T("trace"));
   root->saveToXml(exporter);
-  exporter.leave();
 }
