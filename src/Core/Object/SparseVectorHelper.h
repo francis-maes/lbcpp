@@ -37,8 +37,8 @@ struct SparseVectorHelper
     else
     {
       int pos = dichotomicSearch(v, index, 0, v.size());
-      assert(pos >= 0 && pos <= (int)v.size());
-      assert(pos >= (int)v.size() || v[pos].first != index); // element should not already exists
+      jassert(pos >= 0 && pos <= (int)v.size());
+      jassert(pos >= (int)v.size() || v[pos].first != index); // element should not already exists
       v.insert(v.begin() + pos, std::make_pair(index, value)); // new element
       return v[pos].second;
     }
@@ -70,24 +70,24 @@ private:
   static int findFirstEntryGreaterOrEqual(const VectorType& v, size_t index, size_t startingPoint = 0)
   {
     //assertIntegrity();
-    assert(startingPoint >= 0 && startingPoint <= v.size());
+    jassert(startingPoint >= 0 && startingPoint <= v.size());
     if (startingPoint == v.size())
     {
-      assert(v.empty() || v.back().first < index);
+      jassert(v.empty() || v.back().first < index);
       return v.size();
     }
     size_t res = dichotomicSearch(index, startingPoint, v.size());
-    assert(res >= startingPoint);
-    assert(res <= v.size());
+    jassert(res >= startingPoint);
+    jassert(res <= v.size());
     return res;
   }
   
   static size_t dichotomicSearch(const VectorType& v, size_t index, size_t begin, size_t end)
   {
-    assert(begin >= 0 && begin <= v.size() && end >= 0 && end <= v.size());
-    assert(begin <= end);
-    assert(begin == 0 || v[begin - 1].first < index);
-    assert(end == v.size() || v[end].first >= index);
+    jassert(begin >= 0 && begin <= v.size() && end >= 0 && end <= v.size());
+    jassert(begin <= end);
+    jassert(begin == 0 || v[begin - 1].first < index);
+    jassert(end == v.size() || v[end].first >= index);
 
     unsigned result;
     if (begin < v.size() && v[begin].first >= index)
@@ -100,12 +100,12 @@ private:
         break;
         
       case 1:
-        assert(begin < v.size());
+        jassert(begin < v.size());
         result = v[begin].first >= index ? begin : (begin + 1);
         break;
         
       case 2:
-        assert(begin + 1 < v.size());
+        jassert(begin + 1 < v.size());
         result = v[begin].first >= index ? begin :
           (v[begin + 1].first >= index ? (begin + 1) : (begin + 2));
         break;
@@ -115,7 +115,7 @@ private:
       case 5:
         for (result = begin; result < end; ++result)
         {
-          assert(result < v.size());
+          jassert(result < v.size());
           if (v[result].first >= index)
             break;
         }
@@ -134,15 +134,15 @@ private:
           if (split > end - 2) split = end - 2;*/
           size_t split = (begin + end) / 2;
          
-          assert(split < v.size());
+          jassert(split < v.size());
           if (v[split].first >= index)
             result = dichotomicSearch(v, index, begin, split);
           else
             result = dichotomicSearch(v, index, split, end);
         }
       };
-    assert(result == v.size() || v[result].first >= index);
-    assert(result == 0 || v[result - 1].first < index);
+    jassert(result == v.size() || v[result].first >= index);
+    jassert(result == 0 || v[result - 1].first < index);
     return result;
   }
 };
