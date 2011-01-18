@@ -544,6 +544,8 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   DecisionTree/Inference/ExtraTreeInference.h
   DecisionTree/Inference/ExtraTreeInferenceLearner.h
   DecisionTree/Inference/ExtraTreeInferenceLearner.cpp
+  DecisionTree/Inference/DecisionTreeExampleVector.h
+  DecisionTree/Inference/DecisionTreeExampleVector.cpp
   DecisionTree/Inference/SplitScoringFunction.h
   DecisionTree/Inference/SplitScoringFunction.cpp
   DecisionTree/Inference/BinaryDecisionTreeSplitter.h

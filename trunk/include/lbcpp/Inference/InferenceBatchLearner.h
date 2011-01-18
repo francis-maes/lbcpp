@@ -55,6 +55,8 @@ public:
   */
   const InferencePtr& getTargetInference() const
     {return targetInference;}
+  
+  void setTargetInference(const InferencePtr& targetInference);
 
   /*
   ** Training Data

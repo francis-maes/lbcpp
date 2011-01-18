@@ -49,6 +49,13 @@ InferenceBatchLearnerInput::InferenceBatchLearnerInput(const InferencePtr& targe
 {
 }
 
+void InferenceBatchLearnerInput::setTargetInference(const InferencePtr& targetInference)
+{
+  jassert(targetInference);
+//  setThisClass(inferenceBatchLearnerInputClass(targetInference->getClass()));
+  this->targetInference = targetInference;
+}
+
 size_t InferenceBatchLearnerInput::getNumExamples() const
   {return getNumTrainingExamples() + getNumValidationExamples();}
 

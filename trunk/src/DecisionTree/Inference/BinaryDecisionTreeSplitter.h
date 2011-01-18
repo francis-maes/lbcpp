@@ -77,10 +77,10 @@ public:
     {return lessThanOrEqualToPredicate(splitArgument);}
 };
 
-class IntegereBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
+class IntegerBinaryDecisionTreeSplitter : public BinaryDecisionTreeSplitter
 {
 public:
-  IntegereBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
+  IntegerBinaryDecisionTreeSplitter(SplitScoringFunctionPtr scoringFunction, RandomGeneratorPtr random = RandomGeneratorPtr(), size_t variableIndex = 0)
     : BinaryDecisionTreeSplitter(scoringFunction, random, variableIndex) {}
   
   virtual Variable findBestSplit(const DecisionTreeExampleVector& examples) const

@@ -15,32 +15,25 @@
 using namespace lbcpp;
 
 /*
-** SingleExtraTreeInferenceLearner
+** ExtraTreeInferenceLearner
 */
-SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, DistributionBuilderPtr builder)
-  : random(new RandomGenerator()),
-    numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
-    minimumSizeForSplitting(minimumSizeForSplitting), builder(builder) {}
-
-Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
+InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::createBatchLearnerSubInputModel(ExecutionContext& context,
+                                                                                         const InferencePtr& targetInference,
+                                                                                         const InferenceExampleVectorPtr& trainingExamples,
+                                                                                         const InferenceExampleVectorPtr& validationExamples) const
 {
-  const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
-  jassert(learnerInput);
-  const BinaryDecisionTreeInferencePtr& inference = learnerInput->getTargetInference();
-  jassert(inference);
-
-  if (!learnerInput->getNumTrainingExamples())
-    return Variable();
-
-  TypePtr outputType = learnerInput->getTrainingExample(0).second.getType();
-  PerceptionPtr perception = inference->getPerception();
-  //TypePtr pairType = pairClass(perception->getOutputType(), outputType);
-
+  size_t numTrainingExamples = trainingExamples->getNumElements();
+  if (!numTrainingExamples)
+    return InferenceBatchLearnerInputPtr();
+  
+  TypePtr outputType = trainingExamples->getElement(0)[1].getType();
+  PerceptionPtr perception = ((const BinaryDecisionTreeInferencePtr&)targetInference)->getPerception();
+  
   // compute perceptions and fill decision tree examples vector
-  size_t numTrainingExamples = learnerInput->getNumTrainingExamples();
-  std::vector< std::vector<Variable> > attributes;
-  std::vector<Variable> labels;
-  std::vector<size_t> indices;
+  DecisionTreeSharedExampleVectorPtr sharedExamples = new DecisionTreeSharedExampleVector();
+  std::vector< std::vector<Variable> >& attributes = sharedExamples->attributes;
+  std::vector<Variable>& labels = sharedExamples->labels;
+  std::vector<size_t>& indices = sharedExamples->indices;
   attributes.reserve(numTrainingExamples);
   labels.reserve(numTrainingExamples);
   indices.reserve(numTrainingExamples);
@@ -48,27 +41,58 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   size_t numAttributes = perception->getOutputType()->getObjectNumVariables();
   for (size_t i = 0; i < numTrainingExamples; ++i)
   {
-    const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
+    const std::pair<Variable, Variable>& example = trainingExamples->getElement(i).getObjectAndCast<Pair>()->getValue();
     if (!example.second.exists())
       continue; // skip examples that do not have supervision
-
+    
     ObjectPtr object = perception->computeFunction(context, example.first).getObject();
     std::vector<Variable> attr(numAttributes);
     jassert(numAttributes == object->getNumVariables());
     for (size_t j = 0; j < numAttributes; ++j)
       attr[j] = object->getVariable(j);
-
+    
     indices.push_back(labels.size());
     attributes.push_back(attr);
     labels.push_back(example.second);
   }
 
-  DecisionTreeExampleVector examples(attributes, labels, indices);
+  return new ExtraTreeBatchLearnerInput(targetInference, sharedExamples, perception->getOutputType(), outputType);
+}
 
-  BinaryDecisionTreePtr tree = sampleTree(context, perception->getOutputType(), outputType, examples);
+InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::duplicateBatchLearnerSubInput(ExecutionContext& context,
+                                                                                       const InferenceBatchLearnerInputPtr& learnerInputModel,
+                                                                                       const InferencePtr& targetInference, 
+                                                                                       size_t subInferenceIndex) const
+{
+  ExtraTreeBatchLearnerInputPtr learnerInput = learnerInputModel.dynamicCast<ExtraTreeBatchLearnerInput>();
+  jassert(learnerInput);
+  ExtraTreeBatchLearnerInputPtr res = learnerInput->cloneAndCast<ExtraTreeBatchLearnerInput>(context);
+  res->setTargetInference(targetInference);
+  res->setRandomGeneratorSeed(subInferenceIndex);
+  return res;
+}
+
+
+/*
+** SingleExtraTreeInferenceLearner
+*/
+SingleExtraTreeInferenceLearner::SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, DistributionBuilderPtr builder)
+  : numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
+    minimumSizeForSplitting(minimumSizeForSplitting), builder(builder) {}
+
+Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
+{
+  const ExtraTreeBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<ExtraTreeBatchLearnerInput>(context);
+  jassert(learnerInput);
+  
+  DecisionTreeExampleVector examples = learnerInput->getExamples();
+  const_cast<SingleExtraTreeInferenceLearner* >(this)->random = new RandomGenerator((int)learnerInput->getRandomGeneratorSeed());
+
+  BinaryDecisionTreePtr tree = sampleTree(context, learnerInput->getInputType(), learnerInput->getOutputType(), examples);
   jassert(tree);
 
-  context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
+  const BinaryDecisionTreeInferencePtr& inference = learnerInput->getTargetInference();
+  context.resultCallback(T("Num Attributes"), inference->getPerception()->getNumOutputVariables());
   context.resultCallback(T("Num Active Attributes"), numActiveAttributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());
@@ -259,7 +283,7 @@ BinaryDecisionTreeSplitterPtr SingleExtraTreeInferenceLearner::getBinaryDecision
   else if (inputType->inheritsFrom(booleanType))
     return new BooleanBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
   else if (inputType->inheritsFrom(integerType))
-    return new IntegereBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
+    return new IntegerBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
   else if (inputType->inheritsFrom(doubleType))
     return new DoubleBinaryDecisionTreeSplitter(scoringFunction, random, variableIndex);
 
