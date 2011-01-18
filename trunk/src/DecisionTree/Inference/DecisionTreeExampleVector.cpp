@@ -12,6 +12,8 @@ using namespace lbcpp;
 
 bool DecisionTreeExampleVector::isAttributeConstant(size_t variableIndex) const
 {
+  if (getAttribute(0, variableIndex).isDouble())
+    return isDoubleAttributeConstant(variableIndex);
   size_t n = indices.size();
   Variable constantValue;
   bool isConstantValueSet = false;
@@ -30,6 +32,27 @@ bool DecisionTreeExampleVector::isAttributeConstant(size_t variableIndex) const
       return false;
   }
   return true;
+}
+
+bool DecisionTreeExampleVector::isDoubleAttributeConstant(size_t variableIndex) const
+{
+  size_t n = indices.size();
+  double minValue = DBL_MAX;
+  double maxValue = -DBL_MAX;
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    const Variable& value = getAttribute(i, variableIndex);
+    jassert(!value.isNil() && value.isDouble());
+    if (value.isMissingValue())
+      continue;
+    double val = value.getDouble();
+    if (val < minValue)
+      minValue = val;
+    if (val > maxValue)
+      maxValue = val;
+  }
+  return maxValue - minValue <= 10e-9;
 }
 
 bool DecisionTreeExampleVector::isLabelConstant(Variable& constantValue) const

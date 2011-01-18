@@ -36,6 +36,8 @@ public:
   
   bool isAttributeConstant(size_t variableIndex) const;
   
+  bool isDoubleAttributeConstant(size_t variableIndex) const;
+  
   bool isLabelConstant(Variable& constantValue) const;
   
   const std::vector<size_t>& getIndices() const
