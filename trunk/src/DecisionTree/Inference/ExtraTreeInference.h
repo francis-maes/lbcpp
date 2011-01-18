@@ -20,13 +20,13 @@ namespace lbcpp
 class BinaryDecisionTreeInference : public Inference
 {
 public:
-  BinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
-  : Inference(name), perception(perception) {}
+  BinaryDecisionTreeInference(const String& name)
+  : Inference(name) {}
   BinaryDecisionTreeInference()
     {}
 
   virtual TypePtr getInputType() const
-    {return perception->getInputType();}
+    {return anyType;} // FIXME
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType;}
@@ -36,9 +36,6 @@ public:
 
   void setTree(BinaryDecisionTreePtr tree)
     {this->tree = tree;}
-
-  PerceptionPtr getPerception() const
-    {return perception;}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
@@ -51,11 +48,10 @@ public:
 protected:
   friend class BinaryDecisionTreeInferenceClass;
 
-  PerceptionPtr perception;
   BinaryDecisionTreePtr tree;
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-    {return tree && tree->getNumNodes() ? tree->makePrediction(context, perception->computeFunction(context, input)) : Variable::missingValue(getOutputType(input.getType()));}
+    {return tree && tree->getNumNodes() ? tree->makePrediction(context, input) : Variable::missingValue(getOutputType(input.getType()));}
 };
 
 extern ClassPtr binaryDecisionTreeInferenceClass;
@@ -64,8 +60,8 @@ typedef ReferenceCountedObjectPtr<BinaryDecisionTreeInference> BinaryDecisionTre
 class RegressionBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  RegressionBinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
-    : BinaryDecisionTreeInference(name, perception) {}
+  RegressionBinaryDecisionTreeInference(const String& name)
+    : BinaryDecisionTreeInference(name) {}
   RegressionBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -78,8 +74,8 @@ public:
 class BinaryClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  BinaryClassificationBinaryDecisionTreeInference(const String& name, PerceptionPtr perception)
-    : BinaryDecisionTreeInference(name, perception) {}
+  BinaryClassificationBinaryDecisionTreeInference(const String& name)
+    : BinaryDecisionTreeInference(name) {}
   BinaryClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const
@@ -92,8 +88,8 @@ public:
 class ClassificationBinaryDecisionTreeInference : public BinaryDecisionTreeInference
 {
 public:
-  ClassificationBinaryDecisionTreeInference(const String& name, PerceptionPtr perception, EnumerationPtr classes)
-    : BinaryDecisionTreeInference(name, perception), classes(classes) {}
+  ClassificationBinaryDecisionTreeInference(const String& name, EnumerationPtr classes)
+    : BinaryDecisionTreeInference(name), classes(classes) {}
   ClassificationBinaryDecisionTreeInference() {}
 
   virtual TypePtr getSupervisionType() const

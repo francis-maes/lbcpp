@@ -50,6 +50,26 @@ void StaticDecoratorInference::clone(ExecutionContext& context, const ObjectPtr&
 }
 
 /*
+** PreProcessInference
+*/
+PreProcessInference::PreProcessInference(InferencePtr decorated, FunctionPtr preProcessingFunction)
+  : StaticDecoratorInference(preProcessingFunction->toString() + T("(") + decorated->getName() + T(")"), decorated),
+    preProcessingFunction(preProcessingFunction) {}
+
+TypePtr PreProcessInference::getInputType() const
+  {return preProcessingFunction->getInputType();}
+
+DecoratorInferenceStatePtr PreProcessInference::prepareInference(ExecutionContext& context,
+                                                                 const Variable& input,
+                                                                 const Variable& supervision) const
+{
+  Variable decoratedInput = preProcessingFunction->computeFunction(context, input);
+  DecoratorInferenceStatePtr res = new DecoratorInferenceState(decoratedInput, supervision);
+  res->setSubInference(decorated, decoratedInput, supervision);
+  return res;
+}
+
+/*
 ** PostProcessInference
 */
 PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr postProcessingFunction)

@@ -27,9 +27,8 @@ InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::createBatchLearnerSubIn
     return InferenceBatchLearnerInputPtr();
   
   TypePtr outputType = trainingExamples->getElement(0)[1].getType();
-  PerceptionPtr perception = ((const BinaryDecisionTreeInferencePtr&)targetInference)->getPerception();
   
-  // compute perceptions and fill decision tree examples vector
+  // fill decision tree examples vector
   DecisionTreeSharedExampleVectorPtr sharedExamples = new DecisionTreeSharedExampleVector();
   std::vector< std::vector<Variable> >& attributes = sharedExamples->attributes;
   std::vector<Variable>& labels = sharedExamples->labels;
@@ -38,14 +37,14 @@ InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::createBatchLearnerSubIn
   labels.reserve(numTrainingExamples);
   indices.reserve(numTrainingExamples);
 
-  size_t numAttributes = perception->getOutputType()->getObjectNumVariables();
+  size_t numAttributes = trainingExamples->getElement(0)[0].getType()->getObjectNumVariables();
   for (size_t i = 0; i < numTrainingExamples; ++i)
   {
     const std::pair<Variable, Variable>& example = trainingExamples->getElement(i).getObjectAndCast<Pair>()->getValue();
     if (!example.second.exists())
       continue; // skip examples that do not have supervision
     
-    ObjectPtr object = perception->computeFunction(context, example.first).getObject();
+    ObjectPtr object = example.first.getObject();
     std::vector<Variable> attr(numAttributes);
     jassert(numAttributes == object->getNumVariables());
     for (size_t j = 0; j < numAttributes; ++j)
@@ -56,7 +55,7 @@ InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::createBatchLearnerSubIn
     labels.push_back(example.second);
   }
 
-  return new ExtraTreeBatchLearnerInput(targetInference, sharedExamples, perception->getOutputType(), outputType);
+  return new ExtraTreeBatchLearnerInput(targetInference, sharedExamples, trainingExamples->getElement(0)[0].getType(), outputType);
 }
 
 InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::duplicateBatchLearnerSubInput(ExecutionContext& context,
@@ -92,7 +91,7 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   jassert(tree);
 
   const BinaryDecisionTreeInferencePtr& inference = learnerInput->getTargetInference();
-  context.resultCallback(T("Num Attributes"), inference->getPerception()->getNumOutputVariables());
+  context.resultCallback(T("Num Attributes"), inference->getInputType()->getObjectNumVariables());
   context.resultCallback(T("Num Active Attributes"), numActiveAttributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());

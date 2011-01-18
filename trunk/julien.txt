@@ -9,12 +9,9 @@ Network:
  * Test approfondis
 
 Extra-trees:
- * nouvelle classe ExtraTreeBatchLearnerInput qui derive de InferenceBatchLearnerInput
- * renommer en DecisionTreeBatchLearnerINput
- * nouvelle classe ExtraTreeInferenceLearner qui dérive de ParallelVoteInferenceLearner, faire un système à base de clone
- * rendre deterministe
- * Double erreur de precision
- * Voir chez Pierre pour l'optim
+ * renommer ExtraTreeBatchLearnerInput en DecisionTreeBatchLearnerINput
+ * rendre deterministe : Normalement, c'est bon ! A tester !
+ * Voir chez Pierre pour l'optim suivante:
  * nonConstantAttribute est quadratique. Idée pour le rendre linéaire: Trier, pour chaque attributs, la base de données et se contenté de tester la valeur de la première et dernière données. Gros travail sur les index. 
 
 MNIST: Abort !
