@@ -25,7 +25,18 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
     else
       leftExamples.push_back(indices[i]);
   }
-  jassert(rightExamples.size() && leftExamples.size());
+
+  if (!leftExamples.size() || !rightExamples.size() || leftExamples.size() + rightExamples.size() != examples.getNumExamples())
+  {
+    String attributeValues;
+    for (size_t i = 0; i < examples.getNumExamples(); ++i)
+      attributeValues += examples.getAttribute(i, variableIndex).toShortString() + T(" ");
+    context.errorCallback(T("Invalid split: ") + predicate->toString() + T(" ") + String((int)examples.getNumExamples())
+      + T(" examples -> ") + String((int)leftExamples.size()) + T(" ") + String((int)rightExamples.size())
+      + T("\nAttribute Values: ") + attributeValues);
+    jassert(false);
+  }
+
   return scoringFunction->compute(context, new SplitScoringInput(examples, leftExamples, rightExamples));
 }
 

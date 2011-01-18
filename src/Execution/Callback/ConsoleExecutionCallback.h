@@ -20,14 +20,29 @@ class ConsoleOutput
 public:
   void print(size_t threadNumber, size_t depth, const String& type, const String& text, bool isError)
   {
-    String line = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
-    line += makeFixedSizeString(type, 8) + T(" ");
+    String prefix = T("T") + makeFixedSizeNumber(threadNumber, 5) + T(" ");
+    prefix += makeFixedSizeString(type, 8) + T(" ");
     for (size_t i = 0; i < depth; ++i)
-      line += T("  ");
-    int remainingLength = numColumns - line.length() - 1;
+      prefix += T("  ");
+    int remainingLength = numColumns - prefix.length() - 1;
     if (remainingLength > 0)
-      line += makeFixedSizeString(text, remainingLength);
-    print(line, isError);
+    {
+      StringArray lines;
+      lines.addTokens(text, T("\n"), NULL);
+
+      ScopedLock _(lock);
+      for (int i = 0; i < lines.size(); ++i)
+      {
+        String line;
+        if (i == 0)
+          line = prefix;
+        else
+          for (int j = 0; j < prefix.length(); ++j)
+            line += ' ';
+        line += makeFixedSizeString(lines[i], remainingLength);
+        print(line, isError);
+      }
+    }
   }
 
   void print(const String& line, bool isError)
