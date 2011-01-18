@@ -135,7 +135,8 @@ protected:
 extern ClassPtr inferenceClass;
 
 // Decorator
-extern DecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
+extern StaticDecoratorInferencePtr preProcessInference(InferencePtr inference, FunctionPtr preProcessingFunction);
+extern StaticDecoratorInferencePtr postProcessInference(InferencePtr inference, FunctionPtr postProcessingFunction);
 
 // Reductions
 extern VectorParallelInferencePtr oneAgainstOneClassificationInference(const String& name, EnumerationPtr classes, InferencePtr binaryClassifierModel);

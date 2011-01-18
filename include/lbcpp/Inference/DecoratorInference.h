@@ -127,6 +127,20 @@ typedef ReferenceCountedObjectPtr<StaticDecoratorInference> StaticDecoratorInfer
 
 extern ClassPtr staticDecoratorInferenceClass;
 
+class PreProcessInference : public StaticDecoratorInference
+{
+public:
+  PreProcessInference(InferencePtr decorated, FunctionPtr preProcessingFunction);
+  PreProcessInference() {}
+  
+  virtual TypePtr getInputType() const;
+  virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
+
+protected:
+  friend class PreProcessInferenceClass;
+  FunctionPtr preProcessingFunction;
+};
+
 class PostProcessInference : public StaticDecoratorInference
 {
 public:

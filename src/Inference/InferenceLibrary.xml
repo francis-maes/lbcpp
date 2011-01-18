@@ -49,7 +49,12 @@
     <variable type="ObjectVector[Inference]" name="subInferences"/>
   </class>
 
-  <class name="PostProcessInference" base="DecoratorInference">
+  <class name="PreProcessInference" base="StaticDecoratorInference">
+    <constructor arguments="InferencePtr decorated, FunctionPtr preProcessingFunction"/>
+    <variable type="Function" name="preProcessingFunction"/>
+  </class>
+
+  <class name="PostProcessInference" base="StaticDecoratorInference">
     <constructor arguments="InferencePtr inference, FunctionPtr postProcessingFunction"/>
     <variable type="Function" name="postProcessingFunction"/>
   </class>
