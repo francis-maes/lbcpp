@@ -32,7 +32,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
     }
     workUnits->setPushChildrenIntoStackFlag(hasPushChildrenIntoStackFlag());
     workUnits->setProgressionUnit(getProgressionUnit());
-    context.run(workUnits);
+    context.run(workUnits, false);
   }
   else
   {

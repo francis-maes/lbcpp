@@ -38,11 +38,13 @@ void ExecutionContext::leaveScope(bool result)
   postExecutionCallback(stack, entry.first, entry.second, result);
 }
 
-bool ExecutionContext::run(const WorkUnitPtr& workUnit)
+bool ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
-  enterScope(workUnit);
+  if (pushIntoStack)
+    enterScope(workUnit);
   bool res = workUnit->run(*this);
-  leaveScope(res);
+  if (pushIntoStack)
+    leaveScope(res);
   return res;
 }
 
