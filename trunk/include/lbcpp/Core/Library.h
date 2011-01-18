@@ -68,6 +68,8 @@ protected:
 
   bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
 
+  void getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const;
+
 private:
   friend class LibraryClass;
 

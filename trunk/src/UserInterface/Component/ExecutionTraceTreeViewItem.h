@@ -33,6 +33,8 @@ class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 public:
   ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
 
+  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
+
   enum
   {
     minWidthToDisplayTimes = 300,
@@ -58,6 +60,9 @@ public:
 
   virtual void itemSelectionChanged(bool isNowSelected);
   
+  ExecutionTraceTreeView* getOwner() const
+    {return owner;}
+
 protected:
   ExecutionTraceTreeView* owner;
   ExecutionTraceItemPtr trace;
@@ -72,11 +77,8 @@ public:
   virtual bool mightContainSubItems()
     {return getNumSubItems() > 0;}
 
-  const ExecutionTraceNodePtr& getTrace() const
+  const ExecutionTraceNodePtr& getTraceNode() const
     {return trace.staticCast<ExecutionTraceNode>();}
-
-  const WorkUnitPtr& getWorkUnit() const
-    {return getTrace()->getWorkUnit();}
 };
 
 }; /* namespace lbcpp */

@@ -272,8 +272,9 @@ public:
   virtual void initialise(const String& commandLine)
   {    
     lbcpp::initialize(NULL);
-    explorerExecutionCallback = new ExplorerExecutionCallback();
-    defaultExecutionContext().appendCallback(explorerExecutionCallback);
+    setDefaultExecutionContext(singleThreadedExecutionContext());
+    defaultExecutionContext().appendCallback(consoleExecutionCallback());
+    defaultExecutionContext().appendCallback(explorerExecutionCallback = new ExplorerExecutionCallback());
 
     File currentExecutableDirectory = File::getSpecialLocation(File::currentExecutableFile).getParentDirectory();
 #ifdef JUCE_MAC

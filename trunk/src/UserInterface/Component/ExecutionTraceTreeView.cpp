@@ -23,7 +23,6 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   if (context)
     context->appendCallback(refCountedPointerFromThis(this));
 
-  initialTime = Time::getCurrentTime().toMilliseconds() / 1000.0;
   setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode()));
   getRootItem()->setOpen(true);
   setRootItemVisible(false);
@@ -39,24 +38,41 @@ ExecutionTraceTreeView::~ExecutionTraceTreeView()
   deleteRootItem();
 }
 
-ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getItemFromStack(const ExecutionStackPtr& stack) const
+ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const ExecutionStackPtr& stack) const
 {
   ExecutionTraceTreeViewNode* item = (ExecutionTraceTreeViewNode* )getRootItem();
   size_t n = stack->getDepth();
   for (size_t i = 0; i < n; ++i)
   {
-    const WorkUnitPtr& workUnit = stack->getWorkUnit(i);
+    const std::pair<String, WorkUnitPtr>& entry = stack->getEntry(i);
     bool ok = false;
     for (int i = 0; i < item->getNumSubItems(); ++i)
     {
       ExecutionTraceTreeViewNode* subItem = dynamic_cast<ExecutionTraceTreeViewNode* >(item->getSubItem(i));
-      if (subItem && subItem->getWorkUnit() == workUnit)
+      if (subItem)
       {
-        item = subItem;
-        ok = true;
-        break;
+        const ExecutionTraceNodePtr& traceNode = subItem->getTraceNode();
+        if (entry.second)
+        {
+          if (traceNode->getWorkUnit() == entry.second)
+          {
+            item = subItem;
+            ok = true;
+            break;
+          }
+        }
+        else
+        {
+          if (traceNode->toString() == entry.first)
+          {
+            item = subItem;
+            ok = true;
+            break;
+          }
+        }
       }
     }
+    jassert(ok);
   }
   return item;
 }
@@ -101,107 +117,48 @@ void ExecutionTraceTreeView::invalidateTree()
 int ExecutionTraceTreeView::getDefaultWidth() const
   {return 600;}
 
+#include "../../Execution/Callback/MakeTraceExecutionCallback.h"
 
-/*
-** ExecutionTraceTreeViewBuilderCallback
-*/
-class ExecutionTraceTreeViewBuilderCallback : public ExecutionCallback
+class MakeTraceAndFillTreeThreadExecutionCallback : public MakeTraceThreadExecutionCallback
 {
 public:
-  ExecutionTraceTreeViewBuilderCallback(ExecutionTraceTreeView* tree)
-    : tree(tree), currentNotificationTime(0) {}
+  MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTraceTreeViewNode* node)
+    : MakeTraceThreadExecutionCallback(node->getTrace(), node->getOwner()->getTrace()->getStartTime()), tree(tree), stack(1, node) {}
 
-  virtual void notificationCallback(const NotificationPtr& notification)
+  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
-    Time creationTime = notification->getConstructionTime();
-    double time = creationTime.toMilliseconds() / 1000.0 - tree->getInitialTime();
-    jassert(time >= currentNotificationTime);
-    currentNotificationTime = time;
-    ExecutionCallback::notificationCallback(notification);
+    MakeTraceThreadExecutionCallback::preExecutionCallback(stack, description, workUnit);
+    ExecutionTraceTreeViewNode* node = this->stack.back();
+    node = dynamic_cast<ExecutionTraceTreeViewNode* >(node->getSubItem(node->getNumSubItems() - 1));
+    jassert(node);
+    this->stack.push_back(node);
+  }
+  
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  {
+    this->stack.pop_back();
+    MakeTraceThreadExecutionCallback::postExecutionCallback(stack, description, workUnit, result);
+    tree->invalidateTree();
   }
 
   virtual void progressCallback(const ProgressionStatePtr& progression)
   {
-    ExecutionTraceTreeViewNode* item = dynamic_cast<ExecutionTraceTreeViewNode* >(getCurrentPositionInTree());
-    if (item)
-    {
-      ExecutionTraceNodePtr trace = item->getTrace();
-      jassert(trace);
-      trace->setEndTime(currentNotificationTime);
-      trace->setProgression(progression);
-      tree->invalidateTree();
-    }
-  }
-
-  virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
-  {
-    ExecutionTraceNodePtr trace(new ExecutionTraceNode(description, workUnit, currentNotificationTime));
-
-    ExecutionTraceTreeViewItem* parentItem = tree->getItemFromStack(stack);
-    jassert(parentItem);
-
-    ExecutionTraceTreeViewNode* item = new ExecutionTraceTreeViewNode(tree, trace);
-    addItem(parentItem, item);
-    pushPositionIntoTree(item);
-  }
-
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
-    {popPositionFromTree(!result);}
-  
-  virtual void informationCallback(const String& where, const String& what)
-    {addItem(new MessageExecutionTraceItem(currentNotificationTime, informationMessageType, what, where));}
-
-  virtual void warningCallback(const String& where, const String& what)
-    {addItem(new MessageExecutionTraceItem(currentNotificationTime, warningMessageType, what, where));}
-
-  virtual void errorCallback(const String& where, const String& what)
-    {addItem(new MessageExecutionTraceItem(currentNotificationTime, errorMessageType, what, where));}
-
-  virtual void resultCallback(const String& name, const Variable& value)
-  {
-    ExecutionTraceNodePtr trace = getCurrentPositionInTree()->getTrace().dynamicCast<ExecutionTraceNode>();
-    jassert(trace);
-    trace->setResult(name, value);
+    MakeTraceThreadExecutionCallback::progressCallback(progression);
+    tree->invalidateTree();
   }
 
 protected:
   ExecutionTraceTreeView* tree;
-  double currentNotificationTime;
+  std::vector<ExecutionTraceTreeViewNode* > stack;
 
-
-protected:
-  /*
-  ** Positions Into Tree
-  */
-  std::vector<ExecutionTraceTreeViewNode* > positions;
-
-  void addItem(ExecutionTraceItemPtr trace)
-    {addItem(getCurrentPositionInTree(), new ExecutionTraceTreeViewItem(tree, trace));}
-
-  void addItem(TreeViewItem* parentItem, ExecutionTraceTreeViewItem* newItem)
+  virtual void appendTraceItem(ExecutionTraceItemPtr item)
   {
-    parentItem->addSubItem(newItem);
+    MakeTraceThreadExecutionCallback::appendTraceItem(item);
+    ExecutionTraceTreeViewItem* newItem = ExecutionTraceTreeViewItem::create(tree, item);
+    stack.back()->addSubItem(newItem);
     if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
       tree->scrollToKeepItemVisible(newItem);
   }
-
-  void pushPositionIntoTree(ExecutionTraceTreeViewNode* item)
-    {positions.push_back(item);}
-
-  ExecutionTraceTreeViewItem* popPositionFromTree(bool setErrorFlag = false)
-  { 
-    jassert(positions.size());
-    ExecutionTraceTreeViewNode* res = positions.back();
-    res->getTrace()->setEndTime(currentNotificationTime);
-    if (setErrorFlag)
-      res->setIcon(T("Error-32.png"));
-    positions.pop_back();
-    tree->invalidateTree();
-    return res;
-  }
-
-  ExecutionTraceTreeViewItem* getCurrentPositionInTree() const
-    {return positions.size() ? positions.back() : (ExecutionTraceTreeViewItem* )tree->getRootItem();}
 };
 
 class ExecutionTraceTreeViewBuilderExecutionCallback : public DispatchByThreadExecutionCallback
@@ -211,7 +168,11 @@ public:
     : tree(tree) {}
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
-    {return new ExecutionTraceTreeViewBuilderCallback(tree);}
+  {
+    ExecutionTraceTreeViewNode* node = tree->getNodeFromStack(stack);
+    jassert(node);
+    return new MakeTraceAndFillTreeThreadExecutionCallback(tree, node);
+  }
 
 protected:
   ExecutionTraceTreeView* tree;

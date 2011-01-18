@@ -276,7 +276,7 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
     return ObjectPtr();
   bool classHasChanged = false;
   if (!resultsClass)
-    resultsClass = new UnnamedDynamicClass(workUnit->getName() + T(" results"));
+    resultsClass = new UnnamedDynamicClass(description + T(" results"));
   std::vector<size_t> variableIndices(results.size());
   for (size_t i = 0; i < results.size(); ++i)
   {

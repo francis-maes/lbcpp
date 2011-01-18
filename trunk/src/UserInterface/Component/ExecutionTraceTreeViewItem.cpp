@@ -26,6 +26,15 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* o
       ++numLines;
 }
 
+ExecutionTraceTreeViewItem* ExecutionTraceTreeViewItem::create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& item)
+{
+  ExecutionTraceNodePtr node = item.dynamicCast<ExecutionTraceNode>();
+  if (node)
+    return new ExecutionTraceTreeViewNode(owner, node);
+  else
+    return new ExecutionTraceTreeViewItem(owner, item);
+}
+
 void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
   {owner->invalidateSelection();}
 
@@ -159,12 +168,5 @@ ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* o
   
   std::vector<ExecutionTraceItemPtr> subItems = trace->getSubItems();
   for (size_t i = 0; i < subItems.size(); ++i)
-  {
-    ExecutionTraceItemPtr item = subItems[i];
-    ExecutionTraceNodePtr node = item.dynamicCast<ExecutionTraceNode>();
-    if (node)
-      addSubItem(new ExecutionTraceTreeViewNode(owner, node));
-    else
-      addSubItem(new ExecutionTraceTreeViewItem(owner, item));
-  }
+    addSubItem(ExecutionTraceTreeViewItem::create(owner, subItems[i]));
 }

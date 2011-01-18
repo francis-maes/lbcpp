@@ -367,9 +367,12 @@ bool Object::loadFromXml(XmlImporter& importer)
     TypePtr expectedType = thisClass->getObjectVariableType(variableNumber);
     jassert(expectedType);
     Variable value = importer.loadVariable(child, expectedType);
-    if (value.exists() && !importer.getContext().checkInheritance(value, expectedType))
-      return false;
-    setVariable(importer.getContext(), (size_t)variableNumber, value);
+    if (value.exists())
+    {
+      if (!importer.getContext().checkInheritance(value, expectedType))
+        return false;
+      setVariable(importer.getContext(), (size_t)variableNumber, value);
+    }
   }
   return true;
 }
