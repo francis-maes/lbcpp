@@ -31,7 +31,7 @@ public:
     {return false;}
 
   virtual bool run(const CompositeWorkUnitPtr& workUnits)
-    {return run((WorkUnitPtr)workUnits);}
+    {return ExecutionContext::run((WorkUnitPtr)workUnits);}
     
   lbcpp_UseDebuggingNewOperator
 };
