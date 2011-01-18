@@ -60,7 +60,7 @@ public:
   virtual bool run(ExecutionContext& context)
   {
     runClassification(context);
-    //runRegression(context);
+    runRegression(context);
     return true;
   }
 
@@ -116,12 +116,12 @@ protected:
  
     EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, learningData, evaluator);
-    context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
+    //context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
     checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
 
     evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator);
-    context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
+    //context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
     checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
   }
 

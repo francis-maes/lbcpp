@@ -74,7 +74,21 @@ public:
 class ParallelVoteInferenceLearner : public StaticParallelInferenceLearner 
 {
 public:
-  // virtual createBatchLearnerSubInputModel ou quelque chose comme ca
+  virtual InferenceBatchLearnerInputPtr createBatchLearnerSubInputModel(ExecutionContext& context,
+                                                                        const InferencePtr& targetInference,
+                                                                        const InferenceExampleVectorPtr& trainingExamples,
+                                                                        const InferenceExampleVectorPtr& validationExamples) const
+    {return new InferenceBatchLearnerInput(targetInference, trainingExamples, validationExamples);}
+
+  virtual InferenceBatchLearnerInputPtr duplicateBatchLearnerSubInput(ExecutionContext& context,
+                                                                      const InferenceBatchLearnerInputPtr& learnerInputModel,
+                                                                      const InferencePtr& targetInference, 
+                                                                      size_t subInferenceIndex) const
+  {
+    InferenceBatchLearnerInputPtr res = learnerInputModel->cloneAndCast<InferenceBatchLearnerInput>(context);
+    res->setTargetInference(targetInference);
+    return res;
+  }
 
   virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
@@ -84,11 +98,12 @@ public:
     ParallelInferenceStatePtr res = new ParallelInferenceState(input, supervision);
     size_t numSubInferences = targetInference->getNumSubInferences();
     res->reserve(numSubInferences);
-
+    InferenceBatchLearnerInputPtr subLearnerInput;
     for (size_t i = 0; i < numSubInferences; ++i)
     {
       InferencePtr subInference = targetInference->getSubInference(i);
-      InferenceBatchLearnerInputPtr subLearnerInput = new InferenceBatchLearnerInput(subInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples());
+      subLearnerInput = (!subLearnerInput) ? createBatchLearnerSubInputModel(context, subInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples())
+                                           : duplicateBatchLearnerSubInput(context, subLearnerInput, subInference, i);
       InferencePtr subInferenceLearner = subInference->getBatchLearner();
       if (subInferenceLearner)
         res->addSubInference(subInferenceLearner, subLearnerInput, Variable());

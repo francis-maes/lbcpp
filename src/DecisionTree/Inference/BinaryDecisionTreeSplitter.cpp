@@ -62,7 +62,7 @@ Variable DoubleBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExample
   return Variable(res, doubleType);
 }
 
-Variable IntegereBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const
+Variable IntegerBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeExampleVector& examples) const
 {
   int minValue = 0x7FFFFFFF;
   int maxValue = -minValue;
