@@ -108,6 +108,12 @@ String ExecutionTraceNode::toString() const
 String ExecutionTraceNode::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
+size_t ExecutionTraceNode::getNumSubItems() const
+{
+  ScopedLock _(subItemsLock);
+  return subItems.size();
+}
+
 std::vector<ExecutionTraceItemPtr> ExecutionTraceNode::getSubItems() const
 {
   ScopedLock _(subItemsLock);
