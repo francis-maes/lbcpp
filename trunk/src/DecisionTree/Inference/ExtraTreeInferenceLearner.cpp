@@ -167,7 +167,10 @@ void SingleExtraTreeInferenceLearner::sampleTreeRecursively(ExecutionContext& co
     std::vector<size_t> leftExamples, rightExamples;
     double splitScore = splitter->computeSplitScore(context, examples, leftExamples, rightExamples, splitPredicate);
 
+    jassert(leftExamples.size());
+    jassert(rightExamples.size());
     jassert(leftExamples.size() + rightExamples.size() == examples.getNumExamples());
+
 
     /*std::cout << splitPredicate->toString() << "\t score: " << splitScore;
     std::cout << "   nbNeg: " << leftExamples.size();
