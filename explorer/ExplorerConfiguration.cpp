@@ -10,17 +10,9 @@
 using namespace lbcpp;
 
 /*
-** ExplorerRecentFiles
+** RecentFileVector
 */
-ExplorerRecentFilesPtr ExplorerRecentFiles::getInstance(ExecutionContext& context)
-{
-  Variable& res = ExplorerConfiguration::getConfiguration(context, T("ExplorerRecentFiles"));
-  if (!res.exists())
-    res = Variable(new ExplorerRecentFiles());
-  return res.getObjectAndCast<ExplorerRecentFiles>(context);
-}
-
-void ExplorerRecentFiles::addRecentFile(const File& file)
+void RecentFileVector::addRecentFile(const File& file)
 {
   recentFiles->prepend(file);
   for (size_t i = 1; i < recentFiles->getNumElements(); ++i)
@@ -51,20 +43,20 @@ File ExplorerConfiguration::getApplicationDataDirectory(ExecutionContext& contex
 File ExplorerConfiguration::getConfigurationFile(ExecutionContext& context)
   {return getApplicationDataDirectory(context).getChildFile(T("config.xml"));}
 
-VariableVectorPtr& ExplorerConfiguration::getInstancePtr()
+ExplorerConfigurationPtr& ExplorerConfiguration::getInstancePtr()
 {
-  static VariableVectorPtr configuration;
+  static ExplorerConfigurationPtr configuration;
   return configuration;
 }
 
-VariableVectorPtr ExplorerConfiguration::getInstance()
+ExplorerConfigurationPtr ExplorerConfiguration::getInstance()
 {
-  VariableVectorPtr& configuration = getInstancePtr();
+  ExplorerConfigurationPtr& configuration = getInstancePtr();
   if (!configuration)
   {
     File configurationFile = getConfigurationFile(defaultExecutionContext());
     if (configurationFile.exists())
-      configuration = Variable::createFromFile(defaultExecutionContext(), configurationFile).getObjectAndCast<VariableVector>();
+      configuration = ExplorerConfiguration::createFromFile(defaultExecutionContext(), configurationFile);
     if (!configuration)
       configuration = new ExplorerConfiguration();
   }

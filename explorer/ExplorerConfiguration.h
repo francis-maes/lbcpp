@@ -14,18 +14,16 @@
 namespace lbcpp
 {
 
-class ExplorerRecentFiles;
-typedef ReferenceCountedObjectPtr<ExplorerRecentFiles> ExplorerRecentFilesPtr;
+class RecentFileVector;
+typedef ReferenceCountedObjectPtr<RecentFileVector> RecentFileVectorPtr;
 
-class ExplorerRecentFiles : public Object
+class RecentFileVector : public Object
 {
 public:
-  ExplorerRecentFiles() : recentFiles(vector(fileType)) {}
-
-  static ExplorerRecentFilesPtr getInstance(ExecutionContext& context);
+  RecentFileVector() : recentFiles(vector(fileType)) {}
 
   virtual String getName() const
-    {return T("ExplorerRecentFiles");}
+    {return T("RecentFileVector");}
 
   File getRecentDirectory() const
     {return recentDirectory;}
@@ -45,29 +43,30 @@ public:
     {recentFiles->clear();}
 
 private:
-  friend class ExplorerRecentFilesClass;
+  friend class RecentFileVectorClass;
 
   enum {maxRecentFiles = 8};
   File recentDirectory;
   VectorPtr recentFiles;
 };
 
-extern ClassPtr explorerConfigurationClass;
+class ExplorerConfiguration;
+typedef ReferenceCountedObjectPtr<ExplorerConfiguration> ExplorerConfigurationPtr;
 
-class ExplorerConfiguration : public VariableVector
+class ExplorerConfiguration : public Object
 {
 public:
-  ExplorerConfiguration() : VariableVector() {}
+  ExplorerConfiguration() : recentProjects(new RecentFileVector()) {}
 
   static File getApplicationDataDirectory(ExecutionContext& context);
   static File getConfigurationFile(ExecutionContext& context);
 
-  static VariableVectorPtr& getInstancePtr();
-  static VariableVectorPtr getInstance();
+  static ExplorerConfigurationPtr& getInstancePtr();
+  static ExplorerConfigurationPtr getInstance();
 
   static void save(ExecutionContext& context)
     {getInstance()->saveToFile(context, getConfigurationFile(context));}
-
+/*
   static Variable& getConfiguration(ExecutionContext& context, const String& typeName)
   {
     // FIXME !
@@ -83,6 +82,14 @@ public:
     object->append(Variable::create(type));
     return object->getElement(object->getNumElements() - 1);
   }
+*/
+  RecentFileVectorPtr getRecentProjects() const
+    {return recentProjects;}
+
+private:
+  friend class ExplorerConfigurationClass;
+
+  RecentFileVectorPtr recentProjects;
 };
 
 }; /* namespace lbcpp */

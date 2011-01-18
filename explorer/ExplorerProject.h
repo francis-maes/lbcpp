@@ -1,15 +1,16 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: WorkUnitManagerConfiguration.h | WorkUnit Manager Configuration  |
+| Filename: ExplorerProject.h              | Project                         |
 | Author  : Francis Maes                   |                                 |
-| Started : 02/12/2010 03:14               |                                 |
+| Started : 18/01/2011 19:10               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_EXPLORER_WORK_UNIT_MANAGER_CONFIGURATION_H_
-# define LBCPP_EXPLORER_WORK_UNIT_MANAGER_CONFIGURATION_H_
+#ifndef LBCPP_EXPLORER_PROJECT_H_
+# define LBCPP_EXPLORER_PROJECT_H_
 
-# include "../ExplorerConfiguration.h"
+# include <lbcpp/lbcpp.h>
+# include "ExplorerConfiguration.h"
 
 namespace lbcpp
 {
@@ -42,17 +43,11 @@ protected:
 
 typedef ReferenceCountedObjectPtr<RecentWorkUnitConfiguration> RecentWorkUnitConfigurationPtr;
 
-
-class RecentWorkUnitsConfiguration;
-typedef ReferenceCountedObjectPtr<RecentWorkUnitsConfiguration> RecentWorkUnitsConfigurationPtr;
-
 class RecentWorkUnitsConfiguration : public Object
 {
 public:
   virtual String getName() const
     {return T("RecentWorkUnitsConfiguration");}
-
-  static RecentWorkUnitsConfigurationPtr getInstance(ExecutionContext& context = defaultExecutionContext());
 
   size_t getNumRecentWorkUnits() const
     {return recents.size();}
@@ -75,6 +70,44 @@ protected:
   int findRecentWorkUnit(const String& workUnit) const;
 };
 
+typedef ReferenceCountedObjectPtr<RecentWorkUnitsConfiguration> RecentWorkUnitsConfigurationPtr;
+
+class ExplorerProject;
+typedef ReferenceCountedObjectPtr<ExplorerProject> ExplorerProjectPtr;
+
+class ExplorerProject : public Object
+{
+public:
+  ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration()) {}
+
+  static ExplorerProjectPtr createProject(ExecutionContext& context, const File& rootDirectory);
+  static ExplorerProjectPtr openProject(ExecutionContext& context, const File& rootDirectory);
+
+  void save(ExecutionContext& context);
+  void close(ExecutionContext& context);
+
+  const File& getRootDirectory() const
+    {return rootDirectory;}
+
+  const File& getRecentDirectory() const
+    {return recentDirectory;}
+
+  void setRecentDirectory(const File& recentDirectory)
+    {this->recentDirectory = recentDirectory;}
+
+  const RecentWorkUnitsConfigurationPtr& getRecentWorkUnits() const
+    {return recentWorkUnits;}
+
+  bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit);
+
+protected:
+  friend class ExplorerProjectClass;
+
+  File rootDirectory;
+  File recentDirectory;
+  RecentWorkUnitsConfigurationPtr recentWorkUnits;
+};
+
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_EXPLORER_WORK_UNIT_MANAGER_CONFIGURATION_H_
+#endif // !LBCPP_EXPLORER_PROJECT_H_

@@ -37,8 +37,6 @@ SET(EXPLORER_PROCESS_MANAGER_SOURCES
 
 SET(EXPLORER_WORK_UNIT_MANAGER_SOURCES
   WorkUnitManager/NewWorkUnitDialogWindow.h
-  WorkUnitManager/WorkUnitManagerConfiguration.h
-  WorkUnitManager/WorkUnitManagerConfiguration.cpp
   WorkUnitManager/WorkUnitManagerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/WorkUnitManagerLibrary.cpp
 )
@@ -46,6 +44,8 @@ SET(EXPLORER_WORK_UNIT_MANAGER_SOURCES
 SET(EXPLORER_APPLICATION_SOURCES
   ExplorerConfiguration.h
   ExplorerConfiguration.cpp
+  ExplorerProject.h
+  ExplorerProject.cpp
   ExplorerApplication.cpp
   ExplorerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExplorerLibrary.cpp
