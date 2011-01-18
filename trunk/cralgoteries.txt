@@ -1,7 +1,6 @@
-* Tester le SnowBox:
-  --> SnowBox --trace Traces/trace.xml -ls Data -bl ExtraTree -t "(SS3)2" -nmin 10 -k 20 -n3 7 -max 7
 
 Explorer/ExecutionContext
+ 0- Configurer un repertoire de projet courant, enregistrer toutes les traces d'execution dans ce repertoire
  1- gui pour choisir les parametres dans le "Start Work Unit"
  2- Colonne resultats, améliorer le système de colonnes
  3- tableaux et courbes

@@ -56,6 +56,8 @@ public:
 
   virtual VariableIterator* createVariablesIterator() const;
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class DenseGenericObjectVariableIterator;
 

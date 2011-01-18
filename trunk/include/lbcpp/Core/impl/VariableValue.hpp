@@ -47,6 +47,9 @@ struct VariableValue
   VariableValue(double doubleValue)
     {u.doubleValue = doubleValue;}
 
+  VariableValue(const juce::tchar* stringValue)
+    {u.stringValue = new String(stringValue);}
+
   VariableValue(const String& stringValue)
     {u.stringValue = new String(stringValue);}
 

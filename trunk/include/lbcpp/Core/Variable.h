@@ -44,6 +44,7 @@ public:
   Variable(juce::int64 intValue, TypePtr type = integerType);
   Variable(size_t intValue, TypePtr type = positiveIntegerType);
   Variable(double doubleValue, TypePtr type = doubleType);
+  Variable(const juce::tchar* stringValue, TypePtr type = stringType);
   Variable(const String& stringValue, TypePtr type = stringType);
   Variable(const File& fileValue, TypePtr type = fileType);
   Variable(const ObjectPtr& object);

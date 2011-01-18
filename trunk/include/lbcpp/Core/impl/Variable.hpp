@@ -47,6 +47,9 @@ inline Variable::Variable(size_t intValue, TypePtr type)
 inline Variable::Variable(double doubleValue, TypePtr type)
   : type(type), value(doubleValue) {jassert(isDouble());}
 
+inline Variable::Variable(const juce::tchar* stringValue, TypePtr type)
+  : type(type), value(stringValue) {jassert(isString());}
+
 inline Variable::Variable(const String& stringValue, TypePtr type)
   : type(type), value(stringValue) {jassert(isString());}
 
