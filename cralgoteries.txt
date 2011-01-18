@@ -1,21 +1,12 @@
-- enlever la dependance ExecutionTrace -> ExecutionContext (ne garder qu'un "String contextDescription")
-   -> cleaner l'utilisation de la callback  dans RunWorkUnit.cpp
-
 * Context single-thread plante: Infinite recursion loop in SingleThreadedExecutionContext::run
 
 * Tester le SnowBox:
   --> SnowBox --trace Traces/trace.xml -ls Data -bl ExtraTree -t "(SS3)2" -nmin 10 -k 20 -n3 7 -max 7
 
-
 Explorer/ExecutionContext
  1- gui pour choisir les parametres dans le "Start Work Unit"
- 2- serialisation de l'execution trace
-   * ExecutionTrace ne doit pas stoquer les pointeurs vers le WorkUnit (ca prend trop trop de mémoire)
-   * Callback pour crŽer les ExecutionTrace (multi-thread) => chaque thread ˆ sa sous-trace, et les fusions ne se font qu'a la fin
-   * Serialisation des ExecutionTrace
-   * Affichage des ExecutionTrace en offline
- 3- Collone resultats, améliorer le système de collones
- 4- tableaux et courbes
+ 2- Colonne resultats, améliorer le système de colonnes
+ 3- tableaux et courbes
 
 Boinc:
  * New class BoincExecutionContext
