@@ -9,7 +9,7 @@
 #ifndef LBCPP_EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
 # define LBCPP_EXPLORER_WORK_UNIT_MANAGER_NEW_DIALOG_WINDOW_H_
 
-# include "WorkUnitManagerConfiguration.h"
+# include "../ExplorerProject.h"
 # include "../Components/common.h"
 
 namespace lbcpp
@@ -20,7 +20,8 @@ class NewWorkUnitDialogWindow : public juce::AlertWindow
 public:
   struct WorkUnitSelector : public juce::ComboBox, public juce::ComboBoxListener
   {
-    WorkUnitSelector(String& workUnitName) : juce::ComboBox(T("Toto")), workUnitName(workUnitName)
+    WorkUnitSelector(RecentWorkUnitsConfigurationPtr recent, String& workUnitName)
+      : juce::ComboBox(T("Toto")), recent(recent), workUnitName(workUnitName)
     {
       setEditableText(true);
       setSize(600, 22);
@@ -29,7 +30,6 @@ public:
 
       int id = 1;
 
-      RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
       size_t numRecents = recent->getNumRecentWorkUnits();
       if (numRecents)
       {
@@ -51,14 +51,14 @@ public:
         {
           addSectionHeading(library->getName());
           for (size_t j = 0; j < workUnits.size(); ++j)
-            addItem(workUnits[j]->getName(), id++);
+            if (workUnits[j] != workUnitClass)
+              addItem(workUnits[j]->getName(), id++);
         }
       }
     }
 
     virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
     {
-      RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
       if (comboBoxThatHasChanged == this)
       {
         workUnitName = getText();
@@ -66,6 +66,7 @@ public:
       }
     }
 
+    RecentWorkUnitsConfigurationPtr recent;
     String& workUnitName;
 
     juce_UseDebuggingNewOperator
@@ -73,8 +74,8 @@ public:
 
   struct ArgumentsSelector : public juce::ComboBox, public juce::ComboBoxListener
   {
-    ArgumentsSelector(String& arguments)
-      : juce::ComboBox(T("Toto")), arguments(arguments)
+    ArgumentsSelector(RecentWorkUnitsConfigurationPtr recent, String& arguments)
+      : juce::ComboBox(T("Toto")), recent(recent), arguments(arguments)
     {
       setEditableText(true);
       setSize(600, 22);
@@ -88,7 +89,6 @@ public:
       if (comboBoxThatHasChanged->getName() == T("WorkUnit"))
       {
         clear();
-        RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
         RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
         if (workUnit)
         {
@@ -101,6 +101,7 @@ public:
       }
     }
 
+    RecentWorkUnitsConfigurationPtr recent;
     String& arguments;
 
     juce_UseDebuggingNewOperator
@@ -108,8 +109,8 @@ public:
 
   struct FileSelector : public Component, public juce::ButtonListener, public juce::ComboBoxListener
   {
-    FileSelector(File& file, bool selectDirectories)
-      : file(file), selectDirectories(selectDirectories)
+    FileSelector(RecentWorkUnitsConfigurationPtr recent, File& file, bool selectDirectories)
+      : recent(recent), file(file), selectDirectories(selectDirectories)
     {
       startingDirectory = File::getSpecialLocation(File::userHomeDirectory);
       wildCardPattern = T("*");
@@ -168,6 +169,7 @@ public:
     juce_UseDebuggingNewOperator
 
   protected:
+    RecentWorkUnitsConfigurationPtr recent;
     File& file;
     bool selectDirectories;
 
@@ -180,14 +182,13 @@ public:
 
   struct WorkingDirectorySelector : public FileSelector
   {
-    WorkingDirectorySelector(File& workingDirectory) : FileSelector(workingDirectory, true) {}
+    WorkingDirectorySelector(RecentWorkUnitsConfigurationPtr recent, File& workingDirectory) : FileSelector(recent, workingDirectory, true) {}
 
     virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)
     {
       if (comboBoxThatHasChanged->getName() == T("WorkUnit"))
       {
         comboBox->clear();
-        RecentWorkUnitsConfigurationPtr recent = RecentWorkUnitsConfiguration::getInstance();
         RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
         if (workUnit)
         {
@@ -209,9 +210,9 @@ public:
   ArgumentsSelector argumentsSelector;
   WorkingDirectorySelector workingDirectorySelector;
 
-  NewWorkUnitDialogWindow(String& workUnitName, String& arguments, File& workingDirectory)
+  NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
     : AlertWindow(T("New Work Unit"), T("Select a work unit and its arguments"), QuestionIcon),
-      workUnitSelector(workUnitName), argumentsSelector(arguments), workingDirectorySelector(workingDirectory)
+      workUnitSelector(recent, workUnitName), argumentsSelector(recent, arguments), workingDirectorySelector(recent, workingDirectory)
   {
     addTextBlock(T("Work Unit:"));
     addCustomComponent(&workUnitSelector);
@@ -228,9 +229,9 @@ public:
       workUnitSelector.setSelectedItemIndex(0);
   }
 
-  static bool run(String& workUnitName, String& arguments, File& workingDirectory)
+  static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
   {
-    NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(workUnitName, arguments, workingDirectory);
+    NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(recent, workUnitName, arguments, workingDirectory);
     const int result = window->runModalLoop();
     delete window;
     return result == 1;

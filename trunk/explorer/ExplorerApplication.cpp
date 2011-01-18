@@ -8,8 +8,8 @@
 
 #include "Utilities/SplittedLayout.h"
 #include "Utilities/FileType.h"
-#include "WorkUnitManager/NewWorkUnitDialogWindow.h"
 #include "ExplorerConfiguration.h"
+#include "ExplorerProject.h"
 using namespace lbcpp;
 
 ApplicationCommandManager* theCommandManager = NULL;
@@ -110,6 +110,10 @@ public:
 #ifdef JUCE_MAC
     setUsingNativeTitleBar(true);
 #endif // JUCE_MAC
+
+    ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
+    if (configuration->getRecentProjects()->getNumRecentFiles())
+      menuItemSelected(openRecentProjectMenu + 1, 0); // open most recent project
   }
   
   virtual ~ExplorerMainWindow()
@@ -131,28 +135,52 @@ public:
     return res;
   }
 
+  enum
+  {
+    newProjectMenu = 1,
+    openProjectMenu,
+    closeProjectMenu,
+
+    openFileMenu,
+    openDirectoryMenu,
+    startWorkUnitMenu,
+    closeMenu,
+
+    quitMenu,
+
+    openClearRecentProjectMenu = 100,
+    openRecentProjectMenu,
+  };
+
   virtual const PopupMenu getMenuForIndex(int topLevelMenuIndex, const String& menuName)
   {
+    ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
+
     if (topLevelMenuIndex == 0)
     {
       PopupMenu menu;
-      menu.addItem(1, "Open");
-      menu.addItem(2, "Open Directory");
+      menu.addItem(newProjectMenu, T("New Project"));
+      menu.addItem(openProjectMenu, T("Open Project"));
       
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(defaultExecutionContext());
-      if (configuration->getNumRecentFiles())
+      RecentFileVectorPtr recentProjects = configuration->getRecentProjects();
+      if (recentProjects->getNumRecentFiles())
       {
-        PopupMenu openRecentFilesMenu;
-        for (size_t i = 0; i < configuration->getNumRecentFiles(); ++i)
-          openRecentFilesMenu.addItem(101 + (int)i, configuration->getRecentFile(i).getFileName());
-        openRecentFilesMenu.addSeparator();
-        openRecentFilesMenu.addItem(100, T("Clear Menu"));
-        menu.addSubMenu(T("Open Recent File"), openRecentFilesMenu);
+        PopupMenu subMenu;
+        for (size_t i = 0; i < recentProjects->getNumRecentFiles(); ++i)
+          subMenu.addItem(openRecentProjectMenu + (int)i, recentProjects->getRecentFile(i).getFileName());
+        subMenu.addSeparator();
+        subMenu.addItem(openClearRecentProjectMenu, T("Clear Menu"));
+        menu.addSubMenu(T("Open Recent Project"), subMenu);
       }
-      menu.addItem(3, "Start Work Unit");
-      menu.addItem(4, "Close", contentTabs->getCurrentTabIndex() >= 0);
+      menu.addItem(closeProjectMenu, T("Close Project"));
       menu.addSeparator();
-      menu.addItem(5, "Quit");
+
+      menu.addItem(openFileMenu, T("Open File"), currentProject);
+      menu.addItem(openDirectoryMenu, T("Open Directory"), currentProject);
+      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), currentProject);
+      menu.addItem(closeMenu, T("Close"), currentProject && contentTabs->getCurrentTabIndex() >= 0);
+      menu.addSeparator();
+      menu.addItem(quitMenu, T("Quit"));
       return menu;
     }
     else
@@ -164,68 +192,136 @@ public:
     }
   }
 
+  void closeCurrentProject()
+  {
+    if (currentProject)
+    {
+      currentProject->close(context);
+      currentProject = ExplorerProjectPtr();
+    }
+    contentTabs->clearTabs();
+    setName(T("LBC++ Explorer"));
+  }
+
+  void setCurrentProject(ExplorerProjectPtr project)
+  {
+    ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
+    RecentFileVectorPtr recentProjects = configuration->getRecentProjects();
+
+    closeCurrentProject();
+    jassert(project);
+
+    File directory = project->getRootDirectory();
+    recentProjects->addRecentFile(directory);
+    recentProjects->setRecentDirectory(directory.getParentDirectory());
+    configuration->save(context);
+    setName(T("LBC++ Explorer - ") + directory.getFileName());
+    currentProject = project;
+    loadObjectFromFile(directory);
+  }
+
   virtual void menuItemSelected(int menuItemID, int topLevelMenuIndex)
   {
+    ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
+    RecentFileVectorPtr recentProjects = configuration->getRecentProjects();
+
     if (topLevelMenuIndex == 0)
     {
-      ExplorerRecentFilesPtr configuration = ExplorerRecentFiles::getInstance(defaultExecutionContext());
-
-      if (menuItemID == 1 || menuItemID == 2)
+      switch (menuItemID)
       {
-        File directory = configuration->getRecentDirectory();
-        if (!directory.exists())
-          directory = File::getSpecialLocation(File::userHomeDirectory);
-
-        FileChooser chooser("Please select the file you want to load...",
-                                 directory,
-                                 "*.*");
-
-        if ((menuItemID == 1 && chooser.browseForFileToOpen()) ||
-            (menuItemID == 2 && chooser.browseForDirectory()))
+      case newProjectMenu:
         {
-          File result = chooser.getResult();
-          configuration->setRecentDirectory(result.getParentDirectory());
-          loadObjectFromFile(result);
-        }
-      }
-      else if (menuItemID >= 101)
-      {
-        size_t recentFileId = menuItemID - 101;
-        jassert(recentFileId < configuration->getNumRecentFiles());
-        loadObjectFromFile(configuration->getRecentFile(recentFileId));
-      }
-      else if (menuItemID == 100)
-        configuration->clearRecentFiles();
-      else if (menuItemID == 3)
-      {
-        String workUnitName;
-        String arguments;
-        File workingDirectory;
-        if (NewWorkUnitDialogWindow::run(workUnitName, arguments, workingDirectory))
-        {
-          RecentWorkUnitsConfiguration::getInstance()->addRecent(workUnitName, arguments, workingDirectory);
-          ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
-
-          TypePtr workUnitType = typeManager().getType(context, workUnitName);
-          if (workUnitType)
+          File directory = configuration->getRecentProjects()->getRecentDirectory();
+          if (!directory.exists())
+            File::getSpecialLocation(File::userHomeDirectory);
+          FileChooser chooser("Please select the root directory of your project", directory, "*.*");
+          if (chooser.browseForFileToSave(true))
           {
-            WorkUnitPtr workUnit = Object::create(workUnitType);
-            if (!workUnit)
-              context.errorCallback(T("Create Work Unit"), T("Could not create ") + workUnitName);
-            else if (workUnit->parseArguments(context, arguments))
-            {
-              ExecutionTracePtr trace(new ExecutionTrace(workUnitContext));
-              contentTabs->addVariable(context, trace, workUnitName);
-              workUnitContext->pushWorkUnit(workUnit);
-            }
+            File directory = chooser.getResult();
+            ExplorerProjectPtr project = ExplorerProject::createProject(context, directory);
+            if (project)
+              setCurrentProject(project);
           }
         }
-        flushErrorAndWarningMessages(T("Start Work Unit"));
-      }
-      else if (menuItemID == 4)
+        break;
+
+      case openProjectMenu:
+        {
+          File directory = configuration->getRecentProjects()->getRecentDirectory();
+          if (!directory.exists())
+            File::getSpecialLocation(File::userHomeDirectory);
+          FileChooser chooser("Please choose the project to open", directory, "*.*");
+          if (chooser.browseForDirectory())
+          {
+            File directory = chooser.getResult();
+            ExplorerProjectPtr project = ExplorerProject::openProject(context, directory);
+            if (project)
+              setCurrentProject(project);
+          }
+        }
+        break;
+
+      case closeProjectMenu:
+        closeCurrentProject();
+        break;
+
+      case openFileMenu:
+      case openDirectoryMenu:
+        {
+          File directory = currentProject->getRecentDirectory();
+          if (!directory.exists())
+            directory = File::getSpecialLocation(File::userHomeDirectory);
+
+          FileChooser chooser("Please select the file you want to load...",
+                                   directory,
+                                   "*.*");
+
+          if ((menuItemID == openFileMenu && chooser.browseForFileToOpen()) ||
+              (menuItemID == openDirectoryMenu && chooser.browseForDirectory()))
+          {
+            File result = chooser.getResult();
+            currentProject->setRecentDirectory(result.getParentDirectory());
+            loadObjectFromFile(result);
+          }
+        }
+
+        break;
+
+      case startWorkUnitMenu:
+        {
+          WorkUnitPtr workUnit;
+          if (currentProject->startWorkUnit(context, workUnit))
+          {
+            ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
+            ExecutionTracePtr trace(new ExecutionTrace(workUnitContext));
+            contentTabs->addVariable(context, trace, workUnit->getClassName());
+            workUnitContext->pushWorkUnit(workUnit);
+          }
+          flushErrorAndWarningMessages(T("Start Work Unit"));
+        }
+        break;
+
+      case closeMenu:
         contentTabs->closeCurrentTab();
-      else if (menuItemID == 5)
+        break;
+
+      case quitMenu:
         JUCEApplication::quit();
+        break;
+
+      default:
+        if (menuItemID >= openRecentProjectMenu)
+        {
+          size_t recentFileId = (size_t)(menuItemID - openRecentProjectMenu);
+          jassert(recentFileId < recentProjects->getNumRecentFiles());
+          ExplorerProjectPtr project = ExplorerProject::openProject(context, recentProjects->getRecentFile(recentFileId));
+          if (project)
+            setCurrentProject(project);
+        }
+        else if (menuItemID == openClearRecentProjectMenu)
+          recentProjects->clearRecentFiles();
+        break;
+      };
     }
     else
     {
@@ -238,7 +334,8 @@ public:
 
   void loadObjectFromFile(const File& file)
   {
-    ExplorerRecentFiles::getInstance(context)->addRecentFile(file);
+    //RecentFileVector::getInstance(context)->addRecentFile(file);
+    // FIXME: save project ?
     ExplorerConfiguration::save(context);
     Variable variable = createVariableFromFile(file);
     if (variable.exists())
@@ -257,6 +354,8 @@ public:
 private:
   ExecutionContext& context;
   ExplorerContentTabs* contentTabs;
+
+  ExplorerProjectPtr currentProject;
 };
 
 namespace lbcpp
@@ -296,7 +395,7 @@ public:
     delete mainWindow;
     mainWindow = 0;
     deleteAndZero(theCommandManager); 
-    ExplorerConfiguration::getInstancePtr() = VariableVectorPtr();
+    ExplorerConfiguration::getInstancePtr() = ExplorerConfigurationPtr();
     explorerExecutionCallback = ExecutionCallbackPtr();
     lbcpp::deinitialize();
   }

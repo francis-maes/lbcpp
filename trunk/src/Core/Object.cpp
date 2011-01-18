@@ -180,8 +180,11 @@ ObjectPtr Object::create(ClassPtr objectClass)
 {
   ObjectPtr res = objectClass->create(defaultExecutionContext()).getObject();
   jassert(res);
-  jassert(res->getReferenceCount() == 2);
-  res->decrementReferenceCounter();
+  if (res)
+  {
+    jassert(res->getReferenceCount() == 2);
+    res->decrementReferenceCounter();
+  }
   return res;
 }
 

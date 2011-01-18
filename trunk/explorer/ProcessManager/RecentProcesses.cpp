@@ -8,14 +8,6 @@
 #include "RecentProcesses.h"
 using namespace lbcpp;
 
-RecentProcessesPtr RecentProcesses::getInstance(ExecutionContext& context)
-{
-  Variable& res = ExplorerConfiguration::getConfiguration(context, T("RecentProcesses"));
-  if (!res.exists())
-    res = Variable(new RecentProcesses());
-  return res.getObjectAndCast<RecentProcesses>();
-}
-
 void RecentProcesses::addRecentExecutable(const File& file)
 {
   int index = findRecentExecutable(file);

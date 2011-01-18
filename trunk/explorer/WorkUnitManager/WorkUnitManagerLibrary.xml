@@ -2,15 +2,4 @@
 
 <library name="WorkUnitManager" directory="WorkUnitManager">
 
-  
-    <class name="RecentWorkUnitConfiguration" base="Object">
-      <variable type="String" name="workUnitName"/>
-      <variable type="GenericVector[String]" name="arguments"/>
-      <variable type="GenericVector[File]" name="workingDirectories"/>
-    </class>
-    <class name="RecentWorkUnitsConfiguration" base="Object">
-      <variable type="ObjectVector[RecentWorkUnitConfiguration]" name="recents"/>
-    </class>
-    
-
 </library>
