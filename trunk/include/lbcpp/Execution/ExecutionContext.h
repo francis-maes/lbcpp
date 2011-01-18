@@ -51,8 +51,8 @@ public:
   /*
   ** Work Units
   */
-  virtual bool run(const WorkUnitPtr& workUnit);
-  virtual bool run(const CompositeWorkUnitPtr& workUnits) = 0;
+  virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack = true);
+  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit)

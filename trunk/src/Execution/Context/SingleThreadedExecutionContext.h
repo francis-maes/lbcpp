@@ -30,8 +30,8 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual bool run(const CompositeWorkUnitPtr& workUnits)
-    {return ExecutionContext::run((WorkUnitPtr)workUnits);}
+  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true)
+    {return ExecutionContext::run((WorkUnitPtr)workUnits, pushIntoStack);}
     
   lbcpp_UseDebuggingNewOperator
 };

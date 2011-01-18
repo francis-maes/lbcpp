@@ -63,6 +63,9 @@ class ProteinParallelInference : public VectorParallelInference, public ProteinI
 {
 public:
   ProteinParallelInference(const String& name = T("Protein"));
+  
+  virtual bool useMultiThreading() const
+    {return false;} // the learner uses multi-threading, the inference does not
 
   virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
   virtual Variable finalizeInference(ExecutionContext& context, ParallelInferenceStatePtr state) const;

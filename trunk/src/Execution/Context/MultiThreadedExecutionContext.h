@@ -168,11 +168,7 @@ private:
     context->threadBeginCallback(context->getStack());
 
     // execute work unit
-    if (entry.pushIntoStack)
-      context->enterScope(entry.workUnit);
-    bool result = entry.workUnit->run(*context);
-    if (entry.pushIntoStack)
-      context->leaveScope(result);
+    bool result = context->run(entry.workUnit, entry.pushIntoStack);
 
     // update result and counterToDecrement
     if (entry.result)
@@ -250,17 +246,19 @@ public:
   
   static void startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, bool& result)
   {
-    context.enterScope(workUnits);
     waitingQueue->push(workUnits, context.getStack()->cloneAndCast<ExecutionStack>(context), &numRemainingWorkUnits, &result);
   }
 
-  virtual bool run(const CompositeWorkUnitPtr& workUnits)
+  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     bool result;
     int numRemainingWorkUnits;
+    if (pushIntoStack)
+      enterScope(workUnits);
     startParallelRun(*this, workUnits, thread->getWaitingQueue(), numRemainingWorkUnits, result);
     thread->workUntilWorkUnitsAreDone(workUnits, numRemainingWorkUnits);
-    leaveScope(result);
+    if (pushIntoStack)
+      leaveScope(result);
     return result;
   }
 
@@ -353,7 +351,7 @@ public:
   virtual void waitUntilAllWorkUnitsAreDone()
     {threadPool->waitUntilAllWorkUnitsAreDone();}
     
-  virtual bool run(const WorkUnitPtr& workUnit)
+  virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     int remainingWorkUnits = 1;
     bool result;
@@ -363,13 +361,16 @@ public:
     return result;
   }
 
-  virtual bool run(const CompositeWorkUnitPtr& workUnits)
+  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     int numRemainingWorkUnits;
     bool result;
+    if (pushIntoStack)
+      enterScope(workUnits->getName(), workUnits);
     ThreadOwnedExecutionContext::startParallelRun(*this, workUnits, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
-    leaveScope(result);
+    if (pushIntoStack)
+      leaveScope(result);
     return result;
   }
 
