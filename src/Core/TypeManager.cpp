@@ -282,12 +282,20 @@ juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, c
   return NULL;
 }
 
-std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
+void Library::getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const
 {
-  std::vector<TypePtr> res;
   for (size_t i = 0; i < types.size(); ++i)
     if (types[i]->inheritsFrom(baseType))
       res.push_back(types[i]);
+
+  for (size_t i = 0; i < subLibraries.size(); ++i)
+    subLibraries[i]->getTypesInheritingFrom(baseType, res);
+}
+
+std::vector<TypePtr> Library::getTypesInheritingFrom(TypePtr baseType) const
+{
+  std::vector<TypePtr> res;
+  getTypesInheritingFrom(baseType, res);
   return res;
 }
 

@@ -38,10 +38,7 @@ public:
   ExecutionTraceTreeView(ExecutionTracePtr trace);
   virtual ~ExecutionTraceTreeView();
 
-  ExecutionTraceTreeViewNode* getItemFromStack(const ExecutionStackPtr& stack) const;
-
-  double getInitialTime() const
-    {return initialTime;}
+  ExecutionTraceTreeViewNode* getNodeFromStack(const ExecutionStackPtr& stack) const;
 
   virtual void timerCallback();
 
@@ -50,11 +47,13 @@ public:
 
   virtual int getDefaultWidth() const;
 
+  const ExecutionTracePtr& getTrace() const
+    {return trace;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   ExecutionTracePtr trace;
-  double initialTime;
   bool isSelectionUpToDate;
   bool isTreeUpToDate;
 

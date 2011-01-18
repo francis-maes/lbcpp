@@ -1,6 +1,3 @@
-* Creation de la gui depuis un .trace
-* Unifier la gui et le builder
-
 - enlever la dependance ExecutionTrace -> ExecutionContext (ne garder qu'un "String contextDescription")
    -> cleaner l'utilisation de la callback  dans RunWorkUnit.cpp
 

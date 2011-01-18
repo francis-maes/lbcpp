@@ -41,7 +41,11 @@ public:
     {appendTraceItem(new MessageExecutionTraceItem(currentNotificationTime, errorMessageType, what, where));}
 
   virtual void progressCallback(const ProgressionStatePtr& progression)
-    {getCurrentNode()->setProgression(progression);}
+  {
+    ExecutionTraceNodePtr node = getCurrentNode();
+    node->setProgression(progression);
+    node->setEndTime(currentNotificationTime);
+  }
 
   virtual void resultCallback(const String& name, const Variable& value)
     {getCurrentNode()->setResult(name, value);}
@@ -72,7 +76,7 @@ protected:
   ExecutionTraceNodePtr getCurrentNode() const
     {jassert(stack.size()); return stack.back();}
 
-  void appendTraceItem(ExecutionTraceItemPtr item)
+  virtual void appendTraceItem(ExecutionTraceItemPtr item)
     {getCurrentNode()->appendSubItem(item);}
 };
 
