@@ -65,6 +65,8 @@ public:
   size_t getNumElements() const
     {return numElements;}
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class SparseGenericObjectVariableIterator;
 

@@ -29,6 +29,7 @@ public:
       context.progressCallback(new ProgressionState(i + 1.0, 100.0, T("%")));
     }
     context.informationCallback(T("After"));
+    context.resultCallback(T("aStringResult"), T("Hello"));
     return true;
   }
 };
