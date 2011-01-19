@@ -91,7 +91,7 @@ Variable SingleExtraTreeInferenceLearner::computeInference(ExecutionContext& con
   jassert(tree);
 
   const BinaryDecisionTreeInferencePtr& inference = learnerInput->getTargetInference();
-  context.resultCallback(T("Num Attributes"), inference->getInputType()->getObjectNumVariables());
+  context.resultCallback(T("Num Attributes"), inference->getInputType()->getObjectNumVariables()); // FIXME getInputType = anyType (@see BinaryDecisionTreeInference)
   context.resultCallback(T("Num Active Attributes"), numActiveAttributes);
   context.resultCallback(T("K"), numAttributeSamplesPerSplit);
   context.resultCallback(T("Num Examples"), learnerInput->getNumTrainingExamples());

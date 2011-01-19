@@ -122,7 +122,6 @@ public:
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
             , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
             , target(new ProteinTarget(defaultExecutionContext(), T("(SS3-DR)2")))
-            , numberOfThreads(1)
             , currentPass(0) {}
   
   virtual String toString() const
@@ -162,8 +161,8 @@ protected:
   size_t numForSplitting;
   
   ProteinTargetPtr target;
-
-  size_t numberOfThreads;
+  
+  bool exportPerceptions;
 
 private:
   ContainerPtr learningData;
