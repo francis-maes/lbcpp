@@ -122,6 +122,7 @@ public:
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
             , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
             , target(new ProteinTarget(defaultExecutionContext(), T("(SS3-DR)2")))
+            , exportPerceptions(false)
             , currentPass(0) {}
   
   virtual String toString() const
