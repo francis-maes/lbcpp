@@ -35,6 +35,7 @@ double BinaryDecisionTreeSplitter::computeSplitScore(ExecutionContext& context,
       + T(" examples -> ") + String((int)leftExamples.size()) + T(" ") + String((int)rightExamples.size())
       + T("\nAttribute Values: ") + attributeValues);
     jassert(false);
+    return -DBL_MAX;
   }
 
   return scoringFunction->compute(context, new SplitScoringInput(examples, leftExamples, rightExamples));
@@ -107,7 +108,7 @@ Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeEx
   
   // sample selected values
   std::set<size_t> selectedValues;
-  random->sampleSubset(possibleValuesVector, possibleValues.size() / 2, selectedValues);
+  random->sampleSubset(possibleValuesVector, possibleValuesVector.size() / 2, selectedValues);
   
   // create mask
   BooleanVectorPtr mask = new BooleanVector(numElements + 1);
@@ -120,6 +121,7 @@ Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeEx
       bitValue = (selectedValues.find(i) != selectedValues.end()); // true for selected values
     mask->set(i, bitValue);
   }
+  jassertfalse;
   return mask;
 }
 
@@ -137,7 +139,7 @@ public:
   
   virtual bool computePredicate(ExecutionContext& context, const Variable& value) const
   {
-    if (value.isMissingValue())
+    if (value.isMissingValue()) // FIXME: can be removed ?
       return mask->get(mask->getNumElements() - 1);
     size_t i = (size_t)value.getInteger();
     jassert(i < mask->getNumElements() - 1);

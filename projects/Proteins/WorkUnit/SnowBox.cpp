@@ -536,6 +536,61 @@ ProteinSequentialInferencePtr SnowBox::loadOrCreateIfFailInference(ExecutionCont
   return new ProteinSequentialInference();
 }
 
+void exportPerceptionsToFile(ExecutionContext& context, ContainerPtr data, PerceptionPtr perception, File output)
+{
+  if (output.exists())
+    output.deleteFile();
+  OutputStream* o = output.createOutputStream();
+  for (size_t i = 0; i < data->getNumElements(); ++i)
+  {
+    ProteinPtr protein = data->getElement(i)[1].getObjectAndCast<Protein>();
+    for (size_t j = 0; j < protein->getLength(); ++j)
+    {
+      ObjectPtr obj = perception->computeFunction(context, Variable::pair(protein, j)).getObject();
+      for (size_t k = 0; k < obj->getNumVariables(); ++k)
+      {
+        Variable v = obj->getVariable(k);
+        if (v.isDouble())
+          *o << v.getDouble();
+        else if (v.isInteger())
+          *o << v.getInteger();
+        else if (v.isEnumeration())
+          *o << v.getInteger();
+        else if (v.isBoolean())
+          *o << (v.getBoolean() ? 1 : 0);
+        else
+        {
+          jassertfalse;
+        }
+        *o << " ";
+      }
+      *o << protein->getSecondaryStructure()->getElement(j).getInteger();
+      *o << "\n";
+    }
+  }
+  delete o;
+}
+
+void exportPerceptionTypeToFile(PerceptionPtr perception, File output)
+{
+  if (output.exists())
+    output.deleteFile();
+  OutputStream* o = output.createOutputStream();
+  TypePtr outputType = perception->getOutputType();
+  for (size_t i = 0; i < outputType->getObjectNumVariables(); ++i)
+  {
+    TypePtr elementType = outputType->getObjectVariableType(i);
+    if (elementType->inheritsFrom(enumValueType))
+      *o << (int)elementType.dynamicCast<Enumeration>()->getNumElements() + 1;
+    else if (elementType->inheritsFrom(booleanType))
+      *o << "2";
+    else
+      *o << "0";
+    *o << " ";
+  }
+  delete o;
+}
+
 bool SnowBox::run(ExecutionContext& context)
 {
   if (!loadData(context))
@@ -552,29 +607,32 @@ bool SnowBox::run(ExecutionContext& context)
   }
 
   printInformation(context);
+  
+  if (exportPerceptions)
+  {
+    PerceptionPtr perception = factory->createPerception(T("secondaryStructure"), ProteinInferenceFactory::residuePerception);
+    jassert(perception);
+    exportPerceptionTypeToFile(perception, File(output.getFullPathName() + T(".type")));
+    if (learningData)
+      exportPerceptionsToFile(context, learningData, perception, File(output.getFullPathName() + T(".learningSet")));
+    if (testingData)
+      exportPerceptionsToFile(context, testingData, perception, File(output.getFullPathName() + T(".testingSet")));
+    if (validationData)
+      exportPerceptionsToFile(context, validationData, perception, File(output.getFullPathName() + T(".validationSet")));
+    return true;
+  }
 
   ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference(context);
   inference->setProteinDebugDirectory(File(output.getFullPathName() + T(".debug")));
-  InferencePtr previousInference;
   for (currentPass = 0; currentPass < target->getNumPasses(); ++currentPass)
   {
     ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Passsssssss");
     for (size_t j = 0; j < target->getNumTasks(currentPass); ++j)
       inferencePass->appendInference(factory->createInferenceStep(target->getTask(currentPass, j)));
 
-    if (baseLearner != T("ExtraTree") && previousInference)
-      initializeLearnerByCloning(inferencePass, previousInference);
-
     inference->appendInference(inferencePass);
-    previousInference = inferencePass;
   }
-  /*
-  ExecutionContextPtr inferenceContext = (numberOfThreads == 1)
-                              ? singleThreadedExecutionContext()
-                              : multiThreadedExecutionContext(numberOfThreads);
-  // ExecutionContextPtr inferenceContext = refCountedPointerFromThis(&context); // FIXME !
-  inferenceContext->appendCallback(consoleExecutionCallback());
-  */
+
   if (useCrossValidation)
   {
     //inference->crossValidate(*context, learningData, evaluator, numberOfFolds);
