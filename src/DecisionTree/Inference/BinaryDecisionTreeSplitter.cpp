@@ -121,7 +121,7 @@ Variable EnumerationBinaryDecisionTreeSplitter::sampleSplit(const DecisionTreeEx
       bitValue = (selectedValues.find(i) != selectedValues.end()); // true for selected values
     mask->set(i, bitValue);
   }
-  jassertfalse;
+
   return mask;
 }
 
