@@ -60,7 +60,7 @@ public:
   virtual bool run(ExecutionContext& context)
   {
     runClassification(context);
-    //runRegression(context);
+    runRegression(context);
     return true;
   }
 
@@ -94,15 +94,6 @@ protected:
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
- /*   
-    runRegression(context);
-
-    inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
-    checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
-    
-    evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
-    inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-    checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());*/
   }
   
   void runRegression(ExecutionContext& context)
