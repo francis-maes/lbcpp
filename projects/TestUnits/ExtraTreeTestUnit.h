@@ -60,7 +60,7 @@ public:
   virtual bool run(ExecutionContext& context)
   {
     runClassification(context);
-    runRegression(context);
+    //runRegression(context);
     return true;
   }
 
@@ -70,7 +70,7 @@ protected:
   size_t numTrees;
   size_t numAttributes;
   size_t minSplitSize;
-  
+
   void runClassification(ExecutionContext& context)
   {  
     //File input(File::getSpecialLocation(File::currentExecutableFile).getChildFile(T("../../projects/Examples/Data/ExtraTrees/classification.csv")));
@@ -89,13 +89,20 @@ protected:
     EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     
     inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
-    //context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
     checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
     
     evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
-    //context.informationCallback(T("Evaluation (Test)") + evaluator->toString(), T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
+ /*   
+    runRegression(context);
+
+    inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
+    checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
+    
+    evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
+    inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
+    checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());*/
   }
   
   void runRegression(ExecutionContext& context)
@@ -116,12 +123,10 @@ protected:
  
     EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, learningData, evaluator);
-    //context.informationCallback(T("Evaluation (Train)") + evaluator->toString());
     checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
 
     evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator);
-    //context.informationCallback(T("Evaluation (Test)") + evaluator->toString());
     checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
   }
 

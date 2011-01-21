@@ -41,7 +41,7 @@ public:
     EnumerationDistributionPtr distribution = predicted.dynamicCast<EnumerationDistribution>();
     if (distribution)
     {
-      size_t n = distribution->getEnumeration()->getNumElements() + 1;
+      size_t n = distribution->getEnumeration()->getNumElements();
       size_t bestClass = n + 1;
       double bestProb = -DBL_MAX;
       for (size_t i = 0; i < n; ++i)
@@ -52,7 +52,7 @@ public:
           bestClass = i;
         }
       }
-      jassert(bestClass <= n);
+      jassert(bestClass < n);
       accuracy->push(bestClass == (size_t)correctLabel);
       return;
     }    

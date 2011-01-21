@@ -533,7 +533,11 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
 #### DecisionTree ####
 
 SET(LBCPP_DECISION_TREE_SOURCES
+  ../include/lbcpp/DecisionTree/predeclarations.h
   ../include/lbcpp/DecisionTree/DecisionTree.h
+  ../include/lbcpp/DecisionTree/RTreeInference.h
+  DecisionTree/RTreeInference.cpp
+  DecisionTree/RTreeInferenceLearner.h
   DecisionTree/DecisionTreeLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
 )
@@ -552,6 +556,16 @@ SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
   DecisionTree/Inference/BinaryDecisionTreeSplitter.cpp
   DecisionTree/Inference/DecisionTreeInferenceLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeInferenceLibrary.cpp  
+)
+
+SET(LBCPP_DECISION_TREE_RTREE_SOURCES
+  DecisionTree/RTree/f-table.c
+  DecisionTree/RTree/tree-density.c
+  DecisionTree/RTree/tree-kernel.c
+  DecisionTree/RTree/tree-model.h
+  DecisionTree/RTree/tree-model.c
+  DecisionTree/RTree/tree-multiregr.c
+  DecisionTree/RTree/tree-ok3.c
 )
 
 #### UserInterface ####
@@ -686,7 +700,8 @@ SET(LBCPP_CORE
 
   # DecisionTree
   ${LBCPP_DECISION_TREE_SOURCES}
-  ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
+    ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
+  #  ${LBCPP_DECISION_TREE_RTREE_SOURCES}
   
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
@@ -760,6 +775,7 @@ SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNIN
 ## DecisionTree
 SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP(DecisionTree RTree FILES ${LBCPP_DECISION_TREE_RTREE_SOURCES})
 
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})

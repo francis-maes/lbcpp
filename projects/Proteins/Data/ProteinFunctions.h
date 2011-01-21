@@ -70,6 +70,7 @@ public:
     ProteinPtr inputProtein = new Protein(protein->getName());
     inputProtein->setPrimaryStructure(protein->getPrimaryStructure());
     inputProtein->setPositionSpecificScoringMatrix(protein->getPositionSpecificScoringMatrix());
+    //inputProtein->setSecondaryStructure(protein->getSecondaryStructure()); // FIXME: REMOVE
     return Variable::pair(inputProtein, protein, outputType);
   }
 
