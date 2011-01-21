@@ -3722,8 +3722,7 @@ void free_table_float(float **tableau, int nbl) {
 
 DllExport void free_tree_tables() {
   clean_all_trees();
-
-  if (left_successor!=NULL) {
+/*  if (left_successor!=NULL) {
     MyFree((int *)left_successor);
     left_successor=NULL;
   }
@@ -3738,7 +3737,7 @@ DllExport void free_tree_tables() {
   if (prediction!=NULL) {
     MyFree((int *)prediction);
     prediction=NULL;
-  }
+  }*/
   if (node_weight!=NULL) {
     MyFree((float *)node_weight);
     node_weight=NULL;
@@ -3747,14 +3746,14 @@ DllExport void free_tree_tables() {
     MyFree((float *)node_size);
     node_size=NULL;
   }
-  if (threshold!=NULL) {
+/*  if (threshold!=NULL) {
     MyFree((union threshold_type *)threshold);
     threshold=NULL;
-  }
+  }*/
 
-  free_table_float(prediction_values,size_current_tree_table_pred);
+/*  free_table_float(prediction_values,size_current_tree_table_pred);
   prediction_values=NULL;
-
+*/
   free_table_score_type(table_score,3);
   table_score=NULL;
 
@@ -5092,7 +5091,7 @@ DllExport float build_one_tree_ensemble(int *ts_vector, int length_ts_vector) {
 	save_ensemble_ls_pos++;
       }
     }
-
+    rtree_update_progression((size_t)t + 1);
     if (print_result) {
       printf("model %d...",t+1);
       fflush(stdout);

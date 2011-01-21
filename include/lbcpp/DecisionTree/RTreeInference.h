@@ -45,7 +45,6 @@ protected:
   size_t numTrees;
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;
-  CriticalSection lock;
   
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 };

@@ -16,9 +16,7 @@ public:
   
 protected:
   friend class RTreeInferenceLearnerClass;
-  
-  CriticalSection lock;
-  
+
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 };
 

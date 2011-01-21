@@ -7,6 +7,8 @@
 #define LOAD_MULTIREGR
 #define LOAD_OK3
 
+void rtree_update_progression(size_t);
+
 #include "RTree/tree-model.h"
 #include "RTree/tree-model.c"
 #include "RTree/tree-density.c"
@@ -15,7 +17,25 @@
 #include "RTree/tree-ok3.c"
 #include "RTree/tree-multiregr.c"
 
+
+CORETABLE_TYPE *core_table_y = NULL;
+
+float getobjy_multiregr_learn_matlab(int obj, int att) {
+  return (float)core_table_y[goal_multiregr[att]*nb_obj_in_core_table+object_mapping[obj]];
+}
+
 using namespace lbcpp;
+
+ExecutionContext* rtree_context;
+ProgressionStatePtr rtree_progress;
+
+static CriticalSection learnerLock;
+
+void rtree_update_progression(size_t value)
+{
+  rtree_progress->setValue(value);
+  rtree_context->progressCallback(rtree_progress);
+}
 
 namespace lbcpp
 {
@@ -25,6 +45,7 @@ class RTree
 public:
   Variable makePrediction(ExecutionContext& context, const Variable& input, const TypePtr& outputType) const
   {
+    ScopedLock _(learnerLock);
     restoreTreesState();
     float *saved_core_table = core_table;
     int saved_nb_obj_in_core_table = nb_obj_in_core_table;
@@ -106,6 +127,7 @@ public:
   ~RTree()
   {
     /* on libere la memoire */
+    MyFreeAndNull(treesState.ltrees);
     MyFreeAndNull(treesState.ltrees_weight);
     MyFreeAndNull(treesState.left_successor);
     MyFreeAndNull(treesState.right_successor);
@@ -120,18 +142,29 @@ public:
     treesState.nb_goal_multiregr = nb_goal_multiregr;
     treesState.current_nb_of_ensemble_terms = current_nb_of_ensemble_terms;
     treesState.ltrees_weight = (float*)MyMalloc(current_nb_of_ensemble_terms * sizeof(float));
+    treesState.ltrees = (int*)MyMalloc(current_nb_of_ensemble_terms * sizeof(int));
     for (size_t i = 0; i < (size_t)current_nb_of_ensemble_terms; ++i)
+    {
+      treesState.ltrees[i] = ltrees[i];
       treesState.ltrees_weight[i] = ltrees_weight[i];
+    }
     treesState.average_predictions_ltrees = average_predictions_ltrees;
     treesState.get_tree_prediction_vector = get_tree_prediction_vector;
     treesState.left_successor = left_successor;
+    left_successor = NULL;
     treesState.right_successor = right_successor;
+    right_successor = NULL;
     treesState.tested_attribute = tested_attribute;
+    tested_attribute = NULL;
     treesState.prediction_values = prediction_values;
+    prediction_values = NULL;
     treesState.size_current_tree_table_pred = size_current_tree_table_pred;
     treesState.prediction = prediction;
+    prediction = NULL;
     treesState.threshold = threshold;
+    threshold = NULL;
     treesState.attribute_descriptors = attribute_descriptors;
+    attribute_descriptors = NULL;
     treesState.nb_attributes = nb_attributes;
     treesState.getattval = getattval;
   }
@@ -141,7 +174,10 @@ public:
     nb_goal_multiregr = treesState.nb_goal_multiregr;
     current_nb_of_ensemble_terms = treesState.current_nb_of_ensemble_terms;
     for (size_t i = 0; i < (size_t)current_nb_of_ensemble_terms; ++i)
+    {
+      ltrees[i] = treesState.ltrees[i];
       ltrees_weight[i] = treesState.ltrees_weight[i];
+    }
     average_predictions_ltrees = treesState.average_predictions_ltrees;
     get_tree_prediction_vector = treesState.get_tree_prediction_vector;
     left_successor = treesState.left_successor;
@@ -161,6 +197,7 @@ protected:
   {
     int nb_goal_multiregr;
     int current_nb_of_ensemble_terms;
+    int* ltrees; // need to be copied form 0 to current_nb_of_ensemble_terms
     float* ltrees_weight; // need to be copied form 0 to current_nb_of_ensemble_terms
     int average_predictions_ltrees;
     float *(*get_tree_prediction_vector)(int tree, int obj); // normaly, this fonction is constant
@@ -189,17 +226,11 @@ RTreeInference::RTreeInference(const String& name, PerceptionPtr perception, siz
   {setBatchLearner(rTreeInferenceLearner());}
 
 Variable RTreeInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-  {ScopedLock _(lock); return trees ? trees->makePrediction(context, perception->computeFunction(context, input), getOutputType(getInputType())) : Variable::missingValue(getOutputType(getInputType()));}
+  {return trees ? trees->makePrediction(context, perception->computeFunction(context, input), getOutputType(getInputType())) : Variable::missingValue(getOutputType(getInputType()));}
 
 /*
 ** RTreeInferenceLearner
 */
-
-CORETABLE_TYPE *core_table_y = NULL;
-
-float getobjy_multiregr_learn_matlab(int obj, int att) {
-  return (float)core_table_y[goal_multiregr[att]*nb_obj_in_core_table+object_mapping[obj]];
-}
 
 void exportData()
 {
@@ -228,7 +259,7 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
                                                  const Variable& input,
                                                  const Variable& supervision) const
 {
-  ScopedLock _(lock);
+  ScopedLock _(learnerLock);
   InferenceBatchLearnerInputPtr learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
   jassert(learnerInput);
   RTreeInferencePtr inference = learnerInput->getTargetInference();
@@ -247,7 +278,7 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   context.resultCallback(T("nmin"), inference->getMinimumSizeForSplitting());
   context.resultCallback(T("Num Examples"), examples.size());
   
-  set_print_result(1, 0);
+  set_print_result(0, 0);
   goal_type = MULTIREGR;
   goal = MULTIREGR;
   nb_attributes = perception->getNumOutputVariables();
@@ -381,6 +412,8 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   
   clean_all_trees();
   /* construction de l'ensemble d'arbres */
+  rtree_context = &context;
+  rtree_progress = new ProgressionState(0, inference->getNumTrees(), "Trees");
   build_one_tree_ensemble(NULL, 0);
   
   RTreePtr trees = new RTree();
@@ -405,4 +438,3 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
 
   return Variable();
 }
-
