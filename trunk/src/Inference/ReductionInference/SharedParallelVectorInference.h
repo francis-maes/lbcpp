@@ -74,7 +74,18 @@ public:
         {
           EnumerationDistributionPtr distribution = result.dynamicCast<EnumerationDistribution>();
           if (distribution)
-            result = distribution->sample(RandomGenerator::getInstance());
+          {
+            size_t n = distribution->getEnumeration()->getNumElements();
+            size_t bestClass = n + 1;
+            double bestProb = -DBL_MAX;
+            for (size_t i = 0; i < n; ++i)
+              if (distribution->getProbability(i) > bestProb)
+              {
+                bestProb = distribution->getProbability(i);
+                bestClass = i;
+              }
+            result = Variable(bestClass, distribution->getEnumeration());
+          }
         }
         atLeastOnePrediction = true;
         res->setElement(i, result);

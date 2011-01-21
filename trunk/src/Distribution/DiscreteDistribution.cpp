@@ -95,7 +95,7 @@ double EnumerationDistribution::computeEntropy() const
     return cachedEntropy.getDouble();
   double res = 0.0;
   for (size_t i = 0; i < values.size(); ++i)
-    if (values[i])
+    if (values[i] > 1e-9)
     {
       double p = values[i];
       res -= p * log2(p);

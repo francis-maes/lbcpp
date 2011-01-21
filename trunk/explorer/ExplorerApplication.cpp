@@ -113,7 +113,7 @@ public:
 
     ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
     if (configuration->getRecentProjects()->getNumRecentFiles())
-      menuItemSelected(openRecentProjectMenu + 1, 0); // open most recent project
+      menuItemSelected(openRecentProjectMenu, 0); // open most recent project
   }
   
   virtual ~ExplorerMainWindow()

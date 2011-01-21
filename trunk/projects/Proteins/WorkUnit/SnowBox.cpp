@@ -279,7 +279,7 @@ public:
           for (size_t i = 0; i < learningScores.size(); ++i)
             *o << "\t" << learningScores[i].first << "(train, test, valid)";
           *o << "\n";
-        }        
+        }
 
         *o << (int)passNumber;
         for (size_t i = 0; i < learningScores.size(); ++i)
@@ -543,7 +543,7 @@ void exportPerceptionsToFile(ExecutionContext& context, ContainerPtr data, Perce
   OutputStream* o = output.createOutputStream();
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
-    ProteinPtr protein = data->getElement(i)[1].getObjectAndCast<Protein>();
+    ProteinPtr protein = data->getElement(i)[0].getObjectAndCast<Protein>();
     for (size_t j = 0; j < protein->getLength(); ++j)
     {
       ObjectPtr obj = perception->computeFunction(context, Variable::pair(protein, j)).getObject();
@@ -641,13 +641,15 @@ bool SnowBox::run(ExecutionContext& context)
   }
   else
   {
-    context.appendCallback(new EvaluationInferenceCallback(inference, learningData, testingData, validationData, target, output));
+    ExecutionCallbackPtr evaluationCallback = new EvaluationInferenceCallback(inference, learningData, testingData, validationData, target, output);
+    context.appendCallback(evaluationCallback);
     //context.appendCallback(new StackPrinterCallback());
     inference->train(context, learningData, validationData);
 
     File outputInferenceFile = output.getFullPathName() + T(".xml");
     context.informationCallback(T("SnowBox::InferenceSavedTo"), outputInferenceFile.getFullPathName());
     inference->saveToFile(context, outputInferenceFile);
+    context.removeCallback(evaluationCallback);
   }
   return true;
 }

@@ -3,6 +3,7 @@
 <library name="DecisionTreeInference" directory="DecisionTree/Inference">
 
   <include file="lbcpp/Distribution/DistributionBuilder.h"/>
+  <include file="lbcpp/DecisionTree/RTreeInference.h"/>
 
   <class name="BinaryDecisionTree"/>
   <class name="SplitScoringInput"/>
@@ -46,32 +47,41 @@
 
     InferencePtr regressionExtraTreeInference(const String&amp; name, PerceptionPtr perception, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
     {
+      /*
       InferencePtr decisionTreeModel = new RegressionBinaryDecisionTreeInference(name);
       DistributionBuilderPtr probabilityBuilder = gaussianDistributionBuilder();
       InferencePtr x3Inference = singleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, probabilityBuilder);
       InferencePtr res = new ParallelVoteInference(name, numTrees, decisionTreeModel, x3Inference, probabilityBuilder);
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
+      */
+      return new RegressionRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
     
     InferencePtr binaryClassificationExtraTreeInference(const String&amp; name, PerceptionPtr perception, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
     {
+      /*
       InferencePtr decisionTreeModel = new BinaryClassificationBinaryDecisionTreeInference(name);
       DistributionBuilderPtr probabilityBuilder = bernoulliDistributionBuilder();
       InferencePtr x3Inference = singleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, probabilityBuilder);
       InferencePtr res = new ParallelVoteInference(name, numTrees, decisionTreeModel, x3Inference, probabilityBuilder);
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
+      */
+      return new BinaryRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
     
     InferencePtr classificationExtraTreeInference(const String&amp; name, PerceptionPtr perception, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
     {
+      /*
       InferencePtr decisionTreeModel = new ClassificationBinaryDecisionTreeInference(name, classes);
       DistributionBuilderPtr probabilityBuilder = enumerationDistributionBuilder(classes);
       InferencePtr x3Inference = singleExtraTreeInferenceLearner(numAttributeSamplesPerSplit, minimumSizeForSplitting, probabilityBuilder);
       InferencePtr res = new ParallelVoteInference(name, numTrees, decisionTreeModel, x3Inference, probabilityBuilder);
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
+      */
+      return new ClassificationRTreeInference(name, perception, classes, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
   </code>
     
