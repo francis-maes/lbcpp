@@ -73,10 +73,6 @@ void ReferenceCountedObject::incrementReferenceCounter()
   juce::atomicIncrement(refCount);
   ScopedLock _(refCountInfoLock);
   numAccessesPerType[getTypeName(typeid(*this))]++;
-  if (getTypeName(typeid(*this)) == T("LinearInference"))
-  {
-    std::cout << "" << std::flush;
-  }
   ++totalNumAccesses;
 }
 

@@ -85,7 +85,7 @@ void CompositeExecutionCallback::clearCallbacks()
 void DispatchByThreadExecutionCallback::notificationCallback(const NotificationPtr& notification)
 {
   Thread::ThreadID threadId = notification->getSourceThreadId();
-  std::vector<ExecutionCallbackPtr>& callbacks = callbacksByThread[threadId];
+  std::vector<ExecutionCallbackPtr>& callbacks = getCallbacksByThreadId(threadId);
   
   ReferenceCountedObjectPtr<ThreadExecutionNotification> threadNotification = notification.dynamicCast<ThreadExecutionNotification>();
   if (threadNotification)
@@ -108,6 +108,12 @@ void DispatchByThreadExecutionCallback::notificationCallback(const NotificationP
     jassert(callbacks.size());
     callbacks.back()->notificationCallback(notification);
   }
+}
+
+std::vector<ExecutionCallbackPtr>& DispatchByThreadExecutionCallback::getCallbacksByThreadId(Thread::ThreadID threadID)
+{
+  ScopedLock _(callbacksByThreadLock);
+  return callbacksByThread[threadID];
 }
 
 /*
