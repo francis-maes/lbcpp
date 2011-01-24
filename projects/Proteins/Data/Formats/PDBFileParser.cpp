@@ -70,7 +70,8 @@ bool PDBFileParser::parseLine(const String& line)
 
 bool PDBFileParser::parseHeaderLine(ExecutionContext& context, const String& line)
 {
-  proteinName = getSubString(line, 63, 66);
+  //proteinName = getSubString(line, 63, 66);
+  proteinName = getSubString(line, 60, 70);
   return true;
 }
 
