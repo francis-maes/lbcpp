@@ -17,11 +17,13 @@ using juce::Colour;
 */
 ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(trace), isSelectionUpToDate(false), isTreeUpToDate(true)
 {
-  DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
   DelayToUserInterfaceExecutionCallback::setStaticAllocationFlag();
+  DelayToUserInterfaceExecutionCallback::target = createTreeBuilderCallback();
+  ExecutionCallbackPtr pthis((DelayToUserInterfaceExecutionCallback* )this);
+
   ExecutionContextPtr context = trace->getContextPointer();
   if (context)
-    context->appendCallback(refCountedPointerFromThis(this));
+    context->appendCallback(pthis);
 
   setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode()));
   getRootItem()->setOpen(true);
@@ -34,7 +36,10 @@ ExecutionTraceTreeView::~ExecutionTraceTreeView()
 {
   ExecutionContextPtr context = trace->getContextPointer();
   if (context)
-    context->removeCallback(refCountedPointerFromThis(this));
+  {
+    ExecutionCallbackPtr pthis((DelayToUserInterfaceExecutionCallback* )this);
+    context->removeCallback(pthis);
+  }
   deleteRootItem();
 }
 

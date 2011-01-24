@@ -106,6 +106,7 @@ public:
 
   void decrementReferenceCounter()
   {
+    jassert(refCount != staticAllocationRefCountValue);
     if (juce::atomicDecrementAndReturn(refCount) == 0)
       delete this;
   }
