@@ -147,9 +147,12 @@ public:
   virtual void notificationCallback(const NotificationPtr& notification);
 
 protected:
+  CriticalSection callbacksByThreadLock;
   typedef std::map<Thread::ThreadID, std::vector<ExecutionCallbackPtr> > CallbackByThreadMap;
   CallbackByThreadMap callbacksByThread;
   Thread::ThreadID mainThreadID;
+
+  std::vector<ExecutionCallbackPtr>& getCallbacksByThreadId(Thread::ThreadID threadID);
 };
 
 class ProgressionState : public Object

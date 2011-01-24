@@ -58,7 +58,11 @@ bool DynamicClass::initialize(ExecutionContext& context)
 }
 
 VariableValue DynamicClass::create(ExecutionContext& context) const
-  {return createDenseObject();}
+{
+  VariableValue res = createDenseObject();
+  res.getObject()->decrementReferenceCounter();
+  return res;
+}
 
 ObjectPtr DynamicClass::createDenseObject() const
 {
