@@ -38,23 +38,24 @@ bool ConvertPDBToProteinWorkUnit::run(ExecutionContext& context)
     context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file ") + inputFile.getFileName().quoted() +(" does not exists"));
     return false;
   }
+  
+  if (inputFile.getFileExtension() != T(".pdb") && inputFile.getFileExtension() != T(".xml"))
+  {
+    context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not valid"));
+    return false;
+  }
 
   if (inputFile.getFileExtension() == T(".pdb") && !convertPDBToProtein(context, inputFile, outputFile))
   {
     context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not a valid PDB"));
     return false;
   }
-  else
-    return true;
   
   if (inputFile.getFileExtension() == T(".xml") && !convertProteinToPDB(context, inputFile, outputFile))
   {
     context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not a valid XML"));
     return false;
   }
-  else
-    return true;
   
-  context.errorCallback(T("ConvertPDBToProteinWorkUnit::run"), T("Input file is not valid"));
-  return false;
+  return true;
 }
