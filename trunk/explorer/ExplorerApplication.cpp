@@ -106,7 +106,7 @@ public:
     setContentComponent(contentTabs = new ExplorerContentTabs(this));
     setMenuBar(this);
     setResizable(true, true);
-    centreWithSize(700, 600);
+    centreWithSize(1024, 768);
 #ifdef JUCE_MAC
     setUsingNativeTitleBar(true);
 #endif // JUCE_MAC

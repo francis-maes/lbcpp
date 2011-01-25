@@ -15,14 +15,13 @@
 namespace lbcpp
 {
 
-class WorkUnitSelectorComboxBox;
-class WorkUnitArgumentsViewport;
+class NewWorkUnitContentComponent;
 
-class NewWorkUnitDialogWindow : public juce::AlertWindow
+class NewWorkUnitDialogWindow : public juce::DocumentWindow
 {
 public:
-  virtual ~NewWorkUnitDialogWindow();
-
+//  virtual ~NewWorkUnitDialogWindow();
+/*
   struct FileSelector : public Component, public juce::ButtonListener, public juce::ComboBoxListener
   {
     FileSelector(RecentWorkUnitsConfigurationPtr recent, File& file, bool selectDirectories)
@@ -121,19 +120,16 @@ public:
 
     juce_UseDebuggingNewOperator
   };
-
+*/
   static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
 
-  virtual void resized();
+  //virtual void resized();
 
   juce_UseDebuggingNewOperator
 
 private:
   NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
-
-  WorkUnitSelectorComboxBox* workUnitSelector;
-  WorkUnitArgumentsViewport* argumentsSelector;
-  WorkingDirectorySelector workingDirectorySelector;
+  
 };
 
 }; /* namespace lbcpp */
