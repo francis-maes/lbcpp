@@ -15,97 +15,13 @@
 namespace lbcpp
 {
 
+class WorkUnitSelectorComboxBox;
+class WorkUnitArgumentsViewport;
+
 class NewWorkUnitDialogWindow : public juce::AlertWindow
 {
 public:
-  struct WorkUnitSelector : public juce::ComboBox, public juce::ComboBoxListener
-  {
-    WorkUnitSelector(RecentWorkUnitsConfigurationPtr recent, String& workUnitName)
-      : juce::ComboBox(T("Toto")), recent(recent), workUnitName(workUnitName)
-    {
-      setEditableText(true);
-      setSize(600, 22);
-      setName(T("WorkUnit"));
-      addListener(this);
-
-      int id = 1;
-
-      size_t numRecents = recent->getNumRecentWorkUnits();
-      if (numRecents)
-      {
-        addSectionHeading(T("Recent"));
-        if (numRecents > 8) numRecents = 8;
-        for (size_t i = 0; i < numRecents; ++i)
-        {
-          String str = recent->getRecentWorkUnit(i)->getWorkUnitName();
-          addItem(str, id++);
-        }
-      }
-
-      size_t numLibraries = lbcpp::getNumLibraries();
-      for (size_t i = 0; i < numLibraries; ++i)
-      {
-        LibraryPtr library = lbcpp::getLibrary(i);
-        std::vector<TypePtr> workUnits = library->getTypesInheritingFrom(workUnitClass);
-        if (workUnits.size())
-        {
-          addSectionHeading(library->getName());
-          for (size_t j = 0; j < workUnits.size(); ++j)
-            if (workUnits[j] != workUnitClass)
-              addItem(workUnits[j]->getName(), id++);
-        }
-      }
-    }
-
-    virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
-    {
-      if (comboBoxThatHasChanged == this)
-      {
-        workUnitName = getText();
-        recent->addRecentWorkUnit(workUnitName);
-      }
-    }
-
-    RecentWorkUnitsConfigurationPtr recent;
-    String& workUnitName;
-
-    juce_UseDebuggingNewOperator
-  };
-
-  struct ArgumentsSelector : public juce::ComboBox, public juce::ComboBoxListener
-  {
-    ArgumentsSelector(RecentWorkUnitsConfigurationPtr recent, String& arguments)
-      : juce::ComboBox(T("Toto")), recent(recent), arguments(arguments)
-    {
-      setEditableText(true);
-      setSize(600, 22);
-      addListener(this);
-    }
-
-    virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
-    {
-      if (comboBoxThatHasChanged == this)
-        arguments = getText();
-      if (comboBoxThatHasChanged->getName() == T("WorkUnit"))
-      {
-        clear();
-        RecentWorkUnitConfigurationPtr workUnit = recent->getWorkUnit(comboBoxThatHasChanged->getText());
-        if (workUnit)
-        {
-          std::vector<String> arguments = workUnit->getArguments();
-          for (size_t i = 0; i < arguments.size(); ++i)
-            addItem(arguments[i].isEmpty() ? T(" ") : arguments[i], (int)i + 1);
-          if (arguments.size())
-            setSelectedItemIndex(0);
-        }
-      }
-    }
-
-    RecentWorkUnitsConfigurationPtr recent;
-    String& arguments;
-
-    juce_UseDebuggingNewOperator
-  };
+  virtual ~NewWorkUnitDialogWindow();
 
   struct FileSelector : public Component, public juce::ButtonListener, public juce::ComboBoxListener
   {
@@ -206,36 +122,18 @@ public:
     juce_UseDebuggingNewOperator
   };
 
-  WorkUnitSelector workUnitSelector;
-  ArgumentsSelector argumentsSelector;
+  static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+
+  virtual void resized();
+
+  juce_UseDebuggingNewOperator
+
+private:
+  NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+
+  WorkUnitSelectorComboxBox* workUnitSelector;
+  WorkUnitArgumentsViewport* argumentsSelector;
   WorkingDirectorySelector workingDirectorySelector;
-
-  NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
-    : AlertWindow(T("New Work Unit"), T("Select a work unit and its arguments"), QuestionIcon),
-      workUnitSelector(recent, workUnitName), argumentsSelector(recent, arguments), workingDirectorySelector(recent, workingDirectory)
-  {
-    addTextBlock(T("Work Unit:"));
-    addCustomComponent(&workUnitSelector);
-    addTextBlock(T("Arguments:"));
-    addCustomComponent(&argumentsSelector);
-    addTextBlock(T("Working directory:"));
-    addCustomComponent(&workingDirectorySelector);
-    addButton(T("OK"), 1, juce::KeyPress::returnKey);
-    addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
-
-    workUnitSelector.addListener(&argumentsSelector);
-    workUnitSelector.addListener(&workingDirectorySelector);
-    if (workUnitSelector.getNumItems())
-      workUnitSelector.setSelectedItemIndex(0);
-  }
-
-  static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
-  {
-    NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(recent, workUnitName, arguments, workingDirectory);
-    const int result = window->runModalLoop();
-    delete window;
-    return result == 1;
-  }
 };
 
 }; /* namespace lbcpp */
