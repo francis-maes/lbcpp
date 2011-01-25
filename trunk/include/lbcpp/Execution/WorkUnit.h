@@ -16,21 +16,12 @@
 namespace lbcpp
 {
 
-class WorkUnit : public NameableObject
+class WorkUnit : public Object
 {
 public:
-  WorkUnit(const String& name) : NameableObject(name) {}
-  WorkUnit() : NameableObject(String::empty) {}
+  //WorkUnit(const String& name) : NameableObject(name) {}
+  //WorkUnit() : NameableObject(String::empty) {}
 
-  virtual String getName() const
-    {return name.isEmpty() ? getClassName() : name;}
-
-  virtual String toShortString() const
-    {return getName();}
-
-  virtual String toString() const
-    {return getName();}
- 
   static int main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[]);
 
   String getUsageString() const;
@@ -60,9 +51,12 @@ typedef bool (Object::*ObjectMethod)(ExecutionContext& context);
 class ObjectMethodWorkUnit : public WorkUnit
 {
 public:
-  ObjectMethodWorkUnit(const String& name, ObjectPtr object, ObjectMethod method)
-    : WorkUnit(name), object(object), method(method) {}
+  ObjectMethodWorkUnit(const String& description, ObjectPtr object, ObjectMethod method)
+    : description(description), object(object), method(method) {}
  
+  virtual String toString() const
+    {return description;}
+
   virtual bool run(ExecutionContext& context)
   {
     Object& obj = *object;
@@ -72,15 +66,14 @@ public:
 protected:
   ObjectPtr object;
   ObjectMethod method;
+  String description;
 };
 
 class DecoratorWorkUnit : public WorkUnit
 {
 public:
-  DecoratorWorkUnit(const String& name, WorkUnitPtr decorated)
-    : WorkUnit(name), decorated(decorated) {}
   DecoratorWorkUnit(WorkUnitPtr decorated)
-    : WorkUnit(decorated->getName()), decorated(decorated) {}
+    : decorated(decorated) {}
   DecoratorWorkUnit() {}
 
 protected:
@@ -95,9 +88,12 @@ protected:
 class CompositeWorkUnit : public WorkUnit
 {
 public:
-  CompositeWorkUnit(const String& name, size_t initialSize = 0)
-    : WorkUnit(name), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false) {}
+  CompositeWorkUnit(const String& description, size_t initialSize = 0)
+    : description(description), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false) {}
   CompositeWorkUnit() {}
+
+  virtual String toString() const
+    {return description;}
 
   size_t getNumWorkUnits() const
     {return workUnits->getNumElements();}
@@ -127,6 +123,7 @@ protected:
   ObjectVectorPtr workUnits;
   String progressionUnit;
   bool pushChildrenIntoStack;
+  String description;
 
   virtual bool run(ExecutionContext& context);
 };

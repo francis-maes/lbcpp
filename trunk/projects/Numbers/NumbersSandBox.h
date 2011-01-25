@@ -208,7 +208,8 @@ private:
 class NumbersSandBoxWorkUnit : public WorkUnit
 {
 public:
-  NumbersSandBoxWorkUnit() : WorkUnit(T("NumbersSandBox")) {}
+  virtual String toString() const
+    {return T("NumbersSandBox");}
 
   virtual bool run(ExecutionContext& context)
   {

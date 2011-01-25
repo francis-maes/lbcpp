@@ -155,9 +155,12 @@ extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String&
 class InferenceWorkUnit : public WorkUnit
 {
 public:
-  InferenceWorkUnit(const String& name, InferencePtr inference, const Variable& input, const Variable& supervision, Variable* output)
-    : WorkUnit(name), inference(inference), input(input), supervision(supervision), output(output) {}
+  InferenceWorkUnit(const String& description, InferencePtr inference, const Variable& input, const Variable& supervision, Variable* output)
+    : description(description), inference(inference), input(input), supervision(supervision), output(output) {}
   InferenceWorkUnit() : output(NULL) {}
+
+  virtual String toString() const
+    {return description;}
 
   virtual bool run(ExecutionContext& context)
     {Variable out = inference->computeInference(context, input, supervision); if (output) *output = out; return true;}
@@ -177,6 +180,7 @@ public:
 protected:
   friend class InferenceWorkUnitClass;
 
+  String description;
   InferencePtr inference;
   Variable input;
   Variable supervision;

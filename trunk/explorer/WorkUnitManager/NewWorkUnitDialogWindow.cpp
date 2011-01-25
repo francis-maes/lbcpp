@@ -11,13 +11,69 @@ using namespace lbcpp;
 
 namespace lbcpp {
 
-class WorkUnitSelectorComboxBox : public juce::ComboBox, public juce::ComboBoxListener
+using juce::ComboBox;
+using juce::Label;
+using juce::Font;
+using juce::TextEditor;
+
+////////////
+class VariableEditorComponent : public Component
+{
+public:
+  VariableEditorComponent(TypePtr type)
+    : type(type) {}
+
+  virtual void setValue(const Variable& value) = 0;
+  virtual Variable getValue() const = 0;
+
+  static VariableEditorComponent* create(const Variable& value);
+
+protected:
+  TypePtr type;
+};
+
+class VariableTextEditor : public VariableEditorComponent
+{
+public:
+  VariableTextEditor(const Variable& variable)
+    : VariableEditorComponent(variable.getType())
+  {
+    addAndMakeVisible(editor = new TextEditor());
+    setValue(variable);
+  }
+
+  virtual void setValue(const Variable& value)
+  {
+    if (value.isMissingValue())
+      editor->setText(String::empty);
+    else
+      editor->setText(value.toString());
+  }
+
+  virtual Variable getValue() const
+    {return Variable::createFromString(defaultExecutionContext(), type, editor->getText());}
+
+  virtual void resized()
+    {editor->setBoundsRelative(0, 0, 1, 1);}
+
+protected:
+  TextEditor* editor;
+};
+
+VariableEditorComponent* VariableEditorComponent::create(const Variable& value)
+{
+  return new VariableTextEditor(value);
+}
+
+////////////
+
+class WorkUnitSelectorComboxBox : public ComboBox, public juce::ComboBoxListener
 {
 public:
   WorkUnitSelectorComboxBox(RecentWorkUnitsConfigurationPtr recent, String& workUnitName)
     : juce::ComboBox(T("Toto")), recent(recent), workUnitName(workUnitName)
   {
-    setEditableText(true);
+    //setEditableText(true);
     setSize(600, 22);
     setName(T("WorkUnit"));
     addListener(this);
@@ -68,16 +124,13 @@ public:
   juce_UseDebuggingNewOperator
 };
 
-using juce::ComboBox;
-using juce::Label;
-using juce::Font;
-
 class WorkUnitArgumentComponent : public Component
 {
 public:
   WorkUnitArgumentComponent(ClassPtr workUnitClass, size_t variableIndex)
     : name(NULL), shortName(NULL), description(NULL)
   {
+    TypePtr typeValue = workUnitClass->getObjectVariableType(variableIndex);
     String nameValue = workUnitClass->getObjectVariableName(variableIndex);
     String shortNameValue = workUnitClass->getObjectVariableShortName(variableIndex);
     String descriptionValue = workUnitClass->getObjectVariableDescription(variableIndex);
@@ -96,8 +149,12 @@ public:
     {
       addAndMakeVisible(description = new Label(T("desc"), descriptionValue));
       description->setFont(Font(12, Font::italic));
+      description->setSize(600, descriptionHeightPerLine);
       desiredHeight += descriptionHeightPerLine; // todo: * numLines
     }
+
+    addAndMakeVisible(value = VariableEditorComponent::create(Variable::missingValue(typeValue)));
+    desiredHeight += 2 + (value->getHeight() ? value->getHeight() : defaultValueHeight);
 
     setSize(600, desiredHeight);
   }
@@ -109,6 +166,7 @@ public:
   {
     namesHeight = 18,
     descriptionHeightPerLine = 15,
+    defaultValueHeight = 20, 
   };
 
   virtual void resized()
@@ -117,13 +175,19 @@ public:
     if (shortName)
       shortName->setBounds(0, 0, getWidth(), namesHeight);
     if (description)
-      description->setBounds(0, namesHeight, getWidth(), descriptionHeightPerLine);
+      description->setBounds(0, namesHeight, getWidth(), description->getHeight());
+    int y = namesHeight + (description ? description->getHeight() : 0) + 2;
+    value->setBounds(0, y, getWidth(), value->getHeight() ? value->getHeight() : defaultValueHeight);
   }
+
+  void setValue(const Variable& v)
+    {value->setValue(v);}
 
 private:
   Label* name;
   Label* shortName;
   Label* description;
+  VariableEditorComponent* value; 
 };
 
 class WorkUnitArgumentsComponent : public Component, public juce::ComboBoxListener
@@ -149,9 +213,10 @@ public:
     for (size_t i = 0; i < arguments.size(); ++i)
     {
       addAndMakeVisible(arguments[i] = new WorkUnitArgumentComponent(workUnitClass, i));
-      desiredHeight += arguments[i]->getHeight() + 2;
+      desiredHeight += arguments[i]->getHeight() + 4;
     }
     setSize(600, desiredHeight);
+    setValuesFromCommandLine(resultString);
   }
 
   virtual ~WorkUnitArgumentsComponent()
@@ -160,7 +225,10 @@ public:
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
     if (comboBoxThatHasChanged == recentArguments)
+    {
       resultString = recentArguments->getText();
+      setValuesFromCommandLine(resultString);
+    }
   }
 
   virtual void resized()
@@ -171,8 +239,24 @@ public:
     {
       int h = arguments[i]->getHeight();
       arguments[i]->setBounds(0, y, getWidth(), h);
-      y += h + 2;
+      y += h + 4;
     }
+  }
+
+  void setValuesFromCommandLine(const String& commandLine)
+  {
+    ExecutionContext& context = defaultExecutionContext();
+    
+    WorkUnitPtr workUnit = WorkUnit::create(getType(this->workUnit->getWorkUnitName()));
+    if (!workUnit)
+    {
+      context.errorCallback(T("Could not create work unit of class ") + this->workUnit->getWorkUnitName());
+      return;
+    }
+    workUnit->parseArguments(context, commandLine);
+    jassert(workUnit->getNumVariables() == arguments.size());
+    for (size_t i = 0; i < arguments.size(); ++i)
+      arguments[i]->setValue(workUnit->getVariable(i));
   }
 
 protected:
