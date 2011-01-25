@@ -17,18 +17,21 @@ namespace lbcpp
 class EvaluateObjectiveFunctionWorkUnit : public WorkUnit
 {
 public:
-  EvaluateObjectiveFunctionWorkUnit(const String& name, ObjectiveFunctionPtr objective, const Variable& input, double& result)
-    : WorkUnit(name), objective(objective), input(input), result(result)
+  EvaluateObjectiveFunctionWorkUnit(const String& description, ObjectiveFunctionPtr objective, const Variable& input, double& result)
+    : description(description), objective(objective), input(input), result(result)
   {
   }
 
   EvaluateObjectiveFunctionWorkUnit() : result(*(double* )0) {}
 
+  virtual String toString() const
+    {return description;}
+
 protected:
   virtual bool run(ExecutionContext& context)
   {
     result = objective->compute(context, input);
-    context.resultCallback(name, result);
+    context.resultCallback(T("Evaluation"), result);
     return true;
   }
 
@@ -37,6 +40,7 @@ protected:
   ObjectiveFunctionPtr objective;
   Variable input;
   double& result;
+  String description;
 };
 
 }; /* namespace lbcpp */

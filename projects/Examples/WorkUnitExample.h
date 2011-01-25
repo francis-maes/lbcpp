@@ -17,9 +17,6 @@ namespace lbcpp
 class SubWorkUnitExample : public WorkUnit
 {
 public:
-  SubWorkUnitExample(const String& name = T("SubWorkUnitExample"))
-    : WorkUnit(name) {}
- 
   virtual bool run(ExecutionContext& context)
   {
     context.informationCallback(T("Before"));
@@ -37,7 +34,8 @@ public:
 class WorkUnitExample : public WorkUnit
 {
 public:
-  WorkUnitExample() : WorkUnit(T("My Work Unit !")) {}
+  virtual String toString() const
+    {return T("My Work Unit !");}
  
   virtual bool run(ExecutionContext& context)
   {
@@ -55,7 +53,7 @@ public:
 
     CompositeWorkUnitPtr subWorkUnits(new CompositeWorkUnit(T("My 8 Sub Work Units"), 8));
     for (size_t i = 0; i < subWorkUnits->getNumWorkUnits(); ++i)
-      subWorkUnits->setWorkUnit(i, new SubWorkUnitExample(T("SubWU ") + String((int)i)));
+      subWorkUnits->setWorkUnit(i, new SubWorkUnitExample());
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 

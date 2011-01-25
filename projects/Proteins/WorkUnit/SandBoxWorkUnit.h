@@ -71,8 +71,6 @@ extern ClassPtr myLearningParametersClass;
 class SandBoxWorkUnit : public WorkUnit
 {
 public:
-  SandBoxWorkUnit() : WorkUnit(T("SandBox")) {}
-
   virtual bool run(ExecutionContext& context);
 
   VectorPtr loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory);

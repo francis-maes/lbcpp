@@ -13,7 +13,7 @@
   <import name="ExecutionContext"/>
 
   <!-- Work Unit -->
-  <class name="WorkUnit" base="NameableObject" abstract="yes"/>
+  <class name="WorkUnit" base="Object" abstract="yes"/>
   <class name="DecoratorWorkUnit" base="WorkUnit">
     <variable type="WorkUnit" name="decorated"/>
   </class>
@@ -22,6 +22,7 @@
     <variable type="ObjectVector[WorkUnit]" name="workUnits"/>
     <variable type="String" name="progressionUnit"/>
     <variable type="Boolean" name="pushChildrenIntoStack"/>
+    <variable type="String" name="description"/>
   </class>
   
   <!-- Test Unit -->

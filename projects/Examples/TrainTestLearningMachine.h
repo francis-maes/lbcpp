@@ -144,6 +144,8 @@ protected:
 class TrainTestLearningMachine : public WorkUnit
 {
 public:
+  TrainTestLearningMachine() : maxExamples(0) {}
+
   virtual bool run(ExecutionContext& context)
   {
     // check parameters

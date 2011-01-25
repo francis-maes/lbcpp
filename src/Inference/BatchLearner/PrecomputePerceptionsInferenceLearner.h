@@ -29,12 +29,16 @@ public:
   struct PrecomputePerceptionWorkUnit : public WorkUnit
   {
     PrecomputePerceptionWorkUnit(const PerceptionPtr& perception, const std::pair<Variable, Variable>& example, const InferenceBatchLearnerInputPtr& subLearnerInput, size_t index)
-      : WorkUnit(T("Precompute Perception ") + String((int)index)), perception(perception), example(example), subLearnerInput(subLearnerInput), index(index) {}
+      : description(T("Precompute Perception ") + String((int)index)), perception(perception), example(example), subLearnerInput(subLearnerInput), index(index) {}
+
+    virtual String toString() const
+      {return description;}
 
     virtual bool run(ExecutionContext& context)
       {subLearnerInput->setExample(index, perception->computeFunction(context, example.first), example.second); return true;}
 
   protected:
+    String description;
     PerceptionPtr perception;
     std::pair<Variable, Variable> example;
     InferenceBatchLearnerInputPtr subLearnerInput;
