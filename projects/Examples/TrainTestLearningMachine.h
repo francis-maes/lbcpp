@@ -148,24 +148,17 @@ public:
 
   virtual bool run(ExecutionContext& context)
   {
-    // check parameters
-    if (!learningProblem)
-    {
-      context.errorCallback(T("Undefined learning problem"));
+    LearningProblemPtr learningProblem = createLearningProblem(context);
+    LearningMachineFamilyPtr learningMachineFamily = createLearningMachineFamily(context);
+    if (!learningProblem || !learningMachineFamily)
       return false;
-    }
-    if (!learningMachineFamily)
-    {
-      context.errorCallback(T("Undefined learning machine family"));
-      return false;
-    }
 
     context.enterScope(T("Loading Data"));
     context.enterScope(T("Training Data"));
-    ContainerPtr trainingData = loadData(context, trainingFile);
+    ContainerPtr trainingData = loadData(context, learningProblem, trainingFile);
     context.leaveScope(trainingData != ContainerPtr());
     context.enterScope(T("Testing Data"));
-    ContainerPtr testingData = loadData(context, testingFile);
+    ContainerPtr testingData = loadData(context, learningProblem, testingFile);
     context.leaveScope(testingData != ContainerPtr());
     bool loadingOk = trainingData && testingData;
     context.leaveScope(loadingOk);
@@ -195,14 +188,14 @@ public:
 protected:
   friend class TrainTestLearningMachineClass;
 
-  LearningProblemPtr learningProblem;
-  LearningMachineFamilyPtr learningMachineFamily;
+  size_t learningProblem;
+  size_t learningMachineFamily;
   String methodToUse;
   File trainingFile;
   File testingFile;
   size_t maxExamples;
 
-  ContainerPtr loadData(ExecutionContext& context, const File& file) const
+  ContainerPtr loadData(ExecutionContext& context, LearningProblemPtr learningProblem, const File& file) const
   {
     if (!file.exists())
     {
@@ -219,6 +212,24 @@ protected:
       context.warningCallback(T("No examples"));
     context.resultCallback(T("Num Examples"), res->getNumElements());
     return res;
+  }
+
+  LearningProblemPtr createLearningProblem(ExecutionContext& context) const
+  {
+    static const juce::tchar* classNames[] = {T("MultiClassClassificationProblem"), T("MultiLabelClassificationProblem")};
+    return createObjectFromEnum(context, learningProblem, classNames).staticCast<LearningProblem>();
+  }
+
+  LearningMachineFamilyPtr createLearningMachineFamily(ExecutionContext& context) const
+  {
+    static const juce::tchar* classNames[] = {T("LinearLearningMachineFamily"), T("ExtraTreeLearningMachineFamily")};
+    return createObjectFromEnum(context, learningMachineFamily, classNames).staticCast<LearningMachineFamily>();
+  }
+
+  static ObjectPtr createObjectFromEnum(ExecutionContext& context, size_t enumValue, const juce::tchar* classNames[])
+  {
+    TypePtr type = typeManager().getType(context, classNames[enumValue]);
+    return type ? Object::create(type) : ObjectPtr();
   }
 };
 
