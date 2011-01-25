@@ -33,6 +33,14 @@ public:
   const std::vector<File>& getWorkingDirectories() const
     {return workingDirectories;}
 
+  WorkUnitPtr createWorkUnit() const
+  {
+    WorkUnitPtr res = WorkUnit::create(getType(workUnitName));
+    if (!res)
+      defaultExecutionContext().errorCallback(T("Could not create work unit of class ") + workUnitName);
+    return res;
+  }
+
 protected:
   friend class RecentWorkUnitConfigurationClass;
 

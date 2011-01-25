@@ -29,47 +29,28 @@
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
   <!-- Train/Test Learning Machine -->
-  <class name="LearningProblem" abstract="yes">
-    <code>
-      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-      {
-        if (value == T("MultiClass"))
-          return new MultiClassClassificationProblem();
-        else if (value == T("MultiLabel"))
-          return new MultiLabelClassificationProblem();
-        else
-        {
-          context.errorCallback(T("Could not create learning problem ") + value.quoted());
-          return VariableValue();
-        }
-      }
-    </code>
-  </class>
+
+  <enumeration name="LearningProblemEnum">
+    <value name="MultiClass"/>
+    <value name="MultiLabel"/>
+  </enumeration>
+
+  <class name="LearningProblem" abstract="yes"/>
   <class name="MultiClassClassificationProblem" base="LearningProblem"/>
   <class name="MultiLabelClassificationProblem" base="LearningProblem"/>
+  
+  <enumeration name="LearningMachineFamilyEnum">
+    <value name="Linear"/>
+    <value name="ExtraTree"/>
+  </enumeration>
 
-  <class name="LearningMachineFamily" abstract="yes">
-    <code>
-      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-      {
-        if (value == T("Linear"))
-          return new LinearLearningMachineFamily();
-        else if (value == T("ExtraTree"))
-          return new ExtraTreeLearningMachineFamily();
-        else
-        {
-          context.errorCallback(T("Could not create learning machine family ") + value.quoted());
-          return VariableValue();
-        }
-      }
-    </code>
-  </class>
+  <class name="LearningMachineFamily" abstract="yes"/>
   <class name="LinearLearningMachineFamily" base="LearningMachineFamily"/>
   <class name="ExtraTreeLearningMachineFamily" base="LearningMachineFamily"/>
 
   <class name="TrainTestLearningMachine" base="WorkUnit">
-    <variable type="LearningProblem" name="learningProblem" shortName="t"/>
-    <variable type="LearningMachineFamily" name="learningMachineFamily" shortName="f"/>
+    <variable type="LearningProblemEnum" name="learningProblem" shortName="t"/>
+    <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/>
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>

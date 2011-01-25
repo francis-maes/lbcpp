@@ -122,6 +122,8 @@ public:
   };
 */
   static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+  
+  virtual void closeButtonPressed();
 
   //virtual void resized();
 

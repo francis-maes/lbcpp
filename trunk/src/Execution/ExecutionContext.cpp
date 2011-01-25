@@ -30,7 +30,7 @@ void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& 
 }
 
 void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
-  {enterScope(workUnit->getName(), workUnit);}
+  {enterScope(workUnit->toString(), workUnit);}
 
 void ExecutionContext::leaveScope(bool result)
 {

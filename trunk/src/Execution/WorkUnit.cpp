@@ -24,11 +24,22 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
       return 0;
     }
   }
+  
+  std::vector< std::pair<size_t, Variable> > parsedArguments;
+  if (!workUnit->parseArguments(context, arguments, parsedArguments))
+  {
+    context.informationCallback(workUnit->getUsageString());
+    return 1;
+  }
 
-  return workUnit->parseArguments(context, arguments) && context.run(workUnit) ? 0 : 1;
+  workUnit->setArguments(context, parsedArguments);
+  if (!context.run(workUnit))
+    return 2;
+  
+  return 0;
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)
+bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, Variable> >& res)
 {
   StringArray tokens;
   tokens.addTokens(arguments, true);
@@ -40,10 +51,10 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments
     if (str.isNotEmpty())
       toks.push_back(str);
   }
-  return parseArguments(context, toks);
+  return parseArguments(context, toks, res);
 }
 
-bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, Variable> >& res)
 {
   /* shortcut */
   std::map<String, size_t> variableNames;
@@ -78,7 +89,6 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
 
     if (defaultMap.find(argumentName) == defaultMap.end())
     {
-      context.informationCallback(getUsageString());
       context.errorCallback(T("WorkUnit::parseArguments"), T("Unexpected expression : ") + arguments[i]);
       return false;
     }
@@ -102,9 +112,31 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
         return false;
       }
     }
-    setVariable(context, variableIndex, value);
+    res.push_back(std::make_pair(variableIndex, value));
   }
   return true;
+}
+
+void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, Variable> >& arguments)
+{
+  for (size_t i = 0; i < arguments.size(); ++i)
+    setVariable(context, arguments[i].first, arguments[i].second);
+}
+
+bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)
+{
+  std::vector< std::pair<size_t, Variable> > args;
+  bool res = parseArguments(context, arguments, args);
+  setArguments(context, args);
+  return res;
+}
+
+bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<String>& arguments)
+{
+  std::vector< std::pair<size_t, Variable> > args;
+  bool res = parseArguments(context, arguments, args);
+  setArguments(context, args);
+  return res;
 }
 
 String WorkUnit::getUsageString() const

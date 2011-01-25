@@ -102,8 +102,9 @@ public:
   String getTask(size_t passIndex, size_t taskIndex) const
     {jassert(taskIndex < getNumTasks(passIndex)); return tasks[passIndex][taskIndex];}
   
+  virtual String toString() const;
   virtual bool loadFromString(ExecutionContext& context, const String& str);
-  
+
 protected:
   friend class ProteinTargetClass;
   

@@ -26,6 +26,10 @@ public:
 
   String getUsageString() const;
 
+  bool parseArguments(ExecutionContext& context, const String& arguments, std::vector< std::pair<size_t, Variable> >& res);
+  bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments, std::vector< std::pair<size_t, Variable> >& res);
+  void setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, Variable> >& arguments);
+  
   bool parseArguments(ExecutionContext& context, const String& arguments);
   bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 

@@ -340,6 +340,35 @@ bool NumericalLearningParameter::loadFromString(ExecutionContext& context, const
   return true;
 }
 
+String ProteinTarget::toString() const
+{
+  // FIXME: this code is uncomplete ...
+
+  if (tasks.empty())
+    return String::empty;
+  String res = T("(");
+  for (size_t i = 0; i < tasks[0].size(); ++i)
+  {
+    if (i > 0)
+      res += T("-");
+    String task = tasks[0][i];
+    if (task == T("secondaryStructure"))
+      res += T("SS3");
+    else if (task == T("dsspSecondaryStructure"))
+      res += T("SS8");
+    else if (task == T("solventAccessibilityAt20p"))
+      res += T("SA");
+    else if (task == T("disorderRegions"))
+      res += T("DR");
+    else if (task == T("structuralAlphabetSequence"))
+      res += T("StAl");
+    else
+      jassert(false);
+  }
+  res += T(")") + String((int)tasks.size());
+  return res;
+}
+
 bool ProteinTarget::loadFromString(ExecutionContext& context, const String& value)
 {
   tasks.clear();
