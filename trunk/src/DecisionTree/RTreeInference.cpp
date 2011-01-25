@@ -406,7 +406,7 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   * (best_first * (2 * best_first_max_nb_tests + 1)
      + (1 - best_first) * (2 * nb_obj_in_core_table - 1));
   allocate_tree_tables(maxnbnodes,
-                       ceil((maxnbnodes + number_of_ensemble_terms) / 2),
+                       (int)ceil((double)(maxnbnodes + number_of_ensemble_terms) / 2),
                        multiregr_savepred * nb_goal_multiregr, 0);
   allocate_multiregr_table_score(nb_goal_multiregr);
   

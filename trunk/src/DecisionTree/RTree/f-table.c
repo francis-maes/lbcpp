@@ -160,4 +160,5 @@ float f_test_threshold(int df1, int df2, float a) {
   } else if (a>=1.0) {
     return f_table_1[row][col];
   }
+  return 0.f;
 }

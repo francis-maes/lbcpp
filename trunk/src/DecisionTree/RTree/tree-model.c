@@ -1,3 +1,9 @@
+#ifdef WIN32
+# pragma warning(disable:4244) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+# pragma warning(disable:4305) // warning C4305: 'initializing' : truncation from 'double' to 'float'
+# pragma warning(disable:4996) // warning C4996: '...': This function or variable may be unsafe. Consider using ..._s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+# pragma warning(disable:4129) // warning C4129: '%' : unrecognized character escape sequence
+#endif
 
 /*
  * Author: Pierre Geurts (p.geurts@ulg.ac.be)
@@ -5589,6 +5595,7 @@ DllExport float test_knn_clas(int *ts_vector, int length_ts_vector, int max_k, d
 
   MyFree((int *)lobj);
   MyFree((float *)ldist);
+  return 0.f;
 }
 
 float test_1nn_regr(int *ts_vector, int length_ts_vector) {
@@ -5639,6 +5646,7 @@ float test_knn_regr(int *ts_vector, int length_ts_vector, int max_k, double *ler
 
   MyFree((int *)lobj);
   MyFree((float *)ldist);
+  return 0.f;
 }
 
 /* apply_knn_class */
