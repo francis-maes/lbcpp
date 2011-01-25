@@ -2,8 +2,8 @@
 /* MACRO, CONSTANTES */
 
 #define VALUE_PI 3.141592653589793
-#define PLUS_INFINI 1e100
-#define MOINS_INFINI -1e100
+#define PLUS_INFINI FLT_MAX
+#define MOINS_INFINI -FLT_MAX
 
 /* precision des differentes fonction de calcul */
 

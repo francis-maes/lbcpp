@@ -49,7 +49,7 @@ int node_object_list_size=0;
 float *object_weight2;
 
 DllExport void compute_node_subset_current_ensemble(float *ow) {
-  int t,i,j,s;
+  int t,i,s;
   int pos_nol; /* position in node_object_list */
 
   object_weight2=ow;
@@ -290,7 +290,7 @@ DllExport float apply_current_ltrees_obj_regr_unknown(int obj) {
 }
 
 DllExport int apply_current_ltrees_obj_clas_unknown(int obj, float *vector) {
-  int i,t,best_class;
+  int i,best_class;
   float sum=0.0, max_proba=-1.0;
   
   for (i=0; i<nb_classes; i++) {

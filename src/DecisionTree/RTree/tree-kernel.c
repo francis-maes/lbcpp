@@ -158,7 +158,7 @@ DllExport float get_1nn_ltrees_regr_pred_fast(int o) {
 /* fonctions de test */
 
 DllExport float test_1nn_ltrees_clas(int *ts_vector, int length_ts_vector) {
-  int i, j, nb_error=0;
+  int i, nb_error=0;
 
   /* calcul de l'erreur */
   for (i=0; i<length_ts_vector; i++) {
@@ -171,7 +171,7 @@ DllExport float test_1nn_ltrees_clas(int *ts_vector, int length_ts_vector) {
 }
 
 DllExport float test_1nn_ltrees_regr(int *ts_vector, int length_ts_vector) {
-  int i, j;
+  int i;
   ERROR_TYPE sum_error=0.0;
 
   /* calcul de l'erreur */
@@ -374,7 +374,7 @@ DllExport float apply_1nn_ens_sim_2_regr(int o) {
 /* version moyenne sur tous les objets */
 
 DllExport int apply_allnn_ens_sim2_clas(int o, float *vect) {
-  int t, i, best_clas;
+  int i, best_clas;
   float tot_vot=0.0;
   float max_prob=-1.0;
 
@@ -402,7 +402,7 @@ DllExport int apply_allnn_ens_sim2_clas(int o, float *vect) {
 }
 
 DllExport float apply_allnn_ens_sim2_regr(int o) {
-  int t,i;
+  int i;
   double tot_vot=0.0;
   double sum=0.0;
 
@@ -495,7 +495,7 @@ DllExport void prepare_ens_sim2_fast() {
 /* resultat dans object_weight */
 
 void get_ens_sim2_weight_from_tree(int t, int o) {
-  int i,j,start,end;
+  int i,start,end;
   int current_node=ltrees[t];
   int p=0;
 
@@ -605,7 +605,7 @@ DllExport float apply_1nn_ens_sim_2_regr_fast(int o) {
 /* version moyenne sur tous les objets */
 
 DllExport int apply_allnn_ens_sim2_clas_fast(int o, float *vect) {
-  int t, i, best_clas;
+  int i, best_clas;
   float tot_vot=0.0;
   float max_prob=-1.0;
 
@@ -635,7 +635,7 @@ DllExport int apply_allnn_ens_sim2_clas_fast(int o, float *vect) {
 }
 
 DllExport float apply_allnn_ens_sim2_regr_fast(int o) {
-  int t,i;
+  int i;
   double tot_vot=0.0;
   double sum=0.0;
 

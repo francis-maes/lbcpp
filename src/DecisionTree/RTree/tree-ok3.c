@@ -124,7 +124,6 @@ void summarize_vector_dist(int *vector, int start, int end) {
 SCORE_TYPE d_tot;
 
 SCORE_TYPE compute_distance_score_from_table() {
-  SCORE_TYPE y_tot_dist, n_tot_dist;
 
   /* info contient N*var-N_l*var_l-N_r*var_r (la réduction de variance TOTALE)
    *      avec N*var=N*(1/N^2)*somme des distances/2=1/N*somme des distances/2=tables_score[x][1]/table_score[x][0]
@@ -176,7 +175,7 @@ SCORE_TYPE best_first_node_priority_function_dist() {
 
 int make_leaf_prediction_distance() { /* on enregistre la distance moyenne mais on ne l'utilisera certainement pas */
 
-  int i;
+  //int i;
   index_prediction_values++;
   
   prediction_values[index_prediction_values][0]=(float)(table_score[0][1]/(table_score[0][0]*table_score[0][0]));
@@ -569,7 +568,7 @@ int node_object_allocatedp=0;
 /* (ne sert à rien dans la fonction compute_node_subset_current_ensemble_weighted) */
 
 void compute_node_subset_current_ensemble_weighted(float *ow) {
-  int t,i,j,s,size_ls;
+  int t,i,s,size_ls;
   int pos_nol; /* position in node_object_list */
 
   object_weight2=ow;
@@ -960,7 +959,7 @@ void compute_ltrees_variable_importance_dist(SCORE_TYPE *attribute_importance, i
    * de tests (floues ou prototype) correspondant à cet objet.
    */
 
-  int i,t,j;
+  int i,t;
   SCORE_TYPE sum_val=0.0;
   SCORE_TYPE sum_val2=0.0;
   SCORE_TYPE total_var_one_tree;
@@ -1046,7 +1045,7 @@ float get_clas_tree_distance_prediction(int tree, int obj1, int obj2) {
     double sum_dist=0.0;
     float *pred1=prediction_values[prediction[l1]];
     float *pred2=prediction_values[prediction[l2]];
-    int i,j;
+    int i;
 
     for (i=0; i<nb_classes; i++) {
     /* printf("%f %f\n",pred1[i],pred2[i]); 
@@ -1228,6 +1227,7 @@ float test_knn_dist_clas(int *ts_vector, int length_ts_vector, int max_k, double
 
   free((int *)lobj);
   free((float *)ldist);
+  return 0.f;
 }
 
 float test_knn_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
@@ -1283,6 +1283,7 @@ float test_knn_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double
 
   free((int *)lobj);
   free((float *)ldist);
+  return 0.f;
 }
 
 /* idem avec la distance simple proposée par breiman (nb de vote commun) */
@@ -1335,6 +1336,7 @@ float test_knn_simple_dist_clas(int *ts_vector, int length_ts_vector, int max_k,
 
   free((int *)lobj);
   free((float *)ldist);
+  return 0.f;
 }
 
 float test_knn_simple_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
@@ -1382,6 +1384,7 @@ float test_knn_simple_dist_regr(int *ts_vector, int length_ts_vector, int max_k,
 
   free((int *)lobj);
   free((float *)ldist);
+  return 0.f;
 }
 
 /************************************/
@@ -2004,6 +2007,8 @@ float make_ls_vector_mart_distance(int tree) {
     return new_mart_mu;
   } else
     return mart_mu;
+
+  return 0.f;
 }
 
 /* calcul des prédictions pour un ensemble de points de test */
@@ -2041,7 +2046,7 @@ void get_ens_objects_weight_mart(int *ts_vector, int ts_vector_size, float *W) {
   /* boucle sur les arbres */
   shift_ls=0;
   for (t=0; t<current_nb_of_ensemble_terms; t++) {
-    int c_leaf, c_pos, p_pos, posfl;
+    int c_leaf, c_pos, p_pos;
 
     if (print_result) {
       printf("t=%d (tree weight=%f)\n",t,ltrees_weight[t]);fflush(stdout);
@@ -2092,7 +2097,7 @@ void get_ens_objects_weight_mart(int *ts_vector, int ts_vector_size, float *W) {
     /* mise à jour simultanément de la matrice de poids des sorties et de la matrice W */
     c_pos=0;
     while (c_pos<global_learning_set_size) {
-      int nb_lines_p; float ns;
+      float ns;
       c_leaf=ok3mart_index_leaf[shift_ls+c_pos];
       p_pos=c_pos;
 
@@ -2765,7 +2770,7 @@ float make_ls_vector_mart_ok_uniregr(int tree) {
   } else { /* RESIDUAL COMPUTATION (M>0) */
     /* on évite la dernière mise à jour inutile */
     float *current_v;
-    float new_mart_mu=mart_mu, tmp_val;
+    float new_mart_mu=mart_mu;
 
     if (print_result) {
       printf("MART output update...");     
@@ -2927,6 +2932,8 @@ float make_ls_vector_mart_ok_uniregr(int tree) {
 
     return new_mart_mu;
   }
+
+  return 0.f;
 }
 
 /* calcul des prédictions (même schéma que pour Boosting-OK3) */

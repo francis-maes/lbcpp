@@ -126,7 +126,7 @@ SCORE_TYPE compute_multiregr_score_from_table() {
 
 SCORE_TYPE compute_multiregr_score_from_table_min() {
   int i;
-  SCORE_TYPE y_tot_var, n_tot_var, v_tot_cur, y_tot_var_cur, n_tot_var_cur, min_score, min_info, score_cur;
+  SCORE_TYPE n_tot_var = 0, v_tot_cur, y_tot_var_cur, n_tot_var_cur, min_score, min_info, score_cur;
 
   /* y_tot_var=0.0; */
   /* n_tot_var=0.0; */
@@ -598,7 +598,7 @@ void set_find_a_threshold_symb_function_multiregr(int i) {
  */
 
 SCORE_TYPE get_vi_multiregr(int *ts_vector, int start, int end, int borne) {
-  int i,j, st;
+  int i,j;
   SCORE_TYPE current_score;
 
   /* summarize_vector */
@@ -730,7 +730,7 @@ void compute_ltrees_variable_importance_multiregr(SCORE_TYPE *attribute_importan
    * de tests (floues ou prototype) correspondant à cet objet.
    */
 
-  int i,t,j;
+  int i,t;
   SCORE_TYPE sum_val=0.0;
   SCORE_TYPE sum_val2=0.0;
   SCORE_TYPE total_var_one_tree;
@@ -831,8 +831,7 @@ void compute_multiregr_score_from_table_for_varimp(SCORE_TYPE *vi) {
 }
 
 void get_vi_multiregr_separate(int *ts_vector, int start, int end, int borne, SCORE_TYPE *vi) {
-  int i,j, st;
-  SCORE_TYPE current_score;
+  int i,j;
 
   /* summarize_vector */
   for (i=0; i<2*nb_goal_multiregr+1; i++) {
@@ -975,9 +974,8 @@ void compute_ltrees_variable_importance_multiregr_separate(SCORE_TYPE *attribute
    */
 
   int i,t,j;
-  SCORE_TYPE sum_val=0.0, sum_weight;
+  SCORE_TYPE sum_val=0.0, sum_weight=0.0;
   SCORE_TYPE sum_val2=0.0;
-  SCORE_TYPE total_var_one_tree;
   int *ts_vector=current_learning_set;
   int length_ts_vector=global_learning_set_size;
 
@@ -1142,7 +1140,7 @@ float getobjy_multiregr_learn_temp(int o, int g) {
 }
 
 float make_ls_vector_mart_multiregr(int tree) {
-  int i,j, predc, truec, nb_error=0;
+  int i,j, nb_error=0;
 
   if (tree<0) { /* initialisation */
     for (i=0; i<global_learning_set_size; i++)
