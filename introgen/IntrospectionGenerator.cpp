@@ -529,6 +529,7 @@ protected:
       name = replaceFirstLettersByLowerCase(name) + T("Library");
       writeLine(T("extern lbcpp::LibraryPtr ") + name + T("();"));
       writeLine(T("extern void ") + name + T("CacheTypes(ExecutionContext& context);"));
+      writeLine(T("extern void ") + name + T("UnCacheTypes();"));
     }
 
     // cacheTypes function
@@ -545,8 +546,23 @@ protected:
         writeLine(declaration.cacheVariableName + T(" = typeManager().getType(context, T(") + declaration.name.quoted() + T("));"));
     }
     closeScope();
+    
+    // unCacheTypes function
+    openScope(T("void ") + variableName + T("UnCacheTypes()"));
+    forEachXmlChildElementWithTagName(*xml, elt, T("import"))
+    {
+      String name = elt->getStringAttribute(T("name"), T("???"));
+      writeLine(replaceFirstLettersByLowerCase(name) + T("LibraryUnCacheTypes();"));
+    }
+    for (size_t i = 0; i < declarations.size(); ++i)
+    {
+      const Declaration& declaration = declarations[i];
+      if (declaration.cacheVariableName.isNotEmpty())
+        writeLine(declaration.cacheVariableName + T(".clear();"));
+    }
+    closeScope();
 
-
+    // Library class
     openClass(fileName + T("Library"), T("Library"));
     
     // constructor
@@ -597,6 +613,7 @@ protected:
     
     newLine();
     writeShortFunction(T("virtual void cacheTypes(ExecutionContext& context)"), variableName + T("CacheTypes(context);"));
+    writeShortFunction(T("virtual void uncacheTypes()"), variableName + T("UnCacheTypes();"));
 
     closeClass();
     
@@ -620,6 +637,11 @@ protected:
     writeLine(T("LibraryPtr res = ") + replaceFirstLettersByLowerCase(fileName) + T("Library();"));
     writeLine(T("res->incrementReferenceCounter();"));
     writeLine(T("return res.get();"));
+    closeScope();
+
+    openScope(T("LBCPP_EXPORT void lbcppDeinitializeLibrary()"));
+    writeLine(replaceFirstLettersByLowerCase(fileName) + T("LibraryUnCacheTypes();"));
+    writeLine(T("lbcpp::deinitializeDynamicLibrary();"));
     closeScope();
 
     closeScope(); // extern "C"

@@ -56,9 +56,11 @@ public:
 protected:
   friend bool importLibrary(ExecutionContext& context, LibraryPtr library, void* handle);
   friend void initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext);
+  friend class LibraryManager;
 
   virtual bool initialize(ExecutionContext& context) = 0;
   virtual void cacheTypes(ExecutionContext& context) = 0;
+  virtual void uncacheTypes() = 0;
   
   bool declareType(ExecutionContext& context, TypePtr type);
   bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
