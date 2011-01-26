@@ -25,7 +25,7 @@
   <class name="GetConnectionTypeNetworkCommand" base="NetworkCommand"/>
   <class name="GetWorkUnitNetworkCommand" base="NetworkCommand"/>
   <class name="GetWorkUnitStatusNetworkCommand" base="NetworkCommand">
-    <variable type="Integer" name="workUnitId"/>
+    <variable type="String" name="workUnitIdString"/>
   </class>
   <class name="GetSystemResourceNetworkCommand" base="NetworkCommand"/>
   <class name="PushWorkUnitNetworkCommand" base="NetworkCommand">

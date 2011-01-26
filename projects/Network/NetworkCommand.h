@@ -90,7 +90,7 @@ public:
 class GetWorkUnitStatusNetworkCommand : public NetworkCommand
 {
 public:
-  GetWorkUnitStatusNetworkCommand(juce::int64 workUnitId = 0) : workUnitId(workUnitId) {}
+  GetWorkUnitStatusNetworkCommand(juce::int64 workUnitId = 0) : workUnitIdString(workUnitId) {}
   
   virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
   {
@@ -100,7 +100,7 @@ public:
       context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
       return false;
     }
-    
+    juce::int64 workUnitId = workUnitIdString.getLargeIntValue();
     network->getNetworkClient()->sendVariable(serverNetwork->getWorkUnitStatus(context, workUnitId));
     return true;
   }
@@ -108,7 +108,7 @@ public:
 protected:
   friend class GetWorkUnitStatusNetworkCommandClass;
   
-  juce::int64 workUnitId;
+  String workUnitIdString;
 };
 
 class SystemResource : public Object
