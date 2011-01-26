@@ -101,7 +101,7 @@ public:
       return false;
     }
     
-    network->getNetworkClient()->sendVariable(serverNetwork->getWorkUnitStatus(workUnitId));
+    network->getNetworkClient()->sendVariable(serverNetwork->getWorkUnitStatus(context, workUnitId));
     return true;
   }
 
@@ -162,6 +162,32 @@ protected:
   
   String workUnitIdString;
   WorkUnitPtr workUnit;
+};
+
+class SendTraceNetworkCommand : public NetworkCommand
+{
+public:
+  SendTraceNetworkCommand(juce::int64 workUnitId) : workUnitIdString(workUnitId) {}
+  SendTraceNetworkCommand() {}
+  
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network)
+  {
+    ServerNetworkContextPtr serverNetwork = network.staticCast<ServerNetworkContext>();
+    if (!serverNetwork)
+    {
+      context.errorCallback(T("GetWorkUnitStatusNetworkCommand::runCommand"), T("Must be execute in a ServerNetworkContext only"));
+      return false;
+    }
+    juce::int64 workUnitId = workUnitIdString.getLargeIntValue();
+    Variable trace = serverNetwork->getWorkUnitTrace(context, workUnitId);
+    serverNetwork->getNetworkClient()->sendVariable(trace);
+    return true;
+  }
+  
+protected:
+  friend class SendTraceNetworkCommandClass;
+  
+  String workUnitIdString;
 };
 
 }; /* namespace lbcpp */

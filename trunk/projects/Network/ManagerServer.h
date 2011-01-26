@@ -229,6 +229,19 @@ protected:
       
       workUnitManager->setStatus(assignedJobs[i], status);
       
+      if (status == T("Finished"))
+      {
+        client->sendVariable(new SendTraceNetworkCommand(assignedJobs[i]->getWorkUnitId()));
+        Variable trace;
+        if (!client->receiveVariable(10000, trace))
+        {
+          context.warningCallback(hostname, T("Fail - Trace of work unit: ") + String(assignedJobs[i]->getWorkUnitId()));
+          return false;
+        }
+        
+        trace.saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(String(assignedJobs[i]->getWorkUnitId())));
+      }
+      
       if (status == T("IDontHaveThisWorkUnit"))
       {
         client->sendVariable(new PushWorkUnitNetworkCommand(assignedJobs[i]->getWorkUnitId(), assignedJobs[i]->getWorkUnit()));

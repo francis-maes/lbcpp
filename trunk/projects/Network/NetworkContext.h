@@ -83,9 +83,11 @@ public:
   : NetworkContext(identity, hostname, port) {}
   ServerNetworkContext() {}
   
-  virtual String getWorkUnitStatus(juce::int64 workUnitId) = 0;
+  virtual String getWorkUnitStatus(ExecutionContext& context, juce::int64 workUnitId) const = 0;
 
   virtual void pushWorkUnit(ExecutionContext& context, juce::int64 workUnitId, WorkUnitPtr workUnit) = 0;
+  
+  virtual Variable getWorkUnitTrace(ExecutionContext& context, juce::int64 workUnitId) const = 0;
 };
 
 class SgeServerNetworkContext : public ServerNetworkContext
@@ -95,8 +97,9 @@ public:
   : ServerNetworkContext(identity, hostname, port), workUnitDirectory(workUnitDirectory) {}
   SgeServerNetworkContext() {}
   
-  virtual String getWorkUnitStatus(juce::int64 workUnitId);
+  virtual String getWorkUnitStatus(ExecutionContext& context, juce::int64 workUnitId) const;
   virtual void pushWorkUnit(ExecutionContext& context, juce::int64 workUnitId, WorkUnitPtr workUnit);
+  virtual Variable getWorkUnitTrace(ExecutionContext& context, juce::int64 workUnitId) const;
   
 protected:
   friend class SgeServerNetworkContextClass;
