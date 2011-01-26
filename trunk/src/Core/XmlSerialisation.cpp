@@ -170,7 +170,7 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
     // save object
     currentlySavedObjects.insert(index);
     currentStack.push_back(savedObject.elt);
-    if (object->getClass() != expectedType)
+    if (expectedType != object->getClass())
       writeType(object->getClass());
     object->saveToXml(*this);
     currentStack.pop_back();
