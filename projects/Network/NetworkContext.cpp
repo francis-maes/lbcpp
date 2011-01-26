@@ -33,7 +33,7 @@ bool NetworkContext::run(ExecutionContext& context)
 }
 
 
-String SgeServerNetworkContext::getWorkUnitStatus(juce::int64 workUnitId)
+String SgeServerNetworkContext::getWorkUnitStatus(ExecutionContext& context, juce::int64 workUnitId) const
 {
   File f = workUnitDirectory.getChildFile(T("Waiting/") + String(workUnitId) + T(".workUnit"));
   if (f.exists())
@@ -54,4 +54,13 @@ void SgeServerNetworkContext::pushWorkUnit(ExecutionContext& context, juce::int6
   /* Save work unit */
   File workUnitFile = workUnitDirectory.getChildFile(T("Waiting/") + String(workUnitId) + T(".workUnit"));
   workUnit->saveToFile(context, workUnitFile);
+}
+
+Variable SgeServerNetworkContext::getWorkUnitTrace(ExecutionContext& context, juce::int64 workUnitId) const
+{
+  File f = workUnitDirectory.getChildFile(T("Traces/") + String(workUnitId) + T(".trace"));
+  if (!f.exists())
+    return Variable();
+  
+  return Variable::createFromFile(context, f);
 }

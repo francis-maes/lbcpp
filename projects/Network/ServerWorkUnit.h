@@ -7,11 +7,11 @@ class ServerWorkUnit : public WorkUnit
 {
 public:
   ServerWorkUnit(File workUnitDirectory = File::getCurrentWorkingDirectory())
-    : workUnitDirectory(workUnitDirectory), hostname(T("192.168.1.3")) {}//hostname(T("monster.montefiore.ulg.ac.be")) {}
+    : workUnitDirectory(workUnitDirectory), hostname(T("monster24.montefiore.ulg.ac.be")), serverName(T("unnamed")) {}
   
   virtual bool run(ExecutionContext& context)
   {
-    ServerNetworkContextPtr networkContext = new SgeServerNetworkContext(T("jbecker-server-mac"), hostname, 1664, workUnitDirectory);    
+    ServerNetworkContextPtr networkContext = new SgeServerNetworkContext(getName(), hostname, 1664, workUnitDirectory);    
     networkContext->run(context);
     return true;
   }
@@ -21,7 +21,7 @@ protected:
 
   File workUnitDirectory;
   String hostname;
-  std::deque<WorkUnitPtr> units;
+  String serverName;
 };
 
 };

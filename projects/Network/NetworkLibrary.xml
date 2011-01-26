@@ -32,6 +32,9 @@
     <variable type="String" name="workUnitIdString"/>
     <variable type="WorkUnit" name="workUnit"/>
   </class>
+  <class name="SendTraceNetworkCommand" base="NetworkCommand">
+    <variable type="String" name="workUnitIdString"/>
+  </class>
   
   <class name="SystemResource" base="Object"/>
 
@@ -42,7 +45,8 @@
 
   <class name="ServerWorkUnit" base="WorkUnit">
     <variable type="File" name="workUnitDirectory" description="The path where jobs are stocked" shortName="-d"/>
-    <variable type="String" name="hostname"/>
+    <variable type="String" name="hostname" description="Hostname of the master node" shortName="-h"/>
+    <variable type="String" name="serverName" description="The name of the server (used as a identifier)" shortName="-n"/>
   </class>
 
   <class name="DumbWorkUnit" base="WorkUnit"/>
