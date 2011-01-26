@@ -24,7 +24,10 @@ public:
     {return doubleType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input[0].getDouble() * input[1].getDouble();}
+  {
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    return pair->getFirst().getDouble() * pair->getSecond().getDouble();
+  }
 };
 
 }; /* namespace lbcpp */

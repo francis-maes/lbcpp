@@ -57,6 +57,7 @@ public:
     //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(binaryClassificationConfusionEvaluator(T("binary"))));
 
     StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(100);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
+    criterion = logicalOrStoppingCriterion(criterion, isAboveValueStoppingCriterion(0.0));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(criterion));
     return res;
   }
@@ -109,7 +110,7 @@ public:
 
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
-    PerceptionPtr perception = addUnitFeatures(inputClass.get());
+    PerceptionPtr perception = addUnitFeatures(inputClass);
     return learningMachineFamily->createMultiClassClassifier(perception, outputLabels, arguments);
   }
 
@@ -160,14 +161,16 @@ public:
 
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
-    PerceptionPtr firstStackPerception = identityPerception(inputClass.get());
+    PerceptionPtr firstStackPerception = identityPerception(inputClass);
     InferencePtr firstStack = learningMachineFamily->createMultiLabelClassifier(firstStackPerception, outputLabels, arguments);
     if (numStacks <= 1)
       return firstStack;
     else
     {
-      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, identityPerception(outputClass));
-      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(nextStacksPerception, outputLabels, arguments);
+      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, conjunctionFeatures(identityPerception(outputClass), identityPerception(outputClass)));
+      //PerceptionPtr nextStacksPerception = conjunctionFeatures(firstStackPerception, identityPerception(outputClass), false);
+      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(identityPerception(nextStacksPerception->getOutputType()), outputLabels, arguments);
+      nextStacksModel = preProcessInference(nextStacksModel, nextStacksPerception);
       return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
     }
   }

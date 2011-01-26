@@ -46,6 +46,7 @@ public:
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);
 extern StoppingCriterionPtr maxIterationsWithoutImprovementStoppingCriterion(size_t maxIterationsWithoutImprovement);
 extern StoppingCriterionPtr averageImprovementStoppingCriterion(double tolerance, bool relativeImprovment = false);
+extern StoppingCriterionPtr isAboveValueStoppingCriterion(double referenceValue);
 extern StoppingCriterionPtr logicalOrStoppingCriterion(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2);
 
 inline StoppingCriterionPtr logicalOr(StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2)

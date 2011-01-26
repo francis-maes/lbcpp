@@ -36,12 +36,23 @@ public:
       else
       {
         Object::VariableIterator* iterator = object->createVariablesIterator();
-        for (; iterator && iterator->exists(); iterator->next())
+        if (iterator)
+          for (; iterator->exists(); iterator->next())
+          {
+            size_t variableIndex;
+            Variable subVariable = iterator->getCurrentVariable(variableIndex);
+            if (subVariable.exists())
+              addSubVariable(type->getObjectVariableName(variableIndex), subVariable);
+          }
+        else
         {
-          size_t variableIndex;
-          Variable subVariable = iterator->getCurrentVariable(variableIndex);
-          if (subVariable.exists())
-            addSubVariable(type->getObjectVariableName(variableIndex), subVariable);
+          subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
+          for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+          {
+            Variable value = object->getVariable(i);
+            if (value.exists())
+              addSubVariable(type->getObjectVariableName(i), value);
+          }
         }
       }
     }

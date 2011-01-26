@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ProductPerception.h"
+#include <lbcpp/Core/Pair.h>
 using namespace lbcpp;
 
 /*
@@ -109,21 +110,18 @@ TypePtr ProductPerception::getInputType() const
 
 void ProductPerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
-  // retrieve inputs
-  Variable input1, input2;
-  if (singleInputForBothPerceptions)
-    input1 = input2 = input;
-  else
-    input1 = input[0], input2 = input[1];
+  PairPtr inputPair;
+  if (!singleInputForBothPerceptions)
+    inputPair = input.getObjectAndCast<Pair>();
 
   // compute Perception2
   std::list<PerceptionVariable> variables;
   FillVariableListCallback fillVariableListCallback(context, variables);
-  perception2->computePerception(context, input2, &fillVariableListCallback);
+  perception2->computePerception(context, inputPair ? inputPair->getSecond() : input, &fillVariableListCallback);
 
   // iterate over Perception1
   ComputePerceptionProductCallback computePerceptionProductCallback(context, this, variables, callback);
-  perception1->computePerception(context, input1, &computePerceptionProductCallback);
+  perception1->computePerception(context, inputPair ? inputPair->getFirst() : input, &computePerceptionProductCallback);
 }
 
 void ProductPerception::addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2)
