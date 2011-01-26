@@ -268,10 +268,7 @@ namespace lbcpp
 };
 
 PerceptionPtr lbcpp::identityPerception()
-{
-  static PerceptionPtr identity = identityPerception(anyType);
-  return identity;
-}
+  {return identityPerception(anyType);}
 
 PerceptionPtr lbcpp::productPerception(FunctionPtr multiplyFunction, PerceptionPtr perception1, TypePtr type2)
   {return productWithVariablePerception(multiplyFunction, perception1, type2, false);}
