@@ -155,7 +155,7 @@ bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& work
   String workUnitName;
   String arguments;
   File workingDirectory;
-  if (!NewWorkUnitDialogWindow::run(recentWorkUnits, workUnitName, arguments, workingDirectory))
+  if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments, workingDirectory))
     return false;
 
   recentWorkUnits->addRecent(workUnitName, arguments, workingDirectory);

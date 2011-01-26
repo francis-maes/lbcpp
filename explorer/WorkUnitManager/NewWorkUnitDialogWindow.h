@@ -121,7 +121,7 @@ public:
     juce_UseDebuggingNewOperator
   };
 */
-  static bool run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+  static bool run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
   
   virtual void closeButtonPressed();
 
@@ -130,8 +130,9 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+  NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
   
+  ExecutionContext& context;
 };
 
 }; /* namespace lbcpp */

@@ -96,6 +96,16 @@ private:
   DocumentWindow* mainWindow;
   std::vector<Variable> variables;
 };
+/*
+class ExplorerApplicationData
+{
+public:
+  
+private:
+  ExplorerProjectPtr currentProject;
+  ExecutionContextPtr guiContext;
+  ExecutionContextPtr localContext;
+};*/
 
 class ExplorerMainWindow : public DocumentWindow, public MenuBarModel
 {
@@ -290,9 +300,11 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          if (currentProject->startWorkUnit(context, workUnit))
+          ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
+          workUnitContext->setProjectDirectory(currentProject->getRootDirectory());
+
+          if (currentProject->startWorkUnit(*workUnitContext, workUnit))
           {
-            ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
             ExecutionTracePtr trace(new ExecutionTrace(workUnitContext));
             contentTabs->addVariable(context, trace, workUnit->getClassName());
             workUnitContext->pushWorkUnit(workUnit);
@@ -363,10 +375,10 @@ namespace lbcpp
   extern LibraryPtr explorerLibrary();
 };
 
-class ExplorerApplication : public JUCEApplication
+class ExplorerJUCEApplication : public JUCEApplication
 {
 public:
-  ExplorerApplication() : mainWindow(0) {/*_crtBreakAlloc = 729;*/}
+  ExplorerJUCEApplication() : mainWindow(0) {/*_crtBreakAlloc = 729;*/}
 
   virtual void initialise(const String& commandLine)
   {    
@@ -432,4 +444,4 @@ private:
 // START_JUCE_APPLICATION(ExplorerApplication)
 // pb de link ...
 int main(int argc, char* argv[])
-  {return JUCEApplication::main (argc, argv, new ExplorerApplication());}
+  {return JUCEApplication::main(argc, argv, new ExplorerJUCEApplication());}
