@@ -67,6 +67,28 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 }
 #endif // JUCE_DEBUG
 
+File ExecutionContext::getFile(const String& path)
+{
+  if (path.isEmpty())
+    return File::nonexistent;
+  if (File::isAbsolutePath(path))
+    return File(path);
+  if (!projectDirectory.exists())
+  {
+    errorCallback(T("Project directory is not specified. Could not find path ") + path);
+    return File::nonexistent;
+  }
+  return projectDirectory.getChildFile(path);
+}
+
+String ExecutionContext::getFilePath(const File& file) const
+{
+  if (projectDirectory.exists() && file.isAChildOf(projectDirectory))
+    return file.getRelativePathFrom(projectDirectory);
+  else
+    return file.getFullPathName();
+}
+
 /*
 ** ExecutionStack
 */

@@ -33,12 +33,11 @@ public:
     names.reserve(n);
     for (size_t i = 0; i < n; ++i)
     {
-      const ProteinPtr& protein = container->getElement(i).getObjectAndCast<Protein>();
-      if (protein)
-      {
-        proteins.push_back(protein);
-        names.push_back(String((int)i) + T(" - ") + protein->getName());
-      }
+      ObjectPtr object = container->getElement(i).getObject();
+      ProteinPtr protein = object.dynamicCast<Protein>();
+      jassert(protein);
+      proteins.push_back(protein);
+      names.push_back(String((int)i) + T(" - ") + protein->getName());
     }
     initializeTabs();
   }

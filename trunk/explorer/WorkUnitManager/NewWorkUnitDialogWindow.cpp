@@ -23,23 +23,24 @@ using juce::TextButton;
 class VariableEditorComponent : public Component, public juce::ChangeBroadcaster
 {
 public:
-  VariableEditorComponent(TypePtr type)
-    : type(type) {}
+  VariableEditorComponent(ExecutionContext& context, TypePtr type)
+    : context(context), type(type) {}
 
   virtual void setValue(const Variable& value) = 0;
   virtual Variable getValue() const = 0;
 
-  static VariableEditorComponent* create(const Variable& value);
+  static VariableEditorComponent* create(ExecutionContext& context, const Variable& value);
 
 protected:
+  ExecutionContext& context;
   TypePtr type;
 };
 
 class VariableTextEditor : public VariableEditorComponent, public juce::TextEditorListener
 {
 public:
-  VariableTextEditor(const Variable& variable)
-    : VariableEditorComponent(variable.getType()), hasChanged(false)
+  VariableTextEditor(ExecutionContext& context, const Variable& variable)
+    : VariableEditorComponent(context, variable.getType()), hasChanged(false)
   {
     addAndMakeVisible(editor = new TextEditor());
     editor->addListener(this);
@@ -58,7 +59,7 @@ public:
   }
 
   virtual Variable getValue() const
-    {return Variable::createFromString(defaultExecutionContext(), type, editor->getText());}
+    {return Variable::createFromString(context, type, editor->getText());}
 
   virtual void resized()
     {editor->setBoundsRelative(0, 0, 1, 1);}
@@ -79,8 +80,8 @@ protected:
 class EnumerationComboBoxEditor : public VariableEditorComponent, public juce::ComboBoxListener
 {
 public:
-  EnumerationComboBoxEditor(const Variable& value)
-    : VariableEditorComponent(value.getType())
+  EnumerationComboBoxEditor(ExecutionContext& context, const Variable& value)
+    : VariableEditorComponent(context, value.getType())
   {
     addAndMakeVisible(comboBox = new ComboBox(T("enum")));
     comboBox->addListener(this);
@@ -107,18 +108,18 @@ public:
   }
 
   virtual Variable getValue() const
-    {return Variable::createFromString(defaultExecutionContext(), type, comboBox->getText());}
+    {return Variable::createFromString(context, type, comboBox->getText());}
 
 protected:
   ComboBox* comboBox;
 };
 
-VariableEditorComponent* VariableEditorComponent::create(const Variable& value)
+VariableEditorComponent* VariableEditorComponent::create(ExecutionContext& context, const Variable& value)
 {
   if (value.isEnumeration())
-    return new EnumerationComboBoxEditor(value);
+    return new EnumerationComboBoxEditor(context, value);
 
-  return new VariableTextEditor(value);
+  return new VariableTextEditor(context, value);
 }
 
 ////////////
@@ -183,8 +184,8 @@ public:
 class WorkUnitArgumentComponent : public Component, public juce::ChangeListener
 {
 public:
-  WorkUnitArgumentComponent(ClassPtr workUnitClass, size_t variableIndex)
-    : name(NULL), shortName(NULL), description(NULL), variableIndex(variableIndex)
+  WorkUnitArgumentComponent(ExecutionContext& context, ClassPtr workUnitClass, size_t variableIndex)
+    : context(context), name(NULL), shortName(NULL), description(NULL), variableIndex(variableIndex)
   {
     TypePtr typeValue = workUnitClass->getObjectVariableType(variableIndex);
     String nameValue = workUnitClass->getObjectVariableName(variableIndex);
@@ -209,7 +210,7 @@ public:
       desiredHeight += descriptionHeightPerLine; // todo: * numLines
     }
 
-    addAndMakeVisible(value = VariableEditorComponent::create(Variable::missingValue(typeValue)));
+    addAndMakeVisible(value = VariableEditorComponent::create(context, Variable::missingValue(typeValue)));
     value->addChangeListener(this);
     desiredHeight += 2 + (value->getHeight() ? value->getHeight() : defaultValueHeight);
 
@@ -243,6 +244,7 @@ public:
   virtual void changeListenerCallback(void* objectThatHasChanged);
 
 private:
+  ExecutionContext& context;
   Label* name;
   Label* shortName;
   Label* description;
@@ -253,8 +255,8 @@ private:
 class WorkUnitArgumentListComponent : public Component
 {
 public:
-  WorkUnitArgumentListComponent(RecentWorkUnitConfigurationPtr workUnit, String& resultString)
-    : workUnit(workUnit), resultString(resultString)
+  WorkUnitArgumentListComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, String& resultString)
+    : context(context), workUnit(workUnit), resultString(resultString)
   {
     ClassPtr workUnitClass = getType(workUnit->getWorkUnitName());
     jassert(workUnitClass);
@@ -262,7 +264,7 @@ public:
     int desiredHeight = 0;
     for (size_t i = 0; i < arguments.size(); ++i)
     {
-      addAndMakeVisible(arguments[i] = new WorkUnitArgumentComponent(workUnitClass, i));
+      addAndMakeVisible(arguments[i] = new WorkUnitArgumentComponent(context, workUnitClass, i));
       desiredHeight += arguments[i]->getHeight() + 4;
     }
     setSize(600, desiredHeight);
@@ -285,8 +287,6 @@ public:
 
   void setValuesFromCommandLine(const String& commandLine)
   {
-    ExecutionContext& context = defaultExecutionContext();
-    
     WorkUnitPtr workUnit = WorkUnit::create(getType(this->workUnit->getWorkUnitName()));
     if (!workUnit)
     {
@@ -302,6 +302,7 @@ public:
   }
 
 protected:
+  ExecutionContext& context;
   RecentWorkUnitConfigurationPtr workUnit;
   std::vector<WorkUnitArgumentComponent* > arguments;
   String& resultString;
@@ -325,12 +326,12 @@ public:
 class WorkUnitArgumentsComponent : public Component, public juce::ComboBoxListener
 {
 public:
-  WorkUnitArgumentsComponent(RecentWorkUnitConfigurationPtr workUnit, String& resultString)
-    : argumentList(NULL), workUnit(workUnit), resultString(resultString)
+  WorkUnitArgumentsComponent(ExecutionContext& context, RecentWorkUnitConfigurationPtr workUnit, String& resultString)
+    : context(context), argumentList(NULL), workUnit(workUnit), resultString(resultString)
   {
     // argument list
     addAndMakeVisible(viewport = new WorkUnitArgumentsViewport());
-    viewport->setViewedComponent(argumentList = new WorkUnitArgumentListComponent(workUnit, resultString));
+    viewport->setViewedComponent(argumentList = new WorkUnitArgumentListComponent(context, workUnit, resultString));
     argumentList->setSize(viewport->getMaximumVisibleWidth(), argumentList->getHeight());
     
     // command line label
@@ -383,7 +384,7 @@ public:
     if (!workUnit)
       return;
 
-    workUnit->parseArguments(defaultExecutionContext(), resultString, args);
+    workUnit->parseArguments(context, resultString, args);
     
     size_t argIndex;
     for (argIndex = 0; argIndex < args.size(); ++argIndex)
@@ -398,7 +399,7 @@ public:
     commandLine->setText(resultString, true);
   }
 
-  static String argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, Variable> >& args)
+  String argumentsToString(WorkUnitPtr workUnit, const std::vector< std::pair<size_t, Variable> >& args) const
   {
     ClassPtr workUnitClass = workUnit->getClass();
     String res;
@@ -418,7 +419,11 @@ public:
       else
         res += T(" --") + name;
 
-      if (typeValue != booleanType)
+      if (typeValue == booleanType)
+        continue;
+      else if (typeValue == fileType)
+        res += T(" ") + context.getFilePath(File(value.getString()));
+      else
         res += T(" ") + value.toString();
     }
     return res;
@@ -427,6 +432,8 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
+  ExecutionContext& context;
+
   WorkUnitArgumentsViewport* viewport;
   WorkUnitArgumentListComponent* argumentList;
   Label* commandLineLabel;
@@ -446,8 +453,8 @@ void WorkUnitArgumentComponent::changeListenerCallback(void* )
 class NewWorkUnitContentComponent : public Component, public juce::ComboBoxListener, public juce::ButtonListener
 {
 public:
-  NewWorkUnitContentComponent(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters)
-    : argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
+  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters)
+    : context(context), argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
   {
     addAndMakeVisible(workUnitSelectorLabel = new Label(T("selector"), T("Work Unit")));
     workUnitSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
@@ -478,7 +485,7 @@ public:
       TypePtr type = getType(workUnit->getWorkUnitName());
       if (type && type->getObjectNumVariables() > 0)
       {
-        addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(workUnit, workUnitParameters));
+        addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(context, workUnit, workUnitParameters));
         argumentsSelectorLabel->setText(T("Arguments"), false);
       }
       else
@@ -511,6 +518,8 @@ public:
   enum {workUnitSelectorHeight = 20, labelsHeight = 25, margin = 5, buttonsWidth = 80, buttonsHeight = 30};
 
 private:
+  ExecutionContext& context;
+
   Label* workUnitSelectorLabel;
   WorkUnitSelectorComboxBox* workUnitSelector;
   Label* argumentsSelectorLabel;
@@ -530,17 +539,17 @@ private:
 /*
 ** NewWorkUnitDialogWindow
 */
-NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
-  : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true)
+NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
+  : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
 {
   setResizable(true, true);
   centreWithSize(800, 600);
-  setContentComponent(new NewWorkUnitContentComponent(recent, workUnitName, arguments));
+  setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments));
 }
 
-bool NewWorkUnitDialogWindow::run(RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
+bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
 {
-  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(recent, workUnitName, arguments, workingDirectory);
+  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments, workingDirectory);
   const int result = window->runModalLoop();
   delete window;
   return result == 1;

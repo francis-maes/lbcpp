@@ -98,10 +98,11 @@ public:
 
   virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
   {
-    if (value == String::empty)
+    File file = context.getFile(value);
+    if (file == File::nonexistent)
       return VariableValue(String::empty);
-    File v = File::getCurrentWorkingDirectory().getChildFile(value);
-    return VariableValue(v.getFullPathName());
+    else
+      return VariableValue(file.getFullPathName());
   }
   
 private:

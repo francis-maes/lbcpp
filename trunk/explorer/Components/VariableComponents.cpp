@@ -47,15 +47,11 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
     if (elementsType->inheritsFrom(fileType))
     {
       ContainerPtr loadedContainer = container->apply(context, loadFromFileFunction(objectClass), Container::parallelApply);
+      TypePtr loadedElementsType = loadedContainer->computeElementsCommonBaseType();
+      if (loadedElementsType != objectClass)
+        loadedContainer->setThisClass(containerClass(loadedElementsType));
       return createComponentForObject(context, loadedContainer, explicitName);
     }
-/*
-    if (elementsType->inheritsFrom(proteinClass))
-    {
-     
-      return new MultiProteinComponent(proteins, names);      
-    }
-*/
     return new ContainerSelectorComponent(container);
   }
 /*

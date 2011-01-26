@@ -2,19 +2,15 @@
 
 <library name="ExecutionContext" directory="Execution/Context">
 
+  <class name="SingleThreadedExecutionContext" base="ExecutionContext">
+    <constructor/>
+  </class>
   
-    
-    <class name="SingleThreadedExecutionContext" base="ExecutionContext">
-      <constructor/>
-    </class>
-    
-    <class name="SubExecutionContext" base="ExecutionContext" abstract="yes"/>
-    <class name="ThreadOwnedExecutionContext" base="SubExecutionContext"/>
+  <class name="SubExecutionContext" base="ExecutionContext" abstract="yes"/>
+  <class name="ThreadOwnedExecutionContext" base="SubExecutionContext"/>
 
-    <class name="MultiThreadedExecutionContext" base="ExecutionContext">
-      <constructor arguments="size_t numThreads"/>
-    </class>
-   
-  
+  <class name="MultiThreadedExecutionContext" base="ExecutionContext">
+    <constructor arguments="size_t numThreads"/>
+  </class>
 
 </library>

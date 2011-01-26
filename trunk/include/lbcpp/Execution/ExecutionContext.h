@@ -60,12 +60,25 @@ public:
   virtual void waitUntilAllWorkUnitsAreDone()
     {jassert(isMultiThread());}
 
+  /*
+  ** Access to files
+  */
+  File getFile(const String& path);
+  String getFilePath(const File& file) const;
+
+  File getProjectDirectory() const
+    {return projectDirectory;}
+
+  void setProjectDirectory(const File& projectDirectory)
+    {this->projectDirectory = projectDirectory;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExecutionContextClass;
 
   ExecutionStackPtr stack;
+  File projectDirectory;
 };
 
 extern ExecutionContext& defaultExecutionContext();
