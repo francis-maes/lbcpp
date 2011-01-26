@@ -471,6 +471,8 @@ public:
     if (workUnitSelector->getNumItems())
       workUnitSelector->setSelectedItemIndex(0);
   }
+  virtual ~NewWorkUnitContentComponent()
+    {deleteAllChildren();}
 
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
