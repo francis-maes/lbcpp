@@ -100,12 +100,12 @@ void DispatchByThreadExecutionCallback::notificationCallback(const NotificationP
   }
   else
   {
-    if (callbacks.empty() && mainThreadID == 0)
+    if (callbacks.empty())// && mainThreadID == 0)
     {
       mainThreadID = threadId;
       callbacks.push_back(createCallbackForThread(new ExecutionStack(), threadId));
     }
-    jassert(callbacks.size());
+    //jassert(callbacks.size());
     callbacks.back()->notificationCallback(notification);
   }
 }

@@ -7,140 +7,135 @@
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
 
+  <!-- Pair -->
+  <template name="Pair" base="Object">
+    <parameter name="firstType" type="Variable"/>
+    <parameter name="secondType" type="Variable"/>
+
+    <variable type="firstType" name="first"/>
+    <variable type="secondType" name="second"/>
+
+    <code>
+      virtual size_t getNumElements(const VariableValue&amp; value) const
+        {return 2;}
+      virtual Variable getElement(const VariableValue&amp; value, size_t index) const
+      {
+        const PairPtr&amp; pair = value.getObjectAndCast&lt;Pair&gt;();
+        return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
+      }
+      virtual String getElementName(const VariableValue&amp; value, size_t index) const
+        {return index ? T("second") : T("first");}
+    </code>
+
+  </template>
   
-    
-    <!-- Pair -->
-    <template name="Pair" base="Object">
-      <parameter name="firstType" type="Variable"/>
-      <parameter name="secondType" type="Variable"/>
+  <!-- Container -->
+  <template name="Container" base="Object" abstract="yes">
+    <parameter name="elementsType"/>
+    <code>
+      virtual size_t getNumElements(const VariableValue&amp; value) const
+      {
+      const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+      return container ? container->getNumElements() : 0;
+      }
 
-      <variable type="firstType" name="first"/>
-      <variable type="secondType" name="second"/>
+      virtual Variable getElement(const VariableValue&amp; value, size_t index) const
+      {
+      const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+      jassert(container);
+      return container->getElement(index);
+      }
 
-      <code>
-        virtual size_t getNumElements(const VariableValue&amp; value) const
-          {return 2;}
-        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
-        {
-          const PairPtr&amp; pair = value.getObjectAndCast&lt;Pair&gt;();
-          return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
-        }
-        virtual String getElementName(const VariableValue&amp; value, size_t index) const
-          {return index ? T("second") : T("first");}
-      </code>
+      virtual String getElementName(const VariableValue&amp; value, size_t index) const
+      {return T("[") + String((int)index) + T("]");}
+    </code>
+  </template>
   
-    </template>
-    
-    <!-- Container -->
-    <template name="Container" base="Object" abstract="yes">
-      <parameter name="elementsType"/>
-      <code>
-        virtual size_t getNumElements(const VariableValue&amp; value) const
-        {
-        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-        return container ? container->getNumElements() : 0;
-        }
+  <!-- Vector -->
+  <template name="Vector" base="Container[elementsType]" abstract="yes">
+    <parameter name="elementsType"/>
+  </template>
 
-        virtual Variable getElement(const VariableValue&amp; value, size_t index) const
-        {
-        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-        jassert(container);
-        return container->getElement(index);
-        }
+  <template name="GenericVector" base="Vector[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+  </template>
 
-        virtual String getElementName(const VariableValue&amp; value, size_t index) const
-        {return T("[") + String((int)index) + T("]");}
-      </code>
-    </template>
-    
-    <!-- Vector -->
-    <template name="Vector" base="Container[elementsType]" abstract="yes">
-      <parameter name="elementsType"/>
-    </template>
+  <template name="ObjectVector" base="Vector[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
+  </template>
 
-    <template name="GenericVector" base="Vector[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
-    </template>
+  <class name="BooleanVector" base="Vector[Boolean]">
+    <constructor arguments="size_t initialSize"/>
+  </class>
 
-    <template name="ObjectVector" base="Vector[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="TypePtr elementsType, size_t initialSize" parameters="elementsType"/>
-    </template>
+  <class name="VariableVector" base="Vector[Variable]">
+    <constructor arguments="size_t initialSize"/>
+  </class>
+  
+  <!-- Dynamic Object -->
+  <class name="DynamicClass" base="DefaultClass" abstract="yes">
+    <code>
+    virtual void destroy(VariableValue&amp; value) const
+      {Type::destroy(value);}
 
-    <class name="BooleanVector" base="Vector[Boolean]">
-      <constructor arguments="size_t initialSize"/>
-    </class>
+    virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
+      {Type::copy(dest, source);}
+    </code>
+  </class>
+  
+  <class name="UnnamedDynamicClass" base="DynamicClass"/>
 
-    <class name="VariableVector" base="Vector[Variable]">
-      <constructor arguments="size_t initialSize"/>
-    </class>
-    
-    <!-- Dynamic Object -->
-    <class name="DynamicClass" base="DefaultClass" abstract="yes">
-      <code>
-      virtual void destroy(VariableValue&amp; value) const
-        {Type::destroy(value);}
-
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {Type::copy(dest, source);}
-      </code>
-    </class>
-    
-    <class name="UnnamedDynamicClass" base="DynamicClass"/>
-
-    <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
-      <parameter name="enumeration" type="EnumValue"/>
-      <parameter name="variablesType" type="Double"/>
-      <code>
-        virtual size_t getObjectNumVariables() const
-          {return getEnumeration()->getNumElements();}
-          
-        virtual TypePtr getObjectVariableType(size_t index) const
-          {return getVariablesType();}
-          
-        virtual String getObjectVariableName(size_t index) const
-          {return getEnumeration()->getElementName(index);}
-          
-        virtual void createObjectVariables()
-        {
-          EnumerationPtr enumeration = getEnumeration();
-          size_t n = enumeration->getNumElements();
-          TypePtr variablesType = getVariablesType();
-          for (size_t i = 0; i &lt; n; ++i)
-            addVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
-        }
+  <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
+    <parameter name="enumeration" type="EnumValue"/>
+    <parameter name="variablesType" type="Double"/>
+    <code>
+      virtual size_t getObjectNumVariables() const
+        {return getEnumeration()->getNumElements();}
+        
+      virtual TypePtr getObjectVariableType(size_t index) const
+        {return getVariablesType();}
+        
+      virtual String getObjectVariableName(size_t index) const
+        {return getEnumeration()->getElementName(index);}
+        
+      virtual void createObjectVariables()
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        size_t n = enumeration->getNumElements();
+        TypePtr variablesType = getVariablesType();
+        for (size_t i = 0; i &lt; n; ++i)
+          addVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
+      }
+       
+      EnumerationPtr getEnumeration() const
+      {
+        jassert(getNumTemplateArguments() == 2);
+        EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
+        jassert(enumeration);
+        return enumeration;
+      }
          
-        EnumerationPtr getEnumeration() const
-        {
-          jassert(getNumTemplateArguments() == 2);
-          EnumerationPtr enumeration = getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();
-          jassert(enumeration);
-          return enumeration;
-        }
-           
-        TypePtr getVariablesType() const
-          {jassert(getNumTemplateArguments() == 2); return getTemplateArgument(1);}
-      </code>
-    </template>
-    
-    <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
-      <parameter name="inputClass" type="Object"/>
-      <parameter name="outputVariablesType" type="Variable"/>
-      <code>
-        virtual void createObjectVariables()
-        {
-          jassert(getNumTemplateArguments() == 2);
-          ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
-          TypePtr outputVariablesType = getTemplateArgument(1);
-          jassert(inputClass);
-          size_t n = inputClass->getObjectNumVariables();
-          for (size_t i = 0; i &lt; n; ++i)
-            addVariable(defaultExecutionContext(), outputVariablesType, inputClass->getObjectVariableName(i));
-        }
-      </code>
-    </template>
-
+      TypePtr getVariablesType() const
+        {jassert(getNumTemplateArguments() == 2); return getTemplateArgument(1);}
+    </code>
+  </template>
   
-  
+  <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
+    <parameter name="inputClass" type="Object"/>
+    <parameter name="outputVariablesType" type="Variable"/>
+    <code>
+      virtual void createObjectVariables()
+      {
+        jassert(getNumTemplateArguments() == 2);
+        ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
+        TypePtr outputVariablesType = getTemplateArgument(1);
+        jassert(inputClass);
+        size_t n = inputClass->getObjectNumVariables();
+        for (size_t i = 0; i &lt; n; ++i)
+          addVariable(defaultExecutionContext(), outputVariablesType, inputClass->getObjectVariableName(i));
+      }
+    </code>
+  </template>
 </library>

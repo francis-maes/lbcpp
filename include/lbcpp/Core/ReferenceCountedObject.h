@@ -102,13 +102,15 @@ public:
   void decrementReferenceCounter();
 #else
   void incrementReferenceCounter()
-    {juce::atomicIncrement(refCount);}
+    {if (!hasStaticAllocationFlag()) juce::atomicIncrement(refCount);}
 
   void decrementReferenceCounter()
   {
-    jassert(refCount != staticAllocationRefCountValue);
-    if (juce::atomicDecrementAndReturn(refCount) == 0)
-      delete this;
+    if (!hasStaticAllocationFlag())
+    {
+      if (juce::atomicDecrementAndReturn(refCount) == 0)
+        delete this;
+    }
   }
 #endif
 };

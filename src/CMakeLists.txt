@@ -349,6 +349,7 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   Perception/Container/BoundsProximityPerception.h
   Perception/Container/DistributionPerception.h
   Perception/Container/InputLabelPairPerception.h
+  Perception/Container/ConcatenatePairPerception.h
   Perception/Container/ContainerPerceptionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionLibrary.cpp
 )

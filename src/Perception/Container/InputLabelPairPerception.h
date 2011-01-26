@@ -15,6 +15,7 @@
 namespace lbcpp
 {
 
+// duplicate inputPerception for each possible classes
 class InputLabelPairPerception : public Perception
 {
 public:
