@@ -84,7 +84,7 @@ typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
 class DenseObjectObject : public Object
 {
 public:
-  DenseObjectObject(DynamicClassSharedPtr thisClass);
+  DenseObjectObject(DynamicClassPtr thisClass);
 
   ObjectPtr& getObjectReference(size_t index);
 
@@ -106,14 +106,13 @@ private:
   friend class DenseObjectObjectVariableIterator;
 
   std::vector<ObjectPtr> values;
-  DynamicClassSharedPtr thisClass;
 };
 
 class DenseDoubleObject : public Object
 {
 public:
-  DenseDoubleObject(DynamicClassSharedPtr thisClass);
-  DenseDoubleObject(DynamicClassSharedPtr thisClass, double initialValue);
+  DenseDoubleObject(DynamicClassPtr thisClass);
+  DenseDoubleObject(DynamicClassPtr thisClass, double initialValue);
 
   double& getValueReference(size_t index);
 
@@ -146,7 +145,6 @@ public:
 private:
   friend class DenseDoubleObjectVariableIterator;
   
-  DynamicClassSharedPtr thisClass;
   std::vector<double> values;
   double missingValue;
 };
@@ -154,7 +152,7 @@ private:
 class SparseDoubleObject : public Object
 {
 public:
-  SparseDoubleObject(DynamicClassSharedPtr thisClass);
+  SparseDoubleObject(DynamicClassPtr thisClass);
   
   virtual String toShortString() const;
 
@@ -179,7 +177,6 @@ public:
 private:
   friend class SparseDoubleObjectVariableIterator;
 
-  DynamicClassSharedPtr thisClass;
   std::vector< std::pair<size_t, double> > values;
   int lastIndex;
 };

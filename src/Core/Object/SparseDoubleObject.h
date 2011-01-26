@@ -40,8 +40,8 @@ private:
   size_t currentIndex;
 };
 
-SparseDoubleObject::SparseDoubleObject(DynamicClassSharedPtr thisClass)
-  : Object((Class* )thisClass.get()), thisClass(thisClass), lastIndex(-1)  {}
+SparseDoubleObject::SparseDoubleObject(DynamicClassPtr thisClass)
+  : Object(thisClass), lastIndex(-1)  {}
 
 String SparseDoubleObject::toShortString() const
   {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getObjectNumVariables()) + T(")");}

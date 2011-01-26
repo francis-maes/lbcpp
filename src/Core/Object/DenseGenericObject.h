@@ -17,8 +17,8 @@ namespace lbcpp
 class DenseGenericObject : public Object
 {
 public:
-  DenseGenericObject(DynamicClassSharedPtr thisClass)
-    : Object((Class* )thisClass.get()), thisClass(thisClass) {}
+  DenseGenericObject(DynamicClassPtr thisClass)
+    : Object(thisClass) {}
 
   virtual ~DenseGenericObject()
   {
@@ -62,7 +62,6 @@ private:
   friend class DenseGenericObjectVariableIterator;
 
   std::vector<VariableValue> variableValues;
-  DynamicClassSharedPtr thisClass;
 };
 
 typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;

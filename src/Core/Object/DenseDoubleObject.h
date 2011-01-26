@@ -55,14 +55,14 @@ private:
   }
 };
 
-DenseDoubleObject::DenseDoubleObject(DynamicClassSharedPtr thisClass)
-  : Object((Class* )thisClass.get()), thisClass(thisClass)
+DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass)
+  : Object(thisClass)
 {
   missingValue = doubleType->getMissingValue().getDouble();
 }
 
-DenseDoubleObject::DenseDoubleObject(DynamicClassSharedPtr thisClass, double initialValue)
-  : Object((Class* )thisClass.get()), thisClass(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
+DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass, double initialValue)
+  : Object(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
 {
   missingValue = doubleType->getMissingValue().getDouble();
 }

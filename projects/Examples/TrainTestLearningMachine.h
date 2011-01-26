@@ -125,6 +125,7 @@ class StackedSequentialInference : public VectorSequentialInference
 {
 public:
   StackedSequentialInference(InferencePtr firstStack, InferencePtr nextStacksModel, size_t numStacks)
+    : VectorSequentialInference(T("Stacked"))
   {
     jassert(numStacks >= 1);
     subInferences.resize(numStacks);
@@ -132,6 +133,7 @@ public:
     for (size_t i = 1; i < numStacks; ++i)
       subInferences[i] = nextStacksModel->cloneAndCast<Inference>();
   }
+  StackedSequentialInference() {}
 
   virtual TypePtr getInputType() const
     {return subInferences[0]->getInputType();}

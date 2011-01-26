@@ -106,7 +106,7 @@ protected:
   EnumerationPtr classes;
   size_t correctClass;
 
-  DynamicClassSharedPtr outputClass;
+  DynamicClassPtr outputClass;
 };
 
 typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
