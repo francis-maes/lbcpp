@@ -37,6 +37,11 @@ namespace juce
 namespace lbcpp
 {
 
+extern void coreLibraryCacheTypes(ExecutionContext& context);
+extern void coreLibraryUnCacheTypes();
+extern void lbCppLibraryCacheTypes(ExecutionContext& context);
+extern void lbCppLibraryUnCacheTypes();
+
 class LibraryManager
 {
 public:
@@ -46,7 +51,19 @@ public:
   void preShutdown()
   {
     for (size_t i = 0; i < libraries.size(); ++i)
+    {
+      libraries[i].first->uncacheTypes();
       libraries[i].first = LibraryPtr();
+      void* handle = libraries[i].second;
+      if (handle)
+      {
+        typedef void (*DeinitializeLibraryFunction)();
+
+        DeinitializeLibraryFunction deinitializeFunction = (DeinitializeLibraryFunction)juce::PlatformUtilities::getProcedureEntryPoint(handle, T("lbcppDeinitializeLibrary"));
+        if (deinitializeFunction)
+          deinitializeFunction();
+      }
+    }
   }
 
   void shutdown()
@@ -135,8 +152,16 @@ void lbcpp::deinitialize()
   if (applicationContext)
   {
     applicationContext->defaultExecutionContext = ExecutionContextPtr();
+
+    // pre shutdown types
     applicationContext->libraryManager.preShutdown();
+    coreLibraryUnCacheTypes();
+    lbCppLibraryUnCacheTypes();
+    topLevelType = anyType = TypePtr();
+
+    // shutdown types
     applicationContext->typeManager.shutdown();
+
     applicationContext->libraryManager.shutdown();
     applicationContext->userInterfaceManager.shutdown();
     deleteAndZero(applicationContext);
@@ -228,12 +253,6 @@ bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library, void* d
   return true;
 }
 
-namespace lbcpp
-{
-  extern void coreLibraryCacheTypes(ExecutionContext& context);
-  extern void lbCppLibraryCacheTypes(ExecutionContext& context);
-};
-
 // called from dynamic library
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext)
 {
@@ -247,6 +266,10 @@ void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationConte
 
 void lbcpp::deinitializeDynamicLibrary()
 {
+  coreLibraryUnCacheTypes();
+  lbCppLibraryUnCacheTypes();
+  topLevelType = anyType = TypePtr();
+
   jassert(lbcpp::applicationContext);
   lbcpp::applicationContext = NULL;
 }
