@@ -1,4 +1,5 @@
 
+//#include <lbcpp/Core/Variable.h>
 #include <lbcpp/DecisionTree/RTreeInference.h>
 #include "RTreeInferenceLearner.h"
 #include <lbcpp/Distribution/DiscreteDistribution.h>
@@ -7,7 +8,8 @@
 #define LOAD_MULTIREGR
 #define LOAD_OK3
 
-void rtree_update_progression(size_t);
+static void rtree_update_progression(size_t);
+static void context_result(const String&, double);
 
 #include "RTree/tree-model.h"
 #include "RTree/tree-model.c"
@@ -36,6 +38,9 @@ void rtree_update_progression(size_t value)
   rtree_progress->setValue(value);
   rtree_context->progressCallback(rtree_progress);
 }
+
+void context_result(const String& name, double data)
+  {rtree_context->resultCallback(name, data);}
 
 namespace lbcpp
 {
@@ -232,7 +237,7 @@ Variable RTreeInference::computeInference(ExecutionContext& context, const Varia
 ** RTreeInferenceLearner
 */
 
-void exportData()
+void exportData(ExecutionContext& context)
 {
   File f = File::getCurrentWorkingDirectory().getChildFile(T("x.train"));
   if (f.exists())
@@ -253,6 +258,8 @@ void exportData()
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
     *o << core_table_y[i] << "\n";
   delete o;
+  
+  context.informationCallback(T("RTreeInferenceLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
 }
 
 Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
@@ -273,9 +280,10 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
     if (learnerInput->getTrainingExample(i).second.exists())
       examples.push_back(i);
 
+  size_t nmin = inference->getMinimumSizeForSplitting();
   context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
   context.resultCallback(T("K"), inference->getNumAttributeSamplesPerSplit());
-  context.resultCallback(T("nmin"), inference->getMinimumSizeForSplitting());
+  context.resultCallback(T("nmin"), nmin);
   context.resultCallback(T("Num Examples"), examples.size());
   
   set_print_result(0, 0);
@@ -388,7 +396,7 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   
   getobjy_multiregr_learn = getobjy_multiregr_learn_matlab;
 
-  init_multiregr_trees(inference->getMinimumSizeForSplitting(), 0.0, 1.0,/*savepred*/1);
+  init_multiregr_trees(nmin, 0.0, 1.0,/*savepred*/1);
   set_test_classical();
   set_best_first(/*bestfirst*/0, 0, /*maxnbsplits*/5);
   

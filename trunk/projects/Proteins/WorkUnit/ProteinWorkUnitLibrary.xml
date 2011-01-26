@@ -15,6 +15,7 @@
 
   <class name="ProteinTarget" base="Object">
     <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
+    <variable type="String" name="description"/>
   </class>
 
   <class name="SnowBox" base ="WorkUnit">
@@ -29,7 +30,7 @@
     <variable type="PositiveInteger" name="currentFold" description="The current fold" shortName="c"/>
     <variable type="Boolean" name="useCrossValidation" description="Use cross-validation protocol ? (see 'numberofFolds')" shortName="cv"/>
     <variable type="PositiveInteger" name="partAsValidation" description="The part of learning proteins to use as validation proteins." shortName="vpart"/>
-    <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM'" shortName="bl"/>
+    <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM', 'MultiClassLinearSVMMostViolated' and 'ExtraTree'" shortName="bl"/>
     <variable type="PositiveInteger" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
     <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" description="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
     <variable type="NumericalLearningParameter" name="defaultParameter" description="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>

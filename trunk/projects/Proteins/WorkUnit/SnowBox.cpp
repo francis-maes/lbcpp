@@ -24,7 +24,11 @@ public:
     {return binaryClassificationExtraTreeInference(targetName, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
-    {return classificationExtraTreeInference(targetName, perception, classes, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);}
+  {
+    size_t nmin = minimumSizeForSplitting;
+    const_cast<ExtraTreeProteinInferenceFactory*>(this)->minimumSizeForSplitting  = minimumSizeForSplitting * 2 / 3;
+    return classificationExtraTreeInference(targetName, perception, classes, numTrees, numAttributeSamplesPerSplit, nmin);
+  }
   
 protected:
   size_t numTrees;
@@ -181,8 +185,8 @@ public:
 class MultiClassLinearSVMProteinInferenceFactory : public NumericalProteinInferenceFactory
 {
 public:
-  MultiClassLinearSVMProteinInferenceFactory(ExecutionContext& context)
-    : NumericalProteinInferenceFactory(context) {}
+  MultiClassLinearSVMProteinInferenceFactory(ExecutionContext& context, bool forceMostViolated = false)
+    : NumericalProteinInferenceFactory(context), forceMostViolated(forceMostViolated) {}
 
   virtual InferencePtr createBinaryClassifier(const String& targetName, PerceptionPtr perception) const
   {
@@ -195,10 +199,13 @@ public:
   
   virtual InferencePtr createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
   {
-    NumericalSupervisedInferencePtr res = multiClassLinearSVMInference(targetName, perception, classes, (targetName == T("structuralAlphabet")));
+    NumericalSupervisedInferencePtr res = multiClassLinearSVMInference(targetName, perception, classes, (forceMostViolated || targetName == T("structuralAlphabet")));
     res->setStochasticLearner(createOnlineLearner(targetName));
     return res;
   }
+  
+protected:
+  bool forceMostViolated;
 };
 
 /********** InferenceClallback **********/
@@ -341,37 +348,12 @@ bool NumericalLearningParameter::loadFromString(ExecutionContext& context, const
 }
 
 String ProteinTarget::toString() const
-{
-  // FIXME: this code is uncomplete ...
-
-  if (tasks.empty())
-    return String::empty;
-  String res = T("(");
-  for (size_t i = 0; i < tasks[0].size(); ++i)
-  {
-    if (i > 0)
-      res += T("-");
-    String task = tasks[0][i];
-    if (task == T("secondaryStructure"))
-      res += T("SS3");
-    else if (task == T("dsspSecondaryStructure"))
-      res += T("SS8");
-    else if (task == T("solventAccessibilityAt20p"))
-      res += T("SA");
-    else if (task == T("disorderRegions"))
-      res += T("DR");
-    else if (task == T("structuralAlphabetSequence"))
-      res += T("StAl");
-    else
-      jassert(false);
-  }
-  res += T(")") + String((int)tasks.size());
-  return res;
-}
+  {return description;}
 
 bool ProteinTarget::loadFromString(ExecutionContext& context, const String& value)
 {
   tasks.clear();
+  description = value;
 
   for (int begin = 0; begin != -1 && begin < value.length(); )
   {
@@ -432,9 +414,10 @@ ProteinInferenceFactoryPtr SnowBox::createFactory(ExecutionContext& context) con
   NumericalProteinInferenceFactoryPtr res;
   if (baseLearner == T("OneAgainstAllLinearSVM"))
     res = new OneAgainstAllLinearSVMProteinInferenceFactory(context);
-  if (baseLearner == T("MultiClassLinearSVM"))
+  else if (baseLearner == T("MultiClassLinearSVM"))
     res = new MultiClassLinearSVMProteinInferenceFactory(context);
-  
+  else if (baseLearner == T("MultiClassLinearSVMMostViolated"))
+    res = new MultiClassLinearSVMProteinInferenceFactory(context, true);
   if (res)
   {
     res->setParameters(learningParameters);
