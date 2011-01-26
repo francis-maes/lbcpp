@@ -121,8 +121,8 @@ bool SingleExtraTreeInferenceLearner::shouldCreateLeaf(ExecutionContext& context
     leafValue = examples.getLabel(0);
     return true;
   }
-
-  if (builder->getClass()->inheritsFrom(bernoulliDistributionBuilderClass))
+  // FIXME ->inheritsFrom doesn't work fine under linux because an enumeration passes the test
+  if (builder->getClass() == bernoulliDistributionBuilderClass)
   {
     size_t numOfTrue = 0;
     for (size_t i = 0; i < n; ++i)

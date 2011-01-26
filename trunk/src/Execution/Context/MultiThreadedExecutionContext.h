@@ -64,6 +64,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   if (entries.size() <= priority)
     entries.resize(priority + 1);
   entries[priority].push_back(Entry(workUnit, stack, true, counterToDecrementWhenDone, result));
+  std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Name : " << workUnit->getName() << std::endl;
 }
 
 void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter, bool* result)
@@ -78,6 +79,7 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   *result = true;
   for (size_t i = 0; i < n; ++i)
     entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, result));
+  std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnits->getClassName() << " - Name : " << workUnits->getName() << " - Composite : " << n << std::endl;
 }
 
 WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
@@ -251,6 +253,7 @@ public:
 
   virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
+    CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, 24);
     bool result;
     int numRemainingWorkUnits;
     if (pushIntoStack)
@@ -260,6 +263,32 @@ public:
     if (pushIntoStack)
       leaveScope(result);
     return result;
+  }
+
+  static CompositeWorkUnitPtr compactWorkUnitIfNecessary(const CompositeWorkUnitPtr& workUnits, size_t numThreads)
+  {
+    size_t n = workUnits->getNumWorkUnits();
+    if (n < numThreads * 25)
+      return workUnits;
+
+    CompositeWorkUnitPtr res = new CompositeWorkUnit(workUnits->getName() + T(" (compacted)"), numThreads);
+    res->setProgressionUnit(workUnits->getProgressionUnit());
+    res->setPushChildrenIntoStackFlag(false);
+
+    size_t numWorkUnitByComposite = n / numThreads;
+    size_t remainingWorkUnit = n % numThreads;
+    std::vector<CompositeWorkUnitPtr> compactedWorkUnits(numThreads);
+    for (size_t i = 0; i < numThreads; ++i)
+    {
+      compactedWorkUnits[i] = new CompositeWorkUnit(workUnits->getName() + T("(compacted ") + String((int)i) + T(")"),
+                                                    numWorkUnitByComposite + (i < remainingWorkUnit ? 1 : 0));
+      compactedWorkUnits[i]->setPushChildrenIntoStackFlag(workUnits->hasPushChildrenIntoStackFlag());
+      res->setWorkUnit(i, compactedWorkUnits[i]);
+    }
+
+    for (size_t i = 0; i < n; ++i)
+      compactedWorkUnits[i % numThreads]->setWorkUnit(i / numThreads, workUnits->getWorkUnit(i));
+    return res;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -353,6 +382,7 @@ public:
     
   virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
+    std::cout << "MultiThreadedExecutionContext::run - WorkUnit - Name : " << workUnit->getName() << std::endl;
     int remainingWorkUnits = 1;
     bool result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
@@ -363,6 +393,8 @@ public:
 
   virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
+    CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, threadPool->getNumThreads());
+    std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Name : " << workUnits->getName() << std::endl;
     int numRemainingWorkUnits;
     bool result;
     if (pushIntoStack)
