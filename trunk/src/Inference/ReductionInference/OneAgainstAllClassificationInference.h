@@ -65,12 +65,8 @@ public:
       double score = prediction.getDouble();
       if (score > bestScore)
         bestScore = score, bestClass = (int)i;
-      else if (score == bestScore)
-        bestClass = -1;
     }
-    if (bestClass < 0)
-      return Variable();
-    return Variable(bestClass, classes);
+    return bestClass >= 0 ? Variable(bestClass, classes) : Variable::missingValue(classes);
   }
 
 private:

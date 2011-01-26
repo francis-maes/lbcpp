@@ -25,55 +25,9 @@ public:
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
   {
-    if (!predicted.exists() || !correct.exists())
-      return;
-
-    int correctLabel = getCorrectLabel(correct);
-    if (correctLabel < 0)
-      return;
-    
-    if (predicted.isEnumeration())
-    {
-      accuracy->push(predicted.getInteger() == correctLabel);
-      return;
-    }
-    
-    EnumerationDistributionPtr distribution = predicted.dynamicCast<EnumerationDistribution>();
-    if (distribution)
-    {
-      size_t n = distribution->getEnumeration()->getNumElements();
-      size_t bestClass = n + 1;
-      double bestProb = -DBL_MAX;
-      for (size_t i = 0; i < n; ++i)
-      {
-        if (distribution->getProbability(i) > bestProb)
-        {
-          bestProb = distribution->getProbability(i);
-          bestClass = i;
-        }
-      }
-      jassert(bestClass < n);
-      accuracy->push(bestClass == (size_t)correctLabel);
-      return;
-    }    
-    
-    if (predicted.isObject())
-    {
-      DenseDoubleObjectPtr scores = predicted.dynamicCast<DenseDoubleObject>();
-      if (scores)
-      {
-        const std::vector<double>& scoreValues = scores->getValues();
-        double bestScore = -DBL_MAX;
-        int bestIndex = -1;
-        for (size_t i = 0; i < scoreValues.size(); ++i)
-          if (scoreValues[i] > bestScore)
-            bestScore = scoreValues[i], bestIndex = (int)i;
-        accuracy->push(bestIndex == correctLabel);
-        return;
-      }
-    }
-
-    jassert(false);
+    int correctLabel = getLabel(correct);
+    if (correctLabel >= 0)
+      accuracy->push(correctLabel == getLabel(predicted));
   }
   
   virtual String toString() const
@@ -101,18 +55,45 @@ protected:
 
   ScalarVariableMeanPtr accuracy;
 
-  int getCorrectLabel(const Variable& correct) const
+  int getLabel(const Variable& value) const
   {
-    if (!correct.exists())
+    if (!value.exists())
       return -1;
-    if (correct.isEnumeration())
-      return correct.getInteger();
+    if (value.isEnumeration())
+      return value.getInteger();
 
-    if (correct.isObject())
+    if (value.isObject())
     {
-      MultiClassLossFunctionPtr lossFunction = correct.dynamicCast<MultiClassLossFunction>();
+      MultiClassLossFunctionPtr lossFunction = value.dynamicCast<MultiClassLossFunction>();
       if (lossFunction)
         return lossFunction->getCorrectClass();
+      
+      DenseDoubleObjectPtr scores = value.dynamicCast<DenseDoubleObject>();
+      if (scores)
+      {
+        const std::vector<double>& scoreValues = scores->getValues();
+        double bestScore = -DBL_MAX;
+        int bestIndex = -1;
+        for (size_t i = 0; i < scoreValues.size(); ++i)
+          if (scoreValues[i] > bestScore)
+            bestScore = scoreValues[i], bestIndex = (int)i;
+        return bestIndex;
+      }
+
+      EnumerationDistributionPtr distribution = value.dynamicCast<EnumerationDistribution>();
+      if (distribution)
+      {
+        size_t n = distribution->getEnumeration()->getNumElements();
+        double bestProb = 0.0;
+        int bestIndex = -1;
+        for (size_t i = 0; i < n; ++i)
+        {
+          double prob = distribution->getProbability(i);
+          if (prob > bestProb)
+            bestProb = prob, bestIndex = (int)i;
+        }
+        return bestIndex;
+      }    
     }
 
     jassert(false);

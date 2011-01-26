@@ -90,9 +90,7 @@ public:
         bestClass = i;
       }
     
-    if (bestClass == -1)
-      return Variable();
-    return Variable(bestClass, classes);
+    return bestClass >= 0 ? Variable(bestClass, classes) : Variable::missingValue(classes);
   }
 
 private:

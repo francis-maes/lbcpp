@@ -1,11 +1,11 @@
 
-* Explorer: avoir un ExecutionContext general avec tous les threads
-* ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
 
-Explorer/ExecutionContext
- 0- Configurer un repertoire de projet courant, enregistrer toutes les traces d'execution dans ce repertoire
- 1- Colonne resultats, améliorer le système de colonnes
- 2- tableaux et courbes
+Explorer/ExecutionContext:
+ * Explorer: avoir un ExecutionContext general avec tous les threads
+ * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
+ * Enregistrer toutes les ExecutionTrace dans le repertoire du projet
+ * Colonne resultats, améliorer le système de colonnes
+ * tableaux et courbes
 
 Boinc:
  * New class BoincExecutionContext
