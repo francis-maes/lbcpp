@@ -38,11 +38,15 @@ struct TemplateTypeCache
       return instantiate(context, arguments);
   }
 
-  void clear()
+  void clear(std::vector<Type* >& toDelete)
   {
     ScopedLock _(instancesLock);
+    toDelete.reserve(toDelete.size() + instances.size());
     for (InstanceMap::iterator it = instances.begin(); it != instances.end(); ++it)
-      delete it->second.get();
+    {
+      it->second->deinitialize();
+      toDelete.push_back(it->second.get());
+    }
     instances.clear();
   }
 
@@ -204,15 +208,22 @@ bool TypeManager::doTypeExists(const String& type) const
 void TypeManager::shutdown()
 {
   ScopedLock _(typesLock);
+  std::vector<Type* > toDelete; // we keep traditional pointers, remove the remaining shared ptr and then perform deletion
   for (TemplateTypeMap::iterator it = templateTypes.begin(); it != templateTypes.end(); ++it)
-    it->second.clear();
+    it->second.clear(toDelete);
   templateTypes.clear();
+
+  toDelete.reserve(toDelete.size() + types.size());
   for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
   {
     it->second->deinitialize();
-    delete it->second.get();
+    jassert(it->second->hasStaticAllocationFlag());
+    toDelete.push_back(it->second.get());
   }
   types.clear();
+
+  for (size_t i = 0; i < toDelete.size(); ++i)
+    delete toDelete[i];
 }
 
 TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const

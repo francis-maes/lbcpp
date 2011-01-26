@@ -55,7 +55,7 @@ public:
     {value.clearString();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setString(source.getString());}
+    {if (isMissingValue(source)) dest = VariableValue(); else dest.setString(source.getString());}
 
   virtual String toString(const VariableValue& value) const
   {
