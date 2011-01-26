@@ -14,6 +14,27 @@
 namespace lbcpp
 {
 
+class IsAboveValueStoppingCriterion : public StoppingCriterion
+{
+public:
+  IsAboveValueStoppingCriterion(double referenceValue = 0.0)
+    : referenceValue(referenceValue) {}
+
+  virtual String toString() const
+    {return T("IsAboveValue(") + String(referenceValue) + T(")");}
+
+  virtual void reset()
+    {}
+
+  virtual bool shouldStop(double value)
+    {return value >= referenceValue;}
+
+private:
+  friend class IsAboveValueStoppingCriterionClass;
+
+  double referenceValue;
+};
+
 class MaxIterationsStoppingCriterion : public StoppingCriterion
 {
 public:

@@ -111,7 +111,8 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         Variable example = examples->getElement(i);
-        res->addSubInference(inference, example[0], example[1]);
+        const PairPtr& pair = example.getObjectAndCast<Pair>();
+        res->addSubInference(inference, pair->getFirst(), pair->getSecond());
       }
     return res;
   }

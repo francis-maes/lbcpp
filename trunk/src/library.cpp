@@ -43,14 +43,17 @@ public:
   ~LibraryManager()
     {shutdown();}
 
+  void preShutdown()
+  {
+    for (size_t i = 0; i < libraries.size(); ++i)
+      libraries[i].first = LibraryPtr();
+  }
+
   void shutdown()
   {
     for (size_t i = 0; i < libraries.size(); ++i)
-    {
-      libraries[i].first = LibraryPtr();
       if (libraries[i].second)
         juce::PlatformUtilities::freeDynamicLibrary(libraries[i].second);
-    }
     libraries.clear();
   }
 
@@ -132,6 +135,7 @@ void lbcpp::deinitialize()
   if (applicationContext)
   {
     applicationContext->defaultExecutionContext = ExecutionContextPtr();
+    applicationContext->libraryManager.preShutdown();
     applicationContext->typeManager.shutdown();
     applicationContext->libraryManager.shutdown();
     applicationContext->userInterfaceManager.shutdown();
