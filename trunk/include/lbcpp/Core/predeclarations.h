@@ -42,13 +42,13 @@ class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
 class Type;
-typedef NativePtr<Type> TypePtr;
+typedef ReferenceCountedObjectPtr<Type> TypePtr;
 
 class Class;
-typedef NativePtr<Class> ClassPtr;
+typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 
 class Enumeration;
-typedef NativePtr<Enumeration> EnumerationPtr;
+typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 
 class TemplateType;
 typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
@@ -71,8 +71,7 @@ typedef ReferenceCountedObjectPtr<ExecutionContext> ExecutionContextPtr;
 extern ExecutionContext& defaultExecutionContext();
 
 class DynamicClass;
-typedef NativePtr<DynamicClass> DynamicClassPtr;
-typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassSharedPtr;
+typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
 class UnnamedDynamicClass;
 typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;

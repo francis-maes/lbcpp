@@ -50,7 +50,6 @@ public:
   Variable(const ObjectPtr& object);
   template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType = nilType);
   Variable(Object* object);
-  template<class T> Variable(NativePtr<T> object, TypePtr expectedType = nilType);
   Variable(const Variable& other);
   Variable();
   

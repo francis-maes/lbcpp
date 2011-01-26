@@ -49,12 +49,6 @@
         else
           return VariableValue(Type::loadUnnamedTypeFromXml(importer));
       }
-
-      virtual void destroy(VariableValue&amp; value) const
-        {value.clearObject();}
-
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {dest.setObject(source.getObjectPointer());}
     </code>
   </class>
 
@@ -66,12 +60,6 @@
 
       virtual VariableValue createFromXml(XmlImporter&amp; importer) const
         {return Type::createFromXml(importer);}
-    
-      virtual void destroy(VariableValue&amp; value) const
-        {Type::destroy(value);}
-
-      virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-        {Type::copy(dest, source);}
     </code>
   </class>
 
@@ -82,24 +70,9 @@
 
     virtual VariableValue createFromXml(XmlImporter&amp; importer) const
       {return Type::createFromXml(importer);}
-    
-    virtual void destroy(VariableValue&amp; value) const
-      {Type::destroy(value);}
-
-    virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-      {Type::copy(dest, source);}
     </code>
   </class>
-  <class name="DefaultClass" base="Class">
-    <code>
-    virtual void destroy(VariableValue&amp; value) const
-      {Type::destroy(value);}
-
-    virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-      {Type::copy(dest, source);}
-    </code>
-  </class>
-
+  <class name="DefaultClass" base="Class"/>
 
   <!-- Template Type -->
   <class name="TemplateType" base="NameableObject" abstract="yes"/>

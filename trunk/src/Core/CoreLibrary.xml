@@ -35,19 +35,19 @@
     <code>
       virtual size_t getNumElements(const VariableValue&amp; value) const
       {
-      const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-      return container ? container->getNumElements() : 0;
+        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+        return container ? container->getNumElements() : 0;
       }
 
       virtual Variable getElement(const VariableValue&amp; value, size_t index) const
       {
-      const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-      jassert(container);
-      return container->getElement(index);
+        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
+        jassert(container);
+        return container->getElement(index);
       }
 
       virtual String getElementName(const VariableValue&amp; value, size_t index) const
-      {return T("[") + String((int)index) + T("]");}
+        {return T("[") + String((int)index) + T("]");}
     </code>
   </template>
   
@@ -75,15 +75,7 @@
   </class>
   
   <!-- Dynamic Object -->
-  <class name="DynamicClass" base="DefaultClass" abstract="yes">
-    <code>
-    virtual void destroy(VariableValue&amp; value) const
-      {Type::destroy(value);}
-
-    virtual void copy(VariableValue&amp; dest, const VariableValue&amp; source) const
-      {Type::copy(dest, source);}
-    </code>
-  </class>
+  <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
   
   <class name="UnnamedDynamicClass" base="DynamicClass"/>
 

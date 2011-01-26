@@ -97,8 +97,7 @@ extern ClassPtr sequentialInferenceClass;
 class StaticSequentialInference : public SequentialInference
 {
 public:
-  StaticSequentialInference(const String& name);
-  StaticSequentialInference() {}
+  StaticSequentialInference(const String& name = String::empty);
 
   virtual size_t getNumSubInferences() const = 0;
   virtual InferencePtr getSubInference(size_t index) const = 0;
@@ -111,8 +110,7 @@ extern ClassPtr staticSequentialInferenceClass;
 class VectorSequentialInference : public StaticSequentialInference
 {
 public:
-  VectorSequentialInference(const String& name);
-  VectorSequentialInference() {}
+  VectorSequentialInference(const String& name = String::empty);
 
   virtual TypePtr getInputType() const
     {return subInferences.size() ? subInferences[0]->getInputType() : anyType;}

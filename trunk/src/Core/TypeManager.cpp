@@ -42,7 +42,7 @@ struct TemplateTypeCache
   {
     ScopedLock _(instancesLock);
     for (InstanceMap::iterator it = instances.begin(); it != instances.end(); ++it)
-      delete it->second;
+      delete it->second.get();
     instances.clear();
   }
 
@@ -210,11 +210,10 @@ void TypeManager::shutdown()
   for (TypeMap::iterator it = types.begin(); it != types.end(); ++it)
   {
     it->second->deinitialize();
-    delete it->second;
+    delete it->second.get();
   }
   types.clear();
 }
-
 
 TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const
 {

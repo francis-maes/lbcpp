@@ -63,10 +63,6 @@ inline Variable::Variable(Object* object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(NativePtr<T> object, TypePtr expectedType)
-  : type(object ? (TypePtr)object->getClass() : expectedType), value(object) {jassert(type || !object);}
-
-template<class T>
 inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType)
   : type(object ? (TypePtr)object->getClass() : expectedType), value(object)
   {jassert(type || !object);} // this object's class has not been declared
@@ -256,10 +252,6 @@ template<class TT>
 inline void variableToNative(ExecutionContext& context, ReferenceCountedObjectPtr<TT>& dest, const Variable& source)
   {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context);}
 
-template<class TT>
-inline void variableToNative(ExecutionContext& context, NativePtr<TT>& dest, const Variable& source)
-  {jassert(source.isObject()); dest = source.getObjectAndCast<TT>(context).get();}
-
 inline void variableToNative(ExecutionContext& context, Variable& dest, const Variable& source)
   {dest = source;}
 
@@ -268,10 +260,6 @@ inline void variableToNative(ExecutionContext& context, Variable& dest, const Va
 */
 inline void nativeToVariable(Variable& dest, const Variable& source, TypePtr )
   {dest = source;}
-
-template<class TT>
-inline void nativeToVariable(Variable& dest, const NativePtr<TT>& source, TypePtr expectedType)
-  {dest = Variable(source, expectedType);}
 
 template<class TT>
 inline void nativeToVariable(Variable& dest, const ReferenceCountedObjectPtr<TT>& source, TypePtr expectedType)

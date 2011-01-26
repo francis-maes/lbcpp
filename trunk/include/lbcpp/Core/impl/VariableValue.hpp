@@ -57,10 +57,6 @@ struct VariableValue
   VariableValue(const ReferenceCountedObjectPtr<T>& objectValue)
     {setObject(objectValue.get());}
 
-  template<class T>
-  VariableValue(const NativePtr<T>& objectValue)
-    {setObject(objectValue.get());}
-
 #ifdef LBCPP_ENABLE_CPP0X_RVALUES
   template<class T>
   VariableValue(ReferenceCountedObjectPtr<T>&& objectValue)

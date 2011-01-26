@@ -55,8 +55,8 @@ private:
   }
 };
 
-DenseObjectObject::DenseObjectObject(DynamicClassSharedPtr thisClass)
-  : Object((Class* )thisClass.get()), thisClass(thisClass) {}
+DenseObjectObject::DenseObjectObject(DynamicClassPtr thisClass)
+  : Object(thisClass) {}
 
 ObjectPtr& DenseObjectObject::getObjectReference(size_t index)
 {

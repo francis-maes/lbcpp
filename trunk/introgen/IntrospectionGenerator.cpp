@@ -284,7 +284,7 @@ protected:
     {
       openScope(T("virtual VariableValue create(ExecutionContext& context) const"));
         writeLine(className + T("* res = new ") + className + T("();"));
-        writeLine(T("res->setThisClass(nativePointerFromThis(this));"));
+        writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
         writeLine(T("return res;"));
       closeScope();
       newLine();

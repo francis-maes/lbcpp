@@ -48,6 +48,8 @@
   <class name="LinearLearningMachineFamily" base="LearningMachineFamily"/>
   <class name="ExtraTreeLearningMachineFamily" base="LearningMachineFamily"/>
 
+  <class name="StackedSequentialInference" base="VectorSequentialInference"/>
+
   <class name="TrainTestLearningMachine" base="WorkUnit">
     <variable type="LearningProblemEnum" name="learningProblem" shortName="t"/>
     <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/>
