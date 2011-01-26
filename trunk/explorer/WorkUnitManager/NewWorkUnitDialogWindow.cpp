@@ -92,6 +92,8 @@ public:
       comboBox->addItem(enumeration->getElementName(i), i + 1);
     setValue(value);
   }
+  virtual ~EnumerationComboBoxEditor()
+    {deleteAllChildren();}
 
   virtual void resized()
     {comboBox->setBoundsRelative(0, 0, 1, 1);}
