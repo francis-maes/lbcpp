@@ -70,7 +70,8 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
 
 void ReferenceCountedObject::incrementReferenceCounter()
 {
-  juce::atomicIncrement(refCount);
+  if (!hasStaticAllocationFlag())
+    juce::atomicIncrement(refCount);
   ScopedLock _(refCountInfoLock);
   numAccessesPerType[getTypeName(typeid(*this))]++;
   ++totalNumAccesses;
@@ -85,7 +86,7 @@ void ReferenceCountedObject::decrementReferenceCounter()
     ++totalNumAccesses;
   }
 
-  if (juce::atomicDecrementAndReturn(refCount) == 0)
+  if (!hasStaticAllocationFlag() && juce::atomicDecrementAndReturn(refCount) == 0)
     delete this;
 }
 #else

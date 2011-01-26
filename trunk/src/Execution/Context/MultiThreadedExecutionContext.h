@@ -64,7 +64,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   if (entries.size() <= priority)
     entries.resize(priority + 1);
   entries[priority].push_back(Entry(workUnit, stack, true, counterToDecrementWhenDone, result));
-  std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Name : " << workUnit->getName() << std::endl;
+  //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Description : " << workUnit->toString() << std::endl;
 }
 
 void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter, bool* result)
@@ -79,7 +79,7 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   *result = true;
   for (size_t i = 0; i < n; ++i)
     entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, result));
-  std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnits->getClassName() << " - Name : " << workUnits->getName() << " - Composite : " << n << std::endl;
+  //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnits->getClassName() << " - Description : " << workUnits->toString() << " - Composite : " << n << std::endl;
 }
 
 WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
@@ -382,7 +382,7 @@ public:
     
   virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
-    std::cout << "MultiThreadedExecutionContext::run - WorkUnit - Name : " << workUnit->getName() << std::endl;
+    //std::cout << "MultiThreadedExecutionContext::run - WorkUnit - Description : " << workUnit->getDescription() << std::endl;
     int remainingWorkUnits = 1;
     bool result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
@@ -394,7 +394,7 @@ public:
   virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, threadPool->getNumThreads());
-    std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Name : " << workUnits->getName() << std::endl;
+    //std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Description : " << workUnits->getDescription() << std::endl;
     int numRemainingWorkUnits;
     bool result;
     if (pushIntoStack)

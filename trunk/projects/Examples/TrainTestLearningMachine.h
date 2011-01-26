@@ -19,6 +19,8 @@
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 
+# include <lbcpp/Inference/SequentialInference.h>
+
 namespace lbcpp
 {
 
@@ -91,7 +93,7 @@ class LearningProblem : public Object
 {
 public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file) = 0;
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, const Variable& arguments) = 0;
+  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
 };
 
@@ -105,7 +107,7 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
 
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, const Variable& arguments)
+  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
     PerceptionPtr perception = addUnitFeatures(inputClass.get());
     return learningMachineFamily->createMultiClassClassifier(perception, outputLabels, arguments);
@@ -119,18 +121,53 @@ protected:
   EnumerationPtr outputLabels;
 };
 
+class StackedSequentialInference : public VectorSequentialInference
+{
+public:
+  StackedSequentialInference(InferencePtr firstStack, InferencePtr nextStacksModel, size_t numStacks)
+  {
+    jassert(numStacks >= 1);
+    subInferences.resize(numStacks);
+    subInferences[0] = firstStack;
+    for (size_t i = 1; i < numStacks; ++i)
+      subInferences[i] = nextStacksModel->cloneAndCast<Inference>();
+  }
+
+  virtual TypePtr getInputType() const
+    {return subInferences[0]->getInputType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return subInferences.back()->getOutputType(pairClass(getInputType(), subInferences[0]->getOutputType(inputType)));}
+
+  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
+    {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : new Pair(state->getInput(), state->getSubOutput()), state->getSupervision());}
+};
+
 class MultiLabelClassificationProblem : public LearningProblem
 {
 public:
-  MultiLabelClassificationProblem() : inputClass(new UnnamedDynamicClass(T("FeatureVector"))), outputLabels(new Enumeration(T("Labels"))) {}
+  MultiLabelClassificationProblem()
+    : inputClass(new UnnamedDynamicClass(T("FeatureVector"))),
+      outputLabels(new Enumeration(T("Labels"))),
+      outputClass(enumBasedDoubleVectorClass(outputLabels, probabilityType))
+  {
+  }
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationDataTextParser(context, file, inputClass.get(), outputLabels);}
 
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, const Variable& arguments)
+  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
-    PerceptionPtr perception = identityPerception(inputClass.get());
-    return learningMachineFamily->createMultiLabelClassifier(perception, outputLabels, arguments);
+    PerceptionPtr firstStackPerception = identityPerception(inputClass.get());
+    InferencePtr firstStack = learningMachineFamily->createMultiLabelClassifier(firstStackPerception, outputLabels, arguments);
+    if (numStacks <= 1)
+      return firstStack;
+    else
+    {
+      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, identityPerception(outputClass));
+      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(nextStacksPerception, outputLabels, arguments);
+      return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
+    }
   }
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
@@ -139,12 +176,13 @@ public:
 protected:
   UnnamedDynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
+  ClassPtr outputClass; 
 };
 
 class TrainTestLearningMachine : public WorkUnit
 {
 public:
-  TrainTestLearningMachine() : maxExamples(0) {}
+  TrainTestLearningMachine() : numStacks(1), maxExamples(0) {}
 
   virtual bool run(ExecutionContext& context)
   {
@@ -166,13 +204,16 @@ public:
       return false;
   
     // create learning machine
-    InferencePtr inference = learningProblem->createInference(context, learningMachineFamily, methodToUse);
+    InferencePtr inference = learningProblem->createInference(context, learningMachineFamily, numStacks, methodToUse);
     if (!inference)
       return false;
 
     // train
     if (!inference->train(context, trainingData, ContainerPtr(), T("Training")))
       return false;
+
+    // tmp ! inference 
+    context.resultCallback(T("inference"), inference);
 
     // evaluate on training data
     if (!inference->evaluate(context, trainingData, learningProblem->createEvaluator(context), T("Evaluate on training data")))
@@ -190,6 +231,7 @@ protected:
 
   size_t learningProblem;
   size_t learningMachineFamily;
+  size_t numStacks;
   String methodToUse;
   File trainingFile;
   File testingFile;

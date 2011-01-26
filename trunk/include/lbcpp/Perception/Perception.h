@@ -188,6 +188,7 @@ extern PerceptionPtr windowHistogramPerception(TypePtr elementsType, size_t wind
 extern PerceptionPtr segmentHistogramPerception(TypePtr elementsType, bool useCache = true); // (Container, IndexPair) input
 extern PerceptionPtr boundsProximityPerception();
 extern PerceptionPtr inputLabelPairPerception(PerceptionPtr inputPerception, EnumerationPtr classes);
+extern PerceptionPtr concatenatePairPerception(const PerceptionPtr& firstPerception, const PerceptionPtr& secondPerception);
 
 // probability distribution perceptions
 extern PerceptionPtr discreteDistributionPerception(EnumerationPtr enumeration);

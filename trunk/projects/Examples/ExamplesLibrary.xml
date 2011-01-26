@@ -51,6 +51,7 @@
   <class name="TrainTestLearningMachine" base="WorkUnit">
     <variable type="LearningProblemEnum" name="learningProblem" shortName="t"/>
     <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/>
+    <variable type="PositiveInteger" name="numStacks" shortName="stack"/>
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
