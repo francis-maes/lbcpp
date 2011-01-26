@@ -85,7 +85,7 @@ private:
     double defaultScore = UpdatableOnlineLearner::getDefaultScore();
     //context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Score: ") + String(score));
     Variable parameters = inference->getParametersCopy(context);
-    if (parameters.exists() && restoreBestParametersWhenLearningStops && defaultScore > bestDefaultScore)
+    if (parameters.exists() && restoreBestParametersWhenLearningStops && isNumberValid(defaultScore) && defaultScore > bestDefaultScore)
     {
       bestParameters = parameters;
       bestDefaultScore = defaultScore;
@@ -93,7 +93,7 @@ private:
       UpdatableOnlineLearner::getScores(bestScores);
       //context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("New best score: ") + String(bestScore));
     }
-    if (criterion->shouldStop(defaultScore))
+    if (!isNumberValid(defaultScore) || criterion->shouldStop(defaultScore))
     {
       context.informationCallback(T("StoppingCriterionOnlineLearner::update"), T("Stopped, last score = ") + String(defaultScore) + T(" best score = ") + String(bestDefaultScore));
       learningStopped = true;

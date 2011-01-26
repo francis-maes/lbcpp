@@ -99,9 +99,13 @@ public:
       perceivedInput = input.getObject();
     else
       perceivedInput = perception->computeFunction(context, input).getObject();
+    bool outputValid = true;
     for (size_t i = 0; i < n; ++i)
+    {
       outputs[i] = lbcpp::dotProduct(context, denseWeights->getObject(i), perceivedInput);
-    return res;
+      outputValid &= isNumberValid(outputs[i]);
+    }
+    return outputValid ? Variable(res) : Variable::missingValue(outputClass);
   }
 
   virtual bool loadFromXml(XmlImporter& importer)

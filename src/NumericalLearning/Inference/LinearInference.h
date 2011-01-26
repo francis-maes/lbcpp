@@ -109,10 +109,12 @@ public:
     if (!input.exists())
       return 0.0;
     const PerceptionPtr& perception = getPerception();
+    double res;
     if (input.getType() == perception->getOutputType())
-      return lbcpp::dotProduct(context, weights, input.getObject());
+      res = lbcpp::dotProduct(context, weights, input.getObject());
     else
-      return lbcpp::dotProduct(context, weights, perception, input);
+      res = lbcpp::dotProduct(context, weights, perception, input);
+    return isNumberValid(res) ? Variable(res) : Variable::missingValue(doubleType);
   }
 };
 
