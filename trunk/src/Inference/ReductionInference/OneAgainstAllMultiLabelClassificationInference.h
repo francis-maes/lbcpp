@@ -87,6 +87,12 @@ public:
     return true;
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    VectorParallelInference::clone(context, t);
+    t.staticCast<OneAgainstAllMultiLabelClassificationInference>()->outputClass = outputClass;
+  }
+
 private:
   friend class OneAgainstAllMultiLabelClassificationInferenceClass;
 

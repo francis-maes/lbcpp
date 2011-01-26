@@ -56,7 +56,7 @@ public:
     InferenceOnlineLearnerPtr res = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(0.1));
     //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(binaryClassificationConfusionEvaluator(T("binary"))));
 
-    StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(1000);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
+    StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(100);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(criterion));
     return res;
   }
