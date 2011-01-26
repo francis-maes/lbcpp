@@ -239,7 +239,7 @@ protected:
           return false;
         }
         
-        trace.saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(String(assignedJobs[i]->getWorkUnitId())));
+        trace.saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(String(assignedJobs[i]->getWorkUnitId()) + T(".trace")));
       }
       
       if (status == T("IDontHaveThisWorkUnit"))

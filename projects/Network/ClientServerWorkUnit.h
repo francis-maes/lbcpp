@@ -26,7 +26,7 @@ public:
 class ClientWorkUnit : public WorkUnit
 {
 public:
-  ClientWorkUnit() : hostname(T("192.168.1.3")) {}//hostname(T("monster.montefiore.ulg.ac.be")) {}
+  ClientWorkUnit() : hostname(T("monster24.montefiore.ulg.ac.be")) {}
   
   virtual bool run(ExecutionContext& context)
   {

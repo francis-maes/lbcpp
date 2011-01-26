@@ -11,7 +11,7 @@ public:
   
   virtual bool run(ExecutionContext& context)
   {
-    ServerNetworkContextPtr networkContext = new SgeServerNetworkContext(getName(), hostname, 1664, workUnitDirectory);    
+    ServerNetworkContextPtr networkContext = new SgeServerNetworkContext(serverName, hostname, 1664, workUnitDirectory);    
     networkContext->run(context);
     return true;
   }
