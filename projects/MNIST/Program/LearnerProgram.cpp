@@ -101,14 +101,19 @@ bool LearnerProgram::run(ExecutionContext& context)
   CompositePerceptionPtr perception = compositePerception(imageClass, T("Image"));
 //  perception->addPerception(T("raw data"), imageFunctionToFlattenPerception(identityImageFunction(28, 28)));
 //  perception->addPerception(T("binarized"), imageFunctionToFlattenPerception(binarizeImageFunction(28, 28, 0.02)));
-//  perception->addPerception(T("maxima"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 2)));
+  perception->addPerception(T("maxima x2"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 2)));
+  perception->addPerception(T("maxima x4"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 4)));
+  perception->addPerception(T("maxima x8"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 8)));
+  perception->addPerception(T("maxima x16"), imageFunctionToFlattenPerception(maximumImageFunction(28, 28, 16)));
+
   perception->addPerception(T("minima x2"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 2)));
-//  perception->addPerception(T("minima x4"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 4)));
-//  perception->addPerception(T("minima x8"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 8)));
+  perception->addPerception(T("minima x4"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 4)));
+  perception->addPerception(T("minima x8"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 8)));
+  perception->addPerception(T("minima x16"), imageFunctionToFlattenPerception(minimumImageFunction(28, 28, 16)));
 
   /* Inference */
-  //  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
-  //inference->setStochasticLearner(createOnlineLearner());
+//  NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("digit"), rewritePerception(perception), digitTypeEnumeration, false);
+//  inference->setStochasticLearner(createOnlineLearner());
 
   InferencePtr inference = classificationExtraTreeInference(T("digit"), flattenPerception(perception), digitTypeEnumeration, numTrees, numAttr, splitSize);
   

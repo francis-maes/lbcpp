@@ -576,7 +576,7 @@ void exportPerceptionsToFile(ExecutionContext& context, ContainerPtr data, Perce
         }
         *o << " ";
       }
-      *o << protein->getSecondaryStructure()->getElement(j).getInteger();
+      *o << data->getElement(i)[1].getObjectAndCast<Protein>()->getSecondaryStructure()->getElement(j).getInteger();
       *o << "\n";
     }
   }
