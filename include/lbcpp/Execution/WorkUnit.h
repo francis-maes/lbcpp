@@ -56,7 +56,7 @@ class ObjectMethodWorkUnit : public WorkUnit
 {
 public:
   ObjectMethodWorkUnit(const String& description, ObjectPtr object, ObjectMethod method)
-    : description(description), object(object), method(method) {}
+    : object(object), method(method), description(description) {}
  
   virtual String toString() const
     {return description;}
@@ -93,7 +93,7 @@ class CompositeWorkUnit : public WorkUnit
 {
 public:
   CompositeWorkUnit(const String& description, size_t initialSize = 0)
-    : description(description), workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false) {}
+    : workUnits(new ObjectVector(workUnitClass, initialSize)), progressionUnit(T("Work Units")), pushChildrenIntoStack(false), description(description) {}
   CompositeWorkUnit() {}
 
   virtual String toString() const

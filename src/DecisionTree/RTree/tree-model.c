@@ -5186,6 +5186,7 @@ DllExport float build_one_tree_ensemble(int *ts_vector, int length_ts_vector) {
       sum_complexity=index_nodes-current_tree+1;
     }
   }
+  context_result(T("Complexity"), sum_complexity);
   if (print_result) {
     printf("complexity: %d",sum_complexity);
     if (test_ensemble_while_growing)

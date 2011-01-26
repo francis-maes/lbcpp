@@ -109,6 +109,7 @@ protected:
   friend class ProteinTargetClass;
   
   std::vector<std::vector<String> > tasks;
+  String description;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinTarget> ProteinTargetPtr;

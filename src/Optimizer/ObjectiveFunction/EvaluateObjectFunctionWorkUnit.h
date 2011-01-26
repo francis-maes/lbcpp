@@ -18,7 +18,7 @@ class EvaluateObjectiveFunctionWorkUnit : public WorkUnit
 {
 public:
   EvaluateObjectiveFunctionWorkUnit(const String& description, ObjectiveFunctionPtr objective, const Variable& input, double& result)
-    : description(description), objective(objective), input(input), result(result)
+    : objective(objective), input(input), result(result), description(description)
   {
   }
 
