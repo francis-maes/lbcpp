@@ -38,8 +38,8 @@
     <variable type="ProteinTarget" name="target"/>
     <variable type="String" name="targetName"/>
     <variable type="PositiveInteger" name="targetStage"/>
-    <variable type="Container" name="learningData"/>
-    <variable type="Container" name="validationData"/>
+    <variable type="Container[Pair[Variable,Variable]]" name="learningData"/>
+    <variable type="Container[Pair[Variable,Variable]]" name="validationData"/>
   </class>
 
   <class name="SnowBox" base="WorkUnit">

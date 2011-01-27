@@ -80,6 +80,7 @@
     <variable type="Function" name="function"/>
     <variable type="Variable" name="input"/>
     <variable type="String" name="description"/>
+    <variable type="Boolean" name="sendInputAsResult"/>
   </class>
   
   <class name="InferenceWorkUnit" base="FunctionWorkUnit">

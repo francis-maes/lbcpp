@@ -169,8 +169,8 @@ protected:
 class StochasticInferenceLearner : public InferenceBatchLearner<SequentialInference>
 {
 public:
-  StochasticInferenceLearner(bool randomizeExamples = false)
-    : randomizeExamples(randomizeExamples) {}
+  StochasticInferenceLearner(bool randomizeExamples = false, size_t maxIterations = 0)
+    : randomizeExamples(randomizeExamples), maxIterations(maxIterations) {}
 
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
@@ -191,7 +191,11 @@ public:
   // returns false if the final state is reached
   virtual bool updateInference(ExecutionContext& context, SequentialInferenceStatePtr state) const
   {
+    context.progressCallback(new ProgressionState((double)state->getStepNumber(), (double)maxIterations, T("Learning Iterations")));
     state->incrementStepNumber();
+    if (maxIterations && state->getStepNumber() > (int)maxIterations)
+      return false;
+
     state->getSubInference()->setName(T("Learning Iteration ") + String((int)state->getStepNumber()));
     PairPtr pair = state->getSubOutput().dynamicCast<Pair>();
     // repeat passes until a pass returns "false"
@@ -202,6 +206,7 @@ protected:
   friend class StochasticInferenceLearnerClass;
 
   bool randomizeExamples;
+  size_t maxIterations;
 
   InferencePtr createLearningPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) const
   {

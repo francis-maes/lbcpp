@@ -113,7 +113,10 @@ public:
 
   void setProgressionUnit(const String& progressionUnit)
     {this->progressionUnit = progressionUnit;}
-  
+
+  virtual ProgressionStatePtr getProgression(size_t numWorkUnitsDone) const
+    {return new ProgressionState((double)numWorkUnitsDone, (double)getNumWorkUnits(), getProgressionUnit());}
+
   // push into stack
   void setPushChildrenIntoStackFlag(bool value)
     {pushChildrenIntoStack = value;}

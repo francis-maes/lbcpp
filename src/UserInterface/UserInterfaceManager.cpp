@@ -169,7 +169,7 @@ juce::Component* UserInterfaceManager::createComponentIfExists(ExecutionContext&
 #include "Component/VariableTreeView.h"
 
 juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name,
-                                                              bool showTypes, bool showShortSummaries, bool showMissingVariables) const
+                                                              bool showTypes, bool showShortSummaries, bool showMissingVariables, bool makeRootNodeVisible) const
 {
-  return new VariableTreeView(variable, name, VariableTreeOptions(showTypes, showShortSummaries, showMissingVariables));
+  return new VariableTreeView(variable, name, VariableTreeOptions(showTypes, showShortSummaries, showMissingVariables, makeRootNodeVisible));
 }

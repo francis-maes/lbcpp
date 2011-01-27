@@ -234,7 +234,7 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
     else if (tagName == T("result"))
     {
       String name = importer.getStringAttribute(T("name"));
-      XmlElement* valueXml = xml->getChildByName(T("value"));
+      XmlElement* valueXml = xml->getChildByName(T("variable"));
       if (!valueXml)
       {
         importer.getContext().errorCallback(T("No value xml"));
@@ -275,38 +275,95 @@ void ExecutionTraceNode::setResult(const String& name, const Variable& value)
 
 std::vector< std::pair<String, Variable> > ExecutionTraceNode::getResults() const
 {
-  ScopedLock _(resultsLock);
-  return results;
-}
-
-ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context)
-{
-  ScopedLock _(resultsLock);
-  if (results.empty())
-    return ObjectPtr();
-  bool classHasChanged = false;
-  if (!resultsClass)
-    resultsClass = new UnnamedDynamicClass(description + T(" results"));
-  std::vector<size_t> variableIndices(results.size());
-  for (size_t i = 0; i < results.size(); ++i)
+  std::vector< std::pair<String, Variable> > res;
   {
-    int index = resultsClass->findObjectVariable(results[i].first);
-    if (index < 0)
-    {
-      resultsClass->addVariable(context, results[i].second.getType(), results[i].first);
-      index = (int)resultsClass->getObjectNumVariables() - 1;
-      classHasChanged = true;
-    }
-    variableIndices[i] = (size_t)index;
+    ScopedLock _(resultsLock);
+    res = results;
   }
-  if (classHasChanged)
-    resultsClass->initialize(context);
-  ObjectPtr res = resultsClass->createDenseObject();
-  for (size_t i = 0; i < results.size(); ++i)
-    res->setVariable(context, variableIndices[i], results[i].second);
+  if (returnValue.exists())
+    res.push_back(std::make_pair(T("returnValue"), returnValue));
   return res;
 }
 
+ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
+{
+  std::vector< std::pair<String, Variable> > results = getResults();
+  if (results.empty())
+    return ObjectPtr();
+
+  DynamicClassPtr resultsClass = new UnnamedDynamicClass(description + T(" results"));
+  for (size_t i = 0; i < results.size(); ++i)
+    resultsClass->addVariable(context, results[i].second.getType(), results[i].first);
+  resultsClass->initialize(context);
+
+  ObjectPtr res = resultsClass->createDenseObject();
+  for (size_t i = 0; i < results.size(); ++i)
+    res->setVariable(context, i, results[i].second);
+  return res;
+}
+
+
+VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context) const
+{
+  ScopedLock _(subItemsLock);
+  size_t numRows = subItems.size();
+
+  // (variable name, variable type) -> index in common class
+  typedef std::map<std::pair<String, TypePtr>, size_t> SignatureToIndexMap;
+  SignatureToIndexMap mapping;
+
+  /*
+  ** Create common class
+  */
+  size_t numChildNodes = 0;
+  DynamicClassPtr resultsClass = new UnnamedDynamicClass(description + T(" row"));
+  for (size_t i = 0; i < numRows; ++i)
+  {
+    ExecutionTraceNodePtr childNode = subItems[i].dynamicCast<ExecutionTraceNode>();
+    if (!childNode)
+      continue;
+    ++numChildNodes;
+    std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
+    for (size_t j = 0; j < childResults.size(); ++j)
+    {
+      std::pair<String, TypePtr> key(childResults[j].first, childResults[j].second.getType());
+      SignatureToIndexMap::iterator it = mapping.find(key);
+      if (it == mapping.end())
+      {
+        mapping[key] = resultsClass->getObjectNumVariables();
+        String name = key.first;
+        if (resultsClass->findObjectVariable(name) >= 0)
+          name += T(" (") + key.second->getName() + T(")");
+        resultsClass->addVariable(context, key.second, name);
+      }
+    }
+  }
+  resultsClass->initialize(context);
+
+  /*
+  ** Convert to common class and fill vector
+  */
+  VectorPtr res = vector(resultsClass);
+  res->reserve(numChildNodes);
+  for (size_t i = 0; i < numRows; ++i)
+  {
+    ExecutionTraceNodePtr childNode = subItems[i].dynamicCast<ExecutionTraceNode>();
+    if (!childNode)
+      continue;
+
+    ObjectPtr row = resultsClass->createDenseObject();
+    std::vector< std::pair<String, Variable> > childResults = childNode->getResults();
+    for (size_t j = 0; j < childResults.size(); ++j)
+    {
+      std::pair<String, TypePtr> key(childResults[j].first, childResults[j].second.getType());
+      SignatureToIndexMap::iterator it = mapping.find(key);
+      jassert(it != mapping.end());
+      row->setVariable(context, it->second, childResults[j].second);
+    }
+    res->append(row);
+  }
+  return res;
+}
 
 /*
 ** ExecutionTrace

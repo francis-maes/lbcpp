@@ -11,6 +11,7 @@
 
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
+# include <lbcpp/Inference/Inference.h> // for FunctionWorkUnit
 
 namespace lbcpp
 {
@@ -39,7 +40,7 @@ public:
     for (size_t i = 0; i < numSamples; ++i)
     {
       double parameterValue = values[i];
-      workUnits->setWorkUnit(i, functionWorkUnit(objective, parameterValue, String::empty, &scores[i]));
+      workUnits->setWorkUnit(i, new FunctionWorkUnit(objective, parameterValue, String::empty, &scores[i], true));
     }
     workUnits->setPushChildrenIntoStackFlag(true);
 

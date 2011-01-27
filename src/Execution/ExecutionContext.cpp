@@ -116,6 +116,13 @@ const std::pair<String, WorkUnitPtr>& ExecutionStack::getEntry(size_t depth) con
   return stack[depth];
 }
 
+bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
+{
+  if (stack != otherStack->stack)
+    return false;
+  return (parentStack == otherStack->parentStack) || (parentStack && parentStack->equals(otherStack->parentStack));
+}
+
 /*
 ** Execution Context constructor functions
 */

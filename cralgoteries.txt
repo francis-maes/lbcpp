@@ -1,9 +1,8 @@
-
 Explorer/ExecutionContext:
  * Explorer: avoir un ExecutionContext general avec tous les threads
  * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
  * Enregistrer toutes les ExecutionTrace dans le repertoire du projet
- * Colonne resultats, améliorer le système de colonnes
+ * Améliorer le système de colonnes
  * tableaux et courbes
 
 Boinc:

@@ -83,6 +83,29 @@ ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const Execu
   return item;
 }
 
+juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+{
+  if (!variable.exists())
+    return NULL;
+  if (variable.isObject())
+  {
+    ExecutionTraceNodePtr traceNode = variable.dynamicCast<ExecutionTraceNode>();
+    if (traceNode)
+    {
+      ObjectPtr results = traceNode->getResultsObject(context);
+
+      if (traceNode->getNumSubItems())
+        return userInterfaceManager().createVariableTreeView(context, traceNode->getChildrenResultsTable(context), name, true, true, true);
+
+      if (results)
+        return userInterfaceManager().createVariableTreeView(context, results, name, true, true, false, false);
+
+      return NULL;
+    }
+  }
+  return NULL;
+}
+
 void ExecutionTraceTreeView::timerCallback()
 {
   DelayToUserInterfaceExecutionCallback::timerCallback();
@@ -99,14 +122,10 @@ void ExecutionTraceTreeView::timerCallback()
         ExecutionTraceNodePtr trace = item->getTrace().dynamicCast<ExecutionTraceNode>();
         if (trace)
         {
-          ObjectPtr results = trace->getResultsObject(defaultExecutionContext());
-          if (results)
-          {
-            selectedVariables.push_back(results);
-            if (!selectionName.isEmpty())
-              selectionName += T(", ");
-            selectionName += trace->toString() + T(" results");
-          }
+          selectedVariables.push_back(trace);
+          if (!selectionName.isEmpty())
+            selectionName += T(", ");
+          selectionName += trace->toString();
         }
       }
     }
