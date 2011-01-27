@@ -40,6 +40,8 @@ public:
     t->stack = stack;
   }
 
+  bool equals(const ExecutionStackPtr& otherStack) const;
+
   lbcpp_UseDebuggingNewOperator
 
 private:

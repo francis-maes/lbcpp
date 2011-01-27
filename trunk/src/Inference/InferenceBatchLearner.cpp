@@ -84,6 +84,15 @@ void InferenceBatchLearnerInput::setExample(size_t i, const Variable& input, con
   e.second = supervision;
 }
 
+String InferenceBatchLearnerInput::toShortString() const
+{
+  String res = targetInference->getName() + T(", ") + String((int)getNumTrainingExamples()) + T(" train ex.");
+  size_t n = getNumValidationExamples();
+  if (n)
+    res += T(" ") + String((int)n) + T(" validation ex.");
+  return res;
+}
+
 /*
 ** EvaluateBatchLearnerObjectiveFunction
 */

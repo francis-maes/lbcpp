@@ -94,7 +94,8 @@ public:
   void setResult(const String& name, const Variable& value);
   std::vector< std::pair<String, Variable> > getResults() const;
 
-  ObjectPtr getResultsObject(ExecutionContext& context);
+  ObjectPtr getResultsObject(ExecutionContext& context) const;
+  VectorPtr getChildrenResultsTable(ExecutionContext& context) const;
 
   /*
   ** Progression
@@ -144,7 +145,6 @@ protected:
 
   Variable returnValue;
   CriticalSection resultsLock;
-  UnnamedDynamicClassPtr resultsClass;
   std::vector< std::pair<String, Variable> > results;
 
   ProgressionStatePtr progression;

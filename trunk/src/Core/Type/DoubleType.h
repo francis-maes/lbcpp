@@ -76,10 +76,12 @@ public:
       return String((int)(d + 0.5));
     else if (d > 100)
       return String((int)(d + 0.5)) + T(".");
-    else if (d > 0.01)
+    else if (d > 1)
       return String(d, 2);
+    else if (d > 0.01)
+      return String(d, 4);
     else if (d > 0.0001)
-      return String(d, 3);
+      return String(d, 6);
     else
       return String(d);
   }

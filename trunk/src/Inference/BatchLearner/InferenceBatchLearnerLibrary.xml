@@ -43,8 +43,9 @@
   </class>
 
   <class name="StochasticInferenceLearner" base="SequentialInference">
-    <constructor arguments="bool randomizeExamples"/>
+    <constructor arguments="bool randomizeExamples, size_t maxIterations"/>
     <variable type="Boolean" name="randomizeExamples"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
   </class>
 
   <!-- Auto Tune -->

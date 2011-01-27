@@ -198,22 +198,25 @@ public:
       delete rows[i].first;
       rows.erase(rows.begin() + i);
     }
-    Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
-    Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, selectionName);
-    if (!component)
-      component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, selectionName);
-    if (component)
-      appendVariable(variable, component);
-
-    //setSize(getPreferedWidth(), getHeight());
-    Viewport* viewport = findParentComponentOfClass<Viewport>();
-    if (viewport)
+    if (selectedVariables.size())
     {
-      viewport->setViewPositionProportionately(1.0, 0.0);
-      viewport->resized();
-    }
+      Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
+      Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, selectionName);
+      if (!component)
+        component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, selectionName);
+      if (component)
+        appendVariable(variable, component);
 
-    flushErrorAndWarningMessages(T("Changed Selection"));
+      //setSize(getPreferedWidth(), getHeight());
+      Viewport* viewport = findParentComponentOfClass<Viewport>();
+      if (viewport)
+      {
+        viewport->setViewPositionProportionately(1.0, 0.0);
+        viewport->resized();
+      }
+
+      flushErrorAndWarningMessages(T("Changed Selection"));
+    }
   }
 
 private:

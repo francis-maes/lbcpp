@@ -142,7 +142,7 @@ protected:
 VariableTreeView::VariableTreeView(const Variable& variable, const String& name, const VariableTreeOptions& options)
   : variable(variable), name(name), options(options), root(NULL), isSelectionUpToDate(false)
 {
-  setRootItemVisible(true);
+  setRootItemVisible(options.makeRootNodeVisible);
   setWantsKeyboardFocus(true);
   setMultiSelectEnabled(true);
   buildTree();

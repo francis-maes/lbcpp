@@ -41,7 +41,7 @@ public:
 
   juce::Component* createComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty) const;
   juce::TreeView* createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name = String::empty,
-                                          bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false) const;
+                                          bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true) const;
 
 private:
   UserInterfaceThread* userInterfaceThread;

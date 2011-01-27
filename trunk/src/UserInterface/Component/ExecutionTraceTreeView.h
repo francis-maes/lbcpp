@@ -50,6 +50,8 @@ public:
   const ExecutionTracePtr& getTrace() const
     {return trace;}
 
+  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

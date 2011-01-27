@@ -155,15 +155,22 @@ extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String&
 class FunctionWorkUnit : public WorkUnit
 {
 public:
-  FunctionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL)
-    : function(function), input(input), description(description), output(output) {}
+  FunctionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
+    : function(function), input(input), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
   FunctionWorkUnit() : output(NULL) {}
 
   virtual String toString() const
     {return description.isEmpty() ? function->getDescription(input) : description;}
 
   virtual Variable run(ExecutionContext& context)
-    {Variable out = function->computeFunction(context, input); if (output) *output = out; return out;}
+  {
+    if (sendInputAsResult)
+      context.resultCallback(T("input"), input);
+    Variable out = function->computeFunction(context, input);
+    if (output)
+      *output = out;
+    return out;
+  }
 
   const FunctionPtr& getFunction() const
     {return function;}
@@ -174,6 +181,9 @@ public:
   Variable* getOutput() const
     {return output;}
 
+  void setSendInputAsResultFlag(bool value = true)
+    {sendInputAsResult = value;}
+
 protected:
   friend class FunctionWorkUnitClass;
 
@@ -181,6 +191,7 @@ protected:
   Variable input;
   String description;
   Variable* output;
+  bool sendInputAsResult;
 };
 
 class InferenceWorkUnit : public FunctionWorkUnit
@@ -194,7 +205,14 @@ public:
     {return description.isEmpty() ? getInference()->getDescription(defaultExecutionContext(), input, supervision) : description;}
 
   virtual Variable run(ExecutionContext& context)
-    {Variable out = getInference()->computeInference(context, input, supervision); if (output) *output = out; return out;}
+  {
+    if (sendInputAsResult)
+      context.resultCallback(T("input"), input); 
+    //context.resultCallback(T("supervision"), supervision); 
+    Variable out = getInference()->computeInference(context, input, supervision);
+    if (output) *output = out;
+    return out;
+  }
 
   const InferencePtr& getInference() const
     {return function.staticCast<Inference>();}

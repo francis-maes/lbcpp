@@ -51,6 +51,11 @@ public:
   InferenceBatchLearnerInput() {}
 
   /*
+  ** Object
+  */
+  virtual String toShortString() const;
+
+  /*
   ** Target Inference
   */
   const InferencePtr& getTargetInference() const
@@ -146,7 +151,7 @@ extern DecoratorInferencePtr sharedParallelInferenceLearner(bool filterUnsupervi
 extern ParallelInferencePtr parallelVoteInferenceLearner();
 extern DecoratorInferencePtr decoratorInferenceLearner();
 extern DecoratorInferencePtr postProcessInferenceLearner();
-extern SequentialInferencePtr stochasticInferenceLearner(bool randomizeExamples = false);
+extern SequentialInferencePtr stochasticInferenceLearner(bool randomizeExamples = false, size_t maxIterations = 0);
 
 extern VectorSequentialInferencePtr multiPassInferenceLearner();
 extern VectorSequentialInferencePtr multiPassInferenceLearner(InferencePtr firstLearner, InferencePtr secondLearner);

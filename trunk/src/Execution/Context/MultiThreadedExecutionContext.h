@@ -18,9 +18,60 @@
 namespace lbcpp
 {
 
+class GroupedCompositeWorkUnit : public CompositeWorkUnit
+{
+public:
+  class WorkUnitBatch : public WorkUnit
+  {
+  public:
+    WorkUnitBatch(const CompositeWorkUnitPtr& workUnits, size_t begin, size_t end)
+      : workUnits(workUnits), begin(begin), end(end)
+    {
+    }
+
+    virtual Variable run(ExecutionContext& context)
+    {
+      bool pushIntoStack = workUnits->hasPushChildrenIntoStackFlag();
+      for (size_t i = begin; i < end; ++i)
+        context.run(workUnits->getWorkUnit(i), pushIntoStack);
+      return Variable();
+    }
+    
+  private:
+    CompositeWorkUnitPtr workUnits;
+    size_t begin, end;
+  };
+
+  GroupedCompositeWorkUnit(const CompositeWorkUnitPtr& workUnits, size_t numBatches)
+    : CompositeWorkUnit(workUnits->toString(), numBatches), workUnits(workUnits)
+  {
+    size_t n = workUnits->getNumWorkUnits();
+    meanSizePerBatch = n / (double)numBatches;
+    for (size_t i = 0; i < numBatches; ++i)
+    {
+      size_t begin = i * n / numBatches;
+      size_t end = (i + 1) * n / numBatches;
+      jassert(end <= n);
+      setWorkUnit(i, new WorkUnitBatch(workUnits, begin, end));
+    }
+    setProgressionUnit(workUnits->getProgressionUnit());
+    setPushChildrenIntoStackFlag(false);
+  }
+
+  virtual ProgressionStatePtr getProgression(size_t numWorkUnitsDone) const
+    {return new ProgressionState((double)(int)(numWorkUnitsDone * meanSizePerBatch + 0.5), (double)workUnits->getNumWorkUnits(), progressionUnit);}
+
+private:
+  CompositeWorkUnitPtr workUnits;
+  double meanSizePerBatch;
+};
+
 class WaitingWorkUnitQueue : public Object
 {
 public:
+  WaitingWorkUnitQueue(size_t numThreads = 0)
+    : numThreads(numThreads) {}
+
   struct Entry
   {
     Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, Variable* result)
@@ -44,12 +95,16 @@ public:
 
   bool isEmpty() const;
 
+  size_t getNumThreads() const
+    {return numThreads;}
+
   lbcpp_UseDebuggingNewOperator
 
 private:
   CriticalSection lock;
   typedef std::list<Entry> EntryList;
   std::vector<EntryList> entries;
+  size_t numThreads;
 };
 
 typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
@@ -63,18 +118,21 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   size_t priority = stack->getDepth();
   if (entries.size() <= priority)
     entries.resize(priority + 1);
-  entries[priority].push_back(Entry(workUnit, stack, true, counterToDecrementWhenDone, result));
+  entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), true, counterToDecrementWhenDone, result));
   //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Description : " << workUnit->toString() << std::endl;
 }
 
-void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter, Variable* result)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, Variable* result)
 {
+  ExecutionStackPtr stack = s->cloneAndCast<ExecutionStack>();
+
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
   if (entries.size() <= priority)
     entries.resize(priority + 1);
   
   size_t n = workUnits->getNumWorkUnits();
+
   *numRemainingWorkUnitsCounter = (int)n;
   //*result = true;
   for (size_t i = 0; i < n; ++i)
@@ -131,17 +189,14 @@ public:
   void workUntilWorkUnitsAreDone(const CompositeWorkUnitPtr& workUnits, int& counter)
   {
     size_t n = workUnits->getNumWorkUnits();
-    ProgressionStatePtr progression(new ProgressionState(0.0, (double)n, workUnits->getProgressionUnit()));
     while (!threadShouldExit() && counter)
     {
-      progression->setValue((double)(n - counter));
-      context->progressCallback(progression);
+      context->progressCallback(workUnits->getProgression(n - counter));
       bool ok = processOneWorkUnit();
       if (!ok)
         Thread::sleep(100); // waiting that the other threads are finished
     }
-    progression->setValue((double)(n - counter));
-    context->progressCallback(progression);
+    context->progressCallback(workUnits->getProgression(n));
   }
 
   WaitingWorkUnitQueuePtr getWaitingQueue() const
@@ -164,10 +219,11 @@ private:
 
     // set new stack into context
     ExecutionStackPtr previousStack = context->getStack();
-    context->setStack(ExecutionStackPtr(new ExecutionStack(entry.stack)));
+    ExecutionStackPtr entryStack = entry.stack->cloneAndCast<ExecutionStack>();
+    context->setStack(entryStack);
 
     // thread begin callback
-    context->threadBeginCallback(context->getStack());
+    context->threadBeginCallback(entryStack);
 
     // execute work unit
     Variable result = context->run(entry.workUnit, entry.pushIntoStack);
@@ -179,7 +235,7 @@ private:
       juce::atomicDecrement(*entry.counterToDecrementWhenDone);
 
     // thread end callback and restore previous stack
-    context->threadEndCallback(context->getStack());
+    context->threadEndCallback(entryStack);
     context->setStack(previousStack);
     return true;
   }
@@ -246,49 +302,27 @@ public:
   virtual Variable run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
   
-  static void startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, Variable& result)
+  static void startParallelRun(ExecutionContext& context, CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, Variable& result)
   {
-    waitingQueue->push(workUnits, context.getStack()->cloneAndCast<ExecutionStack>(context), &numRemainingWorkUnits, &result);
+    size_t numThreads = waitingQueue->getNumThreads();
+    size_t maxInParallel = numThreads * 5;
+    if (workUnits->getNumWorkUnits() > maxInParallel)
+      workUnits = new GroupedCompositeWorkUnit(workUnits, maxInParallel);
+    waitingQueue->push(workUnits, context.getStack(), &numRemainingWorkUnits, &result);
   }
 
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
-    CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, 24);
     Variable result;
     int numRemainingWorkUnits;
     if (pushIntoStack)
       enterScope(workUnits);
-    startParallelRun(*this, workUnits, thread->getWaitingQueue(), numRemainingWorkUnits, result);
-    thread->workUntilWorkUnitsAreDone(workUnits, numRemainingWorkUnits);
+    CompositeWorkUnitPtr wus = workUnits;
+    startParallelRun(*this, wus, thread->getWaitingQueue(), numRemainingWorkUnits, result);
+    thread->workUntilWorkUnitsAreDone(wus, numRemainingWorkUnits);
     if (pushIntoStack)
       leaveScope(result);
     return result;
-  }
-
-  static CompositeWorkUnitPtr compactWorkUnitIfNecessary(const CompositeWorkUnitPtr& workUnits, size_t numThreads)
-  {
-    size_t n = workUnits->getNumWorkUnits();
-    if (n < numThreads * 25)
-      return workUnits;
-
-    CompositeWorkUnitPtr res = new CompositeWorkUnit(workUnits->getName() + T(" (compacted)"), numThreads);
-    res->setProgressionUnit(workUnits->getProgressionUnit());
-    res->setPushChildrenIntoStackFlag(false);
-
-    size_t numWorkUnitByComposite = n / numThreads;
-    size_t remainingWorkUnit = n % numThreads;
-    std::vector<CompositeWorkUnitPtr> compactedWorkUnits(numThreads);
-    for (size_t i = 0; i < numThreads; ++i)
-    {
-      compactedWorkUnits[i] = new CompositeWorkUnit(workUnits->getName() + T("(compacted ") + String((int)i) + T(")"),
-                                                    numWorkUnitByComposite + (i < remainingWorkUnit ? 1 : 0));
-      compactedWorkUnits[i]->setPushChildrenIntoStackFlag(workUnits->hasPushChildrenIntoStackFlag());
-      res->setWorkUnit(i, compactedWorkUnits[i]);
-    }
-
-    for (size_t i = 0; i < n; ++i)
-      compactedWorkUnits[i % numThreads]->setWorkUnit(i / numThreads, workUnits->getWorkUnit(i));
-    return res;
   }
 
   lbcpp_UseDebuggingNewOperator
@@ -307,7 +341,7 @@ class WorkUnitThreadPool : public Object
 {
 public:
   WorkUnitThreadPool(ExecutionContext& parentContext, size_t numThreads)
-    : queue(new WaitingWorkUnitQueue()), threads(new WorkUnitThreadVector(numThreads))
+    : queue(new WaitingWorkUnitQueue(numThreads)), threads(new WorkUnitThreadVector(numThreads))
   {
     for (size_t i = 0; i < numThreads; ++i)
       threads->startThread(i, new WorkUnitThread(parentContext, i, queue));
@@ -393,13 +427,13 @@ public:
 
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
-    CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, threadPool->getNumThreads());
     //std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Description : " << workUnits->getDescription() << std::endl;
     int numRemainingWorkUnits;
     Variable result;
     if (pushIntoStack)
       enterScope(workUnits->getName(), workUnits);
-    ThreadOwnedExecutionContext::startParallelRun(*this, workUnits, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);
+    CompositeWorkUnitPtr wus = workUnits;
+    ThreadOwnedExecutionContext::startParallelRun(*this, wus, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);
     threadPool->waitUntilWorkUnitsAreDone(numRemainingWorkUnits);
     if (pushIntoStack)
       leaveScope(result);

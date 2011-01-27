@@ -125,13 +125,21 @@ public:
   }
 
   virtual void resultCallback(const String& name, const Variable& value)
-    {print(T("result"), name + T(" = ") + value.toShortString(), false);}
+  {
+    if (false) // todo: verboseResults flag
+      print(T("result"), name + T(" = ") + value.toShortString(), false);
+  }
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
     {print(T("start"), description, false); ++depth;}
 
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
-    {jassert(depth); --depth;}
+  {
+    if (result.exists())
+      print(T("result"), description + T(" ") + result.toShortString(), false);
+    jassert(depth);
+    --depth;
+  }
 
 private:
   ConsoleOutput& output;

@@ -28,6 +28,15 @@ public:
   ObjectPtr createSparseObject() const;
 
   /*
+  ** DefaultClass
+  */
+  void addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); DefaultClass::addVariable(context, type, name, shortName, description);}
+
+  void addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); DefaultClass::addVariable(context, typeName, name, shortName, description);}
+
+  /*
   ** Class
   */
   virtual bool initialize(ExecutionContext& context);
@@ -39,6 +48,8 @@ public:
   ** Object
   */
   virtual bool loadFromXml(XmlImporter& importer);
+
+  CriticalSection lock;
 
   lbcpp_UseDebuggingNewOperator
 
