@@ -44,6 +44,8 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  void makeOrder(size_t variableIndex, bool increasingOrder, std::vector<size_t>& res) const;
+
   lbcpp_UseDebuggingNewOperator
 
 public:

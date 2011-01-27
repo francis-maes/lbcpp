@@ -21,6 +21,7 @@ public:
     : table(table), configuration(configuration)
   {
     selectedCurves = configuration->getSelectedCurves();
+    table->makeOrder(configuration->getKeyVariableIndex(), true, order);
   }
 
   virtual Drawable* createCopy() const
@@ -107,10 +108,11 @@ protected:
   ContainerCurveEditorConfigurationPtr configuration;
 
   std::vector<size_t> selectedCurves;
+  std::vector<size_t> order;
 
   void getPointPosition(size_t row, size_t columnX, size_t columnY, const AffineTransform& transform, float& x, float& y) const
   {
-    ObjectPtr rowObject = table->getElement(row).getObject();
+    ObjectPtr rowObject = table->getElement(order[row]).getObject();
     x = (float)getTableValue(rowObject, columnX);
     y = (float)getTableValue(rowObject, columnY);
     transform.transformPoint(x, y);

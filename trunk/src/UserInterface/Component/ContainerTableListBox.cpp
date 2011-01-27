@@ -39,6 +39,8 @@ public:
   
   virtual void paintCell(Graphics& g, int row, int column, int width, int height, bool selected)
   {
+    if (order.size())
+      row = (int)order[row];
     if (row < (int)container->getNumElements())
     {
       g.setFont(10);
@@ -63,9 +65,7 @@ public:
   virtual void sortOrderChanged(int columnId, const bool isForwards)
   {
     columnId -= 100;
-    // FIXME !
-    //jassert(columnId >= 0 && columnId < (int)table->getNumColumns()); 
-    //setTable(table->sort((size_t)columnId, !isForwards));
+    container->makeOrder((size_t)columnId, isForwards, order);
   }
 
   juce_UseDebuggingNewOperator
@@ -74,6 +74,7 @@ protected:
   ContainerPtr container;
 
   std::vector<int> autoSizeWidths;
+  std::vector<size_t> order;
   
   void computeAutoColumnWidths()
   {
