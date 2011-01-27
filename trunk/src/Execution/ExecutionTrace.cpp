@@ -171,12 +171,13 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
   {
     ScopedLock _(resultsLock);
     for (size_t i = 0; i < results.size(); ++i)
-    {
-      exporter.enter(T("result"));
-      exporter.setAttribute(T("name"), results[i].first);
-      exporter.saveVariable(T("value"), results[i].second, anyType);
-      exporter.leave();
-    }
+      if (results[i].second.exists())
+      {
+        exporter.enter(T("result"));
+        exporter.setAttribute(T("resultName"), results[i].first);
+        exporter.writeVariable(results[i].second, variableType);
+        exporter.leave();
+      }
   }
 
   // sub items
@@ -233,18 +234,10 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       returnValue = importer.loadVariable(variableType);
     else if (tagName == T("result"))
     {
-      String name = importer.getStringAttribute(T("name"));
-      XmlElement* valueXml = xml->getChildByName(T("variable"));
-      if (!valueXml)
-      {
-        importer.getContext().errorCallback(T("No value xml"));
-        res = false;
-      }
-      else
-      {
-        Variable value = importer.loadVariable(valueXml, anyType);
+      String name = importer.getStringAttribute(T("resultName"));
+      Variable value = importer.loadVariable(variableType);
+      if (value.exists())
         results.push_back(std::make_pair(name, value));
-      }
     }
 
     importer.leave();
@@ -338,6 +331,8 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
       }
     }
   }
+  if (!resultsClass->getObjectNumVariables())
+    return VectorPtr();
   resultsClass->initialize(context);
 
   /*

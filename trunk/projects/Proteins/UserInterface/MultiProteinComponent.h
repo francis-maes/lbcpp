@@ -53,12 +53,10 @@ public:
     addTab(T("Protein 2D"), Colours::white);
   }
 
-  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
     ClassPtr proteinClass = lbcpp::proteinClass;
 
-    jassert(variable.getType()->canBeCastedTo(pairClass(anyType, stringType)));
-    String tabName = variable[1].getString();
     if (tabName == T("Data"))
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
     else if (tabName == T("Perception"))

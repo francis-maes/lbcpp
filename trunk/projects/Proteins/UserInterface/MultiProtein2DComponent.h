@@ -9,7 +9,7 @@
 #ifndef EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 # define EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 
-# include "../../../explorer/Utilities/SplittedLayout.h"
+# include <lbcpp/UserInterface/ObjectEditor.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
@@ -255,40 +255,25 @@ private:
   }
 };
 
-class MultiProtein2DComponent : public Component, public juce::ChangeListener, public ComponentWithPreferedSize, public VariableSelector, public VariableSelectorCallback
+class MultiProtein2DComponent : public ObjectEditor, public VariableSelector, public VariableSelectorCallback
 {
 public:
   MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
-    : proteins(proteins), configuration(configuration)
-  {
-    addAndMakeVisible(configurationComponent = new MultiProtein2DConfigurationComponent(configuration));
-    configurationComponent->addChangeListener(this);
-    addAndMakeVisible(viewport = new ViewportComponent(NULL, true, true));
-    changeListenerCallback(NULL);
-  }
+    : ObjectEditor(ObjectPtr(), configuration, true, true), proteins(proteins)
+    {initialize();}
   
-  virtual ~MultiProtein2DComponent()
-    {deleteAllChildren();}
-  
-  virtual void changeListenerCallback(void* objectThatHasChanged)
+  virtual Component* createConfigurationComponent(const ObjectPtr& configuration)
+    {return new MultiProtein2DConfigurationComponent(configuration);}
+
+  virtual Component* createContentComponent(const ObjectPtr& object, const ObjectPtr& cfg)
   {
-    SymmetricMatrixPtr map1 = getMap(configuration->getProtein1());
-    SymmetricMatrixPtr map2 = getMap(configuration->getProtein2());
+    const MultiProtein2DConfigurationPtr& configuration = cfg.staticCast<MultiProtein2DConfiguration>();
+    SymmetricMatrixPtr map1 = getMap(configuration, configuration->getProtein1());
+    SymmetricMatrixPtr map2 = getMap(configuration, configuration->getProtein2());
     ContactMapComponent* contactMapComponent = new ContactMapComponent(map1, map2);
     contactMapComponent->addCallback(*this);
-    viewport->setViewedComponent(contactMapComponent);
-    viewport->resized();
+    return contactMapComponent;
   }
-  
-  virtual void resized()
-  {
-    enum {configurationHeight = 20};
-    configurationComponent->setBounds(0, 0, getWidth(), configurationHeight);
-    viewport->setBounds(0, configurationHeight, getWidth(), getHeight() - configurationHeight);
-  }
- 
-  virtual int getDefaultWidth() const
-    {return 900;}
 
   virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
   {
@@ -300,13 +285,9 @@ public:
   }
 
 protected:
-  MultiProtein2DConfigurationComponent* configurationComponent;
-  ViewportComponent* viewport;
-  
   std::vector<ProteinPtr> proteins;
-  MultiProtein2DConfigurationPtr configuration;
 
-  SymmetricMatrixPtr getMap(int proteinNumber) const
+  SymmetricMatrixPtr getMap(const MultiProtein2DConfigurationPtr& configuration, int proteinNumber) const
   {
     int currentMap = configuration->getCurrentMap();
     return currentMap < 0 || proteinNumber < 0
@@ -316,10 +297,11 @@ protected:
 
   Variable makeSelection(const Variable& input) const
   {
+    const MultiProtein2DConfigurationPtr& configuration = this->configuration.staticCast<MultiProtein2DConfiguration>();
     SymmetricMatrixPtr contactMap = input[0].getObjectAndCast<SymmetricMatrix>();
 
     for (size_t i = 0; i < proteins.size(); ++i)
-      if (contactMap == getMap((int)i))
+      if (contactMap == getMap(configuration, (int)i))
         return Variable::pair(proteins[i], input[1]);
     jassert(false);
     return Variable();

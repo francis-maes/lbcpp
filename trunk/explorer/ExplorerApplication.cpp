@@ -6,7 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "Utilities/SplittedLayout.h"
 #include "Utilities/FileType.h"
 #include "ExplorerConfiguration.h"
 #include "ExplorerProject.h"

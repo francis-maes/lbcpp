@@ -16,4 +16,6 @@
   <import name="NumericalLearning"/>
   <import name="DecisionTree"/>
 
+  <import name="UserInterfaceComponent"/>
+
 </library>

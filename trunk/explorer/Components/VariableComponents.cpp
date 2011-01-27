@@ -52,7 +52,11 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
         loadedContainer->setThisClass(containerClass(loadedElementsType));
       return createComponentForObject(context, loadedContainer, explicitName);
     }
-    return new ContainerSelectorComponent(container);
+  
+    if (elementsType->isUnnamedType())
+      return userInterfaceManager().createContainerTableListBox(context, container);
+    else
+      return new ContainerSelectorComponent(container);
   }
 /*
   if (object.dynamicCast<Protein>())

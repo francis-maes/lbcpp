@@ -141,7 +141,7 @@ inline bool Variable::isObject() const
   {return type->inheritsFrom(objectClass);}
 
 inline const ObjectPtr& Variable::getObject() const
-  {jassert(isObject()); return value.getObject();}
+  {jassert(isNil() || isObject()); return value.getObject();}
 
 template<class O>
 inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const

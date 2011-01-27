@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ExecutionTraceTreeView.h"
+#include "ContainerCurveEditor.h"
 #include <lbcpp/Execution/ExecutionStack.h>
 using namespace lbcpp;
 using juce::Graphics;
@@ -83,25 +84,59 @@ ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const Execu
   return item;
 }
 
+class TabbedExecutionTraceResultsSelectorComponent : public TabbedVariableSelectorComponent
+{
+public:
+  TabbedExecutionTraceResultsSelectorComponent(const PairPtr& pair)
+    : TabbedVariableSelectorComponent(pair)
+  {
+    table = pair->getSecond().getObjectAndCast<Container>();
+    if (table)
+    {
+      addTab(T("Curves"), Colours::white);
+      addTab(T("Table"), Colours::white);
+    }
+
+    if (pair->getFirst().isObject())
+    {
+      results = pair->getFirst().getObject();
+      if (results)
+        addTab(T("Results"), Colours::white);
+    }
+  }
+
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
+  {
+    if (tabName == T("Curves"))
+      return new ContainerCurveEditor(context, table, new ContainerCurveEditorConfiguration(table->getElementsType()));
+    else if (tabName == T("Table"))
+      return userInterfaceManager().createContainerTableListBox(context, table);
+    else if (tabName == T("Results"))
+      return userInterfaceManager().createVariableTreeView(context, results, tabName, true, true, false, false);
+    else
+      return NULL;
+  }
+
+protected:
+  ContainerPtr table;
+  ObjectPtr results;
+};
+
 juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
 {
   if (!variable.exists())
     return NULL;
   if (variable.isObject())
   {
-    ExecutionTraceNodePtr traceNode = variable.dynamicCast<ExecutionTraceNode>();
-    if (traceNode)
-    {
-      ObjectPtr results = traceNode->getResultsObject(context);
+    PairPtr pair = variable.dynamicCast<Pair>();
+    if (pair)
+      return new TabbedExecutionTraceResultsSelectorComponent(pair);
 
-      if (traceNode->getNumSubItems())
-        return userInterfaceManager().createContainerTableListBox(context, traceNode->getChildrenResultsTable(context));
-
-      if (results)
-        return userInterfaceManager().createVariableTreeView(context, results, name, true, true, false, false);
-
-      return NULL;
-    }
+    ContainerPtr container = variable.dynamicCast<Container>();
+    if (container && container->getElementsType()->isUnnamedType())
+      return userInterfaceManager().createContainerTableListBox(context, container);
+    else
+      return userInterfaceManager().createVariableTreeView(context, variable, name, true, true, false, false);
   }
   return NULL;
 }
@@ -122,7 +157,21 @@ void ExecutionTraceTreeView::timerCallback()
         ExecutionTraceNodePtr trace = item->getTrace().dynamicCast<ExecutionTraceNode>();
         if (trace)
         {
-          selectedVariables.push_back(trace);
+          bool hasResults = trace->getResults().size() > (size_t)(trace->getReturnValue().exists() ? 1 : 0);
+          bool hasSubItems = trace->getNumSubItems() > 0;
+          if (!hasResults && !hasSubItems)
+            continue;
+          
+          ObjectPtr results;
+          ContainerPtr table;
+          if (hasResults)
+            results = trace->getResultsObject(*context);
+
+          if (hasSubItems)
+            table = trace->getChildrenResultsTable(*context);
+
+          selectedVariables.push_back(new Pair(results, table));
+        
           if (!selectionName.isEmpty())
             selectionName += T(", ");
           selectionName += trace->toString();

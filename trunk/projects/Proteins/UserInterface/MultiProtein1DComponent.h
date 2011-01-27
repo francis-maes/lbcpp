@@ -10,7 +10,7 @@
 # define LBCPP_PROTEINS_USER_INTERFACE_MULTI_1D_H_
 
 # include "MultiSequenceComponent.h"
-# include "../../../explorer/Utilities/SplittedLayout.h"
+# include <lbcpp/UserInterface/ObjectEditor.h>
 # include "../Data/Protein.h"
 # include "../Inference/ProteinInferenceFactory.h"
 
@@ -153,19 +153,19 @@ private:
   std::vector< std::vector<ConfigurationButton* > > buttons;
 };
 
-class MultiProtein1DComponent : public SplittedLayout, public juce::ChangeListener, public VariableSelector, public VariableSelectorCallback
+class MultiProtein1DComponent : public ObjectEditor, public VariableSelector, public VariableSelectorCallback
 {
 public:
   MultiProtein1DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
-    : SplittedLayout(new MultiProtein1DConfigurationComponent(configuration), new ViewportComponent(NULL, true, false), 0.16, SplittedLayout::typicalVertical),
-      proteins(proteins), configuration(configuration)
+    : ObjectEditor(ObjectPtr(), configuration, true, false), proteins(proteins)
+    {initialize();}
+
+  virtual Component* createConfigurationComponent(const ObjectPtr& configuration)
+    {return new MultiProtein1DConfigurationComponent(configuration);}
+
+  virtual Component* createContentComponent(const ObjectPtr& object, const ObjectPtr& cfg)
   {
-    dynamic_cast<juce::ChangeBroadcaster* >(first)->addChangeListener(this);
-    changeListenerCallback(NULL);
-  }
-  
-  virtual void changeListenerCallback(void* objectThatHasChanged)
-  {
+    MultiProtein1DConfigurationPtr configuration = cfg.staticCast<MultiProtein1DConfiguration>();
     MultiSequenceComponent* component = new MultiSequenceComponent();
     component->addCallback(*this);
     for (size_t i = 0; i < configuration->getNumSequences(); ++i)
@@ -184,8 +184,8 @@ public:
         if (sequences.size())
           component->addSequenceGroup(sequenceFriendlyName, sequences);
       }
-    getViewport()->setViewedComponent(component);
-    getViewport()->resized();
+
+    return component;
   }
 
   virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
@@ -195,7 +195,7 @@ public:
     for (size_t i = 0; i < selection.size(); ++i)
       selection[i] = makeSelection(selectedVariables[i]);
     sendSelectionChanged(selection, selectionName);
-    MultiSequenceComponent* component = dynamic_cast<MultiSequenceComponent* >(getViewport()->getViewedComponent());
+    MultiSequenceComponent* component = dynamic_cast<MultiSequenceComponent* >(getContentComponent());
     if (component)
     {
       if (selectedVariables.size() == 1)
@@ -205,15 +205,8 @@ public:
     }
   }
   
-  virtual int getDefaultWidth() const
-    {return 900;}
-
 protected:
   std::vector<ProteinPtr> proteins;
-  MultiProtein1DConfigurationPtr configuration;
-
-  ViewportComponent* getViewport() const
-    {return (ViewportComponent* )second;}
 
   Variable makeSelection(const Variable& sequenceVariable) const
   {
@@ -231,6 +224,7 @@ protected:
  
   ProteinPtr findProteinWithName(const String& proteinName) const
   {
+    MultiProtein1DConfigurationPtr configuration = this->configuration.staticCast<MultiProtein1DConfiguration>();
     for (size_t i = 0; i < configuration->getNumProteins(); ++i)
       if (configuration->getProteinName(i) == proteinName)
         return proteins[i];
