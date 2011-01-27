@@ -34,7 +34,7 @@
 -->
   
   <class name="LearningParameterObjectiveFunction" base="ObjectiveFunction">
-    <variable type="Object" name="factory"/>
+<!--    <variable type="Object" name="factory"/> -->
     <variable type="ProteinTarget" name="target"/>
     <variable type="String" name="targetName"/>
     <variable type="PositiveInteger" name="targetStage"/>

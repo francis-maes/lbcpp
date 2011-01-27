@@ -141,6 +141,9 @@ public:
   
   virtual double compute(ExecutionContext& context, const Variable& input) const;
   
+  virtual String toString() 
+    {return T("");}
+  
 protected:
   friend class LearningParameterObjectiveFunctionClass;
   
