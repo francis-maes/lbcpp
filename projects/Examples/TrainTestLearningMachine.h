@@ -189,7 +189,7 @@ class TrainTestLearningMachine : public WorkUnit
 public:
   TrainTestLearningMachine() : numStacks(1), maxExamples(0) {}
 
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     LearningProblemPtr learningProblem = createLearningProblem(context);
     LearningMachineFamilyPtr learningMachineFamily = createLearningMachineFamily(context);

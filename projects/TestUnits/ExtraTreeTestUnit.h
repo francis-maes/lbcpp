@@ -57,7 +57,7 @@ public:
   virtual String toString() const
     {return T("x3Tester has one goal in live: Make Extra-Trees really works ;-)");}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     runClassification(context);
     runRegression(context);

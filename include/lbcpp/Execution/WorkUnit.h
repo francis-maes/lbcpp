@@ -33,7 +33,7 @@ public:
   bool parseArguments(ExecutionContext& context, const String& arguments);
   bool parseArguments(ExecutionContext& context, const std::vector<String>& arguments);
 
-  virtual bool run(ExecutionContext& context) = 0;
+  virtual Variable run(ExecutionContext& context) = 0;
   
   virtual size_t getNumRequiredCpus() const
     {return 0;}
@@ -50,7 +50,7 @@ protected:
 
 extern ClassPtr workUnitClass;
 
-typedef bool (Object::*ObjectMethod)(ExecutionContext& context); 
+typedef Variable (Object::*ObjectMethod)(ExecutionContext& context); 
 
 class ObjectMethodWorkUnit : public WorkUnit
 {
@@ -61,7 +61,7 @@ public:
   virtual String toString() const
     {return description;}
 
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     Object& obj = *object;
     return (obj.*method)(context);
@@ -85,8 +85,8 @@ protected:
 
   WorkUnitPtr decorated;
 
-  virtual bool run(ExecutionContext& context)
-    {return !decorated || decorated->run(context);}
+  virtual Variable run(ExecutionContext& context)
+    {return decorated ? decorated->run(context) : Variable();}
 };
 
 class CompositeWorkUnit : public WorkUnit
@@ -129,7 +129,7 @@ protected:
   bool pushChildrenIntoStack;
   String description;
 
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
 };
 
 }; /* namespace lbcpp */

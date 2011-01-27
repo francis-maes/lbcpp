@@ -22,7 +22,7 @@ public:
   virtual String toString() const
     {return T("Convert a PDB file to a Protein file and vice-versa.");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
   
 protected:
   friend class ConvertPDBToProteinWorkUnitClass;

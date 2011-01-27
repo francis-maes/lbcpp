@@ -48,6 +48,9 @@ public:
 
   void enter(const String& tagName, const String& name = String::empty);
   void writeType(TypePtr type);
+  void writeName(const String& name);
+  void writeVariable(const Variable& variable, TypePtr expectedType);
+  void writeObject(const ObjectPtr& object, TypePtr expectedType);
   void leave();
 
   void addTextElement(const String& text)
@@ -97,10 +100,6 @@ private:
   void resolveSharedObjectReferences(SavedObject& savedObject);
 
   static String makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers);
-
-  void writeName(const String& name);
-  void writeVariable(const Variable& variable, TypePtr expectedType);
-  void writeObject(const ObjectPtr& object, TypePtr expectedType);
 };
 
 class XmlImporter
@@ -150,6 +149,7 @@ public:
   void enter(XmlElement* child);
   bool enter(const String& childTagName);
   TypePtr loadType(TypePtr expectedType);
+  Variable loadVariable(TypePtr expectedType);
   void leave();
 
   ExecutionContext& getContext()
@@ -163,7 +163,6 @@ private:
   std::vector<SharedObjectMap> sharedObjectsStack;
 
   bool loadSharedObjects();
-  Variable loadVariable(TypePtr expectedType);
   ObjectPtr getReferencedObject() const;
 };
 

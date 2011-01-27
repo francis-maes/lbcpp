@@ -23,7 +23,7 @@ class WaitingWorkUnitQueue : public Object
 public:
   struct Entry
   {
-    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, bool* result)
+    Entry(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, bool pushIntoStack, int* counterToDecrementWhenDone, Variable* result)
       : workUnit(workUnit), stack(stack), pushIntoStack(pushIntoStack), counterToDecrementWhenDone(counterToDecrementWhenDone), result(result) {}
     Entry() : counterToDecrementWhenDone(NULL) {}
 
@@ -31,14 +31,14 @@ public:
     ExecutionStackPtr stack;
     bool pushIntoStack;
     int* counterToDecrementWhenDone;
-    bool* result;
+    Variable* result;
 
     bool exists() const
       {return workUnit;}
   };
 
-  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool* result = NULL);
-  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, bool* result = NULL);
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, Variable* result = NULL);
+  void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, Variable* result = NULL);
 
   Entry pop();
 
@@ -57,7 +57,7 @@ typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
 /*
 ** WaitingWorkUnitQueue
 */
-void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, bool* result)
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, Variable* result)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
@@ -67,7 +67,7 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Description : " << workUnit->toString() << std::endl;
 }
 
-void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter, bool* result)
+void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter, Variable* result)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
@@ -76,9 +76,9 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   
   size_t n = workUnits->getNumWorkUnits();
   *numRemainingWorkUnitsCounter = (int)n;
-  *result = true;
+  //*result = true;
   for (size_t i = 0; i < n; ++i)
-    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, result));
+    entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, NULL));
   //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnits->getClassName() << " - Description : " << workUnits->toString() << " - Composite : " << n << std::endl;
 }
 
@@ -170,11 +170,11 @@ private:
     context->threadBeginCallback(context->getStack());
 
     // execute work unit
-    bool result = context->run(entry.workUnit, entry.pushIntoStack);
+    Variable result = context->run(entry.workUnit, entry.pushIntoStack);
 
     // update result and counterToDecrement
     if (entry.result)
-      *entry.result |= result;
+      *entry.result = result;
     if (entry.counterToDecrementWhenDone)
       juce::atomicDecrement(*entry.counterToDecrementWhenDone);
 
@@ -243,18 +243,18 @@ public:
   virtual bool isPaused() const
     {return false;}
  
-  virtual bool run(const WorkUnitPtr& workUnit)
+  virtual Variable run(const WorkUnitPtr& workUnit)
     {return ExecutionContext::run(workUnit);}
   
-  static void startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, bool& result)
+  static void startParallelRun(ExecutionContext& context, const CompositeWorkUnitPtr& workUnits, WaitingWorkUnitQueuePtr waitingQueue, int& numRemainingWorkUnits, Variable& result)
   {
     waitingQueue->push(workUnits, context.getStack()->cloneAndCast<ExecutionStack>(context), &numRemainingWorkUnits, &result);
   }
 
-  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
+  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, 24);
-    bool result;
+    Variable result;
     int numRemainingWorkUnits;
     if (pushIntoStack)
       enterScope(workUnits);
@@ -380,23 +380,23 @@ public:
   virtual void waitUntilAllWorkUnitsAreDone()
     {threadPool->waitUntilAllWorkUnitsAreDone();}
     
-  virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack)
+  virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
     //std::cout << "MultiThreadedExecutionContext::run - WorkUnit - Description : " << workUnit->getDescription() << std::endl;
     int remainingWorkUnits = 1;
-    bool result;
+    Variable result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
     queue->push(workUnit, stack, &remainingWorkUnits, &result);
     threadPool->waitUntilWorkUnitsAreDone(remainingWorkUnits);
     return result;
   }
 
-  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
+  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
     CompositeWorkUnitPtr compactedWorkUnits = ThreadOwnedExecutionContext::compactWorkUnitIfNecessary(workUnits, threadPool->getNumThreads());
     //std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Description : " << workUnits->getDescription() << std::endl;
     int numRemainingWorkUnits;
-    bool result;
+    Variable result;
     if (pushIntoStack)
       enterScope(workUnits->getName(), workUnits);
     ThreadOwnedExecutionContext::startParallelRun(*this, workUnits, threadPool->getWaitingQueue(), numRemainingWorkUnits, result);

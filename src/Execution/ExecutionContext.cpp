@@ -32,17 +32,17 @@ void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& 
 void ExecutionContext::enterScope(const WorkUnitPtr& workUnit)
   {enterScope(workUnit->toString(), workUnit);}
 
-void ExecutionContext::leaveScope(bool result)
+void ExecutionContext::leaveScope(const Variable& result)
 {
   std::pair<String, WorkUnitPtr> entry = stack->pop();
   postExecutionCallback(stack, entry.first, entry.second, result);
 }
 
-bool ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
+Variable ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
   if (pushIntoStack)
     enterScope(workUnit);
-  bool res = workUnit->run(*this);
+  Variable res = workUnit->run(*this);
   if (pushIntoStack)
     leaveScope(res);
   return res;

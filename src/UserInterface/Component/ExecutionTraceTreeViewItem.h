@@ -31,9 +31,9 @@ class ExecutionTraceTreeView;
 class ExecutionTraceTreeViewItem : public SimpleTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
+  ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth);
 
-  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace);
+  static ExecutionTraceTreeViewItem* create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth);
 
   enum
   {
@@ -63,22 +63,28 @@ public:
   ExecutionTraceTreeView* getOwner() const
     {return owner;}
 
+  size_t getDepth() const
+    {return depth;}
+
 protected:
   ExecutionTraceTreeView* owner;
   ExecutionTraceItemPtr trace;
   int numLines;
+  size_t depth;
 };
 
 class ExecutionTraceTreeViewNode : public ExecutionTraceTreeViewItem
 {
 public:
-  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace);
+  ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace, size_t depth);
 
   virtual bool mightContainSubItems()
-    {return getNumSubItems() > 0;}
+    {return getTraceNode()->getNumSubItems() > 0;}
 
   const ExecutionTraceNodePtr& getTraceNode() const
     {return trace.staticCast<ExecutionTraceNode>();}
+
+  virtual void createSubItems();
 };
 
 }; /* namespace lbcpp */

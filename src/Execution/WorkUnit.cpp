@@ -33,9 +33,7 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   }
 
   workUnit->setArguments(context, parsedArguments);
-  if (!context.run(workUnit))
-    return 2;
-  
+  context.run(workUnit);
   return 0;
 }
 
@@ -175,17 +173,13 @@ String WorkUnit::getUsageString() const
     + argumentDescriptions;
 }
 
-bool CompositeWorkUnit::run(ExecutionContext& context)
+Variable CompositeWorkUnit::run(ExecutionContext& context)
 {
   size_t n = getNumWorkUnits();
-  bool res = true;
   for (size_t i = 0; i < n; ++i)
   {
     WorkUnitPtr workUnit = getWorkUnit(i);
-    if (pushChildrenIntoStack)
-      res &= context.run(workUnit);
-    else
-      res &= workUnit->run(context);
+    context.run(workUnit, pushChildrenIntoStack);
   }
-  return res;
+  return Variable();
 }

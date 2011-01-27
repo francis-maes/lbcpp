@@ -34,8 +34,8 @@ public:
     virtual String toString() const
       {return description;}
 
-    virtual bool run(ExecutionContext& context)
-      {subLearnerInput->setExample(index, perception->computeFunction(context, example.first), example.second); return true;}
+    virtual Variable run(ExecutionContext& context)
+      {subLearnerInput->setExample(index, perception->computeFunction(context, example.first), example.second); return Variable();}
 
   protected:
     String description;

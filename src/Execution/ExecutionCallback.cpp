@@ -50,7 +50,7 @@ void CompositeExecutionCallback::resultCallback(const String& name, const Variab
 void CompositeExecutionCallback::preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {notificationCallback(new PreExecutionNotification(stack, description, workUnit));}
 
-void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+void CompositeExecutionCallback::postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {notificationCallback(new PostExecutionNotification(stack, description, workUnit, result));}
 
 void CompositeExecutionCallback::threadBeginCallback(const ExecutionStackPtr& stack)
@@ -106,7 +106,9 @@ void DispatchByThreadExecutionCallback::notificationCallback(const NotificationP
       callbacks.push_back(createCallbackForThread(new ExecutionStack(), threadId));
     }
     //jassert(callbacks.size());
-    callbacks.back()->notificationCallback(notification);
+    ExecutionCallbackPtr currentCallback = callbacks.back();
+    if (currentCallback)
+      currentCallback->notificationCallback(notification);
   }
 }
 

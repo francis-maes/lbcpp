@@ -41,8 +41,10 @@ public:
       double parameterValue = values[i];
       workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(parameterValue), objective, parameterValue, scores[i]));
     }
-    workUnits->setPushChildrenIntoStackFlag(false);
-    context.run(workUnits);
+    workUnits->setPushChildrenIntoStackFlag(true);
+
+    context.enterScope(workUnits);
+    context.run(workUnits, false);
     double bestScore = -DBL_MAX;
     double worstScore = DBL_MAX;
     double res = 0.0;
@@ -55,6 +57,8 @@ public:
       if (scores[i] < worstScore)
         worstScore = scores[i];
     }
+    context.leaveScope(bestScore);
+
     std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
     return res;
   }

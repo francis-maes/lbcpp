@@ -90,10 +90,16 @@ bool checkIsAWorkUnit(ExecutionContext& context, const ObjectPtr& object)
   return true;
 }
 
+bool runWorkUnit(ExecutionContext& context, WorkUnitPtr workUnit)
+{
+  Variable result = context.run(workUnit);
+  return !result.isBoolean() || result.getBoolean();
+}
+
 bool runWorkUnitFromFile(ExecutionContext& context, const File& file)
 {
   ObjectPtr object = Object::createFromFile(context, file);
-  return object && checkIsAWorkUnit(context, object) && context.run(object.staticCast<WorkUnit>());
+  return object && checkIsAWorkUnit(context, object) && runWorkUnit(context, object.staticCast<WorkUnit>());
 }
 
 bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitClassName, const std::vector<String>& arguments)
@@ -118,7 +124,7 @@ bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitC
     }
 
   // parse arguments and run work unit
-  return workUnit->parseArguments(context, arguments) && context.run(workUnit);
+  return workUnit->parseArguments(context, arguments) && runWorkUnit(context, workUnit);
 }
 
 int mainImpl(int argc, char** argv)

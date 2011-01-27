@@ -19,7 +19,7 @@ namespace lbcpp
 class FeatureGeneratorsExample : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     Variable myBoolean(true);
     Variable myProb(0.5, probabilityType);
@@ -42,7 +42,8 @@ public:
     FunctionPtr makePairFunction = identityFunction(pairClass(anyType, anyType));
     testPerception(context, T("pair (I1,I2)"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), myIntegerPair);
     testPerception(context, T("pair (I1,I2) features"), conjunctionFeatures(composite, composite, false), myIntegerPair);
-    return true;
+
+    return Variable();
   }
 
 private:

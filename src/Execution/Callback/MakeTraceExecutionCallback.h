@@ -57,12 +57,12 @@ public:
     stack.push_back(newNode);
   }
 
-  virtual void postExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {
     ExecutionTraceNodePtr finishedNode = getCurrentNode();
     finishedNode->setEndTime(currentNotificationTime);
     finishedNode->removeWorkUnit();
-    //finishedNode->setResult(result);
+    finishedNode->setReturnValue(result);
     jassert(stack.size());
     stack.pop_back();
   }

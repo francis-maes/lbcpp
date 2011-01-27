@@ -71,9 +71,9 @@ extern ClassPtr myLearningParametersClass;
 class SandBoxWorkUnit : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
 
-  VectorPtr loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory);
+  ContainerPtr loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory);
 
 private:
   void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone);

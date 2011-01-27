@@ -12,7 +12,7 @@ public:
   virtual String toString() const
     {return T("Predictor");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
 
 protected:
   friend class PredictorProgramClass;

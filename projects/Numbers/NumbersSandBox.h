@@ -211,7 +211,7 @@ public:
   virtual String toString() const
     {return T("NumbersSandBox");}
 
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     // Perception
     PerceptionPtr numberPerception = twoDigitNumberFeatures();
@@ -238,7 +238,7 @@ public:
     ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
     EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
     featuresInfo.printMostRelevantFeatures(context, enrichedProblem);
-    return true;
+    return Variable();
   }
 };
 

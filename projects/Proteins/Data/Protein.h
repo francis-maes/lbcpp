@@ -42,6 +42,8 @@ public:
   void saveToXmlFile(ExecutionContext& context, const File& xmlFile) const;
   void saveToFASTAFile(ExecutionContext& context, const File& fastaFile) const;
 
+  static ContainerPtr loadProteinsFromDirectoryPair(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, size_t maxCount = 0, const String& workUnitName = T("Loading proteins"));
+
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 

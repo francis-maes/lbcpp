@@ -55,7 +55,7 @@ public:
   ** Execution
   */
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit) {}
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result) {}
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result) {}
 
   virtual void threadBeginCallback(const ExecutionStackPtr& stack) {}
   virtual void threadEndCallback(const ExecutionStackPtr& stack) {}
@@ -106,7 +106,7 @@ public:
   virtual void progressCallback(const ProgressionStatePtr& progression);
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit);
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result);
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result);
   virtual void threadBeginCallback(const ExecutionStackPtr& stack);
   virtual void threadEndCallback(const ExecutionStackPtr& stack);
 

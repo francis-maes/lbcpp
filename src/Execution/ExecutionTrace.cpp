@@ -159,6 +159,14 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
     exporter.leave();
   }
 
+  // return value
+  if (returnValue.exists())
+  {
+    exporter.enter(T("return"));
+    exporter.writeVariable(returnValue, variableType);
+    exporter.leave();
+  }
+
   // results
   {
     ScopedLock _(resultsLock);
@@ -221,6 +229,8 @@ bool ExecutionTraceNode::loadSubItemsFromXml(XmlImporter& importer)
       progression = new ProgressionState();
       res &= progression->loadFromXml(importer);
     }
+    else if (tagName == T("return"))
+      returnValue = importer.loadVariable(variableType);
     else if (tagName == T("result"))
     {
       String name = importer.getStringAttribute(T("name"));

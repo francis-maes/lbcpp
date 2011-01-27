@@ -23,7 +23,7 @@ public:
   NetworkContext() {}
   
   // Etablish a connection to server and execute commands
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
   
   NetworkClientPtr getNetworkClient() const
     {return client;}

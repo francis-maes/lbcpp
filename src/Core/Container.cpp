@@ -134,8 +134,8 @@ protected:
   size_t index;
   String progressionUnit;
 
-  virtual bool run(ExecutionContext& context)
-    {target->setElement(index, function->computeFunction(context, source->getElement(index))); return true;}
+  virtual Variable run(ExecutionContext& context)
+    {target->setElement(index, function->computeFunction(context, source->getElement(index))); return Variable();}
 };
 
 ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode, const String& workUnitName) const

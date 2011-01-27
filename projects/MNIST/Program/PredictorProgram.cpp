@@ -44,7 +44,7 @@ protected:
   OutputStream* o;
 };
 
-bool PredictorProgram::run(ExecutionContext& context)
+Variable PredictorProgram::run(ExecutionContext& context)
 {
   ContainerPtr data = parseDataFile(context, dataFile);
   jassert(data && data->getNumElements());

@@ -85,7 +85,7 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
   return learner;
 }
 
-bool LearnerProgram::run(ExecutionContext& context)
+Variable LearnerProgram::run(ExecutionContext& context)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
   

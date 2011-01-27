@@ -9,11 +9,11 @@ public:
   ServerWorkUnit(File workUnitDirectory = File::getCurrentWorkingDirectory())
     : workUnitDirectory(workUnitDirectory), hostname(T("monster24.montefiore.ulg.ac.be")), serverName(T("unnamed")) {}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     ServerNetworkContextPtr networkContext = new SgeServerNetworkContext(serverName, hostname, 1664, workUnitDirectory);    
     networkContext->run(context);
-    return true;
+    return Variable();
   }
 
 protected:
