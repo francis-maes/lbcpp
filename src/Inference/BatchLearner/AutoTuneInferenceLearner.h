@@ -41,7 +41,10 @@ class AutoTuneInferenceLearner : public InferenceBatchLearner<Inference>
 {
 public:
   AutoTuneInferenceLearner(const OptimizerPtr& optimizer, const OptimizerInputPtr& optimizerInput)
-    : optimizer(optimizer), optimizerInput(optimizerInput) {}
+    : optimizer(optimizer), optimizerInput(optimizerInput)
+  {
+    setPushIntoStackFlag(true);
+  }
   AutoTuneInferenceLearner() {}
 
   virtual ClassPtr getTargetInferenceClass() const
@@ -66,6 +69,12 @@ public:
     InferencePtr baseLearner = objective->createLearner(context, optimizedParameters, targetInference);
     baseLearner->run(context, learnerInput, Variable());
     return Variable();
+  }
+
+  virtual String getDescription(const Variable& input) const
+  {
+    const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
+    return T("Auto-tune ") + learnerInput->getTargetInference()->getName();
   }
 
 protected:

@@ -1,3 +1,5 @@
+* Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
+
 Explorer/ExecutionContext:
  * Explorer: avoir un ExecutionContext general avec tous les threads
  * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)

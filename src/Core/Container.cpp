@@ -11,6 +11,7 @@
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
 #include <lbcpp/Execution/WorkUnit.h>
+#include <algorithm>
 using namespace lbcpp;
 
 VectorPtr Container::toVector() const
@@ -105,6 +106,33 @@ bool Container::loadFromXml(XmlImporter& importer)
     setElement((size_t)index, value);
   }
   return true;
+}
+
+struct OrderContainerFunction
+{
+  OrderContainerFunction(const ContainerPtr& container, size_t variableIndex, bool increasingOrder)
+    : container(container), variableIndex(variableIndex), increasingOrder(increasingOrder) {}
+
+  ContainerPtr container;
+  size_t variableIndex;
+  bool increasingOrder;
+  
+  bool operator ()(size_t first, size_t second) const
+  {
+    Variable a = container->getElement(first).getObject()->getVariable(variableIndex);
+    Variable b = container->getElement(second).getObject()->getVariable(variableIndex);
+    return increasingOrder ? (a > b) : (a < b);
+  }
+};
+
+void Container::makeOrder(size_t variableIndex, bool increasingOrder, std::vector<size_t>& res) const
+{
+  size_t n = getNumElements();
+  res.resize(n);
+  for (size_t i = 0; i < n; ++i)
+    res[i] = i;
+  OrderContainerFunction order(refCountedPointerFromThis(this), variableIndex, increasingOrder);
+  std::sort(res.begin(), res.end(), order);
 }
 
 namespace lbcpp
