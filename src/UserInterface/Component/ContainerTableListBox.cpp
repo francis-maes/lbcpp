@@ -128,9 +128,13 @@ ContainerTableListBox::ContainerTableListBox(const ContainerPtr& container)
     hdr->addColumn(rowType->getObjectVariableName(i), i + 100, 100);
 
   setModel(new ContainerTableListBoxModel(container));
-//    autoSizeAllColumns();
+  autoSizeAllColumns();
   setAutoSizeMenuOptionShown(true);
+
 }
 
 ContainerTableListBox::~ContainerTableListBox()
   {delete getModel();}
+
+int ContainerTableListBox::getPreferedWidth(int availableWidth, int availableHeight) const
+  {return getViewport()->getViewedComponent()->getWidth();}

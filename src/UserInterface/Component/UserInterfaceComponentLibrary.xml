@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="UserInterfaceComponent" directory="UserInterface/Component">
+
+  <class name="CurveAxisConfiguration">
+    <variable type="Double" name="rangeMin"/>
+    <variable type="Double" name="rangeMax"/>
+    <variable type="Boolean" name="autoRange"/>
+    <variable type="Boolean" name="logScale"/>
+    <variable type="String" name="unit"/>
+    <variable type="String" name="label"/>
+  </class>
+
+  <class name="CurveVariableConfiguration">
+    <variable type="Boolean" name="selected"/>
+    <!--<variable type="Colour" name="colour"/> -->
+    <variable type="String" name="label"/>
+  </class>
+
+  <class name="ContainerCurveEditorConfiguration">
+    <variable type="CurveAxisConfiguration" name="xAxis"/>
+    <variable type="CurveAxisConfiguration" name="yAxis"/>
+    <variable type="ObjectVector[CurveVariableConfiguration]" name="variables"/>
+    <variable type="PositiveInteger" name="keyVariableIndex"/>
+  </class>
+
+</library>

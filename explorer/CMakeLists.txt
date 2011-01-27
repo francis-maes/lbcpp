@@ -7,7 +7,6 @@ GENERATE_INTROSPECTION_CODE(ExplorerLibrary.xml ExplorerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnitManager/WorkUnitManagerLibrary.xml WorkUnitManagerLibrary.cpp)
 
 SET(EXPLORER_UTILITIES_SOURCES
-  Utilities/SplittedLayout.h
   Utilities/PropertyListDisplayComponent.h
   Utilities/FileType.h
 )

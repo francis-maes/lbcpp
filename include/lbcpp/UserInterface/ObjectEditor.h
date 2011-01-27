@@ -1,19 +1,23 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SplittedLayout.h               | Horizontal or Vertical          |
-| Author  : Francis Maes                   | Splitted Layout                 |
-| Started : 10/12/2006 17:17               |                                 |
+| Filename: ObjectEditor.h                | Base class for object editors   |
+| Author  : Francis Maes                   |                                 |
+| Started : 27/01/2011 20:13               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
-# define EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
+#ifndef LBCPP_USER_INTERFACE_OBJECT_EDITOR_H_
+# define LBCPP_USER_INTERFACE_OBJECT_EDITOR_H_
 
-# include "../Components/common.h"
-# include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
+# include "VariableSelector.h"
+# include "ComponentWithPreferedSize.h"
 
 namespace lbcpp
 {
+
+using juce::Graphics;
+using juce::Component;
+using juce::Colours;
 
 class SplittedLayout : public Component, public ComponentWithPreferedSize
 {
@@ -21,7 +25,8 @@ public:
   SplittedLayout(Component* first, Component* second, double defaultRatio, int flags)
     : layoutflags(flags), first(first), second(second), defaultRatio(defaultRatio)
   {
-    addAndMakeVisible(first);
+    if (first)
+      addAndMakeVisible(first);
     layout.setItemLayout(0, 10, -1, -defaultRatio);
     if ((layoutflags & noResizeBar) != 0)
       resizebar = new Component();
@@ -30,7 +35,8 @@ public:
     addAndMakeVisible(resizebar);
     double s = (layoutflags & miniResizeBar) != 0 ? 2 : 8;
     layout.setItemLayout(1, s, s, s);
-    addAndMakeVisible(second);
+    if (second)
+      addAndMakeVisible(second);
     layout.setItemLayout(2, 10, -1, defaultRatio - 1);
   }
 
@@ -138,6 +144,37 @@ protected:
   double defaultRatio;
 };
 
+class ObjectEditor : public Component, public juce::ChangeListener, public ComponentWithPreferedSize
+{
+public:
+  ObjectEditor(const ObjectPtr& object, const ObjectPtr& configuration, bool showVerticalScrollbarIfNeeded = true, bool showHorizontalScrollbarIfNeeded = true);
+  virtual ~ObjectEditor();
+  
+  void initialize();
+
+  virtual int getDefaultWidth() const
+    {return 900;}
+
+  ViewportComponent* getContentViewport() const
+    {return contentViewport;}
+
+  Component* getContentComponent() const
+    {return contentViewport->getViewedComponent();}
+
+  virtual void changeListenerCallback(void* objectThatHasChanged);
+  virtual void resized();
+
+protected:
+  ObjectPtr object;
+  ObjectPtr configuration;
+
+  Component* configurationComponent;
+  ViewportComponent* contentViewport;
+
+  virtual Component* createConfigurationComponent(const ObjectPtr& configuration) = 0;
+  virtual Component* createContentComponent(const ObjectPtr& object, const ObjectPtr& configuration) = 0;
+};
+
 }; /* namespace lbcpp */
 
-#endif //!EXPLORER_UTILITIES_SPLITTED_LAYOUT_H_
+#endif // !LBCPP_USER_INTERFACE_COMPONENTS_CONTAINER_CURVE_EDITOR_H_

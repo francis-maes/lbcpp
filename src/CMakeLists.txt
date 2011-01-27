@@ -56,6 +56,8 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceLibrary.xml DecisionTreeInferenceLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+
 #### Core ####
 
 SET(LBCPP_CORE_SOURCES
@@ -608,19 +610,25 @@ SET(LBCPP_USER_INTERFACE_SOURCES
   ../include/lbcpp/UserInterface/VariableSelector.h
   ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
   ../include/lbcpp/UserInterface/UserInterfaceManager.h
+  ../include/lbcpp/UserInterface/ObjectEditor.h
   UserInterface/UserInterfaceManager.cpp
   ${LBCPP_USER_INTEFACE_GENERATED_FILES}
 )
 
 SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
+  UserInterface/Component/ObjectEditor.cpp
   UserInterface/Component/VariableTreeView.h
   UserInterface/Component/VariableTreeView.cpp
   UserInterface/Component/ContainerTableListBox.h
   UserInterface/Component/ContainerTableListBox.cpp
+  UserInterface/Component/ContainerCurveEditor.h
+  UserInterface/Component/ContainerCurveEditor.cpp
   UserInterface/Component/ExecutionTraceTreeViewItem.h
   UserInterface/Component/ExecutionTraceTreeViewItem.cpp
   UserInterface/Component/ExecutionTraceTreeView.h
   UserInterface/Component/ExecutionTraceTreeView.cpp
+  UserInterface/Component/UserInterfaceComponentLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
 )
 
 

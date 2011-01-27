@@ -56,7 +56,7 @@ public:
     {addChangeListener(this);}
 
   virtual void changeListenerCallback(void* objectThatHasChanged)
-    {sendSelectionChanged(Variable::pair(variable, getCurrentTabName()), getCurrentTabName());}
+    {sendSelectionChanged(variable, getCurrentTabName());}
 
   virtual int getDefaultWidth() const
     {return 27;}

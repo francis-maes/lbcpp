@@ -25,12 +25,9 @@ public:
     addTab(T("Features"), Colours::white);
   }
 
-  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
-    ClassPtr proteinClass = lbcpp::proteinClass;
-    jassert(variable.getType()->canBeCastedTo(pairClass(anyType, stringType)));
-    String tabName = variable[1].getString();
-    return userInterfaceManager().createVariableTreeView(context, getPerception(tabName)->computeFunction(context, input), name + T(" ") + tabName);
+    return userInterfaceManager().createVariableTreeView(context, getPerception(tabName)->computeFunction(context, input), tabName);
   }
 
 protected:

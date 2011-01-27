@@ -9,6 +9,8 @@
 #ifndef EXPLORER_UTILITIES_FILE_TYPE_H_
 # define EXPLORER_UTILITIES_FILE_TYPE_H_
 
+# include "../Components/common.h"
+
 namespace lbcpp
 {
 
