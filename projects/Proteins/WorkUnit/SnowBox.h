@@ -3,6 +3,8 @@
 #include <lbcpp/lbcpp.h>
 #include "Inference/ProteinInferenceFactory.h"
 #include "Inference/ProteinInference.h"
+#include "LearningParameter.h"
+#include "ParameteredProteinInferenceFactory.h"
 
 namespace lbcpp {
 
@@ -55,64 +57,6 @@ protected:
   String className;
   File outputFile;
 };
-
-class NumericalLearningParameter : public Object
-{
-public:
-  NumericalLearningParameter() : learningRate(0.0), learningRateDecrease(0.0), regularizer(0.0) {}
-  
-  NumericalLearningParameter(double learningRate, double learningRateDecrease, double regularizer)
-    : learningRate(learningRate), learningRateDecrease(learningRateDecrease), regularizer(regularizer)
-    {}
-  
-  double getLearningRate() const
-    {return pow(10.0, learningRate);}
-  
-  size_t getLearningRateDecrease() const
-    {return (size_t)pow(10.0, learningRateDecrease);}
-  
-  double getRegularizer() const
-    {return (regularizer <= -10.0) ? 0 : pow(10.0, regularizer);}
-  
-  virtual bool loadFromString(ExecutionContext& context, const String& value);
-  
-protected:
-  friend class NumericalLearningParameterClass;
-  
-  double learningRate;
-  double learningRateDecrease;
-  double regularizer;
-};
-
-typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningParameterPtr;
-  
-class ProteinTarget : public Object
-{
-public:
-  ProteinTarget(ExecutionContext& context, const String& targets)
-    {loadFromString(context, targets);}
-  ProteinTarget() {}
-  
-  size_t getNumPasses() const
-    {return tasks.size();}
-  
-  size_t getNumTasks(size_t passIndex) const
-    {jassert(passIndex < getNumPasses()); return tasks[passIndex].size();}
-  
-  String getTask(size_t passIndex, size_t taskIndex) const
-    {jassert(taskIndex < getNumTasks(passIndex)); return tasks[passIndex][taskIndex];}
-  
-  virtual String toString() const;
-  virtual bool loadFromString(ExecutionContext& context, const String& str);
-
-protected:
-  friend class ProteinTargetClass;
-  
-  std::vector<std::vector<String> > tasks;
-  String description;
-};
-
-typedef ReferenceCountedObjectPtr<ProteinTarget> ProteinTargetPtr;
   
 class SnowBox : public WorkUnit
 {
@@ -124,8 +68,9 @@ public:
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
             , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
             , target(new ProteinTarget(defaultExecutionContext(), T("(SS3-DR)2")))
-            , exportPerceptions(false)
-            , currentPass(0) {}
+            , exportPerceptions(false), optimizeLearningParameter(false)
+            , saveIntermediatePredictions(false), targetToOptimize(T("secondaryStructure"))
+            , stageToOptimize(0) {}
   
   virtual String toString() const
   {
@@ -157,8 +102,8 @@ protected:
 
   String baseLearner;
   size_t maxIterations;
-  std::vector<std::pair<String, std::pair<NumericalLearningParameterPtr, NumericalLearningParameterPtr> > > learningParameters;
-  NumericalLearningParameterPtr defaultParameter;
+  std::vector<std::pair<String, std::pair<LearningParameterPtr, LearningParameterPtr> > > learningParameters;
+  LearningParameterPtr defaultParameter;
   size_t numTrees;
   size_t numAttributesPerSplit;
   size_t numForSplitting;
@@ -166,18 +111,45 @@ protected:
   ProteinTargetPtr target;
   
   bool exportPerceptions;
+  bool optimizeLearningParameter;
+  bool saveIntermediatePredictions;
+  
+  String targetToOptimize;
+  size_t stageToOptimize;
 
 private:
   ContainerPtr learningData;
   ContainerPtr testingData;
   ContainerPtr validationData;
-  
-  size_t currentPass;
 
   bool loadData(ExecutionContext& context);
   ProteinInferenceFactoryPtr createFactory(ExecutionContext& context) const;
-  ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context) const;
+  ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context, ParameteredProteinInferenceFactoryPtr factory) const;
   void printInformation(ExecutionContext& context) const;
+};
+  
+class LearningParameterObjectiveFunction : public ObjectiveFunction
+{
+public:
+  LearningParameterObjectiveFunction(ParameteredProteinInferenceFactoryPtr factory, ProteinTargetPtr target,
+                                     const String& targetName, size_t targetStage,
+                                     ContainerPtr learningData, ContainerPtr validationData)
+  : factory(factory), target(target), 
+  targetName(targetName), targetStage(targetStage),
+  learningData(learningData), validationData(validationData) {}
+  LearningParameterObjectiveFunction() {}
+  
+  virtual double compute(ExecutionContext& context, const Variable& input) const;
+  
+protected:
+  friend class LearningParameterObjectiveFunctionClass;
+  
+  ParameteredProteinInferenceFactoryPtr factory;
+  ProteinTargetPtr target;
+  String targetName;
+  size_t targetStage;
+  ContainerPtr learningData;
+  ContainerPtr validationData;
 };
 
 };

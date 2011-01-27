@@ -103,6 +103,9 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/SandBoxWorkUnit.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
+  WorkUnit/LearningParameter.h
+  WorkUnit/ParameteredProteinInferenceFactory.h
+  WorkUnit/ParameteredProteinInferenceFactory.cpp
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
