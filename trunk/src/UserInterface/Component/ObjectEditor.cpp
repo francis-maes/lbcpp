@@ -24,8 +24,8 @@ void ObjectEditor::initialize()
   configurationComponent = createConfigurationComponent(configuration);
   addAndMakeVisible(configurationComponent);
   juce::ChangeBroadcaster* changeBroadcaster = dynamic_cast<juce::ChangeBroadcaster* >(configurationComponent);
-  jassert(changeBroadcaster);
-  changeBroadcaster->addChangeListener(this);
+  if (changeBroadcaster)
+    changeBroadcaster->addChangeListener(this);
   changeListenerCallback(NULL);
 }
 

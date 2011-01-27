@@ -40,6 +40,12 @@ public:
     : selected(selected), colour(colour), label(label) {}
   CurveVariableConfiguration() : selected(false) {}
 
+  bool isSelected() const
+    {return selected;}
+
+  const juce::Colour& getColour() const
+    {return colour;}
+
 private:
   friend class CurveVariableConfigurationClass;
 
@@ -53,18 +59,23 @@ typedef ReferenceCountedObjectPtr<CurveVariableConfiguration> CurveVariableConfi
 class ContainerCurveEditorConfiguration : public Object
 {
 public:
-  ContainerCurveEditorConfiguration(ClassPtr type)
-    : xAxis(new CurveAxisConfiguration(0.0, 1000.0, T("X Axis"))),
-      yAxis(new CurveAxisConfiguration(0.0, 1.0, T("Y Axis"))),
-      variables(type->getObjectNumVariables())
-  {
-    for (size_t i = 0; i < variables.size(); ++i)
-      variables[i] = new CurveVariableConfiguration(true, Colours::black, type->getObjectVariableName(i));
-    keyVariableIndex = 0;
-  }
-
+  ContainerCurveEditorConfiguration(ClassPtr type);
   ContainerCurveEditorConfiguration() {}
   
+  std::vector<size_t> getSelectedCurves() const;
+
+  CurveAxisConfigurationPtr getXAxis() const
+    {return xAxis;}
+
+  CurveAxisConfigurationPtr getYAxis() const
+    {return yAxis;}
+
+  CurveVariableConfigurationPtr getCurve(size_t index) const
+    {jassert(index < variables.size()); return variables[index];}
+
+  size_t getKeyVariableIndex() const
+    {return keyVariableIndex;}
+
 protected:
   friend class ContainerCurveEditorConfigurationClass;
 
