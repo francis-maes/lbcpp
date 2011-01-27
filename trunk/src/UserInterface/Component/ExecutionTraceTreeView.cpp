@@ -90,6 +90,7 @@ void ExecutionTraceTreeView::timerCallback()
   {
     std::vector<Variable> selectedVariables;
     selectedVariables.reserve(getNumSelectedItems());
+    String selectionName;
     for (int i = 0; i < getNumSelectedItems(); ++i)
     {
       ExecutionTraceTreeViewItem* item = dynamic_cast<ExecutionTraceTreeViewItem* >(getSelectedItem(i));
@@ -100,11 +101,16 @@ void ExecutionTraceTreeView::timerCallback()
         {
           ObjectPtr results = trace->getResultsObject(defaultExecutionContext());
           if (results)
+          {
             selectedVariables.push_back(results);
+            if (!selectionName.isEmpty())
+              selectionName += T(", ");
+            selectionName += trace->toString() + T(" results");
+          }
         }
       }
     }
-    sendSelectionChanged(selectedVariables);
+    sendSelectionChanged(selectedVariables, selectionName);
     isSelectionUpToDate = true;
   }
   if (!isTreeUpToDate)

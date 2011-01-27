@@ -84,12 +84,12 @@
   </class>
 
   <class name="ExecutionTrace" base="Object">
-    <variable type="String" name="operatingSystem"/>
-    <variable type="Boolean" name="is64BitOs"/>
-    <variable type="PositiveInteger" name="numCpus"/>
-    <variable type="Integer" name="cpuSpeedInMegaherz"/>
-    <variable type="Integer" name="memoryInMegabytes"/>
-    <variable type="String" name="context"/>
+    <variable type="String" name="operatingSystem" shortName="os"/>
+    <variable type="Boolean" name="is64BitOs" shortName="x64"/>
+    <variable type="PositiveInteger" name="numCpus" shortName="cpus"/>
+    <variable type="Integer" name="cpuSpeedInMegaherz" shortName="freq"/>
+    <variable type="Integer" name="memoryInMegabytes" shortName="mem"/>
+    <variable type="String" name="context" shortName="ctx"/>
 
     <variable type="ExecutionTraceNode" name="root"/>
   </class>

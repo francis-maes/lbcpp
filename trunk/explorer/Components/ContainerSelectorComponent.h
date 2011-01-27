@@ -33,14 +33,20 @@ public:
   {
     std::vector<Variable> selectedVariables;
     selectedVariables.reserve(getNumSelectedRows());
+    String selectionName;
     for (int i = 0; i < getNumSelectedRows(); ++i)
     {
       int rowNumber = getSelectedRow(i);
       Variable variable = container->getElement(rowNumber);
       if (variable.exists())
+      {
         selectedVariables.push_back(variable);
+        if (selectionName.isNotEmpty())
+          selectionName += T(", ");
+        selectionName += container->getElementName(i);
+      }
     }
-    sendSelectionChanged(selectedVariables);
+    sendSelectionChanged(selectedVariables, selectionName);
   }
 
   struct Model : public juce::ListBoxModel

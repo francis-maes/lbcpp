@@ -75,11 +75,15 @@
   </class>
 
   <!-- Work Unit -->
-  <class name="InferenceWorkUnit" base="WorkUnit">
-    <constructor arguments="const String&amp; name, InferencePtr inference, const Variable&amp; input, const Variable&amp; supervision, Variable* output"/>
-    <variable type="String" name="description"/>
-    <variable type="Inference" name="inference"/>
+  <class name="FunctionWorkUnit" base="WorkUnit">
+    <constructor arguments="const FunctionPtr&amp; function, const Variable&amp; input, const String&amp; description, Variable* output"/>
+    <variable type="Function" name="function"/>
     <variable type="Variable" name="input"/>
+    <variable type="String" name="description"/>
+  </class>
+  
+  <class name="InferenceWorkUnit" base="FunctionWorkUnit">
+    <constructor arguments="const InferencePtr&amp; inference, const Variable&amp; input, const Variable&amp; supervision, const String&amp; description, Variable* output" returnType="WorkUnit"/>
     <variable type="Variable" name="supervision"/>
   </class>
 

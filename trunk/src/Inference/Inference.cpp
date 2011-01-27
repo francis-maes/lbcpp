@@ -107,7 +107,7 @@ InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
 /*
 ** High Level functions
 */
-bool Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable* output, const String& workUnitName) const
+Variable Inference::run(ExecutionContext& context, const Variable& input, const Variable& supervision, const String& workUnitName) const
 {
   jassert(!input.isNil());
 
@@ -117,36 +117,40 @@ bool Inference::run(ExecutionContext& context, const Variable& input, const Vari
     String name = workUnitName;
     if (name.isEmpty())
       name = getDescription(context, input, supervision);
-    context.run(new InferenceWorkUnit(name, pthis, input, supervision, output));
-    return true;
+    return context.run(inferenceWorkUnit(pthis, input, supervision, name));
   }
   else
-  {
-    Variable out = computeInference(context, input, supervision);
-    if (output)
-      *output = out;
-    return true;
-  }
+    return computeInference(context, input, supervision);
 }
 
 bool Inference::train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples, const String& workUnitName)
   {return train(context, new InferenceBatchLearnerInput(refCountedPointerFromThis(this), trainingExamples, validationExamples), workUnitName);}
 
 bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput, const String& workUnitName)
-  {return batchLearner && batchLearner->run(context, learnerInput, Variable(), NULL, workUnitName);}
+{
+  if (!batchLearner)
+  {
+    context.errorCallback(T("No Batch Learner"));
+    return false;
+  }
+  batchLearner->run(context, learnerInput, Variable(), workUnitName);
+  return true;
+}
 
 bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
   ParallelInferencePtr evaluatorInference = evaluationInference(inference, evaluator);
   evaluatorInference->setName(workUnitName.isEmpty() ? T("Evaluating") : workUnitName);
-  return evaluatorInference->run(context, examples, Variable(), NULL, workUnitName);
+  evaluatorInference->run(context, examples, Variable(), workUnitName);
+  return true;
 }
 
 bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName) const
 {
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, refCountedPointerFromThis(this), numFolds));
-  return cvInference->run(context, examples, Variable(), NULL, workUnitName);
+  cvInference->run(context, examples, Variable(), workUnitName);
+  return true;
 }
 
 /*

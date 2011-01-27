@@ -199,14 +199,14 @@ public:
       if (map)
       {
         selectedX = x, selectedY = y;
-        sendSelectionChanged(Variable::pair(map, Variable::pair((size_t)x, (size_t)y)));
+        sendSelectionChanged(Variable::pair(map, Variable::pair((size_t)x, (size_t)y)), T("residue pair"));
         repaint();
         return;
       }
     }
 
     selectedX = -1, selectedY = -1;
-    sendSelectionChanged(std::vector<Variable>());
+    sendSelectionChanged(std::vector<Variable>(), String::empty);
     repaint();
   }
   
@@ -290,13 +290,13 @@ public:
   virtual int getDefaultWidth() const
     {return 900;}
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
   {
     std::vector<Variable> selection;
     selection.resize(selectedVariables.size());
     for (size_t i = 0; i < selection.size(); ++i)
       selection[i] = makeSelection(selectedVariables[i]);
-    sendSelectionChanged(selection);
+    sendSelectionChanged(selection, selectionName);
   }
 
 protected:

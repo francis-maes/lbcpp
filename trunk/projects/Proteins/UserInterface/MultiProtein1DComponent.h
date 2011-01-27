@@ -188,13 +188,13 @@ public:
     getViewport()->resized();
   }
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
   {
     std::vector<Variable> selection;
     selection.resize(selectedVariables.size());
     for (size_t i = 0; i < selection.size(); ++i)
       selection[i] = makeSelection(selectedVariables[i]);
-    sendSelectionChanged(selection);
+    sendSelectionChanged(selection, selectionName);
     MultiSequenceComponent* component = dynamic_cast<MultiSequenceComponent* >(getViewport()->getViewedComponent());
     if (component)
     {

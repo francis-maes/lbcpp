@@ -32,14 +32,14 @@ public:
     jassert(apriori);
 
     std::vector<double> values;
-    std::vector<double> scores(numSamples);
+    std::vector<Variable> scores(numSamples);
     apriori->sampleUniformly(numSamples, values);
 
-    CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("UniformSampleAndPickBestOptimizer"), numSamples));
+    CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimize ") + objective->toString(), numSamples));
     for (size_t i = 0; i < numSamples; ++i)
     {
       double parameterValue = values[i];
-      workUnits->setWorkUnit(i, evaluateObjectiveFunctionWorkUnit(objective->getDescription(parameterValue), objective, parameterValue, scores[i]));
+      workUnits->setWorkUnit(i, functionWorkUnit(objective, parameterValue, String::empty, &scores[i]));
     }
     workUnits->setPushChildrenIntoStackFlag(true);
 
@@ -52,10 +52,11 @@ public:
     {
       //double learningRate = pow(10.0, (double)i / 10.0 - 3.0);
       //std::cout << "Score for LR = " << learningRate << ": " << scores[i] << std::endl;
-      if (scores[i] > bestScore)
-        bestScore = scores[i], res = values[i];
-      if (scores[i] < worstScore)
-        worstScore = scores[i];
+      double score = scores[i].getDouble();
+      if (score > bestScore)
+        bestScore = score, res = values[i];
+      if (score < worstScore)
+        worstScore = score;
     }
     context.leaveScope(bestScore);
 

@@ -60,7 +60,7 @@ public:
   /*
   ** High level operations
   */
-  bool run(ExecutionContext& context, const Variable& input, const Variable& supervision, Variable* output = NULL, const String& workUnitName = String::empty) const;
+  Variable run(ExecutionContext& context, const Variable& input, const Variable& supervision, const String& workUnitName = String::empty) const;
   bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples, const String& workUnitName = String::empty);
   bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput, const String& workUnitName = String::empty);
   bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName = String::empty) const;
@@ -152,39 +152,60 @@ extern ParallelInferencePtr evaluationInference(const InferencePtr& inference, c
 extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
 
-class InferenceWorkUnit : public WorkUnit
+class FunctionWorkUnit : public WorkUnit
 {
 public:
-  InferenceWorkUnit(const String& description, InferencePtr inference, const Variable& input, const Variable& supervision, Variable* output)
-    : description(description), inference(inference), input(input), supervision(supervision), output(output) {}
-  InferenceWorkUnit() : output(NULL) {}
+  FunctionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL)
+    : function(function), input(input), description(description), output(output) {}
+  FunctionWorkUnit() : output(NULL) {}
 
   virtual String toString() const
-    {return description;}
+    {return description.isEmpty() ? function->getDescription(input) : description;}
 
   virtual Variable run(ExecutionContext& context)
-    {Variable out = inference->computeInference(context, input, supervision); if (output) *output = out; return out;}
+    {Variable out = function->computeFunction(context, input); if (output) *output = out; return out;}
 
-  const InferencePtr& getInference() const
-    {return inference;}
+  const FunctionPtr& getFunction() const
+    {return function;}
 
   const Variable& getInput() const
     {return input;}
-
-  const Variable& getSupervision() const
-    {return supervision;}
 
   Variable* getOutput() const
     {return output;}
 
 protected:
+  friend class FunctionWorkUnitClass;
+
+  FunctionPtr function;
+  Variable input;
+  String description;
+  Variable* output;
+};
+
+class InferenceWorkUnit : public FunctionWorkUnit
+{
+public:
+  InferenceWorkUnit(const InferencePtr& inference, const Variable& input, const Variable& supervision, const String& description = String::empty, Variable* output = NULL)
+    : FunctionWorkUnit(inference, input, description, output), supervision(supervision) {}
+  InferenceWorkUnit() {}
+
+  virtual String toString() const
+    {return description.isEmpty() ? getInference()->getDescription(defaultExecutionContext(), input, supervision) : description;}
+
+  virtual Variable run(ExecutionContext& context)
+    {Variable out = getInference()->computeInference(context, input, supervision); if (output) *output = out; return out;}
+
+  const InferencePtr& getInference() const
+    {return function.staticCast<Inference>();}
+
+  const Variable& getSupervision() const
+    {return supervision;}
+
+protected:
   friend class InferenceWorkUnitClass;
 
-  String description;
-  InferencePtr inference;
-  Variable input;
   Variable supervision;
-  Variable* output;
 };
 
 typedef ReferenceCountedObjectPtr<InferenceWorkUnit> InferenceWorkUnitPtr;

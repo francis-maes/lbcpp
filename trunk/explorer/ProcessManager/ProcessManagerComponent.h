@@ -47,7 +47,7 @@ class ProcessManagerComponent : public SplittedLayout, public MenuBarModel, publ
 public:
   ProcessManagerComponent(ProcessManagerPtr processManager);
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables);
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName);
 
   // MenuBarModel
   virtual const StringArray getMenuBarNames();

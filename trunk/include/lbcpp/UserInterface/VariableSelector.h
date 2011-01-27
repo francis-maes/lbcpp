@@ -21,7 +21,7 @@ class VariableSelectorCallback
 public:
   virtual ~VariableSelectorCallback() {}
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables) = 0;
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName) = 0;
 };
 
 class VariableSelector
@@ -32,13 +32,13 @@ public:
   void addCallback(VariableSelectorCallback& callback)
     {callbacks.push_back(&callback);}
 
-  void sendSelectionChanged(const Variable& selectedVariable)
-    {sendSelectionChanged(std::vector<Variable>(1, selectedVariable));}
+  void sendSelectionChanged(const Variable& selectedVariable, const String& selectionName)
+    {sendSelectionChanged(std::vector<Variable>(1, selectedVariable), selectionName);}
 
-  void sendSelectionChanged(const std::vector<Variable>& selectedVariables)
+  void sendSelectionChanged(const std::vector<Variable>& selectedVariables, const String& selectionName)
   {
     for (size_t i = 0; i < callbacks.size(); ++i)
-      callbacks[i]->selectionChangedCallback(this, selectedVariables);
+      callbacks[i]->selectionChangedCallback(this, selectedVariables, selectionName);
   }
 
   virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
@@ -56,7 +56,7 @@ public:
     {addChangeListener(this);}
 
   virtual void changeListenerCallback(void* objectThatHasChanged)
-    {sendSelectionChanged(Variable::pair(variable, getCurrentTabName()));}
+    {sendSelectionChanged(Variable::pair(variable, getCurrentTabName()), getCurrentTabName());}
 
   virtual int getDefaultWidth() const
     {return 27;}

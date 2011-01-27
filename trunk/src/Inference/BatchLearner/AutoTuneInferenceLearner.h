@@ -19,6 +19,9 @@ namespace lbcpp
 class EvaluateStochasticLearnerObjectiveFunction : public EvaluateBatchLearnerObjectiveFunction
 {
 public:
+  virtual String toString() const
+    {return T("Stochastic Learner");}
+
   virtual TypePtr getInputType() const
     {return inferenceOnlineLearnerParametersClass;}
 
