@@ -311,11 +311,15 @@ double LearningParameterObjectiveFunction::compute(ExecutionContext& context, co
 {
   LearningParameterPtr parameter = input.getObjectAndCast<NumericalLearningParameter>();
   jassert(parameter);
-  // FIXME: Not thread safe
-  LearningParameterPtr savedParameter = factory->getParameter(targetName, targetStage);
-  factory->setParameter(targetName, targetStage, parameter);
-  InferencePtr inference = factory->createInference(target);
-  factory->setParameter(targetName, targetStage, savedParameter);
+  
+  InferencePtr inference;
+  { // FIXME: Check if thread safe
+    ScopedLock _(lock);
+    LearningParameterPtr savedParameter = factory->getParameter(targetName, targetStage);
+    factory->setParameter(targetName, targetStage, parameter);
+    inference = factory->createInference(target);
+    factory->setParameter(targetName, targetStage, savedParameter);
+  }
   
   inference->train(context, learningData, validationData);
   
