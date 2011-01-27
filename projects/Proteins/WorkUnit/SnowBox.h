@@ -147,6 +147,8 @@ public:
 protected:
   friend class LearningParameterObjectiveFunctionClass;
   
+  CriticalSection lock;
+  
   ParameteredProteinInferenceFactoryPtr factory;
   ProteinTargetPtr target;
   String targetName;
