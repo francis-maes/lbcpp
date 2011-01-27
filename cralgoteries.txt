@@ -16,6 +16,7 @@ From Julien:
    When I want to load it, it doesn't work because of lack of the attribute "type".
    I had added manually "type="PerceptionRewriter"" and it worked.
  * Faire le précompute de perception lors du ParallelProteinInference
+ * I still have a jassert at src/Core/Object.cpp:182 on Monster24 only
 
 =====================
 
