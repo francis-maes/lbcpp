@@ -22,7 +22,7 @@ public:
   virtual String toString() const
     {return T("Merge protein with PSSM and DSSP files");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
   
 protected:
   friend class CompileProteinsWorkUnitClass;

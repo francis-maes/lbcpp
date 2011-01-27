@@ -1,4 +1,12 @@
+* WorkUnit::run() returns a variable
+   -> InferenceWorkUnit virer le output*
+   -> Unifier InferenceWorkUnit et EvaluateObjectiveFunctionWorkUnit (qui devient FunctionWorkUnit)
+   -> changer le prototype de Inference::run (?)
+   -> tester la serialisation des results
 
+* ParallelInference: do not compute descriptions when hasPushChildrenIntoStackFlag() is false
+* SandBox: bugfix initial progress on the root node
+* Function Protein::loadProteinsFromDirectoryPair, utiliser dans SandBox et SnowBox
 
 Explorer/ExecutionContext:
  * Explorer: avoir un ExecutionContext general avec tous les threads
@@ -26,7 +34,6 @@ More Features:
  * Multiclass classifiers: output discrete distributions
 
 Cleaning:
- * ProteinInferenceFactory: reorganiser les Perceptions, classer par variable de la protéine; implémenter le truc dans BoincEvaluator
  * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
 
 Explorer:

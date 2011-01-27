@@ -10,7 +10,7 @@
 
 using namespace lbcpp;
 
-bool CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)
+Variable CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)
 {
   if (pdbDirectory == File::nonexistent || fastaFile == File::nonexistent)
   {

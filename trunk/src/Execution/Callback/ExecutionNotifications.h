@@ -120,7 +120,7 @@ protected:
 class PostExecutionNotification : public ExecutionNotification
 {
 public:
-  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  PostExecutionNotification(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
     : stack(stack->cloneAndCast<ExecutionStack>()), description(description), workUnit(workUnit), result(result) {}
   PostExecutionNotification() {}
 
@@ -135,7 +135,7 @@ protected:
   ExecutionStackPtr stack;
   String description;
   WorkUnitPtr workUnit;
-  bool result;
+  Variable result;
 };
 
 class ThreadExecutionNotification : public ExecutionNotification

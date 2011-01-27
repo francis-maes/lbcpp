@@ -85,6 +85,12 @@ public:
   /*
   ** Results
   */
+  Variable getReturnValue() const
+    {return returnValue;}
+
+  void setReturnValue(const Variable& value)
+    {returnValue = value;}
+
   void setResult(const String& name, const Variable& value);
   std::vector< std::pair<String, Variable> > getResults() const;
 
@@ -136,6 +142,7 @@ protected:
   CriticalSection subItemsLock;
   std::vector<ExecutionTraceItemPtr> subItems;
 
+  Variable returnValue;
   CriticalSection resultsLock;
   UnnamedDynamicClassPtr resultsClass;
   std::vector< std::pair<String, Variable> > results;

@@ -25,7 +25,7 @@ ExecutionTraceTreeView::ExecutionTraceTreeView(ExecutionTracePtr trace) : trace(
   if (context)
     context->appendCallback(pthis);
 
-  setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode()));
+  setRootItem(new ExecutionTraceTreeViewNode(this, trace->getRootNode(), 0));
   getRootItem()->setOpen(true);
   setRootItemVisible(false);
   setColour(backgroundColourId, Colours::white);
@@ -77,7 +77,8 @@ ExecutionTraceTreeViewNode* ExecutionTraceTreeView::getNodeFromStack(const Execu
         }
       }
     }
-    jassert(ok);
+    if (!ok)
+      return NULL;
   }
   return item;
 }
@@ -127,19 +128,20 @@ int ExecutionTraceTreeView::getDefaultWidth() const
 class MakeTraceAndFillTreeThreadExecutionCallback : public MakeTraceThreadExecutionCallback
 {
 public:
-  MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTraceTreeViewNode* node)
-    : MakeTraceThreadExecutionCallback(node->getTrace(), node->getOwner()->getTrace()->getStartTime()), tree(tree), stack(1, node) {}
+  MakeTraceAndFillTreeThreadExecutionCallback(ExecutionTraceTreeView* tree, ExecutionTracePtr trace, ExecutionTraceNodePtr traceNode, ExecutionTraceTreeViewNode* node)
+    : MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime()), tree(tree), stack(1, node) {}
 
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
     MakeTraceThreadExecutionCallback::preExecutionCallback(stack, description, workUnit);
     ExecutionTraceTreeViewNode* node = this->stack.back();
-    node = dynamic_cast<ExecutionTraceTreeViewNode* >(node->getSubItem(node->getNumSubItems() - 1));
-    jassert(node);
-    this->stack.push_back(node);
+    ExecutionTraceTreeViewNode* newNode = NULL;
+    if (node && node->hasBeenOpenedOnce())
+      newNode = dynamic_cast<ExecutionTraceTreeViewNode* >(node->getSubItem(node->getNumSubItems() - 1));
+    this->stack.push_back(newNode);
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {
     this->stack.pop_back();
     MakeTraceThreadExecutionCallback::postExecutionCallback(stack, description, workUnit, result);
@@ -159,10 +161,14 @@ protected:
   virtual void appendTraceItem(ExecutionTraceItemPtr item)
   {
     MakeTraceThreadExecutionCallback::appendTraceItem(item);
-    ExecutionTraceTreeViewItem* newItem = ExecutionTraceTreeViewItem::create(tree, item);
-    stack.back()->addSubItem(newItem);
-    if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
-      tree->scrollToKeepItemVisible(newItem);
+    ExecutionTraceTreeViewNode* parent = stack.back();
+    if (parent && parent->hasBeenOpenedOnce())
+    {
+      ExecutionTraceTreeViewItem* newItem = ExecutionTraceTreeViewItem::create(tree, item, parent->getDepth() + 1);
+      stack.back()->addSubItem(newItem);
+      if (tree->getViewport()->getViewPositionY() + tree->getViewport()->getViewHeight() >= tree->getViewport()->getViewedComponent()->getHeight())
+        tree->scrollToKeepItemVisible(newItem);
+    }
   }
 };
 
@@ -174,9 +180,11 @@ public:
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
   {
+    ExecutionTracePtr trace = tree->getTrace();
+    ExecutionTraceNodePtr traceNode = trace->findNode(stack);
+    jassert(traceNode);
     ExecutionTraceTreeViewNode* node = tree->getNodeFromStack(stack);
-    jassert(node);
-    return new MakeTraceAndFillTreeThreadExecutionCallback(tree, node);
+    return node ? ExecutionCallbackPtr(new MakeTraceAndFillTreeThreadExecutionCallback(tree, trace, traceNode, node)) : ExecutionCallbackPtr();
   }
 
 protected:

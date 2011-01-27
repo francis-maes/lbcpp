@@ -162,8 +162,8 @@ public:
   virtual String toString() const
     {return description;}
 
-  virtual bool run(ExecutionContext& context)
-    {Variable out = inference->computeInference(context, input, supervision); if (output) *output = out; return true;}
+  virtual Variable run(ExecutionContext& context)
+    {Variable out = inference->computeInference(context, input, supervision); if (output) *output = out; return out;}
 
   const InferencePtr& getInference() const
     {return inference;}

@@ -31,7 +31,7 @@ bool convertProteinToPDB(ExecutionContext& context, const File& inputFile, const
   return true;
 }
 
-bool ConvertPDBToProteinWorkUnit::run(ExecutionContext& context)
+Variable ConvertPDBToProteinWorkUnit::run(ExecutionContext& context)
 {
   if (!inputFile.exists())
   {

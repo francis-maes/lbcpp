@@ -64,6 +64,9 @@ public:
   void setIcon(const String& name)
     {iconToUse = userInterfaceManager().getImage(name, 18, 18);}
 
+  bool hasBeenOpenedOnce() const
+    {return hasBeenOpened;}
+
 protected:
   String uniqueName;
   juce::Image* iconToUse;

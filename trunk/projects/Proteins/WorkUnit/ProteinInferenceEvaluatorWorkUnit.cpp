@@ -83,7 +83,7 @@ public:
   }
 };
 
-bool ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
+Variable ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
 {
   if (!inputDirectory.exists()
       || !outputDirectory.exists()

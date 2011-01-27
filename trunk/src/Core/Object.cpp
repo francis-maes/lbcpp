@@ -212,16 +212,20 @@ void Object::setVariable(ExecutionContext& context, size_t index, const Variable
 */
 String Object::toString() const
 {
-  String res = getClassName() + T("{");
+  String res = getClassName();
   size_t n = getNumVariables();
-  for (size_t i = 0; i < n; ++i)
+  if (n)
   {
-    String name = getVariableName(i);
-    res += name + T(" = ") + getVariable(i).toShortString();
-    if (i < n - 1)
-      res += T(", ");
+    res += T("{");
+    for (size_t i = 0; i < n; ++i)
+    {
+      String name = getVariableName(i);
+      res += name + T(" = ") + getVariable(i).toShortString();
+      if (i < n - 1)
+        res += T(", ");
+    }
+    res += T("}");
   }
-  res += T("}");
   return res;
 }
 

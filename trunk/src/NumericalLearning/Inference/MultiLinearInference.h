@@ -92,7 +92,7 @@ public:
     std::vector<double>& outputs = res->getValues();
     size_t n = outputClass->getObjectNumVariables();
     outputs.resize(n);
-    jassert(n == denseWeights->getNumObjects());
+    jassert(n >= denseWeights->getNumObjects());
 
     ObjectPtr perceivedInput;
     if (input.getType() == perception->getOutputType())

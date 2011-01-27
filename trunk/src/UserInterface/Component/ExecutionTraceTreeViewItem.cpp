@@ -16,8 +16,8 @@ using juce::Colour;
 /*
 ** ExecutionTraceTreeViewItem
 */
-ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace)
-  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), owner(owner), trace(trace)
+ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth)
+  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), owner(owner), trace(trace), depth(depth)
 {
   String str = getUniqueName();
   numLines = 1;
@@ -26,13 +26,13 @@ ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* o
       ++numLines;
 }
 
-ExecutionTraceTreeViewItem* ExecutionTraceTreeViewItem::create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& item)
+ExecutionTraceTreeViewItem* ExecutionTraceTreeViewItem::create(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& item, size_t depth)
 {
   ExecutionTraceNodePtr node = item.dynamicCast<ExecutionTraceNode>();
   if (node)
-    return new ExecutionTraceTreeViewNode(owner, node);
+    return new ExecutionTraceTreeViewNode(owner, node, depth);
   else
-    return new ExecutionTraceTreeViewItem(owner, item);
+    return new ExecutionTraceTreeViewItem(owner, item, depth);
 }
 
 void ExecutionTraceTreeViewItem::itemSelectionChanged(bool isNowSelected)
@@ -100,8 +100,18 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     g.setColour(Colours::grey);
     g.setFont(12);
 
-    
-    g.drawText(formatTime(trace->getTime()), w, 0, timeColumnWidth, height, Justification::centredRight, false);
+    String text;
+    ExecutionTraceNodePtr node = trace.dynamicCast<ExecutionTraceNode>();
+    if (node)
+    {
+      Variable returnValue = node->getReturnValue();
+      text = returnValue.exists() ? returnValue.toShortString() : String::empty;
+    }
+    else
+      text = formatTime(trace->getTime());
+
+    g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
+
     ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)
       g.drawText(formatTime(workUnitTrace->getTimeLength()), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
@@ -153,20 +163,23 @@ String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
 /*
 ** ExecutionTraceTreeViewNode
 */
-ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace)
-  : ExecutionTraceTreeViewItem(owner, trace)
+ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace, size_t depth)
+  : ExecutionTraceTreeViewItem(owner, trace, depth)
 {
   WorkUnitPtr workUnit = trace->getWorkUnit();
   if (workUnit)
   {
     // online
     CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
-    setOpen(!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10);
+    setOpen((!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10) && depth <= 4);
   }
   else
-    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1); // open nodes that took more than 1 seconds and that have less than 10 childs
-  
-  std::vector<ExecutionTraceItemPtr> subItems = trace->getSubItems();
+    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1 && depth <= 4); // open nodes that took more than 1 seconds and that have less than 10 childs
+}
+
+void ExecutionTraceTreeViewNode::createSubItems()
+{
+  std::vector<ExecutionTraceItemPtr> subItems = getTraceNode()->getSubItems();
   for (size_t i = 0; i < subItems.size(); ++i)
-    addSubItem(ExecutionTraceTreeViewItem::create(owner, subItems[i]));
+    addSubItem(ExecutionTraceTreeViewItem::create(owner, subItems[i], depth + 1));
 }

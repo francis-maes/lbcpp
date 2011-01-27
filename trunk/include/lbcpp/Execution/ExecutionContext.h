@@ -46,13 +46,13 @@ public:
 
   void enterScope(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
   void enterScope(const WorkUnitPtr& workUnit);
-  void leaveScope(bool result = true);
+  void leaveScope(const Variable& result);
 
   /*
   ** Work Units
   */
-  virtual bool run(const WorkUnitPtr& workUnit, bool pushIntoStack = true);
-  virtual bool run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
+  virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack = true);
+  virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
   virtual void pushWorkUnit(const WorkUnitPtr& workUnit)

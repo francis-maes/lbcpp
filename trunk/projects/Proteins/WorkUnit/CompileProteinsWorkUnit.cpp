@@ -28,7 +28,7 @@ bool loadDSSPFile(ProteinPtr protein, const File& dsspFile, ExecutionContext& co
   {StreamPtr(new DSSPFileParser(context, dsspFile, protein))->next(); return true;}
 
 
-bool CompileProteinsWorkUnit::run(ExecutionContext& context)
+Variable CompileProteinsWorkUnit::run(ExecutionContext& context)
 {
   if (!inputProteinFile.exists())
   {

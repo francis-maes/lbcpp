@@ -11,7 +11,7 @@ class SaveObjectProgram : public WorkUnit
   virtual String toString() const
     {return T("SaveObjectProgram is able to serialize a object.");}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     if (className == String::empty)
     {
@@ -136,7 +136,7 @@ public:
               " a specific testing set or a cross-validation protocol.");
   }
 
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
 
 protected:
   friend class SnowBoxClass;
@@ -174,14 +174,9 @@ private:
   
   size_t currentPass;
 
-  ProteinInferenceFactoryPtr createFactory(ExecutionContext& context) const;
-
   bool loadData(ExecutionContext& context);
-
-  ContainerPtr loadProteins(ExecutionContext& context, const File& f, size_t maxToLoad = 0) const;
-  
+  ProteinInferenceFactoryPtr createFactory(ExecutionContext& context) const;
   ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context) const;
-  
   void printInformation(ExecutionContext& context) const;
 };
 

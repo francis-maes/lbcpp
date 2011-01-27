@@ -220,7 +220,7 @@ public:
     std::cout << description << std::endl;
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {}
 };
 
@@ -244,7 +244,7 @@ public:
     }
   }
   
-  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, bool result)
+  virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {
     ExecutionContext& context = getContext();
 
@@ -430,21 +430,6 @@ ProteinInferenceFactoryPtr SnowBox::createFactory(ExecutionContext& context) con
   return ProteinInferenceFactoryPtr();
 }
 
-ContainerPtr SnowBox::loadProteins(ExecutionContext& context, const File& f, size_t maxToLoad) const
-{
-  if (inputDirectory != File::nonexistent)
-    return directoryPairFileStream(context, inputDirectory, f, T("*.xml"))
-      ->load(maxToLoad)
-      ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply)
-      ->randomize();
-  
-  return directoryFileStream(context, f, T("*.xml"))
-    ->load(maxToLoad)
-    ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply)
-    ->apply(context, proteinToInputOutputPairFunction(false), Container::parallelApply)
-    ->randomize();
-}
-
 bool SnowBox::loadData(ExecutionContext& context)
 {
   /* learning data */
@@ -454,7 +439,7 @@ bool SnowBox::loadData(ExecutionContext& context)
     return false;
   }
   
-  learningData = loadProteins(context, learningDirectory, maxProteinsToLoad);
+  learningData = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, learningDirectory, maxProteinsToLoad, T("Loading training proteins"));
   
   if (!learningData->getNumElements())
   {
@@ -473,7 +458,7 @@ bool SnowBox::loadData(ExecutionContext& context)
   }
   else
   {
-    validationData = loadProteins(context, validationDirectory);
+    validationData = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, validationDirectory, maxProteinsToLoad, T("Loading validation proteins"));
   }
   /* testing data */
   if (testingDirectory == File::nonexistent)
@@ -486,7 +471,7 @@ bool SnowBox::loadData(ExecutionContext& context)
   }
   else
   {
-    testingData = loadProteins(context, testingDirectory);
+    testingData = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, testingDirectory, maxProteinsToLoad, T("Loading testing proteins"));
   }
   
   if (!useCrossValidation && !testingData->getNumElements())
@@ -603,7 +588,7 @@ void exportPerceptionTypeToFile(PerceptionPtr perception, File output)
   delete o;
 }
 
-bool SnowBox::run(ExecutionContext& context)
+Variable SnowBox::run(ExecutionContext& context)
 {
   if (!loadData(context))
   {

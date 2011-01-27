@@ -24,7 +24,7 @@ public:
 class MissingValuesExample : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     Variable myBoolean(true);
     Variable myMissingBoolean = Variable::missingValue(booleanType);
@@ -52,7 +52,8 @@ public:
               << myString.isMissingValue() << " " << myMissingString.isMissingValue() << std::endl
               << myObject.isMissingValue() << " " << myMissingObject.isMissingValue() << std::endl
               << myPair.isMissingValue() << " " << myMissingPair.isMissingValue() << std::endl;
-    return true;
+
+    return Variable();
   }
 };
 

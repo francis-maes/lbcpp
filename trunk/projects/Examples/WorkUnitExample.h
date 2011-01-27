@@ -17,7 +17,7 @@ namespace lbcpp
 class SubWorkUnitExample : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     context.informationCallback(T("Before"));
     for (size_t i = 0; i < 100; ++i)
@@ -26,8 +26,7 @@ public:
       context.progressCallback(new ProgressionState(i + 1.0, 100.0, T("%")));
     }
     context.informationCallback(T("After"));
-    context.resultCallback(T("aStringResult"), T("Hello"));
-    return true;
+    return T("Hello");
   }
 };
 
@@ -37,7 +36,7 @@ public:
   virtual String toString() const
     {return T("My Work Unit !");}
  
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
 //    context.errorCallback(T("My Error"));
     Thread::sleep(100);
@@ -58,7 +57,7 @@ public:
     context.run(subWorkUnits);
 
     context.informationCallback(T("Finished."));
-    return true;
+    return Variable();
   }
 };
 

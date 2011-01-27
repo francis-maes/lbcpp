@@ -46,7 +46,7 @@ public:
 class XorRegressionExample : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
    // create linear regressor
     PerceptionPtr perception = new XorPerception();
@@ -76,7 +76,7 @@ public:
     // test evaluator on one example
     Variable myPrediction = regressor->computeFunction(context, Variable::pair(1.0, 0.0));
     //std::cout << "MyPrediction: " << myPrediction << std::endl;
-    return true;
+    return Variable();
   }
 };
 

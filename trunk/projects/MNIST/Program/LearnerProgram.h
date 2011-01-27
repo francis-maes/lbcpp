@@ -17,7 +17,7 @@ public:
   virtual String toString() const
     {return T("Program developed for the challenge of the course ELEN0062, at University of Liege, in 2010.");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
   
 protected:
   friend class LearnerProgramClass;

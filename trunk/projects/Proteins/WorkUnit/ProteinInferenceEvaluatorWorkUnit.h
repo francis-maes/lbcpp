@@ -22,7 +22,7 @@ public:
     {return T("Take an learned inference and save prediction \
               from an input protein directory to an output directory.");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
 
 protected:
   friend class ProteinInferenceEvaluatorWorkUnitClass;

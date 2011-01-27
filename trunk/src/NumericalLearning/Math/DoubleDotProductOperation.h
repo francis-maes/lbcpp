@@ -179,6 +179,8 @@ bool dotProductSpecialImplementation(const ObjectPtr& object1, const ObjectPtr& 
 // the sparse object should be object2 for optimal performances
 double dotProduct(ExecutionContext& context, const ObjectPtr& object1, const ObjectPtr& object2)
 {
+  if (!object1 || !object2)
+    return 0.0;
   jassert(object1->getClass() == object2->getClass());
   double res = 0.0;
   if (dotProductSpecialImplementation(object1, object2, res) ||

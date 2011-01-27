@@ -23,7 +23,7 @@ public:
     {return T("This program add some lines of header to CASP PDB file. \
               Those lines are necessary if you want to convert a PDB into a XML.");}
   
-  virtual bool run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context);
   
 protected:
   friend class CaspPDBtoValidPDBWorkUnitClass;

@@ -12,14 +12,14 @@ class DumbWorkUnit : public WorkUnit
 public:
   DumbWorkUnit() {}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     for (size_t i = 0; i < 10; ++i)
     {
       context.progressCallback(new ProgressionState(i+1, 10, T("DumbWorkUnit")));
       juce::Thread::sleep(1000);
     }
-    return true;
+    return Variable();
   }
 };
 
@@ -28,7 +28,7 @@ class ClientWorkUnit : public WorkUnit
 public:
   ClientWorkUnit() : hostname(T("monster24.montefiore.ulg.ac.be")) {}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     ClientNetworkContextPtr networkContext = new ClientNetworkContext(T("jbecker-client-mac"), hostname, 1664);
 
@@ -37,7 +37,7 @@ public:
       networkContext->pushWorkUnit(new DumbWorkUnit());
 
     networkContext->run(context);
-    return true;
+    return Variable();
   }
 
 protected:

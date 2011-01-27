@@ -174,7 +174,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(3), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -185,20 +185,14 @@ protected:
 
 /////////////////////////////////////////
 
-VectorPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
+ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
   size_t maxCount = 500;
 #endif // JUCE_DEBUG
-  if (inputDirectory.exists())
-    return directoryPairFileStream(context, inputDirectory, supervisionDirectory)->load(maxCount)
-      ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply, workUnitName)->randomize();
-  else
-    return directoryFileStream(context, supervisionDirectory)->load(maxCount)
-      ->apply(context, composeFunction(loadFromFileFunction(proteinClass), proteinToInputOutputPairFunction(false)), Container::parallelApply, workUnitName)
-      ->randomize();
+  return Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxCount, workUnitName);
 }
 
 void SandBoxWorkUnit::initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
@@ -206,7 +200,7 @@ void SandBoxWorkUnit::initializeLearnerByCloning(InferencePtr inference, Inferen
   inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
 }
 
-bool SandBoxWorkUnit::run(ExecutionContext& context)
+Variable SandBoxWorkUnit::run(ExecutionContext& context)
 {
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -216,8 +210,8 @@ bool SandBoxWorkUnit::run(ExecutionContext& context)
   bool inputOnly = true;
   ContainerPtr trainProteins = loadProteins(context, T("Loading training proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("trainCO")), workingDirectory.getChildFile(T("train")));
   ContainerPtr testProteins = loadProteins(context, T("Loading testing proteins"), inputOnly ? File::nonexistent : workingDirectory.getChildFile(T("testCO")), workingDirectory.getChildFile(T("test")));
-  ContainerPtr validationProteins = trainProteins->fold(0, 10);
-  //trainProteins = trainProteins->invFold(0, 3);
+  ContainerPtr validationProteins = trainProteins->fold(0, 7);
+  trainProteins = trainProteins->invFold(0, 7);
 
   context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ")  +
     String((int)validationProteins->getNumElements()) + T(" validation proteins, ")  +

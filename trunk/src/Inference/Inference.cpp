@@ -117,7 +117,8 @@ bool Inference::run(ExecutionContext& context, const Variable& input, const Vari
     String name = workUnitName;
     if (name.isEmpty())
       name = getDescription(context, input, supervision);
-    return context.run(new InferenceWorkUnit(name, pthis, input, supervision, output));
+    context.run(new InferenceWorkUnit(name, pthis, input, supervision, output));
+    return true;
   }
   else
   {

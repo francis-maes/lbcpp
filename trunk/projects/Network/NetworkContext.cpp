@@ -4,7 +4,7 @@
 
 using namespace lbcpp;
 
-bool NetworkContext::run(ExecutionContext& context)
+Variable NetworkContext::run(ExecutionContext& context)
 {
   /* Establishing a connection */
   client = blockingNetworkClient(context, 3);

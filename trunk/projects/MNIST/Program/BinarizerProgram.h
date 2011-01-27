@@ -51,7 +51,7 @@ public:
   virtual String toString() const
     {return T("Convert text file to binary file.");}
   
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     jassert(inputFile != File::nonexistent);
     if (outputFile == File::nonexistent)
@@ -59,7 +59,7 @@ public:
     
     ContainerPtr data = StreamPtr(new MatlabFileParser(context, inputFile))->load()
       ->apply(context, new SaveMNISTImageAsBinaryFunction(outputFile), Container::sequentialApply);
-    return true;
+    return Variable();
   }
   
 protected:

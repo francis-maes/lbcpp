@@ -37,7 +37,7 @@ typedef ReferenceCountedObjectPtr<SimpleClass> SimpleClassPtr;
 class SimpleIntrospectionExample : public WorkUnit
 {
 public:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     SimpleClassPtr defaultObject = new SimpleClass();
     SimpleClassPtr someObject = new SimpleClass(true);
@@ -51,7 +51,8 @@ public:
     SimpleClassPtr loadedObject = Variable::createFromFile(context, file).getObjectAndCast<SimpleClass>(context);
     context.resultCallback(T("Loaded Object"), loadedObject);
     file.deleteFile();
-    return true;
+
+    return Variable();
   }
 };
 

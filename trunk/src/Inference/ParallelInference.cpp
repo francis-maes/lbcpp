@@ -27,7 +27,9 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
     CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(getName(), n));
     for (size_t i = 0; i < n; ++i)
     {
-      String description = state->getSubInference(i)->getDescription(context, state->getSubInput(i), state->getSubSupervision(i));
+      String description;
+      if (hasPushChildrenIntoStackFlag())
+        description = state->getSubInference(i)->getDescription(context, state->getSubInput(i), state->getSubSupervision(i));
       workUnits->setWorkUnit(i, new InferenceWorkUnit(description, state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), &state->getSubOutput(i)));
     }
     workUnits->setPushChildrenIntoStackFlag(hasPushChildrenIntoStackFlag());

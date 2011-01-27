@@ -109,7 +109,7 @@ class ManagerServer : public WorkUnit
 public:
   ManagerServer() : port(1664), workUnitManager(new WorkUnitManager()) {}
 
-  bool run(ExecutionContext& context)
+  Variable run(ExecutionContext& context)
   {
     NetworkServerPtr server = new NetworkServer(context);
     if (!server->startServer(port))

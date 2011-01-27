@@ -28,11 +28,12 @@ public:
     {return description;}
 
 protected:
-  virtual bool run(ExecutionContext& context)
+  virtual Variable run(ExecutionContext& context)
   {
     result = objective->compute(context, input);
-    context.resultCallback(T("Evaluation"), result);
-    return true;
+    context.resultCallback(T("input"), input);
+    //context.resultCallback(T("Evaluation"), result);
+    return result;
   }
 
   friend class EvaluateObjectiveFunctionWorkUnitClass;
