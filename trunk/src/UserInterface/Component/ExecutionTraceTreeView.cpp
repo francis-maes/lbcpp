@@ -95,7 +95,7 @@ juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionCon
       ObjectPtr results = traceNode->getResultsObject(context);
 
       if (traceNode->getNumSubItems())
-        return userInterfaceManager().createVariableTreeView(context, traceNode->getChildrenResultsTable(context), name, true, true, true);
+        return userInterfaceManager().createContainerTableListBox(context, traceNode->getChildrenResultsTable(context));
 
       if (results)
         return userInterfaceManager().createVariableTreeView(context, results, name, true, true, false, false);

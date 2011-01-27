@@ -615,6 +615,8 @@ SET(LBCPP_USER_INTERFACE_SOURCES
 SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
   UserInterface/Component/VariableTreeView.h
   UserInterface/Component/VariableTreeView.cpp
+  UserInterface/Component/ContainerTableListBox.h
+  UserInterface/Component/ContainerTableListBox.cpp
   UserInterface/Component/ExecutionTraceTreeViewItem.h
   UserInterface/Component/ExecutionTraceTreeViewItem.cpp
   UserInterface/Component/ExecutionTraceTreeView.h

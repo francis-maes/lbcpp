@@ -167,9 +167,15 @@ juce::Component* UserInterfaceManager::createComponentIfExists(ExecutionContext&
 }
 
 #include "Component/VariableTreeView.h"
+#include "Component/ContainerTableListBox.h"
 
 juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name,
                                                               bool showTypes, bool showShortSummaries, bool showMissingVariables, bool makeRootNodeVisible) const
 {
   return new VariableTreeView(variable, name, VariableTreeOptions(showTypes, showShortSummaries, showMissingVariables, makeRootNodeVisible));
+}
+
+juce::TableListBox* UserInterfaceManager::createContainerTableListBox(ExecutionContext& context, const ContainerPtr& container) const
+{
+  return new ContainerTableListBox(container);
 }
