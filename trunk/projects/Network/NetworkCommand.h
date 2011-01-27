@@ -23,6 +23,24 @@ public:
 
 typedef ReferenceCountedObjectPtr<NetworkCommand> NetworkCommandPtr;
 
+class ClientNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkCommandPtr network);
+
+protected:
+  virtual bool runCommand(ExecutionContext& context, ClientNetworkContextPtr network) = 0;
+};
+
+class ServerNetworkCommand : public NetworkCommand
+{
+public:
+  virtual bool runCommand(ExecutionContext& context, NetworkContextPtr network);
+
+protected:
+  virtual bool runCommand(ExecutionContext& context, ServerNetworkContextPtr network) = 0;
+};
+
 class GetIdentityNetworkCommand : public NetworkCommand
 {
 public:

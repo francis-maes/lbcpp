@@ -243,7 +243,7 @@ String Object::defaultToStringImplementation(bool useShortString) const
         else
           res += T("--") + name;
         if (!value.isBoolean())
-          res += T(" ") + value.valueString();
+          res += T(" ") + valueString;
       }
     }
   }
