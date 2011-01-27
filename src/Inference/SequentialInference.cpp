@@ -21,10 +21,7 @@ Variable SequentialInference::computeInference(ExecutionContext& context, const 
 
   while (!state->isFinal())
   {
-    Variable subOutput;
-    if (!state->getSubInference()->run(context, state->getSubInput(), state->getSubSupervision(), &subOutput))
-      return state->getInput();
-
+    Variable subOutput = state->getSubInference()->run(context, state->getSubInput(), state->getSubSupervision());
     state->setSubOutput(subOutput);
     if (!updateInference(context, state))
       state->setFinalState();

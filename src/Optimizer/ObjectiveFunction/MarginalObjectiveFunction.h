@@ -32,6 +32,9 @@ public:
   virtual String getDescription(const Variable& input) const
     {return objective->getDescription(makeValue(defaultExecutionContext(), input));}
 
+  String toString() const
+    {return objective->toString() + T(" (") + referenceValue->getVariableName(variableIndex) + T(")");}
+
 protected:
   friend class MarginalObjectiveFunctionClass;
 

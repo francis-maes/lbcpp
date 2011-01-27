@@ -132,6 +132,9 @@ protected:
   virtual Variable run(ExecutionContext& context);
 };
 
+extern WorkUnitPtr functionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL);
+extern WorkUnitPtr inferenceWorkUnit(const InferencePtr& inference, const Variable& input, const Variable& supervision, const String& description = String::empty, Variable* output = NULL);
+
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_WORK_UNIT_H_

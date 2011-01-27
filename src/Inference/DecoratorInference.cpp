@@ -26,12 +26,7 @@ Variable DecoratorInference::computeInference(ExecutionContext& context, const V
 
   const InferencePtr& subInference = state->getSubInference();
   if (subInference)
-  {
-    Variable subOutput;
-    if (!subInference->run(context, state->getSubInput(), state->getSubSupervision(), &subOutput))
-      return Variable();
-    state->setSubOutput(subOutput);
-  }
+    state->setSubOutput(subInference->run(context, state->getSubInput(), state->getSubSupervision()));
 
   return finalizeInference(context, state);
 }

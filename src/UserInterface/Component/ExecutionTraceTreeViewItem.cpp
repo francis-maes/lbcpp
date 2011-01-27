@@ -100,17 +100,15 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
     g.setColour(Colours::grey);
     g.setFont(12);
 
-    String text;
     ExecutionTraceNodePtr node = trace.dynamicCast<ExecutionTraceNode>();
     if (node)
     {
       Variable returnValue = node->getReturnValue();
-      text = returnValue.exists() ? returnValue.toShortString() : String::empty;
+      String text = returnValue.exists() ? returnValue.toShortString() : String::empty;
+      g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
-    else
-      text = formatTime(trace->getTime());
-
-    g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
+    //else
+    //  text = formatTime(trace->getTime());
 
     ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)

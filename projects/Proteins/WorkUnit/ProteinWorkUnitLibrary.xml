@@ -68,9 +68,9 @@
   
   <!-- SandBox -->
   <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
-    <variable type="Double" name="logLearningRate"/>
-    <variable type="Double" name="logLearningRateDecrease"/>
-    <variable type="Double" name="logRegularizer"/>
+    <variable type="Double" name="logLearningRate" shortName="a"/>
+    <variable type="Double" name="logLearningRateDecrease" shortName="b"/>
+    <variable type="Double" name="logRegularizer" shortName="r"/>
   </class>
 
   <class name="SandBoxWorkUnit" base="WorkUnit"/>

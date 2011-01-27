@@ -213,28 +213,42 @@ void Object::setVariable(ExecutionContext& context, size_t index, const Variable
 String Object::toString() const
 {
   String res = getClassName();
-  size_t n = getNumVariables();
-  if (n)
-  {
-    res += T("{");
-    for (size_t i = 0; i < n; ++i)
-    {
-      String name = getVariableName(i);
-      res += name + T(" = ") + getVariable(i).toShortString();
-      if (i < n - 1)
-        res += T(", ");
-    }
-    res += T("}");
-  }
+  if (getNumVariables())
+    res += T("{") + defaultToStringImplementation(false) + T("}");
   return res;
 }
 
 String Object::toShortString() const
-{
-  String str = toString();
-  return str.containsChar('\n') ? String::empty : str;
-}
+  {return defaultToStringImplementation(true);}
 
+String Object::defaultToStringImplementation(bool useShortString) const
+{
+  ClassPtr type = getClass();
+  size_t n = type->getObjectNumVariables();
+  String res;
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable value = getVariable(i);
+    if (value.exists())
+    {
+      String valueString = useShortString ? value.toShortString() : value.toString();
+      if (valueString.isNotEmpty())
+      {
+        String name = type->getObjectVariableName(i);
+        String shortName = type->getObjectVariableShortName(i);
+        if (res.isNotEmpty())
+          res += T(" ");
+        if (shortName.length() < name.length())
+          res += T("-") + shortName;
+        else
+          res += T("--") + name;
+        if (!value.isBoolean())
+          res += T(" ") + value.valueString();
+      }
+    }
+  }
+  return res;
+}
 
 String Object::variablesToString(const String& separator, bool includeTypes) const
 {

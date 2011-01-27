@@ -30,7 +30,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
       String description;
       if (hasPushChildrenIntoStackFlag())
         description = state->getSubInference(i)->getDescription(context, state->getSubInput(i), state->getSubSupervision(i));
-      workUnits->setWorkUnit(i, new InferenceWorkUnit(description, state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), &state->getSubOutput(i)));
+      workUnits->setWorkUnit(i, inferenceWorkUnit(state->getSubInference(i), state->getSubInput(i), state->getSubSupervision(i), description, &state->getSubOutput(i)));
     }
     workUnits->setPushChildrenIntoStackFlag(hasPushChildrenIntoStackFlag());
     workUnits->setProgressionUnit(getProgressionUnit());
@@ -43,13 +43,7 @@ Variable ParallelInference::computeInference(ExecutionContext& context, const Va
       Variable subOutput;
       InferencePtr subInference = state->getSubInference(i);
       if (subInference)
-      {
-        if (!subInference->run(context, state->getSubInput(i), state->getSubSupervision(i), &subOutput))
-        {
-          context.errorCallback("ParallelInference::computeInference", "Could not finish sub inference");
-          return Variable(); 
-        }
-      }
+        subOutput = subInference->run(context, state->getSubInput(i), state->getSubSupervision(i));
       state->setSubOutput(i, subOutput);
     }
   }

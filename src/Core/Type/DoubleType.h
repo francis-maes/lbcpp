@@ -68,6 +68,22 @@ public:
   virtual String toString(const VariableValue& value) const
     {jassert(!isMissingValue(value)); return String(value.getDouble());}
 
+  virtual String toShortString(const VariableValue& value) const
+  {
+    jassert(!isMissingValue(value));
+    double d = value.getDouble();
+    if (fabs(d - (double)(int)(d + 0.5)) < 10e-8)
+      return String((int)(d + 0.5));
+    else if (d > 100)
+      return String((int)(d + 0.5)) + T(".");
+    else if (d > 0.01)
+      return String(d, 2);
+    else if (d > 0.0001)
+      return String(d, 3);
+    else
+      return String(d);
+  }
+
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
   {
     double v1 = value1.getDouble();

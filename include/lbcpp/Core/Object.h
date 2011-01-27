@@ -192,6 +192,7 @@ protected:
   friend struct ObjectTraits;
 
   // utilities
+  String defaultToStringImplementation(bool useShortString) const;
   String variablesToString(const String& separator, bool includeTypes = true) const;
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlImporter& importer);

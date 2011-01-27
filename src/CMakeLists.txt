@@ -365,7 +365,6 @@ SET(LBCPP_OPTIMIZER_SOURCES
 )
 
 SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
-  Optimizer/ObjectiveFunction/EvaluateObjectFunctionWorkUnit.h
   Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
   Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp

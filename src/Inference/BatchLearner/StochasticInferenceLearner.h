@@ -29,7 +29,7 @@ public:
   StochasticPassInferenceLearner() {}
 
   virtual TypePtr getOutputType(TypePtr ) const
-    {return booleanType;}
+    {return pairClass(booleanType, doubleType);}
 
   virtual ClassPtr getTargetInferenceClass() const
     {return inferenceClass;}
@@ -65,10 +65,11 @@ protected:
         InferenceWorkUnitPtr inferenceWorkUnit = workUnit.dynamicCast<InferenceWorkUnit>();
         if (inferenceWorkUnit)
         {
-          const InferenceOnlineLearnerPtr& parentLearner = inferenceWorkUnit->getInference()->getOnlineLearner();
+          const InferencePtr& parentInference = inferenceWorkUnit->getInference();
+          const InferenceOnlineLearnerPtr& parentLearner = parentInference->getOnlineLearner();
           if (parentLearner && !parentLearner->isLearningStopped())
             parentLearner->subStepFinishedCallback(context, inference, input, supervision, output);
-          if (inferenceWorkUnit->getInference() == targetInference)
+          if (parentInference == targetInference)
             break;
         }
       }
@@ -111,8 +112,7 @@ protected:
       else
       {
         // make an episode
-        if (!targetInference->run(context, example.first, example.second))
-          return Variable();
+        targetInference->run(context, example.first, example.second);
         finishEpisode(context);
       }
     }
@@ -127,7 +127,8 @@ protected:
     }
 
     ++(const_cast<StochasticPassInferenceLearner* >(this)->iteration);
-    return finishPass(context, learnerInput);
+    bool wantMoreIterators = finishPass(context, learnerInput);
+    return new Pair(wantMoreIterators, onlineLearner ? onlineLearner->getLastLearner()->getDefaultScore() : 0.0);
   }
 
   void finishEpisode(ExecutionContext& context) const
@@ -143,7 +144,7 @@ protected:
 
   bool finishPass(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput) const // returns false when learning is finished
   {
-    context.resultCallback(T("Iteration"), (int)iteration);
+    context.resultCallback(T("iteration"), (int)iteration);
 
     bool wantsMoreIterations = false;
     for (size_t i = 0; i < learnedInferences.size(); ++i)
@@ -192,8 +193,9 @@ public:
   {
     state->incrementStepNumber();
     state->getSubInference()->setName(T("Learning Iteration ") + String((int)state->getStepNumber()));
+    PairPtr pair = state->getSubOutput().dynamicCast<Pair>();
     // repeat passes until a pass returns "false"
-    return state->getSubOutput().isNil() || state->getSubOutput().getBoolean();
+    return !pair || pair->getFirst().getBoolean();
   }
 
 protected:

@@ -188,7 +188,7 @@ public:
   virtual int getPreferedWidth(int availableWidth, int availableHeight) const
     {int w = getPreferedWidth(); return w ? w : availableWidth;}
 
-  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables)
+  virtual void selectionChangedCallback(VariableSelector* selector, const std::vector<Variable>& selectedVariables, const String& selectionName)
   {
     int rowNumber = findRowNumber(selector);
     jassert(rowNumber >= 0);
@@ -199,9 +199,9 @@ public:
       rows.erase(rows.begin() + i);
     }
     Variable variable = lbcpp::createMultiSelectionVariable(selectedVariables);
-    Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, variable.toShortString());
+    Component* component = selector->createComponentForVariable(defaultExecutionContext(), variable, selectionName);
     if (!component)
-      component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, variable.toShortString());
+      component = lbcpp::createComponentForVariable(defaultExecutionContext(), variable, selectionName);
     if (component)
       appendVariable(variable, component);
 

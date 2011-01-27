@@ -64,9 +64,9 @@ public:
     String sequenceName, versionName;
     int position;
     if (hitTest(e.getMouseDownX(), e.getMouseDownY(), sequenceName, versionName, position))
-      sendSelectionChanged(Variable::pair(Variable::pair(sequenceName, versionName), position));
+      sendSelectionChanged(Variable::pair(Variable::pair(sequenceName, versionName), position), T("residue"));
     else
-      sendSelectionChanged(std::vector<Variable>());
+      sendSelectionChanged(std::vector<Variable>(), String::empty);
   }
 
   enum
