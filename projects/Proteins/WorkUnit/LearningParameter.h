@@ -6,14 +6,16 @@
 # include <lbcpp/Core/Variable.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
+# include <lbcpp/Inference/InferenceOnlineLearner.h>
 
 namespace lbcpp
 {
 
-class LearningParameter : public Object
+class LearningParameter : public InferenceOnlineLearnerParameters
 {
 public:
   virtual IndependentMultiVariateDistributionPtr getAprioriDistribution() const = 0;
+  virtual InferenceOnlineLearnerPtr createLearner() const {return InferenceOnlineLearnerPtr();} // FIXME: ExtraTree
 };
 
 typedef ReferenceCountedObjectPtr<LearningParameter> LearningParameterPtr;
@@ -43,6 +45,14 @@ public:
     apriori->setSubDistribution(2, new UniformDistribution(-10, 0)); // TODO: Logarithmic distribution
     return apriori;
   }
+  
+  virtual InferenceOnlineLearnerPtr createLearner() const
+  {
+    return learner->cloneAndCast<InferenceOnlineLearner>();
+  }
+  
+  virtual void setLearner(InferenceOnlineLearnerPtr learner)
+    {this->learner = learner;}
 
   virtual bool loadFromString(ExecutionContext& context, const String& value)
   {
@@ -76,6 +86,8 @@ protected:
   double learningRate;
   double learningRateDecrease;
   double regularizer;
+  
+  InferenceOnlineLearnerPtr learner;
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningParameterPtr;

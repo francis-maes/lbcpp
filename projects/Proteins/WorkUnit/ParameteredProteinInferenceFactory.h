@@ -53,6 +53,8 @@ public:
   virtual void setTargetInferenceToOptimize(const String& targetName, size_t targetStage);
 
   virtual InferencePtr createInference(ProteinTargetPtr proteinTarget) const;
+  virtual InferencePtr createOptimizer(const String& targetName, InferencePtr inference) const;
+
 
 protected:
   friend class ParameteredProteinInferenceFactoryClass;
@@ -85,6 +87,8 @@ public:
   
   virtual PerceptionPtr createPerception(const String& targetName, PerceptionType type) const;
   virtual void getPerceptionRewriteRules(PerceptionRewriterPtr rewriter) const;
+  virtual InferencePtr createOptimizer(const String& targetName, InferencePtr inference) const;
+
   
   virtual void setMaximumIterations(size_t maxIterations)
     {this->maxIterations = maxIterations;}
