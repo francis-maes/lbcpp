@@ -174,7 +174,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(50), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(100), maxIterationsWithoutImprovementStoppingCriterion(15));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -190,7 +190,7 @@ ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const Stri
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 500;
+  size_t maxCount = 0;
 #endif // JUCE_DEBUG
   return Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxCount, workUnitName);
 }
