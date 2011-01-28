@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="ProteinFrame" directory="Frame"> 
+<library name="ProteinFrame" directory="Frame">
+
+  <class name="Frame" base="Object"/>
+
+  <!--
+  <class name="ProteinFrame" base="Object">
+    <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
+    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+    <code> -->
+      
+  </class>
+  
   
 </library>
