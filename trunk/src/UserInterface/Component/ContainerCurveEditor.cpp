@@ -9,6 +9,7 @@
 #include "ContainerCurveEditor.h"
 using namespace lbcpp;
 
+using juce::ComboBox;
 using juce::Drawable;
 using juce::AffineTransform;
 using juce::Rectangle;
@@ -302,7 +303,7 @@ protected:
   static void getMarkerValues(double minValue, double maxValue, double valuePerPixel,
                               std::vector<double>& main, std::vector<double>& secondary)
   {
-    double step = pow(10.0, (double)(int)(log10(valuePerPixel) + 0.5));
+    double step = pow(10.0, (double)(int)(log10(valuePerPixel) + 0.9));
     int ibegin = (int)(minValue / step);
     int iend = (int)(maxValue / step);
     for (int i = ibegin; i <= iend; ++i)
@@ -343,20 +344,95 @@ public:
 protected:
   ContainerCurveDrawable* drawable;
 };
+//////////////////////////////////////////
 
+class ContainerCurveSelectorConfigurationComponent : public BooleanButtonsComponent
+{
+public:
+  ContainerCurveSelectorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
+  {
+    std::vector<ConfigurationButton* > buttonsColumn;
+
+    TypePtr rowType = configuration->getRowType();
+    for (size_t i = 0; i < rowType->getObjectNumVariables(); ++i)
+    {
+      CurveVariableConfigurationPtr curve = configuration->getCurve(i);
+      if (curve)
+        addToggleButton(buttonsColumn, rowType->getObjectVariableName(i), curve->isSelected(), 4);
+    }
+    flushButtons(buttonsColumn);
+
+    initialize();
+  }
+};
+
+class ContainerCurveEditorConfigurationComponent : public Component, public juce::ChangeBroadcaster, public juce::ComboBoxListener, public juce::ChangeListener
+{
+public:
+  ContainerCurveEditorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
+    : configuration(configuration)
+  {
+    addAndMakeVisible(keyComboBox = createVariableIndexComboBox(configuration->getKeyVariableIndex()));
+    addAndMakeVisible(selectedCurves = new ContainerCurveSelectorConfigurationComponent(configuration));
+    selectedCurves->addChangeListener(this);
+  }
+
+  virtual ~ContainerCurveEditorConfigurationComponent()
+    {deleteAllChildren();}
+
+  virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
+  {
+    if (comboBoxThatHasChanged == keyComboBox)
+      configuration->setKeyVariableIndex(keyComboBox->getSelectedItemIndex());
+    sendChangeMessage(this);
+  }
+
+  virtual void changeListenerCallback(void* objectThatHasChanged)
+    {sendChangeMessage(this);}
+
+  virtual void resized()
+  {
+    keyComboBox->setBoundsRelative(0, 0.25f, 0.4f, 0.5f);
+    selectedCurves->setBoundsRelative(0.4f, 0, 0.6f, 1.f);
+  }
+
+protected:
+  ContainerCurveEditorConfigurationPtr configuration;
+
+  ComboBox* keyComboBox;
+  ContainerCurveSelectorConfigurationComponent* selectedCurves;
+
+  juce::ComboBox* createVariableIndexComboBox(size_t selectedIndex)
+  {
+    TypePtr type = configuration->getRowType();
+    ComboBox* res = new ComboBox(T("combo"));
+    for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+      if (configuration->getCurve(i))
+      {
+        res->addItem(type->getObjectVariableName(i), i + 1);
+        if (selectedIndex == i)
+          res->setSelectedId(i + 1);
+      }
+    res->addListener(this);
+    return res;
+  }
+};
+
+//////////////////////////////////////////
 /*
 ** ContainerCurveEditorConfiguration
 */
-ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr type)
-  : xAxis(new CurveAxisConfiguration(0.0, 1000.0)),
+ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr rowType)
+  : rowType(rowType), 
+    xAxis(new CurveAxisConfiguration(0.0, 1000.0)),
     yAxis(new CurveAxisConfiguration(0.0, 1.0)),
-    variables(type->getObjectNumVariables())
+    variables(rowType->getObjectNumVariables())
 {
   for (size_t i = 0; i < variables.size(); ++i)
   {
-    TypePtr variableType = type->getObjectVariableType(i);
+    TypePtr variableType = rowType->getObjectVariableType(i);
     if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType))
-      variables[i] = new CurveVariableConfiguration(i == 1, Colours::red, type->getObjectVariableName(i));
+      variables[i] = new CurveVariableConfiguration(i == 1, Colours::red, rowType->getObjectVariableName(i));
   }
   keyVariableIndex = 0;
 }
@@ -365,7 +441,7 @@ std::vector<size_t> ContainerCurveEditorConfiguration::getSelectedCurves() const
 {
   std::vector<size_t> res;
   for (size_t i = 0; i < variables.size(); ++i)
-    if (i != keyVariableIndex && variables[i] && variables[i]->isSelected())
+    if (variables[i] && variables[i]->isSelected())
       res.push_back(i);
   return res;
 }
@@ -381,7 +457,7 @@ ContainerCurveEditor::ContainerCurveEditor(ExecutionContext& context, ContainerP
 
 Component* ContainerCurveEditor::createConfigurationComponent(const ObjectPtr& configuration)
 {
-  return new Component();
+  return new ContainerCurveEditorConfigurationComponent(configuration.staticCast<ContainerCurveEditorConfiguration>());
 }
 
 Component* ContainerCurveEditor::createContentComponent(const ObjectPtr& object, const ObjectPtr& configuration)

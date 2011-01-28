@@ -30,7 +30,7 @@ public:
     const InferenceOnlineLearnerParametersPtr& params = parameters.getObjectAndCast<InferenceOnlineLearnerParameters>();
     jassert(params);
     targetInference->setOnlineLearner(params->createLearner());
-    return stochasticInferenceLearner(true,  10);
+    return stochasticInferenceLearner(true);
   }
 
   virtual double getObjective(ExecutionContext& context, const InferencePtr& targetInference) const

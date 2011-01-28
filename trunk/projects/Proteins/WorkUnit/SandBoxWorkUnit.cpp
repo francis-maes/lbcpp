@@ -156,12 +156,12 @@ protected:
       res = randomizerOnlineLearner(perEpisode);
       lastLearner = res->setNextLearner(gradientDescentOnlineLearner(
         perStep, invLinearIterationFunction(initialLearningRate, 100000), true, // learning steps
-        perStepMiniBatch20, l2RegularizerFunction(0.0)));         // regularizer
+        perStepMiniBatch100, l2RegularizerFunction(0.0)));         // regularizer
     }
     else
       res = lastLearner = gradientDescentOnlineLearner(
         perStep, constantIterationFunction(0.1), true, //  invLinearIterationFunction(initialLearningRate, (size_t)5e6), // learning steps
-        perStepMiniBatch20, l2RegularizerFunction(1e-8));         // regularizer
+        perStepMiniBatch100, l2RegularizerFunction(1e-8));         // regularizer
 
     if (evaluator)
     {
@@ -174,7 +174,7 @@ protected:
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
 
-    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(10), maxIterationsWithoutImprovementStoppingCriterion(5));
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(50), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
 
     //File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));
@@ -190,7 +190,7 @@ ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const Stri
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 7;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxCount, workUnitName);
 }

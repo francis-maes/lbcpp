@@ -112,7 +112,7 @@ public:
 
   virtual void resized()
   {
-    int x = getWidth() - 5;
+    int x = getWidth();
     for (int i = (int)buttons.size() - 1; i >= 0; --i)
     {
       int w = buttons[i]->getWidth();

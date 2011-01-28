@@ -19,6 +19,74 @@ using juce::Graphics;
 using juce::Component;
 using juce::Colours;
 
+class BooleanButtonsComponent : public Component, public juce::ButtonListener, public juce::ChangeBroadcaster
+{
+public:
+  struct ConfigurationButton : public juce::ToggleButton
+  {
+    ConfigurationButton(const String& name, bool& value)
+      : ToggleButton(name), value(value)
+      {setToggleState(value, false);}
+      
+    bool& value;
+  };
+
+  virtual ~BooleanButtonsComponent()
+    {deleteAllChildren();}
+
+  virtual void buttonClicked(juce::Button* button)
+  {
+    ((ConfigurationButton* )button)->value = button->getToggleState();
+    sendChangeMessage(this);
+  }
+
+  virtual void paint(Graphics& g)
+    {g.fillAll(juce::Colour(240, 245, 250));}
+
+  void initialize()
+  {
+    for (size_t i = 0; i < buttons.size(); ++i)
+      for (size_t j = 0; j < buttons[i].size(); ++j)
+      {
+        ConfigurationButton* button = buttons[i][j];
+        button->addButtonListener(this);
+        addAndMakeVisible(button);
+      }
+  }
+
+
+  virtual void resized()
+  {
+    for (size_t i = 0; i < buttons.size(); ++i)
+    {
+      int x = (int)i * buttonWidth;
+      for (size_t j = 0; j < buttons[i].size(); ++j)
+        buttons[i][j]->setBounds(x, (int)j * buttonHeight, buttonWidth, buttonHeight);
+    }
+  }
+
+  enum {buttonWidth = 200, buttonHeight = 20};
+
+protected:
+  std::vector< std::vector<ConfigurationButton* > > buttons;
+
+  void addToggleButton(std::vector<ConfigurationButton* >& buttonsColumn, const String& name, bool& state, size_t columnsHeight)
+  {
+    buttonsColumn.push_back(new ConfigurationButton(name, state));
+    if (buttonsColumn.size() >= columnsHeight)
+      flushButtons(buttonsColumn);
+  }
+
+  void flushButtons(std::vector<ConfigurationButton* >& buttonsColumn)
+  {
+    if (buttonsColumn.size())
+    {
+      buttons.push_back(buttonsColumn);
+      buttonsColumn.clear();
+    }
+  }
+};
+
 class SplittedLayout : public Component, public ComponentWithPreferedSize
 {
 public:

@@ -78,20 +78,10 @@ private:
 
 typedef ReferenceCountedObjectPtr<MultiProtein1DConfiguration> MultiProtein1DConfigurationPtr;
 
-class MultiProtein1DConfigurationComponent : public Component, public juce::ButtonListener, public juce::ChangeBroadcaster
+class MultiProtein1DConfigurationComponent : public BooleanButtonsComponent
 {
 public:
-  struct ConfigurationButton : public juce::ToggleButton
-  {
-    ConfigurationButton(const String& name, bool& value)
-      : ToggleButton(name), value(value)
-      {setToggleState(value, false);}
-      
-    bool& value;
-  };
-
   MultiProtein1DConfigurationComponent(MultiProtein1DConfigurationPtr configuration)
-    : configuration(configuration)
   {
     std::vector<ConfigurationButton* > buttonsColumn;
     for (size_t i = 0; i < configuration->getNumProteins(); ++i)
@@ -105,52 +95,12 @@ public:
     for (size_t i = 0; i < configuration->getNumSequences(); ++i)
     {
       MultiProtein1DConfiguration::SequenceConfiguration& p = configuration->getSequence(i);
-      buttonsColumn.push_back(new ConfigurationButton(p.friendlyName, p.activated));
-      if (buttonsColumn.size() >= 4)
-      {
-        buttons.push_back(buttonsColumn);
-        buttonsColumn.clear();
-      }
+      addToggleButton(buttonsColumn, p.friendlyName, p.activated, 4);
     }
-    if (buttonsColumn.size())
-      buttons.push_back(buttonsColumn);
+    flushButtons(buttonsColumn);
 
-    for (size_t i = 0; i < buttons.size(); ++i)
-      for (size_t j = 0; j < buttons[i].size(); ++j)
-      {
-        ConfigurationButton* button = buttons[i][j];
-        button->addButtonListener(this);
-        addAndMakeVisible(button);
-      }
+    initialize();
   }
-
-  virtual ~MultiProtein1DConfigurationComponent()
-    {deleteAllChildren();}
-
-  virtual void buttonClicked(juce::Button* button)
-  {
-    ((ConfigurationButton* )button)->value = button->getToggleState();
-    sendChangeMessage(this);
-  }
-
-  virtual void paint(Graphics& g)
-    {g.fillAll(Colour(240, 245, 250));}
-
-  virtual void resized()
-  {
-    for (size_t i = 0; i < buttons.size(); ++i)
-    {
-      int x = (int)i * buttonWidth;
-      for (size_t j = 0; j < buttons[i].size(); ++j)
-        buttons[i][j]->setBounds(x, (int)j * buttonHeight, buttonWidth, buttonHeight);
-    }
-  }
-
-  enum {buttonWidth = 200, buttonHeight = 20};
-
-private:
-  MultiProtein1DConfigurationPtr configuration;
-  std::vector< std::vector<ConfigurationButton* > > buttons;
 };
 
 class MultiProtein1DComponent : public ObjectEditor, public VariableSelector, public VariableSelectorCallback
