@@ -34,8 +34,9 @@ public:
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    double x1 = input[0].getDouble();
-    double x2 = input[1].getDouble();
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    double x1 = pair->getFirst().getDouble();
+    double x2 = pair->getSecond().getDouble();
     callback->sense(0, 1.0);
     callback->sense(1, x1);
     callback->sense(2, x2);

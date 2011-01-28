@@ -44,11 +44,11 @@ SparseDoubleObject::SparseDoubleObject(DynamicClassPtr thisClass)
   : Object(thisClass), lastIndex(-1)  {}
 
 String SparseDoubleObject::toShortString() const
-  {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getObjectNumVariables()) + T(")");}
+  {return thisClass->getName() + T(" (actives: ") + String((int)values.size()) + T(" / ") + String((int)thisClass->getNumMemberVariables()) + T(")");}
 
 Variable SparseDoubleObject::getVariable(size_t index) const
 {
-  TypePtr type = thisClass->getObjectVariableType(index); 
+  TypePtr type = thisClass->getMemberVariableType(index); 
   const double* value = SparseDoubleVectorHelper::get(values, index);
   return value ? Variable(*value, type) : Variable::missingValue(type);
 }

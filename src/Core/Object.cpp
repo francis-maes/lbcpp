@@ -186,24 +186,24 @@ ObjectPtr Object::create(ClassPtr objectClass)
 }
 
 size_t Object::getNumVariables() const
-  {return getClass()->getObjectNumVariables();}
+  {return getClass()->getNumMemberVariables();}
 
 TypePtr Object::getVariableType(size_t index) const
-  {return getClass()->getObjectVariableType(index);}
+  {return getClass()->getMemberVariableType(index);}
 
 String Object::getVariableName(size_t index) const
-  {return getClass()->getObjectVariableName(index);}
+  {return getClass()->getMemberVariableName(index);}
 
 Variable Object::getVariable(size_t index) const
 {
-  jassert(index < getClass()->getObjectNumVariables());
-  return getClass()->getObjectVariable(this, index);
+  jassert(index < getClass()->getNumMemberVariables());
+  return getClass()->getMemberVariableValue(this, index);
 }
 
 void Object::setVariable(ExecutionContext& context, size_t index, const Variable& value)
 {
-  jassert(index < getClass()->getObjectNumVariables());
-  getClass()->setObjectVariable(context, this, index, value);
+  jassert(index < getClass()->getNumMemberVariables());
+  getClass()->setMemberVariableValue(context, this, index, value);
 }
 
 
@@ -224,7 +224,7 @@ String Object::toShortString() const
 String Object::defaultToStringImplementation(bool useShortString) const
 {
   ClassPtr type = getClass();
-  size_t n = type->getObjectNumVariables();
+  size_t n = type->getNumMemberVariables();
   String res;
   for (size_t i = 0; i < n; ++i)
   {
@@ -234,8 +234,8 @@ String Object::defaultToStringImplementation(bool useShortString) const
       String valueString = useShortString ? value.toShortString() : value.toString();
       if (valueString.isNotEmpty())
       {
-        String name = type->getObjectVariableName(i);
-        String shortName = type->getObjectVariableShortName(i);
+        String name = type->getMemberVariableName(i);
+        String shortName = type->getMemberVariableShortName(i);
         if (res.isNotEmpty())
           res += T(" ");
         if (shortName.length() < name.length())
@@ -308,7 +308,7 @@ ObjectPtr Object::deepClone(ExecutionContext& context) const
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    TypePtr variableType = thisClass->getObjectVariableType(i);
+    TypePtr variableType = thisClass->getMemberVariableType(i);
     if (variableType->inheritsFrom(objectClass) && !variableType->inheritsFrom(typeClass))
     {
       ObjectPtr object = res->getVariable(i).getObject();
@@ -326,17 +326,17 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
     return clone(context);
 
   ObjectPtr res = Object::create(newType);
-  size_t n = newType->getObjectNumVariables();
+  size_t n = newType->getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    int sourceIndex = thisClass->findObjectVariable(newType->getObjectVariableName(i));
+    int sourceIndex = thisClass->findMemberVariable(newType->getMemberVariableName(i));
     if (sourceIndex >= 0)
     {
       Variable variable = getVariable((size_t)sourceIndex);
       if (!variable.exists())
         continue;
 
-      TypePtr newVariableType = newType->getObjectVariableType(i);
+      TypePtr newVariableType = newType->getMemberVariableType(i);
       if (variable.isObject())
         res->setVariable(context, i, variable.getObject()->cloneToNewType(context, newVariableType));
       else
@@ -355,7 +355,7 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
 void Object::saveToXml(XmlExporter& exporter) const
 {
   ClassPtr type = getClass();
-  size_t n = type->getObjectNumVariables();
+  size_t n = type->getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
     Variable variable = getVariable(i);
@@ -376,13 +376,13 @@ bool Object::loadFromXml(XmlImporter& importer)
       importer.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
       return false;
     }
-    int variableNumber = thisClass->findObjectVariable(name);
+    int variableNumber = thisClass->findMemberVariable(name);
     if (variableNumber < 0)
     {
       importer.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
       continue;
     }
-    TypePtr expectedType = thisClass->getObjectVariableType(variableNumber);
+    TypePtr expectedType = thisClass->getMemberVariableType(variableNumber);
     jassert(expectedType);
     Variable value = importer.loadVariable(child, expectedType);
     if (value.exists())

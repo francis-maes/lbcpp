@@ -14,41 +14,11 @@
 
     <variable type="firstType" name="first"/>
     <variable type="secondType" name="second"/>
-
-    <code>
-      virtual size_t getNumElements(const VariableValue&amp; value) const
-        {return 2;}
-      virtual Variable getElement(const VariableValue&amp; value, size_t index) const
-      {
-        const PairPtr&amp; pair = value.getObjectAndCast&lt;Pair&gt;();
-        return pair ? (index == 0 ? pair->getFirst() : pair->getSecond()) : Variable();
-      }
-      virtual String getElementName(const VariableValue&amp; value, size_t index) const
-        {return index ? T("second") : T("first");}
-    </code>
-
   </template>
   
   <!-- Container -->
   <template name="Container" base="Object" abstract="yes">
     <parameter name="elementsType"/>
-    <code>
-      virtual size_t getNumElements(const VariableValue&amp; value) const
-      {
-        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-        return container ? container->getNumElements() : 0;
-      }
-
-      virtual Variable getElement(const VariableValue&amp; value, size_t index) const
-      {
-        const ContainerPtr&amp; container = value.getObjectAndCast&lt;Container&gt;();
-        jassert(container);
-        return container->getElement(index);
-      }
-
-      virtual String getElementName(const VariableValue&amp; value, size_t index) const
-        {return T("[") + String((int)index) + T("]");}
-    </code>
   </template>
   
   <!-- Vector -->
@@ -83,13 +53,13 @@
     <parameter name="enumeration" type="EnumValue"/>
     <parameter name="variablesType" type="Double"/>
     <code>
-      virtual size_t getObjectNumVariables() const
+      virtual size_t getNumMemberVariables() const
         {return getEnumeration()->getNumElements();}
         
-      virtual TypePtr getObjectVariableType(size_t index) const
+      virtual TypePtr getMemberVariableType(size_t index) const
         {return getVariablesType();}
         
-      virtual String getObjectVariableName(size_t index) const
+      virtual String getMemberVariableName(size_t index) const
         {return getEnumeration()->getElementName(index);}
         
       virtual void createObjectVariables()
@@ -98,7 +68,7 @@
         size_t n = enumeration->getNumElements();
         TypePtr variablesType = getVariablesType();
         for (size_t i = 0; i &lt; n; ++i)
-          addVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
+          addMemberVariable(defaultExecutionContext(), variablesType, enumeration->getElementName(i));
       }
        
       EnumerationPtr getEnumeration() const
@@ -124,9 +94,9 @@
         ClassPtr inputClass = getTemplateArgument(0).dynamicCast&lt;Class&gt;();
         TypePtr outputVariablesType = getTemplateArgument(1);
         jassert(inputClass);
-        size_t n = inputClass->getObjectNumVariables();
+        size_t n = inputClass->getNumMemberVariables();
         for (size_t i = 0; i &lt; n; ++i)
-          addVariable(defaultExecutionContext(), outputVariablesType, inputClass->getObjectVariableName(i));
+          addMemberVariable(defaultExecutionContext(), outputVariablesType, inputClass->getMemberVariableName(i));
       }
     </code>
   </template>

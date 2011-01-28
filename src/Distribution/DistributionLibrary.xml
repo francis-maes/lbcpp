@@ -25,16 +25,16 @@
     EnumerationPtr getEnumeration() const
       {return getTemplateArgument(0).staticCast&lt;Enumeration&gt;();}
 
-    virtual size_t getObjectNumVariables() const
+    virtual size_t getNumMemberVariables() const
       {return getEnumeration()->getNumElements() + 1;}
 
-    virtual Variable getObjectVariable(const Object* pthis, size_t index) const
+    virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const
     {
       const EnumerationDistribution* distribution = dynamic_cast&lt;const EnumerationDistribution* &gt;(pthis);
       return distribution ? Variable(distribution->values[index], probabilityType) : Variable::missingValue(probabilityType);
     }
 
-    virtual void setObjectVariable(ExecutionContext&amp; context, Object* pthis, size_t index, const Variable&amp; subValue) const
+    virtual void setMemberVariableValue(ExecutionContext&amp; context, Object* pthis, size_t index, const Variable&amp; subValue) const
     {
       EnumerationDistribution* distribution = dynamic_cast&lt;EnumerationDistribution* &gt;(pthis);
       if (distribution)
@@ -48,11 +48,11 @@
       }
     }
 
-    virtual TypePtr getObjectVariableType(size_t index) const
-      {return probabilityType;}
-
-    virtual String getObjectVariableName(size_t index) const
-      {return T("p[") + Variable(index, getEnumeration()).toString() + T("]");}
+    virtual VariableSignaturePtr getMemberVariable(size_t index) const
+    {
+      String name = Variable(index, getEnumeration()).toString();
+      return new VariableSignature(probabilityType, T("p[") + name + T("]"), name);
+    }
     </code>
   </template>
   

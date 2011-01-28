@@ -91,8 +91,9 @@ public:
     String str = variable.toShortString();
     if (str.isNotEmpty())
       properties->addProperty(T("Desc"), str);
-    if (variable.size())
-      properties->addProperty(T("Size"), String((int)variable.size()));
+    ContainerPtr container = variable.dynamicCast<Container>();
+    if (container)
+      properties->addProperty(T("Size"), String((int)container->getNumElements()));
     
     // command buttons
     commands = VariableRelatedCommand::getVariableCommands(variable);

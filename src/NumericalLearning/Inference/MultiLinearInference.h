@@ -23,7 +23,7 @@ class MultiLinearInference : public NumericalInference
 {
 public:
   MultiLinearInference(const String& name, PerceptionPtr perception, ClassPtr outputClass)
-    : NumericalInference(name, perception), outputClass(outputClass), numOutputs(outputClass->getObjectNumVariables())
+    : NumericalInference(name, perception), outputClass(outputClass), numOutputs(outputClass->getNumMemberVariables())
   {
     parameters = new NumericalInferenceParameters(perception, getWeightsType(perception->getOutputType()));  
   }
@@ -47,7 +47,7 @@ public:
     const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     std::vector<double> lossGradient;
     lossFunction->compute(context, prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
-    if (lossGradient.empty() || !perception->getOutputType()->getObjectNumVariables())
+    if (lossGradient.empty() || !perception->getOutputType()->getNumMemberVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
 
     bool isLocked = false;
@@ -90,7 +90,7 @@ public:
     const DenseObjectObjectPtr& denseWeights = weights.staticCast<DenseObjectObject>();
     DenseDoubleObjectPtr res = new DenseDoubleObject(outputClass.staticCast<DynamicClass>().get());
     std::vector<double>& outputs = res->getValues();
-    size_t n = outputClass->getObjectNumVariables();
+    size_t n = outputClass->getNumMemberVariables();
     outputs.resize(n);
     jassert(n >= denseWeights->getNumObjects());
 
@@ -113,7 +113,7 @@ public:
     if (!NumericalInference::loadFromXml(importer))
       return false;
     jassert(outputClass);
-    numOutputs = outputClass->getObjectNumVariables();
+    numOutputs = outputClass->getNumMemberVariables();
     return true;
   }
 

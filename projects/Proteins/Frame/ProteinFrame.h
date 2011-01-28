@@ -23,7 +23,7 @@ typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 class FrameClass : public Class
 {
 public:
-  virtual void initializeFrame(ExecutionContext& context, const FramePtr& frame) = 0;
+  //virtual void initializeFrame(ExecutionContext& context, const FramePtr& frame) = 0;
 
   void addNode(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
   {
@@ -38,10 +38,17 @@ public:
     : Object(type) {}
 };
 
+extern FrameClassPtr proteinFrameClass;
 
 class ProteinFrame : public Frame
 {
 public:
+  ProteinFrame(const ProteinPtr& protein)
+    : Frame(proteinFrameClass), protein(protein)
+  {
+    //setNodeValue(
+  }
+
   const ProteinPtr& getProtein() const
     {return protein;}
 
@@ -50,25 +57,6 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;
-
-class ProteinFrameClass : public FrameClass
-{
-public:
-  virtual void initializeFrame(ExecutionContext& context, const FramePtr& f)
-  {
-    const ProteinFramePtr& frame = f.staticCast<ProteinFrame>();
-    const ProteinPtr& protein = frame->getProtein();
-    frame->setVariable(context, 0, protein->getVariable(0));
-    frame->setVariable(context, 1, protein->getVariable(1));
-  }
-
-  virtual bool initialize(ExecutionContext& context)
-  {
-    addNode(context, T("GenericVector<AminoAcidType>"), T("primaryStructure"), T("aa"), T("Primary Structure"));
-    addNode(context, T("ObjectVector<EnumerationDistribution<AminoAcidType>>"), T("positionSpecificScoringMatrix"), T("pssm"), T("PSSM"));
-    return FrameClass::initialize(context);
-  }
-};
 
 }; /* namespace lbcpp */
 

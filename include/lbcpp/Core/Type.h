@@ -85,7 +85,7 @@ public:
   virtual bool isUnnamedType() const;
 
   /*
-  ** Base type
+  ** Type operations
   */
   TypePtr getBaseType() const
     {return baseType;}
@@ -132,27 +132,19 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const;
 
   /*
-  ** Static Variables
+  ** Member Variables
   */
-  // new
+  virtual size_t getNumMemberVariables() const;
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
 
-  virtual size_t getObjectNumVariables() const;
-  virtual TypePtr getObjectVariableType(size_t index) const;
-  virtual String getObjectVariableName(size_t index) const;
-  virtual String getObjectVariableShortName(size_t index) const;
-  virtual String getObjectVariableDescription(size_t index) const;
+  TypePtr getMemberVariableType(size_t index) const;
+  String getMemberVariableName(size_t index) const;
+  String getMemberVariableShortName(size_t index) const;
+  String getMemberVariableDescription(size_t index) const;
 
-  virtual int findObjectVariable(const String& name) const;
-  virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
-  virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
-
-  /*
-  ** Dynamic Variables
-  */
-  virtual size_t getNumElements(const VariableValue& value) const;
-  virtual Variable getElement(const VariableValue& value, size_t index) const;
-  virtual String getElementName(const VariableValue& value, size_t index) const;
+  virtual int findMemberVariable(const String& name) const;
+  virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
+  virtual void setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object
@@ -312,36 +304,25 @@ public:
 
   virtual void deinitialize();
 
-  virtual size_t getObjectNumVariables() const;
-  virtual TypePtr getObjectVariableType(size_t index) const;
-  virtual String getObjectVariableName(size_t index) const;
-  virtual String getObjectVariableShortName(size_t index) const;
-  virtual String getObjectVariableDescription(size_t index) const;
-  virtual int findObjectVariable(const String& name) const;
+  virtual size_t getNumMemberVariables() const;
+  virtual VariableSignaturePtr getMemberVariable(size_t index) const;
 
-  size_t findOrAddObjectVariable(ExecutionContext& context, const String& name, TypePtr type);
+  virtual int findMemberVariable(const String& name) const;
 
-  void reserveVariables(size_t count)
+  size_t findOrAddMemberVariable(ExecutionContext& context, const String& name, TypePtr type);
+
+  void reserveMemberVariables(size_t count)
     {variables.reserve(count);}
 
-  void addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
-  void addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
-  void clearVariables();
+  void addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  void addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DefaultClassClass;
 
-  struct VariableInfo
-  {
-    TypePtr type;
-    String name;
-    String shortName;
-    String description;
-  };
-
-  std::vector<VariableInfo> variables;
+  std::vector<VariableSignaturePtr> variables;
   std::map<String, size_t> variablesMap;
 };
 

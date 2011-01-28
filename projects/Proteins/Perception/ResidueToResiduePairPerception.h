@@ -32,10 +32,11 @@ public:
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    Variable protein = input[0];
-    Variable positionPair = input[1];
-    callback->sense(0, residuePerception, Variable::pair(protein, positionPair[0]));
-    callback->sense(1, residuePerception, Variable::pair(protein, positionPair[1]));
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    Variable protein = pair->getFirst();
+    const PairPtr& positionPair = pair->getSecond().getObjectAndCast<Pair>();
+    callback->sense(0, residuePerception, new Pair(protein, positionPair->getFirst()));
+    callback->sense(1, residuePerception, new Pair(protein, positionPair->getSecond()));
   }
 
 protected:

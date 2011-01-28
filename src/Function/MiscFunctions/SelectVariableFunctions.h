@@ -26,7 +26,7 @@ public:
     {return objectClass;}
   
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return index >= 0 ? inputType->getObjectVariableType((size_t)index) : inputType;}
+    {return index >= 0 ? inputType->getMemberVariableType((size_t)index) : inputType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -34,7 +34,7 @@ public:
     {
       Variable res = input.getObject()->getVariable(index);
       if (!res.exists())
-        res = Variable::missingValue(input.getType()->getObjectVariableType((size_t)index));
+        res = Variable::missingValue(input.getType()->getMemberVariableType((size_t)index));
       return res;
     }
     else
@@ -95,8 +95,8 @@ private:
   {
     if (index >= 0)
     {
-      jassert((size_t)index < inputType->getObjectNumVariables());
-      return inputType->getObjectVariableType((size_t)index);
+      jassert((size_t)index < inputType->getNumMemberVariables());
+      return inputType->getMemberVariableType((size_t)index);
     }
     else
       return inputType;

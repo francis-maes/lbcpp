@@ -27,14 +27,14 @@ void DynamicClass::ensureVariablesTypeIsComputed()
 
 void DynamicClass::computeVariablesType()
 {
-  size_t n = getObjectNumVariables();
+  size_t n = getNumMemberVariables();
   if (n)
   {
     bool hasOnlyDoubles = true;
     bool hasOnlyObjects = true;
     for (size_t i = 0; i < n; ++i)
     {
-      TypePtr type = getObjectVariableType(i);
+      TypePtr type = getMemberVariableType(i);
       if (!type->inheritsFrom(doubleType))
         hasOnlyDoubles = false;
       if (!type->inheritsFrom(objectClass))
@@ -51,7 +51,7 @@ void DynamicClass::computeVariablesType()
 
 bool DynamicClass::initialize(ExecutionContext& context)
 {
-  if (!getObjectNumVariables())
+  if (!getNumMemberVariables())
     createObjectVariables();
   computeVariablesType();
   return DefaultClass::initialize(context);
@@ -66,7 +66,7 @@ VariableValue DynamicClass::create(ExecutionContext& context) const
 
 ObjectPtr DynamicClass::createDenseObject() const
 {
-  jassert(getObjectNumVariables());
+  jassert(getNumMemberVariables());
   const_cast<DynamicClass* >(this)->ensureVariablesTypeIsComputed();
   if (variablesType == onlyDoubleVariables)
     return new DenseDoubleObject(refCountedPointerFromThis(this));
@@ -86,12 +86,12 @@ ObjectPtr DynamicClass::createSparseObject() const
     return new SparseGenericObject(refCountedPointerFromThis(this));
 }
 
-Variable DynamicClass::getObjectVariable(const Object* pthis, size_t index) const
+Variable DynamicClass::getMemberVariableValue(const Object* pthis, size_t index) const
   {jassert(pthis); return pthis->getVariable(index);}
 
-void DynamicClass::setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
+void DynamicClass::setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
 {
-  if (context.checkInheritance(subValue.getType(), getObjectVariableType(index)))
+  if (context.checkInheritance(subValue.getType(), getMemberVariableType(index)))
   {
     jassert(pthis);
     pthis->setVariable(context, index, subValue);

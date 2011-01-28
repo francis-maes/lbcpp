@@ -189,10 +189,10 @@ public:
   WorkUnitArgumentComponent(ExecutionContext& context, ClassPtr workUnitClass, size_t variableIndex)
     : context(context), name(NULL), shortName(NULL), description(NULL), variableIndex(variableIndex)
   {
-    TypePtr typeValue = workUnitClass->getObjectVariableType(variableIndex);
-    String nameValue = workUnitClass->getObjectVariableName(variableIndex);
-    String shortNameValue = workUnitClass->getObjectVariableShortName(variableIndex);
-    String descriptionValue = workUnitClass->getObjectVariableDescription(variableIndex);
+    TypePtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
+    String nameValue = workUnitClass->getMemberVariableName(variableIndex);
+    String shortNameValue = workUnitClass->getMemberVariableShortName(variableIndex);
+    String descriptionValue = workUnitClass->getMemberVariableDescription(variableIndex);
 
     int desiredHeight = namesHeight;
     addAndMakeVisible(name = new Label(T("name"), nameValue));
@@ -262,7 +262,7 @@ public:
   {
     ClassPtr workUnitClass = getType(workUnit->getWorkUnitName());
     jassert(workUnitClass);
-    arguments.resize(workUnitClass->getObjectNumVariables());
+    arguments.resize(workUnitClass->getNumMemberVariables());
     int desiredHeight = 0;
     for (size_t i = 0; i < arguments.size(); ++i)
     {
@@ -412,9 +412,9 @@ public:
       if (value.isMissingValue() || (value.isBoolean() && !value.getBoolean()))
         continue;
 
-      TypePtr typeValue = workUnitClass->getObjectVariableType(variableIndex);
-      String name = workUnitClass->getObjectVariableName(variableIndex);
-      String shortName = workUnitClass->getObjectVariableShortName(variableIndex);
+      TypePtr typeValue = workUnitClass->getMemberVariableType(variableIndex);
+      String name = workUnitClass->getMemberVariableName(variableIndex);
+      String shortName = workUnitClass->getMemberVariableShortName(variableIndex);
       
       if (shortName.isNotEmpty() && shortName.length() < name.length())
         res += T(" -") + shortName;
@@ -487,7 +487,7 @@ public:
         deleteAndZero(argumentsSelector);
       }
       TypePtr type = getType(workUnit->getWorkUnitName());
-      if (type && type->getObjectNumVariables() > 0)
+      if (type && type->getNumMemberVariables() > 0)
       {
         addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(context, workUnit, workUnitParameters));
         argumentsSelectorLabel->setText(T("Arguments"), false);

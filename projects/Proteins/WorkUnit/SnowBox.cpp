@@ -259,10 +259,11 @@ static void exportPerceptionsToFile(ExecutionContext& context, ContainerPtr data
   OutputStream* o = output.createOutputStream();
   for (size_t i = 0; i < data->getNumElements(); ++i)
   {
-    ProteinPtr protein = data->getElement(i)[0].getObjectAndCast<Protein>();
+    const PairPtr& element = data->getElement(i).getObjectAndCast<Pair>();
+    ProteinPtr protein = element->getFirst().getObjectAndCast<Protein>();
     for (size_t j = 0; j < protein->getLength(); ++j)
     {
-      ObjectPtr obj = perception->computeFunction(context, Variable::pair(protein, j)).getObject();
+      ObjectPtr obj = perception->computeFunction(context, new Pair(protein, j)).getObject();
       for (size_t k = 0; k < obj->getNumVariables(); ++k)
       {
         Variable v = obj->getVariable(k);
@@ -280,7 +281,7 @@ static void exportPerceptionsToFile(ExecutionContext& context, ContainerPtr data
         }
         *o << " ";
       }
-      *o << data->getElement(i)[1].getObjectAndCast<Protein>()->getSecondaryStructure()->getElement(j).getInteger();
+      *o << element->getSecond().getObjectAndCast<Protein>()->getSecondaryStructure()->getElement(j).getInteger();
       *o << "\n";
     }
   }
@@ -293,9 +294,9 @@ static void exportPerceptionTypeToFile(PerceptionPtr perception, File output)
     output.deleteFile();
   OutputStream* o = output.createOutputStream();
   TypePtr outputType = perception->getOutputType();
-  for (size_t i = 0; i < outputType->getObjectNumVariables(); ++i)
+  for (size_t i = 0; i < outputType->getNumMemberVariables(); ++i)
   {
-    TypePtr elementType = outputType->getObjectVariableType(i);
+    TypePtr elementType = outputType->getMemberVariableType(i);
     if (elementType->inheritsFrom(enumValueType))
       *o << (int)elementType.dynamicCast<Enumeration>()->getNumElements() + 1;
     else if (elementType->inheritsFrom(booleanType))

@@ -44,7 +44,7 @@ private:
   {
     while (current < n)
     {
-      TypePtr type = object->thisClass->getObjectVariableType(current);
+      TypePtr type = object->thisClass->getMemberVariableType(current);
       if (object->values[current] != object->missingValue)
       {
         currentValue = Variable(object->values[current], type);
@@ -62,14 +62,14 @@ DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass)
 }
 
 DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass, double initialValue)
-  : Object(thisClass), values(thisClass->getObjectNumVariables(), initialValue)
+  : Object(thisClass), values(thisClass->getNumMemberVariables(), initialValue)
 {
   missingValue = doubleType->getMissingValue().getDouble();
 }
 
 double& DenseDoubleObject::getValueReference(size_t index)
 {
-  jassert(index < thisClass->getObjectNumVariables());
+  jassert(index < thisClass->getNumMemberVariables());
   if (values.size() <= index)
     values.resize(index + 1, missingValue);
   return values[index];
@@ -77,7 +77,7 @@ double& DenseDoubleObject::getValueReference(size_t index)
 
 Variable DenseDoubleObject::getVariable(size_t index) const
 {
-  TypePtr type = thisClass->getObjectVariableType(index);
+  TypePtr type = thisClass->getMemberVariableType(index);
   if (index < values.size() && values[index] != missingValue)
     return Variable(values[index], type);
   else

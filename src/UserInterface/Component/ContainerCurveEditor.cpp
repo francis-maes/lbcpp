@@ -144,7 +144,7 @@ public:
   {
     String res = configuration->getXAxis()->getLabel();
     if (res.isEmpty())
-      res = table->getElementsType()->getObjectVariableName(configuration->getKeyVariableIndex());
+      res = table->getElementsType()->getMemberVariableName(configuration->getKeyVariableIndex());
     return res;
   }
 
@@ -157,7 +157,7 @@ public:
       {
         if (i > 0)
           res += T(", ");
-        res += table->getElementsType()->getObjectVariableName(selectedCurves[i]);
+        res += table->getElementsType()->getMemberVariableName(selectedCurves[i]);
       }
     }
     return res;
@@ -354,11 +354,11 @@ public:
     std::vector<ConfigurationButton* > buttonsColumn;
 
     TypePtr rowType = configuration->getRowType();
-    for (size_t i = 0; i < rowType->getObjectNumVariables(); ++i)
+    for (size_t i = 0; i < rowType->getNumMemberVariables(); ++i)
     {
       CurveVariableConfigurationPtr curve = configuration->getCurve(i);
       if (curve)
-        addToggleButton(buttonsColumn, rowType->getObjectVariableName(i), curve->isSelected(), 4);
+        addToggleButton(buttonsColumn, rowType->getMemberVariableName(i), curve->isSelected(), 4);
     }
     flushButtons(buttonsColumn);
 
@@ -406,10 +406,10 @@ protected:
   {
     TypePtr type = configuration->getRowType();
     ComboBox* res = new ComboBox(T("combo"));
-    for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+    for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
       if (configuration->getCurve(i))
       {
-        res->addItem(type->getObjectVariableName(i), i + 1);
+        res->addItem(type->getMemberVariableName(i), i + 1);
         if (selectedIndex == i)
           res->setSelectedId(i + 1);
       }
@@ -426,13 +426,13 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
   : rowType(rowType), 
     xAxis(new CurveAxisConfiguration(0.0, 1000.0)),
     yAxis(new CurveAxisConfiguration(0.0, 1.0)),
-    variables(rowType->getObjectNumVariables())
+    variables(rowType->getNumMemberVariables())
 {
   for (size_t i = 0; i < variables.size(); ++i)
   {
-    TypePtr variableType = rowType->getObjectVariableType(i);
+    TypePtr variableType = rowType->getMemberVariableType(i);
     if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType))
-      variables[i] = new CurveVariableConfiguration(i == 1, Colours::red, rowType->getObjectVariableName(i));
+      variables[i] = new CurveVariableConfiguration(i == 1, Colours::red, rowType->getMemberVariableName(i));
   }
   keyVariableIndex = 0;
 }

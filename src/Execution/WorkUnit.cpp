@@ -61,8 +61,8 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
-    variableNames[thisClass->getObjectVariableName(i)] = i;
-    variableShortNames[thisClass->getObjectVariableShortName(i)] = i;
+    variableNames[thisClass->getMemberVariableName(i)] = i;
+    variableShortNames[thisClass->getMemberVariableShortName(i)] = i;
   }
   
   for (size_t i = 0; i < arguments.size(); )
@@ -145,10 +145,10 @@ String WorkUnit::getUsageString() const
   size_t longestShortName = 1;
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
-    size_t nameLength = thisClass->getObjectVariableName(i).length();
+    size_t nameLength = thisClass->getMemberVariableName(i).length();
     if (nameLength > longestName)
       longestName = nameLength;
-    size_t shortNameLength = thisClass->getObjectVariableShortName(i).length();
+    size_t shortNameLength = thisClass->getMemberVariableShortName(i).length();
     if (shortNameLength > longestShortName)
       longestShortName = shortNameLength;
   }
@@ -159,11 +159,11 @@ String WorkUnit::getUsageString() const
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
     
-    argumentDescriptions += T("-") + thisClass->getObjectVariableShortName(i)
-                        + String::repeatedString(T(" "), longestShortName - thisClass->getObjectVariableShortName(i).length())
-                        + T(" --") + thisClass->getObjectVariableName(i)
-                        + String::repeatedString(T(" "), longestName - thisClass->getObjectVariableName(i).length())
-                        + T(" ") + thisClass->getObjectVariableDescription(i) + T("\n");
+    argumentDescriptions += T("-") + thisClass->getMemberVariableShortName(i)
+                        + String::repeatedString(T(" "), longestShortName - thisClass->getMemberVariableShortName(i).length())
+                        + T(" --") + thisClass->getMemberVariableName(i)
+                        + String::repeatedString(T(" "), longestName - thisClass->getMemberVariableName(i).length())
+                        + T(" ") + thisClass->getMemberVariableDescription(i) + T("\n");
   }
   
   return toString() + T("\n\n")

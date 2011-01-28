@@ -95,7 +95,7 @@ public:
     {return yAxis;}
 
   size_t getNumCurves() const
-    {return rowType->getObjectNumVariables();}
+    {return rowType->getNumMemberVariables();}
 
   CurveVariableConfigurationPtr getCurve(size_t index) const
     {jassert(index < variables.size()); return variables[index];}

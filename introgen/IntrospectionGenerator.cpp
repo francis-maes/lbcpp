@@ -293,12 +293,12 @@ protected:
     // getStaticVariableReference() function
     if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
     {
-      // getObjectVariable
-      openScope(T("virtual Variable getObjectVariable(const Object* __thisbase__, size_t __index__) const"));
-        writeLine(T("TypePtr expectedType = getObjectVariableType(__index__);"));
-        writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
-        writeLine(T("return baseType->getObjectVariable(__thisbase__, __index__);"), 1);
-        writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
+      // getMemberVariableValue
+      openScope(T("virtual Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
+        writeLine(T("TypePtr expectedType = getMemberVariableType(__index__);"));
+        writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
+        writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
+        writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
         writeLine(T("Variable __res__;"));
         newLine();
@@ -326,11 +326,11 @@ protected:
       closeScope();
       newLine();
 
-      // setObjectVariable
-      openScope(T("virtual void setObjectVariable(ExecutionContext& context, Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
-        writeLine(T("if (__index__ < baseType->getObjectNumVariables())"));
-        writeLine(T("{baseType->setObjectVariable(context, __thisbase__, __index__, __subValue__); return;}"), 1);
-        writeLine(T("__index__ -= baseType->getObjectNumVariables();"));
+      // setMemberVariableValue
+      openScope(T("virtual void setMemberVariableValue(ExecutionContext& context, Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
+        writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
+        writeLine(T("{baseType->setMemberVariableValue(context, __thisbase__, __index__, __subValue__); return;}"), 1);
+        writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
         writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__thisbase__);"));
         newLine();
         openScope(T("switch (__index__)"));
@@ -385,7 +385,7 @@ protected:
     arguments += T(", ");
     arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
     
-    writeLine(T("addVariable(context, ") + arguments + T(");"));
+    writeLine(T("addMemberVariable(context, ") + arguments + T(");"));
   }
 
   void generateClassConstructorMethod(XmlElement* xml, const String& className, const String& baseClassName)

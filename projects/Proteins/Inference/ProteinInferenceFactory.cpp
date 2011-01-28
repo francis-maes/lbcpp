@@ -80,13 +80,13 @@ InferencePtr ProteinInferenceFactory::createDisulfideBondsInference(const String
 
 size_t ProteinInferenceFactory::getTargetIndex(const String& targetName) const
 {
-  int targetIndex = proteinClass->findObjectVariable(targetName);
+  int targetIndex = proteinClass->findMemberVariable(targetName);
   jassert(targetIndex >= 0);
   return (size_t)targetIndex;
 }
 
 TypePtr ProteinInferenceFactory::getTargetType(const String& targetName) const
-  {return proteinClass->getObjectVariableType(getTargetIndex(targetName));}
+  {return proteinClass->getMemberVariableType(getTargetIndex(targetName));}
 
 PerceptionPtr ProteinInferenceFactory::createLabelSequencePerception(const String& targetName) const
 {
@@ -131,8 +131,8 @@ PerceptionPtr ProteinInferenceFactory::createProteinPerception(const String& tar
   for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
   {
     int index = (int)getTargetIndex(histogramTargets[i]); jassert(index >= 0);
-    String name = proteinClass->getObjectVariableShortName((size_t)index);
-    TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
+    String name = proteinClass->getMemberVariableShortName((size_t)index);
+    TypePtr elementsType = proteinClass->getMemberVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
     addPerception(freq, name, histogramTargets[i], containerHistogramPerception(elementsType));
   }
   res->addPerception(T("histograms"), freq);
@@ -175,8 +175,8 @@ PerceptionPtr ProteinInferenceFactory::createResiduePairPerception(const String&
   for (size_t i = 0; i < sizeof (histogramTargets) / sizeof (const juce::tchar* ); ++i)
   {
     int index = (int)getTargetIndex(histogramTargets[i]); jassert(index >= 0);
-    String name = proteinClass->getObjectVariableShortName((size_t)index);
-    TypePtr elementsType = proteinClass->getObjectVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
+    String name = proteinClass->getMemberVariableShortName((size_t)index);
+    TypePtr elementsType = proteinClass->getMemberVariableType((size_t)index)->getTemplateArgument(0); jassert(elementsType);
     addPerception(freq, name, histogramTargets[i], segmentHistogramPerception(elementsType));
   }
   res->addPerception(T("centralHistograms"), freq);
@@ -208,7 +208,7 @@ PerceptionPtr ProteinInferenceFactory::createPerception(const String& targetName
 void ProteinInferenceFactory::addPerception(CompositePerceptionPtr composite, const String& name, const String& targetName, PerceptionPtr perception) const
 {
   FunctionPtr selectFunction;
-  int index = proteinClass->findObjectVariable(targetName);
+  int index = proteinClass->findMemberVariable(targetName);
   TypePtr inputType = perception->getInputType();
   if (inputType->inheritsFrom(pairClass(anyType, anyType)))
     selectFunction = selectPairVariablesFunction(index, -1, pairClass(proteinClass, inputType->getTemplateArgument(1)));

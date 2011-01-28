@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "VariableTreeView.h"
+#include <lbcpp/Core/Container.h>
 using namespace lbcpp;
 using juce::Font;
 using juce::Justification;
@@ -29,9 +30,9 @@ public:
       ObjectPtr object = variable.getObject();
       if (options.showMissingVariables)
       {
-        subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
-        for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
-          addSubVariable(type->getObjectVariableName(i), object->getVariable(i));
+        subVariables.reserve(subVariables.size() + type->getNumMemberVariables());
+        for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
+          addSubVariable(type->getMemberVariableName(i), object->getVariable(i));
       }
       else
       {
@@ -42,24 +43,28 @@ public:
             size_t variableIndex;
             Variable subVariable = iterator->getCurrentVariable(variableIndex);
             if (subVariable.exists())
-              addSubVariable(type->getObjectVariableName(variableIndex), subVariable);
+              addSubVariable(type->getMemberVariableName(variableIndex), subVariable);
           }
         else
         {
-          subVariables.reserve(subVariables.size() + type->getObjectNumVariables());
-          for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+          subVariables.reserve(subVariables.size() + type->getNumMemberVariables());
+          for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
           {
             Variable value = object->getVariable(i);
             if (value.exists())
-              addSubVariable(type->getObjectVariableName(i), value);
+              addSubVariable(type->getMemberVariableName(i), value);
           }
         }
       }
     }
 
-    subVariables.reserve(subVariables.size() + variable.size());
-    for (size_t i = 0; i < variable.size(); ++i)
-      addSubVariable(variable.getName(i), variable[i]);
+    ContainerPtr container = variable.dynamicCast<Container>();
+    if (container)
+    {
+      subVariables.reserve(subVariables.size() + container->getNumElements());
+      for (size_t i = 0; i < container->getNumElements(); ++i)
+        addSubVariable(container->getElementName(i), container->getElement(i));
+    }
 
     mightContainSubItemsFlag = !subVariables.empty();
   }

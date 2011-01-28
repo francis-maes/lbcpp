@@ -123,7 +123,7 @@ Variable ProteinParallelInference::finalizeInference(ExecutionContext& context, 
 {
   const ProteinPtr& initialProtein = state->getInput().getObjectAndCast<Protein>(context);
   ProteinPtr finalProtein = initialProtein->cloneAndCast<Protein>(context);
-  size_t numVariables = proteinClass->getObjectNumVariables();
+  size_t numVariables = proteinClass->getNumMemberVariables();
   std::set<size_t> alreadySet;
   for (size_t i = 0; i < state->getNumSubInferences(); ++i)
   {
@@ -138,7 +138,7 @@ Variable ProteinParallelInference::finalizeInference(ExecutionContext& context, 
           alreadySet.insert(j);
         else
           context.warningCallback(T("ProteinParallelInference::finalizeInference"),
-            T("More than one version of Protein::") + proteinClass->getObjectVariableName(j));
+            T("More than one version of Protein::") + proteinClass->getMemberVariableName(j));
         finalProtein->setVariable(context, j, predicted);
       }
     }
@@ -154,7 +154,7 @@ Variable ProteinParallelInference::finalizeInference(ExecutionContext& context, 
 ProteinInferenceStep::ProteinInferenceStep(const String& targetName, InferencePtr targetInference)
   : StaticDecoratorInference(targetName, targetInference)
 {
-  int index = proteinClass->findObjectVariable(targetName);
+  int index = proteinClass->findMemberVariable(targetName);
   jassert(index >= 0);
   targetIndex = (size_t)index;
   checkInheritance((TypePtr)proteinClass, targetInference->getInputType());
@@ -174,7 +174,7 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(ExecutionConte
   if (supervisionProtein)
     targetSupervision = supervisionProtein->getTargetOrComputeIfMissing(targetIndex);
   if (targetSupervision.isNil())
-    targetSupervision = Variable::missingValue(proteinClass->getObjectVariableType(targetIndex));
+    targetSupervision = Variable::missingValue(proteinClass->getMemberVariableType(targetIndex));
   res->setSubInference(decorated, input, targetSupervision);
   return res;
 }

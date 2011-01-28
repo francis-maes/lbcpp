@@ -146,9 +146,8 @@ inline const ObjectPtr& Variable::getObject() const
 template<class O>
 inline ReferenceCountedObjectPtr<O> Variable::dynamicCast() const
 {
-  if (!isNil())
+  if (isObject())
   {
-    jassert(isObject());
     Object* ptr = value.getObjectPointer();
     if (ptr)
     {
@@ -202,15 +201,6 @@ inline bool Variable::equals(const Variable& otherValue) const
   TypePtr type2 = otherValue.type;
   return type == type2 && type->compare(value, otherValue.value) == 0;
 }
-
-inline size_t Variable::size() const
-  {return type->getNumElements(value);}
-
-inline String Variable::getName(size_t index) const
-  {return type->getElementName(value, index);}
-
-inline Variable Variable::operator [](size_t index) const
-  {return type->getElement(value, index);}
 
 inline Variable& Variable::operator =(const Variable& otherVariable)
 {

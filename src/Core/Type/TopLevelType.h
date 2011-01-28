@@ -62,35 +62,26 @@ public:
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {jassert(false); return 0;}
 
-  virtual size_t getObjectNumVariables() const
+  virtual size_t getNumMemberVariables() const
     {return 0;}
 
-  virtual TypePtr getObjectVariableType(size_t index) const
+  virtual TypePtr getMemberVariableType(size_t index) const
     {jassert(false); return TypePtr();}
 
-  virtual String getObjectVariableName(size_t index) const
+  virtual String getMemberVariableName(size_t index) const
     {jassert(false); return String::empty;}
 
-  virtual String getObjectVariableShortName(size_t index) const
+  virtual String getMemberVariableShortName(size_t index) const
     {jassert(false); return String::empty;}
 
-  virtual String getObjectVariableDescription(size_t index) const
+  virtual String getMemberVariableDescription(size_t index) const
     {jassert(false); return String::empty;}
 
-  virtual int findObjectVariable(const String& name) const
+  virtual int findMemberVariable(const String& name) const
     {return -1;}
 
-  virtual Variable getObjectVariable(const VariableValue& value, size_t index) const
+  virtual Variable getMemberVariableValue(const VariableValue& value, size_t index) const
     {jassert(false); return Variable();}
-
-  virtual size_t getNumElements(const VariableValue& value) const
-    {return 0;}
-
-  virtual Variable getElement(const VariableValue& value, size_t index) const
-    {jassert(false); return Variable();}
-
-  virtual String getElementName(const VariableValue& value, size_t index) const
-    {jassert(false); return String::empty;}
 
   lbcpp_UseDebuggingNewOperator
 };

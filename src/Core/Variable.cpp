@@ -99,14 +99,15 @@ static bool hasPrintChildren(const Variable& variable, int maxDepth, int current
   if (maxDepth >= 0 && currentDepth >= maxDepth)
     return false;
 
-  if (variable.size() > 0)
+  ContainerPtr container = variable.dynamicCast<Container>();
+  if (container && container->getNumElements() > 0)
     return true;
 
   TypePtr type = variable.getType();
   if (type->inheritsFrom(objectClass))
   {
     ObjectPtr object = variable.getObject();
-    if (object && type->getObjectNumVariables())
+    if (object && type->getNumMemberVariables())
       return true;
   }
 
@@ -125,12 +126,12 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
     {
       Object::VariableIterator* iterator = object->createVariablesIterator();
       if (displayMissingValues || !iterator)
-        for (size_t i = 0; i < type->getObjectNumVariables(); ++i)
+        for (size_t i = 0; i < type->getNumMemberVariables(); ++i)
         {
           Variable subVariable = object->getVariable(i);
           if (displayMissingValues || subVariable.exists())
           {
-            printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
+            printVariableLine(subVariable, ostr, i, type->getMemberVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
             printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
           }
         }
@@ -139,21 +140,24 @@ static void printVariablesRecursively(const Variable& variable, std::ostream& os
         {
           size_t i;
           Variable subVariable = iterator->getCurrentVariable(i);
-          printVariableLine(subVariable, ostr, i, type->getObjectVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
+          printVariableLine(subVariable, ostr, i, type->getMemberVariableName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
           printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
         }
       delete iterator;
     }
   }
-  for (size_t i = 0; i < variable.size(); ++i)
-  {
-    Variable subVariable = variable[i];
-    if (displayMissingValues || subVariable.exists())
+
+  ContainerPtr container = variable.dynamicCast<Container>();
+  if (container)
+    for (size_t i = 0; i < container->getNumElements(); ++i)
     {
-      printVariableLine(subVariable, ostr, (size_t)-1, variable.getName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
-      printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
+      Variable subVariable = container->getElement(i);
+      if (displayMissingValues || subVariable.exists())
+      {
+        printVariableLine(subVariable, ostr, (size_t)-1, container->getElementName(i), currentDepth, displayTypes, !hasPrintChildren(subVariable, maxDepth, currentDepth + 1));
+        printVariablesRecursively(subVariable, ostr, maxDepth, currentDepth + 1, displayMissingValues, displayTypes);
+      }
     }
-  }
 }
 
 void Variable::printRecursively(std::ostream& ostr, int maxDepth, bool displayMissingValues, bool displayTypes)

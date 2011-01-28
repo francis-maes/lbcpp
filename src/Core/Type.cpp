@@ -43,6 +43,9 @@ void Type::deinitialize()
 ClassPtr Type::getClass() const
   {return typeClass;}
 
+/*
+** Xml Serialisation
+*/
 void Type::saveToXml(XmlExporter& exporter) const
 {
   jassert(isUnnamedType());
@@ -89,6 +92,25 @@ TypePtr Type::loadUnnamedTypeFromXml(XmlImporter& importer)
     return typeManager().getType(importer.getContext(), importer.getStringAttribute(T("typeName")));
 }
 
+/*
+** Type Operations
+*/
+TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
+{
+  if (type1->inheritsFrom(type2))
+    return type2;
+  if (type2->inheritsFrom(type1))
+    return type1;
+  if (type1 == topLevelType || type2 == topLevelType)
+    return topLevelType;
+  TypePtr baseType1 = type1->getBaseType();
+  TypePtr baseType2 = type2->getBaseType();
+  jassert(baseType1 && baseType2);
+  baseType1 = findCommonBaseType(baseType1, type2);
+  baseType2 = findCommonBaseType(type1, baseType2);
+  return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
+}
+
 bool Type::inheritsFrom(TypePtr baseType) const
 {
   jassert(this && baseType.get());
@@ -122,6 +144,9 @@ bool Type::isUnnamedType() const
   return false;
 }
 
+/*
+** Instance basic operations
+*/
 VariableValue Type::getMissingValue() const
 {
   jassert(sizeof (VariableValue) == 8);
@@ -159,56 +184,46 @@ int Type::compare(const VariableValue& value1, const VariableValue& value2) cons
 void Type::saveToXml(XmlExporter& exporter, const VariableValue& value) const
   {jassert(baseType); return baseType->saveToXml(exporter, value);}
 
-size_t Type::getObjectNumVariables() const
-  {jassert(baseType); return baseType->getObjectNumVariables();}
+/*
+** Member Variables
+*/
+size_t Type::getNumMemberVariables() const
+  {jassert(baseType); return baseType->getNumMemberVariables();}
 
 VariableSignaturePtr Type::getMemberVariable(size_t index) const
   {jassert(baseType); return baseType->getMemberVariable(index);}
 
-TypePtr Type::getObjectVariableType(size_t index) const
-  {jassert(baseType); return baseType->getObjectVariableType(index);}
-
-String Type::getObjectVariableName(size_t index) const
-  {jassert(baseType); return baseType->getObjectVariableName(index);}
-
-String Type::getObjectVariableShortName(size_t index) const
-  {jassert(baseType); return baseType->getObjectVariableShortName(index);}
-
-String Type::getObjectVariableDescription(size_t index) const
-  {jassert(baseType); return baseType->getObjectVariableDescription(index);}
-
-int Type::findObjectVariable(const String& name) const
-  {jassert(baseType); return baseType->findObjectVariable(name);}
+int Type::findMemberVariable(const String& name) const
+  {jassert(baseType); return baseType->findMemberVariable(name);}
   
-Variable Type::getObjectVariable(const Object* pthis, size_t index) const
-  {jassert(baseType); return baseType->getObjectVariable(pthis, index);}
+Variable Type::getMemberVariableValue(const Object* pthis, size_t index) const
+  {jassert(baseType); return baseType->getMemberVariableValue(pthis, index);}
 
-void Type::setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
-  {if (baseType) baseType->setObjectVariable(context, pthis, index, subValue);}
+void Type::setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
+  {if (baseType) baseType->setMemberVariableValue(context, pthis, index, subValue);}
 
-size_t Type::getNumElements(const VariableValue& value) const
-  {jassert(baseType); return baseType->getNumElements(value);}
-
-Variable Type::getElement(const VariableValue& value, size_t index) const
-  {jassert(baseType); return baseType->getElement(value, index);}
-
-String Type::getElementName(const VariableValue& value, size_t index) const
-  {jassert(baseType); return baseType->getElementName(value, index);}
-
-TypePtr Type::findCommonBaseType(TypePtr type1, TypePtr type2)
+TypePtr Type::getMemberVariableType(size_t index) const
 {
-  if (type1->inheritsFrom(type2))
-    return type2;
-  if (type2->inheritsFrom(type1))
-    return type1;
-  if (type1 == topLevelType || type2 == topLevelType)
-    return topLevelType;
-  TypePtr baseType1 = type1->getBaseType();
-  TypePtr baseType2 = type2->getBaseType();
-  jassert(baseType1 && baseType2);
-  baseType1 = findCommonBaseType(baseType1, type2);
-  baseType2 = findCommonBaseType(type1, baseType2);
-  return baseType1->inheritsFrom(baseType2) ? baseType1 : baseType2;
+  VariableSignaturePtr signature = getMemberVariable(index);
+  return signature ? signature->getType() : TypePtr();
+}
+
+String Type::getMemberVariableName(size_t index) const
+{
+  VariableSignaturePtr signature = getMemberVariable(index);
+  return signature ? signature->getName() : String::empty;
+}
+
+String Type::getMemberVariableShortName(size_t index) const
+{
+  VariableSignaturePtr signature = getMemberVariable(index);
+  return signature ? signature->getShortName() : String::empty;
+}
+
+String Type::getMemberVariableDescription(size_t index) const
+{
+  VariableSignaturePtr signature = getMemberVariable(index);
+  return signature ? signature->getDescription() : String::empty;
 }
 
 #include "Type/FileType.h"

@@ -73,7 +73,7 @@ public:
 
   EvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, const String& targetName) const
   {
-    int variableIndex = proteinClass->findObjectVariable(targetName);
+    int variableIndex = proteinClass->findMemberVariable(targetName);
     if (variableIndex < 0)
     {
       context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
@@ -118,7 +118,7 @@ protected:
 
   void addEvaluator(const String& variableName, EvaluatorPtr evaluator)
   {
-    int variableIndex = proteinClass->findObjectVariable(variableName);
+    int variableIndex = proteinClass->findMemberVariable(variableName);
     jassert(variableIndex >= 0);
     evaluators.push_back(std::make_pair(variableIndex, evaluator));
   }

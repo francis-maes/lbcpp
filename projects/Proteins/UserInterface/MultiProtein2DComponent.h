@@ -297,12 +297,13 @@ protected:
 
   Variable makeSelection(const Variable& input) const
   {
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
     const MultiProtein2DConfigurationPtr& configuration = this->configuration.staticCast<MultiProtein2DConfiguration>();
-    SymmetricMatrixPtr contactMap = input[0].getObjectAndCast<SymmetricMatrix>();
+    SymmetricMatrixPtr contactMap = pair->getFirst().getObjectAndCast<SymmetricMatrix>();
 
     for (size_t i = 0; i < proteins.size(); ++i)
       if (contactMap == getMap(configuration, (int)i))
-        return Variable::pair(proteins[i], input[1]);
+        return new Pair(proteins[i], pair->getSecond());
     jassert(false);
     return Variable();
   }

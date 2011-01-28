@@ -286,7 +286,7 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
 
   DynamicClassPtr resultsClass = new UnnamedDynamicClass(description + T(" results"));
   for (size_t i = 0; i < results.size(); ++i)
-    resultsClass->addVariable(context, results[i].second.getType(), results[i].first);
+    resultsClass->addMemberVariable(context, results[i].second.getType(), results[i].first);
   resultsClass->initialize(context);
 
   ObjectPtr res = resultsClass->createDenseObject();
@@ -323,15 +323,15 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
       SignatureToIndexMap::iterator it = mapping.find(key);
       if (it == mapping.end())
       {
-        mapping[key] = resultsClass->getObjectNumVariables();
+        mapping[key] = resultsClass->getNumMemberVariables();
         String name = key.first;
-        if (resultsClass->findObjectVariable(name) >= 0)
+        if (resultsClass->findMemberVariable(name) >= 0)
           name += T(" (") + key.second->getName() + T(")");
-        resultsClass->addVariable(context, key.second, name);
+        resultsClass->addMemberVariable(context, key.second, name);
       }
     }
   }
-  if (!resultsClass->getObjectNumVariables())
+  if (!resultsClass->getNumMemberVariables())
     return VectorPtr();
   resultsClass->initialize(context);
 

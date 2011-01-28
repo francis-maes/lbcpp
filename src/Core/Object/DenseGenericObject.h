@@ -23,19 +23,19 @@ public:
   virtual ~DenseGenericObject()
   {
     for (size_t i = 0; i < variableValues.size(); ++i)
-      thisClass->getObjectVariableType(i)->destroy(variableValues[i]);
+      thisClass->getMemberVariableType(i)->destroy(variableValues[i]);
   }
 
   VariableValue& getVariableValueReference(size_t index)
   {
-    jassert(index < thisClass->getObjectNumVariables());
+    jassert(index < thisClass->getNumMemberVariables());
     if (variableValues.size() <= index)
     {
       size_t i = variableValues.size();
       variableValues.resize(index + 1);
       while (i < variableValues.size())
       {
-        variableValues[i] = thisClass->getObjectVariableType(i)->getMissingValue();
+        variableValues[i] = thisClass->getMemberVariableType(i)->getMissingValue();
         ++i;
       }
     }
@@ -44,7 +44,7 @@ public:
 
   virtual Variable getVariable(size_t index) const
   {
-    TypePtr type = thisClass->getObjectVariableType(index);
+    TypePtr type = thisClass->getMemberVariableType(index);
     if (index < variableValues.size())
       return Variable::copyFrom(type, variableValues[index]);
     else
@@ -95,7 +95,7 @@ private:
   {
     while (current < n)
     {
-      TypePtr type = object->thisClass->getObjectVariableType(current);
+      TypePtr type = object->thisClass->getMemberVariableType(current);
       if (!type->isMissingValue(object->variableValues[current]))
       {
         currentValue = Variable::copyFrom(type, object->variableValues[current]);
