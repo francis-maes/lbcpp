@@ -127,7 +127,7 @@ private:
   ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context, ParameteredProteinInferenceFactoryPtr factory) const;
   void printInformation(ExecutionContext& context) const;
 };
-  
+/*
 class LearningParameterObjectiveFunction : public ObjectiveFunction
 {
 public:
@@ -156,5 +156,6 @@ protected:
   ContainerPtr learningData;
   ContainerPtr validationData;
 };
+*/
 
 };

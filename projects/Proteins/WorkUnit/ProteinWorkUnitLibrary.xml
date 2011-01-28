@@ -33,15 +33,16 @@
   <class name="MultiClassLinearSVMProteinInferenceFactory" base="NumericalProteinInferenceFactory"/>
 -->
   
+<!--
   <class name="LearningParameterObjectiveFunction" base="ObjectiveFunction">
-<!--    <variable type="Object" name="factory"/> -->
+    <variable type="Object" name="factory"/>
     <variable type="ProteinTarget" name="target"/>
     <variable type="String" name="targetName"/>
     <variable type="PositiveInteger" name="targetStage"/>
     <variable type="Container[Pair[Variable,Variable]]" name="learningData"/>
     <variable type="Container[Pair[Variable,Variable]]" name="validationData"/>
   </class>
-
+-->
   <class name="SnowBox" base="WorkUnit">
     <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
     <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>

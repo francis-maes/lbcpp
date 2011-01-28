@@ -306,7 +306,7 @@ static void exportPerceptionTypeToFile(PerceptionPtr perception, File output)
   }
   delete o;
 }
-
+/*
 double LearningParameterObjectiveFunction::compute(ExecutionContext& context, const Variable& input) const
 {
   LearningParameterPtr parameter = input.getObjectAndCast<NumericalLearningParameter>();
@@ -328,7 +328,7 @@ double LearningParameterObjectiveFunction::compute(ExecutionContext& context, co
   
   return evaluator->getEvaluatorForTarget(context, targetName)->getDefaultScore();
 }
-
+*/
 Variable SnowBox::run(ExecutionContext& context)
 {
   if (!loadData(context))
@@ -362,6 +362,7 @@ Variable SnowBox::run(ExecutionContext& context)
 
   if (optimizeLearningParameter)
   {
+    /*
     LearningParameterPtr parameter = factory->getParameter(targetToOptimize, stageToOptimize);
     ObjectiveFunctionPtr objective = new LearningParameterObjectiveFunction(factory, target,
                                                                             targetToOptimize, stageToOptimize,
@@ -372,6 +373,8 @@ Variable SnowBox::run(ExecutionContext& context)
                                                                                 parameter));
     std::cout << "Best parameter: " << bestValue.toString() << std::endl;
     return true;
+    */
+    factory->setTargetInferenceToOptimize(targetToOptimize, stageToOptimize);
   }
   
   ProteinSequentialInferencePtr inference = loadOrCreateIfFailInference(context, factory);

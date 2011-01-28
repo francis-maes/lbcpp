@@ -49,6 +49,8 @@ public:
   virtual void setParameter(const String& targetName, size_t stage, LearningParameterPtr parameter);
   virtual LearningParameterPtr getParameter(const String& targetName, size_t stage) const;
   virtual void setDefaultParameter(LearningParameterPtr defaultParameter);
+  
+  virtual void setTargetInferenceToOptimize(const String& targetName, size_t targetStage);
 
   virtual InferencePtr createInference(ProteinTargetPtr proteinTarget) const;
 
@@ -58,6 +60,8 @@ protected:
   std::map<String, std::map<size_t, LearningParameterPtr> > learningParameters;
   LearningParameterPtr defaultParameter;
   size_t currentStage;
+  String targetNameToOptimize;
+  size_t targetStageToOptimize;
   
   virtual LearningParameterPtr getCurrentStageParameter(const String& targetName) const;
 };

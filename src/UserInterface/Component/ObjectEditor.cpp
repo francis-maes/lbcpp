@@ -10,7 +10,7 @@
 using namespace lbcpp;
 
 ObjectEditor::ObjectEditor(const ObjectPtr& object, const ObjectPtr& configuration, bool showVerticalScrollbarIfNeeded, bool showHorizontalScrollbarIfNeeded)
-  : configurationComponent(NULL), object(object), configuration(configuration)
+  : object(object), configuration(configuration), configurationComponent(NULL)
 {
   addAndMakeVisible(contentViewport = new ViewportComponent(NULL, showVerticalScrollbarIfNeeded, showHorizontalScrollbarIfNeeded));
 }
