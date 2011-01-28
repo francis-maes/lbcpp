@@ -2,6 +2,8 @@
 #include "ParameteredProteinInferenceFactory.h"
 #include <lbcpp/DecisionTree/DecisionTree.h>
 #include <lbcpp/Function/StoppingCriterion.h>
+#include <lbcpp/Optimizer/Optimizer.h>
+#include <lbcpp/Inference/InferenceBatchLearner.h>
 
 using namespace lbcpp;
 
@@ -70,7 +72,7 @@ bool ProteinTarget::loadFromString(ExecutionContext& context, const String& valu
 */
 
 ParameteredProteinInferenceFactory::ParameteredProteinInferenceFactory(ExecutionContext& context, LearningParameterPtr defaultParameter)
-  : ProteinInferenceFactory(context), defaultParameter(defaultParameter) {}
+  : ProteinInferenceFactory(context), defaultParameter(defaultParameter), targetStageToOptimize(0) {}
 
 void ParameteredProteinInferenceFactory::setParameter(const String& targetName, size_t stage, LearningParameterPtr parameter)
 {
@@ -89,6 +91,12 @@ void ParameteredProteinInferenceFactory::setDefaultParameter(LearningParameterPt
   this->defaultParameter = defaultParameter;
 }
 
+void ParameteredProteinInferenceFactory::setTargetInferenceToOptimize(const String& targetName, size_t targetStage)
+{
+  targetNameToOptimize = targetName;
+  targetStageToOptimize = targetStage;
+}
+
 InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetPtr proteinTarget) const
 {
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference("Main flow");
@@ -97,7 +105,18 @@ InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetPt
     ProteinParallelInferencePtr inferencePass = new ProteinParallelInference("Stage");
     const_cast<ParameteredProteinInferenceFactory*>(this)->currentStage = i;
     for (size_t j = 0; j < proteinTarget->getNumTasks(i); ++j)
-      inferencePass->appendInference(createInferenceStep(proteinTarget->getTask(i, j)));
+    {
+      NumericalSupervisedInferencePtr step = createInferenceStep(proteinTarget->getTask(i, j));
+      if (targetStageToOptimize == i && targetNameToOptimize == proteinTarget->getTask(i, j))
+      {
+        OptimizerPtr optimizer = iterativeBracketingOptimizer(4, 2.0, uniformSampleAndPickBestOptimizer(7));
+        LearningParameterPtr parameter = getParameter(proteinTarget->getTask(i, j), i);
+        IndependentMultiVariateDistributionPtr aprioriDistribution = parameter->getAprioriDistribution();
+        InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, parameter);
+        step->getSubInference()->setBatchLearner(precomputePerceptionsNumericalInferenceLearner(autoTuneBatchLearner));
+      }
+      inferencePass->appendInference(step);
+    }
     inference->appendInference(inferencePass);
   }
   return inference;
