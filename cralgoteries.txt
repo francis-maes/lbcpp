@@ -1,36 +1,33 @@
-* Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
+Curves:
+ * auto-scale
+ * affichage echelle
+ * options
+ * persistance des options
 
-Explorer/ExecutionContext:
- * Explorer: avoir un ExecutionContext general avec tous les threads
- * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
- * Enregistrer toutes les ExecutionTrace dans le repertoire du projet
- * Améliorer le système de colonnes
- * tableaux et courbes
-
-Boinc:
- * New class BoincExecutionContext
- * Fix bugs reported by Arnaud
  
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I
    In my case, I got a file containing "<shared identifier="PerceptionRewriter1">".
    When I want to load it, it doesn't work because of lack of the attribute "type".
    I had added manually "type="PerceptionRewriter"" and it worked.
- * Faire le précompute de perception lors du ParallelProteinInference
  * I still have a jassert at src/Core/Object.cpp:182 on Monster24 only
+
 
 =====================
 
-More Features:
+Proteins:
+ * Calcul des Perceptions au niveau top-level
  * Probabilities for SS3, SS8 and STAL
  * Segments for SS3, SS8, SA and DR
  * Multiclass classifiers: output discrete distributions
 
+Explorer:
+ * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
+ * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
+ * Améliorer le système de colonnes
+
 Cleaning:
  * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
-
-Explorer:
- * Mettre à jour le ProcessManager pour qu'il utilise les classes Job et ThreadPool
 
 Types:
  * permettre de déclarer des variables ayant des Types abstraits -> c.f. pb dans ProteinInferenceStep::ProteinInferenceStep

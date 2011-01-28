@@ -17,9 +17,24 @@ namespace lbcpp
 class CurveAxisConfiguration : public Object
 {
 public:
-  CurveAxisConfiguration(double rangeMin, double rangeMax, const String& label)
+  CurveAxisConfiguration(double rangeMin, double rangeMax, const String& label = String::empty)
     : rangeMin(rangeMin), rangeMax(rangeMax), autoRange(true), logScale(false), label(label) {}
   CurveAxisConfiguration() : rangeMin(0.0), rangeMax(0.0), autoRange(true), logScale(false) {}
+
+  bool hasAutoRange() const
+    {return autoRange;}
+
+  bool hasLogScale() const
+    {return logScale;}
+
+  double getRangeMin() const
+    {return rangeMin;}
+
+  double getRangeMax() const
+    {return rangeMax;}
+
+  String getLabel() const
+    {return label;}
 
 private:
   friend class CurveAxisConfigurationClass;
