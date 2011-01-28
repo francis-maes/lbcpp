@@ -266,7 +266,12 @@ public:
     ExecutionTraceNodePtr traceNode = trace->findNode(stack);
     jassert(traceNode);
     ExecutionTraceTreeViewNode* node = tree->getNodeFromStack(stack);
-    return node ? ExecutionCallbackPtr(new MakeTraceAndFillTreeThreadExecutionCallback(tree, trace, traceNode, node)) : ExecutionCallbackPtr();
+    if (node)
+      // node is created, fill tree and trace dynamically 
+      return new MakeTraceAndFillTreeThreadExecutionCallback(tree, trace, traceNode, node);
+    else
+      // node is hidden/not created, fill only trace
+      return new MakeTraceThreadExecutionCallback(traceNode, trace->getStartTime());
   }
 
 protected:

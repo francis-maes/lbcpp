@@ -105,6 +105,8 @@ double EvaluateBatchLearnerObjectiveFunction::compute(ExecutionContext& context,
   InferencePtr targetInference = learnerInput->getTargetInference()->cloneAndCast<Inference>(context);
   InferencePtr inferenceLearner = createLearner(context, parameters, targetInference);
 
+  context.resultCallback(T("parameters"), parameters);
+
   inferenceLearner->run(context, new InferenceBatchLearnerInput(targetInference, learnerInput->getTrainingExamples(), learnerInput->getValidationExamples()), Variable());
   return getObjective(context, targetInference);
 }

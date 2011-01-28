@@ -58,7 +58,7 @@ public:
         marginalDistribution = updateMarginalDistribution(marginalDistribution, bestValue);
         distribution->setSubDistribution(j, marginalDistribution);
 
-        context.informationCallback(T("Pass: ") + String((int)i + 1) + T(" Param: ") + String((int)j + 1) + T(" Guess: ") + currentGuess->toString());
+        context.informationCallback(T("Pass ") + String((int)i + 1) + T(" Param ") + currentGuess->getVariableName(j) + T(" Guess ") + currentGuess->toShortString());
         Variable(distribution).printRecursively(std::cout);
       }
     }
