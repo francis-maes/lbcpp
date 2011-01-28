@@ -160,6 +160,27 @@ private:
   double missingValue;
 };
 
+class DenseGenericObject : public Object
+{
+public:
+  DenseGenericObject(DynamicClassPtr thisClass);
+  virtual ~DenseGenericObject();
+
+  VariableValue& getVariableValueReference(size_t index);
+
+  virtual Variable getVariable(size_t index) const;
+  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+
+  virtual VariableIterator* createVariablesIterator() const;
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class DenseGenericObjectVariableIterator;
+
+  std::vector<VariableValue> variableValues;
+};
+
 class SparseDoubleObject : public Object
 {
 public:

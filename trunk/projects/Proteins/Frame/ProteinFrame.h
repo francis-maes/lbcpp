@@ -20,40 +20,74 @@ typedef ReferenceCountedObjectPtr<FrameClass> FrameClassPtr;
 class Frame;
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameClass : public Class
-{
-public:
-  //virtual void initializeFrame(ExecutionContext& context, const FramePtr& frame) = 0;
-
-  void addNode(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
-  {
-
-  }  
-};
-
 class Frame : public Object
 {
 public:
-  Frame(FrameClassPtr type)
-    : Object(type) {}
+  Frame(ClassPtr frameClass)
+    : Object(frameClass) {}
+  Frame() {}
+
+  virtual ~Frame()
+  {
+    for (size_t i = 0; i < variables.size(); ++i)
+      thisClass->getMemberVariableType(i)->destroy(variables[i].first);
+  }
+    
+  std::pair<VariableValue, double>& getVariableValueReference(size_t index)
+  {
+    jassert(index < thisClass->getNumMemberVariables());
+    if (variables.size() <= index)
+    {
+      size_t i = variables.size();
+      variables.resize(index + 1);
+      while (i < variables.size())
+      {
+        variables[i].first = thisClass->getMemberVariableType(i)->getMissingValue();
+        variables[i].second = 0.0;
+        ++i;
+      }
+    }
+    return variables[index];
+  }
+
+  virtual Variable getVariable(size_t index) const
+  {
+    TypePtr type = thisClass->getMemberVariableType(index);
+    if (index < variables.size())
+      return Variable::copyFrom(type, variables[index].first);
+    else
+      return Variable::missingValue(type);
+  }
+
+  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
+    {setVariable(index, value, Time::getMillisecondCounterHiRes());}
+
+  void setVariable(size_t index, const Variable& value, double time)
+  {
+    std::pair<VariableValue, double>& v = getVariableValueReference(index);
+    value.copyTo(v.first);
+    v.second = time;
+  }
+
+private:
+  std::vector< std::pair<VariableValue, double> > variables;
 };
 
-extern FrameClassPtr proteinFrameClass;
+typedef ReferenceCountedObjectPtr<Frame> FramePtr;
+
+extern ClassPtr proteinFrameClass;
 
 class ProteinFrame : public Frame
 {
 public:
   ProteinFrame(const ProteinPtr& protein)
-    : Frame(proteinFrameClass), protein(protein)
+    : Frame(proteinFrameClass)
   {
-    //setNodeValue(
+    double time = Time::getMillisecondCounterHiRes();
+    setVariable(0, protein->getPrimaryStructure(), time);
+    setVariable(1, protein->getPositionSpecificScoringMatrix(), time);
+
   }
-
-  const ProteinPtr& getProtein() const
-    {return protein;}
-
-protected:
-  ProteinPtr protein;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;

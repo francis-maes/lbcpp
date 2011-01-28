@@ -88,6 +88,9 @@ typedef ReferenceCountedObjectPtr<DenseObjectObject> DenseObjectObjectPtr;
 class DenseDoubleObject;
 typedef ReferenceCountedObjectPtr<DenseDoubleObject> DenseDoubleObjectPtr;
 
+class DenseGenericObject;
+typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_PREDECLARATIONS_H_
