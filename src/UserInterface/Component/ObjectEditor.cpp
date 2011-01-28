@@ -38,7 +38,7 @@ void ObjectEditor::changeListenerCallback(void* objectThatHasChanged)
 
 void ObjectEditor::resized()
 {
-  enum {configurationHeight = 60};
+  enum {configurationHeight = 100};
   if (configurationComponent)
     configurationComponent->setBounds(0, 0, getWidth(), configurationHeight);
   contentViewport->setBounds(0, configurationHeight, getWidth(), getHeight() - configurationHeight);

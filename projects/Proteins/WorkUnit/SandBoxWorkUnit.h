@@ -51,7 +51,7 @@ public:
     validationEvaluator->setName(T("validationScore"));
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
 
-    StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(10);
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(50), maxIterationsWithoutImprovementStoppingCriterion(5));
     lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
     return res;
   }
