@@ -131,12 +131,12 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   }
   else if (variable.isObject())
   {
-    Object* object = variable.getObject().get();
-    TypePtr typeValue = dynamic_cast<Type* >(object);
+    const ObjectPtr& object = variable.getObject();
+    TypePtr typeValue = object.dynamicCast<Type>();
     if (typeValue && !typeValue->isUnnamedType())
       addTextElement(typeValue->getName()); // named type
     else
-      writeObject(variable.getObject(), expectedType); // traditional object
+      writeObject(object, expectedType); // traditional object
   }
   else
   {

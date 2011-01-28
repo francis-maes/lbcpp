@@ -55,8 +55,14 @@ public:
     : TabbedButtonBar(TabsAtLeft), variable(variable)
     {addChangeListener(this);}
 
+  virtual Variable getSubVariable(const Variable& variable, const String& tabName) const
+    {return variable;}
+
   virtual void changeListenerCallback(void* objectThatHasChanged)
-    {sendSelectionChanged(variable, getCurrentTabName());}
+  {
+    String tabName = getCurrentTabName();
+    sendSelectionChanged(getSubVariable(variable, tabName), tabName);
+  }
 
   virtual int getDefaultWidth() const
     {return 27;}

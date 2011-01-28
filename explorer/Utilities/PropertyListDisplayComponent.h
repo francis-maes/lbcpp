@@ -27,7 +27,6 @@ public:
 
   virtual void paint(Graphics& g)
   {
-    g.fillAll(Colour(240, 245, 250));
     if (!properties.size())
       return;
     int baseHeight = getHeight() / (int)properties.size();

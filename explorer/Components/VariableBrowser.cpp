@@ -46,21 +46,109 @@ private:
   int mouseDownWidth;
 };
 
+struct VariableRelatedCommand
+{
+  VariableRelatedCommand(const String& name, const String& iconToUse)
+    : name(name), iconToUse(iconToUse) {}
+
+  String name;
+  String iconToUse;
+
+  static std::vector<VariableRelatedCommand> getVariableCommands(const Variable& variable)
+  {
+    std::vector<VariableRelatedCommand> res;
+    if (variable.isObject())
+      res.push_back(VariableRelatedCommand(T("Save"), T("Save-32.png")));
+    return res;
+  }
+
+  static void execute(const Variable& variable, const VariableRelatedCommand& command)
+  {
+    if (command.name == T("Save"))
+    {
+      File directory = File::getSpecialLocation(File::userHomeDirectory); // FIXME: better default directory
+      FileChooser chooser("Select the file to save...", directory, "*.*");
+      if (chooser.browseForFileToSave(true))
+        variable.saveToFile(defaultExecutionContext(), chooser.getResult());
+    }
+  }
+};
+
+
+class VariableBrowserRowHeaderComponent : public Component, public juce::ButtonListener
+{
+public:
+  VariableBrowserRowHeaderComponent(const Variable& variable, Component* selector)
+    : variable(variable)
+  {
+    addAndMakeVisible(properties = new PropertyListDisplayComponent(40));
+    bool isTabbedSelector = (dynamic_cast<TabbedVariableSelectorComponent* >(selector) != NULL);
+    if (isTabbedSelector)
+      return;
+
+    // properties
+    properties->addProperty(T("Type"), variable.getTypeName());
+    String str = variable.toShortString();
+    if (str.isNotEmpty())
+      properties->addProperty(T("Desc"), str);
+    if (variable.size())
+      properties->addProperty(T("Size"), String((int)variable.size()));
+    
+    // command buttons
+    commands = VariableRelatedCommand::getVariableCommands(variable);
+    buttons.resize(commands.size());
+    for (size_t i = 0; i < buttons.size(); ++i)
+    {
+      juce::ImageButton* button = new juce::ImageButton(commands[i].name);
+      juce::Image* image = userInterfaceManager().getImage(commands[i].iconToUse);
+      button->setImages(true, false, true, image, 1.0f, Colours::transparentBlack, NULL, 1.0f, Colours::white.withAlpha(0.2f), NULL, 1.0f, Colours::black.withAlpha(0.2f));
+      button->addButtonListener(this);
+      addAndMakeVisible(buttons[i] = button);
+    }
+  }
+
+  virtual ~VariableBrowserRowHeaderComponent()
+    {deleteAllChildren();}
+
+  virtual void resized()
+  {
+    int x = getWidth() - 5;
+    for (int i = (int)buttons.size() - 1; i >= 0; --i)
+    {
+      int w = buttons[i]->getWidth();
+      x -= (w + 5);
+      buttons[i]->setBounds(x, 0, w, getHeight());
+    }
+    properties->setBounds(0, 0, x, getHeight());
+  }
+
+  virtual void buttonClicked(juce::Button* button)
+  {
+    for (size_t i = 0; i < buttons.size(); ++i)
+      if (buttons[i] == button)
+      {
+        VariableRelatedCommand::execute(variable, commands[i]);
+        break;
+      }
+  }
+
+  virtual void paint(Graphics& g)
+    {g.fillAll(Colour(240, 245, 250));}
+
+private:
+  Variable variable;
+  PropertyListDisplayComponent* properties;
+  std::vector<juce::Button* > buttons;
+  std::vector<VariableRelatedCommand> commands;
+};
+
 class VariableBrowserRowComponent : public Component, public ComponentWithPreferedSize
 {
 public:
   VariableBrowserRowComponent(const Variable& variable, Component* selector)
     : variable(variable), selector(selector)
   {
-    properties = new PropertyListDisplayComponent(40);
-    if (!dynamic_cast<TabbedVariableSelectorComponent* >(selector))
-    {
-      properties->addProperty(T("Type"), variable.getTypeName());
-      properties->addProperty(T("Desc"), variable.toShortString());
-      if (variable.size())
-        properties->addProperty(T("Size"), String((int)variable.size()));
-    }
-    addAndMakeVisible(properties);
+    addAndMakeVisible(header = new VariableBrowserRowHeaderComponent(variable, selector));
     addAndMakeVisible(selector);
     addAndMakeVisible(resizer = new VariableBrowserResizerBar());
   }
@@ -70,15 +158,15 @@ public:
 
   enum
   {
-    propertiesHeight = 36,
+    headerHeight = 36,
     resizerWidth = 4
   };
 
   virtual void resized()
   {
     int w = getWidth() - resizerWidth;
-    properties->setBounds(0, 0, w, propertiesHeight);
-    selector->setBounds(0, propertiesHeight, w, getHeight() - propertiesHeight);
+    header->setBounds(0, 0, w, headerHeight);
+    selector->setBounds(0, headerHeight, w, getHeight() - headerHeight);
     resizer->setBounds(w, 0, resizerWidth, getHeight());
   }
 
@@ -88,7 +176,7 @@ public:
   virtual void paintOverChildren(Graphics& g)
   {
     g.setColour(Colours::lightgrey);
-    g.drawLine(0.f, (float)propertiesHeight, (float)getWidth(), (float)propertiesHeight);
+    g.drawLine(0.f, (float)headerHeight, (float)getWidth(), (float)headerHeight);
   }
 
   Component* getSelectorComponent() const
@@ -110,7 +198,7 @@ public:
     ComponentWithPreferedSize* pf = dynamic_cast<ComponentWithPreferedSize* >(selector);
     if (pf)
     {
-      res = getPreferedWidth(availableWidth - resizerWidth, availableHeight - propertiesHeight);
+      res = getPreferedWidth(availableWidth - resizerWidth, availableHeight - headerHeight);
       res += resizerWidth;
     }
     return res;
@@ -121,7 +209,7 @@ public:
 
 private:
   Variable variable;
-  PropertyListDisplayComponent* properties;
+  VariableBrowserRowHeaderComponent* header;
   Component* selector;
   VariableBrowserResizerBar* resizer;
 };

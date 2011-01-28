@@ -1,6 +1,7 @@
+Serialisation de n'importe quel objet
+  - TabbedComponent: truc
+  
 Curves:
- * auto-scale
- * affichage echelle
  * options
  * persistance des options
 
