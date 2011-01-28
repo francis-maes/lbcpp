@@ -8,22 +8,25 @@
 #include "ProteinFrame.h"
 using namespace lbcpp;
 
-class ProteinFrameClass : public DefaultClass
+/*
+namespace lbcpp
+{
+
+class ProteinFrameClass : public FrameClass
 {
 public:
-  void addFunctionAndVariable(ExecutionContext& context, const FunctionPtr& function, const std::vector<size_t>& inputs, const String& outputName = String::empty)
-  {
-
-  }
-
   virtual bool initialize(ExecutionContext& context)
   {
     addMemberVariable(context, T("GenericVector<AminoAcidType>"), T("aa"));
     addMemberVariable(context, T("ObjectVector<EnumerationDistribution<AminoAcidType>>"), T("pssm"));
 
     //addFunctionAndVariable(context, machinFunction(), std::vector<size_t>(1, 0), T("aac"));
-    return DefaultClass::initialize(context);
+    return FrameClass::initialize(context);
   }
 };
 
-ClassPtr lbcpp::proteinFrameClass = new ProteinFrameClass();
+ClassPtr proteinFrameClass = new ProteinFrameClass();
+
+}; /* namespace lbcpp *
+
+*/

@@ -32,7 +32,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class DirectoriesCache
 {
 public:
@@ -71,6 +71,7 @@ private:
     return file1.getFileName() < file2.getFileName();
   }
 };
+#endif // 0
 
 class FileType : public StringType
 {
@@ -78,6 +79,7 @@ public:
   FileType(const String& name, TypePtr baseType)
     : StringType(name, baseType) {}
 
+  /*
   virtual size_t getNumElements(const VariableValue& value) const
     {return getSubFiles(value).size();}
 
@@ -92,7 +94,7 @@ public:
     const std::vector<File>& subFiles = getSubFiles(value);
     return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType);
   }
-  
+  */
   virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
@@ -106,13 +108,13 @@ public:
   }
   
 private:
-  static DirectoriesCache cache;
+//  static DirectoriesCache cache;
 
   File getFile(const VariableValue& value) const
     {return isMissingValue(value) ? File::nonexistent : File(value.getString());}
 
-  const std::vector<File>& getSubFiles(const VariableValue& value) const
-    {return cache.getSubFiles(getFile(value));}
+  //const std::vector<File>& getSubFiles(const VariableValue& value) const
+  //  {return cache.getSubFiles(getFile(value));}
 };
 
 }; /* namespace lbcpp */

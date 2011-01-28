@@ -5,6 +5,7 @@
   <import name="Geometry"/>
   <import name="ProteinData"/>
   <import name="ProteinPerception"/>
+  <import name="ProteinFrame"/>
   <import name="ProteinInference"/>
   <import name="ProteinWorkUnit"/>
   <import name="ProteinUserInterface"/>

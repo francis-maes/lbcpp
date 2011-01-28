@@ -49,7 +49,7 @@
   
   <class name="UnnamedDynamicClass" base="DynamicClass"/>
 
-  <template name="EnumBasedDoubleVector" base="Object" autoimpl="yes">
+  <template name="EnumBasedDoubleVector" metaclass="DynamicClass">
     <parameter name="enumeration" type="EnumValue"/>
     <parameter name="variablesType" type="Double"/>
     <code>
@@ -84,7 +84,7 @@
     </code>
   </template>
   
-  <template name="OneSubObjectPerInputVariable" base="Object" autoimpl="yes">
+  <template name="OneSubObjectPerInputVariable" base="Object" metaclass="DynamicClass">
     <parameter name="inputClass" type="Object"/>
     <parameter name="outputVariablesType" type="Variable"/>
     <code>
