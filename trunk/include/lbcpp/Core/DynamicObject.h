@@ -30,19 +30,19 @@ public:
   /*
   ** DefaultClass
   */
-  void addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); DefaultClass::addVariable(context, type, name, shortName, description);}
+  void addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); DefaultClass::addMemberVariable(context, type, name, shortName, description);}
 
-  void addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); DefaultClass::addVariable(context, typeName, name, shortName, description);}
+  void addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); DefaultClass::addMemberVariable(context, typeName, name, shortName, description);}
 
   /*
   ** Class
   */
   virtual bool initialize(ExecutionContext& context);
   virtual VariableValue create(ExecutionContext& context) const;
-  virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
-  virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
+  virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
+  virtual void setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object

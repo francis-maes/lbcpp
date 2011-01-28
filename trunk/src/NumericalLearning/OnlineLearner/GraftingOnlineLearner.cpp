@@ -226,7 +226,7 @@ size_t GraftingOnlineLearner::getNumOutputs(const InferencePtr& inference) const
   if (outputType->inheritsFrom(doubleType))
     return outputType;
   else
-    return outputType->getObjectNumVariables();
+    return outputType->getNumMemberVariables();
 }
 
 void GraftingOnlineLearner::computeActiveScores(ExecutionContext& context, std::vector<double>& res) const

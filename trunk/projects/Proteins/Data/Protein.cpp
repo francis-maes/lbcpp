@@ -135,7 +135,7 @@ void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAt
 Variable Protein::getTargetOrComputeIfMissing(size_t index) const
 {
   // skip base class variables
-  size_t baseClassVariables = nameableObjectClass->getObjectNumVariables();
+  size_t baseClassVariables = nameableObjectClass->getNumMemberVariables();
   if (index < baseClassVariables)
     return String::empty;
   index -= baseClassVariables;
@@ -470,7 +470,7 @@ Variable Protein::createEmptyTarget(size_t index) const
   size_t n = getLength();
 
   // skip base class variables
-  size_t baseClassVariables = nameableObjectClass->getObjectNumVariables();
+  size_t baseClassVariables = nameableObjectClass->getNumMemberVariables();
   jassert(index >= baseClassVariables)
   index -= baseClassVariables;
 

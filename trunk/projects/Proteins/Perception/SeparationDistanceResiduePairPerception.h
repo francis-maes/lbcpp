@@ -31,8 +31,9 @@ public:
   
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    Variable positionPair = input[1];
-    callback->sense(0, abs(positionPair[1].getInteger() - positionPair[0].getInteger()));
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    const PairPtr& positionPair = pair->getSecond().getObjectAndCast<Pair>();
+    callback->sense(0, abs(positionPair->getSecond().getInteger() - positionPair->getSecond().getInteger()));
   }
 
 protected:

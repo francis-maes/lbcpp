@@ -44,7 +44,7 @@ private:
   {
     while (current < n)
     {
-      TypePtr type = object->thisClass->getObjectVariableType(current);
+      TypePtr type = object->thisClass->getMemberVariableType(current);
       if (object->values[current])
       {
         currentValue = object->values[current];
@@ -60,7 +60,7 @@ DenseObjectObject::DenseObjectObject(DynamicClassPtr thisClass)
 
 ObjectPtr& DenseObjectObject::getObjectReference(size_t index)
 {
-  jassert(index < thisClass->getObjectNumVariables());
+  jassert(index < thisClass->getNumMemberVariables());
   if (values.size() <= index)
     values.resize(index + 1);
   return values[index];
@@ -68,7 +68,7 @@ ObjectPtr& DenseObjectObject::getObjectReference(size_t index)
 
 Variable DenseObjectObject::getVariable(size_t index) const
 {
-  TypePtr type = thisClass->getObjectVariableType(index);
+  TypePtr type = thisClass->getMemberVariableType(index);
   if (index < values.size() && values[index])
     return Variable(values[index], type);
   else

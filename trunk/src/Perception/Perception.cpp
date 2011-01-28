@@ -8,6 +8,7 @@
 
 #include <lbcpp/Perception/Perception.h>
 #include <lbcpp/Core/DynamicObject.h>
+#include <lbcpp/Core/Pair.h>
 using namespace lbcpp;
 
 /*
@@ -113,7 +114,7 @@ void Perception::addOutputVariable(TypePtr type, const String& name, PerceptionP
   v.subPerception = subPerception;
   outputVariables.push_back(v);
   if (outputType && outputType->getBaseType())
-    outputType->addVariable(defaultExecutionContext(), type, name);
+    outputType->addMemberVariable(defaultExecutionContext(), type, name);
 }
 
 Variable Perception::computeFunction(ExecutionContext& context, const Variable& input) const
@@ -170,11 +171,11 @@ void Perception::computeOutputType()
     outputType->setName(toString());
     outputType->setBaseType(objectClass);
     size_t n = outputVariables.size();
-    outputType->reserveVariables(n);
+    outputType->reserveMemberVariables(n);
     for (size_t i = 0; i < n; ++i)
     {
       const OutputVariable& v = outputVariables[i];
-      outputType->addVariable(defaultExecutionContext(), v.type, v.name);
+      outputType->addMemberVariable(defaultExecutionContext(), v.type, v.name);
     }
     outputType->initialize(defaultExecutionContext()); // FIXME: context
   }
@@ -187,7 +188,7 @@ bool Perception::loadFromXml(XmlImporter& importer)
   outputVariables.clear();
   computeOutputType();
   //DBG("Perception::loadFromXml: " + toString() + T(", num outputs = ") + String(outputVariables.size()));
-  jassert(!outputVariables.size() || getOutputType()->getObjectNumVariables());
+  jassert(!outputVariables.size() || getOutputType()->getNumMemberVariables());
   return true;
 }
 
@@ -242,10 +243,10 @@ void CompositePerception::computeOutputType()
   outputVariables.resize(subPerceptions->getNumElements());
   for (size_t i = 0; i < outputVariables.size(); ++i)
   {
-    Variable nameAndSubPerception = subPerceptions->getElement(i);
+    const PairPtr& nameAndSubPerception = subPerceptions->getElement(i).getObjectAndCast<Pair>();
     OutputVariable& v = outputVariables[i];
-    v.name = nameAndSubPerception[0].getString();
-    v.subPerception = nameAndSubPerception[1].getObjectAndCast<Perception>();
+    v.name = nameAndSubPerception->getFirst().getString();
+    v.subPerception = nameAndSubPerception->getSecond().getObjectAndCast<Perception>();
     v.type = v.subPerception->getOutputType();
   }
   Perception::computeOutputType();

@@ -84,11 +84,11 @@ protected:
 
     TypePtr rowType = container->getElementsType();
     size_t numRows = container->getNumElements();
-    size_t numColumns = rowType->getObjectNumVariables();
+    size_t numColumns = rowType->getNumMemberVariables();
 
     for (size_t j = 0; j < numColumns; ++j)
     {
-      String value = rowType->getObjectVariableName(j);
+      String value = rowType->getMemberVariableName(j);
       autoSizeWidths.push_back(font.getStringWidth(value));
     }
 
@@ -125,8 +125,8 @@ ContainerTableListBox::ContainerTableListBox(const ContainerPtr& container)
   TypePtr rowType = container->getElementsType();
 
   TableHeaderComponent* hdr = getHeader();
-  for (size_t i = 0; i < rowType->getObjectNumVariables(); ++i)
-    hdr->addColumn(rowType->getObjectVariableName(i), i + 100, 100);
+  for (size_t i = 0; i < rowType->getNumMemberVariables(); ++i)
+    hdr->addColumn(rowType->getMemberVariableName(i), i + 100, 100);
 
   setModel(new ContainerTableListBoxModel(container));
   autoSizeAllColumns();

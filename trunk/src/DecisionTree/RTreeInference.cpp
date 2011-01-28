@@ -323,7 +323,7 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   TypePtr inputType = perception->getOutputType();
   for (size_t i = 0; i < (size_t)nb_attributes; ++i)
   {
-    TypePtr attrType = inputType->getObjectVariableType(i);
+    TypePtr attrType = inputType->getMemberVariableType(i);
     int value;
     if (attrType->inheritsFrom(booleanType))
       value = 2;

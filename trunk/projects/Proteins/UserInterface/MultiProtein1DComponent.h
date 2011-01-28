@@ -149,7 +149,10 @@ public:
     if (component)
     {
       if (selectedVariables.size() == 1)
-        component->setSelection(selectedVariables[0][1].getInteger(), String::empty, String::empty);
+      {
+        PairPtr pair = selectedVariables[0].getObjectAndCast<Pair>();
+        component->setSelection(pair->getSecond().getInteger(), String::empty, String::empty);
+      }
       else
         component->setNoSelection();
     }
@@ -161,11 +164,13 @@ protected:
   Variable makeSelection(const Variable& sequenceVariable) const
   {
     jassert(sequenceVariable.getType() == pairClass(pairClass(stringType, stringType), integerType));
-    Variable names = sequenceVariable[0];
+    
+    const PairPtr& nameAndPosition = sequenceVariable.getObjectAndCast<Pair>();
+    const PairPtr& names = nameAndPosition->getFirst().getObjectAndCast<Pair>();
     //String sequenceName = names[0].getString();
-    ProteinPtr protein = findProteinWithName(names[1].getString());
+    ProteinPtr protein = findProteinWithName(names->getSecond().getString());
     jassert(protein);
-    int position = sequenceVariable[1].getInteger();
+    int position = nameAndPosition->getSecond().getInteger();
     if (position < 0)
       return protein;
     else

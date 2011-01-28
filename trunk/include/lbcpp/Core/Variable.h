@@ -210,13 +210,6 @@ public:
   friend std::ostream& operator <<(std::ostream& ostr, const Variable& variable)
     {return ostr << (const char* )variable.toString();}
 
-  /*
-  ** Dynamic variables
-  */
-  size_t size() const;
-  String getName(size_t index) const;
-  Variable operator [](size_t index) const;
-
   void printRecursively(std::ostream& ostr, int maxDepth = -1, bool displayMissingValues = true, bool displayTypes = true);
   bool printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName = T("variable")) const; // returns true if there is at least one difference
 

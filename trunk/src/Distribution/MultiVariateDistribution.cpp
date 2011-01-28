@@ -13,7 +13,7 @@ using namespace lbcpp;
 ** IndependentMultiVariateDistribution
 */
 IndependentMultiVariateDistribution::IndependentMultiVariateDistribution(ClassPtr elementsType)
-  : MultiVariateDistribution(independentMultiVariateDistributionClass(elementsType)), distributions(elementsType->getObjectNumVariables())
+  : MultiVariateDistribution(independentMultiVariateDistributionClass(elementsType)), distributions(elementsType->getNumMemberVariables())
 {
 }
 

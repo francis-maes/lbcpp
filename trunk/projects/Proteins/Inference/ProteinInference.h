@@ -82,10 +82,10 @@ public:
 
   // Accessors
   String getTargetName() const
-    {return proteinClass->getObjectVariableName(targetIndex);}
+    {return proteinClass->getMemberVariableName(targetIndex);}
 
   TypePtr getTargetType() const
-    {return proteinClass->getObjectVariableType(targetIndex);}
+    {return proteinClass->getMemberVariableType(targetIndex);}
 
   InferencePtr getTargetInference() const
     {return decorated;}

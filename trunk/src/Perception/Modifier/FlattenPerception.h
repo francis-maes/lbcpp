@@ -71,7 +71,7 @@ private:
   void precompute(PerceptionPtr perception, const String& fullName, OffsetInfo& offsets)
   {
     TypePtr perceptionOutputType = perception->getOutputType();
-    size_t n = perceptionOutputType->getObjectNumVariables();
+    size_t n = perceptionOutputType->getNumMemberVariables();
 
     offsets.set(outputVariables.size(), n);
 

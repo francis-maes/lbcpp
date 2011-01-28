@@ -483,7 +483,7 @@ bool XmlExporter::CompareObjectsDeterministically::operator()(const ObjectPtr& o
     return object1->getClass()->getName() < object2->getClass()->getName();
   }
   ClassPtr cl = object1->getClass();
-  size_t n = cl->getObjectNumVariables();
+  size_t n = cl->getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
     Variable v1 = object1->getVariable(i);

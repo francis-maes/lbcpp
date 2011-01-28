@@ -36,10 +36,10 @@ public:
 
   virtual void computeOutputType()
   {
-    size_t n = type->getObjectNumVariables();
+    size_t n = type->getNumMemberVariables();
     reserveOutputVariables(n);
     for (size_t i = 0; i < n; ++i)
-      addOutputVariable(type->getObjectVariableName(i), type->getObjectVariableType(i));
+      addOutputVariable(type->getMemberVariableName(i), type->getMemberVariableType(i));
     Perception::computeOutputType();
   }
 
@@ -62,7 +62,7 @@ public:
       }
       else
       {
-        size_t n = type->getObjectNumVariables();
+        size_t n = type->getNumMemberVariables();
         for (size_t i = 0; i < n; ++i)
         {
           Variable variable = inputObject->getVariable(i);

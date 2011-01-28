@@ -36,12 +36,13 @@ protected:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    ObjectPtr object = input[0].getObject();
-    if (object && input[1].exists())
-      object->setVariable(context, fieldIndex, input[1]);
+    const PairPtr& pair = input.getObjectAndCast<Pair>();
+    ObjectPtr object = pair->getFirst().getObject();
+    if (object && pair->getSecond().exists())
+      object->setVariable(context, fieldIndex, pair->getSecond());
     else if (!object)
       context.warningCallback(T("SetFieldFunction::computeFunction"), T("Null object"));
-    return input[0];
+    return pair->getFirst();
   }
 };
 

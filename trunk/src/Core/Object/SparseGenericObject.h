@@ -27,7 +27,7 @@ public:
     for (Node* node = first; node; node = nextNode)
     {
       nextNode = node->next;
-      thisClass->getObjectVariableType(node->index)->destroy(node->value);
+      thisClass->getMemberVariableType(node->index)->destroy(node->value);
       delete node;
     }
     first = NULL;
@@ -37,7 +37,7 @@ public:
   virtual Variable getVariable(size_t index) const
   {
     const Node* node = const_cast<SparseGenericObject* >(this)->findLastNodeBefore(index);
-    TypePtr type = thisClass->getObjectVariableType(index);
+    TypePtr type = thisClass->getMemberVariableType(index);
     if (node && node->index == index)
       return Variable::copyFrom(type, node->value);
     else

@@ -223,8 +223,9 @@ String ProductWithVariablePerception::toString() const
 
 void ProductWithVariablePerception::computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
 {
-  Variable input1 = input[swapVariables ? 1 : 0];
-  Variable input2 = input[swapVariables ? 0 : 1];
+  const PairPtr& pair = input.getObjectAndCast<Pair>();
+  Variable input1 = swapVariables ? pair->getSecond() : pair->getFirst();
+  Variable input2 = swapVariables ? pair->getFirst() : pair->getSecond();
 
   jassert(input1.getType()->inheritsFrom(perception->getInputType()));
   jassert(input2.getType()->inheritsFrom(variableType));

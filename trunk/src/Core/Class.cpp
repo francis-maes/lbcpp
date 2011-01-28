@@ -20,10 +20,10 @@ String Class::toString() const
 {
   String res = getName();
   res += T(" = {");
-  size_t n = getObjectNumVariables();
+  size_t n = getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getObjectVariableType(i)->getName() + T(" ") + getObjectVariableName(i);
+    res += getMemberVariableType(i)->getName() + T(" ") + getMemberVariableName(i);
     if (i < n - 1)
       res += T(", ");
   }
@@ -90,12 +90,7 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : Class(templateType, templateArguments, baseClass) {}
 
-void DefaultClass::clearVariables()
-{
-  variables.clear();
-}
-
-void DefaultClass::addVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
+void DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
 {
   TypePtr type;
   if (templateType)
@@ -103,78 +98,40 @@ void DefaultClass::addVariable(ExecutionContext& context, const String& typeName
   else
     type = typeManager().getType(context, typeName);
   if (type)
-    addVariable(context, type, name, shortName, description);
+    addMemberVariable(context, type, name, shortName, description);
 }
 
-void DefaultClass::addVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
+void DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
 {
   if (!type || name.isEmpty())
   {
-    context.errorCallback(T("Class::addVariable"), T("Invalid type or name"));
+    context.errorCallback(T("Class::addMemberVariable"), T("Invalid type or name"));
     return;
   }
-  if (findObjectVariable(name) >= 0)
+  if (findMemberVariable(name) >= 0)
   {
-    context.errorCallback(T("Class::addVariable"), T("Another variable with name '") + name + T("' already exists"));
+    context.errorCallback(T("Class::addMemberVariable"), T("Another variable with name '") + name + T("' already exists"));
     return;
   }
   variablesMap[name] = variables.size();
-  VariableInfo info;
-  info.type = type;
-  info.name = name;
-  info.shortName = shortName.isNotEmpty() ? shortName : name;
-  info.description = description.isNotEmpty() ? description : name;
-  variables.push_back(info);
+  variables.push_back(new VariableSignature(type, name, shortName, description));
 }
 
-size_t DefaultClass::getObjectNumVariables() const
+size_t DefaultClass::getNumMemberVariables() const
 {
-  size_t n = baseType->getObjectNumVariables();
+  size_t n = baseType->getNumMemberVariables();
   return n + variables.size();
 }
 
-TypePtr DefaultClass::getObjectVariableType(size_t index) const
+VariableSignaturePtr DefaultClass::getMemberVariable(size_t index) const
 {
-  size_t n = baseType->getObjectNumVariables();
+  size_t n = baseType->getNumMemberVariables();
   if (index < n)
-    return baseType->getObjectVariableType(index);
+    return baseType->getMemberVariable(index);
   index -= n;
   
   jassert(index < variables.size());
-  return variables[index].type;
-}
-
-String DefaultClass::getObjectVariableName(size_t index) const
-{
-  size_t n = baseType->getObjectNumVariables();
-  if (index < n)
-    return baseType->getObjectVariableName(index);
-  index -= n;
-  
-  jassert(index < variables.size());
-  return variables[index].name;
-}
-
-String DefaultClass::getObjectVariableShortName(size_t index) const
-{
-  size_t n = baseType->getObjectNumVariables();
-  if (index < n)
-    return baseType->getObjectVariableShortName(index);
-  index -= n;
-  
-  jassert(index < variables.size());
-  return variables[index].shortName;
-}
-
-String DefaultClass::getObjectVariableDescription(size_t index) const
-{
-  size_t n = baseType->getObjectNumVariables();
-  if (index < n)
-    return baseType->getObjectVariableDescription(index);
-  index -= n;
-  
-  jassert(index < variables.size());
-  return variables[index].description;
+  return variables[index];
 }
 
 void DefaultClass::deinitialize()
@@ -183,20 +140,20 @@ void DefaultClass::deinitialize()
   Class::deinitialize();
 }
 
-int DefaultClass::findObjectVariable(const String& name) const
+int DefaultClass::findMemberVariable(const String& name) const
 {
   std::map<String, size_t>::const_iterator it = variablesMap.find(name);
   if (it != variablesMap.end())
-    return (int)(baseType->getObjectNumVariables() + it->second);
-  return baseType->findObjectVariable(name);
+    return (int)(baseType->getNumMemberVariables() + it->second);
+  return baseType->findMemberVariable(name);
 }
 
-size_t DefaultClass::findOrAddObjectVariable(ExecutionContext& context, const String& name, TypePtr type)
+size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const String& name, TypePtr type)
 {
-  int idx = findObjectVariable(name);
+  int idx = findMemberVariable(name);
   if (idx >= 0)
     return (size_t)idx;
-  size_t res = getObjectNumVariables();
-  addVariable(context, type, name);
+  size_t res = getNumMemberVariables();
+  addMemberVariable(context, type, name);
   return res;
 }

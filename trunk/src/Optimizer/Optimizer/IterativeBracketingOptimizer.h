@@ -34,7 +34,7 @@ public:
     ObjectPtr currentGuess = input->getInitialGuess().getObject()->clone(context);
 
     TypePtr parametersType = distribution->getElementsType();
-    size_t numVariables = parametersType->getObjectNumVariables();
+    size_t numVariables = parametersType->getNumMemberVariables();
     for (size_t i = 0; i < numPasses; ++i)
     {
       for (size_t j = 0; j < numVariables; ++j)
