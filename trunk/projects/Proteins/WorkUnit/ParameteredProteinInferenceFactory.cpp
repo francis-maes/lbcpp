@@ -106,20 +106,20 @@ InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetPt
     const_cast<ParameteredProteinInferenceFactory*>(this)->currentStage = i;
     for (size_t j = 0; j < proteinTarget->getNumTasks(i); ++j)
     {
-      NumericalSupervisedInferencePtr step = createInferenceStep(proteinTarget->getTask(i, j));
+      StaticDecoratorInferencePtr step = createInferenceStep(proteinTarget->getTask(i, j));
       if (targetStageToOptimize == i && targetNameToOptimize == proteinTarget->getTask(i, j))
-      {
-        OptimizerPtr optimizer = iterativeBracketingOptimizer(4, 2.0, uniformSampleAndPickBestOptimizer(7));
-        LearningParameterPtr parameter = getParameter(proteinTarget->getTask(i, j), i);
-        IndependentMultiVariateDistributionPtr aprioriDistribution = parameter->getAprioriDistribution();
-        InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, parameter);
-        step->getSubInference()->setBatchLearner(precomputePerceptionsNumericalInferenceLearner(autoTuneBatchLearner));
-      }
+        step = createOptimizer(targetNameToOptimize, step);
       inferencePass->appendInference(step);
     }
     inference->appendInference(inferencePass);
   }
   return inference;
+}
+
+InferencePtr ParameteredProteinInferenceFactory::createOptimizer(const String& targetName, InferencePtr inference) const
+{
+  context.errorCallback(T("NumericalProteinInferenceFactory::createOptimizer"), T("Not yet implemented"));
+  return InferencePtr();
 }
 
 LearningParameterPtr ParameteredProteinInferenceFactory::getCurrentStageParameter(const String& targetName) const
@@ -176,6 +176,17 @@ void NumericalProteinInferenceFactory::getPerceptionRewriteRules(PerceptionRewri
   
   // all other features
   rewriter->addRule(doubleType, identityPerception());
+}
+
+InferencePtr NumericalProteinInferenceFactory::createOptimizer(const String& targetName, InferencePtr inference) const
+{
+  OptimizerPtr optimizer = iterativeBracketingOptimizer(4, 2.0, uniformSampleAndPickBestOptimizer(7));
+  NumericalLearningParameterPtr parameter = getCurrentStageParameter(targetName);
+  parameter->setLearner(createOnlineLearner(targetName));
+  IndependentMultiVariateDistributionPtr aprioriDistribution = parameter->getAprioriDistribution();
+  InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, parameter);
+  ((NumericalSupervisedInferencePtr)inference)->getSubInference()->setBatchLearner(precomputePerceptionsNumericalInferenceLearner(autoTuneBatchLearner));
+  return inference;
 }
 
 void NumericalProteinInferenceFactory::addBiasInferenceIfNeeded(NumericalSupervisedInferencePtr inference, const String& targetName) const
