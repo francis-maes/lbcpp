@@ -41,6 +41,9 @@ class XmlImporter;
 class Object;
 typedef ReferenceCountedObjectPtr<Object> ObjectPtr;
 
+class VariableSignature;
+typedef ReferenceCountedObjectPtr<VariableSignature> VariableSignaturePtr;
+
 class Type;
 typedef ReferenceCountedObjectPtr<Type> TypePtr;
 

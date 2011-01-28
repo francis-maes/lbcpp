@@ -162,6 +162,9 @@ void Type::saveToXml(XmlExporter& exporter, const VariableValue& value) const
 size_t Type::getObjectNumVariables() const
   {jassert(baseType); return baseType->getObjectNumVariables();}
 
+VariableSignaturePtr Type::getMemberVariable(size_t index) const
+  {jassert(baseType); return baseType->getMemberVariable(index);}
+
 TypePtr Type::getObjectVariableType(size_t index) const
   {jassert(baseType); return baseType->getObjectVariableType(index);}
 

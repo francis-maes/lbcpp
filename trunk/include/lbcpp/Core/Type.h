@@ -34,6 +34,34 @@
 namespace lbcpp
 {
 
+class VariableSignature : public NameableObject
+{
+public:
+  VariableSignature(TypePtr type,
+                    const String& name,
+                    const String& shortName = String::empty,
+                    const String& description = String::empty)
+    : NameableObject(name), type(type), shortName(shortName), description(description) {}
+
+  VariableSignature() {}
+
+  TypePtr getType() const
+    {return type;}
+
+  const String& getShortName() const
+    {return shortName;}
+
+  const String& getDescription() const
+    {return description;}
+
+protected:
+  friend class VariableSignatureClass;
+
+  TypePtr type;
+  String shortName;
+  String description;
+};
+
 class Type : public NameableObject
 {
 public:
@@ -106,11 +134,15 @@ public:
   /*
   ** Static Variables
   */
+  // new
+  virtual VariableSignaturePtr getMemberVariable(size_t index) const;
+
   virtual size_t getObjectNumVariables() const;
   virtual TypePtr getObjectVariableType(size_t index) const;
   virtual String getObjectVariableName(size_t index) const;
   virtual String getObjectVariableShortName(size_t index) const;
   virtual String getObjectVariableDescription(size_t index) const;
+
   virtual int findObjectVariable(const String& name) const;
   virtual Variable getObjectVariable(const Object* pthis, size_t index) const;
   virtual void setObjectVariable(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
