@@ -1,9 +1,5 @@
-Serialisation de n'importe quel objet
-  - TabbedComponent: truc
+Objectif: ProteinFrame dans l'explorer
   
-Curves:
- * options
- * persistance des options
 
  
 From Julien:

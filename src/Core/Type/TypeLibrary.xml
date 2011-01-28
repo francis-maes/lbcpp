@@ -32,6 +32,13 @@
     <variable type="String" name="name"/>
   </class>
 
+  <!-- VariableSignature -->
+  <class name="VariableSignature" base="NameableObject">
+    <variable type="Type" name="type"/>
+    <variable type="String" name="shortName"/>
+    <variable type="String" name="description"/>
+  </class>
+  
   <!-- Type -->
   <class name="Type" base="NameableObject" abstract="yes">
     <variable type="Type" name="baseType"/>
