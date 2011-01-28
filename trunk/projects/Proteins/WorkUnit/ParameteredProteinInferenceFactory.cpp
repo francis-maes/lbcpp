@@ -108,7 +108,7 @@ InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetPt
     {
       StaticDecoratorInferencePtr step = createInferenceStep(proteinTarget->getTask(i, j));
       if (targetStageToOptimize == i && targetNameToOptimize == proteinTarget->getTask(i, j))
-        step = createOptimizer(targetNameToOptimize, step);
+        createOptimizer(targetNameToOptimize, ((ProteinInferenceStepPtr)step)->getTargetInference());
       inferencePass->appendInference(step);
     }
     inference->appendInference(inferencePass);
