@@ -13,6 +13,7 @@ using juce::Drawable;
 using juce::AffineTransform;
 using juce::Rectangle;
 using juce::RectanglePlacement;
+using juce::Justification;
 
 class ContainerCurveDrawable : public Drawable
 {
@@ -22,7 +23,17 @@ public:
   {
     selectedCurves = configuration->getSelectedCurves();
     table->makeOrder(configuration->getKeyVariableIndex(), true, order);
+    computeHorizontalBounds();
+    computeVerticalBounds();
   }
+
+  enum
+  {
+    pointCrossSize = 6,
+    frameMarkerSize1 = 5,
+    frameMarkerSize2 = 8,
+    bottomValuesSize = 20,
+  };
 
   virtual Drawable* createCopy() const
     {return new ContainerCurveDrawable(table, configuration);}
@@ -32,41 +43,143 @@ public:
 
   virtual void getBounds(float& x, float& y, float& width, float& height) const
   {
-     // FIXME
-    x = -11;
-    width = 22;
-    y = 1.1f;
-    height = -1.2f;
+    x = (float)boundsX;
+    y = (float)(boundsY + boundsHeight);
+    width = (float)boundsWidth;
+    height = (float)-boundsHeight;
   }
 
   virtual void draw(Graphics& g, const AffineTransform& transform = AffineTransform::identity) const
   {
-    drawAxisBack(g, transform, configuration->getYAxis(), false);
-    drawAxisBack(g, transform, configuration->getXAxis(), true);
+    drawZeroAxis(g, transform, configuration->getYAxis(), false);
+    drawZeroAxis(g, transform, configuration->getXAxis(), true);
+    drawFrame(g, transform);
     for (size_t i = 0; i < selectedCurves.size(); ++i)
     {
       drawCurveLine(g, transform, selectedCurves[i], configuration->getCurve(selectedCurves[i]));
       drawCurvePoint(g, transform, selectedCurves[i], configuration->getCurve(selectedCurves[i])); 
     }
-    drawAxisFront(g, transform, configuration->getYAxis(), false);
-    drawAxisFront(g, transform, configuration->getXAxis(), true);
+  }
+
+  juce::Rectangle getFrameRectangle(const AffineTransform& transform) const
+  {
+    float x, y, width, height;
+    getBounds(x, y, width, height);
+    float x2 = x + width, y2 = y + height;
+    transform.transformPoint(x, y);
+    transform.transformPoint(x2, y2);
+    return juce::Rectangle((int)(x + 0.5), (int)(y + 0.5), (int)(x2 - x + 0.5f), (int)(y2 - y + 0.5f));
+  }
+
+  void drawFrameMarker(Graphics& g, const AffineTransform& transform, double value, bool isHorizontal, bool isMainMarker) const
+  {
+    int dirh = isHorizontal ? 1 : 0;
+    int dirv = isHorizontal ? 0 : 1;
+    float frameMarkerHalfSize = (isMainMarker ? frameMarkerSize1 : frameMarkerSize2) / 2.f;
+
+    float x, y;
+    if (isHorizontal)
+      x = (float)value, y = (float)(boundsY + boundsHeight);
+    else
+      x = (float)(boundsX + boundsWidth), y = (float)value;
+    transform.transformPoint(x, y);
+
+    g.drawLine(x - dirv * frameMarkerHalfSize, y - dirh * frameMarkerHalfSize, x + dirv * frameMarkerHalfSize, y + dirh * frameMarkerHalfSize);
+
+    if (isHorizontal)
+      x = (float)value, y = (float)boundsY;
+    else
+      x = (float)boundsX, y = (float)value;
+    transform.transformPoint(x, y);
+    g.drawLine(x - dirv * frameMarkerHalfSize, y - dirh * frameMarkerHalfSize, x + dirv * frameMarkerHalfSize, y + dirh * frameMarkerHalfSize);
+
+    if (isMainMarker)
+    {
+      g.setFont(11);
+      if (isHorizontal)
+        g.drawText(String(value), (int)(x - 40), (int)(y + 5), 80, bottomValuesSize - 5, Justification::centred, false);
+      else
+        g.drawText(String(value), (int)(x - 40), (int)(y - 10), 40, 20, Justification::centred, false);
+    }
+  }
+
+  void drawFrameMarkers(Graphics& g, const AffineTransform& transform, juce::Rectangle frameRectangle, bool isHorizontal) const
+  {
+    double minValue, maxValue, valuePerPixel;
+    if (isHorizontal)
+      minValue = boundsX, maxValue = boundsX + boundsWidth, valuePerPixel = boundsWidth / frameRectangle.getWidth();
+    else
+      minValue = boundsY, maxValue = boundsY + boundsHeight, valuePerPixel = boundsHeight / frameRectangle.getHeight();
+    
+    std::vector<double> mainMarkers, secondaryMarkers;
+    getMarkerValues(minValue, maxValue, valuePerPixel, mainMarkers, secondaryMarkers);
+
+    g.setColour(Colours::lightgrey);
+    for (size_t i = 0; i < secondaryMarkers.size(); ++i)
+      drawFrameMarker(g, transform, secondaryMarkers[i], isHorizontal, false);
+    g.setColour(Colours::black);
+    for (size_t i = 0; i < mainMarkers.size(); ++i)
+      drawFrameMarker(g, transform, mainMarkers[i], isHorizontal, true);
+  }
+
+  void drawFrame(Graphics& g, const AffineTransform& transform) const
+  {
+    juce::Rectangle rect = getFrameRectangle(transform);
+    
+    drawFrameMarkers(g, transform, rect, true);
+    drawFrameMarkers(g, transform, rect, false);
+
+    g.setColour(Colours::black);
+    g.drawRect(rect.getX(), rect.getY(), rect.getWidth() + 1, rect.getHeight() + 1, 1);
+
+    g.setFont(16);
+    g.drawText(getXAxisLabel(), rect.getX(), rect.getBottom() + bottomValuesSize, rect.getWidth(), 20, Justification::centred, false);
+    float transx = (float)rect.getX() - 40.f;
+    float transy = (float)rect.getY() + rect.getHeight() * 0.5f;
+    g.drawTextAsPath(getYAxisLabel(), AffineTransform::rotation(-(float)(M_PI / 2.f)).translated(transx, transy));
   }
   
-  void drawAxisBack(Graphics& g, const AffineTransform& transform, CurveAxisConfigurationPtr config, bool isHorizontalAxis) const
+  String getXAxisLabel() const
+  {
+    String res = configuration->getXAxis()->getLabel();
+    if (res.isEmpty())
+      res = table->getElementsType()->getObjectVariableName(configuration->getKeyVariableIndex());
+    return res;
+  }
+
+  String getYAxisLabel() const
+  {
+    String res = configuration->getYAxis()->getLabel();
+    if (res.isEmpty())
+    {
+      for (size_t i = 0; i < selectedCurves.size(); ++i)
+      {
+        if (i > 0)
+          res += T(", ");
+        res += table->getElementsType()->getObjectVariableName(selectedCurves[i]);
+      }
+    }
+    return res;
+  }
+
+  void drawZeroAxis(Graphics& g, const AffineTransform& transform, CurveAxisConfigurationPtr config, bool isHorizontalAxis) const
   {
     float x0 = 0.f, y0 = 0.f;
     transform.transformPoint(x0, y0);
 
-    g.setColour(Colours::black);
-    Rectangle bounds = g.getClipBounds();
-    if (isHorizontalAxis)
-      g.drawLine((float)bounds.getX(), y0, (float)bounds.getWidth(), y0);
-    else
-      g.drawLine(x0, (float)bounds.getY(), x0, (float)bounds.getHeight());
-  }
+    juce::Rectangle frameRect = getFrameRectangle(transform);
 
-  void drawAxisFront(Graphics& g, const AffineTransform& transform, CurveAxisConfigurationPtr config, bool isHorizontalAxis) const
-  {
+    g.setColour(Colours::lightgrey);
+    if (isHorizontalAxis)
+    {
+      if (0 >= boundsY && 0 <= boundsY + boundsHeight)
+        g.drawLine((float)frameRect.getX(), y0, (float)frameRect.getRight(), y0);
+    }
+    else
+    {
+      if (0 >= boundsX && 0 <= boundsX + boundsWidth)
+        g.drawLine(x0, (float)frameRect.getY(), x0, (float)frameRect.getBottom());
+    }
   }
 
   void drawCurveLine(Graphics& g, const AffineTransform& transform, size_t index, CurveVariableConfigurationPtr config) const
@@ -96,7 +209,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       float x, y;
-      float crossHalfSize = 3.f;
+      float crossHalfSize = pointCrossSize / 2.f;
       getPointPosition(i, keyVariableIndex, index, transform, x, y);
       g.drawLine(x - crossHalfSize, y, x + crossHalfSize, y);
       g.drawLine(x, y - crossHalfSize, x, y + crossHalfSize);
@@ -109,6 +222,7 @@ protected:
 
   std::vector<size_t> selectedCurves;
   std::vector<size_t> order;
+  double boundsX, boundsY, boundsWidth, boundsHeight;
 
   void getPointPosition(size_t row, size_t columnX, size_t columnY, const AffineTransform& transform, float& x, float& y) const
   {
@@ -133,6 +247,76 @@ protected:
       return 0.0;
     }
   }
+
+  void getTableValueRange(size_t column, double& minValue, double& maxValue) const
+  {
+    for (size_t i = 0; i < table->getNumElements(); ++i)
+    {
+      double value = getTableValue(table->getElement(i).getObject(), column);
+      if (value > maxValue)
+        maxValue = value;
+      if (value < minValue)
+        minValue = value;
+    }
+  }
+
+  void computeHorizontalBounds()
+  {
+    CurveAxisConfigurationPtr axis = configuration->getXAxis();
+    if (axis->hasAutoRange())
+    {
+      double minValue = DBL_MAX, maxValue = -DBL_MAX;
+      getTableValueRange(configuration->getKeyVariableIndex(), minValue, maxValue);
+      if (maxValue > minValue)
+      {
+        double length = maxValue - minValue;
+        boundsX = minValue - length * 0.1;
+        boundsWidth = length * 1.2;
+        return;
+      }
+    }
+    boundsX = axis->getRangeMin();
+    boundsWidth = axis->getRangeMax() - axis->getRangeMin();
+  }
+
+  void computeVerticalBounds()
+  {
+    CurveAxisConfigurationPtr axis = configuration->getXAxis();
+    if (axis->hasAutoRange())
+    {
+      double minValue = DBL_MAX, maxValue = -DBL_MAX;
+      for (size_t i = 0; i < selectedCurves.size(); ++i)
+        getTableValueRange(selectedCurves[i], minValue, maxValue);
+      if (maxValue > minValue)
+      {
+        double length = maxValue - minValue;
+        boundsY = minValue - length * 0.1;
+        boundsHeight = length * 1.2;
+        return;
+      }
+    }
+    boundsY = axis->getRangeMin();
+    boundsHeight = axis->getRangeMax() - axis->getRangeMin();
+  }
+
+  static void getMarkerValues(double minValue, double maxValue, double valuePerPixel,
+                              std::vector<double>& main, std::vector<double>& secondary)
+  {
+    double step = pow(10.0, (double)(int)(log10(valuePerPixel) + 0.5));
+    int ibegin = (int)(minValue / step);
+    int iend = (int)(maxValue / step);
+    for (int i = ibegin; i <= iend; ++i)
+    {
+      double time = i * step;
+      if (time >= minValue && time <= maxValue)
+      {
+        if (i % 10 == 0)
+          main.push_back(time);
+        else
+          secondary.push_back(time);
+      }
+    }
+  }
 };
 
 class ContainerCurveEditorContentComponent : public Component
@@ -145,8 +329,16 @@ public:
   virtual ~ContainerCurveEditorContentComponent()
     {delete drawable;}
 
+  enum
+  {
+    leftMargin = 60,
+    rightMargin = 20,
+    topMargin = 20,
+    bottomMargin = 40
+  };
+
   virtual void paint(Graphics& g)
-    {drawable->drawWithin(g, 0, 0, getWidth(), getHeight(), juce::RectanglePlacement::stretchToFit);}
+    {drawable->drawWithin(g, leftMargin, topMargin, getWidth() - leftMargin - rightMargin, getHeight() - topMargin - bottomMargin, juce::RectanglePlacement::stretchToFit);}
 
 protected:
   ContainerCurveDrawable* drawable;
@@ -156,8 +348,8 @@ protected:
 ** ContainerCurveEditorConfiguration
 */
 ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr type)
-  : xAxis(new CurveAxisConfiguration(0.0, 1000.0, T("X Axis"))),
-    yAxis(new CurveAxisConfiguration(0.0, 1.0, T("Y Axis"))),
+  : xAxis(new CurveAxisConfiguration(0.0, 1000.0)),
+    yAxis(new CurveAxisConfiguration(0.0, 1.0)),
     variables(type->getObjectNumVariables())
 {
   for (size_t i = 0; i < variables.size(); ++i)
