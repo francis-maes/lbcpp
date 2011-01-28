@@ -2,15 +2,23 @@
 
 <library name="ProteinFrame" directory="Frame">
 
-  <class name="Frame" base="Object"/>
+  <class name="ProteinFrame" base="Object" metaclass="FrameClass">
+    <!-- Primary Structure -->
+    <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="AA"/>
+    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
+    <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
 
-  <!--
-  <class name="ProteinFrame" base="Object">
-    <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
-    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
-    <code> -->
-      
+    <!--
+    <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>
+    <variable function="mean()" input="primaryStructureAccumulated" name="primaryStructureDistribution" shortName="AAd"/>
+    
+    <variable function="accumulate()" input="positionSpecificScoringMatrix" name="positionSpecificScoringMatrixAccumulated" shortName="PSSMc"/>
+    <variable function="mean()" input="positionSpecificScoringMatrixAccumulated" name="positionSpecificScoringMatrixDistribution" shortName="PSSMd"/>
+
+    <variable function="accumulate()" input="secondaryStructure" name="secondaryStructureAccumulated" shortName="SS3c"/>
+    <variable function="sample(true)" input="secondaryStructure" name="secondaryStructureSample" shortName="SS3samp"/>
+    <variable function="segment()" input="secondaryStructureSample" name="secondaryStructureSegments" shortName="SS3seg"/>
+    -->
   </class>
-  
   
 </library>

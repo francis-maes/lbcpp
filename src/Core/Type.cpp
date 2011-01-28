@@ -228,7 +228,7 @@ String Type::getMemberVariableDescription(size_t index) const
 
 #include "Type/FileType.h"
 
-DirectoriesCache FileType::cache;
+//DirectoriesCache FileType::cache;
 
 TypePtr lbcpp::sumType(TypePtr type1, TypePtr type2)
 {

@@ -13,6 +13,7 @@
 # include "MultiProtein2DComponent.h"
 # include "ProteinPerceptionComponent.h"
 # include <lbcpp/UserInterface/VariableSelector.h>
+# include "../Frame/ProteinFrame.h"
 
 namespace lbcpp
 {
@@ -51,6 +52,7 @@ public:
     }
     addTab(T("Protein 1D"), Colours::white);
     addTab(T("Protein 2D"), Colours::white);
+    addTab(T("Protein Frame"), Colours::white);
   }
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
@@ -61,6 +63,8 @@ public:
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
     else if (tabName == T("Perception"))
       return new ProteinPerceptionComponent(proteins[0]);
+    else if (tabName == T("Protein Frame"))
+      return userInterfaceManager().createVariableTreeView(context, new ProteinFrame(proteins[0]));
     else if (tabName == T("Protein 1D"))
     {
       std::vector< std::pair<String, size_t> > sequenceIndex;

@@ -250,8 +250,7 @@ protected:
     String className = xml->getStringAttribute(T("name"), T("???"));
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
-    bool hasAutoImplementation = xml->getBoolAttribute(T("autoimpl"), false);
-    String classBaseClass = hasAutoImplementation ? T("DynamicClass") : T("DefaultClass");
+    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
 
     Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, T("Class")) : Declaration::makeType(className, T("Class"));
     if (!isTemplate)
@@ -280,7 +279,7 @@ protected:
     newLine();
 
     // create() function
-    if (!isAbstract && !hasAutoImplementation)
+    if (!isAbstract && classBaseClass == T("DefaultClass"))
     {
       openScope(T("virtual VariableValue create(ExecutionContext& context) const"));
         writeLine(className + T("* res = new ") + className + T("();"));
@@ -291,7 +290,7 @@ protected:
     }
 
     // getStaticVariableReference() function
-    if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false))
+    if (variables.size() && !xml->getBoolAttribute(T("manualAccessors"), false) && classBaseClass == T("DefaultClass"))
     {
       // getMemberVariableValue
       openScope(T("virtual Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));

@@ -85,8 +85,9 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
-  ../include/lbcpp/Core/Function.h  
-  ../include/lbcpp/Core/XmlSerialisation.h  
+  ../include/lbcpp/Core/Function.h
+  Core/Function.cpp
+  ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreLibrary.cpp

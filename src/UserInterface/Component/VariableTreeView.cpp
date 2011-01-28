@@ -66,6 +66,20 @@ public:
         addSubVariable(container->getElementName(i), container->getElement(i));
     }
 
+    if (variable.isFile())
+    {
+      File file = variable.getFile();
+      if (file.isDirectory())
+      {
+        juce::OwnedArray<File> files;
+        file.findChildFiles(files, File::findFilesAndDirectories, false);
+        subVariables.reserve(subVariables.size() + files.size());
+   
+        for (int i = 0; i < files.size(); ++i)
+          addSubVariable(files[i]->getFileName(), Variable(files[i]->getFullPathName(), fileType));
+      }
+    }
+
     mightContainSubItemsFlag = !subVariables.empty();
   }
 

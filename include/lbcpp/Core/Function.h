@@ -34,14 +34,11 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType;}
 
-  /**
-  ** Computes the function
-  **
-  ** @param input : the input variable, whose type must inherit from getInputType()
-  **
-  ** @return a variable of type getOutputType(inputType)
-  */
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const = 0;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs, size_t numInputs) const
+    {return checkNumInputsEquals(context, numInputs, 1) ? computeFunction(context, inputs[0]) : Variable();}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return computeFunction(context, &input, 1);}
 
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
@@ -59,6 +56,10 @@ protected:
   friend class FunctionClass;
 
   bool pushIntoStack;
+
+  bool checkNumInputsEquals(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const;
+  bool checkType(ExecutionContext& context, const Variable& variable, TypePtr type) const;
+  bool checkExistence(ExecutionContext& context, const Variable& variable) const;
 };
 
 extern ClassPtr functionClass;

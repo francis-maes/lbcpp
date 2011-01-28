@@ -22,7 +22,7 @@
 
   <type name="String" base="Variable" implementation="StringType"/>
     <type name="File" base="String" implementation="FileType"/>
-  
+
   <!-- Object -->
   <class name="Object" base="Variable" abstract="yes">
     <!-- <variable type="Class" name="thisClass"/> : bad idea: induces moult complexity on DenseDoubleObjects -->
