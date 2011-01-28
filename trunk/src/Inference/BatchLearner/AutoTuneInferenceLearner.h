@@ -67,7 +67,7 @@ public:
     // learn with optimized parameters
     InferencePtr targetInference = learnerInput->getTargetInference();
     InferencePtr baseLearner = objective->createLearner(context, optimizedParameters, targetInference);
-    baseLearner->run(context, learnerInput, Variable());
+    baseLearner->run(context, learnerInput, Variable(), T("Training with params ") + optimizedParameters.toShortString());
     return Variable();
   }
 

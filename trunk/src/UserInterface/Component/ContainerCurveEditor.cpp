@@ -31,8 +31,8 @@ public:
   enum
   {
     pointCrossSize = 6,
-    frameMarkerSize1 = 5,
-    frameMarkerSize2 = 8,
+    frameMarkerSize1 = 8,
+    frameMarkerSize2 = 5,
     bottomValuesSize = 20,
   };
 

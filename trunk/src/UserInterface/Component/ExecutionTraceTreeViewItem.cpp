@@ -181,3 +181,22 @@ void ExecutionTraceTreeViewNode::createSubItems()
   for (size_t i = 0; i < subItems.size(); ++i)
     addSubItem(ExecutionTraceTreeViewItem::create(owner, subItems[i], depth + 1));
 }
+
+void ExecutionTraceTreeViewNode::itemOpennessChanged(bool isNowOpen)
+{
+  if (isNowOpen)
+  {
+    if (!hasBeenOpened)
+      hasBeenOpened = true;
+    if (getTraceNode()->getNumSubItems() != getNumSubItems())
+    {
+      clearSubItems();
+      createSubItems();
+    }
+  }
+}
+
+bool ExecutionTraceTreeViewNode::mightContainSubItems()
+{
+  return getTraceNode()->getNumSubItems() > 0;
+}

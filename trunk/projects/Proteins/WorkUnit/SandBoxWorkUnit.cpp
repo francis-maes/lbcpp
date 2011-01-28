@@ -190,7 +190,7 @@ ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const Stri
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
 #else
-  size_t maxCount = 0;
+  size_t maxCount = 500;
 #endif // JUCE_DEBUG
   return Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxCount, workUnitName);
 }

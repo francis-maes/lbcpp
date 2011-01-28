@@ -78,13 +78,12 @@ class ExecutionTraceTreeViewNode : public ExecutionTraceTreeViewItem
 public:
   ExecutionTraceTreeViewNode(ExecutionTraceTreeView* owner, const ExecutionTraceNodePtr& trace, size_t depth);
 
-  virtual bool mightContainSubItems()
-    {return getTraceNode()->getNumSubItems() > 0;}
-
   const ExecutionTraceNodePtr& getTraceNode() const
     {return trace.staticCast<ExecutionTraceNode>();}
 
   virtual void createSubItems();
+  virtual void itemOpennessChanged(bool isNowOpen);
+  virtual bool mightContainSubItems();
 };
 
 }; /* namespace lbcpp */
