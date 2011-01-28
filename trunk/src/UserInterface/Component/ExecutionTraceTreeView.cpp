@@ -105,6 +105,14 @@ public:
     }
   }
 
+  virtual Variable getSubVariable(const Variable& variable, const String& tabName) const
+  {
+    if (tabName == T("Results"))
+      return results;
+    else
+      return table;
+  }
+
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
   {
     if (tabName == T("Curves"))
@@ -112,7 +120,7 @@ public:
     else if (tabName == T("Table"))
       return userInterfaceManager().createContainerTableListBox(context, table);
     else if (tabName == T("Results"))
-      return userInterfaceManager().createVariableTreeView(context, results, tabName, true, true, false, false);
+      return userInterfaceManager().createVariableTreeView(context, variable, tabName, true, true, false, false);
     else
       return NULL;
   }
