@@ -82,8 +82,11 @@ public:
     {return compareVariables(otherObject);}
 
   double getProbability(size_t index) const
-    {jassert(index < values.size() + 1); return values[index];}
+    {jassert(index < values.size()); return values[index];}
   
+  void setProbability(size_t index, double value)
+    {jassert(index < values.size()); values[index] = value;}
+
   lbcpp_UseDebuggingNewOperator
   
 private:
@@ -105,6 +108,9 @@ inline ClassPtr enumerationDistributionClass(EnumerationPtr enumeration)
 
 inline EnumerationDistributionPtr enumerationDistribution(EnumerationPtr enumeration, const std::vector<double>& probabilities)
   {return enumerationDistribution((TypePtr)enumeration, probabilities);}
+
+inline EnumerationDistributionPtr enumerationDistribution(EnumerationPtr enumeration)
+  {return enumerationDistribution((TypePtr)enumeration);}
 
 }; /* namespace lbcpp */
 
