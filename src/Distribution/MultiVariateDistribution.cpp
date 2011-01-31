@@ -38,3 +38,12 @@ Variable IndependentMultiVariateDistribution::sample(RandomGeneratorPtr random) 
     res->setVariable(defaultExecutionContext(), i, distributions[i]->sample(random));
   return res;
 }
+
+Variable IndependentMultiVariateDistribution::sampleBest(RandomGeneratorPtr random) const
+{
+  ClassPtr vclass = getElementsType();
+  ObjectPtr res = Object::create(vclass);
+  for (size_t i = 0; i < distributions.size(); ++i)
+    res->setVariable(defaultExecutionContext(), i, distributions[i]->sampleBest(random));
+  return res;
+}

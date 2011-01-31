@@ -25,11 +25,12 @@ public:
   virtual double computeEntropy() const = 0;
   virtual double compute(ExecutionContext& context, const Variable& value) const = 0;
   virtual Variable sample(RandomGeneratorPtr random) const = 0;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<Distribution> DistributionPtr;
 
-extern ClassPtr distributionClass;
+extern ClassPtr distributionClass(TypePtr elementsType);
 
 }; /* namespace lbcpp */
 

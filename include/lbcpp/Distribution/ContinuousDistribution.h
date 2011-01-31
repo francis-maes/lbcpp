@@ -37,6 +37,9 @@ public:
   virtual double computeEntropy() const;
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const
+    {return sample(random);}
+
   virtual void sampleUniformly(size_t numSamples, std::vector<double>& res) const;
 
   double getMinimum() const
@@ -65,6 +68,9 @@ public:
   virtual double computeEntropy() const;
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const
+    {return mean;}
+  
   virtual void sampleUniformly(size_t numSamples, std::vector<double>& res) const;
 
   double getMean() const

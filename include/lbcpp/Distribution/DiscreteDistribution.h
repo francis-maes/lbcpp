@@ -42,6 +42,7 @@ public:
   
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
   
 protected:
@@ -69,6 +70,7 @@ public:
   // Distribution
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
   
   // Object
