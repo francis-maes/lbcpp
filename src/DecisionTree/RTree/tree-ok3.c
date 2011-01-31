@@ -378,7 +378,7 @@ void find_the_best_threshold_symb_dist(int att, int *ls_vector, int start, int e
 /* attribut numérique */
 
 void find_a_threshold_at_random_dist(int att, int *ls_vector, int start, int end) {
-  int i; int nb_obj=end-start+1; int st;
+  int i; int st;
   float min=getattval(object_mapping[ls_vector[start]],att);
   float max=min;
   SCORE_TYPE w;
@@ -660,7 +660,7 @@ void compute_node_subset_current_ensemble_weighted(float *ow) {
       int node=stack_open_nodes[index_stack_open_nodes][0];
       int start=stack_open_nodes[index_stack_open_nodes][1];
       int end=stack_open_nodes[index_stack_open_nodes][2];
-      int node_size=end-start+1;
+      //int node_size=end-start+1;
 
       /*
 	printf("node=%d,start=%d,end=%d\n",node,start,end);fflush(stdout);
@@ -1149,7 +1149,7 @@ float get_ensemble_simple_distance_prediction(int obj1, int obj2) {
 float (*get_distance_function)(int o1, int o2)=get_clas_ensemble_distance_prediction;
 
 void get_k_nn_dist(int o, int k, int *lobj, float *ldist, int *ref_set, int ref_set_size) {
-  int i,j=0, pos;
+  int i, pos;
   float current_max_distance=PLUS_INFINI;
 
   for (i=0; i<k; i++) {
@@ -1180,7 +1180,7 @@ void get_k_nn_dist(int o, int k, int *lobj, float *ldist, int *ref_set, int ref_
 /* effectue un test systématique avec le knn et la mesure apprise */
 
 float test_knn_dist_clas(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
-  int i, j, nb_error=0;
+  int i, j;
   int *lobj;
   float *ldist;
   
@@ -1231,7 +1231,7 @@ float test_knn_dist_clas(int *ts_vector, int length_ts_vector, int max_k, double
 }
 
 float test_knn_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
-  int i, j, nb_error=0;
+  int i, j;
   int *lobj;
   float *ldist;
   
@@ -1289,7 +1289,7 @@ float test_knn_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double
 /* idem avec la distance simple proposée par breiman (nb de vote commun) */
 
 float test_knn_simple_dist_clas(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
-  int i, j, nb_error=0;
+  int i, j;
   int *lobj;
   float *ldist;
   
@@ -1340,7 +1340,7 @@ float test_knn_simple_dist_clas(int *ts_vector, int length_ts_vector, int max_k,
 }
 
 float test_knn_simple_dist_regr(int *ts_vector, int length_ts_vector, int max_k, double *lerrors, int *ref_set, int ref_set_size) {
-  int i, j, nb_error=0;
+  int i, j;
   int *lobj;
   float *ldist;
   
@@ -2073,9 +2073,9 @@ void get_ens_objects_weight_mart(int *ts_vector, int ts_vector_size, float *W) {
       fflush(stdout);
     }
 
-    if (print_result) {
+    /*if (print_result) {
       printf("test...",t);fflush(stdout);
-    }
+    }*/
 
     /* on teste les objets de test et on met la feuille atteinte dans ts_vector_leaf_index */
     for (i=0; i<ts_vector_size; i++) {
@@ -2352,7 +2352,7 @@ int compute_mart_ok_uniregr_direction_masscenter(int tree, float *v, ERROR_TYPE 
 
 int compute_mart_ok_uniregr_direction_maxvar(int tree, float *v, ERROR_TYPE *output, int ls_size) {
   int i,j;
-  double norm=0.0;
+  //double norm=0.0;
 
   if (tree<0) { /* cas de base, on choisit la direction correspondant au centre de masse */
 
@@ -2426,7 +2426,7 @@ int compute_mart_ok_uniregr_direction_maxvar(int tree, float *v, ERROR_TYPE *out
 
 int compute_mart_ok_uniregr_direction_random(int tree, float *v, ERROR_TYPE *output, int ls_size) {
   int i,j;
-  double norm=0.0;
+  //double norm=0.0;
 
   if (tree<0) { /* cas de base, on choisit la direction correspondant au centre de masse */
 
@@ -2434,7 +2434,7 @@ int compute_mart_ok_uniregr_direction_random(int tree, float *v, ERROR_TYPE *out
 
   } else {
     float val;
-    int index_max_var=-1, non_null_dir=0, index_random;
+    int non_null_dir=0, index_random;
 
     if (print_result) {
       printf("Computation of a random direction\n");
@@ -2494,7 +2494,7 @@ int compute_mart_ok_uniregr_direction_random(int tree, float *v, ERROR_TYPE *out
 
 int compute_mart_ok_uniregr_direction_randommaxvar(int tree, float *v, ERROR_TYPE *output, int ls_size) {
   int i,j;
-  double norm=0.0;
+  //double norm=0.0;
 
   if (tree<0) { /* cas de base, on choisit la direction correspondant au centre de masse */
 
@@ -2502,7 +2502,7 @@ int compute_mart_ok_uniregr_direction_randommaxvar(int tree, float *v, ERROR_TYP
 
   } else {
     float val;
-    int index_max_var=-1, non_null_dir=0, index_random;
+    int non_null_dir=0, index_random;
 
     if (print_result) {
       printf("Computation of a random direction\n");
@@ -2567,7 +2567,7 @@ int nb_try_dir=10;
 
 int compute_mart_ok_uniregr_direction_fully_random(int tree, float *v, ERROR_TYPE *output, int ls_size) {
   int i,j;
-  double norm=0.0;
+  //double norm=0.0;
 
   if (tree<0) { /* cas de base, on choisit la direction correspondant au centre de masse */
 
@@ -2969,7 +2969,7 @@ void get_ens_objects_weight_mart_ok_uniregr(int *ts_vector, int ts_vector_size, 
     
     if (print_result) {
       printf("t=%d (tree weight=%f)\n",t,ltrees_weight[t]);fflush(stdout);
-      printf("test...",t);fflush(stdout);
+      //printf("test...",t);fflush(stdout);
     }
     /* on teste les objets de test et on met la prediction dans ts_predictions */
     for (i=0; i<ts_vector_size; i++) {

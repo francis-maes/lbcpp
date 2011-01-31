@@ -89,7 +89,7 @@ DllExport void compute_node_subset_current_ensemble(float *ow) {
       int node=stack_open_nodes[index_stack_open_nodes][0];
       int start=stack_open_nodes[index_stack_open_nodes][1];
       int end=stack_open_nodes[index_stack_open_nodes][2];
-      int node_size=end-start+1;
+      //int node_size=end-start+1;
       
       index_stack_open_nodes--;
 
@@ -152,7 +152,7 @@ DllExport void set_weight_prop(int i) {
 
 DllExport void get_ls_object_weight_from_one_tree(int tree, int obj) {
   int i, start,end;
-  int current_node=tree;
+  //int current_node=tree;
   SCORE_TYPE sum_weight=0.0;
 
   node_weight[tree]=1.0;
