@@ -124,6 +124,7 @@ class DenseDoubleObject : public Object
 public:
   DenseDoubleObject(DynamicClassPtr thisClass);
   DenseDoubleObject(DynamicClassPtr thisClass, double initialValue);
+  DenseDoubleObject(DynamicClassPtr thisClass, const std::vector<double>& values);
 
   double& getValueReference(size_t index);
 

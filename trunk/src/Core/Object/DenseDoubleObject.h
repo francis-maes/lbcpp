@@ -67,6 +67,12 @@ DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass, double initialVa
   missingValue = doubleType->getMissingValue().getDouble();
 }
 
+DenseDoubleObject::DenseDoubleObject(DynamicClassPtr thisClass, const std::vector<double>& values)
+  : Object(thisClass), values(values)
+{
+  missingValue = doubleType->getMissingValue().getDouble();
+}
+
 double& DenseDoubleObject::getValueReference(size_t index)
 {
   jassert(index < thisClass->getNumMemberVariables());

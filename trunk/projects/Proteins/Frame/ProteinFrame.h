@@ -15,26 +15,32 @@
 namespace lbcpp
 {
 
-extern ClassPtr cumulativeScoreVectorClass(TypePtr elementsType);
+extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 
-class CumulativeScoreVector : public Object
+class CumulativeScoreVector : public Container
 {
 public:
-  CumulativeScoreVector(TypePtr elementsType)
-    : Object(cumulativeScoreVectorClass(elementsType)) {}
+  CumulativeScoreVector(EnumerationPtr scores)
+    : Container(cumulativeScoreVectorClass(scores)), scores(scores) {}
   CumulativeScoreVector() {}
 
   std::vector<double>& getAccumulatedScores(size_t index)
     {jassert(index < accumulators.size()); return accumulators[index];}
 
-  size_t getNumElements() const
+  virtual size_t getNumElements() const
     {return accumulators.size();}
 
-  void beginCompute(size_t length, size_t numScores)
+  virtual Variable getElement(size_t index) const
+    {return new DenseDoubleObject(enumBasedDoubleVectorClass(scores), accumulators[index]);}
+
+  virtual void setElement(size_t index, const Variable& value)
+    {jassert(false);}
+
+  void beginCompute(size_t length)
   {
     accumulators.clear();
     accumulators.resize(length);
-    accumulators[0].resize(numScores);
+    accumulators[0].resize(scores->getNumElements());
   }
 
   std::vector<double>& computeStep(size_t i)
@@ -48,6 +54,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 private:
+  EnumerationPtr scores;
   std::vector< std::vector<double> > accumulators; // index -> label -> count
 };
 
@@ -65,6 +72,7 @@ public:
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return cumulativeScoreVectorClass(inputType);}
 
+  virtual EnumerationPtr getScoresEnumeration() const = 0;
   virtual void accumulate(ExecutionContext& context, const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const = 0;
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -73,7 +81,7 @@ public:
       return Variable();
 
     const ContainerPtr& container = input.getObjectAndCast<Container>();
-    CumulativeScoreVectorPtr res(new CumulativeScoreVector(container->getElementsType()));
+    CumulativeScoreVectorPtr res(new CumulativeScoreVector(getScoresEnumeration()));
     accumulate(context, container, res);
     return res;
   };
@@ -89,12 +97,16 @@ public:
   AccumulateEnumerationContainerFunction(EnumerationPtr enumeration)
     : AccumulateContainerFunction(enumeration) {}
 
-  virtual void accumulate(ExecutionContext& context, const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
+  virtual EnumerationPtr getScoresEnumeration() const
   {
     const EnumerationPtr& enumeration = elementsType.staticCast<Enumeration>();
+    return addMissingToEnumerationEnumeration(enumeration);
+  }
 
+  virtual void accumulate(ExecutionContext& context, const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
+  {
     size_t n = container->getNumElements();
-    res->beginCompute(n, enumeration->getNumElements() + 1);
+    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);
@@ -110,10 +122,13 @@ public:
   AccumulateEnumerationDistributionContainerFunction(EnumerationPtr enumeration)
     : AccumulateContainerFunction(enumerationDistributionClass(enumeration)), enumeration(enumeration) {}
 
+  virtual EnumerationPtr getScoresEnumeration() const
+    {return addEntropyToEnumerationEnumeration(addMissingToEnumerationEnumeration(enumeration));}
+
   virtual void accumulate(ExecutionContext& context, const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
-    res->beginCompute(n, enumeration->getNumElements() + 2);
+    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);
@@ -135,19 +150,22 @@ class AccumulateDoubleContainerFunction : public AccumulateContainerFunction
 {
 public:
   AccumulateDoubleContainerFunction() : AccumulateContainerFunction(doubleType) {}
+  
+  virtual EnumerationPtr getScoresEnumeration() const
+    {return missingOrPresentEnumeration;}
 
   virtual void accumulate(ExecutionContext& context, const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
-    res->beginCompute(n, 2);
+    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);
       Variable element = container->getElement(i);
       if (element.exists())
-        scores[0] += element.getDouble();
+        scores[1] += element.getDouble();
       else
-        scores[1] += 1.0;
+        scores[0] += 1.0;
     }
   }
 };
@@ -275,6 +293,14 @@ public:
   ProteinFrame(const ProteinPtr& protein)
     //: Object(proteinFrameClass)
   {
+    primaryStructure = protein->getPrimaryStructure();
+    positionSpecificScoringMatrix = protein->getPositionSpecificScoringMatrix();
+    secondaryStructure = protein->getSecondaryStructure();
+    
+    FunctionPtr aaAccumulator = accumulateFunction(primaryStructure->getClass());
+    jassert(aaAccumulator);
+    primaryStructureAccumulator = aaAccumulator->computeFunction(defaultExecutionContext(), primaryStructure).getObjectAndCast<Container>();
+
     //double time = Time::getMillisecondCounterHiRes();
     //setVariable(0, protein->getPrimaryStructure(), time);
     //setVariable(1, protein->getPositionSpecificScoringMatrix(), time);
@@ -285,6 +311,8 @@ protected:
   friend class ProteinFrameClass;
 
   VectorPtr primaryStructure;
+  ContainerPtr primaryStructureAccumulator;
+
   VectorPtr positionSpecificScoringMatrix;
   VectorPtr secondaryStructure;
 };
