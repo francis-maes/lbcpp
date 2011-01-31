@@ -2,11 +2,7 @@
 #ifndef LBCPP_PROTEIN_LEARNING_PARAMETER_H_
 # define LBCPP_PROTEIN_LEARNING_PARAMETER_H_
 
-# include <lbcpp/Core/Object.h>
-# include <lbcpp/Core/Variable.h>
-# include <lbcpp/Distribution/ContinuousDistribution.h>
-# include <lbcpp/Distribution/MultiVariateDistribution.h>
-# include <lbcpp/Inference/InferenceOnlineLearner.h>
+# include <lbcpp/lbcpp.h>
 
 namespace lbcpp
 {
@@ -15,7 +11,8 @@ class LearningParameter : public InferenceOnlineLearnerParameters
 {
 public:
   virtual IndependentMultiVariateDistributionPtr getAprioriDistribution() const = 0;
-  virtual InferenceOnlineLearnerPtr createLearner() const {return InferenceOnlineLearnerPtr();} // FIXME: ExtraTree
+  virtual InferenceOnlineLearnerPtr createLearner() const
+    {jassertfalse; return InferenceOnlineLearnerPtr();}
 };
 
 typedef ReferenceCountedObjectPtr<LearningParameter> LearningParameterPtr;
@@ -23,8 +20,8 @@ typedef ReferenceCountedObjectPtr<LearningParameter> LearningParameterPtr;
 class NumericalLearningParameter : public LearningParameter
 {
 public:
-  NumericalLearningParameter(double learningRate, double learningRateDecrease, double regularizer)
-    : learningRate(learningRate), learningRateDecrease(learningRateDecrease), regularizer(regularizer) {}
+  NumericalLearningParameter(double logLearningRate, double logLearningRateDecrease, double logRegularizer)
+    : learningRate(logLearningRate), learningRateDecrease(logLearningRateDecrease), regularizer(logRegularizer) {}
   NumericalLearningParameter()
     : learningRate(0.0), learningRateDecrease(0.0), regularizer(0.0) {}
 
@@ -40,19 +37,11 @@ public:
   virtual IndependentMultiVariateDistributionPtr getAprioriDistribution() const
   {
     IndependentMultiVariateDistributionPtr apriori = new IndependentMultiVariateDistribution(getClass());
-    apriori->setSubDistribution(0, new UniformDistribution(-5, 5));  // TODO: Logarithmic distribution
-    apriori->setSubDistribution(1, new UniformDistribution(0, 7));   // TODO: Logarithmic distribution
-    apriori->setSubDistribution(2, new UniformDistribution(-10, 0)); // TODO: Logarithmic distribution
+    apriori->setSubDistribution(0, new UniformDistribution(-3, 3));
+    apriori->setSubDistribution(1, new UniformDistribution(0, 7));
+    apriori->setSubDistribution(2, new UniformDistribution(-10, 0));
     return apriori;
   }
-  
-  virtual InferenceOnlineLearnerPtr createLearner() const
-  {
-    return learner->cloneAndCast<InferenceOnlineLearner>();
-  }
-  
-  virtual void setLearner(InferenceOnlineLearnerPtr learner)
-    {this->learner = learner;}
 
   virtual bool loadFromString(ExecutionContext& context, const String& value)
   {
@@ -86,11 +75,35 @@ protected:
   double learningRate;
   double learningRateDecrease;
   double regularizer;
-  
-  InferenceOnlineLearnerPtr learner;
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearningParameter> NumericalLearningParameterPtr;
+
+class SecondaryStructureNumericalLearningParameter : public NumericalLearningParameter
+{
+public:
+  virtual InferenceOnlineLearnerPtr createLeaner() const
+  {
+    InferenceOnlineLearnerPtr res, lastLearner;
+    /* randomizer */
+
+    /* gradient */
+    res = lastLearner = gradientDescentOnlineLearner(perStep,
+                                                     invLinearIterationFunction(getLearningRate(), getLearningRateDecrease()),
+                                                     true,
+                                                     perStepMiniBatch20,
+                                                     l2RegularizerFunction(getRegularizer()));
+    /* online evaluator */
+    lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("trainScore")), false));
+
+    /* stopping criterion */
+    StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(15), 
+                                                       maxIterationsWithoutImprovementStoppingCriterion(2));
+    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
+    return res;
+  }
+};
+
 
 class ExtraTreeLearningParameter : public LearningParameter
 {

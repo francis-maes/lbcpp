@@ -78,7 +78,7 @@ public:
       return false;
     }
 
-    DistributionBuilderPtr scores = enumerationDistributionBuilder(aminoAcidTypeEnumeration);
+    EnumerationDistributionPtr scores = enumerationDistribution(aminoAcidTypeEnumeration);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + (int)i * 3;
@@ -96,15 +96,15 @@ public:
         return false;
       }
 
-      scores->addElement(Variable(index, aminoAcidTypeEnumeration), scoreI);
-      //scores->setProbability(index, normalize(scoreI));
+      scores->setProbability(index, normalize(scoreI));
+      std::cout << scoreI << " ";
     }
 
     String gapScore = line.substring(153, 157).trim();
+    std::cout << gapScore << std::endl;
     
-    scores->addElement(Variable::missingValue(aminoAcidTypeEnumeration), gapScore.getDoubleValue());
-    //scores->setMissingProbability(gapScore.getDoubleValue());
-    pssm->setElement(currentPosition, scores->build(context));
+    scores->setProbability(aminoAcidTypeEnumeration->getNumElements() + 1, normalize(gapScore.getDoubleValue()));
+    pssm->setElement(currentPosition, scores);
 
     ++currentPosition;
     return true;

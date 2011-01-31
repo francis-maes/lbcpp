@@ -7,13 +7,15 @@
     <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
   </class>
 
-  <class name="LearningParameter" base="Object" abstract="yes"/>
+  <class name="LearningParameter" base="InferenceOnlineLearnerParameters" abstract="yes"/>
 
   <class name="NumericalLearningParameter" base="LearningParameter">
     <variable type="Double" name="learningRate"/>
     <variable type="Double" name="learningRateDecrease"/>
     <variable type="Double" name="regularizer"/>
   </class>
+  
+  <class name="SecondaryStructureNumericalLearningParameter" base="NumericalLearningParameter"/>
   
   <class name="ExtraTreeLearningParameter" base="LearningParameter">
     <variable type="PositiveInteger" name="numTrees"/>

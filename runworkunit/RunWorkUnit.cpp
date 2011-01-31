@@ -18,6 +18,7 @@ void usage()
   std::cerr << "  --numThreads : the number of threads to use. Default value: n = the number of cpus." << std::endl;
   std::cerr << "  --library : add a dynamic library to load." << std::endl;
   std::cerr << "  --trace : output file to save the execution trace." << std::endl;
+  std::cerr << "  --projectDirectory : project directory where find files." << std::endl;
 }
 
 bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads, File& traceOutputFile)
@@ -67,6 +68,22 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
       traceOutputFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (traceOutputFile.exists())
         traceOutputFile.deleteFile();
+    }
+    else if (argument == T("--projectDirectory"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      File projectDirectory = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      if (!projectDirectory.isDirectory())
+      {
+        context.errorCallback(T("Invalid Project Directory"));
+        return false;
+      }
+      context.setProjectDirectory(projectDirectory);
     }
     else
       remainingArguments.push_back(argument);

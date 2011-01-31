@@ -30,6 +30,7 @@ public:
   bool receiveObject(juce::int64 timeout, ReferenceCountedObjectPtr<O>& result);
   bool receiveBoolean(juce::int64 timeout, bool& result);
   bool receiveString(juce::int64 timeout, String& result);
+  bool receiveInteger(juce::int64 timeout, int& result);
 
   bool hasVariableInQueue();
 
