@@ -2,18 +2,15 @@
 
 <library name="ProteinFrame" directory="Frame">
 
-  <template name="CumulativeScoreVector" base="Container[EnumBasedDoubleVector[scoresEnumeration,Double]]">
-    <parameter name="scoresEnumeration" type="EnumValue"/>
-  </template>
-  
   <class name="ProteinFrame" base="Object">
     <!-- Primary Structure -->
     <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="AA"/>
     <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
-    <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
+    <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
 
     <variable type="CumulativeScoreVector[AddMissingToEnumeration[AminoAcidType]]" name="primaryStructureAccumulator"/>
-    
+    <variable type="CumulativeScoreVector[AddEntropyToEnumeration[AddMissingToEnumeration[AminoAcidType]]]" name="positionSpecificScoringMatrixAccumulator"/>
+
     <!--
     <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>
     <variable function="mean()" input="primaryStructureAccumulated" name="primaryStructureDistribution" shortName="AAd"/>

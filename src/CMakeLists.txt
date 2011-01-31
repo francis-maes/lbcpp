@@ -22,6 +22,7 @@ GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml Exec
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/Function/FunctionFunctionLibrary.xml FunctionFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsLibrary.xml MiscFunctionsLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml ScalarObjectFunctionLibrary.cpp)
@@ -248,6 +249,12 @@ SET(LBCPP_FUNCTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
 
+SET(LBCPP_FUNCTION_FUNCTION_SOURCES
+  Function/Function/AccumulateContainerFunction.h
+  Function/Function/FunctionFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FunctionFunctionLibrary.cpp
+)  
+  
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/ComposeFunction.h
@@ -672,6 +679,7 @@ SET(LBCPP_CORE
   
   # Function
   ${LBCPP_FUNCTION_SOURCES}
+    ${LBCPP_FUNCTION_FUNCTION_SOURCES}
     ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
@@ -747,6 +755,7 @@ SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
 ## Function
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Function "Function (Operators)" FILES ${LBCPP_FUNCTION_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})

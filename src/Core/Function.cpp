@@ -30,3 +30,30 @@ bool Function::checkExistence(ExecutionContext& context, const Variable& variabl
   }
   return true;
 }
+
+#include "../Function/Function/AccumulateContainerFunction.h"
+
+namespace lbcpp
+{
+
+FunctionPtr accumulateFunction(TypePtr inputType)
+{
+  if (inputType->inheritsFrom(containerClass(anyType)))
+  {
+    TypePtr elementsType = inputType->getTemplateArgument(0); // FIXME: cast into container base class !!!!
+    if (elementsType.dynamicCast<Enumeration>())
+      return new AccumulateEnumerationContainerFunction(elementsType);
+    else if (elementsType->inheritsFrom(doubleType))
+      return new AccumulateDoubleContainerFunction();
+    else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
+    {
+      EnumerationPtr enumeration = elementsType->getTemplateArgument(0).dynamicCast<Enumeration>();
+      jassert(enumeration);
+      return new AccumulateEnumerationDistributionContainerFunction(enumeration);
+    }
+  }
+
+  return FunctionPtr();
+}
+
+}; /* namespace lbcpp */

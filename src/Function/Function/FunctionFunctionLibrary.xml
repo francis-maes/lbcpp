@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="FunctionFunction" directory="Function/Function">
+
+
+  <template name="CumulativeScoreVector" base="Container[EnumBasedDoubleVector[scoresEnumeration,Double]]">
+    <parameter name="scoresEnumeration" type="EnumValue"/>
+  </template>
+
+  <class name="AccumulateContainerFunction" base="Function" abstract="yes">
+    <variable type="Type" name="elementsType"/>
+  </class>
+  <class name="AccumulateEnumerationContainerFunction" base="AccumulateContainerFunction"/>
+  <class name="AccumulateEnumerationDistributionContainerFunction" base="AccumulateContainerFunction">
+    <variable type="Enumeration" name="enumeration"/>
+  </class>
+  <class name="AccumulateDoubleContainerFunction" base="AccumulateContainerFunction"/>
+
+
+</library>
