@@ -18,7 +18,7 @@ namespace lbcpp
 class NetworkRequest : public Object
 {
 public:
-  enum {unknown, waitingOnManager, waitingOnServer, running, finished};
+  enum {communicationError, unknown, waitingOnManager, waitingOnServer, running, finished, iDontHaveThisWorkUnit};
   
   NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination)
     : identifier(identifier), projectName(projectName), source(source), destination(destination), status(unknown) {}
@@ -111,7 +111,11 @@ public:
   virtual void sendInterfaceClass()
     {client->sendVariable(getClass());}
   
-  virtual void closeCommunication();
+  virtual void closeCommunication()
+    {jassertfalse;}
+  
+  virtual String getNodeName() const
+  {jassertfalse; return T("");}
   
 protected:
   ExecutionContext& context;
@@ -123,8 +127,6 @@ typedef ReferenceCountedObjectPtr<NetworkInterface> NetworkInterfacePtr;
 class NodeNetworkInterface : public NetworkInterface
 {
 public:
-  enum {communicationError, waiting, running, finished, iDontHaveThisWorkUnit};
-  
   virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr workUnit) = 0;
   virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr workUnit) const = 0;
   virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr workUnit) const = 0;
@@ -218,7 +220,7 @@ public:
   virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
   {
     client->sendVariable(new GetWorkUnitStatusNotification(request));
-    int res = communicationError;
+    int res = NetworkRequest::communicationError;
     if (!client->receiveInteger(10000, res))
       context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::getWorkUnitStatut"));
     return res;
@@ -249,14 +251,14 @@ public:
   {
     File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
     if (f.exists())
-      return waiting;
+      return NetworkRequest::waitingOnServer;
     f = context.getFile(T("InProgress/") + request->getIdentifier() + T(".workUnit"));
     if (f.exists())
-      return running;
+      return NetworkRequest::running;
     f = context.getFile(T("Finished/") + request->getIdentifier() + T(".workUnit"));
     if (f.exists())
-      return finished;
-    return iDontHaveThisWorkUnit;
+      return NetworkRequest::finished;
+    return NetworkRequest::iDontHaveThisWorkUnit;
   }
 
   virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
@@ -286,7 +288,7 @@ public:
     NetworkRequestPtr res = request->getNetworkRequest();
     File f = context.getFile(T("Requests/") + res->getIdentifier() + T(".request"));
     res->saveToFile(context, f);
-    f = context.getFile(T("WaitingWorkUnit/") + res->getIdentifier() + T(".workUnit"));
+    f = context.getFile(T("WorkUnits/") + res->getIdentifier() + T(".workUnit"));
     request->getWorkUnit()->saveToFile(context, f);
 
     requests.push_back(res);
@@ -307,10 +309,23 @@ public:
       return ExecutionTracePtr();
     return Object::createFromFile(context, f);
   }
+  
+  void getRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const
+  {
+    jassertfalse;
+  }
+  
+  WorkUnitNetworkRequestPtr getWorkUnit(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    File f = context.getFile(T("WorkUnits/") + request->getIdentifier() + T(".workUnit"));
+    return Object::createFromFile(context, f);
+  }
 
 protected:
   std::vector<NetworkRequestPtr> requests;
 };
+
+typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
 
 class ManagerWorkUnit : public WorkUnit
 {
@@ -326,7 +341,7 @@ public:
       return false;
     }
     
-    NodeNetworkInterfacePtr managerInterface = new ManagerNodeNetworkInterface();
+    ManagerNodeNetworkInterfacePtr managerInterface = new ManagerNodeNetworkInterface();
     
     while (true)
     {
@@ -394,9 +409,32 @@ protected:
     }
   }
   
-  void clientCommunication(NodeNetworkInterfacePtr interface) const
+  void clientCommunication(ManagerNodeNetworkInterfacePtr interface) const
   {
-  
+    String nodeName = interface->getNodeName();
+    if (nodeName == String::empty)
+    {
+      interface->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Fail - Empty node name"));
+      return;
+    }
+    
+    /* Update status */
+    std::vector<NetworkRequestPtr> requests;
+    interface->getRequestsSentTo(nodeName, requests);
+    for (size_t i = 0; i < requests.size(); ++i)
+    {
+      int status = interface->getWorkUnitStatus(interface->getContext(), requests[i]);
+      if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
+        interface->pushWorkUnit(interface->getContext(), interface->getWorkUnit(interface->getContext(), requests[i]));
+      int oldStatus = requests[i]->getStatus();
+      requests[i]->setStatus(status);
+      // On change : Save request
+      if (oldStatus != status)
+      {
+        File f = interface->getContext().getFile(T("Requests/") + requests[i]->getIdentifier() + T(".request"));
+        requests[i]->saveToFile(interface->getContext(), f);
+      }
+    }
   }
 };
 
