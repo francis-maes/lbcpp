@@ -4302,7 +4302,7 @@ int test_tree_classification(int tree, int *ts_vector, int length_ts_vector) {
   }
   
   error=(float)nb_error*1.0/length_ts_vector;
-  printf("Error rate: %f\% - %d/%d\n", error*100.0 , nb_error, length_ts_vector);
+  //printf("Error rate: %f\% - %d/%d\n", error*100.0 , nb_error, length_ts_vector);
   fflush(stdout);
   return nb_error;
 }
@@ -4868,10 +4868,10 @@ float update_test_data_clas(int tree, float weight, int *ts_vector, int length_t
   current_error_single=nb_error_single*1.0/length_ts_vector;
   current_error_combined=nb_error_combined*1.0/length_ts_vector;
 
-  if (print_result)
+  /*if (print_result)
     printf("error single %f\%  - %d/%d - error combined %f\% - %d/%d",100.0*current_error_single,
 	   nb_error_single, length_ts_vector, nb_error_combined*100.0/length_ts_vector, 
-	   nb_error_combined, length_ts_vector);
+	   nb_error_combined, length_ts_vector);*/
   return (nb_error_combined*100.0/length_ts_vector);
 }
 
@@ -5296,8 +5296,8 @@ DllExport float test_current_ltrees_clas(int* ts_vector, int length_ts_vector) {
   }
   
   /* affichage de l'erreur */
-  printf("error combined %f\% - %d/%d\n", nb_error_combined*100.0/length_ts_vector,
-	 nb_error_combined, length_ts_vector);
+  /*printf("error combined %f\% - %d/%d\n", nb_error_combined*100.0/length_ts_vector,
+	 nb_error_combined, length_ts_vector);*/
   fflush(stdout);
 
   free_table_float(test_data,length_ts_vector);
@@ -6098,8 +6098,8 @@ float test_ltrees_oob() {
     }
   
     /* affichage de l'erreur */
-    printf("Out-of-bag error combined %f\% - %d/%d\n", nb_error_combined*100.0/global_learning_set_size,
-	   nb_error_combined, global_learning_set_size);
+    /*printf("Out-of-bag error combined %f\% - %d/%d\n", nb_error_combined*100.0/global_learning_set_size,
+	   nb_error_combined, global_learning_set_size);*/
     fflush(stdout);
 
     /* liberation de la memoire */

@@ -232,7 +232,7 @@ DllExport float apply_allnn_ltrees_regr_pred_fast(int o) {
   double sum=0.0;
 
   for (t=0; t<current_nb_of_ensemble_terms; t++) {
-    float *pred=get_tree_prediction_vector(ltrees[t], o);
+    //float *pred=get_tree_prediction_vector(ltrees[t], o);
     matrix_pred[t]=get_tree_prediction_vector(ltrees[t], o);
   }
 

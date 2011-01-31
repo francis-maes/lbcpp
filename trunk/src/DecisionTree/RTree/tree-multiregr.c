@@ -974,8 +974,8 @@ void compute_ltrees_variable_importance_multiregr_separate(SCORE_TYPE *attribute
    */
 
   int i,t,j;
-  SCORE_TYPE sum_val=0.0, sum_weight=0.0;
-  SCORE_TYPE sum_val2=0.0;
+  SCORE_TYPE sum_weight=0.0;
+  //SCORE_TYPE sum_val2=0.0;
   int *ts_vector=current_learning_set;
   int length_ts_vector=global_learning_set_size;
 
@@ -1140,7 +1140,7 @@ float getobjy_multiregr_learn_temp(int o, int g) {
 }
 
 float make_ls_vector_mart_multiregr(int tree) {
-  int i,j, nb_error=0;
+  int i,j;
 
   if (tree<0) { /* initialisation */
     for (i=0; i<global_learning_set_size; i++)

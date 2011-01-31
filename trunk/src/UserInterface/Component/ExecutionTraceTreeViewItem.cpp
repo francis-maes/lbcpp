@@ -188,7 +188,7 @@ void ExecutionTraceTreeViewNode::itemOpennessChanged(bool isNowOpen)
   {
     if (!hasBeenOpened)
       hasBeenOpened = true;
-    if (getTraceNode()->getNumSubItems() != getNumSubItems())
+    if (getTraceNode()->getNumSubItems() != (size_t)getNumSubItems())
     {
       clearSubItems();
       createSubItems();
