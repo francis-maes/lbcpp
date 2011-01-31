@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Operator" directory="Function/Operator">
+
+
+  <template name="CumulativeScoreVector" base="Container[EnumBasedDoubleVector[scoresEnumeration,Double]]">
+    <parameter name="scoresEnumeration" type="EnumValue"/>
+  </template>
+
+  <class name="AccumulateContainerOperator" base="Function" abstract="yes">
+    <variable type="Type" name="elementsType"/>
+  </class>
+  <class name="AccumulateEnumerationContainerOperator" base="AccumulateContainerOperator"/>
+  <class name="AccumulateEnumerationDistributionContainerOperator" base="AccumulateContainerOperator">
+    <variable type="Enumeration" name="enumeration"/>
+  </class>
+  <class name="AccumulateDoubleContainerOperator" base="AccumulateContainerOperator"/>
+
+</library>
