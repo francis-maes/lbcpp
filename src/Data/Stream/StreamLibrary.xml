@@ -9,11 +9,11 @@
   
   <!-- Learning Data Parsers -->
   <class name="ClassificationDataTextParser" base="LearningDataTextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, EnumerationPtr outputLabels"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels"/>
   </class>
 
   <class name="MultiLabelClassificationDataTextParser" base="LearningDataTextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, EnumerationPtr outputLabels"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels"/>
   </class>
 
   <!-- Directory iterators -->

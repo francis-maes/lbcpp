@@ -50,6 +50,7 @@ String EnumerationDistribution::toString() const
 {
   EnumerationPtr enumeration = getEnumeration();
   String str;
+  bool hasOneLetterCodes = enumeration->hasOneLetterCodes();
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i])
     {
@@ -57,10 +58,11 @@ String EnumerationDistribution::toString() const
         str += ' ';
       if (i == values.size() - 1)
         str += '_';
-      else if (enumeration->hasOneLetterCodes())
-        str += enumeration->getOneLetterCode(i);
+      EnumerationElementPtr element = enumeration->getElement(i);
+      if (hasOneLetterCodes)
+        str += element->getOneLetterCode();
       else
-        str += enumeration->getElementName(i);
+        str += element->getName();
       str += ' ';
       str += String(values[i]);
     }
@@ -121,18 +123,20 @@ bool EnumerationDistribution::loadFromString(ExecutionContext& context, const St
     return false;
   }
   
+  bool hasOneLetterCodes = enumeration->hasOneLetterCodes();
+  
   for (int i = 0; i < tokens.size() - 1; i += 2)
   {
     String indexString = tokens[i];
     double value = tokens[i+1].getDoubleValue();
     int index;
-    if (enumeration->hasOneLetterCodes() && indexString.length() == 1)
+    if (hasOneLetterCodes && indexString.length() == 1)
     {
       if (indexString[0] == '_')
         index = (int)enumeration->getNumElements();
       else
       {
-        index = enumeration->getOneLetterCodes().indexOfChar(indexString[0]);
+        index = enumeration->findElementByOneLetterCode(indexString[0]);
         if (index < 0)
         {
           context.errorCallback(T("DiscreteDistribution::loadFromString"), T("Could not find one-letter code ") + indexString.quoted());
@@ -142,7 +146,7 @@ bool EnumerationDistribution::loadFromString(ExecutionContext& context, const St
     }
     else
     {
-      index = enumeration->findElement(indexString);
+      index = enumeration->findElementByName(indexString);
       if (index < 0)
       {
         context.errorCallback(T("DiscreteDistribution::loadFromString"), T("Could not find element ") + indexString.quoted());

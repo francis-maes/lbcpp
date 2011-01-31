@@ -269,16 +269,24 @@ protected:
 };
 
 
-class ProteinFrame : public Frame
+class ProteinFrame : public Object
 {
 public:
   ProteinFrame(const ProteinPtr& protein)
-    : Frame(proteinFrameClass)
+    //: Object(proteinFrameClass)
   {
-    double time = Time::getMillisecondCounterHiRes();
-    setVariable(0, protein->getPrimaryStructure(), time);
-    setVariable(1, protein->getPositionSpecificScoringMatrix(), time);
+    //double time = Time::getMillisecondCounterHiRes();
+    //setVariable(0, protein->getPrimaryStructure(), time);
+    //setVariable(1, protein->getPositionSpecificScoringMatrix(), time);
   }
+  ProteinFrame() {}
+
+protected:
+  friend class ProteinFrameClass;
+
+  VectorPtr primaryStructure;
+  VectorPtr positionSpecificScoringMatrix;
+  VectorPtr secondaryStructure;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;

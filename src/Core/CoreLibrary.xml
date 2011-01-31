@@ -100,4 +100,25 @@
       }
     </code>
   </template>
+
+  <template name="AddMissingToEnumeration" metaclass="Enumeration">
+    <parameter name="enumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getEnumeration()-&gt;getNumElements() + 1;}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        if (index &lt; enumeration-&gt;getNumElements())
+          return enumeration->getElement(index);
+        else
+          return new EnumerationElement(T("missing"), T("_"), String::empty, T("Missing Value"));
+      }
+      </code>
+  </template>
+            
 </library>

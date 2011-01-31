@@ -214,10 +214,10 @@ protected:
     Declaration declaration = Declaration::makeType(enumName, T("Enumeration"));
     declarations.push_back(declaration);
     
-    openClass(declaration.implementationClassName, T("Enumeration"));
+    openClass(declaration.implementationClassName, T("DefaultEnumeration"));
 
     // constructor
-    openScope(declaration.implementationClassName + T("() : Enumeration(T(") + enumName.quoted() + T("))"));
+    openScope(declaration.implementationClassName + T("() : DefaultEnumeration(T(") + enumName.quoted() + T("))"));
     closeScope();
 
     newLine();
@@ -225,7 +225,7 @@ protected:
     openScope(T("virtual bool initialize(ExecutionContext& context)"));
       forEachXmlChildElementWithTagName(*xml, elt, T("value"))
         generateEnumValueInInitialize(elt);
-      writeLine(T("return Enumeration::initialize(context);"));
+      writeLine(T("return DefaultEnumeration::initialize(context);"));
     closeScope();
     newLine();
 
@@ -251,8 +251,9 @@ protected:
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
     String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String metaClass = getMetaClass(classBaseClass);
 
-    Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, T("Class")) : Declaration::makeType(className, T("Class"));
+    Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, metaClass) : Declaration::makeType(className, metaClass);
     if (!isTemplate)
       declarations.push_back(declaration);
 
@@ -424,6 +425,14 @@ protected:
     newLine();
   }
 
+  static String getMetaClass(const String& classBaseClass)
+  {
+    if (classBaseClass == T("Enumeration"))
+      return T("Enumeration");
+    else
+      return T("Class");
+  }
+
   /*
   ** Template
   */
@@ -431,8 +440,10 @@ protected:
   {
     String className = xml->getStringAttribute(T("name"), T("???"));
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
-    
-    Declaration declaration = Declaration::makeTemplateType(className, T("TemplateClass"));
+    String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
+    String metaClass = getMetaClass(classBaseClass);
+
+    Declaration declaration = Declaration::makeTemplateType(className, T("Template") + metaClass);
     declarations.push_back(declaration);
 
     openClass(declaration.implementationClassName, T("DefaultTemplateType"));
@@ -456,22 +467,22 @@ protected:
 
     // instantiate
     openScope(T("virtual TypePtr instantiate(ExecutionContext& context, const std::vector<TypePtr>& arguments, TypePtr baseType) const"));
-      writeLine(T("return new ") + className + T("Class(refCountedPointerFromThis(this), arguments, baseType);"));
+      writeLine(T("return new ") + className + metaClass + T("(refCountedPointerFromThis(this), arguments, baseType);"));
     closeScope();
     newLine();
 
     closeClass();
 
     // class declarator
-    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className);
+    String classNameWithFirstLowerCase = replaceFirstLettersByLowerCase(className) + metaClass;
     if (parameters.size() == 0)
       std::cerr << "Error: No parameters in template. Type = " << (const char *)className << std::endl;
     else if (parameters.size() == 1)
-      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type)"),
+      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type)"),
       T("return lbcpp::getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
           //T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
     else if (parameters.size() == 2)
-      writeShortFunction(T("ClassPtr ") + classNameWithFirstLowerCase + T("Class(TypePtr type1, TypePtr type2)"),
+      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type1, TypePtr type2)"),
         T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
           //T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
     else

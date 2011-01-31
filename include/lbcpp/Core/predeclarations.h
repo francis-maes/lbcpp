@@ -53,6 +53,9 @@ typedef ReferenceCountedObjectPtr<Class> ClassPtr;
 class Enumeration;
 typedef ReferenceCountedObjectPtr<Enumeration> EnumerationPtr;
 
+class DefaultEnumeration;
+typedef ReferenceCountedObjectPtr<DefaultEnumeration> DefaultEnumerationPtr;
+
 class TemplateType;
 typedef ReferenceCountedObjectPtr<TemplateType> TemplateTypePtr;
 

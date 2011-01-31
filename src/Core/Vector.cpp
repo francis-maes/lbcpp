@@ -24,14 +24,13 @@ String Vector::toString() const
   if (enumeration && enumeration->hasOneLetterCodes())
   {
     String value;
-    String oneLetterCodes = enumeration->getOneLetterCodes();
     for (size_t i = 0; i < n; ++i)
     {
       Variable variable = getElement(i);
       if (variable.isMissingValue())
         value += '_';
       else
-        value += oneLetterCodes[variable.getInteger()];
+        value += enumeration->getElement(variable.getInteger())->getOneLetterCode();
     }
     return value;
   }
@@ -225,10 +224,9 @@ bool GenericVector::loadFromXml(XmlImporter& importer)
       return false;
     }
     
-    String oneLetterCodes = enumeration->getOneLetterCodes();
     for (size_t i = 0; i < values.size(); ++i)
     {
-      int j = oneLetterCodes.indexOfChar(text[(int)i]);
+      int j = enumeration->findElementByOneLetterCode(text[(int)i]);
       if (j >= 0)
         values[i] = VariableValue(j);
       else

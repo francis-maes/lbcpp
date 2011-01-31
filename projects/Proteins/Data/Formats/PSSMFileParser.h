@@ -89,7 +89,7 @@ public:
         return false;
       }
       int scoreI = score.getIntValue();
-      int index = aminoAcidTypeEnumeration->getOneLetterCodes().indexOf(aminoAcidsIndex[i]);
+      int index = aminoAcidTypeEnumeration->findElementByOneLetterCode(aminoAcidsIndex[i][0]);
       if (index < 0)
       {
         context.errorCallback(T("PSSMFileParser::parseLine"), T("Unknown amino acid: '") + aminoAcidsIndex[i] + T("'"));
