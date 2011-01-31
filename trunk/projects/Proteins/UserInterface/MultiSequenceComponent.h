@@ -235,7 +235,11 @@ private:
       g.setFont(12.f);
       String res = T("?");
       if (value.exists())
-        res[0] = type.dynamicCast<Enumeration>()->getOneLetterCode(value.getInteger());
+      {
+        EnumerationElementPtr element = type.dynamicCast<Enumeration>()->getElement(value.getInteger());
+        if (element->getOneLetterCode().length() == 1)
+          res[0] = element->getOneLetterCode()[0];
+      }
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
     }

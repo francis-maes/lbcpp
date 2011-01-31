@@ -94,7 +94,7 @@ public:
     if (secondaryStructureCode == T(" "))
       secondaryStructureCode = T("C");
     EnumerationPtr dsspEnum = dsspSecondaryStructureElementEnumeration;
-    int secondaryStructureIndex = dsspEnum->getOneLetterCodes().indexOf(secondaryStructureCode);
+    int secondaryStructureIndex = dsspEnum->findElementByOneLetterCode(secondaryStructureCode[0]);
     if (secondaryStructureIndex < 0)
     {
       context.errorCallback(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));

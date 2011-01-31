@@ -19,7 +19,7 @@ namespace lbcpp
 class MultiLabelClassificationDataTextParser : public LearningDataTextParser
 {
 public:
-  MultiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels)
+  MultiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels)
     : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
   {
     elementsType = pairClass(inputClass, enumBasedDoubleVectorClass(outputLabels, probabilityType));
@@ -54,7 +54,7 @@ public:
 
 private:
   DynamicClassPtr inputClass;
-  EnumerationPtr outputLabels;
+  DefaultEnumerationPtr outputLabels;
   TypePtr elementsType;
 };
 

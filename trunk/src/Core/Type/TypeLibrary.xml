@@ -59,8 +59,14 @@
     </code>
   </class>
 
+  <class name="EnumerationElement" base="Object">
+    <variable type="String" name="name"/>
+    <variable type="String" name="oneLetterCode"/>
+    <variable type="String" name="shortName"/>
+    <variable type="String" name="description"/>
+  </class>
+
   <class name="Enumeration" base="Type" abstract="yes">
-    <variable type="String" name="oneLetterCodes"/>
     <code>
       virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
         {return Type::createFromString(context, value);}

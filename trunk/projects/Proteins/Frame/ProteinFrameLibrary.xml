@@ -2,12 +2,13 @@
 
 <library name="ProteinFrame" directory="Frame">
 
-  <class name="ProteinFrame" base="Object" metaclass="FrameClass">
+  <class name="ProteinFrame" base="Object">
     <!-- Primary Structure -->
     <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="AA"/>
     <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
     <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
 
+    
     <!--
     <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>
     <variable function="mean()" input="primaryStructureAccumulated" name="primaryStructureDistribution" shortName="AAd"/>

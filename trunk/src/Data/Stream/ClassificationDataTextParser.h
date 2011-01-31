@@ -19,7 +19,7 @@ namespace lbcpp
 class ClassificationDataTextParser : public LearningDataTextParser
 {
 public:
-  ClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, EnumerationPtr outputLabels)
+  ClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels)
     : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
   {
     elementsType = pairClass(inputClass, outputLabels);
@@ -41,7 +41,7 @@ public:
 
 private:
   DynamicClassPtr inputClass;
-  EnumerationPtr outputLabels;
+  DefaultEnumerationPtr outputLabels;
   TypePtr elementsType;
 };
 

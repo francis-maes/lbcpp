@@ -199,12 +199,41 @@ extern TypePtr sumType(const std::vector<TypePtr>& types);
 /*
 ** Enumeration
 */
+class EnumerationElement : public Object
+{
+public:
+  EnumerationElement(const String& name = String::empty, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty)
+    : name(name), oneLetterCode(oneLetterCode), shortName(shortName), description(description) {}
+
+  virtual String getName() const
+    {return name;}
+
+  const String& getOneLetterCode() const
+    {return oneLetterCode;}
+
+  const String& getShortName() const
+    {return shortName;}
+
+  const String& getDescription() const
+    {return description;}
+
+private:
+  friend class EnumerationElementClass;
+
+  String name;
+  String oneLetterCode;
+  String shortName;
+  String description;
+};
+
+typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
+
 class Enumeration : public Type
 {
 public:
-  Enumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
-  Enumeration(const String& name, const String& oneLetterCodes);
   Enumeration(const String& name);
+  Enumeration(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+    : Type(templateType, templateArguments, baseClass) {}
 
   virtual ClassPtr getClass() const;
 
@@ -217,33 +246,50 @@ public:
 
   virtual String toString(const VariableValue& value) const;
 
-  virtual size_t getNumElements(const VariableValue& value) const
-    {return 0;}
-
-  // FIXME: names are not very good
-  size_t getNumElements() const
-    {return elements.size();}
+  // elements
+  virtual size_t getNumElements() const = 0;
+  virtual EnumerationElementPtr getElement(size_t index) const = 0;
 
   String getElementName(size_t index) const
-    {jassert(index < elements.size()); return elements[index];}
+    {return getElement(index)->getName();}
 
-  int findElement(const String& name) const;
-  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& threeLettersCode = String::empty);
-  size_t findOrAddElement(ExecutionContext& context, const String& name);
-
-  // --
+  int findElementByName(const String& name) const;
+  int findElementByOneLetterCode(const juce::tchar c) const;
 
   bool hasOneLetterCodes() const;
+
+  // --
+  /*
   juce::tchar getOneLetterCode(size_t index) const;
-  String getOneLetterCodes() const;
+  String getOneLetterCodes() const;*/
 
   lbcpp_UseDebuggingNewOperator
 
-private:
-  friend class EnumerationClass;
+//private:
+  //friend class EnumerationClass;
 
-  std::vector<String> elements; // use Vector ?
-  String oneLetterCodes;
+  //std::vector<String> elements; // use Vector ?
+  //String oneLetterCodes;
+};
+
+class DefaultEnumeration : public Enumeration
+{
+public:
+  DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
+  DefaultEnumeration(const String& name, const String& oneLetterCodes);
+  DefaultEnumeration(const String& name);
+
+  virtual size_t getNumElements() const
+    {return elements.size();}
+
+  virtual EnumerationElementPtr getElement(size_t index) const
+    {jassert(index < elements.size()); return elements[index];}
+
+  void addElement(ExecutionContext& context, const String& elementName, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
+  size_t findOrAddElement(ExecutionContext& context, const String& name);
+
+private:
+  std::vector<EnumerationElementPtr> elements;
 };
 
 /*
