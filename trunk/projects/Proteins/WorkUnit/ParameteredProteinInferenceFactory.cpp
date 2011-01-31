@@ -83,12 +83,20 @@ LearningParameterPtr ParameteredProteinInferenceFactory::getParameter(const Stri
 {
   if (learningParameters.count(targetName) && learningParameters.find(targetName)->second.count(stage))
     return learningParameters.find(targetName)->second.find(stage)->second;
-  return defaultParameter;
+  return getDefaultParameter(targetName);
 }
 
 void ParameteredProteinInferenceFactory::setDefaultParameter(LearningParameterPtr defaultParameter)
 {
   this->defaultParameter = defaultParameter;
+}
+
+LearningParameterPtr ParameteredProteinInferenceFactory::getDefaultParameter(const String& targetName) const
+{
+  if (targetName == T("secondaryStructure"))
+    return new SecondaryStructureNumericalLearningParameter();
+  jassertfalse;
+  return defaultParameter;
 }
 
 void ParameteredProteinInferenceFactory::setTargetInferenceToOptimize(const String& targetName, size_t targetStage)
@@ -182,7 +190,6 @@ InferencePtr NumericalProteinInferenceFactory::createOptimizer(const String& tar
 {
   OptimizerPtr optimizer = iterativeBracketingOptimizer(4, 2.0, uniformSampleAndPickBestOptimizer(7));
   NumericalLearningParameterPtr parameter = getCurrentStageParameter(targetName);
-  parameter->setLearner(createOnlineLearner(targetName));
   IndependentMultiVariateDistributionPtr aprioriDistribution = parameter->getAprioriDistribution();
   InferencePtr autoTuneBatchLearner = autoTuneStochasticInferenceLearner(optimizer, aprioriDistribution, parameter);
   ((NumericalSupervisedInferencePtr)inference)->getSubInference()->setBatchLearner(precomputePerceptionsNumericalInferenceLearner(autoTuneBatchLearner));
@@ -265,6 +272,5 @@ InferencePtr MultiClassLinearSVMProteinInferenceFactory::createBinaryClassifier(
 InferencePtr MultiClassLinearSVMProteinInferenceFactory::createMultiClassClassifier(const String& targetName, PerceptionPtr perception, EnumerationPtr classes) const
 {
   NumericalSupervisedInferencePtr res = multiClassLinearSVMInference(targetName, perception, classes, (forceMostViolated || targetName == T("structuralAlphabet")));
-  res->setStochasticLearner(createOnlineLearner(targetName));
   return res;
 }

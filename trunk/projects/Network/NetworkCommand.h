@@ -14,6 +14,415 @@
 
 namespace lbcpp
 {
+
+class NetworkRequest : public Object
+{
+public:
+  enum {unknown, waitingOnManager, waitingOnServer, running, finished};
+  
+  NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination)
+    : identifier(identifier), projectName(projectName), source(source), destination(destination), status(unknown) {}
+  NetworkRequest() {}
+  
+  String getIdentifier() const
+    {return identifier;}
+  
+  String getProjectName() const
+    {return projectName;}
+  
+  String getSource() const
+    {return source;}
+  
+  String getDestination() const
+    {return destination;}
+  
+  int getStatus() const
+    {return status;}
+  
+  void setStatus(int status)
+    {this->status = status;}
+  
+  void selfGenerateIdentifier()
+    {identifier = generateIdentifier();}
+  
+protected:
+  String identifier;
+  String projectName;
+  String source;
+  String destination;
+  int status;
+
+  static juce::int64 lastIdentifier;
+  
+  String generateIdentifier()
+  {
+    juce::int64 res = Time::currentTimeMillis();
+    if (res != lastIdentifier)
+    {
+      lastIdentifier = res;
+      return String(res);
+    }
+    juce::Thread::sleep(1);
+    return generateIdentifier();
+  }
+};
+
+typedef ReferenceCountedObjectPtr<NetworkRequest> NetworkRequestPtr;
+  
+class WorkUnitNetworkRequest : public NetworkRequest
+{
+public:
+  WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projetName, const String& source, const String& destination)
+    : NetworkRequest(generateIdentifier(), projectName, source, destination), workUnit(workUnit) {}
+  WorkUnitNetworkRequest() {}
+
+  WorkUnitPtr getWorkUnit() const
+    {return workUnit;}
+
+  NetworkRequestPtr getNetworkRequest() const
+    {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination());}
+
+protected:
+  WorkUnitPtr workUnit;
+};
+
+typedef ReferenceCountedObjectPtr<WorkUnitNetworkRequest> WorkUnitNetworkRequestPtr;
+
+/*
+** NetworkInterface
+*/
+class NetworkInterface : public Object
+{
+public:
+  NetworkInterface() : context(*(ExecutionContext*)NULL) {}
+  
+  void setContext(ExecutionContext& context)
+    {this->context = context;}
+  
+  ExecutionContext& getContext() const
+    {return context;}
+  
+  void setNetworkClient(NetworkClientPtr client)
+    {this->client = client;}
+  
+  NetworkClientPtr getNetworkClient() const
+    {return client;}
+  
+  virtual void sendInterfaceClass()
+    {client->sendVariable(getClass());}
+  
+  virtual void closeCommunication();
+  
+protected:
+  ExecutionContext& context;
+  NetworkClientPtr client;
+};
+
+typedef ReferenceCountedObjectPtr<NetworkInterface> NetworkInterfacePtr;
+
+class NodeNetworkInterface : public NetworkInterface
+{
+public:
+  enum {communicationError, waiting, running, finished, iDontHaveThisWorkUnit};
+  
+  virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr workUnit) = 0;
+  virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr workUnit) const = 0;
+  virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr workUnit) const = 0;
+};
+
+typedef ReferenceCountedObjectPtr<NodeNetworkInterface> NodeNetworkInterfacePtr;
+
+
+/*
+** NetworkNotification
+*/
+class NetworkNotification : public Notification
+{
+public:
+  virtual void notify(const ObjectPtr& target)
+    {notifyNetwork(target);}
+
+  virtual void notifyNetwork(const NetworkInterfacePtr& target) = 0;
+};
+
+class NodeNetworkNotification : public NetworkNotification
+{
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+  {
+    //if (target->getClass()->inheritsFrom(NodeNetworkNotificationClass))
+      notifyNodeNetwork(target);
+    NetworkNotification::notifyNetwork(target);
+  }
+  
+  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target) = 0;
+};
+
+class PushWorkUnitNotification : public NodeNetworkNotification
+{
+public:
+  PushWorkUnitNotification(WorkUnitNetworkRequestPtr request) : request(request) {}
+
+  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
+  {
+    bool res = target->pushWorkUnit(target->getContext(), request);
+    target->getNetworkClient()->sendVariable(Variable(res, booleanType));
+  }
+
+protected:
+  WorkUnitNetworkRequestPtr request;
+};
+
+class GetWorkUnitStatusNotification : public NodeNetworkNotification
+{
+public:
+  GetWorkUnitStatusNotification(NetworkRequestPtr request) : request(request) {}
+
+  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
+  {
+    int res = target->getWorkUnitStatus(target->getContext(), request);
+    target->getNetworkClient()->sendVariable(Variable(res, integerType));
+  }
+
+protected:
+  NetworkRequestPtr request;
+};
+
+class GetExecutionTraceNotification : public NodeNetworkNotification
+{
+public:
+  GetExecutionTraceNotification(NetworkRequestPtr request) : request(request) {}
+  
+  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
+  {
+    ExecutionTracePtr res = target->getExecutionTrace(target->getContext(), request);
+    target->getNetworkClient()->sendVariable(res);
+  }
+  
+protected:
+  NetworkRequestPtr request;
+};
+
+
+class ClientNodeNetworkInterface : public NodeNetworkInterface
+{
+public:
+  virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+  {
+    client->sendVariable(new PushWorkUnitNotification(request));
+    NetworkRequestPtr res = false;
+    if (!client->receiveObject<NetworkRequest>(10000, res))
+      context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::pushWorkUnit"));
+    return res;
+  }
+  
+  virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    client->sendVariable(new GetWorkUnitStatusNotification(request));
+    int res = communicationError;
+    if (!client->receiveInteger(10000, res))
+      context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::getWorkUnitStatut"));
+    return res;
+  }
+  
+  virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    client->sendVariable(new GetExecutionTraceNotification(request));
+    ExecutionTracePtr res;
+    if (!client->receiveObject<ExecutionTrace>(10000, res))
+      context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::getExecutionTrace"));
+    return res;
+  }
+};
+
+
+class SgeNodeNetworkInterface : public NodeNetworkInterface
+{
+public:
+  virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+  {
+    File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
+    request->getWorkUnit()->saveToFile(context, f);
+    return request->getNetworkRequest();
+  }
+
+  virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
+    if (f.exists())
+      return waiting;
+    f = context.getFile(T("InProgress/") + request->getIdentifier() + T(".workUnit"));
+    if (f.exists())
+      return running;
+    f = context.getFile(T("Finished/") + request->getIdentifier() + T(".workUnit"));
+    if (f.exists())
+      return finished;
+    return iDontHaveThisWorkUnit;
+  }
+
+  virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    File f = context.getFile(T("Traces/") + request->getIdentifier() + T(".trace"));
+    if (!f.exists())
+      return ExecutionTracePtr();
+    
+    return Variable::createFromFile(context, f).getObject();
+  }
+};
+
+
+class ManagerNodeNetworkInterface : public NodeNetworkInterface
+{
+public:
+  ManagerNodeNetworkInterface()
+  {
+    // ... restore requests
+  }
+
+  virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+  {
+    request->selfGenerateIdentifier();
+    request->setStatus(NetworkRequest::waitingOnManager);
+    /* First, backup request */
+    NetworkRequestPtr res = request->getNetworkRequest();
+    File f = context.getFile(T("Requests/") + res->getIdentifier() + T(".request"));
+    res->saveToFile(context, f);
+    f = context.getFile(T("WaitingWorkUnit/") + res->getIdentifier() + T(".workUnit"));
+    request->getWorkUnit()->saveToFile(context, f);
+
+    requests.push_back(res);
+    return res;
+  }
+
+  virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    for (size_t i = 0; i < requests.size(); ++i)
+      if (requests[i]->getIdentifier() == request->getIdentifier())
+        return requests[i]->getStatus();
+  }
+
+  virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    File f = context.getFile(T("Traces/") + request->getIdentifier() + T(".trace"));
+    if (!f.exists())
+      return ExecutionTracePtr();
+    return Object::createFromFile(context, f);
+  }
+
+protected:
+  std::vector<NetworkRequestPtr> requests;
+};
+
+class ManagerWorkUnit : public WorkUnit
+{
+public:
+  ManagerWorkUnit() : port(1664) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    NetworkServerPtr server = new NetworkServer(context);
+    if (!server->startServer(port))
+    {
+      context.errorCallback(T("WorkUnitManagerServer::run"), T("Not able to open port ") + String((int)port));
+      return false;
+    }
+    
+    NodeNetworkInterfacePtr managerInterface = new ManagerNodeNetworkInterface();
+    
+    while (true)
+    {
+      /* Accept client */
+      NetworkClientPtr client = server->acceptClient(INT_MAX);
+      if (!client)
+        continue;
+      context.informationCallback(client->getConnectedHostName(), T("connected"));
+      
+      /* Which kind of connection ? */
+      ClassPtr type;
+      if (!client->receiveObject<Class>(10000, type))
+      {
+        context.warningCallback(client->getConnectedHostName(), T("Fail - Client type (1)"));
+        client->stopClient();
+        continue;
+      }
+      
+      /* Strat communication (depending of the type) */
+      NetworkInterfacePtr interface;
+      //if (type->inheritsFrom(clientNodeNetworkInterfaceClass))
+      {
+        interface = managerInterface;
+        interface->setContext(context);
+        interface->setNetworkClient(client);
+
+        serverCommunication(interface);
+      }
+      //else if (type->inheritsFrom(nodeNetworkInterfaceClass))
+      {
+        interface = new ClientNodeNetworkInterface();
+        interface->setContext(context);
+        interface->setNetworkClient(client);
+
+        clientCommunication(interface);
+      }
+      //else
+      {
+        interface = new NetworkInterface();
+        interface->setContext(context);
+        interface->setNetworkClient(client);
+      }
+
+      /* Terminate the connection */
+      interface->closeCommunication();
+      context.informationCallback(client->getConnectedHostName(), T("disconnected"));
+    }
+  }
+
+protected:
+  size_t port;
+  
+  void serverCommunication(NodeNetworkInterfacePtr interface) const
+  {
+    NetworkClientPtr client = interface->getNetworkClient();
+    while (client->isConnected() || client->hasVariableInQueue())
+    {
+      NotificationPtr notification;
+      if (!client->receiveObject<Notification>(10000, notification) || !notification)
+      {
+        interface->getContext().warningCallback(T("NetworkContext::run"), T("No notification received"));
+        return;
+      }
+      notification->notify(interface);
+    }
+  }
+  
+  void clientCommunication(NodeNetworkInterfacePtr interface) const
+  {
+  
+  }
+};
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
 class NetworkCommand : public Object
 {

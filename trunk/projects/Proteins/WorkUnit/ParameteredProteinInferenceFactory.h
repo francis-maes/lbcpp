@@ -49,6 +49,8 @@ public:
   virtual void setParameter(const String& targetName, size_t stage, LearningParameterPtr parameter);
   virtual LearningParameterPtr getParameter(const String& targetName, size_t stage) const;
   virtual void setDefaultParameter(LearningParameterPtr defaultParameter);
+  virtual LearningParameterPtr getDefaultParameter(const String& targetName) const;
+
   
   virtual void setTargetInferenceToOptimize(const String& targetName, size_t targetStage);
 

@@ -73,6 +73,19 @@ bool NetworkClient::receiveString(juce::int64 timeout, String& result)
   return true;
 }
 
+bool NetworkClient::receiveInteger(juce::int64 timeout, int& result)
+{
+  Variable v;
+  if (!receiveVariable(timeout, v))
+    return false;
+  
+  if (!v.isInteger())
+    return false;
+  
+  result = v.getInteger();
+  return true;
+}
+
 bool NetworkClient::hasVariableInQueue()
 {
   ScopedLock _(lock);
