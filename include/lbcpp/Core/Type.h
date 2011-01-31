@@ -272,6 +272,10 @@ public:
   //String oneLetterCodes;
 };
 
+extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr addEntropyToEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr missingOrPresentEnumeration;
+
 class DefaultEnumeration : public Enumeration
 {
 public:

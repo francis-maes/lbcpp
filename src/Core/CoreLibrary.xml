@@ -56,11 +56,8 @@
       virtual size_t getNumMemberVariables() const
         {return getEnumeration()->getNumElements();}
         
-      virtual TypePtr getMemberVariableType(size_t index) const
-        {return getVariablesType();}
-        
-      virtual String getMemberVariableName(size_t index) const
-        {return getEnumeration()->getElementName(index);}
+      virtual VariableSignaturePtr getMemberVariable(size_t index) const
+        {return new VariableSignature(getVariablesType(), getEnumeration()->getElementName(index));}
         
       virtual void createObjectVariables()
       {
@@ -120,5 +117,30 @@
       }
       </code>
   </template>
-            
+
+  <template name="AddEntropyToEnumeration" metaclass="Enumeration">
+    <parameter name="enumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getEnumeration()-&gt;getNumElements() + 1;}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        EnumerationPtr enumeration = getEnumeration();
+        if (index &lt; enumeration-&gt;getNumElements())
+          return enumeration->getElement(index);
+        else
+          return new EnumerationElement(T("entropy"), String::empty, String::empty, T("Entropy"));
+      }
+      </code>
+  </template>
+
+  <enumeration name="MissingOrPresent">
+    <value name="missing" oneLetterCode="m"/>
+    <value name="present" oneLetterCode="v"/>
+  </enumeration>
+  
 </library>
