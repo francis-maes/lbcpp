@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AccumulateContainerFunction.h  | Accumulate Container Function   |
+| Filename: AccumulateContainerOperator.h  | Accumulate Container Function   |
 | Author  : Francis Maes                   |                                 |
 | Started : 31/01/2011 22:00               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_ACCUMULATE_CONTAINER_H_
-# define LBCPP_FUNCTION_ACCUMULATE_CONTAINER_H_
+#ifndef LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
+# define LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
 
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Core/Vector.h>
@@ -62,12 +62,12 @@ private:
 
 typedef ReferenceCountedObjectPtr<CumulativeScoreVector> CumulativeScoreVectorPtr;
 
-class AccumulateContainerFunction : public Function
+class AccumulateContainerOperator : public Function
 {
 public:
-  AccumulateContainerFunction(TypePtr elementsType)
+  AccumulateContainerOperator(TypePtr elementsType)
     : elementsType(elementsType) {}
-  AccumulateContainerFunction() {}
+  AccumulateContainerOperator() {}
 
   virtual TypePtr getInputType() const
     {return containerClass(elementsType);}
@@ -90,18 +90,18 @@ public:
   };
 
 protected:
-  friend class AccumulateContainerFunctionClass;
+  friend class AccumulateContainerOperatorClass;
 
   TypePtr elementsType;
 };
 
 // enum values + missing
-class AccumulateEnumerationContainerFunction : public AccumulateContainerFunction
+class AccumulateEnumerationContainerOperator : public AccumulateContainerOperator
 {
 public:
-  AccumulateEnumerationContainerFunction(EnumerationPtr enumeration)
-    : AccumulateContainerFunction(enumeration) {}
-  AccumulateEnumerationContainerFunction() {}
+  AccumulateEnumerationContainerOperator(EnumerationPtr enumeration)
+    : AccumulateContainerOperator(enumeration) {}
+  AccumulateEnumerationContainerOperator() {}
 
   virtual EnumerationPtr getScoresEnumeration() const
   {
@@ -122,12 +122,12 @@ public:
 };
 
 // enum values + missing + entropy
-class AccumulateEnumerationDistributionContainerFunction : public AccumulateContainerFunction
+class AccumulateEnumerationDistributionContainerOperator : public AccumulateContainerOperator
 {
 public:
-  AccumulateEnumerationDistributionContainerFunction(EnumerationPtr enumeration)
-    : AccumulateContainerFunction(enumerationDistributionClass(enumeration)), enumeration(enumeration) {}
-  AccumulateEnumerationDistributionContainerFunction() {}
+  AccumulateEnumerationDistributionContainerOperator(EnumerationPtr enumeration)
+    : AccumulateContainerOperator(enumerationDistributionClass(enumeration)), enumeration(enumeration) {}
+  AccumulateEnumerationDistributionContainerOperator() {}
 
   virtual EnumerationPtr getScoresEnumeration() const
     {return addEntropyToEnumerationEnumeration(addMissingToEnumerationEnumeration(enumeration));}
@@ -149,16 +149,16 @@ public:
   }
 
 protected:
-  friend class AccumulateEnumerationDistributionContainerFunctionClass;
+  friend class AccumulateEnumerationDistributionContainerOperatorClass;
 
   EnumerationPtr enumeration;
 };
 
 // value sum, missing value count
-class AccumulateDoubleContainerFunction : public AccumulateContainerFunction
+class AccumulateDoubleContainerOperator : public AccumulateContainerOperator
 {
 public:
-  AccumulateDoubleContainerFunction() : AccumulateContainerFunction(doubleType) {}
+  AccumulateDoubleContainerOperator() : AccumulateContainerOperator(doubleType) {}
   
   virtual EnumerationPtr getScoresEnumeration() const
     {return missingOrPresentEnumeration;}
@@ -181,4 +181,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_ACCUMULATE_CONTAINER_H_
+#endif // !LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
