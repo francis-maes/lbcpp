@@ -71,11 +71,14 @@ String EnumerationDistribution::toString() const
         str += ' ';
       if (i == values.size() - 1)
         str += '_';
-      EnumerationElementPtr element = enumeration->getElement(i);
-      if (hasOneLetterCodes)
-        str += element->getOneLetterCode();
       else
-        str += element->getName();
+      {
+        EnumerationElementPtr element = enumeration->getElement(i);
+        if (hasOneLetterCodes)
+          str += element->getOneLetterCode();
+        else
+          str += element->getName();
+      }
       str += ' ';
       str += String(values[i]);
     }
