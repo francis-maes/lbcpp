@@ -8,17 +8,21 @@
   <include file="lbcpp/Distribution/MultiVariateDistribution.h"/>
 
   <!-- Probability Distribution -->
-  <class name="Distribution" base="Object" abstract="yes"/>
+  <template name="Distribution" base="Object" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
 
   <!-- Discrete Probability Distribution -->
-  <class name="DiscreteDistribution" base="Distribution" abstract="yes"/>
+  <template name="DiscreteDistribution" base="Distribution[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
 
-  <class name="BernoulliDistribution" base="DiscreteDistribution">
+  <class name="BernoulliDistribution" base="DiscreteDistribution[Boolean]">
     <variable type="Double" name="pTrue"/>
     <variable type="Double" name="pFalse"/>
   </class>
   
-  <template name="EnumerationDistribution" base="DiscreteDistribution">
+  <template name="EnumerationDistribution" base="DiscreteDistribution[enumeration]">
     <parameter name="enumeration" type="EnumValue"/>
 
     <code>
@@ -57,7 +61,7 @@
   </template>
   
   <!-- Continuous Probability Distribution -->
-  <class name="ContinuousDistribution" base="Distribution" abstract="yes"/>
+  <class name="ContinuousDistribution" base="Distribution[Double]" abstract="yes"/>
 
   <class name="UniformDistribution" base="ContinuousDistribution">
     <variable type="Double" name="minimum"/>
@@ -70,12 +74,14 @@
   </class>
   
   <!-- MultiVariate Probability Distribution -->
-  <class name="MultiVariateDistribution" base="Distribution" abstract="yes"/>
+  <template name="MultiVariateDistribution" base="Distribution[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
   
-  <template name="IndependentMultiVariateDistribution" base="MultiVariateDistribution">
-    <parameter name="variableClass" type="Object"/>
+  <template name="IndependentMultiVariateDistribution" base="MultiVariateDistribution[elementsType]">
+    <parameter name="elementsType" type="Object"/>
     
-    <variable type="ObjectVector[Distribution]" name="distributions"/>
+    <variable type="ObjectVector[Distribution[Variable]]" name="distributions"/>
   </template>
     
   <import name="DistributionBuilder"/>

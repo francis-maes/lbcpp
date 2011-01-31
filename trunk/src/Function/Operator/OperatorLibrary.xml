@@ -7,6 +7,7 @@
     <parameter name="scoresEnumeration" type="EnumValue"/>
   </template>
 
+  <!-- Accumulate -->
   <class name="AccumulateContainerOperator" base="Function" abstract="yes">
     <variable type="Type" name="elementsType"/>
   </class>
@@ -16,4 +17,11 @@
   </class>
   <class name="AccumulateDoubleContainerOperator" base="AccumulateContainerOperator"/>
 
+  <!-- Discretize -->
+  <class name="DiscretizeContainerOperator" base="Function">
+    <constructor arguments="TypePtr elementsType, bool sampleBest"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
+  
 </library>

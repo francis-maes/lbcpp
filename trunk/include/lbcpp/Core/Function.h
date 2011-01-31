@@ -75,7 +75,8 @@ extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> 
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 
-extern FunctionPtr accumulateFunction(TypePtr inputType);
+extern FunctionPtr accumulateOperator(TypePtr inputType);
+extern FunctionPtr discretizeOperator(TypePtr inputType, bool sampleBest = true);
 
 }; /* namespace lbcpp */
 

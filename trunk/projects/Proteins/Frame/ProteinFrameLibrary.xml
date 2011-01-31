@@ -5,11 +5,18 @@
   <class name="ProteinFrame" base="Object">
     <!-- Primary Structure -->
     <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="AA"/>
-    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
-    <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
 
     <variable type="CumulativeScoreVector[AddMissingToEnumeration[AminoAcidType]]" name="primaryStructureAccumulator"/>
+
+    <!-- PSSM -->
+    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
+
     <variable type="CumulativeScoreVector[AddEntropyToEnumeration[AddMissingToEnumeration[AminoAcidType]]]" name="positionSpecificScoringMatrixAccumulator"/>
+
+    <!-- SS3 -->
+    <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
+    
+    <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructureLabels"/>
 
     <!--
     <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>

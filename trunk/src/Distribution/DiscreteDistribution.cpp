@@ -24,6 +24,19 @@ double BernoulliDistribution::compute(ExecutionContext& context, const Variable&
 Variable BernoulliDistribution::sample(RandomGeneratorPtr random) const
   {return random->sampleBool(getProbabilityOfTrue());}
 
+Variable BernoulliDistribution::sampleBest(RandomGeneratorPtr random) const
+{
+  double p = getProbabilityOfFalse();
+  bool res;
+  if (p > 0.5)
+    res = true;
+  else if (p < 0.5)
+    res = false;
+  else
+    res = random->sampleBool();
+  return res;
+}
+
 double BernoulliDistribution::computeEntropy() const
 {
   double p = getProbabilityOfTrue();
@@ -78,6 +91,36 @@ Variable EnumerationDistribution::sample(RandomGeneratorPtr random) const
   else
     return Variable();
 }
+
+Variable EnumerationDistribution::sampleBest(RandomGeneratorPtr random) const
+{
+  EnumerationPtr enumeration = getEnumeration();
+  std::set<size_t> bestIndices;
+  double bestValue = -DBL_MAX;
+
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i] >= bestValue)
+    {
+      if (values[i] != bestValue)
+      {
+        bestValue = values[i];
+        bestIndices.clear();
+      }
+      bestIndices.insert(i);
+    }
+
+  if (!bestIndices.size())
+    return Variable::missingValue(enumeration);
+
+  size_t s = random->sampleSize(bestIndices.size());
+  std::set<size_t>::iterator it = bestIndices.begin();
+  for (size_t i = 0; i < s; ++i)
+  {
+    ++it;
+    jassert(it != bestIndices.end());
+  }
+  return Variable(*it, enumeration);
+} 
 
 double EnumerationDistribution::compute(ExecutionContext& context, const Variable& value) const
 {

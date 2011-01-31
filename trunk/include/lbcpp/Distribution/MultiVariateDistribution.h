@@ -40,6 +40,7 @@ public:
   virtual double computeEntropy() const;
   virtual double compute(ExecutionContext& context, const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
+  virtual Variable sampleBest(RandomGeneratorPtr random) const;
 
   const DistributionPtr& getSubDistribution(size_t index) const
     {jassert(index < distributions.size()); return distributions[index];}

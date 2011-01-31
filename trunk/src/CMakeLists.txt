@@ -251,6 +251,7 @@ SET(LBCPP_FUNCTION_SOURCES
 
 SET(LBCPP_FUNCTION_OPERATOR_SOURCES
   Function/Operator/AccumulateContainerOperator.h
+  Function/Operator/DiscretizeContainerOperator.h
   Function/Operator/OperatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp
 )

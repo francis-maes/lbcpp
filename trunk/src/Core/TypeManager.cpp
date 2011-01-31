@@ -228,14 +228,11 @@ void TypeManager::shutdown()
 
 TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const
 {
-  String name = templateTypeName;
-  if (name == T("DiscreteDistribution"))
-    name = T("EnumerationDistribution");
   ScopedLock _(typesLock);
-  TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(name);
+  TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(templateTypeName);
   if (it == templateTypes.end())
   {
-    context.errorCallback(T("TypeManager::getTemplateType()"), T("Could not find template type ") + name);
+    context.errorCallback(T("TypeManager::getTemplateType()"), T("Could not find template type ") + templateTypeName);
     return NULL;
   }
   return &it->second;
