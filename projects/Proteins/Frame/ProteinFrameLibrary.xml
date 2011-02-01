@@ -19,6 +19,9 @@
     <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructureLabels"/>
     <variable type="SegmentContainer[SecondaryStructureElement]" name="secondaryStructureSegments"/>
 
+    <!-- Residue Frames -->
+    <variable type="ObjectVector[ProteinResidueFrame]" name="residueFrames"/>
+    
     <!--
     <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>
     <variable function="mean()" input="primaryStructureAccumulated" name="primaryStructureDistribution" shortName="AAd"/>
@@ -30,6 +33,11 @@
     <variable function="sample(true)" input="secondaryStructure" name="secondaryStructureSample" shortName="SS3samp"/>
     <variable function="segment()" input="secondaryStructureSample" name="secondaryStructureSegments" shortName="SS3seg"/>
     -->
+  </class>
+
+  <class name="ProteinResidueFrame" base="Object">
+    <variable type="PositiveInteger" name="position"/>
+    <variable type="Object" name="primaryStructureWindow"/>
   </class>
   
 </library>

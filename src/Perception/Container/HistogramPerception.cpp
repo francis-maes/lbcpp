@@ -92,7 +92,7 @@ private:
       EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>(context);
       jassert(distribution);
       for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
-        scores[j] += distribution->compute(context, Variable(j, enumeration));
+        scores[j] += distribution->computeProbability(Variable(j, enumeration));
     }
   }
 };

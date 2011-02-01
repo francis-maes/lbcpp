@@ -20,13 +20,13 @@ IndependentMultiVariateDistribution::IndependentMultiVariateDistribution(ClassPt
 double IndependentMultiVariateDistribution::computeEntropy() const
   {jassert(false); return 0.0;} // not implemented
 
-double IndependentMultiVariateDistribution::compute(ExecutionContext& context, const Variable& value) const
+double IndependentMultiVariateDistribution::computeProbability(const Variable& value) const
 {
   const ObjectPtr& object = value.getObject();
   jassert(object->getNumVariables() == distributions.size());
   double res = 1.0;
   for (size_t i = 0; i < distributions.size(); ++i)
-    res *= distributions[i]->compute(context, object->getVariable(i));
+    res *= distributions[i]->computeProbability(object->getVariable(i));
   return res;
 }
 

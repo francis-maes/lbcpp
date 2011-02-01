@@ -22,7 +22,6 @@ GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml Exec
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/Operator/OperatorLibrary.xml OperatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsLibrary.xml MiscFunctionsLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml ScalarObjectFunctionLibrary.cpp)
@@ -30,6 +29,11 @@ GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.
 GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.xml StoppingCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
+
+GENERATE_INTROSPECTION_CODE(Operator/OperatorLibrary.xml OperatorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Operator/Container/ContainerOperatorLibrary.xml ContainerOperatorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Operator/VariableGenerator/VariableGeneratorLibrary.xml VariableGeneratorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Operator/FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionLibrary.xml SimplePerceptionLibrary.cpp)
@@ -248,14 +252,6 @@ SET(LBCPP_FUNCTION_SOURCES
   Function/FunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
 )
-
-SET(LBCPP_FUNCTION_OPERATOR_SOURCES
-  Function/Operator/AccumulateContainerOperator.h
-  Function/Operator/DiscretizeContainerOperator.h
-  Function/Operator/SegmentContainerOperator.h
-  Function/Operator/OperatorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp
-)
  
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/IdentityFunction.h
@@ -318,6 +314,35 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/SaveToDirectoryEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
+)
+
+#### Operator ####
+
+SET(LBCPP_OPERATOR_SOURCES
+  ../include/lbcpp/Operator/Operator.h
+  ../include/lbcpp/Operator/VariableGenerator.h
+  ../include/lbcpp/Operator/FeatureGenerator.h
+  Operator/Operator.cpp
+  Operator/OperatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp
+)
+
+SET(LBCPP_OPERATOR_CONTAINER_SOURCES
+  Operator/Container/AccumulateContainerOperator.h
+  Operator/Container/DiscretizeContainerOperator.h
+  Operator/Container/SegmentContainerOperator.h
+  Operator/Container/ContainerOperatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ContainerOperatorLibrary.cpp
+)
+
+SET(LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES
+  Operator/VariableGenerator/VariableGeneratorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/VariableGeneratorLibrary.cpp
+)
+
+SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
+  Operator/FeatureGenerator/FeatureGeneratorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
 )
 
 #### Perception ####
@@ -681,7 +706,6 @@ SET(LBCPP_CORE
   
   # Function
   ${LBCPP_FUNCTION_SOURCES}
-    ${LBCPP_FUNCTION_OPERATOR_SOURCES}
     ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_SOURCES}
     ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES}
@@ -689,6 +713,12 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES}
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
+
+  # Operator
+  ${LBCPP_OPERATOR_SOURCES}
+    ${LBCPP_OPERATOR_CONTAINER_SOURCES}
+    ${LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES}
+    ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES}
 
   # Perception
   ${LBCPP_PERCEPTION_SOURCES}
@@ -757,7 +787,6 @@ SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 
 ## Function
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(Function Operator FILES ${LBCPP_FUNCTION_OPERATOR_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
@@ -765,6 +794,12 @@ SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOU
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
+
+## Operator
+SOURCE_GROUP(Operator FILES ${LBCPP_OPERATOR_SOURCES})
+SOURCE_SUB_GROUP(Operator Container FILES ${LBCPP_OPERATOR_CONTAINER_SOURCES})
+SOURCE_SUB_GROUP(Operator VariableGenerator FILES ${LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES})
+SOURCE_SUB_GROUP(Operator FeatureGenerator FILES ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES})
 
 ## Perception
 SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})

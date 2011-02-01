@@ -23,7 +23,7 @@ public:
   virtual TypePtr getElementsType() const = 0;
 
   virtual double computeEntropy() const = 0;
-  virtual double compute(ExecutionContext& context, const Variable& value) const = 0;
+  virtual double computeProbability(const Variable& value) const = 0;
   virtual Variable sample(RandomGeneratorPtr random) const = 0;
   virtual Variable sampleBest(RandomGeneratorPtr random) const = 0;
 };

@@ -10,6 +10,7 @@
   <import name="Function"/>
   <import name="Distribution"/>
 
+  <import name="Operator"/>
   <import name="Perception"/>
   <import name="Optimizer"/>
   <import name="Inference"/>

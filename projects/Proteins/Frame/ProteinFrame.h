@@ -20,20 +20,37 @@ typedef ReferenceCountedObjectPtr<FrameClass> FrameClassPtr;
 class Frame;
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameClass : public DefaultClass
+class FrameVariableSignature : public VariableSignature
 {
 public:
-  FrameClass(const String& name, const String& baseClass)
-    : DefaultClass(name, baseClass) {}
-  FrameClass(const String& className, TypePtr baseType)
-    : DefaultClass(className, baseType) {}
-  FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
-    : DefaultClass(templateType, templateArguments, baseType) {}
+  FrameVariableSignature(TypePtr type,
+                  const String& name,
+                  const String& shortName = String::empty,
+                  const String& description = String::empty)
+    : VariableSignature(type, name, shortName, description) {}
+
+protected:
+  OperatorPtr op;
+};
+
+class FrameClass : public Class
+{
+public:
+  FrameClass(const String& name, TypePtr baseClass)
+    : Class(name, baseClass) {}
+  FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+    : Class(templateType, templateArguments, baseClass) {}
+  FrameClass() {}
 
   void addFunctionAndVariable(ExecutionContext& context, const FunctionPtr& function, const std::vector< std::vector<int> >& inputPaths, const String& outputName = String::empty)
   {
     // ...
-  }  
+  }
+
+private:
+  
+
+
 };
 
 class Frame : public Object
@@ -93,69 +110,14 @@ typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
 extern ClassPtr proteinFrameClass;
 
-class AccumulateLabelSequenceFunction : public Function
-{
-public:
-  AccumulateLabelSequenceFunction(EnumerationPtr labelsType)
-    : labelsType(labelsType) {}
-
-  virtual TypePtr getInputType() const
-    {return containerClass(labelsType);}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return containerClass(enumBasedDoubleVectorClass(labelsType));}
-
-protected:
-  EnumerationPtr labelsType;
-};
-
-
 class ProteinFrame : public Object
 {
 public:
-  ProteinFrame(const ProteinPtr& protein)
-    //: Object(proteinFrameClass)
-  {
-    // primary Structure
-    primaryStructure = protein->getPrimaryStructure();
-
-    FunctionPtr aaAccumulator = accumulateOperator(primaryStructure->getClass());
-    jassert(aaAccumulator);
-    primaryStructureAccumulator = aaAccumulator->computeFunction(defaultExecutionContext(), primaryStructure).getObjectAndCast<Container>();
-  
-    // pssm
-    positionSpecificScoringMatrix = protein->getPositionSpecificScoringMatrix();
-    FunctionPtr pssmAccumulator = accumulateOperator(positionSpecificScoringMatrix->getClass());
-    jassert(pssmAccumulator);
-    positionSpecificScoringMatrixAccumulator = pssmAccumulator->computeFunction(defaultExecutionContext(), positionSpecificScoringMatrix).getObjectAndCast<Container>();
-
-    // secondary structure
-    ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
-    if (inputSecondaryStructure)
-    {
-      size_t n = primaryStructure->getNumElements();
-      secondaryStructure = vector(enumerationDistributionClass(secondaryStructureElementEnumeration), n);
-      for (size_t i = 0; i < n; ++i)
-      {
-        EnumerationDistributionPtr distribution = new EnumerationDistribution(secondaryStructureElementEnumeration);
-        distribution->setProbability((size_t)inputSecondaryStructure->getElement(i).getInteger(), 1.0);
-        secondaryStructure->setElement(i, distribution);
-      }
-
-      FunctionPtr discretizeOperator = lbcpp::discretizeOperator(secondaryStructure->getClass(), true);
-      jassert(discretizeOperator);
-      secondaryStructureLabels = discretizeOperator->computeFunction(defaultExecutionContext(), secondaryStructure).getObject();
-
-      FunctionPtr segmentOperator = lbcpp::segmentOperator(secondaryStructureLabels->getClass());
-      jassert(segmentOperator);
-      secondaryStructureSegments = segmentOperator->computeFunction(defaultExecutionContext(), secondaryStructureLabels).getObject();
-    }
-
-    //double time = Time::getMillisecondCounterHiRes();
-    //setVariable(0, protein->getPrimaryStructure(), time);
-    //setVariable(1, protein->getPositionSpecificScoringMatrix(), time);
-  }
+  ProteinFrame(const ProteinPtr& protein);
   ProteinFrame() {}
+
+  VectorPtr getPrimaryStructure() const
+    {return primaryStructure;}
 
 protected:
   friend class ProteinFrameClass;
@@ -169,6 +131,8 @@ protected:
   VectorPtr secondaryStructure;
   VectorPtr secondaryStructureLabels;
   ContainerPtr secondaryStructureSegments;
+
+  VectorPtr residueFrames;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;

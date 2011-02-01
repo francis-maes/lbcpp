@@ -14,7 +14,7 @@ using namespace lbcpp;
 /*
  ** BernoulliDistribution
  */
-double BernoulliDistribution::compute(ExecutionContext& context, const Variable& value) const
+double BernoulliDistribution::computeProbability(const Variable& value) const
 {
   if (!value.isNil() && checkInheritance(value, booleanType))
     return value.getBoolean() ? getProbabilityOfTrue() : getProbabilityOfFalse();
@@ -125,7 +125,7 @@ Variable EnumerationDistribution::sampleBest(RandomGeneratorPtr random) const
   return Variable(*it, enumeration);
 } 
 
-double EnumerationDistribution::compute(ExecutionContext& context, const Variable& value) const
+double EnumerationDistribution::computeProbability(const Variable& value) const
 {
   if (value.isNil())
     return values.back();

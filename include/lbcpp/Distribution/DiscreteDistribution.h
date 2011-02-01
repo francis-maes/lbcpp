@@ -40,7 +40,7 @@ public:
   double getProbabilityOfFalse() const
     {return 1.0 - getProbabilityOfTrue();}
   
-  virtual double compute(ExecutionContext& context, const Variable& value) const;
+  virtual double computeProbability(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
@@ -68,7 +68,7 @@ public:
     {return getClass()->getTemplateArgument(0).dynamicCast<Enumeration>();}
 
   // Distribution
-  virtual double compute(ExecutionContext& context, const Variable& value) const;
+  virtual double computeProbability(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
