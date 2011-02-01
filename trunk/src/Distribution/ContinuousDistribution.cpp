@@ -16,7 +16,7 @@ using namespace lbcpp;
 double UniformDistribution::computeEntropy() const
   {return log(maximum - minimum);}
 
-double UniformDistribution::compute(ExecutionContext& context, const Variable& value) const
+double UniformDistribution::computeProbability(const Variable& value) const
 {
   jassert(minimum < maximum);
   double d = value.getDouble();
@@ -45,7 +45,7 @@ void UniformDistribution::sampleUniformly(size_t numSamples, std::vector<double>
 double GaussianDistribution::computeEntropy() const
   {return 0.5 * log(2 * M_PI * exp(1.0) * getVariance());}
 
-double GaussianDistribution::compute(ExecutionContext& context, const Variable& value) const
+double GaussianDistribution::computeProbability(const Variable& value) const
 {
   jassert(value.isDouble());
   double mean = getMean();

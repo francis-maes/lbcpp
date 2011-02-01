@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Operator" directory="Operator">
+  <include file="lbcpp/Operator/Operator.h"/>
+
+  <import name="ContainerOperator"/>
+  <import name="VariableGenerator"/>
+  <import name="FeatureGenerator"/>
+
+  <class name="Operator" base="Object" abstract="yes">
+    <variable type="ObjectVector[Type]" name="inputTypes"/>
+    <variable type="Type" name="outputType"/>
+  </class>
+  
+</library>

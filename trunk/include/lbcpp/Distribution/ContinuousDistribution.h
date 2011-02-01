@@ -35,7 +35,7 @@ public:
   UniformDistribution() : minimum(0.0), maximum(0.0) {}
 
   virtual double computeEntropy() const;
-  virtual double compute(ExecutionContext& context, const Variable& value) const;
+  virtual double computeProbability(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const
     {return sample(random);}
@@ -66,7 +66,7 @@ public:
     : mean(mean), variance(variance) {}
 
   virtual double computeEntropy() const;
-  virtual double compute(ExecutionContext& context, const Variable& value) const;
+  virtual double computeProbability(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const
     {return mean;}

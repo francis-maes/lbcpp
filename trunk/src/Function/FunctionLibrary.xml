@@ -7,7 +7,6 @@
     <variable type="Boolean" name="pushIntoStack"/>
   </class>
 
-  <import name="Operator"/>
   <import name="MiscFunctions"/>
   <import name="ScalarFunction"/>
   <import name="ScalarObjectFunction"/>

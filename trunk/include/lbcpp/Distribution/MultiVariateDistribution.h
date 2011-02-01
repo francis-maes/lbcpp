@@ -38,7 +38,7 @@ public:
     {return getClass()->getTemplateArgument(0);}
 
   virtual double computeEntropy() const;
-  virtual double compute(ExecutionContext& context, const Variable& value) const;
+  virtual double computeProbability(const Variable& value) const;
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
 
