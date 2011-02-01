@@ -13,7 +13,10 @@ using namespace lbcpp;
 
 namespace lbcpp
 {
+  
+juce::int64 NetworkRequest::lastIdentifier = Time::currentTimeMillis();
 
+#if 0
 bool ClientNetworkCommand::runCommand(ExecutionContext& context, NetworkCommandPtr network)
 {
   ClientNetworkContextPtr clientNetwork = network.staticCast<ClientNetworkContext>();
@@ -37,6 +40,6 @@ bool ServerNetworkCommand::runCommand(ExecutionContext& context, NetworkContextP
   }
   return runCommand(context, serverNetwork);
 }
-  
+#endif
 
 }; /* namespace lbcpp */

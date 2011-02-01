@@ -3,6 +3,7 @@
 <library name="NetworkExperimental" dynamic="yes">
 
   <!-- Network Context -->
+  <!--
   <class name="NetworkContext" base="WorkUnit">
     <variable type="String" name="identity"/>
     <variable type="String" name="hostname"/>
@@ -16,9 +17,9 @@
   <class name="SgeServerNetworkContext" base="ServerNetworkContext">
     <variable type="File" name="workUnitDirectory"/>
   </class>
-  
+  -->
   <!-- Network Command -->
-
+  <!--
   <class name="NetworkCommand" base="Object" abstract="yes"/>
   <class name="GetIdentityNetworkCommand" base="NetworkCommand"/>
   <class name="CloseConnectionNetworkCommand" base="NetworkCommand"/>
@@ -37,8 +38,9 @@
   </class>
   
   <class name="SystemResource" base="Object"/>
-
+  -->
   <!-- Work Unit -->
+  <!--
   <class name="ClientWorkUnit" base="WorkUnit">
     <variable type="String" name="hostname"/>
   </class>
@@ -49,8 +51,64 @@
     <variable type="String" name="serverName" description="The name of the server (used as a identifier)" shortName="-n"/>
   </class>
 
-  <class name="DumbWorkUnit" base="WorkUnit"/>
-
   <class name="ManagerServer" base="WorkUnit"/>
-
+  -->
+  
+  <class name="DumbWorkUnit" base="WorkUnit"/>
+  <class name="ClientWorkUnit" base="WorkUnit">
+    <variable type="String" name="clientName"/>
+    <variable type="String" name="hostName"/>
+    <variable type="PositiveInteger" name="port"/>
+  </class>
+  
+  <class name="NetworkRequest" base="Object">
+    <variable type="String" name="identifier"/>
+    <variable type="String" name="projectName"/>
+    <variable type="String" name="source"/>
+    <variable type="String" name="destination"/>
+    <variable type="Integer" name="status"/>
+  </class>
+  
+  <class name="WorkUnitNetworkRequest" base="NetworkRequest">
+    <variable type="WorkUnit" name="workUnit"/>
+  </class>
+  
+  <class name="NetworkInterface" base="Object">
+  <!-- TODO: <variable type="ExecutionContext" name="context"/> -->
+    <variable type="NetworkClient" name="client"/>
+  </class>
+  
+  <class name="NodeNetworkInterface" base="NetworkInterface" abstract="yes"/>
+  
+  <class name="NetworkNotification" base="Notification" abstract="yes"/>
+  <class name="NodeNetworkNotification" base="NetworkNotification" abstract="yes"/>
+  <class name="CloseCommunicationNotification" base="NetworkNotification"/>
+  <class name="GetNodeNameNotification" base="NodeNetworkNotification"/>
+  <class name="PushWorkUnitNotification" base="NodeNetworkNotification">
+    <variable type="WorkUnitNetworkRequest" name="request"/>
+  </class>
+  <class name="GetWorkUnitStatusNotification" base="NodeNetworkNotification">
+    <variable type="NetworkRequest" name="request"/>
+  </class>
+  <class name="GetExecutionTraceNotification" base="NodeNetworkNotification">
+    <variable type="NetworkRequest" name="request"/>
+  </class>
+  
+  <class name="ClientNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="SgeNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface">
+    <variable type="GenericVector[NetworkRequest]" name="requests"/>
+  </class>
+  
+  <class name="ManagerWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="port"/>
+  </class>
+  
+  <class name="GridWorkUnit" base="WorkUnit">
+    <variable type="String" name="gridName"/>
+    <variable type="String" name="gridEngine"/>
+    <variable type="String" name="hostName"/>
+    <variable type="PositiveInteger" name="port"/>
+  </class>
+  
 </library>
