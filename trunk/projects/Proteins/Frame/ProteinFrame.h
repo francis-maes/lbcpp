@@ -28,7 +28,7 @@ public:
   FrameOperatorSignature(OperatorPtr operation, size_t input, const String& name, const String& shortName)
     : VariableSignature(TypePtr(), name, shortName), operation(operation), inputs(1, input) {}
 
-  const OperatorPtr& getOperation() const
+  const OperatorPtr& getOperator() const
     {return operation;}
 
   const std::vector<size_t>& getInputs() const
@@ -73,7 +73,7 @@ public:
 private:
   bool initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
   {
-    const OperatorPtr& operation = signature->getOperation();
+    const OperatorPtr& operation = signature->getOperator();
     jassert(operation);
     const std::vector<size_t>& inputs = signature->getInputs();
 
@@ -89,60 +89,55 @@ private:
   }
 };
 
-class Frame : public Object
+class Frame : public DenseGenericObject
 {
 public:
   Frame(ClassPtr frameClass)
-    : Object(frameClass) {}
+    : DenseGenericObject(frameClass) {}
   Frame() {}
 
-  virtual ~Frame()
+  bool isVariableComputed(size_t index) const
   {
-    for (size_t i = 0; i < variables.size(); ++i)
-      thisClass->getMemberVariableType(i)->destroy(variables[i].first);
+    return index < variableValues.size() &&
+      !thisClass->getMemberVariableType(index)->isMissingValue(variableValues[index]);
   }
+
+  Variable getOrComputeVariable(size_t index)
+  {
+    VariableSignaturePtr signature = thisClass->getMemberVariable(index);
+    VariableValue& variableValue = getVariableValueReference(index);
+    const TypePtr& type = signature->getType();
+    if (!type->isMissingValue(variableValue))
+      return Variable::copyFrom(type, variableValue);
+
+    FrameOperatorSignaturePtr operatorSignature = signature.dynamicCast<FrameOperatorSignature>();
+    if (!operatorSignature)
+      return Variable();
     
-  std::pair<VariableValue, double>& getVariableValueReference(size_t index)
-  {
-    jassert(index < thisClass->getNumMemberVariables());
-    if (variables.size() <= index)
+    const std::vector<size_t>& inputIndices = operatorSignature->getInputs();
+    std::vector<Variable> inputs(inputIndices.size());
+    for (size_t i = 0; i < inputs.size(); ++i)
     {
-      size_t i = variables.size();
-      variables.resize(index + 1);
-      while (i < variables.size())
-      {
-        variables[i].first = thisClass->getMemberVariableType(i)->getMissingValue();
-        variables[i].second = 0.0;
-        ++i;
-      }
+      inputs[i] = getOrComputeVariable(inputIndices[i]);
+      if (!inputs[i].exists())
+        return Variable();
     }
-    return variables[index];
+    Variable value = operatorSignature->getOperator()->computeOperator(&inputs[0]);
+    setVariable(defaultExecutionContext(), index, value);
+    return value;
   }
-
+ 
   virtual Variable getVariable(size_t index) const
-  {
-    TypePtr type = thisClass->getMemberVariableType(index);
-    if (index < variables.size())
-      return Variable::copyFrom(type, variables[index].first);
-    else
-      return Variable::missingValue(type);
-  }
-
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
-    {setVariable(index, value, Time::getMillisecondCounterHiRes());}
-
-  void setVariable(size_t index, const Variable& value, double time)
-  {
-    std::pair<VariableValue, double>& v = getVariableValueReference(index);
-    value.copyTo(v.first);
-    v.second = time;
-  }
-
-private:
-  std::vector< std::pair<VariableValue, double> > variables;
+    {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
 };
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
+
+FrameClassPtr defaultProteinFrameClass(ExecutionContext& context);
+FramePtr createProteinFrame(ExecutionContext& context, const ProteinPtr& protein, FrameClassPtr frameClass);
+
+#if 0
+/////////////////////////////////////////////////
 
 extern ClassPtr proteinFrameClass;
 
@@ -172,6 +167,8 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

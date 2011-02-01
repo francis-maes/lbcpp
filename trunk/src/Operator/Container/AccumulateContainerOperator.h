@@ -22,12 +22,11 @@ extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 class CumulativeScoreVector : public Container
 {
 public:
-  CumulativeScoreVector(EnumerationPtr scores, size_t size)
-    : Container(cumulativeScoreVectorClass(scores)), scores(scores),
-      accumulators(size, std::vector<double>(scores->getNumElements(), 0.0)) {}
-
-  CumulativeScoreVector(ClassPtr thisClass)
-    : Container(thisClass) {}
+  CumulativeScoreVector(ClassPtr thisClass, EnumerationPtr scores, size_t size)
+    : Container(thisClass), scores(scores), accumulators(size)
+  {
+    accumulators[0].resize(scores->getNumElements(), 0.0);
+  }
 
   CumulativeScoreVector() {}
 
@@ -42,13 +41,6 @@ public:
 
   virtual void setElement(size_t index, const Variable& value)
     {jassert(false);}
-
-  void beginCompute(size_t length)
-  {
-    accumulators.clear();
-    accumulators.resize(length);
-    accumulators[0].resize(scores->getNumElements(), 0.0);
-  }
 
   std::vector<double>& computeStep(size_t i)
   {
@@ -80,7 +72,7 @@ public:
     TypePtr elementsType = getContainerElementsType(context, inputTypes[0]);
     if (!elementsType)
       return TypePtr();
-    EnumerationPtr scoresEnumeration = getScoresEnumeration(context, elementsType);
+    scoresEnumeration = getScoresEnumeration(context, elementsType);
     if (!scoresEnumeration)
       return TypePtr();
     return cumulativeScoreVectorClass(scoresEnumeration);
@@ -89,10 +81,13 @@ public:
   virtual Variable computeOperator(const Variable* inputs) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
-    CumulativeScoreVectorPtr res(new CumulativeScoreVector(outputType));
+    CumulativeScoreVectorPtr res(new CumulativeScoreVector(outputType, scoresEnumeration, container->getNumElements()));
     accumulate(container, res);
     return res;
   }
+
+protected:
+  EnumerationPtr scoresEnumeration;
 };
 
 // enum values + missing
@@ -108,7 +103,6 @@ public:
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
-    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);
@@ -126,33 +120,32 @@ public:
     TypePtr distributionElementsType = getDistributionElementsType(context, elementsType);
     if (!distributionElementsType)
       return EnumerationPtr();
-    enumeration = distributionElementsType.dynamicCast<Enumeration>();
-    if (!enumeration)
+    inputEnumeration = distributionElementsType.dynamicCast<Enumeration>();
+    if (!inputEnumeration)
     {
       context.errorCallback(T("Not an enumeration"));
       return EnumerationPtr();
     }
-    return addEntropyToEnumerationEnumeration(addMissingToEnumerationEnumeration(enumeration));
+    return addEntropyToEnumerationEnumeration(addMissingToEnumerationEnumeration(inputEnumeration));
   }
 
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
-    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);
       
       EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>();
       jassert(distribution);
-      for (size_t j = 0; j <= enumeration->getNumElements(); ++j)
-        scores[j] += distribution->computeProbability(Variable(j, enumeration));
+      for (size_t j = 0; j <= inputEnumeration->getNumElements(); ++j)
+        scores[j] += distribution->computeProbability(Variable(j, inputEnumeration));
       scores.back() += distribution->computeEntropy();
     }
   }
 
 private:
-  EnumerationPtr enumeration;
+  EnumerationPtr inputEnumeration;
 };
 
 // value sum, missing value count
@@ -165,7 +158,6 @@ public:
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
-    res->beginCompute(n);
     for (size_t i = 0; i < n; ++i)
     {
       std::vector<double>& scores = res->computeStep(i);

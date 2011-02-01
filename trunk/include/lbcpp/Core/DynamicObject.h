@@ -165,6 +165,7 @@ class DenseGenericObject : public Object
 {
 public:
   DenseGenericObject(DynamicClassPtr thisClass);
+  DenseGenericObject() {}
   virtual ~DenseGenericObject();
 
   VariableValue& getVariableValueReference(size_t index);
@@ -176,7 +177,7 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 
-private:
+protected:
   friend class DenseGenericObjectVariableIterator;
 
   std::vector<VariableValue> variableValues;

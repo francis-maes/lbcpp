@@ -17,7 +17,7 @@ namespace lbcpp
 class ProteinResidueFrame : public Object
 {
 public:
-  ProteinResidueFrame(ProteinFrame* proteinFrame, size_t position)
+  ProteinResidueFrame(Frame* proteinFrame, size_t position)
     : proteinFrame(proteinFrame), position(position)
   {
   /*  FunctionPtr windowOperator = windowPerception(aminoAcidTypeEnumeration, 15);
@@ -31,7 +31,7 @@ public:
 private:
   friend class ProteinResidueFrameClass;
 
-  ProteinFrame* proteinFrame;
+  Frame* proteinFrame;
 
   size_t position;
   ObjectPtr primaryStructureWindow;

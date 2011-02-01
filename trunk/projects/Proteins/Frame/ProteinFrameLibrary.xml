@@ -1,43 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinFrame" directory="Frame">
-
-  <class name="ProteinFrame" base="Object">
-    <!-- Primary Structure -->
-    <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="AA"/>
-
-    <variable type="CumulativeScoreVector[AddMissingToEnumeration[AminoAcidType]]" name="primaryStructureAccumulator"/>
-
-    <!-- PSSM -->
-    <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="PSSM"/>
-
-    <variable type="CumulativeScoreVector[AddEntropyToEnumeration[AddMissingToEnumeration[AminoAcidType]]]" name="positionSpecificScoringMatrixAccumulator"/>
-
-    <!-- SS3 -->
-    <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
-    
-    <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructureLabels"/>
-    <variable type="SegmentContainer[SecondaryStructureElement]" name="secondaryStructureSegments"/>
-
-    <!-- Residue Frames -->
-    <variable type="ObjectVector[ProteinResidueFrame]" name="residueFrames"/>
-    
-    <!--
-    <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>
-    <variable function="mean()" input="primaryStructureAccumulated" name="primaryStructureDistribution" shortName="AAd"/>
-    
-    <variable function="accumulate()" input="positionSpecificScoringMatrix" name="positionSpecificScoringMatrixAccumulated" shortName="PSSMc"/>
-    <variable function="mean()" input="positionSpecificScoringMatrixAccumulated" name="positionSpecificScoringMatrixDistribution" shortName="PSSMd"/>
-
-    <variable function="accumulate()" input="secondaryStructure" name="secondaryStructureAccumulated" shortName="SS3c"/>
-    <variable function="sample(true)" input="secondaryStructure" name="secondaryStructureSample" shortName="SS3samp"/>
-    <variable function="segment()" input="secondaryStructureSample" name="secondaryStructureSegments" shortName="SS3seg"/>
-    -->
-  </class>
-
-  <class name="ProteinResidueFrame" base="Object">
-    <variable type="PositiveInteger" name="position"/>
-    <variable type="Object" name="primaryStructureWindow"/>
-  </class>
   
 </library>

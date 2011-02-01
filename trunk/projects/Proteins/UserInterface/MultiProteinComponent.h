@@ -64,7 +64,11 @@ public:
     else if (tabName == T("Perception"))
       return new ProteinPerceptionComponent(proteins[0]);
     else if (tabName == T("Protein Frame"))
-      return userInterfaceManager().createVariableTreeView(context, new ProteinFrame(proteins[0]));
+    {
+      FrameClassPtr frameClass = defaultProteinFrameClass(context);
+      FramePtr proteinFrame = createProteinFrame(context, proteins[0], frameClass);
+      return userInterfaceManager().createVariableTreeView(context, proteinFrame);
+    }
     else if (tabName == T("Protein 1D"))
     {
       std::vector< std::pair<String, size_t> > sequenceIndex;
