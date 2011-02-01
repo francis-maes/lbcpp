@@ -9,6 +9,92 @@
 #include "ProteinResidueFrame.h"
 using namespace lbcpp;
 
+/*
+** FrameClass
+*/
+FrameClass::FrameClass(const String& name, TypePtr baseClass)
+  : DefaultClass(name, baseClass) {}
+
+FrameClass::FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+  : DefaultClass(templateType, templateArguments, baseClass) {}
+
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName, const String& outputShortName)
+  {return addMemberVariable(context, new FrameOperatorSignature(operation, input, outputName, outputShortName));}
+
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
+  {return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));}
+
+bool FrameClass::initialize(ExecutionContext& context)
+{
+  for (size_t i = 0; i < variables.size(); ++i)
+  {
+    FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
+    if (signature && !initializeOperator(context, signature))
+      return false;
+  }
+  return DefaultClass::initialize(context);
+}
+
+bool FrameClass::initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
+{
+  const OperatorPtr& operation = signature->getOperator();
+  jassert(operation);
+  const std::vector<size_t>& inputs = signature->getInputs();
+
+  std::vector<TypePtr> inputTypes(inputs.size());
+  for (size_t i = 0; i < inputTypes.size(); ++i)
+    inputTypes[i] = variables[inputs[i]]->getType();
+  if (!operation->initialize(context, inputTypes))
+    return false;
+  signature->setType(operation->getOutputType());
+  //if (signature->getName().isEmpty())
+  //  signature->setName(operation->getOutputName(...));
+  return true;
+}
+
+/*
+** Frame
+*/
+Frame::Frame(ClassPtr frameClass)
+  : DenseGenericObject(frameClass) {}
+
+bool Frame::isVariableComputed(size_t index) const
+{
+  return index < variableValues.size() &&
+    !thisClass->getMemberVariableType(index)->isMissingValue(variableValues[index]);
+}
+
+Variable Frame::getOrComputeVariable(size_t index)
+{
+  VariableSignaturePtr signature = thisClass->getMemberVariable(index);
+  VariableValue& variableValue = getVariableValueReference(index);
+  const TypePtr& type = signature->getType();
+  if (!type->isMissingValue(variableValue))
+    return Variable::copyFrom(type, variableValue);
+
+  FrameOperatorSignaturePtr operatorSignature = signature.dynamicCast<FrameOperatorSignature>();
+  if (!operatorSignature)
+    return Variable();
+  
+  const std::vector<size_t>& inputIndices = operatorSignature->getInputs();
+  std::vector<Variable> inputs(inputIndices.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+  {
+    inputs[i] = getOrComputeVariable(inputIndices[i]);
+    if (!inputs[i].exists())
+      return Variable();
+  }
+  Variable value = operatorSignature->getOperator()->computeOperator(&inputs[0]);
+  setVariable(defaultExecutionContext(), index, value);
+  return value;
+}
+
+Variable Frame::getVariable(size_t index) const
+  {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
+
+/*
+** ProteinFrame
+*/
 FrameClassPtr lbcpp::defaultProteinFrameClass(ExecutionContext& context)
 {
   FrameClassPtr res(new FrameClass(T("ProteinFrame"), objectClass));
@@ -25,9 +111,11 @@ FrameClassPtr lbcpp::defaultProteinFrameClass(ExecutionContext& context)
   res->addMemberOperator(context, accumulateOperator(), pssmIndex, T("positionSpecificScoringMatrixAccumulator"), T("PSSMc"));
 
   // secondary structure
+  res->addMemberOperator(context, accumulateOperator(), ss3Index, T("secondaryStructureAccumulator"), T("SS3c"));
   size_t ss3LabelsIndex = res->addMemberOperator(context, discretizeOperator(), ss3Index, T("secondaryStructureLabels"), T("SS3d"));
   res->addMemberOperator(context, segmentContainerOperator(), ss3LabelsIndex, T("secondaryStructureSegments"), T("SS3ds"));
-
+  res->addMemberOperator(context, accumulateOperator(), ss3LabelsIndex, T("secondaryStructureLabelsAccumulator"), T("SS3dc"));
+  
   return res->initialize(context) ? res : FrameClassPtr();
 }
 
