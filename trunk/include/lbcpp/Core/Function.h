@@ -77,6 +77,7 @@ extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1,
 
 extern FunctionPtr accumulateOperator(TypePtr inputType);
 extern FunctionPtr discretizeOperator(TypePtr inputType, bool sampleBest = true);
+extern FunctionPtr segmentOperator(TypePtr inputType);
 
 }; /* namespace lbcpp */
 

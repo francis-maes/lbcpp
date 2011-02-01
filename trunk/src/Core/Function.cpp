@@ -33,6 +33,7 @@ bool Function::checkExistence(ExecutionContext& context, const Variable& variabl
 
 #include "../Function/Operator/AccumulateContainerOperator.h"
 #include "../Function/Operator/DiscretizeContainerOperator.h"
+#include "../Function/Operator/SegmentContainerOperator.h"
 
 namespace lbcpp
 {
@@ -63,6 +64,16 @@ FunctionPtr discretizeOperator(TypePtr inputType, bool sampleBest)
   {
     TypePtr elementsType = inputType->getTemplateArgument(0)->getTemplateArgument(0); // FIXME: cast into container base class !!!!
     return new DiscretizeContainerOperator(elementsType, sampleBest);
+  }
+  return FunctionPtr();
+}
+
+FunctionPtr segmentOperator(TypePtr inputType)
+{
+  if (inputType->inheritsFrom(containerClass(anyType)))
+  {
+    TypePtr elementsType = inputType->getTemplateArgument(0);
+    return new SegmentContainerOperator(elementsType);
   }
   return FunctionPtr();
 }

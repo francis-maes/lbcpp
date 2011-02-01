@@ -145,6 +145,10 @@ public:
       FunctionPtr discretizeOperator = lbcpp::discretizeOperator(secondaryStructure->getClass(), true);
       jassert(discretizeOperator);
       secondaryStructureLabels = discretizeOperator->computeFunction(defaultExecutionContext(), secondaryStructure).getObject();
+
+      FunctionPtr segmentOperator = lbcpp::segmentOperator(secondaryStructureLabels->getClass());
+      jassert(segmentOperator);
+      secondaryStructureSegments = segmentOperator->computeFunction(defaultExecutionContext(), secondaryStructureLabels).getObject();
     }
 
     //double time = Time::getMillisecondCounterHiRes();
@@ -164,6 +168,7 @@ protected:
 
   VectorPtr secondaryStructure;
   VectorPtr secondaryStructureLabels;
+  ContainerPtr secondaryStructureSegments;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;

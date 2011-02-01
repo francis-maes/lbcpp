@@ -23,5 +23,23 @@
     <variable type="Type" name="elementsType"/>
     <variable type="Boolean" name="sampleBest"/>
   </class>
-  
+
+
+  <!-- Segment -->
+  <template name="Segment" base="Object">
+    <parameter name="elementType"/>
+    <variable type="PositiveInteger" name="beginIndex" var="segment.beginIndex"/>
+    <variable type="PositiveInteger" name="endIndex" var="segment.endIndex"/>
+    <variable type="Variable" name="value" var="segment.value"/>
+  </template>
+
+  <template name="SegmentContainer" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
+
+  <class name="SegmentContainerOperator" base="Function">
+    <constructor arguments="TypePtr elementsType"/>
+    <variable type="Type" name="elementsType"/>
+  </class>
+
 </library>

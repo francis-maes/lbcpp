@@ -4,62 +4,45 @@
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   
-    
-    <!-- DecoratorContainer -->
-    <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
-      <variable type="Container[Variable]" name="target"/>
-      <parameter name="elementsType"/>
-    </template>
+  <!-- DecoratorContainer -->
+  <template name="DecoratorContainer" base="Container[elementsType]" abstract="yes">
+    <variable type="Container[Variable]" name="target"/>
+    <parameter name="elementsType"/>
+  </template>
 
-    <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType(container->getElementsType())"/>
-      <variable type="Function" name="function"/>
-    </template>
+  <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType(container->getElementsType())"/>
+    <variable type="Function" name="function"/>
+  </template>
 
-    <template name="RangeContainer" base="DecoratorContainer[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
-    </template>
-    
-    <template name="ExcludeRangeContainer" base="DecoratorContainer[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
-    </template>
-    
-    <template name="DuplicatedContainer" base="DecoratorContainer[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr target, size_t count" parameters="target->getElementsType()"/>
-    </template>
-    
-    <template name="SubsetContainer" base="DecoratorContainer[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
-    </template>
+  <template name="RangeContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="ExcludeRangeContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t begin, size_t end" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="DuplicatedContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, size_t count" parameters="target->getElementsType()"/>
+  </template>
+  
+  <template name="SubsetContainer" base="DecoratorContainer[elementsType]">
+    <parameter name="elementsType"/>
+    <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
+  </template>
+  
+  <!-- SymmetricMatrix -->
+  <template name="SymmetricMatrix" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
 
-    <!-- SegmentedContainer -->
-    <template name="ContainerSegment" base="Object">
-      <parameter name="elementsType"/>
-      <variable type="PositiveInteger" name="beginIndex"/>
-      <variable type="PositiveInteger" name="length"/>
-      <variable type="elementsType" name="value"/>
-    </template>
-
-    <template name="SegmentedContainer" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-      <constructor arguments="ContainerPtr container" parameters="container->getElementsType()"/>
-
-      <variable type="Container[elementsType]" name="sourceContainer"/>
-      <variable type="ObjectVector[ContainerSegment[elementsType]]" name="segments"/>
-    </template>
-    
-    <!-- SymmetricMatrix -->
-    <template name="SymmetricMatrix" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-    </template>
-
-    <template name="SymmetricMatrixRow" base="Container[elementsType]">
-      <parameter name="elementsType"/>
-    </template>
+  <template name="SymmetricMatrixRow" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
 
 </library>
