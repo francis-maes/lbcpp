@@ -45,7 +45,7 @@ public:
 
   VariableSignature() {}
 
-  TypePtr getType() const
+  const TypePtr& getType() const
     {return type;}
 
   void setType(TypePtr t)
