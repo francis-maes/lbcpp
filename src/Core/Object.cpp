@@ -238,7 +238,7 @@ String Object::defaultToStringImplementation(bool useShortString) const
         String shortName = type->getMemberVariableShortName(i);
         if (res.isNotEmpty())
           res += T(" ");
-        if (shortName.length() < name.length())
+        if (shortName.isNotEmpty() && shortName.length() < name.length())
           res += T("-") + shortName;
         else
           res += T("--") + name;

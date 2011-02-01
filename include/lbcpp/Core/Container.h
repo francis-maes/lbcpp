@@ -238,46 +238,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<DecoratorContainer> DecoratorContainerPtr;
 
-
-extern ClassPtr containerSegmentClass(TypePtr elementsType);
-
-/*
-** ContainerSegment
-*/
-class ContainerSegment : public Object
-{
-public:
-  ContainerSegment(TypePtr elementsType, size_t beginIndex, size_t length, const Variable& value)
-    : Object(containerSegmentClass(elementsType)), beginIndex(beginIndex), length(length), value(value) {}
-  ContainerSegment() {}
-
-  TypePtr getElementsType() const
-    {return getClass()->getTemplateArgument(0);}
-
-  size_t getBeginIndex() const
-    {return beginIndex;}
-
-  size_t getEndIndex() const
-    {return beginIndex + length;}
-
-  size_t getLength() const
-    {return length;}
-
-  const Variable& getValue() const
-    {return value;}
-
-private:
-  friend class ContainerSegmentClass;
-
-  size_t beginIndex;
-  size_t length;
-  Variable value;
-};
-
-typedef ReferenceCountedObjectPtr<ContainerSegment> ContainerSegmentPtr;
-
-extern ContainerPtr segmentedContainer(ContainerPtr container);
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_CONTAINER_H_

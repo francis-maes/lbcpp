@@ -17,6 +17,7 @@
     <variable type="ObjectVector[EnumerationDistribution[SecondaryStructureElement]]" name="secondaryStructure" shortName="SS3" description="Secondary Structure"/>
     
     <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructureLabels"/>
+    <variable type="SegmentContainer[SecondaryStructureElement]" name="secondaryStructureSegments"/>
 
     <!--
     <variable function="accumulate()" input="primaryStructure" name="primaryStructureAccumulated" shortName="AAc"/>

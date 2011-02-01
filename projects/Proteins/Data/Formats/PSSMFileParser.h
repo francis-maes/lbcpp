@@ -103,7 +103,7 @@ public:
     String gapScore = line.substring(153, 157).trim();
     std::cout << gapScore << std::endl;
     
-    scores->setProbability(aminoAcidTypeEnumeration->getNumElements(), normalize(gapScore.getDoubleValue()));
+    scores->setProbability(aminoAcidTypeEnumeration->getNumElements(), normalize(gapScore.getIntValue()));
     pssm->setElement(currentPosition, scores);
 
     ++currentPosition;
