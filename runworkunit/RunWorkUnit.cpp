@@ -172,11 +172,9 @@ int mainImpl(int argc, char** argv)
   }
 
   // replace default context
-  ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext() : multiThreadedExecutionContext(numThreads));
+  ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext(projectDirectory) : multiThreadedExecutionContext(numThreads, projectDirectory));
   setDefaultExecutionContext(context);
-  context->setProjectDirectory(projectDirectory);
   context->appendCallback(consoleExecutionCallback());
-
   // add "make trace" callback
   ExecutionCallbackPtr makeTraceCallback;
   ExecutionTracePtr trace;

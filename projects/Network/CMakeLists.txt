@@ -7,13 +7,14 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(NetworkLibrary.xml NetworkLibrary.cpp)
 
 ADD_LIBRARY(network SHARED
-  NetworkCommand.h
-  NetworkCommand.cpp
-  NetworkContext.h
-  NetworkContext.cpp
-  ClientServerWorkUnit.h
-  ManagerServer.h
-  ServerWorkUnit.h
+  NetworkRequest.h
+  NetworkRequest.cpp
+  NetworkInterface.h
+  NetworkInterface.cpp
+  NetworkNotification.h
+  NetworkNotification.cpp
+  NetworkWorkUnit.h
+  NetworkWorkUnit.cpp
   NetworkLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )

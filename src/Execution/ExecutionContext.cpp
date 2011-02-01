@@ -17,8 +17,8 @@ using namespace lbcpp;
 /*
 ** ExecutionContext
 */
-ExecutionContext::ExecutionContext()
-  : stack(new ExecutionStack())
+ExecutionContext::ExecutionContext(const File& projectDirectory)
+  : stack(new ExecutionStack()), projectDirectory(projectDirectory)
 {
   initialize(*this);
 }
