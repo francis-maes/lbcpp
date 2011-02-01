@@ -18,6 +18,10 @@ namespace lbcpp
 class SingleThreadedExecutionContext : public ExecutionContext
 {
 public:
+  SingleThreadedExecutionContext(const File& projectDirectory)
+    : ExecutionContext(projectDirectory) {}
+  SingleThreadedExecutionContext() {}
+  
   virtual String toString() const
     {return T("SingleThreaded");}
 

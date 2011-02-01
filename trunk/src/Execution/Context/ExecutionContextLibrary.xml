@@ -3,14 +3,14 @@
 <library name="ExecutionContext" directory="Execution/Context">
 
   <class name="SingleThreadedExecutionContext" base="ExecutionContext">
-    <constructor/>
+    <constructor arguments="const File&amp; projectDirectory"/>
   </class>
   
   <class name="SubExecutionContext" base="ExecutionContext" abstract="yes"/>
   <class name="ThreadOwnedExecutionContext" base="SubExecutionContext"/>
 
   <class name="MultiThreadedExecutionContext" base="ExecutionContext">
-    <constructor arguments="size_t numThreads"/>
+    <constructor arguments="size_t numThreads, const File&amp; projectDirectory"/>
   </class>
 
 </library>

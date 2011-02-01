@@ -1,66 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="NetworkExperimental" dynamic="yes">
-
-  <!-- Network Context -->
-  <!--
-  <class name="NetworkContext" base="WorkUnit">
-    <variable type="String" name="identity"/>
-    <variable type="String" name="hostname"/>
-    <variable type="Integer" name="port"/>
-  </class>
-
-  <class name="ClientNetworkContext" base="NetworkContext"/>
-
-  <class name="ServerNetworkContext" base="NetworkContext" abstract="yes"/>
-
-  <class name="SgeServerNetworkContext" base="ServerNetworkContext">
-    <variable type="File" name="workUnitDirectory"/>
-  </class>
-  -->
-  <!-- Network Command -->
-  <!--
-  <class name="NetworkCommand" base="Object" abstract="yes"/>
-  <class name="GetIdentityNetworkCommand" base="NetworkCommand"/>
-  <class name="CloseConnectionNetworkCommand" base="NetworkCommand"/>
-  <class name="GetConnectionTypeNetworkCommand" base="NetworkCommand"/>
-  <class name="GetWorkUnitNetworkCommand" base="NetworkCommand"/>
-  <class name="GetWorkUnitStatusNetworkCommand" base="NetworkCommand">
-    <variable type="String" name="workUnitIdString"/>
-  </class>
-  <class name="GetSystemResourceNetworkCommand" base="NetworkCommand"/>
-  <class name="PushWorkUnitNetworkCommand" base="NetworkCommand">
-    <variable type="String" name="workUnitIdString"/>
-    <variable type="WorkUnit" name="workUnit"/>
-  </class>
-  <class name="SendTraceNetworkCommand" base="NetworkCommand">
-    <variable type="String" name="workUnitIdString"/>
-  </class>
   
-  <class name="SystemResource" base="Object"/>
-  -->
-  <!-- Work Unit -->
-  <!--
-  <class name="ClientWorkUnit" base="WorkUnit">
-    <variable type="String" name="hostname"/>
-  </class>
-
-  <class name="ServerWorkUnit" base="WorkUnit">
-    <variable type="File" name="workUnitDirectory" description="The path where jobs are stocked" shortName="-d"/>
-    <variable type="String" name="hostname" description="Hostname of the master node" shortName="-h"/>
-    <variable type="String" name="serverName" description="The name of the server (used as a identifier)" shortName="-n"/>
-  </class>
-
-  <class name="ManagerServer" base="WorkUnit"/>
-  -->
-  
-  <class name="DumbWorkUnit" base="WorkUnit"/>
-  <class name="ClientWorkUnit" base="WorkUnit">
-    <variable type="String" name="clientName"/>
-    <variable type="String" name="hostName"/>
-    <variable type="PositiveInteger" name="port"/>
-  </class>
-  
+  <!-- NetworkRequest -->
   <class name="NetworkRequest" base="Object">
     <variable type="String" name="identifier"/>
     <variable type="String" name="projectName"/>
@@ -73,6 +15,7 @@
     <variable type="WorkUnit" name="workUnit"/>
   </class>
   
+  <!-- NetworkInterface -->
   <class name="NetworkInterface" base="Object">
   <!-- TODO: <variable type="ExecutionContext" name="context"/> -->
     <variable type="NetworkClient" name="client"/>
@@ -80,6 +23,13 @@
   
   <class name="NodeNetworkInterface" base="NetworkInterface" abstract="yes"/>
   
+  <class name="ClientNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="SgeNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface">
+    <variable type="GenericVector[NetworkRequest]" name="requests"/>
+  </class>
+  
+  <!-- NetworkNotification -->
   <class name="NetworkNotification" base="Notification" abstract="yes"/>
   <class name="NodeNetworkNotification" base="NetworkNotification" abstract="yes"/>
   <class name="CloseCommunicationNotification" base="NetworkNotification"/>
@@ -94,12 +44,7 @@
     <variable type="NetworkRequest" name="request"/>
   </class>
   
-  <class name="ClientNodeNetworkInterface" base="NodeNetworkInterface"/>
-  <class name="SgeNodeNetworkInterface" base="NodeNetworkInterface"/>
-  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface">
-    <variable type="GenericVector[NetworkRequest]" name="requests"/>
-  </class>
-  
+  <!-- WorkUnit -->
   <class name="ManagerWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="port"/>
   </class>
@@ -107,6 +52,13 @@
   <class name="GridWorkUnit" base="WorkUnit">
     <variable type="String" name="gridName"/>
     <variable type="String" name="gridEngine"/>
+    <variable type="String" name="hostName"/>
+    <variable type="PositiveInteger" name="port"/>
+  </class>
+  
+  <class name="DumbWorkUnit" base="WorkUnit"/>
+  <class name="ClientWorkUnit" base="WorkUnit">
+    <variable type="String" name="clientName"/>
     <variable type="String" name="hostName"/>
     <variable type="PositiveInteger" name="port"/>
   </class>

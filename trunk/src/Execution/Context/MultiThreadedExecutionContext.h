@@ -119,7 +119,6 @@ void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStac
   if (entries.size() <= priority)
     entries.resize(priority + 1);
   entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), true, counterToDecrementWhenDone, result));
-  //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnit->getClassName() << " - Description : " << workUnit->toString() << std::endl;
 }
 
 void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, Variable* result)
@@ -137,7 +136,6 @@ void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const Exe
   //*result = true;
   for (size_t i = 0; i < n; ++i)
     entries[priority].push_back(Entry(workUnits->getWorkUnit(i), stack, workUnits->hasPushChildrenIntoStackFlag(), numRemainingWorkUnitsCounter, NULL));
-  //std::cout << "WaitingWorkUnitQueue::push - ClassName : " << workUnits->getClassName() << " - Description : " << workUnits->toString() << " - Composite : " << n << std::endl;
 }
 
 WaitingWorkUnitQueue::Entry WaitingWorkUnitQueue::pop()
@@ -178,6 +176,7 @@ public:
     : Thread(T("WorkUnitThread ") + String((int)number + 1)), waitingQueue(waitingQueue)
   {
     context = threadOwnedExecutionContext(parentContext, this);
+    context->setProjectDirectory(parentContext.getProjectDirectory());
   }
 
   virtual void run()
@@ -383,7 +382,8 @@ typedef ReferenceCountedObjectPtr<WorkUnitThreadPool> WorkUnitThreadPoolPtr;
 class MultiThreadedExecutionContext : public ExecutionContext
 {
 public:
-  MultiThreadedExecutionContext(size_t numThreads)
+  MultiThreadedExecutionContext(size_t numThreads, const File& projectDirectory)
+    : ExecutionContext(projectDirectory)
     {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));}
   MultiThreadedExecutionContext() {}
 
@@ -416,7 +416,6 @@ public:
     
   virtual Variable run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   {
-    //std::cout << "MultiThreadedExecutionContext::run - WorkUnit - Description : " << workUnit->getDescription() << std::endl;
     int remainingWorkUnits = 1;
     Variable result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
@@ -427,7 +426,6 @@ public:
 
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack)
   {
-    //std::cout << "MultiThreadedExecutionContext::run - CompositeWorkUnit - Description : " << workUnits->getDescription() << std::endl;
     int numRemainingWorkUnits;
     Variable result;
     if (pushIntoStack)

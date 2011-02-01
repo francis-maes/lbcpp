@@ -17,7 +17,7 @@ namespace lbcpp
 class ExecutionContext : public CompositeExecutionCallback
 {
 public:
-  ExecutionContext();
+  ExecutionContext(const File& projectDirectory = File::nonexistent);
 
   virtual bool isMultiThread() const = 0;
 
@@ -66,7 +66,7 @@ public:
   File getFile(const String& path);
   String getFilePath(const File& file) const;
 
-  File getProjectDirectory() const
+  virtual File getProjectDirectory() const
     {return projectDirectory;}
 
   void setProjectDirectory(const File& projectDirectory)
@@ -84,8 +84,8 @@ protected:
 extern ExecutionContext& defaultExecutionContext();
 extern void setDefaultExecutionContext(ExecutionContextPtr defaultContext);
 
-extern ExecutionContextPtr singleThreadedExecutionContext();
-extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads);
+extern ExecutionContextPtr singleThreadedExecutionContext(const File& projectDirectory = File::nonexistent);
+extern ExecutionContextPtr multiThreadedExecutionContext(size_t numThreads, const File& projectDirectory = File::nonexistent);
 
 extern ExecutionContextPtr defaultConsoleExecutionContext(bool noMultiThreading = false);
 
