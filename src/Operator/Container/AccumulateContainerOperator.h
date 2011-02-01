@@ -178,6 +178,28 @@ public:
   }
 };
 
+class AccumulateOperator : public ProxyOperator
+{
+public:
+  virtual OperatorPtr createImplementation(const std::vector<TypePtr>& inputTypes) const
+  {
+    if (inputTypes.size() == 1 && inputTypes[0]->inheritsFrom(containerClass(anyType)))
+    {
+      TypePtr elementsType = getContainerElementsType(defaultExecutionContext(), inputTypes[0]);
+      if (elementsType)
+      {
+        if (elementsType.dynamicCast<Enumeration>())
+          return new AccumulateEnumerationContainerOperator();
+        else if (elementsType->inheritsFrom(doubleType))
+          return new AccumulateDoubleContainerOperator();
+        else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
+          return new AccumulateEnumerationDistributionContainerOperator();
+      }
+    }
+    return OperatorPtr();
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_

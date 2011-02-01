@@ -32,6 +32,26 @@ ClassPtr proteinFrameClass = new ProteinFrameClass();
 
 */
 
+FrameClassPtr defaultProteinFrameClass(ExecutionContext& context)
+{
+  FrameClassPtr res(new FrameClass(T("ProteinFrame"), objectClass));
+
+  // primaryStructure
+  size_t aaIndex = res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
+  res->addMemberOperator(context, accumulateOperator(), aaIndex, T("primaryStructureAccumulator"), T("AAc"));
+
+  // pssm
+  size_t pssmIndex = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
+  res->addMemberOperator(context, accumulateOperator(), pssmIndex, T("positionSpecificScoringMatrixAccumulator"), T("PSSMc"));
+
+  // secondary structure
+  size_t ss3Index = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
+  size_t ss3LabelsIndex = res->addMemberOperator(context, discretizeOperator(), ss3Index, T("secondaryStructureLabels"), T("SS3d"));
+  res->addMemberOperator(context, segmentContainerOperator(), ss3LabelsIndex, T("secondaryStructureSegments"), T("SS3ds"));
+
+  return res->initialize(context) ? res : FrameClassPtr();
+}
+
 ProteinFrame::ProteinFrame(const ProteinPtr& protein)
   //: Object(proteinFrameClass)
 {

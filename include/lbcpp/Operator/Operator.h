@@ -18,6 +18,8 @@ namespace lbcpp
 class Operator : public Object
 {
 public:
+  bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputs);
+  
   size_t getNumInputs() const
     {return inputTypes.size();}
 
@@ -27,15 +29,13 @@ public:
   TypePtr getOutputType() const
     {return outputType;}
 
-  bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputs);
-  
   Variable compute(const Variable& input) const
     {jassert(inputTypes.size() == 1); return computeOperator(&input);}
 
   Variable compute(const Variable* inputs) const
     {return computeOperator(inputs);}
 
-protected:
+public:
   virtual TypePtr initializeOperator(ExecutionContext& context) = 0;
   virtual Variable computeOperator(const Variable* inputs) const = 0;
 
@@ -54,9 +54,34 @@ protected:
 
 typedef ReferenceCountedObjectPtr<Operator> OperatorPtr;
 
-extern OperatorPtr accumulateOperator(TypePtr inputType);
-extern OperatorPtr discretizeOperator(TypePtr inputType, bool sampleBest = true);
-extern OperatorPtr segmentOperator(TypePtr inputType);
+class ProxyOperator : public Operator
+{
+protected:
+  virtual OperatorPtr createImplementation(const std::vector<TypePtr>& inputTypes) const = 0;
+
+  virtual TypePtr initializeOperator(ExecutionContext& context)
+  {
+    implementation = createImplementation(inputTypes);
+    if (!implementation)
+    {
+      context.errorCallback(T("Could not create implementation in proxy operator"));
+      return TypePtr();
+    }
+    if (!implementation->initialize(context, inputTypes))
+      return TypePtr();
+
+    return implementation->getOutputType();
+  }
+
+  virtual Variable computeOperator(const Variable* inputs) const
+    {jassert(implementation); return implementation->computeOperator(inputs);}
+
+  OperatorPtr implementation;
+};
+
+extern OperatorPtr accumulateOperator();
+extern OperatorPtr discretizeOperator(bool sampleBest = true);
+extern OperatorPtr segmentContainerOperator();
 
 }; /* namespace lbcpp */
 

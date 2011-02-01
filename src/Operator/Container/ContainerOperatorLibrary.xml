@@ -12,6 +12,9 @@
   <class name="AccumulateEnumerationContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateEnumerationDistributionContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateDoubleContainerOperator" base="AccumulateContainerOperator"/>
+  <class name="AccumulateOperator" base="ProxyOperator">
+    <constructor returnType="Operator"/>
+  </class>
 
   <!-- Discretize -->
   <class name="DiscretizeContainerOperator" base="Operator">
@@ -19,7 +22,10 @@
     <variable type="Type" name="elementsType"/>
     <variable type="Boolean" name="sampleBest"/>
   </class>
-
+  <class name="DiscretizeOperator" base="ProxyOperator">
+    <constructor arguments="bool sampleBest" returnType="Operator"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
 
   <!-- Segment -->
   <template name="Segment" base="Object">
@@ -35,7 +41,6 @@
 
   <class name="SegmentContainerOperator" base="Operator">
     <constructor/>
-    <variable type="Type" name="elementsType"/>
   </class>
 
 </library>

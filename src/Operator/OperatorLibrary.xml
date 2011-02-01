@@ -11,5 +11,7 @@
     <variable type="ObjectVector[Type]" name="inputTypes"/>
     <variable type="Type" name="outputType"/>
   </class>
+
+  <class name="ProxyOperator" base="Operator" abstract="yes"/>
   
 </library>
