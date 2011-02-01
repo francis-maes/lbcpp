@@ -44,131 +44,39 @@ typedef ReferenceCountedObjectPtr<FrameOperatorSignature> FrameOperatorSignature
 class FrameClass : public DefaultClass
 {
 public:
-  FrameClass(const String& name, TypePtr baseClass)
-    : DefaultClass(name, baseClass) {}
-  FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-    : DefaultClass(templateType, templateArguments, baseClass) {}
+  FrameClass(const String& name, TypePtr baseClass);
+  FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
   FrameClass() {}
 
   virtual bool isUnnamedType() const
     {return true;}
 
-  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty)
-    {return addMemberVariable(context, new FrameOperatorSignature(operation, input, outputName, outputShortName));}
+  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
-  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty)
-    {return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));}
-
-  virtual bool initialize(ExecutionContext& context)
-  {
-    for (size_t i = 0; i < variables.size(); ++i)
-    {
-      FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
-      if (signature && !initializeOperator(context, signature))
-        return false;
-    }
-    return DefaultClass::initialize(context);
-  }
+  virtual bool initialize(ExecutionContext& context);
 
 private:
-  bool initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
-  {
-    const OperatorPtr& operation = signature->getOperator();
-    jassert(operation);
-    const std::vector<size_t>& inputs = signature->getInputs();
-
-    std::vector<TypePtr> inputTypes(inputs.size());
-    for (size_t i = 0; i < inputTypes.size(); ++i)
-      inputTypes[i] = variables[inputs[i]]->getType();
-    if (!operation->initialize(context, inputTypes))
-      return false;
-    signature->setType(operation->getOutputType());
-    //if (signature->getName().isEmpty())
-    //  signature->setName(operation->getOutputName(...));
-    return true;
-  }
+  bool initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature);
 };
 
 class Frame : public DenseGenericObject
 {
 public:
-  Frame(ClassPtr frameClass)
-    : DenseGenericObject(frameClass) {}
+  Frame(ClassPtr frameClass);
   Frame() {}
 
-  bool isVariableComputed(size_t index) const
-  {
-    return index < variableValues.size() &&
-      !thisClass->getMemberVariableType(index)->isMissingValue(variableValues[index]);
-  }
+  bool isVariableComputed(size_t index) const;
+  Variable getOrComputeVariable(size_t index);
 
-  Variable getOrComputeVariable(size_t index)
-  {
-    VariableSignaturePtr signature = thisClass->getMemberVariable(index);
-    VariableValue& variableValue = getVariableValueReference(index);
-    const TypePtr& type = signature->getType();
-    if (!type->isMissingValue(variableValue))
-      return Variable::copyFrom(type, variableValue);
-
-    FrameOperatorSignaturePtr operatorSignature = signature.dynamicCast<FrameOperatorSignature>();
-    if (!operatorSignature)
-      return Variable();
-    
-    const std::vector<size_t>& inputIndices = operatorSignature->getInputs();
-    std::vector<Variable> inputs(inputIndices.size());
-    for (size_t i = 0; i < inputs.size(); ++i)
-    {
-      inputs[i] = getOrComputeVariable(inputIndices[i]);
-      if (!inputs[i].exists())
-        return Variable();
-    }
-    Variable value = operatorSignature->getOperator()->computeOperator(&inputs[0]);
-    setVariable(defaultExecutionContext(), index, value);
-    return value;
-  }
- 
-  virtual Variable getVariable(size_t index) const
-    {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
+  virtual Variable getVariable(size_t index) const;
 };
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
+// Proteins ...
 FrameClassPtr defaultProteinFrameClass(ExecutionContext& context);
 FramePtr createProteinFrame(ExecutionContext& context, const ProteinPtr& protein, FrameClassPtr frameClass);
-
-#if 0
-/////////////////////////////////////////////////
-
-extern ClassPtr proteinFrameClass;
-
-class ProteinFrame : public Object
-{
-public:
-  ProteinFrame(const ProteinPtr& protein);
-  ProteinFrame() {}
-
-  VectorPtr getPrimaryStructure() const
-    {return primaryStructure;}
-
-protected:
-  friend class ProteinFrameClass;
-
-  VectorPtr primaryStructure;
-  ContainerPtr primaryStructureAccumulator;
-
-  VectorPtr positionSpecificScoringMatrix;
-  ContainerPtr positionSpecificScoringMatrixAccumulator;
-
-  VectorPtr secondaryStructure;
-  VectorPtr secondaryStructureLabels;
-  ContainerPtr secondaryStructureSegments;
-
-  VectorPtr residueFrames;
-};
-
-typedef ReferenceCountedObjectPtr<ProteinFrame> ProteinFramePtr;
-
-#endif // 0
 
 }; /* namespace lbcpp */
 
