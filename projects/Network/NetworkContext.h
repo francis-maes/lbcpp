@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class NetworkContext : public WorkUnit
 {
 public:
@@ -113,7 +113,7 @@ extern ClassPtr serverNetworkContextClass;
 typedef ReferenceCountedObjectPtr<NetworkContext> NetworkContextPtr;
 typedef ReferenceCountedObjectPtr<ClientNetworkContext> ClientNetworkContextPtr;
 typedef ReferenceCountedObjectPtr<ServerNetworkContext> ServerNetworkContextPtr;
-
+#endif
 };
 
 #endif // !LBCPP_NETWORK_CONTEXT_H_

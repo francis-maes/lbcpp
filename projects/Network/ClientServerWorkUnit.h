@@ -26,24 +26,40 @@ public:
 class ClientWorkUnit : public WorkUnit
 {
 public:
-  ClientWorkUnit() : hostname(T("monster24.montefiore.ulg.ac.be")) {}
+  ClientWorkUnit() : clientName(T("jbecker-localhost")), hostName(T("monster24.montefiore.ulg.ac.be")), port(1664) {}
   
   virtual Variable run(ExecutionContext& context)
   {
-    ClientNetworkContextPtr networkContext = new ClientNetworkContext(T("jbecker-client-mac"), hostname, 1664);
+    NetworkClientPtr client = blockingNetworkClient(context);
+    
+    if (!client->startClient(hostName, port))
+    {
+      context.errorCallback(T("ClientWorkUnit::run"), T("Not connected !"));
+      return Variable();
+    }
+
+    NodeNetworkInterfacePtr interface = new ClientNodeNetworkInterface(context, client, clientName);
+    interface->sendInterfaceClass();
 
     /* Submit jobs */
-    for (size_t i = 0; i < 3; ++i)
-      networkContext->pushWorkUnit(new DumbWorkUnit());
+    for (size_t i = 0; i < 1; ++i)
+    {
+      WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(new DumbWorkUnit(), T("testProject"), clientName, T("LocalGridNode"));
+      NetworkRequestPtr res = interface->pushWorkUnit(context, request);
+      interface->getWorkUnitStatus(context, res);
+    }
+    
+    interface->closeCommunication(context);
 
-    networkContext->run(context);
     return Variable();
   }
 
 protected:
   friend class ClientWorkUnitClass;
 
-  String hostname;
+  String clientName;
+  String hostName;
+  size_t port;
 };
 
 }; /* namespace lbcpp */

@@ -21,7 +21,7 @@ void usage()
   std::cerr << "  --projectDirectory : project directory where find files." << std::endl;
 }
 
-bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads, File& traceOutputFile)
+bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads, File& traceOutputFile, File& projectDirectory)
 {
   numThreads = (size_t)juce::SystemStats::getNumCpus();
   
@@ -77,13 +77,12 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         context.errorCallback(T("Invalid Syntax"));
         return false;
       }
-      File projectDirectory = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
+      projectDirectory = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (!projectDirectory.isDirectory())
       {
         context.errorCallback(T("Invalid Project Directory"));
         return false;
       }
-      context.setProjectDirectory(projectDirectory);
     }
     else
       remainingArguments.push_back(argument);
@@ -165,7 +164,8 @@ int mainImpl(int argc, char** argv)
   std::vector<String> arguments;
   size_t numThreads;
   File traceOutputFile;
-  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile))
+  File projectDirectory;
+  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile, projectDirectory))
   {
     usage();
     return 1;
@@ -174,7 +174,7 @@ int mainImpl(int argc, char** argv)
   // replace default context
   ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext() : multiThreadedExecutionContext(numThreads));
   setDefaultExecutionContext(context);
-  context->setProjectDirectory(File::getCurrentWorkingDirectory());
+  context->setProjectDirectory(projectDirectory);
   context->appendCallback(consoleExecutionCallback());
 
   // add "make trace" callback

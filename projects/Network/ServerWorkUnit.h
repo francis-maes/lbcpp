@@ -2,7 +2,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class ServerWorkUnit : public WorkUnit
 {
 public:
@@ -23,7 +23,7 @@ protected:
   String hostname;
   String serverName;
 };
-
+#endif
 class GridWorkUnit : public WorkUnit
 {
 public:
@@ -35,13 +35,12 @@ public:
   {
     NodeNetworkInterfacePtr interface;
     if (gridEngine == T("SGE"))
-      interface = new SgeNodeNetworkInterface();
+      interface = new SgeNodeNetworkInterface(context, gridName);
     else
     {
       jassertfalse;
       return Variable();
     }
-    interface->setContext(context);
 
     /* Establishing a connection */
     NetworkClientPtr client = blockingNetworkClient(context, 3);
@@ -71,6 +70,8 @@ public:
   }
   
 protected:
+  friend class GridWorkUnitClass;
+  
   String gridName;
   String gridEngine;
   String hostName;

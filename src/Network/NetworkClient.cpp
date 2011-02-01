@@ -19,6 +19,7 @@ bool NetworkClient::sendVariable(const Variable& variable)
   String text = exporter.toString();
   if (text == String::empty)
     return false;
+  std::cout << "Send: " << text << std::endl;
   juce::MemoryBlock block(text.toUTF8(), text.length());
   return sendMessage(block);
 }
@@ -123,6 +124,7 @@ void NetworkClient::connectionLost()
 
 void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 {
+  std::cout << "Msg: " << message.toString() << std::endl;
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);
   variableReceived(importer.isOpened() ? importer.load() : Variable());

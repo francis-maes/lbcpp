@@ -3,7 +3,7 @@
 #include "NetworkCommand.h"
 
 using namespace lbcpp;
-
+#if 0
 Variable NetworkContext::run(ExecutionContext& context)
 {
   /* Establishing a connection */
@@ -64,3 +64,4 @@ Variable SgeServerNetworkContext::getWorkUnitTrace(ExecutionContext& context, ju
   
   return Variable::createFromFile(context, f);
 }
+#endif

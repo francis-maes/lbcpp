@@ -3,7 +3,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class WorkUnitManager;
 
 class Job : public Object
@@ -279,5 +279,5 @@ protected:
     return true;
   }
 };
-
+#endif
 };
