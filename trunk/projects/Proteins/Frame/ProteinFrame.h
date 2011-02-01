@@ -20,37 +20,73 @@ typedef ReferenceCountedObjectPtr<FrameClass> FrameClassPtr;
 class Frame;
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameVariableSignature : public VariableSignature
+class FrameOperatorSignature : public VariableSignature
 {
 public:
-  FrameVariableSignature(TypePtr type,
-                  const String& name,
-                  const String& shortName = String::empty,
-                  const String& description = String::empty)
-    : VariableSignature(type, name, shortName, description) {}
+  FrameOperatorSignature(OperatorPtr operation, const std::vector<size_t>& inputs, const String& name, const String& shortName)
+    : VariableSignature(TypePtr(), name, shortName), operation(operation), inputs(inputs) {}
+  FrameOperatorSignature(OperatorPtr operation, size_t input, const String& name, const String& shortName)
+    : VariableSignature(TypePtr(), name, shortName), operation(operation), inputs(1, input) {}
+
+  const OperatorPtr& getOperation() const
+    {return operation;}
+
+  const std::vector<size_t>& getInputs() const
+    {return inputs;}
 
 protected:
-  OperatorPtr op;
+  OperatorPtr operation;
+  std::vector<size_t> inputs;
 };
 
-class FrameClass : public Class
+typedef ReferenceCountedObjectPtr<FrameOperatorSignature> FrameOperatorSignaturePtr;
+
+class FrameClass : public DefaultClass
 {
 public:
   FrameClass(const String& name, TypePtr baseClass)
-    : Class(name, baseClass) {}
+    : DefaultClass(name, baseClass) {}
   FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-    : Class(templateType, templateArguments, baseClass) {}
+    : DefaultClass(templateType, templateArguments, baseClass) {}
   FrameClass() {}
 
-  void addFunctionAndVariable(ExecutionContext& context, const FunctionPtr& function, const std::vector< std::vector<int> >& inputPaths, const String& outputName = String::empty)
+  virtual bool isUnnamedType() const
+    {return true;}
+
+  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty)
+    {return addMemberVariable(context, new FrameOperatorSignature(operation, input, outputName, outputShortName));}
+
+  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty)
+    {return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));}
+
+  virtual bool initialize(ExecutionContext& context)
   {
-    // ...
+    for (size_t i = 0; i < variables.size(); ++i)
+    {
+      FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
+      if (signature && !initializeOperator(context, signature))
+        return false;
+    }
+    return DefaultClass::initialize(context);
   }
 
 private:
-  
+  bool initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
+  {
+    const OperatorPtr& operation = signature->getOperation();
+    jassert(operation);
+    const std::vector<size_t>& inputs = signature->getInputs();
 
-
+    std::vector<TypePtr> inputTypes(inputs.size());
+    for (size_t i = 0; i < inputTypes.size(); ++i)
+      inputTypes[i] = variables[inputs[i]]->getType();
+    if (!operation->initialize(context, inputTypes))
+      return false;
+    signature->setType(operation->getOutputType());
+    //if (signature->getName().isEmpty())
+    //  signature->setName(operation->getOutputName(...));
+    return true;
+  }
 };
 
 class Frame : public Object

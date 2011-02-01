@@ -48,6 +48,9 @@ public:
   TypePtr getType() const
     {return type;}
 
+  void setType(TypePtr t)
+    {type = t;}
+
   const String& getShortName() const
     {return shortName;}
 
@@ -364,8 +367,9 @@ public:
   void reserveMemberVariables(size_t count)
     {variables.reserve(count);}
 
-  void addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
-  void addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature);
 
   lbcpp_UseDebuggingNewOperator
 

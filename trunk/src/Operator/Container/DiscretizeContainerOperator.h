@@ -60,6 +60,24 @@ protected:
   bool sampleBest;
 };
 
+class DiscretizeOperator : public ProxyOperator
+{
+public:
+  DiscretizeOperator(bool sampleBest = true)
+    : sampleBest(sampleBest) {}
+
+  virtual OperatorPtr createImplementation(const std::vector<TypePtr>& inputTypes) const
+  {
+    if (inputTypes.size() == 1 && inputTypes[0]->inheritsFrom(containerClass(distributionClass(anyType))))
+      return new DiscretizeContainerOperator(sampleBest);
+    return OperatorPtr();
+  }
+
+protected:
+  friend class DiscretizeOperatorClass;
+  bool sampleBest;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_OPERATOR_DISCRETIZE_CONTAINER_H_

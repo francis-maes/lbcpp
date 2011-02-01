@@ -90,7 +90,7 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : Class(templateType, templateArguments, baseClass) {}
 
-void DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
 {
   TypePtr type;
   if (templateType)
@@ -98,23 +98,32 @@ void DefaultClass::addMemberVariable(ExecutionContext& context, const String& ty
   else
     type = typeManager().getType(context, typeName);
   if (type)
-    addMemberVariable(context, type, name, shortName, description);
+    return addMemberVariable(context, type, name, shortName, description);
+  else
+    return (size_t)-1;
 }
 
-void DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
 {
   if (!type || name.isEmpty())
   {
     context.errorCallback(T("Class::addMemberVariable"), T("Invalid type or name"));
-    return;
+    return (size_t)-1;
   }
   if (findMemberVariable(name) >= 0)
   {
     context.errorCallback(T("Class::addMemberVariable"), T("Another variable with name '") + name + T("' already exists"));
-    return;
+    return (size_t)-1;
   }
-  variablesMap[name] = variables.size();
-  variables.push_back(new VariableSignature(type, name, shortName, description));
+  return addMemberVariable(context, new VariableSignature(type, name, shortName, description));
+}
+
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature)
+{
+  size_t res = variables.size();
+  variablesMap[signature->getName()] = res;
+  variables.push_back(signature);
+  return res;
 }
 
 size_t DefaultClass::getNumMemberVariables() const
@@ -153,7 +162,5 @@ size_t DefaultClass::findOrAddMemberVariable(ExecutionContext& context, const St
   int idx = findMemberVariable(name);
   if (idx >= 0)
     return (size_t)idx;
-  size_t res = getNumMemberVariables();
-  addMemberVariable(context, type, name);
-  return res;
+  return addMemberVariable(context, type, name);
 }

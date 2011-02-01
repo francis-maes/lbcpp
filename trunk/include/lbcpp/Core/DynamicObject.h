@@ -30,11 +30,11 @@ public:
   /*
   ** DefaultClass
   */
-  void addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); DefaultClass::addMemberVariable(context, type, name, shortName, description);}
+  size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); return DefaultClass::addMemberVariable(context, type, name, shortName, description);}
 
-  void addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); DefaultClass::addMemberVariable(context, typeName, name, shortName, description);}
+  size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
+    {ScopedLock _(lock); return DefaultClass::addMemberVariable(context, typeName, name, shortName, description);}
 
   /*
   ** Class

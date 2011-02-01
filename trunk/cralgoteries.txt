@@ -1,6 +1,3 @@
-* New base class Operator
-* Inherit AccumulateContainerOperator, DiscretizeContainerOperator and SegmentContainerOperator from Operator
-* Rename Distribution::compute() into computeProbability() and remove ExecutionContext argument
 
 * Remplacer les types dans Protein
 * ProteinResidueFrame, ProteinResiduePairFrame

@@ -78,37 +78,3 @@ TypePtr Operator::getDistributionElementsType(ExecutionContext& context, TypePtr
   }
   return getTemplateArgument(context, t, 0, anyType);
 }
-
-namespace lbcpp
-{
-
-OperatorPtr accumulateOperator(TypePtr inputType)
-{
-  if (inputType->inheritsFrom(containerClass(anyType)))
-  {
-    TypePtr elementsType = inputType->getTemplateArgument(0); // FIXME: cast into container base class !!!!
-    if (elementsType.dynamicCast<Enumeration>())
-      return new AccumulateEnumerationContainerOperator();
-    else if (elementsType->inheritsFrom(doubleType))
-      return new AccumulateDoubleContainerOperator();
-    else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
-      return new AccumulateEnumerationDistributionContainerOperator();
-  }
-  return OperatorPtr();
-}
-
-OperatorPtr discretizeOperator(TypePtr inputType, bool sampleBest)
-{
-  if (inputType->inheritsFrom(containerClass(distributionClass(anyType))))
-    return new DiscretizeContainerOperator(sampleBest);
-  return OperatorPtr();
-}
-
-OperatorPtr segmentOperator(TypePtr inputType)
-{
-  if (inputType->inheritsFrom(containerClass(anyType)))
-    return new SegmentContainerOperator();
-  return OperatorPtr();
-}
-
-}; /* namespace lbcpp */
