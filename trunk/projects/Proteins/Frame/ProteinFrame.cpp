@@ -92,6 +92,8 @@ Variable Frame::getOrComputeVariable(size_t index)
 Variable Frame::getVariable(size_t index) const
   {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
 
+////////////////////////////////////////////////////
+
 /*
 ** ProteinFrame
 */
@@ -103,6 +105,8 @@ FrameClassPtr lbcpp::defaultProteinFrameClass(ExecutionContext& context)
   size_t aaIndex = res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
   size_t pssmIndex = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
   size_t ss3Index = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
+
+  size_t singleResidueFramesIndex = res->addMemberVariable(context, vectorClass(objectClass), T("singleResidueFrames"));
 
   // primaryStructure
   res->addMemberOperator(context, accumulateOperator(), aaIndex, T("primaryStructureAccumulator"), T("AAc"));
@@ -139,51 +143,6 @@ FramePtr lbcpp::createProteinFrame(ExecutionContext& context, const ProteinPtr& 
     res->setVariable(context, 2, secondaryStructure);
   }
 
+  res->setVariable(context, 3, createProteinSingleResidueFrames(context, res, defaultProteinSingleResidueFrameClass(context)));
   return res;
 }
-
-#if 0
-ProteinFrame::ProteinFrame(const ProteinPtr& protein)
-  //: Object(proteinFrameClass)
-{
-  // primary Structure
-  primaryStructure = protein->getPrimaryStructure();
-  size_t n = primaryStructure->getNumElements();
-/*
-  FunctionPtr aaAccumulator = accumulateOperator(primaryStructure->getClass());
-  jassert(aaAccumulator);
-  primaryStructureAccumulator = aaAccumulator->computeFunction(defaultExecutionContext(), primaryStructure).getObjectAndCast<Container>();*/
-
-  // pssm
-  positionSpecificScoringMatrix = protein->getPositionSpecificScoringMatrix();
-  /*FunctionPtr pssmAccumulator = accumulateOperator(positionSpecificScoringMatrix->getClass());
-  jassert(pssmAccumulator);
-  positionSpecificScoringMatrixAccumulator = pssmAccumulator->computeFunction(defaultExecutionContext(), positionSpecificScoringMatrix).getObjectAndCast<Container>();*/
-
-  // secondary structure
-  ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
-  if (inputSecondaryStructure)
-  {
-    size_t n = primaryStructure->getNumElements();
-    secondaryStructure = vector(enumerationDistributionClass(secondaryStructureElementEnumeration), n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      EnumerationDistributionPtr distribution = new EnumerationDistribution(secondaryStructureElementEnumeration);
-      distribution->setProbability((size_t)inputSecondaryStructure->getElement(i).getInteger(), 1.0);
-      secondaryStructure->setElement(i, distribution);
-    }
-
-    /*FunctionPtr discretizeOperator = lbcpp::discretizeOperator(secondaryStructure->getClass(), true);
-    jassert(discretizeOperator);
-    secondaryStructureLabels = discretizeOperator->computeFunction(defaultExecutionContext(), secondaryStructure).getObject();
-
-    FunctionPtr segmentOperator = lbcpp::segmentOperator(secondaryStructureLabels->getClass());
-    jassert(segmentOperator);
-    secondaryStructureSegments = segmentOperator->computeFunction(defaultExecutionContext(), secondaryStructureLabels).getObject();*/
-  }
-
-  residueFrames = vector(proteinResidueFrameClass, n);
-  for (size_t i = 0; i < n; ++i)
-    residueFrames->setElement(i, new ProteinResidueFrame(this, i));
-}
-#endif // 0

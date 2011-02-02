@@ -243,7 +243,7 @@ void CompositePerception::computeOutputType()
   outputVariables.resize(subPerceptions->getNumElements());
   for (size_t i = 0; i < outputVariables.size(); ++i)
   {
-    const PairPtr& nameAndSubPerception = subPerceptions->getElement(i).getObjectAndCast<Pair>();
+    PairPtr nameAndSubPerception = subPerceptions->getElement(i).getObjectAndCast<Pair>();
     OutputVariable& v = outputVariables[i];
     v.name = nameAndSubPerception->getFirst().getString();
     v.subPerception = nameAndSubPerception->getSecond().getObjectAndCast<Perception>();

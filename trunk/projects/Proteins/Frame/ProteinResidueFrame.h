@@ -14,31 +14,8 @@
 namespace lbcpp
 {
 
-class ProteinResidueFrame : public Object
-{
-public:
-  ProteinResidueFrame(Frame* proteinFrame, size_t position)
-    : proteinFrame(proteinFrame), position(position)
-  {
-  /*  FunctionPtr windowOperator = windowPerception(aminoAcidTypeEnumeration, 15);
-    jassert(windowOperator);
-    primaryStructureWindow = windowOperator->computeFunction(defaultExecutionContext(), new Pair(proteinFrame->getPrimaryStructure(), position)).getObject();
-    */
-  }
-
-  ProteinResidueFrame() : position(0) {}
-
-private:
-  friend class ProteinResidueFrameClass;
-
-  Frame* proteinFrame;
-
-  size_t position;
-  ObjectPtr primaryStructureWindow;
-  ObjectPtr primaryStructureWindowFeatures;
-};
-
-extern ClassPtr proteinResidueFrameClass;
+extern FrameClassPtr defaultProteinSingleResidueFrameClass(ExecutionContext& context);
+extern VectorPtr createProteinSingleResidueFrames(ExecutionContext& context, const FramePtr& proteinFrame, FrameClassPtr residueFrameClass);
 
 }; /* namespace lbcpp */
 

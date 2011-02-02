@@ -20,7 +20,7 @@ class SparseDoubleObjectVariableIterator : public Object::VariableIterator
 {
 public:
   SparseDoubleObjectVariableIterator(SparseDoubleObjectPtr object)
-    : object(object), currentIndex(0) {}
+    : object(object), objectClass(object->getClass()), currentIndex(0) {}
 
   virtual bool exists() const
     {return currentIndex < object->values.size();}
@@ -29,13 +29,14 @@ public:
   {
     std::pair<size_t, double>& entry = object->values[currentIndex];
     index = entry.first;
-    return entry.second;
+    return Variable(entry.second, objectClass->getMemberVariableType(entry.first));
   }
 
   virtual void next()
     {++currentIndex;}
 
 private:
+  ClassPtr objectClass;
   SparseDoubleObjectPtr object;
   size_t currentIndex;
 };

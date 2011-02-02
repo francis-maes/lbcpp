@@ -13,5 +13,7 @@
   </class>
 
   <class name="ProxyOperator" base="Operator" abstract="yes"/>
+
+  <class name="FeatureGenerator" base="Operator" abstract="yes"/>
   
 </library>

@@ -2,4 +2,11 @@
 
 <library name="FeatureGenerator" directory="Operator/FeatureGenerator">
 
+  <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+
 </library>
