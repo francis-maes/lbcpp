@@ -43,4 +43,12 @@
     <constructor/>
   </class>
 
+
+  <!-- Apply -->
+  <class name="ApplyOnContainerOperator" base="Operator">
+    <constructor arguments="const OperatorPtr&amp; function"/>
+    <variable type="Operator" name="function"/>
+  </class>
+
+
 </library>

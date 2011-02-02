@@ -22,18 +22,21 @@ public:
   virtual ~VariableGeneratorCallback() {}
 
   virtual void sense(size_t index, bool value)
-    {jassert(false);}
+    {sense(index, Variable(value));}
 
   virtual void sense(size_t index, int value)
-    {jassert(false);}
+    {sense(index, Variable(value));}
 
   virtual void sense(size_t index, double value)
-    {jassert(false);}
+    {sense(index, Variable(value));}
 
   virtual void sense(size_t index, const String& value)
-    {jassert(false);}
+    {sense(index, Variable(value));}
 
   virtual void sense(size_t index, const ObjectPtr& value)
+    {sense(index, Variable(value));}
+
+  virtual void sense(size_t index, const Variable& value)
     {jassert(false);}
 };
 
@@ -46,6 +49,8 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<VariableGenerator> VariableGeneratorPtr;
+
+extern VariableGeneratorPtr windowVariableGenerator(size_t size);
 
 }; /* namespace lbcpp */
 

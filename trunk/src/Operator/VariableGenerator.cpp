@@ -29,6 +29,9 @@ public:
   virtual void sense(size_t index, const ObjectPtr& value)
     {target->setVariable(index, value);}
 
+  virtual void sense(size_t index, const Variable& value)
+    {target->setVariable(index, value);}
+
 private:
   ObjectPtr target;
 };

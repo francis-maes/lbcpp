@@ -23,7 +23,7 @@ class CumulativeScoreVector : public Container
 {
 public:
   CumulativeScoreVector(ClassPtr thisClass, EnumerationPtr scores, size_t size)
-    : Container(thisClass), scores(scores), accumulators(size)
+    : Container(thisClass), scores(scores), accumulators(size), elementsType(enumBasedDoubleVectorClass(scores))
   {
     accumulators[0].resize(scores->getNumElements(), 0.0);
   }
@@ -33,11 +33,14 @@ public:
   std::vector<double>& getAccumulatedScores(size_t index)
     {jassert(index < accumulators.size()); return accumulators[index];}
 
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
   virtual size_t getNumElements() const
     {return accumulators.size();}
 
   virtual Variable getElement(size_t index) const
-    {return new DenseDoubleObject(enumBasedDoubleVectorClass(scores), accumulators[index]);}
+    {return new DenseDoubleObject(elementsType, accumulators[index]);}
 
   virtual void setElement(size_t index, const Variable& value)
     {jassert(false);}
@@ -55,6 +58,7 @@ public:
 private:
   EnumerationPtr scores;
   std::vector< std::vector<double> > accumulators; // index -> label -> count
+  TypePtr elementsType;
 };
 
 typedef ReferenceCountedObjectPtr<CumulativeScoreVector> CumulativeScoreVectorPtr;
@@ -171,6 +175,36 @@ public:
   }
 };
 
+class AccumulateDoubleObjectContainerOperator : public AccumulateContainerOperator
+{
+public:
+  virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
+    {return variablesEnumerationEnumeration(elementsType);}
+
+  virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
+  {
+    size_t n = container->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      std::vector<double>& scores = res->computeStep(i);
+   
+      ObjectPtr object = container->getElement(i).getObject();
+      SparseDoubleObjectPtr sparseDoubleObject = object.dynamicCast<SparseDoubleObject>();
+      if (sparseDoubleObject)
+      {
+        const std::vector<std::pair<size_t, double> >& features = sparseDoubleObject->getValues();
+        for (size_t i = 0; i < features.size(); ++i)
+          scores[features[i].first] += features[i].second;
+      }
+      else
+      {
+        // not implemented
+        jassert(false);
+      }
+    }
+  }
+};
+
 class AccumulateOperator : public ProxyOperator
 {
 public:
@@ -187,6 +221,11 @@ public:
           return new AccumulateDoubleContainerOperator();
         else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
           return new AccumulateEnumerationDistributionContainerOperator();
+        else if (elementsType->inheritsFrom(objectClass))
+        {
+          // todo: verify if the object only contains double members
+          return new AccumulateDoubleObjectContainerOperator();
+        }
       }
     }
     return OperatorPtr();

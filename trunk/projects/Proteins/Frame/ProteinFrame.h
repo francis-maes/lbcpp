@@ -52,6 +52,7 @@ public:
     {return true;}
 
   size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
   virtual bool initialize(ExecutionContext& context);
@@ -74,9 +75,46 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-// Proteins ...
-FrameClassPtr defaultProteinFrameClass(ExecutionContext& context);
-FramePtr createProteinFrame(ExecutionContext& context, const ProteinPtr& protein, FrameClassPtr frameClass);
+class FrameBasedOperator : public Operator
+{
+public:
+  FrameBasedOperator(FrameClassPtr frameClass)
+    : frameClass(frameClass) {}
+  FrameBasedOperator() {}
+
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+    {return frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);}
+
+  virtual Variable computeOperator(const Variable* inputs) const
+  {
+    FramePtr frame(new Frame(frameClass));
+    for (size_t i = 0; i < getNumInputs(); ++i)
+      frame->setVariable(i, inputs[i]);
+    return frame->getVariable(frameClass->getNumMemberVariables() - 1);
+  }
+
+protected:
+  friend class FrameBasedOperatorClass;
+
+  FrameClassPtr frameClass;
+};
+
+class ProteinFrameFactory : public Object
+{
+public:
+  FrameClassPtr createProteinFrameClass(ExecutionContext& context);
+
+  void createProteinFrameClass(ExecutionContext& context, const FrameClassPtr& res);
+  void createContextFreeResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res);
+  void createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res);
+
+  FramePtr createFrame(const ProteinPtr& protein) const;
+
+protected:
+  FrameClassPtr contextFreeResidueFrame;
+  FrameClassPtr residueFrame;
+  FrameClassPtr proteinFrame;
+};
 
 }; /* namespace lbcpp */
 
