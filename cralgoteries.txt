@@ -1,3 +1,6 @@
+-> Sous-frames / frames en relation
+-> VariableGenerator / FeatureGenerator
+
 
 * Remplacer les types dans Protein
 * ProteinResidueFrame, ProteinResiduePairFrame

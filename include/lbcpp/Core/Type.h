@@ -261,18 +261,7 @@ public:
 
   bool hasOneLetterCodes() const;
 
-  // --
-  /*
-  juce::tchar getOneLetterCode(size_t index) const;
-  String getOneLetterCodes() const;*/
-
   lbcpp_UseDebuggingNewOperator
-
-//private:
-  //friend class EnumerationClass;
-
-  //std::vector<String> elements; // use Vector ?
-  //String oneLetterCodes;
 };
 
 extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);

@@ -86,6 +86,9 @@ public:
   double getProbability(size_t index) const
     {jassert(index < values.size()); return values[index];}
   
+  const std::vector<double>& getProbabilities() const
+    {return values;}
+
   void setProbability(size_t index, double value)
     {jassert(index < values.size()); values[index] = value;}
 

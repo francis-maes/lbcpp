@@ -341,6 +341,8 @@ SET(LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES
 )
 
 SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
+  Operator/FeatureGenerator/EnumerationFeatureGenerator.h
+  Operator/FeatureGenerator/EnumerationDistributionFeatureGenerator.h
   Operator/FeatureGenerator/FeatureGeneratorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
 )
