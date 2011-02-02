@@ -76,6 +76,13 @@ void SparseDoubleObject::appendValue(size_t index, double value)
   }
 }
 
+void SparseDoubleObject::appendValuesWithShift(const std::vector<std::pair<size_t, double> >& subValues, size_t shift)
+{
+  values.reserve(values.size() + subValues.size());
+  for (size_t i = 0; i < subValues.size(); ++i)
+    appendValue(subValues[i].first + shift, subValues[i].second);
+}
+
 Object::VariableIterator* SparseDoubleObject::createVariablesIterator() const
   {return new SparseDoubleObjectVariableIterator(refCountedPointerFromThis(this));}
 

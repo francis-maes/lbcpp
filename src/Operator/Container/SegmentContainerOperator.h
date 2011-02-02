@@ -129,14 +129,15 @@ private:
 class SegmentContainerOperator : public Operator
 {
 public:
-  virtual TypePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
   {
-    if (!checkNumInputsEquals(context, 1))
-      return TypePtr();
-    TypePtr elementsType = getContainerElementsType(context, inputTypes[0]);
+    if (!checkNumInputs(context, 1))
+      return VariableSignaturePtr();
+    VariableSignaturePtr inputVariable = getInputVariable(0);
+    TypePtr elementsType = getContainerElementsType(context, inputVariable->getType());
     if (!elementsType)
-      return TypePtr();
-    return vectorClass(segmentContainerClass(elementsType));
+      return VariableSignaturePtr();
+    return new VariableSignature(vectorClass(segmentContainerClass(elementsType)), inputVariable->getName() + T("Segmented"), inputVariable->getShortName() + T("s"));
   }
 
   virtual Variable computeOperator(const Variable* input) const
@@ -144,7 +145,7 @@ public:
     const ContainerPtr& container = input[0].getObjectAndCast<Container>();
     size_t n = container->getNumElements();
 
-    SegmentContainerPtr res(new SegmentContainer(outputType));
+    SegmentContainerPtr res(new SegmentContainer(getOutputType()));
     res->setInputNumElements(n);
     size_t beginIndex = 0;
     while (beginIndex < n)

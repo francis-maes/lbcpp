@@ -9,6 +9,132 @@
 #include "ProteinResidueFrame.h"
 using namespace lbcpp;
 
+class ConcatenateFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  {
+    size_t numInputs = getNumInputs();
+
+    if (!numInputs)
+    {
+      context.errorCallback(T("No inputs"));
+      return VariableSignaturePtr();
+    }
+
+    DefaultClassPtr outputType = new UnnamedDynamicClass(T("FeatureVector"));
+    shifts.resize(numInputs);
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      const VariableSignaturePtr& inputVariable = getInputVariable(i);
+
+      shifts[i] = outputType->getNumMemberVariables();
+      TypePtr subType = inputVariable->getType();
+      size_t n = subType->getNumMemberVariables();
+      for (size_t j = 0; j < n; ++j)
+      {
+        VariableSignaturePtr signature = subType->getMemberVariable(j)->cloneAndCast<VariableSignature>();
+        signature->setName(inputVariable->getName() + T(".") + signature->getName());
+        signature->setShortName(inputVariable->getShortName() + T(".") + signature->getShortName());
+        outputType->addMemberVariable(context, signature);
+      }
+    }
+    if (!outputType->getNumMemberVariables())
+    {
+      context.errorCallback(T("No member variables"));
+      return VariableSignaturePtr();
+    }
+    return new VariableSignature(outputType, T("AllFeatures"));
+  }
+
+  struct Callback : public VariableGeneratorCallback
+  {
+    Callback(VariableGeneratorCallback& target)
+      : target(target) {}
+    size_t shift;
+
+    virtual void sense(size_t index, double value)
+      {target.sense(index + shift, value);}
+
+    VariableGeneratorCallback& target;
+  };
+
+  virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
+  {
+  /*  for (size_t i = 0; i < inputTypes.size(); ++i)
+    {
+      SparseDoubleObjectPtr input = inputs[i].dynamicCast<SparseDoubleObject>();
+      jassert(input);
+      res->appendValuesWithShift(input, shifts[i]);
+    }*/
+    jassert(false); 
+    // FIXME: "LazyVariable"
+  }
+
+  virtual Variable computeOperator(const Variable* inputs) const
+  {
+    SparseDoubleObjectPtr res = new SparseDoubleObject(getOutputType());
+    size_t v = 0;
+    for (size_t i = 0; i < shifts.size(); ++i)
+    {
+      SparseDoubleObjectPtr input = inputs[i].dynamicCast<SparseDoubleObject>();
+      jassert(input);
+      res->appendValuesWithShift(input, shifts[i]);
+    }
+    return res;
+  }
+
+private:
+  std::vector<size_t> shifts;
+};
+
+class PerceptionToFeatureGeneratorWrapper : public FeatureGenerator
+{
+public:
+  PerceptionToFeatureGeneratorWrapper(PerceptionPtr perception)
+    : perception(perception) {}
+
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  {
+    if (!checkNumInputs(context, 1))
+      return VariableSignaturePtr();
+    VariableSignaturePtr inputVariable = getInputVariable(0);
+    if (!checkInputType(context, 0, perception->getInputType()))
+      return VariableSignaturePtr();
+
+    return new VariableSignature(perception->getOutputType(), inputVariable->getName() + T("Perception"), inputVariable->getShortName() + T("p"));
+  }
+ 
+  virtual Variable computeOperator(const Variable* inputs) const
+    {return perception->computeFunction(defaultExecutionContext(), inputs[0]);}
+
+  virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
+  {
+    jassert(false);
+    // todo: wrapper
+  }
+
+protected:
+  PerceptionPtr perception;
+};
+
+class EntropyOperator : public Operator
+{
+public:
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  {
+     if (!checkNumInputs(context, 1))
+      return VariableSignaturePtr();
+    VariableSignaturePtr inputVariable = getInputVariable(0);
+    if (!checkInputType(context, 0, distributionClass(anyType)))
+      return VariableSignaturePtr();
+    return new VariableSignature(negativeLogProbabilityType, inputVariable->getName() + T("Entropy"), inputVariable->getShortName() + T("e"));
+  }
+
+  virtual Variable computeOperator(const Variable* inputs) const
+    {return inputs[0].getObjectAndCast<Distribution>()->computeEntropy();}
+};
+
 FrameClassPtr lbcpp::defaultProteinSingleResidueFrameClass(ExecutionContext& context)
 {
   FrameClassPtr res(new FrameClass(T("ProteinResidueFrame"), objectClass));
@@ -19,9 +145,19 @@ FrameClassPtr lbcpp::defaultProteinSingleResidueFrameClass(ExecutionContext& con
   size_t ss3Index = res->addMemberVariable(context, enumerationDistributionClass(secondaryStructureElementEnumeration), T("ss3"));
 
   // feature generators
-  res->addMemberOperator(context, enumerationFeatureGenerator(), aaIndex, T("aminoAcidFeatures"));
-  res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), pssmIndex, T("pssmFeatures"));
-  res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), ss3Index, T("ss3Features"));
+  std::vector<size_t> featureIndices;
+
+  featureIndices.push_back(res->addMemberOperator(context, enumerationFeatureGenerator(), aaIndex));
+  featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), pssmIndex));
+  size_t pssmEntropyIndex = res->addMemberOperator(context, new EntropyOperator(), pssmIndex);
+  featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), pssmEntropyIndex));
+
+  featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), ss3Index));
+  size_t ss3EntropyIndex = res->addMemberOperator(context, new EntropyOperator(), ss3Index);
+  featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
+
+  // all features
+  res->addMemberOperator(context, new ConcatenateFeatureGenerator(), featureIndices, T("allFeatures"));
 
   return res->initialize(context) ? res : FrameClassPtr();
 }

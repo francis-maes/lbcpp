@@ -12,16 +12,16 @@
 #include "Container/SegmentContainerOperator.h"
 using namespace lbcpp;
 
-bool Operator::initialize(ExecutionContext& context, const std::vector<TypePtr>& inputs)
+bool Operator::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
-  this->inputTypes = inputs;
-  this->outputType = initializeOperator(context);
-  return this->outputType != TypePtr();
+  this->inputVariables = inputVariables;
+  this->outputVariable = initializeOperator(context);
+  return this->outputVariable != VariableSignaturePtr();
 }
 
-bool Operator::checkNumInputsEquals(ExecutionContext& context, size_t numInputs) const
+bool Operator::checkNumInputs(ExecutionContext& context, size_t numInputs) const
 {
-  if (inputTypes.size() != numInputs)
+  if (inputVariables.size() != numInputs)
   {
     context.errorCallback(T("Wrong number of inputs"));
     return false;
@@ -31,13 +31,13 @@ bool Operator::checkNumInputsEquals(ExecutionContext& context, size_t numInputs)
 
 bool Operator::checkInputType(ExecutionContext& context, size_t index, TypePtr requestedType) const
 {
-  if (index >= inputTypes.size())
+  if (index >= inputVariables.size())
   {
     context.errorCallback(T("Missing input"));
     return false;
   }
 
-  return context.checkInheritance(inputTypes[index], requestedType);
+  return context.checkInheritance(inputVariables[index]->getType(), requestedType);
 }
 
 TypePtr Operator::getTemplateArgument(ExecutionContext& context, TypePtr type, size_t templateArgumentIndex, TypePtr requestedType) const

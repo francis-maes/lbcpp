@@ -41,14 +41,20 @@ bool FrameClass::initializeOperator(ExecutionContext& context, const FrameOperat
   jassert(operation);
   const std::vector<size_t>& inputs = signature->getInputs();
 
-  std::vector<TypePtr> inputTypes(inputs.size());
-  for (size_t i = 0; i < inputTypes.size(); ++i)
-    inputTypes[i] = variables[inputs[i]]->getType();
-  if (!operation->initialize(context, inputTypes))
+  std::vector<VariableSignaturePtr> inputVariables(inputs.size());
+  for (size_t i = 0; i < inputVariables.size(); ++i)
+    inputVariables[i] = variables[inputs[i]];
+  if (!operation->initialize(context, inputVariables))
     return false;
-  signature->setType(operation->getOutputType());
-  //if (signature->getName().isEmpty())
-  //  signature->setName(operation->getOutputName(...));
+
+  FrameOperatorSignaturePtr autoSignature = operation->getOutputVariable();
+  signature->setType(autoSignature->getType());
+  if (signature->getName().isEmpty())
+    signature->setName(autoSignature->getName());
+  if (signature->getShortName().isEmpty())
+    signature->setShortName(autoSignature->getShortName());
+  if (signature->getDescription().isEmpty())
+    signature->setDescription(autoSignature->getDescription());
   return true;
 }
 
@@ -109,16 +115,16 @@ FrameClassPtr lbcpp::defaultProteinFrameClass(ExecutionContext& context)
   size_t singleResidueFramesIndex = res->addMemberVariable(context, vectorClass(objectClass), T("singleResidueFrames"));
 
   // primaryStructure
-  res->addMemberOperator(context, accumulateOperator(), aaIndex, T("primaryStructureAccumulator"), T("AAc"));
+  res->addMemberOperator(context, accumulateOperator(), aaIndex);
 
   // pssm
-  res->addMemberOperator(context, accumulateOperator(), pssmIndex, T("positionSpecificScoringMatrixAccumulator"), T("PSSMc"));
+  res->addMemberOperator(context, accumulateOperator(), pssmIndex);
 
   // secondary structure
-  res->addMemberOperator(context, accumulateOperator(), ss3Index, T("secondaryStructureAccumulator"), T("SS3c"));
-  size_t ss3LabelsIndex = res->addMemberOperator(context, discretizeOperator(), ss3Index, T("secondaryStructureLabels"), T("SS3d"));
-  res->addMemberOperator(context, segmentContainerOperator(), ss3LabelsIndex, T("secondaryStructureSegments"), T("SS3ds"));
-  res->addMemberOperator(context, accumulateOperator(), ss3LabelsIndex, T("secondaryStructureLabelsAccumulator"), T("SS3dc"));
+  res->addMemberOperator(context, accumulateOperator(), ss3Index);
+  size_t ss3LabelsIndex = res->addMemberOperator(context, discretizeOperator(), ss3Index);
+  res->addMemberOperator(context, segmentContainerOperator(), ss3LabelsIndex);
+  res->addMemberOperator(context, accumulateOperator(), ss3LabelsIndex);
   
   return res->initialize(context) ? res : FrameClassPtr();
 }

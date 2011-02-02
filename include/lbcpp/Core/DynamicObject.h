@@ -206,6 +206,11 @@ public:
 
   void appendValue(size_t index, double value);
 
+  void appendValuesWithShift(const std::vector<std::pair<size_t, double> >& subValues, size_t shift);
+  
+  void appendValuesWithShift(const SparseDoubleObjectPtr& subValues, size_t shift)
+    {appendValuesWithShift(subValues->getValues(), shift);}
+
   lbcpp_UseDebuggingNewOperator
 
 private:

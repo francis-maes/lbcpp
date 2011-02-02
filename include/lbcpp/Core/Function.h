@@ -35,7 +35,7 @@ public:
     {return anyType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs, size_t numInputs) const
-    {return checkNumInputsEquals(context, numInputs, 1) ? computeFunction(context, inputs[0]) : Variable();}
+    {return checkNumInputs(context, numInputs, 1) ? computeFunction(context, inputs[0]) : Variable();}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return computeFunction(context, &input, 1);}
@@ -57,7 +57,7 @@ protected:
 
   bool pushIntoStack;
 
-  bool checkNumInputsEquals(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const;
+  bool checkNumInputs(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const;
   bool checkType(ExecutionContext& context, const Variable& variable, TypePtr type) const;
   bool checkExistence(ExecutionContext& context, const Variable& variable) const;
 };

@@ -1,10 +1,8 @@
--> Sous-frames / frames en relation
--> VariableGenerator / FeatureGenerator
+* Object::setVariable(): enlever le ExecutionContext
+
 
 
 * Remplacer les types dans Protein
-* ProteinResidueFrame, ProteinResiduePairFrame
-* Frame metaclass
 
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I
