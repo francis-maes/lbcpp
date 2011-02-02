@@ -19,3 +19,6 @@ ADD_LIBRARY(network SHARED
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
 TARGET_LINK_LIBRARIES(network lbcpp-core)
+
+ADD_EXECUTABLE(SendWorkUnit SendWorkUnit.cpp)
+TARGET_LINK_LIBRARIES(SendWorkUnit network)
