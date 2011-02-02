@@ -321,7 +321,9 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
 SET(LBCPP_OPERATOR_SOURCES
   ../include/lbcpp/Operator/Operator.h
   ../include/lbcpp/Operator/VariableGenerator.h
+  Operator/VariableGenerator.cpp
   ../include/lbcpp/Operator/FeatureGenerator.h
+  Operator/FeatureGenerator.cpp
   Operator/Operator.cpp
   Operator/OperatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp

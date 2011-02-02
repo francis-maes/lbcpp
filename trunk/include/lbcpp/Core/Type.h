@@ -54,8 +54,14 @@ public:
   const String& getShortName() const
     {return shortName;}
 
+  void setShortName(const String& shortName)
+    {this->shortName = shortName;}
+
   const String& getDescription() const
     {return description;}
+
+  void setDescription(const String& description)
+    {this->description = description;}
 
 protected:
   friend class VariableSignatureClass;

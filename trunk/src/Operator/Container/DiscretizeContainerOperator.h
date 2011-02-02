@@ -24,17 +24,18 @@ public:
   DiscretizeContainerOperator(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
-  virtual TypePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
   {
-    if (!checkNumInputsEquals(context, 1))
-      return TypePtr();
-    TypePtr distributionType = getContainerElementsType(context, inputTypes[0]);
+    if (!checkNumInputs(context, 1))
+      return VariableSignaturePtr();
+    VariableSignaturePtr inputVariable = getInputVariable(0);
+    TypePtr distributionType = getContainerElementsType(context, inputVariable->getType());
     if (!distributionType)
-      return TypePtr();
+      return VariableSignaturePtr();
     elementsType = getDistributionElementsType(context, distributionType);
     if (!elementsType)
-      return TypePtr();
-    return vectorClass(elementsType);
+      return VariableSignaturePtr();
+    return new VariableSignature(vectorClass(elementsType), inputVariable->getName() + T("Discretized"), inputVariable->getShortName() + T("d"));
   }
 
   virtual Variable computeOperator(const Variable* inputs) const
@@ -66,9 +67,9 @@ public:
   DiscretizeOperator(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
-  virtual OperatorPtr createImplementation(const std::vector<TypePtr>& inputTypes) const
+  virtual OperatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    if (inputTypes.size() == 1 && inputTypes[0]->inheritsFrom(containerClass(distributionClass(anyType))))
+    if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(distributionClass(anyType))))
       return new DiscretizeContainerOperator(sampleBest);
     return OperatorPtr();
   }

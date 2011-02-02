@@ -9,26 +9,15 @@
 #ifndef LBCPP_OPERATOR_FEATURE_GENERATOR_H_
 # define LBCPP_OPERATOR_FEATURE_GENERATOR_H_
 
-# include "Operator.h"
-# include "../Core/DynamicObject.h"
+# include "VariableGenerator.h"
 
 namespace lbcpp
 {
 
-class FeatureGenerator : public Operator
+class FeatureGenerator : public VariableGenerator
 {
 public:
-  virtual double dotProduct(const Variable* inputs, size_t startIndex, double weight, const DenseDoubleObjectPtr& parameters) const
-    {jassert(false); return 0.0;}
-
-  virtual void computeFeatures(const Variable* inputs, size_t startIndex, double weight, const SparseDoubleObjectPtr& target) const = 0;
-
-  virtual Variable computeOperator(const Variable* inputs) const
-  {
-    SparseDoubleObjectPtr res(new SparseDoubleObject(outputType));
-    computeFeatures(inputs, 0, 1.0, res);
-    return res;
-  }
+  virtual Variable computeOperator(const Variable* inputs) const;
 };
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;

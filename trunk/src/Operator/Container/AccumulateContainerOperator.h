@@ -65,23 +65,24 @@ public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType) = 0;
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const = 0;
 
-  virtual TypePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
   {
-    if (!checkNumInputsEquals(context, 1))
-      return TypePtr();
-    TypePtr elementsType = getContainerElementsType(context, inputTypes[0]);
+    if (!checkNumInputs(context, 1))
+      return VariableSignaturePtr();
+    VariableSignaturePtr inputVariable = getInputVariable(0);
+    TypePtr elementsType = getContainerElementsType(context, inputVariable->getType());
     if (!elementsType)
-      return TypePtr();
+      return VariableSignaturePtr();
     scoresEnumeration = getScoresEnumeration(context, elementsType);
     if (!scoresEnumeration)
-      return TypePtr();
-    return cumulativeScoreVectorClass(scoresEnumeration);
+      return VariableSignaturePtr();
+    return new VariableSignature(cumulativeScoreVectorClass(scoresEnumeration), inputVariable->getName() + T("Accumulated"), inputVariable->getShortName() + T("a"));
   }
 
   virtual Variable computeOperator(const Variable* inputs) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
-    CumulativeScoreVectorPtr res(new CumulativeScoreVector(outputType, scoresEnumeration, container->getNumElements()));
+    CumulativeScoreVectorPtr res(new CumulativeScoreVector(getOutputType(), scoresEnumeration, container->getNumElements()));
     accumulate(container, res);
     return res;
   }
@@ -173,11 +174,11 @@ public:
 class AccumulateOperator : public ProxyOperator
 {
 public:
-  virtual OperatorPtr createImplementation(const std::vector<TypePtr>& inputTypes) const
+  virtual OperatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    if (inputTypes.size() == 1 && inputTypes[0]->inheritsFrom(containerClass(anyType)))
+    if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(anyType)))
     {
-      TypePtr elementsType = getContainerElementsType(defaultExecutionContext(), inputTypes[0]);
+      TypePtr elementsType = getContainerElementsType(defaultExecutionContext(), inputVariables[0]->getType());
       if (elementsType)
       {
         if (elementsType.dynamicCast<Enumeration>())

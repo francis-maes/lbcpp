@@ -8,7 +8,7 @@
 #include <lbcpp/Core/Function.h>
 using namespace lbcpp;
 
-bool Function::checkNumInputsEquals(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const
+bool Function::checkNumInputs(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const
 {
   if (requestedNumInputs != numInputs)
   {
