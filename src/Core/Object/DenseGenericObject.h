@@ -88,7 +88,7 @@ Variable DenseGenericObject::getVariable(size_t index) const
     return Variable::missingValue(type);
 }
 
-void DenseGenericObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+void DenseGenericObject::setVariable(size_t index, const Variable& value)
   {value.copyTo(getVariableValueReference(index));}
 
 Object::VariableIterator* DenseGenericObject::createVariablesIterator() const

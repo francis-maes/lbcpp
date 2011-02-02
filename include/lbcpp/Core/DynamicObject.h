@@ -42,7 +42,7 @@ public:
   virtual bool initialize(ExecutionContext& context);
   virtual VariableValue create(ExecutionContext& context) const;
   virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
-  virtual void setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
+  virtual void setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object
@@ -106,7 +106,7 @@ public:
     {static ObjectPtr empty; return index < values.size() ? values[index] : empty;}
 
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+  virtual void setVariable(size_t index, const Variable& value);
   virtual VariableIterator* createVariablesIterator() const;
 
   virtual String toString() const;
@@ -141,7 +141,7 @@ public:
     {return value == missingValue;}
 
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+  virtual void setVariable(size_t index, const Variable& value);
   virtual VariableIterator* createVariablesIterator() const;
 
   virtual String toString() const;
@@ -171,7 +171,7 @@ public:
   VariableValue& getVariableValueReference(size_t index);
 
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+  virtual void setVariable(size_t index, const Variable& value);
 
   virtual VariableIterator* createVariablesIterator() const;
 
@@ -191,7 +191,7 @@ public:
   virtual String toShortString() const;
 
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+  virtual void setVariable(size_t index, const Variable& value);
 
   VariableIterator* createVariablesIterator() const;
 

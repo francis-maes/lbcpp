@@ -91,7 +91,7 @@ Variable Frame::getOrComputeVariable(size_t index)
       return Variable();
   }
   Variable value = operatorSignature->getOperator()->computeOperator(&inputs[0]);
-  setVariable(defaultExecutionContext(), index, value);
+  setVariable(index, value);
   return value;
 }
 
@@ -132,8 +132,8 @@ FrameClassPtr lbcpp::defaultProteinFrameClass(ExecutionContext& context)
 FramePtr lbcpp::createProteinFrame(ExecutionContext& context, const ProteinPtr& protein, FrameClassPtr frameClass)
 {
   FramePtr res(new Frame(frameClass));
-  res->setVariable(context, 0, protein->getPrimaryStructure());
-  res->setVariable(context, 1, protein->getPositionSpecificScoringMatrix());
+  res->setVariable(0, protein->getPrimaryStructure());
+  res->setVariable(1, protein->getPositionSpecificScoringMatrix());
   
   ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
   if (inputSecondaryStructure)
@@ -146,9 +146,9 @@ FramePtr lbcpp::createProteinFrame(ExecutionContext& context, const ProteinPtr& 
       distribution->setProbability((size_t)inputSecondaryStructure->getElement(i).getInteger(), 1.0);
       secondaryStructure->setElement(i, distribution);
     }
-    res->setVariable(context, 2, secondaryStructure);
+    res->setVariable(2, secondaryStructure);
   }
 
-  res->setVariable(context, 3, createProteinSingleResidueFrames(context, res, defaultProteinSingleResidueFrameClass(context)));
+  res->setVariable(3, createProteinSingleResidueFrames(context, res, defaultProteinSingleResidueFrameClass(context)));
   return res;
 }

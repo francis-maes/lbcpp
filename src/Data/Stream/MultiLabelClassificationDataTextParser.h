@@ -37,7 +37,7 @@ public:
     for (int i = 0; i < tokens.size(); ++i)
     {
       size_t label = outputLabels->findOrAddElement(context, tokens[i]);
-      res->setVariable(context, label, 1.0);
+      res->setVariable(label, 1.0);
     }
     return res;
   }

@@ -327,9 +327,9 @@ protected:
       newLine();
 
       // setMemberVariableValue
-      openScope(T("virtual void setMemberVariableValue(ExecutionContext& context, Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
+      openScope(T("virtual void setMemberVariableValue(Object* __thisbase__, size_t __index__, const Variable& __subValue__) const"));
         writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
-        writeLine(T("{baseType->setMemberVariableValue(context, __thisbase__, __index__, __subValue__); return;}"), 1);
+        writeLine(T("{baseType->setMemberVariableValue(__thisbase__, __index__, __subValue__); return;}"), 1);
         writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
         writeLine(className + T("* __this__ = static_cast<") + className + T("* >(__thisbase__);"));
         newLine();
@@ -340,7 +340,7 @@ protected:
             if (name.isEmpty())
               name = variables[i]->getStringAttribute(T("name"), T("???"));
 
-            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(context, ");
+            String code = T("case ") + String((int)i) + T(": lbcpp::variableToNative(defaultExecutionContext(), ");
 
             bool isEnumeration = variables[i]->getBoolAttribute(T("enumeration"), false);
             if (isEnumeration)

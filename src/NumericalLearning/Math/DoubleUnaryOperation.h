@@ -89,7 +89,7 @@ void doubleUnaryOperation(OperationType& operation, const ObjectPtr& object)
       jassert(v.isDouble());
       double value = v.isMissingValue() ? 0.0 : v.getDouble();
       operation.compute(value);
-      object->setVariable(operation.context, i, Variable(value, v.getType()));
+      object->setVariable(i, Variable(value, v.getType()));
     }
   }
 }

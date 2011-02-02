@@ -139,7 +139,7 @@ Variable ProteinParallelInference::finalizeInference(ExecutionContext& context, 
         else
           context.warningCallback(T("ProteinParallelInference::finalizeInference"),
             T("More than one version of Protein::") + proteinClass->getMemberVariableName(j));
-        finalProtein->setVariable(context, j, predicted);
+        finalProtein->setVariable(j, predicted);
       }
     }
   }
@@ -184,6 +184,6 @@ Variable ProteinInferenceStep::finalizeInference(ExecutionContext& context, cons
   const ProteinPtr& protein = finalState->getInput().getObjectAndCast<Protein>(context);
   Variable prediction = finalState->getSubOutput();
   if (prediction.exists())
-    protein->setVariable(context, targetIndex, prediction);
+    protein->setVariable(targetIndex, prediction);
   return protein;
 }

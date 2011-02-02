@@ -75,7 +75,7 @@ Variable DenseObjectObject::getVariable(size_t index) const
     return Variable::missingValue(type);
 }
 
-void DenseObjectObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+void DenseObjectObject::setVariable(size_t index, const Variable& value)
   {getObjectReference(index) = value.getObject();}
 
 String DenseObjectObject::toString() const

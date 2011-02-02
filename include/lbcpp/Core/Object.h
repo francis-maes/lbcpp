@@ -156,7 +156,7 @@ public:
   TypePtr getVariableType(size_t index) const;
   String getVariableName(size_t index) const;
   virtual Variable getVariable(size_t index) const;
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value);
+  virtual void setVariable(size_t index, const Variable& value);
 
   class VariableIterator
   {

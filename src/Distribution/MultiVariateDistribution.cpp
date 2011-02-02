@@ -35,7 +35,7 @@ Variable IndependentMultiVariateDistribution::sample(RandomGeneratorPtr random) 
   ClassPtr vclass = getElementsType();
   ObjectPtr res = Object::create(vclass);
   for (size_t i = 0; i < distributions.size(); ++i)
-    res->setVariable(defaultExecutionContext(), i, distributions[i]->sample(random));
+    res->setVariable(i, distributions[i]->sample(random));
   return res;
 }
 
@@ -44,6 +44,6 @@ Variable IndependentMultiVariateDistribution::sampleBest(RandomGeneratorPtr rand
   ClassPtr vclass = getElementsType();
   ObjectPtr res = Object::create(vclass);
   for (size_t i = 0; i < distributions.size(); ++i)
-    res->setVariable(defaultExecutionContext(), i, distributions[i]->sampleBest(random));
+    res->setVariable(i, distributions[i]->sampleBest(random));
   return res;
 }

@@ -86,7 +86,7 @@ public:
       jassert(outputProtein);
       
       for (size_t i = 0; i < outputProtein->getNumVariables(); ++i)
-        inputProtein->setVariable(context, i, outputProtein->getVariable(i));
+        inputProtein->setVariable(i, outputProtein->getVariable(i));
 
       Variable::pair(inputProtein, supervision).saveToFile(context, f);
     }

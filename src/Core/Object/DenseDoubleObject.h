@@ -90,7 +90,7 @@ Variable DenseDoubleObject::getVariable(size_t index) const
     return Variable::missingValue(type);
 }
 
-void DenseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+void DenseDoubleObject::setVariable(size_t index, const Variable& value)
   {getValueReference(index) = value.getDouble();}
 
 String DenseDoubleObject::toString() const

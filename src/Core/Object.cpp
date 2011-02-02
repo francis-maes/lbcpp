@@ -200,10 +200,10 @@ Variable Object::getVariable(size_t index) const
   return getClass()->getMemberVariableValue(this, index);
 }
 
-void Object::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+void Object::setVariable(size_t index, const Variable& value)
 {
   jassert(index < getClass()->getNumMemberVariables());
-  getClass()->setMemberVariableValue(context, this, index, value);
+  getClass()->setMemberVariableValue(this, index, value);
 }
 
 
@@ -298,7 +298,7 @@ void Object::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
-    target->setVariable(context, i, getVariable(i));
+    target->setVariable(i, getVariable(i));
 }
 
 ObjectPtr Object::deepClone(ExecutionContext& context) const
@@ -313,7 +313,7 @@ ObjectPtr Object::deepClone(ExecutionContext& context) const
     {
       ObjectPtr object = res->getVariable(i).getObject();
       if (object)
-        res->setVariable(context, i, Variable(object->deepClone(context), variableType));
+        res->setVariable(i, Variable(object->deepClone(context), variableType));
     }
   }
   return res;
@@ -338,11 +338,11 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
 
       TypePtr newVariableType = newType->getMemberVariableType(i);
       if (variable.isObject())
-        res->setVariable(context, i, variable.getObject()->cloneToNewType(context, newVariableType));
+        res->setVariable(i, variable.getObject()->cloneToNewType(context, newVariableType));
       else
       {
         jassert(variable.getType() == newVariableType);
-        res->setVariable(context, i, variable);
+        res->setVariable(i, variable);
       }
     }
   }
@@ -389,7 +389,7 @@ bool Object::loadFromXml(XmlImporter& importer)
     {
       if (!importer.getContext().checkInheritance(value, expectedType))
         return false;
-      setVariable(importer.getContext(), (size_t)variableNumber, value);
+      setVariable((size_t)variableNumber, value);
     }
   }
   return true;
@@ -413,7 +413,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
     {
       Variable var = Variable::createFromString(importer.getContext(), getVariableType(i), xml->getStringAttribute(name));
       if (!var.isMissingValue())
-        setVariable(importer.getContext(), i, var);
+        setVariable(i, var);
     }
     else if (name != T("thisClass"))
       importer.warningMessage(T("Object::loadVariablesFromXmlAttributes"), T("No value for variable ") + name.quoted());

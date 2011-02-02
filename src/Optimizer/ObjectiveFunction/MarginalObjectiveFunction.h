@@ -46,7 +46,7 @@ protected:
   ObjectPtr makeValue(ExecutionContext& context, const Variable& input) const
   {
     ObjectPtr res = referenceValue->clone(context);
-    res->setVariable(context, variableIndex, input);
+    res->setVariable(variableIndex, input);
     return res;
   }
 };

@@ -39,7 +39,7 @@ protected:
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     ObjectPtr object = pair->getFirst().getObject();
     if (object && pair->getSecond().exists())
-      object->setVariable(context, fieldIndex, pair->getSecond());
+      object->setVariable(fieldIndex, pair->getSecond());
     else if (!object)
       context.warningCallback(T("SetFieldFunction::computeFunction"), T("Null object"));
     return pair->getFirst();

@@ -118,7 +118,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
 void WorkUnit::setArguments(ExecutionContext& context, const std::vector< std::pair<size_t, Variable> >& arguments)
 {
   for (size_t i = 0; i < arguments.size(); ++i)
-    setVariable(context, arguments[i].first, arguments[i].second);
+    setVariable(arguments[i].first, arguments[i].second);
 }
 
 bool WorkUnit::parseArguments(ExecutionContext& context, const String& arguments)

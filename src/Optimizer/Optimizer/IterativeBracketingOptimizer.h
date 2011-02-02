@@ -54,7 +54,7 @@ public:
         if (bestValue.isNil())
           return Variable();
         
-        currentGuess->setVariable(context, j, bestValue);
+        currentGuess->setVariable(j, bestValue);
         marginalDistribution = updateMarginalDistribution(marginalDistribution, bestValue);
         distribution->setSubDistribution(j, marginalDistribution);
 

@@ -291,7 +291,7 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
 
   ObjectPtr res = resultsClass->createDenseObject();
   for (size_t i = 0; i < results.size(); ++i)
-    res->setVariable(context, i, results[i].second);
+    res->setVariable(i, results[i].second);
   return res;
 }
 
@@ -353,7 +353,7 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
       std::pair<String, TypePtr> key(childResults[j].first, childResults[j].second.getType());
       SignatureToIndexMap::iterator it = mapping.find(key);
       jassert(it != mapping.end());
-      row->setVariable(context, it->second, childResults[j].second);
+      row->setVariable(it->second, childResults[j].second);
     }
     res->append(row);
   }

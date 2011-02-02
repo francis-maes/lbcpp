@@ -89,12 +89,12 @@ ObjectPtr DynamicClass::createSparseObject() const
 Variable DynamicClass::getMemberVariableValue(const Object* pthis, size_t index) const
   {jassert(pthis); return pthis->getVariable(index);}
 
-void DynamicClass::setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
+void DynamicClass::setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const
 {
-  if (context.checkInheritance(subValue.getType(), getMemberVariableType(index)))
+  if (checkInheritance(subValue.getType(), getMemberVariableType(index)))
   {
     jassert(pthis);
-    pthis->setVariable(context, index, subValue);
+    pthis->setVariable(index, subValue);
   }
 }
 

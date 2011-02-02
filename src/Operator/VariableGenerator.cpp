@@ -8,7 +8,6 @@
 #include <lbcpp/Operator/VariableGenerator.h>
 using namespace lbcpp;
 
-
 class SetInObjectVariableGeneratorCallback : public VariableGeneratorCallback
 {
 public:
@@ -16,19 +15,19 @@ public:
     : target(target) {}
 
   virtual void sense(size_t index, bool value)
-    {target->setVariable(defaultExecutionContext(), index, value);}
+    {target->setVariable(index, value);}
 
   virtual void sense(size_t index, int value)
-    {target->setVariable(defaultExecutionContext(), index, value);}
+    {target->setVariable(index, value);}
 
   virtual void sense(size_t index, double value)
-    {target->setVariable(defaultExecutionContext(), index, value);}
+    {target->setVariable(index, value);}
 
   virtual void sense(size_t index, const String& value)
-    {target->setVariable(defaultExecutionContext(), index, value);}
+    {target->setVariable(index, value);}
 
   virtual void sense(size_t index, const ObjectPtr& value)
-    {target->setVariable(defaultExecutionContext(), index, value);}
+    {target->setVariable(index, value);}
 
 private:
   ObjectPtr target;
