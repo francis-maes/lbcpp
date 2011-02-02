@@ -44,7 +44,7 @@ public:
       return Variable::missingValue(type);
   }
 
-  virtual void setVariable(ExecutionContext& context, size_t index, const Variable& value)
+  virtual void setVariable(size_t index, const Variable& value)
   {
     if (!last || last->index < index)
       appendNode(index, value);

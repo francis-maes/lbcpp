@@ -199,8 +199,8 @@ int Type::findMemberVariable(const String& name) const
 Variable Type::getMemberVariableValue(const Object* pthis, size_t index) const
   {jassert(baseType); return baseType->getMemberVariableValue(pthis, index);}
 
-void Type::setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const
-  {if (baseType) baseType->setMemberVariableValue(context, pthis, index, subValue);}
+void Type::setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const
+  {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
 TypePtr Type::getMemberVariableType(size_t index) const
 {

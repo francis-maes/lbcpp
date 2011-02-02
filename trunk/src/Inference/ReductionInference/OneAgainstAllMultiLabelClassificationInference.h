@@ -72,7 +72,7 @@ public:
       const Variable& prediction = state->getSubOutput(i);
       if (prediction.exists())
       {
-        object->setVariable(context, i, prediction);
+        object->setVariable(i, prediction);
         atLeastOnePrediction = true;
       }
     }

@@ -54,7 +54,7 @@ Variable SparseDoubleObject::getVariable(size_t index) const
   return value ? Variable(*value, type) : Variable::missingValue(type);
 }
 
-void SparseDoubleObject::setVariable(ExecutionContext& context, size_t index, const Variable& value)
+void SparseDoubleObject::setVariable(size_t index, const Variable& value)
 {
   jassert(value.exists() && value.isDouble());
   if ((int)index > lastIndex)

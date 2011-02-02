@@ -45,7 +45,7 @@ struct DefaultDoubleAssignmentCallback : public PerceptionCallback
     Variable targetVariable = object->getVariable(variableNumber);
     double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
     operation.compute(targetValue, value);
-    object->setVariable(context, variableNumber, Variable(targetValue, targetVariable.getType()));
+    object->setVariable(variableNumber, Variable(targetValue, targetVariable.getType()));
   }
 
   virtual void sense(size_t variableNumber, const ObjectPtr& value)
@@ -53,7 +53,7 @@ struct DefaultDoubleAssignmentCallback : public PerceptionCallback
     jassert(value);
     ObjectPtr targetObject = object->getVariable(variableNumber).getObject();
     operation.compute(targetObject, value);
-    object->setVariable(context, variableNumber, targetObject);
+    object->setVariable(variableNumber, targetObject);
   }
 
   virtual void sense(size_t variableNumber, const PerceptionPtr& subPerception, const Variable& subInput)
@@ -62,7 +62,7 @@ struct DefaultDoubleAssignmentCallback : public PerceptionCallback
     if (!subObject)
     {
       subObject = Object::create(subPerception->getOutputType());
-      object->setVariable(context, variableNumber, subObject);
+      object->setVariable(variableNumber, subObject);
     }
     operation.compute(subObject, subPerception, subInput);
   }
@@ -185,14 +185,14 @@ void doubleAssignmentOperation(OperationType& operation, const ObjectPtr& target
       jassert(targetVariable.isObject());
       ObjectPtr targetObject = targetVariable.getObject();
       operation.compute(targetObject, sourceVariable.getObject());
-      target->setVariable(operation.context, index, targetObject);
+      target->setVariable(index, targetObject);
     }
     else
     {
       jassert(sourceVariable.isDouble() && targetVariable.isDouble());
       double targetValue = targetVariable.isMissingValue() ? 0.0 : targetVariable.getDouble();
       operation.compute(targetValue, sourceVariable.getDouble());
-      target->setVariable(operation.context, index, Variable(targetValue, targetVariable.getType()));
+      target->setVariable(index, Variable(targetValue, targetVariable.getType()));
     }
   }
   delete iterator;

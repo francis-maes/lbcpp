@@ -188,7 +188,7 @@ ObjectPtr LearningDataTextParser::parseFeatureList(DynamicClassPtr cl, const std
       return false;
 
     size_t index = cl->findOrAddMemberVariable(context, identifier, doubleType);
-    res->setVariable(context, index, value);
+    res->setVariable(index, value);
   }
   return res;
 }

@@ -176,10 +176,10 @@ VectorPtr lbcpp::createProteinSingleResidueFrames(ExecutionContext& context, con
   for (size_t i = 0; i < n; ++i)
   {
     FramePtr residueFrame(new Frame(residueFrameClass));
-    residueFrame->setVariable(context, 0, primaryStructure->getElement(i));
-    residueFrame->setVariable(context, 1, pssm->getElement(i));
+    residueFrame->setVariable(0, primaryStructure->getElement(i));
+    residueFrame->setVariable(1, pssm->getElement(i));
     if (ss3)
-      residueFrame->setVariable(context, 2, ss3->getElement(i));
+      residueFrame->setVariable(2, ss3->getElement(i));
     res->setElement(i, residueFrame);
   }
   return res;

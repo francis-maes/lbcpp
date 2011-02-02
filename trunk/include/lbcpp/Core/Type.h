@@ -153,7 +153,7 @@ public:
 
   virtual int findMemberVariable(const String& name) const;
   virtual Variable getMemberVariableValue(const Object* pthis, size_t index) const;
-  virtual void setMemberVariableValue(ExecutionContext& context, Object* pthis, size_t index, const Variable& subValue) const;
+  virtual void setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const;
 
   /*
   ** Object
