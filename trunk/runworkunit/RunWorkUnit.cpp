@@ -13,15 +13,16 @@ using namespace lbcpp;
 
 void usage()
 {
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace] WorkUnitFile.xml" << std::endl;
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace] WorkUnitName WorkUnitArguments" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --projectDirectory path] WorkUnitFile.xml" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --projectDirectory path] WorkUnitName WorkUnitArguments" << std::endl;
   std::cerr << "  --numThreads : the number of threads to use. Default value: n = the number of cpus." << std::endl;
   std::cerr << "  --library : add a dynamic library to load." << std::endl;
   std::cerr << "  --trace : output file to save the execution trace." << std::endl;
   std::cerr << "  --projectDirectory : project directory where find files." << std::endl;
 }
 
-bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments, size_t& numThreads, File& traceOutputFile, File& projectDirectory)
+bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
+                            size_t& numThreads, File& traceOutputFile, File& projectDirectory)
 {
   numThreads = (size_t)juce::SystemStats::getNumCpus();
   
@@ -184,7 +185,7 @@ int mainImpl(int argc, char** argv)
     makeTraceCallback = makeTraceExecutionCallback(trace);
     context->appendCallback(makeTraceCallback);
   }
-  
+
   // run work unit either from file or from arguments
   int result = 0;
   jassert(arguments.size());
