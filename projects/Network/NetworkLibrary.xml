@@ -8,6 +8,9 @@
     <variable type="String" name="projectName"/>
     <variable type="String" name="source"/>
     <variable type="String" name="destination"/>
+    <variable type="PositiveInteger" name="requiredCpus"/>
+    <variable type="PositiveInteger" name="requiredMemory"/>
+    <variable type="PositiveInteger" name="requiredTime"/>
     <variable type="Integer" name="status"/>
   </class>
   
