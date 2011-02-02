@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Core/Type.h>
+#include <lbcpp/Core/Enumeration.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>

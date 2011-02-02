@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Core/Type.h>
+#include <lbcpp/Core/Class.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>

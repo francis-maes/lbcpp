@@ -65,8 +65,9 @@ public:
       return new ProteinPerceptionComponent(proteins[0]);
     else if (tabName == T("Protein Frame"))
     {
-      FrameClassPtr frameClass = defaultProteinFrameClass(context);
-      FramePtr proteinFrame = createProteinFrame(context, proteins[0], frameClass);
+      ProteinFrameFactory factory;
+      FrameClassPtr frameClass = factory.createProteinFrameClass(context);
+      FramePtr proteinFrame = factory.createFrame(proteins[0]);
       return userInterfaceManager().createVariableTreeView(context, proteinFrame);
     }
     else if (tabName == T("Protein 1D"))

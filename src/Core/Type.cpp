@@ -202,6 +202,13 @@ Variable Type::getMemberVariableValue(const Object* pthis, size_t index) const
 void Type::setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const
   {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
+VariableSignaturePtr Type::getLastMemberVariable() const
+{
+  size_t n = getNumMemberVariables();
+  jassert(n);
+  return getMemberVariable(n - 1);
+}
+
 TypePtr Type::getMemberVariableType(size_t index) const
 {
   VariableSignaturePtr signature = getMemberVariable(index);

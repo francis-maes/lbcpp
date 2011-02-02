@@ -22,6 +22,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
+extern FeatureGeneratorPtr concatenateFeatureGenerator();
+
 extern FeatureGeneratorPtr enumerationFeatureGenerator();
 extern FeatureGeneratorPtr enumerationDistributionFeatureGenerator();
 

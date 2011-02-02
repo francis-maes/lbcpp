@@ -88,6 +88,7 @@ protected:
 extern OperatorPtr accumulateOperator();
 extern OperatorPtr discretizeOperator(bool sampleBest = true);
 extern OperatorPtr segmentContainerOperator();
+extern OperatorPtr applyOnContainerOperator(const OperatorPtr& function);
 
 }; /* namespace lbcpp */
 

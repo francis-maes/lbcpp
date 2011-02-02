@@ -138,6 +138,23 @@
       </code>
   </template>
 
+  <template name="VariablesEnumeration" metaclass="Enumeration">
+    <parameter name="class" type="Object"/>
+    <code>
+      ClassPtr getTargetClass() const
+        {return getTemplateArgument(0).dynamicCast&lt;Class&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getTargetClass()-&gt;getNumMemberVariables();}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        VariableSignaturePtr variable = getTargetClass()-&gt;getMemberVariable(index);
+        return new EnumerationElement(variable->getName(), String::empty, variable->getShortName(), variable->getDescription());
+      }
+    </code>
+  </template>
+
   <enumeration name="MissingOrPresent">
     <value name="missing" oneLetterCode="m"/>
     <value name="present" oneLetterCode="v"/>

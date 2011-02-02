@@ -16,6 +16,7 @@ bool Operator::initialize(ExecutionContext& context, const std::vector<VariableS
 {
   this->inputVariables = inputVariables;
   this->outputVariable = initializeOperator(context);
+  jassert(!this->outputVariable || getOutputType());
   return this->outputVariable != VariableSignaturePtr();
 }
 

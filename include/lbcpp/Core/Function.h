@@ -10,6 +10,7 @@
 # define LBCPP_CORE_FUNCTION_H_
 
 # include "Variable.h"
+# include "Pair.h"
 
 namespace lbcpp
 {

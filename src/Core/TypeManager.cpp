@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Type.h>
+#include <lbcpp/Core/Class.h>
 #include <lbcpp/Core/TemplateType.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/library.h>

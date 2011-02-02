@@ -76,7 +76,9 @@ SET(LBCPP_CORE_SOURCES
   Core/TypeManager.cpp
   ../include/lbcpp/Core/Type.h
   Core/Type.cpp
+  ../include/lbcpp/Core/Enumeration.h
   Core/Enumeration.cpp
+  ../include/lbcpp/Core/Class.h
   Core/Class.cpp
   ../include/lbcpp/Core/TemplateType.h
   Core/TemplateType.cpp
@@ -333,16 +335,19 @@ SET(LBCPP_OPERATOR_CONTAINER_SOURCES
   Operator/Container/AccumulateContainerOperator.h
   Operator/Container/DiscretizeContainerOperator.h
   Operator/Container/SegmentContainerOperator.h
+  Operator/Container/ApplyOnContainerOperator.h
   Operator/Container/ContainerOperatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerOperatorLibrary.cpp
 )
 
 SET(LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES
+  Operator/VariableGenerator/WindowVariableGenerator.h
   Operator/VariableGenerator/VariableGeneratorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/VariableGeneratorLibrary.cpp
 )
 
 SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
+  Operator/FeatureGenerator/ConcatenateFeatureGenerator.h
   Operator/FeatureGenerator/EnumerationFeatureGenerator.h
   Operator/FeatureGenerator/EnumerationDistributionFeatureGenerator.h
   Operator/FeatureGenerator/FeatureGeneratorLibrary.xml

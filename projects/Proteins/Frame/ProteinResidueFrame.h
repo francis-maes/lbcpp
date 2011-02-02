@@ -14,9 +14,6 @@
 namespace lbcpp
 {
 
-extern FrameClassPtr defaultProteinSingleResidueFrameClass(ExecutionContext& context);
-extern VectorPtr createProteinSingleResidueFrames(ExecutionContext& context, const FramePtr& proteinFrame, FrameClassPtr residueFrameClass);
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_RESIDUE_FRAME_H_

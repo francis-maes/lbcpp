@@ -30,6 +30,8 @@
 # include "Object.h"
 # include "../Execution/ExecutionContext.h"
 # include "Type.h"
+# include "Enumeration.h"
+# include "Class.h"
 # include "TemplateType.h"
 # include "TypeManager.h"
 
