@@ -16,11 +16,14 @@ using namespace lbcpp;
 
 juce::int64 NetworkRequest::lastIdentifier = Time::currentTimeMillis();
 
-NetworkRequest::NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination)
-  : identifier(identifier), projectName(projectName), source(source), destination(destination), status(unknown) {}
+NetworkRequest::NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+  : identifier(identifier), projectName(projectName), source(source), destination(destination),
+    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime), status(unknown) {}
+
 NetworkRequest::NetworkRequest(NetworkRequestPtr request)
   : identifier(request->identifier), projectName(request->projectName), source(request->source),
-    destination(request->destination), status(request->status) {}
+    destination(request->destination), requiredCpus(request->requiredCpus),
+    requiredMemory(request->requiredMemory), requiredTime(request->requiredTime), status(request->status) {}
 
 String NetworkRequest::generateIdentifier()
 {
@@ -38,10 +41,11 @@ String NetworkRequest::generateIdentifier()
 ** WorkUnitNetworkRequest
 */
 
-WorkUnitNetworkRequest::WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination)
-  : NetworkRequest(generateIdentifier(), projectName, source, destination), workUnit(workUnit) {}
+WorkUnitNetworkRequest::WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+  : NetworkRequest(generateIdentifier(), projectName, source, destination, requiredCpus, requiredMemory, requiredTime), workUnit(workUnit) {}
+
 WorkUnitNetworkRequest::WorkUnitNetworkRequest(NetworkRequestPtr request, WorkUnitPtr workUnit)
   : NetworkRequest(request), workUnit(workUnit) {}
   
 NetworkRequestPtr WorkUnitNetworkRequest::getNetworkRequest() const
-  {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination());}
+  {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination(), requiredCpus, requiredMemory);}

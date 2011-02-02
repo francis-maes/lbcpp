@@ -16,16 +16,21 @@ using namespace lbcpp;
 
 void usage()
 {
-  std::cerr << "Usage: SendWorkUnit --project name --from senderName --to gridName [--manager address[:port]] WorkUnitFile.xml" << std::endl;
-  std::cerr << "Usage: SendWorkUnit --project name --from senderName --to gridName [--manager address[:port]] WorkUnitName WorkUnitArguments" << std::endl;
+  std::cerr << "Usage: SendWorkUnit --project name --from senderName --to gridName [--manager address[:port] --cpus n --memory gigabytes --time hours] WorkUnitFile.xml" << std::endl;
+  std::cerr << "Usage: SendWorkUnit --project name --from senderName --to gridName [--manager address[:port] --cpus n --memory gigabytes --time hours] WorkUnitName WorkUnitArguments" << std::endl;
   std::cerr << "  --project : Name of project" << std::endl;
   std::cerr << "  --from : Name of expediter (you)." << std::endl;
   std::cerr << "  --to : Name of grid node." << std::endl;
   std::cerr << "  --manager : Address and port of the manager (default: monster24.montefiore.ulg.ac.be:1664)" << std::endl;
+  std::cerr << "  --cpus : Number of required cpus to run the work unit." << std::endl;
+  std::cerr << "  --memory : Number of gigabytes required to run the work unit." << std::endl;
+  std::cerr << "  --time : Number of hours required to run the work unit." << std::endl;
 }
 
 bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
-                            String& projectName, String& source, String& destination, String& managerHostName, size_t& managerPort)
+                            String& projectName, String& source, String& destination,
+                            String& managerHostName, size_t& managerPort,
+                            size_t& requiredCpus, size_t& requiredMemory, size_t& requiredTime)
 {  
   remainingArguments.reserve(argc - 1);
   for (int i = 1; i < argc; ++i)
@@ -85,6 +90,54 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
         managerPort = (size_t)port;
       }
 
+    }
+    else if (argument == T("--cpus"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      int n = String(argv[i]).getIntValue();
+      if (n < 1)
+      {
+        context.errorCallback(T("Invalid Number of CPUs"));
+        return false;
+      }
+      requiredCpus = (size_t)n;
+    }
+    else if (argument == T("--memory"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      int n = String(argv[i]).getIntValue();
+      if (n < 1)
+      {
+        context.errorCallback(T("Invalid Number of GigaBytes"));
+        return false;
+      }
+      requiredMemory = (size_t)n;
+    }
+    else if (argument == T("--time"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      int n = String(argv[i]).getIntValue();
+      if (n < 0)
+      {
+        context.errorCallback(T("Invalid Number of Hours"));
+        return false;
+      }
+      requiredTime = (size_t)n;
     }
     else
       remainingArguments.push_back(argument);
@@ -166,9 +219,12 @@ int mainImpl(int argc, char** argv)
   String destination;
   String managerHostName(T("monster24.montefiore.ulg.ac.be"));
   size_t managerPort = 1664;
-
+  size_t requiredCpus = 1;
+  size_t requiredMemory = 2;
+  size_t requiredTime = 10;
+  
   ExecutionContextPtr context = singleThreadedExecutionContext();
-  if (!parseTopLevelArguments(*context, argc, argv, arguments, projectName, source, destination, managerHostName, managerPort)
+  if (!parseTopLevelArguments(*context, argc, argv, arguments, projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime)
       || projectName == String::empty || source == String::empty || destination == String::empty)
   {
     usage();
@@ -203,7 +259,7 @@ int mainImpl(int argc, char** argv)
   NodeNetworkInterfacePtr interface = new ClientNodeNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
   
-  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(workUnit, projectName, source, destination);
+  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime);
   NetworkRequestPtr res = interface->pushWorkUnit(*context, request);
   if (!res)
   {

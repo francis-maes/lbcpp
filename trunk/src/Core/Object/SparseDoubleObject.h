@@ -20,7 +20,7 @@ class SparseDoubleObjectVariableIterator : public Object::VariableIterator
 {
 public:
   SparseDoubleObjectVariableIterator(SparseDoubleObjectPtr object)
-    : object(object), objectClass(object->getClass()), currentIndex(0) {}
+    : objectClass(object->getClass()), object(object), currentIndex(0) {}
 
   virtual bool exists() const
     {return currentIndex < object->values.size();}

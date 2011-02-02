@@ -98,13 +98,22 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
   
   /* Update status */
   std::vector<NetworkRequestPtr> requests;
-  manager->getRequestsSentTo(nodeName, requests);
+  manager->getUnfinishedRequestsSentTo(nodeName, requests);
   for (size_t i = 0; i < requests.size(); ++i)
   {
     int status = interface->getWorkUnitStatus(interface->getContext(), requests[i]);
+    int oldStatus = requests[i]->getStatus();
+
     if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
       interface->pushWorkUnit(interface->getContext(), manager->getWorkUnit(manager->getContext(), requests[i]));
-    int oldStatus = requests[i]->getStatus();
+    
+    if (status == NetworkRequest::finished && status != oldStatus)
+    {
+      ExecutionTracePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]);
+      File f = manager->getContext().getFile(T("Traces/") + requests[i]->getIdentifier() + T(".trace"));
+      trace->saveToFile(manager->getContext(), f);
+    }
+
     requests[i]->setStatus(status);
     // On change : Save request
     if (oldStatus != status)
@@ -151,7 +160,6 @@ Variable GridWorkUnit::run(ExecutionContext& context)
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return false;
     }
-    
     notification->notify(interface);
   }
   return true;

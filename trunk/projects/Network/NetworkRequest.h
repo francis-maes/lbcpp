@@ -23,7 +23,7 @@ class NetworkRequest : public Object
 public:
   enum {communicationError, unknown, waitingOnManager, waitingOnServer, running, finished, iDontHaveThisWorkUnit};
   
-  NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination);
+  NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
   NetworkRequest(NetworkRequestPtr request);
   NetworkRequest() {}
   
@@ -55,17 +55,20 @@ protected:
   String projectName;
   String source;
   String destination;
+  size_t requiredCpus;
+  size_t requiredMemory; // Gb
+  size_t requiredTime; // Hour
   int status;
-  
+
   static juce::int64 lastIdentifier;
-  
+
   static String generateIdentifier();
 };
 
 class WorkUnitNetworkRequest : public NetworkRequest
 {
 public:
-  WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination);
+  WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
   WorkUnitNetworkRequest(NetworkRequestPtr request, WorkUnitPtr workUnit);
   WorkUnitNetworkRequest() {}
   

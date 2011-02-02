@@ -13,6 +13,13 @@
 
 using namespace lbcpp;
 
+void createDirectoryIfNotExists(ExecutionContext& context, const String& directoryName)
+{
+  File f = context.getFile(directoryName);
+  if (!f.exists())
+    f.createDirectory();
+}
+
 /*
 ** NetworkInterface
 */
@@ -27,7 +34,8 @@ void NetworkInterface::closeCommunication(ExecutionContext& context)
 ** NodeNetworkInterface - ClientNodeNetworkInterface
 */
 
-ClientNodeNetworkInterface::ClientNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName) : NodeNetworkInterface(context, client, nodeName) {}
+ClientNodeNetworkInterface::ClientNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
+  : NodeNetworkInterface(context, client, nodeName) {}
 
 void ClientNodeNetworkInterface::closeCommunication(ExecutionContext& context)
 {
@@ -76,12 +84,24 @@ ExecutionTracePtr ClientNodeNetworkInterface::getExecutionTrace(ExecutionContext
 ** NodeNetworkInterface - SgeNodeNetworkInterface
 */
 
-SgeNodeNetworkInterface::SgeNodeNetworkInterface(ExecutionContext& context, const String& nodeName) : NodeNetworkInterface(context, nodeName) {}
+SgeNodeNetworkInterface::SgeNodeNetworkInterface(ExecutionContext& context, const String& nodeName)
+  : NodeNetworkInterface(context, nodeName)
+{
+  createDirectoryIfNotExists(context, T("Requests"));
+  createDirectoryIfNotExists(context, T("Waiting"));
+  createDirectoryIfNotExists(context, T("InProgress"));
+  createDirectoryIfNotExists(context, T("Finished"));
+  createDirectoryIfNotExists(context, T("Traces"));
+}
 
 NetworkRequestPtr SgeNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
 {
-  File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
+  File f = context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));
+  request->getNetworkRequest()->saveToFile(context, f);
+
+  f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
   request->getWorkUnit()->saveToFile(context, f);
+
   return request->getNetworkRequest();
 }
 
@@ -90,12 +110,15 @@ int SgeNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, Networ
   File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
   if (f.exists())
     return NetworkRequest::waitingOnServer;
+
   f = context.getFile(T("InProgress/") + request->getIdentifier() + T(".workUnit"));
   if (f.exists())
     return NetworkRequest::running;
+
   f = context.getFile(T("Finished/") + request->getIdentifier() + T(".workUnit"));
   if (f.exists())
     return NetworkRequest::finished;
+
   return NetworkRequest::iDontHaveThisWorkUnit;
 }
 
@@ -163,10 +186,10 @@ ExecutionTracePtr ManagerNodeNetworkInterface::getExecutionTrace(ExecutionContex
   return ExecutionTrace::createFromFile(context, f);
 }
 
-void ManagerNodeNetworkInterface::getRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const
+void ManagerNodeNetworkInterface::getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const
 {
   for (size_t i = 0; i < requests.size(); ++i)
-    if (requests[i]->getDestination() == nodeName)
+    if (requests[i]->getStatus() != NetworkRequest::finished && requests[i]->getDestination() == nodeName)
       results.push_back(requests[i]);
 }
 
@@ -175,11 +198,4 @@ WorkUnitNetworkRequestPtr ManagerNodeNetworkInterface::getWorkUnit(ExecutionCont
   File f = context.getFile(T("WorkUnits/") + request->getIdentifier() + T(".workUnit"));
   WorkUnitPtr workUnit = WorkUnit::createFromFile(context, f);
   return new WorkUnitNetworkRequest(request, workUnit);
-}
-
-void ManagerNodeNetworkInterface::createDirectoryIfNotExists(ExecutionContext& context, const String& directoryName)
-{
-  File f = context.getFile(directoryName);
-  if (!f.exists())
-    f.createDirectory();
 }

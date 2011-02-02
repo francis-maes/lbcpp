@@ -113,15 +113,13 @@ public:
   virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const;
   virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const;
   
-  void getRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const;
+  void getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const;
   WorkUnitNetworkRequestPtr getWorkUnit(ExecutionContext& context, NetworkRequestPtr request) const;
   
 protected:
   friend class ManagerNodeNetworkInterfaceClass;
 
   std::vector<NetworkRequestPtr> requests;
-
-  void createDirectoryIfNotExists(ExecutionContext& context, const String& directoryName);
 };
 
 typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
