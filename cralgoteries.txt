@@ -1,12 +1,14 @@
-* Container::getElementName() => becomes non virtual
-* Type::isUnnamedType(): becomes non virtual Type::isNamedType(), is a flag stored by Type now
-* Remove UnnamedDynamicClass
+* repertoire Operator/Container => Data/Container
+* repertoire Operator/FeatureGenerator => FeatureGenerator
+* enlever repertoire Operator
+* recycler toutes les Perceptions necessaires en tant que FeatureGenerator
+   => but: avoir les Frames completes de l'etat courrant
 
-* New files: Data/DoubleVector.{h|cpp}
-
--> Container: virtual EnumerationPtr getElementsEnumeration() const
--> DoubleVector qui dérive de Vector, SparseDoubleVector, DenseDoubleVector, LazyDoubleVector, CompositeDoubleVector
-
+* Integration des Frames dans ProteinInferenceFactory et ProteinInference
+* Enlever les Perceptions des machines elementaires
+* NumericalLearning: utiliser DoubleVector partout
+* NumericalLearning: enlever les anciens fichiers maths
+* Inference multi-classes: toujours sortir des DenseDoubleVector[classes, probabilityType]
 
 * Remplacer les types dans Protein
 
