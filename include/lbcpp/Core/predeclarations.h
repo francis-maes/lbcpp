@@ -79,9 +79,6 @@ extern ExecutionContext& defaultExecutionContext();
 class DynamicClass;
 typedef ReferenceCountedObjectPtr<DynamicClass> DynamicClassPtr;
 
-class UnnamedDynamicClass;
-typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
-
 class SparseDoubleObject;
 typedef ReferenceCountedObjectPtr<SparseDoubleObject> SparseDoubleObjectPtr;
 

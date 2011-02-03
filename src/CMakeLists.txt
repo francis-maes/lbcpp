@@ -131,6 +131,8 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/predeclarations.h
   ../include/lbcpp/Data/Stream.h
   Data/Stream.cpp
+  ../include/lbcpp/Data/DoubleVector.h
+  Data/DoubleVector.cpp
   ../include/lbcpp/Data/SymmetricMatrix.h
   Data/SymmetricMatrix.cpp
   ../include/lbcpp/Data/RandomGenerator.h

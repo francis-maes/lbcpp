@@ -29,7 +29,7 @@ public:
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
     VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr distributionType, elementsType;
+    TypePtr distributionType;
     if (!getContainerElementsType(context, inputVariable->getType(), distributionType) || !getDistributionElementsType(context, distributionType, elementsType))
       return VariableSignaturePtr();
     if (!elementsType)

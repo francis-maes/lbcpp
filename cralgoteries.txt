@@ -1,8 +1,12 @@
+* Container::getElementName() => becomes non virtual
+* Type::isUnnamedType(): becomes non virtual Type::isNamedType(), is a flag stored by Type now
+* Remove UnnamedDynamicClass
+
+* New files: Data/DoubleVector.{h|cpp}
+
 -> Container: virtual EnumerationPtr getElementsEnumeration() const
 -> DoubleVector qui dérive de Vector, SparseDoubleVector, DenseDoubleVector, LazyDoubleVector, CompositeDoubleVector
 
-* enlever Container::getElementName
-* clarifier le "Type::isUnnamedType()"
 
 * Remplacer les types dans Protein
 

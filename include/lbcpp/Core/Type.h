@@ -77,7 +77,7 @@ class Type : public NameableObject
 public:
   Type(const String& className, TypePtr baseType);
   Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType);
-  Type() {}
+  Type() : namedType(false) {}
   virtual ~Type();
 
   /*
@@ -92,7 +92,8 @@ public:
   /*
   ** Name
   */
-  virtual bool isUnnamedType() const;
+  bool isNamedType() const
+    {return namedType;}
 
   /*
   ** Type operations
@@ -174,12 +175,15 @@ public:
 
 protected:
   friend class TypeClass;
+  friend class TypeManager;
+  friend struct TemplateTypeCache;
 
   bool initialized;
 
   TypePtr baseType;
   TemplateTypePtr templateType;
   std::vector<TypePtr> templateArguments;
+  bool namedType;
 };
 
 extern TypePtr variableType;

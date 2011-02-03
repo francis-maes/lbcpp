@@ -137,7 +137,10 @@ public:
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return perception->computeFunction(defaultExecutionContext(), inputs[0]);}
+  {
+
+    return perception->computeFunction(defaultExecutionContext(), inputs[0]);
+  }
 
   virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
   {
@@ -275,14 +278,14 @@ void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& c
   featureIndices.push_back(res->addMemberOperator(context, enumerationFeatureGenerator(), aaIndex));
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), pssmIndex));
   size_t pssmEntropyIndex = res->addMemberOperator(context, new EntropyOperator(), pssmIndex);
-  featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), pssmEntropyIndex));
+  //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), pssmEntropyIndex));
 
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), ss3Index));
   size_t ss3EntropyIndex = res->addMemberOperator(context, new EntropyOperator(), ss3Index);
-  featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
+  //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
 
   // all features
-  res->addMemberOperator(context, concatenateFeatureGenerator(), featureIndices, T("allFeatures"));
+  res->addMemberOperator(context, concatenateDoubleVectorFunction(false), featureIndices, T("CFResidueFeatures"));
 }
 
 void ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res)

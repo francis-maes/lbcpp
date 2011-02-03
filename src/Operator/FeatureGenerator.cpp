@@ -30,20 +30,6 @@ Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Vari
   return res;
 }
 
-bool FeatureGenerator::getDoubleVectorParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType) const
-{
-  TypePtr dvType = type->findBaseTypeFromTemplateName(T("DoubleVector"));
-  if (!dvType)
-  {
-    context.errorCallback(type->getName() + T(" is not a DoubleVector"));
-    return false;
-  }
-  jassert(dvType->getNumTemplateArguments() == 2);
-  elementsEnumeration = dvType->getTemplateArgument(0);
-  elementsType = dvType->getTemplateArgument(1);
-  return true;
-}  
-
 TypePtr FeatureGenerator::computeOutputType(ExecutionContext& context)
 {
   featuresType = doubleType;

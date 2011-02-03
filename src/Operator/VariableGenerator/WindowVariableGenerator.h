@@ -27,7 +27,7 @@ public:
     TypePtr elementsType;
     if (!getContainerElementsType(context, getInputType(0), elementsType))
       return false;
-    DynamicClassPtr outputType = new UnnamedDynamicClass(T("Window"));
+    DynamicClassPtr outputType = new DynamicClass(T("Window"));
     int startPosition = - (int)(windowSize / 2);
     for (size_t i = 0; i < windowSize; ++i)
     {

@@ -12,8 +12,8 @@
 #include <map>
 using namespace lbcpp;
 
-Enumeration::Enumeration(const String& name)
-  : Type(name, enumValueType)
+Enumeration::Enumeration(const String& name, const String& baseTypeName)
+  : Type(name, lbcpp::getType(baseTypeName))
 {
 }
 
@@ -84,11 +84,11 @@ int Enumeration::findElementByOneLetterCode(const juce::tchar c) const
 /*
 ** DefaultEnumeration
 */
-DefaultEnumeration::DefaultEnumeration(const String& name)
-  : Enumeration(name)
+DefaultEnumeration::DefaultEnumeration(const String& name, const String& baseTypeName)
+  : Enumeration(name, baseTypeName)
 {
 }
-
+/*
 DefaultEnumeration::DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
   : Enumeration(name)
 {
@@ -107,7 +107,7 @@ DefaultEnumeration::DefaultEnumeration(const String& name, const String& oneLett
     addElement(defaultExecutionContext(), oneLetterCode, oneLetterCode);
   }
 }
-
+*/
 void DefaultEnumeration::addElement(ExecutionContext& context, const String& name, const String& oneLetterCode, const String& shortName, const String& description)
 {
   if (findElementByName(name) >= 0)

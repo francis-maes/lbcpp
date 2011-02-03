@@ -248,10 +248,10 @@ protected:
   void generateClassDeclaration(XmlElement* xml, bool isTemplate)
   {
     String className = xml->getStringAttribute(T("name"), T("???"));
-    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
     String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
+    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
     Declaration declaration = isTemplate ? Declaration::makeTemplateType(className, metaClass) : Declaration::makeType(className, metaClass);
     if (!isTemplate)
@@ -266,9 +266,7 @@ protected:
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
     {
-      String arguments = T("T(") + className.quoted() + T(")");
-      if (classBaseClass != T("Enumeration"))
-        arguments += T(", T(") + baseClassName.quoted() + T(")");
+      String arguments = T("T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T(")");
       openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(") + arguments + T(")"));
     }
     closeScope();
@@ -438,15 +436,20 @@ protected:
       return T("Class");
   }
 
+  static String getDefaultBaseType(const String& metaClass) 
+    {if (metaClass == T("Enumeration")) return T("EnumValue"); else return T("Object");}
+
+
   /*
   ** Template
   */
+
   void generateTemplateClassDeclaration(XmlElement* xml)
   {
     String className = xml->getStringAttribute(T("name"), T("???"));
-    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), T("Object")));
     String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
+    String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
 
     Declaration declaration = Declaration::makeTemplateType(className, T("Template") + metaClass);
     declarations.push_back(declaration);

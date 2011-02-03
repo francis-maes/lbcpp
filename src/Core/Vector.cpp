@@ -397,6 +397,7 @@ void VariableVector::setElement(size_t index, const Variable& value)
 */
 VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
 {
+  jassert(elementsType);
   if (elementsType->inheritsFrom(booleanType))
     return booleanVector(initialSize);
   else if (elementsType->inheritsFrom(objectClass))

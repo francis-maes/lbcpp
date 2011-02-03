@@ -64,7 +64,7 @@ typedef ReferenceCountedObjectPtr<EnumerationElement> EnumerationElementPtr;
 class Enumeration : public Type
 {
 public:
-  Enumeration(const String& name);
+  Enumeration(const String& name, const String& baseTypeName = T("EnumValue"));
   Enumeration(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
     : Type(templateType, templateArguments, baseClass) {}
 
@@ -103,9 +103,9 @@ extern EnumerationPtr positiveIntegerEnumerationEnumeration;
 class DefaultEnumeration : public Enumeration
 {
 public:
-  DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
-  DefaultEnumeration(const String& name, const String& oneLetterCodes);
-  DefaultEnumeration(const String& name);
+  //DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
+  //DefaultEnumeration(const String& name, const String& oneLetterCodes);
+  DefaultEnumeration(const String& name, const String& baseTypeName = T("EnumValue"));
 
   virtual size_t getNumElements() const
     {return elements.size();}

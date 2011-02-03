@@ -10,8 +10,8 @@
 # define LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
 
 # include <lbcpp/Operator/Operator.h>
-# include <lbcpp/Core/Vector.h>
 # include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
@@ -19,45 +19,34 @@ namespace lbcpp
 
 extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 
-class CumulativeScoreVector : public Container
+class CumulativeScoreVector : public ObjectVector
 {
 public:
   CumulativeScoreVector(ClassPtr thisClass, EnumerationPtr scores, size_t size)
-    : Container(thisClass), scores(scores), accumulators(size), elementsType(enumBasedDoubleVectorClass(scores))
+    : ObjectVector(thisClass), elementsType(denseDoubleVectorClass(scores))
   {
-    accumulators[0].resize(scores->getNumElements(), 0.0);
+    objects.resize(size);
+    objects[0] = new DenseDoubleVector(elementsType, scores->getNumElements(), 0.0);
   }
 
   CumulativeScoreVector() {}
 
-  std::vector<double>& getAccumulatedScores(size_t index)
-    {jassert(index < accumulators.size()); return accumulators[index];}
-
   virtual TypePtr getElementsType() const
     {return elementsType;}
 
-  virtual size_t getNumElements() const
-    {return accumulators.size();}
+  const DenseDoubleVectorPtr& getVector(size_t index) const
+    {return objects[index].staticCast<DenseDoubleVector>();}
 
-  virtual Variable getElement(size_t index) const
-    {return new DenseDoubleObject(elementsType, accumulators[index]);}
-
-  virtual void setElement(size_t index, const Variable& value)
-    {jassert(false);}
-
-  std::vector<double>& computeStep(size_t i)
+  const DenseDoubleVectorPtr& computeStep(size_t i)
   {
-   std::vector<double>& scores = accumulators[i];
     if (i > 0)
-      scores = accumulators[i - 1];
-    return scores;
+      objects[i] = objects[i - 1]->clone(defaultExecutionContext());
+    return getVector(i);
   }
 
   lbcpp_UseDebuggingNewOperator
 
 private:
-  EnumerationPtr scores;
-  std::vector< std::vector<double> > accumulators; // index -> label -> count
   TypePtr elementsType;
 };
 
@@ -110,8 +99,8 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      std::vector<double>& scores = res->computeStep(i);
-      scores[container->getElement(i).getInteger()] += 1.0;
+      const DenseDoubleVectorPtr& scores = res->computeStep(i);
+      scores->incrementValue(container->getElement(i).getInteger(), 1.0);
     }
   }
 };
@@ -139,13 +128,13 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      std::vector<double>& scores = res->computeStep(i);
+      const DenseDoubleVectorPtr& scores = res->computeStep(i);
       
       EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>();
       jassert(distribution);
       for (size_t j = 0; j <= inputEnumeration->getNumElements(); ++j)
-        scores[j] += distribution->computeProbability(Variable(j, inputEnumeration));
-      scores.back() += distribution->computeEntropy();
+        scores->incrementValue(j, distribution->computeProbability(Variable(j, inputEnumeration)));
+      scores->incrementValue(inputEnumeration->getNumElements() + 1, distribution->computeEntropy());
     }
   }
 
@@ -165,42 +154,36 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      std::vector<double>& scores = res->computeStep(i);
+      const DenseDoubleVectorPtr& scores = res->computeStep(i);
       Variable element = container->getElement(i);
       if (element.exists())
-        scores[1] += element.getDouble();
+        scores->incrementValue(1, element.getDouble());
       else
-        scores[0] += 1.0;
+        scores->incrementValue(0, 1.0);
     }
   }
 };
 
-class AccumulateDoubleObjectContainerOperator : public AccumulateContainerOperator
+class AccumulateDoubleVectorContainerOperator : public AccumulateContainerOperator
 {
 public:
-  virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
-    {return variablesEnumerationEnumeration(elementsType);}
+  virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr doubleVectorType)
+  {
+    EnumerationPtr featuresEnumeration;
+    TypePtr featuresType;
+    if (!DoubleVector::getTemplateParameters(context, doubleVectorType, featuresEnumeration, featuresType))
+      return EnumerationPtr();
+    return featuresEnumeration;
+  }
 
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      std::vector<double>& scores = res->computeStep(i);
-   
-      ObjectPtr object = container->getElement(i).getObject();
-      SparseDoubleObjectPtr sparseDoubleObject = object.dynamicCast<SparseDoubleObject>();
-      if (sparseDoubleObject)
-      {
-        const std::vector<std::pair<size_t, double> >& features = sparseDoubleObject->getValues();
-        for (size_t i = 0; i < features.size(); ++i)
-          scores[features[i].first] += features[i].second;
-      }
-      else
-      {
-        // not implemented
-        jassert(false);
-      }
+      DoubleVectorPtr vector = container->getElement(i).getObjectAndCast<DoubleVector>();
+      jassert(vector);
+      vector->addTo(res->computeStep(i));
     }
   }
 };
@@ -224,7 +207,7 @@ public:
         else if (elementsType->inheritsFrom(objectClass))
         {
           // todo: verify if the object only contains double members
-          return new AccumulateDoubleObjectContainerOperator();
+          return new AccumulateDoubleVectorContainerOperator();
         }
       }
     }

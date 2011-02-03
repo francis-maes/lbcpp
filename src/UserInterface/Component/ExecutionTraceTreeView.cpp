@@ -141,7 +141,7 @@ juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionCon
       return new TabbedExecutionTraceResultsSelectorComponent(pair);
 
     ContainerPtr container = variable.dynamicCast<Container>();
-    if (container && container->getElementsType()->isUnnamedType())
+    if (container && !container->getElementsType()->isNamedType())
       return userInterfaceManager().createContainerTableListBox(context, container);
     else
       return userInterfaceManager().createVariableTreeView(context, variable, name, true, true, false, false);

@@ -46,8 +46,6 @@
   
   <!-- Dynamic Object -->
   <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
-  
-  <class name="UnnamedDynamicClass" base="DynamicClass"/>
 
   <template name="EnumBasedDoubleVector" metaclass="DynamicClass">
     <parameter name="enumeration" type="EnumValue"/>

@@ -110,14 +110,14 @@ void XmlExporter::writeName(const String& name)
 void XmlExporter::writeType(TypePtr type)
 {
   jassert(type);
-  if (type->isUnnamedType())
+  if (type->isNamedType())
+    setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+  else
   {
     enter(T("type"));
     writeVariable(type, TypePtr());
     leave();
   }
-  else
-    setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
 }
 
 void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
@@ -133,7 +133,7 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   {
     const ObjectPtr& object = variable.getObject();
     TypePtr typeValue = object.dynamicCast<Type>();
-    if (typeValue && !typeValue->isUnnamedType())
+    if (typeValue && typeValue->isNamedType())
       addTextElement(typeValue->getName()); // named type
     else
       writeObject(object, expectedType); // traditional object
