@@ -17,6 +17,33 @@ namespace lbcpp
 class ConcatenateFeatureGenerator : public FeatureGenerator
 {
 public:
+  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+  {
+    size_t numInputs = getNumInputs();
+    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
+    elementsType = TypePtr();
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      const VariableSignaturePtr& inputVariable = getInputVariable(i);
+
+      EnumerationPtr subElementsEnumeration;
+      TypePtr subElementsType;
+      if (!getDoubleVectorParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))
+        return EnumerationPtr();
+      elementsEnumeration->addElementsWithPrefix(context, subElementsEnumeration, inputVariable->getName() + T("."), inputVariable->getShortName() + T("."));
+      if (i == 0)
+        elementsType = subElementsType;
+      else
+        elementsType = Type::findCommonBaseType(elementsType, subElementsType);
+    }
+    if (!elementsType->inheritsFrom(doubleType))
+    {
+      context.errorCallback(T("All elements do not inherit from double"));
+      return EnumerationPtr();
+    }
+    return elementsEnumeration;
+  }
+
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     size_t numInputs = getNumInputs();
@@ -26,30 +53,11 @@ public:
       context.errorCallback(T("No inputs"));
       return VariableSignaturePtr();
     }
-
-    DefaultClassPtr outputType = new UnnamedDynamicClass(T("FeatureVector"));
-    shifts.resize(numInputs);
     for (size_t i = 0; i < numInputs; ++i)
-    {
-      const VariableSignaturePtr& inputVariable = getInputVariable(i);
+      if (!checkInputType(context, i, doubleVectorClass(enumValueType)))
+        return VariableSignaturePtr();
 
-      shifts[i] = outputType->getNumMemberVariables();
-      TypePtr subType = inputVariable->getType();
-      size_t n = subType->getNumMemberVariables();
-      for (size_t j = 0; j < n; ++j)
-      {
-        VariableSignaturePtr signature = subType->getMemberVariable(j)->cloneAndCast<VariableSignature>();
-        signature->setName(inputVariable->getName() + T(".") + signature->getName());
-        signature->setShortName(inputVariable->getShortName() + T(".") + signature->getShortName());
-        outputType->addMemberVariable(context, signature);
-      }
-    }
-    if (!outputType->getNumMemberVariables())
-    {
-      context.errorCallback(T("No member variables"));
-      return VariableSignaturePtr();
-    }
-    return new VariableSignature(outputType, T("AllFeatures"));
+    return new VariableSignature(computeOutputType(context) , T("AllFeatures"));
   }
 
   struct Callback : public VariableGeneratorCallback
@@ -73,24 +81,20 @@ public:
       res->appendValuesWithShift(input, shifts[i]);
     }*/
     jassert(false); 
-    // FIXME: "LazyVariable"
+    // FIXME: "LazyDoubleVector"
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    SparseDoubleObjectPtr res = new SparseDoubleObject(getOutputType());
-    size_t v = 0;
+    CompositeDoubleVectorPtr res = new CompositeDoubleVector(featuresEnumeration, featuresType);
     for (size_t i = 0; i < shifts.size(); ++i)
-    {
-      SparseDoubleObjectPtr input = inputs[i].dynamicCast<SparseDoubleObject>();
-      jassert(input);
-      res->appendValuesWithShift(input, shifts[i]);
-    }
+      res->appendSubVector(shifts[i], inputs[i].dynamicCast<DoubleVector>());
     return res;
   }
 
 private:
   std::vector<size_t> shifts;
+  TypePtr elementsType;
 };
 
 }; /* namespace lbcpp */

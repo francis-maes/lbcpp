@@ -159,5 +159,14 @@
     <value name="missing" oneLetterCode="m"/>
     <value name="present" oneLetterCode="v"/>
   </enumeration>
+
+  <class name="PositiveIntegerEnumeration" metaclass="Enumeration">
+    <code>
+      virtual size_t getNumElements() const
+        {return 0;}
+      virtual EnumerationElementPtr getElement(size_t index) const
+        {String str((int)index); return new EnumerationElement(T("[") + str + T("]"), String::empty, str);}
+    </code>
+  </class>
   
 </library>

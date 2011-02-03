@@ -17,6 +17,12 @@ namespace lbcpp
 class EnumerationFeatureGenerator : public FeatureGenerator
 {
 public:
+  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+  {
+    elementsType = probabilityType;
+    return addMissingToEnumerationEnumeration(enumeration);
+  }
+
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))
@@ -27,8 +33,7 @@ public:
       context.errorCallback(T("Not an enumeration"));
       return VariableSignaturePtr();
     }
-    TypePtr type = enumBasedDoubleVectorClass(addMissingToEnumerationEnumeration(enumeration), probabilityType);
-    return new VariableSignature(type, inputVariables[0]->getName() + T("Features"), inputVariables[0]->getShortName() + T("f"));
+    return new VariableSignature(computeOutputType(context), inputVariables[0]->getName() + T("Features"), inputVariables[0]->getShortName() + T("f"));
   }
 
   virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const

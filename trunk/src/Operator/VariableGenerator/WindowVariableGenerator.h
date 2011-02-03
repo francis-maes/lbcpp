@@ -24,8 +24,8 @@ public:
   {
     if (!checkNumInputs(context, 2) || !checkInputType(context, 0, containerClass(anyType)) || !checkInputType(context, 1, positiveIntegerType))
       return false;
-    TypePtr elementsType = getContainerElementsType(context, getInputType(0));
-    if (!elementsType)
+    TypePtr elementsType;
+    if (!getContainerElementsType(context, getInputType(0), elementsType))
       return false;
     DynamicClassPtr outputType = new UnnamedDynamicClass(T("Window"));
     int startPosition = - (int)(windowSize / 2);

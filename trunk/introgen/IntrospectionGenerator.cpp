@@ -265,7 +265,12 @@ protected:
       openScope(declaration.implementationClassName + T("(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)")
         + T(" : ") + classBaseClass + T("(templateType, templateArguments, baseClass)"));
     else
-      openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T("))"));
+    {
+      String arguments = T("T(") + className.quoted() + T(")");
+      if (classBaseClass != T("Enumeration"))
+        arguments += T(", T(") + baseClassName.quoted() + T(")");
+      openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(") + arguments + T(")"));
+    }
     closeScope();
     newLine();
 
@@ -363,7 +368,7 @@ protected:
     // class declarator
     if (!isTemplate)
     {
-      writeLine(T("ClassPtr ") + declaration.cacheVariableName + T(";"));
+      writeLine(metaClass + T("Ptr ") + declaration.cacheVariableName + T(";"));
 
       // class constructors
       forEachXmlChildElementWithTagName(*xml, elt, T("constructor"))

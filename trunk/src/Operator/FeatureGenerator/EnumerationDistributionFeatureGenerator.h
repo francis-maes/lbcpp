@@ -18,12 +18,16 @@ namespace lbcpp
 class EnumerationDistributionFeatureGenerator : public FeatureGenerator
 {
 public:
+  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+  {
+    elementsType = probabilityType;
+    return addMissingToEnumerationEnumeration(enumeration);
+  }
+
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)))
-      return VariableSignaturePtr();
-    TypePtr elementsType = getDistributionElementsType(context, getInputType(0));
-    if (!elementsType)
+    TypePtr elementsType;
+    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)) || !getDistributionElementsType(context, getInputType(0), elementsType))
       return VariableSignaturePtr();
     enumeration = elementsType.dynamicCast<Enumeration>();
     if (!enumeration)
@@ -31,8 +35,7 @@ public:
       context.errorCallback(T("Not an enumeration"));
       return VariableSignaturePtr();
     }
-    TypePtr type = enumBasedDoubleVectorClass(addMissingToEnumerationEnumeration(enumeration), probabilityType);
-    return new VariableSignature(type, inputVariables[0]->getName() + T("Features"), inputVariables[0]->getShortName() + T("f"));
+    return new VariableSignature(computeOutputType(context), inputVariables[0]->getName() + T("Features"), inputVariables[0]->getShortName() + T("f"));
   }
 
   virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const

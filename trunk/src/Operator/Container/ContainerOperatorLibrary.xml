@@ -8,22 +8,22 @@
   </template>
 
   <!-- Accumulate -->
-  <class name="AccumulateContainerOperator" base="Operator" abstract="yes"/>
+  <class name="AccumulateContainerOperator" base="Function" abstract="yes"/>
   <class name="AccumulateEnumerationContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateEnumerationDistributionContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateDoubleContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateOperator" base="ProxyFunction">
-    <constructor returnType="Operator"/>
+    <constructor returnType="Function"/>
   </class>
 
   <!-- Discretize -->
-  <class name="DiscretizeContainerOperator" base="Operator">
+  <class name="DiscretizeContainerOperator" base="Function">
     <constructor arguments="bool sampleBest"/>
     <variable type="Type" name="elementsType"/>
     <variable type="Boolean" name="sampleBest"/>
   </class>
   <class name="DiscretizeOperator" base="ProxyFunction">
-    <constructor arguments="bool sampleBest" returnType="Operator"/>
+    <constructor arguments="bool sampleBest" returnType="Function"/>
     <variable type="Boolean" name="sampleBest"/>
   </class>
 
@@ -39,13 +39,13 @@
     <parameter name="elementsType"/>
   </template>
 
-  <class name="SegmentContainerOperator" base="Operator">
+  <class name="SegmentContainerOperator" base="Function">
     <constructor/>
   </class>
 
 
   <!-- Apply -->
-  <class name="ApplyOnContainerOperator" base="Operator">
+  <class name="ApplyOnContainerOperator" base="Function">
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Operator" name="function"/>
   </class>

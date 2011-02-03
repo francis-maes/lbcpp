@@ -30,6 +30,9 @@ public:
   virtual TypePtr getElementsType() const
     {jassert(thisClass); return thisClass->getTemplateArgument(0);}
 
+  virtual EnumerationPtr getElementsEnumeration() const
+    {return positiveIntegerEnumerationEnumeration;}
+
   virtual size_t getNumElements() const = 0;
   virtual String getElementName(size_t index) const;
   virtual Variable getElement(size_t index) const = 0;

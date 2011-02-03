@@ -103,6 +103,8 @@ public:
   void setBaseType(TypePtr baseType)
     {this->baseType = baseType;}
 
+  TypePtr findBaseTypeFromTemplateName(const String& templateName) const;
+
   bool inheritsFrom(TypePtr baseType) const;
   bool canBeCastedTo(TypePtr targetType) const;
 

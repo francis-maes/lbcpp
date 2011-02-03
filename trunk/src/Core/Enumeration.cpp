@@ -82,38 +82,6 @@ int Enumeration::findElementByOneLetterCode(const juce::tchar c) const
 }
 
 /*
-juce::tchar Enumeration::getOneLetterCode(size_t index) const
-{
-  jassert(index < elements.size());
-  if (oneLetterCodes.length())
-  {
-    jassert(oneLetterCodes.length() == (int)elements.size());
-    return oneLetterCodes[(int)index];
-  }
-  else
-  {
-    jassert(elements[index].isNotEmpty());
-    return elements[index][0];
-  }
-}
-
-String Enumeration::getOneLetterCodes() const
-{
-  if (oneLetterCodes.isEmpty())
-  {
-    String res;
-    for (size_t i = 0; i < elements.size(); ++i)
-      res += getOneLetterCode(i);
-    return res;
-  }
-  else
-  {
-    jassert(oneLetterCodes.length() == (int)elements.size());
-    return oneLetterCodes;
-  }
-}*/
-
-/*
 ** DefaultEnumeration
 */
 DefaultEnumeration::DefaultEnumeration(const String& name)
@@ -158,4 +126,15 @@ size_t DefaultEnumeration::findOrAddElement(ExecutionContext& context, const Str
   size_t res = elements.size();
   elements.push_back(new EnumerationElement(name));
   return res;
+}
+
+void DefaultEnumeration::addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const String& namePrefix, const String& shortNamePrefix)
+{
+  size_t n = enumeration->getNumElements();
+  elements.reserve(elements.size() + n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    EnumerationElementPtr element = enumeration->getElement(i);
+    elements.push_back(new EnumerationElement(namePrefix + element->getName(), String::empty, shortNamePrefix + element->getShortName()));
+  }
 }
