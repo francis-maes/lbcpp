@@ -32,8 +32,8 @@ public:
     for (size_t i = 0; i < subInputVariables.size(); ++i)
     {
       VariableSignaturePtr inputVariable = getInputVariable(0);
-      TypePtr elementsType = getContainerElementsType(context, inputVariable->getType());
-      if (!elementsType)
+      TypePtr elementsType;
+      if (!getContainerElementsType(context, inputVariable->getType(), elementsType))
         return false;
 
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));

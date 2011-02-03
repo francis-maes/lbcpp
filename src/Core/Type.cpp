@@ -133,6 +133,18 @@ bool Type::inheritsFrom(TypePtr baseType) const
   return this->baseType->inheritsFrom(baseType);
 }
 
+TypePtr Type::findBaseTypeFromTemplateName(const String& templateName) const
+{
+  TypePtr res = refCountedPointerFromThis(this);
+  while (res)
+  {
+    if (res->templateType && res->templateType->getName() == templateName)
+      return res;
+    res = res->getBaseType();
+  }
+  return TypePtr();
+}
+
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
 

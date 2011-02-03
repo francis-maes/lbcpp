@@ -74,8 +74,8 @@ public:
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
     VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr elementsType = getContainerElementsType(context, inputVariable->getType());
-    if (!elementsType)
+    TypePtr elementsType;
+    if (!getContainerElementsType(context, inputVariable->getType(), elementsType))
       return VariableSignaturePtr();
     scoresEnumeration = getScoresEnumeration(context, elementsType);
     if (!scoresEnumeration)
@@ -122,8 +122,8 @@ class AccumulateEnumerationDistributionContainerOperator : public AccumulateCont
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
   {
-    TypePtr distributionElementsType = getDistributionElementsType(context, elementsType);
-    if (!distributionElementsType)
+    TypePtr distributionElementsType;
+    if (!getDistributionElementsType(context, elementsType, distributionElementsType))
       return EnumerationPtr();
     inputEnumeration = distributionElementsType.dynamicCast<Enumeration>();
     if (!inputEnumeration)
@@ -212,8 +212,8 @@ public:
   {
     if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(anyType)))
     {
-      TypePtr elementsType = getContainerElementsType(defaultExecutionContext(), inputVariables[0]->getType());
-      if (elementsType)
+      TypePtr elementsType;
+      if (getContainerElementsType(defaultExecutionContext(), inputVariables[0]->getType(), elementsType))
       {
         if (elementsType.dynamicCast<Enumeration>())
           return new AccumulateEnumerationContainerOperator();

@@ -122,6 +122,9 @@ public:
   PerceptionToFeatureGeneratorWrapper(PerceptionPtr perception)
     : perception(perception) {}
 
+  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+    {return variablesEnumerationEnumeration(perception->getOutputType());}
+
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))

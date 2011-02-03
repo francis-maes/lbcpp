@@ -37,43 +37,30 @@ bool Function::checkInputType(ExecutionContext& context, size_t index, TypePtr r
   return context.checkInheritance(inputVariables[index]->getType(), requestedType);
 }
 
-TypePtr Function::getTemplateArgument(ExecutionContext& context, TypePtr type, size_t templateArgumentIndex, TypePtr requestedType) const
+bool Function::getContainerElementsType(ExecutionContext& context, TypePtr type, TypePtr& res) const
 {
-  if (templateArgumentIndex >= type->getNumTemplateArguments())
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  if (!dvType)
   {
-    context.errorCallback(T("Missing template argument"));
-    return TypePtr();
-  }
-  TypePtr res = type->getTemplateArgument(templateArgumentIndex);
-  if (requestedType && !context.checkInheritance(res, requestedType))
-    return TypePtr();
-  return res;
-}
-
-TypePtr Function::getContainerElementsType(ExecutionContext& context, TypePtr type) const
-{
-  TypePtr t = type;
-  while (t && (!t->getTemplate() || t->getTemplate()->getName() != T("Container")))
-    t = t->getBaseType();
-  if (!t)
-  {
-    context.errorCallback(type->getName() + T(" is not a container"));
+    context.errorCallback(type->getName() + T(" is not a Container"));
     return false;
   }
-  return getTemplateArgument(context, t, 0, anyType);
+  jassert(dvType->getNumTemplateArguments() == 1);
+  res = dvType->getTemplateArgument(0);
+  return true;
 }
 
-TypePtr Function::getDistributionElementsType(ExecutionContext& context, TypePtr type) const
+bool Function::getDistributionElementsType(ExecutionContext& context, TypePtr type, TypePtr& res) const
 {
-  TypePtr t = type;
-  while (t && (!t->getTemplate() || t->getTemplate()->getName() != T("Distribution")))
-    t = t->getBaseType();
-  if (!t)
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Distribution"));
+  if (!dvType)
   {
-    context.errorCallback(type->getName() + T(" is not a distribution"));
+    context.errorCallback(type->getName() + T(" is not a Distribution"));
     return false;
   }
-  return getTemplateArgument(context, t, 0, anyType);
+  jassert(dvType->getNumTemplateArguments() == 1);
+  res = dvType->getTemplateArgument(0);
+  return true;
 }
 
 bool Function::checkExistence(ExecutionContext& context, const Variable& variable) const

@@ -29,10 +29,9 @@ public:
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
     VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr distributionType = getContainerElementsType(context, inputVariable->getType());
-    if (!distributionType)
+    TypePtr distributionType, elementsType;
+    if (!getContainerElementsType(context, inputVariable->getType(), distributionType) || !getDistributionElementsType(context, distributionType, elementsType))
       return VariableSignaturePtr();
-    elementsType = getDistributionElementsType(context, distributionType);
     if (!elementsType)
       return VariableSignaturePtr();
     return new VariableSignature(vectorClass(elementsType), inputVariable->getName() + T("Discretized"), inputVariable->getShortName() + T("d"));
