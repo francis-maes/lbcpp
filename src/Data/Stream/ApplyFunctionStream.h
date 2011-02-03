@@ -10,7 +10,7 @@
 # define LBCPP_DATA_STREAM_APPLY_FUNCTION_H_
 
 # include <lbcpp/Data/Stream.h>
-# include <lbcpp/Core/Function.h>
+# include <lbcpp/Function/Function.h>
 
 namespace lbcpp
 {

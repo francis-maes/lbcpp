@@ -7,14 +7,9 @@
   <import name="VariableGenerator"/>
   <import name="FeatureGenerator"/>
 
-  <class name="Operator" base="Object" abstract="yes">
-    <variable type="ObjectVector[VariableSignature]" name="inputVariables"/>
-    <variable type="VariableSignature" name="outputVariable"/>
-  </class>
+  <class name="ProxyFunction" base="Function" abstract="yes"/>
 
-  <class name="ProxyOperator" base="Operator" abstract="yes"/>
-
-  <class name="VariableGenerator" base="Operator" abstract="yes"/>
+  <class name="VariableGenerator" base="Function" abstract="yes"/>
   <class name="FeatureGenerator" base="VariableGenerator" abstract="yes"/>
   
 </library>

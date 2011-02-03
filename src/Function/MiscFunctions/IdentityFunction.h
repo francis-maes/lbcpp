@@ -9,7 +9,7 @@
 #ifndef LBCPP_FUNCTION_IDENTITY_H_
 # define LBCPP_FUNCTION_IDENTITY_H_
 
-# include <lbcpp/Core/Function.h>
+# include <lbcpp/Function/Function.h>
 
 namespace lbcpp
 {

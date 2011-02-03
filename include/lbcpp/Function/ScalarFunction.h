@@ -27,8 +27,7 @@
 #ifndef LBCPP_FUNCTION_SCALAR_H_
 # define LBCPP_FUNCTION_SCALAR_H_
 
-# include "../Core/Function.h"
-# include "predeclarations.h"
+# include "Function.h"
 
 namespace lbcpp
 {

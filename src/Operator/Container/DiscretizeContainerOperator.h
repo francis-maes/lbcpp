@@ -18,13 +18,13 @@ namespace lbcpp
 {
 
   // container[distribution[T]] => container[T]
-class DiscretizeContainerOperator : public Operator
+class DiscretizeContainerOperator : public Function
 {
 public:
   DiscretizeContainerOperator(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
@@ -38,7 +38,7 @@ public:
     return new VariableSignature(vectorClass(elementsType), inputVariable->getName() + T("Discretized"), inputVariable->getShortName() + T("d"));
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
 
@@ -61,17 +61,17 @@ protected:
   bool sampleBest;
 };
 
-class DiscretizeOperator : public ProxyOperator
+class DiscretizeOperator : public ProxyFunction
 {
 public:
   DiscretizeOperator(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
-  virtual OperatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
     if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(distributionClass(anyType))))
       return new DiscretizeContainerOperator(sampleBest);
-    return OperatorPtr();
+    return FunctionPtr();
   }
 
 protected:

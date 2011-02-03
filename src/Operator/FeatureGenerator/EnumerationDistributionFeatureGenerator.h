@@ -18,7 +18,7 @@ namespace lbcpp
 class EnumerationDistributionFeatureGenerator : public FeatureGenerator
 {
 public:
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)))
       return VariableSignaturePtr();

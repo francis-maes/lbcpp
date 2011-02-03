@@ -36,7 +36,7 @@ private:
   ObjectPtr target;
 };
 
-Variable VariableGenerator::computeOperator(const Variable* inputs) const
+Variable VariableGenerator::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   ObjectPtr res = Object::create(getOutputType());
   SetInObjectVariableGeneratorCallback callback(res);

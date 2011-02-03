@@ -18,10 +18,10 @@ FrameClass::FrameClass(const String& name, TypePtr baseClass)
 FrameClass::FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : DefaultClass(templateType, templateArguments, baseClass) {}
 
-size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName, const String& outputShortName)
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input, const String& outputName, const String& outputShortName)
   {return addMemberVariable(context, new FrameOperatorSignature(operation, input, outputName, outputShortName));}
 
-size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
 {
   std::vector<size_t> inputs(2);
   inputs[0] = input1;
@@ -29,7 +29,7 @@ size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPt
   return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));
 }
 
-size_t FrameClass::addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, const std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
   {return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));}
 
 bool FrameClass::initialize(ExecutionContext& context)
@@ -37,16 +37,16 @@ bool FrameClass::initialize(ExecutionContext& context)
   for (size_t i = 0; i < variables.size(); ++i)
   {
     FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
-    if (signature && !initializeOperator(context, signature))
+    if (signature && !initializeFunction(context, signature))
       return false;
   }
   return DefaultClass::initialize(context);
 }
 
-bool FrameClass::initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
+bool FrameClass::initializeFunction(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
 {
-  const OperatorPtr& operation = signature->getOperator();
-  jassert(operation);
+  const FunctionPtr& function = signature->getFunction();
+  jassert(function);
   const std::vector<size_t>& inputs = signature->getInputs();
 
   std::vector<VariableSignaturePtr> inputVariables(inputs.size());
@@ -60,10 +60,10 @@ bool FrameClass::initializeOperator(ExecutionContext& context, const FrameOperat
     }
     inputVariables[i] = variables[inputIndex];
   }
-  if (!operation->initialize(context, inputVariables))
+  if (!function->initialize(context, inputVariables))
     return false;
 
-  FrameOperatorSignaturePtr autoSignature = operation->getOutputVariable();
+  FrameOperatorSignaturePtr autoSignature = function->getOutputVariable();
   signature->setType(autoSignature->getType());
   if (signature->getName().isEmpty())
     signature->setName(autoSignature->getName());
@@ -106,7 +106,7 @@ Variable Frame::getOrComputeVariable(size_t index)
     if (!inputs[i].exists())
       return Variable();
   }
-  Variable value = operatorSignature->getOperator()->computeOperator(&inputs[0]);
+  Variable value = operatorSignature->getFunction()->computeFunction(defaultExecutionContext(), &inputs[0]);
   setVariable(index, value);
   return value;
 }
@@ -122,7 +122,7 @@ public:
   PerceptionToFeatureGeneratorWrapper(PerceptionPtr perception)
     : perception(perception) {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
@@ -133,7 +133,7 @@ public:
     return new VariableSignature(perception->getOutputType(), inputVariable->getName() + T("Perception"), inputVariable->getShortName() + T("p"));
   }
  
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return perception->computeFunction(defaultExecutionContext(), inputs[0]);}
 
   virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
@@ -146,10 +146,10 @@ protected:
   PerceptionPtr perception;
 };
 
-class EntropyOperator : public Operator
+class EntropyOperator : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
      if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
@@ -159,19 +159,19 @@ public:
     return new VariableSignature(negativeLogProbabilityType, inputVariable->getName() + T("Entropy"), inputVariable->getShortName() + T("e"));
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0].getObjectAndCast<Distribution>()->computeEntropy();}
 };
 
 ////////////////////////////////////////////////////
 
-class ForEachOperator : public Operator
+class ForEachOperator : public Function
 {
 public:
-  ForEachOperator(OperatorPtr function, const String& loopVariableName = T("i"))
+  ForEachOperator(FunctionPtr function, const String& loopVariableName = T("i"))
     : function(function), loopVariableName(loopVariableName) {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!function->initialize(context, inputVariables))
       return VariableSignaturePtr();
@@ -179,7 +179,8 @@ public:
     return new VariableSignature(vectorClass(elementsSignature->getType()), elementsSignature->getName() + T("Vector"), elementsSignature->getShortName() + T("v"));
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  // at each iteration, replaces the first input (n) by the loop counter (i in [0,n[)
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     std::vector<Variable> subInputs(getNumInputs());
     for (size_t i = 1; i < subInputs.size(); ++i)
@@ -190,47 +191,15 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       subInputs[0] = Variable(i);
-      res->setElement(i, function->computeOperator(&subInputs[0]));
+      res->setElement(i, function->computeFunction(context, &subInputs[0]));
     }
     return res;
   }
 
 protected:
-  OperatorPtr function;
+  FunctionPtr function;
   String loopVariableName;
 };
-/*
-class CreateResidueFrameVectorOperator : public Operator
-{
-public:
-  CreateResidueFrameVectorOperator(FrameClassPtr frameClass)
-    : frameClass(frameClass) {}
-
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
-    {return new VariableSignature(vectorClass(frameClass), T("residueFrames"));}
-
-  virtual Variable computeOperator(const Variable* inputs) const
-  {
-    ContainerPtr contextFreeResidueFeatures = inputs[0].getObjectAndCast<Container>();
-    ContainerPtr contextFreeResidueFeaturesSum = inputs[1].getObjectAndCast<Container>();
-
-    size_t n = contextFreeResidueFeatures->getNumElements();
-
-    VectorPtr res = vector(frameClass, n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      FramePtr frame(new Frame(frameClass));
-      frame->setVariable(0, i);
-      frame->setVariable(1, contextFreeResidueFeatures);
-      //frame->setVariable(2, contextFreeResidueFeaturesSum);
-      res->setElement(i, frame);
-    }
-    return res;
-  }
-
-protected:
-  FrameClassPtr frameClass;
-};*/
 
 ////////////////////////////////////////////////////
 

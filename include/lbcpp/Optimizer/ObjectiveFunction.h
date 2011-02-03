@@ -9,7 +9,7 @@
 #ifndef LBCPP_FUNCTION_OBJECTIVE_H_
 # define LBCPP_FUNCTION_OBJECTIVE_H_
 
-# include "../Core/Function.h"
+# include "../Function/Function.h"
 # include "../Execution/WorkUnit.h"
 
 namespace lbcpp

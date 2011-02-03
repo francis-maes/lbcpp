@@ -14,13 +14,13 @@
 namespace lbcpp
 {
 
-class ApplyOnContainerOperator : public Operator
+class ApplyOnContainerOperator : public Function
 {
 public:
-  ApplyOnContainerOperator(OperatorPtr function = OperatorPtr())
+  ApplyOnContainerOperator(FunctionPtr function = FunctionPtr())
     : function(function) {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!getNumInputs())
     {
@@ -45,7 +45,7 @@ public:
     return new VariableSignature(vectorClass(function->getOutputType()), function->getOutputVariable()->getName(), function->getOutputVariable()->getShortName());
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t numInputs = getNumInputs();
 
@@ -57,7 +57,7 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         Variable element = input->getElement(i);
-        res->setElement(i, function->computeOperator(&element));
+        res->setElement(i, function->computeFunction(context, element));
       }
       return res;
     }
@@ -78,7 +78,7 @@ public:
       {
         for (size_t j = 0; j < numInputs; ++j)
           elements[j] = containers[j]->getElement(i);
-        res->setElement(i, function->computeOperator(&elements[0]));
+        res->setElement(i, function->computeFunction(context, &elements[0]));
       }
       return res; 
     }
@@ -87,7 +87,7 @@ public:
 protected:
   friend class ApplyOnContainerOperatorClass;
 
-  OperatorPtr function;
+  FunctionPtr function;
 };
 
 }; /* namespace lbcpp */

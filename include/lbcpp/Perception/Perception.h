@@ -11,7 +11,7 @@
 
 # include "../Core/Vector.h"
 # include "../Core/DynamicObject.h"
-# include "../Core/Function.h"
+# include "../Function/Function.h"
 # include "../Data/RandomVariable.h"
 
 namespace lbcpp

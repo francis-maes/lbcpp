@@ -10,7 +10,6 @@
 # define LBCPP_CORE_CONTAINER_H_
 
 # include "../Core/Variable.h"
-# include "../Core/Function.h"
 
 namespace lbcpp
 {
