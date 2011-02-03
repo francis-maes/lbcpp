@@ -54,7 +54,7 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  virtual void createObjectVariables() = 0;
+  virtual void createObjectVariables() {}
 
   enum VariablesType
   {
@@ -70,27 +70,6 @@ protected:
 
 extern ClassPtr enumBasedDoubleVectorClass(TypePtr enumeration, TypePtr variablesType = doubleType);
 extern ClassPtr oneSubObjectPerInputVariableClass(TypePtr inputType, TypePtr outputVariablesType);
-
-class UnnamedDynamicClass : public DynamicClass
-{
-public:
-  UnnamedDynamicClass(const String& name, TypePtr baseClass = objectClass)
-    : DynamicClass(name, baseClass) {}
-  UnnamedDynamicClass() {}
-
-  virtual ClassPtr getClass() const
-    {return Object::getClass();}
-
-  virtual bool isUnnamedType() const
-    {return true;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  virtual void createObjectVariables() {}
-};
-
-typedef ReferenceCountedObjectPtr<UnnamedDynamicClass> UnnamedDynamicClassPtr;
 
 class DenseObjectObject : public Object
 {

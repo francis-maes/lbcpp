@@ -20,11 +20,11 @@ TypePtr lbcpp::anyType;
 ** Type
 */
 Type::Type(const String& className, TypePtr baseType)
-  : NameableObject(className), initialized(false), baseType(baseType) {}
+  : NameableObject(className), initialized(false), baseType(baseType), namedType(false) {}
 
 Type::Type(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
   : NameableObject(templateType->makeTypeName(templateArguments)), initialized(false),
-      baseType(baseType), templateType(templateType), templateArguments(templateArguments)
+      baseType(baseType), templateType(templateType), templateArguments(templateArguments), namedType(false)
  {}
 
 Type::~Type() {}
@@ -48,7 +48,7 @@ ClassPtr Type::getClass() const
 */
 void Type::saveToXml(XmlExporter& exporter) const
 {
-  jassert(isUnnamedType());
+  jassert(!namedType);
   if (templateType)
   {
     exporter.setAttribute(T("templateType"), templateType->getName());
@@ -147,14 +147,6 @@ TypePtr Type::findBaseTypeFromTemplateName(const String& templateName) const
 
 bool Type::canBeCastedTo(TypePtr targetType) const
   {return inheritsFrom(targetType);}
-
-bool Type::isUnnamedType() const
-{
-  for (size_t i = 0; i < templateArguments.size(); ++i)
-    if (templateArguments[i]->isUnnamedType())
-      return true;
-  return false;
-}
 
 /*
 ** Instance basic operations

@@ -126,6 +126,8 @@ class ObjectVector : public Vector
 {
 public:
   ObjectVector(TypePtr elementsType, size_t initialSize);
+  ObjectVector(ClassPtr thisClass)
+    : Vector(thisClass) {}
   ObjectVector() {}
  
   /*

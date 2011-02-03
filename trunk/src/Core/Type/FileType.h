@@ -32,46 +32,6 @@
 
 namespace lbcpp
 {
-#if 0
-class DirectoriesCache
-{
-public:
-  const std::vector<File>& getSubFiles(const File& file)
-  {
-    static std::vector<File> empty;
-    if (!file.isDirectory())
-      return empty;
-    juce::Time time = file.getLastModificationTime();
-    DirectoriesMap::const_iterator it = m.find(file.getFullPathName());
-    if (it == m.end() || it->second.first != time)
-    {
-      std::pair<juce::Time, std::vector<File> >& entry = m[file.getFullPathName()];
-      entry.first = time;
-
-      juce::OwnedArray<File> files;
-      file.findChildFiles(files, File::findFilesAndDirectories, false);
-      entry.second.resize(files.size());
-      for (int i = 0; i < files.size(); ++i)
-        entry.second[i] = *files[i];
-      std::sort(entry.second.begin(), entry.second.end(), sortFile);
-      return entry.second;
-    }
-    else
-      return it->second.second;
-  }
-
-private:
-  typedef std::map<String, std::pair<juce::Time, std::vector<File> > > DirectoriesMap;
-  DirectoriesMap m;
-
-  static bool sortFile(const File& file1, const File& file2)
-  {
-    if (file1.isDirectory() != file2.isDirectory())
-      return file1.isDirectory();
-    return file1.getFileName() < file2.getFileName();
-  }
-};
-#endif // 0
 
 class FileType : public StringType
 {
@@ -79,22 +39,6 @@ public:
   FileType(const String& name, TypePtr baseType)
     : StringType(name, baseType) {}
 
-  /*
-  virtual size_t getNumElements(const VariableValue& value) const
-    {return getSubFiles(value).size();}
-
-  virtual String getElementName(const VariableValue& value, size_t index) const
-  {
-    const std::vector<File>& subFiles = getSubFiles(value);
-    return index < subFiles.size() ? subFiles[index].getFileName() : String::empty;
-  }
-
-  virtual Variable getElement(const VariableValue& value, size_t index) const
-  {
-    const std::vector<File>& subFiles = getSubFiles(value);
-    return index < subFiles.size() ? Variable(subFiles[index]) : Variable::missingValue(fileType);
-  }
-  */
   virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
@@ -108,13 +52,8 @@ public:
   }
   
 private:
-//  static DirectoriesCache cache;
-
   File getFile(const VariableValue& value) const
     {return isMissingValue(value) ? File::nonexistent : File(value.getString());}
-
-  //const std::vector<File>& getSubFiles(const VariableValue& value) const
-  //  {return cache.getSubFiles(getFile(value));}
 };
 
 }; /* namespace lbcpp */

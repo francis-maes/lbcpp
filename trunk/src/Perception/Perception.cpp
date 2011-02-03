@@ -101,7 +101,7 @@ void Perception::ensureOutputTypeIsComputed()
 }
 
 void Perception::clearOutputType()
-  {outputType = UnnamedDynamicClassPtr();}
+  {outputType = DynamicClassPtr();}
 
 void Perception::clearOutputVariables()
   {outputVariables.clear(); clearOutputType();}
@@ -165,7 +165,7 @@ Variable Perception::computeFunction(ExecutionContext& context, const Variable& 
 void Perception::computeOutputType()
 {
   if (!outputType)
-    outputType = new UnnamedDynamicClass();
+    outputType = new DynamicClass();
   if (!outputType->getBaseType())
   {
     outputType->setName(toString());

@@ -2,8 +2,8 @@
 
 <library name="FeatureGenerator" directory="Operator/FeatureGenerator">
 
-  <class name="ConcatenateFeatureGenerator" base="FeatureGenerator">
-    <constructor/>
+  <class name="ConcatenateDoubleVectorFunction" base="Function">
+    <constructor arguments="bool lazy"/>
   </class>
   
   <class name="EnumerationFeatureGenerator" base="FeatureGenerator">

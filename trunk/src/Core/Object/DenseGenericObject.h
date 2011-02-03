@@ -55,7 +55,7 @@ private:
 };
 
 DenseGenericObject::DenseGenericObject(DynamicClassPtr thisClass)
-  : Object(thisClass) {}
+  : Object(thisClass) {jassert(thisClass);}
 
 DenseGenericObject::~DenseGenericObject()
 {

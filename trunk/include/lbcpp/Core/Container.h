@@ -33,8 +33,9 @@ public:
   virtual EnumerationPtr getElementsEnumeration() const
     {return positiveIntegerEnumerationEnumeration;}
 
+  String getElementName(size_t index) const;
+
   virtual size_t getNumElements() const = 0;
-  virtual String getElementName(size_t index) const;
   virtual Variable getElement(size_t index) const = 0;
   virtual void setElement(size_t index, const Variable& value) = 0;
 

@@ -3,11 +3,11 @@
 <library name="ContainerOperator" directory="Operator/Container">
 
 
-  <template name="CumulativeScoreVector" base="Container[EnumBasedDoubleVector[scoresEnumeration,Double]]">
+  <!-- Accumulate -->
+  <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">
     <parameter name="scoresEnumeration" type="EnumValue"/>
   </template>
 
-  <!-- Accumulate -->
   <class name="AccumulateContainerOperator" base="Function" abstract="yes"/>
   <class name="AccumulateEnumerationContainerOperator" base="AccumulateContainerOperator"/>
   <class name="AccumulateEnumerationDistributionContainerOperator" base="AccumulateContainerOperator"/>
@@ -47,7 +47,7 @@
   <!-- Apply -->
   <class name="ApplyOnContainerOperator" base="Function">
     <constructor arguments="const FunctionPtr&amp; function"/>
-    <variable type="Operator" name="function"/>
+    <variable type="Function" name="function"/>
   </class>
 
 

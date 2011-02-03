@@ -47,7 +47,7 @@ void Container::clone(ExecutionContext& context, const ObjectPtr& target) const
 }
 
 String Container::getElementName(size_t index) const
-  {return T("[") + String((int)index) + T("]");}
+  {return getElementsEnumeration()->getElementName(index);}
 
 int Container::findElement(const Variable& value) const
 {

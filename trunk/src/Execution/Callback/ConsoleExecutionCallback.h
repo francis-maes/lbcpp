@@ -24,6 +24,12 @@ public:
     prefix += makeFixedSizeString(type, 8) + T(" ");
     for (size_t i = 0; i < depth; ++i)
       prefix += T("  ");
+
+    String res = prefix + text;
+    if (res.length() % numColumns)
+      res += makeFixedSizeString(String::empty, numColumns - (res.length() % numColumns) - 1);
+    print(res, isError);
+/*
     int remainingLength = numColumns - prefix.length() - 1;
     if (remainingLength > 0)
     {
@@ -42,7 +48,7 @@ public:
         line += makeFixedSizeString(lines[i], remainingLength);
         print(line, isError);
       }
-    }
+    }*/
   }
 
   void print(const String& line, bool isError)

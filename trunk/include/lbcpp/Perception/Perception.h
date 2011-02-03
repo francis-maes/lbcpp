@@ -123,7 +123,7 @@ private:
   void ensureOutputTypeIsComputed();
 
   friend class PerceptionClass;
-  UnnamedDynamicClassPtr outputType;
+  DynamicClassPtr outputType;
 
   CriticalSection sparsenessLock;
   ScalarVariableRecentMeanAndVariance sparseness;

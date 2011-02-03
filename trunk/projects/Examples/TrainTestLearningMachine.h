@@ -103,7 +103,7 @@ typedef ReferenceCountedObjectPtr<LearningProblem> LearningProblemPtr;
 class MultiClassClassificationProblem : public LearningProblem
 {
 public:
-  MultiClassClassificationProblem() : inputClass(new UnnamedDynamicClass(T("FeatureVector"))), outputLabels(new DefaultEnumeration(T("Labels"))) {}
+  MultiClassClassificationProblem() : inputClass(new DynamicClass(T("FeatureVector"))), outputLabels(new DefaultEnumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
@@ -118,7 +118,7 @@ public:
     {return classificationAccuracyEvaluator();}
 
 protected:
-  UnnamedDynamicClassPtr inputClass;
+  DynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
 };
 
@@ -150,7 +150,7 @@ class MultiLabelClassificationProblem : public LearningProblem
 {
 public:
   MultiLabelClassificationProblem()
-    : inputClass(new UnnamedDynamicClass(T("FeatureVector"))),
+    : inputClass(new DynamicClass(T("FeatureVector"))),
       outputLabels(new DefaultEnumeration(T("Labels"))),
       outputClass(enumBasedDoubleVectorClass(outputLabels, probabilityType))
   {
@@ -179,7 +179,7 @@ public:
     {return multiLabelClassificationEvaluator();}
 
 protected:
-  UnnamedDynamicClassPtr inputClass;
+  DynamicClassPtr inputClass;
   EnumerationPtr outputLabels;
   ClassPtr outputClass; 
 };

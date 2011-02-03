@@ -284,7 +284,7 @@ ObjectPtr ExecutionTraceNode::getResultsObject(ExecutionContext& context) const
   if (results.empty())
     return ObjectPtr();
 
-  DynamicClassPtr resultsClass = new UnnamedDynamicClass(description + T(" results"));
+  DynamicClassPtr resultsClass = new DynamicClass(description + T(" results"));
   for (size_t i = 0; i < results.size(); ++i)
     resultsClass->addMemberVariable(context, results[i].second.getType(), results[i].first);
   resultsClass->initialize(context);
@@ -309,7 +309,7 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
   ** Create common class
   */
   size_t numChildNodes = 0;
-  DynamicClassPtr resultsClass = new UnnamedDynamicClass(description + T(" row"));
+  DynamicClassPtr resultsClass = new DynamicClass(description + T(" row"));
   for (size_t i = 0; i < numRows; ++i)
   {
     ExecutionTraceNodePtr childNode = subItems[i].dynamicCast<ExecutionTraceNode>();

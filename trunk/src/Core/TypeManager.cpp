@@ -63,6 +63,10 @@ private:
       return TypePtr();
     res->setStaticAllocationFlag();
     instances[arguments] = res;
+    bool isNamedType = true;
+    for (size_t i = 0; i < arguments.size(); ++i)
+      isNamedType |= arguments[i]->isNamedType();
+    res->namedType = isNamedType;
     return res;
   }
 };
@@ -84,11 +88,6 @@ bool TypeManager::declare(ExecutionContext& context, TypePtr type)
     context.errorCallback(T("TypeManager::declare"), T("Empty class name"));
     return false;
   }
-  if (type->isUnnamedType())
-  {
-    context.errorCallback(T("TypeManager::declare"), T("Trying to declare an unnamed type"));
-    return false;
-  }
 
   ScopedLock _(typesLock);
   String typeName = type->getName();
@@ -99,6 +98,7 @@ bool TypeManager::declare(ExecutionContext& context, TypePtr type)
   }
   type->setStaticAllocationFlag();
   types[typeName] = type;
+  type->namedType = true;
   return true;
 }
 

@@ -14,21 +14,26 @@
 namespace lbcpp
 {
 
-class ConcatenateFeatureGenerator : public FeatureGenerator
+class ConcatenateDoubleVectorFunction : public Function
 {
 public:
-  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+  ConcatenateDoubleVectorFunction(bool lazy = true)
+    : lazy(lazy) {}
+
+  EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
   {
     size_t numInputs = getNumInputs();
     DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
     elementsType = TypePtr();
+    shifts.resize(numInputs);
     for (size_t i = 0; i < numInputs; ++i)
     {
       const VariableSignaturePtr& inputVariable = getInputVariable(i);
 
+      shifts[i] = elementsEnumeration->getNumElements();
       EnumerationPtr subElementsEnumeration;
       TypePtr subElementsType;
-      if (!getDoubleVectorParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))
+      if (!DoubleVector::getTemplateParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))
         return EnumerationPtr();
       elementsEnumeration->addElementsWithPrefix(context, subElementsEnumeration, inputVariable->getName() + T("."), inputVariable->getShortName() + T("."));
       if (i == 0)
@@ -57,42 +62,36 @@ public:
       if (!checkInputType(context, i, doubleVectorClass(enumValueType)))
         return VariableSignaturePtr();
 
-    return new VariableSignature(computeOutputType(context) , T("AllFeatures"));
-  }
-
-  struct Callback : public VariableGeneratorCallback
-  {
-    Callback(VariableGeneratorCallback& target)
-      : target(target) {}
-    size_t shift;
-
-    virtual void sense(size_t index, double value)
-      {target.sense(index + shift, value);}
-
-    VariableGeneratorCallback& target;
-  };
-
-  virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
-  {
-  /*  for (size_t i = 0; i < inputTypes.size(); ++i)
-    {
-      SparseDoubleObjectPtr input = inputs[i].dynamicCast<SparseDoubleObject>();
-      jassert(input);
-      res->appendValuesWithShift(input, shifts[i]);
-    }*/
-    jassert(false); 
-    // FIXME: "LazyDoubleVector"
+    TypePtr featuresType = doubleType;
+    EnumerationPtr featuresEnumeration = getFeaturesEnumeration(context, featuresType);
+    TypePtr outputType = lazy
+      ? compositeDoubleVectorClass(featuresEnumeration, featuresType)
+      : sparseDoubleVectorClass(featuresEnumeration, featuresType);
+    return new VariableSignature(outputType, T("AllFeatures"));
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    CompositeDoubleVectorPtr res = new CompositeDoubleVector(featuresEnumeration, featuresType);
-    for (size_t i = 0; i < shifts.size(); ++i)
-      res->appendSubVector(shifts[i], inputs[i].dynamicCast<DoubleVector>());
-    return res;
+    if (lazy)
+    {
+      CompositeDoubleVectorPtr res = new CompositeDoubleVector(getOutputType());
+      for (size_t i = 0; i < shifts.size(); ++i)
+        res->appendSubVector(shifts[i], inputs[i].getObjectAndCast<DoubleVector>());
+      return res;
+    }
+    else
+    {
+      SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
+      for (size_t i = 0; i < shifts.size(); ++i)
+        inputs[i].getObjectAndCast<DoubleVector>()->appendTo(res, shifts[i]);
+      return res;
+    }
   }
 
 private:
+  friend class ConcatenateDoubleVectorsFunctionClass;
+
+  bool lazy;
   std::vector<size_t> shifts;
   TypePtr elementsType;
 };
