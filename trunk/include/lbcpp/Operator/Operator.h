@@ -11,10 +11,11 @@
 
 # include "../Core/Variable.h"
 # include "../Core/Vector.h"
+# include "../Function/Function.h"
 
 namespace lbcpp
 {
-
+/*
 class Operator : public Object
 {
 public:
@@ -42,8 +43,8 @@ public:
     {return computeOperator(inputs);}
 
 public:
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context) = 0;
-  virtual Variable computeOperator(const Variable* inputs) const = 0;
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context) = 0;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const = 0;
 
 protected:
   friend class OperatorClass;
@@ -58,14 +59,15 @@ protected:
   TypePtr getDistributionElementsType(ExecutionContext& context, TypePtr type) const;
 };
 
-typedef ReferenceCountedObjectPtr<Operator> OperatorPtr;
+typedef ReferenceCountedObjectPtr<Operator> FunctionPtr;
+*/
 
-class ProxyOperator : public Operator
+class ProxyFunction : public Function
 {
 protected:
-  virtual OperatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     implementation = createImplementation(inputVariables);
     if (!implementation)
@@ -79,16 +81,19 @@ protected:
     return implementation->getOutputVariable();
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
-    {jassert(implementation); return implementation->computeOperator(inputs);}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassert(implementation); return implementation->computeFunction(context, input);}
 
-  OperatorPtr implementation;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {jassert(implementation); return implementation->computeFunction(context, inputs);}
+
+  FunctionPtr implementation;
 };
 
-extern OperatorPtr accumulateOperator();
-extern OperatorPtr discretizeOperator(bool sampleBest = true);
-extern OperatorPtr segmentContainerOperator();
-extern OperatorPtr applyOnContainerOperator(const OperatorPtr& function);
+extern FunctionPtr accumulateOperator();
+extern FunctionPtr discretizeOperator(bool sampleBest = true);
+extern FunctionPtr segmentContainerOperator();
+extern FunctionPtr applyOnContainerOperator(const FunctionPtr& function);
 
 }; /* namespace lbcpp */
 

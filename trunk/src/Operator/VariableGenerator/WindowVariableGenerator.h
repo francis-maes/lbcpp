@@ -20,7 +20,7 @@ public:
   WindowVariableGenerator(size_t windowSize = 0)
     : windowSize(windowSize) {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 2) || !checkInputType(context, 0, containerClass(anyType)) || !checkInputType(context, 1, positiveIntegerType))
       return false;

@@ -23,19 +23,19 @@ typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 class FrameOperatorSignature : public VariableSignature
 {
 public:
-  FrameOperatorSignature(OperatorPtr operation, const std::vector<size_t>& inputs, const String& name, const String& shortName)
-    : VariableSignature(TypePtr(), name, shortName), operation(operation), inputs(inputs) {}
-  FrameOperatorSignature(OperatorPtr operation, size_t input, const String& name, const String& shortName)
-    : VariableSignature(TypePtr(), name, shortName), operation(operation), inputs(1, input) {}
+  FrameOperatorSignature(FunctionPtr function, const std::vector<size_t>& inputs, const String& name, const String& shortName)
+    : VariableSignature(TypePtr(), name, shortName), function(function), inputs(inputs) {}
+  FrameOperatorSignature(FunctionPtr function, size_t input, const String& name, const String& shortName)
+    : VariableSignature(TypePtr(), name, shortName), function(function), inputs(1, input) {}
 
-  const OperatorPtr& getOperator() const
-    {return operation;}
+  const FunctionPtr& getFunction() const
+    {return function;}
 
   const std::vector<size_t>& getInputs() const
     {return inputs;}
 
 protected:
-  OperatorPtr operation;
+  FunctionPtr function;
   std::vector<size_t> inputs;
 };
 
@@ -51,14 +51,14 @@ public:
   virtual bool isUnnamedType() const
     {return true;}
 
-  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
-  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
-  size_t addMemberOperator(ExecutionContext& context, const OperatorPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
   virtual bool initialize(ExecutionContext& context);
 
 private:
-  bool initializeOperator(ExecutionContext& context, const FrameOperatorSignaturePtr& signature);
+  bool initializeFunction(ExecutionContext& context, const FrameOperatorSignaturePtr& signature);
 };
 
 class Frame : public DenseGenericObject
@@ -75,17 +75,17 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameBasedOperator : public Operator
+class FrameBasedOperator : public Function
 {
 public:
   FrameBasedOperator(FrameClassPtr frameClass)
     : frameClass(frameClass) {}
   FrameBasedOperator() {}
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
     {return frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);}
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     FramePtr frame(new Frame(frameClass));
     for (size_t i = 0; i < getNumInputs(); ++i)

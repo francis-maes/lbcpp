@@ -6,11 +6,13 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_CORE_FUNCTION_H_
-# define LBCPP_CORE_FUNCTION_H_
+#ifndef LBCPP_FUNCTION_FUNCTION_H_
+# define LBCPP_FUNCTION_FUNCTION_H_
 
-# include "Variable.h"
-# include "Pair.h"
+# include "../Core/Variable.h"
+# include "../Core/Pair.h"
+# include "../Core/Vector.h"
+# include "predeclarations.h"
 
 namespace lbcpp
 {
@@ -29,20 +31,45 @@ class Function : public Object
 public:
   Function() : pushIntoStack(false) {}
 
+  // new
+  bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
+
+protected:
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+    {jassert(false); return VariableSignaturePtr();}
+
+public:
+  size_t getNumInputs() const
+    {return inputVariables.size();}
+
+  const VariableSignaturePtr& getInputVariable(size_t index) const
+    {jassert(index < inputVariables.size()); return inputVariables[index];}
+
+  const TypePtr& getInputType(size_t index) const
+    {return getInputVariable(index)->getType();}
+
+  const VariableSignaturePtr& getOutputVariable() const
+    {return outputVariable;}
+
+  const TypePtr& getOutputType() const
+    {return outputVariable->getType();}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassert(getNumInputs() == 1); return computeFunction(context, &input);}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {jassert(getNumInputs() == 1); return computeFunction(context, *inputs);}
+
+  // old
   virtual TypePtr getInputType() const
     {return anyType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return anyType;}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs, size_t numInputs) const
-    {return checkNumInputs(context, numInputs, 1) ? computeFunction(context, inputs[0]) : Variable();}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return computeFunction(context, &input, 1);}
-
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
+  // -
 
   // push into stack
   void setPushIntoStackFlag(bool value)
@@ -58,8 +85,14 @@ protected:
 
   bool pushIntoStack;
 
-  bool checkNumInputs(ExecutionContext& context, size_t numInputs, size_t requestedNumInputs) const;
-  bool checkType(ExecutionContext& context, const Variable& variable, TypePtr type) const;
+  std::vector<VariableSignaturePtr> inputVariables;
+  VariableSignaturePtr outputVariable;
+
+  bool checkNumInputs(ExecutionContext& context, size_t numInputs) const;
+  bool checkInputType(ExecutionContext& context, size_t index, TypePtr requestedType) const;
+  TypePtr getTemplateArgument(ExecutionContext& context, TypePtr type, size_t templateArgumentIndex, TypePtr requestedType = anyType) const;
+  TypePtr getContainerElementsType(ExecutionContext& context, TypePtr type) const;
+  TypePtr getDistributionElementsType(ExecutionContext& context, TypePtr type) const;
   bool checkExistence(ExecutionContext& context, const Variable& variable) const;
 };
 

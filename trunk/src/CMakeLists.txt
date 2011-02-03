@@ -92,8 +92,6 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
-  ../include/lbcpp/Core/Function.h
-  Core/Function.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml
@@ -243,6 +241,8 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
 
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/predeclarations.h
+  ../include/lbcpp/Function/Function.h
+  Function/Function.cpp  
   ../include/lbcpp/Function/ScalarFunction.h
   ../include/lbcpp/Function/ScalarObjectFunction.h
   Function/ScalarFunction.cpp

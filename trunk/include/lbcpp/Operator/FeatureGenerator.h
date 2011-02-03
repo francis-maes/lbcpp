@@ -17,7 +17,7 @@ namespace lbcpp
 class FeatureGenerator : public VariableGenerator
 {
 public:
-  virtual Variable computeOperator(const Variable* inputs) const;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 };
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;

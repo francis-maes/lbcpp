@@ -22,7 +22,7 @@ private:
   SparseDoubleObjectPtr target;
 };
 
-Variable FeatureGenerator::computeOperator(const Variable* inputs) const
+Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   SparseDoubleObjectPtr res(new SparseDoubleObject(getOutputType()));
   SetInSparseDoubleObjectVariableGeneratorCallback callback(res);

@@ -63,13 +63,13 @@ private:
 
 typedef ReferenceCountedObjectPtr<CumulativeScoreVector> CumulativeScoreVectorPtr;
 
-class AccumulateContainerOperator : public Operator
+class AccumulateContainerOperator : public Function
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType) = 0;
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const = 0;
 
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
@@ -83,7 +83,7 @@ public:
     return new VariableSignature(cumulativeScoreVectorClass(scoresEnumeration), inputVariable->getName() + T("Accumulated"), inputVariable->getShortName() + T("a"));
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
     CumulativeScoreVectorPtr res(new CumulativeScoreVector(getOutputType(), scoresEnumeration, container->getNumElements()));
@@ -205,10 +205,10 @@ public:
   }
 };
 
-class AccumulateOperator : public ProxyOperator
+class AccumulateOperator : public ProxyFunction
 {
 public:
-  virtual OperatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
     if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(anyType)))
     {
@@ -228,7 +228,7 @@ public:
         }
       }
     }
-    return OperatorPtr();
+    return FunctionPtr();
   }
 };
 

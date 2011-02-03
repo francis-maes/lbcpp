@@ -40,12 +40,12 @@ public:
     {jassert(false);}
 };
 
-class VariableGenerator : public Operator
+class VariableGenerator : public Function
 {
 public:
   virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const = 0;
 
-  virtual Variable computeOperator(const Variable* inputs) const;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 };
 
 typedef ReferenceCountedObjectPtr<VariableGenerator> VariableGeneratorPtr;

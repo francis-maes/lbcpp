@@ -17,7 +17,7 @@ namespace lbcpp
 class ConcatenateFeatureGenerator : public FeatureGenerator
 {
 public:
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     size_t numInputs = getNumInputs();
 
@@ -76,7 +76,7 @@ public:
     // FIXME: "LazyVariable"
   }
 
-  virtual Variable computeOperator(const Variable* inputs) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     SparseDoubleObjectPtr res = new SparseDoubleObject(getOutputType());
     size_t v = 0;

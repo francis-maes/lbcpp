@@ -1,11 +1,6 @@
 -> Container: virtual EnumerationPtr getElementsEnumeration() const
 -> DoubleVector qui dérive de Vector, SparseDoubleVector, DenseDoubleVector, LazyDoubleVector, CompositeDoubleVector
 
--> Unifier Operator et Function
-     * implementer: initializeOperator partout
-     * Utiliser plusieurs arguments la ou c'est approprié
-     
-
 * Remplacer les types dans Protein
 
 From Julien:

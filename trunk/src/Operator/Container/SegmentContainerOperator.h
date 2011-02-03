@@ -126,10 +126,10 @@ private:
 ** SegmentContainerOperator
 */
 // Container[T] => SegmentContainer[T]
-class SegmentContainerOperator : public Operator
+class SegmentContainerOperator : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
   {
     if (!checkNumInputs(context, 1))
       return VariableSignaturePtr();
@@ -140,9 +140,9 @@ public:
     return new VariableSignature(vectorClass(segmentContainerClass(elementsType)), inputVariable->getName() + T("Segmented"), inputVariable->getShortName() + T("s"));
   }
 
-  virtual Variable computeOperator(const Variable* input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const ContainerPtr& container = input[0].getObjectAndCast<Container>();
+    const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
     size_t n = container->getNumElements();
 
     SegmentContainerPtr res(new SegmentContainer(getOutputType()));

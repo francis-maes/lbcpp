@@ -27,7 +27,7 @@
 # define LBCPP_VARIABLE_STREAM_H_
 
 # include "predeclarations.h"
-# include "../Core/Function.h"
+# include "../Function/Function.h"
 
 namespace lbcpp
 {
