@@ -142,12 +142,6 @@ public:
     return perception->computeFunction(defaultExecutionContext(), inputs[0]);
   }
 
-  virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
-  {
-    jassert(false);
-    // todo: wrapper
-  }
-
 protected:
   PerceptionPtr perception;
 };
@@ -285,7 +279,7 @@ void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& c
   //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
 
   // all features
-  res->addMemberOperator(context, concatenateDoubleVectorFunction(false), featureIndices, T("CFResidueFeatures"));
+  res->addMemberOperator(context, concatenateFeatureGenerator(false), featureIndices, T("CFResidueFeatures"));
 }
 
 void ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res)
@@ -298,7 +292,7 @@ void ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, con
   
   std::vector<size_t> featureIndices;
 
-  size_t windowIndex = res->addMemberOperator(context, windowVariableGenerator(15), residueFeaturesArrayIndex, positionIndex);
+  size_t windowIndex = res->addMemberOperator(context, windowFeatureGenerator(15), residueFeaturesArrayIndex, positionIndex);
   
    // all features
   //res->addMemberOperator(context, concatenateFeatureGenerator(), featureIndices, T("allFeatures")); 

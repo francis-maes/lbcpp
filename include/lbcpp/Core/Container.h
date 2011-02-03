@@ -21,6 +21,8 @@ public:
     : Object(thisClass) {}
   Container() {}
 
+  static bool getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res);
+
   bool isEmpty() const
     {return getNumElements() == 0;}
     

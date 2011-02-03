@@ -11,6 +11,21 @@
 #include <lbcpp/Distribution/DiscreteDistribution.h>
 using namespace lbcpp;
 
+// todo: ranger
+bool Distribution::getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res)
+{
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Distribution"));
+  if (!dvType)
+  {
+    context.errorCallback(type->getName() + T(" is not a Distribution"));
+    return false;
+  }
+  jassert(dvType->getNumTemplateArguments() == 1);
+  res = dvType->getTemplateArgument(0);
+  return true;
+}
+
+
 /*
  ** BernoulliDistribution
  */

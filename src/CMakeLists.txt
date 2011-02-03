@@ -32,7 +32,6 @@ GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLib
 
 GENERATE_INTROSPECTION_CODE(Operator/OperatorLibrary.xml OperatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Operator/Container/ContainerOperatorLibrary.xml ContainerOperatorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Operator/VariableGenerator/VariableGeneratorLibrary.xml VariableGeneratorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Operator/FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
@@ -324,8 +323,6 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
 
 SET(LBCPP_OPERATOR_SOURCES
   ../include/lbcpp/Operator/Operator.h
-  ../include/lbcpp/Operator/VariableGenerator.h
-  Operator/VariableGenerator.cpp
   ../include/lbcpp/Operator/FeatureGenerator.h
   Operator/FeatureGenerator.cpp
   Operator/Operator.cpp
@@ -342,14 +339,9 @@ SET(LBCPP_OPERATOR_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerOperatorLibrary.cpp
 )
 
-SET(LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES
-  Operator/VariableGenerator/WindowVariableGenerator.h
-  Operator/VariableGenerator/VariableGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/VariableGeneratorLibrary.cpp
-)
-
 SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
   Operator/FeatureGenerator/ConcatenateFeatureGenerator.h
+  Operator/FeatureGenerator/WindowFeatureGenerator.h
   Operator/FeatureGenerator/EnumerationFeatureGenerator.h
   Operator/FeatureGenerator/EnumerationDistributionFeatureGenerator.h
   Operator/FeatureGenerator/FeatureGeneratorLibrary.xml
@@ -728,7 +720,6 @@ SET(LBCPP_CORE
   # Operator
   ${LBCPP_OPERATOR_SOURCES}
     ${LBCPP_OPERATOR_CONTAINER_SOURCES}
-    ${LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES}
     ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES}
 
   # Perception
@@ -809,7 +800,6 @@ SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 ## Operator
 SOURCE_GROUP(Operator FILES ${LBCPP_OPERATOR_SOURCES})
 SOURCE_SUB_GROUP(Operator Container FILES ${LBCPP_OPERATOR_CONTAINER_SOURCES})
-SOURCE_SUB_GROUP(Operator VariableGenerator FILES ${LBCPP_OPERATOR_VARIABLE_GENERATOR_SOURCES})
 SOURCE_SUB_GROUP(Operator FeatureGenerator FILES ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES})
 
 ## Perception

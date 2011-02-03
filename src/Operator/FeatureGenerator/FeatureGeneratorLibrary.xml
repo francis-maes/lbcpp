@@ -2,8 +2,13 @@
 
 <library name="FeatureGenerator" directory="Operator/FeatureGenerator">
 
-  <class name="ConcatenateDoubleVectorFunction" base="Function">
+  <class name="ConcatenateFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool lazy"/>
+  </class>
+
+  <class name="WindowFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="size_t windowSize"/>
+    <variable type="PositiveInteger" name="windowSize"/>
   </class>
   
   <class name="EnumerationFeatureGenerator" base="FeatureGenerator">

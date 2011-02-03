@@ -8,6 +8,7 @@
 
 #include "VariableTreeView.h"
 #include <lbcpp/Core/Container.h>
+#include <lbcpp/Data/DoubleVector.h>
 using namespace lbcpp;
 using juce::Font;
 using juce::Justification;
@@ -62,8 +63,20 @@ public:
     if (container)
     {
       subVariables.reserve(subVariables.size() + container->getNumElements());
-      for (size_t i = 0; i < container->getNumElements(); ++i)
-        addSubVariable(container->getElementName(i), container->getElement(i));
+      bool isDoubleVector = container.dynamicCast<DoubleVector>();
+    
+      if (isDoubleVector && !options.showMissingVariables)
+        // skip 0 values for double vectors
+        for (size_t i = 0; i < container->getNumElements(); ++i)
+        {
+          Variable elt = container->getElement(i);
+          jassert(elt.isDouble());
+          if (elt.getDouble() != 0.0)
+            addSubVariable(container->getElementName(i), container->getElement(i));
+        }
+      else
+        for (size_t i = 0; i < container->getNumElements(); ++i)
+          addSubVariable(container->getElementName(i), container->getElement(i));
     }
 
     if (variable.isFile())
