@@ -165,6 +165,41 @@ public:
 
 ////////////////////////////////////////////////////
 
+class ForEachOperator : public Operator
+{
+public:
+  ForEachOperator(OperatorPtr function, const String& loopVariableName = T("i"))
+    : function(function), loopVariableName(loopVariableName) {}
+
+  virtual VariableSignaturePtr initializeOperator(ExecutionContext& context)
+  {
+    if (!function->initialize(context, inputVariables))
+      return VariableSignaturePtr();
+    VariableSignaturePtr elementsSignature = function->getOutputVariable();
+    return new VariableSignature(vectorClass(elementsSignature->getType()), elementsSignature->getName() + T("Vector"), elementsSignature->getShortName() + T("v"));
+  }
+
+  virtual Variable computeOperator(const Variable* inputs) const
+  {
+    std::vector<Variable> subInputs(getNumInputs());
+    for (size_t i = 1; i < subInputs.size(); ++i)
+      subInputs[i] = inputs[i];
+
+    size_t n = (size_t)inputs[0].getInteger();
+    VectorPtr res = vector(function->getOutputType(), n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      subInputs[0] = Variable(i);
+      res->setElement(i, function->computeOperator(&subInputs[0]));
+    }
+    return res;
+  }
+
+protected:
+  OperatorPtr function;
+  String loopVariableName;
+};
+/*
 class CreateResidueFrameVectorOperator : public Operator
 {
 public:
@@ -195,7 +230,7 @@ public:
 
 protected:
   FrameClassPtr frameClass;
-};
+};*/
 
 ////////////////////////////////////////////////////
 
@@ -222,6 +257,7 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
 void ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context, const FrameClassPtr& res)
 {
   // inputs
+  size_t lengthIndex = res->addMemberVariable(context, positiveIntegerType, T("length"));
   size_t aaIndex = res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
   size_t pssmIndex = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
   size_t ss3Index = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
@@ -235,7 +271,11 @@ void ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context, con
   size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateOperator(), contextFreeResidueFeatures);
   
   // residues 
-  res->addMemberOperator(context, new CreateResidueFrameVectorOperator(residueFrame), contextFreeResidueFeatures, contextFreeResidueFeaturesSum);
+  std::vector<size_t> residueFrameInputs;
+  residueFrameInputs.push_back(lengthIndex);
+  residueFrameInputs.push_back(contextFreeResidueFeatures);
+  residueFrameInputs.push_back(contextFreeResidueFeaturesSum);
+  res->addMemberOperator(context, new ForEachOperator(new FrameBasedOperator(residueFrame)), residueFrameInputs, T("residueFrames"));
 
   // primaryStructure
   res->addMemberOperator(context, accumulateOperator(), aaIndex);
@@ -277,10 +317,16 @@ void ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, con
 {
   size_t positionIndex = res->addMemberVariable(context, positiveIntegerType, T("position"));
   
-  size_t residueFeaturesArrayIndex = res->addMemberVariable(context, containerClass(contextFreeResidueFrame->getLastMemberVariable()->getType()), T("contextFreeResidueFeatures"));
-  //size_t residueSumFeaturesArrayIndex = res->addMemberVariable(context, 
+  TypePtr contextFreeResidueFeatureClass = contextFreeResidueFrame->getLastMemberVariable()->getType();
+  size_t residueFeaturesArrayIndex = res->addMemberVariable(context, containerClass(contextFreeResidueFeatureClass), T("contextFreeResidueFeatures"));
+  size_t residueSumFeaturesArrayIndex = res->addMemberVariable(context, containerClass(enumBasedDoubleVectorClass(variablesEnumerationEnumeration(contextFreeResidueFeatureClass))), T("featuressum"));
   
-  res->addMemberOperator(context, windowVariableGenerator(15), residueFeaturesArrayIndex, positionIndex);
+  std::vector<size_t> featureIndices;
+
+  size_t windowIndex = res->addMemberOperator(context, windowVariableGenerator(15), residueFeaturesArrayIndex, positionIndex);
+  
+   // all features
+  //res->addMemberOperator(context, concatenateFeatureGenerator(), featureIndices, T("allFeatures")); 
 }
 
 
@@ -301,8 +347,9 @@ VectorPtr createProteinResidueFrames(const FramePtr& proteinFrame, FrameClassPtr
 FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
 {
   FramePtr res(new Frame(proteinFrame));
-  res->setVariable(0, protein->getPrimaryStructure());
-  res->setVariable(1, protein->getPositionSpecificScoringMatrix());
+  res->setVariable(0, protein->getLength());
+  res->setVariable(1, protein->getPrimaryStructure());
+  res->setVariable(2, protein->getPositionSpecificScoringMatrix());
   
   ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
   if (inputSecondaryStructure)
@@ -315,7 +362,7 @@ FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
       distribution->setProbability((size_t)inputSecondaryStructure->getElement(i).getInteger(), 1.0);
       secondaryStructure->setElement(i, distribution);
     }
-    res->setVariable(2, secondaryStructure);
+    res->setVariable(3, secondaryStructure);
   }
 
   //res->setVariable(3, createProteinContextFreeResidueFrames(res, contextFreeResidueFrame));
