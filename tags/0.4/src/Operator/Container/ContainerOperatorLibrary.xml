@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ContainerOperator" directory="Operator/Container">
+
+
+  <template name="CumulativeScoreVector" base="Container[EnumBasedDoubleVector[scoresEnumeration,Double]]">
+    <parameter name="scoresEnumeration" type="EnumValue"/>
+  </template>
+
+  <!-- Accumulate -->
+  <class name="AccumulateContainerOperator" base="Operator" abstract="yes"/>
+  <class name="AccumulateEnumerationContainerOperator" base="AccumulateContainerOperator"/>
+  <class name="AccumulateEnumerationDistributionContainerOperator" base="AccumulateContainerOperator"/>
+  <class name="AccumulateDoubleContainerOperator" base="AccumulateContainerOperator"/>
+  <class name="AccumulateOperator" base="ProxyOperator">
+    <constructor returnType="Operator"/>
+  </class>
+
+  <!-- Discretize -->
+  <class name="DiscretizeContainerOperator" base="Operator">
+    <constructor arguments="bool sampleBest"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
+  <class name="DiscretizeOperator" base="ProxyOperator">
+    <constructor arguments="bool sampleBest" returnType="Operator"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
+
+  <!-- Segment -->
+  <template name="Segment" base="Object">
+    <parameter name="elementType"/>
+    <variable type="PositiveInteger" name="beginIndex" var="segment.beginIndex"/>
+    <variable type="PositiveInteger" name="endIndex" var="segment.endIndex"/>
+    <variable type="Variable" name="value" var="segment.value"/>
+  </template>
+
+  <template name="SegmentContainer" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
+
+  <class name="SegmentContainerOperator" base="Operator">
+    <constructor/>
+  </class>
+
+
+  <!-- Apply -->
+  <class name="ApplyOnContainerOperator" base="Operator">
+    <constructor arguments="const OperatorPtr&amp; function"/>
+    <variable type="Operator" name="function"/>
+  </class>
+
+
+</library>

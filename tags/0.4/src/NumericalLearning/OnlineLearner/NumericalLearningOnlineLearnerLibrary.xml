@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="NumericalLearningOnlineLearner" directory="NumericalLearning/OnlineLearner">
+
+  
+
+    <!-- Gradient Descent -->
+    <class name="GradientDescentOnlineLearner" base="InferenceOnlineLearner" abstract="yes">
+      <variable type="PositiveInteger" name="epoch"/>
+      <variable type="LearnerUpdateFrequency" name="learningUpdateFrequency" enumeration="yes"/>
+      <variable type="IterationFunction" name="learningRate"/>
+      <variable type="Boolean" name="normalizeLearningRate"/>
+      <variable type="LearnerUpdateFrequency" name="regularizerUpdateFrequency" enumeration="yes"/>
+      <variable type="ScalarObjectFunction" name="regularizer"/>
+      <variable type="Double" name="lastEmpiricalRisk"/>
+      <variable type="PositiveInteger" name="lastApplyRegularizerEpoch"/>
+    </class>
+
+    <class name="StochasticGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+    </class>
+
+    <class name="BatchGradientDescentOnlineLearner" base="GradientDescentOnlineLearner">
+      <constructor arguments="LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+    </class>
+
+    <!-- Grafting -->
+    <class name="GraftingOnlineLearner" base="InferenceOnlineLearner">
+      <constructor arguments="PerceptionPtr perception, const std::vector&lt;NumericalInferencePtr&gt;&amp; inferences"/>
+    </class>
+
+    <code>
+      InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference)
+        {return graftingOnlineLearner(perception, std::vector&lt;NumericalInferencePtr&gt;(1, targetInference));}
+    </code>
+
+  
+</library>

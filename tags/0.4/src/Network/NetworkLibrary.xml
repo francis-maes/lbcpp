@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Network" directory="Network">
+  <include file="lbcpp/Network/NetworkClient.h"/>
+
+  <class name="NetworkClient" base="Object" abstract="yes"/>
+
+</library>

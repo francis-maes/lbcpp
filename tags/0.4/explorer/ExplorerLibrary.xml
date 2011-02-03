@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Explorer">
+  <include file="ProcessManager/RecentProcesses.h"/>
+  <import name="WorkUnitManager"/>
+
+  <!-- Explorer Configuration -->
+  <class name="RecentFileVector">
+    <variable type="File" name="recentDirectory"/>
+    <variable type="GenericVector[File]" name="recentFiles"/>
+  </class>
+
+  <class name="ExplorerConfiguration" base="Object">
+    <variable type="RecentFileVector" name="recentProjects"/>
+  </class>
+
+  <!-- Project -->
+  <class name="RecentWorkUnitConfiguration" base="Object">
+    <variable type="String" name="workUnitName"/>
+    <variable type="GenericVector[String]" name="arguments"/>
+    <variable type="GenericVector[File]" name="workingDirectories"/>
+  </class>
+
+  <class name="RecentWorkUnitsConfiguration" base="Object">
+    <variable type="ObjectVector[RecentWorkUnitConfiguration]" name="recents"/>
+  </class>
+  
+  <class name="ExplorerProject">
+    <variable type="File" name="rootDirectory"/>
+    <variable type="File" name="recentDirectory"/>
+    <variable type="RecentWorkUnitsConfiguration" name="recentWorkUnits"/>
+  </class>
+
+  <!-- Old -->
+  <class name="RecentProcesses"/>
+  <class name="ProcessConsoleSettings"/>
+  <class name="ProcessConsoleFilter"/>
+
+</library>

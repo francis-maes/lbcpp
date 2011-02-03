@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="DistributionBuilder" directory="Distribution/Builder">
+
+  <include file="lbcpp/Core/Vector.h"/>
+
+  <!-- Probability Distribution Builder -->
+  <class name="DistributionBuilder" base="Object" abstract="yes"/>
+
+  <class name="EnumerationDistributionBuilder" base="DistributionBuilder">
+    <constructor arguments="EnumerationPtr enumeration"/>
+    <variable type="Enumeration" name="enumeration"/>
+    <variable type="GenericVector[Double]" name="elementValues"/>
+    <variable type="GenericVector[Double]" name="distributionValues"/>
+  </class>
+
+  <class name="GaussianDistributionBuilder" base="DistributionBuilder">
+    <constructor/>
+    <variable type="ScalarVariableMean" name="means"/>
+    <variable type="ScalarVariableMean" name="variances"/>
+    <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
+  </class>
+
+  <class name="BernoulliDistributionBuilder" base="DistributionBuilder">
+    <constructor/>
+    <variable type="Double" name="pTrue"/>
+    <variable type="PositiveInteger" name="count"/>
+  </class>
+
+</library>

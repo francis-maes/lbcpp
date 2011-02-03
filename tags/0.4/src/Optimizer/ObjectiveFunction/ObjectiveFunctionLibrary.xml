@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ObjectiveFunction" directory="Optimizer/ObjectiveFunction">
+
+  <include file="lbcpp/Optimizer/ObjectiveFunction.h"/>
+  
+  <class name="ObjectiveFunction" base="Function" abstract="yes"/>
+
+  <class name="MarginalObjectiveFunction" base="ObjectiveFunction">
+    <constructor arguments="const ObjectiveFunctionPtr&amp; objective, const ObjectPtr&amp; referenceValue, size_t variableIndex"/>
+    <variable type="ObjectiveFunction" name="objective"/>
+    <variable type="Object" name="referenceValue"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+  </class>
+</library>

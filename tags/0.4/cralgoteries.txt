@@ -1,0 +1,35 @@
+-> Container: virtual EnumerationPtr getElementsEnumeration() const
+-> DoubleVector qui dérive de Vector, SparseDoubleVector, DenseDoubleVector, LazyDoubleVector, CompositeDoubleVector
+
+-> Unifier Operator et Function
+     * implementer: initializeOperator partout
+     * Utiliser plusieurs arguments la ou c'est approprié
+     
+
+* Remplacer les types dans Protein
+
+From Julien:
+ * Bug during the serialization of shared PerceptionRewriter. I
+   In my case, I got a file containing "<shared identifier="PerceptionRewriter1">".
+   When I want to load it, it doesn't work because of lack of the attribute "type".
+   I had added manually "type="PerceptionRewriter"" and it worked.
+ * I still have a jassert at src/Core/Object.cpp:182 on Monster24 only
+
+=====================
+
+Proteins:
+ * Calcul des Perceptions au niveau top-level
+ * Probabilities for SS3, SS8 and STAL
+ * Segments for SS3, SS8, SA and DR
+ * Multiclass classifiers: output discrete distributions
+
+Explorer:
+ * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
+ * ExecutionTrace: enlever le pointeur vers le ExecutionContextPtr (?)
+ * Améliorer le système de colonnes
+
+Cleaning:
+ * Manipulate parameters recursively in StoppingCriterionOnlineLearner and InitializeByCloningBatchLearner
+
+Types:
+ * permettre de déclarer des variables ayant des Types abstraits -> c.f. pb dans ProteinInferenceStep::ProteinInferenceStep

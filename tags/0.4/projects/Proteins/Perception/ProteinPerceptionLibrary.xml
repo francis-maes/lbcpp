@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinPerception" directory="Perception">
+  
+
+    <!-- Protein Perception -->
+    <class name="ProteinCompositePerception" base="CompositePerception"/>
+
+    <!-- Residue Perception -->
+    <class name="ResidueCompositePerception" base="CompositePerception"/>
+
+    <!-- Residue Pair Perception -->
+    <class name="ResidueToResiduePairPerception" base="Perception">
+      <constructor arguments="PerceptionPtr residuePerception"/>
+      <variable type="Perception" name="residuePerception"/>
+    </class>
+
+    <class name="SeparationDistanceResiduePairPerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="DisulfideBondsResiduePerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="DisulfideBondsResiduePairPerception" base="Perception">
+      <constructor/>
+    </class>
+
+    <class name="ResiduePairCompositePerception" base="CompositePerception"/>
+
+    
+</library>

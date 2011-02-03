@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="MetaInference" directory="Inference/MetaInference">
+
+  <class name="RunOnSupervisedExamplesSequentialInference" base="SequentialInference">
+    <constructor arguments="InferencePtr inference"/>
+  </class>
+
+  <class name="RunOnSupervisedExamplesParallelInference" base="ParallelInference">
+    <constructor arguments="InferencePtr inference"/>
+  </class>
+
+  <code>
+    InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel)
+    {
+      if (doInParallel)
+        return runOnSupervisedExamplesParallelInference(inference);
+      else
+       return runOnSupervisedExamplesSequentialInference(inference);
+    }
+  </code>
+
+  <class name="EvaluationInference" base="RunOnSupervisedExamplesParallelInference">
+    <constructor arguments="const InferencePtr&amp; inference, const EvaluatorPtr&amp; evaluator" returnType="ParallelInference"/>
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
+
+  <class name="CrossValidateStepInference" base="Inference">
+    <variable type="Evaluator" name="evaluator"/>
+    <variable type="Inference" name="inferenceModel"/>
+  </class>
+  
+  <class name="CrossValidationInference" base="SharedParallelInference">
+    <constructor arguments="const String&amp; name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds"/>
+    <variable type="Inference" name="inferenceModel"/>
+    <variable type="Integer" name="numFolds"/>
+  </class>
+  
+  <class name="CallbackBasedDecoratorInference" base="StaticDecoratorInference">
+    <constructor arguments="const String&amp; name, InferencePtr decoratedInference, ExecutionCallbackPtr callback"/>
+  </class>
+
+</library>

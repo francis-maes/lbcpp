@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinFrame" directory="Frame">
+
+  <class name="FrameClass" base="DefaultClass"/>
+  
+  <class name="FrameBasedOperator" base="Operator">
+    <variable type="Class" name="frameClass"/>
+  </class>
+  
+</library>

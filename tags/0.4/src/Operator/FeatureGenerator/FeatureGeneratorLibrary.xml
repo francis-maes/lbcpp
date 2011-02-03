@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="FeatureGenerator" directory="Operator/FeatureGenerator">
+
+  <class name="ConcatenateFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  
+  <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+
+</library>

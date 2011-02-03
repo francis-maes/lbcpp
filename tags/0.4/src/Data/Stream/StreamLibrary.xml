@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Stream" directory="Data/Stream">
+
+  <!-- Abstract classes -->
+  <class name="Stream" abstract="yes"/>
+  <class name="TextParser" base="Stream" abstract="yes"/>
+  <class name="LearningDataTextParser" base="TextParser" abstract="yes"/>
+  
+  <!-- Learning Data Parsers -->
+  <class name="ClassificationDataTextParser" base="LearningDataTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels"/>
+  </class>
+
+  <class name="MultiLabelClassificationDataTextParser" base="LearningDataTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels"/>
+  </class>
+
+  <!-- Directory iterators -->
+  <class name="DirectoryFileStream" base="Stream">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; directory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+  </class>
+
+  <class name="DirectoryPairFileStream" base="Stream">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; mainDirectory, const File&amp; secondDirectory, const String&amp; wildCardPattern, bool searchFilesRecursively"/>
+  </class>
+
+  <!-- Apply Function Modifier -->
+  <class name="ApplyFunctionStream" base="Stream">
+    <constructor arguments="StreamPtr stream, FunctionPtr function"/>
+
+    <variable type="Stream" name="stream"/>
+    <variable type="Function" name="function"/>
+  </template>
+
+
+ <!-- Consumer -->
+  <class name="SaveToFileConsumer" base="Consumer">
+    <constructor arguments="const File&amp; outputDirectory"/>
+  </class>
+
+</library>

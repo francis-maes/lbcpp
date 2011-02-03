@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LBCpp">
+
+  <!-- <import name="Core"/> -->
+  <import name="Execution"/>
+
+  <import name="Data"/>
+  <import name="Network"/>
+  <import name="Function"/>
+  <import name="Distribution"/>
+
+  <import name="Operator"/>
+  <import name="Perception"/>
+  <import name="Optimizer"/>
+  <import name="Inference"/>
+
+  <import name="NumericalLearning"/>
+  <import name="DecisionTree"/>
+
+  <import name="UserInterfaceComponent"/>
+
+</library>

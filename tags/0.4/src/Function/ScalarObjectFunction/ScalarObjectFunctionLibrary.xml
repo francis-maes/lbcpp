@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ScalarObjectFunction" directory="Function/ScalarObjectFunction">
+  <include file="lbcpp/Function/ScalarObjectFunction.h"/>
+
+  
+
+    <class name="ScalarObjectFunction" base="Function" abstract="yes"/>
+
+    <class name="BinarySumScalarObjectFunction" base="ScalarObjectFunction">
+      <constructor arguments="ScalarObjectFunctionPtr f1, ScalarObjectFunctionPtr f2"/>
+      <variable type="ScalarObjectFunction" name="f1"/>
+      <variable type="ScalarObjectFunction" name="f2"/>
+    </class>
+
+    <class name="MultiplyByScalarObjectFunction" base="ScalarObjectFunction">
+      <constructor arguments="ScalarObjectFunctionPtr function, double scalar"/>
+      <variable type="ScalarObjectFunction" name="function"/>
+      <variable type="Double" name="scalar"/>
+    </class>
+
+   
+</library>

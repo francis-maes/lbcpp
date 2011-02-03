@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Evaluator" directory="Function/Evaluator">
+  <include file="lbcpp/Function/Evaluator.h"/>
+
+  <!-- Utility Classes -->
+  <class name="BinaryClassificationConfusionMatrix"/>
+  <class name="ROCAnalyse"/>
+  
+  <!-- Base Class -->
+  <class name="Evaluator" base="NameableObject" abstract="yes"/>
+  
+  <!-- Regression -->
+  <class name="RegressionErrorEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name"/>
+  </class>
+
+  <class name="DihedralRegressionErrorEvaluator" base="RegressionErrorEvaluator">
+    <constructor arguments="const String&amp; name"/>
+  </class>
+
+  <!-- Binary Classification -->
+  <class name="BinaryClassificationConfusionEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name"/>
+  </class>
+  
+  <class name="ROCAnalysisEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name"/>
+  </class>
+
+  <!-- MultiClass Classification -->
+  <class name="ClassificationAccuracyEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name"/>
+    <variable type="ScalarVariableMean" name="accuracy"/>
+  </class>
+
+  <!-- MultiLabel Classification -->
+  <class name="MultiLabelClassificationEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name"/>
+    <variable type="ScalarVariableMean" name="hammingLoss"/>
+    <variable type="ScalarVariableMean" name="accuracy"/>
+    <variable type="ScalarVariableMean" name="precision"/>
+    <variable type="ScalarVariableMean" name="recall"/>
+  </class>
+  
+  <!-- Misc -->
+  <class name="ContainerElementsEvaluator" base="Evaluator">
+    <constructor arguments="const String&amp; name, EvaluatorPtr elementEvaluator"/>
+    <variable type="Evaluator" name="elementEvaluator"/>
+  </class>
+
+  <class name="SaveToDirectoryEvaluator" base="Evaluator">
+    <constructor arguments="const File&amp; directory, const String&amp; extension"/>
+    <variable type="File" name="directory"/>
+    <variable type="String" name="extension"/>
+  </class>
+  
+</library>

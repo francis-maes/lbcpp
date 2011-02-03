@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Optimizer" directory="Optimizer">
+
+  <include file="lbcpp/Optimizer/Optimizer.h"/>
+
+  <import name="ObjectiveFunction"/>
+  <import name="OptimizerOptimizer"/>
+
+  <class name="OptimizerInput" base="Object">
+    <variable type="ObjectiveFunction" name="objective"/>
+    <variable type="Distribution[Variable]" name="aprioriDistribution"/>
+    <variable type="Variable" name="initialGuess"/>
+  </class>
+
+  <class name="Optimizer" base="Function" abstract="yes"/>
+
+</library>

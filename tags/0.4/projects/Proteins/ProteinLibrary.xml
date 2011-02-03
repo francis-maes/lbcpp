@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Protein" dynamic="yes">
+
+  <import name="Geometry"/>
+  <import name="ProteinData"/>
+  <import name="ProteinPerception"/>
+  <import name="ProteinFrame"/>
+  <import name="ProteinInference"/>
+  <import name="ProteinWorkUnit"/>
+  <import name="ProteinUserInterface"/>
+
+  <include file="Data/Protein.h"/>
+
+  <type name="AngstromDistance" base="Double">
+    <code>
+    virtual String toString(const VariableValue&amp; value) const
+      {return String(value.getDouble(), 2) + T(" A");}
+    </code>
+  </type>
+
+</library>

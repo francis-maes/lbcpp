@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Type" directory="Core/Type">
+  <include file="lbcpp/Core/Pair.h"/>
+  <include file="lbcpp/Core/Vector.h"/>
+  
+  <type name="Variable" base="" implementation="TopLevelType"/>
+
+  <!-- Builtin Types -->
+  <type name="Nil" base="Variable" implementation="NilType"/>
+  <type name="Boolean" base="Variable" implementation="BooleanType"/>
+  <type name="Integer" base="Variable" implementation="IntegerType"/>
+    <type name="PositiveInteger" base="Integer"/>
+      <type name="VariableIndex" base="PositiveInteger"/>
+
+  <type name="EnumValue" base="Integer" implementation="IntegerType"/>
+
+  <type name="Double" base="Variable" implementation="DoubleType"/>
+    <type name="PositiveDouble" base="Double"/>
+      <type name="NegativeLogProbability" base="PositiveDouble"/>
+    <type name="Probability" base="Double" implementation="ProbabilityType"/>
+
+  <type name="String" base="Variable" implementation="StringType"/>
+    <type name="File" base="String" implementation="FileType"/>
+
+  <!-- Object -->
+  <class name="Object" base="Variable" abstract="yes">
+    <!-- <variable type="Class" name="thisClass"/> : bad idea: induces moult complexity on DenseDoubleObjects -->
+  </class>
+  
+  <class name="NameableObject" base="Object" abstract="yes">
+    <variable type="String" name="name"/>
+  </class>
+
+  <!-- VariableSignature -->
+  <class name="VariableSignature" base="NameableObject">
+    <variable type="Type" name="type"/>
+    <variable type="String" name="shortName"/>
+    <variable type="String" name="description"/>
+  </class>
+  
+  <!-- Type -->
+  <class name="Type" base="NameableObject" abstract="yes">
+    <variable type="Type" name="baseType"/>
+    <variable type="TemplateType" name="templateType"/>
+    <variable type="ObjectVector[Type]" name="templateArguments"/>
+    <code>
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return VariableValue(typeManager().getType(context, value));}
+
+      virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+      {
+        String text = importer.getAllSubText().trim();
+        if (text.isNotEmpty())
+          return createFromString(importer.getContext(), importer.getAllSubText());
+        else
+          return VariableValue(Type::loadUnnamedTypeFromXml(importer));
+      }
+    </code>
+  </class>
+
+  <class name="EnumerationElement" base="Object">
+    <variable type="String" name="name"/>
+    <variable type="String" name="oneLetterCode"/>
+    <variable type="String" name="shortName"/>
+    <variable type="String" name="description"/>
+  </class>
+
+  <class name="Enumeration" base="Type" abstract="yes">
+    <code>
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return Type::createFromString(context, value);}
+
+      virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+        {return Type::createFromXml(importer);}
+    </code>
+  </class>
+
+  <class name="Class" base="Type" abstract="yes">
+    <code>
+    virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      {return Type::createFromString(context, value);}
+
+    virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+      {return Type::createFromXml(importer);}
+    </code>
+  </class>
+  <class name="DefaultClass" base="Class"/>
+
+  <!-- Template Type -->
+  <class name="TemplateType" base="NameableObject" abstract="yes"/>
+
+</library>

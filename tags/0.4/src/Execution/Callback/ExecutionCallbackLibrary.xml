@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ExecutionCallback" directory="Execution/Callback">
+
+  <class name="ConsoleExecutionCallback" base="DispatchByThreadExecutionCallback">
+    <constructor returnType="ExecutionCallback"/>
+  </class>
+
+  <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
+    <constructor/>
+  </class>
+
+  <class name="MakeTraceExecutionCallback" base="DispatchByThreadExecutionCallback">
+    <constructor arguments="ExecutionTracePtr trace" returnType="ExecutionCallback"/>
+    <variable type="ExecutionTrace" name="trace"/>
+  </class>
+
+  <!-- NotifierExecutionCallback -->
+  <class name="ExecutionNotification" base="Notification" abstract="yes"/>
+
+  <class name="ExecutionProgressNotification" base="ExecutionNotification">
+    <variable type="ProgressionState" name="progression"/>
+  </class>
+
+  <class name="ExecutionResultNotification" base="ExecutionNotification">
+    <variable type="String" name="name"/>
+    <variable type="Variable" name="value"/>
+  </class>
+
+  <class name="ExecutionMessageNotification" base="ExecutionNotification">
+    <variable type="ExecutionMessageType" name="messageType" enumeration="yes"/>
+    <variable type="String" name="what"/>
+    <variable type="String" name="where"/>
+  </class>
+
+  <class name="PreExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="String" name="description"/>
+    <variable type="WorkUnit" name="workUnit"/>
+  </class>
+
+  <class name="PostExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="WorkUnit" name="workUnit"/>
+    <variable type="Boolean" name="result"/>
+  </class>
+  
+  <class name="ThreadExecutionNotification" base="ExecutionNotification">
+    <variable type="ExecutionStack" name="stack"/>
+    <variable type="Boolean" name="isThreadEnd"/>
+  </class>
+
+</library>

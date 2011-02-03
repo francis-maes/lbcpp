@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Image" directory="Image">
+
+  
+    
+    <!-- Image Data -->
+    <class name="Image" base="Object">
+      <constructor arguments="size_t width, size_t height"/>
+      <variable type="PositiveInteger" name="width"/>
+      <variable type="PositiveInteger" name="height"/>
+      <variable type="GenericVector[Double]" name="pixels"/>
+    </class>
+    
+    <class name="BinaryImage" base="Image">
+      <constructor arguments="size_t width, size_t height"/>
+    </class>
+    
+    <!-- Image Function -->
+    <class name="ImageFunction" base="Function" abstract="yes">
+      <variable type="PositiveInteger" name="width"/>
+      <variable type="PositiveInteger" name="height"/>
+    </class>
+    
+    <class name="IdentityImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight"/>
+    </class>
+    
+    <class name="AverageImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t radius"/>
+      <variable type="PositiveInteger" name="radius"/>
+    </class>
+    
+    <class name="ReduceImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t scaleFactor"/>
+      <variable type="PositiveInteger" name="scaleFactor"/>
+    </class>
+    
+    <class name="BinarizeImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, double threshold"/>
+      <variable type="Double" name="threshold"/>
+    </class>
+    
+    <class name="MinimumImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t blockSize"/>
+      <variable type="PositiveInteger" name="blockSize"/>
+    </class>
+    
+    <class name="MaximumImageFunction" base="ImageFunction">
+      <constructor arguments="size_t inputWidth, size_t inputHeight, size_t blockSize"/>
+      <variable type="PositiveInteger" name="blockSize"/>
+    </class>
+    
+    <!-- Perception -->
+    <class name="ImageFunctionToFlattenPerception" base="Perception">
+      <constructor arguments="ImageFunctionPtr function"/>
+      <variable type="ImageFunction" name="function"/>
+    </class>
+   
+</library>
