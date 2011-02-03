@@ -15,6 +15,19 @@
 #include <algorithm>
 using namespace lbcpp;
 
+bool Container::getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res)
+{
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  if (!dvType)
+  {
+    context.errorCallback(type->getName() + T(" is not a Container"));
+    return false;
+  }
+  jassert(dvType->getNumTemplateArguments() == 1);
+  res = dvType->getTemplateArgument(0);
+  return true;
+}
+
 VectorPtr Container::toVector() const
 {
   size_t n = getNumElements();

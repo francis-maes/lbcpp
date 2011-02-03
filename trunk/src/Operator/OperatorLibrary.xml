@@ -5,38 +5,12 @@
   <include file="lbcpp/Operator/FeatureGenerator.h"/>
 
   <import name="ContainerOperator"/>
-  <import name="VariableGenerator"/>
   <import name="FeatureGenerator"/>
 
   <class name="ProxyFunction" base="Function" abstract="yes"/>
 
-  <class name="VariableGenerator" base="Function" abstract="yes"/>
-
-  <template name="DoubleVector" base="Vector[elementsType]" abstract="yes">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-  
-  <template name="SparseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-  
-  <template name="DenseDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-  
-  <template name="LazyDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-  
-  <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <parameter name="elementsType" type="Double"/>
-  </template>
-
-  <class name="FeatureGenerator" base="VariableGenerator" abstract="yes"/>
+  <class name="FeatureGenerator" base="Function" abstract="yes">
+    <variable type="Boolean" name="lazyComputation"/>
+  </class>
   
 </library>

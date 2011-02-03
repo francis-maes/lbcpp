@@ -91,10 +91,6 @@ protected:
   bool checkNumInputs(ExecutionContext& context, size_t numInputs) const;
   bool checkInputType(ExecutionContext& context, size_t index, TypePtr requestedType) const;
   
-  bool getDoubleVectorParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType) const;
-  bool getContainerElementsType(ExecutionContext& context, TypePtr type, TypePtr& res) const;
-  bool getDistributionElementsType(ExecutionContext& context, TypePtr type, TypePtr& res) const;
-
   bool checkExistence(ExecutionContext& context, const Variable& variable) const;
 };
 

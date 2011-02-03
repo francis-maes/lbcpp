@@ -20,6 +20,8 @@ public:
   Distribution(ClassPtr thisClass) : Object(thisClass) {}
   Distribution() : Object() {}
   
+  static bool getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res);
+
   virtual TypePtr getElementsType() const = 0;
 
   virtual double computeEntropy() const = 0;

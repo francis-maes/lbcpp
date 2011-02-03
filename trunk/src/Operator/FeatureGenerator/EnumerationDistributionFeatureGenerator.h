@@ -18,27 +18,25 @@ namespace lbcpp
 class EnumerationDistributionFeatureGenerator : public FeatureGenerator
 {
 public:
-  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    elementsType = probabilityType;
-    return addMissingToEnumerationEnumeration(enumeration);
-  }
-
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    TypePtr elementsType;
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)) || !getDistributionElementsType(context, getInputType(0), elementsType))
-      return VariableSignaturePtr();
-    enumeration = elementsType.dynamicCast<Enumeration>();
+    TypePtr distributionElementsType;
+    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)) || !Distribution::getTemplateParameter(context, getInputType(0), distributionElementsType))
+      return EnumerationPtr();
+    enumeration = distributionElementsType.dynamicCast<Enumeration>();
     if (!enumeration)
     {
       context.errorCallback(T("Not an enumeration"));
-      return VariableSignaturePtr();
+      return EnumerationPtr();
     }
-    return new VariableSignature(computeOutputType(context), inputVariables[0]->getName() + T("Features"), inputVariables[0]->getShortName() + T("f"));
+
+    elementsType = probabilityType;
+    outputName = inputVariables[0]->getName() + T("Features");
+    outputShortName = inputVariables[0]->getShortName() + T("f");
+    return addMissingToEnumerationEnumeration(enumeration);
   }
 
-  virtual void computeVariables(const Variable* inputs, VariableGeneratorCallback& callback) const
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     EnumerationDistributionPtr distribution = inputs[0].getObjectAndCast<EnumerationDistribution>();
     const std::vector<double>& probabilities = distribution->getProbabilities();

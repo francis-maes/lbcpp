@@ -72,7 +72,6 @@
 # include "Function/Evaluator.h"
 
 # include "Operator/Operator.h"
-# include "Operator/VariableGenerator.h"
 # include "Operator/FeatureGenerator.h"
 
 # include "Perception/Perception.h"

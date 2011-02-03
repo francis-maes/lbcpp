@@ -58,12 +58,11 @@ public:
     {addWeightedTo(denseVector, 0, 1.0);}
 };
 
-extern ClassPtr doubleVectorClass(TypePtr elementsEnumeration = positiveIntegerEnumerationEnumeration, TypePtr elementsType = doubleType);
-extern ClassPtr sparseDoubleVectorClass(TypePtr elementsEnumeration = positiveIntegerEnumerationEnumeration, TypePtr elementsType = doubleType);
-extern ClassPtr denseDoubleVectorClass(TypePtr elementsEnumeration = positiveIntegerEnumerationEnumeration, TypePtr elementsType = doubleType);
-extern ClassPtr lazyDoubleVectorClass(TypePtr elementsEnumeration = positiveIntegerEnumerationEnumeration, TypePtr elementsType = doubleType);
-extern ClassPtr compositeDoubleVectorClass(TypePtr elementsEnumeration = positiveIntegerEnumerationEnumeration, TypePtr elementsType = doubleType);
-
+extern ClassPtr doubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
+extern ClassPtr sparseDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
+extern ClassPtr denseDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
+extern ClassPtr lazyDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
+extern ClassPtr compositeDoubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
 
 class SparseDoubleVector : public DoubleVector
 {
@@ -124,6 +123,12 @@ public:
   const double* getValuePointer(size_t index) const
     {jassert(values && index <= values->size()); return &(*values)[0] + index;}
 
+  double& getValueReference(size_t index)
+    {return *getValuePointer(index);}
+
+  double getValue(size_t index) const
+    {jassert(values); return index < values->size() ? (*values)[index] : 0.0;}
+
   void incrementValue(size_t index, double value)
     {jassert(values && index < values->size()); (*values)[index] += value;}
 
@@ -180,8 +185,13 @@ public:
   virtual void setElement(size_t index, const Variable& value);
 
 private:
+  friend class LazyDoubleVectorClass;
+
   FeatureGeneratorPtr featureGenerator;
   std::vector<Variable> inputs;
+  DoubleVectorPtr computedVector;
+
+  void ensureIsComputed();
 };
 
 class CompositeDoubleVector : public DoubleVector

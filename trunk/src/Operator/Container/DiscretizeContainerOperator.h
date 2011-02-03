@@ -30,7 +30,7 @@ public:
       return VariableSignaturePtr();
     VariableSignaturePtr inputVariable = getInputVariable(0);
     TypePtr distributionType;
-    if (!getContainerElementsType(context, inputVariable->getType(), distributionType) || !getDistributionElementsType(context, distributionType, elementsType))
+    if (!Container::getTemplateParameter(context, inputVariable->getType(), distributionType) || !Distribution::getTemplateParameter(context, distributionType, elementsType))
       return VariableSignaturePtr();
     if (!elementsType)
       return VariableSignaturePtr();

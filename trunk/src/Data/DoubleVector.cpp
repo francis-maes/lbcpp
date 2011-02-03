@@ -260,25 +260,88 @@ void DenseDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) con
 ** LazyDoubleVector
 */
 LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const Variable* inputs)
-  : featureGenerator(featureGenerator), inputs(featureGenerator->getNumInputs())
+  : DoubleVector(lazyDoubleVectorClass(featureGenerator->getFeaturesEnumeration(), featureGenerator->getFeaturesType())),
+    featureGenerator(featureGenerator), inputs(featureGenerator->getNumInputs())
 {
   for (size_t i = 0; i < this->inputs.size(); ++i)
     this->inputs[i] = inputs[i];
 }
 
+class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  AppendToFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector)
+    : target(target), offset(offsetInSparseVector) {}
+
+  virtual void sense(size_t index, double value)
+    {target->appendValue(offset + index, value);}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {jassert(weight == 1.0); target->appendTo(target, offset + index);}
+
+protected:
+  SparseDoubleVectorPtr target;
+  size_t offset;
+};
+
 // DoubleVector
 void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
-  // todo ..
+  AppendToFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector);
+  featureGenerator->computeFeatures(&inputs[0], callback);
 }
+
+class AddWeightedToFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  AddWeightedToFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
+    : target(target), offset(offsetInSparseVector), weight(weight) {}
+
+  virtual void sense(size_t index, double value)
+    {target->getValueReference(index + offset) += value * weight;}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {vector->addWeightedTo(target, index + offset, weight * this->weight);}
+
+protected:
+  DenseDoubleVectorPtr target;
+  size_t offset;
+  double weight;
+};
 
 void LazyDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
+  if (weight)
+  {
+    AddWeightedToFeatureGeneratorCallback callback(denseVector, offsetInDenseVector, weight);
+    featureGenerator->computeFeatures(&inputs[0], callback);
+  }
 }
+
+class DotProductFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  DotProductFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector)
+    : target(target), offset(offsetInSparseVector), res(0.0) {}
+
+  virtual void sense(size_t index, double value)
+    {res += target->getValue(index + offset) * value;}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {res += weight * vector->dotProduct(target, index + offset);}
+
+  double res;
+
+protected:
+  DenseDoubleVectorPtr target;
+  size_t offset;
+};
 
 double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
 {
-  return 0.0;
+  DotProductFeatureGeneratorCallback callback(denseVector, offsetInDenseVector);
+  featureGenerator->computeFeatures(&inputs[0], callback);
+  return callback.res;
 }
 
   // Vector
@@ -300,15 +363,30 @@ void LazyDoubleVector::append(const Variable& value)
 void LazyDoubleVector::remove(size_t index)
   {jassert(false);}
 
+void LazyDoubleVector::ensureIsComputed()
+{
+  if (!computedVector)
+    computedVector = featureGenerator->toComputedVector(&inputs[0]);
+}
+
 // Container
 size_t LazyDoubleVector::getNumElements() const
-  {jassert(false); return 0;}
+{
+  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
+  return computedVector->getNumElements();
+}
 
 Variable LazyDoubleVector::getElement(size_t index) const
-  {jassert(false); return Variable();}
+{
+  jassert(computedVector);
+  return computedVector->getElement(index);
+}
 
 void LazyDoubleVector::setElement(size_t index, const Variable& value)
-  {jassert(false);}
+{
+  // not allowed
+  jassert(false);
+}
 
 /*
 ** CompositeDoubleVector

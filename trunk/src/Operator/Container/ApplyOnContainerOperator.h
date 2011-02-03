@@ -33,7 +33,7 @@ public:
     {
       VariableSignaturePtr inputVariable = getInputVariable(0);
       TypePtr elementsType;
-      if (!getContainerElementsType(context, inputVariable->getType(), elementsType))
+      if (!Container::getTemplateParameter(context, inputVariable->getType(), elementsType))
         return false;
 
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));

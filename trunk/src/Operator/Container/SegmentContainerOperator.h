@@ -135,7 +135,7 @@ public:
       return VariableSignaturePtr();
     VariableSignaturePtr inputVariable = getInputVariable(0);
     TypePtr elementsType;
-    if (!getContainerElementsType(context, inputVariable->getType(), elementsType))
+    if (!Container::getTemplateParameter(context, inputVariable->getType(), elementsType))
       return VariableSignaturePtr();
     return new VariableSignature(vectorClass(segmentContainerClass(elementsType)), inputVariable->getName() + T("Segmented"), inputVariable->getShortName() + T("s"));
   }
