@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Function" directory="Function">
-  <include file="lbcpp/Function/Function.h"/>
-
-  <class name="Function" abstract="yes">
-    <variable type="ObjectVector[VariableSignature]" name="inputVariables"/>
-    <variable type="VariableSignature" name="outputVariable"/>
-    <variable type="Boolean" name="pushIntoStack"/>
-  </class>
-
-  <class name="ProxyFunction" base="Function" abstract="yes"/>
 
   <import name="MiscFunctions"/>
   <import name="ScalarFunction"/>

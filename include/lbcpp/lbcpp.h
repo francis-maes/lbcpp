@@ -72,7 +72,7 @@
 # include "Function/StoppingCriterion.h"
 # include "Function/Evaluator.h"
 
-# include "Operator/FeatureGenerator.h"
+# include "FeatureGenerator/FeatureGenerator.h"
 
 # include "Perception/Perception.h"
 # include "Perception/PerceptionRewriter.h"

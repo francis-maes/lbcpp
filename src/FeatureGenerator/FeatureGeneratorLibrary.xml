@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="FeatureGenerator" directory="FeatureGenerator">
+  <include file="lbcpp/FeatureGenerator/FeatureGenerator.h"/>
+
+  <class name="FeatureGenerator" base="Function" abstract="yes">
+    <variable type="Boolean" name="lazyComputation"/>
+  </class>
+
+  <import name="GenericFeatureGenerator"/>
+  <import name="AtomicFeatureGenerator"/>
+
+</library>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="FeatureGenerator" directory="Operator/FeatureGenerator">
+<library name="GenericFeatureGenerator" directory="FeatureGenerator/Generic">
 
   <class name="ConcatenateFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool lazy"/>
@@ -9,13 +9,6 @@
   <class name="WindowFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="size_t windowSize"/>
     <variable type="PositiveInteger" name="windowSize"/>
-  </class>
-  
-  <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
-    <constructor/>
-  </class>
-  <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
-    <constructor/>
   </class>
 
 </library>

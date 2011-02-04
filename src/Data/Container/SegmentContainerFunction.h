@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SegmentContainerFunction.h     | Segment Container Operator      |
+| Filename: SegmentContainerFunction.h     | Segment Container Function      |
 | Author  : Francis Maes                   |                                 |
 | Started : 01/02/2011 13:15               |                                 |
 `------------------------------------------/                                 |

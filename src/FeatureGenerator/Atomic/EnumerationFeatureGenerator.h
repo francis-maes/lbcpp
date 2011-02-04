@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OPERATOR_FEATURE_GENERATOR_ENUMERATION_H_
-# define LBCPP_OPERATOR_FEATURE_GENERATOR_ENUMERATION_H_
+#ifndef LBCPP_FEATURE_GENERATOR_ATOMIC_ENUMERATION_H_
+# define LBCPP_FEATURE_GENERATOR_ATOMIC_ENUMERATION_H_
 
-# include <lbcpp/Operator/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp
 {
@@ -50,4 +50,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OPERATOR_FEATURE_GENERATOR_ENUMERATION_H_
+#endif // !LBCPP_FEATURE_GENERATOR_ATOMIC_ENUMERATION_H_

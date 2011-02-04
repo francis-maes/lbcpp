@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_OPERATOR_FEATURE_GENERATOR_CONCATENATE_H_
-# define LBCPP_OPERATOR_FEATURE_GENERATOR_CONCATENATE_H_
+#ifndef LBCPP_FEATURE_GENERATOR_GENERIC_CONCATENATE_H_
+# define LBCPP_FEATURE_GENERATOR_GENERIC_CONCATENATE_H_
 
-# include <lbcpp/Operator/FeatureGenerator.h>
+# include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp
 {
@@ -100,4 +100,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_OPERATOR_FEATURE_GENERATOR_CONCATENATE_H_
+#endif // !LBCPP_FEATURE_GENERATOR_GENERIC_CONCATENATE_H_
