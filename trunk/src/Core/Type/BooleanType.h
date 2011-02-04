@@ -58,7 +58,7 @@ public:
     {value.clearBuiltin();}
 
   virtual void copy(VariableValue& dest, const VariableValue& source) const
-    {dest.setBoolean(source.getBoolean());}
+    {dest.setInteger(source.getInteger());}
 
   virtual String toString(const VariableValue& value) const
     {jassert(!isMissingValue(value)); return value.getBoolean() ? T("True") : T("False");}

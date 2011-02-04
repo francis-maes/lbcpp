@@ -267,81 +267,29 @@ LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const V
     this->inputs[i] = inputs[i];
 }
 
-class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  AppendToFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : target(target), offset(offsetInSparseVector) {}
-
-  virtual void sense(size_t index, double value)
-    {target->appendValue(offset + index, value);}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {jassert(weight == 1.0); target->appendTo(target, offset + index);}
-
-protected:
-  SparseDoubleVectorPtr target;
-  size_t offset;
-};
-
 // DoubleVector
 void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
-  AppendToFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector);
-  featureGenerator->computeFeatures(&inputs[0], callback);
+  if (computedVector)
+    computedVector->appendTo(sparseVector, offsetInSparseVector);
+  else
+    featureGenerator->appendTo(&inputs[0], sparseVector, offsetInSparseVector);
 }
-
-class AddWeightedToFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  AddWeightedToFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
-    : target(target), offset(offsetInSparseVector), weight(weight) {}
-
-  virtual void sense(size_t index, double value)
-    {target->getValueReference(index + offset) += value * weight;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {vector->addWeightedTo(target, index + offset, weight * this->weight);}
-
-protected:
-  DenseDoubleVectorPtr target;
-  size_t offset;
-  double weight;
-};
 
 void LazyDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
-  if (weight)
-  {
-    AddWeightedToFeatureGeneratorCallback callback(denseVector, offsetInDenseVector, weight);
-    featureGenerator->computeFeatures(&inputs[0], callback);
-  }
+  if (computedVector)
+    computedVector->addWeightedTo(denseVector, offsetInDenseVector, weight);
+  else
+    featureGenerator->addWeightedTo(&inputs[0], denseVector, offsetInDenseVector, weight);
 }
-
-class DotProductFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  DotProductFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : target(target), offset(offsetInSparseVector), res(0.0) {}
-
-  virtual void sense(size_t index, double value)
-    {res += target->getValue(index + offset) * value;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {res += weight * vector->dotProduct(target, index + offset);}
-
-  double res;
-
-protected:
-  DenseDoubleVectorPtr target;
-  size_t offset;
-};
 
 double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
 {
-  DotProductFeatureGeneratorCallback callback(denseVector, offsetInDenseVector);
-  featureGenerator->computeFeatures(&inputs[0], callback);
-  return callback.res;
+  if (computedVector)
+    return computedVector->dotProduct(denseVector, offsetInDenseVector);
+  else
+    return featureGenerator->dotProduct(&inputs[0], denseVector, offsetInDenseVector);
 }
 
   // Vector

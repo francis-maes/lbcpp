@@ -12,6 +12,7 @@
 # include "NumericalInference.h"
 # include "../Inference/InferenceOnlineLearner.h"
 # include "../Inference/DecoratorInference.h"
+# include "LossFunctions.h"
 
 namespace lbcpp
 {

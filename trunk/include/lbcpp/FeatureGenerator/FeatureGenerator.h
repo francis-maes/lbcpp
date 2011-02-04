@@ -22,6 +22,7 @@ public:
 
   virtual void sense(size_t index, double value) = 0;
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight) = 0;
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight) = 0;
 };
 
 class FeatureGenerator : public Function
@@ -50,6 +51,10 @@ public:
   virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const;
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const;
 
+  virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
+  virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+
   // Function
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
@@ -64,10 +69,24 @@ protected:
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 
+// atomic
+extern FeatureGeneratorPtr booleanFeatureGenerator(bool includeMissingValue = true);
+extern FeatureGeneratorPtr enumerationFeatureGenerator(bool includeMissingValue = true);
+extern FeatureGeneratorPtr enumerationDistributionFeatureGenerator(bool includeMissingValue = true);
 
-extern FeatureGeneratorPtr enumerationFeatureGenerator();
-extern FeatureGeneratorPtr enumerationDistributionFeatureGenerator();
+// number features
+extern FeatureGeneratorPtr hardDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
+extern FeatureGeneratorPtr softDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
+extern FeatureGeneratorPtr softDiscretizedLogNumberFeatureGenerator(double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures);
+extern FeatureGeneratorPtr signedNumberFeatureGenerator(FeatureGeneratorPtr positiveNumberFeatures);
 
+extern FeatureGeneratorPtr defaultPositiveIntegerFeatureGenerator(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
+extern FeatureGeneratorPtr defaultIntegerFeatureGenerator(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
+extern FeatureGeneratorPtr defaultDoubleFeatureGenerator(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
+extern FeatureGeneratorPtr defaultPositiveDoubleFeatureGenerator(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
+extern FeatureGeneratorPtr defaultProbabilityFeatureGenerator(size_t numIntervals = 5);
+
+// generic
 extern FeatureGeneratorPtr windowFeatureGenerator(size_t windowSize);
 extern FeatureGeneratorPtr concatenateFeatureGenerator(bool lazy);
 

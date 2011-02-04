@@ -18,6 +18,9 @@ namespace lbcpp
 class EnumerationDistributionFeatureGenerator : public FeatureGenerator
 {
 public:
+  EnumerationDistributionFeatureGenerator(bool includeMissingValue = true)
+    : includeMissingValue(includeMissingValue) {}
+
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     TypePtr distributionElementsType;
@@ -33,18 +36,24 @@ public:
     elementsType = probabilityType;
     outputName = inputVariables[0]->getName() + T("Features");
     outputShortName = inputVariables[0]->getShortName() + T("f");
-    return addMissingToEnumerationEnumeration(enumeration);
+    return includeMissingValue ? addMissingToEnumerationEnumeration(enumeration) : enumeration;
   }
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     EnumerationDistributionPtr distribution = inputs[0].getObjectAndCast<EnumerationDistribution>();
     const std::vector<double>& probabilities = distribution->getProbabilities();
+    size_t n = probabilities.size();
+    if (!includeMissingValue)
+      --n;
     for (size_t i = 0; i < probabilities.size(); ++i)
       callback.sense(i, probabilities[i]);
   }
 
 protected:
+  friend class EnumerationDistributionFeatureGeneratorClass;
+  bool includeMissingValue;
+
   EnumerationPtr enumeration;
 };
 

@@ -1,6 +1,3 @@
-* repertoire Operator/Container => Data/Container
-* repertoire Operator/FeatureGenerator => FeatureGenerator
-* enlever repertoire Operator
 * recycler toutes les Perceptions necessaires en tant que FeatureGenerator
    => but: avoir les Frames completes de l'etat courrant
 

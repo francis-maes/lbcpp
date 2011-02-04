@@ -8,6 +8,13 @@
 #include <lbcpp/Function/Function.h>
 using namespace lbcpp;
 
+bool Function::initialize(ExecutionContext& context, TypePtr inputType)
+{
+  std::vector<VariableSignaturePtr> inputVariables(1);
+  inputVariables[0] = new VariableSignature(inputType, T("input"));
+  return initialize(context, inputVariables);
+}
+
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
   this->inputVariables = inputVariables;
