@@ -1,0 +1,138 @@
+/*-----------------------------------------.---------------------------------.
+| Filename: Frame.cpp                      | Frame                           |
+| Author  : Francis Maes                   |                                 |
+| Started : 04/02/2011 20:27               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+#include <lbcpp/Core/Frame.h>
+#include <lbcpp/Function/Function.h>
+using namespace lbcpp;
+
+/*
+** FrameClass
+*/
+FrameClass::FrameClass(const String& name, TypePtr baseClass)
+  : DefaultClass(name, baseClass) {}
+
+FrameClass::FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
+  : DefaultClass(templateType, templateArguments, baseClass) {}
+
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& function, size_t input, const String& outputName, const String& outputShortName)
+  {return addMemberOperator(context, function, std::vector<size_t>(1, input), outputName, outputShortName);}
+
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& function, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
+{
+  std::vector<size_t> inputs(2);
+  inputs[0] = input1;
+  inputs[1] = input2;
+  return addMemberOperator(context, function, inputs, outputName, outputShortName);
+}
+
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, const std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
+{
+  FrameOperatorSignaturePtr signature = new FrameOperatorSignature(operation, inputs, outputName, outputShortName);
+  size_t res = addMemberVariable(context, signature);
+  initializeFunction(context, signature);
+  return res;
+}
+
+bool FrameClass::initialize(ExecutionContext& context)
+{
+ /* for (size_t i = 0; i < variables.size(); ++i)
+  {
+    FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
+    if (signature && !initializeFunction(context, signature))
+      return false;
+  }*/
+  return DefaultClass::initialize(context);
+}
+
+bool FrameClass::initializeFunction(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
+{
+  const FunctionPtr& function = signature->getFunction();
+  jassert(function);
+  const std::vector<size_t>& inputs = signature->getInputs();
+
+  std::vector<VariableSignaturePtr> inputVariables(inputs.size());
+  for (size_t i = 0; i < inputVariables.size(); ++i)
+  {
+    size_t inputIndex = inputs[i];
+    if (inputIndex == (size_t)-1)
+    {
+      // this
+      inputVariables[i] = new VariableSignature(refCountedPointerFromThis(this), T("this"));
+    }
+    else
+    {
+      if (inputIndex >= variables.size())
+      {
+        context.errorCallback(T("Invalid index: ") + String((int)inputIndex));
+        return false;
+      }
+      inputVariables[i] = variables[inputIndex];
+    }
+  }
+  if (!function->initialize(context, inputVariables))
+    return false;
+
+  FrameOperatorSignaturePtr autoSignature = function->getOutputVariable();
+  signature->setType(autoSignature->getType());
+  if (signature->getName().isEmpty())
+    signature->setName(autoSignature->getName());
+  if (signature->getShortName().isEmpty())
+    signature->setShortName(autoSignature->getShortName());
+  if (signature->getDescription().isEmpty())
+    signature->setDescription(autoSignature->getDescription());
+  return true;
+}
+
+/*
+** Frame
+*/
+Frame::Frame(ClassPtr frameClass)
+  : DenseGenericObject(frameClass) {}
+
+void Frame::ensureAllVariablesAreComputed()
+{
+  size_t n = thisClass->getNumMemberVariables();
+  for (size_t i = 0; i < n; ++i)
+    getOrComputeVariable(i);
+}
+
+bool Frame::isVariableComputed(size_t index) const
+{
+  return index < variableValues.size() &&
+    !thisClass->getMemberVariableType(index)->isMissingValue(variableValues[index]);
+}
+
+Variable Frame::getOrComputeVariable(size_t index)
+{
+  if (index == (size_t)-1)
+    return this;
+
+  VariableSignaturePtr signature = thisClass->getMemberVariable(index);
+  VariableValue& variableValue = getVariableValueReference(index);
+  const TypePtr& type = signature->getType();
+  if (!type->isMissingValue(variableValue))
+    return Variable::copyFrom(type, variableValue);
+
+  FrameOperatorSignaturePtr operatorSignature = signature.dynamicCast<FrameOperatorSignature>();
+  if (!operatorSignature)
+    return Variable();
+  
+  const std::vector<size_t>& inputIndices = operatorSignature->getInputs();
+  std::vector<Variable> inputs(inputIndices.size());
+  for (size_t i = 0; i < inputs.size(); ++i)
+  {
+    inputs[i] = getOrComputeVariable(inputIndices[i]);
+    if (!inputs[i].exists())
+      return Variable();
+  }
+  Variable value = operatorSignature->getFunction()->computeFunction(defaultExecutionContext(), &inputs[0]);
+  setVariable(index, value);
+  return value;
+}
+
+Variable Frame::getVariable(size_t index) const
+  {return const_cast<Frame* >(this)->getOrComputeVariable(index);}

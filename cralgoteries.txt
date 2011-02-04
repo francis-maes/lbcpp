@@ -1,5 +1,3 @@
-* 2- SandBox: tester le calcul de toutes les features sur toutes les proteines : checker vitesse et utilisation memoire
-* 3- Suite...
 
 * Enlever les Perceptions des machines elementaires
 * NumericalLearning: utiliser DoubleVector partout

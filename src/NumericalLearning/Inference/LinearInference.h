@@ -59,10 +59,17 @@ public:
         isLocked = true;
       }
 
-      if (input.getType() == perception->getOutputType())
-        lbcpp::addWeighted(context, *target, input.getObject(), lossDerivative * weight);
+      if (perception)
+      {
+        // old
+        if (input.getType() == perception->getOutputType())
+          lbcpp::addWeighted(context, *target, input.getObject(), lossDerivative * weight);
+        else
+          lbcpp::addWeighted(context, *target, perception, input, lossDerivative * weight);
+      }
       else
-        lbcpp::addWeighted(context, *target, perception, input, lossDerivative * weight);
+      {
+      }
        
       if (isLocked)
         parametersLock.exitWrite();
@@ -108,12 +115,25 @@ public:
       return Variable::missingValue(doubleType);
     if (!input.exists())
       return 0.0;
-    const PerceptionPtr& perception = getPerception();
+
     double res;
-    if (input.getType() == perception->getOutputType())
-      res = lbcpp::dotProduct(context, weights, input.getObject());
+    const PerceptionPtr& perception = getPerception();
+    if (perception)
+    {
+      // old
+      if (input.getType() == perception->getOutputType())
+        res = lbcpp::dotProduct(context, weights, input.getObject());
+      else
+        res = lbcpp::dotProduct(context, weights, perception, input);
+    }
     else
-      res = lbcpp::dotProduct(context, weights, perception, input);
+    {
+      // new
+      DenseDoubleVectorPtr weightsVector = weights.dynamicCast<DenseDoubleVector>();
+      DoubleVectorPtr inputVector = input.dynamicCast<DoubleVector>();
+      if (weightsVector && inputVector)
+        res = inputVector->dotProduct(weightsVector, 0);
+    }
     return isNumberValid(res) ? Variable(res) : Variable::missingValue(doubleType);
   }
 };

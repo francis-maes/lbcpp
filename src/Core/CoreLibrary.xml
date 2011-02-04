@@ -6,7 +6,7 @@
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
-  <include file="lbcpp/Function/Function.h"/>
+  <include file="lbcpp/Core/Frame.h"/>
 
   <!-- Pair -->
   <template name="Pair" base="Object">
@@ -44,7 +44,7 @@
   <class name="VariableVector" base="Vector[Variable]">
     <constructor arguments="size_t initialSize"/>
   </class>
-  
+
   <!-- Dynamic Object -->
   <class name="DynamicClass" base="DefaultClass" abstract="yes"/>
 
@@ -178,8 +178,7 @@
         {String str((int)index); return new EnumerationElement(T("[") + str + T("]"), String::empty, str);}
     </code>
   </class>
-  
-  
+    
   <!-- Function -->
   <class name="Function" abstract="yes">
     <variable type="ObjectVector[VariableSignature]" name="inputVariables"/>
@@ -188,5 +187,13 @@
   </class>
 
   <class name="ProxyFunction" base="Function" abstract="yes"/>
+  
+  <!-- Frame -->
+  <class name="FrameOperatorSignature" base="VariableSignature"/>
+  <class name="FrameClass" base="DefaultClass"/>
+
+  <class name="FrameBasedFunction" base="Function">
+    <variable type="Class" name="frameClass"/>
+  </class>
 
 </library>

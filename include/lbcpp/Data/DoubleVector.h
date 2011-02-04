@@ -54,6 +54,9 @@ public:
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
 
+  double dotProduct(const DenseDoubleVectorPtr& denseVector)
+    {return dotProduct(denseVector, 0);}
+
   void addTo(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, 1.0);}
   

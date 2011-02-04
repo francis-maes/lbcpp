@@ -2,10 +2,4 @@
 
 <library name="ProteinFrame" directory="Frame">
 
-  <class name="FrameClass" base="DefaultClass"/>
-  
-  <class name="FrameBasedFunction" base="Function">
-    <variable type="Class" name="frameClass"/>
-  </class>
-  
 </library>
