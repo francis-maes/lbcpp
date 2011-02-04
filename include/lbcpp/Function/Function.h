@@ -97,6 +97,12 @@ protected:
 
 extern ClassPtr functionClass;
 
+// new
+extern FunctionPtr getVariableFunction(size_t variableIndex);
+extern FunctionPtr getVariableFunction(const String& variableName);
+extern FunctionPtr getElementFunction();
+
+// old
 extern FunctionPtr identityFunction(TypePtr type);
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 extern FunctionPtr multiplyDoubleFunction();
@@ -107,6 +113,8 @@ extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass,
 extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
+// -
+
 
 
 class ProxyFunction : public Function

@@ -119,7 +119,12 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, std::vector<double>& va
   : DoubleVector(thisClass), values(&values), ownValues(false) {}
 
 DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, double initialValue)
-  : DoubleVector(thisClass), values(new std::vector<double>(initialSize, initialValue)), ownValues(true) {}
+  : DoubleVector(thisClass), ownValues(true)
+{
+  if (initialSize == (size_t)-1)
+    initialSize = getElementsEnumeration()->getNumElements();
+  values = new std::vector<double>(initialSize, initialValue);
+}
 
 DenseDoubleVector::DenseDoubleVector()
   : values(NULL), ownValues(false)
@@ -139,6 +144,25 @@ void DenseDoubleVector::ensureSize(size_t minimumSize)
   else if (values->size() < minimumSize)
     values->resize(minimumSize, 0.0);
 
+}
+
+void DenseDoubleVector::multiplyByScalar(double value)
+{
+  jassert(values);
+  if (value == 1.0)
+    return;
+  else if (value == 0.0)
+    memset(&(*values)[0], 0, sizeof (double) * values->size());
+  else
+  {
+    double* pointer = getValuePointer(0);
+    double* limit = getValuePointer(values->size());
+    while (pointer < limit)
+    {
+      (*pointer) *= value;
+      ++pointer;
+    }
+  }      
 }
 
 // DoubleVector
@@ -319,14 +343,11 @@ void LazyDoubleVector::ensureIsComputed()
 
 // Container
 size_t LazyDoubleVector::getNumElements() const
-{
-  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
-  return computedVector->getNumElements();
-}
+  {return getElementsEnumeration()->getNumElements();}
 
 Variable LazyDoubleVector::getElement(size_t index) const
 {
-  jassert(computedVector);
+  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
   return computedVector->getElement(index);
 }
 
@@ -429,4 +450,8 @@ void CompositeDoubleVector::remove(size_t index)
   {jassert(false);}
 
 void CompositeDoubleVector::appendSubVector(size_t shift, const DoubleVectorPtr& subVector)
-  {jassert(vectors.empty() || shift >= (vectors.back().first + vectors.back().second->getNumElements())); vectors.push_back(std::make_pair(shift, subVector));}
+{
+  jassert(subVector);
+  jassert(vectors.empty() || shift >= (vectors.back().first + vectors.back().second->getElementsEnumeration()->getNumElements()));
+  vectors.push_back(std::make_pair(shift, subVector));
+}

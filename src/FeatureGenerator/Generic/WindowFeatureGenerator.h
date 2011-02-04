@@ -41,7 +41,7 @@ public:
       String pos = String((int)i + startPosition);
       res->addElementsWithPrefix(context, subFeaturesEnumeration, T("[") + pos + T("]."), pos + T("."));
     }
-    outputName = T("Window");
+    outputName = T("window");
     outputShortName = T("Win");
     return res;
   }

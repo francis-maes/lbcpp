@@ -164,7 +164,10 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/RangeContainer.h
   Data/Container/ExcludeRangeContainer.h
   Data/Container/AccumulateContainerFunction.h
+  Data/Container/AccumulatorLocalMeanFunction.h
+  Data/Container/AccumulatorGlobalMeanFunction.h
   Data/Container/SegmentContainerFunction.h
+  Data/Container/GenerateVectorFunction.h
   Data/Container/ContainerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )

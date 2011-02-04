@@ -190,9 +190,17 @@ public:
 
 extern ClassPtr containerClass(TypePtr elementsType);
 
+extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 extern FunctionPtr accumulateContainerFunction();
+extern FunctionPtr accumulatorLocalMeanFunction(size_t windowSize);
+extern FunctionPtr accumulatorGlobalMeanFunction();
+
 extern FunctionPtr segmentContainerFunction();
 extern FunctionPtr applyOnContainerFunction(const FunctionPtr& function);
+
+extern FunctionPtr globalAccumulatorMeanFunction();
+extern FunctionPtr localAccumulatorMeanFunction(size_t windowSize);
+ 
 
 /**
 ** @class DecoratorContainer

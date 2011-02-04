@@ -281,6 +281,8 @@ extern VectorPtr booleanVector(size_t initialSize);
 extern VectorPtr objectVector(TypePtr elementsType, size_t initialSize);
 extern VectorPtr variableVector(size_t initialSize);
 
+extern FunctionPtr generateVectorFunction(FunctionPtr elementGeneratorFunction);
+
 template<class TT>
 inline void variableToNative(ExecutionContext& context, std::vector<TT>& dest, const Variable& source)
 {

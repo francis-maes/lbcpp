@@ -72,12 +72,12 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameBasedOperator : public Function
+class FrameBasedFunction : public Function
 {
 public:
-  FrameBasedOperator(FrameClassPtr frameClass)
+  FrameBasedFunction(FrameClassPtr frameClass)
     : frameClass(frameClass) {}
-  FrameBasedOperator() {}
+  FrameBasedFunction() {}
 
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
     {return frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);}
@@ -91,7 +91,7 @@ public:
   }
 
 protected:
-  friend class FrameBasedOperatorClass;
+  friend class FrameBasedFunctionClass;
 
   FrameClassPtr frameClass;
 };
@@ -100,16 +100,13 @@ class ProteinFrameFactory : public Object
 {
 public:
   FrameClassPtr createProteinFrameClass(ExecutionContext& context);
-
-  void createProteinFrameClass(ExecutionContext& context, const FrameClassPtr& res);
-  void createContextFreeResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res);
-  void createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res);
+  FrameClassPtr createPrimaryResidueFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass);
+  FrameClassPtr createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass);
+  FrameClassPtr createProteinGlobalFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass);
 
   FramePtr createFrame(const ProteinPtr& protein) const;
 
-protected:
-  FrameClassPtr contextFreeResidueFrame;
-  FrameClassPtr residueFrame;
+private:
   FrameClassPtr proteinFrame;
 };
 
