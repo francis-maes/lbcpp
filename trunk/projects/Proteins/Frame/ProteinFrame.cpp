@@ -93,6 +93,13 @@ bool FrameClass::initializeFunction(ExecutionContext& context, const FrameOperat
 Frame::Frame(ClassPtr frameClass)
   : DenseGenericObject(frameClass) {}
 
+void Frame::ensureAllVariablesAreComputed()
+{
+  size_t n = thisClass->getNumMemberVariables();
+  for (size_t i = 0; i < n; ++i)
+    getOrComputeVariable(i);
+}
+
 bool Frame::isVariableComputed(size_t index) const
 {
   return index < variableValues.size() &&
@@ -148,17 +155,17 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
   size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), (size_t)-1, lengthIndex, T("primaryResidueFeatures"));
   size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
   
-  // residue features
-  FrameClassPtr residueFrameClass = createResidueFrameClass(context, res);
-  if (!residueFrameClass)
-    return FrameClassPtr();
-  res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(residueFrameClass)), (size_t)-1, lengthIndex, T("residueFeatures"));
-
   // global features
   FrameClassPtr proteinGlobalFrameClass = createProteinGlobalFrameClass(context, res);
   if (!proteinGlobalFrameClass)
     return FrameClassPtr();
   res->addMemberOperator(context, new FrameBasedFunction(proteinGlobalFrameClass), (size_t)-1, T("globalFeatures"));
+
+  // residue features
+  FrameClassPtr residueFrameClass = createResidueFrameClass(context, res);
+  if (!residueFrameClass)
+    return FrameClassPtr();
+  res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(residueFrameClass)), (size_t)-1, lengthIndex, T("residueFeatures"));
 
   return res->initialize(context) ? res : FrameClassPtr();
 }
@@ -193,7 +200,7 @@ FrameClassPtr ProteinFrameFactory::createPrimaryResidueFrameClass(ExecutionConte
   featureIndices.push_back(res->addMemberOperator(context, defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), ss3EntropyIndex));
 
   // all features
-  res->addMemberOperator(context, concatenateFeatureGenerator(false), featureIndices, T("primaryResidueFeatures"));
+  res->addMemberOperator(context, concatenateFeatureGenerator(true), featureIndices, T("primaryResidueFeatures"));
 
   return res->initialize(context) ? res : FrameClassPtr();
 }
@@ -212,6 +219,7 @@ FrameClassPtr ProteinFrameFactory::createResidueFrameClass(ExecutionContext& con
   featureIndices.push_back(res->addMemberOperator(context, windowFeatureGenerator(15), primaryResidueFeaturesIndex, positionIndex));
   featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(10), primaryResidueFeaturesAccIndex, positionIndex, T("localMean10")));
   featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(50), primaryResidueFeaturesAccIndex, positionIndex, T("localMean50")));
+  featureIndices.push_back(res->addMemberOperator(context, getVariableFunction(T("globalFeatures")), proteinFrameIndex, T("global")));
   
   // all features
   res->addMemberOperator(context, concatenateFeatureGenerator(true), featureIndices, T("AllFeatures")); 

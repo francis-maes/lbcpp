@@ -126,6 +126,11 @@ ProgressionState::ProgressionState(double value, double total, const String& uni
 {
 }
 
+ProgressionState::ProgressionState(size_t value, size_t total, const String& unit)
+  : value((double)value), total((double)total), unit(unit)
+{
+}
+
 ProgressionState::ProgressionState(double value, const String& unit)
   : value(value), total(0.0), unit(unit)
 {

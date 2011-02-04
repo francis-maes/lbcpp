@@ -66,6 +66,7 @@ public:
 
   bool isVariableComputed(size_t index) const;
   Variable getOrComputeVariable(size_t index);
+  void ensureAllVariablesAreComputed();
 
   virtual Variable getVariable(size_t index) const;
 };

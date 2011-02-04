@@ -59,6 +59,13 @@ void Protein::saveToXmlFile(ExecutionContext& context, const File& xmlFile) cons
 void Protein::saveToFASTAFile(ExecutionContext& context, const File& fastaFile) const
   {ConsumerPtr(new FASTAFileGenerator(context, fastaFile))->consume(context, refCountedPointerFromThis(this));}
 
+ContainerPtr Protein::loadProteinsFromDirectory(ExecutionContext& context, const File& directory, size_t maxCount, const String& workUnitName)
+{
+  return directoryFileStream(context, directory, T("*.xml"))->load(maxCount, false)
+      ->apply(context, loadFromFileFunction(proteinClass), Container::parallelApply, workUnitName)
+      ->randomize();
+}
+
 ContainerPtr Protein::loadProteinsFromDirectoryPair(ExecutionContext& context, const File& inputDirectory, const File& supervisionDirectory, size_t maxCount, const String& workUnitName)
 {
   if (inputDirectory.exists())
