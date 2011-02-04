@@ -31,8 +31,9 @@ GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Operator/OperatorLibrary.xml OperatorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Operator/FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionLibrary.xml SimplePerceptionLibrary.cpp)
@@ -328,22 +329,30 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
 
-#### Operator ####
+#### FeatureGenerator ####
 
-SET(LBCPP_OPERATOR_SOURCES
-  ../include/lbcpp/Operator/FeatureGenerator.h
-  Operator/FeatureGenerator.cpp
-  Operator/OperatorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp
+GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
+
+SET(LBCPP_FEATURE_GENERATOR_SOURCES
+  ../include/lbcpp/FeatureGenerator/FeatureGenerator.h
+  FeatureGenerator/FeatureGenerator.cpp
+  FeatureGenerator/FeatureGeneratorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
 )
 
-SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
-  Operator/FeatureGenerator/ConcatenateFeatureGenerator.h
-  Operator/FeatureGenerator/WindowFeatureGenerator.h
-  Operator/FeatureGenerator/EnumerationFeatureGenerator.h
-  Operator/FeatureGenerator/EnumerationDistributionFeatureGenerator.h
-  Operator/FeatureGenerator/FeatureGeneratorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
+SET(LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES
+  FeatureGenerator/Generic/ConcatenateFeatureGenerator.h
+  FeatureGenerator/Generic/WindowFeatureGenerator.h
+  FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/GenericFeatureGeneratorLibrary.cpp
+)
+
+SET(LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES
+  FeatureGenerator/Atomic/EnumerationFeatureGenerator.h
+  FeatureGenerator/Atomic/EnumerationDistributionFeatureGenerator.h
+  FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/AtomicFeatureGeneratorLibrary.cpp
 )
 
 #### Perception ####
@@ -716,9 +725,10 @@ SET(LBCPP_CORE
     ${LBCPP_FUNCTION_PREDICATE_SOURCES}
     ${LBCPP_FUNCTION_EVALUATOR_SOURCES}
 
-  # Operator
-  ${LBCPP_OPERATOR_SOURCES}
-    ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES}
+  # FeatureGenerator
+  ${LBCPP_FEATURE_GENERATOR_SOURCES}
+    ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES}
+    ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES}
 
   # Perception
   ${LBCPP_PERCEPTION_SOURCES}
@@ -796,9 +806,10 @@ SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRIT
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
-## Operator
-SOURCE_GROUP(Operator FILES ${LBCPP_OPERATOR_SOURCES})
-SOURCE_SUB_GROUP(Operator FeatureGenerator FILES ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES})
+## FeatureGenerator
+SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_SOURCES})
+SOURCE_SUB_GROUP(FeatureGenerator Generic FILES ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES})
+SOURCE_SUB_GROUP(FeatureGenerator Atomic FILES ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES})
 
 ## Perception
 SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})

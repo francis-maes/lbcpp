@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Operator/FeatureGenerator.h>
+#include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 using namespace lbcpp;
 
 class FillSparseVectorFeatureGeneratorCallback : public FeatureGeneratorCallback

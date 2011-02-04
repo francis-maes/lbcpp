@@ -6,6 +6,7 @@
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
+  <include file="lbcpp/Function/Function.h"/>
 
   <!-- Pair -->
   <template name="Pair" base="Object">
@@ -167,4 +168,14 @@
     </code>
   </class>
   
+  
+  <!-- Function -->
+  <class name="Function" abstract="yes">
+    <variable type="ObjectVector[VariableSignature]" name="inputVariables"/>
+    <variable type="VariableSignature" name="outputVariable"/>
+    <variable type="Boolean" name="pushIntoStack"/>
+  </class>
+
+  <class name="ProxyFunction" base="Function" abstract="yes"/>
+
 </library>

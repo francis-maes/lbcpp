@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="AtomicFeatureGenerator" directory="FeatureGenerator/Atomic">
+
+  <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  
+  <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+
+</library>
