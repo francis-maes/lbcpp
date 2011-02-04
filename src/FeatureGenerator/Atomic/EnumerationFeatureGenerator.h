@@ -17,6 +17,9 @@ namespace lbcpp
 class EnumerationFeatureGenerator : public FeatureGenerator
 {
 public:
+  EnumerationFeatureGenerator(bool includeMissingValue = true)
+    : includeMissingValue(includeMissingValue) {}
+
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     if (!checkNumInputs(context, 1))
@@ -31,13 +34,20 @@ public:
     elementsType = probabilityType;
     outputName = inputVariables[0]->getName() + T("Features");
     outputShortName = inputVariables[0]->getShortName() + T("f");
-    return addMissingToEnumerationEnumeration(enumeration);
+    return includeMissingValue ? addMissingToEnumerationEnumeration(enumeration) : enumeration;
   }
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
-    {callback.sense(getIndex(*inputs), 1.0);}
+  {
+    size_t index = getIndex(*inputs);
+    if (includeMissingValue || index < enumeration->getNumElements())
+      callback.sense(index, 1.0);
+  }
 
 protected:
+  friend class EnumerationFeatureGeneratorClass;
+  bool includeMissingValue;
+
   EnumerationPtr enumeration;
 
   size_t getIndex(const Variable& input) const

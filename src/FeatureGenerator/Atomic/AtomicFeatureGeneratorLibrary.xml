@@ -2,12 +2,47 @@
 
 <library name="AtomicFeatureGenerator" directory="FeatureGenerator/Atomic">
 
+  <!-- Boolean Features -->     
+  <class name="BooleanFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="bool includeMissingValue"/>
+    <variable type="Boolean" name="includeMissingValue"/>
+  </class>
+
+  <!-- Enumeration and EnumerationDistribution Features -->
   <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
-    <constructor/>
+    <constructor arguments="bool includeMissingValue"/>
+    <variable type="Boolean" name="includeMissingValue"/>
   </class>
   
   <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
-    <constructor/>
+    <constructor arguments="bool includeMissingValue"/>
+    <variable type="Boolean" name="includeMissingValue"/>
   </class>
 
+  <!-- Number Features -->
+  <class name="DiscretizedNumberFeatureGenerator" base="FeatureGenerator" abstract="yes">
+    <variable type="Double" name="minimumValue"/>
+    <variable type="Double" name="maximumValue"/>
+    <variable type="Integer" name="numIntervals"/>
+    <variable type="Boolean" name="doOutOfBoundsFeatures"/>
+  </class>
+
+  <class name="HardDiscretizedNumberFeatureGenerator" base="DiscretizedNumberFeatureGenerator">
+    <constructor arguments="double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="FeatureGenerator"/>
+  </class>
+
+  <class name="SoftDiscretizedNumberFeatureGenerator" base="DiscretizedNumberFeatureGenerator">
+    <constructor arguments="double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior" returnType="FeatureGenerator"/>
+    <variable type="Boolean" name="cyclicBehavior"/>
+  </class>
+
+  <class name="SoftDiscretizedLogNumberFeatureGenerator" base="SoftDiscretizedNumberFeatureGenerator">
+    <constructor arguments="double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures" returnType="FeatureGenerator"/>
+  </class>
+
+  <class name="SignedNumberFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="FeatureGeneratorPtr positiveNumberFeatures"/>
+    <variable type="FeatureGenerator" name="positiveNumberFeatures"/>
+  </class>
+  
 </library>

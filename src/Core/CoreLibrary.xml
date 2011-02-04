@@ -159,6 +159,17 @@
     <value name="present" oneLetterCode="v"/>
   </enumeration>
 
+  <enumeration name="FalseOrTrue">
+    <value name="false" oneLetterCode="f"/>
+    <value name="true" oneLetterCode="t"/>
+  </enumeration>
+
+  <enumeration name="FalseTrueOrMissing">
+    <value name="false" oneLetterCode="f"/>
+    <value name="true" oneLetterCode="t"/>
+    <value name="missing" oneLetterCode="m"/>
+  </enumeration>
+  
   <class name="PositiveIntegerEnumeration" metaclass="Enumeration">
     <code>
       virtual size_t getNumElements() const

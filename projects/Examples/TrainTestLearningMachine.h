@@ -14,7 +14,7 @@
 # include <lbcpp/Data/Stream.h>
 # include <lbcpp/Inference/Inference.h>
 # include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/NumericalLearning/NumericalSupervisedInference.h>
+# include <lbcpp/NumericalLearning/NumericalLearning.h>
 # include <lbcpp/DecisionTree/DecisionTree.h>
 # include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/StoppingCriterion.h>

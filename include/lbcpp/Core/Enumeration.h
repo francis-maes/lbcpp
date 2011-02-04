@@ -97,6 +97,8 @@ public:
 extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr addEntropyToEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr missingOrPresentEnumeration;
+extern EnumerationPtr falseOrTrueEnumeration;
+extern EnumerationPtr falseTrueOrMissingEnumeration;
 extern EnumerationPtr variablesEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr positiveIntegerEnumerationEnumeration;
 
@@ -117,6 +119,9 @@ public:
   size_t findOrAddElement(ExecutionContext& context, const String& name);
   
   void addElementsWithPrefix(ExecutionContext& context, const EnumerationPtr& enumeration, const String& namePrefix, const String& shortNamePrefix);
+
+  void reserveElements(size_t size)
+    {elements.reserve(size);}
 
 private:
   std::vector<EnumerationElementPtr> elements;
