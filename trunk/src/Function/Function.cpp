@@ -15,6 +15,9 @@ bool Function::initialize(ExecutionContext& context, TypePtr inputType)
   return initialize(context, inputVariables);
 }
 
+bool Function::initialize(ExecutionContext& context, VariableSignaturePtr inputVariable)
+  {return initialize(context, std::vector<VariableSignaturePtr>(1, inputVariable));}
+
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
   this->inputVariables = inputVariables;

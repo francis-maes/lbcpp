@@ -11,6 +11,8 @@
 
 # include "../Perception/Perception.h"
 # include "../Inference/Inference.h"
+# include "../Data/DoubleVector.h"
+# include "../FeatureGenerator/FeatureGenerator.h"
 
 namespace lbcpp
 {

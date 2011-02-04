@@ -92,6 +92,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
+  ../include/lbcpp/Core/Frame.h
+  Core/Frame.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml

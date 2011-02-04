@@ -33,6 +33,7 @@ public:
 
   // new
   bool initialize(ExecutionContext& context, TypePtr inputType);
+  bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
 
 protected:

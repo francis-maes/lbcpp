@@ -3,7 +3,7 @@
 <library name="Examples" dynamic="yes">
 
   <!-- Xor Regression Example -->
-  <class name="XorPerception" base="Perception"/>
+  <class name="XorFeatureGenerator" base="FeatureGenerator"/>
   <class name="XorRegressionExample" base="WorkUnit"/>
 
   <!-- WorkUnit Example -->

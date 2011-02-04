@@ -40,6 +40,7 @@
 # include "Core/DynamicObject.h"
 # include "Core/Vector.h"
 # include "Function/Function.h"
+# include "Core/Frame.h"
 
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
