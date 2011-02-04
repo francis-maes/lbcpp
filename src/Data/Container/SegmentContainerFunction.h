@@ -1,17 +1,16 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SegmentContainerOperator.h     | Segment Container Operator      |
+| Filename: SegmentContainerFunction.h     | Segment Container Operator      |
 | Author  : Francis Maes                   |                                 |
 | Started : 01/02/2011 13:15               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_OPERATOR_SEGMENT_CONTAINER_H_
-# define LBCPP_FUNCTION_OPERATOR_SEGMENT_CONTAINER_H_
+#ifndef LBCPP_DATA_CONTAINER_FUNCTION_SEGMENT_H_
+# define LBCPP_DATA_CONTAINER_FUNCTION_SEGMENT_H_
 
-# include <lbcpp/Operator/Operator.h>
+# include <lbcpp/Function/Function.h>
 # include <lbcpp/Core/Vector.h>
-# include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
 {
@@ -123,10 +122,10 @@ private:
 };
 
 /*
-** SegmentContainerOperator
+** SegmentContainerFunction
 */
 // Container[T] => SegmentContainer[T]
-class SegmentContainerOperator : public Function
+class SegmentContainerFunction : public Function
 {
 public:
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
@@ -162,11 +161,11 @@ public:
   };
 
 protected:
-  friend class SegmentContainerOperatorClass;
+  friend class SegmentContainerFunctionClass;
 
   TypePtr elementsType;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_OPERATOR_SEGMENT_CONTAINER_H_
+#endif // !LBCPP_DATA_CONTAINER_FUNCTION_SEGMENT_H_

@@ -1,16 +1,15 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: AccumulateContainerOperator.h  | Accumulate Container Function   |
+| Filename: AccumulateContainerFunction.h  | Accumulate Container Function   |
 | Author  : Francis Maes                   |                                 |
 | Started : 31/01/2011 22:00               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
-# define LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
+#ifndef LBCPP_DATA_CONTAINER_FUNCTION_ACCUMULATE_H_
+# define LBCPP_DATA_CONTAINER_FUNCTION_ACCUMULATE_H_
 
-# include <lbcpp/Operator/Operator.h>
-# include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Function/Function.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 
@@ -52,7 +51,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<CumulativeScoreVector> CumulativeScoreVectorPtr;
 
-class AccumulateContainerOperator : public Function
+class AccumulateContainerFunctionImpl : public Function
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType) = 0;
@@ -85,7 +84,7 @@ protected:
 };
 
 // enum values + missing
-class AccumulateEnumerationContainerOperator : public AccumulateContainerOperator
+class AccumulateEnumerationContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType) 
@@ -106,7 +105,7 @@ public:
 };
 
 // enum values + missing + entropy
-class AccumulateEnumerationDistributionContainerOperator : public AccumulateContainerOperator
+class AccumulateEnumerationDistributionContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
@@ -143,7 +142,7 @@ private:
 };
 
 // value sum, missing value count
-class AccumulateDoubleContainerOperator : public AccumulateContainerOperator
+class AccumulateDoubleContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
@@ -164,7 +163,7 @@ public:
   }
 };
 
-class AccumulateDoubleVectorContainerOperator : public AccumulateContainerOperator
+class AccumulateDoubleVectorContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr doubleVectorType)
@@ -188,7 +187,7 @@ public:
   }
 };
 
-class AccumulateOperator : public ProxyFunction
+class AccumulateContainerFunction : public ProxyFunction
 {
 public:
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
@@ -199,16 +198,15 @@ public:
       if (Container::getTemplateParameter(defaultExecutionContext(), inputVariables[0]->getType(), elementsType))
       {
         if (elementsType.dynamicCast<Enumeration>())
-          return new AccumulateEnumerationContainerOperator();
+          return new AccumulateEnumerationContainerFunction();
         else if (elementsType->inheritsFrom(doubleType))
-          return new AccumulateDoubleContainerOperator();
+          return new AccumulateDoubleContainerFunction();
         else if (elementsType->inheritsFrom(enumerationDistributionClass(anyType)))
-          return new AccumulateEnumerationDistributionContainerOperator();
-        else if (elementsType->inheritsFrom(objectClass))
-        {
-          // todo: verify if the object only contains double members
-          return new AccumulateDoubleVectorContainerOperator();
-        }
+          return new AccumulateEnumerationDistributionContainerFunction();
+        else if (elementsType->inheritsFrom(doubleVectorClass()))
+          return new AccumulateDoubleVectorContainerFunction();
+        else
+          return FunctionPtr();
       }
     }
     return FunctionPtr();
@@ -217,4 +215,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_OPERATOR_ACCUMULATE_CONTAINER_H_
+#endif // !LBCPP_DATA_CONTAINER_FUNCTION_ACCUMULATE_H_

@@ -45,4 +45,39 @@
     <parameter name="elementsType"/>
   </template>
 
+  <!-- Accumulate Function -->
+  <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">
+    <parameter name="scoresEnumeration" type="EnumValue"/>
+  </template>
+
+  <class name="AccumulateContainerFunctionImpl" base="Function" abstract="yes"/>
+  <class name="AccumulateEnumerationContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateEnumerationDistributionContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateDoubleContainerFunction" base="AccumulateContainerFunctionImpl"/>
+  <class name="AccumulateContainerFunction" base="ProxyFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <!-- Segment Function -->
+  <template name="Segment" base="Object">
+    <parameter name="elementType"/>
+    <variable type="PositiveInteger" name="beginIndex" var="segment.beginIndex"/>
+    <variable type="PositiveInteger" name="endIndex" var="segment.endIndex"/>
+    <variable type="Variable" name="value" var="segment.value"/>
+  </template>
+
+  <template name="SegmentContainer" base="Container[elementsType]">
+    <parameter name="elementsType"/>
+  </template>
+
+  <class name="SegmentContainerFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <!-- Apply Function -->
+  <class name="ApplyOnContainerFunction" base="Function">
+    <constructor arguments="const FunctionPtr&amp; function"/>
+    <variable type="Function" name="function"/>
+  </class>
+  
 </library>

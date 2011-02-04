@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="DistributionFunction" directory="Distribution/Function">
+
+  <!-- Entropy -->
+  <class name="DistributionEntropyFunction" base="Function">
+    <constructor/>
+  </class>
+  
+  <!-- Sample -->
+  <class name="SampleDistributionContainerFunction" base="Function">
+    <constructor arguments="bool sampleBest"/>
+    <variable type="Type" name="elementsType"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
+  
+  <class name="SampleDistributionFunction" base="ProxyFunction">
+    <constructor arguments="bool sampleBest" returnType="Function"/>
+    <variable type="Boolean" name="sampleBest"/>
+  </class>
+
+</library>

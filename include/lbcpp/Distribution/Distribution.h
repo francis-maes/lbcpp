@@ -34,6 +34,9 @@ typedef ReferenceCountedObjectPtr<Distribution> DistributionPtr;
 
 extern ClassPtr distributionClass(TypePtr elementsType);
 
+extern FunctionPtr distributionEntropyFunction();
+extern FunctionPtr sampleDistributionFunction(bool sampleBest = true);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_

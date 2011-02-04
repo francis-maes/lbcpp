@@ -64,6 +64,7 @@
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 
+# include "Function/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarObjectFunction.h"
 # include "Function/Predicate.h"
@@ -71,7 +72,6 @@
 # include "Function/StoppingCriterion.h"
 # include "Function/Evaluator.h"
 
-# include "Operator/Operator.h"
 # include "Operator/FeatureGenerator.h"
 
 # include "Perception/Perception.h"
