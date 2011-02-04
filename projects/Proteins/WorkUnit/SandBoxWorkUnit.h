@@ -16,6 +16,7 @@
 # include "../Inference/ProteinInference.h"
 # include "../Inference/ContactMapInference.h"
 # include "../Evaluator/ProteinEvaluator.h"
+# include "../Frame/ProteinFrame.h"
 
 namespace lbcpp
 {
@@ -77,6 +78,52 @@ public:
 
 private:
   void initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone);
+};
+
+class ComputeProteinFeaturesSandBox : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!dataDirectory.exists())
+    {
+      context.errorCallback(T("Missing data directory"));
+      return false;
+    }
+
+    ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, dataDirectory);
+    if (!proteins->getNumElements())
+    {
+      context.errorCallback(T("No proteins"));
+      return false;
+    }
+    
+    context.enterScope(T("Waiting"));
+    Thread::sleep(10000);
+    context.leaveScope(T("ok"));
+
+    context.enterScope(T("Computing features"));
+    ProteinFrameFactory factory;
+    FrameClassPtr proteinFrameClass = factory.createProteinFrameClass(context);
+    std::vector<FramePtr> proteinFrames(proteins->getNumElements());
+    for (size_t i = 0; i < proteinFrames.size(); ++i)
+    {
+      ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
+      proteinFrames[i] = factory.createFrame(protein);
+      proteinFrames[i]->ensureAllVariablesAreComputed();
+    }
+    context.leaveScope(T("ok"));
+
+    context.enterScope(T("Waiting"));
+    Thread::sleep(10000);
+    context.leaveScope(T("ok"));
+    return true;
+  }
+
+protected:
+  friend class ComputeProteinFeaturesSandBoxClass;
+
+  File dataDirectory;
 };
 
 }; /* namespace lbcpp */

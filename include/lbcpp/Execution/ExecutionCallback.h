@@ -159,6 +159,7 @@ class ProgressionState : public Object
 {
 public:
   ProgressionState(double value, double total, const String& unit);
+  ProgressionState(size_t value, size_t total, const String& unit);
   ProgressionState(double value, const String& unit);
   ProgressionState(const ProgressionState& other);
   ProgressionState();

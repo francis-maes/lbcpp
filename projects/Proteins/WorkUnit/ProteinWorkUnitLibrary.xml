@@ -106,4 +106,8 @@
 
   <class name="SandBoxWorkUnit" base="WorkUnit"/>
 
+  <class name="ComputeProteinFeaturesSandBox" base="WorkUnit">
+    <variable type="File" name="dataDirectory" shortName="d"/>
+  </class>
+
 </library>
