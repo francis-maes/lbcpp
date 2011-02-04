@@ -7,6 +7,9 @@
   <include file="lbcpp/Distribution/ContinuousDistribution.h"/>
   <include file="lbcpp/Distribution/MultiVariateDistribution.h"/>
 
+  <import name="DistributionFunction"/>
+  <import name="DistributionBuilder"/>
+
   <!-- Probability Distribution -->
   <template name="Distribution" base="Object" abstract="yes">
     <parameter name="elementsType" type="Variable"/>
@@ -83,7 +86,5 @@
     
     <variable type="ObjectVector[Distribution[Variable]]" name="distributions"/>
   </template>
-    
-  <import name="DistributionBuilder"/>
   
 </library>

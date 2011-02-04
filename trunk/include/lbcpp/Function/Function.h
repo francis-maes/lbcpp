@@ -107,6 +107,35 @@ extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> 
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 
+
+class ProxyFunction : public Function
+{
+protected:
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
+
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  {
+    implementation = createImplementation(inputVariables);
+    if (!implementation)
+    {
+      context.errorCallback(T("Could not create implementation in proxy operator"));
+      return VariableSignaturePtr();
+    }
+    if (!implementation->initialize(context, inputVariables))
+      return VariableSignaturePtr();
+
+    return implementation->getOutputVariable();
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassert(implementation); return implementation->computeFunction(context, input);}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {jassert(implementation); return implementation->computeFunction(context, inputs);}
+
+  FunctionPtr implementation;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_FUNCTION_H_

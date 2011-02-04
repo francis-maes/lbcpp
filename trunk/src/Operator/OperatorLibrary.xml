@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Operator" directory="Operator">
-  <include file="lbcpp/Operator/Operator.h"/>
   <include file="lbcpp/Operator/FeatureGenerator.h"/>
 
-  <import name="ContainerOperator"/>
   <import name="FeatureGenerator"/>
-
-  <class name="ProxyFunction" base="Function" abstract="yes"/>
 
   <class name="FeatureGenerator" base="Function" abstract="yes">
     <variable type="Boolean" name="lazyComputation"/>

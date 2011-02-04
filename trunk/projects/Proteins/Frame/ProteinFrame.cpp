@@ -146,23 +146,6 @@ protected:
   PerceptionPtr perception;
 };
 
-class EntropyOperator : public Function
-{
-public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-     if (!checkNumInputs(context, 1))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    if (!checkInputType(context, 0, distributionClass(anyType)))
-      return VariableSignaturePtr();
-    return new VariableSignature(negativeLogProbabilityType, inputVariable->getName() + T("Entropy"), inputVariable->getShortName() + T("e"));
-  }
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getObjectAndCast<Distribution>()->computeEntropy();}
-};
-
 ////////////////////////////////////////////////////
 
 class ForEachOperator : public Function
@@ -236,8 +219,8 @@ void ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context, con
   contextFreeResidueInputs.push_back(aaIndex);
   contextFreeResidueInputs.push_back(pssmIndex);
   contextFreeResidueInputs.push_back(ss3Index);
-  size_t contextFreeResidueFeatures = res->addMemberOperator(context, applyOnContainerOperator(new FrameBasedOperator(contextFreeResidueFrame)), contextFreeResidueInputs);
-  size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateOperator(), contextFreeResidueFeatures);
+  size_t contextFreeResidueFeatures = res->addMemberOperator(context, applyOnContainerFunction(new FrameBasedOperator(contextFreeResidueFrame)), contextFreeResidueInputs);
+  size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures);
   
   // residues 
   std::vector<size_t> residueFrameInputs;
@@ -247,16 +230,16 @@ void ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context, con
   res->addMemberOperator(context, new ForEachOperator(new FrameBasedOperator(residueFrame)), residueFrameInputs, T("residueFrames"));
 
   // primaryStructure
-  res->addMemberOperator(context, accumulateOperator(), aaIndex);
+  res->addMemberOperator(context, accumulateContainerFunction(), aaIndex);
 
   // pssm
-  res->addMemberOperator(context, accumulateOperator(), pssmIndex);
+  res->addMemberOperator(context, accumulateContainerFunction(), pssmIndex);
 
   // secondary structure
-  res->addMemberOperator(context, accumulateOperator(), ss3Index);
-  size_t ss3LabelsIndex = res->addMemberOperator(context, discretizeOperator(), ss3Index);
-  res->addMemberOperator(context, segmentContainerOperator(), ss3LabelsIndex);
-  res->addMemberOperator(context, accumulateOperator(), ss3LabelsIndex);
+  res->addMemberOperator(context, accumulateContainerFunction(), ss3Index);
+  size_t ss3LabelsIndex = res->addMemberOperator(context, sampleDistributionFunction(true), ss3Index);
+  res->addMemberOperator(context, segmentContainerFunction(), ss3LabelsIndex);
+  res->addMemberOperator(context, accumulateContainerFunction(), ss3LabelsIndex);
 }
 
 void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res)
@@ -271,11 +254,11 @@ void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& c
 
   featureIndices.push_back(res->addMemberOperator(context, enumerationFeatureGenerator(), aaIndex));
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), pssmIndex));
-  size_t pssmEntropyIndex = res->addMemberOperator(context, new EntropyOperator(), pssmIndex);
+  size_t pssmEntropyIndex = res->addMemberOperator(context, distributionEntropyFunction(), pssmIndex);
   //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), pssmEntropyIndex));
 
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), ss3Index));
-  size_t ss3EntropyIndex = res->addMemberOperator(context, new EntropyOperator(), ss3Index);
+  size_t ss3EntropyIndex = res->addMemberOperator(context, distributionEntropyFunction(), ss3Index);
   //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
 
   // all features

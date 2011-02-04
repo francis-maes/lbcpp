@@ -1,27 +1,25 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DiscretizeContainerOperator.h  | Discretize Container Function   |
+| Filename: SampleDistributionFunction.h   | Sample Distribution Function    |
 | Author  : Francis Maes                   |                                 |
 | Started : 31/01/2011 22:23               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_OPERATOR_DISCRETIZE_CONTAINER_H_
-# define LBCPP_FUNCTION_OPERATOR_DISCRETIZE_CONTAINER_H_
+#ifndef LBCPP_DISTRIBUTION_FUNCTION_SAMPLE_H_
+# define LBCPP_DISTRIBUTION_FUNCTION_SAMPLE_H_
 
-# include <lbcpp/Operator/Operator.h>
-# include <lbcpp/Core/Vector.h>
-# include <lbcpp/Core/DynamicObject.h>
+# include <lbcpp/Function/Function.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
 {
 
   // container[distribution[T]] => container[T]
-class DiscretizeContainerOperator : public Function
+class SampleDistributionContainerFunction : public Function
 {
 public:
-  DiscretizeContainerOperator(bool sampleBest = true)
+  SampleDistributionContainerFunction(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
   virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
@@ -54,30 +52,30 @@ public:
   };
 
 protected:
-  friend class DiscretizeContainerOperatorClass;
+  friend class SampleDistributionContainerFunctionClass;
 
   TypePtr elementsType;
   bool sampleBest;
 };
 
-class DiscretizeOperator : public ProxyFunction
+class SampleDistributionFunction : public ProxyFunction
 {
 public:
-  DiscretizeOperator(bool sampleBest = true)
+  SampleDistributionFunction(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
     if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(distributionClass(anyType))))
-      return new DiscretizeContainerOperator(sampleBest);
+      return new SampleDistributionContainerFunction(sampleBest);
     return FunctionPtr();
   }
 
 protected:
-  friend class DiscretizeOperatorClass;
+  friend class SampleDistributionFunctionClass;
   bool sampleBest;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_OPERATOR_DISCRETIZE_CONTAINER_H_
+#endif // !LBCPP_DISTRIBUTION_FUNCTION_SAMPLE_H_

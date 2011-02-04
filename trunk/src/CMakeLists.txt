@@ -15,6 +15,7 @@ GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Distribution/Function/DistributionFunctionLibrary.xml DistributionFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Distribution/Builder/DistributionBuilderLibrary.xml DistributionBuilderLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
@@ -31,7 +32,6 @@ GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLib
 GENERATE_INTROSPECTION_CODE(Function/Evaluator/EvaluatorLibrary.xml EvaluatorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Operator/OperatorLibrary.xml OperatorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Operator/Container/ContainerOperatorLibrary.xml ContainerOperatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Operator/FeatureGenerator/FeatureGeneratorLibrary.xml FeatureGeneratorLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
@@ -162,6 +162,8 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/DuplicatedContainer.h
   Data/Container/RangeContainer.h
   Data/Container/ExcludeRangeContainer.h
+  Data/Container/AccumulateContainerFunction.h
+  Data/Container/SegmentContainerFunction.h
   Data/Container/ContainerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )
@@ -217,7 +219,7 @@ SET(LBCPP_NETWORK_SOURCES
 
 #### Distribution ####
 
-SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
+SET(LBCPP_DISTRIBUTION_SOURCES
   ../include/lbcpp/Distribution/Distribution.h
   ../include/lbcpp/Distribution/DiscreteDistribution.h
   Distribution/DiscreteDistribution.cpp
@@ -230,7 +232,14 @@ SET(LBCPP_PROBABILITY_DISTRIBUTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionLibrary.cpp
 )
 
-SET(LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES
+SET(LBCPP_DISTRIBUTION_FUNCTION_SOURCES
+  Distribution/Function/DistributionEntropyFunction.h
+  Distribution/Function/SampleDistributionFunction.h
+  Distribution/Function/DistributionFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DistributionFunctionLibrary.cpp
+)
+
+SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
   Distribution/Builder/EnumerationDistributionBuilder.h
   Distribution/Builder/GaussianDistributionBuilder.h
   Distribution/Builder/BernoulliDistributionBuilder.h
@@ -322,21 +331,10 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
 #### Operator ####
 
 SET(LBCPP_OPERATOR_SOURCES
-  ../include/lbcpp/Operator/Operator.h
   ../include/lbcpp/Operator/FeatureGenerator.h
   Operator/FeatureGenerator.cpp
-  Operator/Operator.cpp
   Operator/OperatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OperatorLibrary.cpp
-)
-
-SET(LBCPP_OPERATOR_CONTAINER_SOURCES
-  Operator/Container/AccumulateContainerOperator.h
-  Operator/Container/DiscretizeContainerOperator.h
-  Operator/Container/SegmentContainerOperator.h
-  Operator/Container/ApplyOnContainerOperator.h
-  Operator/Container/ContainerOperatorLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ContainerOperatorLibrary.cpp
 )
 
 SET(LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES
@@ -699,8 +697,9 @@ SET(LBCPP_CORE
   ${LBCPP_NETWORK_SOURCES}
   
   # Distribution
-  ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES}
-    ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES}
+  ${LBCPP_DISTRIBUTION_SOURCES}
+    ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES}
+    ${LBCPP_DISTRIBUTION_BUILDER_SOURCES}  
 
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
@@ -719,7 +718,6 @@ SET(LBCPP_CORE
 
   # Operator
   ${LBCPP_OPERATOR_SOURCES}
-    ${LBCPP_OPERATOR_CONTAINER_SOURCES}
     ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES}
 
   # Perception
@@ -779,8 +777,9 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
 
 ## Distribution
-SOURCE_GROUP(Distribution FILES ${LBCPP_PROBABILITY_DISTRIBUTION_SOURCES})
-SOURCE_SUB_GROUP(Distribution Builder FILES ${LBCPP_PROBABILITY_DISTRIBUTION_BUILDER_SOURCES})
+SOURCE_GROUP(Distribution FILES ${LBCPP_DISTRIBUTION_SOURCES})
+SOURCE_SUB_GROUP(Distribution Function FILES ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP(Distribution Builder FILES ${LBCPP_DISTRIBUTION_BUILDER_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
@@ -799,7 +798,6 @@ SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
 
 ## Operator
 SOURCE_GROUP(Operator FILES ${LBCPP_OPERATOR_SOURCES})
-SOURCE_SUB_GROUP(Operator Container FILES ${LBCPP_OPERATOR_CONTAINER_SOURCES})
 SOURCE_SUB_GROUP(Operator FeatureGenerator FILES ${LBCPP_OPERATOR_FEATURE_GENERATOR_SOURCES})
 
 ## Perception

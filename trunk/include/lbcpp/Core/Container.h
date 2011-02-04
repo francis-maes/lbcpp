@@ -190,6 +190,10 @@ public:
 
 extern ClassPtr containerClass(TypePtr elementsType);
 
+extern FunctionPtr accumulateContainerFunction();
+extern FunctionPtr segmentContainerFunction();
+extern FunctionPtr applyOnContainerFunction(const FunctionPtr& function);
+
 /**
 ** @class DecoratorContainer
 ** @brief Base class for Container decorators.
