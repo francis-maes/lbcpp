@@ -1,9 +1,9 @@
-* recycler toutes les Perceptions necessaires en tant que FeatureGenerator
-   => but: avoir les Frames completes de l'etat courrant
+* 2- SandBox: tester le calcul de toutes les features sur toutes les proteines : checker vitesse et utilisation memoire
+* 3- Suite...
 
-* Integration des Frames dans ProteinInferenceFactory et ProteinInference
 * Enlever les Perceptions des machines elementaires
 * NumericalLearning: utiliser DoubleVector partout
+* Integration des Frames dans ProteinInferenceFactory et ProteinInference
 * NumericalLearning: enlever les anciens fichiers maths
 * Inference multi-classes: toujours sortir des DenseDoubleVector[classes, probabilityType]
 

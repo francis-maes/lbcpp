@@ -18,28 +18,33 @@ FrameClass::FrameClass(const String& name, TypePtr baseClass)
 FrameClass::FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : DefaultClass(templateType, templateArguments, baseClass) {}
 
-size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input, const String& outputName, const String& outputShortName)
-  {return addMemberVariable(context, new FrameOperatorSignature(operation, input, outputName, outputShortName));}
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& function, size_t input, const String& outputName, const String& outputShortName)
+  {return addMemberOperator(context, function, std::vector<size_t>(1, input), outputName, outputShortName);}
 
-size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
+size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& function, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
 {
   std::vector<size_t> inputs(2);
   inputs[0] = input1;
   inputs[1] = input2;
-  return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));
+  return addMemberOperator(context, function, inputs, outputName, outputShortName);
 }
 
 size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, const std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
-  {return addMemberVariable(context, new FrameOperatorSignature(operation, inputs, outputName, outputShortName));}
+{
+  FrameOperatorSignaturePtr signature = new FrameOperatorSignature(operation, inputs, outputName, outputShortName);
+  size_t res = addMemberVariable(context, signature);
+  initializeFunction(context, signature);
+  return res;
+}
 
 bool FrameClass::initialize(ExecutionContext& context)
 {
-  for (size_t i = 0; i < variables.size(); ++i)
+ /* for (size_t i = 0; i < variables.size(); ++i)
   {
     FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
     if (signature && !initializeFunction(context, signature))
       return false;
-  }
+  }*/
   return DefaultClass::initialize(context);
 }
 
@@ -53,12 +58,20 @@ bool FrameClass::initializeFunction(ExecutionContext& context, const FrameOperat
   for (size_t i = 0; i < inputVariables.size(); ++i)
   {
     size_t inputIndex = inputs[i];
-    if (inputIndex >= variables.size())
+    if (inputIndex == (size_t)-1)
     {
-      context.errorCallback(T("Invalid index: ") + String((int)inputIndex));
-      return false;
+      // this
+      inputVariables[i] = new VariableSignature(refCountedPointerFromThis(this), T("this"));
     }
-    inputVariables[i] = variables[inputIndex];
+    else
+    {
+      if (inputIndex >= variables.size())
+      {
+        context.errorCallback(T("Invalid index: ") + String((int)inputIndex));
+        return false;
+      }
+      inputVariables[i] = variables[inputIndex];
+    }
   }
   if (!function->initialize(context, inputVariables))
     return false;
@@ -88,6 +101,9 @@ bool Frame::isVariableComputed(size_t index) const
 
 Variable Frame::getOrComputeVariable(size_t index)
 {
+  if (index == (size_t)-1)
+    return this;
+
   VariableSignaturePtr signature = thisClass->getMemberVariable(index);
   VariableValue& variableValue = getVariableValueReference(index);
   const TypePtr& type = signature->getType();
@@ -114,140 +130,56 @@ Variable Frame::getOrComputeVariable(size_t index)
 Variable Frame::getVariable(size_t index) const
   {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
 
-////////////////////////////////////////////////////
-
-class PerceptionToFeatureGeneratorWrapper : public FeatureGenerator
-{
-public:
-  PerceptionToFeatureGeneratorWrapper(PerceptionPtr perception)
-    : perception(perception) {}
-
-  virtual EnumerationPtr getFeaturesEnumeration(ExecutionContext& context, TypePtr& elementsType)
-    {return variablesEnumerationEnumeration(perception->getOutputType());}
-
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    if (!checkNumInputs(context, 1))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    if (!checkInputType(context, 0, perception->getInputType()))
-      return VariableSignaturePtr();
-
-    return new VariableSignature(perception->getOutputType(), inputVariable->getName() + T("Perception"), inputVariable->getShortName() + T("p"));
-  }
- 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-
-    return perception->computeFunction(defaultExecutionContext(), inputs[0]);
-  }
-
-protected:
-  PerceptionPtr perception;
-};
-
-////////////////////////////////////////////////////
-
-class ForEachOperator : public Function
-{
-public:
-  ForEachOperator(FunctionPtr function, const String& loopVariableName = T("i"))
-    : function(function), loopVariableName(loopVariableName) {}
-
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    if (!function->initialize(context, inputVariables))
-      return VariableSignaturePtr();
-    VariableSignaturePtr elementsSignature = function->getOutputVariable();
-    return new VariableSignature(vectorClass(elementsSignature->getType()), elementsSignature->getName() + T("Vector"), elementsSignature->getShortName() + T("v"));
-  }
-
-  // at each iteration, replaces the first input (n) by the loop counter (i in [0,n[)
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    std::vector<Variable> subInputs(getNumInputs());
-    for (size_t i = 1; i < subInputs.size(); ++i)
-      subInputs[i] = inputs[i];
-
-    size_t n = (size_t)inputs[0].getInteger();
-    VectorPtr res = vector(function->getOutputType(), n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      subInputs[0] = Variable(i);
-      res->setElement(i, function->computeFunction(context, &subInputs[0]));
-    }
-    return res;
-  }
-
-protected:
-  FunctionPtr function;
-  String loopVariableName;
-};
-
-////////////////////////////////////////////////////
-
 FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context)
 {
-  contextFreeResidueFrame = new FrameClass(T("ContextFreeResidue"), objectClass);
-  createContextFreeResidueFrameClass(context, contextFreeResidueFrame);
-  if (!contextFreeResidueFrame->initialize(context))
-    return FrameClassPtr();
-
-  residueFrame = new FrameClass(T("Residue"), objectClass);
-  createResidueFrameClass(context, residueFrame);
-  if (!residueFrame->initialize(context))
-    return FrameClassPtr();
-
-  proteinFrame = new FrameClass(T("Protein"), objectClass);
-  createProteinFrameClass(context, proteinFrame);
-  if (!proteinFrame->initialize(context))
-    return FrameClassPtr();
-
-  return proteinFrame;
-}
-
-void ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context, const FrameClassPtr& res)
-{
+  FrameClassPtr res = new FrameClass(T("ProteinFrame"), objectClass);
+  proteinFrame = res;
+  
   // inputs
   size_t lengthIndex = res->addMemberVariable(context, positiveIntegerType, T("length"));
   size_t aaIndex = res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
   size_t pssmIndex = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
   size_t ss3Index = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
 
-  // sub frames features
-  std::vector<size_t> contextFreeResidueInputs;
-  contextFreeResidueInputs.push_back(aaIndex);
-  contextFreeResidueInputs.push_back(pssmIndex);
-  contextFreeResidueInputs.push_back(ss3Index);
-  size_t contextFreeResidueFeatures = res->addMemberOperator(context, applyOnContainerFunction(new FrameBasedOperator(contextFreeResidueFrame)), contextFreeResidueInputs);
-  size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures);
+  // primary residue features
+  FrameClassPtr primaryResidueFrameClass = createPrimaryResidueFrameClass(context, res);
+  if (!primaryResidueFrameClass)
+    return FrameClassPtr();
+  size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), (size_t)-1, lengthIndex, T("primaryResidueFeatures"));
+  size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
   
-  // residues 
-  std::vector<size_t> residueFrameInputs;
-  residueFrameInputs.push_back(lengthIndex);
-  residueFrameInputs.push_back(contextFreeResidueFeatures);
-  residueFrameInputs.push_back(contextFreeResidueFeaturesSum);
-  res->addMemberOperator(context, new ForEachOperator(new FrameBasedOperator(residueFrame)), residueFrameInputs, T("residueFrames"));
+  // residue features
+  FrameClassPtr residueFrameClass = createResidueFrameClass(context, res);
+  if (!residueFrameClass)
+    return FrameClassPtr();
+  res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(residueFrameClass)), (size_t)-1, lengthIndex, T("residueFeatures"));
 
-  // primaryStructure
-  res->addMemberOperator(context, accumulateContainerFunction(), aaIndex);
+  // global features
+  FrameClassPtr proteinGlobalFrameClass = createProteinGlobalFrameClass(context, res);
+  if (!proteinGlobalFrameClass)
+    return FrameClassPtr();
+  res->addMemberOperator(context, new FrameBasedFunction(proteinGlobalFrameClass), (size_t)-1, T("globalFeatures"));
 
-  // pssm
-  res->addMemberOperator(context, accumulateContainerFunction(), pssmIndex);
-
-  // secondary structure
-  res->addMemberOperator(context, accumulateContainerFunction(), ss3Index);
-  size_t ss3LabelsIndex = res->addMemberOperator(context, sampleDistributionFunction(true), ss3Index);
-  res->addMemberOperator(context, segmentContainerFunction(), ss3LabelsIndex);
-  res->addMemberOperator(context, accumulateContainerFunction(), ss3LabelsIndex);
+  return res->initialize(context) ? res : FrameClassPtr();
 }
 
-void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res)
+FrameClassPtr ProteinFrameFactory::createPrimaryResidueFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass)
 {
+  FrameClassPtr res = new FrameClass(T("PrimaryResidueFrame"), objectClass);
+  
   // inputs
-  size_t aaIndex = res->addMemberVariable(context, aminoAcidTypeEnumeration, T("aminoAcid"));
-  size_t pssmIndex = res->addMemberVariable(context, enumerationDistributionClass(aminoAcidTypeEnumeration), T("pssmRow"));
-  size_t ss3Index = res->addMemberVariable(context, enumerationDistributionClass(secondaryStructureElementEnumeration), T("ss3"));
+  size_t proteinFrameIndex = res->addMemberVariable(context, proteinFrameClass, T("proteinFrame"));
+  size_t positionIndex = res->addMemberVariable(context, positiveIntegerType, T("position"));
+
+  // retrieve the amino acid, the pssm row and the ss3 prediction
+  size_t aaIndex = res->addMemberOperator(context, getVariableFunction(T("primaryStructure")), proteinFrameIndex);
+  aaIndex = res->addMemberOperator(context, getElementFunction(), aaIndex, positionIndex, T("aa"));
+
+  size_t pssmIndex = res->addMemberOperator(context, getVariableFunction(T("positionSpecificScoringMatrix")), proteinFrameIndex);
+  pssmIndex = res->addMemberOperator(context, getElementFunction(), pssmIndex, positionIndex, T("pssm"));
+
+  size_t ss3Index = res->addMemberOperator(context, getVariableFunction(T("secondaryStructure")), proteinFrameIndex);
+  ss3Index = res->addMemberOperator(context, getElementFunction(), ss3Index, positionIndex, T("ss3"));
 
   // feature generators
   std::vector<size_t> featureIndices;
@@ -255,46 +187,48 @@ void ProteinFrameFactory::createContextFreeResidueFrameClass(ExecutionContext& c
   featureIndices.push_back(res->addMemberOperator(context, enumerationFeatureGenerator(), aaIndex));
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), pssmIndex));
   size_t pssmEntropyIndex = res->addMemberOperator(context, distributionEntropyFunction(), pssmIndex);
-  //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), pssmEntropyIndex));
-
+  featureIndices.push_back(res->addMemberOperator(context, defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), pssmEntropyIndex));
   featureIndices.push_back(res->addMemberOperator(context, enumerationDistributionFeatureGenerator(), ss3Index));
   size_t ss3EntropyIndex = res->addMemberOperator(context, distributionEntropyFunction(), ss3Index);
-  //featureIndices.push_back(res->addMemberOperator(context, new PerceptionToFeatureGeneratorWrapper(defaultPositiveDoubleFeatures()), ss3EntropyIndex));
+  featureIndices.push_back(res->addMemberOperator(context, defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), ss3EntropyIndex));
 
   // all features
-  res->addMemberOperator(context, concatenateFeatureGenerator(false), featureIndices, T("CFResidueFeatures"));
+  res->addMemberOperator(context, concatenateFeatureGenerator(false), featureIndices, T("primaryResidueFeatures"));
+
+  return res->initialize(context) ? res : FrameClassPtr();
 }
 
-void ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& res)
+FrameClassPtr ProteinFrameFactory::createResidueFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass)
 {
+  FrameClassPtr res = new FrameClass(T("ResidueFrame"), objectClass);
+
+  size_t proteinFrameIndex = res->addMemberVariable(context, proteinFrameClass, T("proteinFrame"));
   size_t positionIndex = res->addMemberVariable(context, positiveIntegerType, T("position"));
   
-  TypePtr contextFreeResidueFeatureClass = contextFreeResidueFrame->getLastMemberVariable()->getType();
-  size_t residueFeaturesArrayIndex = res->addMemberVariable(context, containerClass(contextFreeResidueFeatureClass), T("contextFreeResidueFeatures"));
-  size_t residueSumFeaturesArrayIndex = res->addMemberVariable(context, containerClass(enumBasedDoubleVectorClass(variablesEnumerationEnumeration(contextFreeResidueFeatureClass))), T("featuressum"));
-  
-  std::vector<size_t> featureIndices;
+  size_t primaryResidueFeaturesIndex = res->addMemberOperator(context, getVariableFunction(T("primaryResidueFeatures")), proteinFrameIndex);
+  size_t primaryResidueFeaturesAccIndex = res->addMemberOperator(context, getVariableFunction(T("primaryResidueFeaturesAcc")), proteinFrameIndex);
 
-  size_t windowIndex = res->addMemberOperator(context, windowFeatureGenerator(15), residueFeaturesArrayIndex, positionIndex);
+  std::vector<size_t> featureIndices;
+  featureIndices.push_back(res->addMemberOperator(context, windowFeatureGenerator(15), primaryResidueFeaturesIndex, positionIndex));
+  featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(10), primaryResidueFeaturesAccIndex, positionIndex, T("localMean10")));
+  featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(50), primaryResidueFeaturesAccIndex, positionIndex, T("localMean50")));
   
-   // all features
-  //res->addMemberOperator(context, concatenateFeatureGenerator(), featureIndices, T("allFeatures")); 
+  // all features
+  res->addMemberOperator(context, concatenateFeatureGenerator(true), featureIndices, T("AllFeatures")); 
+
+  return res->initialize(context) ? res : FrameClassPtr();
 }
 
-
-/*
-VectorPtr createProteinResidueFrames(const FramePtr& proteinFrame, FrameClassPtr residueFrameClass)
+FrameClassPtr ProteinFrameFactory::createProteinGlobalFrameClass(ExecutionContext& context, const FrameClassPtr& proteinFrameClass)
 {
-  VectorPtr primaryStructure = proteinFrame->getVariable(0).getObjectAndCast<Vector>();
-  size_t n = primaryStructure->getNumElements();
-  
-  VectorPtr res = vector(residueFrameClass, n);
-  for (size_t i = 0; i < n; ++i)
-  {
-    
-  }
-  return res;
-}*/
+  FrameClassPtr res = new FrameClass(T("ProteinGlobal"), objectClass);
+
+  size_t proteinFrameIndex = res->addMemberVariable(context, proteinFrameClass, T("proteinFrame"));
+  size_t primaryResidueFeaturesAccIndex = res->addMemberOperator(context, getVariableFunction(T("primaryResidueFeaturesAcc")), proteinFrameIndex);
+  res->addMemberOperator(context, accumulatorGlobalMeanFunction(), primaryResidueFeaturesAccIndex);
+
+  return res->initialize(context) ? res : FrameClassPtr();
+}
 
 FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
 {
@@ -316,8 +250,5 @@ FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
     }
     res->setVariable(3, secondaryStructure);
   }
-
-  //res->setVariable(3, createProteinContextFreeResidueFrames(res, contextFreeResidueFrame));
-  //res->setVariable(4, createProteinResidueFrames(res, residueFrame));
   return res;
 }

@@ -15,6 +15,81 @@
 namespace lbcpp
 {
 
+// NEW 
+class GetVariableFunction : public Function
+{
+public:
+  GetVariableFunction(const String& variableName)
+    : variableIndex((size_t)-1), variableName(variableName) {}
+  GetVariableFunction(size_t variableIndex = 0)
+    : variableIndex(variableIndex) {}
+
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  {
+    if (!checkNumInputs(context, 1) && !checkInputType(context, 0, objectClass))
+      return VariableSignaturePtr();
+    const VariableSignaturePtr& inputVariable = getInputVariable(0);
+    const TypePtr& inputType = inputVariable->getType();
+
+    if (variableName.isNotEmpty())
+    {
+      int index = inputType->findMemberVariable(variableName);
+      if (index < 0)
+      {
+        context.errorCallback(T("Variable ") + variableName + T(" does not exists in class ") + inputType->getName());
+        return VariableSignaturePtr();
+      }
+      variableIndex = (size_t)index;
+    }
+    else if (variableIndex >= inputType->getNumMemberVariables())
+    {
+      context.errorCallback(String((int)variableIndex) + T(" is not a valid member variable index for class ") + inputType->getName());
+      return VariableSignaturePtr();
+    }
+
+    const VariableSignaturePtr& memberVariable = inputType->getMemberVariable(variableIndex);
+    return new VariableSignature(memberVariable->getType(), inputVariable->getName() + T(".") + memberVariable->getName(),
+                                  memberVariable->getShortName(), memberVariable->getDescription());
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return input.getObject()->getVariable(variableIndex);}
+
+protected:
+  friend class GetVariableFunctionClass;
+
+  size_t variableIndex;
+  String variableName;
+};
+
+// Container<T>, PositiveInteger -> T
+class GetElementFunction : public Function
+{
+public:
+  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  {
+    TypePtr elementsType;
+    if (!checkNumInputs(context, 2) ||
+        !Container::getTemplateParameter(context, getInputType(0), elementsType) ||
+        !checkInputType(context, 1, positiveIntegerType))
+      return VariableSignaturePtr();
+
+    const VariableSignaturePtr& firstInputVariable = getInputVariable(0);
+    return new VariableSignature(elementsType, firstInputVariable->getName() + T("Element"), firstInputVariable->getShortName() + T("[]"));
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
+    int index = inputs[1].getInteger();
+    if (index >= 0 && index < (int)container->getNumElements())
+      return container->getElement((size_t)index);
+    else
+      return Variable::missingValue(container->getElementsType());
+  }
+};
+
+// OLD - deprecated
 // a => a.x
 class SelectVariableFunction : public Function
 {

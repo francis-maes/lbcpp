@@ -154,9 +154,9 @@
     </code>
   </template>
 
-  <enumeration name="MissingOrPresent">
+  <enumeration name="ExistOrMissing">
+    <value name="exist" oneLetterCode="e"/>
     <value name="missing" oneLetterCode="m"/>
-    <value name="present" oneLetterCode="v"/>
   </enumeration>
 
   <enumeration name="FalseOrTrue">

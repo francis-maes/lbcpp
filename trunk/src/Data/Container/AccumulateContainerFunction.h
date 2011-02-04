@@ -104,7 +104,7 @@ public:
   }
 };
 
-// enum values + missing + entropy
+// enum values + entropy + missing
 class AccumulateEnumerationDistributionContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
@@ -119,7 +119,7 @@ public:
       context.errorCallback(T("Not an enumeration"));
       return EnumerationPtr();
     }
-    return addEntropyToEnumerationEnumeration(addMissingToEnumerationEnumeration(inputEnumeration));
+    return addMissingToEnumerationEnumeration(addEntropyToEnumerationEnumeration(inputEnumeration));
   }
 
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
@@ -131,9 +131,11 @@ public:
       
       EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>();
       jassert(distribution);
-      for (size_t j = 0; j <= inputEnumeration->getNumElements(); ++j)
+      size_t enumSize = inputEnumeration->getNumElements();
+      for (size_t j = 0; j < enumSize; ++j)
         scores->incrementValue(j, distribution->computeProbability(Variable(j, inputEnumeration)));
-      scores->incrementValue(inputEnumeration->getNumElements() + 1, distribution->computeEntropy());
+      scores->incrementValue(enumSize, distribution->computeEntropy());
+      scores->incrementValue(enumSize + 1, distribution->computeProbability(Variable(enumSize, inputEnumeration)));
     }
   }
 
@@ -146,7 +148,7 @@ class AccumulateDoubleContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType)
-    {return missingOrPresentEnumeration;}
+    {return existOrMissingEnumeration;}
 
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
   {
@@ -156,13 +158,14 @@ public:
       const DenseDoubleVectorPtr& scores = res->computeStep(i);
       Variable element = container->getElement(i);
       if (element.exists())
-        scores->incrementValue(1, element.getDouble());
+        scores->incrementValue(0, element.getDouble());
       else
-        scores->incrementValue(0, 1.0);
+        scores->incrementValue(1, 1.0);
     }
   }
 };
 
+// features + missing
 class AccumulateDoubleVectorContainerFunction : public AccumulateContainerFunctionImpl
 {
 public:
@@ -172,7 +175,7 @@ public:
     TypePtr featuresType;
     if (!DoubleVector::getTemplateParameters(context, doubleVectorType, featuresEnumeration, featuresType))
       return EnumerationPtr();
-    return featuresEnumeration;
+    return addMissingToEnumerationEnumeration(featuresEnumeration);
   }
 
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const
@@ -181,8 +184,11 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       DoubleVectorPtr vector = container->getElement(i).getObjectAndCast<DoubleVector>();
-      jassert(vector);
-      vector->addTo(res->computeStep(i));
+      DenseDoubleVectorPtr scores = res->computeStep(i);
+      if (vector)
+        vector->addTo(scores);
+      else
+        scores->incrementValue(scores->getNumElements() - 1, 1.0); // missing
     }
   }
 };

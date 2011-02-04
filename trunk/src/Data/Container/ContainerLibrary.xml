@@ -45,6 +45,12 @@
     <parameter name="elementsType"/>
   </template>
 
+  <!-- Generate Vector Function -->
+  <class name="GenerateVectorFunction" base="Function">
+    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
+
   <!-- Accumulate Function -->
   <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">
     <parameter name="scoresEnumeration" type="EnumValue"/>
@@ -56,6 +62,16 @@
   <class name="AccumulateDoubleContainerFunction" base="AccumulateContainerFunctionImpl"/>
   <class name="AccumulateContainerFunction" base="ProxyFunction">
     <constructor returnType="Function"/>
+  </class>
+  
+  <!-- Local and Global Mean -->
+  <class name="AccumulatorGlobalMeanFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <class name="AccumulatorLocalMeanFunction" base="Function">
+    <constructor arguments="size_t windowSize"/>
+    <variable type="PositiveInteger" name="windowSize"/>
   </class>
 
   <!-- Segment Function -->

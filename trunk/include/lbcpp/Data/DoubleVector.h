@@ -56,6 +56,9 @@ public:
 
   void addTo(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, 1.0);}
+  
+  void subtractFrom(const DenseDoubleVectorPtr& denseVector)
+    {addWeightedTo(denseVector, 0, -1.0);}
 };
 
 extern ClassPtr doubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
@@ -110,7 +113,7 @@ class DenseDoubleVector : public DoubleVector
 {
 public:
   DenseDoubleVector(ClassPtr thisClass, std::vector<double>& values);
-  DenseDoubleVector(ClassPtr thisClass, size_t initialSize, double initialValue = 0.0);
+  DenseDoubleVector(ClassPtr thisClass, size_t initialSize = (size_t)-1, double initialValue = 0.0);
   DenseDoubleVector();
   virtual ~DenseDoubleVector();
   
@@ -133,6 +136,8 @@ public:
     {jassert(values && index < values->size()); (*values)[index] += value;}
 
   void ensureSize(size_t minimumSize);
+
+  void multiplyByScalar(double value);
 
   // DoubleVector
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;

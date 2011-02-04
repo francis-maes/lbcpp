@@ -66,14 +66,17 @@ public:
       bool isDoubleVector = container.dynamicCast<DoubleVector>();
     
       if (isDoubleVector && !options.showMissingVariables)
+      {
+        size_t n = container->getNumElements();
         // skip 0 values for double vectors
-        for (size_t i = 0; i < container->getNumElements(); ++i)
+        for (size_t i = 0; i < n; ++i)
         {
           Variable elt = container->getElement(i);
           jassert(elt.isDouble());
           if (elt.getDouble() != 0.0)
             addSubVariable(container->getElementName(i), container->getElement(i));
         }
+      }
       else
         for (size_t i = 0; i < container->getNumElements(); ++i)
           addSubVariable(container->getElementName(i), container->getElement(i));
