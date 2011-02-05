@@ -20,16 +20,14 @@ public:
   SignedNumberFeatureGenerator(FeatureGeneratorPtr positiveNumberFeatures = FeatureGeneratorPtr())
     : positiveNumberFeatures(positiveNumberFeatures), numBaseFeatures(0) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return positiveNumberFeatures->getRequiredInputType(0, 1);}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1))
-      return EnumerationPtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    if (!inputVariable->getType()->inheritsFrom(doubleType) && !inputVariable->getType()->inheritsFrom(integerType))
-    {
-      context.errorCallback(inputVariable->getType()->getName() + T(" is not a number"));
-      return EnumerationPtr();
-    }
     if (!positiveNumberFeatures->initialize(context, inputVariables))
       return EnumerationPtr();
 

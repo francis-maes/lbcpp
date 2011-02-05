@@ -19,15 +19,17 @@ namespace lbcpp
 class AccumulatorGlobalMeanFunction : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    TypePtr doubleVectorType;
-    if (!checkNumInputs(context, 1) ||
-        !Container::getTemplateParameter(context, getInputType(0), doubleVectorType))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    return new VariableSignature(doubleVectorType, inputVariable->getName() + T("GlobalMean"), inputVariable->getShortName() + T("gm"));
-  }
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(doubleVectorClass());}
+
+  virtual String getOutputPostFix() const
+    {return T("GlobalMean");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return Container::getTemplateParameter(inputVariables[0]->getType());}
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {

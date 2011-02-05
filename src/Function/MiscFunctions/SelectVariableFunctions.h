@@ -24,11 +24,18 @@ public:
   GetVariableFunction(size_t variableIndex = 0)
     : variableIndex(variableIndex) {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return objectClass;}
+
+  virtual String getOutputPostFix() const
+    {return T("Member");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1) && !checkInputType(context, 0, objectClass))
-      return VariableSignaturePtr();
-    const VariableSignaturePtr& inputVariable = getInputVariable(0);
+    const VariableSignaturePtr& inputVariable = inputVariables[0];
     const TypePtr& inputType = inputVariable->getType();
 
     if (variableName.isNotEmpty())
@@ -37,19 +44,20 @@ public:
       if (index < 0)
       {
         context.errorCallback(T("Variable ") + variableName + T(" does not exists in class ") + inputType->getName());
-        return VariableSignaturePtr();
+        return TypePtr();
       }
       variableIndex = (size_t)index;
     }
     else if (variableIndex >= inputType->getNumMemberVariables())
     {
       context.errorCallback(String((int)variableIndex) + T(" is not a valid member variable index for class ") + inputType->getName());
-      return VariableSignaturePtr();
+      return TypePtr();
     }
 
     const VariableSignaturePtr& memberVariable = inputType->getMemberVariable(variableIndex);
-    return new VariableSignature(memberVariable->getType(), inputVariable->getName() + T(".") + memberVariable->getName(),
-                                  memberVariable->getShortName(), memberVariable->getDescription());
+    outputName = inputVariable->getName() + T(".") + memberVariable->getName();
+    outputShortName = memberVariable->getShortName();
+    return memberVariable->getType();
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
@@ -66,17 +74,17 @@ protected:
 class GetElementFunction : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    TypePtr elementsType;
-    if (!checkNumInputs(context, 2) ||
-        !Container::getTemplateParameter(context, getInputType(0), elementsType) ||
-        !checkInputType(context, 1, positiveIntegerType))
-      return VariableSignaturePtr();
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
 
-    const VariableSignaturePtr& firstInputVariable = getInputVariable(0);
-    return new VariableSignature(elementsType, firstInputVariable->getName() + T("Element"), firstInputVariable->getShortName() + T("[]"));
-  }
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : containerClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Element");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return Container::getTemplateParameter(inputVariables[0]->getType());}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {

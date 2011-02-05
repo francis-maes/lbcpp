@@ -18,13 +18,17 @@ namespace lbcpp
 class DistributionEntropyFunction : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-     if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    return new VariableSignature(negativeLogProbabilityType, inputVariable->getName() + T("Entropy"), inputVariable->getShortName() + T("e"));
-  }
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return distributionClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Entropy");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return negativeLogProbabilityType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return inputs[0].getObjectAndCast<Distribution>()->computeEntropy();}

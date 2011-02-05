@@ -30,7 +30,7 @@ class FeatureGenerator : public Function
 public:
   FeatureGenerator(bool lazy = true) : lazyComputation(lazy) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName) = 0;
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName) = 0;
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const = 0;
 
   virtual ClassPtr getNonLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
@@ -56,7 +56,10 @@ public:
   virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
 
   // Function
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context);
+  virtual String getOutputPostFix() const
+    {return T("Features");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
 protected:

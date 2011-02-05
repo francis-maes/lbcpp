@@ -33,7 +33,7 @@ size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPt
 {
   FrameOperatorSignaturePtr signature = new FrameOperatorSignature(operation, inputs, outputName, outputShortName);
   size_t res = addMemberVariable(context, signature);
-  initializeFunction(context, signature);
+  initializeFunctionTypes(context, signature);
   return res;
 }
 
@@ -42,13 +42,13 @@ bool FrameClass::initialize(ExecutionContext& context)
  /* for (size_t i = 0; i < variables.size(); ++i)
   {
     FrameOperatorSignaturePtr signature = variables[i].dynamicCast<FrameOperatorSignature>();
-    if (signature && !initializeFunction(context, signature))
+    if (signature && !initializeFunctionTypes(context, signature))
       return false;
   }*/
   return DefaultClass::initialize(context);
 }
 
-bool FrameClass::initializeFunction(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
+bool FrameClass::initializeFunctionTypes(ExecutionContext& context, const FrameOperatorSignaturePtr& signature)
 {
   const FunctionPtr& function = signature->getFunction();
   jassert(function);

@@ -22,17 +22,20 @@ public:
   SampleDistributionContainerFunction(bool sampleBest = true)
     : sampleBest(sampleBest) {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(distributionClass(anyType));}
+
+  virtual String getOutputPostFix() const
+    {return T("Discretized");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr distributionType;
-    if (!Container::getTemplateParameter(context, inputVariable->getType(), distributionType) || !Distribution::getTemplateParameter(context, distributionType, elementsType))
-      return VariableSignaturePtr();
-    if (!elementsType)
-      return VariableSignaturePtr();
-    return new VariableSignature(vectorClass(elementsType), inputVariable->getName() + T("Discretized"), inputVariable->getShortName() + T("d"));
+    TypePtr distributionType = Container::getTemplateParameter(inputVariables[0]->getType());
+    TypePtr elementsType = Distribution::getTemplateParameter(distributionType);
+    return vectorClass(elementsType);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const

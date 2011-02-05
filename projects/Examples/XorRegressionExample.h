@@ -22,11 +22,14 @@ namespace lbcpp
 class XorFeatureGenerator : public FeatureGenerator
 {
 public:
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, pairClass(doubleType, doubleType)))
-      return EnumerationPtr();
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
 
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleType;}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
     DefaultEnumerationPtr res = new DefaultEnumeration(T("xor-features"));
     res->addElement(context, T("unit"));
     res->addElement(context, T("x1"));
@@ -74,10 +77,17 @@ typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
 
 ///////////////////////////////////////////////////////////////
 
+class FunctionCallback : public Object
+{
+public:
+  virtual void functionPreExecution(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs) {}
+  virtual void functionPostExecution(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
+};
+
 class LearnableFunction : public Function
 {
 public:
-  ObjectPtr getParameters() const
+  const ObjectPtr& getParameters() const
     {return parameters;}
 
 protected:
@@ -105,19 +115,24 @@ public:
   DenseDoubleVectorPtr getParameters() const
     {return parameters.staticCast<DenseDoubleVector>();}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    EnumerationPtr featuresEnumeration;
-    TypePtr featuresType;
-    if (!checkNumInputs(context, 2) ||
-        !DoubleVector::getTemplateParameters(context, getInputType(0), featuresEnumeration, featuresType) ||
-        !checkInputType(context, 1, functionClass))
-      return VariableSignaturePtr();
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
 
-    parametersClass = denseDoubleVectorClass(featuresEnumeration, featuresType);
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? functionClass : doubleVectorClass();}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
+    parametersClass = denseDoubleVectorClass(featuresEnumeration);
     if (!parameters)
       parameters = new DenseDoubleVector(parametersClass);
-    return new VariableSignature(doubleType, T("prediction"), T("p"));
+    outputName = T("prediction");
+    outputShortName = T("p");
+    return doubleType;
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -132,40 +147,22 @@ public:
     return isNumberValid(res) ? Variable(res) : Variable::missingValue(doubleType);
   }
 };
-/*
-class ApplyOnSingleVariableFunction : public Function
-{
-public:
-  ApplyOnSingleVariableFunction(size_t inputIndex, FunctionPtr function)
-    : inputIndex(inputIndex), function(function) {}
- 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    if (getNumInputs() <= inputIndex)
-    {
-      context.errorCallback(T("Not enough inputs"));
-      return VariableSignaturePtr();
-    }
-    if (!function->initialize(context, getInputVariable(inputIndex))
-      return VariableSignaturePtr();
-    return new VariableSignaturePtr(
- 
-
-protected:
-  size_t inputIndex;
-  FunctionPtr function;
-};*/
 
 class MakeRegressionLossFunction : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, doubleType))
-      return VariableSignaturePtr();
-    return new VariableSignature(scalarFunctionClass, T("loss"), T("l"));
-  }
- 
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleType;}
+
+  virtual String getOutputPostFix() const
+    {return T("Loss");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return scalarFunctionClass;}
+
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return squareLossFunction(inputs[0].getDouble());}
 };
@@ -173,21 +170,25 @@ public:
 class LinearRegressor : public FrameBasedFunction
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? doubleType : doubleVectorClass();}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    EnumerationPtr featuresEnumeration;
-    TypePtr featuresType;
-    if (!checkNumInputs(context, 2) ||
-        !DoubleVector::getTemplateParameters(context, getInputType(0), featuresEnumeration, featuresType) ||
-        !checkInputType(context, 1, doubleType))
-      return VariableSignaturePtr();
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
 
     frameClass = new FrameClass(T("LinearRegressor"));
-    frameClass->addMemberVariable(context, getInputType(0), T("input"));
-    frameClass->addMemberVariable(context, getInputType(1), T("supervision"));
+    frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));
+    frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));
     frameClass->addMemberOperator(context, new MakeRegressionLossFunction(), 1);
     frameClass->addMemberOperator(context, new LearnableDotProductFunction(), 0, 2);
-    return FrameBasedFunction::initializeFunction(context);
+    return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 };
 

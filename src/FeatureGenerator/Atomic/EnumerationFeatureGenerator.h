@@ -20,20 +20,17 @@ public:
   EnumerationFeatureGenerator(bool includeMissingValue = true)
     : includeMissingValue(includeMissingValue) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    if (!checkNumInputs(context, 1))
-      return EnumerationPtr();
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
 
-    enumeration = getInputType(0).dynamicCast<Enumeration>();
-    if (!enumeration)
-    {
-      context.errorCallback(T("Not an enumeration"));
-      return EnumerationPtr();
-    }
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return enumValueType;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    enumeration = inputVariables[0]->getType().dynamicCast<Enumeration>();
+    jassert(enumeration);
     elementsType = probabilityType;
-    outputName = inputVariables[0]->getName() + T("Features");
-    outputShortName = inputVariables[0]->getShortName() + T("f");
     return includeMissingValue ? addMissingToEnumerationEnumeration(enumeration) : enumeration;
   }
 

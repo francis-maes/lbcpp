@@ -31,16 +31,28 @@ class Function : public Object
 public:
   Function() : pushIntoStack(false) {}
 
-  // new
+  virtual size_t getNumRequiredInputs() const
+    {jassert(false); return 0;}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return getNumRequiredInputs();}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return getNumRequiredInputs();}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {jassert(false); return anyType;}
+
+  virtual String getOutputPostFix() const
+    {return T("Processed");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {jassert(false); return TypePtr();} // should be =0
+
   bool initialize(ExecutionContext& context, TypePtr inputType);
   bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
 
-protected:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-    {jassert(false); return VariableSignaturePtr();}
-
-public:
   size_t getNumInputs() const
     {return inputVariables.size();}
 
@@ -89,11 +101,6 @@ protected:
 
   std::vector<VariableSignaturePtr> inputVariables;
   VariableSignaturePtr outputVariable;
-
-  bool checkNumInputs(ExecutionContext& context, size_t numInputs) const;
-  bool checkInputType(ExecutionContext& context, size_t index, TypePtr requestedType) const;
-  
-  bool checkExistence(ExecutionContext& context, const Variable& variable) const;
 };
 
 extern ClassPtr functionClass;
@@ -116,25 +123,32 @@ extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 // -
 
-
-
 class ProxyFunction : public Function
 {
 protected:
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
+ 
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 0;}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     implementation = createImplementation(inputVariables);
     if (!implementation)
     {
       context.errorCallback(T("Could not create implementation in proxy operator"));
-      return VariableSignaturePtr();
+      return TypePtr();
     }
     if (!implementation->initialize(context, inputVariables))
-      return VariableSignaturePtr();
+      return TypePtr();
 
-    return implementation->getOutputVariable();
+    const VariableSignaturePtr& v = implementation->getOutputVariable();
+    outputName = v->getName();
+    outputShortName = v->getShortName();
+    return v->getType();
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const

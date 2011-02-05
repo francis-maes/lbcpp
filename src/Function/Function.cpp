@@ -20,39 +20,33 @@ bool Function::initialize(ExecutionContext& context, VariableSignaturePtr inputV
 
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
+  size_t numInputs = inputVariables.size();
+  size_t minInputs = getMinimumNumRequiredInputs();
+  if (minInputs && numInputs < minInputs)
+  {
+    context.errorCallback(T("Missing input: expected ") + String((int)minInputs) + T(" inputs, found only ") + numInputs + T(" inputs"));
+    return false;
+  }
+
+  size_t maxInputs = getMaximumNumRequiredInputs();
+  if (numInputs > maxInputs)
+  {
+    context.errorCallback(T("Too much inputs: expected ") + String((int)maxInputs) + T(" inputs, found ") + numInputs + T(" inputs"));
+    return false;
+  }
+
+  for (size_t i = 0; i < numInputs; ++i)
+    if (!context.checkInheritance(inputVariables[i]->getType(), getRequiredInputType(i, numInputs)))
+      return false;
+
+  String outputPostFix = getOutputPostFix();
+  String outputName = (numInputs ? inputVariables[0]->getName() : String::empty) + outputPostFix;
+  String outputShortName = (numInputs ? inputVariables[0]->getShortName() : String::empty) + outputPostFix;
+  TypePtr outputType = initializeFunction(context, inputVariables, outputName, outputShortName);
+  if (!outputType)
+    return false;
+
   this->inputVariables = inputVariables;
-  this->outputVariable = initializeFunction(context);
-  jassert(!this->outputVariable || getOutputType());
-  return this->outputVariable != VariableSignaturePtr();
-}
-
-bool Function::checkNumInputs(ExecutionContext& context, size_t numInputs) const
-{
-  if (inputVariables.size() != numInputs)
-  {
-    context.errorCallback(T("Wrong number of inputs"));
-    return false;
-  }
-  return true;
-}
-
-bool Function::checkInputType(ExecutionContext& context, size_t index, TypePtr requestedType) const
-{
-  if (index >= inputVariables.size())
-  {
-    context.errorCallback(T("Missing input"));
-    return false;
-  }
-
-  return context.checkInheritance(inputVariables[index]->getType(), requestedType);
-}
-
-bool Function::checkExistence(ExecutionContext& context, const Variable& variable) const
-{
-  if (!variable.exists())
-  {
-    context.errorCallback(T("Variable does not exists"));
-    return false;
-  }
+  this->outputVariable = new VariableSignature(outputType, outputName, outputShortName);
   return true;
 }

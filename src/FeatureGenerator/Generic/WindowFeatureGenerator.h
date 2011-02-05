@@ -21,16 +21,20 @@ public:
   WindowFeatureGenerator(size_t windowSize = 0)
     : windowSize(windowSize) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    TypePtr containerElementsType;
-    EnumerationPtr subFeaturesEnumeration;
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
 
-    if (!checkNumInputs(context, 2) ||
-        !checkInputType(context, 0, containerClass(doubleVectorClass())) ||
-        !checkInputType(context, 1, positiveIntegerType) ||
-        !Container::getTemplateParameter(context, getInputType(0), containerElementsType) ||
-        !DoubleVector::getTemplateParameters(context, containerElementsType, subFeaturesEnumeration, elementsType))
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : containerClass(doubleVectorClass());}
+  
+  virtual String getOutputPostFix() const
+    {return T("Window");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    TypePtr containerElementsType = Container::getTemplateParameter(inputVariables[0]->getType());
+    EnumerationPtr subFeaturesEnumeration;
+    if (!DoubleVector::getTemplateParameters(context, containerElementsType, subFeaturesEnumeration, elementsType))
       return EnumerationPtr();
 
     DefaultEnumerationPtr res = new DefaultEnumeration(T("WindowFeatures"));
@@ -41,8 +45,6 @@ public:
       String pos = String((int)i + startPosition);
       res->addElementsWithPrefix(context, subFeaturesEnumeration, T("[") + pos + T("]."), pos + T("."));
     }
-    outputName = T("window");
-    outputShortName = T("Win");
     return res;
   }
 

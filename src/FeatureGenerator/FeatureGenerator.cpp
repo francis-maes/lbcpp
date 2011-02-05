@@ -34,15 +34,12 @@ private:
   SparseDoubleVectorPtr target;
 };
 
-VariableSignaturePtr FeatureGenerator::initializeFunction(ExecutionContext& context)
+TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  String outputName = T("Features");
-  String outputShortName = T("phi");
   featuresType = doubleType;
-  featuresEnumeration = initializeFeatures(context, featuresType, outputName, outputShortName);
+  featuresEnumeration = initializeFeatures(context, inputVariables, featuresType, outputName, outputShortName);
   jassert(featuresEnumeration && featuresType);
-  TypePtr outputType = lazyComputation ? getLazyOutputType(featuresEnumeration, featuresType) : getNonLazyOutputType(featuresEnumeration, featuresType);
-  return new VariableSignature(outputType, outputName, outputShortName);
+  return lazyComputation ? getLazyOutputType(featuresEnumeration, featuresType) : getNonLazyOutputType(featuresEnumeration, featuresType);
 }
 
 DoubleVectorPtr FeatureGenerator::toLazyVector(const Variable* inputs) const

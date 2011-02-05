@@ -20,14 +20,15 @@ public:
   BooleanFeatureGenerator(bool includeMissingValue = true)
     : includeMissingValue(includeMissingValue) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, booleanType))
-      return EnumerationPtr();
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
 
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return booleanType;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
     elementsType = probabilityType;
-    outputName = inputVariables[0]->getName() + T("Features");
-    outputShortName = inputVariables[0]->getShortName() + T("f");
     return includeMissingValue ? falseTrueOrMissingEnumeration : falseOrTrueEnumeration;
   }
 

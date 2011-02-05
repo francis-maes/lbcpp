@@ -29,26 +29,25 @@ public:
 
   virtual EnumerationPtr createDiscreteNumberFeatures(ExecutionContext& context) = 0;
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return sumType(doubleType, integerType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Discretized");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1))
-      return EnumerationPtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    if (!inputVariable->getType()->inheritsFrom(doubleType) && !inputVariable->getType()->inheritsFrom(integerType))
-    {
-      context.errorCallback(inputVariable->getType()->getName() + T(" is not a number"));
-      return EnumerationPtr();
-    }
+    const VariableSignaturePtr& inputVariable = inputVariables[0];
     isDouble = inputVariable->getType()->inheritsFrom(doubleType);
-    outputName = inputVariable->getName() + T("Discretized");
-    outputShortName = inputVariable->getName() + T("d");
     elementsType = probabilityType;
     return createDiscreteNumberFeatures(context);
   }
 
-  virtual bool isSparse() const
-    {return true;}
-
+  //virtual bool isSparse() const
+  //  {return true;}
 
 protected:
   friend class DiscretizedNumberFeatureGeneratorClass;
