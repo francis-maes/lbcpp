@@ -17,25 +17,29 @@
 namespace lbcpp
 {
   
-class FunctionCallback : public Object
+class FunctionCallback
 {
 public:
+  virtual ~FunctionCallback() {}
+
   virtual void functionCalled(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs) {}
   virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
 };
 
-typedef ReferenceCountedObjectPtr<FunctionCallback> FunctionCallbackPtr;
+typedef FunctionCallback* FunctionCallbackPtr;
 
 class OnlineLearner : public Object
 {
 public:
   virtual void startLearning(const FunctionPtr& function) {}
-  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations) {}
-  virtual void startEpisode(const FunctionPtr& function, const Variable* inputs) {}
-  virtual void learningStep(const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
-  virtual void finishEpisode() {}
-  virtual bool finishLearningIteration(ExecutionContext& context) {return false;} // returns true if learning is finished
   virtual void finishLearning() {}
+
+  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations) {}
+  virtual bool finishLearningIteration(ExecutionContext& context, const FunctionPtr& function) {return false;} // returns true if learning is finished
+
+  virtual void startEpisode(const FunctionPtr& function) {}
+  virtual void learningStep(const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
+  virtual void finishEpisode(const FunctionPtr& function) {}
 };
 
 typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
@@ -123,6 +127,16 @@ public:
 
   void addPostCallback(const FunctionCallbackPtr& callback)
     {postCallbacks.push_back(callback);}
+
+  void removePostCallback(const FunctionCallbackPtr& callback)
+  {
+    for (size_t i = 0; i < postCallbacks.size(); ++i)
+      if (postCallbacks[i] == callback)
+      {
+        postCallbacks.erase(postCallbacks.begin() + i);
+        return;
+      }
+  }
 
   /*
   ** Push into stack flag

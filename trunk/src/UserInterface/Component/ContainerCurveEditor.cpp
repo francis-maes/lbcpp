@@ -26,6 +26,13 @@ public:
     table->makeOrder(configuration->getKeyVariableIndex(), true, order);
     computeHorizontalBounds();
     computeVerticalBounds();
+    if (!isNumberValid(boundsX) || !isNumberValid(boundsY) || !isNumberValid(boundsWidth) || !isNumberValid(boundsHeight))
+    {
+      boundsX = -1000.0;
+      boundsWidth = 2000.0;
+      boundsY = -1.0;
+      boundsHeight = 2.0;
+    }
   }
 
   enum
@@ -183,6 +190,9 @@ public:
     }
   }
 
+  static bool isNumberValid(double number)
+    {return lbcpp::isNumberValid(number) && fabs(number) < 1e20;}
+
   void drawCurveLine(Graphics& g, const AffineTransform& transform, size_t index, CurveVariableConfigurationPtr config) const
   {
     size_t n = table->getNumElements();
@@ -195,7 +205,8 @@ public:
     {
       float x1, y1;
       getPointPosition(i, keyVariableIndex, index, transform, x1, y1);
-      g.drawLine(x0, y0, x1, y1);
+      if (isNumberValid(x0) && isNumberValid(y0) && isNumberValid(x1) && isNumberValid(y1))
+        g.drawLine(x0, y0, x1, y1);
       x0 = x1;
       y0 = y1;
     }
@@ -212,8 +223,11 @@ public:
       float x, y;
       float crossHalfSize = pointCrossSize / 2.f;
       getPointPosition(i, keyVariableIndex, index, transform, x, y);
-      g.drawLine(x - crossHalfSize, y, x + crossHalfSize, y);
-      g.drawLine(x, y - crossHalfSize, x, y + crossHalfSize);
+      if (isNumberValid(x) && isNumberValid(y))
+      {
+        g.drawLine(x - crossHalfSize, y, x + crossHalfSize, y);
+        g.drawLine(x, y - crossHalfSize, x, y + crossHalfSize);
+      }
     }
   }
 

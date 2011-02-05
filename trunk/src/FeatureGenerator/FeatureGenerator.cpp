@@ -61,6 +61,30 @@ Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Vari
     return toComputedVector(inputs);
 }
 
+class ComputeL0NormFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  ComputeL0NormFeatureGeneratorCallback() : res(0) {}
+
+  virtual void sense(size_t index, double value)
+    {if (value) ++res;}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {if (weight) res += vector->l0norm();}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {if (weight) res += featureGenerator->l0norm(inputs);}
+
+  size_t res;
+};
+
+size_t FeatureGenerator::l0norm(const Variable* inputs) const
+{
+  ComputeL0NormFeatureGeneratorCallback callback;
+  computeFeatures(&inputs[0], callback);
+  return callback.res;
+}
+
 class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
