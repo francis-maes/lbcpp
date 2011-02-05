@@ -1,10 +1,7 @@
-
-* Enlever les Perceptions des machines elementaires
-* NumericalLearning: utiliser DoubleVector partout
-* Integration des Frames dans ProteinInferenceFactory et ProteinInference
-* NumericalLearning: enlever les anciens fichiers maths
-* Inference multi-classes: toujours sortir des DenseDoubleVector[classes, probabilityType]
-
+* Nouveau repertoire: Learning, contient: LearnableFunction, sous repertoire: BatchLearner, OnlineLearner, Numerical, ...
+* Learner pour les CompositeFunctions (notemment pour la ApplyFunctionOnContainer)
+* Objectif: Faire marcher TrainTestLearningMachine avec les LearnableFunction
+* Objectif: Refaire le SandBox avec les LearnableFunction
 * Remplacer les types dans Protein
 
 From Julien:
