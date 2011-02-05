@@ -94,6 +94,12 @@ typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 
+class Frame;
+typedef ReferenceCountedObjectPtr<Frame> FramePtr;
+
+class FrameClass;
+typedef ReferenceCountedObjectPtr<FrameClass> FrameClassPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_PREDECLARATIONS_H_

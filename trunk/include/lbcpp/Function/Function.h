@@ -17,20 +17,37 @@
 namespace lbcpp
 {
   
-/**
-** @class Function
-** @brief Represents a function which takes a Variable as input and
-** returns a Variable.
-**
-** Function can be applied to streams and to containers.
-**
-** @see Stream, Container
-*/
+class FunctionCallback : public Object
+{
+public:
+  virtual void functionCalled(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs) {}
+  virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
+};
+
+typedef ReferenceCountedObjectPtr<FunctionCallback> FunctionCallbackPtr;
+
+class OnlineLearner : public Object
+{
+public:
+  virtual void startLearning(const FunctionPtr& function) {}
+  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations) {}
+  virtual void startEpisode(const FunctionPtr& function, const Variable* inputs) {}
+  virtual void learningStep(const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
+  virtual void finishEpisode() {}
+  virtual bool finishLearningIteration(ExecutionContext& context) {return false;} // returns true if learning is finished
+  virtual void finishLearning() {}
+};
+
+typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
+
 class Function : public Object
 {
 public:
-  Function() : pushIntoStack(false) {}
+  Function() : numInputs(0), pushIntoStack(false) {}
 
+  /*
+  ** Type checking
+  */
   virtual size_t getNumRequiredInputs() const
     {jassert(false); return 0;}
 
@@ -43,6 +60,9 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {jassert(false); return anyType;}
 
+  /*
+  ** Static computation
+  */
   virtual String getOutputPostFix() const
     {return T("Processed");}
 
@@ -51,16 +71,25 @@ public:
 
   bool initialize(ExecutionContext& context, TypePtr inputType);
   bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
+  bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputTypes);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
 
-  size_t getNumInputs() const
-    {return inputVariables.size();}
+  /*
+  ** Static Prototype
+  */
+  virtual FrameClassPtr createFrameClass(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const VariableSignaturePtr& outputVariable);
 
+  size_t getNumInputs() const
+    {return numInputs;}
+
+  const FrameClassPtr& getFrameClass() const
+    {return frameClass;}
+/*
   const VariableSignaturePtr& getInputVariable(size_t index) const
     {jassert(index < inputVariables.size()); return inputVariables[index];}
 
   const TypePtr& getInputType(size_t index) const
-    {return getInputVariable(index)->getType();}
+    {return getInputVariable(index)->getType();}*/
 
   const VariableSignaturePtr& getOutputVariable() const
     {return outputVariable;}
@@ -68,12 +97,78 @@ public:
   const TypePtr& getOutputType() const
     {return outputVariable->getType();}
 
+  /*
+  ** Dynamic computation
+  */
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {jassert(getNumInputs() == 1); return computeFunction(context, &input);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {jassert(getNumInputs() == 1); return computeFunction(context, *inputs);}
+ 
+  virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
+    {return T("FIXME");}
 
+  /*
+  ** Callbacks
+  */
+  size_t getNumPreCallbacks() const
+    {return preCallbacks.size();}
+  
+  void addPreCallback(const FunctionCallbackPtr& callback)
+    {preCallbacks.push_back(callback);}
+
+  size_t getNumPostCallbacks() const
+    {return postCallbacks.size();}
+
+  void addPostCallback(const FunctionCallbackPtr& callback)
+    {postCallbacks.push_back(callback);}
+
+  /*
+  ** Push into stack flag
+  */
+  void setPushIntoStackFlag(bool value)
+    {pushIntoStack = value;}
+
+  bool hasPushIntoStackFlag() const
+    {return pushIntoStack;}
+
+  /*
+  ** Learner
+  */
+  bool hasBatchLearner() const
+    {return batchLearner_;}
+
+  const FunctionPtr& getBatchLearner() const
+    {return batchLearner_;}
+
+  void setBatchLearner(const FunctionPtr& batchLearner);
+
+  bool hasOnlineLearner() const
+    {return onlineLearner_;}
+
+  const OnlineLearnerPtr& getOnlineLearner() const
+    {return onlineLearner_;}
+
+  void setOnlineLearner(const OnlineLearnerPtr& onlineLearner)
+    {this->onlineLearner_ = onlineLearner;}
+
+  /*
+  ** High level learning operations
+  */
+  bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr());
+  bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const;
+  bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const;
+
+  /*
+  ** High level dynamic computation (calls callbacks and push into stack if requested)
+  */
+  Variable compute(ExecutionContext& context, const Variable* inputs) const;
+  Variable compute(ExecutionContext& context, const Variable& input) const;
+  Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const;
+  Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const;
+
+  /////////////////////////////////////////////////////////////
   // old
   virtual TypePtr getInputType() const
     {return anyType;}
@@ -84,23 +179,22 @@ public:
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
   // -
-
-  // push into stack
-  void setPushIntoStackFlag(bool value)
-    {pushIntoStack = value;}
-
-  bool hasPushIntoStackFlag() const
-    {return pushIntoStack;}
-
+  
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class FunctionClass;
+  
+  size_t numInputs;
+  VariableSignaturePtr outputVariable;
 
+  std::vector<FunctionCallbackPtr> preCallbacks;
+  std::vector<FunctionCallbackPtr> postCallbacks;
+  FunctionPtr batchLearner_; // tmp names, while Inference exists
+  OnlineLearnerPtr onlineLearner_;
   bool pushIntoStack;
 
-  std::vector<VariableSignaturePtr> inputVariables;
-  VariableSignaturePtr outputVariable;
+  FrameClassPtr frameClass;
 };
 
 extern ClassPtr functionClass;

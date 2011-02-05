@@ -70,6 +70,13 @@ double RegressionErrorEvaluator::getRMSE() const
   return sqrt(squaredError->getMean());
 }
 
+void RegressionErrorEvaluator::clone(ExecutionContext& context, const ObjectPtr& target) const
+{
+  const RegressionErrorEvaluatorPtr& t = target.staticCast<RegressionErrorEvaluator>();
+  t->absoluteError = new ScalarVariableMean();
+  t->squaredError = new ScalarVariableMean();
+}
+
 /*
 ** BinaryClassificationConfusionMatrix
 */

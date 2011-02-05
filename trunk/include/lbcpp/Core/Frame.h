@@ -32,7 +32,13 @@ public:
   const FunctionPtr& getFunction() const
     {return function;}
 
-  const std::vector<size_t>& getInputs() const
+  size_t getNumInputs() const
+    {return inputs.size();}
+
+  size_t getInputIndex(size_t i) const
+    {jassert(i < inputs.size()); return inputs[i];}
+
+  const std::vector<size_t>& getInputIndices() const
     {return inputs;}
 
 protected:
@@ -63,6 +69,9 @@ class Frame : public DenseGenericObject
 {
 public:
   Frame(ClassPtr frameClass);
+  Frame(ClassPtr frameClass, const Variable& firstVariable);
+  Frame(ClassPtr frameClass, const Variable& firstVariable, const Variable& secondVariable);
+  Frame(ClassPtr frameClass, const Variable& firstVariable, const Variable& secondVariable, const Variable& thirdVariable);
   Frame() {}
 
   bool isVariableComputed(size_t index) const;
@@ -78,7 +87,8 @@ class FrameBasedFunction : public Function
 {
 public:
   FrameBasedFunction(FrameClassPtr frameClass)
-    : frameClass(frameClass) {}
+    {this->frameClass = frameClass;}
+
   FrameBasedFunction() {}
 
   virtual size_t getMinimumNumRequiredInputs() const
@@ -105,12 +115,9 @@ public:
       frame->setVariable(i, inputs[i]);
     return frame->getVariable(frameClass->getNumMemberVariables() - 1);
   }
-
-protected:
-  friend class FrameBasedFunctionClass;
-
-  FrameClassPtr frameClass;
 };
+
+typedef ReferenceCountedObjectPtr<FrameBasedFunction> FrameBasedFunctionPtr;
 
 }; /* namespace lbcpp */
 

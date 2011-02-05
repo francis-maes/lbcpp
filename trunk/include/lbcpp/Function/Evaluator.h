@@ -47,6 +47,8 @@ public:
 
   double getRMSE() const;
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
 protected:
   ScalarVariableMeanPtr absoluteError;
   ScalarVariableMeanPtr squaredError;

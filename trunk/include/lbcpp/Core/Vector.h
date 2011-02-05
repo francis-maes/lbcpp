@@ -158,6 +158,12 @@ public:
   void set(size_t index, ObjectPtr object)
     {objects[index] = object;}
 
+  const std::vector<ObjectPtr>& getObjects() const
+    {return objects;}
+
+  std::vector<ObjectPtr>& getObjects()
+    {return objects;}
+
 protected:
   std::vector<ObjectPtr> objects;
 };

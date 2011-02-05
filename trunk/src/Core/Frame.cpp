@@ -52,7 +52,7 @@ bool FrameClass::initializeFunctionTypes(ExecutionContext& context, const FrameO
 {
   const FunctionPtr& function = signature->getFunction();
   jassert(function);
-  const std::vector<size_t>& inputs = signature->getInputs();
+  const std::vector<size_t>& inputs = signature->getInputIndices();
 
   std::vector<VariableSignaturePtr> inputVariables(inputs.size());
   for (size_t i = 0; i < inputVariables.size(); ++i)
@@ -93,6 +93,30 @@ bool FrameClass::initializeFunctionTypes(ExecutionContext& context, const FrameO
 Frame::Frame(ClassPtr frameClass)
   : DenseGenericObject(frameClass) {}
 
+Frame::Frame(ClassPtr frameClass, const Variable& firstVariable)
+  : DenseGenericObject(frameClass)
+{
+  jassert(getNumVariables() > 0);
+  setVariable(0, firstVariable);
+}
+
+Frame::Frame(ClassPtr frameClass, const Variable& firstVariable, const Variable& secondVariable)
+  : DenseGenericObject(frameClass)
+{
+  jassert(getNumVariables() > 1);
+  setVariable(0, firstVariable);
+  setVariable(1, secondVariable);
+}
+
+Frame::Frame(ClassPtr frameClass, const Variable& firstVariable, const Variable& secondVariable, const Variable& thirdVariable)
+  : DenseGenericObject(frameClass)
+{
+  jassert(getNumVariables() > 2);
+  setVariable(0, firstVariable);
+  setVariable(1, secondVariable);
+  setVariable(2, thirdVariable);
+}
+
 void Frame::ensureAllVariablesAreComputed()
 {
   size_t n = thisClass->getNumMemberVariables();
@@ -121,7 +145,7 @@ Variable Frame::getOrComputeVariable(size_t index)
   if (!operatorSignature)
     return Variable();
   
-  const std::vector<size_t>& inputIndices = operatorSignature->getInputs();
+  const std::vector<size_t>& inputIndices = operatorSignature->getInputIndices();
   std::vector<Variable> inputs(inputIndices.size());
   for (size_t i = 0; i < inputs.size(); ++i)
   {
@@ -129,7 +153,7 @@ Variable Frame::getOrComputeVariable(size_t index)
     if (!inputs[i].exists())
       return Variable();
   }
-  Variable value = operatorSignature->getFunction()->computeFunction(defaultExecutionContext(), &inputs[0]);
+  Variable value = operatorSignature->getFunction()->compute(defaultExecutionContext(), &inputs[0]);
   setVariable(index, value);
   return value;
 }
