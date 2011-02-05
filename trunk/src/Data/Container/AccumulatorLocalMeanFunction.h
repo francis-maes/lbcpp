@@ -22,16 +22,17 @@ public:
   AccumulatorLocalMeanFunction(size_t windowSize = 0)
     : windowSize(windowSize) {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    TypePtr doubleVectorType;
-    if (!checkNumInputs(context, 2) ||
-        !Container::getTemplateParameter(context, getInputType(0), doubleVectorType) ||
-        !checkInputType(context, 1, positiveIntegerType))
-      return VariableSignaturePtr();
-    VariableSignaturePtr firstInputVariable = getInputVariable(0);
-    return new VariableSignature(doubleVectorType, firstInputVariable->getName() + T("LocalMean"), firstInputVariable->getShortName() + T("lm"));
-  }
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : containerClass(doubleVectorClass());}
+
+  virtual String getOutputPostFix() const
+    {return T("LocalMean");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return Container::getTemplateParameter(inputVariables[0]->getType());}
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {

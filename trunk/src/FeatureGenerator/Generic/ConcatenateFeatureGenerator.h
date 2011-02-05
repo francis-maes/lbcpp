@@ -23,25 +23,27 @@ public:
   virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
     {return compositeDoubleVectorClass(featuresEnumeration, featuresType);}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass();}
+  
+  virtual String getOutputPostFix() const
+    {return T("Concatenated");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    size_t numInputs = getNumInputs();
-
-    if (!numInputs)
-    {
-      context.errorCallback(T("No inputs"));
-      return EnumerationPtr();
-    }
-    for (size_t i = 0; i < numInputs; ++i)
-      if (!checkInputType(context, i, doubleVectorClass(enumValueType)))
-        return EnumerationPtr();
-
     DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
     elementsType = TypePtr();
+    size_t numInputs = inputVariables.size();
     shifts.resize(numInputs);
     for (size_t i = 0; i < numInputs; ++i)
     {
-      const VariableSignaturePtr& inputVariable = getInputVariable(i);
+      const VariableSignaturePtr& inputVariable = inputVariables[i];
 
       shifts[i] = elementsEnumeration->getNumElements();
       EnumerationPtr subElementsEnumeration;
@@ -59,9 +61,6 @@ public:
       context.errorCallback(T("All elements do not inherit from double"));
       return EnumerationPtr();
     }
-
-    outputName = T("Concatenate");
-    outputShortName = T("Concat");
     return elementsEnumeration;
   }
 

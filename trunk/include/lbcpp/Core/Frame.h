@@ -56,7 +56,7 @@ public:
   virtual bool initialize(ExecutionContext& context);
 
 private:
-  bool initializeFunction(ExecutionContext& context, const FrameOperatorSignaturePtr& signature);
+  bool initializeFunctionTypes(ExecutionContext& context, const FrameOperatorSignaturePtr& signature);
 };
 
 class Frame : public DenseGenericObject
@@ -81,8 +81,22 @@ public:
     : frameClass(frameClass) {}
   FrameBasedFunction() {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-    {return frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);}
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 0;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return anyType;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    VariableSignaturePtr lastMemberVariable = frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);
+    outputName = lastMemberVariable->getName();
+    outputShortName = lastMemberVariable->getShortName();
+    return lastMemberVariable->getType();
+  }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {

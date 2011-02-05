@@ -22,12 +22,27 @@ public:
   GenerateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
     : elementGeneratorFunction(elementGeneratorFunction) {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == (numInputs - 1) ? positiveIntegerType : elementGeneratorFunction->getRequiredInputType(index, numInputs);}
+
+  virtual String getOutputPostFix() const
+    {return T("Generated");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     if (!elementGeneratorFunction->initialize(context, inputVariables))
-      return VariableSignaturePtr();
+      return TypePtr();
+
     VariableSignaturePtr elementsSignature = elementGeneratorFunction->getOutputVariable();
-    return new VariableSignature(vectorClass(elementsSignature->getType()), elementsSignature->getName() + T("Vector"), elementsSignature->getShortName() + T("v"));
+    outputName = elementsSignature->getName() + T("Vector");
+    outputShortName = elementsSignature->getShortName() + T("v");
+    return vectorClass(elementsSignature->getType());
   }
 
   // at each iteration, replaces the last input (n) by the loop counter (i in [0,n[)

@@ -19,7 +19,8 @@ class Distribution : public Object
 public:
   Distribution(ClassPtr thisClass) : Object(thisClass) {}
   Distribution() : Object() {}
-  
+
+  static TypePtr getTemplateParameter(TypePtr type);
   static bool getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res);
 
   virtual TypePtr getElementsType() const = 0;

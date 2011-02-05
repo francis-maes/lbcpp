@@ -128,15 +128,19 @@ private:
 class SegmentContainerFunction : public Function
 {
 public:
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Segmented");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr elementsType;
-    if (!Container::getTemplateParameter(context, inputVariable->getType(), elementsType))
-      return VariableSignaturePtr();
-    return new VariableSignature(vectorClass(segmentContainerClass(elementsType)), inputVariable->getName() + T("Segmented"), inputVariable->getShortName() + T("s"));
+    TypePtr elementsType = Container::getTemplateParameter(inputVariables[0]->getType());
+    return segmentContainerClass(elementsType);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const

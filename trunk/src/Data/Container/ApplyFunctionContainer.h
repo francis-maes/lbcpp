@@ -45,31 +45,35 @@ public:
   ApplyOnContainerFunction(FunctionPtr function = FunctionPtr())
     : function(function) {}
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
-  {
-    if (!getNumInputs())
-    {
-      context.errorCallback(T("No inputs"));
-      return false;
-    }
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
 
-    std::vector<VariableSignaturePtr> subInputVariables(getNumInputs());
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return function->getOutputPostFix();}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    std::vector<VariableSignaturePtr> subInputVariables(inputVariables.size());
     for (size_t i = 0; i < subInputVariables.size(); ++i)
     {
-      VariableSignaturePtr inputVariable = getInputVariable(0);
-      TypePtr elementsType;
-      if (!Container::getTemplateParameter(context, inputVariable->getType(), elementsType))
-        return false;
-
+      const VariableSignaturePtr& inputVariable = inputVariables[0];
+      TypePtr elementsType = Container::getTemplateParameter(inputVariable->getType());
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));
     }
-
     if (!function->initialize(context, subInputVariables))
-      return false;
+      return TypePtr();
 
-    return new VariableSignature(vectorClass(function->getOutputType()), function->getOutputVariable()->getName(), function->getOutputVariable()->getShortName());
+    outputName = function->getOutputVariable()->getName() + T("Container");
+    outputShortName = T("[") + function->getOutputVariable()->getShortName() + T("]");
+    return vectorClass(function->getOutputType());
   }
-
+ 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t numInputs = getNumInputs();

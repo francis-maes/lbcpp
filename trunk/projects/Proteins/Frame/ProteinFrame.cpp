@@ -88,7 +88,7 @@ FrameClassPtr ProteinFrameFactory::createResidueFrameClass(ExecutionContext& con
   size_t primaryResidueFeaturesAccIndex = res->addMemberOperator(context, getVariableFunction(T("primaryResidueFeaturesAcc")), proteinFrameIndex);
 
   std::vector<size_t> featureIndices;
-  featureIndices.push_back(res->addMemberOperator(context, windowFeatureGenerator(15), primaryResidueFeaturesIndex, positionIndex));
+  featureIndices.push_back(res->addMemberOperator(context, windowFeatureGenerator(15), primaryResidueFeaturesIndex, positionIndex, T("window")));
   featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(10), primaryResidueFeaturesAccIndex, positionIndex, T("localMean10")));
   featureIndices.push_back(res->addMemberOperator(context, accumulatorLocalMeanFunction(50), primaryResidueFeaturesAccIndex, positionIndex, T("localMean50")));
   featureIndices.push_back(res->addMemberOperator(context, getVariableFunction(T("globalFeatures")), proteinFrameIndex, T("global")));

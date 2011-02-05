@@ -57,18 +57,20 @@ public:
   virtual EnumerationPtr getScoresEnumeration(ExecutionContext& context, TypePtr elementsType) = 0;
   virtual void accumulate(const ContainerPtr& container, const CumulativeScoreVectorPtr& res) const = 0;
 
-  virtual VariableSignaturePtr initializeFunction(ExecutionContext& context)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Accumulated");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!checkNumInputs(context, 1))
-      return VariableSignaturePtr();
-    VariableSignaturePtr inputVariable = getInputVariable(0);
-    TypePtr elementsType;
-    if (!Container::getTemplateParameter(context, inputVariable->getType(), elementsType))
-      return VariableSignaturePtr();
+    TypePtr elementsType = Container::getTemplateParameter(inputVariables[0]->getType());
     scoresEnumeration = getScoresEnumeration(context, elementsType);
-    if (!scoresEnumeration)
-      return VariableSignaturePtr();
-    return new VariableSignature(cumulativeScoreVectorClass(scoresEnumeration), inputVariable->getName() + T("Accumulated"), inputVariable->getShortName() + T("a"));
+    return scoresEnumeration ? cumulativeScoreVectorClass(scoresEnumeration) : TypePtr();
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -196,6 +198,15 @@ public:
 class AccumulateContainerFunction : public ProxyFunction
 {
 public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(anyType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Accumulated");}
+
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
     if (inputVariables.size() == 1 && inputVariables[0]->getType()->inheritsFrom(containerClass(anyType)))

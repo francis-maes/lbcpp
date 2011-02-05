@@ -21,11 +21,15 @@ public:
   EnumerationDistributionFeatureGenerator(bool includeMissingValue = true)
     : includeMissingValue(includeMissingValue) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return distributionClass(anyType);}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    TypePtr distributionElementsType;
-    if (!checkNumInputs(context, 1) || !checkInputType(context, 0, distributionClass(anyType)) || !Distribution::getTemplateParameter(context, getInputType(0), distributionElementsType))
-      return EnumerationPtr();
+    TypePtr distributionElementsType = Distribution::getTemplateParameter(inputVariables[0]->getType());
     enumeration = distributionElementsType.dynamicCast<Enumeration>();
     if (!enumeration)
     {
@@ -34,8 +38,6 @@ public:
     }
 
     elementsType = probabilityType;
-    outputName = inputVariables[0]->getName() + T("Features");
-    outputShortName = inputVariables[0]->getShortName() + T("f");
     return includeMissingValue ? addMissingToEnumerationEnumeration(enumeration) : enumeration;
   }
 

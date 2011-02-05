@@ -48,6 +48,7 @@ public:
   Variable missingElement() const
     {return Variable::missingValue(getElementsType());}
 
+  static EnumerationPtr getElementsEnumeration(TypePtr doubleVectorType);
   static bool getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType);
 
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;

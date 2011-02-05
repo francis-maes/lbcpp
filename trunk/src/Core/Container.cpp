@@ -15,6 +15,15 @@
 #include <algorithm>
 using namespace lbcpp;
 
+TypePtr Container::getTemplateParameter(TypePtr type)
+{
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));
+  jassert(dvType && dvType->getNumTemplateArguments() == 1);
+  TypePtr res = dvType->getTemplateArgument(0);
+  jassert(res);
+  return res;
+}
+
 bool Container::getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res)
 {
   TypePtr dvType = type->findBaseTypeFromTemplateName(T("Container"));

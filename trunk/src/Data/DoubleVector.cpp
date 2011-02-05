@@ -14,6 +14,15 @@ using namespace lbcpp;
 /*
 ** DoubleVector
 */
+EnumerationPtr DoubleVector::getElementsEnumeration(TypePtr doubleVectorType)
+{
+  TypePtr dvType = doubleVectorType->findBaseTypeFromTemplateName(T("DoubleVector"));
+  jassert(dvType && dvType->getNumTemplateArguments() == 2);
+  TypePtr res = dvType->getTemplateArgument(0);
+  jassert(res);
+  return res;
+}
+
 bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType)
 {
   TypePtr dvType = type->findBaseTypeFromTemplateName(T("DoubleVector"));

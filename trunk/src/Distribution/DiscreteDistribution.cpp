@@ -12,6 +12,15 @@
 using namespace lbcpp;
 
 // todo: ranger
+TypePtr Distribution::getTemplateParameter(TypePtr type)
+{
+  TypePtr dvType = type->findBaseTypeFromTemplateName(T("Distribution"));
+  jassert(dvType && dvType->getNumTemplateArguments() == 1);
+  TypePtr res = dvType->getTemplateArgument(0);
+  jassert(res);
+  return res;
+}
+
 bool Distribution::getTemplateParameter(ExecutionContext& context, TypePtr type, TypePtr& res)
 {
   TypePtr dvType = type->findBaseTypeFromTemplateName(T("Distribution"));
