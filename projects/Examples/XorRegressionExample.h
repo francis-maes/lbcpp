@@ -192,7 +192,7 @@ public:
   StochasticLearner(const std::vector<FunctionPtr>& functionsToLearn, EvaluatorPtr evaluator,
                     size_t maxIterations = 1000,
                     StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-                    bool randomizeExamples = false,
+                    bool randomizeExamples = true,
                     bool restoreBestParametersWhenDone = true)
     : functionsToLearn(functionsToLearn), evaluator(evaluator), maxIterations(maxIterations),
       randomizeExamples(randomizeExamples), restoreBestParametersWhenDone(restoreBestParametersWhenDone) {}
@@ -200,10 +200,9 @@ public:
   virtual TypePtr getRequiredExamplesType() const
     {return objectClass;} // frameObjectClass
 
-
   virtual void train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    std::vector<OnlineLearnerPtr> runningLearners;
+    RunningLearnerVector runningLearners;
     startLearning(function, runningLearners);
 
     if (stoppingCriterion)
@@ -212,7 +211,9 @@ public:
     for (size_t i = 0; runningLearners.size() && (!maxIterations || i < maxIterations); ++i)
     {
       context.enterScope(T("Learning Iteration ") + String((int)i + 1));
+      context.resultCallback(T("Iteration"), i + 1);
 
+      // Learning iteration
       startLearningIteration(function, i, maxIterations, runningLearners);
 
       if (randomizeExamples)
@@ -226,6 +227,9 @@ public:
         for (size_t i = 0; i < trainingData.size(); ++i)
           doEpisode(context, function, trainingData[i], runningLearners);
 
+      bool learningFinished = finishLearningIteration(context, runningLearners);
+
+      // Evaluation
       EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
       function->evaluate(context, trainingData, trainEvaluator);
       returnEvaluatorResults(context, trainEvaluator, T("Train"));
@@ -238,9 +242,7 @@ public:
       }
 
       double mainScore = validationEvaluator ? validationEvaluator->getDefaultScore() : trainEvaluator->getDefaultScore();
-
-      bool learningFinished = finishLearningIteration(context, runningLearners);
-
+      
       context.leaveScope(mainScore);
       context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Learning Iterations")));
 
@@ -252,7 +254,7 @@ public:
         context.informationCallback(T("Best score: ") + String(mainScore));
       }
 
-      if (learningFinished || (stoppingCriterion && stoppingCriterion->shouldStop(-mainScore)))
+      if (learningFinished || (stoppingCriterion && stoppingCriterion->shouldStop(mainScore)))
         break;
     }
 
@@ -271,6 +273,8 @@ public:
   }
 
 protected:
+  typedef std::vector< std::pair<FunctionPtr, OnlineLearnerPtr> > RunningLearnerVector;
+
   std::vector<FunctionPtr> functionsToLearn;
   EvaluatorPtr evaluator;
   size_t maxIterations;
@@ -278,13 +282,13 @@ protected:
   bool randomizeExamples;
   bool restoreBestParametersWhenDone;
 
-  void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const std::vector<OnlineLearnerPtr>& runningLearners) const
+  void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const RunningLearnerVector& runningLearners) const
   {
     std::vector<Variable> in(function->getNumInputs());
     for (size_t i = 0; i < in.size(); ++i)
       in[i] = inputs->getVariable(i);
 
-    startEpisode(function, &in[0], runningLearners);
+    startEpisode(runningLearners);
     function->compute(context, &in[0]);
     finishEpisode(runningLearners);
   }
@@ -300,14 +304,14 @@ protected:
   }
 
 private:
-  void startLearning(const FunctionPtr& function, std::vector<OnlineLearnerPtr>& runningLearners) const
+  void startLearning(const FunctionPtr& function, RunningLearnerVector& runningLearners) const
   {
     for (size_t i = 0; i < functionsToLearn.size(); ++i)
     {
       OnlineLearnerPtr onlineLearner = functionsToLearn[i]->getOnlineLearner();
       jassert(onlineLearner);
       onlineLearner->startLearning(function);
-      runningLearners.push_back(onlineLearner);
+      runningLearners.push_back(std::make_pair(functionsToLearn[i], onlineLearner));
     }
   }
 
@@ -317,18 +321,18 @@ private:
       functionsToLearn[i]->getOnlineLearner()->finishLearning();
   }
 
-  static void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations, const std::vector<OnlineLearnerPtr>& runningLearners)
+  static void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations, const RunningLearnerVector& runningLearners)
   {
     for (size_t i = 0; i < runningLearners.size(); ++i)
-      runningLearners[i]->startLearningIteration(function, iteration, maxIterations);
+      runningLearners[i].second->startLearningIteration(runningLearners[i].first, iteration, maxIterations);
   }
 
-  static bool finishLearningIteration(ExecutionContext& context, std::vector<OnlineLearnerPtr>& runningLearners)
+  static bool finishLearningIteration(ExecutionContext& context, RunningLearnerVector& runningLearners)
   {
     bool learningFinished = true;
     for (int i = runningLearners.size() - 1; i >= 0; --i)
     {
-      bool learnerFinished = runningLearners[i]->finishLearningIteration(context);
+      bool learnerFinished = runningLearners[i].second->finishLearningIteration(context, runningLearners[i].first);
       if (learnerFinished)
         runningLearners.erase(runningLearners.begin() + i);
       else
@@ -337,16 +341,16 @@ private:
     return learningFinished;
   }
 
-  static void startEpisode(const FunctionPtr& function, const Variable* inputs, const std::vector<OnlineLearnerPtr>& runningLearners)
+  static void startEpisode(const RunningLearnerVector& runningLearners)
   {
     for (size_t i = 0; i < runningLearners.size(); ++i)
-      runningLearners[i]->startEpisode(function, inputs);
+      runningLearners[i].second->startEpisode(runningLearners[i].first);
   }
 
-  static void finishEpisode(const std::vector<OnlineLearnerPtr>& runningLearners)
+  static void finishEpisode(const RunningLearnerVector& runningLearners)
   {
     for (int i = runningLearners.size() - 1; i >= 0; --i)
-      runningLearners[i]->finishEpisode();
+      runningLearners[i].second->finishEpisode(runningLearners[i].first);
   }
 };
 
@@ -389,11 +393,12 @@ typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnable
 
 /////////////////
 
-class GDOnlineLearner : public OnlineLearner
+class GDOnlineLearner : public OnlineLearner, public FunctionCallback
 {
 public:
   GDOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
-    : learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
+    : numberOfActiveFeatures(T("NumActiveFeatures"), 100), 
+      learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
   GDOnlineLearner() : normalizeLearningRate(true), epoch(0) {}
 
   virtual void startLearning(const FunctionPtr& function)
@@ -403,22 +408,45 @@ public:
     epoch = 0;
   }
 
-  virtual void startEpisode(const FunctionPtr& function, const ObjectPtr& inputs) {}
-  virtual void finishEpisode() {}
+  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations)
+    {function->addPostCallback(this);}
 
-  virtual bool finishLearningIteration(ExecutionContext& context)
+  virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output)
   {
+    learningStep(function, inputs, output);
+    
+   /* if (inputs[0].isObject() && inputs[0].dynamicCast<Container>())
+    {
+      // composite inputs (e.g. ranking)
+      const ContainerPtr& inputContainer = inputs[0].getObjectAndCast<Container>(context);
+      size_t n = inputContainer->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+        updateNumberOfActiveFeatures(context, inputContainer->getElement(i).getObjectAndCast<DoubleVector>());
+    }
+    else*/
+    {
+      // simple input
+      updateNumberOfActiveFeatures(inputs[0].getObjectAndCast<DoubleVector>());
+    }
+  }
+
+  virtual bool finishLearningIteration(ExecutionContext& context, const FunctionPtr& function)
+  {
+    function->removePostCallback(this);
+
+    bool isLearningFinished = false;
     if (lossValue.getCount())
     {
       double mean = lossValue.getMean();
       context.resultCallback(T("Empirical Risk"), mean);
       context.resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
       lossValue.clear();
-    }
-    return true;
-  }
 
-  virtual void finishLearning() {}
+      if (mean == 0.0)
+        isLearningFinished = true;
+    }
+    return isLearningFinished;
+  }
 
 protected:
   ScalarVariableRecentMean numberOfActiveFeatures;
@@ -450,13 +478,32 @@ protected:
       res *= learningRate->compute(epoch);
     if (normalizeLearningRate && numberOfActiveFeatures.getMean())
       res /= numberOfActiveFeatures.getMean();
+    jassert(isNumberValid(res));
     return res;
+  }
+
+  void updateNumberOfActiveFeatures(const DoubleVectorPtr& input)
+  {
+    if (normalizeLearningRate && input)
+    {
+      // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
+      if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
+      {
+        double norm = input->l0norm();
+        if (norm)
+          numberOfActiveFeatures.push(norm);
+      }
+    }
   }
 };
 
 class StochasticGDOnlineLearner : public GDOnlineLearner
 {
 public:
+  StochasticGDOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate = true)
+    : GDOnlineLearner(learningRate, normalizeLearningRate) {}
+  StochasticGDOnlineLearner() {}
+
   virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
   {
     const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
@@ -470,7 +517,7 @@ public:
   virtual void startEpisode(const FunctionPtr& f, const ObjectPtr& inputs)
   {
     const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
-    episodeGradient = new DenseDoubleVector(function->getParametersClass());
+    episodeGradient =  new DenseDoubleVector(function->getParametersClass());
   }
 
   virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
@@ -515,7 +562,7 @@ public:
     parametersClass = denseDoubleVectorClass(featuresEnumeration);
     outputName = T("prediction");
     outputShortName = T("p");
-    setOnlineLearner(new StochasticGDOnlineLearner());
+    setOnlineLearner(new StochasticGDOnlineLearner(constantIterationFunction(0.1)));
     setBatchLearner(new StochasticLearner(std::vector<FunctionPtr>(1, refCountedPointerFromThis(this)), regressionErrorEvaluator(T("toto"))));
     return doubleType;
   }
@@ -599,9 +646,12 @@ public:
     frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));
     frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));
     frameClass->addMemberOperator(context, new MakeRegressionLossFunction(), 1);
-    frameClass->addMemberOperator(context, new LearnableLinearFunction(), 0, 2);
+    FunctionPtr linearFunction = new LearnableLinearFunction();
+    frameClass->addMemberOperator(context, linearFunction, 0, 2);
 
-    setBatchLearner(new FrameBasedFunctionSequentialLearner());
+    setBatchLearner(new StochasticLearner(std::vector<FunctionPtr>(1, linearFunction), regressionErrorEvaluator(T("toto"))));
+
+//    setBatchLearner(new FrameBasedFunctionSequentialLearner());
     return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 };

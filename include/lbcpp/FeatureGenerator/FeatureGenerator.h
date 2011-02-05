@@ -51,6 +51,7 @@ public:
   virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const;
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const;
 
+  virtual size_t l0norm(const Variable* inputs) const;
   virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;

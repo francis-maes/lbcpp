@@ -50,6 +50,15 @@ SparseDoubleVector::SparseDoubleVector()
   : lastIndex(-1) {}
 
 // double vector
+size_t SparseDoubleVector::l0norm() const
+{
+  size_t res = 0;
+  for (size_t i = 0; i < values.size(); ++i)
+    if (values[i].second)
+      ++res;
+  return res;
+}
+
 void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (values.empty())
@@ -175,6 +184,20 @@ void DenseDoubleVector::multiplyByScalar(double value)
 }
 
 // DoubleVector
+size_t DenseDoubleVector::l0norm() const
+{
+  if (!values)
+    return 0;
+
+  const double* source = getValuePointer(0);
+  const double* limit = source + values->size();
+  size_t res = 0;
+  while (source < limit)
+    if (*source++)
+      ++res;
+  return res;
+}
+
 void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (!values)
@@ -301,6 +324,9 @@ LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const V
 }
 
 // DoubleVector
+size_t LazyDoubleVector::l0norm() const
+  {return computedVector ? computedVector->l0norm() : featureGenerator->l0norm(&inputs[0]);}
+
 void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (computedVector)
@@ -370,6 +396,14 @@ void LazyDoubleVector::setElement(size_t index, const Variable& value)
 ** CompositeDoubleVector
 */
 // DoubleVector
+size_t CompositeDoubleVector::l0norm() const
+{
+  size_t res = 0;
+  for (size_t i = 0; i < vectors.size(); ++i)
+    res += vectors[i].second->l0norm();
+  return res;
+}
+
 void CompositeDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   for (size_t i = 0; i < vectors.size(); ++i)

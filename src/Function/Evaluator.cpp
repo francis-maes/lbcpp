@@ -35,6 +35,17 @@ void RegressionErrorEvaluator::addPrediction(ExecutionContext& context, const Va
     else
       jassert(false);
   }
+
+  double correctValue;
+  if (correct.isDouble())
+    correctValue = correct.getDouble();
+  else
+  {
+   // jassert(correct.dynamicCast<ScalarFunction>());
+   // correct.getObjectAndCast<ScalarFunction>()->
+    // CRACK ! : il faut des RegressionLoss pour pouvoir faire ça
+  }
+
   addDelta(predictedValue - correct.getDouble());
 }
 
