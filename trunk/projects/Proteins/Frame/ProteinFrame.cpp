@@ -16,16 +16,16 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
   
   // inputs
   size_t lengthIndex = res->addMemberVariable(context, positiveIntegerType, T("length"));
-  size_t aaIndex = res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
-  size_t pssmIndex = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
-  size_t ss3Index = res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
+  res->addMemberVariable(context, vectorClass(aminoAcidTypeEnumeration), T("primaryStructure"), T("AA"));
+  res->addMemberVariable(context, vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)), T("positionSpecificScoringMatrix"), T("PSSM"));
+  res->addMemberVariable(context, vectorClass(enumerationDistributionClass(secondaryStructureElementEnumeration)), T("secondaryStructure"), T("SS3"));
 
   // primary residue features
   FrameClassPtr primaryResidueFrameClass = createPrimaryResidueFrameClass(context, res);
   if (!primaryResidueFrameClass)
     return FrameClassPtr();
   size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), (size_t)-1, lengthIndex, T("primaryResidueFeatures"));
-  size_t contextFreeResidueFeaturesSum = res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
+  res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
   
   // global features
   FrameClassPtr proteinGlobalFrameClass = createProteinGlobalFrameClass(context, res);

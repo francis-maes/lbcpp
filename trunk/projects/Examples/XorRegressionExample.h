@@ -523,7 +523,7 @@ public:
   virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
   {
     const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
-    DoubleVectorPtr& parameters = function->getParameters(); // FIXME: unused variable
+    //DoubleVectorPtr& parameters = function->getParameters(); // FIXME: unused variable
     computeAndAddGradient(function, inputs, output, episodeGradient, 1.0);
     GDOnlineLearner::learningStep(f, inputs, output);
   }
