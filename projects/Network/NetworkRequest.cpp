@@ -48,4 +48,4 @@ WorkUnitNetworkRequest::WorkUnitNetworkRequest(NetworkRequestPtr request, WorkUn
   : NetworkRequest(request), workUnit(workUnit) {}
   
 NetworkRequestPtr WorkUnitNetworkRequest::getNetworkRequest() const
-  {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination(), requiredCpus, requiredMemory);}
+  {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination(), requiredCpus, requiredMemory, requiredTime);}

@@ -523,7 +523,7 @@ public:
   virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
   {
     const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
-    DoubleVectorPtr& parameters = function->getParameters();
+    DoubleVectorPtr& parameters = function->getParameters(); // FIXME: unused variable
     computeAndAddGradient(function, inputs, output, episodeGradient, 1.0);
     GDOnlineLearner::learningStep(f, inputs, output);
   }
@@ -633,7 +633,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? doubleType : doubleVectorClass();}
+    {return index ? doubleType : (TypePtr)doubleVectorClass();}
 
   virtual String getOutputPostFix() const
     {return T("Prediction");}
