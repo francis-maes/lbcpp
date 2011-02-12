@@ -145,7 +145,7 @@ class DotProductFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
   DotProductFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : target(target), offset(offsetInSparseVector), res(0.0) {}
+    : res(0.0), target(target), offset(offsetInSparseVector) {}
 
   virtual void sense(size_t index, double value)
     {res += target->getValue(index + offset) * value;}

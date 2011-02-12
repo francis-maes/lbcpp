@@ -40,8 +40,7 @@ public:
     TypePtr type = thisClass->getMemberVariableType(index);
     if (node && node->index == index)
       return Variable::copyFrom(type, node->value);
-    else
-      return Variable::missingValue(type);
+    return Variable::missingValue(type);
   }
 
   virtual void setVariable(size_t index, const Variable& value)
