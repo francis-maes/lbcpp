@@ -63,7 +63,7 @@
     <code>
       SecondaryStructureElement dsspSecondaryStructureToSecondaryStructure(DSSPSecondaryStructureElement element)
       {
-        if (element == threeTurnHelix || element == alphaHelix)
+        if (element == threeTurnHelix || element == alphaHelix || element == piHelix)
           return helix;
         if (element == residueInIsolatedBridge || element == extendedStrandInSheet)
           return sheet;

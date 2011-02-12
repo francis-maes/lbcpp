@@ -70,7 +70,7 @@ public:
   {
     TypePtr elementsType = Container::getTemplateParameter(inputVariables[0]->getType());
     scoresEnumeration = getScoresEnumeration(context, elementsType);
-    return scoresEnumeration ? cumulativeScoreVectorClass(scoresEnumeration) : TypePtr();
+    return scoresEnumeration ? (TypePtr)cumulativeScoreVectorClass(scoresEnumeration) : TypePtr();
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const

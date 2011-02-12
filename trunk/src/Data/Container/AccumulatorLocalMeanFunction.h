@@ -26,7 +26,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? positiveIntegerType : containerClass(doubleVectorClass());}
+    {return index ? positiveIntegerType : (TypePtr)containerClass(doubleVectorClass());}
 
   virtual String getOutputPostFix() const
     {return T("LocalMean");}
