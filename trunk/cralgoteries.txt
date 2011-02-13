@@ -1,3 +1,4 @@
+
 * Option CMake pour virer la dependance sur X11
 
 * Nouveau repertoire: Learning, contient: LearnableFunction, sous repertoire: BatchLearner, OnlineLearner, Numerical, ...
