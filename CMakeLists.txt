@@ -25,6 +25,25 @@ ENDIF(WIN32)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LBCPP_BIN_DIRECTORY})
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LBCPP_BIN_DIRECTORY})
 
+# Search for shared library in current directory (instead of hard links)
+IF   (UNIX)
+  IF	(APPLE)
+    # FIXME : not working yet
+    #SET(INSTALL_NAME_DIR "@executable_path")
+    #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-executable_path,@executable_path")
+    #SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-executable_path,@executable_path")
+    #SET(CMAKE_SKIP_BUILD_RPATH  TRUE)
+    #SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@executable_path")
+    #SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,@executable_path")
+    #SET(BUILD_WITH_INSTALL_RPATH 1)
+    #SET(INSTALL_NAME_DIR "@executable_path")
+  ELSE	(APPLE)
+    # $ORIGIN AND $$ORIGIN needed due to some "bug" in CMAKE, see: http://www.cmake.org/pipermail/cmake/2008-January/019290.html
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN:$$ORIGIN'")
+    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,'$ORIGIN:$$ORIGIN'") 
+  ENDIF(APPLE)
+ENDIF(UNIX)
+
 ###
 ### C++ Introspection support
 ###
