@@ -269,7 +269,10 @@ void lbcpp::deinitializeDynamicLibrary()
   coreLibraryUnCacheTypes();
   lbCppLibraryUnCacheTypes();
   topLevelType = anyType = TypePtr();
-
-  jassert(lbcpp::applicationContext);
-  lbcpp::applicationContext = NULL;
+  // FIXME : Arnaud : I commented those two lines since lbcpp::applicationContext is set to NULL in
+  // lbcpp::deinitialize() and it seems that lbcpp::deinitializeDynamicLibrary() is called in this function through
+  // applicationContext->libraryManager.preShutdown().
+  // This seems to solve the exit problem.	
+  //jassert(lbcpp::applicationContext);
+  //lbcpp::applicationContext = NULL;
 }
