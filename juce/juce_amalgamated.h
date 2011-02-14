@@ -124,13 +124,13 @@
     (This only affects a Win32 build)
 */
 #ifndef JUCE_ASIO
-  #define JUCE_ASIO 1
+//  #define JUCE_ASIO 1
 #endif
 
 /** Comment out this macro to disable building of ALSA device support on Linux.
 */
 #ifndef JUCE_ALSA
-  #define JUCE_ALSA 1
+//  #define JUCE_ALSA 1
 #endif
 
 /** Comment out this macro if you don't want to enable QuickTime or if you don't
@@ -143,7 +143,7 @@
     installed, and its header files will need to be on your include path.
 */
 #if ! (defined (JUCE_QUICKTIME) || defined (LINUX) || (defined (_WIN32) && ! defined (_MSC_VER)))
-  #define JUCE_QUICKTIME 0
+//  #define JUCE_QUICKTIME 0
 #endif
 
 /** Comment out this macro if you don't want to enable OpenGL or if you don't
@@ -160,18 +160,18 @@
     avoid bloating your codebase with them.
 */
 #ifndef JUCE_USE_FLAC
-  #define JUCE_USE_FLAC 0
+//  #define JUCE_USE_FLAC 0
 #endif
 
 #ifndef JUCE_USE_OGGVORBIS
-  #define JUCE_USE_OGGVORBIS 0
+//  #define JUCE_USE_OGGVORBIS 0
 #endif
 
 /** This flag lets you enable support for CD-burning. You might want to disable
     it to build without the MS SDK under windows.
 */
 #if (! defined (JUCE_USE_CDBURNER)) && ! (defined (_WIN32) && ! defined (_MSC_VER))
-  #define JUCE_USE_CDBURNER 1
+//  #define JUCE_USE_CDBURNER 1
 #endif
 
 /** Enabling this macro means that all regions that get repainted will have a coloured
@@ -187,7 +187,7 @@
 /** Enable this under Linux to use Xinerama for multi-monitor support.
 */
 #ifndef JUCE_USE_XINERAMA
-  #define JUCE_USE_XINERAMA 1
+//  #define JUCE_USE_XINERAMA 1
 #endif
 
 /** Enable this under Linux to use XShm for faster shared-memory rendering.
@@ -221,7 +221,7 @@
 /** This lets you disable building of the WebBrowserComponent, if it's not required.
 */
 #ifndef JUCE_WEB_BROWSER
-  #define JUCE_WEB_BROWSER 1
+//  #define JUCE_WEB_BROWSER 1
 #endif
 
 /** Setting this allows the build to use old Carbon libraries that will be
@@ -241,11 +241,11 @@
 #endif
 
 #ifndef JUCE_INCLUDE_FLAC_CODE
-  #define JUCE_INCLUDE_FLAC_CODE        1
+//  #define JUCE_INCLUDE_FLAC_CODE        1
 #endif
 
 #ifndef JUCE_INCLUDE_OGGVORBIS_CODE
-  #define JUCE_INCLUDE_OGGVORBIS_CODE   1
+//  #define JUCE_INCLUDE_OGGVORBIS_CODE   1
 #endif
 
 #ifndef JUCE_INCLUDE_PNGLIB_CODE
