@@ -64,4 +64,12 @@
     <variable type="File" name="testingFile" shortName="test"/>
     <variable type="PositiveInteger" name="maxExamples" shortName="max"/>
   </class>
+  
+  <!-- Genetic Programming Example -->
+  <class name="AgAddFunction" base="Function"/>
+  <class name="AgSubFunction" base="Function"/>
+  <class name="AgMultiplyFunction" base="Function"/>
+  <class name="AgDivideFunction" base="Function"/>
+  
+  <class name="GeneticProgrammingExample" base="WorkUnit"/>
 </library>
