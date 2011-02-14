@@ -143,6 +143,12 @@ public:
     return res;
   }
   
+  void setVariableIndex(size_t node, size_t variableIndex)
+    {jassert(isLeaf(node)); nodes[node].value.variableIndex = variableIndex;}
+  
+  void setFunction(size_t node, FunctionPtr function)
+    {jassert(isInternalNode(node)); nodes[node].value.function = function.get();}
+  
   size_t getChild(size_t node, size_t index) const
   {
     jassert(node < nodes.size() && index < nodes[node].children.size());
@@ -163,6 +169,9 @@ public:
   
   size_t getNumNodes() const
     {return nodes.size();}
+  
+  size_t getNumChildren(size_t node) const
+    {jassert(node < nodes.size()); return nodes[node].children.size();}
   
   virtual String toString(size_t node = 0)
   {
@@ -244,6 +253,57 @@ double evaluateTree(ExecutionContext& context, const GeneticTreePtr& tree, const
   return evaluator->getDefaultScore();
 }
 
+void inducePointMutation(RandomGeneratorPtr& random, size_t numInputVariables, const std::vector<FunctionPtr>& functions, const GeneticTreePtr& tree, size_t node, double probOfMutation)
+{
+  if (random->sampleDouble() < probOfMutation)
+  {
+    if (tree->isLeaf(node))
+      tree->setVariableIndex(node, random->sampleSize(numInputVariables));
+    else
+      tree->setFunction(node, functions[random->sampleSize(functions.size())]);
+  }
+
+  if (tree->isLeaf(node))
+    return;
+
+  for (size_t i = 0; i < tree->getNumChildren(node); ++i)
+    inducePointMutation(random, numInputVariables, functions, tree, tree->getChild(node, i), probOfMutation);
+}
+
+void makeCrossOver(size_t breakNode, const GeneticTreePtr& from, size_t fromNode, const GeneticTreePtr& alter, size_t alterNode, GeneticTreePtr& to, size_t toNode)
+{
+  if (fromNode == breakNode)
+  {
+    makeCrossOver(alter->getNumNodes(), alter, alterNode, from, fromNode, to, toNode);
+    return;
+  }
+  
+  if (from->isLeaf(fromNode))
+  {
+    to->createLeaf(toNode, from->getVariableIndex(fromNode));
+    return;
+  }
+  
+  size_t parentNode = to->createInternalNode(toNode, from->getFunction(fromNode));
+  size_t n = from->getNumChildren(fromNode);
+  for (size_t i = 0; i < n; ++i)
+    makeCrossOver(breakNode, from, from->getChild(fromNode, i), alter, alterNode, to, parentNode);
+}
+
+void makeCrossOver(RandomGeneratorPtr& random, GeneticTreePtr& a, GeneticTreePtr& b)
+{
+  size_t indexA = random->sampleSize(a->getNumNodes());
+  size_t indexB = random->sampleSize(b->getNumNodes());
+  
+  GeneticTreePtr newA = new GeneticTree();
+  makeCrossOver(indexA, a, 0, b, indexB, newA, 0);
+  GeneticTreePtr newB = new GeneticTree();
+  makeCrossOver(indexB, b, 0, a, indexA, newB, 0);
+  
+  a = newA;
+  b = newB;
+}
+
 class GeneticProgrammingExample : public WorkUnit
 {
 public:
@@ -287,11 +347,56 @@ public:
     evaluateTrees(context, results);
     context.leaveScope(Variable());
     
+    /* Generation */
+    enum {crossOver, pointMutation, reproduction, bestTree};
     progress = new ProgressionState(0, numGenerations, T("Generation"));
     for (size_t i = 0; i < numGenerations; ++i)
     {
       context.enterScope(T("Generation ") + String((int)i + 1));
+      
+      std::vector<int> operation(numTrees);
+      for (size_t j = 0; j < numTrees; ++j)
+      {
+        double p = random->sampleDouble();
+        if (p < probOfCrossOver)
+          operation[j] = crossOver;
+        else
+          operation[j] = reproduction;
+      }
+      
+      /* Force the best tree to be reproduced */
+      double bestScore = -DBL_MAX;
+      size_t bestIndex = numTrees;
+      for (size_t j = 0; j < numTrees; ++j)
+        if (results[j] > bestScore)
+        {
+          bestScore = results[j];
+          bestIndex = j;
+        }
+      jassert(bestIndex < numTrees);
+      operation[bestIndex] = bestTree;
+
+      /* CrossOver */
+      std::vector<size_t> indexToCrossOver;
+      for (size_t j = 0; j < numTrees; ++j)
+        if (operation[j] == crossOver)
+          indexToCrossOver.push_back(j);
+      std::vector<size_t> sampledIndexToCrossOver(indexToCrossOver.size());
+      random->sampleOrder(0, indexToCrossOver.size(), sampledIndexToCrossOver);
+      for (size_t j = 0; j < indexToCrossOver.size(); ++j)
+        sampledIndexToCrossOver[j] = indexToCrossOver[sampledIndexToCrossOver[j]];
+      
+      for (size_t j = 0; j < sampledIndexToCrossOver.size() / 2; j += 2)
+        makeCrossOver(random, trees[sampledIndexToCrossOver[j]], trees[sampledIndexToCrossOver[j + 1]]);
+
+      /* Induce point mutation */
+      for (size_t j = 0; j < numTrees; ++j)
+        if (operation[j] != bestTree)
+          inducePointMutation(random, numInputVariables, functions, trees[j], 0, probOfMutation);
+
+      /* Evaluate */
       evaluateTrees(context, results);
+
       context.leaveScope(Variable());
       progress->setValue(i + 1);
       context.progressCallback(progress);
@@ -340,9 +445,11 @@ protected:
     for (size_t i = 0; i < trees.size(); ++i)
     {
       results[i] = evaluateTree(context, trees[i], inputData, outputData);
-
-      context.resultCallback(T("Tree ") + String((int)i), trees[i]->toString());
-      context.resultCallback(T("Score Tree ") + String((int)i), Variable(results[i], doubleType));
+      context.enterScope(T("Tree ") + String((int)i));
+      context.resultCallback(T("Iteration"), Variable((int)i, positiveIntegerType));
+      context.resultCallback(T("Tree"), trees[i]->toString());
+      context.resultCallback(T("Score"), Variable(results[i], doubleType));
+      context.leaveScope(Variable());
       progress->setValue(i + 1);
       context.progressCallback(progress);
     }
