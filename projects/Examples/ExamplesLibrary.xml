@@ -71,5 +71,13 @@
   <class name="AgMultiplyFunction" base="Function"/>
   <class name="AgDivideFunction" base="Function"/>
   
-  <class name="GeneticProgrammingExample" base="WorkUnit"/>
+  <class name="GeneticProgrammingExample" base="WorkUnit">
+    <variable type="PositiveInteger" name="numInputVariables"/>
+    <variable type="PositiveInteger" name="numData"/>
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numGenerations"/>
+    <variable type="Double" name="probOfCrossOver"/>
+    <variable type="Double" name="probOfReproduction"/>
+    <variable type="Double" name="probOfMutation"/>
+  </class>
 </library>
