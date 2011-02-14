@@ -54,6 +54,7 @@ using juce::OutputStream;
 using juce::Time;
 using juce::XmlElement;
 using juce::Logger;
+using juce::ZipFile;
 
 namespace lbcpp
 {
