@@ -193,7 +193,7 @@
 /** Enable this under Linux to use XShm for faster shared-memory rendering.
 */
 #ifndef JUCE_USE_XSHM
-  #define JUCE_USE_XSHM 1
+//  #define JUCE_USE_XSHM 1
 #endif
 
 /** Enabling this builds support for VST audio plugins.
