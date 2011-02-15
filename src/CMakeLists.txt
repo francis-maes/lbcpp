@@ -12,7 +12,9 @@ GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
+IF(LBCPP_NETWORKING)
+  GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
+ENDIF(LBCPP_NETWORKING)
 
 GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Distribution/Function/DistributionFunctionLibrary.xml DistributionFunctionLibrary.cpp)
@@ -224,24 +226,25 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
 )
 
 ### Network ###
-SET(LBCPP_NETWORK_SOURCES
-  ../include/lbcpp/Network/NetworkClient.h
-  Network/NetworkClient.cpp
-  ../include/lbcpp/Network/NetworkServer.h
-  Network/NetworkServer.cpp
-  ../include/lbcpp/Network/NetworkCallback.h
-  ../include/lbcpp/Network/NetworkRequest.h
-  Network/NetworkRequest.cpp
-  ../include/lbcpp/Network/NetworkInterface.h
-  Network/NetworkInterface.cpp
-  Network/NetworkNotification.h
-  Network/NetworkNotification.cpp
-  Network/NetworkWorkUnit.h
-  Network/NetworkWorkUnit.cpp
-  Network/NetworkLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
+IF(LBCPP_NETWORKING)
+  SET(LBCPP_NETWORK_SOURCES
+    ../include/lbcpp/Network/NetworkClient.h
+    Network/NetworkClient.cpp
+    ../include/lbcpp/Network/NetworkServer.h
+    Network/NetworkServer.cpp
+    ../include/lbcpp/Network/NetworkCallback.h
+    ../include/lbcpp/Network/NetworkRequest.h
+    Network/NetworkRequest.cpp
+    ../include/lbcpp/Network/NetworkInterface.h
+    Network/NetworkInterface.cpp
+    Network/NetworkNotification.h
+    Network/NetworkNotification.cpp
+    Network/NetworkWorkUnit.h
+    Network/NetworkWorkUnit.cpp
+    Network/NetworkLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
-
+ENDIF(LBCPP_NETWORKING)
 
 #### Distribution ####
 

@@ -9,7 +9,6 @@
 # define LBCPP_COMMON_H_
 
 # define LBCPP_MULTI_THREAD
-# define LBCPP_NETWORKING
 
 # ifdef JUCE_WIN32
 #  if _MSC_VER>=1600
