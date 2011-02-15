@@ -3,8 +3,8 @@
  | Author  : Arnaud Schoofs                 |                                 |
  | Started : 30/10/2010 12:00               |                                 |
  `------------------------------------------/                                 |
-                                |                                             |
-																`--------------------------------------------*/
+                                            |                                 |
+                                            `--------------------------------*/
 
 #include <lbcpp/library.h>
 using namespace lbcpp;
@@ -15,36 +15,34 @@ void usage()
 }
 
 int mainImpl(int argc, char** argv) {
-	if (argc != 3) {
-		usage();
-		return 1;
-	}
-	
-	File file(argv[1]);
-	if (!file.existsAsFile()) {
-		std::cerr << "ZipFile not found: " << argv[1] << std::endl;
-		usage();
-		return 1;
-	}
-	ZipFile zippy(file);
-	
-	File target(argv[2]);
-	if (!file.exists()) {
-		std::cerr << "Destination doesn't exist: " << argv[2] << std::endl;
-		usage();
-		return 1;
-	}
-	
-	zippy.uncompressTo(target, false);	// don't overwrite files that already exist
-	
-	return 0;
+  if (argc != 3) {
+    usage();
+    return 1;
+  }
+  
+  File file(argv[1]);
+  if (!file.existsAsFile()) {
+    std::cerr << "ZipFile not found: " << argv[1] << std::endl;
+    usage();
+    return 1;
+  }
+  ZipFile zippy(file);
+  
+  File target(argv[2]);
+  if (!file.exists()) {
+    std::cerr << "Destination doesn't exist: " << argv[2] << std::endl;
+    usage();
+    return 1;
+  }
+  
+  zippy.uncompressTo(target, false);  // don't overwrite files that already exist
+  
+  return 0;
 }
 
 
 int main(int argc, char** argv) {
-	lbcpp::initialize(argv[0]);
   int exitCode = mainImpl(argc, argv);
-  lbcpp::deinitialize();
   return exitCode;
 }
 
