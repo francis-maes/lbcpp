@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "NetworkRequest.h"
+#include <lbcpp/Network/NetworkRequest.h>
 
 using namespace lbcpp;
 

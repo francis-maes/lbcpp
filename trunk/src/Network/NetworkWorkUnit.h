@@ -9,7 +9,7 @@
 #ifndef LBCPP_NETWORK_WORK_UNIT_H_
 # define LBCPP_NETWORK_WORK_UNIT_H_
 
-# include "NetworkInterface.h"
+# include <lbcpp/Network/NetworkInterface.h>
 
 namespace lbcpp
 {

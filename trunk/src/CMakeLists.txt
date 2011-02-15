@@ -219,6 +219,14 @@ SET(LBCPP_NETWORK_SOURCES
   ../include/lbcpp/Network/NetworkServer.h
   Network/NetworkServer.cpp
   ../include/lbcpp/Network/NetworkCallback.h
+  ../include/lbcpp/Network/NetworkRequest.h
+  Network/NetworkRequest.cpp
+  ../include/lbcpp/Network/NetworkInterface.h
+  Network/NetworkInterface.cpp
+  Network/NetworkNotification.h
+  Network/NetworkNotification.cpp
+  Network/NetworkWorkUnit.h
+  Network/NetworkWorkUnit.cpp
   Network/NetworkLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )

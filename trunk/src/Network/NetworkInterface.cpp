@@ -8,7 +8,7 @@
 
 #include <lbcpp/Data/Stream.h>
 
-#include "NetworkInterface.h"
+#include <lbcpp/Network/NetworkInterface.h>
 #include "NetworkNotification.h"
 
 using namespace lbcpp;
