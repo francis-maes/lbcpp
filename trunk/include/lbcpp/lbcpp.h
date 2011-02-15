@@ -80,7 +80,9 @@
 
 # include "Optimizer/Optimizer.h"
 
+#ifdef LBCPP_UI
 # include "UserInterface/UserInterfaceManager.h"
+#endif
 
 // Old --> 
 # include "Perception/Perception.h"

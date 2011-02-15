@@ -161,8 +161,10 @@ public:
   ExecutionTrace(ExecutionContextPtr context);
   ExecutionTrace() {}
 
+#ifdef LBCPP_UI
   virtual juce::Component* createComponent() const;
-
+#endif
+  
   ExecutionContextPtr getContextPointer() const
     {return contextPointer;}
 

@@ -44,6 +44,13 @@ IF   (UNIX)
   ENDIF(APPLE)
 ENDIF(UNIX)
 
+OPTION(LBCPP_NETWORKING "Networking components" ON)
+OPTION(LBCPP_UI "UserInterface components" ON)
+
+IF(LBCPP_UI)
+  ADD_DEFINITIONS(-DLBCPP_UI)
+ENDIF(LBCPP_UI)
+
 ###
 ### C++ Introspection support
 ###
@@ -88,10 +95,12 @@ ADD_SUBDIRECTORY(sendworkunit)
 ADD_SUBDIRECTORY(unzipper)
 ADD_SUBDIRECTORY(projects)
 
-OPTION(LBCPP_EXPLORER "Include explorer into the project" ON)
-IF (LBCPP_EXPLORER)
-  ADD_SUBDIRECTORY(explorer)
-ENDIF(LBCPP_EXPLORER)
+IF (LBCPP_UI)
+  OPTION(LBCPP_EXPLORER "Include explorer into the project" ON)
+  IF (LBCPP_EXPLORER)
+    ADD_SUBDIRECTORY(explorer)
+  ENDIF(LBCPP_EXPLORER)
+ENDIF(LBCPP_UI)
 
 OPTION(LBCPP_DOCUMENTATION "Include documentation into the project" OFF)
 IF (LBCPP_DOCUMENTATION)

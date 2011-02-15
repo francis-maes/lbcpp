@@ -175,9 +175,11 @@ public:
   /*
   ** Introspection: User Interface
   */
+#ifdef LBCPP_UI
   virtual juce::Component* createComponent() const
     {return NULL;}
-
+#endif
+  
   lbcpp_UseDebuggingNewOperator
 
 protected:

@@ -266,6 +266,7 @@ bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary
   return true;
 }
 
+#ifdef LBCPP_UI
 bool Library::declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor)
 {
   TypePtr type = typeManager().getType(context, typeName);
@@ -289,6 +290,7 @@ juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, c
   }
   return NULL;
 }
+#endif
 
 void Library::getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const
 {

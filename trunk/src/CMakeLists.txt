@@ -44,7 +44,9 @@ GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml Onli
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+IF(LBCPP_UI)
+  GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+ENDIF(LBCPP_UI)
 
 ### old ->
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
@@ -69,7 +71,6 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceLibrary.xml DecisionTreeInferenceLibrary.cpp)
 ### <- old
-
 
 #### Core ####
 
@@ -206,10 +207,13 @@ SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionNotifications.h
   Execution/Callback/ConsoleExecutionCallback.h
   Execution/Callback/MakeTraceExecutionCallback.h
-  Execution/Callback/UserInterfaceExecutionCallback.h
   Execution/Callback/ExecutionCallbackLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackLibrary.cpp
 )
+IF(LBCPP_UI)
+  SET(LBCPP_EXECUTION_CALLBACK_SOURCES ${LBCPP_EXECUTION_CALLBACK_SOURCES} Execution/Callback/UserInterfaceExecutionCallback.h)
+ENDIF(LBCPP_UI)
+
 
 SET(LBCPP_EXECUTION_CONTEXT_SOURCES
   Execution/Context/SingleThreadedExecutionContext.h
@@ -220,7 +224,6 @@ SET(LBCPP_EXECUTION_CONTEXT_SOURCES
 )
 
 ### Network ###
-
 SET(LBCPP_NETWORK_SOURCES
   ../include/lbcpp/Network/NetworkClient.h
   Network/NetworkClient.cpp
@@ -238,6 +241,7 @@ SET(LBCPP_NETWORK_SOURCES
   Network/NetworkLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
 )
+
 
 #### Distribution ####
 
@@ -675,65 +679,68 @@ SET(LBCPP_DECISION_TREE_RTREE_SOURCES
 )
 
 #### UserInterface ####
+IF(LBCPP_UI)
 
-# Res input data.
-FILE(GLOB LBCPP_USER_INTERFACE_DATA_FILES
-  UserInterface/Data/*.png
-)
+  # Res input data.
+  FILE(GLOB LBCPP_USER_INTERFACE_DATA_FILES
+    UserInterface/Data/*.png
+  )
 
-# Where is jucebinbuild?
-GET_TARGET_PROPERTY(JUCE_BIN_BUILD_COMMAND jucebinbuild LOCATION)
+  # Where is jucebinbuild?
+  GET_TARGET_PROPERTY(JUCE_BIN_BUILD_COMMAND jucebinbuild LOCATION)
 
-# The generated files.
-SET(LBCPP_USER_INTERFACE_DATA_CPP ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.cpp)
-SET(LBCPP_USER_INTERFACE_DATA_H ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.h)
+  # The generated files.
+  SET(LBCPP_USER_INTERFACE_DATA_CPP ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.cpp)
+  SET(LBCPP_USER_INTERFACE_DATA_H ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceData.h)
 
-# Main commmand for resources generation.
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${LBCPP_USER_INTERFACE_DATA_CPP}
-  COMMAND ${JUCE_BIN_BUILD_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/UserInterface/Data ${CMAKE_CURRENT_BINARY_DIR} UserInterfaceData lbcpp/common.h
-  DEPENDS ${LBCPP_USER_INTERFACE_DATA_FILES} ${JUCE_BIN_BUILD_COMMAND} 
-  COMMENT "User Interface Data"
-)
-# Dummy custom command for second generated file.
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${LBCPP_USER_INTERFACE_DATA_H}
-  COMMAND echo
-  DEPENDS  ${LBCPP_USER_INTERFACE_DATA_FILES} ${JUCE_BIN_BUILD_COMMAND}
-)
+  # Main commmand for resources generation.
+  ADD_CUSTOM_COMMAND(
+    OUTPUT ${LBCPP_USER_INTERFACE_DATA_CPP}
+    COMMAND ${JUCE_BIN_BUILD_COMMAND} ${CMAKE_CURRENT_SOURCE_DIR}/UserInterface/Data ${CMAKE_CURRENT_BINARY_DIR} UserInterfaceData lbcpp/common.h
+    DEPENDS ${LBCPP_USER_INTERFACE_DATA_FILES} ${JUCE_BIN_BUILD_COMMAND} 
+    COMMENT "User Interface Data"
+  )
+  # Dummy custom command for second generated file.
+  ADD_CUSTOM_COMMAND(
+    OUTPUT ${LBCPP_USER_INTERFACE_DATA_H}
+    COMMAND echo
+    DEPENDS  ${LBCPP_USER_INTERFACE_DATA_FILES} ${JUCE_BIN_BUILD_COMMAND}
+  )
 
-SET(LBCPP_USER_INTEFACE_GENERATED_FILES
-  ${LBCPP_USER_INTERFACE_DATA_H}
-  ${LBCPP_USER_INTERFACE_DATA_CPP}
-)
+  SET(LBCPP_USER_INTEFACE_GENERATED_FILES
+    ${LBCPP_USER_INTERFACE_DATA_H}
+    ${LBCPP_USER_INTERFACE_DATA_CPP}
+  )
 
-#IDE_ONLY_SOURCES(LBCPP_USER_INTEFACE_GENERATED_FILES ${LBCPP_USER_INTEFACE_GENERATED_FILES})
+  #IDE_ONLY_SOURCES(LBCPP_USER_INTEFACE_GENERATED_FILES ${LBCPP_USER_INTEFACE_GENERATED_FILES})
 
-SET(LBCPP_USER_INTERFACE_SOURCES
-  ../include/lbcpp/UserInterface/SimpleTreeViewItem.h
-  ../include/lbcpp/UserInterface/VariableSelector.h
-  ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
-  ../include/lbcpp/UserInterface/UserInterfaceManager.h
-  ../include/lbcpp/UserInterface/ObjectEditor.h
-  UserInterface/UserInterfaceManager.cpp
-  ${LBCPP_USER_INTEFACE_GENERATED_FILES}
-)
+  SET(LBCPP_USER_INTERFACE_SOURCES
+    ../include/lbcpp/UserInterface/SimpleTreeViewItem.h
+    ../include/lbcpp/UserInterface/VariableSelector.h
+    ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
+    ../include/lbcpp/UserInterface/UserInterfaceManager.h
+    ../include/lbcpp/UserInterface/ObjectEditor.h
+    UserInterface/UserInterfaceManager.cpp
+    ${LBCPP_USER_INTEFACE_GENERATED_FILES}
+  )
 
-SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
-  UserInterface/Component/ObjectEditor.cpp
-  UserInterface/Component/VariableTreeView.h
-  UserInterface/Component/VariableTreeView.cpp
-  UserInterface/Component/ContainerTableListBox.h
-  UserInterface/Component/ContainerTableListBox.cpp
-  UserInterface/Component/ContainerCurveEditor.h
-  UserInterface/Component/ContainerCurveEditor.cpp
-  UserInterface/Component/ExecutionTraceTreeViewItem.h
-  UserInterface/Component/ExecutionTraceTreeViewItem.cpp
-  UserInterface/Component/ExecutionTraceTreeView.h
-  UserInterface/Component/ExecutionTraceTreeView.cpp
-  UserInterface/Component/UserInterfaceComponentLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
-)
+  SET(LBCPP_USER_INTERFACE_COMPONENT_SOURCES
+    UserInterface/Component/ObjectEditor.cpp
+    UserInterface/Component/VariableTreeView.h
+    UserInterface/Component/VariableTreeView.cpp
+    UserInterface/Component/ContainerTableListBox.h
+    UserInterface/Component/ContainerTableListBox.cpp
+    UserInterface/Component/ContainerCurveEditor.h
+    UserInterface/Component/ContainerCurveEditor.cpp
+    UserInterface/Component/ExecutionTraceTreeViewItem.h
+    UserInterface/Component/ExecutionTraceTreeViewItem.cpp
+    UserInterface/Component/ExecutionTraceTreeView.h
+    UserInterface/Component/ExecutionTraceTreeView.cpp
+    UserInterface/Component/UserInterfaceComponentLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
+  )
+
+ENDIF(LBCPP_UI)
 
 
 ##### MAIN ####
