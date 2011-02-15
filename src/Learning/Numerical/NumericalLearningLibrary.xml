@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="NumericalLearning" directory="Learning/Numerical">
+
+  <!-- Online Learner -->
+  <class name="GradientDescentOnlineLearner" base="OnlineLearner">
+    <variable type="IterationFunction" name="learningRate"/>
+    <variable type="Boolean" name="normalizeLearningRate"/>
+    <variable type="PositiveInteger" name="epoch"/>
+  </class>
+  
+  <class name="StochasticGDOnlineLearner" base="GradientDescentOnlineLearner">
+    <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
+  </class>
+
+  <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner">
+    <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
+  </class>
+
+  <!-- Learnable Functions -->
+  <class name="NumericalLearnableFunction" base="LearnableFunction" abstract="yes"/>
+  
+  <class name="LinearLearnableFunction" base="NumericalLearnableFunction">
+    <constructor/>
+  </class>
+
+  <class name="LinearRegressor" base="FrameBasedFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+</library>

@@ -171,12 +171,12 @@ void NumericalInference::updateParametersType(ExecutionContext& context)
 
 namespace lbcpp
 {
-  extern GradientDescentOnlineLearnerPtr stochasticGradientDescentOnlineLearner(
+  extern OldGradientDescentOnlineLearnerPtr stochasticOldGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     LearnerUpdateFrequency regularizerUpdateFrequency,
     ScalarObjectFunctionPtr regularizer);
 
-  extern GradientDescentOnlineLearnerPtr batchGradientDescentOnlineLearner(
+  extern OldGradientDescentOnlineLearnerPtr batchOldGradientDescentOnlineLearner(
     LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
     LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
   
@@ -199,11 +199,11 @@ InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
 
   // base learner
   if (learningUpdateFrequency == perStep)
-    return stochasticGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+    return stochasticOldGradientDescentOnlineLearner(learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   //else if (learningUpdateFrequency >= perStepMiniBatch && miniBatchSize < 100)
-  //  res = miniBatchGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
+  //  res = miniBatchOldGradientDescentOnlineLearner(miniBatchSize, learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
   else
-    return batchGradientDescentOnlineLearner(learningUpdateFrequency,
+    return batchOldGradientDescentOnlineLearner(learningUpdateFrequency,
                                               learningRate, normalizeLearningRate, regularizerUpdateFrequency, regularizer);
 }
 

@@ -12,7 +12,7 @@
 #include <lbcpp/Inference/ParallelInference.h>
 using namespace lbcpp;
 
-GradientDescentOnlineLearner::GradientDescentOnlineLearner(
+OldGradientDescentOnlineLearner::OldGradientDescentOnlineLearner(
                       LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                       LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
     : numberOfActiveFeatures(T("NumActiveFeatures"), 10), epoch(0),
@@ -22,7 +22,7 @@ GradientDescentOnlineLearner::GradientDescentOnlineLearner(
 {
 }
 
-void GradientDescentOnlineLearner::startLearningCallback(ExecutionContext& context)
+void OldGradientDescentOnlineLearner::startLearningCallback(ExecutionContext& context)
 {
   numberOfActiveFeatures.clear();
   epoch = 0;
@@ -33,7 +33,7 @@ void GradientDescentOnlineLearner::startLearningCallback(ExecutionContext& conte
   InferenceOnlineLearner::startLearningCallback(context);
 }
 
-void GradientDescentOnlineLearner::stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
+void OldGradientDescentOnlineLearner::stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
 {
   checkRegularizerAfterStep(context, inference);
 
@@ -54,14 +54,14 @@ void GradientDescentOnlineLearner::stepFinishedCallback(ExecutionContext& contex
   InferenceOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
 }
   
-void GradientDescentOnlineLearner::episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
+void OldGradientDescentOnlineLearner::episodeFinishedCallback(ExecutionContext& context, const InferencePtr& inference)
 {
   if (regularizerUpdateFrequency == perEpisode)
     applyRegularizer(context, inference);
   InferenceOnlineLearner::episodeFinishedCallback(context, inference);
 }
 
-void GradientDescentOnlineLearner::passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
+void OldGradientDescentOnlineLearner::passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
 {
   if (regularizerUpdateFrequency == perPass)
     applyRegularizer(context, inference);
@@ -86,7 +86,7 @@ void GradientDescentOnlineLearner::passFinishedCallback(ExecutionContext& contex
   InferenceOnlineLearner::passFinishedCallback(context, inference, batchLearnerInput);
 }
 
-void GradientDescentOnlineLearner::updateParameters(ExecutionContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
+void OldGradientDescentOnlineLearner::updateParameters(ExecutionContext& context, const InferencePtr& inference, double weight, const Variable& input, const Variable& supervision, const Variable& prediction, ObjectPtr* target)
 {
   double exampleLossValue;
   const NumericalInferencePtr& numericalInference = getNumericalInference(inference);
@@ -101,7 +101,7 @@ void GradientDescentOnlineLearner::updateParameters(ExecutionContext& context, c
   lossValue.push(exampleLossValue);
 }
 
-bool GradientDescentOnlineLearner::shouldApplyRegularizerAfterStep(size_t epoch) const
+bool OldGradientDescentOnlineLearner::shouldApplyRegularizerAfterStep(size_t epoch) const
 {
   if (regularizerUpdateFrequency == perStep)
     return true;
@@ -113,19 +113,19 @@ bool GradientDescentOnlineLearner::shouldApplyRegularizerAfterStep(size_t epoch)
   return false;
 }
 
-void GradientDescentOnlineLearner::checkRegularizerAfterStep(ExecutionContext& context, const InferencePtr& inference)
+void OldGradientDescentOnlineLearner::checkRegularizerAfterStep(ExecutionContext& context, const InferencePtr& inference)
 {
   if (shouldApplyRegularizerAfterStep(epoch))
     applyRegularizer(context, inference);
 }
 
-void GradientDescentOnlineLearner::gradientDescentStep(ExecutionContext& context, const InferencePtr& inf, const ObjectPtr& gradient, double weight)
+void OldGradientDescentOnlineLearner::gradientDescentStep(ExecutionContext& context, const InferencePtr& inf, const ObjectPtr& gradient, double weight)
 {
   NumericalInferencePtr inference = getNumericalInference(inf);
   inference->addWeightedToParameters(context, gradient, -computeLearningRate() * weight);
 }
 
-void GradientDescentOnlineLearner::applyRegularizer(ExecutionContext& context, const InferencePtr& inference)
+void OldGradientDescentOnlineLearner::applyRegularizer(ExecutionContext& context, const InferencePtr& inference)
 {
   if (regularizer)
   {
@@ -135,7 +135,7 @@ void GradientDescentOnlineLearner::applyRegularizer(ExecutionContext& context, c
   }
 }
 
-double GradientDescentOnlineLearner::computeLearningRate() const
+double OldGradientDescentOnlineLearner::computeLearningRate() const
 {
   double res = 1.0;
   if (learningRate)
@@ -145,7 +145,7 @@ double GradientDescentOnlineLearner::computeLearningRate() const
   return res;
 }
 
-void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
+void OldGradientDescentOnlineLearner::updateNumberOfActiveFeatures(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input)
 {
   if (normalizeLearningRate && input.exists())
   {
@@ -159,11 +159,11 @@ void GradientDescentOnlineLearner::updateNumberOfActiveFeatures(ExecutionContext
   }
 }
 
-void GradientDescentOnlineLearner::clone(ExecutionContext& context, const ObjectPtr& target) const
+void OldGradientDescentOnlineLearner::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   InferenceOnlineLearner::clone(context, target);
 
-  const GradientDescentOnlineLearnerPtr& res = target.staticCast<GradientDescentOnlineLearner>();
+  const OldGradientDescentOnlineLearnerPtr& res = target.staticCast<OldGradientDescentOnlineLearner>();
   res->numberOfActiveFeatures = numberOfActiveFeatures;
   res->epoch = epoch;
   res->learningRate = learningRate;
@@ -175,7 +175,7 @@ void GradientDescentOnlineLearner::clone(ExecutionContext& context, const Object
   res->lastApplyRegularizerEpoch = lastApplyRegularizerEpoch;
 }
 
-NumericalInferencePtr GradientDescentOnlineLearner::getNumericalInference(const InferencePtr& inference) const
+NumericalInferencePtr OldGradientDescentOnlineLearner::getNumericalInference(const InferencePtr& inference) const
 {
   if (inference.isInstanceOf<NumericalInference>())
     return inference.staticCast<NumericalInference>();

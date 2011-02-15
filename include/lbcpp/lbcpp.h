@@ -39,7 +39,6 @@
 # include "Core/XmlSerialisation.h"
 # include "Core/DynamicObject.h"
 # include "Core/Vector.h"
-# include "Function/Function.h"
 # include "Core/Frame.h"
 
 # include "Data/Stream.h"
@@ -75,10 +74,17 @@
 
 # include "FeatureGenerator/FeatureGenerator.h"
 
-# include "Perception/Perception.h"
-# include "Perception/PerceptionRewriter.h"
+# include "Learning/OnlineLearner.h"
+# include "Learning/BatchLearner.h"
+# include "Learning/Numerical.h"
 
 # include "Optimizer/Optimizer.h"
+
+# include "UserInterface/UserInterfaceManager.h"
+
+// Old --> 
+# include "Perception/Perception.h"
+# include "Perception/PerceptionRewriter.h"
 
 # include "Inference/Inference.h"
 # include "Inference/InferenceResultCache.h"
@@ -92,7 +98,6 @@
 # include "NumericalLearning/NumericalLearning.h"
 
 # include "DecisionTree/DecisionTree.h"
-
-# include "UserInterface/UserInterfaceManager.h"
+//  ----
 
 #endif // !LBCPP_LBCPP_H_

@@ -1,6 +1,6 @@
-* Option CMake pour virer la dependance sur X11
-
 * Nouveau repertoire: Learning, contient: LearnableFunction, sous repertoire: BatchLearner, OnlineLearner, Numerical, ...
+
+
 * Learner pour les CompositeFunctions (notemment pour la ApplyFunctionOnContainer)
 * Objectif: Faire marcher TrainTestLearningMachine avec les LearnableFunction
 * Objectif: Refaire le SandBox avec les LearnableFunction

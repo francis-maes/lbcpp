@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GradientDescentOnlineLearner.h | Base class for gradient         |
+| Filename: OldGradientDescentOnlineLearner.h | Base class for gradient         |
 | Author  : Francis Maes                   |  descent learners               |
 | Started : 25/05/2010 18:58               |                                 |
 `------------------------------------------/                                 |
@@ -16,13 +16,13 @@
 namespace lbcpp
 {
 
-class GradientDescentOnlineLearner : public InferenceOnlineLearner
+class OldGradientDescentOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  GradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
+  OldGradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
                                 IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                 LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
-  GradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
+  OldGradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
 
 
   virtual void startLearningCallback(ExecutionContext& context);
@@ -39,7 +39,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
 protected:
-  friend class GradientDescentOnlineLearnerClass;
+  friend class OldGradientDescentOnlineLearnerClass;
 
   ScalarVariableRecentMean numberOfActiveFeatures;
   size_t epoch;
@@ -70,7 +70,7 @@ private:
     {return getNumericalInference(inference)->getPerception();}
 };
 
-typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentOnlineLearnerPtr;
+typedef ReferenceCountedObjectPtr<OldGradientDescentOnlineLearner> OldGradientDescentOnlineLearnerPtr;
 
 }; /* namespace lbcpp */
 

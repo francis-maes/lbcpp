@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="NumericalLearning" directory="lbcpp/NumericalLearning">
+<library name="OldNumericalLearning" directory="lbcpp/NumericalLearning">
   <include file="lbcpp/NumericalLearning/NumericalLearning.h"/>
 
   <import name="NumericalLearningLossFunction"/>
@@ -8,8 +8,5 @@
   <import name="NumericalLearningInference"/>
   <import name="NumericalLearningBatchLearner"/>
   <import name="NumericalLearningOnlineLearner"/>
-
-  
-  
 
 </library>

@@ -11,13 +11,14 @@
   <import name="Distribution"/>
 
   <import name="FeatureGenerator"/>
-  <import name="Perception"/>
+  <import name="Learning"/>
   <import name="Optimizer"/>
-  <import name="Inference"/>
-
-  <import name="NumericalLearning"/>
-  <import name="DecisionTree"/>
-
   <import name="UserInterfaceComponent"/>
+
+  <!-- old -->
+  <import name="Perception"/>
+  <import name="Inference"/>
+  <import name="OldNumericalLearning"/>
+  <import name="DecisionTree"/>
 
 </library>

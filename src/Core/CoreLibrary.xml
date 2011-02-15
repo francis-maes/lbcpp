@@ -7,6 +7,7 @@
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
   <include file="lbcpp/Core/Frame.h"/>
+  <include file="lbcpp/Learning/OnlineLearner.h"/>
 
   <!-- Pair -->
   <template name="Pair" base="Object">

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Learning" directory="Learning">
+
+  <include file="lbcpp/Learning/LearnableFunction.h"/>
+  
+  <class name="LearnableFunction" base="Function" abstract="yes"/>
+  
+  <import name="BatchLearner"/>
+  <import name="OnlineLearner"/>
+  <import name="NumericalLearning"/>
+
+</library>
