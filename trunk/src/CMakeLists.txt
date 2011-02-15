@@ -35,14 +35,22 @@ GENERATE_INTROSPECTION_CODE(FeatureGenerator/FeatureGeneratorLibrary.xml Feature
 GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
+
+GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
+
+GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
+
+### old ->
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Simple/SimplePerceptionLibrary.xml SimplePerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Modifier/ModifierPerceptionLibrary.xml ModifierPerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/Container/ContainerPerceptionLibrary.xml ContainerPerceptionLibrary.cpp)
-
-GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Inference/InferenceLibrary.xml InferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/InferenceCallback/InferenceCallbackLibrary.xml InferenceCallbackLibrary.cpp)
@@ -51,7 +59,7 @@ GENERATE_INTROSPECTION_CODE(Inference/MetaInference/MetaInferenceLibrary.xml Met
 GENERATE_INTROSPECTION_CODE(Inference/BatchLearner/InferenceBatchLearnerLibrary.xml InferenceBatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/OnlineLearner/InferenceOnlineLearnerLibrary.xml InferenceOnlineLearnerLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(NumericalLearning/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(NumericalLearning/OldNumericalLearningLibrary.xml OldNumericalLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/LossFunction/NumericalLearningLossFunctionLibrary.xml NumericalLearningLossFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Perception/NumericalLearningPerceptionLibrary.xml NumericalLearningPerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferenceLibrary.xml NumericalLearningInferenceLibrary.cpp)
@@ -60,8 +68,8 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnl
 
 GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceLibrary.xml DecisionTreeInferenceLibrary.cpp)
+### <- old
 
-GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
 
 #### Core ####
 
@@ -373,7 +381,63 @@ SET(LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/AtomicFeatureGeneratorLibrary.cpp
 )
 
-#### Perception ####
+#### Learning ####
+
+SET(LBCPP_LEARNING_SOURCES
+  ../include/lbcpp/Learning/LearnableFunction.h
+  ../include/lbcpp/Learning/OnlineLearner.h
+  ../include/lbcpp/Learning/BatchLearner.h
+  ../include/lbcpp/Learning/Numerical.h
+  Learning/LearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LearningLibrary.cpp
+)
+
+SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
+  Learning/OnlineLearner/OnlineLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OnlineLearnerLibrary.cpp
+)
+
+SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
+  Learning/BatchLearner/StochasticBatchLearner.h
+  Learning/BatchLearner/FrameBasedFunctionBatchLearner.h
+  Learning/BatchLearner/BatchLearnerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp
+)
+
+SET(LBCPP_LEARNING_NUMERICAL_SOURCES
+  Learning/Numerical/GradientDescentOnlineLearner.h
+  Learning/Numerical/StochasticGDOnlineLearner.h
+  Learning/Numerical/PerEpisodeGDOnlineLearner.h
+  Learning/Numerical/LinearLearnableFunction.h
+  Learning/Numerical/LinearRegressor.h
+  Learning/Numerical/NumericalLearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
+)
+
+#### Optimizer ####
+
+SET(LBCPP_OPTIMIZER_SOURCES
+  ../include/lbcpp/Optimizer/OptimizerInput.h
+  ../include/lbcpp/Optimizer/Optimizer.h
+  ../include/lbcpp/Optimizer/ObjectiveFunction.h
+  Optimizer/OptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
+)
+
+SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
+  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
+  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
+)
+
+SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
+  Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
+  Optimizer/Optimizer/IterativeBracketingOptimizer.h
+  Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
+)
+
+#### Perception (Old) ####
 
 SET(LBCPP_PERCEPTION_SOURCES
   ../include/lbcpp/Perception/Perception.h
@@ -419,30 +483,7 @@ SET(LBCPP_PERCEPTION_CONTAINER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerPerceptionLibrary.cpp
 )
 
-#### Optimizer ####
-
-SET(LBCPP_OPTIMIZER_SOURCES
-  ../include/lbcpp/Optimizer/OptimizerInput.h
-  ../include/lbcpp/Optimizer/Optimizer.h
-  ../include/lbcpp/Optimizer/ObjectiveFunction.h
-  Optimizer/OptimizerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
-)
-
-SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
-  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
-  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
-)
-
-SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
-  Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
-  Optimizer/Optimizer/IterativeBracketingOptimizer.h
-  Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
-)
-
-#### Inference ####
+#### Inference (Old) ####
 
 SET(LBCPP_INFERENCE_SOURCES
   ../include/lbcpp/Inference/predeclarations.h
@@ -525,8 +566,8 @@ SET(LBCPP_NUMERICAL_LEARNING_SOURCES
   ../include/lbcpp/NumericalLearning/NumericalSupervisedInference.h
   ../include/lbcpp/NumericalLearning/NumericalLearning.h
   NumericalLearning/NumericalLearning.cpp
-  NumericalLearning/NumericalLearningLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
+  NumericalLearning/OldNumericalLearningLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OldNumericalLearningLibrary.cpp
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
@@ -748,16 +789,29 @@ SET(LBCPP_CORE
     ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES}
     ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES}
 
-  # Perception
-  ${LBCPP_PERCEPTION_SOURCES}
-    ${LBCPP_PERCEPTION_SIMPLE_SOURCES}
-    ${LBCPP_PERCEPTION_MODIFIER_SOURCES}
-    ${LBCPP_PERCEPTION_CONTAINER_SOURCES}
+  # Learning
+  ${LBCPP_LEARNING_SOURCES}
+    ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES}
+    ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES}
+    ${LBCPP_LEARNING_NUMERICAL_SOURCES}
 
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
+    
+  # User Interface
+  ${LBCPP_USER_INTERFACE_SOURCES}
+    ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
+    ${LBCPP_USER_INTERFACE_DATA_FILES}
+    
+  ######### old --> ############
+  
+  # Perception
+  ${LBCPP_PERCEPTION_SOURCES}
+    ${LBCPP_PERCEPTION_SIMPLE_SOURCES}
+    ${LBCPP_PERCEPTION_MODIFIER_SOURCES}
+    ${LBCPP_PERCEPTION_CONTAINER_SOURCES}
 
   # Inference
   ${LBCPP_INFERENCE_SOURCES}
@@ -782,10 +836,7 @@ SET(LBCPP_CORE
     ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
   #  ${LBCPP_DECISION_TREE_RTREE_SOURCES}
   
-  # User Interface
-  ${LBCPP_USER_INTERFACE_SOURCES}
-    ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES}
-    ${LBCPP_USER_INTERFACE_DATA_FILES}
+  ######### <-- old  ############
 )
 
 SOURCE_GROUP(Main FILES ${LBCPP_MAIN_SOURCES})
@@ -829,43 +880,53 @@ SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator Generic FILES ${LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES})
 SOURCE_SUB_GROUP(FeatureGenerator Atomic FILES ${LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES})
 
-## Perception
-SOURCE_GROUP(Perception FILES ${LBCPP_PERCEPTION_SOURCES})
-SOURCE_SUB_GROUP(Perception Simple FILES ${LBCPP_PERCEPTION_SIMPLE_SOURCES})
-SOURCE_SUB_GROUP(Perception Modifier FILES ${LBCPP_PERCEPTION_MODIFIER_SOURCES})
-SOURCE_SUB_GROUP(Perception Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES})
+## Learning
+SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
+SOURCE_SUB_GROUP(Learning OnlineLearner FILES ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Learning BatchLearner FILES ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 
-## Inference
-SOURCE_GROUP(Inference FILES ${LBCPP_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP(Inference Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
-SOURCE_SUB_GROUP(Inference ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
-SOURCE_SUB_GROUP(Inference MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
-SOURCE_SUB_GROUP(Inference BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(Inference OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
-
-## NumericalLearning
-SOURCE_GROUP(NumericalLearning FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning Math FILES ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning LossFunction FILES ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning BatchLearner FILES ${LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES})
-SOURCE_SUB_GROUP(NumericalLearning OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})
-
-## DecisionTree
-SOURCE_GROUP(DecisionTree FILES ${LBCPP_DECISION_TREE_SOURCES})
-SOURCE_SUB_GROUP(DecisionTree Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
-SOURCE_SUB_GROUP(DecisionTree RTree FILES ${LBCPP_DECISION_TREE_RTREE_SOURCES})
-
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Component FILES ${LBCPP_USER_INTERFACE_COMPONENT_SOURCES})
 SOURCE_SUB_GROUP(UserInterface Data FILES ${LBCPP_USER_INTERFACE_DATA_FILES})
+
+######### old --> ############
+
+## Perception
+SOURCE_GROUP("Old - Perception" FILES ${LBCPP_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP("Old - Perception" Simple FILES ${LBCPP_PERCEPTION_SIMPLE_SOURCES})
+SOURCE_SUB_GROUP("Old - Perception" Modifier FILES ${LBCPP_PERCEPTION_MODIFIER_SOURCES})
+SOURCE_SUB_GROUP("Old - Perception" Container FILES ${LBCPP_PERCEPTION_CONTAINER_SOURCES})
+
+## Inference
+SOURCE_GROUP("Old - Inference" FILES ${LBCPP_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP("Old - Inference" Callback FILES ${LBCPP_INFERENCE_CALLBACK_SOURCES})
+SOURCE_SUB_GROUP("Old - Inference" ReductionInference FILES ${LBCPP_INFERENCE_REDUCTION_SOURCES})
+SOURCE_SUB_GROUP("Old - Inference" MetaInference FILES ${LBCPP_INFERENCE_META_SOURCES})
+SOURCE_SUB_GROUP("Old - Inference" BatchLearner FILES ${LBCPP_INFERENCE_BATCH_LEARNER_SOURCES})
+SOURCE_SUB_GROUP("Old - Inference" OnlineLearner FILES ${LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES})
+
+## NumericalLearning
+SOURCE_GROUP("Old - NumericalLearning" FILES ${LBCPP_NUMERICAL_LEARNING_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" Math FILES ${LBCPP_NUMERICAL_LEARNING_MATH_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" LossFunction FILES ${LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" Perception FILES ${LBCPP_NUMERICAL_LEARNING_PERCEPTION_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" Inference FILES ${LBCPP_NUMERICAL_LEARNING_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" BatchLearner FILES ${LBCPP_NUMERICAL_LEARNING_BATCH_LEARNER_SOURCES})
+SOURCE_SUB_GROUP("Old - NumericalLearning" OnlineLearner FILES ${LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES})
+
+## DecisionTree
+SOURCE_GROUP("Old - DecisionTree" FILES ${LBCPP_DECISION_TREE_SOURCES})
+SOURCE_SUB_GROUP("Old - DecisionTree" Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
+SOURCE_SUB_GROUP("Old - DecisionTree" RTree FILES ${LBCPP_DECISION_TREE_RTREE_SOURCES})
+
+######### <-- old  ############
 
 IF (UNIX)
   ADD_LIBRARY(lbcpp-core SHARED ${LBCPP_CORE})

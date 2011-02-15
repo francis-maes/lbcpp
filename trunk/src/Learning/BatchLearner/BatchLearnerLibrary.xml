@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="BatchLearner" directory="Learning/BatchLearner">
+
+  <class name="BatchLearner" base="Function" abstract="yes"/>
+
+  <class name="FrameBasedFunctionBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+
+  <class name="StochasticBatchLearner" base="BatchLearner">
+    <constructor arguments="const std::vector&lt;FunctionPtr&gt;&amp; functionsToLearn, EvaluatorPtr evaluator, size_t maxIterations, StoppingCriterionPtr stoppingCriterion, bool randomizeExamples, bool restoreBestParametersWhenDone"/>
+  </class>
+  
+</library>

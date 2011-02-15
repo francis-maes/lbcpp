@@ -3,11 +3,6 @@
 <library name="Examples" dynamic="yes">
 
   <!-- Xor Regression Example -->
-  <class name="LearnableFunction" base="Function" abstract="yes"/>
-  <class name="NumericalLearnableFunction" base="LearnableFunction" abstract="yes"/>
-  <class name="LearnableLinearFunction" base="NumericalLearnableFunction"/>
-  <class name="LinearRegressor" base="FrameBasedFunction"/>
-  
   <class name="XorFeatureGenerator" base="FeatureGenerator"/>
   <class name="XorRegressionExample" base="WorkUnit"/>
 
@@ -34,7 +29,6 @@
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
   <!-- Train/Test Learning Machine -->
-
   <enumeration name="LearningProblemEnum">
     <value name="MultiClass"/>
     <value name="MultiLabel"/>

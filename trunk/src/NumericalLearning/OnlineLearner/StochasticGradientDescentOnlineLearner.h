@@ -14,21 +14,21 @@
 namespace lbcpp
 {
 
-class StochasticGradientDescentOnlineLearner : public GradientDescentOnlineLearner
+class StochasticOldGradientDescentOnlineLearner : public OldGradientDescentOnlineLearner
 {
 public:
-  StochasticGradientDescentOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, 
+  StochasticOldGradientDescentOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate, 
                                           LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
-    : GradientDescentOnlineLearner(perStep, learningRate, normalizeLearningRate,
+    : OldGradientDescentOnlineLearner(perStep, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer) {}
 
-  StochasticGradientDescentOnlineLearner() {}
+  StochasticOldGradientDescentOnlineLearner() {}
 
   virtual void stepFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const Variable& input, const Variable& supervision, const Variable& prediction)
   {
     ++epoch;
     updateParameters(context, inference, 1.0, input, supervision, prediction);
-    GradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
+    OldGradientDescentOnlineLearner::stepFinishedCallback(context, inference, input, supervision, prediction);
   }
 };
 

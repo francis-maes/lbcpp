@@ -28,20 +28,7 @@ public:
 
 typedef FunctionCallback* FunctionCallbackPtr;
 
-class OnlineLearner : public Object
-{
-public:
-  virtual void startLearning(const FunctionPtr& function) {}
-  virtual void finishLearning() {}
-
-  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations) {}
-  virtual bool finishLearningIteration(ExecutionContext& context, const FunctionPtr& function) {return false;} // returns true if learning is finished
-
-  virtual void startEpisode(const FunctionPtr& function) {}
-  virtual void learningStep(const FunctionPtr& function, const Variable* inputs, const Variable& output) {}
-  virtual void finishEpisode(const FunctionPtr& function) {}
-};
-
+class OnlineLearner;
 typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
 
 class Function : public Object
