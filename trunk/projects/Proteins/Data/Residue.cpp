@@ -73,6 +73,14 @@ AtomPtr Residue::checkAndGetCBetaOrCAlphaAtom(ExecutionContext& context) const
   return atom;
 }
 
+AtomPtr Residue::checkAndGetSulfureOrCBetaAtom(ExecutionContext& context) const
+{
+  AtomPtr atom = getSulfureAtom();
+  if (!atom)
+    atom = checkAndGetCBetaOrCAlphaAtom(context);
+  return atom;
+}
+
 void Residue::applyAffineTransform(const impl::Matrix4& affineTransform) const
 {
   jassert(affineTransform.isAffine());

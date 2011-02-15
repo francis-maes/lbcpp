@@ -63,6 +63,10 @@ public:
   // back bone
   AtomPtr getCarbonAtom() const
     {return findAtomByName(T("C"));}
+  
+  // Sufure atom (for Cysteine only)
+  AtomPtr getSulfureAtom() const
+    {jassert(aminoAcidType == cysteine); return findAtomByName(T("SG"));}
 
   AtomPtr findAtomByName(const String& name) const;
   
@@ -85,6 +89,8 @@ public:
     {return aminoAcidType != glycine && !getCBetaAtom();}
 
   AtomPtr checkAndGetCBetaOrCAlphaAtom(ExecutionContext& context) const;
+  
+  AtomPtr checkAndGetSulfureOrCBetaAtom(ExecutionContext& context) const;
 
   void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 

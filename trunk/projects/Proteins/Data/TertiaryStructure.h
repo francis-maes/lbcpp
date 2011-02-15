@@ -35,6 +35,7 @@ public:
   //ProteinBackboneBondSequencePtr makeBackbone() const;
   SymmetricMatrixPtr makeCAlphaDistanceMatrix() const;
   SymmetricMatrixPtr makeCBetaDistanceMatrix(ExecutionContext& context) const;
+  SymmetricMatrixPtr makeSulfurDistanceMatrix(ExecutionContext& context, const std::vector<size_t>& cysteines) const;
 
   size_t getNumResidues() const
     {return residues->getNumElements();}
