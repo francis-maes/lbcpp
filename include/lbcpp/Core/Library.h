@@ -48,9 +48,10 @@ public:
 
   const std::vector<LibraryPtr>& getSubLibraries() const
     {return subLibraries;}
-
+#ifdef LBCPP_UI
   juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
-
+#endif
+  
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -66,11 +67,12 @@ protected:
   bool declareTemplateType(ExecutionContext& context, TemplateTypePtr templateType);
   bool declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary);
 
-  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
-
-  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
-
   void getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const;
+  
+#ifdef LBCPP_UI
+  typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
+  bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
+#endif
 
 private:
   friend class LibraryClass;
@@ -78,18 +80,23 @@ private:
   std::vector<TypePtr> types;
   std::vector<TemplateTypePtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
+  
+#ifdef LBCPP_UI
   std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
+#endif
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
 
+#ifdef LBCPP_UI
 template<class ComponentClass>
 struct MakeUIComponentConstructor
 {
   static juce::Component* ctor(const ObjectPtr& object, const String& name)
     {return new ComponentClass(object, name);}
 };
-
+#endif
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_LIBRARY_H_

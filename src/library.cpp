@@ -26,7 +26,11 @@
 #include <lbcpp/library.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
+
+#ifdef LBCPP_UI
 #include <lbcpp/UserInterface/UserInterfaceManager.h>
+#endif
+
 using namespace lbcpp;
 
 namespace juce
@@ -118,8 +122,10 @@ struct ApplicationContext
 {
   LibraryManager libraryManager;
   TypeManager typeManager;
-  UserInterfaceManager userInterfaceManager;
   ExecutionContextPtr defaultExecutionContext;
+#ifdef LBCPP_UI
+  UserInterfaceManager userInterfaceManager;
+#endif
 };
 
 ApplicationContext* applicationContext = NULL;
@@ -163,7 +169,9 @@ void lbcpp::deinitialize()
     applicationContext->typeManager.shutdown();
 
     applicationContext->libraryManager.shutdown();
+#ifdef LBCPP_UI
     applicationContext->userInterfaceManager.shutdown();
+#endif
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
   }
@@ -172,8 +180,10 @@ void lbcpp::deinitialize()
 TypeManager& lbcpp::typeManager()
   {jassert(applicationContext); return applicationContext->typeManager;}
 
+#ifdef LBCPP_UI
 UserInterfaceManager& lbcpp::userInterfaceManager()
   {jassert(applicationContext); return applicationContext->userInterfaceManager;}
+#endif
 
 ExecutionContext& lbcpp::defaultExecutionContext()
   {jassert(applicationContext); return *applicationContext->defaultExecutionContext;}
