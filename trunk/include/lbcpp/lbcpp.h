@@ -48,9 +48,11 @@
 # include "Data/RandomVariable.h"
 # include "Data/Cache.h"
 
+#ifdef LBCPP_NETWORKING
 # include "Network/NetworkClient.h"
 # include "Network/NetworkServer.h"
 # include "Network/NetworkCallback.h"
+#endif
 
 # include "Distribution/Distribution.h"
 # include "Distribution/DiscreteDistribution.h"
