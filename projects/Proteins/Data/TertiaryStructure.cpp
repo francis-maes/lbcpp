@@ -222,6 +222,20 @@ SymmetricMatrixPtr TertiaryStructure::makeCBetaDistanceMatrix(ExecutionContext& 
   return makeDistanceMatrix(positions);
 }
 
+SymmetricMatrixPtr TertiaryStructure::makeSulfurDistanceMatrix(ExecutionContext& context, const std::vector<size_t>& cysteines) const
+{
+  size_t n = cysteines.size();
+  std::vector<impl::Vector3> positions(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    ResiduePtr residue = getResidue(cysteines[i]);
+    AtomPtr atom = residue ? residue->checkAndGetSulfureOrCBetaAtom(context) : AtomPtr();
+    if (atom && atom->getPosition())
+      positions[i] = atom->getPosition()->getValue();
+  }
+  return makeDistanceMatrix(positions);
+}
+
 bool TertiaryStructure::hasCompleteBackbone() const
 {
   size_t n = getNumResidues();

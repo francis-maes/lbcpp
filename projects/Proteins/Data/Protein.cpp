@@ -235,11 +235,11 @@ SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAto
 
 const SymmetricMatrixPtr& Protein::getDisulfideBonds() const
 {
-  if (!disulfideBonds)
+  if (!disulfideBonds && tertiaryStructure)
   {
-    SymmetricMatrixPtr distanceMap = getDistanceMap(true);
+    SymmetricMatrixPtr distanceMap = tertiaryStructure->makeSulfurDistanceMatrix(defaultExecutionContext(), cysteinIndices);
     if (distanceMap)
-      const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromCBetaDistanceMap(cysteinIndices, distanceMap);
+      const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromTertiaryStructure(distanceMap);
   }
   return disulfideBonds;
 }
@@ -328,43 +328,58 @@ SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr 
       }
     }
   return res;
-}  
+}
 
-SymmetricMatrixPtr Protein::computeDisulfideBondsFromCBetaDistanceMap(const std::vector<size_t>& cysteines, SymmetricMatrixPtr distanceMap)
+void computeDisulfideBondsFromTertiaryStructure(const SymmetricMatrixPtr& distanceMap, std::vector<bool>& isBridged, double distanceThreshold, SymmetricMatrixPtr& result)
 {
-  static const double disulfideBondCBetaDistanceThreshold = 5.0;
+  size_t n = distanceMap->getDimension();
+  for (size_t i = 0; i < n - 1; ++i)
+  {
+    if (isBridged[i])
+      continue;
 
-  size_t n = cysteines.size();
-  size_t numBonds = 0;
+    double bestDistance = DBL_MAX;
+    size_t bestIndex = n;
+    for (size_t j = i + 1; j < n; ++j)
+    {
+      double value = distanceMap->getElement(i, j).getDouble();
+      if (value < bestDistance)
+      {
+        bestDistance = value;
+        bestIndex = j;
+      }
+    }
+    jassert(bestIndex < n);
+    
+    if (isBridged[bestIndex])
+      continue;
+    
+    if (bestDistance < distanceThreshold)
+    {
+      result->setElement(i, bestIndex, probability(1.0));
+      isBridged[i] = true;
+      isBridged[bestIndex] = true;
+    }
+  }
+}
+
+
+SymmetricMatrixPtr Protein::computeDisulfideBondsFromTertiaryStructure(SymmetricMatrixPtr distanceMap)
+{
+  static const double disulfideBondSulfurDistanceStrongThreshold = 2.25;
+  static const double disulfideBondSulfurDistanceSoftThreshold = 3.0;
+
+  size_t n = distanceMap->getDimension();
   SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
+  std::vector<bool> isBridged(n, false);
+  /* Initialize connectivity to 0 */
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i; j < n; ++j)
-    {
-      double probability = 0.0;
-      if (i != j)
-      {
-        Variable distance = distanceMap->getElement(cysteines[i], cysteines[j]);
-        if (distance.isMissingValue())
-          continue;
-        if (distance.getDouble() < disulfideBondCBetaDistanceThreshold)
-        {
-          probability = 1.0;
-          ++numBonds;
-        }
-      }
-      res->setElement(i, j, Variable(probability, probabilityType));
-    }
+      res->setElement(i, j, probability(0.0));
 
-#ifndef JUCE_DEBUG
-  for (size_t i = 0; i < n; ++i)
-  {
-    size_t numBonds = 0;
-    for (size_t j = 0; j < n; ++j)
-      if (res->getElement(i, j).exists() && res->getElement(i, j).getDouble() > 0.5)
-        ++numBonds;
-    jassert(numBonds <= 1);
-  }
-#endif // JUCE_DEBUG
+  /* Fill matrix */
+  ::computeDisulfideBondsFromTertiaryStructure(distanceMap, isBridged, disulfideBondSulfurDistanceStrongThreshold, res);
+  ::computeDisulfideBondsFromTertiaryStructure(distanceMap, isBridged, disulfideBondSulfurDistanceSoftThreshold, res);
 
   return res;
 }
