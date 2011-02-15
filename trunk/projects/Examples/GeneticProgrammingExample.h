@@ -239,10 +239,10 @@ Variable makePredictionTree(ExecutionContext& context, const GeneticTreePtr& tre
     return Variable(inputs[tree->getVariableIndex(node)], doubleType);
   FunctionPtr function = tree->getFunction(node);
   size_t n = function->getNumInputs();
-  Variable results[n];
+  std::vector<Variable> results(n);
   for (size_t i = 0; i < n; ++i)
     results[i] = makePredictionTree(context, tree, tree->getChild(node, i), inputs);
-  return function->compute(context, results);
+  return function->compute(context, &results[0]);
 }
 
 double evaluateTree(ExecutionContext& context, const GeneticTreePtr& tree, const std::vector<std::vector<double> >& inputData, const std::vector<double>& outputData)

@@ -256,23 +256,25 @@ bool lbcpp::importLibrary(ExecutionContext& context, LibraryPtr library, void* d
 // called from dynamic library
 void lbcpp::initializeDynamicLibrary(lbcpp::ApplicationContext& applicationContext)
 {
+#ifdef JUCE_WIN32
   lbcpp::applicationContext = &applicationContext;
   ExecutionContext& context = defaultExecutionContext();
 
   coreLibraryCacheTypes(context);
   lbCppLibraryCacheTypes(context);
   topLevelType = anyType = variableType;
+#else
+  jassert(lbcpp::applicationContext == &applicationContext);
+#endif
 }
 
 void lbcpp::deinitializeDynamicLibrary()
 {
+#ifdef JUCE_WIN32
   coreLibraryUnCacheTypes();
   lbCppLibraryUnCacheTypes();
   topLevelType = anyType = TypePtr();
-  // FIXME : Arnaud : I commented those two lines since lbcpp::applicationContext is set to NULL in
-  // lbcpp::deinitialize() and it seems that lbcpp::deinitializeDynamicLibrary() is called in this function through
-  // applicationContext->libraryManager.preShutdown().
-  // This seems to solve the exit problem.	
-  //jassert(lbcpp::applicationContext);
-  //lbcpp::applicationContext = NULL;
+  jassert(lbcpp::applicationContext);
+  lbcpp::applicationContext = NULL;
+#endif // JUCE_WIN32
 }
