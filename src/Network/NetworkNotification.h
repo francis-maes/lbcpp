@@ -9,7 +9,7 @@
 #ifndef LBCPP_NETWORK_NOTIFICATION_H_
 # define LBCPP_NETWORK_NOTIFICATION_H_
 
-# include "NetworkInterface.h"
+# include <lbcpp/Network/NetworkInterface.h>
 # include <lbcpp/Execution/Notification.h>
 
 namespace lbcpp
