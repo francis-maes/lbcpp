@@ -27,8 +27,8 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
 
-#ifdef LBCPP_UI
-#include <lbcpp/UserInterface/UserInterfaceManager.h>
+#ifdef LBCPP_USER_INTERFACE
+# include <lbcpp/UserInterface/UserInterfaceManager.h>
 #endif
 
 using namespace lbcpp;
@@ -123,7 +123,7 @@ struct ApplicationContext
   LibraryManager libraryManager;
   TypeManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
   UserInterfaceManager userInterfaceManager;
 #endif
 };
@@ -169,7 +169,7 @@ void lbcpp::deinitialize()
     applicationContext->typeManager.shutdown();
 
     applicationContext->libraryManager.shutdown();
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
     applicationContext->userInterfaceManager.shutdown();
 #endif
     deleteAndZero(applicationContext);
@@ -180,7 +180,7 @@ void lbcpp::deinitialize()
 TypeManager& lbcpp::typeManager()
   {jassert(applicationContext); return applicationContext->typeManager;}
 
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
 UserInterfaceManager& lbcpp::userInterfaceManager()
   {jassert(applicationContext); return applicationContext->userInterfaceManager;}
 #endif

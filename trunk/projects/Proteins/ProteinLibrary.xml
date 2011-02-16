@@ -8,7 +8,7 @@
   <import name="ProteinFrame"/>
   <import name="ProteinInference"/>
   <import name="ProteinWorkUnit"/>
-  <import name="ProteinUserInterface"/>
+  <import name="ProteinUserInterface" ifdef="LBCPP_USER_INTERFACE"/>
 
   <include file="Data/Protein.h"/>
 

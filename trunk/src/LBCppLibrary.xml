@@ -6,14 +6,14 @@
   <import name="Execution"/>
 
   <import name="Data"/>
-  <import name="Network"/>
+  <import name="Network" ifdef="LBCPP_NETWORKING"/>
   <import name="Function"/>
   <import name="Distribution"/>
 
   <import name="FeatureGenerator"/>
   <import name="Learning"/>
   <import name="Optimizer"/>
-  <import name="UserInterfaceComponent"/>
+  <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
 
   <!-- old -->
   <import name="Perception"/>

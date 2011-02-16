@@ -175,7 +175,7 @@ public:
   /*
   ** Introspection: User Interface
   */
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
   virtual juce::Component* createComponent() const
     {return NULL;}
 #endif

@@ -48,7 +48,7 @@ public:
 
   const std::vector<LibraryPtr>& getSubLibraries() const
     {return subLibraries;}
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
   juce::Component* createUIComponentIfExists(ExecutionContext& context, const ObjectPtr& object, const String& name = String::empty);
 #endif
   
@@ -69,7 +69,7 @@ protected:
 
   void getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const;
   
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
   typedef juce::Component* (*UIComponentConstructor)(const ObjectPtr& object, const String& name);
   bool declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor);
 #endif
@@ -81,14 +81,14 @@ private:
   std::vector<TemplateTypePtr> templateTypes;
   std::vector<LibraryPtr> subLibraries;
   
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
   std::vector< std::pair<TypePtr, UIComponentConstructor> > uiComponents;
 #endif
 };
 
 typedef ReferenceCountedObjectPtr<Library> LibraryPtr;
 
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
 template<class ComponentClass>
 struct MakeUIComponentConstructor
 {
