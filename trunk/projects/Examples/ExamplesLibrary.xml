@@ -39,7 +39,10 @@
   <class name="LearningProblem" abstract="yes">
     <code>
       virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {return LearningProblem::createFromString(context, value);}
+      {
+        ObjectPtr res = LearningProblem::createFromString(context, value);
+        return res ? Variable(res) : Variable::missingValue(refCountedPointerFromThis(this));
+      }
     </code>
   </class>
 

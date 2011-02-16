@@ -108,10 +108,15 @@ public:
 class MultiClassClassificationProblem : public LearningProblem
 {
 public:
-  MultiClassClassificationProblem() : inputClass(new DynamicClass(T("FeatureVector"))), outputLabels(new DefaultEnumeration(T("Labels"))) {}
+  MultiClassClassificationProblem()
+    : features(new DefaultEnumeration(T("Features"))),
+      labels(new DefaultEnumeration(T("Labels"))) {}
+
+  virtual String toString() const
+    {return T("MultiClass");}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
+    {return classificationDataTextParser(context, file, features, labels);}
 /*
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
@@ -123,8 +128,49 @@ public:
     {return classificationAccuracyEvaluator();}
 
 protected:
-  DynamicClassPtr inputClass;
-  EnumerationPtr outputLabels;
+  DefaultEnumerationPtr features;
+  DefaultEnumerationPtr labels;
+};
+
+class MultiLabelClassificationProblem : public LearningProblem
+{
+public:
+  MultiLabelClassificationProblem()
+    : features(new DefaultEnumeration(T("Features"))),
+      labels(new DefaultEnumeration(T("Labels"))),
+      outputClass(sparseDoubleVectorClass(labels, probabilityType))
+  {
+  }
+
+  virtual String toString() const
+    {return T("MultiLabel");}
+
+  virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
+    {return multiLabelClassificationDataTextParser(context, file, features, labels);}
+/*
+  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
+  {
+    PerceptionPtr firstStackPerception = identityPerception(inputClass);
+    InferencePtr firstStack = learningMachineFamily->createMultiLabelClassifier(firstStackPerception, outputLabels, arguments);
+    if (numStacks <= 1)
+      return firstStack;
+    else
+    {
+      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, conjunctionFeatures(identityPerception(outputClass), identityPerception(outputClass)));
+      //PerceptionPtr nextStacksPerception = conjunctionFeatures(firstStackPerception, identityPerception(outputClass), false);
+      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(identityPerception(nextStacksPerception->getOutputType()), outputLabels, arguments);
+      nextStacksModel = preProcessInference(nextStacksModel, nextStacksPerception);
+      return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
+    }
+  }*/
+
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return multiLabelClassificationEvaluator();}
+
+protected:
+  DefaultEnumerationPtr features;
+  DefaultEnumerationPtr labels;
+  ClassPtr outputClass; 
 };
 
 #if 0
@@ -153,43 +199,6 @@ public:
 };
 #endif // 0
 
-class MultiLabelClassificationProblem : public LearningProblem
-{
-public:
-  MultiLabelClassificationProblem()
-    : inputClass(new DynamicClass(T("FeatureVector"))),
-      outputLabels(new DefaultEnumeration(T("Labels"))),
-      outputClass(enumBasedDoubleVectorClass(outputLabels, probabilityType))
-  {
-  }
-
-  virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return multiLabelClassificationDataTextParser(context, file, inputClass.get(), outputLabels);}
-/*
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
-  {
-    PerceptionPtr firstStackPerception = identityPerception(inputClass);
-    InferencePtr firstStack = learningMachineFamily->createMultiLabelClassifier(firstStackPerception, outputLabels, arguments);
-    if (numStacks <= 1)
-      return firstStack;
-    else
-    {
-      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, conjunctionFeatures(identityPerception(outputClass), identityPerception(outputClass)));
-      //PerceptionPtr nextStacksPerception = conjunctionFeatures(firstStackPerception, identityPerception(outputClass), false);
-      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(identityPerception(nextStacksPerception->getOutputType()), outputLabels, arguments);
-      nextStacksModel = preProcessInference(nextStacksModel, nextStacksPerception);
-      return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
-    }
-  }*/
-
-  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return multiLabelClassificationEvaluator();}
-
-protected:
-  DynamicClassPtr inputClass;
-  EnumerationPtr outputLabels;
-  ClassPtr outputClass; 
-};
 
 LearningProblemPtr LearningProblem::createFromString(ExecutionContext& context, const String& stringValue)
 {
@@ -219,10 +228,10 @@ public:
     context.enterScope(T("Loading Data"));
     context.enterScope(T("Training Data"));
     ContainerPtr trainingData = loadData(context, learningProblem, trainingFile);
-    context.leaveScope(trainingData != ContainerPtr());
+    context.leaveScope(String(trainingData ? trainingData->getNumElements() : 0) + T(" examples"));
     context.enterScope(T("Testing Data"));
     ContainerPtr testingData = loadData(context, learningProblem, testingFile);
-    context.leaveScope(testingData != ContainerPtr());
+    context.leaveScope(String(testingData ? testingData->getNumElements() : 0) + T(" examples"));
     bool loadingOk = trainingData && testingData;
     context.leaveScope(loadingOk);
     if (!loadingOk)
@@ -278,7 +287,6 @@ protected:
       return ContainerPtr();
     if (res->getNumElements() == 0)
       context.warningCallback(T("No examples"));
-    context.resultCallback(T("Num Examples"), res->getNumElements());
     return res;
   }
 

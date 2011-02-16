@@ -19,42 +19,41 @@ namespace lbcpp
 class MultiLabelClassificationDataTextParser : public LearningDataTextParser
 {
 public:
-  MultiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels)
-    : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
-  {
-    elementsType = pairClass(inputClass, enumBasedDoubleVectorClass(outputLabels, probabilityType));
-  }
+  MultiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
+    : LearningDataTextParser(context, file), features(features), labels(labels)
+    {elementsType = pairClass(sparseDoubleVectorClass(features), sparseDoubleVectorClass(labels, probabilityType));}
+
   MultiLabelClassificationDataTextParser() {}
 
   virtual TypePtr getElementsType() const
     {return elementsType;}
 
-  ObjectPtr parseLabelsList(EnumerationPtr labels, const String& text) const
+  SparseDoubleVectorPtr parseLabelsList(const String& text) const
   {
     StringArray tokens;
     tokens.addTokens(text, T(","), NULL);
-    ObjectPtr res = new SparseDoubleObject(enumBasedDoubleVectorClass(outputLabels, probabilityType).staticCast<DynamicClass>().get());
+    SparseDoubleVectorPtr res = new SparseDoubleVector(labels, probabilityType);
     for (int i = 0; i < tokens.size(); ++i)
     {
-      size_t label = outputLabels->findOrAddElement(context, tokens[i]);
-      res->setVariable(label, 1.0);
+      size_t label = labels->findOrAddElement(context, tokens[i]);
+      res->setElement(label, 1.0);
     }
     return res;
   }
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    ObjectPtr labels = parseLabelsList(outputLabels, columns[0]);
-    ObjectPtr features = parseFeatureList(inputClass, columns, 1);
-    if (!labels || !features)
+    SparseDoubleVectorPtr labelsVector = parseLabelsList(columns[0]);
+    SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
+    if (!labelsVector || !featuresVector)
       return false;
-    setResult(new Pair(elementsType, features, labels));
+    setResult(new Pair(elementsType, featuresVector, labelsVector));
     return true;
   }
 
 private:
-  DynamicClassPtr inputClass;
-  DefaultEnumerationPtr outputLabels;
+  DefaultEnumerationPtr features;
+  DefaultEnumerationPtr labels;
   TypePtr elementsType;
 };
 

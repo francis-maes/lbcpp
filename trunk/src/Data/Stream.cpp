@@ -35,7 +35,11 @@ VectorPtr Stream::load(size_t maximumCount, bool doProgression)
       res->append(variable);
 
     if (isExhausted())
+    {
+      if (doProgression)
+        context.progressCallback(getCurrentPosition());
       break;
+    }
   }
   return res;
 }
@@ -70,7 +74,7 @@ StreamPtr Stream::apply(FunctionPtr function) const
 ** TextParser
 */
 TextParser::TextParser(ExecutionContext& context, InputStream* newInputStream)
-  : Stream(context), istr(newInputStream) {}
+  : Stream(context), istr(NULL) {initialize(newInputStream);}
 
 TextParser::TextParser(ExecutionContext& context, const File& file)
   : Stream(context), istr(NULL)
@@ -87,7 +91,13 @@ TextParser::TextParser(ExecutionContext& context, const File& file)
     return;
   }
   
-  this->istr = inputStream;
+  initialize(inputStream);
+}
+
+void TextParser::initialize(InputStream* istr)
+{
+  this->istr = istr;
+  progression = new ProgressionState(0, (size_t)(istr->getTotalLength() / 1024), T("kb"));
 }
 
 TextParser::~TextParser()
@@ -98,10 +108,8 @@ TextParser::~TextParser()
 
 ProgressionStatePtr TextParser::getCurrentPosition() const
 {
-  if (istr)
-    return new ProgressionState((double)(istr->getPosition() / 1024), (double)(istr->getTotalLength() / 1024), T("kb"));
-  else
-    return ProgressionStatePtr();
+  const_cast<TextParser* >(this)->progression->setValue(istr ? (double)(istr->getPosition() / 1024) : progression->getTotal());
+  return progression;
 }
 
 inline int indexOfAnyNotOf(const String& str, const String& characters, int startPosition = 0)
@@ -177,18 +185,17 @@ bool LearningDataTextParser::parseLine(const String& line)
   return parseDataLine(columns);
 }
 
-ObjectPtr LearningDataTextParser::parseFeatureList(DynamicClassPtr cl, const std::vector<String>& columns, size_t firstColumn) const
+SparseDoubleVectorPtr LearningDataTextParser::parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstColumn) const
 {
-  ObjectPtr res = new SparseDoubleObject(cl.get());
+  SparseDoubleVectorPtr res = new SparseDoubleVector(features, doubleType);
   for (size_t i = firstColumn; i < columns.size(); ++i)
   {
     String identifier;
     double value;
     if (!parseFeature(columns[i], identifier, value))
       return false;
-
-    size_t index = cl->findOrAddMemberVariable(context, identifier, doubleType);
-    res->setVariable(index, value);
+    size_t index = features->findOrAddElement(context, identifier);
+    res->setElement(index, value);
   }
   return res;
 }

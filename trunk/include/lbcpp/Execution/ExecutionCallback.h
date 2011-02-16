@@ -170,6 +170,9 @@ public:
   void setValue(double value)
     {this->value = value;}
 
+  void setValue(size_t value)
+    {this->value = (double)value;}
+
   double getTotal() const
     {return total;}
 
