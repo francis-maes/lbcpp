@@ -28,10 +28,10 @@ public:
 
     // make initial frames
     std::vector<FramePtr> trainingFrames;
-    makeInitialFrames(trainingData, trainingFrames);
+    makeInitialFrames(trainingData, frameClass, trainingFrames);
     std::vector<FramePtr> validationFrames;
     if (validationData.size())
-      makeInitialFrames(validationData, validationFrames);
+      makeInitialFrames(validationData, frameClass, validationFrames);
 
     // for each frame operator:
     for (size_t i = 0; i < frameClass->getNumMemberVariables(); ++i)
@@ -52,36 +52,40 @@ public:
   }
 
 protected:
-  void makeInitialFrames(const std::vector<ObjectPtr>& data, std::vector<FramePtr>& res) const
+  void makeInitialFrames(const std::vector<ObjectPtr>& data, const FrameClassPtr& frameClass, std::vector<FramePtr>& res) const
   {
     size_t n = data.size();
     res.resize(n);
     for (size_t i = 0; i < n; ++i)
     {
-      res[i] = data[i].staticCast<Frame>();
-      jassert(res[i]);
+      FramePtr frame = new Frame(frameClass);
+      size_t numInputVariables = data[i]->getNumVariables();
+      jassert(numInputVariables < frame->getNumVariables());
+      for (size_t j = 0; j < numInputVariables; ++j)
+        frame->setVariable(j, data[i]->getVariable(j));
+      res[i] = frame;
     }
   }
 
-  ObjectVectorPtr makeSubFrames(const FrameClassPtr& frameClass, const std::vector<FramePtr>& frames, size_t variableIndex) const
+  ObjectVectorPtr makeSubInputs(const FrameClassPtr& frameClass, const std::vector<FramePtr>& frames, size_t variableIndex) const
   {
     FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(variableIndex).staticCast<FrameOperatorSignature>();
     const FunctionPtr& function = signature->getFunction();
-    const FrameClassPtr& subFrameClass = function->getFrameClass();
+    const DynamicClassPtr& subInputsClass = function->getInputsClass();
 
     size_t n = frames.size();
     size_t numInputs = function->getNumInputs();
     jassert(numInputs == signature->getNumInputs());
-    ObjectVectorPtr res = new ObjectVector(subFrameClass, n);
 
-    std::vector<ObjectPtr>& subFrames = res->getObjects();
+    ObjectVectorPtr res = new ObjectVector(subInputsClass, n);
+    std::vector<ObjectPtr>& v = res->getObjects();
     for (size_t i = 0; i < n; ++i)
     {
       const FramePtr& frame = frames[i];
-      FramePtr subFrame(new Frame(subFrameClass));
+      DenseGenericObjectPtr subInput(new DenseGenericObject(subInputsClass));
       for (size_t j = 0; j < numInputs; ++j)
-        subFrame->setVariable(j, frame->getOrComputeVariable(signature->getInputIndex(j)));
-      subFrames[i] = subFrame;
+        subInput->setVariable(j, frame->getOrComputeVariable(signature->getInputIndex(j)));
+      v[i] = subInput;
     }
     return res;
   }
@@ -89,10 +93,10 @@ protected:
   void learnSubFunction(ExecutionContext& context, const FrameClassPtr& frameClass, size_t variableIndex, const FrameOperatorSignaturePtr& signature, const std::vector<FramePtr>& trainingFrames, const std::vector<FramePtr>& validationFrames) const
   {
     const FunctionPtr& function = signature->getFunction();
-    ObjectVectorPtr subTrainingData = makeSubFrames(frameClass, trainingFrames, variableIndex);
+    ObjectVectorPtr subTrainingData = makeSubInputs(frameClass, trainingFrames, variableIndex);
     ObjectVectorPtr subValidationData;
     if (validationFrames.size())
-      subValidationData = makeSubFrames(frameClass, validationFrames, variableIndex);
+      subValidationData = makeSubInputs(frameClass, validationFrames, variableIndex);
     function->train(context, subTrainingData, subValidationData);
   }
 

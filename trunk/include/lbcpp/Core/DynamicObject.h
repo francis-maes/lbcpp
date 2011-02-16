@@ -31,10 +31,13 @@ public:
   ** DefaultClass
   */
   size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); return DefaultClass::addMemberVariable(context, type, name, shortName, description);}
+    {return DefaultClass::addMemberVariable(context, type, name, shortName, description);}
 
   size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty)
-    {ScopedLock _(lock); return DefaultClass::addMemberVariable(context, typeName, name, shortName, description);}
+    {return DefaultClass::addMemberVariable(context, typeName, name, shortName, description);}
+
+  virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature)
+    {ScopedLock _(lock); return DefaultClass::addMemberVariable(context, signature);}
 
   /*
   ** Class
@@ -143,6 +146,9 @@ private:
 class DenseGenericObject : public Object
 {
 public:
+  DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable, const Variable& secondVariable, const Variable& thirdVariable);
+  DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable, const Variable& secondVariable);
+  DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable);
   DenseGenericObject(DynamicClassPtr thisClass);
   DenseGenericObject() {}
   virtual ~DenseGenericObject();

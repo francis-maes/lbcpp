@@ -80,7 +80,7 @@ public:
   ** Batch Learner
   */
   const InferencePtr& getBatchLearner() const
-    {return batchLearner;}
+    {return _batchLearner;}
     
   void setBatchLearner(InferencePtr batchLearner);
 
@@ -91,7 +91,7 @@ public:
   InferenceOnlineLearnerPtr getLastOnlineLearner() const;
 
   void setOnlineLearner(const InferenceOnlineLearnerPtr& learner)
-    {this->onlineLearner = learner;}
+    {this->_onlineLearner = learner;}
 
   void addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront = false);
   void getInferencesThatHaveAnOnlineLearner(ExecutionContext& context, std::vector<InferencePtr>& res) const;
@@ -127,8 +127,8 @@ protected:
   virtual void parametersChangedCallback() {}
 
   String name;
-  InferenceOnlineLearnerPtr onlineLearner;
-  InferencePtr batchLearner;
+  InferenceOnlineLearnerPtr _onlineLearner;
+  InferencePtr _batchLearner;
   juce::ReadWriteLock parametersLock;
   Variable parameters;
 };

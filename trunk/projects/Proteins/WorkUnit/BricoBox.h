@@ -42,7 +42,7 @@ protected:
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i + 1; j < n; ++j)
         numBridges += (size_t)bridges->getElement(i, j).getDouble();
-    return numBridges;
+    return (size_t)numBridges;
   }
   
   static bool checkConsistencyOfBridges(SymmetricMatrixPtr bridges)

@@ -16,8 +16,8 @@
 
   <class name="Inference" base="Function" abstract="yes">
     <variable type="String" name="name"/>
-    <variable type="InferenceOnlineLearner" name="onlineLearner"/>
-    <variable type="Inference" name="batchLearner"/>
+    <variable type="InferenceOnlineLearner" name="_onlineLearner"/>
+    <variable type="Inference" name="_batchLearner"/>
     <variable type="Variable" name="parameters"/>
   </class>
 

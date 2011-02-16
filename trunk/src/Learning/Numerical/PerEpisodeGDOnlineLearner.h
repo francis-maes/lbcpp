@@ -22,24 +22,14 @@ public:
 
   PerEpisodeGDOnlineLearner() {}
  
-  virtual void startEpisode(const FunctionPtr& f, const ObjectPtr& inputs)
-  {
-    const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
-    episodeGradient =  new DenseDoubleVector(function->getParametersClass());
-  }
+  virtual void startEpisode()
+    {episodeGradient =  new DenseDoubleVector(getNumericalLearnableFunction()->getParametersClass());}
 
-  virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
-  {
-    const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
-    computeAndAddGradient(function, inputs, output, episodeGradient, 1.0);
-    GradientDescentOnlineLearner::learningStep(f, inputs, output);
-  }
+  virtual void learningStep(const Variable* inputs, const Variable& output)
+    {computeAndAddGradient(getNumericalLearnableFunction(), inputs, output, episodeGradient, 1.0);}
 
-  virtual void finishEpisode(const FunctionPtr& f)
-  {
-    NumericalLearnableFunctionPtr function = f.staticCast<NumericalLearnableFunction>();
-    gradientDescentStep(function, episodeGradient);
-  }
+  virtual void finishEpisode()
+    {gradientDescentStep(getNumericalLearnableFunction(), episodeGradient);}
 
 protected:
   DoubleVectorPtr episodeGradient;
