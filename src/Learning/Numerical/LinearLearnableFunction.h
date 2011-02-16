@@ -39,15 +39,13 @@ public:
     parametersClass = denseDoubleVectorClass(featuresEnumeration);
     outputName = T("prediction");
     outputShortName = T("p");
-    setOnlineLearner(stochasticGDOnlineLearner(constantIterationFunction(0.1)));
-    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, refCountedPointerFromThis(this)), regressionErrorEvaluator(T("toto"))));
+    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, refCountedPointerFromThis(this))));
     return doubleType;
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     DoubleVectorPtr inputVector = inputs[0].getObjectAndCast<DoubleVector>();
-    //FunctionPtr supervision = inputs[1].getObjectAndCast<Function>();
     DenseDoubleVectorPtr parameters = getParameters();
     if (!parameters || !inputVector)
       return Variable::missingValue(doubleType);

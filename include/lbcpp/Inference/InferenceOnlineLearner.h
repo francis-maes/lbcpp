@@ -102,7 +102,7 @@ protected:
 typedef ReferenceCountedObjectPtr<UpdatableOnlineLearner> UpdatableOnlineLearnerPtr;
 
 extern UpdatableOnlineLearnerPtr randomizerOnlineLearner(LearnerUpdateFrequency randomizationFrequency = perPass);
-extern UpdatableOnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true, LearnerUpdateFrequency criterionTestFrequency = perPass);
+extern UpdatableOnlineLearnerPtr oldStoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true, LearnerUpdateFrequency criterionTestFrequency = perPass);
 
 extern UpdatableOnlineLearnerPtr computeScoreOnlineLearner(FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency = perPass);
 extern InferenceOnlineLearnerPtr computeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData = false);

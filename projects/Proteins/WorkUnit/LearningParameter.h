@@ -99,7 +99,7 @@ public:
     /* stopping criterion */
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(15), 
                                                        maxIterationsWithoutImprovementStoppingCriterion(2));
-    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
+    lastLearner = lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(stoppingCriterion, true));
     return res;
   }
 };
