@@ -42,13 +42,53 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
   return object1->compare(object2);
 }
 
+inline ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
+{
+  TypePtr type = typeManager().getTypeByShortName(context, nameOrShortName);
+  if (!type)
+    type = typeManager().getType(context, nameOrShortName);
+  if (!type)
+    return ObjectPtr();
+  if (!context.checkInheritance(type, baseClass))
+    return ObjectPtr();
+  return Object::create(type);
+}
+
+inline ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& context, ClassPtr baseClass, const String& value)
+{
+  int n = value.indexOfChar('(');
+  if (n >= 0)
+  {
+    ObjectPtr res = createObjectFromShortNameOrName(context, baseClass, value.substring(0, n));
+    int e = value.lastIndexOfChar(')');
+    if (e <= n)
+    {
+      context.errorCallback(T("Unmatched parenthesis in ") + value.quoted());
+      return ObjectPtr();
+    }
+    String arguments = value.substring(n + 1, e).trim();
+    if (arguments.isNotEmpty() && !res->loadFromString(context, arguments))
+      res = ObjectPtr();
+    return res;
+  }
+  else
+    return createObjectFromShortNameOrName(context, baseClass, value);
+}
+
 Variable Class::createFromString(ExecutionContext& context, const String& value) const
 {
-  ObjectPtr object = create(context).getObject();
-  if (!object)
-    context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
-  else if (!object->loadFromString(context, value))
-    object = ObjectPtr();
+  ObjectPtr object;
+
+  if (isAbstract())
+    object = createObjectFromStringWithAbstractClass(context, refCountedPointerFromThis(this), value);
+  else
+  {
+    object = create(context).getObject();
+    if (!object)
+      context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
+    else if (!object->loadFromString(context, value))
+      object = ObjectPtr();
+  }
   return Variable(object, refCountedPointerFromThis(this));
 }
 
@@ -76,17 +116,17 @@ ClassPtr Class::getClass() const
 ** DefaultClass
 */
 DefaultClass::DefaultClass(const String& name, TypePtr baseClass)
-  : Class(name, baseClass)
+  : Class(name, baseClass), abstractClass(false)
 {
 }
 
 DefaultClass::DefaultClass(const String& name, const String& baseClass)
-: Class(name, lbcpp::getType(baseClass))
+: Class(name, lbcpp::getType(baseClass)), abstractClass(false)
 {
 }
 
 DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
-  : Class(templateType, templateArguments, baseClass) {}
+  : Class(templateType, templateArguments, baseClass), abstractClass(false) {}
 
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
 {

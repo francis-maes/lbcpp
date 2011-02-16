@@ -70,7 +70,7 @@ public:
 class LinearLearningMachine : public ProxyFunction
 {
 public:
-  LinearLearningMachine(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
+  LinearLearningMachine(LearnerParametersPtr learnerParameters = new StochasticGDParameters())
     : learnerParameters(learnerParameters) {}
 
   virtual size_t getNumRequiredInputs() const

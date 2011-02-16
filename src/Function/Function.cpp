@@ -18,6 +18,14 @@ bool Function::initialize(ExecutionContext& context, TypePtr inputType)
   return initialize(context, inputVariables);
 }
 
+bool Function::initialize(ExecutionContext& context, TypePtr inputType1, TypePtr inputType2)
+{
+  std::vector<VariableSignaturePtr> inputVariables(2);
+  inputVariables[0] = new VariableSignature(inputType1, T("firstInput"));
+  inputVariables[1] = new VariableSignature(inputType2, T("secondInput"));
+  return initialize(context, inputVariables);
+}
+
 bool Function::initialize(ExecutionContext& context, VariableSignaturePtr inputVariable)
   {return initialize(context, std::vector<VariableSignaturePtr>(1, inputVariable));}
 
@@ -133,10 +141,26 @@ Variable Function::computeWithInputsObject(ExecutionContext& context, const Obje
   return compute(context, inputs);
 }
 
+bool Function::checkIsInitialized(ExecutionContext& context) const
+{
+  if (!outputVariable)
+  {
+    context.errorCallback(T("Function ") + toShortString(), T("Not initialized"));
+    return false;
+  }
+  return true;
+}
+
 bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData)
 {
-  if (!batchLearner)
+  if (!checkIsInitialized(context))
     return false;
+
+  if (!batchLearner)
+  {
+    context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
+    return false;
+  }
   batchLearner->compute(context, this, trainingData, validationData);
   return true;
 }
@@ -146,6 +170,9 @@ bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& tr
 
 bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const
 {
+  if (!checkIsInitialized(context))
+    return false;
+
   // todo: parallel evaluation
   size_t n = examples->getNumElements();
   for (size_t i = 0; i < n; ++i)
@@ -160,6 +187,21 @@ bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples,
 
 bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const
   {return evaluate(context, new ObjectVector(examples), evaluator);}
+
+String Function::toString() const
+{
+  return toShortString();
+}
+
+String Function::toShortString() const
+{
+  ClassPtr thisClass = getClass();
+  String shortName = thisClass->getShortName();
+  if (shortName.isNotEmpty())
+    return shortName;
+  else
+    return thisClass->getName();
+}
 
 /*
 ** ProxyFunction

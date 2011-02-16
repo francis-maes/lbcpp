@@ -41,6 +41,9 @@ public:
     : Type(templateType, templateArguments, baseClass) {}
   Class() {}
 
+  virtual bool isAbstract() const
+    {return false;}
+
   virtual String toString() const;
   virtual ClassPtr getClass() const;
 
@@ -82,7 +85,10 @@ public:
   DefaultClass(const String& name, TypePtr baseClass = objectClass);
   DefaultClass(const String& name, const String& baseClass);
   DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
-  DefaultClass() {}
+  DefaultClass() : abstractClass(false) {}
+
+  virtual bool isAbstract() const
+    {return abstractClass;}
 
   virtual void deinitialize();
 
@@ -107,6 +113,7 @@ protected:
 
   std::vector<VariableSignaturePtr> variables;
   std::map<String, size_t> variablesMap;
+  bool abstractClass;
 };
 
 typedef ReferenceCountedObjectPtr<DefaultClass> DefaultClassPtr;

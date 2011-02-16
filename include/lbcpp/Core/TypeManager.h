@@ -27,6 +27,7 @@ public:
 
   TypePtr getType(ExecutionContext& context, const String& typeName, const std::vector<TypePtr>& arguments) const;
   TypePtr getType(ExecutionContext& context, const String& name) const;
+  TypePtr getTypeByShortName(ExecutionContext& context, const String& shortName) const;
 
   TypePtr findType(const String& name) const;
   bool doTypeExists(const String& type) const;
@@ -39,6 +40,7 @@ private:
 
   CriticalSection typesLock;
   TypeMap types;
+  TypeMap typesByShortName;
   TemplateTypeMap templateTypes;
  
   TemplateTypeCache* getTemplateType(ExecutionContext& context, const String& templateTypeName) const;

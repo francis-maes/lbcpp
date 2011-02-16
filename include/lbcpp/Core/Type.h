@@ -95,6 +95,9 @@ public:
   bool isNamedType() const
     {return namedType;}
 
+  const String& getShortName() const
+    {return shortName;}
+
   /*
   ** Type operations
   */
@@ -171,6 +174,9 @@ public:
   virtual String toString() const
     {return getName();}
 
+  virtual String toShortString() const
+    {return shortName.isNotEmpty() ? shortName : toString();}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -184,6 +190,7 @@ protected:
   TemplateTypePtr templateType;
   std::vector<TypePtr> templateArguments;
   bool namedType;
+  String shortName;
 };
 
 extern TypePtr variableType;

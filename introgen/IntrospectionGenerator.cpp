@@ -249,6 +249,7 @@ protected:
   {
     String className = xml->getStringAttribute(T("name"), T("???"));
     bool isAbstract = xml->getBoolAttribute(T("abstract"), false);
+    String classShortName = xml->getStringAttribute(T("shortName"), String::empty);
     String classBaseClass = xml->getStringAttribute(T("metaclass"), T("DefaultClass"));
     String metaClass = getMetaClass(classBaseClass);
     String baseClassName = xmlTypeToCppType(xml->getStringAttribute(T("base"), getDefaultBaseType(metaClass)));
@@ -269,6 +270,10 @@ protected:
       String arguments = T("T(") + className.quoted() + T("), T(") + baseClassName.quoted() + T(")");
       openScope(declaration.implementationClassName + T("() : ") + classBaseClass + T("(") + arguments + T(")"));
     }
+    if (classShortName.isNotEmpty())
+      writeLine(T("shortName = T(") + classShortName.quoted() + T(");"));
+    if (isAbstract)
+      writeLine(T("abstractClass = true;"));
     closeScope();
     newLine();
 
