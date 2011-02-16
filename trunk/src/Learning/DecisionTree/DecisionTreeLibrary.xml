@@ -2,6 +2,7 @@
 
 <library name="DecisionTree" directory="Learning/DecisionTree">
 
+  <!-- RTreeFunction -->
   <class name="RTreeFunction" base="LearnableFunction">
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
@@ -16,4 +17,31 @@
     <constructor/>
   </class>
   
+  <!-- BinaryDecisionTree -->
+  <class name="BinaryDecisionTreeFunction" base="LearnableFunction"/>
+
+  <class name="RegressionBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
+  <class name="BinaryClassificationBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
+  <class name="ClassificationBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
+  
+  <class name="BinaryDecisionTreeBatchLearner" base="Inference">
+    <variable type="Integer" name="numAttributeSamplesPerSplit"/>
+    <variable type="Integer" name="minimumSizeForSplitting"/>
+  </class>
+  <!--
+  <class name="DecisionTreeSharedExampleVector" base="Object">
+    <variable type="GenericVector[GenericVector[Variable]]" name="attributes"/>
+    <variable type="GenericVector[Variable]" name="labels"/>
+    <variable type="GenericVector[PositiveInteger]" name="indices"/>
+  </class>
+  
+  <class name="ExtraTreeBatchLearnerInput" base="InferenceBatchLearnerInput[BinaryDecisionTreeInference]">
+    <variable type="DecisionTreeSharedExampleVector" name="examples"/>
+    <variable type="PositiveInteger" name="randomGeneratorSeed"/>
+    <variable type="Type" name="inputType"/>
+    <variable type="Type" name="outputType"/>
+  </class>
+
+  <class name="ExtraTreeInferenceLearner" base="ParallelVoteInferenceLearner"/>
+  -->
 </library>

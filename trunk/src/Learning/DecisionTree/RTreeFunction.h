@@ -68,7 +68,7 @@ public:
   ClassificationRTreeFunction() {}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(enumValueType)); return inputVariables[1]->getType();}  
+    {jassert(inputVariables[1]->getType()->inheritsFrom(enumValueType)); return inputVariables[1]->getType();}
 };
   
 class RegressionRTreeFunction : public RTreeFunction

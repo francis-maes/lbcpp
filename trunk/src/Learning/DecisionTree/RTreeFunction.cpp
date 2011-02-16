@@ -288,10 +288,11 @@ void exportData(ExecutionContext& context)
 FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   ScopedLock _(learnerLock);
-  RTreeFunctionPtr rTreeFunction = function.dynamicCast<RTreeFunction>();
+  const RTreeFunctionPtr& rTreeFunction = function.dynamicCast<RTreeFunction>();
   jassert(rTreeFunction);
 
-  if (!trainingData.size())
+  size_t n = trainingData.size();
+  if (n == 0)
   {
     RTreePtr trees = new RTree();
     trees->saveTreesState();
@@ -301,23 +302,23 @@ FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPt
 
   size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
   // Filtre les données sans supervision
-  size_t n = trainingData.size();
   std::vector<size_t> examples;
   examples.reserve(n);
   for (size_t i = 0; i < n; ++i)
     if (trainingData[i]->getVariable(supervisionIndex).exists()) // FIXME: Add Object::getLastVariable()
       examples.push_back(i);
+  n = examples.size();
 
   context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables());
   context.resultCallback(T("K"), rTreeFunction->getNumAttributeSamplesPerSplit());
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
-  context.resultCallback(T("Num Examples"), examples.size());
+  context.resultCallback(T("Num Examples"), n);
   
   set_print_result(0, 0);
   goal_type = MULTIREGR;
   goal = MULTIREGR;
   nb_attributes = function->getInputsClass()->getNumMemberVariables();
-  nb_obj_in_core_table = examples.size();
+  nb_obj_in_core_table = n;
   
   core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_attributes * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)

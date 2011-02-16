@@ -9,20 +9,17 @@
 #ifndef LBCPP_INFERENCE_EXTRA_TREE_LEARNER_H_
 # define LBCPP_INFERENCE_EXTRA_TREE_LEARNER_H_
 
-# include "ExtraTreeInference.h"
-# include "../../Learning/DecisionTree/Data/BinaryDecisionTreeSplitter.h"
+# include "BinaryDecisionTreeFunction.h"
+# include "Data/BinaryDecisionTreeSplitter.h"
 # include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
-# include <lbcpp/Inference/InferenceBatchLearner.h>
 # include "../../Inference/BatchLearner/StaticParallelInferenceLearner.h"
 
 namespace lbcpp 
 {
-
-extern ClassPtr extraTreeBatchLearnerInputClass;
-
+#if 0
+/* DecisionTreeSharedExampleVector */
 class DecisionTreeSharedExampleVector : public Object
 {
 public:
@@ -84,29 +81,37 @@ class ExtraTreeInferenceLearner : public ParallelVoteInferenceLearner
                                                                       const InferencePtr& targetInference, 
                                                                       size_t subInferenceIndex) const;
 };
-
+#endif
 // Input: InferenceBatchLearnerInput
 // Supervision: None
 // Output: BinaryDecisionTree
-class SingleExtraTreeInferenceLearner : public InferenceBatchLearner<Inference>
+class BinaryDecisionTreeBatchLearner : public BatchLearner
 {
 public:
-  SingleExtraTreeInferenceLearner(size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting, DistributionBuilderPtr builder);
-  SingleExtraTreeInferenceLearner() : numAttributeSamplesPerSplit(0), minimumSizeForSplitting(0), numActiveAttributes(0) {}
+  BinaryDecisionTreeBatchLearner(size_t numAttributeSamplesPerSplit,
+                                 size_t minimumSizeForSplitting,
+                                 DistributionBuilderPtr builder)
+    : numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
+      minimumSizeForSplitting(minimumSizeForSplitting),
+      builder(builder),
+      numActiveAttributes(0) {}
 
-  typedef InferenceBatchLearner<Inference> BaseClass;
-
-  virtual ClassPtr getTargetInferenceClass() const
-    {return binaryDecisionTreeInferenceClass;}
+  BinaryDecisionTreeBatchLearner()
+    : numAttributeSamplesPerSplit(0),
+      minimumSizeForSplitting(0),
+      numActiveAttributes(0) {}
   
+  virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
+
+  /* Object */
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
-    InferenceBatchLearner<Inference>::clone(context, target);
-    target.staticCast<SingleExtraTreeInferenceLearner>()->builder = builder->cloneAndCast<DistributionBuilder>(context);
+    BatchLearner::clone(context, target);
+    target.staticCast<BinaryDecisionTreeBatchLearner>()->builder = builder->cloneAndCast<DistributionBuilder>(context);
   }
 
 protected:
-  friend class SingleExtraTreeInferenceLearnerClass;
+  friend class BinaryDecisionTreeBatchLearnerClass;
 
   RandomGeneratorPtr random;
 
@@ -123,8 +128,6 @@ protected:
     std::vector<size_t> left;
     std::vector<size_t> right;
   };
-
-  virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const;
 
   BinaryDecisionTreePtr sampleTree(ExecutionContext& context, TypePtr inputClass, TypePtr outputClass, const DecisionTreeExampleVector& examples) const;
 
