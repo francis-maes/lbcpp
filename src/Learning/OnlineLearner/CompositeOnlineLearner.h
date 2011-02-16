@@ -101,6 +101,8 @@ public:
     return learners.size() > 1 ? res : res->getElement(0);
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class CompositeOnlineLearnerClass;
 

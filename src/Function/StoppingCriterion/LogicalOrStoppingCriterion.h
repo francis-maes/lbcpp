@@ -41,6 +41,8 @@ public:
     t->criterion2 = criterion2->cloneAndCast<StoppingCriterion>(context);
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class LogicalOrStoppingCriterionClass;
 

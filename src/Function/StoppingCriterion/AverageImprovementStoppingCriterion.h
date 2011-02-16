@@ -62,6 +62,8 @@ public:
     return res;
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class AverageImprovementStoppingCriterionClass;
 

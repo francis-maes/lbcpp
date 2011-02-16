@@ -34,19 +34,21 @@ public:
     if (trainingData)
     {
       EvaluatorPtr evaluator = evaluate(*trainingData, T("Train"));
-      objectiveValueToMinimize = evaluator->getDefaultScore();
+      objectiveValueToMinimize = -evaluator->getDefaultScore();
     }
 
     if (validationData)
     {
       EvaluatorPtr evaluator = evaluate(*trainingData, T("Validation"));
-      objectiveValueToMinimize = evaluator->getDefaultScore();
+      objectiveValueToMinimize = -evaluator->getDefaultScore();
     }
     return false;
   }
 
   virtual void finishLearning()
     {function = FunctionPtr();}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class EvaluatorOnlineLearnerClass;

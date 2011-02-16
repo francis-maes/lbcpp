@@ -29,6 +29,8 @@ public:
   virtual bool shouldStop(double value)
     {return value >= referenceValue;}
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class IsAboveValueStoppingCriterionClass;
 
@@ -49,6 +51,8 @@ public:
 
   virtual bool shouldStop(double)
     {jassert(maxIterations); ++iterations; return iterations >= maxIterations;}
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class MaxIterationsStoppingCriterionClass;

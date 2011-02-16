@@ -33,7 +33,7 @@ public:
   {
     if (!parameters && parameters.staticCast<BinaryDecisionTree>()->getNumNodes())
       return Variable::missingValue(getOutputType());
-    return parameters.staticCast<BinaryDecisionTree>()->makePrediction(context, inputs);
+    return parameters.staticCast<BinaryDecisionTree>()->makePrediction(context, inputs[0]);
   }
 
   /* BinaryDecisionTreeFunction */

@@ -63,6 +63,8 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class FeatureGeneratorClass;
   bool lazyComputation;

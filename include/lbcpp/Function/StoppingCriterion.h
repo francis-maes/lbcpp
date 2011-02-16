@@ -41,6 +41,8 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
     {Object::clone(context, target); target.staticCast<StoppingCriterion>()->reset();}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern StoppingCriterionPtr maxIterationsStoppingCriterion(size_t maxIterations);

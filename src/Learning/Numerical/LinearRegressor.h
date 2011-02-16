@@ -17,17 +17,14 @@
 namespace lbcpp
 {
 
-class LinearRegressor : public FrameBasedFunction
+class LinearRegressor : public SupervisedNumericalFunction
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
+  LinearRegressor(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
+    : SupervisedNumericalFunction(learnerParameters) {}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return index ? doubleType : (TypePtr)doubleVectorClass();}
-
-  virtual String getOutputPostFix() const
-    {return T("Prediction");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -38,16 +35,10 @@ public:
     frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));
     frameClass->addMemberOperator(context, createObjectFunction(squareLossFunctionClass), 1);
     FunctionPtr linearFunction = new LinearLearnableFunction();
-
-    linearFunction->setOnlineLearner(compositeOnlineLearner(
-      stochasticGDOnlineLearner(constantIterationFunction(0.1)),
-      evaluatorOnlineLearner(regressionErrorEvaluator(T("toto"))),
-      stoppingCriterionOnlineLearner(maxIterationsWithoutImprovementStoppingCriterion(10)),
-      restoreBestParametersOnlineLearner()));
-
+    linearFunction->setOnlineLearner(learnerParameters->createOnlineLearner());
     frameClass->addMemberOperator(context, linearFunction, 0, 2);
 
-    setBatchLearner(stochasticBatchLearner());
+    setBatchLearner(learnerParameters->createBatchLearner());
     return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 };

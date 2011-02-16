@@ -56,6 +56,8 @@ public:
   double getTarget() const
     {return target;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class RegressionLossFunctionClass;
 
@@ -84,6 +86,8 @@ public:
 
   bool getLabel() const
     {return isPositive;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class BinaryClassificationLossFunctionClass;
@@ -119,6 +123,8 @@ public:
 
   size_t getCorrectClass() const
     {return correctClass;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class MultiClassLossFunctionClass;
@@ -157,6 +163,8 @@ public:
 
   void setCosts(const std::vector<double>& costs)
     {this->costs = costs;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class RankingLossFunctionClass;

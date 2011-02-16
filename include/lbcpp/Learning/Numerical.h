@@ -10,7 +10,10 @@
 # define LBCPP_LEARNING_NUMERICAL_H_
 
 # include "LearnableFunction.h"
+# include "../Core/Frame.h"
 # include "../Data/DoubleVector.h"
+# include "../Function/StoppingCriterion.h"
+# include "../Function/IterationFunction.h"
 
 namespace lbcpp
 {
@@ -37,7 +40,65 @@ extern NumericalLearnableFunctionPtr linearLearnableFunction();
 extern OnlineLearnerPtr stochasticGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 extern OnlineLearnerPtr perEpisodeGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
-extern FunctionPtr linearRegressor();
+class StochasticGDParameters : public LearnerParameters
+{
+public:
+  StochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
+                          StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(10),
+                          size_t maxIterations = 100,
+                          EvaluatorPtr evaluator = EvaluatorPtr(),
+                          bool doPerEpisodeUpdates = false,
+                          bool normalizeLearningRate = true,
+                          bool restoreBestParameters = true,
+                          bool randomizeExamples = true);
+
+  virtual BatchLearnerPtr createBatchLearner() const;
+  virtual OnlineLearnerPtr createOnlineLearner() const;
+
+  const EvaluatorPtr& getEvaluator() const
+    {return evaluator;}
+
+  void setEvaluator(EvaluatorPtr evaluator)
+    {this->evaluator = evaluator;}
+
+protected:
+  friend class StochasticGDParametersClass;
+
+  IterationFunctionPtr learningRate;
+  StoppingCriterionPtr stoppingCriterion;
+  size_t maxIterations;
+  EvaluatorPtr evaluator;
+  bool doPerEpisodeUpdates;
+  bool normalizeLearningRate;
+  bool restoreBestParameters;
+  bool randomizeExamples;
+  // todo: regularizer
+};
+
+typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParametersPtr;
+
+class SupervisedNumericalFunction : public FrameBasedFunction
+{
+public:
+  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters)
+    : learnerParameters(learnerParameters) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+protected:
+  friend class SupervisedNumericalFunctionClass;
+
+  LearnerParametersPtr learnerParameters;
+};
+
+typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
+
+extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters);
+
 
 }; /* namespace lbcpp */
 

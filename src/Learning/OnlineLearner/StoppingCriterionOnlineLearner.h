@@ -33,6 +33,8 @@ public:
       target.staticCast<StoppingCriterionOnlineLearner>()->stoppingCriterion = stoppingCriterion->cloneAndCast<StoppingCriterion>();
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class StoppingCriterionOnlineLearnerClass;
 
