@@ -29,8 +29,8 @@ public:
   virtual void finishLearning() {}
 };
 
-extern OnlineLearnerPtr concatenateOnlineLearner(const OnlineLearnerPtr& learner1, const OnlineLearnerPtr& learner2);
-extern OnlineLearnerPtr concatenateOnlineLearners(const std::vector<OnlineLearnerPtr>& learners);
+OnlineLearnerPtr compositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners);
+OnlineLearnerPtr compositeOnlineLearner(const OnlineLearnerPtr& learner1, const OnlineLearnerPtr& learner2);
 
 }; /* namespace lbcpp */
 

@@ -118,6 +118,17 @@ Variable Function::compute(ExecutionContext& context, const Variable& input1, co
   return compute(context, v);
 }
 
+Variable Function::compute(ExecutionContext& context, const std::vector<Variable>& inputs) const
+  {return compute(context, &inputs[0]);}
+
+Variable Function::computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const
+{
+  std::vector<Variable> inputs(getNumInputs());
+  for (size_t j = 0; j < inputs.size(); ++j)
+    inputs[j] = inputsObject->getVariable(j);
+  return compute(context, inputs);
+}
+
 bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData)
 {
   if (!batchLearner)
@@ -128,16 +139,14 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
 
 static void evaluateFunctionOnExample(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& example, const EvaluatorPtr& evaluator)
 {
-  std::vector<Variable> inputs(function->getNumInputs());
-  for (size_t j = 0; j < inputs.size(); ++j)
-    inputs[j] = example->getVariable(j);
-  Variable prediction = function->compute(context, &inputs[0]);
-  const Variable& correct = inputs.back();
+  Variable prediction = function->computeWithInputsObject(context, example);
+  Variable correct = example->getVariable(example->getNumVariables() - 1);
   evaluator->addPrediction(context, prediction, correct);
 }
 
 bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const
 {
+  // todo: parallel evaluation
   size_t n = examples->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
@@ -149,6 +158,7 @@ bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples,
 
 bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const
 {
+  // todo: parallel evaluation
   size_t n = examples.size();
   for (size_t i = 0; i < n; ++i)
   {

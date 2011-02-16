@@ -2,4 +2,10 @@
 
 <library name="OnlineLearner" directory="Learning/OnlineLearner">
 
+  <class name="CompositeOnlineLearner" base="OnlineLearner">
+    <constructor arguments="const std::vector&lt;OnlineLearnerPtr&gt;&amp; learners"/>
+    <constructor arguments="const OnlineLearnerPtr&amp; learner1, const OnlineLearnerPtr&amp; learner2"/>
+    <variable type="ObjectVector[OnlineLearner]" name="learners"/>
+  </class>
+
 </library>
