@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_MULTIREGR_C
+# define FILE_TREE_MULTIREGR_C
+
 /*
  * Author: Pierre Geurts (p.geurts@ulg.ac.be)
  *
@@ -1199,3 +1202,5 @@ float make_ls_vector_mart_multiregr(int tree) {
   return 1.0;
 
 }
+
+#endif //!FILE_TREE_MULTIREGR_C

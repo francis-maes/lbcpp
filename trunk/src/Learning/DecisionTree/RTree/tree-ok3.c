@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_OK3_C
+# define FILE_TREE_OK3_C
+
 /*
  * Author: Pierre Geurts (p.geurts@ulg.ac.be)
  *
@@ -3125,3 +3128,5 @@ float compute_gaussian_kernel(int o1, int o2, int *att_vect, int nb_att, float s
   }
   return exp(-sum/(2*nb_att*sigma*sigma));
 }
+
+#endif //!FILE_TREE_OK3_C

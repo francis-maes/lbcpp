@@ -55,7 +55,8 @@
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
       */
-      return new RegressionRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return InferencePtr();
+      //return new RegressionRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
     
     InferencePtr binaryClassificationExtraTreeInference(const String&amp; name, PerceptionPtr perception, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
@@ -68,7 +69,8 @@
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
       */
-      return new BinaryRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return InferencePtr();
+      //return new BinaryRTreeInference(name, perception, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
     
     InferencePtr classificationExtraTreeInference(const String&amp; name, PerceptionPtr perception, EnumerationPtr classes, size_t numTrees, size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
@@ -81,7 +83,8 @@
       res->setBatchLearner(extraTreeInferenceLearner());
       return preProcessInference(res, perception);
       */
-      return new ClassificationRTreeInference(name, perception, classes, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
+      return InferencePtr();
+      //return new ClassificationRTreeInference(name, perception, classes, numTrees, numAttributeSamplesPerSplit, minimumSizeForSplitting);
     }
   </code>
     
