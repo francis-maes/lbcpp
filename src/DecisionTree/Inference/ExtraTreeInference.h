@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_EXTRA_TREE_H_
 # define LBCPP_INFERENCE_EXTRA_TREE_H_
 
-# include "BinaryDecisionTree.h"
+# include "../../Learning/DecisionTree/Data/BinaryDecisionTree.h"
 # include "../../Inference/ReductionInference/ParallelVoteInference.h"
 # include <lbcpp/Distribution/Distribution.h>
 # include <lbcpp/Perception/Perception.h>

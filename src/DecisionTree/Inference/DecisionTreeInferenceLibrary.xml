@@ -5,9 +5,6 @@
   <include file="lbcpp/Distribution/DistributionBuilder.h"/>
   <include file="lbcpp/DecisionTree/RTreeInference.h"/>
 
-  <class name="BinaryDecisionTree"/>
-  <class name="SplitScoringInput"/>
-
   <class name="BinaryDecisionTreeInference" base="Inference">
     <variable type="BinaryDecisionTree" name="tree"/>
   </class>
