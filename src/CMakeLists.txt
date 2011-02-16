@@ -297,12 +297,16 @@ SET(LBCPP_FUNCTION_SOURCES
 )
  
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
+  # new
+  Function/MiscFunctions/SelectVariableFunctions.h
+  Function/MiscFunctions/CreateObjectFunction.h
+
+  # old / unchecked
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/ComposeFunction.h
   Function/MiscFunctions/MultiplyFunction.h
   Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
-  Function/MiscFunctions/SelectVariableFunctions.h
   Function/MiscFunctions/MiscFunctionsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsLibrary.cpp
 )
@@ -610,6 +614,7 @@ SET(LBCPP_NUMERICAL_LEARNING_SOURCES
 )
 
 SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
+  NumericalLearning/LossFunction/SquareLossFunction.h
   NumericalLearning/LossFunction/HingeLossFunction.h
   NumericalLearning/LossFunction/LogBinomialLossFunction.h
   NumericalLearning/LossFunction/OneAgainstAllMultiClassLossFunction.h

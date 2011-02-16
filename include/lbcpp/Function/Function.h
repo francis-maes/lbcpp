@@ -198,6 +198,7 @@ extern ClassPtr functionClass;
 extern FunctionPtr getVariableFunction(size_t variableIndex);
 extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
+extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 
 // old
 extern FunctionPtr identityFunction(TypePtr type);

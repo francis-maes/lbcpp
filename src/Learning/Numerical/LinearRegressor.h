@@ -17,25 +17,6 @@
 namespace lbcpp
 {
 
-class MakeRegressionLossFunction : public Function
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-
-  virtual String getOutputPostFix() const
-    {return T("Loss");}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return scalarFunctionClass;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return squareLossFunction(inputs[0].getDouble());}
-};
-
 class LinearRegressor : public FrameBasedFunction
 {
 public:
@@ -55,7 +36,7 @@ public:
     frameClass = new FrameClass(T("LinearRegressor"));
     frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));
     frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));
-    frameClass->addMemberOperator(context, new MakeRegressionLossFunction(), 1);
+    frameClass->addMemberOperator(context, createObjectFunction(squareLossFunctionClass), 1);
     FunctionPtr linearFunction = new LinearLearnableFunction();
 
     linearFunction->setOnlineLearner(compositeOnlineLearner(

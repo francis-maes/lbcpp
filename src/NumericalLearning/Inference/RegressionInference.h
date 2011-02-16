@@ -52,7 +52,7 @@ public:
   SquareRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return squareLossFunction(target);}
+    {return oldSquareLossFunction(target);}
 };
 
 class DihedralAngleRegressionInference : public RegressionInference
@@ -64,7 +64,7 @@ public:
   DihedralAngleRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return dihedralAngleSquareLossFunction(target);}
+    {return oldDihedralAngleSquareLossFunction(target);}
 };
 
 class AbsoluteRegressionInference : public RegressionInference
@@ -76,7 +76,7 @@ public:
   AbsoluteRegressionInference() {}
   
   virtual ScalarFunctionPtr getLoss(double target) const
-    {return absoluteLossFunction(target);}
+    {return oldAbsoluteLossFunction(target);}
 };
   
 }; /* namespace lbcpp */

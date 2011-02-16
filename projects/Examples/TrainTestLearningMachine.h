@@ -238,9 +238,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    //LearningProblemPtr learningProblem = createLearningProblem(context);
-    //LearningMachineFamilyPtr learningMachineFamily = createLearningMachineFamily(context);
-    if (!learningProblem)// || !learningMachineFamily)
+    if (!learningProblem || !learningMachine)
       return false;
 
     context.enterScope(T("Loading Data"));
@@ -284,6 +282,8 @@ protected:
   friend class TrainTestLearningMachineClass;
 
   LearningProblemPtr learningProblem;
+  FunctionPtr learningMachine;
+
   size_t numStacks;
   String methodToUse;
   File trainingFile;

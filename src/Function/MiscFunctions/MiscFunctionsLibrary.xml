@@ -14,6 +14,11 @@
     <constructor/>
   </class>
 
+  <class name="CreateObjectFunction" base="Function">
+    <constructor arguments="ClassPtr objectClass"/>
+    <variable type="Class" name="objectClass"/>
+  </class>
+  
   <!-- Old -->
   <class name="IdentityFunction" base="Function">
     <constructor arguments="TypePtr type"/>

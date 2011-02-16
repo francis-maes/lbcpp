@@ -47,8 +47,11 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
   }
 
   for (size_t i = 0; i < numInputs; ++i)
-    if (!context.checkInheritance(inputVariables[i]->getType(), getRequiredInputType(i, numInputs)))
+  {
+    TypePtr requiredInputType = getRequiredInputType(i, numInputs);
+    if (!context.checkInheritance(inputVariables[i]->getType(), requiredInputType))
       return false;
+  }
 
   // make inputs class
   inputsClass = new DynamicClass(getClassName() + T("Inputs"));
