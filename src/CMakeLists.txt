@@ -46,9 +46,9 @@ GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml Onli
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
 
-IF(LBCPP_UI)
+IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
-ENDIF(LBCPP_UI)
+ENDIF(LBCPP_USER_INTERFACE)
 
 ### old ->
 GENERATE_INTROSPECTION_CODE(Perception/PerceptionLibrary.xml PerceptionLibrary.cpp)
@@ -212,9 +212,9 @@ SET(LBCPP_EXECUTION_CALLBACK_SOURCES
   Execution/Callback/ExecutionCallbackLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExecutionCallbackLibrary.cpp
 )
-IF(LBCPP_UI)
+IF(LBCPP_USER_INTERFACE)
   SET(LBCPP_EXECUTION_CALLBACK_SOURCES ${LBCPP_EXECUTION_CALLBACK_SOURCES} Execution/Callback/UserInterfaceExecutionCallback.h)
-ENDIF(LBCPP_UI)
+ENDIF(LBCPP_USER_INTERFACE)
 
 
 SET(LBCPP_EXECUTION_CONTEXT_SOURCES
@@ -682,7 +682,7 @@ SET(LBCPP_DECISION_TREE_RTREE_SOURCES
 )
 
 #### UserInterface ####
-IF(LBCPP_UI)
+IF(LBCPP_USER_INTERFACE)
 
   # Res input data.
   FILE(GLOB LBCPP_USER_INTERFACE_DATA_FILES
@@ -743,7 +743,7 @@ IF(LBCPP_UI)
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
   )
 
-ENDIF(LBCPP_UI)
+ENDIF(LBCPP_USER_INTERFACE)
 
 
 ##### MAIN ####

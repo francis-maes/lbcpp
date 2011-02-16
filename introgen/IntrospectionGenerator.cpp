@@ -543,11 +543,22 @@ protected:
 
     forEachXmlChildElementWithTagName(*xml, elt, T("import"))
     {
+      String ifdef = elt->getStringAttribute(T("ifdef"));
+      if (ifdef.isNotEmpty())
+        writeLine(T("#ifdef ") + ifdef);
       String name = elt->getStringAttribute(T("name"), T("???"));
       name = replaceFirstLettersByLowerCase(name) + T("Library");
       writeLine(T("extern lbcpp::LibraryPtr ") + name + T("();"));
       writeLine(T("extern void ") + name + T("CacheTypes(ExecutionContext& context);"));
       writeLine(T("extern void ") + name + T("UnCacheTypes();"));
+      if (ifdef.isNotEmpty())
+      {
+        writeLine(T("#else // ") + ifdef);
+        writeLine(T("inline lbcpp::LibraryPtr ") + name + T("() {return lbcpp::LibraryPtr();}"));
+        writeLine(T("inline void ") + name + T("CacheTypes(ExecutionContext& context) {}"));
+        writeLine(T("inline void ") + name + T("UnCacheTypes() {}"));
+        writeLine(T("#endif // ") + ifdef);
+      }
     }
 
     // cacheTypes function

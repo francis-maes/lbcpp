@@ -1,4 +1,6 @@
-* Nouveau repertoire: Learning, contient: LearnableFunction, sous repertoire: BatchLearner, OnlineLearner, Numerical, ...
+* Regler l'amalgame FramePtr vs std::vector<Variable>
+* GradientDescentOnlineLearner: ne pas deriver de FunctionCallback
+
 
 
 * Learner pour les CompositeFunctions (notemment pour la ApplyFunctionOnContainer)

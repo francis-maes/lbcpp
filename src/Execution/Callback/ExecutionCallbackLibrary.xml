@@ -6,9 +6,11 @@
     <constructor returnType="ExecutionCallback"/>
   </class>
 
-  <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
-    <constructor/>
-  </class>
+  <!--
+    <class name="UserInterfaceExecutionCallback" base="ExecutionCallback">
+      <constructor/>
+    </class>
+  -->
 
   <class name="MakeTraceExecutionCallback" base="DispatchByThreadExecutionCallback">
     <constructor arguments="ExecutionTracePtr trace" returnType="ExecutionCallback"/>

@@ -260,13 +260,15 @@ bool Library::declareTemplateType(ExecutionContext& context, TemplateTypePtr tem
 
 bool Library::declareSubLibrary(ExecutionContext& context, LibraryPtr subLibrary)
 {
+  if (!subLibrary)
+    return true; // this may happen with the "ifdef" directive in the <import> command
   if (!subLibrary->initialize(context))
     return false;
   subLibraries.push_back(subLibrary);
   return true;
 }
 
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
 bool Library::declareUIComponent(ExecutionContext& context, const String& typeName, UIComponentConstructor constructor)
 {
   TypePtr type = typeManager().getType(context, typeName);
@@ -290,7 +292,7 @@ juce::Component* Library::createUIComponentIfExists(ExecutionContext& context, c
   }
   return NULL;
 }
-#endif
+#endif // LBCPP_USER_INTERFACE
 
 void Library::getTypesInheritingFrom(TypePtr baseType, std::vector<TypePtr>& res) const
 {

@@ -11,9 +11,9 @@ GENERATE_INTROSPECTION_CODE(Frame/ProteinFrameLibrary.xml ProteinFrameLibrary.cp
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
 
-IF(LBCPP_UI)
+IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
-ENDIF(LBCPP_UI)
+ENDIF(LBCPP_USER_INTERFACE)
 
 GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
 
@@ -126,7 +126,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
 
-IF(LBCPP_UI)
+IF(LBCPP_USER_INTERFACE)
   SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
     UserInterface/MultiSequenceComponent.h
     UserInterface/MultiProtein1DComponent.h
@@ -136,7 +136,7 @@ IF(LBCPP_UI)
     UserInterface/ProteinUserInterfaceLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinUserInterfaceLibrary.cpp
   )
-ENDIF(LBCPP_UI)
+ENDIF(LBCPP_USER_INTERFACE)
 
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}

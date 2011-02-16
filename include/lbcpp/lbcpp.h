@@ -82,7 +82,7 @@
 
 # include "Optimizer/Optimizer.h"
 
-#ifdef LBCPP_UI
+#ifdef LBCPP_USER_INTERFACE
 # include "UserInterface/UserInterfaceManager.h"
 #endif
 
