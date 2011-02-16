@@ -1,4 +1,4 @@
-
+#if 0
 #ifndef LBCPP_DECISION_TREE_R_TREE_INFERENCE_LEARNER_H_
 # define LBCPP_DECISION_TREE_R_TREE_INFERENCE_LEARNER_H_
 
@@ -25,3 +25,4 @@ extern InferencePtr rTreeInferenceLearner();
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DECISION_TREE_R_TREE_INFERENCE_LEARNER_H_
+#endif

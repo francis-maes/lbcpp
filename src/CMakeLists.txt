@@ -45,6 +45,7 @@ GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -70,7 +71,7 @@ GENERATE_INTROSPECTION_CODE(NumericalLearning/Inference/NumericalLearningInferen
 GENERATE_INTROSPECTION_CODE(NumericalLearning/BatchLearner/NumericalLearningBatchLearnerLibrary.xml NumericalLearningBatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(NumericalLearning/OnlineLearner/NumericalLearningOnlineLearnerLibrary.xml NumericalLearningOnlineLearnerLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(DecisionTree/OldDecisionTreeLibrary.xml OldDecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(DecisionTree/Inference/DecisionTreeInferenceLibrary.xml DecisionTreeInferenceLibrary.cpp)
 ### <- old
 
@@ -425,6 +426,14 @@ SET(LBCPP_LEARNING_NUMERICAL_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
 )
 
+SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
+  Learning/DecisionTree/RTreeFunction.h
+  Learning/DecisionTree/RTreeFunction.cpp
+  Learning/DecisionTree/RTreeBatchLearner.h
+  Learning/DecisionTree/DecisionTreeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
+)
+
 #### Optimizer ####
 
 SET(LBCPP_OPTIMIZER_SOURCES
@@ -655,8 +664,8 @@ SET(LBCPP_DECISION_TREE_SOURCES
   ../include/lbcpp/DecisionTree/RTreeInference.h
   DecisionTree/RTreeInference.cpp
   DecisionTree/RTreeInferenceLearner.h
-  DecisionTree/DecisionTreeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/DecisionTreeLibrary.cpp
+  DecisionTree/OldDecisionTreeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OldDecisionTreeLibrary.cpp
 )
 
 SET(LBCPP_DECISION_TREE_INFERENCE_SOURCES
@@ -808,6 +817,7 @@ SET(LBCPP_CORE
     ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES}
     ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES}
     ${LBCPP_LEARNING_NUMERICAL_SOURCES}
+    ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
 
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
@@ -899,6 +909,7 @@ SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
 SOURCE_SUB_GROUP(Learning OnlineLearner FILES ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Learning BatchLearner FILES ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
+SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})

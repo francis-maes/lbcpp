@@ -1,7 +1,15 @@
-#if 0
-//#include <lbcpp/Core/Variable.h>
-#include <lbcpp/DecisionTree/RTreeInference.h>
-#include "RTreeInferenceLearner.h"
+/*-----------------------------------------.---------------------------------.
+| Filename: RTreeFunction.cpp              | Wrapper of ExtraTrees           |
+| Author  : Julien Becker                  | implemented by Pierre Geurts    |
+| Started : 16/02/2011 13:13               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
+#include "RTreeFunction.h"
+#include "RTreeBatchLearner.h"
+#include <lbcpp/Core/ReferenceCountedObject.h>
+#include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/Distribution/DiscreteDistribution.h>
 #include <lbcpp/Distribution/DistributionBuilder.h>
 
@@ -11,13 +19,13 @@
 static void rtree_update_progression(size_t);
 static void context_result(const String&, double);
 
-#include "../Learning/DecisionTree/RTree/tree-model.h"
-#include "../Learning/DecisionTree/RTree/tree-model.c"
-#include "../Learning/DecisionTree/RTree/tree-density.c"
-#include "../Learning/DecisionTree/RTree/tree-kernel.c"
-#include "../Learning/DecisionTree/RTree/f-table.c"
-#include "../Learning/DecisionTree/RTree/tree-ok3.c"
-#include "../Learning/DecisionTree/RTree/tree-multiregr.c"
+#include "RTree/tree-model.h"
+#include "RTree/tree-model.c"
+#include "RTree/tree-density.c"
+#include "RTree/tree-kernel.c"
+#include "RTree/f-table.c"
+#include "RTree/tree-ok3.c"
+#include "RTree/tree-multiregr.c"
 
 
 CORETABLE_TYPE *core_table_y = NULL;
@@ -45,7 +53,7 @@ void context_result(const String& name, double data)
 namespace lbcpp
 {
 
-class RTree
+class RTree : public Object
 {
 public:
   Variable makePrediction(ExecutionContext& context, const Variable& input, const TypePtr& outputType) const
@@ -219,19 +227,34 @@ protected:
   } treesState;
 };
 
+typedef ReferenceCountedObjectPtr<RTreeFunction> RTreeFunctionPtr;
+typedef ReferenceCountedObjectPtr<RTree> RTreePtr;
+
+extern BatchLearnerPtr rTreeBatchLearner();
+
 }; /* namespace lbcpp */
 
 /*
 ** RTreeInference
 */
-RTreeInference::RTreeInference(const String& name, PerceptionPtr perception, size_t numTrees,
-                               size_t numAttributeSamplesPerSplit, size_t minimumSizeForSplitting)
-  : Inference(name), perception(perception), numTrees(numTrees), 
-    numAttributeSamplesPerSplit(numAttributeSamplesPerSplit), minimumSizeForSplitting(minimumSizeForSplitting)
-  {setBatchLearner(rTreeInferenceLearner());}
 
-Variable RTreeInference::computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
-  {return trees ? trees->makePrediction(context, perception->computeFunction(context, input), getOutputType(getInputType())) : Variable::missingValue(getOutputType(getInputType()));}
+RTreeFunction::RTreeFunction(size_t numTrees,
+                             size_t numAttributeSamplesPerSplit,
+                             size_t minimumSizeForSplitting)
+  : numTrees(numTrees), 
+    numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
+    minimumSizeForSplitting(minimumSizeForSplitting)
+  {
+    parametersClass = objectClass;
+    setBatchLearner(rTreeBatchLearner());
+  }
+
+Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  if (!parameters)
+    Variable::missingValue(getOutputType());
+  return parameters.staticCast<RTree>()->makePrediction(context, inputs[0], getOutputType());
+}
 
 /*
 ** RTreeInferenceLearner
@@ -262,40 +285,44 @@ void exportData(ExecutionContext& context)
   context.informationCallback(T("RTreeInferenceLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
 }
 
-Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
-                                                 const Variable& input,
-                                                 const Variable& supervision) const
+FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   ScopedLock _(learnerLock);
-  InferenceBatchLearnerInputPtr learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>();
-  jassert(learnerInput);
-  RTreeInferencePtr inference = learnerInput->getTargetInference();
-  jassert(inference);
-  PerceptionPtr perception = inference->getPerception();
-  
+  RTreeFunctionPtr rTreeFunction = function.dynamicCast<RTreeFunction>();
+  jassert(rTreeFunction);
+
+  if (!trainingData.size())
+  {
+    RTreePtr trees = new RTree();
+    trees->saveTreesState();
+    rTreeFunction->setTrees(trees);
+    return function;
+  }
+
+  size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
   // Filtre les données sans supervision
+  size_t n = trainingData.size();
   std::vector<size_t> examples;
-  examples.reserve(learnerInput->getNumTrainingExamples());
-  for (size_t i = 0; i < learnerInput->getNumTrainingExamples(); ++i)
-    if (learnerInput->getTrainingExample(i).second.exists())
+  examples.reserve(n);
+  for (size_t i = 0; i < n; ++i)
+    if (trainingData[i]->getVariable(supervisionIndex).exists()) // FIXME: Add Object::getLastVariable()
       examples.push_back(i);
 
-  size_t nmin = inference->getMinimumSizeForSplitting();
-  context.resultCallback(T("Num Attributes"), perception->getNumOutputVariables());
-  context.resultCallback(T("K"), inference->getNumAttributeSamplesPerSplit());
-  context.resultCallback(T("nmin"), nmin);
+  context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables());
+  context.resultCallback(T("K"), rTreeFunction->getNumAttributeSamplesPerSplit());
+  context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
   context.resultCallback(T("Num Examples"), examples.size());
   
   set_print_result(0, 0);
   goal_type = MULTIREGR;
   goal = MULTIREGR;
-  nb_attributes = perception->getNumOutputVariables();
+  nb_attributes = function->getInputsClass()->getNumMemberVariables();
   nb_obj_in_core_table = examples.size();
   
   core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_attributes * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
-    ObjectPtr obj = perception->computeFunction(context, learnerInput->getTrainingExample(examples[i]).first).getObject();
+    ObjectPtr obj = trainingData[examples[i]]->getVariable(0).getObject(); // training inputs
     jassert(obj->getNumVariables() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
@@ -313,14 +340,13 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
       else {
         jassertfalse;
       }
-
       core_table[nb_obj_in_core_table * j + i] = value;
     }
   }
 
   length_attribute_descriptors = nb_attributes;
   attribute_descriptors = (int*)MyMalloc((size_t)nb_attributes * sizeof(int));
-  TypePtr inputType = perception->getOutputType();
+  TypePtr inputType = function->getInputsClass();
   for (size_t i = 0; i < (size_t)nb_attributes; ++i)
   {
     TypePtr attrType = inputType->getMemberVariableType(i);
@@ -362,12 +388,12 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
     object_weight[i] = 1.0;
   
-  TypePtr outputType = inference->getOutputType(inference->getInputType());
+  TypePtr outputType = rTreeFunction->getOutputType();
   nb_goal_multiregr = outputType->inheritsFrom(enumValueType) ? outputType.dynamicCast<Enumeration>()->getNumElements() : 1;
   core_table_y = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_goal_multiregr * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
-    Variable objVariable = learnerInput->getTrainingExample(examples[i]).second;
+    Variable objVariable = trainingData[examples[i]]->getVariable(supervisionIndex);
     if (nb_goal_multiregr == 1)
     {
       CORETABLE_TYPE value;
@@ -396,15 +422,15 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   
   getobjy_multiregr_learn = getobjy_multiregr_learn_matlab;
 
-  init_multiregr_trees(nmin, 0.0, 1.0,/*savepred*/1);
+  init_multiregr_trees(rTreeFunction->getMinimumSizeForSplitting(), 0.0, 1.0,/*savepred*/1);
   set_test_classical();
   set_best_first(/*bestfirst*/0, 0, /*maxnbsplits*/5);
   
   set_find_a_threshold_num_function_multiregr(3,1);
   set_find_a_threshold_symb_function_multiregr(1);
-  set_find_a_test_function(6, 10.0, inference->getNumAttributeSamplesPerSplit(), inference->getNumAttributeSamplesPerSplit());
+  set_find_a_test_function(6, 10.0, rTreeFunction->getNumAttributeSamplesPerSplit(), rTreeFunction->getNumAttributeSamplesPerSplit());
   
-  set_ensemble_method_parameters(/*method*/0, inference->getNumTrees(), 1, 0, 1, 0, 0, 1.0, z_max);
+  set_ensemble_method_parameters(/*method*/0, rTreeFunction->getNumTrees(), 1, 0, 1, 0, 0, 1.0, z_max);
 
   set_sorting_variant(LOCAL_SORT);
   init_sorting_method();
@@ -421,12 +447,12 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   clean_all_trees();
   /* construction de l'ensemble d'arbres */
   rtree_context = &context;
-  rtree_progress = new ProgressionState(0, inference->getNumTrees(), "Trees");
+  rtree_progress = new ProgressionState(0, rTreeFunction->getNumTrees(), "Trees");
   build_one_tree_ensemble(NULL, 0);
   
   RTreePtr trees = new RTree();
   trees->saveTreesState();
-  inference->setTrees(trees);
+  rTreeFunction->setTrees(trees);
 
   /* Libération de la mémoire */
   MyFreeAndNull(attribute_vector);
@@ -444,6 +470,5 @@ Variable RTreeInferenceLearner::computeInference(ExecutionContext& context,
   MyFreeAndNull(save_ensemble_ls_weight);
   MyFreeAndNull(core_table);
 
-  return Variable();
+  return function;
 }
-#endif

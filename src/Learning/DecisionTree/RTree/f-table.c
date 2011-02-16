@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_TABLE_C
+# define FILE_TREE_TABLE_C
+
 /* pour faire un f-test en regression */
 
 /* tables reprises de http://www.stat.auckland.ac.nz/~wild/ChanceEnc/ */
@@ -162,3 +165,5 @@ float f_test_threshold(int df1, int df2, float a) {
   }
   return 0.f;
 }
+
+#endif //!FILE_TREE_TABLE_C

@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_KERNEL_C
+# define FILE_TREE_KERNEL_C
+
 /*
  * Author: Pierre Geurts (p.geurts@ulg.ac.be)
  *
@@ -684,3 +687,5 @@ DllExport float ensemble_true_similarity_att(float x1, float x2, float y1, float
 
   return ensemble_true_similarity(0,1);
 }
+
+#endif //!FILE_TREE_KERNEL_C

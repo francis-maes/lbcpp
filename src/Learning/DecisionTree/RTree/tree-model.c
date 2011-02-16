@@ -1,3 +1,7 @@
+
+#ifndef FILE_TREE_MODEL_C
+# define FILE_TREE_MODEL_C
+
 #ifdef WIN32
 # pragma warning(disable:4244) // warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
 # pragma warning(disable:4305) // warning C4305: 'initializing' : truncation from 'double' to 'float'
@@ -8070,3 +8074,5 @@ DllExport void apply_current_oneltrees_obj_clas(int tree, int obj, float *vector
 */
 
 }
+
+#endif //!FILE_TREE_MODEL_C

@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_DENSITY_C
+# define FILE_TREE_DENSITY_C
+
 /*
  * Author: Pierre Geurts (p.geurts@ulg.ac.be)
  *
@@ -327,3 +330,5 @@ DllExport int apply_current_ltrees_obj_clas_unknown(int obj, float *vector) {
   */
   return best_class;
 }
+
+#endif //!FILE_TREE_DENSITY_C

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="DecisionTree" directory="Learning/DecisionTree">
+
+  <class name="RTreeFunction" base="LearnableFunction">
+    <variable type="PositiveInteger" name="numTrees"/>
+    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
+    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
+  </class>
+  
+  <class name="ClassificationRTreeFunction" base="RTreeFunction"/>
+  <class name="RegressionRTreeFunction" base="RTreeFunction"/>
+  <class name="BinaryRTreeFunction" base="RTreeFunction"/>
+  
+  <class name="RTreeBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+  
+</library>

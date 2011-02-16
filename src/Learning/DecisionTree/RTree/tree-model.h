@@ -1,4 +1,7 @@
 
+#ifndef FILE_TREE_MODEL_H
+# define FILE_TREE_MODEL_H
+
 /* MACRO, CONSTANTES */
 
 #define VALUE_PI 3.141592653589793
@@ -292,3 +295,5 @@ float getobjy_2dim(int obj);
 void set_core_table_value(float val, int obj, int att);
 void set_core_table_value_2dim(float val, int obj, int att);
 #endif
+
+#endif //!FILE_TREE_MODEL_H
