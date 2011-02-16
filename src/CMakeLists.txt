@@ -165,6 +165,7 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
+  Data/Stream/RegressionDataTextParser.h
   Data/Stream/ClassificationDataTextParser.h
   Data/Stream/MultiLabelClassificationDataTextParser.h
   Data/Stream/SaveToFileConsumer.h

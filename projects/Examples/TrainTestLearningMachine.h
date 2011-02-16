@@ -130,6 +130,25 @@ public:
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
 };
 
+
+class RegressionProblem : public LearningProblem
+{
+public:
+  RegressionProblem() : features(new DefaultEnumeration(T("Features"))) {}
+
+  virtual String toString() const
+    {return T("Regression");}
+
+  virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
+    {return regressionDataTextParser(context, file, features);}
+
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return regressionErrorEvaluator(T("regression"));}
+
+protected:
+  DefaultEnumerationPtr features;
+};
+
 class BinaryClassificationProblem : public LearningProblem
 {
 public:
@@ -218,7 +237,9 @@ protected:
 
 LearningProblemPtr LearningProblem::createFromString(ExecutionContext& context, const String& stringValue)
 {
-  if (stringValue == T("MultiClass"))
+  if (stringValue == T("Regression"))
+    return new RegressionProblem();
+  else if (stringValue == T("MultiClass"))
     return new MultiClassClassificationProblem();
   else if (stringValue == T("MultiLabel"))
     return new MultiLabelClassificationProblem();
@@ -238,7 +259,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    if (!learningProblem || !learningMachine)
+    if (!learningProblem)
       return false;
 
     context.enterScope(T("Loading Data"));

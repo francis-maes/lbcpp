@@ -46,6 +46,7 @@
     </code>
   </class>
 
+  <class name="RegressionProblem" base="LearningProblem"/>
   <class name="BinaryClassificationProblem" base="LearningProblem"/>
   <class name="MultiClassClassificationProblem" base="LearningProblem"/>
   <class name="MultiLabelClassificationProblem" base="LearningProblem"/>

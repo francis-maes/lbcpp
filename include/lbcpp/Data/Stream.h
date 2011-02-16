@@ -401,6 +401,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LearningDataTextParser> LearningDataTextParserPtr;
 
+extern LearningDataTextParserPtr regressionDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
 extern LearningDataTextParserPtr binaryClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features);
 extern LearningDataTextParserPtr classificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 extern LearningDataTextParserPtr multiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
