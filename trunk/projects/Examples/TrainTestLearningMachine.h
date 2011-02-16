@@ -228,10 +228,10 @@ public:
     context.enterScope(T("Loading Data"));
     context.enterScope(T("Training Data"));
     ContainerPtr trainingData = loadData(context, learningProblem, trainingFile);
-    context.leaveScope(String(trainingData ? trainingData->getNumElements() : 0) + T(" examples"));
+    context.leaveScope(String((int)(trainingData ? trainingData->getNumElements() : 0)) + T(" examples"));
     context.enterScope(T("Testing Data"));
     ContainerPtr testingData = loadData(context, learningProblem, testingFile);
-    context.leaveScope(String(testingData ? testingData->getNumElements() : 0) + T(" examples"));
+    context.leaveScope(String((int)(testingData ? testingData->getNumElements() : 0)) + T(" examples"));
     bool loadingOk = trainingData && testingData;
     context.leaveScope(loadingOk);
     if (!loadingOk)
