@@ -91,12 +91,12 @@
     <variable type="File" name="dsspFile" description="DSSP file" shortName="dssp"/>
     <variable type="File" name="outputProteinFile" description="Output file" shortName="o"/>
   </class>
-  
+
   <class name="ConvertPDBToProteinWorkUnit" base="WorkUnit">
     <variable type="File" name="inputFile" description="The PDB (resp. Protein) input file" shortName="in"/>
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
-  
+
   <!-- SandBox -->
   <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
     <variable type="Double" name="logLearningRate" shortName="a"/>
@@ -108,6 +108,11 @@
 
   <class name="ComputeProteinFeaturesSandBox" base="WorkUnit">
     <variable type="File" name="dataDirectory" shortName="d"/>
+  </class>
+
+  <!-- BricoBox -->
+  <class name="CheckDisulfideBondsWorkUnit" base="WorkUnit">
+    <variable type="File" name="proteinDirectory"/>
   </class>
 
 </library>

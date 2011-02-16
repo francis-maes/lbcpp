@@ -120,6 +120,8 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/LearningParameter.h
   WorkUnit/ParameteredProteinInferenceFactory.h
   WorkUnit/ParameteredProteinInferenceFactory.cpp
+  WorkUnit/BricoBox.h
+  WorkUnit/BricoBox.cpp
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
