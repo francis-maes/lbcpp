@@ -10,6 +10,7 @@
 
   <class name="StochasticBatchLearner" base="BatchLearner">
     <constructor arguments="const std::vector&lt;FunctionPtr&gt;&amp; functionsToLearn, size_t maxIterations, bool randomizeExamples"/>
+    <constructor arguments="size_t maxIterations, bool randomizeExamples"/>
     <variable type="PositiveInteger" name="maxIterations"/>
     <variable type="Boolean" name="randomizeExamples"/>
   </class>

@@ -24,6 +24,7 @@
 namespace lbcpp
 {
 
+#if 0
 /*
 ** LearningMachineFamily
 */
@@ -86,19 +87,23 @@ public:
   virtual InferencePtr createMultiClassClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
     {return classificationExtraTreeInference(T("Classifier"), perception, labels, 100, 10, 0);}
 };
+#endif // 0
 
 /*
 ** LearningProblem
 */
+class LearningProblem;
+typedef ReferenceCountedObjectPtr<LearningProblem> LearningProblemPtr;
+
 class LearningProblem : public Object
 {
 public:
+  static LearningProblemPtr createFromString(ExecutionContext& context, const String& stringValue);
+
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file) = 0;
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
+  //virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
 };
-
-typedef ReferenceCountedObjectPtr<LearningProblem> LearningProblemPtr;
 
 class MultiClassClassificationProblem : public LearningProblem
 {
@@ -107,12 +112,12 @@ public:
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, inputClass.get(), outputLabels);}
-
+/*
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
     PerceptionPtr perception = addUnitFeatures(inputClass);
     return learningMachineFamily->createMultiClassClassifier(perception, outputLabels, arguments);
-  }
+  }*/
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return classificationAccuracyEvaluator();}
@@ -122,6 +127,7 @@ protected:
   EnumerationPtr outputLabels;
 };
 
+#if 0
 class StackedSequentialInference : public VectorSequentialInference
 {
 public:
@@ -145,6 +151,7 @@ public:
   virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
     {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : new Pair(state->getInput(), state->getSubOutput()), state->getSupervision());}
 };
+#endif // 0
 
 class MultiLabelClassificationProblem : public LearningProblem
 {
@@ -158,7 +165,7 @@ public:
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationDataTextParser(context, file, inputClass.get(), outputLabels);}
-
+/*
   virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
   {
     PerceptionPtr firstStackPerception = identityPerception(inputClass);
@@ -173,7 +180,7 @@ public:
       nextStacksModel = preProcessInference(nextStacksModel, nextStacksPerception);
       return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
     }
-  }
+  }*/
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return multiLabelClassificationEvaluator();}
@@ -184,6 +191,19 @@ protected:
   ClassPtr outputClass; 
 };
 
+LearningProblemPtr LearningProblem::createFromString(ExecutionContext& context, const String& stringValue)
+{
+  if (stringValue == T("MultiClass"))
+    return new MultiClassClassificationProblem();
+  else if (stringValue == T("MultiLabel"))
+    return new MultiLabelClassificationProblem();
+  else
+  {
+    context.warningCallback(T("Unknown learning problem type: ") + stringValue);
+    return LearningProblemPtr();
+  }
+}
+
 class TrainTestLearningMachine : public WorkUnit
 {
 public:
@@ -191,9 +211,9 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    LearningProblemPtr learningProblem = createLearningProblem(context);
-    LearningMachineFamilyPtr learningMachineFamily = createLearningMachineFamily(context);
-    if (!learningProblem || !learningMachineFamily)
+    //LearningProblemPtr learningProblem = createLearningProblem(context);
+    //LearningMachineFamilyPtr learningMachineFamily = createLearningMachineFamily(context);
+    if (!learningProblem)// || !learningMachineFamily)
       return false;
 
     context.enterScope(T("Loading Data"));
@@ -208,6 +228,7 @@ public:
     if (!loadingOk)
       return false;
   
+#if 0
     // create learning machine
     InferencePtr inference = learningProblem->createInference(context, learningMachineFamily, numStacks, methodToUse);
     if (!inference)
@@ -217,7 +238,7 @@ public:
     if (!inference->train(context, trainingData, ContainerPtr(), T("Training")))
       return false;
 
-    // tmp ! inference 
+    // tmp: inference 
     context.resultCallback(T("inference"), inference);
 
     // evaluate on training data
@@ -227,6 +248,7 @@ public:
     // evaluate on testing data
     if (!inference->evaluate(context, testingData, learningProblem->createEvaluator(context), T("Evaluate on testing data")))
       return false;
+#endif // 0
 
     return true;
   }
@@ -234,8 +256,7 @@ public:
 protected:
   friend class TrainTestLearningMachineClass;
 
-  size_t learningProblem;
-  size_t learningMachineFamily;
+  LearningProblemPtr learningProblem;
   size_t numStacks;
   String methodToUse;
   File trainingFile;
@@ -266,12 +287,12 @@ protected:
     static const juce::tchar* classNames[] = {T("MultiClassClassificationProblem"), T("MultiLabelClassificationProblem")};
     return createObjectFromEnum(context, learningProblem, classNames).staticCast<LearningProblem>();
   }
-
+/*
   LearningMachineFamilyPtr createLearningMachineFamily(ExecutionContext& context) const
   {
     static const juce::tchar* classNames[] = {T("LinearLearningMachineFamily"), T("ExtraTreeLearningMachineFamily")};
     return createObjectFromEnum(context, learningMachineFamily, classNames).staticCast<LearningMachineFamily>();
-  }
+  }*/
 
   static ObjectPtr createObjectFromEnum(ExecutionContext& context, size_t enumValue, const juce::tchar* classNames[])
   {

@@ -27,6 +27,8 @@ public:
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize) {return false;} // returns true if learning is finished
 
   virtual void finishLearning() {}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 OnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion);

@@ -94,6 +94,9 @@ typedef ReferenceCountedObjectPtr<DenseGenericObject> DenseGenericObjectPtr;
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 
+class CompositeFunction;
+typedef ReferenceCountedObjectPtr<CompositeFunction> CompositeFunctionPtr;
+
 class Frame;
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 

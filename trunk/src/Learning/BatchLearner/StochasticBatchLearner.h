@@ -24,6 +24,8 @@ class StochasticBatchLearner : public BatchLearner
 public:
   StochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations, bool randomizeExamples)
     : functionsToLearn(functionsToLearn), maxIterations(maxIterations), randomizeExamples(randomizeExamples) {}
+  StochasticBatchLearner(size_t maxIterations, bool randomizeExamples)
+    : maxIterations(maxIterations), randomizeExamples(randomizeExamples) {}
 
   StochasticBatchLearner() {}
 
@@ -33,8 +35,20 @@ public:
   virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     CompositeOnlineLearnerPtr compositeOnlineLearner = new CompositeOnlineLearner();
-    for (size_t i = 0; i < functionsToLearn.size(); ++i)
-      compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+    if (functionsToLearn.size())
+    {
+      // functions to learn are explicitly declared
+      for (size_t i = 0; i < functionsToLearn.size(); ++i)
+        compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+    }
+    else
+    {
+      // all sub-functions that have an online learner must be learned
+      std::vector<FunctionPtr> functionsToLearner;
+      getAllFunctionsThatHaveAnOnlineLearner(function, functionsToLearner);
+      for (size_t i = 0; i < functionsToLearn.size(); ++i)
+        compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+    }
 
     for (size_t i = 0; compositeOnlineLearner->getNumLearners() && (!maxIterations || i < maxIterations); ++i)
     {
@@ -57,6 +71,20 @@ protected:
   size_t maxIterations;
   bool randomizeExamples;
   
+  static void getAllFunctionsThatHaveAnOnlineLearner(const FunctionPtr& function, std::vector<FunctionPtr>& res)
+  {
+    if (function->hasOnlineLearner())
+      res.push_back(function);
+    
+    CompositeFunctionPtr compositeFunction = function.dynamicCast<CompositeFunction>();
+    size_t n = compositeFunction->getNumSubFunctions();
+    for (size_t i = 0; i < n; ++i)
+    {
+      const FunctionPtr& subFunction = compositeFunction->getSubFunction(i);
+      getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
+    }
+  }
+
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const
   {
     onlineLearner->startEpisode();

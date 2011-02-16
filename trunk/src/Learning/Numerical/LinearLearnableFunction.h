@@ -39,7 +39,7 @@ public:
     parametersClass = denseDoubleVectorClass(featuresEnumeration);
     outputName = T("prediction");
     outputShortName = T("p");
-    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, refCountedPointerFromThis(this))));
+    setBatchLearner(stochasticBatchLearner());
     return doubleType;
   }
 
@@ -76,6 +76,8 @@ public:
 
     return true;
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 }; /* namespace lbcpp */

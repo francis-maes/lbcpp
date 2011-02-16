@@ -160,3 +160,30 @@ Variable Frame::getOrComputeVariable(size_t index)
 
 Variable Frame::getVariable(size_t index) const
   {return const_cast<Frame* >(this)->getOrComputeVariable(index);}
+
+/*
+** FrameBasedFunction
+*/
+TypePtr FrameBasedFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+{
+  jassert(frameClass);
+  for (size_t i = 0; i < frameClass->getNumMemberVariables(); ++i)
+  {
+    FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(i).dynamicCast<FrameOperatorSignature>();
+    if (signature)
+      subFunctions.push_back(signature->getFunction());
+  }
+
+  VariableSignaturePtr lastMemberVariable = frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);
+  outputName = lastMemberVariable->getName();
+  outputShortName = lastMemberVariable->getShortName();
+  return lastMemberVariable->getType();
+}
+
+Variable FrameBasedFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  FramePtr frame(new Frame(frameClass));
+  for (size_t i = 0; i < getNumInputs(); ++i)
+    frame->setVariable(i, inputs[i]);
+  return frame->getVariable(frameClass->getNumMemberVariables() - 1);
+}

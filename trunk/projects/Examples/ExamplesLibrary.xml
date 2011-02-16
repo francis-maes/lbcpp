@@ -29,15 +29,24 @@
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
   <!-- Train/Test Learning Machine -->
+  <!-- 
   <enumeration name="LearningProblemEnum">
     <value name="MultiClass"/>
     <value name="MultiLabel"/>
   </enumeration>
+  -->
 
-  <class name="LearningProblem" abstract="yes"/>
+  <class name="LearningProblem" abstract="yes">
+    <code>
+      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return LearningProblem::createFromString(context, value);}
+    </code>
+  </class>
+
   <class name="MultiClassClassificationProblem" base="LearningProblem"/>
   <class name="MultiLabelClassificationProblem" base="LearningProblem"/>
   
+  <!--  
   <enumeration name="LearningMachineFamilyEnum">
     <value name="Linear"/>
     <value name="ExtraTree"/>
@@ -46,12 +55,13 @@
   <class name="LearningMachineFamily" abstract="yes"/>
   <class name="LinearLearningMachineFamily" base="LearningMachineFamily"/>
   <class name="ExtraTreeLearningMachineFamily" base="LearningMachineFamily"/>
-
+  
   <class name="StackedSequentialInference" base="VectorSequentialInference"/>
+  -->
 
   <class name="TrainTestLearningMachine" base="WorkUnit">
-    <variable type="LearningProblemEnum" name="learningProblem" shortName="t"/>
-    <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/>
+    <variable type="LearningProblem" name="learningProblem" shortName="t"/>
+    <!-- <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/> -->
     <variable type="PositiveInteger" name="numStacks" shortName="stack"/>
     <variable type="String" name="methodToUse" shortName="m"/>
     <variable type="File" name="trainingFile" shortName="train"/>
