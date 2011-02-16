@@ -1,7 +1,4 @@
 
-* Function::evaluate et Function::train, arguments optionel "scopeName"
-* Faire marcher le TrainTestLearningMachine sur la classification binaire
-
 * MultiLinearLearnableFunction
 * MaxentMultiClassClassifier, LinearSVMMultiClassClassifier, 
 
