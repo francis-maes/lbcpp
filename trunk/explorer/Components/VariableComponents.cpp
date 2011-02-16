@@ -53,7 +53,7 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
       return createComponentForObject(context, loadedContainer, explicitName);
     }
   
-    if (!elementsType->isNamedType())
+    if (!elementsType->isNamedType() && elementsType->getNumMemberVariables() > 1)
       return userInterfaceManager().createContainerTableListBox(context, container);
     else
       return new ContainerSelectorComponent(container);

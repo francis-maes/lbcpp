@@ -1,7 +1,3 @@
-* Learner pour les CompositeFunctions (notemment pour la ApplyFunctionOnContainer)
-* Objectif: Faire marcher TrainTestLearningMachine avec les LearnableFunction
-* Objectif: Refaire le SandBox avec les LearnableFunction
-* Remplacer les types dans Protein
 
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I

@@ -87,7 +87,32 @@ public:
   virtual InferencePtr createMultiClassClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
     {return classificationExtraTreeInference(T("Classifier"), perception, labels, 100, 10, 0);}
 };
+
+class StackedSequentialInference : public VectorSequentialInference
+{
+public:
+  StackedSequentialInference(InferencePtr firstStack, InferencePtr nextStacksModel, size_t numStacks)
+    : VectorSequentialInference(T("Stacked"))
+  {
+    jassert(numStacks >= 1);
+    subInferences.resize(numStacks);
+    subInferences[0] = firstStack;
+    for (size_t i = 1; i < numStacks; ++i)
+      subInferences[i] = nextStacksModel->cloneAndCast<Inference>();
+  }
+  StackedSequentialInference() {}
+
+  virtual TypePtr getInputType() const
+    {return subInferences[0]->getInputType();}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return subInferences.back()->getOutputType(pairClass(getInputType(), subInferences[0]->getOutputType(inputType)));}
+
+  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
+    {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : new Pair(state->getInput(), state->getSubOutput()), state->getSupervision());}
+};
 #endif // 0
+
 
 /*
 ** LearningProblem
@@ -103,6 +128,24 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file) = 0;
   //virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
+};
+
+class BinaryClassificationProblem : public LearningProblem
+{
+public:
+  BinaryClassificationProblem() : features(new DefaultEnumeration(T("Features"))) {}
+
+  virtual String toString() const
+    {return T("Binary");}
+
+  virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
+    {return binaryClassificationDataTextParser(context, file, features);}
+
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return binaryClassificationConfusionEvaluator(T("binary"));}
+
+protected:
+  DefaultEnumerationPtr features;
 };
 
 class MultiClassClassificationProblem : public LearningProblem
@@ -173,39 +216,14 @@ protected:
   ClassPtr outputClass; 
 };
 
-#if 0
-class StackedSequentialInference : public VectorSequentialInference
-{
-public:
-  StackedSequentialInference(InferencePtr firstStack, InferencePtr nextStacksModel, size_t numStacks)
-    : VectorSequentialInference(T("Stacked"))
-  {
-    jassert(numStacks >= 1);
-    subInferences.resize(numStacks);
-    subInferences[0] = firstStack;
-    for (size_t i = 1; i < numStacks; ++i)
-      subInferences[i] = nextStacksModel->cloneAndCast<Inference>();
-  }
-  StackedSequentialInference() {}
-
-  virtual TypePtr getInputType() const
-    {return subInferences[0]->getInputType();}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return subInferences.back()->getOutputType(pairClass(getInputType(), subInferences[0]->getOutputType(inputType)));}
-
-  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
-    {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : new Pair(state->getInput(), state->getSubOutput()), state->getSupervision());}
-};
-#endif // 0
-
-
 LearningProblemPtr LearningProblem::createFromString(ExecutionContext& context, const String& stringValue)
 {
   if (stringValue == T("MultiClass"))
     return new MultiClassClassificationProblem();
   else if (stringValue == T("MultiLabel"))
     return new MultiLabelClassificationProblem();
+  else if (stringValue == T("Binary"))
+    return new BinaryClassificationProblem();
   else
   {
     context.warningCallback(T("Unknown learning problem type: ") + stringValue);

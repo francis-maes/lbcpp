@@ -147,11 +147,14 @@ class VariableBrowserRowComponent : public Component, public ComponentWithPrefer
 {
 public:
   VariableBrowserRowComponent(const Variable& variable, Component* selector)
-    : variable(variable), selector(selector)
+    : variable(variable), selector(selector), resizer(NULL)
   {
+    bool isResizeable = (dynamic_cast<TabbedVariableSelectorComponent* >(selector) == NULL);
+
     addAndMakeVisible(header = new VariableBrowserRowHeaderComponent(variable, selector));
     addAndMakeVisible(selector);
-    addAndMakeVisible(resizer = new VariableBrowserResizerBar());
+    if (isResizeable)
+      addAndMakeVisible(resizer = new VariableBrowserResizerBar());
   }
 
   virtual ~VariableBrowserRowComponent()
@@ -165,10 +168,10 @@ public:
 
   virtual void resized()
   {
-    int w = getWidth() - resizerWidth;
-    header->setBounds(0, 0, w, headerHeight);
-    selector->setBounds(0, headerHeight, w, getHeight() - headerHeight);
-    resizer->setBounds(w, 0, resizerWidth, getHeight());
+    header->setBounds(0, 0, getWidth() - (resizer ? resizerWidth : 0), headerHeight);
+    selector->setBounds(0, headerHeight, getWidth() - (resizer ? resizerWidth : 2), getHeight() - headerHeight);
+    if (resizer)
+      resizer->setBounds(getWidth() - resizerWidth, 0, resizerWidth, getHeight());
   }
 
   virtual void paint(Graphics& g)
