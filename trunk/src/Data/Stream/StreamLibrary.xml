@@ -8,6 +8,10 @@
   <class name="LearningDataTextParser" base="TextParser" abstract="yes"/>
   
   <!-- Learning Data Parsers -->
+  <class name="RegressionDataTextParser" base="LearningDataTextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
+  </class>
+
   <class name="BinaryClassificationDataTextParser" base="LearningDataTextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
   </class>
