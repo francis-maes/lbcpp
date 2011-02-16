@@ -133,7 +133,7 @@ protected:
   {
     if (normalizeLearningRate && input)
     {
-      // computing the l1norm() may be long, so we make more and more sparse sampling of this quantity
+      // computing the l0norm() may be long, so we make more and more sparse sampling of this quantity
       if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
       {
         double norm = input->l0norm();

@@ -38,14 +38,34 @@ namespace lbcpp
 /*
 ** Regression Loss Functions
 */
-inline ScalarFunctionPtr squareLossFunction(double target)
+inline ScalarFunctionPtr oldSquareLossFunction(double target)
   {return squareFunction(addConstantScalarFunction(-target));}
 
-inline ScalarFunctionPtr absoluteLossFunction(double target)
+inline ScalarFunctionPtr oldAbsoluteLossFunction(double target)
   {return absFunction(addConstantScalarFunction(-target));}
 
-inline ScalarFunctionPtr dihedralAngleSquareLossFunction(double target)
+inline ScalarFunctionPtr oldDihedralAngleSquareLossFunction(double target)
   {return squareFunction(angleDifferenceScalarFunction(target));}
+
+class RegressionLossFunction : public ScalarFunction
+{
+public:
+  RegressionLossFunction(double target = 0.0)
+    : target(target) {}
+
+  double getTarget() const
+    {return target;}
+
+protected:
+  friend class RegressionLossFunctionClass;
+
+  double target;
+};
+
+typedef ReferenceCountedObjectPtr<RegressionLossFunction> RegressionLossFunctionPtr;
+
+extern RegressionLossFunctionPtr squareLossFunction();
+extern ClassPtr squareLossFunctionClass;
 
 /*
 ** Binary Classification Loss Functions

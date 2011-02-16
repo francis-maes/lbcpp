@@ -1,4 +1,11 @@
 
+ 
+ -> enlever le crash de sortie
+ -> RegressionLearningProblem
+ -> Machines lineaires pour la regression et la classification binaire
+ -> Classification OneAgainstOne, OneAgainstAll
+ -> Machines lineaire pour la classification multi-classe
+
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I
    In my case, I got a file containing "<shared identifier="PerceptionRewriter1">".
