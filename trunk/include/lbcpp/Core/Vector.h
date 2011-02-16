@@ -74,6 +74,8 @@ public:
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   std::vector<VariableValue> values;
 };
@@ -115,6 +117,8 @@ public:
   ** Object
   */
   virtual String toString() const;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   std::vector<bool> v;
@@ -164,6 +168,8 @@ public:
   std::vector<ObjectPtr>& getObjects()
     {return objects;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   std::vector<ObjectPtr> objects;
 };
@@ -197,6 +203,8 @@ public:
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   std::vector<Variable> variables;
@@ -264,6 +272,8 @@ public:
 
   void append(const ImplementationType& value)
     {values.push_back(value);}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   std::vector<ImplementationType> values;

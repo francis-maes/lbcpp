@@ -25,6 +25,8 @@ public:
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const = 0;
   virtual double getDefaultScore() const = 0;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
@@ -48,6 +50,8 @@ public:
   double getRMSE() const;
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   ScalarVariableMeanPtr absoluteError;

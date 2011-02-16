@@ -67,6 +67,41 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
 }
 #endif // JUCE_DEBUG
 
+
+static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const ObjectPtr& object, std::vector<ObjectPtr>& currentStack)
+{
+  for (size_t i = 0; i < currentStack.size(); ++i)
+    if (currentStack[i] == object)
+    {
+      String cycle;
+      for (size_t j = i; j < currentStack.size(); ++j)
+        cycle += currentStack[j]->getClassName() + T(" -> ");
+      cycle += object->getClassName();
+      context.errorCallback(T("Found a shared pointer cycle: ") + cycle);
+      return false;
+    }
+
+  currentStack.push_back(object);
+  size_t n = object->getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v = object->getVariable(i);
+    if (v.exists() && v.isObject())
+    {
+      if (!checkSharedPointerCyclesRecursively(context, v.getObject(), currentStack))
+        return false;
+    }
+  }
+  currentStack.pop_back();
+  return true;
+}
+
+bool ExecutionContext::checkSharedPointerCycles(const ObjectPtr& object)
+{
+  std::vector<ObjectPtr> currentStack;
+  return checkSharedPointerCyclesRecursively(*this, object, currentStack);
+}
+
 File ExecutionContext::getFile(const String& path)
 {
   if (path.isEmpty())

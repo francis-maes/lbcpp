@@ -1,6 +1,4 @@
 
- 
- -> enlever le crash de sortie
  -> RegressionLearningProblem
  -> Machines lineaires pour la regression et la classification binaire
  -> Classification OneAgainstOne, OneAgainstAll

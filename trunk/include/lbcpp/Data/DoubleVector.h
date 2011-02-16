@@ -64,6 +64,8 @@ public:
   
   void subtractFrom(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, -1.0);}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr doubleVectorClass(TypePtr elementsEnumeration = enumValueType, TypePtr elementsType = doubleType);
@@ -109,6 +111,8 @@ public:
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
+  
+  lbcpp_UseDebuggingNewOperator
 
 private:
   std::vector< std::pair<size_t, double> > values;
@@ -167,6 +171,8 @@ public:
   // Object
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   std::vector<double>* values;
   bool ownValues;
@@ -196,6 +202,8 @@ public:
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class LazyDoubleVectorClass;
@@ -234,6 +242,8 @@ public:
   virtual void setElement(size_t index, const Variable& value);
 
   void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   std::vector< std::pair<size_t, DoubleVectorPtr> > vectors;

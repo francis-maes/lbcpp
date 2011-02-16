@@ -22,6 +22,7 @@ public:
     this->function = function;
     bestFunction = FunctionPtr();
     bestFunctionValue = DBL_MAX;
+    isLastFunctionBest = true;
   }
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
@@ -30,20 +31,28 @@ public:
     {
       bestFunction = function->cloneAndCast<Function>();
       bestFunctionValue = objectiveValueToMinimize;
+      isLastFunctionBest = true;
     }
+    else
+      isLastFunctionBest = false;
     return false;
   }
 
   virtual void finishLearning()
   {
-    if (bestFunction)
+    if (!isLastFunctionBest && bestFunction)
       bestFunction->clone(defaultExecutionContext(), function);
+    function = FunctionPtr();
+    bestFunction = FunctionPtr();
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   FunctionPtr function;
   FunctionPtr bestFunction;
   double bestFunctionValue;
+  bool isLastFunctionBest;
 };
 
 }; /* namespace lbcpp */

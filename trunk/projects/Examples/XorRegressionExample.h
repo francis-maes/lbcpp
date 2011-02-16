@@ -57,7 +57,10 @@ public:
     frameClass->addMemberVariable(context, doubleType, T("x2"));
     frameClass->addMemberVariable(context, doubleType, T("supervision"));
     frameClass->addMemberOperator(context, new XorFeatureGenerator(), 0, 1, T("features"));
-    frameClass->addMemberOperator(context, linearRegressor(), 3, 2);
+
+    StochasticGDParametersPtr params = new StochasticGDParameters();
+    params->setEvaluator(regressionErrorEvaluator(T("xor-error")));
+    frameClass->addMemberOperator(context, linearRegressor(params), 3, 2);
 
     FunctionPtr xorFunction = new FrameBasedFunction(frameClass);
     xorFunction->setBatchLearner(frameBasedFunctionBatchLearner());
@@ -91,6 +94,8 @@ public:
     Variable myPrediction = xorFunction->compute(context, 1.0, 0.0, Variable::missingValue(doubleType));
     context.resultCallback(T("prediction"), myPrediction);
 
+    context.checkSharedPointerCycles(xorFunction);
+    context.checkSharedPointerCycles(refCountedPointerFromThis(this));
     return Variable();
   }
 };

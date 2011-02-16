@@ -2,6 +2,18 @@
 
 <library name="NumericalLearning" directory="Learning/Numerical">
 
+  <!-- Learning Parameters -->
+  <class name="StochasticGDParameters" base="Object">
+    <variable type="IterationFunction" name="learningRate"/>
+    <variable type="StoppingCriterion" name="stoppingCriterion"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+    <variable type="Evaluator" name="evaluator"/>
+    <variable type="Boolean" name="doPerEpisodeUpdates"/>
+    <variable type="Boolean" name="normalizeLearningRate"/>
+    <variable type="Boolean" name="restoreBestParameters"/>
+    <variable type="Boolean" name="randomizeExamples"/>
+  </class>
+  
   <!-- Online Learner -->
   <class name="GradientDescentOnlineLearner" base="OnlineLearner" abstract="yes">
     <variable type="IterationFunction" name="learningRate"/>
@@ -17,15 +29,20 @@
     <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
 
-  <!-- Learnable Functions -->
+  <!-- Low-level Learnable Functions -->
   <class name="NumericalLearnableFunction" base="LearnableFunction" abstract="yes"/>
   
   <class name="LinearLearnableFunction" base="NumericalLearnableFunction">
     <constructor/>
   </class>
 
-  <class name="LinearRegressor" base="FrameBasedFunction">
-    <constructor returnType="Function"/>
+  <!-- High-level Learnable Functions -->
+  <class name="SupervisedNumericalFunction" base="FrameBasedFunction" abstract="yes">
+    <variable type="LearnerParameters" name="learnerParameters"/>
+  </class>
+
+  <class name="LinearRegressor" base="SupervisedNumericalFunction">
+    <constructor arguments="LearnerParametersPtr learnerParameters"/>
   </class>
 
 </library>

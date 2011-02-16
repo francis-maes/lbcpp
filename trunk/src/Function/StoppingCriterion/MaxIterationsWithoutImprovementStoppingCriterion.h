@@ -25,14 +25,14 @@ public:
     {return "MaxIterationsWithoutImprovement(" + String((int)maxIterationsWithoutImprovement) + ")";}
 
   virtual void reset()
-    {numIterationsWithoutImprovement = 0; bestValue = -DBL_MAX;}
+    {numIterationsWithoutImprovement = 0; bestValue = DBL_MAX;}
 
-  virtual bool shouldStop(double value)
+  virtual bool shouldStop(double objectiveValueToMinimize)
   {
     static const double epsilon = 1e-10;
-    if (value > bestValue + epsilon) // reject too small improvements
+    if (objectiveValueToMinimize < bestValue - epsilon) // reject too small improvements
     {
-      bestValue = value;
+      bestValue = objectiveValueToMinimize;
       numIterationsWithoutImprovement = 0;
     }
     else
@@ -52,6 +52,8 @@ public:
     res->bestValue = bestValue;
     return res;
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class MaxIterationsWithoutImprovementStoppingCriterionClass;

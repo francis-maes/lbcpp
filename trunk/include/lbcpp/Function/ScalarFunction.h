@@ -67,6 +67,8 @@ public:
 
   ScalarFunctionPtr multiplyByScalar(double scalar);
   ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr scalarFunctionClass;

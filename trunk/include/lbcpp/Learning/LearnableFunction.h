@@ -10,6 +10,8 @@
 # define LBCPP_LEARNING_LEARNABLE_FUNCTION_H_
 
 # include <lbcpp/Function/Function.h>
+# include "OnlineLearner.h"
+# include "BatchLearner.h"
 
 namespace lbcpp
 {
@@ -34,6 +36,18 @@ protected:
   ObjectPtr parameters;
   ClassPtr parametersClass;
 };
+
+class LearnerParameters : public Object
+{
+public:
+  virtual BatchLearnerPtr createBatchLearner() const
+    {return BatchLearnerPtr();}
+
+  virtual OnlineLearnerPtr createOnlineLearner() const
+    {return OnlineLearnerPtr();}
+};
+
+typedef ReferenceCountedObjectPtr<LearnerParameters> LearnerParametersPtr;
 
 }; /* namespace lbcpp */
 
