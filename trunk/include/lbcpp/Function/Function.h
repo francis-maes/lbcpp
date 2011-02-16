@@ -152,11 +152,11 @@ public:
   */
   bool checkIsInitialized(ExecutionContext& context) const;
 
-  bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr());
-  bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
+  bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
+  bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
 
-  bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const;
-  bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const;
+  bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
+  bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
 
   /*
   ** High level dynamic computation (calls callbacks and push into stack if requested)

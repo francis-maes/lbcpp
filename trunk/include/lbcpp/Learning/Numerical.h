@@ -45,7 +45,7 @@ class StochasticGDParameters : public LearnerParameters
 {
 public:
   StochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
-                          StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(10),
+                          StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
                           size_t maxIterations = 100,
                           EvaluatorPtr evaluator = EvaluatorPtr(),
                           bool doPerEpisodeUpdates = false,

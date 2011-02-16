@@ -233,14 +233,10 @@ public:
     if (!learningProblem || !learningMachine)
       return false;
 
-    // Load data
+    // load data
     context.enterScope(T("Loading Data"));
-    context.enterScope(T("Training Data"));
-    ContainerPtr trainingData = loadData(context, learningProblem, trainingFile);
-    context.leaveScope(String((int)(trainingData ? trainingData->getNumElements() : 0)) + T(" examples"));
-    context.enterScope(T("Testing Data"));
-    ContainerPtr testingData = loadData(context, learningProblem, testingFile);
-    context.leaveScope(String((int)(testingData ? testingData->getNumElements() : 0)) + T(" examples"));
+    ContainerPtr trainingData = loadData(context, learningProblem, trainingFile, T("Training Data"));
+    ContainerPtr testingData = loadData(context, learningProblem, testingFile, T("Testing Data"));
     bool loadingOk = trainingData && testingData;
     context.leaveScope(loadingOk);
     if (!loadingOk)
@@ -253,23 +249,17 @@ public:
       return false;
 
     // train
-    context.enterScope(T("Training"));
-    if (!learningMachine->train(context, trainingData))
+    if (!learningMachine->train(context, trainingData, ContainerPtr(), T("Training"), true))
       return false;
-    context.resultCallback(T("learning machine"), learningMachine);
-    context.leaveScope(true);
 
     // evaluate on training data
-    context.enterScope(T("Evaluate on training data"));
-    if (!learningMachine->evaluate(context, trainingData, learningProblem->createEvaluator(context)))//, T("Evaluate on training data")))
+    if (!learningMachine->evaluate(context, trainingData, learningProblem->createEvaluator(context), T("Evaluate on training data")))
       return false;
-    context.leaveScope(true);
-
+    
     // evaluate on testing data
-    context.enterScope(T("Evaluate on testing data"));
-    if (!learningMachine->evaluate(context, testingData, learningProblem->createEvaluator(context)))//, T("Evaluate on testing data")))
+    if (!learningMachine->evaluate(context, testingData, learningProblem->createEvaluator(context), T("Evaluate on testing data")))
       return false;
-    context.leaveScope(true);
+
     return true;
   }
 
@@ -285,21 +275,25 @@ protected:
   File testingFile;
   size_t maxExamples;
 
-  ContainerPtr loadData(ExecutionContext& context, LearningProblemPtr learningProblem, const File& file) const
+  ContainerPtr loadData(ExecutionContext& context, LearningProblemPtr learningProblem, const File& file, const String& scopeName) const
   {
+    context.enterScope(scopeName);
+
+    ContainerPtr res;
     if (!file.exists())
-    {
       context.errorCallback(T("Missing file"));
-      return ContainerPtr();
+    else
+    {
+      StreamPtr stream = learningProblem->createDataParser(context, file);
+      if (stream)
+      {
+        res = stream->load(maxExamples);
+        if (res && res->getNumElements() == 0)
+          context.warningCallback(T("No examples"));
+      }
     }
-    StreamPtr stream = learningProblem->createDataParser(context, file);
-    if (!stream)
-      return ContainerPtr();
-    ContainerPtr res = stream->load(maxExamples);
-    if (!res)
-      return ContainerPtr();
-    if (res->getNumElements() == 0)
-      context.warningCallback(T("No examples"));
+
+    context.leaveScope(String((int)(res ? res->getNumElements() : 0)) + T(" examples"));
     return res;
   }
 };

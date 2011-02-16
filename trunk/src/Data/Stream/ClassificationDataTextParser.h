@@ -21,7 +21,7 @@ class BinaryClassificationDataTextParser : public LearningDataTextParser
 public:
   BinaryClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
     : LearningDataTextParser(context, file), features(features)
-    {elementsType = pairClass(sparseDoubleVectorClass(features), probabilityType);}
+    {elementsType = pairClass(sparseDoubleVectorClass(features), booleanType);}
 
   BinaryClassificationDataTextParser() {}
 
@@ -33,11 +33,11 @@ public:
     String label = columns[0];
     jassert(label.isNotEmpty());
     juce::tchar lowerCase = juce::CharacterFunctions::toLowerCase(label[0]);
-    double supervision = (lowerCase == 'y' || lowerCase == 't' || lowerCase == '+' || lowerCase == '1') ? 1.0 : 0.0;
+    bool supervision = (lowerCase == 'y' || lowerCase == 't' || lowerCase == '+' || lowerCase == '1');
     SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
     if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, featuresVector, Variable(supervision, probabilityType)));
+    setResult(new Pair(elementsType, featuresVector, supervision));
     return true;
   }
 

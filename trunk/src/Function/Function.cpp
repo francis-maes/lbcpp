@@ -151,42 +151,74 @@ bool Function::checkIsInitialized(ExecutionContext& context) const
   return true;
 }
 
-bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData)
+bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData, const String& scopeName, bool returnLearnedFunction)
 {
-  if (!checkIsInitialized(context))
-    return false;
+  bool doScope = scopeName.isNotEmpty();
+  if (doScope)
+    context.enterScope(scopeName);
+  bool res = true;
 
-  if (!batchLearner)
+  if (!checkIsInitialized(context))
+    res = false;
+  else if (!batchLearner)
   {
     context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
-    return false;
+    res = false;
   }
-  batchLearner->compute(context, this, trainingData, validationData);
-  return true;
-}
+  else
+    res = batchLearner->compute(context, this, trainingData, validationData).getBoolean();
 
-bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
-  {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData));}
-
-bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const
-{
-  if (!checkIsInitialized(context))
-    return false;
-
-  // todo: parallel evaluation
-  size_t n = examples->getNumElements();
-  for (size_t i = 0; i < n; ++i)
+  if (doScope)
   {
-    ObjectPtr example = examples->getElement(i).getObject();
-    Variable prediction = computeWithInputsObject(context, example);
-    Variable correct = example->getVariable(example->getNumVariables() - 1);
-    evaluator->addPrediction(context, prediction, correct);
+    if (returnLearnedFunction)
+      context.resultCallback(T("learned"), refCountedPointerFromThis(this));
+    context.leaveScope(Variable());
   }
+  return res;
+}
+
+bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData, const String& scopeName, bool returnLearnedFunction)
+  {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData), scopeName, returnLearnedFunction);}
+
+bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
+{
+  bool doScope = scopeName.isNotEmpty();
+  bool res = true;
+
+  if (doScope)
+    context.enterScope(scopeName);
+
+  if (!checkIsInitialized(context))
+    res = false;
+  else
+  {
+    // todo: parallel evaluation
+    size_t n = examples->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      ObjectPtr example = examples->getElement(i).getObject();
+      Variable prediction = computeWithInputsObject(context, example);
+      Variable correct = example->getVariable(example->getNumVariables() - 1);
+      evaluator->addPrediction(context, prediction, correct);
+    }
+
+    if (doScope)
+    {
+      std::vector< std::pair<String, double> > results;
+      evaluator->getScores(results);
+      for (size_t i = 0; i < results.size(); ++i)
+        context.resultCallback(results[i].first, results[i].second);
+    }
+  }
+
+  if (doScope)
+    context.leaveScope(evaluator->getDefaultScore());
+
   return true;
 }
 
-bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const
-  {return evaluate(context, new ObjectVector(examples), evaluator);}
+bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
+  {return evaluate(context, new ObjectVector(examples), evaluator, scopeName);}
 
 String Function::toString() const
 {
