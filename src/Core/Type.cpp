@@ -164,13 +164,13 @@ bool Type::isMissingValue(const VariableValue& value) const
   return value.getInteger() == missing.getInteger();
 }
 
-VariableValue Type::create(ExecutionContext& context) const
+Variable Type::create(ExecutionContext& context) const
   {jassert(baseType); return baseType->create(context);}
 
-VariableValue Type::createFromString(ExecutionContext& context, const String& value) const
+Variable Type::createFromString(ExecutionContext& context, const String& value) const
   {jassert(baseType); return baseType->createFromString(context, value);}
 
-VariableValue Type::createFromXml(XmlImporter& importer) const
+Variable Type::createFromXml(XmlImporter& importer) const
   {jassert(baseType); return baseType->createFromXml(importer);}
 
 String Type::toString(const VariableValue& value) const

@@ -38,14 +38,14 @@ public:
   TopLevelType(const String& name)
     : Type(name, TypePtr()) {}
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return VariableValue();}
+  virtual Variable create(ExecutionContext& context) const
+    {context.errorCallback(T("Type::create"), getName() + T(" has no default constructor")); return Variable();}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
-    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return VariableValue();}
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+    {context.errorCallback(T("Type::createFromString"), T("Not implemented")); return Variable();}
 
-  virtual VariableValue createFromXml(XmlImporter& importer) const
-    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return VariableValue();}
+  virtual Variable createFromXml(XmlImporter& importer) const
+    {importer.errorMessage(T("Type::createFromXml"), T("Not implemented")); return Variable();}
 
   virtual void destroy(VariableValue& value) const
     {jassert(false);}

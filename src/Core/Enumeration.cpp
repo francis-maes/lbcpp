@@ -20,24 +20,29 @@ Enumeration::Enumeration(const String& name, const String& baseTypeName)
 ClassPtr Enumeration::getClass() const
   {return enumerationClass;}
 
-VariableValue Enumeration::create(ExecutionContext& context) const
-  {return getMissingValue();}
+Variable Enumeration::create(ExecutionContext& context) const
+  {return Variable(getNumElements(), refCountedPointerFromThis(this));}
 
 VariableValue Enumeration::getMissingValue() const
   {return VariableValue((juce::int64)getNumElements());}
 
-VariableValue Enumeration::createFromXml(XmlImporter& importer) const
+Variable Enumeration::createFromXml(XmlImporter& importer) const
   {return createFromString(importer.getContext(), importer.getAllSubText());}
  
-VariableValue Enumeration::createFromString(ExecutionContext& context, const String& value) const
+Variable Enumeration::createFromString(ExecutionContext& context, const String& value) const
 {
   String str = value.trim();
   size_t n = getNumElements();
+  size_t res = n;
   for (size_t i = 0; i < n; ++i)
     if (str == getElementName(i))
-      return VariableValue(i);
-  context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
-  return getMissingValue();
+    {
+      res = i;
+      break;
+    }
+  if (res == n)
+    context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
+  return Variable(res, refCountedPointerFromThis(this));
 }
 
 void Enumeration::saveToXml(XmlExporter& exporter, const VariableValue& value) const

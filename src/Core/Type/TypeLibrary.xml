@@ -45,16 +45,16 @@
     <variable type="TemplateType" name="templateType"/>
     <variable type="ObjectVector[Type]" name="templateArguments"/>
     <code>
-      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
-        {return VariableValue(typeManager().getType(context, value));}
+      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
+        {return Variable(typeManager().getType(context, value));}
 
-      virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+      virtual Variable createFromXml(XmlImporter&amp; importer) const
       {
         String text = importer.getAllSubText().trim();
         if (text.isNotEmpty())
           return createFromString(importer.getContext(), importer.getAllSubText());
         else
-          return VariableValue(Type::loadUnnamedTypeFromXml(importer));
+          return Type::loadUnnamedTypeFromXml(importer);
       }
     </code>
   </class>
@@ -68,20 +68,20 @@
 
   <class name="Enumeration" base="Type" abstract="yes">
     <code>
-      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
         {return Type::createFromString(context, value);}
 
-      virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+      virtual Variable createFromXml(XmlImporter&amp; importer) const
         {return Type::createFromXml(importer);}
     </code>
   </class>
 
   <class name="Class" base="Type" abstract="yes">
     <code>
-    virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+    virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
       {return Type::createFromString(context, value);}
 
-    virtual VariableValue createFromXml(XmlImporter&amp; importer) const
+    virtual Variable createFromXml(XmlImporter&amp; importer) const
       {return Type::createFromXml(importer);}
     </code>
   </class>

@@ -57,13 +57,6 @@ bool DynamicClass::initialize(ExecutionContext& context)
   return DefaultClass::initialize(context);
 }
 
-VariableValue DynamicClass::create(ExecutionContext& context) const
-{
-  VariableValue res = createDenseObject();
-  //res.getObject()->decrementReferenceCounter();
-  return res;
-}
-
 ObjectPtr DynamicClass::createDenseObject() const
 {
   jassert(getNumMemberVariables());

@@ -42,13 +42,13 @@ public:
   virtual String toShortString(const VariableValue& value) const
     {return getFile(value).getFileName();}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     File file = context.getFile(value);
     if (file == File::nonexistent)
-      return VariableValue(String::empty);
+      return Variable::missingValue(refCountedPointerFromThis(this));
     else
-      return VariableValue(file.getFullPathName());
+      return Variable(file.getFullPathName(), refCountedPointerFromThis(this));
   }
   
 private:

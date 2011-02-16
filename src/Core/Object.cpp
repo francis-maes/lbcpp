@@ -174,16 +174,7 @@ ClassPtr Object::getClass() const
 }
 
 ObjectPtr Object::create(ClassPtr objectClass)
-{
-  ObjectPtr res = objectClass->create(defaultExecutionContext()).getObject();
-  jassert(res);
-  if (res)
-  {
-    jassert(res->getReferenceCount() == 2);
-    res->decrementReferenceCounter();
-  }
-  return res;
-}
+  {return objectClass->create(defaultExecutionContext()).getObject();}
 
 size_t Object::getNumVariables() const
   {return getClass()->getNumMemberVariables();}

@@ -37,22 +37,22 @@ public:
   BooleanType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim().toLowerCase();
     if (v == T("true"))
-      return VariableValue(true);
+      return Variable(true, refCountedPointerFromThis(this));
     else if (v == T("false"))
-      return VariableValue(false);
+      return Variable(false, refCountedPointerFromThis(this));
     else
     {
       context.errorCallback(T("BooleanType::createFromString"), T("Could not read boolean value ") + value.quoted());
-      return getMissingValue();
+      return Variable::missingValue(refCountedPointerFromThis(this));
     }
   }
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue(false);}
+  virtual Variable create(ExecutionContext& context) const
+    {return Variable(false, refCountedPointerFromThis(this));}
 
   virtual void destroy(VariableValue& value) const
     {value.clearBuiltin();}
