@@ -368,9 +368,13 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromTertiaryStructure(Symmetric
 {
   static const double disulfideBondSulfurDistanceStrongThreshold = 2.25;
   static const double disulfideBondSulfurDistanceSoftThreshold = 3.0;
-
+  jassert(distanceMap);
   size_t n = distanceMap->getDimension();
   SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
+
+  if (n == 0)
+    return res;
+
   std::vector<bool> isBridged(n, false);
   /* Initialize connectivity to 0 */
   for (size_t i = 0; i < n; ++i)
