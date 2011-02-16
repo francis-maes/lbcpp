@@ -8,6 +8,7 @@
 #include <lbcpp/Function/Function.h>
 #include <lbcpp/Core/Frame.h>
 #include <lbcpp/Function/Evaluator.h>
+#include <lbcpp/Learning/BatchLearner.h>
 using namespace lbcpp;
 
 bool Function::initialize(ExecutionContext& context, TypePtr inputType)
@@ -140,12 +141,8 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
   return true;
 }
 
-static void evaluateFunctionOnExample(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& example, const EvaluatorPtr& evaluator)
-{
-  Variable prediction = function->computeWithInputsObject(context, example);
-  Variable correct = example->getVariable(example->getNumVariables() - 1);
-  evaluator->addPrediction(context, prediction, correct);
-}
+bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData));}
 
 bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const
 {
@@ -154,19 +151,39 @@ bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples,
   for (size_t i = 0; i < n; ++i)
   {
     ObjectPtr example = examples->getElement(i).getObject();
-    evaluateFunctionOnExample(context, refCountedPointerFromThis(this), example, evaluator);
+    Variable prediction = computeWithInputsObject(context, example);
+    Variable correct = example->getVariable(example->getNumVariables() - 1);
+    evaluator->addPrediction(context, prediction, correct);
   }
   return true;
 }
 
 bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const
+  {return evaluate(context, new ObjectVector(examples), evaluator);}
+
+/*
+** ProxyFunction
+*/
+TypePtr ProxyFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
-  // todo: parallel evaluation
-  size_t n = examples.size();
-  for (size_t i = 0; i < n; ++i)
+  implementation = createImplementation(inputVariables);
+  if (!implementation)
   {
-    ObjectPtr example = examples[i];
-    evaluateFunctionOnExample(context, refCountedPointerFromThis(this), example, evaluator);
+    context.errorCallback(T("Could not create implementation in proxy operator"));
+    return TypePtr();
   }
-  return true;
+  if (!implementation->initialize(context, inputVariables))
+    return TypePtr();
+
+  const VariableSignaturePtr& v = implementation->getOutputVariable();
+  outputName = v->getName();
+  outputShortName = v->getShortName();
+  setBatchLearner(proxyFunctionBatchLearner());
+  return v->getType();
 }
+
+Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable& input) const
+  {jassert(implementation); return implementation->computeFunction(context, input);}
+
+Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {jassert(implementation); return implementation->computeFunction(context, inputs);}

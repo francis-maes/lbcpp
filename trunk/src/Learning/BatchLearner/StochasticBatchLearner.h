@@ -29,10 +29,7 @@ public:
 
   StochasticBatchLearner() {}
 
-  virtual TypePtr getRequiredExamplesType() const
-    {return objectClass;}
-
-  virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     // identify functions that have an online learner
     std::vector<FunctionPtr> functionsToLearn = this->functionsToLearn;
@@ -60,7 +57,7 @@ public:
 
     // finish learning
     compositeOnlineLearner->finishLearning();
-    return function;
+    return true;
   }
 
   lbcpp_UseDebuggingNewOperator

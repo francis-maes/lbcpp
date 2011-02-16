@@ -1,5 +1,4 @@
 
- -> Machines lineaires pour la regression et la classification binaire
  -> Classification OneAgainstOne, OneAgainstAll
  -> Machines lineaire pour la classification multi-classe
 

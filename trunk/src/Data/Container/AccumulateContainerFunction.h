@@ -24,8 +24,8 @@ public:
   CumulativeScoreVector(ClassPtr thisClass, EnumerationPtr scores, size_t size)
     : ObjectVector(thisClass), elementsType(denseDoubleVectorClass(scores))
   {
-    objects.resize(size);
-    objects[0] = new DenseDoubleVector(elementsType, scores->getNumElements(), 0.0);
+    objects->resize(size);
+    (*objects)[0] = new DenseDoubleVector(elementsType, scores->getNumElements(), 0.0);
   }
 
   CumulativeScoreVector() {}
@@ -34,12 +34,12 @@ public:
     {return elementsType;}
 
   const DenseDoubleVectorPtr& getVector(size_t index) const
-    {return objects[index].staticCast<DenseDoubleVector>();}
+    {return (*objects)[index].staticCast<DenseDoubleVector>();}
 
   const DenseDoubleVectorPtr& computeStep(size_t i)
   {
     if (i > 0)
-      objects[i] = objects[i - 1]->clone(defaultExecutionContext());
+      (*objects)[i] = (*objects)[i - 1]->clone(defaultExecutionContext());
     return getVector(i);
   }
 

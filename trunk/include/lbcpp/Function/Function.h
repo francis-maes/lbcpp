@@ -150,6 +150,8 @@ public:
   ** High level learning operations
   */
   bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr());
+  bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
+
   bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator) const;
   bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator) const;
 
@@ -213,49 +215,47 @@ extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 // -
 
-class ProxyFunction : public Function
-{
-protected:
-  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
- 
-  virtual size_t getMinimumNumRequiredInputs() const
-    {return 0;}
-
-  virtual size_t getMaximumNumRequiredInputs() const
-    {return (size_t)-1;}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    implementation = createImplementation(inputVariables);
-    if (!implementation)
-    {
-      context.errorCallback(T("Could not create implementation in proxy operator"));
-      return TypePtr();
-    }
-    if (!implementation->initialize(context, inputVariables))
-      return TypePtr();
-
-    const VariableSignaturePtr& v = implementation->getOutputVariable();
-    outputName = v->getName();
-    outputShortName = v->getShortName();
-    return v->getType();
-  }
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {jassert(implementation); return implementation->computeFunction(context, input);}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {jassert(implementation); return implementation->computeFunction(context, inputs);}
-
-  FunctionPtr implementation;
-};
-
 class CompositeFunction : public Function
 {
 public:
   virtual size_t getNumSubFunctions() const = 0;
   virtual const FunctionPtr& getSubFunction(size_t index) const = 0;
 };
+
+class ProxyFunction : public CompositeFunction
+{
+public:
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
+
+  const FunctionPtr& getImplementation() const
+    {return implementation;}
+
+  // CompositeFunction
+  virtual size_t getNumSubFunctions() const
+    {return 1;}
+
+  virtual const FunctionPtr& getSubFunction(size_t index) const
+    {return implementation;}
+
+  // Function
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 0;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+protected:
+  friend class ProxyFunctionClass;
+
+  FunctionPtr implementation;
+};
+
+typedef ReferenceCountedObjectPtr<ProxyFunction> ProxyFunctionPtr;
 
 }; /* namespace lbcpp */
 

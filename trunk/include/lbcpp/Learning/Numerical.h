@@ -14,6 +14,7 @@
 # include "../Data/DoubleVector.h"
 # include "../Function/StoppingCriterion.h"
 # include "../Function/IterationFunction.h"
+# include "../NumericalLearning/LossFunctions.h"
 
 namespace lbcpp
 {
@@ -82,12 +83,19 @@ class SupervisedNumericalFunction : public FrameBasedFunction
 public:
   SupervisedNumericalFunction(LearnerParametersPtr learnerParameters)
     : learnerParameters(learnerParameters) {}
+  SupervisedNumericalFunction() {}
 
+  virtual TypePtr getSupervisionType() const = 0;
+
+  // Function
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
   virtual String getOutputPostFix() const
     {return T("Prediction");}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? getSupervisionType() : (TypePtr)doubleVectorClass();}
 
 protected:
   friend class SupervisedNumericalFunctionClass;
@@ -97,8 +105,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
-extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters);
-
+extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = squareLossFunctionClass);
+extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = hingeLossFunctionClass);
+extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
 }; /* namespace lbcpp */
 

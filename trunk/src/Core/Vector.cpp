@@ -317,41 +317,86 @@ void BooleanVector::remove(size_t index)
 ** ObjectVector
 */
 ObjectVector::ObjectVector(TypePtr elementsType, size_t initialSize)
-  : Vector(objectVectorClass(elementsType)), objects(initialSize)
+  : Vector(objectVectorClass(elementsType)), objects(new std::vector<ObjectPtr>(initialSize)), ownObjects(true)
 {
 }
 
+ObjectVector::ObjectVector(ClassPtr thisClass)
+  : Vector(thisClass), objects(new std::vector<ObjectPtr>()), ownObjects(true)
+{
+}
+
+ObjectVector::ObjectVector(const std::vector<ObjectPtr>& reference, TypePtr elementsType)
+  : Vector(objectVectorClass(elementsType ? elementsType : (TypePtr)(reference.size() ? reference[0]->getClass() : objectClass))),
+    objects(const_cast<std::vector<ObjectPtr>* >(&reference)), ownObjects(false)
+{
+}
+
+ObjectVector::ObjectVector(std::vector<ObjectPtr>& reference, TypePtr elementsType)
+  : Vector(objectVectorClass(elementsType ? elementsType : (TypePtr)(reference.size() ? reference[0]->getClass() : objectClass))),
+    objects(&reference), ownObjects(false)
+{
+}
+
+ObjectVector::ObjectVector() : objects(NULL), ownObjects(false)
+{
+}
+
+ObjectVector::~ObjectVector()
+{
+  if (ownObjects)
+  {
+    jassert(objects);
+    delete objects;
+  }
+}
+
 void ObjectVector::clear()
-  {objects.clear();}
+  {objects->clear();}
 
 void ObjectVector::reserve(size_t size)
-  {objects.reserve(size);}
+{
+  if (!objects)
+  {
+    objects = new std::vector<ObjectPtr>();
+    ownObjects = true;
+  }
+  objects->reserve(size);
+}
 
 void ObjectVector::resize(size_t size)
-  {objects.resize(size);}
+{
+  if (objects)
+    objects->resize(size);
+  else
+  {
+    objects = new std::vector<ObjectPtr>(size);
+    ownObjects = true;
+  }
+}
 
 void ObjectVector::prepend(const Variable& value)
-  {objects.insert(objects.begin(), value.getObject());}
+  {objects->insert(objects->begin(), value.getObject());}
 
 void ObjectVector::append(const Variable& value)
-  {objects.push_back(value.getObject());}
+  {objects->push_back(value.getObject());}
 
 void ObjectVector::remove(size_t index)
-  {objects.erase(objects.begin() + index);}
+  {objects->erase(objects->begin() + index);}
 
 size_t ObjectVector::getNumElements() const
-  {return objects.size();}
+  {return objects->size();}
 
 Variable ObjectVector::getElement(size_t index) const
 {
-  jassert(index < objects.size());
-  const ObjectPtr& res = objects[index];
+  jassert(index < objects->size());
+  const ObjectPtr& res = (*objects)[index];
   TypePtr elementsType = getElementsType();
   return Variable(res, elementsType);
 }
 
 void ObjectVector::setElement(size_t index, const Variable& value)
-  {jassert(index < objects.size()); objects[index] = value.getObject();}
+  {jassert(index < objects->size()); (*objects)[index] = value.getObject();}
 
 
 /*

@@ -41,8 +41,21 @@
     <variable type="LearnerParameters" name="learnerParameters"/>
   </class>
 
-  <class name="LinearRegressor" base="SupervisedNumericalFunction">
-    <constructor arguments="LearnerParametersPtr learnerParameters"/>
+  <class name="SupervisedLinearNumericalFunction" base="SupervisedNumericalFunction" abstract="yes">
+    <variable type="Class" name="lossFunctionClass"/>
   </class>
-
+  
+  <class name="LinearRegressor" base="SupervisedLinearNumericalFunction">
+    <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass" returnType="SupervisedNumericalFunction"/>
+  </class>
+  
+  <class name="LinearBinaryClassifier" base="SupervisedLinearNumericalFunction">
+    <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass" returnType="SupervisedNumericalFunction"/>
+  </class>
+  
+  <class name="LinearLearningMachine" base="ProxyFunction">
+    <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
+    <variable type="LearnerParameters" name="learnerParameters"/>
+  </class>
+  
 </library>

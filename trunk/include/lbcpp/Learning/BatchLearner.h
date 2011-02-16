@@ -51,7 +51,7 @@ public:
     return train(context, function, trainingData->getObjects(), validationData ? validationData->getObjects() : std::vector<ObjectPtr>());
   }
 
-  virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const = 0;
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const = 0;
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -59,9 +59,10 @@ public:
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;
 
 
-BatchLearnerPtr frameBasedFunctionBatchLearner();
-BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
-BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
+extern BatchLearnerPtr proxyFunctionBatchLearner();
+extern BatchLearnerPtr frameBasedFunctionBatchLearner();
+extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
+extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
 
 }; /* namespace lbcpp */
 
