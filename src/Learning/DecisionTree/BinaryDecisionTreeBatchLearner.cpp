@@ -77,14 +77,17 @@ InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::duplicateBatchLearnerSu
 /*
 ** BinaryDecisionTreeBatchLearner
 */
-FunctionPtr BinaryDecisionTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+bool BinaryDecisionTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   const BinaryDecisionTreeFunctionPtr& treeFunction = function.dynamicCast<BinaryDecisionTreeFunction>();
   jassert(treeFunction);
   
   size_t n = trainingData.size();
   if (n == 0)
-    return FunctionPtr();
+  {
+    context.errorCallback(T("No training examples"));
+    return false;
+  }
 
   size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
   std::vector< std::vector<Variable> > attributes;
@@ -120,7 +123,7 @@ FunctionPtr BinaryDecisionTreeBatchLearner::train(ExecutionContext& context, con
 
   treeFunction->setTree(tree);
 
-  return function;
+  return true;
 }
 
 bool BinaryDecisionTreeBatchLearner::shouldCreateLeaf(ExecutionContext& context,

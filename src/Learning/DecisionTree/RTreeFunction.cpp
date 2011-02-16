@@ -285,7 +285,7 @@ void exportData(ExecutionContext& context)
   context.informationCallback(T("RTreeInferenceLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
 }
 
-FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   ScopedLock _(learnerLock);
   const RTreeFunctionPtr& rTreeFunction = function.dynamicCast<RTreeFunction>();
@@ -297,7 +297,7 @@ FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPt
     RTreePtr trees = new RTree();
     trees->saveTreesState();
     rTreeFunction->setTrees(trees);
-    return function;
+    return false;
   }
 
   size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
@@ -471,5 +471,5 @@ FunctionPtr RTreeBatchLearner::train(ExecutionContext& context, const FunctionPt
   MyFreeAndNull(save_ensemble_ls_weight);
   MyFreeAndNull(core_table);
 
-  return function;
+  return true;
 }

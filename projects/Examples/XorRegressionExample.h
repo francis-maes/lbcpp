@@ -60,7 +60,7 @@ public:
 
     StochasticGDParametersPtr params = new StochasticGDParameters();
     params->setEvaluator(regressionErrorEvaluator(T("xor-error")));
-    frameClass->addMemberOperator(context, linearRegressor(params), 3, 2);
+    frameClass->addMemberOperator(context, linearLearningMachine(params), 3, 2);
 
     FunctionPtr xorFunction = new FrameBasedFunction(frameClass);
     xorFunction->setBatchLearner(frameBasedFunctionBatchLearner());

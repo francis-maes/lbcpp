@@ -4,6 +4,10 @@
 
   <class name="BatchLearner" base="Function" abstract="yes"/>
 
+  <class name="ProxyFunctionBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
+  
   <class name="FrameBasedFunctionBatchLearner" base="BatchLearner">
     <constructor/>
   </class>

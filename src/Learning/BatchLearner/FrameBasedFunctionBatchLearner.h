@@ -21,7 +21,7 @@ public:
   virtual TypePtr getRequiredExamplesType() const
     {return objectClass;} // frameObjectClass
 
-  virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
+  virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const FrameBasedFunctionPtr& function = f.staticCast<FrameBasedFunction>();
     FrameClassPtr frameClass = function->getFrameClass();
@@ -40,7 +40,10 @@ public:
       if (signature)
       {
         if (signature->getFunction()->hasBatchLearner())
-          learnSubFunction(context, frameClass, i, signature, trainingFrames, validationFrames);
+        {
+          if (!learnSubFunction(context, frameClass, i, signature, trainingFrames, validationFrames))
+            return false;
+        }
         if (trainingFrames.size())
           computeSubFunction(i, trainingFrames);
         if (validationFrames.size())
@@ -48,7 +51,7 @@ public:
       }
     }
 
-    return function;
+    return true;
   }
 
 protected:
@@ -90,14 +93,14 @@ protected:
     return res;
   }
 
-  void learnSubFunction(ExecutionContext& context, const FrameClassPtr& frameClass, size_t variableIndex, const FrameOperatorSignaturePtr& signature, const std::vector<FramePtr>& trainingFrames, const std::vector<FramePtr>& validationFrames) const
+  bool learnSubFunction(ExecutionContext& context, const FrameClassPtr& frameClass, size_t variableIndex, const FrameOperatorSignaturePtr& signature, const std::vector<FramePtr>& trainingFrames, const std::vector<FramePtr>& validationFrames) const
   {
     const FunctionPtr& function = signature->getFunction();
     ObjectVectorPtr subTrainingData = makeSubInputs(frameClass, trainingFrames, variableIndex);
     ObjectVectorPtr subValidationData;
     if (validationFrames.size())
       subValidationData = makeSubInputs(frameClass, validationFrames, variableIndex);
-    function->train(context, subTrainingData, subValidationData);
+    return function->train(context, subTrainingData, subValidationData);
   }
 
   void computeSubFunction(size_t variableIndex, std::vector<FramePtr>& frames) const

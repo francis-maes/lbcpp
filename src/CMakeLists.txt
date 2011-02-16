@@ -417,6 +417,7 @@ SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
 )
 
 SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
+  Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
   Learning/BatchLearner/FrameBasedFunctionBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
@@ -429,7 +430,7 @@ SET(LBCPP_LEARNING_NUMERICAL_SOURCES
   Learning/Numerical/StochasticGDOnlineLearner.h
   Learning/Numerical/PerEpisodeGDOnlineLearner.h
   Learning/Numerical/LinearLearnableFunction.h
-  Learning/Numerical/LinearRegressor.h
+  Learning/Numerical/LinearLearningMachine.h
   Learning/Numerical/NumericalLearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
 )

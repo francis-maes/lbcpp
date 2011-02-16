@@ -101,7 +101,7 @@ public:
       minimumSizeForSplitting(0),
       numActiveAttributes(0) {}
   
-  virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
+  virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
 
   /* Object */
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const

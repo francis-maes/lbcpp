@@ -130,10 +130,13 @@ class ObjectVector : public Vector
 {
 public:
   ObjectVector(TypePtr elementsType, size_t initialSize);
-  ObjectVector(ClassPtr thisClass)
-    : Vector(thisClass) {}
-  ObjectVector() {}
- 
+  ObjectVector(ClassPtr thisClass);
+  ObjectVector(const std::vector<ObjectPtr>& reference, TypePtr elementsType = TypePtr());
+  ObjectVector(std::vector<ObjectPtr>& reference, TypePtr elementsType = TypePtr());
+  ObjectVector();
+
+  virtual ~ObjectVector();
+
   /*
   ** Vector
   */
@@ -153,25 +156,26 @@ public:
   virtual void setElement(size_t index, const Variable& value);
 
   const ObjectPtr& get(size_t index) const
-    {jassert(index < objects.size()); return objects[index];}
+    {jassert(index < objects->size()); return (*objects)[index];}
 
   template<class T>
   const ReferenceCountedObjectPtr<T>& getAndCast(size_t index) const
     {const ObjectPtr& res = get(index); return res.staticCast<T>();}
 
   void set(size_t index, ObjectPtr object)
-    {objects[index] = object;}
+    {(*objects)[index] = object;}
 
   const std::vector<ObjectPtr>& getObjects() const
-    {return objects;}
+    {return *objects;}
 
   std::vector<ObjectPtr>& getObjects()
-    {return objects;}
+    {return *objects;}
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  std::vector<ObjectPtr> objects;
+  std::vector<ObjectPtr>* objects;
+  bool ownObjects;
 };
 
 typedef ReferenceCountedObjectPtr<ObjectVector> ObjectVectorPtr;

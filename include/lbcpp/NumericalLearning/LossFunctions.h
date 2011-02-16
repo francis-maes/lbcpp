@@ -97,6 +97,7 @@ protected:
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;
 
+extern ClassPtr hingeLossFunctionClass;
 extern BinaryClassificationLossFunctionPtr hingeLossFunction(bool isPositive, double margin = 1);
 extern BinaryClassificationLossFunctionPtr logBinomialLossFunction(bool isPositive);
 
