@@ -249,6 +249,13 @@ protected:
   FunctionPtr implementation;
 };
 
+class CompositeFunction : public Function
+{
+public:
+  virtual size_t getNumSubFunctions() const = 0;
+  virtual const FunctionPtr& getSubFunction(size_t index) const = 0;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_FUNCTION_H_

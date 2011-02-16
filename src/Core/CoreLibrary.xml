@@ -188,6 +188,7 @@
     <variable type="Boolean" name="pushIntoStack"/>
   </class>
 
+  <class name="CompositeFunction" base="Function" abstract="yes"/>
   <class name="ProxyFunction" base="Function" abstract="yes"/>
   
   <!-- Frame -->

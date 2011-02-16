@@ -26,6 +26,8 @@ public:
 
   // returns false if no supervision is available
   virtual bool computeAndAddGradient(const Variable* inputs, const Variable& output, double& exampleLossValue, DoubleVectorPtr& target, double weight) const = 0;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnableFunctionPtr;

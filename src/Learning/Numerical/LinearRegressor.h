@@ -66,7 +66,7 @@ public:
 
     frameClass->addMemberOperator(context, linearFunction, 0, 2);
 
-    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, linearFunction)));
+    setBatchLearner(stochasticBatchLearner());
     return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 };

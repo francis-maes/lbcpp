@@ -26,6 +26,8 @@ public:
   ObjectPtr& getParameters()
     {return parameters;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class LearnableFunctionClass;
 

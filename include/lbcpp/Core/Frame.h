@@ -83,12 +83,20 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameBasedFunction : public Function
+class FrameBasedFunction : public CompositeFunction
 {
 public:
   FrameBasedFunction(FrameClassPtr frameClass = FrameClassPtr())
     : frameClass(frameClass) {}
 
+  // CompositeFunction
+  virtual size_t getNumSubFunctions() const
+    {return subFunctions.size();}
+
+  virtual const FunctionPtr& getSubFunction(size_t index) const
+    {jassert(index < subFunctions.size()); return subFunctions[index];}
+
+  // Function
   virtual size_t getMinimumNumRequiredInputs() const
     {return 0;}
 
@@ -98,29 +106,20 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return anyType;}
 
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    VariableSignaturePtr lastMemberVariable = frameClass->getMemberVariable(frameClass->getNumMemberVariables() - 1);
-    outputName = lastMemberVariable->getName();
-    outputShortName = lastMemberVariable->getShortName();
-    return lastMemberVariable->getType();
-  }
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    FramePtr frame(new Frame(frameClass));
-    for (size_t i = 0; i < getNumInputs(); ++i)
-      frame->setVariable(i, inputs[i]);
-    return frame->getVariable(frameClass->getNumMemberVariables() - 1);
-  }
-
+  // FrameBasedFunction
   const FrameClassPtr& getFrameClass() const
     {return frameClass;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class FrameBasedFunctionClass;
 
   FrameClassPtr frameClass;
+  std::vector<FunctionPtr> subFunctions;
 };
 
 typedef ReferenceCountedObjectPtr<FrameBasedFunction> FrameBasedFunctionPtr;
