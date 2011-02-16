@@ -1,8 +1,3 @@
-* Regler l'amalgame FramePtr vs std::vector<Variable>
-* GradientDescentOnlineLearner: ne pas deriver de FunctionCallback
-
-
-
 * Learner pour les CompositeFunctions (notemment pour la ApplyFunctionOnContainer)
 * Objectif: Faire marcher TrainTestLearningMachine avec les LearnableFunction
 * Objectif: Refaire le SandBox avec les LearnableFunction

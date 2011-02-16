@@ -183,12 +183,9 @@
   <!-- Function -->
   <class name="OnlineLearner" abstract="yes"/>
   <class name="Function" abstract="yes">
-    <variable type="PositiveInteger" name="numInputs"/>
-    <variable type="VariableSignature" name="outputVariable"/>
-    <variable type="Function" name="batchLearner_"/>
-    <variable type="OnlineLearner" name="onlineLearner_"/>
+    <variable type="Function" name="batchLearner"/>
+    <variable type="OnlineLearner" name="onlineLearner"/>
     <variable type="Boolean" name="pushIntoStack"/>
-    <variable type="Class" name="frameClass"/>
   </class>
 
   <class name="ProxyFunction" base="Function" abstract="yes"/>
@@ -196,6 +193,8 @@
   <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature"/>
   <class name="FrameClass" base="DefaultClass"/>
-  <class name="FrameBasedFunction" base="Function"/>
-
+  <class name="FrameBasedFunction" base="Function">
+    <variable type="FrameClass" name="frameClass"/>
+  </class>
+  
 </library>

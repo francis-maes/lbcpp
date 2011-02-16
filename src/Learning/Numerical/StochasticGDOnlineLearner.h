@@ -21,9 +21,9 @@ public:
     : GradientDescentOnlineLearner(learningRate, normalizeLearningRate) {}
   StochasticGDOnlineLearner() {}
 
-  virtual void learningStep(const FunctionPtr& f, const Variable* inputs, const Variable& output)
+  virtual void learningStep(const Variable* inputs, const Variable& output)
   {
-    const NumericalLearnableFunctionPtr& function = f.staticCast<NumericalLearnableFunction>();
+    const NumericalLearnableFunctionPtr& function = getNumericalLearnableFunction();
     computeAndAddGradient(function, inputs, output, function->getParameters(), -computeLearningRate());
   }
 };

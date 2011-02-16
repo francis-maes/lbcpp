@@ -50,41 +50,36 @@ public:
 class XorRegressionExample : public WorkUnit
 {
 public:
-  FrameClassPtr createXorFrameClass(ExecutionContext& context)
+  FunctionPtr createXorFunction(ExecutionContext& context)
   {
-    FrameClassPtr res = new FrameClass(T("XorFrame"));
-    res->addMemberVariable(context, doubleType, T("x1"));
-    res->addMemberVariable(context, doubleType, T("x2"));
-    res->addMemberVariable(context, doubleType, T("supervision"));
-    res->addMemberOperator(context, new XorFeatureGenerator(), 0, 1, T("features"));
-    res->addMemberOperator(context, linearRegressor(), 3, 2);
-    return res;
-  }
+    FrameClassPtr frameClass = new FrameClass(T("XorFrame"));
+    frameClass->addMemberVariable(context, doubleType, T("x1"));
+    frameClass->addMemberVariable(context, doubleType, T("x2"));
+    frameClass->addMemberVariable(context, doubleType, T("supervision"));
+    frameClass->addMemberOperator(context, new XorFeatureGenerator(), 0, 1, T("features"));
+    frameClass->addMemberOperator(context, linearRegressor(), 3, 2);
 
-  FunctionPtr createXorFunction(ExecutionContext& context, FrameClassPtr xorFrameClass)
-  {
-    FunctionPtr xorFunction = new FrameBasedFunction(xorFrameClass);
+    FunctionPtr xorFunction = new FrameBasedFunction(frameClass);
     xorFunction->setBatchLearner(frameBasedFunctionBatchLearner());
     xorFunction->initialize(context, std::vector<TypePtr>(3, doubleType));
     return xorFunction;
   }
 
-  VectorPtr createTrainingExamples(FrameClassPtr frameClass) const
+  VectorPtr createTrainingExamples(ClassPtr inputsClass) const
   {
-    VectorPtr trainingExamples = vector(frameClass);
-    trainingExamples->append(new Frame(frameClass, 0.0, 0.0, 1.0));
-    trainingExamples->append(new Frame(frameClass, 1.0, 0.0, 0.0));
-    trainingExamples->append(new Frame(frameClass, 0.0, 1.0, 0.0));
-    trainingExamples->append(new Frame(frameClass, 1.0, 1.0, 1.0));
+    VectorPtr trainingExamples = vector(inputsClass);
+    trainingExamples->append(new DenseGenericObject(inputsClass, 0.0, 0.0, 1.0));
+    trainingExamples->append(new DenseGenericObject(inputsClass, 1.0, 0.0, 0.0));
+    trainingExamples->append(new DenseGenericObject(inputsClass, 0.0, 1.0, 0.0));
+    trainingExamples->append(new DenseGenericObject(inputsClass, 1.0, 1.0, 1.0));
     return trainingExamples;
   }
 
   virtual Variable run(ExecutionContext& context)
   {
-    FrameClassPtr xorFrameClass = createXorFrameClass(context);
-    VectorPtr trainingExamples = createTrainingExamples(xorFrameClass);
+    FunctionPtr xorFunction = createXorFunction(context);
     
-    FunctionPtr xorFunction = createXorFunction(context, xorFrameClass);
+    VectorPtr trainingExamples = createTrainingExamples(xorFunction->getInputsClass());
     if (!xorFunction->train(context, trainingExamples))
       return false;
 

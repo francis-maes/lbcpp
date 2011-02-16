@@ -57,6 +57,30 @@ private:
 DenseGenericObject::DenseGenericObject(DynamicClassPtr thisClass)
   : Object(thisClass) {jassert(thisClass);}
 
+DenseGenericObject::DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable)
+  : Object(thisClass)
+{
+  jassert(thisClass && getNumVariables() > 0);
+  setVariable(0, firstVariable);
+}
+
+DenseGenericObject::DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable, const Variable& secondVariable)
+  : Object(thisClass)
+{
+  jassert(thisClass && getNumVariables() > 1);
+  setVariable(0, firstVariable);
+  setVariable(1, secondVariable);
+}
+
+DenseGenericObject::DenseGenericObject(DynamicClassPtr thisClass, const Variable& firstVariable, const Variable& secondVariable, const Variable& thirdVariable)
+  : Object(thisClass)
+{
+  jassert(thisClass && getNumVariables() > 2);
+  setVariable(0, firstVariable);
+  setVariable(1, secondVariable);
+  setVariable(2, thirdVariable);
+}
+
 DenseGenericObject::~DenseGenericObject()
 {
   for (size_t i = 0; i < variableValues.size(); ++i)

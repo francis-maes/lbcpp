@@ -37,7 +37,7 @@ public:
   virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     RunningLearnerVector runningLearners;
-    startLearning(function, runningLearners);
+    startLearning(context, maxIterations, runningLearners);
 
     if (stoppingCriterion)
       stoppingCriterion->reset();
@@ -48,7 +48,7 @@ public:
       context.resultCallback(T("Iteration"), i + 1);
 
       // Learning iteration
-      startLearningIteration(function, i, maxIterations, runningLearners);
+      startLearningIteration(runningLearners, i);
 
       if (randomizeExamples)
       {
@@ -61,7 +61,7 @@ public:
         for (size_t i = 0; i < trainingData.size(); ++i)
           doEpisode(context, function, trainingData[i], runningLearners);
 
-      bool learningFinished = finishLearningIteration(context, runningLearners);
+      bool learningFinished = finishLearningIteration(runningLearners, i);
 
       // Evaluation
       EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
@@ -85,14 +85,14 @@ public:
         if (restoreBestParametersWhenDone)
           storeParameters(function);
         bestMainScore = mainScore;
-        context.informationCallback(T("Best score: ") + String(mainScore));
+        //context.informationCallback(T("Best score: ") + String(mainScore));
       }
 
       if (learningFinished || (stoppingCriterion && stoppingCriterion->shouldStop(mainScore)))
         break;
     }
 
-    finishLearning();
+    finishLearning(runningLearners);
     
     if (restoreBestParametersWhenDone)
       restoreParameters(function);
@@ -109,7 +109,7 @@ public:
   }
 
 protected:
-  typedef std::vector< std::pair<FunctionPtr, OnlineLearnerPtr> > RunningLearnerVector;
+  typedef std::vector<OnlineLearnerPtr> RunningLearnerVector;
 
   std::vector<FunctionPtr> functionsToLearn;
   EvaluatorPtr evaluator;
@@ -140,37 +140,42 @@ protected:
   }
 
 private:
-  void startLearning(const FunctionPtr& function, RunningLearnerVector& runningLearners) const
+  void startLearning(ExecutionContext& context, size_t maxIterations, RunningLearnerVector& runningLearners) const
   {
     for (size_t i = 0; i < functionsToLearn.size(); ++i)
     {
-      OnlineLearnerPtr onlineLearner = functionsToLearn[i]->getOnlineLearner();
+      const FunctionPtr& function = functionsToLearn[i];
+      const OnlineLearnerPtr& onlineLearner = function->getOnlineLearner();
       jassert(onlineLearner);
-      onlineLearner->startLearning(function);
-      runningLearners.push_back(std::make_pair(functionsToLearn[i], onlineLearner));
+      onlineLearner->startLearning(context, function, maxIterations);
+      runningLearners.push_back(onlineLearner);
     }
   }
 
-  void finishLearning() const
+  static void finishLearning(RunningLearnerVector& runningLearners)
   {
-    for (int i = functionsToLearn.size() - 1; i >= 0; --i)
-      functionsToLearn[i]->getOnlineLearner()->finishLearning();
+    for (int i = runningLearners.size() - 1; i >= 0; --i)
+      runningLearners[i]->finishLearning();
+    runningLearners.clear();
   }
 
-  static void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations, const RunningLearnerVector& runningLearners)
+  static void startLearningIteration(const RunningLearnerVector& runningLearners, size_t iteration)
   {
     for (size_t i = 0; i < runningLearners.size(); ++i)
-      runningLearners[i].second->startLearningIteration(runningLearners[i].first, iteration, maxIterations);
+      runningLearners[i]->startLearningIteration(iteration);
   }
 
-  static bool finishLearningIteration(ExecutionContext& context, RunningLearnerVector& runningLearners)
+  static bool finishLearningIteration(RunningLearnerVector& runningLearners, size_t iteration)
   {
     bool learningFinished = true;
     for (int i = runningLearners.size() - 1; i >= 0; --i)
     {
-      bool learnerFinished = runningLearners[i].second->finishLearningIteration(context, runningLearners[i].first);
+      bool learnerFinished = runningLearners[i]->finishLearningIteration(iteration);
       if (learnerFinished)
+      {
+        runningLearners[i]->finishLearning();
         runningLearners.erase(runningLearners.begin() + i);
+      }
       else
         learningFinished = false;
     }
@@ -180,13 +185,13 @@ private:
   static void startEpisode(const RunningLearnerVector& runningLearners)
   {
     for (size_t i = 0; i < runningLearners.size(); ++i)
-      runningLearners[i].second->startEpisode(runningLearners[i].first);
+      runningLearners[i]->startEpisode();
   }
 
   static void finishEpisode(const RunningLearnerVector& runningLearners)
   {
     for (int i = runningLearners.size() - 1; i >= 0; --i)
-      runningLearners[i].second->finishEpisode(runningLearners[i].first);
+      runningLearners[i]->finishEpisode();
   }
 };
 

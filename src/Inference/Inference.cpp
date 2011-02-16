@@ -21,10 +21,10 @@ using namespace lbcpp;
 */
 Inference::~Inference()
 {
-  while (onlineLearner)
+  while (_onlineLearner)
   {
-    onlineLearner->setPreviousLearner(InferenceOnlineLearnerPtr());
-    onlineLearner = onlineLearner->getNextLearner();
+    _onlineLearner->setPreviousLearner(InferenceOnlineLearnerPtr());
+    _onlineLearner = _onlineLearner->getNextLearner();
   }
 }
 
@@ -35,10 +35,10 @@ void Inference::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const InferencePtr& target = t.staticCast<Inference>();
   Function::clone(context, target);
-  if (onlineLearner)
+  if (_onlineLearner)
   {
-    target->onlineLearner = onlineLearner->cloneAndCast<InferenceOnlineLearner>(context);
-    jassert(!target->onlineLearner->getNextLearner() || target->onlineLearner->getNextLearner()->getPreviousLearner() == target->onlineLearner);
+    target->_onlineLearner = _onlineLearner->cloneAndCast<InferenceOnlineLearner>(context);
+    jassert(!target->_onlineLearner->getNextLearner() || target->_onlineLearner->getNextLearner()->getPreviousLearner() == target->_onlineLearner);
   }
   ScopedReadLock _(parametersLock);
   if (parameters.exists())
@@ -80,17 +80,17 @@ void Inference::setBatchLearner(InferencePtr batchLearner)
 {
   if (batchLearner->getName() == T("Unnamed"))
     batchLearner->setName(getName() + T(" learner"));
-  this->batchLearner = batchLearner;
+  this->_batchLearner = batchLearner;
 }
 
 void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool insertInFront)
 {
-  InferenceOnlineLearnerPtr currentLearner = this->onlineLearner;
+  InferenceOnlineLearnerPtr currentLearner = this->_onlineLearner;
   if (!currentLearner)
-    this->onlineLearner = learner;
+    this->_onlineLearner = learner;
   else if (insertInFront)
   {
-    this->onlineLearner = learner;
+    this->_onlineLearner = learner;
     if (currentLearner)
       learner->setNextLearner(currentLearner);
   }
@@ -99,10 +99,10 @@ void Inference::addOnlineLearner(const InferenceOnlineLearnerPtr& learner, bool 
 }
 
 const InferenceOnlineLearnerPtr& Inference::getOnlineLearner() const
-  {return onlineLearner;}
+  {return _onlineLearner;}
 
 InferenceOnlineLearnerPtr Inference::getLastOnlineLearner() const
-  {return onlineLearner->getLastLearner();}
+  {return _onlineLearner->getLastLearner();}
 
 /*
 ** High Level functions
@@ -133,7 +133,7 @@ bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInpu
     context.errorCallback(T("No Batch Learner"));
     return false;
   }
-  batchLearner->run(context, learnerInput, Variable(), workUnitName);
+  _batchLearner->run(context, learnerInput, Variable(), workUnitName);
   return true;
 }
 

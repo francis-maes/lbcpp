@@ -30,6 +30,7 @@ bool Function::initialize(ExecutionContext& context, const std::vector<TypePtr>&
 
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
+  // check inputs
   numInputs = inputVariables.size();
   size_t minInputs = getMinimumNumRequiredInputs();
   if (minInputs && numInputs < minInputs)
@@ -49,29 +50,21 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
     if (!context.checkInheritance(inputVariables[i]->getType(), getRequiredInputType(i, numInputs)))
       return false;
 
+  // make inputs class
+  inputsClass = new DynamicClass(getClassName() + T("Inputs"));
+  inputsClass->reserveMemberVariables(inputVariables.size() + 1);
+  for (size_t i = 0; i < inputVariables.size(); ++i)
+    inputsClass->addMemberVariable(context, inputVariables[i]);
+  
+  // compute output type
   String outputPostFix = getOutputPostFix();
   String outputName = (numInputs ? inputVariables[0]->getName() : String::empty) + outputPostFix;
   String outputShortName = (numInputs ? inputVariables[0]->getShortName() : String::empty) + outputPostFix;
   TypePtr outputType = initializeFunction(context, inputVariables, outputName, outputShortName);
   if (!outputType)
     return false;
-
   outputVariable = new VariableSignature(outputType, outputName, outputShortName);
-  if (!frameClass)
-    frameClass = createFrameClass(context, inputVariables, outputVariable);
-
   return true;
-}
-
-FrameClassPtr Function::createFrameClass(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const VariableSignaturePtr& outputVariable)
-{
-  FrameClassPtr res = new FrameClass(getClassName() + T("Frame"));
-  res->reserveMemberVariables(inputVariables.size() + 1);
-  for (size_t i = 0; i < inputVariables.size(); ++i)
-    res->addMemberVariable(context, inputVariables[i]);
-  res->addMemberVariable(context, outputVariable);
-  res->initialize(context);
-  return res;
 }
 
 void Function::setBatchLearner(const FunctionPtr& batchLearner)
@@ -82,7 +75,7 @@ void Function::setBatchLearner(const FunctionPtr& batchLearner)
   types[1] = containerClass(frameClass);
   types[2] = containerClass(frameClass);
   learner->initialize(defaultExecutionContext(), types);*/
-  this->batchLearner_ = batchLearner;
+  this->batchLearner = batchLearner;
 }
 
 Variable Function::compute(ExecutionContext& context, const Variable* inputs) const
@@ -127,9 +120,9 @@ Variable Function::compute(ExecutionContext& context, const Variable& input1, co
 
 bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData)
 {
-  if (!batchLearner_)
+  if (!batchLearner)
     return false;
-  batchLearner_->compute(context, this, trainingData, validationData);
+  batchLearner->compute(context, this, trainingData, validationData);
   return true;
 }
 

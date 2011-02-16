@@ -68,19 +68,11 @@ public:
   /*
   ** Static Prototype
   */
-  virtual FrameClassPtr createFrameClass(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const VariableSignaturePtr& outputVariable);
-
   size_t getNumInputs() const
     {return numInputs;}
 
-  const FrameClassPtr& getFrameClass() const
-    {return frameClass;}
-/*
-  const VariableSignaturePtr& getInputVariable(size_t index) const
-    {jassert(index < inputVariables.size()); return inputVariables[index];}
-
-  const TypePtr& getInputType(size_t index) const
-    {return getInputVariable(index)->getType();}*/
+  const DynamicClassPtr& getInputsClass() const
+    {return inputsClass;}
 
   const VariableSignaturePtr& getOutputVariable() const
     {return outputVariable;}
@@ -138,21 +130,21 @@ public:
   ** Learner
   */
   bool hasBatchLearner() const
-    {return batchLearner_;}
+    {return batchLearner;}
 
   const FunctionPtr& getBatchLearner() const
-    {return batchLearner_;}
+    {return batchLearner;}
 
   void setBatchLearner(const FunctionPtr& batchLearner);
 
   bool hasOnlineLearner() const
-    {return onlineLearner_;}
+    {return onlineLearner;}
 
   const OnlineLearnerPtr& getOnlineLearner() const
-    {return onlineLearner_;}
+    {return onlineLearner;}
 
   void setOnlineLearner(const OnlineLearnerPtr& onlineLearner)
-    {this->onlineLearner_ = onlineLearner;}
+    {this->onlineLearner = onlineLearner;}
 
   /*
   ** High level learning operations
@@ -191,11 +183,11 @@ protected:
 
   std::vector<FunctionCallbackPtr> preCallbacks;
   std::vector<FunctionCallbackPtr> postCallbacks;
-  FunctionPtr batchLearner_; // tmp names, while Inference exists
-  OnlineLearnerPtr onlineLearner_;
+  FunctionPtr batchLearner;
+  OnlineLearnerPtr onlineLearner;
   bool pushIntoStack;
 
-  FrameClassPtr frameClass;
+  DynamicClassPtr inputsClass;
 };
 
 extern ClassPtr functionClass;

@@ -21,24 +21,26 @@ class GradientDescentOnlineLearner : public OnlineLearner, public FunctionCallba
 {
 public:
   GradientDescentOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
-    : numberOfActiveFeatures(T("NumActiveFeatures"), 100), 
+    : context(NULL), maxIterations(0), numberOfActiveFeatures(T("NumActiveFeatures"), 100), 
       learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
-  GradientDescentOnlineLearner() : normalizeLearningRate(true), epoch(0) {}
+  GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0) {}
 
-  virtual void startLearning(const FunctionPtr& function)
+  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations)
   {
     numberOfActiveFeatures.clear();
     lossValue.clear();
     epoch = 0;
+    this->context = &context;
+    this->function = function;
+    this->maxIterations = maxIterations;
   }
 
-  virtual void startLearningIteration(const FunctionPtr& function, size_t iteration, size_t maxIterations)
-    {function->addPostCallback(this);}
+  virtual void learningStep(const Variable* inputs, const Variable& output) = 0;
 
   virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output)
   {
-    learningStep(function, inputs, output);
-    
+    jassert(function == this->function);
+    learningStep(inputs, output);
    /* if (inputs[0].isObject() && inputs[0].dynamicCast<Container>())
     {
       // composite inputs (e.g. ranking)
@@ -54,16 +56,19 @@ public:
     }
   }
 
-  virtual bool finishLearningIteration(ExecutionContext& context, const FunctionPtr& function)
+  virtual void startLearningIteration(size_t iteration)
+    {function->addPostCallback(this);}
+
+  virtual bool finishLearningIteration(size_t iteration)
   {
     function->removePostCallback(this);
-
     bool isLearningFinished = false;
     if (lossValue.getCount())
     {
       double mean = lossValue.getMean();
-      context.resultCallback(T("Empirical Risk"), mean);
-      context.resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
+      context->resultCallback(T("Epoch"), epoch);
+      context->resultCallback(T("Empirical Risk"), mean);
+      context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
       lossValue.clear();
 
       if (mean == 0.0)
@@ -72,8 +77,15 @@ public:
     return isLearningFinished;
   }
 
+  const NumericalLearnableFunctionPtr& getNumericalLearnableFunction() const
+    {return function.staticCast<NumericalLearnableFunction>();}
+
 protected:
   friend class GradientDescentOnlineLearnerClass;
+
+  ExecutionContext* context;
+  size_t maxIterations;
+  FunctionPtr function;
 
   ScalarVariableRecentMean numberOfActiveFeatures;
   ScalarVariableMean lossValue;
@@ -81,7 +93,7 @@ protected:
   bool normalizeLearningRate;
   size_t epoch;
 
-  void gradientDescentStep(NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double weight = 1.0)
+  void gradientDescentStep(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double weight = 1.0)
   {
     DoubleVectorPtr& parameters = function->getParameters();
     if (!parameters)

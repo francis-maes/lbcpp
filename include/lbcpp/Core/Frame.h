@@ -86,10 +86,8 @@ typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 class FrameBasedFunction : public Function
 {
 public:
-  FrameBasedFunction(FrameClassPtr frameClass)
-    {this->frameClass = frameClass;}
-
-  FrameBasedFunction() {}
+  FrameBasedFunction(FrameClassPtr frameClass = FrameClassPtr())
+    : frameClass(frameClass) {}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 0;}
@@ -115,6 +113,14 @@ public:
       frame->setVariable(i, inputs[i]);
     return frame->getVariable(frameClass->getNumMemberVariables() - 1);
   }
+
+  const FrameClassPtr& getFrameClass() const
+    {return frameClass;}
+
+protected:
+  friend class FrameBasedFunctionClass;
+
+  FrameClassPtr frameClass;
 };
 
 typedef ReferenceCountedObjectPtr<FrameBasedFunction> FrameBasedFunctionPtr;
