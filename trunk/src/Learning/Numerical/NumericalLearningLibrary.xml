@@ -45,15 +45,15 @@
     <variable type="Class" name="lossFunctionClass"/>
   </class>
   
-  <class name="LinearRegressor" base="SupervisedLinearNumericalFunction">
+  <class name="LinearRegressor" base="SupervisedLinearNumericalFunction" shortName="linearRegressor">
     <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass" returnType="SupervisedNumericalFunction"/>
   </class>
   
-  <class name="LinearBinaryClassifier" base="SupervisedLinearNumericalFunction">
+  <class name="LinearBinaryClassifier" base="SupervisedLinearNumericalFunction" shortName="linearBinaryClassifier">
     <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass" returnType="SupervisedNumericalFunction"/>
   </class>
   
-  <class name="LinearLearningMachine" base="ProxyFunction">
+  <class name="LinearLearningMachine" base="ProxyFunction" shortName="linearLearningMachine">
     <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
     <variable type="LearnerParameters" name="learnerParameters"/>
   </class>

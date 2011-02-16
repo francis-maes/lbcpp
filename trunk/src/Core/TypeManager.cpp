@@ -98,6 +98,8 @@ bool TypeManager::declare(ExecutionContext& context, TypePtr type)
   }
   type->setStaticAllocationFlag();
   types[typeName] = type;
+  if (type->getShortName().isNotEmpty())
+    typesByShortName[type->getShortName()] = type;
   type->namedType = true;
   return true;
 }
@@ -158,6 +160,15 @@ TypePtr TypeManager::getType(ExecutionContext& context, const String& typeName, 
   ScopedLock _(typesLock);
   TemplateTypeCache* templateType = getTemplateType(context, typeName);
   return templateType ? templateType->getInstanceCached(context, arguments) : TypePtr();
+}
+
+TypePtr TypeManager::getTypeByShortName(ExecutionContext& context, const String& shortName) const
+{
+  TypeMap::const_iterator it = typesByShortName.find(shortName);
+  if (it == typesByShortName.end())
+    return TypePtr();
+  else
+    return it->second;
 }
 
 TypePtr TypeManager::getType(ExecutionContext& context, const String& name) const
@@ -222,6 +233,7 @@ void TypeManager::shutdown()
     toDelete.push_back(it->second.get());
   }
   types.clear();
+  typesByShortName.clear();
 
   for (size_t i = 0; i < toDelete.size(); ++i)
     delete toDelete[i];

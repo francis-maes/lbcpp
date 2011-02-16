@@ -44,6 +44,7 @@
     <variable type="Type" name="baseType"/>
     <variable type="TemplateType" name="templateType"/>
     <variable type="ObjectVector[Type]" name="templateArguments"/>
+    <variable type="String" name="shortName"/>
     <code>
       virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
         {return Variable(typeManager().getType(context, value));}

@@ -61,6 +61,7 @@ public:
     {jassert(false); return TypePtr();} // should be =0
 
   bool initialize(ExecutionContext& context, TypePtr inputType);
+  bool initialize(ExecutionContext& context, TypePtr inputType1, TypePtr inputType2);
   bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
   bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputTypes);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
@@ -149,6 +150,8 @@ public:
   /*
   ** High level learning operations
   */
+  bool checkIsInitialized(ExecutionContext& context) const;
+
   bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr());
   bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>());
 
@@ -164,6 +167,12 @@ public:
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const;
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const;
   Variable computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const;
+
+  /*
+  ** Object
+  */
+  virtual String toString() const;
+  virtual String toShortString() const;
 
   /////////////////////////////////////////////////////////////
   // old

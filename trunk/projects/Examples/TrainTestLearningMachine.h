@@ -123,21 +123,18 @@ typedef ReferenceCountedObjectPtr<LearningProblem> LearningProblemPtr;
 class LearningProblem : public Object
 {
 public:
-  static LearningProblemPtr createFromString(ExecutionContext& context, const String& stringValue);
-
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file) = 0;
   //virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
-};
 
+  virtual String toString() const
+    {return getClass()->getShortName();}
+};
 
 class RegressionProblem : public LearningProblem
 {
 public:
   RegressionProblem() : features(new DefaultEnumeration(T("Features"))) {}
-
-  virtual String toString() const
-    {return T("Regression");}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return regressionDataTextParser(context, file, features);}
@@ -153,9 +150,6 @@ class BinaryClassificationProblem : public LearningProblem
 {
 public:
   BinaryClassificationProblem() : features(new DefaultEnumeration(T("Features"))) {}
-
-  virtual String toString() const
-    {return T("Binary");}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return binaryClassificationDataTextParser(context, file, features);}
@@ -173,9 +167,6 @@ public:
   MultiClassClassificationProblem()
     : features(new DefaultEnumeration(T("Features"))),
       labels(new DefaultEnumeration(T("Labels"))) {}
-
-  virtual String toString() const
-    {return T("MultiClass");}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, features, labels);}
@@ -203,9 +194,6 @@ public:
       outputClass(sparseDoubleVectorClass(labels, probabilityType))
   {
   }
-
-  virtual String toString() const
-    {return T("MultiLabel");}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationDataTextParser(context, file, features, labels);}
@@ -235,33 +223,17 @@ protected:
   ClassPtr outputClass; 
 };
 
-LearningProblemPtr LearningProblem::createFromString(ExecutionContext& context, const String& stringValue)
-{
-  if (stringValue == T("Regression"))
-    return new RegressionProblem();
-  else if (stringValue == T("MultiClass"))
-    return new MultiClassClassificationProblem();
-  else if (stringValue == T("MultiLabel"))
-    return new MultiLabelClassificationProblem();
-  else if (stringValue == T("Binary"))
-    return new BinaryClassificationProblem();
-  else
-  {
-    context.warningCallback(T("Unknown learning problem type: ") + stringValue);
-    return LearningProblemPtr();
-  }
-}
-
 class TrainTestLearningMachine : public WorkUnit
 {
 public:
-  TrainTestLearningMachine() : numStacks(1), maxExamples(0) {}
+  TrainTestLearningMachine() : maxExamples(0) {}
 
   virtual Variable run(ExecutionContext& context)
   {
-    if (!learningProblem)
+    if (!learningProblem || !learningMachine)
       return false;
 
+    // Load data
     context.enterScope(T("Loading Data"));
     context.enterScope(T("Training Data"));
     ContainerPtr trainingData = loadData(context, learningProblem, trainingFile);
@@ -273,29 +245,31 @@ public:
     context.leaveScope(loadingOk);
     if (!loadingOk)
       return false;
-  
-#if 0
-    // create learning machine
-    InferencePtr inference = learningProblem->createInference(context, learningMachineFamily, numStacks, methodToUse);
-    if (!inference)
+
+    // initialize learning machine
+    TypePtr examplesType = trainingData->getElementsType();
+    jassert(examplesType->getNumTemplateArguments() == 2);
+    if (!learningMachine->initialize(context, examplesType->getTemplateArgument(0), examplesType->getTemplateArgument(1)))
       return false;
 
     // train
-    if (!inference->train(context, trainingData, ContainerPtr(), T("Training")))
+    context.enterScope(T("Training"));
+    if (!learningMachine->train(context, trainingData))
       return false;
-
-    // tmp: inference 
-    context.resultCallback(T("inference"), inference);
+    context.resultCallback(T("learning machine"), learningMachine);
+    context.leaveScope(true);
 
     // evaluate on training data
-    if (!inference->evaluate(context, trainingData, learningProblem->createEvaluator(context), T("Evaluate on training data")))
+    context.enterScope(T("Evaluate on training data"));
+    if (!learningMachine->evaluate(context, trainingData, learningProblem->createEvaluator(context)))//, T("Evaluate on training data")))
       return false;
+    context.leaveScope(true);
 
     // evaluate on testing data
-    if (!inference->evaluate(context, testingData, learningProblem->createEvaluator(context), T("Evaluate on testing data")))
+    context.enterScope(T("Evaluate on testing data"));
+    if (!learningMachine->evaluate(context, testingData, learningProblem->createEvaluator(context)))//, T("Evaluate on testing data")))
       return false;
-#endif // 0
-
+    context.leaveScope(true);
     return true;
   }
 
@@ -305,8 +279,8 @@ protected:
   LearningProblemPtr learningProblem;
   FunctionPtr learningMachine;
 
-  size_t numStacks;
-  String methodToUse;
+  //size_t numStacks;
+  //String methodToUse;
   File trainingFile;
   File testingFile;
   size_t maxExamples;
@@ -327,24 +301,6 @@ protected:
     if (res->getNumElements() == 0)
       context.warningCallback(T("No examples"));
     return res;
-  }
-
-  LearningProblemPtr createLearningProblem(ExecutionContext& context) const
-  {
-    static const juce::tchar* classNames[] = {T("MultiClassClassificationProblem"), T("MultiLabelClassificationProblem")};
-    return createObjectFromEnum(context, learningProblem, classNames).staticCast<LearningProblem>();
-  }
-/*
-  LearningMachineFamilyPtr createLearningMachineFamily(ExecutionContext& context) const
-  {
-    static const juce::tchar* classNames[] = {T("LinearLearningMachineFamily"), T("ExtraTreeLearningMachineFamily")};
-    return createObjectFromEnum(context, learningMachineFamily, classNames).staticCast<LearningMachineFamily>();
-  }*/
-
-  static ObjectPtr createObjectFromEnum(ExecutionContext& context, size_t enumValue, const juce::tchar* classNames[])
-  {
-    TypePtr type = typeManager().getType(context, classNames[enumValue]);
-    return type ? Object::create(type) : ObjectPtr();
   }
 };
 

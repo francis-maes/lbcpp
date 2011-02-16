@@ -36,20 +36,12 @@
   </enumeration>
   -->
 
-  <class name="LearningProblem" abstract="yes">
-    <code>
-      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
-      {
-        ObjectPtr res = LearningProblem::createFromString(context, value);
-        return res ? Variable(res) : Variable::missingValue(refCountedPointerFromThis(this));
-      }
-    </code>
-  </class>
+  <class name="LearningProblem" abstract="yes"/>
 
-  <class name="RegressionProblem" base="LearningProblem"/>
-  <class name="BinaryClassificationProblem" base="LearningProblem"/>
-  <class name="MultiClassClassificationProblem" base="LearningProblem"/>
-  <class name="MultiLabelClassificationProblem" base="LearningProblem"/>
+  <class name="RegressionProblem" base="LearningProblem" shortName="regression"/>
+  <class name="BinaryClassificationProblem" base="LearningProblem" shortName="binary"/>
+  <class name="MultiClassClassificationProblem" base="LearningProblem" shortName="multiClass"/>
+  <class name="MultiLabelClassificationProblem" base="LearningProblem" shortName="multiLabel"/>
   
   <!--  
   <enumeration name="LearningMachineFamilyEnum">
@@ -66,9 +58,10 @@
 
   <class name="TrainTestLearningMachine" base="WorkUnit">
     <variable type="LearningProblem" name="learningProblem" shortName="t"/>
-    <!-- <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/> -->
+    <variable type="Function" name="learningMachine" shortName="m"/>
+    <!-- <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/> 
     <variable type="PositiveInteger" name="numStacks" shortName="stack"/>
-    <variable type="String" name="methodToUse" shortName="m"/>
+    <variable type="String" name="methodToUse" shortName="m"/>-->
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
     <variable type="PositiveInteger" name="maxExamples" shortName="max"/>
