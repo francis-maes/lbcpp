@@ -40,7 +40,7 @@ public:
   BuiltinType(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseType)
     : Type(templateType, templateArguments, baseType) {}
 
-  virtual VariableValue createFromXml(XmlImporter& importer) const
+  virtual Variable createFromXml(XmlImporter& importer) const
     {return createFromString(importer.getContext(), importer.getAllSubText());}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const

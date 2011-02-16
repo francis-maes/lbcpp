@@ -34,22 +34,21 @@ public:
 
   virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    CompositeOnlineLearnerPtr compositeOnlineLearner = new CompositeOnlineLearner();
-    if (functionsToLearn.size())
+    // identify functions that have an online learner
+    std::vector<FunctionPtr> functionsToLearn = this->functionsToLearn;
+    if (functionsToLearn.empty())
     {
-      // functions to learn are explicitly declared
-      for (size_t i = 0; i < functionsToLearn.size(); ++i)
-        compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
-    }
-    else
-    {
-      // all sub-functions that have an online learner must be learned
-      std::vector<FunctionPtr> functionsToLearner;
-      getAllFunctionsThatHaveAnOnlineLearner(function, functionsToLearner);
-      for (size_t i = 0; i < functionsToLearn.size(); ++i)
-        compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+      // functions to learn are not explicitly declared,
+      // all sub-functions that have an online learner will be learned
+      getAllFunctionsThatHaveAnOnlineLearner(function, functionsToLearn);
     }
 
+    // start learning
+    CompositeOnlineLearnerPtr compositeOnlineLearner = new CompositeOnlineLearner();
+    for (size_t i = 0; i < functionsToLearn.size(); ++i)
+      compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+
+    // perform learning iterations
     for (size_t i = 0; compositeOnlineLearner->getNumLearners() && (!maxIterations || i < maxIterations); ++i)
     {
       context.enterScope(T("Learning Iteration ") + String((int)i + 1));
@@ -59,9 +58,12 @@ public:
       context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Learning Iterations")));
     }
 
+    // finish learning
     compositeOnlineLearner->finishLearning();
     return function;
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class StochasticBatchLearnerClass;
@@ -77,11 +79,14 @@ protected:
       res.push_back(function);
     
     CompositeFunctionPtr compositeFunction = function.dynamicCast<CompositeFunction>();
-    size_t n = compositeFunction->getNumSubFunctions();
-    for (size_t i = 0; i < n; ++i)
+    if (compositeFunction)
     {
-      const FunctionPtr& subFunction = compositeFunction->getSubFunction(i);
-      getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
+      size_t n = compositeFunction->getNumSubFunctions();
+      for (size_t i = 0; i < n; ++i)
+      {
+        const FunctionPtr& subFunction = compositeFunction->getSubFunction(i);
+        getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
+      }
     }
   }
 

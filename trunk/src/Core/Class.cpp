@@ -42,26 +42,24 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
   return object1->compare(object2);
 }
 
-VariableValue Class::createFromString(ExecutionContext& context, const String& value) const
+Variable Class::createFromString(ExecutionContext& context, const String& value) const
 {
-  VariableValue res = create(context);
-  if (isMissingValue(res))
-  {
+  ObjectPtr object = create(context).getObject();
+  if (!object)
     context.errorCallback(T("Class::createFromString"), T("Could not create instance of ") + getName().quoted());
-    return getMissingValue();
-  }
-  return res.getObject()->loadFromString(context, value) ? res : getMissingValue();
+  else if (!object->loadFromString(context, value))
+    object = ObjectPtr();
+  return Variable(object, refCountedPointerFromThis(this));
 }
 
-VariableValue Class::createFromXml(XmlImporter& importer) const
+Variable Class::createFromXml(XmlImporter& importer) const
 {
-  VariableValue res = create(importer.getContext());
-  if (isMissingValue(res))
-  {
+  ObjectPtr object = create(importer.getContext()).getObject();
+  if (!object)
     importer.errorMessage(T("Class::createFromXml"), T("Could not create instance of ") + getName().quoted());
-    return getMissingValue();
-  }
-  return res.getObject()->loadFromXml(importer) ? res : getMissingValue();
+  else if (!object->loadFromXml(importer))
+    object = ObjectPtr();
+  return Variable(object, refCountedPointerFromThis(this));
 }
 
 void Class::saveToXml(XmlExporter& exporter, const VariableValue& value) const

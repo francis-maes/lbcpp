@@ -285,7 +285,7 @@ protected:
     // create() function
     if (!isAbstract && classBaseClass == T("DefaultClass"))
     {
-      openScope(T("virtual VariableValue create(ExecutionContext& context) const"));
+      openScope(T("virtual Variable create(ExecutionContext& context) const"));
         writeLine(className + T("* res = new ") + className + T("();"));
         writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
         writeLine(T("return res;"));

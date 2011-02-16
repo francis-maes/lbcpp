@@ -27,13 +27,10 @@ Variable Variable::copyFrom(TypePtr type, const VariableValue& value)
 }
 
 Variable Variable::createFromString(ExecutionContext& context, TypePtr type, const String& str)
-{
-  VariableValue value = type->createFromString(context, str);
-  return type->isMissingValue(value) ? Variable::missingValue(type) : Variable(type, value);
-}
+  {return type->createFromString(context, str);}
 
 Variable Variable::createFromXml(TypePtr type, XmlImporter& importer)
-  {return Variable(type, type->createFromXml(importer));}
+  {return type->createFromXml(importer);}
 
 Variable Variable::createFromFile(ExecutionContext& context, const File& file)
 {

@@ -39,22 +39,22 @@ public:
   DoubleType(const String& name, TypePtr baseType)
     : BuiltinType(name, baseType) {}
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue(0.0);}
+  virtual Variable create(ExecutionContext& context) const
+    {return Variable(0.0, refCountedPointerFromThis(this));}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim().toLowerCase();
     if (!v.containsOnly(T("0123456789e.-")))
     {
       context.errorCallback(T("DoubleType::createFromString"), T("Could not read double value ") + value.quoted());
-      return getMissingValue();
+      return Variable::missingValue(refCountedPointerFromThis(this));
     }
-    return VariableValue(v.getDoubleValue());
+    return Variable(v.getDoubleValue(), refCountedPointerFromThis(this));
   }
 
-  virtual VariableValue createFromXml(XmlImporter& importer) const
-    {return VariableValue(importer.getAllSubText().getDoubleValue());}
+  virtual Variable createFromXml(XmlImporter& importer) const
+    {return Variable(importer.getAllSubText().getDoubleValue(), refCountedPointerFromThis(this));}
 
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
     {exporter.addTextElement(String(value.getDouble(), 8));}
@@ -103,12 +103,12 @@ public:
   virtual String toString(const VariableValue& value) const
     {return String(value.getDouble() * 100, 2) + T("%");}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     String str = value.trim();
     if (str.endsWithChar('%'))
       str.dropLastCharacters(1);
-    return str.getDoubleValue() / 100.0;
+    return Variable(str.getDoubleValue() / 100.0, refCountedPointerFromThis(this));
   }
 };
 

@@ -10,11 +10,11 @@
     <value name="perStepMiniBatch"/>
 
     <code>
-      VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
       {
         String str = value.trim();
         if (str.startsWith(T("perStepMiniBatch")))
-          return VariableValue(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue());
+          return Variable(perStepMiniBatch + str.substring(strlen("perStepMiniBatch")).getIntValue(), refCountedPointerFromThis(this));
         else
           return Enumeration::createFromString(context, value);
       }

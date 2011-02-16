@@ -132,9 +132,9 @@ public:
   virtual VariableValue getMissingValue() const;
   virtual bool isMissingValue(const VariableValue& value) const;
 
-  virtual VariableValue create(ExecutionContext& context) const;
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const;
-  virtual VariableValue createFromXml(XmlImporter& importer) const;
+  virtual Variable create(ExecutionContext& context) const;
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const;
+  virtual Variable createFromXml(XmlImporter& importer) const;
   virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const;
 
   virtual void destroy(VariableValue& value) const;

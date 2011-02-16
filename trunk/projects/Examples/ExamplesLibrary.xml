@@ -38,7 +38,7 @@
 
   <class name="LearningProblem" abstract="yes">
     <code>
-      virtual VariableValue createFromString(ExecutionContext&amp; context, const String&amp; value) const
+      virtual Variable createFromString(ExecutionContext&amp; context, const String&amp; value) const
         {return LearningProblem::createFromString(context, value);}
     </code>
   </class>

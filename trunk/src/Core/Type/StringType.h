@@ -42,13 +42,13 @@ public:
   virtual VariableValue getMissingValue() const
     {return VariableValue();}
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue(String::empty);}
+  virtual Variable create(ExecutionContext& context) const
+    {return Variable(String::empty, refCountedPointerFromThis(this));}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     String v = value.trim();
-    return VariableValue(v.startsWithChar('"') ? v.unquoted() : v);
+    return Variable(v.startsWithChar('"') ? v.unquoted() : v, refCountedPointerFromThis(this));
   }
 
   virtual void destroy(VariableValue& value) const

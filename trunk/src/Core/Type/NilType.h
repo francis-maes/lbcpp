@@ -39,11 +39,11 @@ public:
     : Type(name, baseType) {}
   virtual ~NilType() {}
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue();}
+  virtual Variable create(ExecutionContext& context) const
+    {return Variable();}
 
-  virtual VariableValue createFromXml(XmlImporter& importer) const
-    {return VariableValue();}
+  virtual Variable createFromXml(XmlImporter& importer) const
+    {return Variable();}
 
   virtual void destroy(VariableValue& value) const
     {}

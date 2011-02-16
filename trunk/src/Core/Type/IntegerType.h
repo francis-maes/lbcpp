@@ -39,17 +39,17 @@ public:
     : BuiltinType(className, baseType) {}
   IntegerType() : BuiltinType(T("Integer")) {}
 
-  virtual VariableValue create(ExecutionContext& context) const
-    {return VariableValue(0);}
+  virtual Variable create(ExecutionContext& context) const
+    {return Variable(0, refCountedPointerFromThis(this));}
 
-  virtual VariableValue createFromString(ExecutionContext& context, const String& value) const
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
     if (!value.trim().containsOnly(T("-+e0123456789")))
     {
       context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
-      return getMissingValue();
+      return Variable::missingValue(refCountedPointerFromThis(this));
     }
-    return VariableValue(value.getIntValue());
+    return Variable(value.getIntValue(), refCountedPointerFromThis(this));
   }
 
   virtual void destroy(VariableValue& value) const
