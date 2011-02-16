@@ -176,9 +176,14 @@ void ExecutionTraceTreeView::timerCallback()
             results = trace->getResultsObject(*context);
 
           if (hasSubItems)
+          {
             table = trace->getChildrenResultsTable(*context);
+            if (table && table->getElementsType()->getNumMemberVariables() <= 1)
+              table = ContainerPtr(); // do not display tables that have only one column
+          }
 
-          selectedVariables.push_back(new Pair(results, table));
+          if (results || table)
+            selectedVariables.push_back(new Pair(results, table));
         
           if (!selectionName.isEmpty())
             selectionName += T(", ");

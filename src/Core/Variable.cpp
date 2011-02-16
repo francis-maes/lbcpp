@@ -57,7 +57,12 @@ int Variable::compare(const Variable& otherValue) const
     else
       return getTypeName().compare(otherValue.getTypeName());
   }
-  return type->compare(value, otherValue.value);
+  if (exists() && otherValue.exists())
+    return type->compare(value, otherValue.value);
+  else if (!exists() && !otherValue.exists())
+    return 0;
+  else
+    return exists() ? 1 : -1;
 }
 
 Variable Variable::clone(ExecutionContext& context) const

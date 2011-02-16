@@ -16,6 +16,36 @@
 namespace lbcpp
 {
 
+class BinaryClassificationDataTextParser : public LearningDataTextParser
+{
+public:
+  BinaryClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features)
+    : LearningDataTextParser(context, file), features(features)
+    {elementsType = pairClass(sparseDoubleVectorClass(features), probabilityType);}
+
+  BinaryClassificationDataTextParser() {}
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+  virtual bool parseDataLine(const std::vector<String>& columns)
+  {
+    String label = columns[0];
+    jassert(label.isNotEmpty());
+    juce::tchar lowerCase = juce::CharacterFunctions::toLowerCase(label[0]);
+    double supervision = (lowerCase == 'y' || lowerCase == 't' || lowerCase == '+' || lowerCase == '1') ? 1.0 : 0.0;
+    SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
+    if (!featuresVector)
+      return false;
+    setResult(new Pair(elementsType, featuresVector, Variable(supervision, probabilityType)));
+    return true;
+  }
+
+private:
+  DefaultEnumerationPtr features;
+  TypePtr elementsType;
+};
+
 class ClassificationDataTextParser : public LearningDataTextParser
 {
 public:

@@ -259,10 +259,7 @@ protected:
     else if (value.isBoolean())
       return value.getBoolean() ? 1.0 : 0.0;
     else
-    {
-      jassert(false);
       return 0.0;
-    }
   }
 
   void getTableValueRange(size_t column, double& minValue, double& maxValue) const
