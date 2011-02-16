@@ -64,6 +64,12 @@ public:
     return str.containsAnyOf(T(" \t\r\n")) ? str.quoted() : str;
   }
 
+  virtual String toShortString(const VariableValue& value) const
+  {
+    jassert(!isMissingValue(value));
+    return value.getString();
+  }
+
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const
     {return value1.getString().compare(value2.getString());}
 };

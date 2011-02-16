@@ -19,11 +19,10 @@ namespace lbcpp
 class ClassificationDataTextParser : public LearningDataTextParser
 {
 public:
-  ClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels)
-    : LearningDataTextParser(context, file), inputClass(inputClass), outputLabels(outputLabels)
-  {
-    elementsType = pairClass(inputClass, outputLabels);
-  }
+  ClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels)
+    : LearningDataTextParser(context, file), features(features), labels(labels)
+    {elementsType = pairClass(sparseDoubleVectorClass(features), labels);}
+
   ClassificationDataTextParser() {}
 
   virtual TypePtr getElementsType() const
@@ -31,17 +30,17 @@ public:
 
   virtual bool parseDataLine(const std::vector<String>& columns)
   {
-    size_t label = outputLabels->findOrAddElement(context, columns[0]);
-    ObjectPtr features = parseFeatureList(inputClass, columns, 1);
-    if (!features)
+    size_t label = labels->findOrAddElement(context, columns[0]);
+    SparseDoubleVectorPtr featuresVector = parseFeatureList(features, columns, 1);
+    if (!featuresVector)
       return false;
-    setResult(new Pair(elementsType, features, Variable(label, outputLabels)));
+    setResult(new Pair(elementsType, featuresVector, Variable(label, labels)));
     return true;
   }
 
 private:
-  DynamicClassPtr inputClass;
-  DefaultEnumerationPtr outputLabels;
+  DefaultEnumerationPtr features;
+  DefaultEnumerationPtr labels;
   TypePtr elementsType;
 };
 

@@ -28,6 +28,7 @@
 
 # include "predeclarations.h"
 # include "../Function/Function.h"
+# include "DoubleVector.h"
 
 namespace lbcpp
 {
@@ -261,6 +262,9 @@ protected:
 private:
   Variable currentResult;      /*!< The current Variable. */
   InputStream* istr;           /*!< A pointer to the current stream. */
+  ProgressionStatePtr progression;
+
+  void initialize(InputStream* istr);
 };
   
 
@@ -363,7 +367,7 @@ protected:
   ** @param columns : the columns to parse.
   ** @param firstColumn : start column number.
   */
-  ObjectPtr parseFeatureList(DynamicClassPtr cl, const std::vector<String>& columns, size_t firstIndex) const;
+  SparseDoubleVectorPtr parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstIndex) const;
 
 
   /**
@@ -397,8 +401,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<LearningDataTextParser> LearningDataTextParserPtr;
 
-extern LearningDataTextParserPtr classificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels);
-extern LearningDataTextParserPtr multiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DynamicClassPtr inputClass, DefaultEnumerationPtr outputLabels);
+extern LearningDataTextParserPtr classificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
+extern LearningDataTextParserPtr multiLabelClassificationDataTextParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 
 }; /* namespace lbcpp */
 

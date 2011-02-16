@@ -256,6 +256,8 @@ protected:
       return (double)value.getInteger();
     else if (value.isDouble())
       return value.getDouble();
+    else if (value.isBoolean())
+      return value.getBoolean() ? 1.0 : 0.0;
     else
     {
       jassert(false);
