@@ -400,6 +400,9 @@ SET(LBCPP_LEARNING_SOURCES
 )
 
 SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
+  Learning/OnlineLearner/StoppingCriterionOnlineLearner.h
+  Learning/OnlineLearner/RestoreBestParametersOnlineLearner.h
+  Learning/OnlineLearner/EvaluatorOnlineLearner.h
   Learning/OnlineLearner/CompositeOnlineLearner.h
   Learning/OnlineLearner/OnlineLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OnlineLearnerLibrary.cpp

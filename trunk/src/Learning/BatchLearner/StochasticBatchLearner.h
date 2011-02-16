@@ -22,104 +22,41 @@ namespace lbcpp
 class StochasticBatchLearner : public BatchLearner
 {
 public:
-  StochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, EvaluatorPtr evaluator,
-                    size_t maxIterations = 1000,
-                    StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-                    bool randomizeExamples = true,
-                    bool restoreBestParametersWhenDone = true)
-    : functionsToLearn(functionsToLearn), evaluator(evaluator), maxIterations(maxIterations),
-      randomizeExamples(randomizeExamples), restoreBestParametersWhenDone(restoreBestParametersWhenDone) {}
+  StochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations, bool randomizeExamples)
+    : functionsToLearn(functionsToLearn), maxIterations(maxIterations), randomizeExamples(randomizeExamples) {}
 
   StochasticBatchLearner() {}
 
   virtual TypePtr getRequiredExamplesType() const
-    {return objectClass;} // frameObjectClass
+    {return objectClass;}
 
   virtual FunctionPtr train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     CompositeOnlineLearnerPtr compositeOnlineLearner = new CompositeOnlineLearner();
     for (size_t i = 0; i < functionsToLearn.size(); ++i)
-      compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations);
+      compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
 
-    if (stoppingCriterion)
-      stoppingCriterion->reset();
-    double bestMainScore = -DBL_MAX;
-    for (size_t i = 0; !maxIterations || i < maxIterations; ++i)
+    for (size_t i = 0; compositeOnlineLearner->getNumLearners() && (!maxIterations || i < maxIterations); ++i)
     {
       context.enterScope(T("Learning Iteration ") + String((int)i + 1));
       context.resultCallback(T("Iteration"), i + 1);
-
-      // Learning iteration
-      jassert(compositeOnlineLearner->getNumLearners());
-      compositeOnlineLearner->startLearningIteration(i);
-
-      if (randomizeExamples)
-      {
-        std::vector<size_t> order;
-        RandomGenerator::getInstance()->sampleOrder(trainingData.size(), order);
-        for (size_t i = 0; i < order.size(); ++i)
-          doEpisode(context, function, trainingData[order[i]], compositeOnlineLearner);
-      }
-      else
-        for (size_t i = 0; i < trainingData.size(); ++i)
-          doEpisode(context, function, trainingData[i], compositeOnlineLearner);
-
-      compositeOnlineLearner->finishLearningIterationAndRemoveFinishedLearners(i);
-      bool learningFinished = (compositeOnlineLearner->getNumLearners() == 0);
-
-      // Evaluation
-      EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
-      function->evaluate(context, trainingData, trainEvaluator);
-      returnEvaluatorResults(context, trainEvaluator, T("Train"));
-      EvaluatorPtr validationEvaluator;
-      if (validationData.size())
-      {
-        validationEvaluator = evaluator->cloneAndCast<Evaluator>();
-        function->evaluate(context, validationData, validationEvaluator);
-        returnEvaluatorResults(context, validationEvaluator, T("Validation"));
-      }
-
-      double mainScore = validationEvaluator ? validationEvaluator->getDefaultScore() : trainEvaluator->getDefaultScore();
-      
-      context.leaveScope(mainScore);
+      Variable learningIterationResult = doLearningIteration(context, i, function, trainingData, compositeOnlineLearner);
+      context.leaveScope(learningIterationResult);
       context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Learning Iterations")));
-
-      if (mainScore > bestMainScore)
-      {
-        if (restoreBestParametersWhenDone)
-          storeParameters(function);
-        bestMainScore = mainScore;
-        //context.informationCallback(T("Best score: ") + String(mainScore));
-      }
-
-      if (learningFinished || (stoppingCriterion && stoppingCriterion->shouldStop(mainScore)))
-        break;
     }
 
     compositeOnlineLearner->finishLearning();
-    
-    if (restoreBestParametersWhenDone)
-      restoreParameters(function);
-
     return function;
   }
 
-  void returnEvaluatorResults(ExecutionContext& context, EvaluatorPtr evaluator, const String& name) const
-  {
-    std::vector< std::pair<String, double> > results;
-    evaluator->getScores(results);
-    for (size_t i = 0; i < results.size(); ++i)
-      context.resultCallback(name + T(" ") + results[i].first, results[i].second);
-  }
-
 protected:
+  friend class StochasticBatchLearnerClass;
+
   std::vector<FunctionPtr> functionsToLearn;
   EvaluatorPtr evaluator;
   size_t maxIterations;
-  StoppingCriterionPtr stoppingCriterion;
   bool randomizeExamples;
-  bool restoreBestParametersWhenDone;
-
+  
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const
   {
     onlineLearner->startEpisode();
@@ -127,14 +64,23 @@ protected:
     onlineLearner->finishEpisode();
   }
 
-  void storeParameters(const FunctionPtr& function) const
+  Variable doLearningIteration(ExecutionContext& context, size_t iteration, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, CompositeOnlineLearnerPtr compositeOnlineLearner) const
   {
-    // FIXME
-  }
+    jassert(compositeOnlineLearner->getNumLearners());
+    compositeOnlineLearner->startLearningIteration(iteration);
 
-  void restoreParameters(const FunctionPtr& function) const
-  {
-    // FIXME
+    if (randomizeExamples)
+    {
+      std::vector<size_t> order;
+      RandomGenerator::getInstance()->sampleOrder(trainingData.size(), order);
+      for (size_t i = 0; i < order.size(); ++i)
+        doEpisode(context, function, trainingData[order[i]], compositeOnlineLearner);
+    }
+    else
+      for (size_t i = 0; i < trainingData.size(); ++i)
+        doEpisode(context, function, trainingData[i], compositeOnlineLearner);
+
+    return compositeOnlineLearner->finishLearningIterationAndRemoveFinishedLearners(iteration);
   }
 };
 

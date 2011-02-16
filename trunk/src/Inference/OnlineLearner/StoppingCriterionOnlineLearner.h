@@ -18,16 +18,16 @@
 namespace lbcpp
 {
 
-class StoppingCriterionOnlineLearner : public UpdatableOnlineLearner
+class OldStoppingCriterionOnlineLearner : public UpdatableOnlineLearner
 {
 public:
-  StoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency)
+  OldStoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency)
     : UpdatableOnlineLearner(criterionTestFrequency), 
         criterion(criterion), restoreBestParametersWhenLearningStops(restoreBestParametersWhenLearningStops),
         learningStopped(false), bestDefaultScore(-DBL_MAX), iteration(0)
      {criterion->reset();}
 
-  StoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
+  OldStoppingCriterionOnlineLearner() : learningStopped(false), bestDefaultScore(-DBL_MAX) {}
 
   virtual void startLearningCallback(ExecutionContext& context)
   {
@@ -46,7 +46,7 @@ public:
   {
     UpdatableOnlineLearner::clone(context, target);
     if (criterion)
-      target.staticCast<StoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>(context);
+      target.staticCast<OldStoppingCriterionOnlineLearner>()->criterion = criterion->cloneAndCast<StoppingCriterion>(context);
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
@@ -69,7 +69,7 @@ public:
     {return bestDefaultScore;}
 
 private:
-  friend class StoppingCriterionOnlineLearnerClass;
+  friend class OldStoppingCriterionOnlineLearnerClass;
 
   StoppingCriterionPtr criterion;
   bool restoreBestParametersWhenLearningStops;

@@ -9,7 +9,9 @@
   </class>
 
   <class name="StochasticBatchLearner" base="BatchLearner">
-    <constructor arguments="const std::vector&lt;FunctionPtr&gt;&amp; functionsToLearn, EvaluatorPtr evaluator, size_t maxIterations, StoppingCriterionPtr stoppingCriterion, bool randomizeExamples, bool restoreBestParametersWhenDone"/>
+    <constructor arguments="const std::vector&lt;FunctionPtr&gt;&amp; functionsToLearn, size_t maxIterations, bool randomizeExamples"/>
+    <variable type="PositiveInteger" name="maxIterations"/>
+    <variable type="Boolean" name="randomizeExamples"/>
   </class>
   
 </library>

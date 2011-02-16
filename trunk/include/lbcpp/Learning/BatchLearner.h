@@ -58,11 +58,7 @@ typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;
 
 
 BatchLearnerPtr frameBasedFunctionBatchLearner();
-BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, EvaluatorPtr evaluator,
-                        size_t maxIterations = 100,
-                        StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr(),
-                        bool randomizeExamples = true,
-                        bool restoreBestParametersWhenDone = true);
+BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
 
 }; /* namespace lbcpp */
 

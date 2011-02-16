@@ -80,7 +80,7 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
   lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(output.getFullPathName() + T(".gnuplot")));
   
   StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(numIterations);
-  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true));
+  lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(stoppingCriterion, true));
   
   return learner;
 }

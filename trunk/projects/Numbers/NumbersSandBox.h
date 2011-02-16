@@ -23,7 +23,7 @@ InferenceOnlineLearnerPtr createOnlineLearner()
       perStep, invLinearIterationFunction(1.0, 1000), true, // learning steps
       perStep, l2RegularizerFunction(0.01)));         // regularizer
 
-  lastLearner->setNextLearner(stoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(10), true)); // stopping criterion
+  lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(maxIterationsStoppingCriterion(10), true)); // stopping criterion
   return res;
 }
 

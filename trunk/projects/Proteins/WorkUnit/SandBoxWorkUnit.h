@@ -53,7 +53,7 @@ public:
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
 
     StoppingCriterionPtr stoppingCriterion = logicalOr(maxIterationsStoppingCriterion(100), maxIterationsWithoutImprovementStoppingCriterion(100));
-    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
+    lastLearner = lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(stoppingCriterion, true)); // stopping criterion
     return res;
   }
 

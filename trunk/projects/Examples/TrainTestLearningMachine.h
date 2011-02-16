@@ -58,7 +58,7 @@ public:
 
     StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(100);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
     criterion = logicalOrStoppingCriterion(criterion, isAboveValueStoppingCriterion(0.0));
-    lastLearner = lastLearner->setNextLearner(stoppingCriterionOnlineLearner(criterion));
+    lastLearner = lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(criterion));
     return res;
   }
 

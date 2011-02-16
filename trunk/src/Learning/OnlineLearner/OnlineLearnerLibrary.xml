@@ -2,9 +2,23 @@
 
 <library name="OnlineLearner" directory="Learning/OnlineLearner">
 
+  <class name="StoppingCriterionOnlineLearner" base="OnlineLearner">
+    <constructor arguments="StoppingCriterionPtr stoppingCriterion"/>
+    <variable type="StoppingCriterion" name="stoppingCriterion"/>
+  </class>
+  
+  <class name="RestoreBestParametersOnlineLearner" base="OnlineLearner">
+    <constructor/>
+  </class>
+
+  <class name="EvaluatorOnlineLearner" base="OnlineLearner">
+    <constructor arguments="EvaluatorPtr evaluator"/>
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
+  
   <class name="CompositeOnlineLearner" base="OnlineLearner">
     <constructor arguments="const std::vector&lt;OnlineLearnerPtr&gt;&amp; learners"/>
-    <constructor arguments="const OnlineLearnerPtr&amp; learner1, const OnlineLearnerPtr&amp; learner2"/>
+    <constructor arguments="const OnlineLearnerPtr&amp; learner1, const OnlineLearnerPtr&amp; learner2, const OnlineLearnerPtr&amp; learner3, const OnlineLearnerPtr&amp; learner4"/>
     <variable type="ObjectVector[OnlineLearner]" name="learners"/>
   </class>
 

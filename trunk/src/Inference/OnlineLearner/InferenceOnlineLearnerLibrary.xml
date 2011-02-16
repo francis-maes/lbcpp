@@ -53,7 +53,7 @@
     <variable type="Double" name="lastDefaultScore"/>
   </class>
 
-  <class name="StoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
+  <class name="OldStoppingCriterionOnlineLearner" base="UpdatableOnlineLearner">
     <constructor arguments="StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops, LearnerUpdateFrequency criterionTestFrequency"/>
 
     <variable type="StoppingCriterion" name="criterion"/>

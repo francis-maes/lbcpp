@@ -17,6 +17,9 @@
 namespace lbcpp
 {
 
+class GradientDescentOnlineLearner;
+typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentOnlineLearnerPtr;
+
 class GradientDescentOnlineLearner : public OnlineLearner, public FunctionCallback
 {
 public:
@@ -25,7 +28,7 @@ public:
       learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
   GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0) {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations)
+  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     numberOfActiveFeatures.clear();
     lossValue.clear();
@@ -59,23 +62,29 @@ public:
   virtual void startLearningIteration(size_t iteration)
     {function->addPostCallback(this);}
 
-  virtual bool finishLearningIteration(size_t iteration)
+  virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
     function->removePostCallback(this);
     bool isLearningFinished = false;
     if (lossValue.getCount())
     {
       double mean = lossValue.getMean();
-      context->resultCallback(T("Epoch"), epoch);
       context->resultCallback(T("Empirical Risk"), mean);
       context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
+      context->resultCallback(T("Epoch"), epoch);
       lossValue.clear();
+
+      if (objectiveValueToMinimize == DBL_MAX)
+        objectiveValueToMinimize = mean;
 
       if (mean == 0.0)
         isLearningFinished = true;
     }
     return isLearningFinished;
   }
+
+  virtual void finishLearning()
+    {function = FunctionPtr();}
 
   const NumericalLearnableFunctionPtr& getNumericalLearnableFunction() const
     {return function.staticCast<NumericalLearnableFunction>();}

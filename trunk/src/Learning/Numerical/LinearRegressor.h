@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Frame.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
+# include <lbcpp/Function/StoppingCriterion.h>
 
 namespace lbcpp
 {
@@ -56,11 +57,16 @@ public:
     frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));
     frameClass->addMemberOperator(context, new MakeRegressionLossFunction(), 1);
     FunctionPtr linearFunction = new LinearLearnableFunction();
+
+    linearFunction->setOnlineLearner(compositeOnlineLearner(
+      stochasticGDOnlineLearner(constantIterationFunction(0.1)),
+      evaluatorOnlineLearner(regressionErrorEvaluator(T("toto"))),
+      stoppingCriterionOnlineLearner(maxIterationsWithoutImprovementStoppingCriterion(10)),
+      restoreBestParametersOnlineLearner()));
+
     frameClass->addMemberOperator(context, linearFunction, 0, 2);
 
-    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, linearFunction), regressionErrorEvaluator(T("toto"))));
-
-//    setBatchLearner(frameBasedFunctionSequentialLearner());
+    setBatchLearner(stochasticBatchLearner(std::vector<FunctionPtr>(1, linearFunction)));
     return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 };

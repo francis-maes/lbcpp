@@ -19,14 +19,19 @@ class CompositeOnlineLearner : public OnlineLearner
 public:
   CompositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners)
     : learners(learners) {}
-  CompositeOnlineLearner(const OnlineLearnerPtr& learner1, const OnlineLearnerPtr& learner2)
-    : learners(2) {learners[0] = learner1; learners[1] = learner2;}
+  CompositeOnlineLearner(const OnlineLearnerPtr& learner1, const OnlineLearnerPtr& learner2, const OnlineLearnerPtr& learner3, const OnlineLearnerPtr& learner4)
+  {
+    if (learner1) learners.push_back(learner1);
+    if (learner2) learners.push_back(learner2);
+    if (learner3) learners.push_back(learner3);
+    if (learner4) learners.push_back(learner4);
+  }
   CompositeOnlineLearner() {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations)
+  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     for (size_t i = 0; i < learners.size(); ++i)
-      learners[i]->startLearning(context, function, maxIterations);
+      learners[i]->startLearning(context, function, maxIterations, trainingData, validationData);
   }
 
   virtual void startLearningIteration(size_t iteration)
@@ -43,40 +48,57 @@ public:
 
   virtual void finishEpisode()
   {
-    for (int i = learners.size() - 1; i >= 0; --i)
+    for (size_t i = 0; i < learners.size(); ++i)
       learners[i]->finishEpisode();
   }
 
-  virtual bool finishLearningIteration(size_t iteration)
+  virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
     bool learningIsFinished = false;
-    for (int i = learners.size() - 1; i >= 0; --i)
-      learningIsFinished |= learners[i]->finishLearningIteration(i);
+    for (size_t i = 0; i < learners.size(); ++i)
+      learningIsFinished |= learners[i]->finishLearningIteration(i, objectiveValueToMinimize);
     return learningIsFinished;
   }
 
   virtual void finishLearning()
   {
-    for (int i = learners.size() - 1; i >= 0; --i)
+    for (size_t i = 0; i < learners.size(); ++i)
       learners[i]->finishLearning();
   }
 
   size_t getNumLearners() const
     {return learners.size();}
 
-  void startLearningAndAddLearner(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations)
+  void startLearningAndAddLearner(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     const OnlineLearnerPtr& onlineLearner = function->getOnlineLearner();
     jassert(onlineLearner);
     learners.push_back(onlineLearner);
-    onlineLearner->startLearning(context, function, maxIterations);
+    onlineLearner->startLearning(context, function, maxIterations, trainingData, validationData);
   }
 
-  void finishLearningIterationAndRemoveFinishedLearners(size_t iteration)
+  Variable finishLearningIterationAndRemoveFinishedLearners(size_t iteration)
   {
-    for (int i = learners.size() - 1; i >= 0; --i)
-      if (learners[i]->finishLearningIteration(i))
-        learners.erase(learners.begin() + i);
+    if (learners.empty())
+      return Variable();
+
+    std::vector<OnlineLearnerPtr> remainingLearners;
+    remainingLearners.reserve(learners.size());
+    
+    ContainerPtr res = vector(doubleType, learners.size());
+    for (size_t i = 0; i < learners.size(); ++i)
+    {
+      const OnlineLearnerPtr& learner = learners[i];
+      double objectiveValue = DBL_MAX;
+      if (learner->finishLearningIteration(i, objectiveValue))
+        learner->finishLearning();
+      else
+        remainingLearners.push_back(learner);
+      jassert(objectiveValue < DBL_MAX);
+      res->setElement(i, objectiveValue);
+    }
+    learners.swap(remainingLearners);
+    return learners.size() > 1 ? res : res->getElement(0);
   }
 
 protected:
