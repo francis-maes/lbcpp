@@ -1,0 +1,13 @@
+apps/BoincEvaluator/*/*.zip
+archives/
+download/*.zip
+error_results/
+html/cache
+html/stats_*
+invalid_results/
+log_boinc/
+pid_boinc/
+results/
+sample_results/
+strange/
+tmp_boinc/
