@@ -64,7 +64,7 @@ protected:
 
     if (value.isObject())
     {
-      DenseDoubleObjectPtr scores = value.dynamicCast<DenseDoubleObject>();
+      DenseDoubleVectorPtr scores = value.dynamicCast<DenseDoubleVector>();
       if (scores)
       {
         const std::vector<double>& scoreValues = scores->getValues();

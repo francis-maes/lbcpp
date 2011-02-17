@@ -10,8 +10,8 @@
   <class name="EnumerationDistributionBuilder" base="DistributionBuilder">
     <constructor arguments="EnumerationPtr enumeration"/>
     <variable type="Enumeration" name="enumeration"/>
-    <variable type="GenericVector[Double]" name="elementValues"/>
-    <variable type="GenericVector[Double]" name="distributionValues"/>
+    <variable type="DenseDoubleVector[EnumValue, Double]" name="elementValues"/>
+    <variable type="DenseDoubleVector[EnumValue, Double]" name="distributionValues"/>
   </class>
 
   <class name="GaussianDistributionBuilder" base="DistributionBuilder">

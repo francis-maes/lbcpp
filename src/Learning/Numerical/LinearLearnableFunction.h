@@ -70,31 +70,6 @@ public:
     return true;
   }
 
-#if 0
-  virtual bool computeAndAddGradient(const Variable* inputs, const Variable& prediction, double& exampleLossValue, DoubleVectorPtr& target, double weight) const
-  {
-    const DoubleVectorPtr& inputVector = inputs[0].getObjectAndCast<DoubleVector>();
-    const Variable& supervision = inputs[1];
-
-    if (!supervision.exists())
-      return false;
-
-    if (supervision.isInstanceOf<ScalarFunction>())
-    {
-      const ScalarFunctionPtr& loss = supervision.staticCast<ScalarFunction>();
-      double lossDerivative;
-      //loss->computeDiscriminativeLoss(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
-      if (!target)
-        target = new DenseDoubleVector(parametersClass);
-      inputVector->addWeightedTo(target, 0, weight * lossDerivative);
-    }
-    else
-      jassert(false);
-
-    return true;
-  }
-#endif // 0
-
   lbcpp_UseDebuggingNewOperator
 };
 

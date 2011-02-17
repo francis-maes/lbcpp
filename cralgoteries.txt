@@ -1,15 +1,7 @@
-
-
-* Moderniser les loss de ranking en vitesse
+* Tester: OneAgainstAllHingeLoss, MostViolatedHingeLoss et MaxentLoss
 
 * DoubleVector: se servir des FeatureGeneratorCallback dans les implems de DoubleVector
 * DoubleVector: virtualiser computeLogSumOfExponentials()
-
-* Faire marcher le multiclass lineaire (OneAgainstAllHingeLoss, MostViolatedHingeLoss et MaxentLoss)
-
-
-* revoir la hierarchie ScalarFunction
-* deplacer les LossFunctions
 
 --
 

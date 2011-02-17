@@ -68,6 +68,7 @@ TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, co
 
 void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVectorPtr& scores, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
 {
+  jassert(classes);
   int correct = otherInputs[0].getInteger();
   size_t numClasses = classes->getNumElements();
   jassert(numClasses > 1);
