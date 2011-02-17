@@ -45,7 +45,7 @@ public:
     const FunctionPtr& lossFunction = supervision.getObjectAndCast<Function>(context);
     if (lossFunction.isInstanceOf<ScalarFunction>())
     {
-      const ScalarFunctionPtr& loss = lossFunction.staticCast<ScalarFunction>();
+      //const ScalarFunctionPtr& loss = lossFunction.staticCast<ScalarFunction>();
       double lossDerivative = 0.0;
       
       jassert(false); // broken
@@ -85,7 +85,7 @@ public:
       size_t n = alternatives->getNumElements();
       jassert(!scores || n == scores->getNumElements());
       std::vector<double> lossGradient;
-      const RankingLossFunctionPtr& loss = lossFunction.staticCast<RankingLossFunction>();
+      //const RankingLossFunctionPtr& loss = lossFunction.staticCast<RankingLossFunction>();
       jassert(false); // broken
       //loss->computeRankingLoss(context, scores, n, &exampleLossValue, &lossGradient);
       jassert(lossGradient.size() == n);

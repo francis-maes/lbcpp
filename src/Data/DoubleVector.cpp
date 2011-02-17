@@ -26,7 +26,7 @@ inline void computeFeatures(const SparseDoubleVector& sparseVector, CallbackType
 template<class CallbackType>
 inline void computeFeatures(const DenseDoubleVector& denseVector, CallbackType& callback)
 {
-  const std::vector<double>& values = denseVector.getValues();
+  //const std::vector<double>& values = denseVector.getValues();
   const double* source = denseVector.getValuePointer(0);
   const double* limit = source + denseVector.getNumElements();
   size_t i = 0;

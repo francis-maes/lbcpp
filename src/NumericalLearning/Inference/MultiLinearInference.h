@@ -44,7 +44,7 @@ public:
     const NumericalInferenceParametersPtr& parameters = this->parameters.getObjectAndCast<NumericalInferenceParameters>(context);
     const PerceptionPtr& perception = parameters->getPerception();
 
-    const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>(context);
+    //const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     std::vector<double> lossGradient;
     jassert(false); // broken
     //lossFunction->compute(context, prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
