@@ -188,6 +188,10 @@
     <variable type="Boolean" name="pushIntoStack"/>
   </class>
 
+  <class name="SimpleFunction" base="Function" abstract="yes"/>
+  <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
+  <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
+
   <class name="CompositeFunction" base="Function" abstract="yes"/>
   <class name="ProxyFunction" base="Function" abstract="yes"/>
   

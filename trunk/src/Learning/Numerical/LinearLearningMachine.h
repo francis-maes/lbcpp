@@ -31,32 +31,6 @@ public:
     {return linearLearnableFunction();}
 };
 
-class SignedScalarToProbabilityFunction : public Function
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-
-  virtual String getOutputPostFix() const
-    {return T("Prob");}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return probabilityType;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    if (!input.exists())
-      return Variable::missingValue(probabilityType);
-
-    double score = input.getDouble();
-    static const double temperature = 1.0;
-    return Variable(1.0 / (1.0 + exp(-score * temperature)), probabilityType);
-  }
-};
-
 class LinearBinaryClassifier : public SupervisedNumericalFunction
 {
 public:
@@ -68,7 +42,7 @@ public:
     {return booleanType;}
 
   virtual FunctionPtr createPostProcessing() const
-    {return new SignedScalarToProbabilityFunction();}
+    {return signedScalarToProbabilityFunction();}
 
   virtual FunctionPtr createLearnableFunction() const
     {return linearLearnableFunction();}
@@ -85,7 +59,7 @@ public:
     {return enumValueType;}
 
   virtual FunctionPtr createPostProcessing() const
-    {return applyOnContainerFunction(new SignedScalarToProbabilityFunction());}
+    {return applyOnContainerFunction(signedScalarToProbabilityFunction());}
 
   virtual FunctionPtr createLearnableFunction() const
     {return multiLinearLearnableFunction();}

@@ -18,6 +18,10 @@
     <constructor arguments="ClassPtr objectClass"/>
     <variable type="Class" name="objectClass"/>
   </class>
+
+  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
+    <constructor returnType="Function"/>
+  </class>
   
   <!-- Old -->
   <class name="IdentityFunction" base="Function">

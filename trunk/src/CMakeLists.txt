@@ -301,6 +301,7 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   # new
   Function/MiscFunctions/SelectVariableFunctions.h
   Function/MiscFunctions/CreateObjectFunction.h
+  Function/MiscFunctions/SignedScalarToProbabilityFunction.h
 
   # old / unchecked
   Function/MiscFunctions/IdentityFunction.h
