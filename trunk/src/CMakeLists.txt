@@ -166,9 +166,8 @@ SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
   Data/Stream/DirectoryFileStream.h
   Data/Stream/DirectoryPairFileStream.h
-  Data/Stream/RegressionDataTextParser.h
-  Data/Stream/ClassificationDataTextParser.h
-  Data/Stream/MultiLabelClassificationDataTextParser.h
+  Data/Stream/LibSVMDataParser.h
+  Data/Stream/LibSVMDataParser.cpp
   Data/Stream/SaveToFileConsumer.h
   Data/Stream/StreamLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/StreamLibrary.cpp

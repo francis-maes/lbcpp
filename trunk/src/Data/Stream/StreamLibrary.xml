@@ -5,22 +5,23 @@
   <!-- Abstract classes -->
   <class name="Stream" abstract="yes"/>
   <class name="TextParser" base="Stream" abstract="yes"/>
-  <class name="LearningDataTextParser" base="TextParser" abstract="yes"/>
   
-  <!-- Learning Data Parsers -->
-  <class name="RegressionDataTextParser" base="LearningDataTextParser">
+  <!-- LibSVM Data Parsers -->
+  <class name="LibSVMDataParser" base="TextParser" abstract="yes"/>
+  
+  <class name="RegressionLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
   </class>
 
-  <class name="BinaryClassificationDataTextParser" base="LearningDataTextParser">
+  <class name="BinaryClassificationLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features"/>
   </class>
 
-  <class name="ClassificationDataTextParser" base="LearningDataTextParser">
+  <class name="ClassificationLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
 
-  <class name="MultiLabelClassificationDataTextParser" base="LearningDataTextParser">
+  <class name="MultiLabelClassificationLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
 

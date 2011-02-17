@@ -47,7 +47,7 @@ public:
   RegressionProblem() : features(new DefaultEnumeration(T("Features"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return regressionDataTextParser(context, file, features);}
+    {return regressionLibSVMDataParser(context, file, features);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return regressionErrorEvaluator(T("regression"));}
@@ -62,7 +62,7 @@ public:
   BinaryClassificationProblem() : features(new DefaultEnumeration(T("Features"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return binaryClassificationDataTextParser(context, file, features);}
+    {return binaryClassificationLibSVMDataParser(context, file, features);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return binaryClassificationConfusionEvaluator(T("binary"));}
@@ -79,7 +79,7 @@ public:
       labels(new DefaultEnumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return classificationDataTextParser(context, file, features, labels);}
+    {return classificationLibSVMDataParser(context, file, features, labels);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return classificationAccuracyEvaluator();}
@@ -100,7 +100,7 @@ public:
   }
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return multiLabelClassificationDataTextParser(context, file, features, labels);}
+    {return multiLabelClassificationLibSVMDataParser(context, file, features, labels);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return multiLabelClassificationEvaluator();}
