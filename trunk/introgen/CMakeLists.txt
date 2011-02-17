@@ -1,4 +1,4 @@
 ADD_EXECUTABLE(IntrospectionGenerator IntrospectionGenerator.cpp)
 SET_TARGET_PROPERTIES(IntrospectionGenerator PROPERTIES PROJECT_LABEL "TOOL Introspection Generator")
-TARGET_LINK_LIBRARIES(IntrospectionGenerator juce)
+TARGET_LINK_LIBRARIES(IntrospectionGenerator juce${NAME_FILE_SUFFIX})
 

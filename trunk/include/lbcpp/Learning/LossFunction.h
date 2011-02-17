@@ -57,7 +57,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 1 ? enumValueType : denseDoubleVectorClass();}
+    {return index == 1 ? enumValueType : (TypePtr) denseDoubleVectorClass();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
 
