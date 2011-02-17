@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+#if 0
 class AngleDifferenceScalarFunction : public ScalarFunction
 {
 public:
@@ -36,6 +37,7 @@ protected:
 
   double referenceAngle;
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

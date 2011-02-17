@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+#if 0
 class ComposeScalarFunction : public ScalarFunction
 {
 public:
@@ -24,7 +25,7 @@ public:
   virtual bool isDerivable() const
     {return f1->isDerivable() && f2->isDerivable();}
 
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
   {
     double f1output, f1derivative;
     f1->compute(input, &f1output, derivativeDirection, derivative ? &f1derivative : NULL);
@@ -39,6 +40,8 @@ private:
   ScalarFunctionPtr f1;
   ScalarFunctionPtr f2;
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

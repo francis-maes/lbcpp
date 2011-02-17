@@ -21,7 +21,7 @@ public:
   virtual bool isDerivable() const
     {return true;}
 
-  virtual void compute(double input, double* output, const double* , double* derivative) const
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
   {
     if (output)
       *output = input * input;

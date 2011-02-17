@@ -60,8 +60,9 @@ public:
 
       if (supervisionValue < 0)
         supervisionValue = -supervisionValue;
-      if (supervisionValue != 1.0)
-        lossFunction = lossFunction->multiplyByScalar(supervisionValue);
+      jassert(false); // broken
+      //if (supervisionValue != 1.0)
+      //  lossFunction = lossFunction->multiplyByScalar(supervisionValue);
     }
 
     res->setSubInference(decorated, input, Variable(lossFunction, scalarFunctionClass));
@@ -93,7 +94,11 @@ public:
   BinaryLinearSVMInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const
-    {return hingeLossFunction(isPositive);}
+  {
+    jassert(false); // broken
+    return ScalarFunctionPtr();
+    //return hingeLossFunction(isPositive);
+  }
 };
 
 class BinaryLogisticRegressionInference : public BinaryClassificationInference
@@ -104,7 +109,11 @@ public:
   BinaryLogisticRegressionInference() {}
 
   virtual ScalarFunctionPtr createLossFunction(bool isPositive) const
-    {return logBinomialLossFunction(isPositive);}
+  {
+    jassert(false); // broken
+    return ScalarFunctionPtr();
+    //return logBinomialLossFunction(isPositive);
+  }
 };
 
 }; /* namespace lbcpp */

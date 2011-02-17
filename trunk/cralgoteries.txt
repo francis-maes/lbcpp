@@ -1,8 +1,6 @@
 
-
 * Moderniser les autres loss
 * Refaire le mecanisme de branchement entre supervision, loss et learner
-
 
 * DoubleVector: se servir des FeatureGeneratorCallback dans les implems de DoubleVector
 * DoubleVector: virtualiser computeLogSumOfExponentials()

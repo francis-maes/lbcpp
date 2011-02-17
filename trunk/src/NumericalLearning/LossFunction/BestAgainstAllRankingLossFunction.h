@@ -17,7 +17,7 @@ namespace lbcpp
 class BestAgainstAllRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  BestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  BestAgainstAllRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : AdditiveRankingLossFunction(baseLoss, costs) {}
   BestAgainstAllRankingLossFunction() {}
   

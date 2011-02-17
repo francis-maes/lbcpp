@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+#if 0
 class AddConstantScalarFunction : public ScalarFunction
 {
 public:
@@ -61,6 +61,7 @@ protected:
   ScalarFunctionPtr function;
   double constant;
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 

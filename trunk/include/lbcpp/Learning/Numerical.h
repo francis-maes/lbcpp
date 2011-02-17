@@ -114,8 +114,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
-extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = squareLossFunctionClass);
-extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = hingeLossFunctionClass);
+extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = ClassPtr()); // FIXME
+extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = ClassPtr()); // FIXME
 extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass);// = oneAgainstAllMultiClassLossFunction(hingeLossFunctionClass));
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 

@@ -29,7 +29,8 @@ public:
     {
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       jassert(loss);
-      res->setSubInference(decorated, input, transferFunction->composeWith(loss));
+      jassert(false); // broken
+      //res->setSubInference(decorated, input, transferFunction->composeWith(loss));
     }
     else
       res->setSubInference(decorated, input, Variable());
@@ -42,7 +43,9 @@ public:
     {
       ScalarFunctionPtr loss = supervision.dynamicCast<ScalarFunction>();
       jassert(loss);
-      return std::make_pair(input, transferFunction->composeWith(loss));
+      jassert(false); // broken
+      return std::make_pair(input, Variable());
+      //return std::make_pair(input, transferFunction->composeWith(loss));
     }
     return std::make_pair(input, supervision);
   }
@@ -50,7 +53,9 @@ public:
   virtual Variable finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
   {
     Variable subOutput = finalState->getSubOutput();
-    return subOutput.exists() ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();
+    //return subOutput.exists() ? Variable(transferFunction->compute(subOutput.getDouble())) : Variable();
+    jassert(false); // broken
+    return Variable();
   }
   
 protected:

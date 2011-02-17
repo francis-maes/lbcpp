@@ -20,19 +20,17 @@ public:
   virtual bool isDerivable() const
     {return true;}
 
-  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
+  virtual void computeMultiClassLoss(const DenseDoubleVectorPtr& scores, size_t correctClass, size_t numClasses, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    size_t numClasses = getNumClasses();
-    size_t correctClass = getCorrectClass(otherInputs);
-    double logZ = input ? input->computeLogSumOfExponentials() : log((double)numClasses);
+    double logZ = scores ? scores->computeLogSumOfExponentials() : log((double)numClasses);
     jassert(isNumberValid(logZ));
     if (output)
-      *output += logZ - (input ? input->getValue(correctClass) : 0.0);
+      *output += logZ - (scores ? scores->getValue(correctClass) : 0.0);
     if (gradientTarget)
     {
       for (size_t i = 0; i < numClasses; ++i)
       {
-        double score = input ? input->getValue(i) : 0.0;
+        double score = scores ? scores->getValue(i) : 0.0;
         double derivative = exp(score - logZ);
         jassert(isNumberValid(derivative));
         (*gradientTarget)->incrementValue(i, derivative * gradientWeight);

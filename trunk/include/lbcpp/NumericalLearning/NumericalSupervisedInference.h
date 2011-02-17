@@ -46,9 +46,9 @@ extern NumericalSupervisedInferencePtr multiClassLinearSVMInference(const String
 extern NumericalSupervisedInferencePtr multiClassMaxentInference(const String& name, PerceptionPtr perception, EnumerationPtr classes);
 
 // Ranking
-extern NumericalSupervisedInferencePtr bestAgainstAllRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss);
-extern NumericalSupervisedInferencePtr mostViolatedPairRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss);
-extern NumericalSupervisedInferencePtr allPairsRankingInference(const String& name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss);
+extern NumericalSupervisedInferencePtr bestAgainstAllRankingInference(const String& name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss);
+extern NumericalSupervisedInferencePtr mostViolatedPairRankingInference(const String& name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss);
+extern NumericalSupervisedInferencePtr allPairsRankingInference(const String& name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss);
 extern NumericalSupervisedInferencePtr allPairsRankingLinearSVMInference(const String& name, PerceptionPtr perception);
 extern NumericalSupervisedInferencePtr binaryClassificationRankingLinearSVMInference(const String& name, PerceptionPtr perception);
 

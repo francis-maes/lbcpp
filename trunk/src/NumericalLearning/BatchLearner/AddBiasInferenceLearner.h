@@ -32,7 +32,9 @@ public:
     {
       const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
       const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>(context);
-      bool isPositiveExample = loss->compute(1.0) < loss->compute(-1.0);
+      
+      jassert(false); // broken
+      bool isPositiveExample = false;//loss->compute(1.0) < loss->compute(-1.0);
       roc.addPrediction(context, example.first.getDouble(), isPositiveExample);
     }
     if (n)

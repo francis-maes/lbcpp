@@ -15,32 +15,29 @@ namespace lbcpp
 {
 
 // f(x) = max(0, 1 - input)
-class HingeLossFunction : public BinaryClassificationLossFunction
+class HingeDiscriminativeLossFunction : public DiscriminativeLossFunction
 {
 public:
-  // correctClass: 0 = negative, 1 = positive
-  HingeLossFunction(bool isPositive, double margin)
-    : BinaryClassificationLossFunction(isPositive), margin(margin) {}
-  HingeLossFunction() : margin(0.0) {}
+  HingeDiscriminativeLossFunction(double margin = 1.0) : margin(margin) {}
 
   virtual bool isDerivable() const
     {return false;}
 
-  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const
+  virtual void computeDiscriminativeLoss(double score, double* output, double* derivative) const
   {
-    if (input > margin)
+    if (score > margin)
     {
       if (output) *output = 0.0;
       if (derivative) *derivative = 0.0;
     }
-    else if (input == margin)
+    else if (score == margin)
     {
       if (output) *output = 0.0;
-      if (derivative) *derivative = (!derivativeDirection || *derivativeDirection <= 0) ? -1.0 : 0;
+      if (derivative) *derivative = -1.0;
     }
     else
     {
-      if (output) *output = margin - input;
+      if (output) *output = margin - score;
       if (derivative) *derivative = -1.0;
     }
   }
@@ -52,7 +49,7 @@ protected:
   double margin;
 };
 
-typedef ReferenceCountedObjectPtr<HingeLossFunction> HingeLossFunctionPtr;
+typedef ReferenceCountedObjectPtr<HingeDiscriminativeLossFunction> HingeDiscriminativeLossFunctionPtr;
 
 }; /* namespace lbcpp */
 

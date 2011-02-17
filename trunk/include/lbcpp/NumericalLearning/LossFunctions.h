@@ -36,7 +36,7 @@ namespace lbcpp
 
 /*
 ** Regression Loss Functions
-*/
+*
 inline ScalarFunctionPtr oldSquareLossFunction(double target)
   {return squareFunction(addConstantScalarFunction(-target));}
 
@@ -46,33 +46,7 @@ inline ScalarFunctionPtr oldAbsoluteLossFunction(double target)
 inline ScalarFunctionPtr oldDihedralAngleSquareLossFunction(double target)
   {return squareFunction(angleDifferenceScalarFunction(target));}
 
-class RegressionLossFunction : public ScalarFunction
-{
-public:
-  RegressionLossFunction(double target = 0.0)
-    : target(target) {}
-
-  double getTarget() const
-    {return target;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class RegressionLossFunctionClass;
-
-  double target;
-};
-
-typedef ReferenceCountedObjectPtr<RegressionLossFunction> RegressionLossFunctionPtr;
-
-extern RegressionLossFunctionPtr squareLossFunction();
-extern ClassPtr squareLossFunctionClass;
-
-// BINARY
-extern ClassPtr hingeLossFunctionClass;
-extern BinaryClassificationLossFunctionPtr hingeLossFunction(bool isPositive, double margin = 1);
-extern BinaryClassificationLossFunctionPtr logBinomialLossFunction(bool isPositive);
-
+*/
 /*
 ** Ranking Loss Functions
 */
@@ -120,12 +94,12 @@ protected:
 typedef ReferenceCountedObjectPtr<RankingLossFunction> RankingLossFunctionPtr;
 extern ClassPtr rankingLossFunctionClass;
 
-extern RankingLossFunctionPtr allPairsRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
-extern RankingLossFunctionPtr mostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
-extern RankingLossFunctionPtr bestAgainstAllRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr allPairsRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr mostViolatedPairRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr bestAgainstAllRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
 
-extern RankingLossFunctionPtr f1ScoreRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
-extern RankingLossFunctionPtr mccRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr f1ScoreRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
+extern RankingLossFunctionPtr mccRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
 
 /*
 ** Regularizers

@@ -17,20 +17,20 @@ namespace lbcpp
 class AdditiveRankingLossFunction : public RankingLossFunction
 {
 public:
-  AdditiveRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  AdditiveRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : RankingLossFunction(costs), baseLoss(baseLoss) {}
   AdditiveRankingLossFunction() {}
 
   virtual bool isDerivable() const
     {return baseLoss->isDerivable();}
 
-  const BinaryClassificationLossFunctionPtr& getBaseLoss() const
+  const DiscriminativeLossFunctionPtr& getBaseLoss() const
     {return baseLoss;}
 
 protected:
   friend class AdditiveRankingLossFunctionClass;
 
-  BinaryClassificationLossFunctionPtr baseLoss;
+  DiscriminativeLossFunctionPtr baseLoss;
 
   void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const
   {
@@ -39,7 +39,7 @@ protected:
     // deltaScore should be positive
     
     double discriminantValue, discriminantDerivative;
-    baseLoss->computePositive(deltaScore, output ? &discriminantValue : NULL, NULL, gradient ? &discriminantDerivative : NULL);
+    baseLoss->computeDiscriminativeLoss(deltaScore, output ? &discriminantValue : NULL, gradient ? &discriminantDerivative : NULL);
     if (gradient)
     {
       double delta = deltaCost * discriminantDerivative;

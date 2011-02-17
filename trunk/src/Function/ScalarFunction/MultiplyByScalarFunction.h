@@ -14,6 +14,7 @@
 namespace lbcpp
 {
 
+#if 0 
 class MultiplyByScalarFunction : public ScalarFunction
 {
 public:
@@ -52,6 +53,7 @@ protected:
   ScalarFunctionPtr function;
   double scalar;
 };
+#endif // 0
 
 }; /* namespace lbcpp */
 
