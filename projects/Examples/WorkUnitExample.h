@@ -57,7 +57,7 @@ public:
     context.run(subWorkUnits);
 
     context.informationCallback(T("Finished."));
-    return Variable();
+    return Variable(0.85);  // return fictive score
   }
 };
 
