@@ -1,11 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SandBoxWorkUnit.cpp            | Sand Box Work Unit              |
+| Filename: AutoTuneSandBox.cpp            | Sand Box Work Unit              |
 | Author  : Francis Maes                   |                                 |
 | Started : 02/12/2010 13:25               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include "SandBoxWorkUnit.h"
+#include "AutoTuneSandBox.h"
 using namespace lbcpp;
 
 ExecutionContextPtr createInferenceContext()
@@ -185,7 +185,7 @@ protected:
 
 /////////////////////////////////////////
 
-ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
+ContainerPtr AutoTuneSandBox::loadProteins(ExecutionContext& context, const String& workUnitName, const File& inputDirectory, const File& supervisionDirectory)
 {
 #ifdef JUCE_DEBUG
   size_t maxCount = 7;
@@ -195,12 +195,12 @@ ContainerPtr SandBoxWorkUnit::loadProteins(ExecutionContext& context, const Stri
   return Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxCount, workUnitName);
 }
 
-void SandBoxWorkUnit::initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
+void AutoTuneSandBox::initializeLearnerByCloning(InferencePtr inference, InferencePtr inferenceToClone)
 {
   inference->setBatchLearner(multiPassInferenceLearner(initializeByCloningInferenceLearner(inferenceToClone), inference->getBatchLearner()));
 }
 
-Variable SandBoxWorkUnit::run(ExecutionContext& context)
+Variable AutoTuneSandBox::run(ExecutionContext& context)
 {
 #ifdef JUCE_WIN32
   File workingDirectory(T("C:\\Projets\\lbcpp\\projects\\temp\\psipred"));

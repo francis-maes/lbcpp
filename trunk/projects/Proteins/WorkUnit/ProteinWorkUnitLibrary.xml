@@ -97,19 +97,26 @@
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
 
-  <!-- SandBox -->
+  <!-- Previous SandBox -->
   <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
     <variable type="Double" name="logLearningRate" shortName="a"/>
     <variable type="Double" name="logLearningRateDecrease" shortName="b"/>
     <variable type="Double" name="logRegularizer" shortName="r"/>
   </class>
 
-  <class name="SandBoxWorkUnit" base="WorkUnit"/>
+  <class name="AutoTuneSandBox" base="WorkUnit"/>
 
   <class name="ComputeProteinFeaturesSandBox" base="WorkUnit">
     <variable type="File" name="dataDirectory" shortName="d"/>
   </class>
-
+  
+  <!-- New SandBox -->
+  <class name="SandBox" base="WorkUnit">
+    <variable type="File" name="supervisionDirectory" shortName="s"/>
+    <variable type="File" name="inputDirectory" shortName="d"/>
+    <variable type="PositiveInteger" name="maxProteins" shortName="m"/>
+  </class>
+         
   <!-- BricoBox -->
   <class name="CheckDisulfideBondsWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinDirectory"/>

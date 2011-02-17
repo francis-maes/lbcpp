@@ -1,7 +1,10 @@
+Objectif: SS3 en dur dans un NewSandBox
+
 
 * Reunir la bibliotheque de fonctions standard:
-  - createObject, getVariable, getElement, applyOnContainer
+  - createObject, getVariable, getElement, applyOnContainer (renommer en mapContainer)
 * Make ComposeFunction generic, Replace SupervisedNumericalFunction by ComposeFunction
+* Moderniser IterationFunction
 
 --
 
