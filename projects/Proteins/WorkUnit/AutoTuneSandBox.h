@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SandBoxWorkUnit.h              | Sand Box Work Unit              |
+| Filename: AutoTuneSandBox.h              | Sand Box Work Unit              |
 | Author  : Francis Maes                   |                                 |
 | Started : 02/12/2010 13:24               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
-# define LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
+#ifndef LBCPP_PROTEINS_WORK_UNIT_AUTO_TUNE_SAND_BOX_H_
+# define LBCPP_PROTEINS_WORK_UNIT_AUTO_TUNE_SAND_BOX_H_
 
 # include <lbcpp/lbcpp.h>
 # include "../Data/Protein.h"
@@ -69,7 +69,7 @@ typedef ReferenceCountedObjectPtr<MyLearningParameters> MyLearningParametersPtr;
 
 extern ClassPtr myLearningParametersClass;
 
-class SandBoxWorkUnit : public WorkUnit
+class AutoTuneSandBox : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context);
@@ -128,4 +128,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
+#endif // !LBCPP_PROTEINS_WORK_UNIT_AUTO_TUNE_SAND_BOX_H_

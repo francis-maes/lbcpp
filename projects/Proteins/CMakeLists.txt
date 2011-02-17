@@ -113,10 +113,11 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinInferenceEvaluator.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
-  WorkUnit/SandBoxWorkUnit.h
-  WorkUnit/SandBoxWorkUnit.cpp
+  WorkUnit/AutoTuneSandBox.h
+  WorkUnit/AutoTuneSandBox.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
+  WorkUnit/SandBox.h
   WorkUnit/LearningParameter.h
   WorkUnit/ParameteredProteinInferenceFactory.h
   WorkUnit/ParameteredProteinInferenceFactory.cpp
