@@ -42,7 +42,7 @@ public:
       return TypePtr();
     }
 
-    parametersClass = compositeDoubleVectorClass();
+    parametersClass = compositeDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     outputName = T("prediction");
     outputShortName = T("p");
     setBatchLearner(stochasticBatchLearner());

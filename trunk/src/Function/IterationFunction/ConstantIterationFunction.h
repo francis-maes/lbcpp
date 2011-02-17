@@ -19,14 +19,11 @@ class ConstantIterationFunction : public IterationFunction
 public:
   ConstantIterationFunction(double value = 0.0) : value(value) {}
   
-  virtual double compute(size_t iteration) const
+  virtual double computeIterationFunction(size_t iteration) const
     {return value;}
     
   virtual String toString() const
     {return "ConstantIterationFunction(" + String(value) + ")";}
-  
-  virtual ObjectPtr clone(ExecutionContext& context) const
-    {return new ConstantIterationFunction(value);}
   
 private:
   friend class ConstantIterationFunctionClass;

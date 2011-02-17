@@ -66,6 +66,9 @@ public:
   bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputTypes);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
 
+  bool isInitialized() const
+    {return outputVariable;}
+
   /*
   ** Static Prototype
   */

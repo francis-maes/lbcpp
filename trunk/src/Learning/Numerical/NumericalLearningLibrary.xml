@@ -3,7 +3,7 @@
 <library name="NumericalLearning" directory="Learning/Numerical">
 
   <!-- Learning Parameters -->
-  <class name="StochasticGDParameters" base="Object">
+  <class name="StochasticGDParameters" base="LearnerParameters">
     <variable type="Function" name="lossFunction"/>
     <variable type="IterationFunction" name="learningRate"/>
     <variable type="StoppingCriterion" name="stoppingCriterion"/>

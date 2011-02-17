@@ -86,7 +86,11 @@
       {return Type::createFromXml(importer);}
     </code>
   </class>
-  <class name="DefaultClass" base="Class"/>
+  
+  <class name="DefaultClass" base="Class">
+    <variable type="ObjectVector[VariableSignature]" name="variables"/>
+    <variable type="Boolean" name="abstractClass"/>
+  </class>
 
   <!-- Template Type -->
   <class name="TemplateType" base="NameableObject" abstract="yes"/>

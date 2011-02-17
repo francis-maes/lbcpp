@@ -182,21 +182,24 @@
     
   <!-- Function -->
   <class name="OnlineLearner" abstract="yes"/>
-  <class name="Function" abstract="yes">
-    <variable type="Function" name="batchLearner"/>
-    <variable type="OnlineLearner" name="onlineLearner"/>
-    <variable type="Boolean" name="pushIntoStack"/>
-  </class>
+  <class name="Function" abstract="yes"/>
 
   <class name="SimpleFunction" base="Function" abstract="yes"/>
   <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
   <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
 
   <class name="CompositeFunction" base="Function" abstract="yes"/>
-  <class name="ProxyFunction" base="Function" abstract="yes"/>
+  
+  <class name="ProxyFunction" base="Function" abstract="yes">
+    <variable type="Function" name="implementation"/>
+  </class>
   
   <!-- Frame -->
-  <class name="FrameOperatorSignature" base="VariableSignature"/>
+  <class name="FrameOperatorSignature" base="VariableSignature">
+    <variable type="Function" name="function"/>
+    <variable type="GenericVector[PositiveInteger]" name="inputs"/>
+  </class>
+
   <class name="FrameClass" base="DefaultClass"/>
   <class name="FrameBasedFunction" base="Function">
     <variable type="Class" name="frameClass"/>

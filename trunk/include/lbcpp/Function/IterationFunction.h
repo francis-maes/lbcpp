@@ -27,8 +27,8 @@
 #ifndef LBCPP_ITERATION_FUNCTION_H_
 # define LBCPP_ITERATION_FUNCTION_H_
 
-# include "../Core/Variable.h"
-# include "predeclarations.h"
+# include "../Function/Function.h"
+//# include "predeclarations.h"
 
 namespace lbcpp
 {
@@ -45,7 +45,7 @@ namespace lbcpp
 ** iteration numbers to scalars.
 **
 */
-class IterationFunction : public Object
+class IterationFunction : public Function
 {
 public:
   /*!
@@ -55,7 +55,19 @@ public:
   **
   ** @return the result of @a iteration iterations.
   */
-  virtual double compute(size_t iteration) const = 0;
+  virtual double computeIterationFunction(size_t iteration) const = 0;
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return positiveIntegerType;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return computeIterationFunction((size_t)input.getInteger());}
 };
 
 /*!

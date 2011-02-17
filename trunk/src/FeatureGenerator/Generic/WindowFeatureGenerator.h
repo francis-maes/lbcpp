@@ -62,7 +62,8 @@ public:
       if (position >= 0 && position < n)
       {
         DoubleVectorPtr variable = container->getElement(position).getObjectAndCast<DoubleVector>();
-        callback.sense(i * numFeaturesPerPosition, variable, 1.0);
+        if (variable)
+          callback.sense(i * numFeaturesPerPosition, variable, 1.0);
       }
     }
   }
