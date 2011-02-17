@@ -1,4 +1,5 @@
 - workgenerator in project/BOINC/
 - add others scipts from BOINC server in project/BOINC
 - merge unzipper, sendworkunit, runworkunit directory
+- new validator using score
 - send workunit to BOINC server through sendworkunit (LBCpp)
