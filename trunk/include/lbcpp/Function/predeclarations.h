@@ -26,8 +26,8 @@ typedef ReferenceCountedObjectPtr<StoppingCriterion> StoppingCriterionPtr;
 class ScalarFunction;
 typedef ReferenceCountedObjectPtr<ScalarFunction> ScalarFunctionPtr;
 
-class ScalarObjectFunction;
-typedef ReferenceCountedObjectPtr<ScalarObjectFunction> ScalarObjectFunctionPtr;
+class ScalarVectorFunction;
+typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 
 class Evaluator;
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;

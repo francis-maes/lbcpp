@@ -39,9 +39,23 @@ MultiClassLossFunction::MultiClassLossFunction(EnumerationPtr classes, size_t co
 String MultiClassLossFunction::toString() const
   {return getClassName() + T("(") + String((int)correctClass) + T(")");}
 
+void MultiClassLossFunction::computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
+{
+  jassert(input->getElementsEnumeration() == classes);
+  DenseDoubleVectorPtr denseInput = input.dynamicCast<DenseDoubleVector>();
+  jassert(denseInput);
+  DenseDoubleVectorPtr denseGradientTarget;
+  if (gradientTarget)
+  {
+    denseGradientTarget = gradientTarget->dynamicCast<DenseDoubleVector>();
+    jassert(denseGradientTarget);
+  }
+  computeMultiClassLossFunction(&denseInput->getValues(), output, denseGradientTarget ? &denseGradientTarget->getValues() : NULL, gradientWeight);
+}
+
 void MultiClassLossFunction::compute(ExecutionContext& context, const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
 {
-  DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
+ /* DenseDoubleObjectPtr denseDoubleInput = input.dynamicCast<DenseDoubleObject>();
   if (!input || denseDoubleInput)
   {
     if (gradientTarget)
@@ -51,7 +65,7 @@ void MultiClassLossFunction::compute(ExecutionContext& context, const ObjectPtr&
     }
     compute(context, denseDoubleInput ? &denseDoubleInput->getValues() : NULL, output, gradientTarget, gradientWeight);
   }
-  else
+  else*/
     jassert(false); // not implemented
 }
 

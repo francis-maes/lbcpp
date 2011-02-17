@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Function/ScalarFunction.h>
-#include <lbcpp/Function/ScalarObjectFunction.h>
+#include <lbcpp/Function/ScalarVectorFunction.h>
 using namespace lbcpp;
 
 /*
@@ -44,7 +44,7 @@ ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) co
   {return composeScalarFunction(refCountedPointerFromThis(this), postFunction);}
 
 /*
-** ScalarObjectFunction
+** ScalarVectorFunction
 */
-ScalarObjectFunctionPtr ScalarObjectFunction::multiplyByScalar(double weight) const
-  {return multiplyByScalarObjectFunction(refCountedPointerFromThis(this), weight);}
+ScalarVectorFunctionPtr ScalarVectorFunction::multiplyByScalar(double weight) const
+  {return multiplyByScalarVectorFunction(refCountedPointerFromThis(this), weight);}

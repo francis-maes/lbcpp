@@ -68,7 +68,7 @@
 
 # include "Function/Function.h"
 # include "Function/ScalarFunction.h"
-# include "Function/ScalarObjectFunction.h"
+# include "Function/ScalarVectorFunction.h"
 # include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
 # include "Function/StoppingCriterion.h"

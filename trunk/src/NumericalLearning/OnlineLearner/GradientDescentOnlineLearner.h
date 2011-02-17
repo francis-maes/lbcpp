@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_GRADIENT_DESCENT_H_
 
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
-# include <lbcpp/Function/ScalarObjectFunction.h>
+# include <lbcpp/Function/ScalarVectorFunction.h>
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
 
 namespace lbcpp
@@ -21,7 +21,7 @@ class OldGradientDescentOnlineLearner : public InferenceOnlineLearner
 public:
   OldGradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
                                 IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
+                                LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
   OldGradientDescentOnlineLearner() : epoch(0), learningUpdateFrequency(never), normalizeLearningRate(false), regularizerUpdateFrequency(never), lastEmpiricalRisk(0.0) {}
 
 
@@ -49,7 +49,7 @@ protected:
   bool normalizeLearningRate;
 
   LearnerUpdateFrequency regularizerUpdateFrequency;
-  ScalarObjectFunctionPtr regularizer;
+  ScalarVectorFunctionPtr regularizer;
   CriticalSection lossValueLock;
   ScalarVariableMean lossValue;
   double lastEmpiricalRisk;

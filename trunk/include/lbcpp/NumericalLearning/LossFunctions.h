@@ -30,7 +30,7 @@
 # include "../Core/Container.h"
 # include "../Core/DynamicObject.h"
 # include "../Function/ScalarFunction.h"
-# include "../Function/ScalarObjectFunction.h"
+# include "../Function/ScalarVectorFunction.h"
 
 namespace lbcpp
 {
@@ -104,7 +104,7 @@ extern BinaryClassificationLossFunctionPtr logBinomialLossFunction(bool isPositi
 /*
 ** Multi Class Loss Functions
 */
-class MultiClassLossFunction : public ScalarObjectFunction
+class MultiClassLossFunction : public ScalarVectorFunction
 {
 public:
   MultiClassLossFunction(EnumerationPtr classes, size_t correctClass);
@@ -115,7 +115,9 @@ public:
     {return containerClass(doubleType);}
   virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
 
-  virtual void compute(ExecutionContext& context, const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
+  virtual void computeMultiClassLossFunction(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
+
+  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const;
 
   void compute(ExecutionContext& context, const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const;
 
@@ -145,7 +147,7 @@ extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction(EnumerationPt
 /*
 ** Ranking Loss Functions
 */
-class RankingLossFunction : public ScalarObjectFunction
+class RankingLossFunction : public ScalarVectorFunction
 {
 public:
   RankingLossFunction(const std::vector<double>& costs) : costs(costs) {}
@@ -155,6 +157,9 @@ public:
     {return containerClass(doubleType);}
 
   virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
+
+  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
+    {jassert(false);} // FIXME: not implemented
 
   virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
   void compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;
@@ -196,7 +201,7 @@ extern RankingLossFunctionPtr mccRankingLossFunction(BinaryClassificationLossFun
 /*
 ** Regularizers
 */
-extern ScalarObjectFunctionPtr l2RegularizerFunction(double weight);
+extern ScalarVectorFunctionPtr l2RegularizerFunction(double weight);
 
 }; /* namespace lbcpp */
 

@@ -17,52 +17,18 @@
 namespace lbcpp
 {
 
-class SupervisedLinearNumericalFunction : public SupervisedNumericalFunction
-{
-public:
-  SupervisedLinearNumericalFunction(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedNumericalFunction(learnerParameters), lossFunctionClass(lossFunctionClass) {}
-  SupervisedLinearNumericalFunction() {}
-
-  virtual FunctionPtr createPostProcessing() const
-    {return FunctionPtr();}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
-
-    frameClass = new FrameClass(getClassName() + T("Frame"));
-    frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));             // 0: input
-    frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));       // 1: supervision
-    frameClass->addMemberOperator(context, createObjectFunction(lossFunctionClass), 1);           // 2: loss(supervision)
-
-    FunctionPtr linearFunction = new LinearLearnableFunction();
-    linearFunction->setOnlineLearner(learnerParameters->createOnlineLearner());
-    frameClass->addMemberOperator(context, linearFunction, 0, 2);                                 // 3: linearFunction(0,2)
-
-    FunctionPtr postProcessing = createPostProcessing();
-    if (postProcessing)
-      frameClass->addMemberOperator(context, postProcessing, 3);                                  // 4: postProcess(3)          
-
-    setBatchLearner(learnerParameters->createBatchLearner());
-    return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
-  }
-
-protected:
-  friend class SupervisedLinearNumericalFunctionClass;
-
-  ClassPtr lossFunctionClass;
-};
-
-class LinearRegressor : public SupervisedLinearNumericalFunction
+class LinearRegressor : public SupervisedNumericalFunction
 {
 public:
   LinearRegressor(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedLinearNumericalFunction(learnerParameters, lossFunctionClass) {}
+    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
   LinearRegressor() {}
 
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
+
+  virtual FunctionPtr createLearnableFunction() const
+    {return linearLearnableFunction();}
 };
 
 class SignedScalarToProbabilityFunction : public Function
@@ -91,11 +57,11 @@ public:
   }
 };
 
-class LinearBinaryClassifier : public SupervisedLinearNumericalFunction
+class LinearBinaryClassifier : public SupervisedNumericalFunction
 {
 public:
   LinearBinaryClassifier(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedLinearNumericalFunction(learnerParameters, lossFunctionClass) {}
+    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
   LinearBinaryClassifier() {}
 
   virtual TypePtr getSupervisionType() const
@@ -103,6 +69,26 @@ public:
 
   virtual FunctionPtr createPostProcessing() const
     {return new SignedScalarToProbabilityFunction();}
+
+  virtual FunctionPtr createLearnableFunction() const
+    {return linearLearnableFunction();}
+};
+
+class LinearMultiClassClassifier : public SupervisedNumericalFunction
+{
+public:
+  LinearMultiClassClassifier(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
+    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
+  LinearMultiClassClassifier() {}
+
+  virtual TypePtr getSupervisionType() const
+    {return enumValueType;}
+
+  virtual FunctionPtr createPostProcessing() const
+    {return applyOnContainerFunction(new SignedScalarToProbabilityFunction());}
+
+  virtual FunctionPtr createLearnableFunction() const
+    {return multiLinearLearnableFunction();}
 };
 
 class LinearLearningMachine : public ProxyFunction
@@ -129,6 +115,8 @@ public:
       return linearRegressor(learnerParameters);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return linearBinaryClassifier(learnerParameters);
+    else if (supervisionType->inheritsFrom(enumValueType))
+      return linearMultiClassClassifier(learnerParameters, ClassPtr()); // FIXME !
     else
       return FunctionPtr();
   }

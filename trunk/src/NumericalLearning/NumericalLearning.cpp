@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Function/ScalarObjectFunction.h>
+#include <lbcpp/Function/ScalarVectorFunction.h>
 #include <lbcpp/NumericalLearning/NumericalLearning.h>
 #include <lbcpp/Inference/SequentialInference.h>
 #include <lbcpp/Inference/InferenceBatchLearner.h>
@@ -133,7 +133,7 @@ void NumericalInference::addWeightedToParameters(ExecutionContext& context, cons
   }
 }
 
-void NumericalInference::applyRegularizerToParameters(ExecutionContext& context, ScalarObjectFunctionPtr regularizer, double weight)
+void NumericalInference::applyRegularizerToParameters(ExecutionContext& context, ScalarVectorFunctionPtr regularizer, double weight)
 {
   if (weight)
   {
@@ -174,17 +174,17 @@ namespace lbcpp
   extern OldGradientDescentOnlineLearnerPtr stochasticOldGradientDescentOnlineLearner(
     IterationFunctionPtr learningRate, bool normalizeLearningRate,
     LearnerUpdateFrequency regularizerUpdateFrequency,
-    ScalarObjectFunctionPtr regularizer);
+    ScalarVectorFunctionPtr regularizer);
 
   extern OldGradientDescentOnlineLearnerPtr batchOldGradientDescentOnlineLearner(
     LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer);
+    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer);
   
 };
 
 InferenceOnlineLearnerPtr lbcpp::gradientDescentOnlineLearner(
         LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate,
-        LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+        LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
 {
   jassert(learningUpdateFrequency != never);
   InferenceOnlineLearnerPtr res;

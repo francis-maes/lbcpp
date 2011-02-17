@@ -103,7 +103,7 @@ extern InferenceOnlineLearnerPtr gradientDescentOnlineLearner(
           bool normalizeLearningRate = true,
           // regularizer
           LearnerUpdateFrequency regularizerUpdateFrequency = perEpisode,
-          ScalarObjectFunctionPtr regularizer = ScalarObjectFunctionPtr());
+          ScalarVectorFunctionPtr regularizer = ScalarVectorFunctionPtr());
 
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, const std::vector<NumericalInferencePtr>& targetInferences);
 extern InferenceOnlineLearnerPtr graftingOnlineLearner(PerceptionPtr perception, NumericalInferencePtr targetInference);

@@ -4,7 +4,7 @@
 
   <import name="MiscFunctions"/>
   <import name="ScalarFunction"/>
-  <import name="ScalarObjectFunction"/>
+  <import name="ScalarVectorFunction"/>
   <import name="IterationFunction"/>
   <import name="StoppingCriterion"/>
   <import name="Predicate"/>

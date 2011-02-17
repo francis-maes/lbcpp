@@ -17,21 +17,18 @@
 namespace lbcpp
 {
 
-// DoubleVector<T>, optional LossFunction -> Double
+// DoubleVector<T>, optional ScalarFunction -> Double
 class LinearLearnableFunction : public NumericalLearnableFunction
 {
 public:
-  DenseDoubleVectorPtr getParameters() const
+  const DenseDoubleVectorPtr& getParameters() const
     {return parameters.staticCast<DenseDoubleVector>();}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? functionClass : doubleVectorClass();}
-
-  virtual String getOutputPostFix() const
-    {return T("Prediction");}
+    {return index ? scalarFunctionClass : doubleVectorClass();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -45,8 +42,8 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    DoubleVectorPtr inputVector = inputs[0].getObjectAndCast<DoubleVector>();
-    DenseDoubleVectorPtr parameters = getParameters();
+    const DoubleVectorPtr& inputVector = inputs[0].getObjectAndCast<DoubleVector>();
+    const DenseDoubleVectorPtr& parameters = getParameters();
     if (!parameters || !inputVector)
       return Variable::missingValue(doubleType);
 
