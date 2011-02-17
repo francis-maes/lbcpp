@@ -50,11 +50,13 @@ DBS=""
 # DO NOT BACKUP these databases
 IGGY="information_schema mysql phpmyadmin"
  
+# Go to working di
+cd $WorkingDir
+
 # create DIR if necessary 
 [ ! -d $DIR ] && mkdir -p $DIR || :
 
-# Go to working dir & stops boinc server
-cd $WorkingDir
+# stops boinc server
 ./projects/$Project/bin/stop
  
 # Get database list
