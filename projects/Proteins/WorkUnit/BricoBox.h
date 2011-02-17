@@ -24,52 +24,38 @@ public:
   
 protected:
   friend class CheckDisulfideBondsWorkUnitClass;
-  
+
   File proteinDirectory;
-  
-  static size_t getNumBridges(ProteinPtr protein)
-  {
-    SymmetricMatrixPtr bridges = protein->getDisulfideBonds();
 
-    if (!checkConsistencyOfBridges(bridges))
+  static size_t getNumBridges(ProteinPtr protein);
+  static bool checkConsistencyOfBridges(SymmetricMatrixPtr bridges);
+};
+
+class CheckARFFDataFileParserWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!dataFile.exists())
     {
-      jassertfalse;
-      return 0;
+      context.errorCallback(T("CheckARFFDataFileParserWorkUnit::run"), T("Invalid input data file: ") + dataFile.getFullPathName());
+      return Variable();
     }
 
-    size_t n = bridges->getDimension();
-    double numBridges = 0;
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = i + 1; j < n; ++j)
-        numBridges += (size_t)bridges->getElement(i, j).getDouble();
-    return (size_t)numBridges;
-  }
-  
-  static bool checkConsistencyOfBridges(SymmetricMatrixPtr bridges)
-  {
-    size_t n = bridges->getDimension();
-    for (size_t i = 0; i < n; ++i)
+    TextParserPtr parser = classificationARFFDataParser(context, dataFile, new DefaultEnumeration(T("output")));
+    while (!parser->isExhausted())
     {
-      size_t numBridges = 0;
-      for (size_t j = 0; j < n; ++j)
-      {
-        double value = bridges->getElement(i,j).getDouble();
-        if (value != 0.0 && value != 1.0)
-        {
-          jassertfalse;
-          return false;
-        }
-        numBridges += (size_t)value;
-      }
-      
-      if (numBridges > 1)
-      {
-        jassertfalse;
-        return false;
-      }
+      Variable v = parser->next();
+      context.informationCallback(v.toString());
     }
-    return true;
+
+    return Variable();
   }
+
+protected:
+  friend class CheckARFFDataFileParserWorkUnitClass;
+  
+  File dataFile;
 };
 
 };

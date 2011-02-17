@@ -24,13 +24,8 @@ public:
   /*
   ** Checks
   */
-#ifdef JUCE_DEBUG
   bool checkInheritance(TypePtr type, TypePtr baseType);
   bool checkInheritance(const Variable& variable, TypePtr baseType);
-#else
-  inline bool checkInheritance(TypePtr type, TypePtr baseType) {return true;}
-  inline bool checkInheritance(const Variable& variable, TypePtr baseType) {return true;}
-#endif // JUCE_DEBUG
   bool checkSharedPointerCycles(const ObjectPtr& object);
 
   /*

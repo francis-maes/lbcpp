@@ -48,7 +48,6 @@ Variable ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
   return res;
 }
 
-#ifdef JUCE_DEBUG
 bool ExecutionContext::checkInheritance(TypePtr type, TypePtr baseType)
 {
   jassert(baseType);
@@ -65,8 +64,6 @@ bool ExecutionContext::checkInheritance(const Variable& variable, TypePtr baseTy
   jassert(baseType);
   return variable.isNil() || checkInheritance(variable.getType(), baseType);
 }
-#endif // JUCE_DEBUG
-
 
 static bool checkSharedPointerCyclesRecursively(ExecutionContext& context, const ObjectPtr& object, std::vector<ObjectPtr>& currentStack)
 {
