@@ -128,6 +128,11 @@ DefaultClass::DefaultClass(const String& name, const String& baseClass)
 DefaultClass::DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : Class(templateType, templateArguments, baseClass), abstractClass(false) {}
 
+namespace lbcpp {extern ClassPtr defaultClassClass;};
+
+ClassPtr DefaultClass::getClass() const
+  {return defaultClassClass;}
+
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
 {
   TypePtr type;

@@ -130,12 +130,6 @@ public:
     if (!loadingOk)
       return false;
 
-    // initialize learning machine
-    TypePtr examplesType = trainingData->getElementsType();
-    jassert(examplesType->getNumTemplateArguments() == 2);
-    if (!learningMachine->initialize(context, examplesType->getTemplateArgument(0), examplesType->getTemplateArgument(1)))
-      return false;
-
     // train
     if (!learningMachine->train(context, trainingData, ContainerPtr(), T("Training"), true))
       return false;

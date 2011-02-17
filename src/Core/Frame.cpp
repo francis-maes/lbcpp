@@ -9,6 +9,8 @@
 #include <lbcpp/Function/Function.h>
 using namespace lbcpp;
 
+namespace lbcpp {extern ClassPtr frameClassClass;};
+
 /*
 ** FrameClass
 */
@@ -17,6 +19,9 @@ FrameClass::FrameClass(const String& name, TypePtr baseClass)
 
 FrameClass::FrameClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass)
   : DefaultClass(templateType, templateArguments, baseClass) {}
+
+ClassPtr FrameClass::getClass() const
+  {return frameClassClass;}
 
 size_t FrameClass::addMemberOperator(ExecutionContext& context, const FunctionPtr& function, size_t input, const String& outputName, const String& outputShortName)
   {return addMemberOperator(context, function, std::vector<size_t>(1, input), outputName, outputShortName);}

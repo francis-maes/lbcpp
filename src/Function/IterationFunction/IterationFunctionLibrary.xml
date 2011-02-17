@@ -3,20 +3,17 @@
 <library name="IterationFunction" directory="Function/IterationFunction">
   <include file="lbcpp/Function/IterationFunction.h"/>
 
+  <class name="IterationFunction" base="Function" abstract="yes"/>
   
+  <class name="ConstantIterationFunction" base="IterationFunction">
+    <constructor arguments="double value"/>
+    <variable type="Double" name="value"/>
+  </class>
 
-    <class name="IterationFunction" base="Function" abstract="yes"/>
-    
-    <class name="ConstantIterationFunction" base="IterationFunction">
-      <constructor arguments="double value"/>
-      <variable type="Double" name="value"/>
-    </class>
-
-    <class name="InvLinearIterationFunction" base="IterationFunction">
-      <constructor arguments="double initialValue, size_t numberIterationsToReachHalfInitialValue"/>
-      <variable type="Double" name="initialValue"/>
-      <variable type="Integer" name="numberIterationsToReachHalfInitialValue"/>
-    </class>
-    
+  <class name="InvLinearIterationFunction" base="IterationFunction">
+    <constructor arguments="double initialValue, size_t numberIterationsToReachHalfInitialValue"/>
+    <variable type="Double" name="initialValue"/>
+    <variable type="Integer" name="numberIterationsToReachHalfInitialValue"/>
+  </class>
    
 </library>

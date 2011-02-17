@@ -20,15 +20,12 @@ public:
   InvLinearIterationFunction(double initialValue = 1.0, size_t numberIterationsToReachHalfInitialValue = 1000)
     : initialValue(initialValue), numberIterationsToReachHalfInitialValue(numberIterationsToReachHalfInitialValue) {}
     
-  virtual double compute(size_t iteration) const
+  virtual double computeIterationFunction(size_t iteration) const
     {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
 
   virtual String toString() const
     {return "InvLinearIterationFunction(" + String(initialValue) + 
        ", " + String((int)numberIterationsToReachHalfInitialValue) + ")";}
-
-  virtual ObjectPtr clone(ExecutionContext& context) const
-    {return new InvLinearIterationFunction(initialValue, numberIterationsToReachHalfInitialValue);}
 
 private:
   friend class InvLinearIterationFunctionClass;

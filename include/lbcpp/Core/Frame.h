@@ -42,6 +42,8 @@ public:
     {return inputs;}
 
 protected:
+  friend class FrameOperatorSignatureClass;
+
   FunctionPtr function;
   std::vector<size_t> inputs;
 };
@@ -59,6 +61,7 @@ public:
   size_t addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addMemberOperator(ExecutionContext& context, const FunctionPtr& operation, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
+  virtual ClassPtr getClass() const;
   virtual bool initialize(ExecutionContext& context);
 
 private:

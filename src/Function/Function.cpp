@@ -158,15 +158,27 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
     context.enterScope(scopeName);
   bool res = true;
 
-  if (!checkIsInitialized(context))
-    res = false;
-  else if (!batchLearner)
+  if (!isInitialized())
   {
-    context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
-    res = false;
+    // auto-initialize given examples type
+    TypePtr examplesType = trainingData->getElementsType();
+    std::vector<VariableSignaturePtr> inputSignatures(examplesType->getNumMemberVariables());
+    for (size_t i = 0; i < inputSignatures.size(); ++i)
+      inputSignatures[i] = examplesType->getMemberVariable(i);
+    if (!initialize(context, inputSignatures))
+      res = false;
   }
-  else
-    res = batchLearner->compute(context, this, trainingData, validationData).getBoolean();
+
+  if (res)
+  {
+    if (!batchLearner)
+    {
+      context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
+      res = false;
+    }
+    else
+      res = batchLearner->compute(context, this, trainingData, validationData).getBoolean();
+  }
 
   if (doScope)
   {

@@ -83,8 +83,7 @@ public:
   virtual size_t getNumElements() const = 0;
   virtual EnumerationElementPtr getElement(size_t index) const = 0;
 
-  String getElementName(size_t index) const
-    {return getElement(index)->getName();}
+  String getElementName(size_t index) const;
 
   int findElementByName(const String& name) const;
   int findElementByOneLetterCode(const juce::tchar c) const;

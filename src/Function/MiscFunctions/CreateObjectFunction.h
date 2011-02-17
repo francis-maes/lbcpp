@@ -27,7 +27,7 @@ public:
     {return objectClass->getNumMemberVariables();}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return objectClass->getMemberVariable(getFirstIndex() + index)->getType();}
+    {return objectClass->getMemberVariable(index)->getType();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -40,15 +40,10 @@ public:
   {
     ObjectPtr res = Object::create(objectClass);
     jassert(res);
-    size_t firstIndex = getFirstIndex();
     for (size_t i = 0; i < numInputs; ++i)
-      res->setVariable(firstIndex + i, inputs[i]);
+      res->setVariable(i, inputs[i]);
     return res;
   }
-
-  // pas beau, c'est pour enlever les trois variables de Function (onlineLearner, batchLearner, pushIntoStackFlag)
-  size_t getFirstIndex() const
-    {return objectClass->inheritsFrom(functionClass) ? functionClass->getNumMemberVariables() : 0;}
 
 protected:
   friend class CreateObjectFunctionClass;

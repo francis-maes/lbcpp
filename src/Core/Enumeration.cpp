@@ -86,6 +86,13 @@ int Enumeration::findElementByOneLetterCode(const juce::tchar c) const
   return -1;
 }
 
+String Enumeration::getElementName(size_t index) const
+{
+  jassert(index < getNumElements() || getNumElements() == 0);
+  EnumerationElementPtr element = getElement(index);
+  return element ? element->getName() : String::empty;
+}
+
 /*
 ** DefaultEnumeration
 */

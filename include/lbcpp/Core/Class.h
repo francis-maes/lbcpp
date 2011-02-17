@@ -87,6 +87,8 @@ public:
   DefaultClass(TemplateTypePtr templateType, const std::vector<TypePtr>& templateArguments, TypePtr baseClass);
   DefaultClass() : abstractClass(false) {}
 
+  virtual ClassPtr getClass() const;
+
   virtual bool isAbstract() const
     {return abstractClass;}
 

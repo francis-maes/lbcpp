@@ -117,7 +117,7 @@ FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
   res->setVariable(1, protein->getPrimaryStructure());
   res->setVariable(2, protein->getPositionSpecificScoringMatrix());
   
-  ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
+  /*ContainerPtr inputSecondaryStructure = protein->getSecondaryStructure();
   if (inputSecondaryStructure)
   {
     size_t n = inputSecondaryStructure->getNumElements();
@@ -129,6 +129,6 @@ FramePtr ProteinFrameFactory::createFrame(const ProteinPtr& protein) const
       secondaryStructure->setElement(i, distribution);
     }
     res->setVariable(3, secondaryStructure);
-  }
+  }*/
   return res;
 }

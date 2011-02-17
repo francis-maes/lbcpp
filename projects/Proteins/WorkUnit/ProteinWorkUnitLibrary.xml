@@ -115,6 +115,7 @@
     <variable type="File" name="supervisionDirectory" shortName="s"/>
     <variable type="File" name="inputDirectory" shortName="d"/>
     <variable type="PositiveInteger" name="maxProteins" shortName="m"/>
+    <variable type="PositiveInteger" name="numFolds" shortName="f"/>
   </class>
          
   <!-- BricoBox -->

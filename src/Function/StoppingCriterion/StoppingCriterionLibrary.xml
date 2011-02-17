@@ -3,7 +3,7 @@
 <library name="StoppingCriterion" directory="Function/StoppingCriterion">
   <include file="lbcpp/Function/StoppingCriterion.h"/>
   
-  <class name="StoppingCriterion" base="Function" abstract="yes"/>
+  <class name="StoppingCriterion" base="Object" abstract="yes"/>
 
   <class name="IsAboveValueStoppingCriterion" base="StoppingCriterion">
     <constructor arguments="double referenceValue"/>

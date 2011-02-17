@@ -139,7 +139,7 @@ double OldGradientDescentOnlineLearner::computeLearningRate() const
 {
   double res = 1.0;
   if (learningRate)
-    res *= learningRate->compute(epoch);
+    res *= learningRate->computeIterationFunction(epoch);
   if (normalizeLearningRate && numberOfActiveFeatures.getMean())
     res /= numberOfActiveFeatures.getMean();
   return res;
