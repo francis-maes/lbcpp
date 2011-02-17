@@ -35,7 +35,7 @@ public:
     {return 3;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? getRequiredFunctionType() : objectVectorClass(getRequiredExamplesType());}
+    {return index == 0 ? getRequiredFunctionType() : (TypePtr)objectVectorClass(getRequiredExamplesType());}
 
   virtual String getOutputPostFix() const
     {return T("Learned");}

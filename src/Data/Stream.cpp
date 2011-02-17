@@ -9,6 +9,7 @@
 #include <lbcpp/Data/Stream.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/DynamicObject.h>
+
 using namespace lbcpp;
 
 /*
@@ -167,51 +168,4 @@ Variable TextParser::next()
   delete istr;
   istr = NULL;
   return currentResult;
-}
-
-/*
-** LearningDataTextParser
-*/
-bool LearningDataTextParser::parseLine(const String& line)
-{
-  int begin = indexOfAnyNotOf(line, T(" \t"));
-  bool isEmpty = begin < 0;
-  if (isEmpty)
-    return parseEmptyLine();
-  if (line[begin] == '#')
-    return parseCommentLine(line.substring(begin + 1).trim());
-  std::vector<String> columns;
-  tokenize(line, columns);
-  return parseDataLine(columns);
-}
-
-SparseDoubleVectorPtr LearningDataTextParser::parseFeatureList(DefaultEnumerationPtr features, const std::vector<String>& columns, size_t firstColumn) const
-{
-  SparseDoubleVectorPtr res = new SparseDoubleVector(features, doubleType);
-  for (size_t i = firstColumn; i < columns.size(); ++i)
-  {
-    String identifier;
-    double value;
-    if (!parseFeature(columns[i], identifier, value))
-      return false;
-    size_t index = features->findOrAddElement(context, identifier);
-    res->setElement(index, value);
-  }
-  return res;
-}
-
-bool LearningDataTextParser::parseFeature(const String& str, String& featureId, double& featureValue)
-{
-  int n = str.indexOfChar(':');
-  if (n < 0)
-  {
-    featureId = str;
-    featureValue = 1.0;
-  }
-  else
-  {
-    featureId = str.substring(0, n);
-    featureValue = str.substring(n + 1).getDoubleValue();
-  }
-  return true;
 }
