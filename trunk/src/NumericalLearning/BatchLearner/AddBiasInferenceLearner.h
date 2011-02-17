@@ -31,7 +31,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       const std::pair<Variable, Variable>& example = learnerInput->getTrainingExample(i);
-      const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>(context);
+      //const ScalarFunctionPtr& loss = example.second.getObjectAndCast<ScalarFunction>(context);
       
       jassert(false); // broken
       bool isPositiveExample = false;//loss->compute(1.0) < loss->compute(-1.0);

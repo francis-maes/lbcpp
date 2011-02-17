@@ -328,7 +328,7 @@ void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, con
 
   if (numericalInference.dynamicCast<LinearInference>())
   {
-    const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>(context);
+    //const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>(context);
     
     jassert(false); // broken
     double derivative = 0.0;// = loss->computeDerivative(prediction.getDouble());
@@ -337,7 +337,7 @@ void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, con
   }
   else if (numericalInference.dynamicCast<MultiLinearInference>())
   {
-    const MultiClassLossFunctionPtr& loss = supervision.getObjectAndCast<MultiClassLossFunction>(context);
+    //const MultiClassLossFunctionPtr& loss = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     ObjectPtr gradient;
     jassert(prediction.isObject());
     jassert(false); // broken
