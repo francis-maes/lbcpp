@@ -4,27 +4,7 @@
   <include file="lbcpp/NumericalLearning/LossFunctions.h"/>
 
   
-  <!-- Ranking Loss Functions -->
-  <class name="RankingLossFunction" base="ScalarVectorFunction" abstract="yes">
-    <variable type="GenericVector[Double]" name="costs"/>
-  </class>
-  
-  <class name="AdditiveRankingLossFunction" base="RankingLossFunction" abstract="yes">
-    <variable type="DiscriminativeLossFunction" name="baseLoss"/>
-  </class>
-
-  <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
-  </class>
-  
-  <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
-  </class>
-  
-  <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
-  </class>
-
+  <!-- Ranking Loss Functions
   <class name="BinaryClassificationRankingLossFunction" base="AdditiveRankingLossFunction" abstract="yes"/>
   <class name="F1ScoreRankingLossFunction" base="BinaryClassificationRankingLossFunction">
     <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
@@ -32,6 +12,7 @@
   <class name="MCCRankingLossFunction" base="BinaryClassificationRankingLossFunction">
     <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
+  -->
 
   <!-- Regularizers -->
   <class name="L2RegularizerFunction" base="ScalarVectorFunction">

@@ -35,7 +35,7 @@ public:
         jassert(isNumberValid(derivative));
         (*gradientTarget)->incrementValue(i, derivative * gradientWeight);
       }
-      (*gradientTarget)->incrementValue(correctClass, -gradientWeight);
+      (*gradientTarget)->decrementValue(correctClass, gradientWeight);
     }
   }
 };

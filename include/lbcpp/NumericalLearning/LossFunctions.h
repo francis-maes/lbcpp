@@ -48,59 +48,9 @@ inline ScalarFunctionPtr oldDihedralAngleSquareLossFunction(double target)
 
 */
 /*
-** Ranking Loss Functions
-*/
-class RankingLossFunction : public ScalarVectorFunction
-{
-public:
-  RankingLossFunction(const std::vector<double>& costs) : costs(costs) {}
-  RankingLossFunction() {}
-
-  virtual TypePtr getInputType() const
-    {return containerClass(doubleType);}
-
-  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
-    {jassert(false);} // FIXME
-
-  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
-
-  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
-  void compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;
-
-  const std::vector<double>& getCosts() const
-    {return costs;}
-
-  void setCosts(const std::vector<double>& costs)
-    {this->costs = costs;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class RankingLossFunctionClass;
-
-  std::vector<double> costs;
-
-  static void multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k);
-  static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res);
-
-  // returns true if all costs are equal to 0 or equal to a shared positive constant
-  static bool areCostsBipartite(const std::vector<double>& costs);
-
-  // returns a map from costs to (argmin scores, argmax scores) pairs
-  static void getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res);
-  static bool hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts);
-};
-
-typedef ReferenceCountedObjectPtr<RankingLossFunction> RankingLossFunctionPtr;
-extern ClassPtr rankingLossFunctionClass;
-
-extern RankingLossFunctionPtr allPairsRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
-extern RankingLossFunctionPtr mostViolatedPairRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
-extern RankingLossFunctionPtr bestAgainstAllRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
-
 extern RankingLossFunctionPtr f1ScoreRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
 extern RankingLossFunctionPtr mccRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs);
-
+*/
 /*
 ** Regularizers
 */

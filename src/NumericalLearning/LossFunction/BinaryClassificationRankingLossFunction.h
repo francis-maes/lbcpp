@@ -9,12 +9,13 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BINARY_CLASSIFICATION_RANKING_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BINARY_CLASSIFICATION_RANKING_H_
 
-# include "AdditiveRankingLossFunction.h"
+//# include "AdditiveRankingLossFunction.h"
 # include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
 
+#if 0
 class BinaryClassificationRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
@@ -117,6 +118,8 @@ public:
   virtual double computeScore(const BinaryClassificationConfusionMatrix& matrix) const
     {return matrix.computeMatthewsCorrelation();}
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

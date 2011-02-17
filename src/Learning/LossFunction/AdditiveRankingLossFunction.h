@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_
-# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_
+#ifndef LBCPP_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_
+# define LBCPP_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {
@@ -17,9 +17,8 @@ namespace lbcpp
 class AdditiveRankingLossFunction : public RankingLossFunction
 {
 public:
-  AdditiveRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
-    : RankingLossFunction(costs), baseLoss(baseLoss) {}
-  AdditiveRankingLossFunction() {}
+  AdditiveRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss = DiscriminativeLossFunctionPtr())
+    : baseLoss(baseLoss) {}
 
   virtual bool isDerivable() const
     {return baseLoss->isDerivable();}
@@ -35,6 +34,7 @@ protected:
   void addRankingPair(double deltaCost, double deltaScore, size_t positiveAlternative, size_t negativeAlternative, double* output, std::vector<double>* gradient) const
   {
     jassert(deltaCost > 0);
+
     // deltaScore = scores[positiveAlternative] - scores[negativeAlternative]
     // deltaScore should be positive
     
@@ -53,4 +53,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_
+#endif // !LBCPP_LEARNING_LOSS_FUNCTION_ADDITIVE_RANKING_H_

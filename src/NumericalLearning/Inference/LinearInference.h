@@ -86,7 +86,8 @@ public:
       jassert(!scores || n == scores->getNumElements());
       std::vector<double> lossGradient;
       const RankingLossFunctionPtr& loss = lossFunction.staticCast<RankingLossFunction>();
-      loss->compute(context, scores, n, &exampleLossValue, &lossGradient);
+      jassert(false); // broken
+      //loss->computeRankingLoss(context, scores, n, &exampleLossValue, &lossGradient);
       jassert(lossGradient.size() == n);
       
       if (target)

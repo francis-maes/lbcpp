@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
-# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
+#ifndef LBCPP_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
+# define LBCPP_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
 
 # include "AdditiveRankingLossFunction.h"
 
@@ -17,15 +17,13 @@ namespace lbcpp
 class MostViolatedPairRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  MostViolatedPairRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
-    : AdditiveRankingLossFunction(baseLoss, costs) {}
-  
-  MostViolatedPairRankingLossFunction() {}
+  MostViolatedPairRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss = DiscriminativeLossFunctionPtr())
+    : AdditiveRankingLossFunction(baseLoss) {}
 
   virtual bool isDerivable() const
     {return false;}
 
-  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
+  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
     std::pair<size_t, size_t> mostViolatedPair;
     bool hasViolation;    
@@ -131,4 +129,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
+#endif // !LBCPP_LEARNING_LOSS_FUNCTION_MOST_VIOLATED_PAIR_RANKING_H_
