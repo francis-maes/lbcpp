@@ -26,25 +26,29 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
 {
 }
 
-BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
+BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
 {
   return stochasticBatchLearner(maxIterations, randomizeExamples);
 }
 
-OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
+OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
 {
-  std::vector<OnlineLearnerPtr> learners;
+  TypePtr supervisionType = inputVariables[1]->getType();
 
+  // get or create loss function
   FunctionPtr lossFunction = this->lossFunction;
   if (!lossFunction)
   {
-    TypePtr supervisionType = inputVariables[1]->getType();
     if (supervisionType == booleanType)
       lossFunction = hingeDiscriminativeLossFunction();
     else if (supervisionType == doubleType)
       lossFunction = squareRegressionLossFunction();
     else if (supervisionType->inheritsFrom(enumValueType))
-      lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+    {
+    // mostViolatedMultiClassLossFunction(DiscriminativeLossFunctionPtr binaryLossFunction);
+      lossFunction = logBinomialMultiClassLossFunction();
+      //oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+    }
     else
     {
       context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
@@ -52,16 +56,21 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
     }
   }
 
+  // initialize loss function
+  if (!lossFunction->initialize(context, outputType, supervisionType))
+    return OnlineLearnerPtr();
+
+  // create gradient descent learner
+  std::vector<OnlineLearnerPtr> learners;
   learners.push_back(doPerEpisodeUpdates
     ? perEpisodeGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate)
     : stochasticGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate));
 
+  // create other optionnal online learners
   if (evaluator)
     learners.push_back(evaluatorOnlineLearner(evaluator));
-
   if (stoppingCriterion)
     learners.push_back(stoppingCriterionOnlineLearner(stoppingCriterion));
-
   if (restoreBestParameters)
     learners.push_back(restoreBestParametersOnlineLearner());
 
@@ -86,13 +95,13 @@ TypePtr SupervisedNumericalFunction::initializeFunction(ExecutionContext& contex
   frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));       // 1: supervision
 
   FunctionPtr learnableFunction = createLearnableFunction();
-  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(context, inputVariables));
   frameClass->addMemberOperator(context, learnableFunction, 0, 1);                              // 2: linearFunction(0,1)
+  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(context, inputVariables, learnableFunction->getOutputType()));
 
   FunctionPtr postProcessing = createPostProcessing();
   if (postProcessing)
     frameClass->addMemberOperator(context, postProcessing, 2);                                  // 3: postProcess(2)
 
-  setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables));
+  setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, postProcessing->getOutputType()));
   return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 }

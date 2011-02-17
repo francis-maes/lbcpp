@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/XmlSerialisation.h>
+#include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/Distribution/Distribution.h>
 using namespace lbcpp;
 
@@ -447,6 +448,8 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
     return booleanVector(initialSize);
   else if (elementsType->inheritsFrom(objectClass))
     return objectVector(elementsType, initialSize);
+  else if (elementsType->inheritsFrom(doubleType))
+    return new DenseDoubleVector(denseDoubleVectorClass(), initialSize);
   else if (elementsType == anyType)
     return variableVector(initialSize);
   else
