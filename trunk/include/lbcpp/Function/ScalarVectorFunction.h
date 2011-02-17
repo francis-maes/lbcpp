@@ -44,37 +44,21 @@ typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 class ScalarVectorFunction : public Function
 {
 public:
+  virtual bool isDerivable() const = 0;
+
+  // if (output) *output += result
+  // if (gradientTarget) *gradientTarget += resultGradinet * gradientWeight
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
+
   /*
   ** Function
   */
-  virtual TypePtr getInputType() const
-    {return objectClass;}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return doubleType;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return compute(context, input.getObject());}
-
-  /**
-  ** Checks if the function is derivable or not.
-  **
-  ** @return True if derivable.
-  */
-  virtual bool isDerivable() const = 0;
-
-  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
-
-  // old ---> 
-  virtual double compute(ExecutionContext& context, ObjectPtr input) const
-    {double res = 0.0; compute(context, input, &res, NULL, 0.0); return res;}
-
-  // if (output) *output += f(input)
-  // if (gradientTarget) *gradientTarget += gradient_f(input) * gradientWeight
-  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const = 0;
-  // --------
-
-  ScalarVectorFunctionPtr multiplyByScalar(double weight) const;
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual String getOutputPostFix() const;
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+ 
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 };
 
 extern ClassPtr scalarVectorFunctionClass;

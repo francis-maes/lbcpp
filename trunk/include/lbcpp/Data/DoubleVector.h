@@ -157,6 +157,10 @@ public:
 
   void ensureSize(size_t minimumSize);
 
+  // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
+  // todo: virtualize
+  double computeLogSumOfExponentials() const;
+
 
   // DoubleVector
   virtual size_t l0norm() const;

@@ -29,8 +29,7 @@
 
 # include "../Core/Container.h"
 # include "../Core/DynamicObject.h"
-# include "../Function/ScalarFunction.h"
-# include "../Function/ScalarVectorFunction.h"
+# include "../Learning/LossFunction.h"
 
 namespace lbcpp
 {
@@ -69,80 +68,10 @@ typedef ReferenceCountedObjectPtr<RegressionLossFunction> RegressionLossFunction
 extern RegressionLossFunctionPtr squareLossFunction();
 extern ClassPtr squareLossFunctionClass;
 
-/*
-** Binary Classification Loss Functions
-*/
-class BinaryClassificationLossFunction : public ScalarFunction
-{
-public:
-  BinaryClassificationLossFunction(bool isPositive) : isPositive(isPositive) {}
-  BinaryClassificationLossFunction() {}
-
-  virtual String toString() const;
-
-  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
-
-  bool getLabel() const
-    {return isPositive;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class BinaryClassificationLossFunctionClass;
-
-  bool isPositive;
-};
-
-typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;
-
+// BINARY
 extern ClassPtr hingeLossFunctionClass;
 extern BinaryClassificationLossFunctionPtr hingeLossFunction(bool isPositive, double margin = 1);
 extern BinaryClassificationLossFunctionPtr logBinomialLossFunction(bool isPositive);
-
-/*
-** Multi Class Loss Functions
-*/
-class MultiClassLossFunction : public ScalarVectorFunction
-{
-public:
-  MultiClassLossFunction(EnumerationPtr classes, size_t correctClass);
-  MultiClassLossFunction() : correctClass(0) {}
-
-  virtual String toString() const;
-  virtual TypePtr getInputType() const
-    {return containerClass(doubleType);}
-  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
-
-  virtual void computeMultiClassLossFunction(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const = 0;
-
-  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const;
-
-  void compute(ExecutionContext& context, const ObjectPtr& input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const;
-
-  size_t getNumClasses() const
-    {return classes->getNumElements();}
-
-  size_t getCorrectClass() const
-    {return correctClass;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class MultiClassLossFunctionClass;
-
-  EnumerationPtr classes;
-  size_t correctClass;
-
-  DynamicClassPtr outputClass;
-};
-
-typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
-
-extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
-extern MultiClassLossFunctionPtr mostViolatedMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction, EnumerationPtr classes, size_t correctClass);
-extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction(EnumerationPtr classes, size_t correctClass);
 
 /*
 ** Ranking Loss Functions
@@ -156,10 +85,10 @@ public:
   virtual TypePtr getInputType() const
     {return containerClass(doubleType);}
 
-  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
+    {jassert(false);} // FIXME
 
-  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
-    {jassert(false);} // FIXME: not implemented
+  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const = 0;
 
   virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const;
   void compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const;

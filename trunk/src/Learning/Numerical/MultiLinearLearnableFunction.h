@@ -68,9 +68,12 @@ public:
     if (!supervision)
       return false;
 
+    // FIXME: compute all inputs
+
+    jassert(false); // not implemented
     exampleLossValue = 0.0;
-    DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(denseDoubleVectorClass(inputVector->getElementsEnumeration()));
-    supervision->computeScalarVectorFunction(inputVector, &exampleLossValue, (DoubleVectorPtr* )&lossGradient, 1.0);
+    DenseDoubleVectorPtr lossGradient;// = new DenseDoubleVector(denseDoubleVectorClass(inputVector->getElementsEnumeration()));
+    //supervision->computeScalarVectorFunction(inputVector, &exampleLossValue, (DoubleVectorPtr* )&lossGradient, 1.0);
 
     if (!target)
       target = new CompositeDoubleVector(compositeDoubleVectorClass()); // FIXME: create sub vectors 

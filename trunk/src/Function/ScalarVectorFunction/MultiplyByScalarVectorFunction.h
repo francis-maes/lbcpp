@@ -27,22 +27,12 @@ public:
   virtual bool isDerivable() const
     {return function->isDerivable();}
   
-  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     if (scalar == 0)
       return;
     double out = 0.0;
-    function->compute(context, input, output ? &out : NULL, gradientTarget, gradientWeight * scalar);
-    if (output)
-      *output += out * scalar;
-  }
-
-  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
-  {
-    if (scalar == 0)
-      return;
-    double out = 0.0;
-    function->computeScalarVectorFunction(input, output ? &out : NULL, gradientTarget, gradientWeight * scalar);
+    function->computeScalarVectorFunction(input, otherInputs, output ? &out : NULL, gradientTarget, gradientWeight * scalar);
     if (output)
       *output += out * scalar;
   }

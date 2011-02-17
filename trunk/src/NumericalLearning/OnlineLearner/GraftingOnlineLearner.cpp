@@ -338,7 +338,8 @@ void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, con
     const MultiClassLossFunctionPtr& loss = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     ObjectPtr gradient;
     jassert(prediction.isObject());
-    loss->compute(context, prediction.getObject(), NULL, &gradient, 1.0);
+    jassert(false); // broken
+    //loss->compute(context, prediction.getObject(), NULL, &gradient, 1.0);
 
     size_t n = gradient->getNumVariables();
     for (size_t i = 0; i < n; ++i)

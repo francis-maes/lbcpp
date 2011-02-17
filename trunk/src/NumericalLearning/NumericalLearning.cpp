@@ -139,11 +139,12 @@ void NumericalInference::applyRegularizerToParameters(ExecutionContext& context,
   {
     parametersLock.enterWrite();
     bool changed = true;
-    ObjectPtr weights = getParameters()->getWeights();
+/*    ObjectPtr weights = getParameters()->getWeights();
     if (weights)
       regularizer->compute(context, weights, NULL, &weights, weight);
     else
-      changed = false;
+      changed = false;*/
+    jassert(false); // broken
     parametersLock.exitWrite();
     if (changed)
       parametersChangedCallback();

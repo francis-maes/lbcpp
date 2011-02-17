@@ -118,10 +118,13 @@ public:
 
   virtual MultiClassLossFunctionPtr createLossFunction(size_t correctClass) const
   {
+    jassert(false); // broken
+    return MultiClassLossFunctionPtr();
+    /*
     if (updateOnlyMostViolatedClasses)
       return mostViolatedMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);
     else
-      return oneAgainstAllMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);
+      return oneAgainstAllMultiClassLossFunction(hingeLossFunction(true), classes, correctClass);*/
   }
 
 protected:
@@ -140,7 +143,11 @@ public:
   MultiClassMaxentInference() {}
 
   virtual MultiClassLossFunctionPtr createLossFunction(size_t correctClass) const
-    {return logBinomialMultiClassLossFunction(classes, correctClass);}
+  {
+    jassert(false); // broken
+    return MultiClassLossFunctionPtr();
+    //return logBinomialMultiClassLossFunction(classes, correctClass);
+  }
 };
 
 }; /* namespace lbcpp */

@@ -37,16 +37,17 @@ GENERATE_INTROSPECTION_CODE(FeatureGenerator/FeatureGeneratorLibrary.xml Feature
 GENERATE_INTROSPECTION_CODE(FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml GenericFeatureGeneratorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrary.xml AtomicFeatureGeneratorLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
-
 GENERATE_INTROSPECTION_CODE(Learning/LearningLibrary.xml LearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/OnlineLearner/OnlineLearnerLibrary.xml OnlineLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/BatchLearner/BatchLearnerLibrary.xml BatchLearnerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/Numerical/NumericalLearningLibrary.xml NumericalLearningLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/DecisionTreeLibrary.xml DecisionTreeLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Learning/DecisionTree/Data/DecisionTreeDataLibrary.xml DecisionTreeDataLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xml LearningLossFunctionLibrary.cpp)
+
+GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -402,6 +403,7 @@ SET(LBCPP_LEARNING_SOURCES
   ../include/lbcpp/Learning/LearnableFunction.h
   ../include/lbcpp/Learning/OnlineLearner.h
   ../include/lbcpp/Learning/BatchLearner.h
+  ../include/lbcpp/Learning/LossFunction.h
   ../include/lbcpp/Learning/Numerical.h
   ../include/lbcpp/Learning/DecisionTree.h
   Learning/LearningLibrary.xml
@@ -423,6 +425,14 @@ SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
   Learning/BatchLearner/FrameBasedFunctionBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp
+)
+
+SET(LBCPP_LEARNING_LOSS_FUNCTION_SOURCES
+  Learning/LossFunction/OneAgainstAllMultiClassLossFunction.h
+  Learning/LossFunction/MostViolatedMultiClassLossFunction.h
+  Learning/LossFunction/LogBinomialMultiClassLossFunction.h
+  Learning/LossFunction/LearningLossFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/LearningLossFunctionLibrary.cpp
 )
 
 SET(LBCPP_LEARNING_NUMERICAL_SOURCES
@@ -622,9 +632,6 @@ SET(LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_SOURCES
   NumericalLearning/LossFunction/SquareLossFunction.h
   NumericalLearning/LossFunction/HingeLossFunction.h
   NumericalLearning/LossFunction/LogBinomialLossFunction.h
-  NumericalLearning/LossFunction/OneAgainstAllMultiClassLossFunction.h
-  NumericalLearning/LossFunction/MostViolatedMultiClassLossFunction.h
-  NumericalLearning/LossFunction/LogBinomialMultiClassLossFunction.h
   NumericalLearning/LossFunction/AdditiveRankingLossFunction.h
   NumericalLearning/LossFunction/AllPairsRankingLossFunction.h
   NumericalLearning/LossFunction/MostViolatedPairRankingLossFunction.h
@@ -837,6 +844,7 @@ SET(LBCPP_CORE
   ${LBCPP_LEARNING_SOURCES}
     ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES}
     ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES}
+    ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES}
     ${LBCPP_LEARNING_NUMERICAL_SOURCES}
     ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
       ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES}
@@ -930,6 +938,7 @@ SOURCE_SUB_GROUP(FeatureGenerator Atomic FILES ${LBCPP_FEATURE_GENERATOR_ATOMIC_
 SOURCE_GROUP(Learning FILES ${LBCPP_LEARNING_SOURCES})
 SOURCE_SUB_GROUP(Learning OnlineLearner FILES ${LBCPP_LEARNING_ONLINE_LEARNER_SOURCES})
 SOURCE_SUB_GROUP(Learning BatchLearner FILES ${LBCPP_LEARNING_BATCH_LEARNER_SOURCES})
+SOURCE_SUB_GROUP(Learning LossFunction FILES ${LBCPP_LEARNING_LOSS_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES})

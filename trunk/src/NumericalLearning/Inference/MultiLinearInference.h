@@ -46,7 +46,8 @@ public:
 
     const MultiClassLossFunctionPtr& lossFunction = supervision.getObjectAndCast<MultiClassLossFunction>(context);
     std::vector<double> lossGradient;
-    lossFunction->compute(context, prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
+    jassert(false); // broken
+    //lossFunction->compute(context, prediction.getObject(), &exampleLossValue, &lossGradient, 1.0);
     if (lossGradient.empty() || !perception->getOutputType()->getNumMemberVariables())
       return; // when learning the perception, its number of output variables may be null at beginning
 
