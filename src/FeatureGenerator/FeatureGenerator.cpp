@@ -85,6 +85,30 @@ size_t FeatureGenerator::l0norm(const Variable* inputs) const
   return callback.res;
 }
 
+class ComputeSumOfSquaresFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  ComputeSumOfSquaresFeatureGeneratorCallback() : res(0.0) {}
+
+  virtual void sense(size_t index, double value)
+    {res += value * value;}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {res += vector->sumOfSquares() * weight;}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {res += featureGenerator->sumOfSquares(inputs) * weight;}
+
+  double res;
+};
+
+double FeatureGenerator::sumOfSquares(const Variable* inputs) const
+{
+  ComputeSumOfSquaresFeatureGeneratorCallback callback;
+  computeFeatures(&inputs[0], callback);
+  return callback.res;
+}
+
 class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:

@@ -24,96 +24,6 @@
 namespace lbcpp
 {
 
-#if 0
-/*
-** LearningMachineFamily
-*/
-class LearningMachineFamily : public Object
-{
-public:
-  virtual InferencePtr createBinaryClassifier(PerceptionPtr perception, const Variable& arguments) const = 0;
-
-  virtual InferencePtr createMultiClassClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
-  {
-    // default: one-against-all
-    return oneAgainstAllClassificationInference(T("MultiClass"), labels, createBinaryClassifier(perception, arguments));
-  }
-
-  virtual InferencePtr createMultiLabelClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
-  {
-    // default: one-against-all multi-label
-    return oneAgainstAllMultiLabelClassificationInference(T("MultiLabelMultiClass"), labels, createBinaryClassifier(perception, arguments));
-  }
-};
-
-typedef ReferenceCountedObjectPtr<LearningMachineFamily> LearningMachineFamilyPtr;
-
-class LinearLearningMachineFamily : public LearningMachineFamily
-{
-public:
-  InferenceOnlineLearnerPtr createOnlineLearner(const Variable& arguments) const
-  {
-    InferenceOnlineLearnerPtr lastLearner;
-    InferenceOnlineLearnerPtr res = lastLearner = gradientDescentOnlineLearner(perStep, constantIterationFunction(0.1));
-    //lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(binaryClassificationConfusionEvaluator(T("binary"))));
-
-    StoppingCriterionPtr criterion = maxIterationsStoppingCriterion(100);//logicalOr(, maxIterationsWithoutImprovementStoppingCriterion(10));
-    criterion = logicalOrStoppingCriterion(criterion, isAboveValueStoppingCriterion(0.0));
-    lastLearner = lastLearner->setNextLearner(oldStoppingCriterionOnlineLearner(criterion));
-    return res;
-  }
-
-  virtual InferencePtr createBinaryClassifier(PerceptionPtr perception, const Variable& arguments) const
-  {
-    NumericalSupervisedInferencePtr inference = binaryLinearSVMInference(T("Classifier"), perception);
-    inference->setStochasticLearner(createOnlineLearner(arguments), false);
-    return inference;
-  }
-
-  virtual InferencePtr createMultiClassClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
-  {
-    NumericalSupervisedInferencePtr inference = multiClassLinearSVMInference(T("Classifier"), perception, labels);
-    inference->setStochasticLearner(createOnlineLearner(arguments), false);
-    return inference;
-  }
-};
-
-class ExtraTreeLearningMachineFamily : public LinearLearningMachineFamily
-{
-public:
-  virtual InferencePtr createBinaryClassifier(PerceptionPtr perception, const Variable& arguments) const
-    {return binaryClassificationExtraTreeInference(T("Classifier"), perception, 100, 10, 0);}
-
-  virtual InferencePtr createMultiClassClassifier(PerceptionPtr perception, EnumerationPtr labels, const Variable& arguments) const
-    {return classificationExtraTreeInference(T("Classifier"), perception, labels, 100, 10, 0);}
-};
-
-class StackedSequentialInference : public VectorSequentialInference
-{
-public:
-  StackedSequentialInference(InferencePtr firstStack, InferencePtr nextStacksModel, size_t numStacks)
-    : VectorSequentialInference(T("Stacked"))
-  {
-    jassert(numStacks >= 1);
-    subInferences.resize(numStacks);
-    subInferences[0] = firstStack;
-    for (size_t i = 1; i < numStacks; ++i)
-      subInferences[i] = nextStacksModel->cloneAndCast<Inference>();
-  }
-  StackedSequentialInference() {}
-
-  virtual TypePtr getInputType() const
-    {return subInferences[0]->getInputType();}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return subInferences.back()->getOutputType(pairClass(getInputType(), subInferences[0]->getOutputType(inputType)));}
-
-  virtual void prepareSubInference(ExecutionContext& context, SequentialInferenceStatePtr state, size_t index) const
-    {state->setSubInference(subInferences[index], index == 0 ? state->getInput() : new Pair(state->getInput(), state->getSubOutput()), state->getSupervision());}
-};
-#endif // 0
-
-
 /*
 ** LearningProblem
 */
@@ -170,12 +80,6 @@ public:
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationDataTextParser(context, file, features, labels);}
-/*
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
-  {
-    PerceptionPtr perception = addUnitFeatures(inputClass);
-    return learningMachineFamily->createMultiClassClassifier(perception, outputLabels, arguments);
-  }*/
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return classificationAccuracyEvaluator();}
@@ -197,22 +101,6 @@ public:
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationDataTextParser(context, file, features, labels);}
-/*
-  virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments)
-  {
-    PerceptionPtr firstStackPerception = identityPerception(inputClass);
-    InferencePtr firstStack = learningMachineFamily->createMultiLabelClassifier(firstStackPerception, outputLabels, arguments);
-    if (numStacks <= 1)
-      return firstStack;
-    else
-    {
-      PerceptionPtr nextStacksPerception = concatenatePairPerception(firstStackPerception, conjunctionFeatures(identityPerception(outputClass), identityPerception(outputClass)));
-      //PerceptionPtr nextStacksPerception = conjunctionFeatures(firstStackPerception, identityPerception(outputClass), false);
-      InferencePtr nextStacksModel = learningMachineFamily->createMultiLabelClassifier(identityPerception(nextStacksPerception->getOutputType()), outputLabels, arguments);
-      nextStacksModel = preProcessInference(nextStacksModel, nextStacksPerception);
-      return new StackedSequentialInference(firstStack, nextStacksModel, numStacks);
-    }
-  }*/
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return multiLabelClassificationEvaluator();}
@@ -269,8 +157,6 @@ protected:
   LearningProblemPtr learningProblem;
   FunctionPtr learningMachine;
 
-  //size_t numStacks;
-  //String methodToUse;
   File trainingFile;
   File testingFile;
   size_t maxExamples;

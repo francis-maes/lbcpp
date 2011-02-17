@@ -59,6 +59,24 @@ size_t SparseDoubleVector::l0norm() const
   return res;
 }
 
+double SparseDoubleVector::sumOfSquares() const
+{
+  double res = 0;
+  for (size_t i = 0; i < values.size(); ++i)
+    res += values[i].second * values[i].second;
+  return res;
+}
+
+void SparseDoubleVector::multiplyByScalar(double scalar)
+{
+  if (scalar == 0.0)
+    values.clear();
+  else if (scalar == 1.0)
+    return;
+  for (size_t i = 0; i < values.size(); ++i)
+    values[i].second *= scalar;
+}
+
 void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (values.empty())
@@ -198,6 +216,22 @@ size_t DenseDoubleVector::l0norm() const
   return res;
 }
 
+double DenseDoubleVector::sumOfSquares() const
+{
+  if (!values)
+    return 0.0;
+
+  const double* source = getValuePointer(0);
+  const double* limit = source + values->size();
+  double res = 0;
+  while (source < limit)
+  {
+    res += (*source) * (*source);
+    ++source;
+  }
+  return res;
+}
+
 void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (!values)
@@ -327,6 +361,12 @@ LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const V
 size_t LazyDoubleVector::l0norm() const
   {return computedVector ? computedVector->l0norm() : featureGenerator->l0norm(&inputs[0]);}
 
+double LazyDoubleVector::sumOfSquares() const
+  {return computedVector ? computedVector->sumOfSquares() : featureGenerator->sumOfSquares(&inputs[0]);}
+
+void LazyDoubleVector::multiplyByScalar(double scalar)
+  {jassert(false);}
+
 void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   if (computedVector)
@@ -402,6 +442,22 @@ size_t CompositeDoubleVector::l0norm() const
   for (size_t i = 0; i < vectors.size(); ++i)
     res += vectors[i].second->l0norm();
   return res;
+}
+
+double CompositeDoubleVector::sumOfSquares() const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < vectors.size(); ++i)
+    res += vectors[i].second->sumOfSquares();
+  return res;
+}
+
+void CompositeDoubleVector::multiplyByScalar(double scalar)
+{
+  if (scalar == 1.0)
+    return;
+  for (size_t i = 0; i < vectors.size(); ++i)
+    vectors[i].second->multiplyByScalar(scalar);
 }
 
 void CompositeDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const

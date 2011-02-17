@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class L2RegularizerFunction : public ScalarObjectFunction
+class L2RegularizerFunction : public ScalarVectorFunction
 {
 public:
   L2RegularizerFunction(double weight = 0.0)
@@ -25,7 +25,20 @@ public:
 
   virtual bool isDerivable() const
     {return true;}
-  
+
+  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
+  {
+    if (output)
+      *output = input->l2norm() * weight;
+    if (gradientTarget)
+    {
+      if (input == *gradientTarget)
+        (*gradientTarget)->multiplyByScalar(1 - 2.0 * gradientWeight * weight);
+      else
+        input->addWeightedTo(*gradientTarget, 0, gradientWeight * 2.0 * weight);
+    }
+  }
+
   virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
   {
     if (output)

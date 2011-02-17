@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_ONLINE_LEARNER_H_
 
 # include "Inference.h"
-# include "../Function/ScalarObjectFunction.h"
+# include "../Function/ScalarVectorFunction.h"
 # include "../Function/IterationFunction.h"
 # include "../Data/RandomVariable.h"
 

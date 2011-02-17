@@ -79,7 +79,7 @@ public:
 
   void addWeightedToParameters(ExecutionContext& context, const ObjectPtr& value, double weight);
   void addWeightedToParameters(ExecutionContext& context, const PerceptionPtr& perception, const Variable& input, double weight);
-  void applyRegularizerToParameters(ExecutionContext& context, ScalarObjectFunctionPtr regularizer, double weight);
+  void applyRegularizerToParameters(ExecutionContext& context, ScalarVectorFunctionPtr regularizer, double weight);
   void updateParametersType(ExecutionContext& context); // this function is called when the type of Perception changes
 
 protected:

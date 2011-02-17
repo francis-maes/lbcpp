@@ -19,7 +19,7 @@ class BatchOldGradientDescentOnlineLearner : public OldGradientDescentOnlineLear
 public:
   BatchOldGradientDescentOnlineLearner(LearnerUpdateFrequency learningUpdateFrequency,
                                     IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                                    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+                                    LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : OldGradientDescentOnlineLearner(learningUpdateFrequency, learningRate, normalizeLearningRate,
                                       regularizerUpdateFrequency, regularizer)
     {jassert(learningUpdateFrequency != never && learningUpdateFrequency != perStep);}

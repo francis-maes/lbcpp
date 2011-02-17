@@ -29,13 +29,6 @@
   <class name="FeatureGeneratorsExample" base="WorkUnit"/>
 
   <!-- Train/Test Learning Machine -->
-  <!-- 
-  <enumeration name="LearningProblemEnum">
-    <value name="MultiClass"/>
-    <value name="MultiLabel"/>
-  </enumeration>
-  -->
-
   <class name="LearningProblem" abstract="yes"/>
 
   <class name="RegressionProblem" base="LearningProblem" shortName="regression"/>
@@ -43,25 +36,9 @@
   <class name="MultiClassClassificationProblem" base="LearningProblem" shortName="multiClass"/>
   <class name="MultiLabelClassificationProblem" base="LearningProblem" shortName="multiLabel"/>
   
-  <!--  
-  <enumeration name="LearningMachineFamilyEnum">
-    <value name="Linear"/>
-    <value name="ExtraTree"/>
-  </enumeration>
-
-  <class name="LearningMachineFamily" abstract="yes"/>
-  <class name="LinearLearningMachineFamily" base="LearningMachineFamily"/>
-  <class name="ExtraTreeLearningMachineFamily" base="LearningMachineFamily"/>
-  
-  <class name="StackedSequentialInference" base="VectorSequentialInference"/>
-  -->
-
   <class name="TrainTestLearningMachine" base="WorkUnit">
     <variable type="LearningProblem" name="learningProblem" shortName="t"/>
     <variable type="Function" name="learningMachine" shortName="m"/>
-    <!-- <variable type="LearningMachineFamilyEnum" name="learningMachineFamily" shortName="f"/> 
-    <variable type="PositiveInteger" name="numStacks" shortName="stack"/>
-    <variable type="String" name="methodToUse" shortName="m"/>-->
     <variable type="File" name="trainingFile" shortName="train"/>
     <variable type="File" name="testingFile" shortName="test"/>
     <variable type="PositiveInteger" name="maxExamples" shortName="max"/>

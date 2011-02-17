@@ -17,30 +17,31 @@
 */
 
 /*-----------------------------------------.---------------------------------.
-| Filename: ScalarObjectFunction.h         | Object -> Scalar derivable      |
+| Filename: ScalarVectorFunction.h         | Object -> Scalar derivable      |
 | Author  : Francis Maes                   |   Function                      |
 | Started : 07/03/2009 03:11               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_SCALAR_OBJECT_H_
-# define LBCPP_FUNCTION_SCALAR_OBJECT_H_
+#ifndef LBCPP_FUNCTION_SCALAR_VECTOR_H_
+# define LBCPP_FUNCTION_SCALAR_VECTOR_H_
 
 # include "ScalarFunction.h"
+# include "../Data/DoubleVector.h"
 
 namespace lbcpp
 {
 
-class ScalarObjectFunction;
-typedef ReferenceCountedObjectPtr<ScalarObjectFunction> ScalarObjectFunctionPtr;
+class ScalarVectorFunction;
+typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 
 /**
-** @class ScalarObjectFunction
-** @brief \f$ f :  Object  \to  R  \f$
+** @class ScalarVectorFunction
+** @brief \f$ f :  R^n  \to  R  \f$
 **
 */
-class ScalarObjectFunction : public Function
+class ScalarVectorFunction : public Function
 {
 public:
   /*
@@ -62,21 +63,25 @@ public:
   */
   virtual bool isDerivable() const = 0;
 
+  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
+
+  // old ---> 
   virtual double compute(ExecutionContext& context, ObjectPtr input) const
     {double res = 0.0; compute(context, input, &res, NULL, 0.0); return res;}
 
   // if (output) *output += f(input)
   // if (gradientTarget) *gradientTarget += gradient_f(input) * gradientWeight
   virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const = 0;
+  // --------
 
-  ScalarObjectFunctionPtr multiplyByScalar(double weight) const;
+  ScalarVectorFunctionPtr multiplyByScalar(double weight) const;
 };
 
-extern ClassPtr scalarObjectFunctionClass;
+extern ClassPtr scalarVectorFunctionClass;
 
-extern ScalarObjectFunctionPtr binarySumScalarObjectFunction(ScalarObjectFunctionPtr f1, ScalarObjectFunctionPtr f2);
-extern ScalarObjectFunctionPtr multiplyByScalarObjectFunction(ScalarObjectFunctionPtr function, double scalar);
+extern ScalarVectorFunctionPtr binarySumScalarVectorFunction(ScalarVectorFunctionPtr f1, ScalarVectorFunctionPtr f2);
+extern ScalarVectorFunctionPtr multiplyByScalarVectorFunction(ScalarVectorFunctionPtr function, double scalar);
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_SCALAR_OBJECT_H_
+#endif // !LBCPP_FUNCTION_SCALAR_VECTOR_H_

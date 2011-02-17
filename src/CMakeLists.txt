@@ -27,7 +27,7 @@ GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml Execut
 GENERATE_INTROSPECTION_CODE(Function/FunctionLibrary.xml FunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/MiscFunctions/MiscFunctionsLibrary.xml MiscFunctionsLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/ScalarFunction/ScalarFunctionLibrary.xml ScalarFunctionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml ScalarObjectFunctionLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml ScalarVectorFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/IterationFunction/IterationFunctionLibrary.xml IterationFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/StoppingCriterion/StoppingCriterionLibrary.xml StoppingCriterionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Function/Predicate/PredicateLibrary.xml PredicateLibrary.cpp)
@@ -286,7 +286,7 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/Function.h
   Function/Function.cpp  
   ../include/lbcpp/Function/ScalarFunction.h
-  ../include/lbcpp/Function/ScalarObjectFunction.h
+  ../include/lbcpp/Function/ScalarVectorFunction.h
   Function/ScalarFunction.cpp
   ../include/lbcpp/Function/IterationFunction.h
   ../include/lbcpp/Function/StoppingCriterion.h
@@ -324,10 +324,10 @@ SET(LBCPP_FUNCTION_SCALAR_SOURCES
 )
 
 SET(LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES
-  Function/ScalarObjectFunction/BinarySumScalarObjectFunction.h
-  Function/ScalarObjectFunction/MultiplyByScalarObjectFunction.h
-  Function/ScalarObjectFunction/ScalarObjectFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ScalarObjectFunctionLibrary.cpp
+  Function/ScalarVectorFunction/BinarySumScalarVectorFunction.h
+  Function/ScalarVectorFunction/MultiplyByScalarVectorFunction.h
+  Function/ScalarVectorFunction/ScalarVectorFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ScalarVectorFunctionLibrary.cpp
 )
 
 SET(LBCPP_FUNCTION_ITERATION_SOURCES
@@ -430,6 +430,7 @@ SET(LBCPP_LEARNING_NUMERICAL_SOURCES
   Learning/Numerical/StochasticGDOnlineLearner.h
   Learning/Numerical/PerEpisodeGDOnlineLearner.h
   Learning/Numerical/LinearLearnableFunction.h
+  Learning/Numerical/MultiLinearLearnableFunction.h
   Learning/Numerical/LinearLearningMachine.h
   Learning/Numerical/NumericalLearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
@@ -913,7 +914,7 @@ SOURCE_SUB_GROUP(Execution Context FILES ${LBCPP_EXECUTION_CONTEXT_SOURCES})
 SOURCE_GROUP(Function FILES ${LBCPP_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Function MiscFunctions FILES ${LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES})
 SOURCE_SUB_GROUP(Function ScalarFunction FILES ${LBCPP_FUNCTION_SCALAR_SOURCES})
-SOURCE_SUB_GROUP(Function ScalarObjectFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
+SOURCE_SUB_GROUP(Function ScalarVectorFunction FILES ${LBCPP_FUNCTION_SCALAR_OBJECT_SOURCES})
 SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOURCES})
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})

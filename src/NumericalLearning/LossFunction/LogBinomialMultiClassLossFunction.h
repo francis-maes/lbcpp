@@ -24,12 +24,11 @@ public:
   virtual bool isDerivable() const
     {return true;}
 
-  virtual void compute(ExecutionContext& context, const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
+  virtual void computeMultiClassLossFunction(const std::vector<double>* input, double* output, std::vector<double>* gradientTarget, double gradientWeight) const
   {
     size_t numClasses = classes->getNumElements();
     double logZ = input ? computeLogSumOfExponentials(*input) : log((double)numClasses);
-    if (!isNumberValid(logZ))
-      context.errorCallback(T("LogBinomialMultiClassLossFunction::compute"), T("LogZ is not a valid number."));
+    jassert(isNumberValid(logZ));
     if (output)
       *output = logZ - (input ? (*input)[correctClass] : 0.0);
     if (gradientTarget)

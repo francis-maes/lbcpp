@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_INFERENCE_MULTI_LINEAR_H_
 
 # include <lbcpp/NumericalLearning/NumericalLearning.h>
-# include <lbcpp/Function/ScalarObjectFunction.h>
+# include <lbcpp/Function/ScalarVectorFunction.h>
 # include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
@@ -18,7 +18,7 @@ namespace lbcpp
 
 // Input: Perception's input
 // Output: outputClass parameter
-// Supervision: ScalarObjectFunction
+// Supervision: ScalarVectorFunction
 class MultiLinearInference : public NumericalInference
 {
 public:
@@ -31,7 +31,7 @@ public:
   MultiLinearInference() {}
 
   virtual TypePtr getSupervisionType() const
-    {return scalarObjectFunctionClass;}
+    {return scalarVectorFunctionClass;}
 
   virtual TypePtr getOutputType(TypePtr ) const
     {return outputClass;}

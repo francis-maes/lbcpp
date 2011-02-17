@@ -11,17 +11,17 @@
       <variable type="IterationFunction" name="learningRate"/>
       <variable type="Boolean" name="normalizeLearningRate"/>
       <variable type="LearnerUpdateFrequency" name="regularizerUpdateFrequency" enumeration="yes"/>
-      <variable type="ScalarObjectFunction" name="regularizer"/>
+      <variable type="ScalarVectorFunction" name="regularizer"/>
       <variable type="Double" name="lastEmpiricalRisk"/>
       <variable type="PositiveInteger" name="lastApplyRegularizerEpoch"/>
     </class>
 
     <class name="StochasticOldGradientDescentOnlineLearner" base="OldGradientDescentOnlineLearner">
-      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+      <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
     </class>
 
     <class name="BatchOldGradientDescentOnlineLearner" base="OldGradientDescentOnlineLearner">
-      <constructor arguments="LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer"/>
+      <constructor arguments="LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer"/>
     </class>
 
     <!-- Grafting -->

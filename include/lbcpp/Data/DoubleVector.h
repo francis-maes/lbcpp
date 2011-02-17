@@ -52,9 +52,14 @@ public:
   static bool getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType);
 
   virtual size_t l0norm() const = 0;
+  virtual double sumOfSquares() const = 0;
+  virtual void multiplyByScalar(double scalar) = 0;
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
+
+  double l2norm() const
+    {return sqrt(sumOfSquares());}
 
   double dotProduct(const DenseDoubleVectorPtr& denseVector)
     {return dotProduct(denseVector, 0);}
@@ -95,6 +100,8 @@ public:
 
   // DoubleVector
   virtual size_t l0norm() const;
+  virtual double sumOfSquares() const;
+  virtual void multiplyByScalar(double scalar);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
@@ -142,15 +149,19 @@ public:
   double getValue(size_t index) const
     {jassert(values); return index < values->size() ? (*values)[index] : 0.0;}
 
+  void setValue(size_t index, double value)
+    {getValueReference(index) = value;}
+
   void incrementValue(size_t index, double value)
     {jassert(values && index < values->size()); (*values)[index] += value;}
 
   void ensureSize(size_t minimumSize);
 
-  void multiplyByScalar(double value);
 
   // DoubleVector
   virtual size_t l0norm() const;
+  virtual double sumOfSquares() const;
+  virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
@@ -186,6 +197,8 @@ public:
 
   // DoubleVector
   virtual size_t l0norm() const;
+  virtual double sumOfSquares() const;
+  virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
@@ -222,8 +235,22 @@ public:
     : DoubleVector(thisClass) {}
   CompositeDoubleVector() {}
   
+  // sub vectors
+  size_t getNumSubVectors() const
+    {return vectors.size();}
+
+  const DoubleVectorPtr& getSubVector(size_t index) const
+    {jassert(index < vectors.size()); return vectors[index].second;}
+
+  size_t getSubVectorOffset(size_t index) const
+    {jassert(index < vectors.size()); return vectors[index].first;}
+
+  void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
+
   // DoubleVector
   virtual size_t l0norm() const;
+  virtual double sumOfSquares() const;
+  virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
@@ -240,8 +267,6 @@ public:
   virtual size_t getNumElements() const;
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
-
-  void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
 
   lbcpp_UseDebuggingNewOperator
 

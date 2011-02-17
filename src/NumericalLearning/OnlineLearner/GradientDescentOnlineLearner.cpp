@@ -14,7 +14,7 @@ using namespace lbcpp;
 
 OldGradientDescentOnlineLearner::OldGradientDescentOnlineLearner(
                       LearnerUpdateFrequency learningUpdateFrequency, IterationFunctionPtr learningRate, bool normalizeLearningRate, 
-                      LearnerUpdateFrequency regularizerUpdateFrequency, ScalarObjectFunctionPtr regularizer)
+                      LearnerUpdateFrequency regularizerUpdateFrequency, ScalarVectorFunctionPtr regularizer)
     : numberOfActiveFeatures(T("NumActiveFeatures"), 10), epoch(0),
       learningUpdateFrequency(learningUpdateFrequency), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate),
       regularizerUpdateFrequency(regularizerUpdateFrequency), regularizer(regularizer),

@@ -31,12 +31,17 @@ public:
   // returns false if no supervision is available
   virtual bool computeAndAddGradient(const Variable* inputs, const Variable& output, double& exampleLossValue, DoubleVectorPtr& target, double weight) const = 0;
 
+  // Function
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
   lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnableFunctionPtr;
 
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
+extern NumericalLearnableFunctionPtr multiLinearLearnableFunction();
 
 extern OnlineLearnerPtr stochasticGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 extern OnlineLearnerPtr perEpisodeGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
@@ -81,11 +86,12 @@ typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParameters
 class SupervisedNumericalFunction : public FrameBasedFunction
 {
 public:
-  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters)
-    : learnerParameters(learnerParameters) {}
+  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass);
   SupervisedNumericalFunction() {}
 
   virtual TypePtr getSupervisionType() const = 0;
+  virtual FunctionPtr createPostProcessing() const {return FunctionPtr();}
+  virtual FunctionPtr createLearnableFunction() const = 0;
 
   // Function
   virtual size_t getNumRequiredInputs() const
@@ -97,16 +103,20 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return index ? getSupervisionType() : (TypePtr)doubleVectorClass();}
 
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+
 protected:
   friend class SupervisedNumericalFunctionClass;
 
   LearnerParametersPtr learnerParameters;
+  ClassPtr lossFunctionClass;
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
 extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = squareLossFunctionClass);
 extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = hingeLossFunctionClass);
+extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass);// = oneAgainstAllMultiClassLossFunction(hingeLossFunctionClass));
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
 }; /* namespace lbcpp */

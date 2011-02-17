@@ -2,6 +2,9 @@
 * MultiLinearLearnableFunction
 * MaxentMultiClassClassifier, LinearSVMMultiClassClassifier, 
 
+* Reunir la bibliotheque de fonctions standard:
+  - createObject, getVariable, getElement, applyOnContainer
+
  -> Classification OneAgainstOne, OneAgainstAll
  -> Machines lineaire pour la classification multi-classe
 

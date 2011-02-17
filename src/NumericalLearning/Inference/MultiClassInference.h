@@ -38,14 +38,14 @@ public:
   virtual DecoratorInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     DecoratorInferenceStatePtr res = new DecoratorInferenceState(input, supervision);
-    ScalarObjectFunctionPtr lossFunction;
+    ScalarVectorFunctionPtr lossFunction;
     if (supervision.exists())
     {
       size_t correctClass = (size_t)supervision.getInteger();
       jassert(correctClass < lossFunctions.size());
       lossFunction = lossFunctions[correctClass];
     }
-    res->setSubInference(decorated, input, Variable(lossFunction, scalarObjectFunctionClass));
+    res->setSubInference(decorated, input, Variable(lossFunction, scalarVectorFunctionClass));
     return res;
   }
 
