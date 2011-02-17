@@ -4,6 +4,7 @@
 
   <!-- Learning Parameters -->
   <class name="StochasticGDParameters" base="Object">
+    <variable type="Function" name="lossFunction"/>
     <variable type="IterationFunction" name="learningRate"/>
     <variable type="StoppingCriterion" name="stoppingCriterion"/>
     <variable type="PositiveInteger" name="maxIterations"/>
@@ -16,17 +17,18 @@
   
   <!-- Online Learner -->
   <class name="GradientDescentOnlineLearner" base="OnlineLearner" abstract="yes">
+    <variable type="Function" name="lossFunction"/>
     <variable type="IterationFunction" name="learningRate"/>
     <variable type="Boolean" name="normalizeLearningRate"/>
     <variable type="PositiveInteger" name="epoch"/>
   </class>
   
   <class name="StochasticGDOnlineLearner" base="GradientDescentOnlineLearner">
-    <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
+    <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
 
   <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner">
-    <constructor arguments="IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
+    <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
 
   <!-- Low-level Learnable Functions -->
@@ -43,19 +45,18 @@
   <!-- High-level Learnable Functions -->
   <class name="SupervisedNumericalFunction" base="FrameBasedFunction" abstract="yes">
     <variable type="LearnerParameters" name="learnerParameters"/>
-    <variable type="Class" name="lossFunctionClass"/>
   </class>
 
   <class name="LinearRegressor" base="SupervisedNumericalFunction" shortName="linearRegressor">
-    <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters"/>
   </class>
   
   <class name="LinearBinaryClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">
-    <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters"/>
   </class>
   
   <class name="LinearMultiClassClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">
-    <constructor arguments="LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters"/>
   </class>
 
   <class name="LinearLearningMachine" base="ProxyFunction" shortName="linearLearningMachine">

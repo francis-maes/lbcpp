@@ -26,20 +26,42 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
 {
 }
 
-BatchLearnerPtr StochasticGDParameters::createBatchLearner() const
+BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
 {
   return stochasticBatchLearner(maxIterations, randomizeExamples);
 }
 
-OnlineLearnerPtr StochasticGDParameters::createOnlineLearner() const
+OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
 {
   std::vector<OnlineLearnerPtr> learners;
 
-  learners.push_back(doPerEpisodeUpdates ? perEpisodeGDOnlineLearner(learningRate, normalizeLearningRate) : stochasticGDOnlineLearner(learningRate, normalizeLearningRate));
+  FunctionPtr lossFunction = this->lossFunction;
+  if (!lossFunction)
+  {
+    TypePtr supervisionType = inputVariables[1]->getType();
+    if (supervisionType == booleanType)
+      lossFunction = hingeDiscriminativeLossFunction();
+    else if (supervisionType == doubleType)
+      lossFunction = squareRegressionLossFunction();
+    else if (supervisionType->inheritsFrom(enumValueType))
+      lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+    else
+    {
+      context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
+      return OnlineLearnerPtr();
+    }
+  }
+
+  learners.push_back(doPerEpisodeUpdates
+    ? perEpisodeGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate)
+    : stochasticGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate));
+
   if (evaluator)
     learners.push_back(evaluatorOnlineLearner(evaluator));
+
   if (stoppingCriterion)
     learners.push_back(stoppingCriterionOnlineLearner(stoppingCriterion));
+
   if (restoreBestParameters)
     learners.push_back(restoreBestParametersOnlineLearner());
 
@@ -49,11 +71,12 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner() const
 /*
 ** SupervisedNumericalFunction
 */
-SupervisedNumericalFunction::SupervisedNumericalFunction(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-  : learnerParameters(learnerParameters), lossFunctionClass(lossFunctionClass)
+SupervisedNumericalFunction::SupervisedNumericalFunction(LearnerParametersPtr learnerParameters)
+  : learnerParameters(learnerParameters)
 {
 }
 
+// TODO: replace by "ComposeFunction"
 TypePtr SupervisedNumericalFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
@@ -61,16 +84,15 @@ TypePtr SupervisedNumericalFunction::initializeFunction(ExecutionContext& contex
   frameClass = new FrameClass(getClassName() + T("Frame"));
   frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));             // 0: input
   frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));       // 1: supervision
-  frameClass->addMemberOperator(context, createObjectFunction(lossFunctionClass), 1);           // 2: loss(supervision)
 
-  FunctionPtr linearFunction = createLearnableFunction();
-  linearFunction->setOnlineLearner(learnerParameters->createOnlineLearner());
-  frameClass->addMemberOperator(context, linearFunction, 0, 2);                                 // 3: linearFunction(0,2)
+  FunctionPtr learnableFunction = createLearnableFunction();
+  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(context, inputVariables));
+  frameClass->addMemberOperator(context, learnableFunction, 0, 1);                              // 2: linearFunction(0,1)
 
   FunctionPtr postProcessing = createPostProcessing();
   if (postProcessing)
-    frameClass->addMemberOperator(context, postProcessing, 3);                                  // 4: postProcess(3)          
+    frameClass->addMemberOperator(context, postProcessing, 2);                                  // 3: postProcess(2)
 
-  setBatchLearner(learnerParameters->createBatchLearner());
+  setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables));
   return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 }

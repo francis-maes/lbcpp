@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="LearningLossFunctionLibrary" directory="Learning/LossFunction">
+<library name="LearningLossFunction" directory="Learning/LossFunction">
   <include file="lbcpp/Learning/LossFunction.h"/>
 
   <!-- Regression Loss Functions -->

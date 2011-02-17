@@ -1,6 +1,6 @@
 
-* Moderniser les autres loss
-* Refaire le mecanisme de branchement entre supervision, loss et learner
+
+* Moderniser les loss de ranking en vitesse
 
 * DoubleVector: se servir des FeatureGeneratorCallback dans les implems de DoubleVector
 * DoubleVector: virtualiser computeLogSumOfExponentials()
@@ -15,6 +15,7 @@
 
 * Reunir la bibliotheque de fonctions standard:
   - createObject, getVariable, getElement, applyOnContainer
+* Make ComposeFunction generic, Replace SupervisedNumericalFunction by ComposeFunction
 
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I

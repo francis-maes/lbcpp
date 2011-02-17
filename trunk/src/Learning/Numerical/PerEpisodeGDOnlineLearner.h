@@ -17,8 +17,8 @@ namespace lbcpp
 class PerEpisodeGDOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  PerEpisodeGDOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate = true)
-    : GradientDescentOnlineLearner(learningRate, normalizeLearningRate) {}
+  PerEpisodeGDOnlineLearner(const FunctionPtr& lossFunction, const IterationFunctionPtr& learningRate, bool normalizeLearningRate = true)
+    : GradientDescentOnlineLearner(lossFunction, learningRate, normalizeLearningRate) {}
 
   PerEpisodeGDOnlineLearner() {}
  

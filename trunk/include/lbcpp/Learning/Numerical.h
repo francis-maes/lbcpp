@@ -29,7 +29,9 @@ public:
     {return *(DoubleVectorPtr* )&parameters;}
 
   // returns false if no supervision is available
-  virtual bool computeAndAddGradient(const Variable* inputs, const Variable& output, double& exampleLossValue, DoubleVectorPtr& target, double weight) const = 0;
+  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction,
+                                     const Variable* inputs, const Variable& output,
+                                     double& exampleLossValue, DoubleVectorPtr& target, double weight) const = 0;
 
   // Function
   virtual String getOutputPostFix() const
@@ -43,8 +45,8 @@ typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnable
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
 extern NumericalLearnableFunctionPtr multiLinearLearnableFunction();
 
-extern OnlineLearnerPtr stochasticGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
-extern OnlineLearnerPtr perEpisodeGDOnlineLearner(IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
+extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
+extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
 class StochasticGDParameters : public LearnerParameters
 {
@@ -58,9 +60,21 @@ public:
                           bool restoreBestParameters = true,
                           bool randomizeExamples = true);
 
-  virtual BatchLearnerPtr createBatchLearner() const;
-  virtual OnlineLearnerPtr createOnlineLearner() const;
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const;
+  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const;
 
+  /*
+  ** Loss Function
+  */
+  const FunctionPtr& getLossFunction() const
+    {return lossFunction;}
+
+  void setLossFunction(const FunctionPtr& function)
+    {lossFunction = function;}
+
+  /*
+  ** Evaluator
+  */
   const EvaluatorPtr& getEvaluator() const
     {return evaluator;}
 
@@ -70,6 +84,7 @@ public:
 protected:
   friend class StochasticGDParametersClass;
 
+  FunctionPtr lossFunction;
   IterationFunctionPtr learningRate;
   StoppingCriterionPtr stoppingCriterion;
   size_t maxIterations;
@@ -86,7 +101,7 @@ typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParameters
 class SupervisedNumericalFunction : public FrameBasedFunction
 {
 public:
-  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass);
+  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters);
   SupervisedNumericalFunction() {}
 
   virtual TypePtr getSupervisionType() const = 0;
@@ -109,14 +124,13 @@ protected:
   friend class SupervisedNumericalFunctionClass;
 
   LearnerParametersPtr learnerParameters;
-  ClassPtr lossFunctionClass;
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
-extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = ClassPtr()); // FIXME
-extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass = ClassPtr()); // FIXME
-extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters, ClassPtr lossFunctionClass);// = oneAgainstAllMultiClassLossFunction(hingeLossFunctionClass));
+extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters);
+extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters);
+extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters);
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
 }; /* namespace lbcpp */
