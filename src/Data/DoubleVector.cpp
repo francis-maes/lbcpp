@@ -201,6 +201,18 @@ void DenseDoubleVector::multiplyByScalar(double value)
   }      
 }
 
+double DenseDoubleVector::computeLogSumOfExponentials() const
+{
+  double highestValue = -DBL_MAX;
+  for (size_t i = 0; i < values->size(); ++i)
+    if ((*values)[i] > highestValue)
+      highestValue = (*values)[i];
+  double res = 0.0;
+  for (size_t i = 0; i < values->size(); ++i)
+    res += exp((*values)[i] - highestValue);
+  return log(res) + highestValue;
+}
+
 // DoubleVector
 size_t DenseDoubleVector::l0norm() const
 {

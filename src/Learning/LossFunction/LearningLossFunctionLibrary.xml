@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="LearningLossFunctionLibrary" directory="Learning/LossFunction">
+  <include file="lbcpp/Learning/LossFunction.h"/>
+
+  <!-- Multi Class Loss Functions -->
+  <class name="MultiClassLossFunction" base="ScalarVectorFunction" abstract="yes"/>
+
+  <class name="OneAgainstAllMultiClassLossFunction" base="MultiClassLossFunction">
+    <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction"/>
+    <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
+  </class>
+  
+  <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction">
+    <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction"/>
+    <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
+  </class>
+  
+  <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">
+    <constructor/>
+  </class>
+  
+</library>

@@ -26,10 +26,10 @@ public:
   virtual bool isDerivable() const
     {return true;}
 
-  virtual void computeScalarVectorFunction(const DoubleVectorPtr& input, double* output, DoubleVectorPtr* gradientTarget, double gradientWeight) const
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     if (output)
-      *output = input->l2norm() * weight;
+      *output += input->l2norm() * weight;
     if (gradientTarget)
     {
       if (input == *gradientTarget)
@@ -37,14 +37,6 @@ public:
       else
         input->addWeightedTo(*gradientTarget, 0, gradientWeight * 2.0 * weight);
     }
-  }
-
-  virtual void compute(ExecutionContext& context, ObjectPtr input, double* output, ObjectPtr* gradientTarget, double gradientWeight) const
-  {
-    if (output)
-      *output = lbcpp::sumOfSquares(context, input) * weight;
-    if (gradientTarget)
-      lbcpp::addWeighted(context, *gradientTarget, input, 2.0 * gradientWeight * weight);
   }
 
 private:

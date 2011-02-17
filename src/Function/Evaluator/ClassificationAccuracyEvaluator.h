@@ -64,10 +64,6 @@ protected:
 
     if (value.isObject())
     {
-      MultiClassLossFunctionPtr lossFunction = value.dynamicCast<MultiClassLossFunction>();
-      if (lossFunction)
-        return lossFunction->getCorrectClass();
-      
       DenseDoubleObjectPtr scores = value.dynamicCast<DenseDoubleObject>();
       if (scores)
       {

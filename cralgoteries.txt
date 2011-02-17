@@ -1,7 +1,14 @@
 
 
-* revoir la hierarchie ScalarVectorFunction
+* Moderniser les autres loss
+* Refaire le mecanisme de branchement entre supervision, loss et learner
+
+
+* DoubleVector: se servir des FeatureGeneratorCallback dans les implems de DoubleVector
+* DoubleVector: virtualiser computeLogSumOfExponentials()
+
 * Faire marcher le multiclass lineaire (OneAgainstAllHingeLoss, MostViolatedHingeLoss et MaxentLoss)
+
 
 * revoir la hierarchie ScalarFunction
 * deplacer les LossFunctions
