@@ -114,5 +114,9 @@
   <class name="CheckDisulfideBondsWorkUnit" base="WorkUnit">
     <variable type="File" name="proteinDirectory"/>
   </class>
+  
+  <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
+    <variable type="File" name="dataFile"/>
+  </class>
 
 </library>

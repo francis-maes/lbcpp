@@ -24,6 +24,25 @@
   <class name="MultiLabelClassificationLibSVMDataParser" base="TextParser">
     <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels"/>
   </class>
+  
+  <!-- ARFF Data Parsers -->
+  <class name="ARFFDataParser" base="TextParser" abstract="yes"/>
+  
+  <class name="RegressionARFFDataParser" base="TextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file"/>
+  </class>
+  
+  <class name="BinaryClassificationARFFDataParser" base="TextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file"/>
+  </class>
+  
+  <class name="ClassificationARFFDataParser" base="TextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr labels"/>
+  </class>
+  
+  <class name="MultiLabelClassificationARFFDataParser" base="TextParser">
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr labels"/>
+  </class>
 
   <!-- Directory iterators -->
   <class name="DirectoryFileStream" base="Stream">
