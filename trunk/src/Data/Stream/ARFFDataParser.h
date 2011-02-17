@@ -36,6 +36,8 @@ protected:
   virtual bool checkSupervisionType() const = 0;
   bool parseDataLine(const String& line);
   bool parseSparseDataLine(const String& line);
+  virtual Variable finalizeData(Variable data) const
+    {return data;}
 };
 
 class RegressionARFFDataParser : public ARFFDataParser
@@ -68,24 +70,30 @@ public:
   
   virtual TypePtr getElementsType() const
     {return elementsType;}
+
+protected:
+  TypePtr elementsType;
   
   virtual bool checkSupervisionType() const
   {
     if (!context.checkInheritance(supervisionType, enumValueType))
       return false;
-
+    
     EnumerationPtr enumType = supervisionType.dynamicCast<Enumeration>();
     if (enumType->getNumElements() != 2)
     {
       context.errorCallback(T("BinaryClassificationARFFDataParser::checkSupervisionType"), T("Too many possible output"));
       return false;
     }
-    const_cast<BinaryClassificationARFFDataParser*>(this)->supervisionType = booleanType;
     return true;
   }
-
-protected:
-  TypePtr elementsType;
+  
+  virtual Variable finalizeData(Variable data) const
+  {
+    PairPtr p = data.getObjectAndCast<Pair>();
+    p->setSecond(p->getSecond().getInteger() == 1);
+    return p;
+  }
 };
 
 class ClassificationARFFDataParser : public ARFFDataParser
