@@ -211,6 +211,8 @@ extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
 extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 
+extern FunctionPtr signedScalarToProbabilityFunction();
+
 // old
 extern FunctionPtr identityFunction(TypePtr type);
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
@@ -223,6 +225,56 @@ extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> 
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
 // -
+
+class SimpleFunction : public Function
+{
+public:
+  SimpleFunction(TypePtr outputType, const String& outputPostFix)
+    : outputType(outputType), outputPostFix(outputPostFix) {}
+
+  virtual String getOutputPostFix() const
+    {return outputPostFix;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return outputType;}
+
+protected:
+  TypePtr outputType;
+  String outputPostFix;
+};
+
+class SimpleUnaryFunction : public SimpleFunction
+{
+public:
+  SimpleUnaryFunction(TypePtr inputType, TypePtr outputType, const String& outputPostFix)
+    : SimpleFunction(outputType, outputPostFix), inputType(inputType) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return inputType;}
+
+protected:
+  TypePtr inputType;
+};
+
+class SimpleBinaryFunction : public SimpleFunction
+{
+public:
+  SimpleBinaryFunction(TypePtr inputType1, TypePtr inputType2, TypePtr outputType, const String& outputPostFix)
+    : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? inputType2 : inputType1;}
+
+protected:
+  TypePtr inputType1;
+  TypePtr inputType2;
+};
 
 class CompositeFunction : public Function
 {

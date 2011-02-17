@@ -45,10 +45,10 @@
   </class>
   
   <!-- Genetic Programming Example -->
-  <class name="AgAddFunction" base="Function"/>
-  <class name="AgSubFunction" base="Function"/>
-  <class name="AgMultiplyFunction" base="Function"/>
-  <class name="AgDivideFunction" base="Function"/>
+  <class name="AgAddFunction" base="SimpleBinaryFunction"/>
+  <class name="AgSubFunction" base="SimpleBinaryFunction"/>
+  <class name="AgMultiplyFunction" base="SimpleBinaryFunction"/>
+  <class name="AgDivideFunction" base="SimpleBinaryFunction"/>
   
   <class name="GeneticProgrammingExample" base="WorkUnit">
     <variable type="PositiveInteger" name="numInputVariables"/>

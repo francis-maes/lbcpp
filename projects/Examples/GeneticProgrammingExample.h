@@ -8,24 +8,14 @@ namespace lbcpp
 {
 
 /***** Function *****/
-class AgAddFunction : public Function
+class AgAddFunction : public SimpleBinaryFunction
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-  
-  virtual String getOuputPostFix() const
-    {return T("Add");}
-  
+  AgAddFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, T("Add")) {}
+
   virtual String toString() const
     {return T("+");}
   
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
-  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t n = getNumInputs();
@@ -36,24 +26,14 @@ public:
   }
 };
 
-class AgSubFunction : public Function
+class AgSubFunction : public SimpleBinaryFunction
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-  
-  virtual String getOuputPostFix() const
-    {return T("Sub");}
-  
+  AgSubFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, T("Sub")) {}
+
   virtual String toString() const
     {return T("-");}
   
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
-  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t n = getNumInputs();
@@ -64,24 +44,14 @@ public:
   }
 };
 
-class AgMultiplyFunction : public Function
+class AgMultiplyFunction : public SimpleBinaryFunction
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-  
-  virtual String getOuputPostFix() const
-    {return T("Multiply");}
-  
+  AgMultiplyFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, T("Multiply")) {}
+
   virtual String toString() const
     {return T("*");}
 
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
-  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t n = getNumInputs();
@@ -92,23 +62,13 @@ public:
   }
 };
 
-class AgDivideFunction : public Function
+class AgDivideFunction : public SimpleBinaryFunction
 {
 public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleType;}
-  
-  virtual String getOuputPostFix() const
-    {return T("Divide");}
-  
+  AgDivideFunction() : SimpleBinaryFunction(doubleType, doubleType, doubleType, T("Divide")) {}
+
   virtual String toString() const
     {return T("/");}
-  
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
