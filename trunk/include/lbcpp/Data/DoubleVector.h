@@ -53,6 +53,7 @@ public:
 
   virtual size_t l0norm() const = 0;
   virtual double sumOfSquares() const = 0;
+  virtual double getMaximumValue() const = 0;
   virtual void multiplyByScalar(double scalar) = 0;
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
@@ -89,6 +90,9 @@ public:
   void appendValue(size_t index, double value)
     {jassert((int)index > lastIndex); values.push_back(std::make_pair(index, value)); lastIndex = (int)index;}
 
+  const std::vector< std::pair<size_t, double> >& getValues() const
+    {return values;}
+
   std::vector< std::pair<size_t, double> >& getValues()
     {return values;}
 
@@ -101,6 +105,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
+  virtual double getMaximumValue() const;
   virtual void multiplyByScalar(double scalar);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -134,6 +139,9 @@ public:
   DenseDoubleVector();
   virtual ~DenseDoubleVector();
   
+  const std::vector<double>& getValues() const
+    {jassert(values); return *values;}
+
   std::vector<double>& getValues()
     {jassert(values); return *values;}
 
@@ -168,6 +176,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
+  virtual double getMaximumValue() const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -202,9 +211,23 @@ public:
   LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const Variable* inputs);
   LazyDoubleVector() {}
 
+  const FeatureGeneratorPtr& getFeatureGenerator() const
+    {return featureGenerator;}
+ 
+  const std::vector<Variable>& getInputs() const
+    {return inputs;}
+
+  bool isComputed() const
+    {return computedVector;}
+
+  const DoubleVectorPtr& getComputedVector() const
+    {return computedVector;}
+ 
+
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
+  virtual double getMaximumValue() const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -257,6 +280,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
+  virtual double getMaximumValue() const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
