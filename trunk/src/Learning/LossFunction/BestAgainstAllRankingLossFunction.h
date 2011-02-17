@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_
-# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_
+#ifndef LBCPP_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_
+# define LBCPP_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include "AdditiveRankingLossFunction.h"
 
 namespace lbcpp
 {
@@ -17,14 +17,13 @@ namespace lbcpp
 class BestAgainstAllRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  BestAgainstAllRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
-    : AdditiveRankingLossFunction(baseLoss, costs) {}
-  BestAgainstAllRankingLossFunction() {}
+  BestAgainstAllRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss = DiscriminativeLossFunctionPtr())
+    : AdditiveRankingLossFunction(baseLoss) {}
   
   virtual bool isDerivable() const
     {return false;}
 
-  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
+  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
     size_t n = scores.size();
     double topRankScore = -DBL_MAX;
@@ -61,4 +60,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_
+#endif // !LBCPP_LEARNING_LOSS_FUNCTION_BEST_AGAINST_ALL_RANKING_H_

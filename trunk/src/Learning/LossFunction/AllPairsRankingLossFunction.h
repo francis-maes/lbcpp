@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
-# define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
+#ifndef LBCPP_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
+# define LBCPP_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
 
 # include "AdditiveRankingLossFunction.h"
-# include "../../Learning/LossFunction/HingeDiscriminativeLossFunction.h" // tmp: should be the same directory
+# include "HingeDiscriminativeLossFunction.h"
 
 namespace lbcpp
 {
@@ -18,11 +18,10 @@ namespace lbcpp
 class AllPairsRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  AllPairsRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
-    : AdditiveRankingLossFunction(baseLoss, costs) {}
-  AllPairsRankingLossFunction() {}
+  AllPairsRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss = DiscriminativeLossFunctionPtr())
+    : AdditiveRankingLossFunction(baseLoss) {}
 
-  virtual void computeRankingLoss(ExecutionContext& context, const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
+  virtual void computeRankingLoss(const std::vector<double>& scores, const std::vector<double>& costs, double* output, std::vector<double>* gradient) const
   {
     // testLoss(scores, costs);
     HingeDiscriminativeLossFunctionPtr hingeLoss = baseLoss.dynamicCast<HingeDiscriminativeLossFunction>();
@@ -238,4 +237,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_
+#endif // !LBCPP_LEARNING_LOSS_FUNCTION_ALL_PAIRS_RANKING_H_

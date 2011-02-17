@@ -59,7 +59,7 @@ public:
       {
         derivative *= gradientWeight * invZ;
         (*gradientTarget)->incrementValue(correctClass, derivative);
-        (*gradientTarget)->incrementValue(*it, -derivative);
+        (*gradientTarget)->decrementValue(*it, derivative);
       }
     }
   }

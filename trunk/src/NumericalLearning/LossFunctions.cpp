@@ -9,12 +9,11 @@
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/DynamicObject.h>
 #include <lbcpp/NumericalLearning/LossFunctions.h>
-#include <algorithm>
 using namespace lbcpp;
 
 /*
 ** RankingLossFunction
-*/
+*
 void RankingLossFunction::compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const
 {
   jassert(!scores || scores->getNumElements() == numScores);
@@ -53,75 +52,4 @@ void RankingLossFunction::compute(ExecutionContext& context, ObjectPtr input, do
     }
   }
 }
-
-bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs)
-{
-  double positiveCost = 0.0;
-  bool positiveCostDefined = false;
-  for (size_t i = 0; i < costs.size(); ++i)
-    if (costs[i])
-    {
-      if (positiveCostDefined)
-      {
-        if (costs[i] != positiveCost)
-          return false;
-      }
-      else
-        positiveCost = costs[i], positiveCostDefined = true;
-    }
-    
-  return positiveCostDefined;
-}
-
-
-// returns a map from costs to (argmin scores, argmax scores) pairs
-void RankingLossFunction::getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res)
-{
-  res.clear();
-  for (size_t i = 0; i < costs.size(); ++i)
-  {
-    double cost = costs[i];
-    double score = scores[i];
-    std::map<double, std::pair<size_t, size_t> >::iterator it = res.find(cost);
-    if (it == res.end())
-      res[cost] = std::make_pair(i, i);
-    else
-    {
-      if (score < scores[it->second.first]) it->second.first = i;
-      if (score > scores[it->second.second]) it->second.second = i;
-    }
-  }
-}
-
-bool RankingLossFunction::hasFewDifferentCosts(size_t numAlternatives, size_t numDifferentCosts)
-  {return numAlternatives > 3 && numDifferentCosts < numAlternatives / 3;}  
-
-void RankingLossFunction::multiplyOutputAndGradient(double* output, std::vector<double>* gradient, double k)
-{
-  if (k != 1.0)
-  {
-    if (output)
-      *output *= k;
-    if (gradient)
-      for (size_t i = 0; i < gradient->size(); ++i)
-        (*gradient)[i] *= k;
-  }
-}
-
-struct CompareRankingLossScores
-{
-  CompareRankingLossScores(const std::vector<double>& scores) : scores(scores) {}
-
-  const std::vector<double>& scores;
-
-  bool operator()(size_t first, size_t second) const
-    {return scores[first] > scores[second];}
-};
-
-void RankingLossFunction::sortScores(const std::vector<double>& scores, std::vector<size_t>& res)
-{
-  res.resize(scores.size());
-  for (size_t i = 0; i < res.size(); ++i)
-    res[i] = i;
-  std::sort(res.begin(), res.end(), CompareRankingLossScores(scores));
-}
+*/

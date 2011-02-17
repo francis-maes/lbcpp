@@ -46,7 +46,7 @@ public:
         if (gradientTarget)
         {
           correctValueDerivative += derivative;
-          (*gradientTarget)->incrementValue(i, -derivative * gradientWeight);
+          (*gradientTarget)->decrementValue(i, derivative * gradientWeight);
         }
       }
 

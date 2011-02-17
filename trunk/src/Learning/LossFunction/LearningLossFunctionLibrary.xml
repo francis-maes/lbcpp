@@ -37,5 +37,24 @@
   <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">
     <constructor/>
   </class>
+
+  <!-- Ranking Loss Functions -->
+  <class name="RankingLossFunction" base="ScalarVectorFunction" abstract="yes"/>
+
+  <class name="AdditiveRankingLossFunction" base="RankingLossFunction" abstract="yes">
+    <variable type="DiscriminativeLossFunction" name="baseLoss"/>
+  </class>
+
+  <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
+
+  <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
+
+  <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
+  </class>
   
 </library>

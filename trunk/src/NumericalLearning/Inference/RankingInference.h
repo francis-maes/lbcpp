@@ -29,7 +29,7 @@ public:
     {return containerClass(getSubInference()->getInputType());} // input vector
 
   virtual TypePtr getSupervisionType() const
-    {return rankingLossFunctionClass;}
+    {return TypePtr();}//rankingLossFunctionClass;} // broken
 
   virtual TypePtr getOutputType(TypePtr inputType) const
     {return containerClass(doubleType);} // score vector
@@ -119,7 +119,10 @@ public:
   MostViolatedPairRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
-    {return mostViolatedPairRankingLossFunction(baseLoss, costs);}
+  {
+    jassert(false); /* broken */ return RankingLossFunctionPtr();
+    //return mostViolatedPairRankingLossFunction(baseLoss, costs);
+  }
 };
 
 class BestAgainstAllRankingInference : public AdditiveRankingInference
@@ -130,7 +133,10 @@ public:
   BestAgainstAllRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
-    {return bestAgainstAllRankingLossFunction(baseLoss, costs);}
+  {
+    jassert(false); /* broken */ return RankingLossFunctionPtr();
+    //return bestAgainstAllRankingLossFunction(baseLoss, costs);
+  }
 };
 
 class AllPairsRankingInference : public AdditiveRankingInference
@@ -141,7 +147,10 @@ public:
   AllPairsRankingInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
-    {return allPairsRankingLossFunction(baseLoss, costs);}
+  {
+    jassert(false); /* broken */ return RankingLossFunctionPtr();
+    //return allPairsRankingLossFunction(baseLoss, costs);
+  }
 };
 
 class AllPairsRankingLinearSVMInference : public AllPairsRankingInference
@@ -152,7 +161,10 @@ public:
   AllPairsRankingLinearSVMInference() {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
-    {return allPairsRankingLossFunction(baseLoss, costs);}
+  {
+    jassert(false); /* broken */ return RankingLossFunctionPtr();
+    //return allPairsRankingLossFunction(baseLoss, costs);
+  }
 };
 
 class BinaryClassificationRankingLinearSVMInference : public AdditiveRankingInference
@@ -163,7 +175,10 @@ public:
   BinaryClassificationRankingLinearSVMInference() : optimizeMcc(false) {}
 
   virtual RankingLossFunctionPtr createRankingLoss(const std::vector<double>& costs) const
-    {return optimizeMcc ? mccRankingLossFunction(baseLoss, costs) : f1ScoreRankingLossFunction(baseLoss, costs);}
+  {
+    jassert(false); /* broken */ return RankingLossFunctionPtr();
+    //return optimizeMcc ? mccRankingLossFunction(baseLoss, costs) : f1ScoreRankingLossFunction(baseLoss, costs);
+  }
 
 protected:
   friend class BinaryClassificationRankingLinearSVMInferenceClass;
