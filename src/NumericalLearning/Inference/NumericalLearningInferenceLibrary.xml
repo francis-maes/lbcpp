@@ -77,19 +77,19 @@
     <class name="RankingInference" base="NumericalSupervisedInference" abstract="yes"/>
     
     <class name="AdditiveRankingInference" base="RankingInference" abstract="yes">
-      <variable type="BinaryClassificationLossFunction" name="baseLoss"/>
+      <variable type="DiscriminativeLossFunction" name="baseLoss"/>
     </class>
     
     <class name="MostViolatedPairRankingInference" base="RankingInference">
-      <constructor arguments="const String&amp; name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
+      <constructor arguments="const String&amp; name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
     </class>
       
     <class name="BestAgainstAllRankingInference" base="RankingInference">
-      <constructor arguments="const String&amp; name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
+      <constructor arguments="const String&amp; name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
     </class>
 
     <class name="AllPairsRankingInference" base="RankingInference">
-      <constructor arguments="const String&amp; name, InferencePtr scoreInference, BinaryClassificationLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
+      <constructor arguments="const String&amp; name, InferencePtr scoreInference, DiscriminativeLossFunctionPtr baseLoss" returnType="NumericalSupervisedInference"/>
     </class>
 
     <class name="AllPairsRankingLinearSVMInference" base="AllPairsRankingInference">

@@ -3,17 +3,35 @@
 <library name="LearningLossFunctionLibrary" directory="Learning/LossFunction">
   <include file="lbcpp/Learning/LossFunction.h"/>
 
-  <!-- Multi Class Loss Functions -->
+  <!-- Regression Loss Functions -->
+  <class name="RegressionLossFunction" base="ScalarFunction" abstract="yes"/>
+  
+  <class name="SquareRegressionLossFunction" base="RegressionLossFunction">
+    <constructor/>
+  </class>
+
+  <!-- Discriminative Loss Functions -->
+  <class name="DiscriminativeLossFunction" base="ScalarFunction" abstract="yes"/>
+
+  <class name="HingeDiscriminativeLossFunction" base="DiscriminativeLossFunction">
+    <constructor arguments="double margin"/>
+  </class>
+  
+  <class name="LogBinomialDiscriminativeLossFunction" base="DiscriminativeLossFunction">
+    <constructor/>
+  </class>
+  
+  <!-- MultiClass Loss Functions -->
   <class name="MultiClassLossFunction" base="ScalarVectorFunction" abstract="yes"/>
 
   <class name="OneAgainstAllMultiClassLossFunction" base="MultiClassLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction"/>
-    <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
+    <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
   </class>
   
   <class name="MostViolatedMultiClassLossFunction" base="MultiClassLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr binaryLossFunction"/>
-    <variable type="BinaryClassificationLossFunction" name="binaryLoss"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr binaryLossFunction"/>
+    <variable type="DiscriminativeLossFunction" name="binaryLoss"/>
   </class>
   
   <class name="LogBinomialMultiClassLossFunction" base="MultiClassLossFunction">

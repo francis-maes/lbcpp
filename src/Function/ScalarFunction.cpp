@@ -13,35 +13,25 @@ using namespace lbcpp;
 /*
 ** Scalar Function
 */
-double ScalarFunction::compute(double input) const
+size_t ScalarFunction::getNumRequiredInputs() const
+  {return 1;}
+
+TypePtr ScalarFunction::getRequiredInputType(size_t index, size_t numInputs) const
+  {return doubleType;}
+
+String ScalarFunction::getOutputPostFix() const
+  {return T("Scalar");}
+
+TypePtr ScalarFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {return doubleType;}
+
+Variable ScalarFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  double res;
-  compute(input, &res, NULL, NULL);
-  return res;
+  double input = inputs[0].getDouble();
+  double output = 0.0;
+  computeScalarFunction(input, numInputs > 1 ? inputs + 1 : NULL, &output, NULL);
+  return output;
 }
-
-double ScalarFunction::computeDerivative(double input) const
-{
-  double res;
-  compute(input, NULL, NULL, &res);
-  return res;
-}
-
-double ScalarFunction::computeDerivative(double input, double direction) const
-{
-  double res;
-  compute(input, NULL, &direction, &res);
-  return res;
-}
-
-void ScalarFunction::compute(double input, double* output, double* derivative) const
-  {compute(input, output, NULL, derivative);}
-
-ScalarFunctionPtr ScalarFunction::multiplyByScalar(double scalar)
-  {return multiplyByScalarFunction(refCountedPointerFromThis(this), scalar);}
-
-ScalarFunctionPtr ScalarFunction::composeWith(ScalarFunctionPtr postFunction) const
-  {return composeScalarFunction(refCountedPointerFromThis(this), postFunction);}
 
 /*
 ** ScalarVectorFunction

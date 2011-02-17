@@ -63,7 +63,7 @@ public:
     {
       const ScalarFunctionPtr& loss = supervision.staticCast<ScalarFunction>();
       double lossDerivative;
-      loss->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
+      //loss->computeDiscriminativeLoss(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
       if (!target)
         target = new DenseDoubleVector(parametersClass);
       inputVector->addWeightedTo(target, 0, weight * lossDerivative);

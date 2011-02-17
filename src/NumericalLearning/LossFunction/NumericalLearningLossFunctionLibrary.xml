@@ -3,26 +3,6 @@
 <library name="NumericalLearningLossFunction" directory="NumericalLearning/LossFunction">
   <include file="lbcpp/NumericalLearning/LossFunctions.h"/>
 
-  <!-- Regression Loss Functions -->
-  <class name="RegressionLossFunction" base="ScalarFunction" abstract="yes">
-    <variable type="Double" name="target"/>
-  </class>
-
-  <class name="SquareLossFunction" base="RegressionLossFunction">
-    <constructor/>
-  </class>
-  
-  <!-- Binary Loss Functions -->
-  <class name="BinaryClassificationLossFunction" base="ScalarFunction" abstract="yes">
-    <variable type="Boolean" name="isPositive"/>
-  </class>
-
-  <class name="HingeLossFunction" base="BinaryClassificationLossFunction">
-    <constructor arguments="bool isPositive, double margin"/>
-  </class>
-  <class name="LogBinomialLossFunction" base="BinaryClassificationLossFunction">
-    <constructor arguments="bool isPositive"/>
-  </class>
   
   <!-- Ranking Loss Functions -->
   <class name="RankingLossFunction" base="ScalarVectorFunction" abstract="yes">
@@ -30,27 +10,27 @@
   </class>
   
   <class name="AdditiveRankingLossFunction" base="RankingLossFunction" abstract="yes">
-    <variable type="BinaryClassificationLossFunction" name="baseLoss"/>
+    <variable type="DiscriminativeLossFunction" name="baseLoss"/>
   </class>
 
   <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
   
   <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
   
   <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
 
   <class name="BinaryClassificationRankingLossFunction" base="AdditiveRankingLossFunction" abstract="yes"/>
   <class name="F1ScoreRankingLossFunction" base="BinaryClassificationRankingLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
   <class name="MCCRankingLossFunction" base="BinaryClassificationRankingLossFunction">
-    <constructor arguments="BinaryClassificationLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
+    <constructor arguments="DiscriminativeLossFunctionPtr baseLoss, const std::vector&lt;double&gt;&amp; costs" returnType="RankingLossFunction"/>
   </class>
 
   <!-- Regularizers -->

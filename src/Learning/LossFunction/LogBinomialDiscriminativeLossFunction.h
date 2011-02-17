@@ -15,28 +15,24 @@ namespace lbcpp
 {
 
 // f(x) = log(1 + exp(-x))
-class LogBinomialLossFunction : public BinaryClassificationLossFunction
+class LogBinomialDiscriminativeLossFunction : public DiscriminativeLossFunction
 {
 public:
-  LogBinomialLossFunction(bool isPositive)
-    : BinaryClassificationLossFunction(isPositive) {}
-  LogBinomialLossFunction() {}
-
   virtual bool isDerivable() const
     {return true;}
 
-  virtual void computePositive(double input, double* output, const double* , double* derivative) const
+  virtual void computeDiscriminativeLoss(double score, double* output, double* derivative) const
   {
-    if (input < -10) // avoid approximation errors in the exp(-x) formula
+    if (score < -10) // avoid approximation errors in the exp(-x) formula
     {
       if (derivative)
         *derivative = -1;
       if (output)
-        *output = -input;
+        *output = -score;
       return;
     }
     
-    if (input == 0)
+    if (score == 0)
     {
       static const double log2 = log(2.0);
       if (output)
@@ -46,7 +42,7 @@ public:
       return;
     }
     
-    double res = log(1 + exp(-input));
+    double res = log(1 + exp(-score));
     jassert(isNumberValid(res));
     if (isNumberNearlyNull(res))
     {
@@ -61,7 +57,7 @@ public:
       *output = res;
     if (derivative)
     {
-      *derivative = -1 / (1 + exp(input));
+      *derivative = -1 / (1 + exp(score));
       jassert(isNumberValid(*derivative));
     }
   }

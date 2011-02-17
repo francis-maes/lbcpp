@@ -18,26 +18,23 @@ namespace lbcpp
 class MostViolatedMultiClassLossFunction : public MultiClassLossFunction
 {
 public:
-  MostViolatedMultiClassLossFunction(const BinaryClassificationLossFunctionPtr& binaryLoss)
+  MostViolatedMultiClassLossFunction(const DiscriminativeLossFunctionPtr& binaryLoss)
     : binaryLoss(binaryLoss) {}
   MostViolatedMultiClassLossFunction() {}
 
   virtual bool isDerivable() const
     {return false;}
   
-  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
+  virtual void computeMultiClassLoss(const DenseDoubleVectorPtr& scores, size_t correctClass, size_t numClasses, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    size_t numClasses = getNumClasses();
-    size_t correctClass = getCorrectClass(otherInputs);
-    jassert(numClasses > 1);
-    double correctValue = input ? input->getValue(correctClass) : 0.0;
+    double correctValue = scores ? scores->getValue(correctClass) : 0.0;
 
     double worstValue = -DBL_MAX;
     std::set<size_t> worstClasses;
     for (size_t i = 0; i < numClasses; ++i)
       if (i != correctClass)
       {
-        double value = input ? input->getValue(i) : 0.0;
+        double value = scores ? scores->getValue(i) : 0.0;
         if (value >= worstValue)
         {
           if (value > worstValue)
@@ -55,7 +52,7 @@ public:
     {
       double derivative;
       double lossOutput;
-      binaryLoss->computePositive(correctValue - worstValue, output ? &lossOutput : NULL, NULL, gradientTarget ? &derivative : NULL);
+      binaryLoss->computeDiscriminativeLoss(correctValue - worstValue, output ? &lossOutput : NULL, gradientTarget ? &derivative : NULL);
       if (output)
         *output += lossOutput * invZ;
       if (gradientTarget)
@@ -70,7 +67,7 @@ public:
 protected:
   friend class MostViolatedMultiClassLossFunctionClass;
 
-  BinaryClassificationLossFunctionPtr binaryLoss;
+  DiscriminativeLossFunctionPtr binaryLoss;
 };
 
 }; /* namespace lbcpp */

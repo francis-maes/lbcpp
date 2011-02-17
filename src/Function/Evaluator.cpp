@@ -131,8 +131,6 @@ bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& con
     res = variable.getDouble() > 0.5;
   else if (variable.inheritsFrom(doubleType))
     res = variable.getDouble() > 0.0; // sign
-  else if (variable.isObject() && variable.dynamicCast<BinaryClassificationLossFunction>())
-    res = variable.dynamicCast<BinaryClassificationLossFunction>()->getLabel();
   else
   {
     context.errorCallback(T("BinaryClassificationConfusionMatrix::convertToBoolean"), T("Given type: ") + variable.getType()->toString());

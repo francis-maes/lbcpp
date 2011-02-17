@@ -16,50 +16,58 @@ namespace lbcpp
 {
 
 /*
-** FIXME: update-- Binary Classification Loss Functions
+** RegressionLossFunction
 */
-class BinaryClassificationLossFunction : public ScalarFunction
+class RegressionLossFunction : public ScalarFunction
 {
 public:
-  BinaryClassificationLossFunction(bool isPositive) : isPositive(isPositive) {}
-  BinaryClassificationLossFunction() {}
+  virtual void computeRegressionLoss(double input, double target, double* output, double* derivative) const = 0;
 
-  virtual String toString() const;
-
-  virtual void computePositive(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
-
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const;
-
-  bool getLabel() const
-    {return isPositive;}
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual String getOutputPostFix() const;
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const;
 
   lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class BinaryClassificationLossFunctionClass;
-
-  bool isPositive;
 };
 
-typedef ReferenceCountedObjectPtr<BinaryClassificationLossFunction> BinaryClassificationLossFunctionPtr;
+typedef ReferenceCountedObjectPtr<RegressionLossFunction> RegressionLossFunctionPtr;
+
+extern RegressionLossFunctionPtr squareRegressionLossFunction();
 
 /*
-** Multi Class Loss Functions
+** DiscriminativeLossFunction
+*/
+class DiscriminativeLossFunction : public ScalarFunction
+{
+public:
+  virtual void computeDiscriminativeLoss(double score, double* output, double* derivative) const = 0;
+
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual String getOutputPostFix() const;
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const;
+
+  lbcpp_UseDebuggingNewOperator
+};
+
+typedef ReferenceCountedObjectPtr<DiscriminativeLossFunction> DiscriminativeLossFunctionPtr;
+
+extern DiscriminativeLossFunctionPtr hingeDiscriminativeLossFunction(double margin = 1);
+extern DiscriminativeLossFunctionPtr logBinomialDiscriminativeLossFunction();
+
+/*
+** MultiClassLossFunction
 */
 class MultiClassLossFunction : public ScalarVectorFunction
 {
 public:
-  size_t getNumClasses() const
-    {return classes->getNumElements();}
+  virtual void computeMultiClassLoss(const DenseDoubleVectorPtr& scores, size_t correctClass, size_t numClasses, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const = 0;
 
-  // Function
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 1 ? enumValueType : (TypePtr) denseDoubleVectorClass();}
-
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -67,14 +75,12 @@ protected:
   friend class MultiClassLossFunctionClass;
 
   EnumerationPtr classes;
-
-  size_t getCorrectClass(const Variable* otherInputs) const;
 };
 
 typedef ReferenceCountedObjectPtr<MultiClassLossFunction> MultiClassLossFunctionPtr;
 
-extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction);
-extern MultiClassLossFunctionPtr mostViolatedMultiClassLossFunction(BinaryClassificationLossFunctionPtr binaryLossFunction);
+extern MultiClassLossFunctionPtr oneAgainstAllMultiClassLossFunction(DiscriminativeLossFunctionPtr binaryLossFunction);
+extern MultiClassLossFunctionPtr mostViolatedMultiClassLossFunction(DiscriminativeLossFunctionPtr binaryLossFunction);
 extern MultiClassLossFunctionPtr logBinomialMultiClassLossFunction();
 
 }; /* namespace lbcpp */

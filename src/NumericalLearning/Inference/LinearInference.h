@@ -46,8 +46,11 @@ public:
     if (lossFunction.isInstanceOf<ScalarFunction>())
     {
       const ScalarFunctionPtr& loss = lossFunction.staticCast<ScalarFunction>();
-      double lossDerivative;
-      loss->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
+      double lossDerivative = 0.0;
+      
+      jassert(false); // broken
+      //loss->compute(prediction.exists() ? prediction.getDouble() : 0.0, &exampleLossValue, &lossDerivative);
+
      // std::cout << "computeAndAddGradient: prevL2=" << (target ? l2norm(target) : -1.0)
      //   << " w = " << weight << " loss = " << exampleLossValue << " lossDerivative = " << lossDerivative << " inputL2 =  " << l2norm(perception, input);
 

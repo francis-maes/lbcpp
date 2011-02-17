@@ -329,7 +329,9 @@ void GraftingOnlineLearner::updateCandidateScores(ExecutionContext& context, con
   if (numericalInference.dynamicCast<LinearInference>())
   {
     const ScalarFunctionPtr& loss = supervision.getObjectAndCast<ScalarFunction>(context);
-    double derivative = loss->computeDerivative(prediction.getDouble());
+    
+    jassert(false); // broken
+    double derivative = 0.0;// = loss->computeDerivative(prediction.getDouble());
     lbcpp::addWeighted(context, candidateScores[firstScoreIndex].first, candidatesPerception, input, derivative);
     ++candidateScores[firstScoreIndex].second;
   }

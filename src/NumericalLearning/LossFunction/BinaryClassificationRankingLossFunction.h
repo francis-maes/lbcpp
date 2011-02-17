@@ -18,7 +18,7 @@ namespace lbcpp
 class BinaryClassificationRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  BinaryClassificationRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  BinaryClassificationRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : AdditiveRankingLossFunction(baseLoss, costs) {}
   BinaryClassificationRankingLossFunction() {}
 
@@ -83,7 +83,7 @@ public:
       jassert(diff >= 0.0);
 
       double baseOutput, baseDerivative;
-      baseLoss->computePositive(score, output ? &baseOutput : NULL, NULL, gradient ? &baseDerivative : NULL);
+      baseLoss->computeDiscriminativeLoss(score, output ? &baseOutput : NULL, gradient ? &baseDerivative : NULL);
       if (output)
         *output += baseOutput * diff;
       if (gradient)
@@ -97,7 +97,7 @@ public:
 class F1ScoreRankingLossFunction : public BinaryClassificationRankingLossFunction
 {
 public:
-  F1ScoreRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  F1ScoreRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : BinaryClassificationRankingLossFunction(baseLoss, costs) {}
 
   F1ScoreRankingLossFunction() {}
@@ -109,7 +109,7 @@ public:
 class MCCRankingLossFunction : public BinaryClassificationRankingLossFunction
 {
 public:
-  MCCRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  MCCRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : BinaryClassificationRankingLossFunction(baseLoss, costs) {}
 
   MCCRankingLossFunction() {}

@@ -40,39 +40,35 @@ namespace lbcpp
 class ScalarFunction : public Function
 {
 public:
+  virtual bool isDerivable() const = 0;
+
+  // if (output) *output = result
+  // if (derivative) *derivative = resultDerivative
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const = 0;
+
   /*
   ** Function
   */
-  virtual TypePtr getInputType() const
-    {return doubleType;}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return doubleType;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return compute(input.getDouble());}
-
-  /**
-  ** Checks if the function is derivable or not.
-  **
-  ** @return True if derivable.
-  */
-  virtual bool isDerivable() const = 0;
-
-  virtual double compute(double input) const;
-  virtual double computeDerivative(double input) const;
-  virtual double computeDerivative(double input, double direction) const;
-  virtual void compute(double input, double* output, double* derivative) const;
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const = 0;
-
-  ScalarFunctionPtr multiplyByScalar(double scalar);
-  ScalarFunctionPtr composeWith(ScalarFunctionPtr postFunction) const;
+  virtual size_t getNumRequiredInputs() const;
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const;
+  virtual String getOutputPostFix() const;
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+ 
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
   lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr scalarFunctionClass;
 
+// x -> x^2
+extern ScalarFunctionPtr squareFunction();
+
+// x -> |x|
+extern ScalarFunctionPtr absFunction();
+
+
+#if 0
 extern ScalarFunctionPtr composeScalarFunction(ScalarFunctionPtr f1, ScalarFunctionPtr f2);
 extern ScalarFunctionPtr multiplyByScalarFunction(ScalarFunctionPtr function, double scalar);
 
@@ -89,18 +85,14 @@ extern ScalarFunctionPtr addConstantScalarFunction(double constant);
 // x -> angleDifference(x, reference)
 extern ScalarFunctionPtr angleDifferenceScalarFunction(double reference);
 
-// x -> x^2
-extern ScalarFunctionPtr squareFunction();
 
 // x -> f(x)^2
 inline ScalarFunctionPtr squareFunction(ScalarFunctionPtr input)
   {return input->composeWith(squareFunction());}
 
-// x -> |x|
-extern ScalarFunctionPtr absFunction();
-
 inline ScalarFunctionPtr absFunction(ScalarFunctionPtr input)
   {return input->composeWith(absFunction());}
+#endif // 0
 
 }; /* namespace lbcpp */
 

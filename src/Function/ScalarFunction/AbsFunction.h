@@ -21,7 +21,7 @@ public:
   virtual bool isDerivable() const
     {return false;}
 
-  virtual void compute(double input, double* output, const double* derivativeDirection, double* derivative) const
+  virtual void computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
   {
     if (output)
       *output = fabs(input);
@@ -32,15 +32,7 @@ public:
       else if (input < 0)
         *derivative = -1;
       else
-      {
-        jassert(derivativeDirection);
-        if (*derivativeDirection > 0)
-          *derivative = 1;
-        else if (*derivativeDirection < 0)
-          *derivative = -1;
-        else
-          *derivative = 0;
-      }
+        *derivative = 0;
     }
   }
 };

@@ -17,7 +17,7 @@ namespace lbcpp
 class MostViolatedPairRankingLossFunction : public AdditiveRankingLossFunction
 {
 public:
-  MostViolatedPairRankingLossFunction(BinaryClassificationLossFunctionPtr baseLoss, const std::vector<double>& costs)
+  MostViolatedPairRankingLossFunction(DiscriminativeLossFunctionPtr baseLoss, const std::vector<double>& costs)
     : AdditiveRankingLossFunction(baseLoss, costs) {}
   
   MostViolatedPairRankingLossFunction() {}
@@ -53,7 +53,7 @@ private:
   {
     jassert(deltaCost > 0);
     double violation;
-    baseLoss->compute(deltaScore, &violation, NULL, NULL);
+    baseLoss->computeDiscriminativeLoss(deltaScore, &violation, NULL);
     return violation * deltaCost;
   }
   

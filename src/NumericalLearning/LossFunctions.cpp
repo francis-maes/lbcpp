@@ -13,44 +13,6 @@
 using namespace lbcpp;
 
 /*
-** BinaryClassificationLossFunction
-*/
-String BinaryClassificationLossFunction::toString() const
-  {return getClassName() + T("(") + (isPositive ? T("+") : T("-")) + T(")");}
-
-void BinaryClassificationLossFunction::compute(double input, double* output, const double* derivativeDirection, double* derivative) const
-{
-  double dd;
-  if (derivativeDirection)
-    dd = isPositive ? *derivativeDirection : -(*derivativeDirection);
-  computePositive(isPositive ? input : -input, output, derivativeDirection ? &dd : NULL, derivative);
-  if (derivative && !isPositive)
-    *derivative = - (*derivative);
-}
-
-/*
-** MultiClassLossFunction
-*/
-TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-{
-  classes = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
-  jassert(classes);
-  if (classes != inputVariables[1]->getType())
-  {
-    context.errorCallback(T("Type mismatch: double vector type is ") + classes->getName() + T(" supervision type is ") + inputVariables[1]->getType()->getName());
-    return TypePtr();
-  }
-  return ScalarVectorFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
-}
-
-size_t MultiClassLossFunction::getCorrectClass(const Variable* otherInputs) const
-{
-  int res = otherInputs[0].getInteger();
-  jassert(res >= 0 && res < (int)getNumClasses());
-  return (size_t)res;
-}
-
-/*
 ** RankingLossFunction
 */
 void RankingLossFunction::compute(ExecutionContext& context, const ContainerPtr& scores, size_t numScores, double* output, std::vector<double>* gradient) const
