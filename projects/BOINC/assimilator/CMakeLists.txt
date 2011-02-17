@@ -7,8 +7,7 @@ IF(UNIX)
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/lib
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/db
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/sched
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include/tools
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include/api ${CMAKE_CURRENT_SOURCE_DIR}/../include/client
+
         # Not used
         # ${OpenSSL_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../include/api ${CMAKE_CURRENT_SOURCE_DIR}/../include/client ${CMAKE_CURRENT_SOURCE_DIR}/../include/tools
       )
@@ -17,8 +16,7 @@ IF(UNIX)
         ${MYSQL_LIBRARIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libsched.a
         ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libboinc.a
-        crypto
-        ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libboinc_crypt.a pthread
+
         # Not used
         # ${OpenSSL_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libboinc_crypt.a pthread crypto
       ) 
@@ -26,6 +24,7 @@ IF(UNIX)
       ADD_EXECUTABLE(sample_assimilator
         sample_assimilator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/../validator/validate_util.cpp
+        assimilator.cpp
       )
 
       TARGET_LINK_LIBRARIES(sample_assimilator ${LIBS})

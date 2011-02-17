@@ -1,0 +1,62 @@
+IF(WIN32)
+  ADD_DEFINITIONS(-DDONT_AUTOLINK_TO_JUCE_LIBRARY)
+ELSE(WIN32)
+  IF(UNIX)
+    IF(APPLE)
+    ELSE(APPLE)
+      SET(JUCEBINBUILD_PLATFORM_SPECIFIC_LIBRARIES dl pthread)
+      ADD_DEFINITIONS(-DLINUX)
+      #SET(SSL_INCLUDE_DIR /usr/include/openssl)
+      INCLUDE_DIRECTORIES(
+        ${MYSQL_INCLUDE_DIR}
+	${SSL_INCLUDE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/api	
+	${CMAKE_CURRENT_SOURCE_DIR}/../include/db
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/client
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/tools
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/sched
+        ${LBCpp_SOURCE_DIR}/include
+      )
+      #SET(MYSQL_LIB /usr/lib/libmysqlclient.a)
+      SET(SSL_LIB /usr/lib/libssl.a)
+      SET(LIBSBOINC 
+        ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libsched.a
+ 	/home/boincadm/boinc/lib/libboinc_crypt.a
+        ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libboinc.a
+	${MYSQL_LIBRARIES}
+        pthread
+        crypto 
+        ${SSL_LIB}
+      )
+    ENDIF(APPLE)
+  ENDIF(UNIX)
+ENDIF(WIN32)
+
+ADD_EXECUTABLE(workgenerator
+  old_workgenerator.cpp
+  Category.h
+  Category.cpp
+)
+
+#ADD_EXECUTABLE(workgenerator2
+#  Main2.cpp
+#  Category.h
+#  Category.cpp
+#)
+
+TARGET_LINK_LIBRARIES(workgenerator
+  lbcpp-core${NAME_FILE_SUFFIX}
+  #juce
+  #${JUCEBINBUILD_PLATFORM_SPECIFIC_LIBRARIES}
+  #lbcpp-core
+  ${LIBSBOINC}
+)
+
+#TARGET_LINK_LIBRARIES(workgenerator2
+#  juce
+#  ${JUCEBINBUILD_PLATFORM_SPECIFIC_LIBRARIES}
+#  lbcpp-core
+#  ${LIBSBOINC}
+#)
