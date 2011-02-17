@@ -22,9 +22,10 @@ bool ARFFDataParser::parseLine(const String& line)
         return parseSparseDataLine(line);
     return parseDataLine(line);
   }
-  if (line.startsWith(T("@attribute")))
+  String record = line.substring(0, juce::jmin(10, line.length())).toLowerCase();
+  if (record.startsWith(T("@attribute")))
       return parseAttributeLine(line);
-  if (line.startsWith(T("@relation")))    // @relation *must* be declared before
+  if (record.startsWith(T("@relation")))    // @relation *must* be declared before
   {                                       // any @attribute declaration
     if (attributesType.size())
     {
@@ -33,7 +34,7 @@ bool ARFFDataParser::parseLine(const String& line)
     }
     return true;                                     // skip the relation's name
   }
-  if (line.startsWith(T("@data")))
+  if (record.startsWith(T("@data")))
   {
     if (attributesType.size() < 2)
     {
@@ -86,6 +87,49 @@ bool ARFFDataParser::parseAttributeLine(const String& line)
   return false;
 }
 
+static inline bool comparePairOfStrings(const String& a, const String& b, const String& x, const String& y)
+  {return (a == x && b == y) || (a == y && b == x);}
+
+static bool shouldBeABooleanType(const StringArray& tokens)
+{
+  if (tokens.size() != 2)
+    return false;
+  String first = tokens[0].unquoted().toLowerCase();
+  String second = tokens[1].unquoted().toLowerCase();
+  if (comparePairOfStrings(first, second, T("yes"), T("no")))
+    return true;
+  if (comparePairOfStrings(first, second, T("true"), T("false")))
+    return true;
+  if (comparePairOfStrings(first, second, T("+"), T("-")))
+    return true;
+  if (comparePairOfStrings(first, second, T("0"), T("1")))
+    return true;
+  return false;
+}
+
+static Variable createBooleanFromString(ExecutionContext& context, const String& str)
+{
+  String value = str.unquoted().toLowerCase();
+  if (value == T("yes"))
+    return true;
+  if (value == T("no"))
+    return false;
+  if (value == T("true"))
+    return true;
+  if (value == T("false"))
+    return false;
+  if (value == T("+"))
+    return true;
+  if (value == T("-"))
+    return false;
+  if (value == T("0"))
+    return false;
+  if (value == T("1"))
+    return true;
+  context.errorCallback(T("ARFFDataParser::createBooleanFromString"), T("The value is not a boolean: ") + str.quoted());
+  return Variable::missingValue(booleanType);
+}
+
 bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
 {
   // get enumeration name
@@ -114,10 +158,16 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
     context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("No enumeration element found in: ") + trimmedLine.quoted());
     return false;
   }
+  // It can be a booleanType ?
+  if (shouldBeABooleanType(tokens))
+  {
+    attributesType.push_back(booleanType);
+    return true;
+  }
   // create enumeration
   DefaultEnumerationPtr enumClass = new DefaultEnumeration(enumerationName + T("ARFFEnum"));
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
-    if (enumClass->findOrAddElement(context, tokens[i].unquoted().replaceCharacters(T(" \t"), T("--"))) != i)
+    if (enumClass->findOrAddElement(context, tokens[i].unquoted().trim().replaceCharacters(T(" \t"), T("--"))) != i)
     {
       context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Duplicate enumeration element found: ") + tokens[i].quoted());
       return false;
@@ -130,6 +180,8 @@ static Variable createFromString(ExecutionContext& context, const TypePtr& type,
 {
   if (str.length() == 1 && str == T("?"))
     return Variable::missingValue(type);
+  if (type == booleanType)
+    return createBooleanFromString(context, str);
   return type->createFromString(context, str.unquoted());
 }
 

@@ -41,10 +41,19 @@ public:
       context.errorCallback(T("CheckARFFDataFileParserWorkUnit::run"), T("Invalid input data file: ") + dataFile.getFullPathName());
       return Variable();
     }
-
-    VectorPtr data = classificationARFFDataParser(context, dataFile, new DefaultEnumeration(T("output")))->load();
-    context.resultCallback(T("Data"), data);
     
+    juce::OwnedArray<File> files;
+    if (dataFile.isDirectory())
+      dataFile.findChildFiles(files, 2, false, T("*.arff"));
+    else
+      files.add(new File(dataFile));
+
+    for (size_t i = 0; i < (size_t)files.size(); ++i)
+    {
+      VectorPtr data = classificationARFFDataParser(context, *files[i], new DefaultEnumeration(T("output")))->load();
+      context.resultCallback(files[i]->getFileName(), data);
+    }
+
     return Variable();
   }
 
