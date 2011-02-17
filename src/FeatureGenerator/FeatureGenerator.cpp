@@ -7,32 +7,8 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
+#include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
-
-class FillSparseVectorFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  FillSparseVectorFeatureGeneratorCallback(const SparseDoubleVectorPtr& target)
-    : target(target) {}
-
-  virtual void sense(size_t index, double value)
-    {target->appendValue(index, value);}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-  {
-    jassert(weight == 1.0);
-    vector->appendTo(target, index);
-  }
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-  {
-    jassert(weight == 1.0);
-    featureGenerator->appendTo(inputs, target, index);
-  }
-
-private:
-  SparseDoubleVectorPtr target;
-};
 
 TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
@@ -61,46 +37,12 @@ Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Vari
     return toComputedVector(inputs);
 }
 
-class ComputeL0NormFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  ComputeL0NormFeatureGeneratorCallback() : res(0) {}
-
-  virtual void sense(size_t index, double value)
-    {if (value) ++res;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {if (weight) res += vector->l0norm();}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {if (weight) res += featureGenerator->l0norm(inputs);}
-
-  size_t res;
-};
-
 size_t FeatureGenerator::l0norm(const Variable* inputs) const
 {
   ComputeL0NormFeatureGeneratorCallback callback;
   computeFeatures(&inputs[0], callback);
   return callback.res;
 }
-
-class ComputeSumOfSquaresFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  ComputeSumOfSquaresFeatureGeneratorCallback() : res(0.0) {}
-
-  virtual void sense(size_t index, double value)
-    {res += value * value;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {res += vector->sumOfSquares() * weight;}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {res += featureGenerator->sumOfSquares(inputs) * weight;}
-
-  double res;
-};
 
 double FeatureGenerator::sumOfSquares(const Variable* inputs) const
 {
@@ -109,52 +51,18 @@ double FeatureGenerator::sumOfSquares(const Variable* inputs) const
   return callback.res;
 }
 
-class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
+double FeatureGenerator::getMaximumValue(const Variable* inputs) const
 {
-public:
-  AppendToFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : target(target), offset(offsetInSparseVector) {}
-
-  virtual void sense(size_t index, double value)
-    {target->appendValue(offset + index, value);}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {jassert(weight == 1.0); target->appendTo(target, offset + index);}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {jassert(weight == 1.0); featureGenerator->appendTo(inputs, target, offset + index);}
-
-protected:
-  SparseDoubleVectorPtr target;
-  size_t offset;
-};
+  ComputeMaximumValueFeatureGeneratorCallback callback;
+  computeFeatures(&inputs[0], callback);
+  return callback.res;
+}
 
 void FeatureGenerator::appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
   AppendToFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector);
   computeFeatures(&inputs[0], callback);
 }
-
-class AddWeightedToFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  AddWeightedToFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
-    : target(target), offset(offsetInSparseVector), weight(weight) {}
-
-  virtual void sense(size_t index, double value)
-    {target->getValueReference(index + offset) += value * weight;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {vector->addWeightedTo(target, index + offset, weight * this->weight);}
-
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {featureGenerator->addWeightedTo(inputs, target, offset + index, weight * this->weight);}
-
-protected:
-  DenseDoubleVectorPtr target;
-  size_t offset;
-  double weight;
-};
 
 void FeatureGenerator::addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
@@ -164,28 +72,6 @@ void FeatureGenerator::addWeightedTo(const Variable* inputs, const DenseDoubleVe
     computeFeatures(inputs, callback);
   }
 }
-
-class DotProductFeatureGeneratorCallback : public FeatureGeneratorCallback
-{
-public:
-  DotProductFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : res(0.0), target(target), offset(offsetInSparseVector) {}
-
-  virtual void sense(size_t index, double value)
-    {res += target->getValue(index + offset) * value;}
-
-  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {res += weight * vector->dotProduct(target, index + offset);}
- 
-  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {res += weight * featureGenerator->dotProduct(inputs, target, index + offset);}
- 
-  double res;
-
-protected:
-  DenseDoubleVectorPtr target;
-  size_t offset;
-};
 
 double FeatureGenerator::dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
 {

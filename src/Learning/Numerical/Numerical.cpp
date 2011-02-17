@@ -39,16 +39,13 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
   FunctionPtr lossFunction = this->lossFunction;
   if (!lossFunction)
   {
+    // create default loss function
     if (supervisionType == booleanType)
       lossFunction = hingeDiscriminativeLossFunction();
     else if (supervisionType == doubleType)
       lossFunction = squareRegressionLossFunction();
     else if (supervisionType->inheritsFrom(enumValueType))
-    {
-    // mostViolatedMultiClassLossFunction(DiscriminativeLossFunctionPtr binaryLossFunction);
-      lossFunction = logBinomialMultiClassLossFunction();
-      //oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
-    }
+      lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     else
     {
       context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());

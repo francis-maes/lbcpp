@@ -9,7 +9,77 @@
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include "../Core/Object/SparseVectorHelper.h"
+#include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
+
+/*
+** Default implementations
+*/
+template<class CallbackType>
+inline void computeFeatures(const SparseDoubleVector& sparseVector, CallbackType& callback)
+{
+  const std::vector<std::pair<size_t, double> >& values = sparseVector.getValues();
+  for (size_t i = 0; i < values.size(); ++i)
+    callback.sense(values[i].first, values[i].second);
+}
+
+template<class CallbackType>
+inline void computeFeatures(const DenseDoubleVector& denseVector, CallbackType& callback)
+{
+  const std::vector<double>& values = denseVector.getValues();
+  const double* source = denseVector.getValuePointer(0);
+  const double* limit = source + denseVector.getNumElements();
+  size_t i = 0;
+  while (source < limit)
+  {
+    callback.sense(i, *source);
+    ++i;
+    ++source;
+  }
+}
+
+template<class CallbackType>
+inline void computeFeatures(const CompositeDoubleVector& compositeVector, CallbackType& callback)
+{
+  size_t n = compositeVector.getNumSubVectors();
+  for (size_t i = 0; i < n; ++i)
+    callback.sense(compositeVector.getSubVectorOffset(i), compositeVector.getSubVector(i), 1.0);
+}
+
+template<class CallbackType>
+inline void computeFeatures(const LazyDoubleVector& lazyVector, CallbackType& callback)
+{
+  const DoubleVectorPtr& computed = lazyVector.getComputedVector();
+  if (computed)
+    callback.sense(0, computed, 1.0);
+  else
+    callback.sense(0, lazyVector.getFeatureGenerator(), &lazyVector.getInputs()[0], 1.0);
+}
+
+
+template<class VectorType>
+inline size_t defaultL0Norm(const VectorType& vector)
+{
+  ComputeL0NormFeatureGeneratorCallback callback;
+  computeFeatures(vector, callback);
+  return callback.res;
+}
+
+template<class VectorType>
+inline double defaultSumOfSquares(const VectorType& vector)
+{
+  ComputeSumOfSquaresFeatureGeneratorCallback callback;
+  computeFeatures(vector, callback);
+  return callback.res;
+}
+
+template<class VectorType>
+inline double defaultGetMaximumValue(const VectorType& vector)
+{
+  ComputeMaximumValueFeatureGeneratorCallback callback;
+  computeFeatures(vector, callback);
+  return callback.res;
+}
 
 /*
 ** DoubleVector
@@ -51,21 +121,13 @@ SparseDoubleVector::SparseDoubleVector()
 
 // double vector
 size_t SparseDoubleVector::l0norm() const
-{
-  size_t res = 0;
-  for (size_t i = 0; i < values.size(); ++i)
-    if (values[i].second)
-      ++res;
-  return res;
-}
+  {return defaultL0Norm(*this);}
 
 double SparseDoubleVector::sumOfSquares() const
-{
-  double res = 0;
-  for (size_t i = 0; i < values.size(); ++i)
-    res += values[i].second * values[i].second;
-  return res;
-}
+  {return defaultSumOfSquares(*this);}
+
+double SparseDoubleVector::getMaximumValue() const
+  {return defaultGetMaximumValue(*this);}
 
 void SparseDoubleVector::multiplyByScalar(double scalar)
 {
@@ -203,10 +265,7 @@ void DenseDoubleVector::multiplyByScalar(double value)
 
 double DenseDoubleVector::computeLogSumOfExponentials() const
 {
-  double highestValue = -DBL_MAX;
-  for (size_t i = 0; i < values->size(); ++i)
-    if ((*values)[i] > highestValue)
-      highestValue = (*values)[i];
+  double highestValue = getMaximumValue();
   double res = 0.0;
   for (size_t i = 0; i < values->size(); ++i)
     res += exp((*values)[i] - highestValue);
@@ -215,34 +274,13 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
 
 // DoubleVector
 size_t DenseDoubleVector::l0norm() const
-{
-  if (!values)
-    return 0;
-
-  const double* source = getValuePointer(0);
-  const double* limit = source + values->size();
-  size_t res = 0;
-  while (source < limit)
-    if (*source++)
-      ++res;
-  return res;
-}
+  {return values ? defaultL0Norm(*this) : 0;}
 
 double DenseDoubleVector::sumOfSquares() const
-{
-  if (!values)
-    return 0.0;
+  {return values ? defaultSumOfSquares(*this) : 0.0;}
 
-  const double* source = getValuePointer(0);
-  const double* limit = source + values->size();
-  double res = 0;
-  while (source < limit)
-  {
-    res += (*source) * (*source);
-    ++source;
-  }
-  return res;
-}
+double DenseDoubleVector::getMaximumValue() const
+  {return defaultGetMaximumValue(*this);}
 
 void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
@@ -371,10 +409,13 @@ LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const V
 
 // DoubleVector
 size_t LazyDoubleVector::l0norm() const
-  {return computedVector ? computedVector->l0norm() : featureGenerator->l0norm(&inputs[0]);}
+  {return defaultL0Norm(*this);}
 
 double LazyDoubleVector::sumOfSquares() const
-  {return computedVector ? computedVector->sumOfSquares() : featureGenerator->sumOfSquares(&inputs[0]);}
+  {return defaultSumOfSquares(*this);}
+
+double LazyDoubleVector::getMaximumValue() const
+  {return defaultGetMaximumValue(*this);}
 
 void LazyDoubleVector::multiplyByScalar(double scalar)
   {jassert(false);}
@@ -449,20 +490,13 @@ void LazyDoubleVector::setElement(size_t index, const Variable& value)
 */
 // DoubleVector
 size_t CompositeDoubleVector::l0norm() const
-{
-  size_t res = 0;
-  for (size_t i = 0; i < vectors.size(); ++i)
-    res += vectors[i].second->l0norm();
-  return res;
-}
+  {return defaultL0Norm(*this);}
 
 double CompositeDoubleVector::sumOfSquares() const
-{
-  double res = 0.0;
-  for (size_t i = 0; i < vectors.size(); ++i)
-    res += vectors[i].second->sumOfSquares();
-  return res;
-}
+  {return defaultSumOfSquares(*this);}
+
+double CompositeDoubleVector::getMaximumValue() const
+  {return defaultGetMaximumValue(*this);}
 
 void CompositeDoubleVector::multiplyByScalar(double scalar)
 {

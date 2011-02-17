@@ -372,6 +372,7 @@ GENERATE_INTROSPECTION_CODE(FeatureGenerator/Atomic/AtomicFeatureGeneratorLibrar
 
 SET(LBCPP_FEATURE_GENERATOR_SOURCES
   ../include/lbcpp/FeatureGenerator/FeatureGenerator.h
+  FeatureGenerator/FeatureGeneratorCallbacks.hpp
   FeatureGenerator/FeatureGenerator.cpp
   FeatureGenerator/FeatureGeneratorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FeatureGeneratorLibrary.cpp
