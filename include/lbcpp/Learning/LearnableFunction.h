@@ -40,10 +40,10 @@ protected:
 class LearnerParameters : public Object
 {
 public:
-  virtual BatchLearnerPtr createBatchLearner() const
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
     {return BatchLearnerPtr();}
 
-  virtual OnlineLearnerPtr createOnlineLearner() const
+  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables) const
     {return OnlineLearnerPtr();}
 };
 

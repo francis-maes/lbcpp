@@ -17,7 +17,7 @@
 namespace lbcpp
 {
 
-// DoubleVector<T>, optional ScalarFunction -> Double
+// DoubleVector<T>, optional Supervision -> Double
 class LinearLearnableFunction : public NumericalLearnableFunction
 {
 public:
@@ -28,7 +28,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? scalarFunctionClass : doubleVectorClass();}
+    {return index ? anyType : doubleVectorClass();}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
@@ -51,12 +51,32 @@ public:
     return isNumberValid(res) ? Variable(res) : Variable::missingValue(doubleType);
   }
 
+  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
+                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
+  {
+    ScalarFunctionPtr scalarFunction = lossFunction.dynamicCast<ScalarFunction>();
+    jassert(scalarFunction);
+    const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
+    const Variable& supervision = inputs[1];
+
+    double lossDerivative = 0.0;
+    scalarFunction->computeScalarFunction(prediction.getDouble(), &supervision, &exampleLossValue, &lossDerivative);
+    if (!isNumberValid(exampleLossValue) || !isNumberValid(lossDerivative))
+      return false;
+
+    if (!target)
+      target = new DenseDoubleVector(parametersClass);
+    input->addWeightedTo(target, 0, weight * lossDerivative);
+    return true;
+  }
+
+#if 0
   virtual bool computeAndAddGradient(const Variable* inputs, const Variable& prediction, double& exampleLossValue, DoubleVectorPtr& target, double weight) const
   {
     const DoubleVectorPtr& inputVector = inputs[0].getObjectAndCast<DoubleVector>();
-    const FunctionPtr& supervision = inputs[1].getObjectAndCast<Function>();
+    const Variable& supervision = inputs[1];
 
-    if (!supervision)
+    if (!supervision.exists())
       return false;
 
     if (supervision.isInstanceOf<ScalarFunction>())
@@ -73,6 +93,7 @@ public:
 
     return true;
   }
+#endif // 0
 
   lbcpp_UseDebuggingNewOperator
 };

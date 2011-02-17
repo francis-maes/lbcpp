@@ -20,8 +20,8 @@ namespace lbcpp
 class LinearRegressor : public SupervisedNumericalFunction
 {
 public:
-  LinearRegressor(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
+  LinearRegressor(LearnerParametersPtr learnerParameters)
+    : SupervisedNumericalFunction(learnerParameters) {}
   LinearRegressor() {}
 
   virtual TypePtr getSupervisionType() const
@@ -34,8 +34,8 @@ public:
 class LinearBinaryClassifier : public SupervisedNumericalFunction
 {
 public:
-  LinearBinaryClassifier(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
+  LinearBinaryClassifier(LearnerParametersPtr learnerParameters)
+    : SupervisedNumericalFunction(learnerParameters) {}
   LinearBinaryClassifier() {}
 
   virtual TypePtr getSupervisionType() const
@@ -51,8 +51,8 @@ public:
 class LinearMultiClassClassifier : public SupervisedNumericalFunction
 {
 public:
-  LinearMultiClassClassifier(LearnerParametersPtr learnerParameters, ClassPtr lossFunctionClass)
-    : SupervisedNumericalFunction(learnerParameters, lossFunctionClass) {}
+  LinearMultiClassClassifier(LearnerParametersPtr learnerParameters)
+    : SupervisedNumericalFunction(learnerParameters) {}
   LinearMultiClassClassifier() {}
 
   virtual TypePtr getSupervisionType() const
@@ -90,7 +90,7 @@ public:
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return linearBinaryClassifier(learnerParameters);
     else if (supervisionType->inheritsFrom(enumValueType))
-      return linearMultiClassClassifier(learnerParameters, ClassPtr()); // FIXME !
+      return linearMultiClassClassifier(learnerParameters);
     else
       return FunctionPtr();
   }

@@ -23,9 +23,9 @@ typedef ReferenceCountedObjectPtr<GradientDescentOnlineLearner> GradientDescentO
 class GradientDescentOnlineLearner : public OnlineLearner, public FunctionCallback
 {
 public:
-  GradientDescentOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
+  GradientDescentOnlineLearner(const FunctionPtr& lossFunction, const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
     : context(NULL), maxIterations(0), numberOfActiveFeatures(T("NumActiveFeatures"), 100), 
-      learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
+      lossFunction(lossFunction), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
   GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0) {}
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
@@ -98,6 +98,7 @@ protected:
 
   ScalarVariableRecentMean numberOfActiveFeatures;
   ScalarVariableMean lossValue;
+  FunctionPtr lossFunction;
   IterationFunctionPtr learningRate;
   bool normalizeLearningRate;
   size_t epoch;
@@ -112,9 +113,9 @@ protected:
 
   void computeAndAddGradient(const NumericalLearnableFunctionPtr& function, const Variable* inputs, const Variable& output, DoubleVectorPtr& target, double weight)
   {
-     ++epoch;
-    double exampleLossValue;
-    if (function->computeAndAddGradient(inputs, output, exampleLossValue, target, weight))
+    ++epoch;
+    double exampleLossValue = 0.0;
+    if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
       lossValue.push(exampleLossValue);
   }
 

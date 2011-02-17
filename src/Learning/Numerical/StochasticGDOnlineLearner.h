@@ -17,8 +17,8 @@ namespace lbcpp
 class StochasticGDOnlineLearner : public GradientDescentOnlineLearner
 {
 public:
-  StochasticGDOnlineLearner(const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
-    : GradientDescentOnlineLearner(learningRate, normalizeLearningRate) {}
+  StochasticGDOnlineLearner(const FunctionPtr& lossFunction, const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
+    : GradientDescentOnlineLearner(lossFunction, learningRate, normalizeLearningRate) {}
   StochasticGDOnlineLearner() {}
 
   virtual void learningStep(const Variable* inputs, const Variable& output)

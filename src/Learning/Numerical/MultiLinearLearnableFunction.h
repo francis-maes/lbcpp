@@ -60,6 +60,13 @@ public:
     return res;
   }
 
+  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
+                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
+  {
+    // FIXME
+    return false;
+  }
+#if 0
   virtual bool computeAndAddGradient(const Variable* inputs, const Variable& prediction, double& exampleLossValue, DoubleVectorPtr& target, double weight) const
   {
     const DoubleVectorPtr& inputVector = inputs[0].getObjectAndCast<DoubleVector>();
@@ -85,6 +92,7 @@ public:
       inputVector->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
     return true;
   }
+#endif // 0
 
   lbcpp_UseDebuggingNewOperator
 };

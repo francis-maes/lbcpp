@@ -9,6 +9,7 @@
   
   <import name="BatchLearner"/>
   <import name="OnlineLearner"/>
+  <import name="LearningLossFunction"/>
   <import name="NumericalLearning"/>
 
 </library>

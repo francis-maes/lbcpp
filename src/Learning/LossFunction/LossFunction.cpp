@@ -38,7 +38,7 @@ String DiscriminativeLossFunction::getOutputPostFix() const
 
 void DiscriminativeLossFunction::computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
 {
-  bool isPositive = otherInputs[1].getBoolean();
+  bool isPositive = otherInputs[0].getBoolean();
   computeDiscriminativeLoss(isPositive ? input : -input, output, derivative);
   if (derivative && !isPositive)
     *derivative = - (*derivative);
