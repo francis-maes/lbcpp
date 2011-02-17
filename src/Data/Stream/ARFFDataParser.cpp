@@ -117,7 +117,7 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
   // create enumeration
   DefaultEnumerationPtr enumClass = new DefaultEnumeration(enumerationName + T("ARFFEnum"));
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
-    if (enumClass->findOrAddElement(context, tokens[i].unquoted().replaceCharacters(T(" \t"), T("-"))) != i)
+    if (enumClass->findOrAddElement(context, tokens[i].unquoted().replaceCharacters(T(" \t"), T("--"))) != i)
     {
       context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("Duplicate enumeration element found: ") + tokens[i].quoted());
       return false;
@@ -147,14 +147,53 @@ bool ARFFDataParser::parseDataLine(const String& line)
   VectorPtr inputs = variableVector(n);
   for (size_t i = 0; i < n; ++i)
     inputs->setElement(i, createFromString(context, attributesType[i], tokens[i]));
-  // get supervision
-  Variable supervison = createFromString(context, supervisionType, tokens[n]); // FIXME: trouble with booleanType ??
-  setResult(Variable::pair(inputs, supervison, getElementsType()));
+
+  setResult(finalizeData(Variable::pair(inputs, createFromString(context, supervisionType, tokens[n]), getElementsType())));
   return true;
 }
 
 bool ARFFDataParser::parseSparseDataLine(const String& line)
 {
-  jassertfalse; // FIXME: not yet implemented
-  return false;
+  size_t n = attributesType.size();
+  StringArray tokens;
+  tokens.addTokens(line.substring(1, line.length() - 1), T(", "), T("'\""));
+  size_t numTokens = tokens.size();
+  if (numTokens > n + 1)
+  {
+    context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Too many values in: ") + line.quoted());
+    return false;
+  }
+  
+  // get attributes
+  Variable supervision;
+  VectorPtr inputs = variableVector(n);
+  for (size_t i = 0; i < numTokens; ++i)
+  {
+    int e = tokens[i].indexOfAnyOf(T(" \t"));
+    if (e < 0)
+    {
+      context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
+      return false;
+    }
+    Variable v = Variable::createFromString(context, positiveIntegerType, tokens[i].substring(0, e));
+    if (!v.exists())
+    {
+      context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Bad index in: ") + tokens[i].quoted());
+      return false;
+    }
+    size_t index = v.getInteger();
+    if (index == n)
+      supervision = createFromString(context, supervisionType, tokens[i].substring(e).trim());
+    else
+    {
+      if (inputs->getElement(index).exists())
+      {
+        context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Duplicate index '" + String((int)index) + "' in: ") + tokens[i].quoted());
+        return false;
+      }
+      inputs->setElement(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));
+    }
+  }
+  setResult(finalizeData(Variable::pair(inputs, supervision, getElementsType())));
+  return true;
 }

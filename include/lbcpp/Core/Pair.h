@@ -71,6 +71,12 @@ public:
 
   Variable& getSecond()
     {return second;}
+  
+  void setFirst(const Variable& v)
+    {first = v;}
+  
+  void setSecond(const Variable& v)
+    {second = v;}
 
   std::pair<Variable, Variable> getValue() const
     {return std::make_pair(first, second);}

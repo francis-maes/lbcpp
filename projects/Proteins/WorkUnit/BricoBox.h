@@ -42,13 +42,9 @@ public:
       return Variable();
     }
 
-    TextParserPtr parser = classificationARFFDataParser(context, dataFile, new DefaultEnumeration(T("output")));
-    while (!parser->isExhausted())
-    {
-      Variable v = parser->next();
-      context.informationCallback(v.toString());
-    }
-
+    VectorPtr data = classificationARFFDataParser(context, dataFile, new DefaultEnumeration(T("output")))->load();
+    context.resultCallback(T("Data"), data);
+    
     return Variable();
   }
 
