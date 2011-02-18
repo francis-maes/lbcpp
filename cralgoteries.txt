@@ -1,21 +1,26 @@
 
-2) SS3: container[DV]
-
-3) AQTime on SS3 training
+* Bouger CompositeFunction dans Core
+* Deriver NumericalSupervisedFunction de CompositeFunction
+* Virer FrameBasedFunction
 
 4) framework pour l'inference des proteins
- * ProteinResidueFeaturesFunction: Protein -> Vector[DoubleVector]
  * ProteinInferenceStep: Protein x Protein -> Protein
  * Trois fonctions cles: compose(functions, treatAdditionalInputsAsGlobals), map(function, treatAdditionalInputsAsGlobals), createAndSetVariables(type, matchVariablesByType)
- 
 
 baseline:  train    test      numTrainProt  numTestProt numTrainSS3 numTestSS3
 
 PDBSmall:  70.36%  65.22%      86             14           16411      2329          1min10  / 296 ms / 46ms
-PDBMedium: 75.07%  74.24%      429             71           84018     13263         5min47  / 1,5s / 0,25s
+PDBMedium: 75.07%  74.24%      429             71           84018     13263         5min47  / 1,5s / 250ms
 PDBLarge:  74.98%  73.96%      2143            357         409562     72521         28min39 / 8s / 1s
 
 Mean-features: 420..430
+
+AFTER AQTIME:
+ PDBSmall: 51s / 234 ms / 30 ms
+ PDBMedium: 4min4 / 1,37s / 203 ms
+
+
+
 
 --
 

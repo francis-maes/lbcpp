@@ -138,7 +138,7 @@ inline File Variable::getFile() const
   {jassert(isFile()); return File(value.getString());}
 
 inline bool Variable::isObject() const
-  {return type->inheritsFrom(objectClass);}
+  {return dynamic_cast<Class* >(type.get()) != NULL;}
 
 inline const ObjectPtr& Variable::getObject() const
   {jassert(isNil() || isObject()); return value.getObject();}

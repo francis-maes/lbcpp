@@ -226,6 +226,8 @@ public:
     jassert(project);
 
     File directory = project->getRootDirectory();
+    defaultExecutionContext().setProjectDirectory(directory);
+
     recentProjects->addRecentFile(directory);
     recentProjects->setRecentDirectory(directory.getParentDirectory());
     configuration->save(context);

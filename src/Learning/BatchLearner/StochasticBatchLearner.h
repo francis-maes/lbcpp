@@ -77,14 +77,41 @@ protected:
     if (function->hasOnlineLearner())
       res.push_back(function);
     
-    CompositeFunctionPtr compositeFunction = function.dynamicCast<CompositeFunction>();
-    if (compositeFunction)
+    FrameBasedFunctionPtr frameBasedFunction = function.dynamicCast<FrameBasedFunction>();
+    if (frameBasedFunction)
     {
-      size_t n = compositeFunction->getNumSubFunctions();
+      FrameClassPtr frameClass = frameBasedFunction->getFrameClass();
+      size_t n = frameClass->getNumMemberVariables();
       for (size_t i = 0; i < n; ++i)
       {
-        const FunctionPtr& subFunction = compositeFunction->getSubFunction(i);
+        FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(i).dynamicCast<FrameOperatorSignature>();
+        if (signature)
+          getAllFunctionsThatHaveAnOnlineLearner(signature->getFunction(), res);
+      }
+      return;
+    }
+
+    size_t n = function->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable v = function->getVariable(i);
+      FunctionPtr subFunction = v.dynamicCast<Function>();
+      if (subFunction)
+      {
         getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
+        continue;
+      }
+
+      ContainerPtr container = v.dynamicCast<Container>();
+      if (container && container->getElementsType()->inheritsFrom(functionClass))
+      {
+        size_t numSubFunctions = container->getNumElements();
+        for (size_t j = 0; j < numSubFunctions; ++j)
+        {
+          FunctionPtr subFunction = container->getElement(j).getObjectAndCast<Function>();
+          if (subFunction)
+            getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
+        }
       }
     }
   }

@@ -68,9 +68,14 @@ public:
     bool isLearningFinished = false;
     if (lossValue.getCount())
     {
+      const NumericalLearnableFunctionPtr& numericalFunction = function.staticCast<NumericalLearnableFunction>();
+      const DoubleVectorPtr& parameters = numericalFunction->getParameters();
+
       double mean = lossValue.getMean();
       context->resultCallback(T("Empirical Risk"), mean);
       context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
+      context->resultCallback(T("Num Params"), parameters->l0norm());
+      context->resultCallback(T("Params Norm"), parameters->l2norm());
       context->resultCallback(T("Epoch"), epoch);
       
       lossValue.clear();

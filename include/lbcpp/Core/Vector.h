@@ -168,6 +168,10 @@ public:
   const std::vector<ObjectPtr>& getObjects() const
     {return *objects;}
 
+  template<class T>
+  const std::vector<ReferenceCountedObjectPtr<T> >& getObjectsAndCast() const
+    {return *(const std::vector<ReferenceCountedObjectPtr<T> >* )objects;}
+
   std::vector<ObjectPtr>& getObjects()
     {return *objects;}
 

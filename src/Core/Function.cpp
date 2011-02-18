@@ -135,10 +135,21 @@ Variable Function::compute(ExecutionContext& context, const std::vector<Variable
 
 Variable Function::computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const
 {
-  std::vector<Variable> inputs(getNumInputs());
-  for (size_t j = 0; j < inputs.size(); ++j)
-    inputs[j] = inputsObject->getVariable(j);
-  return compute(context, inputs);
+  PairPtr inputPair = inputsObject.dynamicCast<Pair>();
+  if (inputPair)
+  {
+    // faster version for pairs
+    const Variable* inputs = &inputPair->getFirst();
+    jassert(inputs + 1 == &inputPair->getSecond());
+    return compute(context, inputs);
+  }
+  else
+  {
+    std::vector<Variable> inputs(getNumInputs());
+    for (size_t j = 0; j < inputs.size(); ++j)
+      inputs[j] = inputsObject->getVariable(j);
+    return compute(context, &inputs[0]);
+  }
 }
 
 bool Function::checkIsInitialized(ExecutionContext& context) const
@@ -206,12 +217,43 @@ bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples,
   {
     // todo: parallel evaluation
     size_t n = examples->getNumElements();
-    for (size_t i = 0; i < n; ++i)
+
+    ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
+    if (objectExamples)
     {
-      ObjectPtr example = examples->getElement(i).getObject();
-      Variable prediction = computeWithInputsObject(context, example);
-      Variable correct = example->getVariable(example->getNumVariables() - 1);
-      evaluator->addPrediction(context, prediction, correct);
+      if (examples->getElementsType()->inheritsFrom(pairClass(anyType, anyType)))
+      {
+        // fast version for pair vectors
+        const std::vector<PairPtr>& pairs = objectExamples->getObjectsAndCast<Pair>();
+        for (size_t i = 0; i < n; ++i)
+        {
+          const PairPtr& example = pairs[i];
+          evaluator->addPrediction(context, compute(context, &example->getFirst()), example->getSecond());
+        }
+      }
+      else
+      {
+        // fast version for object vectors
+        const std::vector<ObjectPtr>& objects = objectExamples->getObjects();
+        for (size_t i = 0; i < n; ++i)
+        {
+          const ObjectPtr& example = objects[i];
+          Variable prediction = computeWithInputsObject(context, example);
+          Variable correct = example->getVariable(example->getNumVariables() - 1);
+          evaluator->addPrediction(context, prediction, correct);
+        }
+      }
+    }
+    else
+    {
+      // generic version
+      for (size_t i = 0; i < n; ++i)
+      {
+        ObjectPtr example = examples->getElement(i).getObject();
+        Variable prediction = computeWithInputsObject(context, example);
+        Variable correct = example->getVariable(example->getNumVariables() - 1);
+        evaluator->addPrediction(context, prediction, correct);
+      }
     }
 
     if (doScope)

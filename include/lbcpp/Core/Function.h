@@ -282,26 +282,12 @@ protected:
   TypePtr inputType2;
 };
 
-class CompositeFunction : public Function
-{
-public:
-  virtual size_t getNumSubFunctions() const = 0;
-  virtual const FunctionPtr& getSubFunction(size_t index) const = 0;
-};
-
-class ProxyFunction : public CompositeFunction
+class ProxyFunction : public Function
 {
 public:
   virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
 
   const FunctionPtr& getImplementation() const
-    {return implementation;}
-
-  // CompositeFunction
-  virtual size_t getNumSubFunctions() const
-    {return 1;}
-
-  virtual const FunctionPtr& getSubFunction(size_t index) const
     {return implementation;}
 
   // Function
