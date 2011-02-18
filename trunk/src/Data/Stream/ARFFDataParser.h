@@ -9,6 +9,7 @@
 # define LBCPP_VARIABLE_STREAM_ARFF_DATA_PARSER_H_
 
 # include <lbcpp/Data/Stream.h>
+# include <lbcpp/Core/DynamicObject.h>
 
 namespace lbcpp
 {
@@ -16,23 +17,26 @@ namespace lbcpp
 class ARFFDataParser : public TextParser
 {
 public:
-  ARFFDataParser(ExecutionContext& context, const File& file)
-    : TextParser(context, file), shouldReadData(false) {}
+  ARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features)
+    : TextParser(context, file), features(features), shouldReadData(false) {}
 
-  ARFFDataParser(ExecutionContext& context, InputStream* newInputStream)
-    : TextParser(context, newInputStream), shouldReadData(false) {}
+  ARFFDataParser(ExecutionContext& context, InputStream* newInputStream, DynamicClassPtr features)
+    : TextParser(context, newInputStream), features(features), shouldReadData(false) {}
 
   ARFFDataParser() {}
   
   virtual bool parseLine(const String& line);
-  
+
 protected:
-  bool shouldReadData;
   std::vector<TypePtr> attributesType;
+  std::vector<String> attributesName;
   TypePtr supervisionType;
+  DynamicClassPtr features;
+  bool shouldReadData;
 
   bool parseAttributeLine(const String& line);
   bool parseEnumerationAttributeLine(const String& line);
+  bool checkOrAddAttributesTypeToFeatures();
   virtual bool checkSupervisionType() const = 0;
   bool parseDataLine(const String& line);
   bool parseSparseDataLine(const String& line);
@@ -43,9 +47,9 @@ protected:
 class RegressionARFFDataParser : public ARFFDataParser
 {
 public:
-  RegressionARFFDataParser(ExecutionContext& context, const File& file)
-    : ARFFDataParser(context, file)
-    {elementsType = pairClass(variableVectorClass, doubleType);}
+  RegressionARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features)
+    : ARFFDataParser(context, file, features)
+    {elementsType = pairClass(features, doubleType);}
 
   RegressionARFFDataParser() {}
   
@@ -62,9 +66,9 @@ protected:
 class BinaryClassificationARFFDataParser : public ARFFDataParser
 {
 public:
-  BinaryClassificationARFFDataParser(ExecutionContext& context, const File& file)
-    : ARFFDataParser(context, file)
-    {elementsType = pairClass(variableVectorClass, booleanType);}
+  BinaryClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features)
+    : ARFFDataParser(context, file, features)
+    {elementsType = pairClass(features, booleanType);}
 
   BinaryClassificationARFFDataParser() {}
   
@@ -99,9 +103,9 @@ protected:
 class ClassificationARFFDataParser : public ARFFDataParser
 {
 public:
-  ClassificationARFFDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr labels)
-    : ARFFDataParser(context, file), labels(labels)
-    {elementsType = pairClass(variableVectorClass, labels);}
+  ClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels)
+    : ARFFDataParser(context, file, features), labels(labels)
+    {elementsType = pairClass(features, labels);}
 
   ClassificationARFFDataParser() {}
   
@@ -129,9 +133,9 @@ protected:
 class MultiLabelClassificationARFFDataParser : public ARFFDataParser
 {
 public:
-  MultiLabelClassificationARFFDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr labels)
-    : ARFFDataParser(context, file), labels(labels)
-    {elementsType = pairClass(variableVectorClass, sparseDoubleVectorClass(labels, probabilityType));}
+  MultiLabelClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels)
+    : ARFFDataParser(context, file, features), labels(labels)
+    {elementsType = pairClass(features, sparseDoubleVectorClass(labels, probabilityType));}
 
   MultiLabelClassificationARFFDataParser() {}
   

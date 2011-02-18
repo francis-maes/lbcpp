@@ -93,6 +93,21 @@ String Enumeration::getElementName(size_t index) const
   return element ? element->getName() : String::empty;
 }
 
+int Enumeration::compare(ObjectPtr otherObject) const
+{
+  EnumerationPtr other = otherObject.dynamicCast<Enumeration>();
+  if (!other)
+    return -1;
+  size_t n = getNumElements();
+  if (other->getNumElements() != n)
+    return -2;
+  
+  for (size_t i = 0; i < n; ++i)
+    if (getElement(i)->getName() != other->getElement(i)->getName())
+      return i + 1;
+  return 0;
+}
+
 /*
 ** DefaultEnumeration
 */

@@ -276,10 +276,10 @@ extern TextParserPtr classificationLibSVMDataParser(ExecutionContext& context, c
 extern TextParserPtr multiLabelClassificationLibSVMDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr features, DefaultEnumerationPtr labels);
 
 /* ARFF Data Parser */
-extern TextParserPtr regressionARFFDataParser(ExecutionContext& context, const File& file);
-extern TextParserPtr binaryClassificationARFFDataParser(ExecutionContext& context, const File& file);
-extern TextParserPtr classificationARFFDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr labels);
-extern TextParserPtr multiLabelClassificationARFFDataParser(ExecutionContext& context, const File& file, DefaultEnumerationPtr labels);
+extern TextParserPtr regressionARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features);
+extern TextParserPtr binaryClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features);
+extern TextParserPtr classificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels);
+extern TextParserPtr multiLabelClassificationARFFDataParser(ExecutionContext& context, const File& file, DynamicClassPtr features, DefaultEnumerationPtr labels);
 
 }; /* namespace lbcpp */
 

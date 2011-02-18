@@ -29,19 +29,19 @@
   <class name="ARFFDataParser" base="TextParser" abstract="yes"/>
   
   <class name="RegressionARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features"/>
   </class>
   
   <class name="BinaryClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features"/>
   </class>
   
   <class name="ClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr labels"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels"/>
   </class>
   
   <class name="MultiLabelClassificationARFFDataParser" base="TextParser">
-    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DefaultEnumerationPtr labels"/>
+    <constructor arguments="ExecutionContext&amp; context, const File&amp; file, DynamicClassPtr features, DefaultEnumerationPtr labels"/>
   </class>
 
   <!-- Directory iterators -->
