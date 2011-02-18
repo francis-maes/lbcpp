@@ -19,6 +19,9 @@ namespace lbcpp
 class LearnableFunction : public Function
 {
 public:
+  LearnableFunction(ClassPtr parametersClass = ClassPtr(), ObjectPtr parameters = ObjectPtr())
+    : parameters(parameters), parametersClass(parametersClass) {}
+  
   const ClassPtr& getParametersClass() const
     {return parametersClass;}
 

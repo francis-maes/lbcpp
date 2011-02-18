@@ -44,16 +44,16 @@ public:
 class RegressionProblem : public LearningProblem
 {
 public:
-  RegressionProblem() : features(new DefaultEnumeration(T("Features"))) {}
+  RegressionProblem() : features(new DynamicClass(T("Features"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return regressionLibSVMDataParser(context, file, features);}
+    {return regressionARFFDataParser(context, file, features);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return regressionErrorEvaluator(T("regression"));}
 
 protected:
-  DefaultEnumerationPtr features;
+  DynamicClassPtr features;
 };
 
 class BinaryClassificationProblem : public LearningProblem
@@ -75,17 +75,17 @@ class MultiClassClassificationProblem : public LearningProblem
 {
 public:
   MultiClassClassificationProblem()
-    : features(new DefaultEnumeration(T("Features"))),
+    : features(new DynamicClass(T("Features"))),
       labels(new DefaultEnumeration(T("Labels"))) {}
 
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
-    {return classificationLibSVMDataParser(context, file, features, labels);}
+    {return classificationARFFDataParser(context, file, features, labels);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
     {return classificationAccuracyEvaluator();}
 
 protected:
-  DefaultEnumerationPtr features;
+  DynamicClassPtr features;
   DefaultEnumerationPtr labels;
 };
 

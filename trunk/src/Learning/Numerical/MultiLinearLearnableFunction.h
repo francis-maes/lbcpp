@@ -44,7 +44,7 @@ public:
 
     // make parameters class
     DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("MultiLinearParameters"));
-    size_t numFeatures = featuresEnumeration->getNumElements();
+    //size_t numFeatures = featuresEnumeration->getNumElements();
     size_t numOutputs = outputsEnumeration->getNumElements();
     for (size_t i = 0; i < numOutputs; ++i)
     {

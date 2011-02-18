@@ -20,8 +20,7 @@ public:
   RTreeFunction(size_t numTrees,
                 size_t numAttributeSamplesPerSplit,
                 size_t minimumSizeForSplitting);
-  RTreeFunction()
-    {parametersClass = objectClass;} // FIXME: create constructor LearnableFunction(ClassPtr)
+  RTreeFunction();
 
   /* RTreeFunction */
   void setTrees(ObjectPtr trees)
@@ -41,10 +40,10 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)objectVectorClass(objectClass) : anyType;}
+    {return index == 0 ? (TypePtr)objectClass : anyType;}
 
   virtual String getOutputPostFix() const
-    {return T("RTree");}
+    {return T("RTree");}  
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
@@ -70,7 +69,7 @@ public:
   ClassificationRTreeFunction() {}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(enumValueType)); return inputVariables[1]->getType();}
+    {return inputVariables[1]->getType();}
 };
   
 class RegressionRTreeFunction : public RTreeFunction
@@ -85,7 +84,7 @@ public:
   RegressionRTreeFunction() {}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(doubleType)); return doubleType;}
+    {return doubleType;}
 };
 
 class BinaryRTreeFunction : public RTreeFunction
@@ -100,7 +99,7 @@ public:
   BinaryRTreeFunction() {}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(sumType(booleanType, probabilityType))); return probabilityType;}
+    {return probabilityType;}
 };
 
 }; /* namespace lbcpp */

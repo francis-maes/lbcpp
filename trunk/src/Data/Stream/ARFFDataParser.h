@@ -116,18 +116,7 @@ protected:
   TypePtr elementsType;
   DefaultEnumerationPtr labels;
   
-  virtual bool checkSupervisionType() const
-  {
-    if (!context.checkInheritance(supervisionType, enumValueType))
-      return false;
-    // copy supervision enumeration to labels
-    EnumerationPtr enumType = supervisionType.dynamicCast<Enumeration>();
-    ClassificationARFFDataParser* thisPtr = const_cast<ClassificationARFFDataParser*>(this);
-    for (size_t i = 0; i < enumType->getNumElements(); ++i)
-      thisPtr->labels->addElement(context, enumType->getElement(i)->getName());
-    thisPtr->supervisionType = labels;
-    return true;
-  }
+  virtual bool checkSupervisionType() const;
 };
 
 class MultiLabelClassificationARFFDataParser : public ARFFDataParser
@@ -146,18 +135,7 @@ protected:
   TypePtr elementsType;
   DefaultEnumerationPtr labels;
   
-  virtual bool checkSupervisionType() const
-  {
-    if (!context.checkInheritance(supervisionType, enumValueType))
-      return false;
-    // copy supervision enumeration to labels
-    EnumerationPtr enumType = supervisionType.dynamicCast<Enumeration>();
-    MultiLabelClassificationARFFDataParser* thisPtr = const_cast<MultiLabelClassificationARFFDataParser*>(this);
-    for (size_t i = 0; i < enumType->getNumElements(); ++i)
-      thisPtr->labels->addElement(context, enumType->getElement(i)->getName());
-    const_cast<MultiLabelClassificationARFFDataParser*>(this)->supervisionType = labels;
-    return true;
-  }
+  virtual bool checkSupervisionType() const;
 };
 
 };

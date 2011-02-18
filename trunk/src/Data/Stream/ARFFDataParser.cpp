@@ -104,8 +104,8 @@ static bool shouldBeABooleanType(const StringArray& tokens)
 {
   if (tokens.size() != 2)
     return false;
-  String first = tokens[0].unquoted().toLowerCase();
-  String second = tokens[1].unquoted().toLowerCase();
+  String first = tokens[0].toLowerCase();
+  String second = tokens[1].toLowerCase();
   if (comparePairOfStrings(first, second, T("yes"), T("no")))
     return true;
   if (comparePairOfStrings(first, second, T("true"), T("false")))
@@ -169,6 +169,8 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
     context.errorCallback(T("ARFFDataParser::parseEnumerationAttributeLine"), T("No enumeration element found in: ") + trimmedLine.quoted());
     return false;
   }
+  for (size_t i = 0; i < (size_t)tokens.size(); ++i)
+    tokens.set(i, tokens[i].trim().unquoted());
   // It can be a booleanType ?
   if (shouldBeABooleanType(tokens))
   {
@@ -289,4 +291,40 @@ bool ARFFDataParser::parseSparseDataLine(const String& line)
   }
   setResult(finalizeData(Variable::pair(inputs, supervision, getElementsType())));
   return true;
+}
+
+/* Classification ARFFDataParser */
+static bool checkOrAddSupervisionTypeToLabels(ExecutionContext& context, TypePtr& supervisionType, DefaultEnumerationPtr& labels)
+{
+  if (!context.checkInheritance(supervisionType, enumValueType))
+    return false;
+  if (labels->getNumElements() == 0)
+  {
+    EnumerationPtr enumType = supervisionType.dynamicCast<Enumeration>();
+    for (size_t i = 0; i < enumType->getNumElements(); ++i)
+      labels->addElement(context, enumType->getElement(i)->getName());
+    supervisionType = labels;
+    return true;
+  }
+  if (labels->compare(supervisionType) == 0)
+  {
+    supervisionType = labels;
+    return true;
+  }
+  context.errorCallback(T("ARFFDataParser::checkOrAddSupervisionTypeToLabels"), T("An enumeration already exists as supervision type but does not match the current supervision type"));
+  return false;
+}
+
+bool ClassificationARFFDataParser::checkSupervisionType() const
+{
+  return checkOrAddSupervisionTypeToLabels(context,
+                                           const_cast<ClassificationARFFDataParser*>(this)->supervisionType,
+                                           const_cast<ClassificationARFFDataParser*>(this)->labels);
+}
+
+bool MultiLabelClassificationARFFDataParser::checkSupervisionType() const
+{
+  return checkOrAddSupervisionTypeToLabels(context,
+                                           const_cast<MultiLabelClassificationARFFDataParser*>(this)->supervisionType,
+                                           const_cast<MultiLabelClassificationARFFDataParser*>(this)->labels);
 }
