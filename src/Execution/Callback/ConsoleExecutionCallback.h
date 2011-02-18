@@ -121,6 +121,7 @@ public:
     if (where.isNotEmpty())
       text += T(" (in ") + where + T(")");
     print(T("error"), text, false);
+    jassertfalse;
   }
 
   virtual void progressCallback(const ProgressionStatePtr& progression)

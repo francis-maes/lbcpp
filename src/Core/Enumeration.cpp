@@ -101,7 +101,6 @@ int Enumeration::compare(ObjectPtr otherObject) const
   size_t n = getNumElements();
   if (other->getNumElements() != n)
     return -2;
-  
   for (size_t i = 0; i < n; ++i)
     if (getElement(i)->getName() != other->getElement(i)->getName())
       return i + 1;

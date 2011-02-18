@@ -135,7 +135,7 @@ extern BatchLearnerPtr frameBasedFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
 extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
 
-extern DecoratorBatchLearnerPtr supervisedExamplesBatchLearner(BatchLearnerPtr decorated);
+extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
 
 }; /* namespace lbcpp */
 

@@ -241,13 +241,16 @@ extern BatchLearnerPtr rTreeBatchLearner();
 RTreeFunction::RTreeFunction(size_t numTrees,
                              size_t numAttributeSamplesPerSplit,
                              size_t minimumSizeForSplitting)
-  : numTrees(numTrees), 
+  : LearnableFunction(objectClass), numTrees(numTrees), 
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting)
-  {
-    parametersClass = objectClass;
-    setBatchLearner(rTreeBatchLearner());
-  }
+  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
+
+RTreeFunction::RTreeFunction() : LearnableFunction(objectClass),
+                                  numTrees(100),
+                                  numAttributeSamplesPerSplit(10),
+                                  minimumSizeForSplitting(1)
+  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
 
 Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
@@ -294,16 +297,6 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
     return false;
 
   size_t n = trainingData.size();
-  // FIXME: ...
-  size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
-  // Filtre les données sans supervision
-  std::vector<size_t> examples;
-  examples.reserve(n);
-  for (size_t i = 0; i < n; ++i)
-    if (trainingData[i]->getVariable(supervisionIndex).exists()) // FIXME: Add Object::getLastVariable()
-      examples.push_back(i);
-  n = examples.size();
-
   context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables());
   context.resultCallback(T("K"), rTreeFunction->getNumAttributeSamplesPerSplit());
   context.resultCallback(T("nmin"), rTreeFunction->getMinimumSizeForSplitting());
@@ -312,13 +305,13 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   set_print_result(0, 0);
   goal_type = MULTIREGR;
   goal = MULTIREGR;
-  nb_attributes = function->getInputsClass()->getNumMemberVariables();
+  nb_attributes = function->getInputsClass()->getMemberVariable(0)->getType()->getNumMemberVariables();
   nb_obj_in_core_table = n;
   
   core_table = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_attributes * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
-    ObjectPtr obj = trainingData[examples[i]]->getVariable(0).getObject(); // training inputs
+    ObjectPtr obj = trainingData[i]->getVariable(0).getObject(); // training inputs
     jassert(obj->getNumVariables() == (size_t)nb_attributes);
     for (size_t j = 0; j < (size_t)nb_attributes; ++j)
     {
@@ -342,7 +335,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
 
   length_attribute_descriptors = nb_attributes;
   attribute_descriptors = (int*)MyMalloc((size_t)nb_attributes * sizeof(int));
-  TypePtr inputType = function->getInputsClass();
+  TypePtr inputType = function->getInputsClass()->getMemberVariable(0)->getType();
   for (size_t i = 0; i < (size_t)nb_attributes; ++i)
   {
     TypePtr attrType = inputType->getMemberVariableType(i);
@@ -389,7 +382,7 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   core_table_y = (CORETABLE_TYPE *)MyMalloc((size_t)nb_obj_in_core_table * (size_t)nb_goal_multiregr * sizeof(CORETABLE_TYPE));
   for (size_t i = 0; i < (size_t)nb_obj_in_core_table; ++i)
   {
-    Variable objVariable = trainingData[examples[i]]->getVariable(supervisionIndex);
+    Variable objVariable = trainingData[i]->getVariable(1);
     if (nb_goal_multiregr == 1)
     {
       CORETABLE_TYPE value;
