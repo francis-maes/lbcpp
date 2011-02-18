@@ -161,7 +161,7 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t
   return addFunction(function, inputs, outputName, outputShortName);
 }
 
-size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, const std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
 {
   std::vector<VariableSignaturePtr> inputVariables(inputs.size());
   for (size_t i = 0; i < inputVariables.size(); ++i)
