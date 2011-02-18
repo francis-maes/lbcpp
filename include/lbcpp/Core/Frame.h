@@ -10,7 +10,7 @@
 # define LBCPP_CORE_FRAME_H_
 
 # include "DynamicObject.h"
-# include "../Function/Function.h"
+# include "Function.h"
 
 namespace lbcpp
 {

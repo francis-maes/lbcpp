@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_CONTAINER_FUNCTION_ACCUMULATOR_LOCAL_MEAN_FUNCTION_H_
 # define LBCPP_DATA_CONTAINER_FUNCTION_ACCUMULATOR_LOCAL_MEAN_FUNCTION_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp

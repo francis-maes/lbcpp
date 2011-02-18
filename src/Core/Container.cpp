@@ -10,7 +10,7 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
-#include <lbcpp/Function/Function.h>
+#include <lbcpp/Core/Function.h>
 #include <lbcpp/Execution/WorkUnit.h>
 #include <algorithm>
 using namespace lbcpp;

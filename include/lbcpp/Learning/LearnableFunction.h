@@ -9,7 +9,7 @@
 #ifndef LBCPP_LEARNING_LEARNABLE_FUNCTION_H_
 # define LBCPP_LEARNING_LEARNABLE_FUNCTION_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include "OnlineLearner.h"
 # include "BatchLearner.h"
 

@@ -5,7 +5,8 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(LBCppLibrary.xml LBCppLibrary.cpp)
 
-GENERATE_INTROSPECTION_CODE(Core/Type/TypeLibrary.xml TypeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Core/Type/CoreTypeLibrary.xml CoreTypeLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Core/Function/CoreFunctionLibrary.xml CoreFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
@@ -106,6 +107,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Vector.cpp
   ../include/lbcpp/Core/DynamicObject.h
   Core/DynamicObject.cpp
+  ../include/lbcpp/Core/Function.h
+  Core/Function.cpp  
   ../include/lbcpp/Core/Frame.h
   Core/Frame.cpp
   ../include/lbcpp/Core/XmlSerialisation.h
@@ -128,8 +131,8 @@ SET(LBCPP_CORE_TYPE_SOURCES
   Core/Type/DoubleType.h
   Core/Type/StringType.h
   Core/Type/FileType.h
-  Core/Type/TypeLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/TypeLibrary.cpp
+  Core/Type/CoreTypeLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/CoreTypeLibrary.cpp
 )
 
 SET(LBCPP_CORE_OBJECT_SOURCES
@@ -140,6 +143,18 @@ SET(LBCPP_CORE_OBJECT_SOURCES
   Core/Object/DenseDoubleObject.h
   Core/Object/DenseObjectObject.h
 )
+
+SET(LBCPP_CORE_FUNCTION_SOURCES
+  Core/Function/GetVariableFunction.h
+  Core/Function/GetElementFunction.h
+  Core/Function/CreateObjectFunction.h
+  Core/Function/CreateVectorFunction.h
+  Core/Function/MapContainerFunction.h
+  Core/Function/SignedScalarToProbabilityFunction.h
+  Core/Function/CoreFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/CoreFunctionLibrary.cpp
+)
+
 
 #### Data ####
 
@@ -185,7 +200,6 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/AccumulatorLocalMeanFunction.h
   Data/Container/AccumulatorGlobalMeanFunction.h
   Data/Container/SegmentContainerFunction.h
-  Data/Container/GenerateVectorFunction.h
   Data/Container/ContainerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp
 )
@@ -285,8 +299,6 @@ SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
 
 SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/predeclarations.h
-  ../include/lbcpp/Function/Function.h
-  Function/Function.cpp  
   ../include/lbcpp/Function/ScalarFunction.h
   ../include/lbcpp/Function/ScalarVectorFunction.h
   Function/ScalarFunction.cpp
@@ -300,12 +312,7 @@ SET(LBCPP_FUNCTION_SOURCES
 )
  
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
-  # new
   Function/MiscFunctions/SelectVariableFunctions.h
-  Function/MiscFunctions/CreateObjectFunction.h
-  Function/MiscFunctions/SignedScalarToProbabilityFunction.h
-
-  # old / unchecked
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/ComposeFunction.h
   Function/MiscFunctions/MultiplyFunction.h
@@ -822,6 +829,7 @@ SET(LBCPP_CORE
     ${LBCPP_CORE_IMPL_HEADERS}
     ${LBCPP_CORE_TYPE_SOURCES}
     ${LBCPP_CORE_OBJECT_SOURCES}
+    ${LBCPP_CORE_FUNCTION_SOURCES}
 
   # Data
   ${LBCPP_DATA_SOURCES}
@@ -920,6 +928,7 @@ SOURCE_GROUP(Core FILES ${LBCPP_CORE_SOURCES})
 SOURCE_SUB_GROUP(Core impl FILES ${LBCPP_CORE_IMPL_HEADERS})
 SOURCE_SUB_GROUP(Core Type FILES ${LBCPP_CORE_TYPE_SOURCES})
 SOURCE_SUB_GROUP(Core Object FILES ${LBCPP_CORE_OBJECT_SOURCES})
+SOURCE_SUB_GROUP(Core Function FILES ${LBCPP_CORE_FUNCTION_SOURCES})
 
 ## Data
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})

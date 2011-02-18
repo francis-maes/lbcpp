@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<library name="Type" directory="Core/Type">
+<library name="CoreType" directory="Core/Type">
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
   

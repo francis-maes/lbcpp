@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_FUNCTION_SET_FIELD_H_
 # define LBCPP_DATA_FUNCTION_SET_FIELD_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

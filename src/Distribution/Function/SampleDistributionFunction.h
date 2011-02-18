@@ -9,7 +9,7 @@
 #ifndef LBCPP_DISTRIBUTION_FUNCTION_SAMPLE_H_
 # define LBCPP_DISTRIBUTION_FUNCTION_SAMPLE_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp

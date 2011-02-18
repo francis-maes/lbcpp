@@ -14,7 +14,7 @@
 # include "../Core/Container.h"
 # include "../Execution/WorkUnit.h"
 # include "../Data/RandomVariable.h"
-# include "../Function/Function.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {

@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_MISC_SIGNED_SCALAR_TO_PROBABILITY_H_
-# define LBCPP_FUNCTION_MISC_SIGNED_SCALAR_TO_PROBABILITY_H_
+#ifndef LBCPP_CORE_FUNCTION_SIGNED_SCALAR_TO_PROBABILITY_H_
+# define LBCPP_CORE_FUNCTION_SIGNED_SCALAR_TO_PROBABILITY_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
@@ -32,4 +32,4 @@ public:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_MISC_SIGNED_SCALAR_TO_PROBABILITY_H_
+#endif // !LBCPP_CORE_FUNCTION_SIGNED_SCALAR_TO_PROBABILITY_H_

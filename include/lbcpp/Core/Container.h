@@ -197,7 +197,6 @@ extern FunctionPtr accumulatorLocalMeanFunction(size_t windowSize);
 extern FunctionPtr accumulatorGlobalMeanFunction();
 
 extern FunctionPtr segmentContainerFunction();
-extern FunctionPtr applyOnContainerFunction(const FunctionPtr& function);
 
 extern FunctionPtr globalAccumulatorMeanFunction();
 extern FunctionPtr localAccumulatorMeanFunction(size_t windowSize);

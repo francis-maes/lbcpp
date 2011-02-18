@@ -2,28 +2,6 @@
 
 <library name="MiscFunctions" directory="Function/MiscFunctions">
   
-  <!-- New -->
-  <class name="GetVariableFunction" base="Function">
-    <constructor arguments="const String&amp; variableName"/>
-    <constructor arguments="size_t variableIndex"/>
-    <variable type="PositiveInteger" name="variableIndex"/>
-    <variable type="String" name="variableName"/>
-  </class>
-
-  <class name="GetElementFunction" base="Function">
-    <constructor/>
-  </class>
-
-  <class name="CreateObjectFunction" base="Function">
-    <constructor arguments="ClassPtr objectClass"/>
-    <variable type="Class" name="objectClass"/>
-  </class>
-
-  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
-    <constructor returnType="Function"/>
-  </class>
-  
-  <!-- Old -->
   <class name="IdentityFunction" base="Function">
     <constructor arguments="TypePtr type"/>
     <variable type="Type" name="type"/>

@@ -45,12 +45,6 @@
     <parameter name="elementsType"/>
   </template>
 
-  <!-- Generate Vector Function -->
-  <class name="GenerateVectorFunction" base="Function">
-    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
-    <variable type="Function" name="elementGeneratorFunction"/>
-  </class>
-
   <!-- Accumulate Function -->
   <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">
     <parameter name="scoresEnumeration" type="EnumValue"/>
@@ -88,12 +82,6 @@
 
   <class name="SegmentContainerFunction" base="Function">
     <constructor/>
-  </class>
-
-  <!-- Apply Function -->
-  <class name="ApplyOnContainerFunction" base="Function">
-    <constructor arguments="const FunctionPtr&amp; function"/>
-    <variable type="Function" name="function"/>
   </class>
   
 </library>

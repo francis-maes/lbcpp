@@ -15,6 +15,8 @@
 namespace lbcpp
 {
 
+extern FunctionPtr proteinResidueFeaturesVectorFunction();
+
 class ProteinFrameFactory : public Object
 {
 public:

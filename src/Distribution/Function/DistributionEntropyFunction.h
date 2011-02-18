@@ -10,7 +10,7 @@
 # define LBCPP_DISTRIBUTION_FUNCTION_ENTROPY_H_
 
 # include <lbcpp/Distribution/Distribution.h>
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

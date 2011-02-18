@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="Core" directory="Core">
-  <import name="Type" pre="yes"/>
+  <import name="CoreType" pre="yes"/>
+  <import name="CoreFunction"/>
 
   <include file="lbcpp/Core/Pair.h"/>
   <include file="lbcpp/Core/Vector.h"/>
@@ -179,21 +180,10 @@
         {String str((int)index); return new EnumerationElement(T("[") + str + T("]"), String::empty, str);}
     </code>
   </class>
-    
+
   <!-- Function -->
-  <class name="OnlineLearner" abstract="yes"/>
   <class name="Function" abstract="yes"/>
 
-  <class name="SimpleFunction" base="Function" abstract="yes"/>
-  <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
-  <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
-
-  <class name="CompositeFunction" base="Function" abstract="yes"/>
-  
-  <class name="ProxyFunction" base="Function" abstract="yes">
-    <variable type="Function" name="implementation"/>
-  </class>
-  
   <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">
     <variable type="Function" name="function"/>

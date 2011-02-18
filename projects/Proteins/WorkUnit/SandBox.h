@@ -41,8 +41,8 @@ public:
     
     proteinFrameClass = factory.createProteinFrameClass(context);
 
-    VectorPtr trainingExamples = makeSecondaryStructureExamples(trainingProteins);
-    VectorPtr testingExamples = makeSecondaryStructureExamples(testingProteins);
+    VectorPtr trainingExamples = makeSecondaryStructureExamples(context, trainingProteins);
+    VectorPtr testingExamples = makeSecondaryStructureExamples(context, testingProteins);
     context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
                                String((int)testingExamples->getNumElements()) + T(" testing examples"));
 
@@ -65,8 +65,13 @@ public:
     return true;
   }
 
-  VectorPtr makeSecondaryStructureExamples(const ContainerPtr& proteins) const
+  VectorPtr makeSecondaryStructureExamples(ExecutionContext& context, const ContainerPtr& proteins) const
   {
+    FunctionPtr function = proteinResidueFeaturesVectorFunction();
+    if (!function->initialize(context, (TypePtr)proteinClass))
+      return VectorPtr();
+
+
     ClassPtr featuresClass = Container::getTemplateParameter(proteinFrameClass->getMemberVariableType(proteinFrameClass->getNumMemberVariables() - 1));
     jassert(featuresClass);
     TypePtr examplesType = pairClass(featuresClass, secondaryStructureElementEnumeration);
@@ -79,17 +84,15 @@ public:
       const ProteinPtr& inputProtein = proteinPair->getFirst().getObjectAndCast<Protein>();
       const ProteinPtr& supervisionProtein = proteinPair->getSecond().getObjectAndCast<Protein>();
       jassert(inputProtein && supervisionProtein);
-      makeSecondaryStructureExamples(inputProtein, supervisionProtein, res);
+      VectorPtr residueFeatures = function->computeFunction(context, inputProtein).getObjectAndCast<Vector>();
+      makeSecondaryStructureExamples(residueFeatures, supervisionProtein, res);
     }
     return res;    
   }
 
-  void makeSecondaryStructureExamples(const ProteinPtr& inputProtein, const ProteinPtr& supervisionProtein, const VectorPtr& res) const
+  void makeSecondaryStructureExamples(const VectorPtr& residueFeatures, const ProteinPtr& supervisionProtein, const VectorPtr& res) const
   {
-    FramePtr proteinFrame = factory.createFrame(inputProtein);
-    VectorPtr residueFeatures = proteinFrame->getVariable(proteinFrame->getNumVariables() - 1).getObjectAndCast<Vector>();
     jassert(residueFeatures);
-
     VectorPtr secondaryStructure = supervisionProtein->getSecondaryStructure();
     if (secondaryStructure)
     {
