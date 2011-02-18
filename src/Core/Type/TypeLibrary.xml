@@ -19,6 +19,7 @@
     <type name="PositiveDouble" base="Double"/>
       <type name="NegativeLogProbability" base="PositiveDouble"/>
     <type name="Probability" base="Double" implementation="ProbabilityType"/>
+    <type name="Time" base="Double" implementation="TimeType"/>
 
   <type name="String" base="Variable" implementation="StringType"/>
     <type name="File" base="String" implementation="FileType"/>

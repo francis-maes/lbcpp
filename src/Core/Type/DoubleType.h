@@ -112,6 +112,63 @@ public:
   }
 };
 
+class TimeType : public DoubleType
+{
+public:
+  TimeType(const String& name, TypePtr baseType)
+    : DoubleType(name, baseType) {}
+
+  virtual String toShortString(const VariableValue& value) const
+  {
+    jassert(!isMissingValue(value));
+    double timeInSeconds = value.getDouble();
+    if (timeInSeconds == 0.0)
+      return T("0 s");
+
+    String sign;
+    if (timeInSeconds > 0)
+      sign = String::empty;
+    else
+    {
+      timeInSeconds = -timeInSeconds;
+      sign = T("-");
+    }
+
+    if (timeInSeconds < 1e-5)
+      return sign + String((int)(timeInSeconds / 1e-9)) + T(" nanos");
+    if (timeInSeconds < 1e-2)
+      return sign + String((int)(timeInSeconds / 1e-6)) + T(" micros");
+
+    int numSeconds = (int)timeInSeconds;
+    if (timeInSeconds < 10)
+      return sign + (numSeconds ? String(numSeconds) + T(" s ") : String::empty) + String((int)(timeInSeconds * 1000) % 1000) + T(" ms");
+
+    String res = sign;
+    if (numSeconds > 3600)
+    {
+      int numHours = numSeconds / 3600;
+      if (numHours > 24)
+      {
+        int numDays = numHours / 24;
+        res += numDays == 1 ? T("1 day") : String(numDays) + T(" days");
+      }
+      if (res.isNotEmpty())
+        res += T(" ");
+      res += String(numHours % 24) + T(" hours");
+    }
+    if (numSeconds >= 60)
+    {
+      if (res.isNotEmpty())
+        res += T(" ");
+      res += String((numSeconds / 60) % 60) + T(" min");
+    }
+    if (res.isNotEmpty())
+      res += T(" ");
+    res += String(numSeconds % 60) + T(" s");
+    return res;
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_DOUBLE_H_

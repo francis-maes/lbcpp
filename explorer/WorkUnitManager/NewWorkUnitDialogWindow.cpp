@@ -197,7 +197,7 @@ public:
     int desiredHeight = namesHeight;
     addAndMakeVisible(name = new Label(T("name"), nameValue));
     name->setFont(Font(16, Font::bold));
-    if (shortNameValue != nameValue)
+    if (shortNameValue.isNotEmpty() && shortNameValue != nameValue)
     {
       addAndMakeVisible(shortName = new Label(T("shortName"), T("-") + shortNameValue));
       shortName->setJustificationType(Justification::centredRight);

@@ -46,7 +46,11 @@ public:
     context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
                                String((int)testingExamples->getNumElements()) + T(" testing examples"));
 
-    FunctionPtr classifier = linearLearningMachine(new StochasticGDParameters());
+
+    StochasticGDParametersPtr parameters = new StochasticGDParameters();
+    parameters->setEvaluator(classificationAccuracyEvaluator());
+
+    FunctionPtr classifier = linearLearningMachine(parameters);
     if (!classifier->train(context, trainingExamples, ContainerPtr(), T("Training"), true))
       return false;
 
@@ -87,15 +91,16 @@ public:
     jassert(residueFeatures);
 
     VectorPtr secondaryStructure = supervisionProtein->getSecondaryStructure();
-    jassert(secondaryStructure);
-    
-    size_t n = secondaryStructure->getNumElements();
-    jassert(residueFeatures->getNumElements() == n);
-    for (size_t i = 0; i < n; ++i)
+    if (secondaryStructure)
     {
-      Variable ss3 = secondaryStructure->getElement(i);
-      if (ss3.exists())
-        res->append(new Pair(res->getElementsType(), residueFeatures->getElement(i), ss3));
+      size_t n = secondaryStructure->getNumElements();
+      jassert(residueFeatures->getNumElements() == n);
+      for (size_t i = 0; i < n; ++i)
+      {
+        Variable ss3 = secondaryStructure->getElement(i);
+        if (ss3.exists())
+          res->append(new Pair(res->getElementsType(), residueFeatures->getElement(i), ss3));
+      }
     }
   }
 

@@ -198,17 +198,18 @@ public:
     size_t n = table->getNumElements();
     size_t keyVariableIndex = configuration->getKeyVariableIndex();
     float x0, y0;
-    getPointPosition(0, keyVariableIndex, index, transform, x0, y0);
+    bool isX0Valid = getPointPosition(0, keyVariableIndex, index, transform, x0, y0) && isNumberValid(x0) && isNumberValid(y0);
 
     g.setColour(config->getColour());
     for (size_t i = 1; i < n; ++i)
     {
       float x1, y1;
-      getPointPosition(i, keyVariableIndex, index, transform, x1, y1);
-      if (isNumberValid(x0) && isNumberValid(y0) && isNumberValid(x1) && isNumberValid(y1))
+      bool isX1Valid = getPointPosition(i, keyVariableIndex, index, transform, x1, y1) && isNumberValid(x1) && isNumberValid(y1);
+      if (isX0Valid && isX1Valid)
         g.drawLine(x0, y0, x1, y1);
       x0 = x1;
       y0 = y1;
+      isX0Valid = isX1Valid;
     }
   }
 
@@ -222,8 +223,7 @@ public:
     {
       float x, y;
       float crossHalfSize = pointCrossSize / 2.f;
-      getPointPosition(i, keyVariableIndex, index, transform, x, y);
-      if (isNumberValid(x) && isNumberValid(y))
+      if (getPointPosition(i, keyVariableIndex, index, transform, x, y) && isNumberValid(x) && isNumberValid(y))
       {
         g.drawLine(x - crossHalfSize, y, x + crossHalfSize, y);
         g.drawLine(x, y - crossHalfSize, x, y + crossHalfSize);
@@ -239,39 +239,56 @@ protected:
   std::vector<size_t> order;
   double boundsX, boundsY, boundsWidth, boundsHeight;
 
-  void getPointPosition(size_t row, size_t columnX, size_t columnY, const AffineTransform& transform, float& x, float& y) const
+  bool getPointPosition(size_t row, size_t columnX, size_t columnY, const AffineTransform& transform, float& x, float& y) const
   {
     ObjectPtr rowObject = table->getElement(order[row]).getObject();
-    x = (float)getTableValue(rowObject, columnX);
-    y = (float)getTableValue(rowObject, columnY);
+    double dx, dy;
+    if (!getTableScalarValue(rowObject, columnX, dx) || !getTableScalarValue(rowObject, columnY, dy))
+      return false;
+
+    x = (float)dx;
+    y = (float)dy;
     transform.transformPoint(x, y);
+    return true;
   }
 
-  double getTableValue(const ObjectPtr& row, size_t column) const
+  bool getTableScalarValue(const ObjectPtr& row, size_t column, double& scalarValue) const
   {
     Variable value = row->getVariable(column);
-    if (!value.exists())
-      return 0.0;
-    if (value.isInteger())
-      return (double)value.getInteger();
-    else if (value.isDouble())
-      return value.getDouble();
-    else if (value.isBoolean())
-      return value.getBoolean() ? 1.0 : 0.0;
-    else
-      return 0.0;
+    if (value.exists())
+    {
+      if (value.isInteger())
+      {
+        scalarValue = (double)value.getInteger();
+        return true;
+      }
+
+      if (value.isDouble())
+      {
+        scalarValue = value.getDouble();
+        return true;
+      }
+
+      if (value.isBoolean())
+      {
+        scalarValue = value.getBoolean() ? 1.0 : 0.0;
+        return true;
+      }
+    }
+    return false;
   }
 
   void getTableValueRange(size_t column, double& minValue, double& maxValue) const
   {
+    double value;
     for (size_t i = 0; i < table->getNumElements(); ++i)
-    {
-      double value = getTableValue(table->getElement(i).getObject(), column);
-      if (value > maxValue)
-        maxValue = value;
-      if (value < minValue)
-        minValue = value;
-    }
+      if (getTableScalarValue(table->getElement(i).getObject(), column, value))
+      {
+        if (value > maxValue)
+          maxValue = value;
+        if (value < minValue)
+          minValue = value;
+      }
   }
 
   void computeHorizontalBounds()
