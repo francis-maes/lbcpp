@@ -133,7 +133,7 @@ public:
 
   size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
-  size_t addFunction(const FunctionPtr& function, std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
   void startSelection();
   const std::vector<size_t>& finishSelection();
