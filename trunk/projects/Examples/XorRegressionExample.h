@@ -47,25 +47,31 @@ public:
   }
 };
 
+class LearnableXorFunction : public CompositeFunction
+{
+public:
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input1 = builder.addInput(doubleType, T("x1"));
+    size_t input2 = builder.addInput(doubleType, T("x2"));
+    size_t supervision = builder.addInput(doubleType, T("supervision"));
+    size_t features = builder.addFunction(new XorFeatureGenerator(), input1, input2, T("features"));
+
+    StochasticGDParametersPtr params = new StochasticGDParameters();
+    params->setEvaluator(regressionErrorEvaluator(T("xor-error")));
+    builder.addFunction(linearLearningMachine(params), features, supervision);
+    
+    setBatchLearner(compositeFunctionBatchLearner());
+  }
+};
+
 class XorRegressionExample : public WorkUnit
 {
 public:
   FunctionPtr createXorFunction(ExecutionContext& context)
   {
-    FrameClassPtr frameClass = new FrameClass(T("XorFrame"));
-    frameClass->addMemberVariable(context, doubleType, T("x1"));
-    frameClass->addMemberVariable(context, doubleType, T("x2"));
-    frameClass->addMemberVariable(context, doubleType, T("supervision"));
-    frameClass->addMemberOperator(context, new XorFeatureGenerator(), 0, 1, T("features"));
-
-    StochasticGDParametersPtr params = new StochasticGDParameters();
-    params->setEvaluator(regressionErrorEvaluator(T("xor-error")));
-    frameClass->addMemberOperator(context, linearLearningMachine(params), 3, 2);
-
-    FunctionPtr xorFunction = new FrameBasedFunction(frameClass);
-    xorFunction->setBatchLearner(frameBasedFunctionBatchLearner());
-    xorFunction->initialize(context, std::vector<TypePtr>(3, doubleType));
-    return xorFunction;
+    FunctionPtr res = new LearnableXorFunction();
+    return res->initialize(context, std::vector<TypePtr>(3, doubleType)) ? res : FunctionPtr();
   }
 
   VectorPtr createTrainingExamples(ClassPtr inputsClass) const

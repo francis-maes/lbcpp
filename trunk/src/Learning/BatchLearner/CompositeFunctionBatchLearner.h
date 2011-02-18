@@ -1,21 +1,21 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: FrameBasedFunctionBatchLearner.h| FrameBasedFunction learner     |
+| Filename: CompositeFunctionBatchLearner.h| Composite Function learner      |
 | Author  : Francis Maes                   |                                 |
 | Started : 15/02/2011 19:34               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_LEARNING_BATCH_LEARNER_FRAME_BASED_FUNCTION_H_
-# define LBCPP_LEARNING_BATCH_LEARNER_FRAME_BASED_FUNCTION_H_
+#ifndef LBCPP_LEARNING_BATCH_LEARNER_COMPOSITE_FUNCTION_H_
+# define LBCPP_LEARNING_BATCH_LEARNER_COMPOSITE_FUNCTION_H_
 
 # include <lbcpp/Learning/BatchLearner.h>
-# include <lbcpp/Core/Frame.h>
+# include <lbcpp/Core/CompositeFunction.h>
 
 namespace lbcpp
 {
 
-class FrameBasedFunctionBatchLearner : public BatchLearner
+class CompositeFunctionBatchLearner : public BatchLearner
 {
 public:
   virtual TypePtr getRequiredExamplesType() const
@@ -23,7 +23,7 @@ public:
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
-    const FrameBasedFunctionPtr& function = f.staticCast<FrameBasedFunction>();
+    const CompositeFunctionPtr& function = f.staticCast<CompositeFunction>();
     FrameClassPtr frameClass = function->getFrameClass();
 
     // make initial frames
@@ -112,4 +112,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_LEARNING_BATCH_LEARNER_FRAME_BASED_FUNCTION_H_
+#endif // !LBCPP_LEARNING_BATCH_LEARNER_COMPOSITE_FUNCTION_H_

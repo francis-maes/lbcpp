@@ -111,6 +111,8 @@ SET(LBCPP_CORE_SOURCES
   Core/Function.cpp  
   ../include/lbcpp/Core/Frame.h
   Core/Frame.cpp
+  ../include/lbcpp/Core/CompositeFunction.h
+  Core/CompositeFunction.cpp  
   ../include/lbcpp/Core/XmlSerialisation.h
   Core/XmlSerialisation.cpp
   Core/CoreLibrary.xml
@@ -431,7 +433,7 @@ SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
 SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
   Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
-  Learning/BatchLearner/FrameBasedFunctionBatchLearner.h
+  Learning/BatchLearner/CompositeFunctionBatchLearner.h
   Learning/BatchLearner/FilterUnsupervisedExamplesBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp

@@ -12,7 +12,7 @@
     <constructor/>
   </class>
   
-  <class name="FrameBasedFunctionBatchLearner" base="BatchLearner">
+  <class name="CompositeFunctionBatchLearner" base="BatchLearner">
     <constructor/>
   </class>
 

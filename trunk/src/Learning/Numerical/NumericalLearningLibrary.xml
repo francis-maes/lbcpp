@@ -43,7 +43,7 @@
   </class>
 
   <!-- High-level Learnable Functions -->
-  <class name="SupervisedNumericalFunction" base="FrameBasedFunction" abstract="yes">
+  <class name="SupervisedNumericalFunction" base="CompositeFunction" abstract="yes">
     <variable type="LearnerParameters" name="learnerParameters"/>
   </class>
 

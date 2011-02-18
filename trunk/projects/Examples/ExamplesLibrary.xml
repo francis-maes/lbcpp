@@ -4,6 +4,7 @@
 
   <!-- Xor Regression Example -->
   <class name="XorFeatureGenerator" base="FeatureGenerator"/>
+  <class name="LearnableXorFunction" base="CompositeFunction"/>
   <class name="XorRegressionExample" base="WorkUnit"/>
 
   <!-- WorkUnit Example -->

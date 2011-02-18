@@ -8,6 +8,7 @@
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Core/DynamicObject.h"/>
   <include file="lbcpp/Core/Frame.h"/>
+  <include file="lbcpp/Core/CompositeFunction.h"/>
   <include file="lbcpp/Learning/OnlineLearner.h"/>
 
   <!-- Pair -->
@@ -183,16 +184,16 @@
 
   <!-- Function -->
   <class name="Function" abstract="yes"/>
+  <class name="CompositeFunction" base="Function" abstract="yes">
+    <variable type="Class" name="frameClass"/>
+  </class>
 
-  <!-- Frame -->
+    <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">
     <variable type="Function" name="function"/>
     <variable type="GenericVector[PositiveInteger]" name="inputs"/>
   </class>
 
   <class name="FrameClass" base="DefaultClass"/>
-  <class name="FrameBasedFunction" base="Function">
-    <variable type="Class" name="frameClass"/>
-  </class>
   
 </library>
