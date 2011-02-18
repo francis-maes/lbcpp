@@ -89,11 +89,14 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
-    int index = inputs[1].getInteger();
-    if (index >= 0 && index < (int)container->getNumElements())
-      return container->getElement((size_t)index);
-    else
-      return Variable::missingValue(container->getElementsType());
+    if (container)
+    {
+      int index = inputs[1].getInteger();
+      if (index >= 0 && index < (int)container->getNumElements())
+        return container->getElement((size_t)index);
+    }
+
+    return Variable::missingValue(getOutputType());
   }
 };
 

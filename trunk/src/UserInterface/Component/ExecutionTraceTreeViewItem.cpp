@@ -108,54 +108,14 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
       g.drawText(text, w, 0, timeColumnWidth, height, Justification::centredRight, false);
     }
     //else
-    //  text = formatTime(trace->getTime());
+    //  text = Variable(trace->getTime(), timeType).toShortString()
 
     ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)
-      g.drawText(formatTime(workUnitTrace->getTimeLength()), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
+      g.drawText(Variable(workUnitTrace->getTimeLength(), timeType).toShortString(), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
   }
   else
     paintIconTextAndProgression(g, width, height);
-}
-
-String ExecutionTraceTreeViewItem::formatTime(double timeInSeconds)
-{
-  jassert(timeInSeconds >= 0.0);
-  if (!timeInSeconds)
-    return T("0 s");
-
-  int numSeconds = (int)timeInSeconds;
-
-  if (timeInSeconds < 1e-5)
-    return String((int)(timeInSeconds / 1e-9)) + T(" nanos");
-  if (timeInSeconds < 1e-2)
-    return String((int)(timeInSeconds / 1e-6)) + T(" micros");
-  if (timeInSeconds < 10)
-    return (numSeconds ? String(numSeconds) + T(" s ") : String::empty) + String((int)(timeInSeconds * 1000) % 1000) + T(" ms");
-
-  String res;
-  if (numSeconds > 3600)
-  {
-    int numHours = numSeconds / 3600;
-    if (numHours > 24)
-    {
-      int numDays = numHours / 24;
-      res += numDays == 1 ? T("1 day") : String(numDays) + T(" days");
-    }
-    if (res.isNotEmpty())
-      res += T(" ");
-    res += String(numHours % 24) + T(" hours");
-  }
-  if (numSeconds >= 60)
-  {
-    if (res.isNotEmpty())
-      res += T(" ");
-    res += String((numSeconds / 60) % 60) + T(" min");
-  }
-  if (res.isNotEmpty())
-    res += T(" ");
-  res += String(numSeconds % 60) + T(" s");
-  return res;
 }
 
 /*

@@ -140,24 +140,31 @@ Variable Frame::getOrComputeVariable(size_t index)
   if (index == (size_t)-1)
     return this;
 
+  // return variable if it is already compuetd
   VariableSignaturePtr signature = thisClass->getMemberVariable(index);
   VariableValue& variableValue = getVariableValueReference(index);
   const TypePtr& type = signature->getType();
   if (!type->isMissingValue(variableValue))
     return Variable::copyFrom(type, variableValue);
 
+  // get operator signature
   FrameOperatorSignaturePtr operatorSignature = signature.dynamicCast<FrameOperatorSignature>();
   if (!operatorSignature)
-    return Variable();
-  
+    return Variable::missingValue(signature->getType());
+
+  // retrieve inputs
   const std::vector<size_t>& inputIndices = operatorSignature->getInputIndices();
   std::vector<Variable> inputs(inputIndices.size());
+  bool atLeastOneExistingInputVariable = false;
   for (size_t i = 0; i < inputs.size(); ++i)
   {
     inputs[i] = getOrComputeVariable(inputIndices[i]);
-    if (!inputs[i].exists())
-      return Variable();
+    atLeastOneExistingInputVariable |= inputs[i].exists();
   }
+  if (!atLeastOneExistingInputVariable)
+    return Variable::missingValue(signature->getType());
+
+  // compute variable
   Variable value = operatorSignature->getFunction()->compute(defaultExecutionContext(), &inputs[0]);
   setVariable(index, value);
   return value;

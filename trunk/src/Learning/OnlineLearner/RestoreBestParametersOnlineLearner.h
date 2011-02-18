@@ -17,20 +17,27 @@ namespace lbcpp
 class RestoreBestParametersOnlineLearner : public OnlineLearner
 {
 public:
+  RestoreBestParametersOnlineLearner() : context(NULL) {}
+  
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
+    this->context = &context;
     this->function = function;
     bestFunction = FunctionPtr();
     bestFunctionValue = DBL_MAX;
     isLastFunctionBest = true;
+    iteration = 0;
+    bestFunctionIteration = 0;
   }
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
+    ++iteration;
     if (objectiveValueToMinimize < bestFunctionValue)
     {
       bestFunction = function->cloneAndCast<Function>();
       bestFunctionValue = objectiveValueToMinimize;
+      bestFunctionIteration = iteration;
       isLastFunctionBest = true;
     }
     else
@@ -41,7 +48,11 @@ public:
   virtual void finishLearning()
   {
     if (!isLastFunctionBest && bestFunction)
+    {
+      context->informationCallback(T("Cloning parameters that gave score ") + String(bestFunctionValue) +
+          T(" at iteration ") + String((int)bestFunctionIteration)); 
       bestFunction->clone(defaultExecutionContext(), function);
+    }
     function = FunctionPtr();
     bestFunction = FunctionPtr();
   }
@@ -49,10 +60,13 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
+  ExecutionContext* context;
   FunctionPtr function;
   FunctionPtr bestFunction;
   double bestFunctionValue;
   bool isLastFunctionBest;
+  size_t iteration;
+  size_t bestFunctionIteration;
 };
 
 }; /* namespace lbcpp */

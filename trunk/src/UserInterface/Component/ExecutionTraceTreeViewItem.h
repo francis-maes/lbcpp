@@ -49,8 +49,6 @@ public:
   void paintIconTextAndProgression(juce::Graphics& g, int width, int height);
 
   virtual void paintItem(juce::Graphics& g, int width, int height);
-
-  static String formatTime(double timeInSeconds);
   
   virtual int getItemHeight() const
     {return 20 * numLines;}

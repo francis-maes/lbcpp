@@ -5,7 +5,7 @@
   <class name="BatchLearner" base="Function" abstract="yes"/>
   
   <class name="DecoratorBatchLearner" base="BatchLearner" abstract="yes">
-    <variable type="BatchLeaner" name="decorated"/>
+    <variable type="BatchLearner" name="decorated"/>
   </class>
 
   <class name="ProxyFunctionBatchLearner" base="BatchLearner">

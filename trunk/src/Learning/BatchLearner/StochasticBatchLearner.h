@@ -46,11 +46,13 @@ public:
       compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
 
     // perform learning iterations
+    double startTime = Time::getMillisecondCounterHiRes();
     for (size_t i = 0; compositeOnlineLearner->getNumLearners() && (!maxIterations || i < maxIterations); ++i)
     {
       context.enterScope(T("Learning Iteration ") + String((int)i + 1));
       context.resultCallback(T("Iteration"), i + 1);
       Variable learningIterationResult = doLearningIteration(context, i, function, trainingData, compositeOnlineLearner);
+      context.resultCallback(T("Time"), Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType));
       context.leaveScope(learningIterationResult);
       context.progressCallback(new ProgressionState(i + 1, maxIterations, T("Learning Iterations")));
     }

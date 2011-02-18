@@ -211,6 +211,7 @@ extern TypePtr doubleType;
   extern TypePtr positiveDoubleType;
     extern TypePtr negativeLogProbabilityType;
   extern TypePtr probabilityType;
+  extern TypePtr timeType;  
 
 extern TypePtr stringType;
   extern TypePtr fileType;

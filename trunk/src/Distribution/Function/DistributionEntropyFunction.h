@@ -31,7 +31,13 @@ public:
     {return negativeLogProbabilityType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return inputs[0].getObjectAndCast<Distribution>()->computeEntropy();}
+  {
+    const DistributionPtr& distribution = inputs[0].getObjectAndCast<Distribution>();
+    if (distribution)
+      return distribution->computeEntropy();
+    else
+      return Variable::missingValue(getOutputType());
+  }
 };
 
 }; /* namespace lbcpp */

@@ -68,8 +68,9 @@ public:
   {
     for (size_t i = 0; i < shifts.size(); ++i)
     {
-      const DoubleVectorPtr& subVector = inputs[i].getObjectAndCast<DoubleVector>();
-      callback.sense(shifts[i], subVector, 1.0);
+      const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();
+      if (input)
+        callback.sense(shifts[i], input, 1.0);
     }
   }
 
@@ -77,7 +78,11 @@ public:
   {
     CompositeDoubleVectorPtr res = new CompositeDoubleVector(getOutputType());
     for (size_t i = 0; i < shifts.size(); ++i)
-      res->appendSubVector(shifts[i], inputs[i].getObjectAndCast<DoubleVector>());
+    {
+      const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();
+      if (input)
+        res->appendSubVector(shifts[i], input);
+    }
     return res;
   }
 
@@ -85,7 +90,11 @@ public:
   {
     SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
     for (size_t i = 0; i < shifts.size(); ++i)
-      inputs[i].getObjectAndCast<DoubleVector>()->appendTo(res, shifts[i]);
+    {
+      const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();
+      if (input)
+        input->appendTo(res, shifts[i]);
+    }
     return res;
   }
 

@@ -1,12 +1,29 @@
-Objectif: SS3 en dur dans un NewSandBox
 
 
+1) robustesse
+ * fix memory leak in explorer
+ * aqtime on training of SS3
+
+2) framework pour l'inference des proteins
+ * ProteinResidueFeaturesFunction: Protein -> Vector[DoubleVector]
+ * ProteinInferenceStep: Protein x Protein -> Protein
+ 
+
+baseline:  train    test      numTrainProt  numTestProt numTrainSS3 numTestSS3
+
+PDBSmall:  70.36%  65.22%      86             14           16411      2329          1min10  / 296 ms / 46ms
+PDBMedium: 75.07%  74.24%      429             71           84018     13263         5min47  / 1,5s / 0,25s
+PDBLarge:  74.98%  73.96%      2143            357         409562     72521         28min39 / 8s / 1s
+
+Mean-features: 420..430
+
+--
+
+Misc:
 * Reunir la bibliotheque de fonctions standard:
   - createObject, getVariable, getElement, applyOnContainer (renommer en mapContainer)
 * Make ComposeFunction generic, Replace SupervisedNumericalFunction by ComposeFunction
-* Moderniser IterationFunction
 
---
 
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I

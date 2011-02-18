@@ -32,21 +32,32 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
+    // retrieve features and outputs
     featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
     jassert(featuresEnumeration);
-
-    elementsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
-    if (!elementsEnumeration)
+    outputsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
+    if (!outputsEnumeration)
     {
       context.errorCallback(T("Could not identify elements enumeration"));
       return TypePtr();
     }
 
-    parametersClass = compositeDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+    // make parameters class
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("MultiLinearParameters"));
+    size_t numFeatures = featuresEnumeration->getNumElements();
+    size_t numOutputs = outputsEnumeration->getNumElements();
+    for (size_t i = 0; i < numOutputs; ++i)
+    {
+      EnumerationElementPtr output = outputsEnumeration->getElement(i);
+      parametersEnumeration->addElementsWithPrefix(context, featuresEnumeration, output->getName() + T("."), output->getShortName() + T("."));
+    }
+    parametersClass = compositeDoubleVectorClass(parametersEnumeration);
+
+    // output and learner
     outputName = T("prediction");
     outputShortName = T("p");
     setBatchLearner(stochasticBatchLearner());
-    return denseDoubleVectorClass(elementsEnumeration);
+    return denseDoubleVectorClass(outputsEnumeration);
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -58,7 +69,7 @@ public:
       return Variable::missingValue(getOutputType());
     
     size_t n = parameters->getNumSubVectors();
-    jassert(n == elementsEnumeration->getNumElements());
+    jassert(n == outputsEnumeration->getNumElements());
     DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType());
     for (size_t i = 0; i < n; ++i)
     {
@@ -103,11 +114,11 @@ public:
 
 protected:
   EnumerationPtr featuresEnumeration;
-  EnumerationPtr elementsEnumeration;
+  EnumerationPtr outputsEnumeration;
 
   void createCompositeSubVectors(const CompositeDoubleVectorPtr& composite) const
   {
-    size_t n = elementsEnumeration->getNumElements();
+    size_t n = outputsEnumeration->getNumElements();
     size_t numFeatures = featuresEnumeration->getNumElements();
     jassert(numFeatures);
     ClassPtr subVectorsClass = denseDoubleVectorClass(featuresEnumeration);

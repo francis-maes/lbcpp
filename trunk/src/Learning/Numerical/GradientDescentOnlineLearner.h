@@ -72,6 +72,7 @@ public:
       context->resultCallback(T("Empirical Risk"), mean);
       context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
       context->resultCallback(T("Epoch"), epoch);
+      
       lossValue.clear();
 
       if (objectiveValueToMinimize == DBL_MAX)
