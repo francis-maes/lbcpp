@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include <lbcpp/Core/Frame.h>
-#include <lbcpp/Function/Function.h>
+#include <lbcpp/Core/Function.h>
 using namespace lbcpp;
 
 namespace lbcpp {extern ClassPtr frameClassClass;};

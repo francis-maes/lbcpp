@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#include <lbcpp/Function/Function.h>
+#include <lbcpp/Core/Function.h>
 #include <lbcpp/Core/Frame.h>
 #include <lbcpp/Function/Evaluator.h>
 #include <lbcpp/Learning/BatchLearner.h>

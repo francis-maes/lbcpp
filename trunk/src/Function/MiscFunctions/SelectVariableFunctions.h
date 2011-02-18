@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_FUNCTION_SELECT_PAIR_FIELDS_H_
 # define LBCPP_DATA_FUNCTION_SELECT_PAIR_FIELDS_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Core/Pair.h>
 
 namespace lbcpp

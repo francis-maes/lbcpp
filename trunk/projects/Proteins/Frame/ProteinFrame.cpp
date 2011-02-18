@@ -26,20 +26,101 @@ public:
 protected:
   ExecutionContext* context;
 
-  size_t addInput(TypePtr type, const String& name)
-    {return frameClass->addMemberVariable(*context, type, name);}
+  size_t copyInput(const VariableSignaturePtr& signature)
+    {return addInSelection(frameClass->addMemberVariable(*context, signature));}
 
-  size_t addConstant(const Variable& value, const String& name)
+  size_t addInput(TypePtr type, const String& name = String::empty)
+  {
+    String n = name.isEmpty() ? T("input") + String((int)frameClass->getNumMemberVariables() + 1) : name;
+    return addInSelection(frameClass->addMemberVariable(*context, type, n));
+  }
+
+  size_t addInSelection(size_t index)
+  {
+    currentSelection.push_back(index);
+    return index;
+  }
+
+  size_t addConstant(const Variable& value, const String& name = String::empty)
     {jassert(false); return 0;}
 
   size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty)
-    {return frameClass->addMemberOperator(*context, function, input, outputName, outputShortName);}
+    {return addInSelection(frameClass->addMemberOperator(*context, function, input, outputName, outputShortName));}
 
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty)
-    {return frameClass->addMemberOperator(*context, function, input1, input2, outputName, outputShortName);}
+    {return addInSelection(frameClass->addMemberOperator(*context, function, input1, input2, outputName, outputShortName));}
 
   size_t addFunction(const FunctionPtr& function, std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty)
-    {return frameClass->addMemberOperator(*context, function, inputs, outputName, outputShortName);}
+    {return addInSelection(frameClass->addMemberOperator(*context, function, inputs, outputName, outputShortName));}
+
+  std::vector<size_t> currentSelection;
+
+  void startSelection()
+    {currentSelection.clear();}
+
+  const std::vector<size_t>& finishSelection()
+    {return currentSelection;}
+
+  size_t finishSelectionWithFunction(const FunctionPtr& function)
+  {
+    size_t res = addFunction(function, currentSelection);
+    currentSelection.clear();
+    return res;
+  }
+};
+
+// object, position -> element
+class GetElementInVariableFunction : public GraphBasedFunction
+{
+public:
+  GetElementInVariableFunction(const String& variableName)
+    : variableName(variableName) {}
+ 
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 1 ? positiveIntegerType : (TypePtr)objectClass;}
+
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    copyInput(inputVariables[0]);
+    addInput(positiveIntegerType);
+    addFunction(getVariableFunction(variableName), 0);
+    addFunction(getElementFunction(), 2, 1);
+    return true;
+  }
+
+protected:
+  String variableName;
+};
+
+FunctionPtr getElementInVariableFunction(const String& variableName)
+  {return new GetElementInVariableFunction(variableName);}
+
+// distribution[enumeration] -> features
+class EnumerationDistributionFeaturesFunction : public GraphBasedFunction
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return enumerationDistributionClass();}
+
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    copyInput(inputVariables[0]);
+    addFunction(distributionEntropyFunction(), 0);
+    
+    startSelection();
+
+      addFunction(enumerationDistributionFeatureGenerator(), 0, T("p"));
+      addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), 1, T("e"));
+
+    finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    return true;
+  }
 };
 
 // position, protein -> features
@@ -50,19 +131,20 @@ public:
   {
     addInput(positiveIntegerType, T("position"));
     addInput(proteinClass, T("protein"));
+    size_t aminoAcid = addFunction(getElementInVariableFunction(T("primaryStructure")), 1, 0);
+    size_t pssmRow = addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), 1, 0);
+    //size_t ss3 = addFunction(getElementInVariableFunction(T("secondaryStructure")), 1, 0);
+    //size_t ss8 = addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), 1, 0);
 
-/*    size_t aminoAcid = addFunction(composeFunction(getVariableFunction(T("primaryStructure")), 
-// retrieve the amino acid, the pssm row and the ss3 prediction
-  size_t aaIndex = res->addMemberOperator(context, getVariableFunction(T("primaryStructure")), proteinFrameIndex);
-  aaIndex = res->addMemberOperator(context, getElementFunction(), aaIndex, positionIndex, T("aa"));
-
-  size_t pssmIndex = res->addMemberOperator(context, getVariableFunction(T("positionSpecificScoringMatrix")), proteinFrameIndex);
-  pssmIndex = res->addMemberOperator(context, getElementFunction(), pssmIndex, positionIndex, T("pssm"));
-
-  size_t ss3Index = res->addMemberOperator(context, getVariableFunction(T("secondaryStructure")), proteinFrameIndex);
-  ss3Index = res->addMemberOperator(context, getElementFunction(), ss3Index, positionIndex, T("ss3"));
-
- */
+    // feature generators
+    startSelection();
+    
+      addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
+      addFunction(new EnumerationDistributionFeaturesFunction(), pssmRow, T("pssm"));
+      //addFunction(new EnumerationDistributionFeaturesFunction(), ss3, T("ss3"));
+      //addFunction(new EnumerationDistributionFeaturesFunction(), ss8, T("ss8"));
+  
+    finishSelectionWithFunction(concatenateFeatureGenerator(false));
     return true;
   }
 };
@@ -75,7 +157,36 @@ public:
   {
     addInput(proteinClass, T("protein"));
     addFunction(proteinLengthFunction(), 0);
-    addFunction(generateVectorFunction(new ProteinPrimaryResidueFeaturesFunction()), 1, 0);
+    addFunction(createVectorFunction(new ProteinPrimaryResidueFeaturesFunction()), 1, 0);
+    return true;
+  }
+};
+
+// position, vector[features], accumulator[features], features (mean)
+class ProteinResidueFeaturesFunction : public GraphBasedFunction
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 4;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? positiveIntegerType : anyType;}
+
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    size_t position = addInput(positiveIntegerType);
+    size_t primaryResidueFeatures = copyInput(inputVariables[1]);
+    size_t primaryResidueFeaturesAcc = copyInput(inputVariables[2]);
+    
+    startSelection();
+
+      copyInput(inputVariables[3]);
+
+      addFunction(windowFeatureGenerator(15), primaryResidueFeatures, position, T("window"));
+      addFunction(accumulatorLocalMeanFunction(15), primaryResidueFeaturesAcc, position, T("mean15"));
+      addFunction(accumulatorLocalMeanFunction(50), primaryResidueFeaturesAcc, position, T("mean50"));
+     
+    finishSelectionWithFunction(concatenateFeatureGenerator(true));
     return true;
   }
 };
@@ -87,12 +198,30 @@ public:
   virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     size_t protein = addInput(proteinClass, T("protein"));
-    size_t primaryResidueFeatures = addFunction(new ProteinPrimaryResidueFeaturesVectorFunction(), protein);
-    // todo ...
+
+    startSelection();
+
+      addFunction(proteinLengthFunction(), protein);
+      size_t primaryFeatures = addFunction(new ProteinPrimaryResidueFeaturesVectorFunction(), protein);
+      size_t primaryFeaturesAcc = addFunction(accumulateContainerFunction(), primaryFeatures);
+      addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
+
+    finishSelectionWithFunction(createVectorFunction(new ProteinResidueFeaturesFunction()));
     return true;
   }
 };
 
+namespace lbcpp
+{
+
+  FunctionPtr proteinResidueFeaturesVectorFunction()
+    {return new ProteinResidueFeaturesVectorFunction();}
+
+};
+
+//////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
 
 FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context)
 {
@@ -109,7 +238,7 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
   FrameClassPtr primaryResidueFrameClass = createPrimaryResidueFrameClass(context, res);
   if (!primaryResidueFrameClass)
     return FrameClassPtr();
-  size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), lengthIndex, (size_t)-1, T("primaryResidueFeatures"));
+  size_t contextFreeResidueFeatures = res->addMemberOperator(context, createVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), lengthIndex, (size_t)-1, T("primaryResidueFeatures"));
   res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
   
   // global features
@@ -122,7 +251,7 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
   FrameClassPtr residueFrameClass = createResidueFrameClass(context, res);
   if (!residueFrameClass)
     return FrameClassPtr();
-  res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(residueFrameClass)), (size_t)-1, lengthIndex, T("residueFeatures"));
+  res->addMemberOperator(context, createVectorFunction(new FrameBasedFunction(residueFrameClass)), (size_t)-1, lengthIndex, T("residueFeatures"));
 
   return res->initialize(context) ? res : FrameClassPtr();
 }

@@ -1,25 +1,25 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GenerateVectorFunction.h       | Generate Vector Function        |
+| Filename: CreateVectorFunction.h         | Create Vector Function          |
 | Author  : Francis Maes                   |                                 |
 | Started : 04/02/2011 17:01               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_CONTAINER_GENERATE_VECTOR_FUNCTION_H_
-# define LBCPP_DATA_CONTAINER_GENERATE_VECTOR_FUNCTION_H_
+#ifndef LBCPP_CORE_FUNCTION_CREATE_VECTOR_H_
+# define LBCPP_CORE_FUNCTION_CREATE_VECTOR_H_
 
 # include <lbcpp/Core/Vector.h>
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
 
 // generates a vector V(f(0,x); f(1,x); ... f(n-1,x)) from input n,x
-class GenerateVectorFunction : public Function
+class CreateVectorFunction : public Function
 {
 public:
-  GenerateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
+  CreateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
     : elementGeneratorFunction(elementGeneratorFunction) {}
 
   virtual size_t getMinimumNumRequiredInputs() const
@@ -64,11 +64,11 @@ public:
   }
 
 protected:
-  friend class GenerateVectorFunctionClass;
+  friend class CreateVectorFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_CONTAINER_GENERATE_VECTOR_FUNCTION_H_
+#endif // !LBCPP_CORE_FUNCTION_CREATE_VECTOR_H_

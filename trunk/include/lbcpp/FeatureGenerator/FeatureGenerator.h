@@ -9,7 +9,7 @@
 #ifndef LBCPP_OPERATOR_FEATURE_GENERATOR_H_
 # define LBCPP_OPERATOR_FEATURE_GENERATOR_H_
 
-# include "../Function/Function.h"
+# include "../Core/Function.h"
 # include "../Data/DoubleVector.h"
 
 namespace lbcpp

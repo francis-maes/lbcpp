@@ -9,7 +9,8 @@
 #ifndef LBCPP_LEARNING_ONLINE_LEARNER_H_
 # define LBCPP_LEARNING_ONLINE_LEARNER_H_
 
-# include <lbcpp/Function/Function.h>
+# include "../Core/Function.h"
+# include "../Function/StoppingCriterion.h"
 
 namespace lbcpp
 {

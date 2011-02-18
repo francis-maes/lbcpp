@@ -65,10 +65,13 @@ public:
       return new ProteinPerceptionComponent(proteins[0]);
     else if (tabName == T("Protein Frame"))
     {
-      ProteinFrameFactory factory;
+      FunctionPtr function = proteinResidueFeaturesVectorFunction();
+      function->initialize(context, (TypePtr)proteinClass);
+      Variable description = function->computeFunction(context, proteins[0]);
+/*      ProteinFrameFactory factory;
       FrameClassPtr frameClass = factory.createProteinFrameClass(context);
-      FramePtr proteinFrame = factory.createFrame(proteins[0]);
-      return userInterfaceManager().createVariableTreeView(context, proteinFrame);
+      FramePtr proteinFrame = factory.createFrame(proteins[0]);*/
+      return userInterfaceManager().createVariableTreeView(context, description);
     }
     else if (tabName == T("Protein 1D"))
     {

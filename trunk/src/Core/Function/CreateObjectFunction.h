@@ -6,10 +6,10 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_MISC_CREATE_OBJECT_H_
-# define LBCPP_FUNCTION_MISC_CREATE_OBJECT_H_
+#ifndef LBCPP_CORE_FUNCTION_CREATE_OBJECT_H_
+# define LBCPP_CORE_FUNCTION_CREATE_OBJECT_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
@@ -53,4 +53,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_MISC_CREATE_OBJECT_H_
+#endif // !LBCPP_CORE_FUNCTION_CREATE_OBJECT_H_

@@ -1,8 +1,9 @@
-1) robustesse
- * fix memory leak in explorer
- * aqtime on training of SS3
 
-2) framework pour l'inference des proteins
+2) SS3: container[DV]
+
+3) AQTime on SS3 training
+
+4) framework pour l'inference des proteins
  * ProteinResidueFeaturesFunction: Protein -> Vector[DoubleVector]
  * ProteinInferenceStep: Protein x Protein -> Protein
  * Trois fonctions cles: compose(functions, treatAdditionalInputsAsGlobals), map(function, treatAdditionalInputsAsGlobals), createAndSetVariables(type, matchVariablesByType)

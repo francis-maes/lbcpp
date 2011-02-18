@@ -2,6 +2,8 @@
 
 <library name="OnlineLearner" directory="Learning/OnlineLearner">
 
+  <class name="OnlineLearner" base="Object" abstract="yes"/>
+
   <class name="StoppingCriterionOnlineLearner" base="OnlineLearner">
     <constructor arguments="StoppingCriterionPtr stoppingCriterion"/>
     <variable type="StoppingCriterion" name="stoppingCriterion"/>

@@ -9,7 +9,7 @@
 #ifndef LBCPP_LEARNING_BATCH_LEARNER_H_
 # define LBCPP_LEARNING_BATCH_LEARNER_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {

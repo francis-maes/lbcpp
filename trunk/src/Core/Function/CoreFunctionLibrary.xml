@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="CoreFunction" directory="Core/Function">
+  <include file="lbcpp/Core/Function.h"/>
+
+  <!-- Function -->
+  <class name="SimpleFunction" base="Function" abstract="yes"/>
+  <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
+  <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
+
+  <class name="CompositeFunction" base="Function" abstract="yes"/>
+
+  <class name="ProxyFunction" base="Function" abstract="yes">
+    <variable type="Function" name="implementation"/>
+  </class>
+
+  <!-- Standard Functions -->
+  <class name="GetVariableFunction" base="Function">
+    <constructor arguments="const String&amp; variableName"/>
+    <constructor arguments="size_t variableIndex"/>
+    <variable type="PositiveInteger" name="variableIndex"/>
+    <variable type="String" name="variableName"/>
+  </class>
+
+  <class name="GetElementFunction" base="Function">
+    <constructor/>
+  </class>
+
+  <class name="CreateObjectFunction" base="Function">
+    <constructor arguments="ClassPtr objectClass"/>
+    <variable type="Class" name="objectClass"/>
+  </class>
+
+  <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
+    <constructor returnType="Function"/>
+  </class>
+
+  <!-- Generate Vector Function -->
+  <class name="CreateVectorFunction" base="Function">
+    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
+
+  <!-- Map Function -->
+  <class name="MapContainerFunction" base="Function">
+    <constructor arguments="const FunctionPtr&amp; function"/>
+    <variable type="Function" name="function"/>
+  </class>
+  
+</library>

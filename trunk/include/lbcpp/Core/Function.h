@@ -6,13 +6,12 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_FUNCTION_H_
-# define LBCPP_FUNCTION_FUNCTION_H_
+#ifndef LBCPP_CORE_FUNCTION_H_
+# define LBCPP_CORE_FUNCTION_H_
 
-# include "../Core/Variable.h"
-# include "../Core/Pair.h"
-# include "../Core/Vector.h"
-# include "predeclarations.h"
+# include "Variable.h"
+# include "Pair.h"
+# include "Vector.h"
 
 namespace lbcpp
 {
@@ -30,6 +29,8 @@ typedef FunctionCallback* FunctionCallbackPtr;
 
 class OnlineLearner;
 typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
+class Evaluator;
+typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 
 class Function : public Object
 {
@@ -213,6 +214,8 @@ extern FunctionPtr getVariableFunction(size_t variableIndex);
 extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
 extern FunctionPtr createObjectFunction(ClassPtr objectClass);
+extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction);
+extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 
 extern FunctionPtr signedScalarToProbabilityFunction();
 

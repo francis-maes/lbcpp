@@ -10,7 +10,7 @@
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
-#include <lbcpp/Function/Function.h>
+#include <lbcpp/Core/Function.h>
 #include <lbcpp/Inference/Inference.h>
 using namespace lbcpp;
 

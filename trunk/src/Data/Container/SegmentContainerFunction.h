@@ -9,7 +9,7 @@
 #ifndef LBCPP_DATA_CONTAINER_FUNCTION_SEGMENT_H_
 # define LBCPP_DATA_CONTAINER_FUNCTION_SEGMENT_H_
 
-# include <lbcpp/Function/Function.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Core/Vector.h>
 
 namespace lbcpp

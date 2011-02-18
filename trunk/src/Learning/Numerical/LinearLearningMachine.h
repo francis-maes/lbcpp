@@ -59,7 +59,7 @@ public:
     {return enumValueType;}
 
   virtual FunctionPtr createPostProcessing() const
-    {return applyOnContainerFunction(signedScalarToProbabilityFunction());}
+    {return mapContainerFunction(signedScalarToProbabilityFunction());}
 
   virtual FunctionPtr createLearnableFunction() const
     {return multiLinearLearnableFunction();}
