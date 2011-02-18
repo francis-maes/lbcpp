@@ -151,6 +151,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/GetElementFunction.h
   Core/Function/CreateObjectFunction.h
   Core/Function/CreateVectorFunction.h
+  Core/Function/LoadFromFileFunction.h
   Core/Function/MapContainerFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
   Core/Function/CoreFunctionLibrary.xml
@@ -318,7 +319,6 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/ComposeFunction.h
   Function/MiscFunctions/MultiplyFunction.h
-  Function/MiscFunctions/LoadFromFileFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/MiscFunctionsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsLibrary.cpp

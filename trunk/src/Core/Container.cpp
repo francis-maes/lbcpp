@@ -186,7 +186,7 @@ protected:
   String progressionUnit;
 
   virtual Variable run(ExecutionContext& context)
-    {target->setElement(index, function->computeFunction(context, source->getElement(index))); return Variable();}
+    {target->setElement(index, function->compute(context, source->getElement(index))); return Variable();}
 };
 
 ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode, const String& workUnitName) const
@@ -200,7 +200,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
     if (computeMode == sequentialApply)
     {
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, function->computeFunction(context, getElement(i)));
+        res->setElement(i, function->compute(context, getElement(i)));
     }
     else if (computeMode == parallelApply)
     {

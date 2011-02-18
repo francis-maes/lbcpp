@@ -35,7 +35,7 @@ public:
   virtual Variable next()
   {
     Variable v = stream->next();
-    return v.isNil() ? Variable() : function->computeFunction(context, v);
+    return v.isNil() ? Variable() : function->compute(context, v);
   }
 
   virtual ProgressionStatePtr getCurrentPosition() const

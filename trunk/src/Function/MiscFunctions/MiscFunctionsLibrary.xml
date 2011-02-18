@@ -16,16 +16,6 @@
   <class name="MultiplyDoubleFunction" base="Function">
     <constructor/>
   </class>
-  
-  <class name="LoadFromFileFunction" base="Function">
-    <constructor arguments="TypePtr expectedType"/>
-    <variable type="Type" name="expectedType"/>
-  </class>
-  
-  <class name="LoadFromFilePairFunction" base="Function">
-    <constructor arguments="TypePtr expectedType1, TypePtr expectedType2"/>
-    <variable type="Type" name="expectedType"/>
-  </class>
 
   <class name="SetFieldFunction" base="Function">
     <constructor arguments="size_t fieldIndex"/>

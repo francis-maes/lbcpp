@@ -182,7 +182,7 @@ public:
 
     SequentialInferenceStatePtr res = new SequentialInferenceState(input, supervision);
     InferencePtr learningPass = createLearningPass(context, learnerInput);
-    learningPass->setPushIntoStackFlag(true);
+    //learningPass->setPushIntoStackFlag(true);
     res->setSubInference(learningPass, learnerInput, Variable());
     updateInference(context, res);
     return res;

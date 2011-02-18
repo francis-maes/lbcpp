@@ -22,7 +22,7 @@ class StaticParallelInferenceLearner : public InferenceBatchLearner<ParallelInfe
 public:
   StaticParallelInferenceLearner()
   {
-    setPushIntoStackFlag(true);
+    //setPushIntoStackFlag(true);
     setPushChildrenIntoStackFlag(true);
   }
 

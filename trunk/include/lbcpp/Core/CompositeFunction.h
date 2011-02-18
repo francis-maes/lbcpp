@@ -22,9 +22,8 @@ class CompositeFunctionBuilder;
 class CompositeFunction : public Function
 {
 public:
-  CompositeFunction(FrameClassPtr frameClass = FrameClassPtr())
-    : frameClass(frameClass) {}
-  
+  CompositeFunction() : maxNumFunctionInputs(0) {}
+
   virtual void buildFunction(CompositeFunctionBuilder& builder) = 0;
 
   // Function
@@ -38,25 +37,75 @@ public:
     {return anyType;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  // FrameBasedFunction
-  const FrameClassPtr& getFrameClass() const
-    {return frameClass;}
+  /*
+  ** Sub Functions
+  */
+  size_t getNumSubFunctions() const
+    {return functions.size();}
 
-  void setFrameClass(FrameClassPtr frameClass)
-    {this->frameClass = frameClass;}
+  const FunctionPtr& getSubFunction(size_t index) const
+    {jassert(index < functions.size()); return functions[index];}
+
+  /*
+  ** Constants
+  */
+  size_t getNumConstants() const
+    {return constants.size();}
+
+  const Variable& getConstant(size_t index) const
+    {jassert(index < constants.size()); return constants[index];}
+
+  /*
+  ** Steps
+  */
+  enum StepType
+  {
+    inputStep,
+    constantStep,
+    functionStep
+  };
+  
+  size_t getNumSteps() const
+    {return steps.size();}
+
+  StepType getStepType(size_t index) const
+    {jassert(index < steps.size()); return steps[index].first;}
+
+  size_t getStepArgument(size_t index) const
+    {jassert(index < steps.size()); return steps[index].second;}
+
+  /*
+  ** State
+  */
+  const DynamicClassPtr& getStateClass() const
+    {return stateClass;}
+
+  ObjectPtr makeInitialState(const ObjectPtr& inputsObject) const;
+  ObjectPtr makeSubInputsObject(size_t stepNumber, const ObjectPtr& state) const;
+  void updateState(ExecutionContext& context, size_t stepNumber, ObjectPtr& state) const;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class CompositeFunctionClass;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  FrameClassPtr frameClass;
-  std::vector<FunctionPtr> subFunctions;
+protected:
+  friend class CompositeFunctionClass;
+  friend class CompositeFunctionBuilder;
+
+  DynamicClassPtr stateClass;
+  
+  std::vector<Variable> constants;
+  std::vector<FunctionPtr> functions;
+  std::vector<std::vector<size_t> > functionInputs;
+  size_t maxNumFunctionInputs;
+
+  std::vector< std::pair<StepType, size_t> > steps; // signature and argument index
 };
 
 typedef ReferenceCountedObjectPtr<CompositeFunction> CompositeFunctionPtr;
+extern ClassPtr compositeFunctionClass;
 
 /*
 ** CompositeFunctionBuilder
@@ -78,9 +127,9 @@ public:
   size_t invalidIndex() const
     {return (size_t)-1;}
 
-  size_t addInput(TypePtr type, const String& name = String::empty);
+  size_t addInput(TypePtr type, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
-  size_t addConstant(const Variable& value, const String& name = String::empty);
+  size_t addConstant(const Variable& value, const String& name = T("constant"), const String& shortName = T("C"));
 
   size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
@@ -95,13 +144,21 @@ public:
   ExecutionContext& getContext()
     {return context;}
 
+  bool hasFailed() const
+    {return failed;}
+
 private:
   ExecutionContext& context;
-  FrameClassPtr frameClass;
-  std::vector<size_t> currentSelection;
+  CompositeFunctionPtr function;
   std::vector<VariableSignaturePtr> inputVariables;
+  size_t numInputs;
+  bool failed;
 
-  size_t addInSelection(size_t index);
+  std::vector<size_t> currentSelection;
+
+  size_t addVariable(TypePtr type, const String& name, const String& shortName, CompositeFunction::StepType stepType, size_t stepArgument);
+  size_t returnError()
+    {failed = true; return invalidIndex();}
 };
 
 /*

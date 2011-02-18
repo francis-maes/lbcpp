@@ -92,9 +92,6 @@ void Function::setBatchLearner(const FunctionPtr& batchLearner)
 
 Variable Function::compute(ExecutionContext& context, const Variable* inputs) const
 {
-  if (pushIntoStack)
-    context.enterScope(getDescription(context, inputs));
-
   for (size_t i = 0; i < preCallbacks.size(); ++i)
     preCallbacks[i]->functionCalled(context, refCountedPointerFromThis(this), inputs);
 
@@ -102,9 +99,6 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs) co
 
   for (size_t i = 0; i < postCallbacks.size(); ++i)
     postCallbacks[i]->functionReturned(context, refCountedPointerFromThis(this), inputs, res);
-
-  if (pushIntoStack)
-    context.leaveScope(res);
   return res;
 }
 
@@ -311,7 +305,7 @@ TypePtr ProxyFunction::initializeFunction(ExecutionContext& context, const std::
 }
 
 Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable& input) const
-  {jassert(implementation); return implementation->computeFunction(context, input);}
+  {jassert(implementation); return implementation->compute(context, input);}
 
 Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {jassert(implementation); return implementation->computeFunction(context, inputs);}
+  {jassert(implementation); return implementation->compute(context, inputs);}

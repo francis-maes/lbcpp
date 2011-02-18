@@ -36,18 +36,11 @@ public:
 /*
 ** ProteinToInputOutputPairFunction
 */
-class ProteinToInputOutputPairFunction : public Function
+class ProteinToInputOutputPairFunction : public SimpleUnaryFunction
 {
 public:
-  ProteinToInputOutputPairFunction(bool keepTertiaryStructure)
-    : outputType(pairClass(proteinClass, proteinClass)), keepTertiaryStructure(keepTertiaryStructure) {}
-  ProteinToInputOutputPairFunction() {}
-
-  virtual TypePtr getInputType() const
-    {return proteinClass;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return outputType;}
+  ProteinToInputOutputPairFunction(bool keepTertiaryStructure = true)
+    : SimpleUnaryFunction(proteinClass, pairClass(proteinClass, proteinClass), T("IO")), keepTertiaryStructure(keepTertiaryStructure) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -72,18 +65,9 @@ public:
     return Variable::pair(inputProtein, protein, outputType);
   }
 
-  virtual bool loadFromXml(XmlImporter& importer)
-  {
-    if (!Function::loadFromXml(importer))
-      return false;
-    outputType = pairClass(proteinClass, proteinClass); // precompute output type
-    return true;
-  }
-
 protected:
   friend class ProteinToInputOutputPairFunctionClass;
 
-  TypePtr outputType;
   bool keepTertiaryStructure;
 };
 

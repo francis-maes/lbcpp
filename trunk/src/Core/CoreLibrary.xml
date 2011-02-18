@@ -185,7 +185,8 @@
   <!-- Function -->
   <class name="Function" abstract="yes"/>
   <class name="CompositeFunction" base="Function" abstract="yes">
-    <variable type="Class" name="frameClass"/>
+    <variable type="VariableVector" name="constants"/>
+    <variable type="ObjectVector[Function]" name="functions"/>
   </class>
 
     <!-- Frame -->

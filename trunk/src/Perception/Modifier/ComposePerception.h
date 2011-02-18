@@ -47,7 +47,7 @@ public:
   {
     if (context.checkInheritance(function->getOutputType(input.getType()), perceptionInputType))
     {
-      Variable intermediate = function->computeFunction(context, input);
+      Variable intermediate = function->compute(context, input);
       perception->computePerception(context, intermediate, callback);
     }
   }

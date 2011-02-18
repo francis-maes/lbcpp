@@ -43,7 +43,7 @@ public:
   AutoTuneInferenceLearner(const OptimizerPtr& optimizer, const OptimizerInputPtr& optimizerInput)
     : optimizer(optimizer), optimizerInput(optimizerInput)
   {
-    setPushIntoStackFlag(true);
+    //setPushIntoStackFlag(true);
   }
   AutoTuneInferenceLearner() {}
 
@@ -60,7 +60,7 @@ public:
     OptimizerInputPtr optimizerInput(new OptimizerInput(objective, this->optimizerInput->getAprioriDistribution(), this->optimizerInput->getInitialGuess()));
     
     // optimize the parameters
-    Variable optimizedParameters = optimizer->computeFunction(context, optimizerInput);
+    Variable optimizedParameters = optimizer->compute(context, optimizerInput);
     if (optimizedParameters.isNil())
       return Variable();
     

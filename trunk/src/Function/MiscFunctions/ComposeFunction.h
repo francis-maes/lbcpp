@@ -17,7 +17,7 @@ namespace lbcpp
 class ComposeFunction : public Function
 {
 public:
-  ComposeFunction(const FunctionPtr& f, const FunctionPtr& g) : f(f), g(g) {}
+  ComposeFunction(const FunctionPtr& f, const FunctionPtr& g) : f(f), g(g) {numInputs = 1;}
   ComposeFunction() {}
 
   virtual String toString() const
@@ -34,7 +34,7 @@ public:
 
   // return g(f(x))
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return g->computeFunction(context, f->computeFunction(context, input));}
+    {return g->compute(context, f->compute(context, input));}
 
 protected:
   friend class ComposeFunctionClass;

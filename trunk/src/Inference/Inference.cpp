@@ -111,7 +111,7 @@ Variable Inference::run(ExecutionContext& context, const Variable& input, const 
 {
   jassert(!input.isNil());
 
-  if (workUnitName.isNotEmpty() || hasPushIntoStackFlag())
+  if (workUnitName.isNotEmpty())// || hasPushIntoStackFlag())
   {
     InferencePtr pthis = refCountedPointerFromThis(this);
     String name = workUnitName;

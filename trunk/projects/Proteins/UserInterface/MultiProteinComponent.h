@@ -67,7 +67,7 @@ public:
     {
       FunctionPtr function = proteinResidueFeaturesVectorFunction();
       function->initialize(context, (TypePtr)proteinClass);
-      Variable description = function->computeFunction(context, proteins[0]);
+      Variable description = function->compute(context, proteins[0]);
 /*      ProteinFrameFactory factory;
       FrameClassPtr frameClass = factory.createProteinFrameClass(context);
       FramePtr proteinFrame = factory.createFrame(proteins[0]);*/

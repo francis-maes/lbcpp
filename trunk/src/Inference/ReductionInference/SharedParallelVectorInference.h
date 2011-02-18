@@ -43,7 +43,7 @@ public:
 
   virtual ParallelInferenceStatePtr prepareInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
-    size_t n = (size_t)sizeFunction->computeFunction(context, input).getInteger();
+    size_t n = (size_t)sizeFunction->compute(context, input).getInteger();
     
     VectorPtr supervisionVector = supervision.exists() ? supervision.getObjectAndCast<Vector>(context) : VectorPtr();
 

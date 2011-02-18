@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
-# define LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
+#ifndef LBCPP_CORE_FUNCTION_LOAD_FROM_FILE_H_
+# define LBCPP_CORE_FUNCTION_LOAD_FROM_FILE_H_
 
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Core/Function.h>
@@ -16,17 +16,11 @@ namespace lbcpp
 {
 
 // File -> Variable
-class LoadFromFileFunction : public Function
+class LoadFromFileFunction : public SimpleUnaryFunction
 {
 public:
   LoadFromFileFunction(TypePtr expectedType = objectClass)
-    : expectedType(expectedType) {}
-
-  virtual TypePtr getInputType() const
-    {return fileType;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return expectedType;}
+    : SimpleUnaryFunction(fileType, expectedType, T("Loaded")), expectedType(expectedType) {}
 
   virtual String toString() const
     {return T("Load ") + expectedType->getName() + T(" From File");}
@@ -49,39 +43,31 @@ protected:
 };
 
 // Pair<File,File> -> Pair<Variable,Variable>
-class LoadFromFilePairFunction : public Function
+class LoadFromFilePairFunction : public SimpleBinaryFunction
 {
 public:
   LoadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass)
-    : expectedType(pairClass(expectedType1, expectedType2)) {}
+    : SimpleBinaryFunction(fileType, fileType, pairClass(expectedType1, expectedType2), T("Loaded")), expectedType1(expectedType1), expectedType2(expectedType2) {}
 
-  virtual TypePtr getInputType() const
-    {return pairClass(fileType, fileType);}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return expectedType;}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const PairPtr& pair = input.getObjectAndCast<Pair>(context);
-    File file1 = pair->getFirst().getFile();
-    File file2 = pair->getSecond().getFile();
+    File file1 = inputs[0].getFile();
+    File file2 = inputs[1].getFile();
 
     Variable res1 = Variable::createFromFile(context, file1);
     Variable res2 = Variable::createFromFile(context, file2);
     if (!res1.exists() || !res2.exists())
-      return Variable::missingValue(expectedType);
-    Variable res = Variable::pair(res1, res2);
-    context.checkInheritance(res, expectedType);
-    return res;
+      return Variable::missingValue(getOutputType());
+    return new Pair(getOutputType(), res1, res2);
   }
 
 protected:
   friend class LoadFromFilePairFunctionClass;
 
-  TypePtr expectedType;
+  TypePtr expectedType1;
+  TypePtr expectedType2;
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_DATA_FUNCTION_LOAD_FROM_FILE_H_
+#endif // !LBCPP_CORE_FUNCTION_LOAD_FROM_FILE_H_

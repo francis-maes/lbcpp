@@ -58,7 +58,7 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       subInputs[0] = Variable(i);
-      res->setElement(i, elementGeneratorFunction->computeFunction(context, &subInputs[0]));
+      res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
     }
     return res;
   }
