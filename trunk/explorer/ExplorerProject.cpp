@@ -103,7 +103,7 @@ ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, con
     context.errorCallback(T("Could not create directory ") + rootDirectory.getFullPathName());
     return ExplorerProjectPtr();
   }
-  res->rootDirectory = res->recentDirectory = rootDirectory;
+  res->setRootDirectory(res->recentDirectory = rootDirectory);
   res->save(context); // create initial "project.xml" file
   return res;
 }
@@ -132,11 +132,12 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
   if (!res)
   {
     res = new ExplorerProject();
-    res->rootDirectory = res->recentDirectory = rootDirectory;
+    res->setRootDirectory(res->recentDirectory = rootDirectory);
     res->save(context); // create initial "project.xml" file
   }
   else
-    res->rootDirectory = rootDirectory;
+    res->setRootDirectory(rootDirectory);
+
   return res;
 }
 

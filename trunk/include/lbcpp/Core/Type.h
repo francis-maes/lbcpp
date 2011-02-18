@@ -64,6 +64,8 @@ public:
   void setDescription(const String& description)
     {this->description = description;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class VariableSignatureClass;
 

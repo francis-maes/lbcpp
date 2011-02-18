@@ -48,6 +48,8 @@ public:
   virtual juce::Component* createComponent() const;
   juce::Component* createComponent(ProcessConsoleSettingsPtr settings) const;
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   File executableFile;
   String arguments;

@@ -153,8 +153,8 @@
     </class>
     
     <!-- Protein Functions -->
-    <class name="ProteinLengthFunction" base="Function">
-      <constructor/>
+    <class name="ProteinLengthFunction" base="SimpleUnaryFunction">
+      <constructor returnType="Function"/>
     </class>
     
     <class name="ProteinToInputOutputPairFunction" base="Function">

@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "Utilities/FileType.h"
+#include "Components/VariableBrowser.h"
 #include "ExplorerConfiguration.h"
 #include "ExplorerProject.h"
 using namespace lbcpp;
@@ -60,9 +61,10 @@ public:
   ExplorerContentTabs(DocumentWindow* mainWindow)
     : TabbedComponent(TabbedButtonBar::TabsAtTop), mainWindow(mainWindow) {}
 
-  void addVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  void addVariable(ExecutionContext& context, const Variable& variable, const String& name, Component* component = NULL)
   {
-    Component* component = createComponentForVariable(context, variable, name, true);
+    if (!component)
+      component = createComponentForVariable(context, variable, name, true);
     addTab(name, Colours::lightblue, component, true);
     variables.push_back(variable);
     setCurrentTabIndex(getNumTabs() - 1);
@@ -129,7 +131,10 @@ public:
     {setMenuBar(NULL);}
     
   virtual void closeButtonPressed()
-    {JUCEApplication::quit();}
+  {
+    closeCurrentProject();
+    JUCEApplication::quit();
+  }
 
   MenuBarModel* getAdditionalMenus() const
     {return dynamic_cast<MenuBarModel* >(contentTabs->getCurrentContentComponent());}
@@ -299,14 +304,12 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          ExecutionContextPtr workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
-          workUnitContext->setProjectDirectory(currentProject->getRootDirectory());
-
-          if (currentProject->startWorkUnit(*workUnitContext, workUnit))
+          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
           {
-            ExecutionTracePtr trace(new ExecutionTrace(workUnitContext));
-            contentTabs->addVariable(context, trace, workUnit->getClassName());
-            workUnitContext->pushWorkUnit(workUnit);
+            ExecutionTracePtr trace(new ExecutionTrace(currentProject->workUnitContext->toString()));
+            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
+            contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
+            currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
         }

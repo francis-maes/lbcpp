@@ -166,6 +166,8 @@ public:
     virtual bool exists() const = 0;
     virtual Variable getCurrentVariable(size_t& index) const = 0;
     virtual void next() = 0;
+
+    lbcpp_UseDebuggingNewOperator
   };
 
   // optional specialized variable iterator
