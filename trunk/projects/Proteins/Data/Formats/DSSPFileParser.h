@@ -43,7 +43,7 @@ public:
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
         dsspSecondaryStructureSequence = protein->createEmptyDSSPSecondaryStructure();
-        solventAccessibilitySequence = protein->createEmptyProbabilitySequence();
+        solventAccessibilitySequence = protein->createEmptyDoubleSequence();
         ++serialNumber;
       }
       return true;
@@ -100,7 +100,9 @@ public:
       context.errorCallback(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
       return false;
     }
-    dsspSecondaryStructureSequence->setElement((size_t)residueNumber, Variable(secondaryStructureIndex, dsspEnum));
+    SparseDoubleVectorPtr value = new SparseDoubleVector(dsspSecondaryStructureSequence->getElementsType(), probabilityType);
+    value->appendValue(secondaryStructureIndex, 1.0);
+    dsspSecondaryStructureSequence->setElement((size_t)residueNumber, value);
 
     /*
     ** Solvent accesibility
@@ -124,10 +126,9 @@ public:
     double normalizedSolventAccessibility = (double)absoluteSolventAccesiblity / maximumSolventAccissibilityValue[aminoAcidType];
     // jassert(normalizedSolventAccessibility <= 1.0); FIXME: IT FAILS !
     if (normalizedSolventAccessibility > 1.0)
-    {
       normalizedSolventAccessibility = 1.0;
-    }
-    solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, probabilityType));
+
+    solventAccessibilitySequence->setElement((size_t)residueNumber, Variable(normalizedSolventAccessibility, doubleType));
     return true;
   }
 
