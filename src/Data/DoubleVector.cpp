@@ -10,6 +10,7 @@
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include "../Core/Object/SparseVectorHelper.h"
 #include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
+
 using namespace lbcpp;
 
 /*
@@ -118,6 +119,36 @@ SparseDoubleVector::SparseDoubleVector(ClassPtr thisClass)
 
 SparseDoubleVector::SparseDoubleVector()
   : lastIndex(-1) {}
+
+void SparseDoubleVector::saveToXml(XmlExporter& exporter) const
+{
+  Object::saveToXml(exporter);
+  size_t n = values.size();
+  String res;
+  for (size_t i = 0; i < n; ++i)
+    if (values[i].second)
+      res += String((int)values[i].first) + T(":") + String(values[i].second) + T(" ");
+  exporter.addTextElement(res.trimEnd());
+}
+
+bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+  StringArray tokens;
+  tokens.addTokens(importer.getAllSubText(), true);
+  TypePtr elementType = getElementsType();
+  for (size_t i = 0; i < (size_t)tokens.size(); ++i)
+  {
+    int e = tokens[i].indexOfChar(T(':'));
+    Variable index = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[i].substring(0, e));
+    Variable value = Variable::createFromString(importer.getContext(), elementType, tokens[i].substring(e + 1));
+    if (!index.exists() || !value.exists())
+      return false;
+    setElement(index.getInteger(), value);
+  }
+  return true;
+}
 
 // double vector
 size_t SparseDoubleVector::l0norm() const
@@ -239,6 +270,35 @@ DenseDoubleVector::DenseDoubleVector()
 
 DenseDoubleVector::~DenseDoubleVector()
   {if (values && ownValues) delete values;}
+
+void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
+{
+  Object::saveToXml(exporter);
+  size_t n = values->size();
+  String res;
+  for (size_t i = 0; i < n; ++i)
+    res += String((*values)[i]) + T(" ");
+  exporter.addTextElement(res.trimEnd());
+}
+
+bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
+{
+  if (!Object::loadFromXml(importer))
+    return false;
+  StringArray tokens;
+  tokens.addTokens(importer.getAllSubText(), true);
+  size_t n = tokens.size();
+  TypePtr elementType = getElementsType();
+  ensureSize(n);
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable value = Variable::createFromString(importer.getContext(), elementType, tokens[i]);
+    if (!value.exists())
+      return false;
+    getValueReference(i) = value.getDouble();
+  }
+  return true;
+}
 
 void DenseDoubleVector::ensureSize(size_t minimumSize)
 {
