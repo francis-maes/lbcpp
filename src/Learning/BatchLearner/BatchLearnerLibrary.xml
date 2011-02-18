@@ -3,6 +3,10 @@
 <library name="BatchLearner" directory="Learning/BatchLearner">
 
   <class name="BatchLearner" base="Function" abstract="yes"/>
+  
+  <class name="BatchLearnerDecorator" base="BatchLearner" abstract="yes">
+    <variable type="BatchLeaner" name="decorated"/>
+  </class>
 
   <class name="ProxyFunctionBatchLearner" base="BatchLearner">
     <constructor/>
@@ -17,6 +21,10 @@
     <constructor arguments="size_t maxIterations, bool randomizeExamples"/>
     <variable type="PositiveInteger" name="maxIterations"/>
     <variable type="Boolean" name="randomizeExamples"/>
+  </class>
+  
+  <class name="SupervisedExamplesBatchLearner" base="BatchLearnerDecorator">
+    <constructor arguments="BatchLearnerPtr decorated"/>
   </class>
   
 </library>

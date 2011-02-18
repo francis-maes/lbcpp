@@ -56,6 +56,8 @@ protected:
   size_t minimumSizeForSplitting;
 };
 
+extern ClassPtr rTreeFunctionClass;
+
 class ClassificationRTreeFunction : public RTreeFunction
 {
 public:

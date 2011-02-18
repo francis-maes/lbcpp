@@ -288,18 +288,13 @@ void exportData(ExecutionContext& context)
 bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   ScopedLock _(learnerLock);
-  const RTreeFunctionPtr& rTreeFunction = function.dynamicCast<RTreeFunction>();
-  jassert(rTreeFunction);
+  const RTreeFunctionPtr& rTreeFunction = function.staticCast<RTreeFunction>();
+
+  if (!checkHasAtLeastOneExemples(trainingData))
+    return false;
 
   size_t n = trainingData.size();
-  if (n == 0)
-  {
-    RTreePtr trees = new RTree();
-    trees->saveTreesState();
-    rTreeFunction->setTrees(trees);
-    return false;
-  }
-
+  // FIXME: ...
   size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
   // Filtre les données sans supervision
   std::vector<size_t> examples;
