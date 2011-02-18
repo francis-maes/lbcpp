@@ -25,12 +25,12 @@ public:
     {}
   
   virtual TypePtr getElementsType() const
-    {return objectVectorClass(doubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType));}
+    {return Protein::createEmptyPositionSpecificScoringMatrix(0)->getClass();}
 
   virtual void parseBegin()
   {
     currentPosition = -3;
-    pssm = objectVector(doubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), primaryStructure->getNumElements());
+    pssm = Protein::createEmptyPositionSpecificScoringMatrix(primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(const String& line)

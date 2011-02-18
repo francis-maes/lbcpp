@@ -263,7 +263,7 @@ DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStr
   }
 
   size_t n = tertiaryStructure->getNumResidues();
-  DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, n);
+  DenseDoubleVectorPtr res = createEmptyProbabilitySequence(n);
   for (size_t i = 0; i < n; ++i)
     res->getValueReference(i) = tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0;
   
@@ -306,7 +306,7 @@ ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(Contai
 DoubleVectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold)
 {
   size_t n = solventAccessibility->getNumElements();
-  DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, n);
+  DenseDoubleVectorPtr res = createEmptyProbabilitySequence(n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable sa = solventAccessibility->getElement(i);
@@ -477,48 +477,20 @@ ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(Cartesian
 /*
 ** Create Empty Targets
 */
-ContainerPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-  {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), getLength());}
+ContainerPtr Protein::createEmptyPositionSpecificScoringMatrix(size_t length)
+  {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), length);}
 
-ContainerPtr Protein::createEmptySecondaryStructure() const
-  {return objectVector(denseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), getLength());}
+ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length)
+  {return objectVector(denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType), length);}
 
-ContainerPtr Protein::createEmptyDSSPSecondaryStructure() const
-  {return objectVector(denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType), getLength());}
+DoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length);}
 
-DoubleVectorPtr Protein::createEmptyProbabilitySequence() const
-  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, getLength());}
-
-DoubleVectorPtr Protein::createEmptyDoubleSequence() const
-  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, getLength());}
+DoubleVectorPtr Protein::createEmptyDoubleSequence(size_t length)
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, length);}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap() const
   {return new SymmetricMatrix(probabilityType, getLength());}
 
 SymmetricMatrixPtr Protein::createEmptyDistanceMap() const
   {return new SymmetricMatrix(angstromDistanceType, getLength());}
-
-Variable Protein::createEmptyTarget(size_t index) const
-{
-  size_t n = getLength();
-
-  // skip base class variables
-  size_t baseClassVariables = nameableObjectClass->getNumMemberVariables();
-  jassert(index >= baseClassVariables)
-  index -= baseClassVariables;
-
-  switch (index)
-  {
-  case 1: return createEmptyPositionSpecificScoringMatrix();
-  case 2: return createEmptySecondaryStructure();
-  case 3: return createEmptyDSSPSecondaryStructure();
-  case 4: return vector(structuralAlphabetElementEnumeration, n);
-  case 5: return createEmptyProbabilitySequence();
-  case 6: return createEmptyProbabilitySequence();
-  case 7: return createEmptyProbabilitySequence();
-  case 8: case 9: return createEmptyContactMap();
-  case 10: case 11: return createEmptyDistanceMap();
-  default:
-    jassert(false); return Variable();
-  }
-}
