@@ -86,18 +86,11 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameBasedFunction : public CompositeFunction
+class FrameBasedFunction : public Function
 {
 public:
   FrameBasedFunction(FrameClassPtr frameClass = FrameClassPtr())
     : frameClass(frameClass) {}
-
-  // CompositeFunction
-  virtual size_t getNumSubFunctions() const
-    {return subFunctions.size();}
-
-  virtual const FunctionPtr& getSubFunction(size_t index) const
-    {jassert(index < subFunctions.size()); return subFunctions[index];}
 
   // Function
   virtual size_t getMinimumNumRequiredInputs() const
@@ -115,6 +108,9 @@ public:
   // FrameBasedFunction
   const FrameClassPtr& getFrameClass() const
     {return frameClass;}
+
+  void setFrameClass(FrameClassPtr frameClass)
+    {this->frameClass = frameClass;}
 
   lbcpp_UseDebuggingNewOperator
 

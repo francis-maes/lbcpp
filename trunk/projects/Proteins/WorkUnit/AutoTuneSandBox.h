@@ -103,7 +103,7 @@ public:
     context.leaveScope(T("ok"));
 
     context.enterScope(T("Computing features"));
-    ProteinFrameFactory factory;
+/*    ProteinFrameFactory factory;
     FrameClassPtr proteinFrameClass = factory.createProteinFrameClass(context);
     std::vector<FramePtr> proteinFrames(proteins->getNumElements());
     for (size_t i = 0; i < proteinFrames.size(); ++i)
@@ -111,7 +111,8 @@ public:
       ProteinPtr protein = proteins->getElement(i).getObjectAndCast<Protein>();
       proteinFrames[i] = factory.createFrame(protein);
       proteinFrames[i]->ensureAllVariablesAreComputed();
-    }
+    }*/
+    jassert(false);
     context.leaveScope(T("ok"));
 
     context.enterScope(T("Waiting"));

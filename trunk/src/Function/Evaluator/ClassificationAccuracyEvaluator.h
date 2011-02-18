@@ -62,34 +62,16 @@ protected:
     if (value.isEnumeration())
       return value.getInteger();
 
-    if (value.isObject())
+    DenseDoubleVectorPtr scores = value.dynamicCast<DenseDoubleVector>();
+    if (scores)
     {
-      DenseDoubleVectorPtr scores = value.dynamicCast<DenseDoubleVector>();
-      if (scores)
-      {
-        const std::vector<double>& scoreValues = scores->getValues();
-        double bestScore = -DBL_MAX;
-        int bestIndex = -1;
-        for (size_t i = 0; i < scoreValues.size(); ++i)
-          if (scoreValues[i] > bestScore)
-            bestScore = scoreValues[i], bestIndex = (int)i;
-        return bestIndex;
-      }
-
-      EnumerationDistributionPtr distribution = value.dynamicCast<EnumerationDistribution>();
-      if (distribution)
-      {
-        size_t n = distribution->getEnumeration()->getNumElements();
-        double bestProb = 0.0;
-        int bestIndex = -1;
-        for (size_t i = 0; i < n; ++i)
-        {
-          double prob = distribution->getProbability(i);
-          if (prob > bestProb)
-            bestProb = prob, bestIndex = (int)i;
-        }
-        return bestIndex;
-      }    
+      const std::vector<double>& scoreValues = scores->getValues();
+      double bestScore = -DBL_MAX;
+      int bestIndex = -1;
+      for (size_t i = 0; i < scoreValues.size(); ++i)
+        if (scoreValues[i] > bestScore)
+          bestScore = scoreValues[i], bestIndex = (int)i;
+      return bestIndex;
     }
 
     jassert(false);

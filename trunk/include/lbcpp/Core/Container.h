@@ -189,7 +189,7 @@ public:
   ContainerPtr invRange(size_t begin, size_t end) const;
 };
 
-extern ClassPtr containerClass(TypePtr elementsType);
+extern ClassPtr containerClass(TypePtr elementsType = anyType);
 
 extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 extern FunctionPtr accumulateContainerFunction();

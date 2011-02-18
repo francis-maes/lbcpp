@@ -52,18 +52,36 @@ public:
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
     int position = inputs[1].getInteger();
-    
     int startPosition = position - (int)(windowSize / 2);
-    
     int n = (int)container->getNumElements();
-    for (size_t i = 0; i < windowSize; ++i)
+
+    ObjectVectorPtr objectVector = container.dynamicCast<ObjectVector>();
+    if (objectVector)
     {
-      int position = startPosition + (int)i;
-      if (position >= 0 && position < n)
+      // fast version
+      const std::vector<DoubleVectorPtr>& doubleVectors = objectVector->getObjectsAndCast<DoubleVector>();
+      for (size_t i = 0; i < windowSize; ++i)
       {
-        DoubleVectorPtr variable = container->getElement(position).getObjectAndCast<DoubleVector>();
-        if (variable)
-          callback.sense(i * numFeaturesPerPosition, variable, 1.0);
+        int position = startPosition + (int)i;
+        if (position >= 0 && position < n)
+        {
+          if (doubleVectors[position])
+            callback.sense(i * numFeaturesPerPosition, doubleVectors[position], 1.0);
+        }
+      }
+    }
+    else
+    {
+      // generic version
+      for (size_t i = 0; i < windowSize; ++i)
+      {
+        int position = startPosition + (int)i;
+        if (position >= 0 && position < n)
+        {
+          DoubleVectorPtr variable = container->getElement(position).getObjectAndCast<DoubleVector>();
+          if (variable)
+            callback.sense(i * numFeaturesPerPosition, variable, 1.0);
+        }
       }
     }
   }

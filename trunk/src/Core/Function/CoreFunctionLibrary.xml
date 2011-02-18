@@ -8,8 +8,6 @@
   <class name="SimpleUnaryFunction" base="SimpleFunction" abstract="yes"/>
   <class name="SimpleBinaryFunction" base="SimpleFunction" abstract="yes"/>
 
-  <class name="CompositeFunction" base="Function" abstract="yes"/>
-
   <class name="ProxyFunction" base="Function" abstract="yes">
     <variable type="Function" name="implementation"/>
   </class>

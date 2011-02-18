@@ -39,8 +39,6 @@ public:
                                String((int)testingProteins->getNumElements()) + T(" testing proteins"));
     
     
-    proteinFrameClass = factory.createProteinFrameClass(context);
-
     VectorPtr trainingExamples = makeSecondaryStructureExamples(context, trainingProteins);
     VectorPtr testingExamples = makeSecondaryStructureExamples(context, testingProteins);
     context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
@@ -67,12 +65,11 @@ public:
 
   VectorPtr makeSecondaryStructureExamples(ExecutionContext& context, const ContainerPtr& proteins) const
   {
-    FunctionPtr function = proteinResidueFeaturesVectorFunction();
-    if (!function->initialize(context, (TypePtr)proteinClass))
+    FunctionPtr computeResidueFeaturesFunction = proteinResidueFeaturesVectorFunction();
+    if (!computeResidueFeaturesFunction->initialize(context, (TypePtr)proteinClass))
       return VectorPtr();
 
-
-    ClassPtr featuresClass = Container::getTemplateParameter(proteinFrameClass->getMemberVariableType(proteinFrameClass->getNumMemberVariables() - 1));
+    ClassPtr featuresClass = Container::getTemplateParameter(computeResidueFeaturesFunction->getOutputType());
     jassert(featuresClass);
     TypePtr examplesType = pairClass(featuresClass, secondaryStructureElementEnumeration);
     VectorPtr res = vector(examplesType);
@@ -84,7 +81,7 @@ public:
       const ProteinPtr& inputProtein = proteinPair->getFirst().getObjectAndCast<Protein>();
       const ProteinPtr& supervisionProtein = proteinPair->getSecond().getObjectAndCast<Protein>();
       jassert(inputProtein && supervisionProtein);
-      VectorPtr residueFeatures = function->computeFunction(context, inputProtein).getObjectAndCast<Vector>();
+      VectorPtr residueFeatures = computeResidueFeaturesFunction->computeFunction(context, inputProtein).getObjectAndCast<Vector>();
       makeSecondaryStructureExamples(residueFeatures, supervisionProtein, res);
     }
     return res;    
@@ -114,9 +111,6 @@ protected:
   File supervisionDirectory;
   size_t maxProteins;
   size_t numFolds;
-
-  ProteinFrameFactory factory;
-  FrameClassPtr proteinFrameClass;
 };
 
 }; /* namespace lbcpp */
