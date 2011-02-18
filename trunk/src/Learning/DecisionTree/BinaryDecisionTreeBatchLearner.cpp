@@ -6,73 +6,17 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Function/Predicate.h>
-#include <lbcpp/Distribution/Distribution.h>
 #include <lbcpp/Core/Vector.h>
 #include "BinaryDecisionTreeBatchLearner.h"
 
 using namespace lbcpp;
-#if 0
+
 /*
-** ExtraTreeInferenceLearner
+** BinaryDecisionTreeFunction
 */
-InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::createBatchLearnerSubInputModel(ExecutionContext& context,
-                                                                                         const InferencePtr& targetInference,
-                                                                                         const InferenceExampleVectorPtr& trainingExamples,
-                                                                                         const InferenceExampleVectorPtr& validationExamples) const
-{
-  size_t numTrainingExamples = trainingExamples->getNumElements();
-  if (!numTrainingExamples)
-    return InferenceBatchLearnerInputPtr();
-
-  const std::pair<Variable, Variable>& firstTrainingExample = trainingExamples->get(0);
-  TypePtr inputType = firstTrainingExample.first.getType();
-  TypePtr outputType = firstTrainingExample.second.getType();
-  
-  // fill decision tree examples vector
-  DecisionTreeSharedExampleVectorPtr sharedExamples = new DecisionTreeSharedExampleVector();
-  std::vector< std::vector<Variable> >& attributes = sharedExamples->attributes;
-  std::vector<Variable>& labels = sharedExamples->labels;
-  std::vector<size_t>& indices = sharedExamples->indices;
-  attributes.reserve(numTrainingExamples);
-  labels.reserve(numTrainingExamples);
-  indices.reserve(numTrainingExamples);
-
-  size_t numAttributes = inputType->getNumMemberVariables();
-  for (size_t i = 0; i < numTrainingExamples; ++i)
-  {
-    const std::pair<Variable, Variable>& example = trainingExamples->get(i);
-    if (!example.second.exists())
-      continue; // skip examples that do not have supervision
-    
-    ObjectPtr object = example.first.getObject();
-    std::vector<Variable> attr(numAttributes);
-    jassert(numAttributes == object->getNumVariables());
-    for (size_t j = 0; j < numAttributes; ++j)
-      attr[j] = object->getVariable(j);
-    
-    indices.push_back(labels.size());
-    attributes.push_back(attr);
-    labels.push_back(example.second);
-  }
-
-  return new ExtraTreeBatchLearnerInput(targetInference, sharedExamples, inputType, outputType);
-}
-
-InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::duplicateBatchLearnerSubInput(ExecutionContext& context,
-                                                                                       const InferenceBatchLearnerInputPtr& learnerInputModel,
-                                                                                       const InferencePtr& targetInference, 
-                                                                                       size_t subInferenceIndex) const
-{
-  ExtraTreeBatchLearnerInputPtr learnerInput = learnerInputModel.dynamicCast<ExtraTreeBatchLearnerInput>();
-  jassert(learnerInput);
-  ExtraTreeBatchLearnerInputPtr res = learnerInput->cloneAndCast<ExtraTreeBatchLearnerInput>(context);
-  res->setTargetInference(targetInference);
-  res->setRandomGeneratorSeed(subInferenceIndex);
-  return res;
-}
-#endif
+BinaryDecisionTreeFunction::BinaryDecisionTreeFunction()
+  {setBatchLearner(filterUnsupervisedExamplesBatchLearner(new BinaryDecisionTreeBatchLearner(10, 5)));}
 
 /*
 ** BinaryDecisionTreeBatchLearner
@@ -80,30 +24,28 @@ InferenceBatchLearnerInputPtr ExtraTreeInferenceLearner::duplicateBatchLearnerSu
 bool BinaryDecisionTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
 {
   const BinaryDecisionTreeFunctionPtr& treeFunction = function.dynamicCast<BinaryDecisionTreeFunction>();
-  jassert(treeFunction);
-  
-  size_t n = trainingData.size();
-  if (n == 0)
+
+  if (!checkHasAtLeastOneExemples(trainingData))
   {
     context.errorCallback(T("No training examples"));
     return false;
   }
 
-  size_t supervisionIndex = trainingData[0]->getNumVariables() - 1;
+  size_t n = trainingData.size();
+  TypePtr inputType = function->getInputsClass()->getMemberVariable(0)->getType();
+  size_t numAttributes = inputType->getNumMemberVariables();
   std::vector< std::vector<Variable> > attributes;
   std::vector<Variable> labels;
   attributes.reserve(n);
   labels.reserve(n);
   for (size_t i = 0; i < n; ++i)
-    if (trainingData[i]->getVariable(supervisionIndex).exists())
-    {
-      std::vector<Variable> example(supervisionIndex, Variable());
-      for (size_t j = 0; j < supervisionIndex; ++j)
-        example[j] = trainingData[i]->getVariable(j);
-      attributes.push_back(example);
-      labels.push_back(trainingData[i]->getVariable(supervisionIndex));
-    }
-  n = attributes.size();
+  {
+    std::vector<Variable> example(numAttributes, Variable());
+    for (size_t j = 0; j < numAttributes; ++j)
+      example[j] = trainingData[i]->getVariable(0).getObject()->getVariable(j);
+    attributes.push_back(example);
+    labels.push_back(trainingData[i]->getVariable(1));
+  }
   
   std::vector<size_t> indices(n, 0);
   for (size_t i = 1; i < n; ++i)
@@ -112,7 +54,7 @@ bool BinaryDecisionTreeBatchLearner::train(ExecutionContext& context, const Func
   DecisionTreeExampleVector examples(attributes, labels, indices);
   const_cast<BinaryDecisionTreeBatchLearner* >(this)->random = new RandomGenerator(/* FIXME: determistic seed */);
 
-  BinaryDecisionTreePtr tree = sampleTree(context, function->getInputsClass(), function->getOutputType(), examples);
+  BinaryDecisionTreePtr tree = sampleTree(context, inputType, function->getOutputType(), examples);
   jassert(tree);
 
   context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables()); // FIXME getInputType = anyType (@see BinaryDecisionTreeInference)
@@ -142,25 +84,50 @@ bool BinaryDecisionTreeBatchLearner::shouldCreateLeaf(ExecutionContext& context,
   
   if (n == 1)
   {
-    leafValue = examples.getLabel(0);
+    if (outputType->inheritsFrom(enumValueType))
+    {
+      SparseDoubleVectorPtr res = new SparseDoubleVector(outputType, doubleType);
+      res->appendValue(examples.getLabel(0).getInteger(), 1.0);
+      leafValue = res;
+    }
+    else if (outputType->inheritsFrom(booleanType))
+      leafValue = Variable(examples.getLabel(0).getDouble(), probabilityType);
+    else if (outputType->inheritsFrom(doubleType))
+      leafValue = Variable(examples.getLabel(0).getDouble(), doubleType);
+    else
+    {
+      context.errorCallback(T("BinaryDecisionTreeBatchLearner::shouldCreateLeaf"), T("Output type not implemented: ") + outputType->toString().quoted());
+      return false;
+    }
     return true;
   }
-  // FIXME ->inheritsFrom doesn't work fine under linux because an enumeration passes the test
-  if (builder->getClass() == bernoulliDistributionBuilderClass)
+  // there are more than one example
+  if (outputType->inheritsFrom(enumValueType))
   {
-    size_t numOfTrue = 0;
+    DenseDoubleVectorPtr res = new DenseDoubleVector(outputType, doubleType);
     for (size_t i = 0; i < n; ++i)
-      if (examples.getLabel(i).getBoolean())
-        ++numOfTrue;
-    leafValue = numOfTrue / (double)n;
-    return true;
+      res->getValueReference(examples.getLabel(i).getInteger()) += 1.0;
+    size_t numElements = res->getNumElements();
+    for (size_t i = 0; i < numElements; ++i)
+      res->getValueReference(i) /= n;
+    leafValue = res;
   }
-
-  builder->clear();
-  for (size_t i = 0; i < n; ++i)
-    builder->addElement(examples.getLabel(i));
-  leafValue = builder->build(context);
-  jassert(leafValue.exists());
+  else if (outputType->inheritsFrom(doubleType))
+  {
+    double res = 0.0;
+    for (size_t i = 0; i < n; ++i)
+      res += examples.getLabel(i).getDouble();
+    res /= n;
+    if (outputType->inheritsFrom(sumType(booleanType, probabilityType)))
+      leafValue = Variable(res, probabilityType);
+    else
+      leafValue = Variable(res, doubleType);
+  }
+  else
+  {
+    context.errorCallback(T("BinaryDecisionTreeBatchLearner::shouldCreateLeaf"), T("Output type not implemented: ") + outputType->toString().quoted());
+    return false;
+  }
   return true;
 }
 
@@ -218,11 +185,6 @@ void BinaryDecisionTreeBatchLearner::sampleTreeRecursively(ExecutionContext& con
     jassert(rightExamples.size());
     jassert(leftExamples.size() + rightExamples.size() == examples.getNumExamples());
 
-
-    /*std::cout << splitPredicate->toString() << "\t score: " << splitScore;
-    std::cout << "   nbNeg: " << leftExamples.size();
-    std::cout << "   nbPos: " << rightExamples.size() << std::endl;*/
-
     if (splitScore > bestSplitScore)
     {
       bestSplits.clear();
@@ -243,13 +205,11 @@ void BinaryDecisionTreeBatchLearner::sampleTreeRecursively(ExecutionContext& con
   jassert(bestSplits.size());
   int bestIndex = RandomGenerator::getInstance()->sampleInt(0, (int)bestSplits.size());
   Split selectedSplit = bestSplits[bestIndex];
-  //std::cout << "Best: " << selectedSplit.argument.toString() << std::endl;
+
   // allocate child nodes
   size_t leftChildIndex = tree->allocateNodes(2);
-
   // create the node
   tree->createInternalNode(nodeIndex, selectedSplit.variableIndex, selectedSplit.argument, leftChildIndex);
-
   // call recursively
   sampleTreeRecursively(context, tree, leftChildIndex, inputType, outputType, examples.subset(selectedSplit.left), nonConstantVariables, bestSplits, numLeaves, numExamples);
   sampleTreeRecursively(context, tree, leftChildIndex + 1, inputType, outputType, examples.subset(selectedSplit.right), nonConstantVariables, bestSplits, numLeaves, numExamples);

@@ -34,13 +34,15 @@ public:
 
   size_t getMinimumSizeForSplitting() const
     {return minimumSizeForSplitting;}
+  
+  virtual TypePtr getSupervisionType() const = 0;
 
   /* Function */
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)objectClass : anyType;}
+    {return index == 0 ? (TypePtr)objectClass : getSupervisionType();}
 
   virtual String getOutputPostFix() const
     {return T("RTree");}  
@@ -68,6 +70,9 @@ public:
                     minimumSizeForSplitting) {}
   ClassificationRTreeFunction() {}
   
+  virtual TypePtr getSupervisionType() const
+    {return enumValueType;}
+  
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return inputVariables[1]->getType();}
 };
@@ -83,6 +88,9 @@ public:
                     minimumSizeForSplitting) {}
   RegressionRTreeFunction() {}
   
+  virtual TypePtr getSupervisionType() const
+    {return doubleType;}
+  
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return doubleType;}
 };
@@ -97,6 +105,9 @@ public:
                     numAttributeSamplesPerSplit,
                     minimumSizeForSplitting) {}
   BinaryRTreeFunction() {}
+  
+  virtual TypePtr getSupervisionType() const
+    {return probabilityType;}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return probabilityType;}

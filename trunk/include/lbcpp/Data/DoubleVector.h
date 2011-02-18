@@ -136,6 +136,7 @@ class DenseDoubleVector : public DoubleVector
 public:
   DenseDoubleVector(ClassPtr thisClass, std::vector<double>& values);
   DenseDoubleVector(ClassPtr thisClass, size_t initialSize = (size_t)-1, double initialValue = 0.0);
+  DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize = (size_t)-1, double initialValue = 0.0);
   DenseDoubleVector();
   virtual ~DenseDoubleVector();
   
