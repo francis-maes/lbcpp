@@ -48,11 +48,7 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  Variable createEmptyTarget(size_t index) const;
   Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
-
-  DoubleVectorPtr createEmptyProbabilitySequence() const;
-  DoubleVectorPtr createEmptyDoubleSequence() const;
 
   size_t getLength() const
     {return primaryStructure ? primaryStructure->getNumElements() : 0;}
@@ -78,7 +74,7 @@ public:
   void setPositionSpecificScoringMatrix(ContainerPtr pssm)
     {positionSpecificScoringMatrix = pssm;}
 
-  ContainerPtr createEmptyPositionSpecificScoringMatrix() const;
+  static ContainerPtr createEmptyPositionSpecificScoringMatrix(size_t length);
 
   /*
   ** Secondary Structure
@@ -87,7 +83,6 @@ public:
     {this->secondaryStructure = secondaryStructure;}
 
   ContainerPtr getSecondaryStructure() const;
-  ContainerPtr createEmptySecondaryStructure() const;
 
   void setDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
     {this->dsspSecondaryStructure = dsspSecondaryStructure;}
@@ -95,7 +90,7 @@ public:
   ContainerPtr getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
-  ContainerPtr createEmptyDSSPSecondaryStructure() const;
+  static ContainerPtr createEmptyDSSPSecondaryStructure(size_t length);
 
   void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
     {this->structuralAlphabetSequence = structuralAlphabetSequence;}
@@ -116,6 +111,10 @@ public:
 
   DoubleVectorPtr getSolventAccessibilityAt20p() const;
 
+  static DoubleVectorPtr createEmptyProbabilitySequence(size_t length);
+
+  static DoubleVectorPtr createEmptyDoubleSequence(size_t length);
+  
   /*
   ** Disorder regions
   */

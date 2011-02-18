@@ -517,7 +517,7 @@ TertiaryStructurePtr PDBFileParser::finalizeChain(ExecutionContext& context, cha
   jassert(tertiaryStructure);
   return tertiaryStructure;
 }
-
+/*
 VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
 {
   if (experimentData != T("X-RAY DIFFRACTION"))
@@ -554,7 +554,7 @@ VectorPtr PDBFileParser::finalizeDisorderSequence(ProteinPtr protein)
   //std::cout << "Disorder sequence: " << res->toString() << std::endl;
   return res;
 }
-
+*/
 bool PDBFileParser::parseEnd()
 {
   if (!chains.size())

@@ -73,7 +73,7 @@ protected:
   bool parseAndCheckAtomSerialNumber(ExecutionContext& context, const String& line, int firstColumn, int lastColumn);
 
   TertiaryStructurePtr finalizeChain(ExecutionContext& context, char chainId, ProteinPtr protein, const std::vector< std::vector<ResiduePtr> >& tertiaryStructureBlocks);
-  VectorPtr finalizeDisorderSequence(ProteinPtr protein);
+  //VectorPtr finalizeDisorderSequence(ProteinPtr protein);
 
   bool checkResidueConsistency(ExecutionContext& context, ResiduePtr residue);
 };
