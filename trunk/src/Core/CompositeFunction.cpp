@@ -32,29 +32,40 @@ TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const s
 Variable CompositeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   std::vector<Variable> state(functions.size());
-  std::vector<Variable> subInputs(maxNumFunctionInputs);
+  //std::vector<Variable> subInputs(maxNumFunctionInputs);
+
+  juce::int64* tmp = (juce::int64* )malloc(sizeof (Variable) * maxNumFunctionInputs);
+  jassert(sizeof (Variable) == 2 * sizeof (juce::int64));
 
   for (size_t i = 0; i < functions.size(); ++i)
   {
     const FunctionPtr& function = functions[i];
     const std::vector<size_t>& inputIndices = functionInputs[i];
+    juce::int64* ptr = tmp;
+
     for (size_t j = 0; j < inputIndices.size(); ++j)
     {
       size_t index = inputIndices[j];
       StepType stepType = steps[index].first;
       size_t stepArgument = steps[index].second;
+      const Variable* var;
       if (stepType == inputStep)
-        subInputs[j] = inputs[stepArgument];
+        var = &inputs[stepArgument];
       else if (stepType == constantStep)
-        subInputs[j] = constants[stepArgument];
+        var = &constants[stepArgument];
       else if (stepType == functionStep)
-        subInputs[j] = state[stepArgument];
+        var = &state[stepArgument];
       else
         jassert(false);
-    }
-    state[i] = function->compute(context, &subInputs[0]);
-  }
 
+      const juce::int64* vari = (const juce::int64* )var;
+      *ptr++ = vari[0];
+      *ptr++ = vari[1];
+      //subInputs[j] = *var;
+    }
+    state[i] = function->compute(context, (const Variable* )tmp);//&subInputs[0]);
+  }
+  free(tmp);
   jassert(steps.back().first == functionStep);
   return state.back();
 }

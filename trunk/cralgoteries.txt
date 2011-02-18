@@ -13,6 +13,8 @@ AFTER AQTIME:
 AFTER Rewriting CompositeFunction:
  PDBSmall: 48s / 201 ms / 15 ms
  PDBMedium: 3min48 / 983 ms / 186 ms
+ 
+ Mem sur PDB30Small = 73Mb - 30Mb
 
 But1: SS3 propre
  * LabelSequencePredictor (Vector[Features], Vector[Supervision] -> Vector[DDV])
