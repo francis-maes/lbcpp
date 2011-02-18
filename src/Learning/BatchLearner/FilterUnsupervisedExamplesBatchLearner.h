@@ -14,13 +14,13 @@
 namespace lbcpp
 {
 
-class SupervisedExamplesBatchLearner : public BatchLearnerDecorator
+class FilterUnsupervisedExamplesBatchLearner : public DecoratorBatchLearner
 {
 public:
-  SupervisedExamplesBatchLearner(BatchLearnerPtr decorated)
-    : BatchLearnerDecorator(decorated) {}
+ FilterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated)
+    : DecoratorBatchLearner(decorated) {}
 
-  SupervisedExamplesBatchLearner() {}
+ FilterUnsupervisedExamplesBatchLearner() {}
   
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
