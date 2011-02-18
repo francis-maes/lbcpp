@@ -40,6 +40,8 @@
 # include "Core/DynamicObject.h"
 # include "Core/Vector.h"
 # include "Core/Frame.h"
+# include "Core/Function.h"
+# include "Core/CompositeFunction.h"
 
 # include "Data/Stream.h"
 # include "Data/Consumer.h"
@@ -66,7 +68,6 @@
 # include "Execution/WorkUnit.h"
 # include "Execution/TestUnit.h"
 
-# include "Core/Function.h"
 # include "Function/ScalarFunction.h"
 # include "Function/ScalarVectorFunction.h"
 # include "Function/Predicate.h"

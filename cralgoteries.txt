@@ -1,7 +1,7 @@
 
-* Bouger CompositeFunction dans Core
-* Deriver NumericalSupervisedFunction de CompositeFunction
-* Virer FrameBasedFunction
+
+ * Remove FrameClass and all Frame related stuff from CompositeFunction...
+
 
 4) framework pour l'inference des proteins
  * ProteinInferenceStep: Protein x Protein -> Protein

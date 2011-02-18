@@ -10,7 +10,7 @@
 # define LBCPP_LEARNING_NUMERICAL_H_
 
 # include "LearnableFunction.h"
-# include "../Core/Frame.h"
+# include "../Core/CompositeFunction.h"
 # include "../Data/DoubleVector.h"
 # include "../Function/StoppingCriterion.h"
 # include "../Function/IterationFunction.h"
@@ -98,11 +98,11 @@ protected:
 
 typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParametersPtr;
 
-class SupervisedNumericalFunction : public FrameBasedFunction
+class SupervisedNumericalFunction : public CompositeFunction
 {
 public:
-  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters);
-  SupervisedNumericalFunction() {}
+  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
+    : learnerParameters(learnerParameters) {}
 
   virtual TypePtr getSupervisionType() const = 0;
   virtual FunctionPtr createPostProcessing() const {return FunctionPtr();}
@@ -115,10 +115,7 @@ public:
   virtual String getOutputPostFix() const
     {return T("Prediction");}
 
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? getSupervisionType() : (TypePtr)doubleVectorClass();}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual void buildFunction(CompositeFunctionBuilder& builder);
 
 protected:
   friend class SupervisedNumericalFunctionClass;

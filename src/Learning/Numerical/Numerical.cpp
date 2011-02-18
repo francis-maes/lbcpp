@@ -77,28 +77,18 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
 /*
 ** SupervisedNumericalFunction
 */
-SupervisedNumericalFunction::SupervisedNumericalFunction(LearnerParametersPtr learnerParameters)
-  : learnerParameters(learnerParameters)
+void SupervisedNumericalFunction::buildFunction(CompositeFunctionBuilder& builder)
 {
-}
+  size_t input = builder.addInput(doubleVectorClass());
+  size_t supervision = builder.addInput(anyType);
 
-// TODO: replace by "ComposeFunction"
-TypePtr SupervisedNumericalFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-{
-  EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
+  FunctionPtr learnableFunctionFunction = createLearnableFunction();
+  size_t learnableFunction = builder.addFunction(learnableFunctionFunction, input, supervision);
+  learnableFunctionFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
 
-  frameClass = new FrameClass(getClassName() + T("Frame"));
-  frameClass->addMemberVariable(context, inputVariables[0]->getType(), T("input"));             // 0: input
-  frameClass->addMemberVariable(context, inputVariables[1]->getType(), T("supervision"));       // 1: supervision
+  FunctionPtr postProcessingFunction = createPostProcessing();
+  if (postProcessingFunction)
+    frameClass->addMemberOperator(builder.getContext(), postProcessingFunction, learnableFunction);
 
-  FunctionPtr learnableFunction = createLearnableFunction();
-  frameClass->addMemberOperator(context, learnableFunction, 0, 1);                              // 2: linearFunction(0,1)
-  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(context, inputVariables, learnableFunction->getOutputType()));
-
-  FunctionPtr postProcessing = createPostProcessing();
-  if (postProcessing)
-    frameClass->addMemberOperator(context, postProcessing, 2);                                  // 3: postProcess(2)
-
-  setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, postProcessing->getOutputType()));
-  return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
+  setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
 }

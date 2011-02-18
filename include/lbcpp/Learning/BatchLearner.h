@@ -131,7 +131,7 @@ protected:
 typedef ReferenceCountedObjectPtr<DecoratorBatchLearner> DecoratorBatchLearnerPtr;
 
 extern BatchLearnerPtr proxyFunctionBatchLearner();
-extern BatchLearnerPtr frameBasedFunctionBatchLearner();
+extern BatchLearnerPtr compositeFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
 extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
 

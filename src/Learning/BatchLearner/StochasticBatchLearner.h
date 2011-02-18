@@ -77,7 +77,7 @@ protected:
     if (function->hasOnlineLearner())
       res.push_back(function);
     
-    FrameBasedFunctionPtr frameBasedFunction = function.dynamicCast<FrameBasedFunction>();
+    CompositeFunctionPtr frameBasedFunction = function.dynamicCast<CompositeFunction>();
     if (frameBasedFunction)
     {
       FrameClassPtr frameClass = frameBasedFunction->getFrameClass();

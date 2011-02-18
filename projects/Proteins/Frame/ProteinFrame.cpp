@@ -9,56 +9,6 @@
 #include "ProteinResidueFrame.h"
 using namespace lbcpp;
 
-FunctionBuilder::FunctionBuilder(ExecutionContext& context, CompositeFunctionPtr function, const std::vector<VariableSignaturePtr>& inputVariables)
-  : context(context), frameClass(new FrameClass(T("Function"))), inputVariables(inputVariables)
-{
-  function->setFrameClass(frameClass);
-}
-
-size_t FunctionBuilder::addInput(TypePtr type, const String& name)
-{
-  size_t inputNumber = frameClass->getNumMemberVariables();
-  const VariableSignaturePtr& inputVariable = inputVariables[inputNumber];
-  if (!context.checkInheritance(inputVariable->getType(), type))
-    return invalidIndex();
-
-  String n = name.isEmpty() ? inputVariable->getName() : name;
-  return addInSelection(frameClass->addMemberVariable(context, inputVariable->getType(), n));
-}
-
-size_t FunctionBuilder::addConstant(const Variable& value, const String& name)
-  {jassert(false); return 0;}
-
-size_t FunctionBuilder::addFunction(const FunctionPtr& function, size_t input, const String& outputName, const String& outputShortName)
-  {return addInSelection(frameClass->addMemberOperator(context, function, input, outputName, outputShortName));}
-
-size_t FunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
-  {return addInSelection(frameClass->addMemberOperator(context, function, input1, input2, outputName, outputShortName));}
-
-size_t FunctionBuilder::addFunction(const FunctionPtr& function, std::vector<size_t>& inputs, const String& outputName, const String& outputShortName)
-  {return addInSelection(frameClass->addMemberOperator(context, function, inputs, outputName, outputShortName));}
-
-void FunctionBuilder::startSelection()
-  {currentSelection.clear();}
-
-const std::vector<size_t>& FunctionBuilder::finishSelection()
-  {return currentSelection;}
-
-size_t FunctionBuilder::finishSelectionWithFunction(const FunctionPtr& function)
-{
-  size_t res = addFunction(function, currentSelection);
-  currentSelection.clear();
-  return res;
-}
-
-size_t FunctionBuilder::addInSelection(size_t index)
-{
-  currentSelection.push_back(index);
-  return index;
-}
-
-////////////////////////////////////////////////////
-
 // object, position -> element
 class GetElementInVariableFunction : public CompositeFunction
 {
@@ -69,7 +19,7 @@ public:
   virtual size_t getNumRequiredInputs() const
     {return 2;}
   
-  virtual void buildFunction(FunctionBuilder& builder)
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t input = builder.addInput(objectClass);
     size_t position = builder.addInput(positiveIntegerType);
@@ -91,7 +41,7 @@ public:
   virtual size_t getNumRequiredInputs() const
     {return 1;}
 
-  virtual void buildFunction(FunctionBuilder& builder)
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t input = builder.addInput(enumerationDistributionClass());
     size_t entropy = builder.addFunction(distributionEntropyFunction(), input);
@@ -107,7 +57,7 @@ public:
 
 //////////////////////////////////////////////
 
-void NumericalProteinFunctionFactory::primaryResidueFeatures(FunctionBuilder& builder) const 
+void NumericalProteinFunctionFactory::primaryResidueFeatures(CompositeFunctionBuilder& builder) const 
 {
   builder.addInput(positiveIntegerType, T("position"));
   builder.addInput(proteinClass, T("protein"));
@@ -127,14 +77,14 @@ void NumericalProteinFunctionFactory::primaryResidueFeatures(FunctionBuilder& bu
   builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 }
 
-void NumericalProteinFunctionFactory::primaryResidueFeaturesVector(FunctionBuilder& builder) const
+void NumericalProteinFunctionFactory::primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
 {
   builder.addInput(proteinClass, T("protein"));
   builder.addFunction(proteinLengthFunction(), 0);
   builder.addFunction(createVectorFunction(function(&NumericalProteinFunctionFactory::primaryResidueFeatures)), 1, 0);
 }
 
-void NumericalProteinFunctionFactory::residueFeatures(FunctionBuilder& builder) const
+void NumericalProteinFunctionFactory::residueFeatures(CompositeFunctionBuilder& builder) const
 {
   size_t position = builder.addInput(positiveIntegerType);
   size_t primaryResidueFeatures = builder.addInput(vectorClass(doubleVectorClass()));
@@ -152,7 +102,7 @@ void NumericalProteinFunctionFactory::residueFeatures(FunctionBuilder& builder) 
 
 }
 
-void NumericalProteinFunctionFactory::residueFeaturesVector(FunctionBuilder& builder) const
+void NumericalProteinFunctionFactory::residueFeaturesVector(CompositeFunctionBuilder& builder) const
 {
   size_t protein = builder.addInput(proteinClass, T("protein"));
 

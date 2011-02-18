@@ -86,43 +86,6 @@ public:
 
 typedef ReferenceCountedObjectPtr<Frame> FramePtr;
 
-class FrameBasedFunction : public Function
-{
-public:
-  FrameBasedFunction(FrameClassPtr frameClass = FrameClassPtr())
-    : frameClass(frameClass) {}
-
-  // Function
-  virtual size_t getMinimumNumRequiredInputs() const
-    {return 0;}
-
-  virtual size_t getMaximumNumRequiredInputs() const
-    {return (size_t)-1;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return anyType;}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-
-  // FrameBasedFunction
-  const FrameClassPtr& getFrameClass() const
-    {return frameClass;}
-
-  void setFrameClass(FrameClassPtr frameClass)
-    {this->frameClass = frameClass;}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class FrameBasedFunctionClass;
-
-  FrameClassPtr frameClass;
-  std::vector<FunctionPtr> subFunctions;
-};
-
-typedef ReferenceCountedObjectPtr<FrameBasedFunction> FrameBasedFunctionPtr;
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_FRAME_H_
