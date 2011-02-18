@@ -1,5 +1,3 @@
-
-
 1) robustesse
  * fix memory leak in explorer
  * aqtime on training of SS3
@@ -7,6 +5,7 @@
 2) framework pour l'inference des proteins
  * ProteinResidueFeaturesFunction: Protein -> Vector[DoubleVector]
  * ProteinInferenceStep: Protein x Protein -> Protein
+ * Trois fonctions cles: compose(functions, treatAdditionalInputsAsGlobals), map(function, treatAdditionalInputsAsGlobals), createAndSetVariables(type, matchVariablesByType)
  
 
 baseline:  train    test      numTrainProt  numTestProt numTrainSS3 numTestSS3

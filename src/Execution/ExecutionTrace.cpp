@@ -363,8 +363,8 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
 /*
 ** ExecutionTrace
 */
-ExecutionTrace::ExecutionTrace(ExecutionContextPtr context)
-  : contextPointer(context), root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
+ExecutionTrace::ExecutionTrace(const String& contextDescription)
+  : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
 {
   using juce::SystemStats;
 
@@ -373,7 +373,7 @@ ExecutionTrace::ExecutionTrace(ExecutionContextPtr context)
   numCpus = (size_t)SystemStats::getNumCpus();
   cpuSpeedInMegaherz = SystemStats::getCpuSpeedInMegaherz();
   memoryInMegabytes = SystemStats::getMemorySizeInMegabytes();
-  this->context = contextPointer->toString();
+  context = contextDescription;
 }
 
 ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) const

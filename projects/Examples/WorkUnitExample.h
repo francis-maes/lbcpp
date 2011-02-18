@@ -56,6 +56,7 @@ public:
     subWorkUnits->setPushChildrenIntoStackFlag(true);
     context.run(subWorkUnits);
 
+    context.resultCallback(T("toto"), T("tata"));//TMP
     context.informationCallback(T("Finished."));
     return Variable(0.85);  // return fictive score
   }

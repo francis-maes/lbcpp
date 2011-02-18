@@ -61,6 +61,8 @@ public:
   virtual String toString() const
     {return getName() + T(" = ") + String(getMean());}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   double sum;
   double cnt;
@@ -178,6 +180,8 @@ public:
 
   bool isMemoryFull() const
     {return values.size() == memorySize;}
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   size_t memorySize;

@@ -158,15 +158,12 @@ typedef ReferenceCountedObjectPtr<ExecutionTraceNode> ExecutionTraceNodePtr;
 class ExecutionTrace : public Object
 {
 public:
-  ExecutionTrace(ExecutionContextPtr context);
+  ExecutionTrace(const String& contextDescription);
   ExecutionTrace() {}
 
 #ifdef LBCPP_USER_INTERFACE
   virtual juce::Component* createComponent() const;
 #endif // LBCPP_USER_INTERFACE
-  
-  ExecutionContextPtr getContextPointer() const
-    {return contextPointer;}
 
   virtual String toString() const
     {return context + T(" Execution Trace");}
@@ -183,8 +180,6 @@ public:
 
 protected:
   friend class ExecutionTraceClass;
-
-  ExecutionContextPtr contextPointer;
 
   String operatingSystem;
   bool is64BitOs;

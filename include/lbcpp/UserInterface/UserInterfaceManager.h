@@ -43,6 +43,7 @@ public:
   juce::TreeView* createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name = String::empty,
                                           bool showTypes = true, bool showShortSummaries = true, bool showMissingVariables = false, bool makeRootNodeVisible = true) const;
   juce::TableListBox* createContainerTableListBox(ExecutionContext& context, const ContainerPtr& container) const;
+  juce::TreeView* createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const;
 
 private:
   UserInterfaceThread* userInterfaceThread;

@@ -24,7 +24,6 @@ public:
       variable(variable), options(options), typeName(variable.getTypeName()), component(NULL)
   {
     shortSummary = variable.toShortString();
-
     TypePtr type = variable.getType();
     if (variable.exists() && variable.isObject())
     {
@@ -39,6 +38,7 @@ public:
       {
         Object::VariableIterator* iterator = object->createVariablesIterator();
         if (iterator)
+        {
           for (; iterator->exists(); iterator->next())
           {
             size_t variableIndex;
@@ -46,6 +46,8 @@ public:
             if (subVariable.exists())
               addSubVariable(type->getMemberVariableName(variableIndex), subVariable);
           }
+          delete iterator;
+        }
         else
         {
           subVariables.reserve(subVariables.size() + type->getNumMemberVariables());
@@ -97,6 +99,10 @@ public:
     }
 
     mightContainSubItemsFlag = !subVariables.empty();
+  }
+
+  virtual ~VariableTreeViewItem()
+  {
   }
 
   virtual void itemSelectionChanged(bool isNowSelected)

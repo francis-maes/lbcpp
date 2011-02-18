@@ -168,6 +168,7 @@ juce::Component* UserInterfaceManager::createComponentIfExists(ExecutionContext&
 
 #include "Component/VariableTreeView.h"
 #include "Component/ContainerTableListBox.h"
+#include "Component/ExecutionTraceTreeView.h"
 
 juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& context, const Variable& variable, const String& name,
                                                               bool showTypes, bool showShortSummaries, bool showMissingVariables, bool makeRootNodeVisible) const
@@ -178,4 +179,9 @@ juce::TreeView* UserInterfaceManager::createVariableTreeView(ExecutionContext& c
 juce::TableListBox* UserInterfaceManager::createContainerTableListBox(ExecutionContext& context, const ContainerPtr& container) const
 {
   return new ContainerTableListBox(container);
+}
+
+juce::TreeView* UserInterfaceManager::createExecutionTraceInteractiveTreeView(ExecutionContext& context, ExecutionTracePtr trace, ExecutionContextPtr traceContext) const
+{
+  return new ExecutionTraceTreeView(trace, traceContext);
 }

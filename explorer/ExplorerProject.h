@@ -86,13 +86,22 @@ typedef ReferenceCountedObjectPtr<ExplorerProject> ExplorerProjectPtr;
 class ExplorerProject : public Object
 {
 public:
-  ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration()) {}
+  ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration())
+  {
+    workUnitContext = multiThreadedExecutionContext(juce::SystemStats::getNumCpus());
+  }
 
   static ExplorerProjectPtr createProject(ExecutionContext& context, const File& rootDirectory);
   static ExplorerProjectPtr openProject(ExecutionContext& context, const File& rootDirectory);
 
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
+
+  void setRootDirectory(const File& rootDirectory)
+  {
+    this->rootDirectory = rootDirectory;
+    workUnitContext->setProjectDirectory(rootDirectory);
+  }
 
   const File& getRootDirectory() const
     {return rootDirectory;}
@@ -107,6 +116,10 @@ public:
     {return recentWorkUnits;}
 
   bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit);
+
+  ExecutionContextPtr workUnitContext;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ExplorerProjectClass;

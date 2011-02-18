@@ -18,20 +18,18 @@ namespace lbcpp
 /*
 ** ProteinLengthFunction
 */
-class ProteinLengthFunction : public Function
+class ProteinLengthFunction : public SimpleUnaryFunction
 {
 public:
-  virtual TypePtr getInputType() const
-    {return proteinClass;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return positiveIntegerType;}
+  ProteinLengthFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("Length")) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
-    jassert(protein);
-    return Variable(protein->getLength(), positiveIntegerType);
+    if (protein)
+      return Variable(protein->getLength(), positiveIntegerType);
+    else
+      return Variable::missingValue(positiveIntegerType);
   }
 };
 

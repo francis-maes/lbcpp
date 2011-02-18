@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-// generates a vector V(f(x,0); f(x,1); ... f(x,n-1)) from input x,n
+// generates a vector V(f(0,x); f(1,x); ... f(n-1,x)) from input n,x
 class GenerateVectorFunction : public Function
 {
 public:
@@ -29,7 +29,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == (numInputs - 1) ? positiveIntegerType : elementGeneratorFunction->getRequiredInputType(index, numInputs);}
+    {return (index == 0) ? positiveIntegerType : elementGeneratorFunction->getRequiredInputType(index, numInputs);}
 
   virtual String getOutputPostFix() const
     {return T("Generated");}
@@ -50,14 +50,14 @@ public:
   {
     size_t numInputs = getNumInputs();
     std::vector<Variable> subInputs(numInputs);
-    for (size_t i = 0; i < subInputs.size() - 1; ++i)
+    for (size_t i = 1; i < subInputs.size(); ++i)
       subInputs[i] = inputs[i];
 
-    size_t n = (size_t)inputs[numInputs - 1].getInteger();
+    size_t n = (size_t)inputs[0].getInteger();
     VectorPtr res = vector(elementGeneratorFunction->getOutputType(), n);
     for (size_t i = 0; i < n; ++i)
     {
-      subInputs[numInputs - 1] = Variable(i);
+      subInputs[0] = Variable(i);
       res->setElement(i, elementGeneratorFunction->computeFunction(context, &subInputs[0]));
     }
     return res;

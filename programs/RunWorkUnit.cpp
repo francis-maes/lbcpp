@@ -181,7 +181,7 @@ int mainImpl(int argc, char** argv)
   ExecutionTracePtr trace;
   if (traceOutputFile != File::nonexistent)
   {
-    trace = new ExecutionTrace(context);
+    trace = new ExecutionTrace(context->toString());
     makeTraceCallback = makeTraceExecutionCallback(trace);
     context->appendCallback(makeTraceCallback);
   }

@@ -9,6 +9,91 @@
 #include "ProteinResidueFrame.h"
 using namespace lbcpp;
 
+class GraphBasedFunction : public FrameBasedFunction
+{
+public:
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName) = 0;
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    this->context = &context;
+    frameClass = new FrameClass(T("toto"));
+    if (!initializeFunctionGraph(inputVariables, outputName, outputShortName))
+      return TypePtr();
+    return FrameBasedFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
+  }
+
+protected:
+  ExecutionContext* context;
+
+  size_t addInput(TypePtr type, const String& name)
+    {return frameClass->addMemberVariable(*context, type, name);}
+
+  size_t addConstant(const Variable& value, const String& name)
+    {jassert(false); return 0;}
+
+  size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty)
+    {return frameClass->addMemberOperator(*context, function, input, outputName, outputShortName);}
+
+  size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty)
+    {return frameClass->addMemberOperator(*context, function, input1, input2, outputName, outputShortName);}
+
+  size_t addFunction(const FunctionPtr& function, std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty)
+    {return frameClass->addMemberOperator(*context, function, inputs, outputName, outputShortName);}
+};
+
+// position, protein -> features
+class ProteinPrimaryResidueFeaturesFunction : public GraphBasedFunction
+{
+public:
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    addInput(positiveIntegerType, T("position"));
+    addInput(proteinClass, T("protein"));
+
+/*    size_t aminoAcid = addFunction(composeFunction(getVariableFunction(T("primaryStructure")), 
+// retrieve the amino acid, the pssm row and the ss3 prediction
+  size_t aaIndex = res->addMemberOperator(context, getVariableFunction(T("primaryStructure")), proteinFrameIndex);
+  aaIndex = res->addMemberOperator(context, getElementFunction(), aaIndex, positionIndex, T("aa"));
+
+  size_t pssmIndex = res->addMemberOperator(context, getVariableFunction(T("positionSpecificScoringMatrix")), proteinFrameIndex);
+  pssmIndex = res->addMemberOperator(context, getElementFunction(), pssmIndex, positionIndex, T("pssm"));
+
+  size_t ss3Index = res->addMemberOperator(context, getVariableFunction(T("secondaryStructure")), proteinFrameIndex);
+  ss3Index = res->addMemberOperator(context, getElementFunction(), ss3Index, positionIndex, T("ss3"));
+
+ */
+    return true;
+  }
+};
+
+// protein -> vector[features]
+class ProteinPrimaryResidueFeaturesVectorFunction : public GraphBasedFunction
+{
+public:
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    addInput(proteinClass, T("protein"));
+    addFunction(proteinLengthFunction(), 0);
+    addFunction(generateVectorFunction(new ProteinPrimaryResidueFeaturesFunction()), 1, 0);
+    return true;
+  }
+};
+
+// protein -> vector[features]
+class ProteinResidueFeaturesVectorFunction : public GraphBasedFunction
+{
+public:
+  virtual bool initializeFunctionGraph(const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    size_t protein = addInput(proteinClass, T("protein"));
+    size_t primaryResidueFeatures = addFunction(new ProteinPrimaryResidueFeaturesVectorFunction(), protein);
+    // todo ...
+    return true;
+  }
+};
+
+
 FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& context)
 {
   FrameClassPtr res = new FrameClass(T("ProteinFrame"), objectClass);
@@ -24,7 +109,7 @@ FrameClassPtr ProteinFrameFactory::createProteinFrameClass(ExecutionContext& con
   FrameClassPtr primaryResidueFrameClass = createPrimaryResidueFrameClass(context, res);
   if (!primaryResidueFrameClass)
     return FrameClassPtr();
-  size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), (size_t)-1, lengthIndex, T("primaryResidueFeatures"));
+  size_t contextFreeResidueFeatures = res->addMemberOperator(context, generateVectorFunction(new FrameBasedFunction(primaryResidueFrameClass)), lengthIndex, (size_t)-1, T("primaryResidueFeatures"));
   res->addMemberOperator(context, accumulateContainerFunction(), contextFreeResidueFeatures, T("primaryResidueFeaturesAcc"));
   
   // global features
