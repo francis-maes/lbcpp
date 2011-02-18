@@ -9,7 +9,7 @@
 #ifndef LBCPP_PROTEINS_PROTEIN_H_
 # define LBCPP_PROTEINS_PROTEIN_H_
 
-# include <lbcpp/Core/Vector.h>
+# include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Distribution/Distribution.h>
 
@@ -22,7 +22,7 @@ namespace lbcpp
 
 class Protein;
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
-  
+
 class Protein : public NameableObject
 {
 public:
@@ -30,7 +30,7 @@ public:
     : NameableObject(name) {}
 
   Protein() {}
-  
+
   /*
   ** Save/Load operators
   */
@@ -51,8 +51,9 @@ public:
   Variable createEmptyTarget(size_t index) const;
   Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
 
-  VectorPtr createEmptyProbabilitySequence() const;
-  
+  DoubleVectorPtr createEmptyProbabilitySequence() const;
+  DoubleVectorPtr createEmptyDoubleSequence() const;
+
   size_t getLength() const
     {return primaryStructure ? primaryStructure->getNumElements() : 0;}
 
@@ -70,36 +71,36 @@ public:
 
   void setPrimaryStructure(VectorPtr primaryStructure);
   void setPrimaryStructure(const String& primaryStructure);
-  
-  VectorPtr getPositionSpecificScoringMatrix() const
+
+  ContainerPtr getPositionSpecificScoringMatrix() const
     {return positionSpecificScoringMatrix;}
 
-  void setPositionSpecificScoringMatrix(VectorPtr pssm)
+  void setPositionSpecificScoringMatrix(ContainerPtr pssm)
     {positionSpecificScoringMatrix = pssm;}
-  
-  VectorPtr createEmptyPositionSpecificScoringMatrix() const;
+
+  ContainerPtr createEmptyPositionSpecificScoringMatrix() const;
 
   /*
   ** Secondary Structure
   */
-  void setSecondaryStructure(VectorPtr secondaryStructure)
+  void setSecondaryStructure(ContainerPtr secondaryStructure)
     {this->secondaryStructure = secondaryStructure;}
 
-  VectorPtr getSecondaryStructure() const;
-  VectorPtr createEmptySecondaryStructure() const;
+  ContainerPtr getSecondaryStructure() const;
+  ContainerPtr createEmptySecondaryStructure() const;
 
-  void setDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
+  void setDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
     {this->dsspSecondaryStructure = dsspSecondaryStructure;}
 
-  VectorPtr getDSSPSecondaryStructure() const
+  ContainerPtr getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
-  VectorPtr createEmptyDSSPSecondaryStructure() const;
-  
+  ContainerPtr createEmptyDSSPSecondaryStructure() const;
+
   void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
     {this->structuralAlphabetSequence = structuralAlphabetSequence;}
 
-  VectorPtr getStructuralAlphabetSequence() const;
+  ContainerPtr getStructuralAlphabetSequence() const;
 
   /*
   ** Solvent Accesibility
@@ -107,21 +108,21 @@ public:
   void setSolventAccessibility(VectorPtr solventAccessibility)
     {this->solventAccessibility = solventAccessibility;}
 
-  VectorPtr getSolventAccessibility() const
+  DoubleVectorPtr getSolventAccessibility() const
     {return solventAccessibility;}
 
-  void setSolventAccessibilityAt20p(VectorPtr solventAccessibilityAt20p)
+  void setSolventAccessibilityAt20p(DoubleVectorPtr solventAccessibilityAt20p)
     {this->solventAccessibilityAt20p = solventAccessibilityAt20p;}
 
-  VectorPtr getSolventAccessibilityAt20p() const;
+  DoubleVectorPtr getSolventAccessibilityAt20p() const;
 
   /*
   ** Disorder regions
   */
-  void setDisorderRegions(VectorPtr disorderRegions)
-  {jassert(disorderRegions->getElementsType() == probabilityType); this->disorderRegions = disorderRegions;}
+  void setDisorderRegions(DoubleVectorPtr disorderRegions)
+    {jassert(disorderRegions->getElementsType() == probabilityType); this->disorderRegions = disorderRegions;}
 
-  VectorPtr getDisorderRegions() const;
+  DoubleVectorPtr getDisorderRegions() const;
   
   /*
   ** Contact maps / Distance maps
@@ -160,19 +161,19 @@ protected:
 
   // input
   VectorPtr primaryStructure;
-  VectorPtr positionSpecificScoringMatrix;
+  ContainerPtr positionSpecificScoringMatrix;
   std::vector<size_t> cysteinIndices;
   std::vector<int> cysteinInvIndices; // residue position => cystein index
 
   // 1D
-  VectorPtr secondaryStructure;
-  VectorPtr dsspSecondaryStructure;
-  VectorPtr structuralAlphabetSequence;
+  ContainerPtr secondaryStructure;
+  ContainerPtr dsspSecondaryStructure;
+  ContainerPtr structuralAlphabetSequence;
 
-  VectorPtr solventAccessibility;
-  VectorPtr solventAccessibilityAt20p;
+  DoubleVectorPtr solventAccessibility;
+  DoubleVectorPtr solventAccessibilityAt20p;
 
-  VectorPtr disorderRegions;
+  DoubleVectorPtr disorderRegions;
 
   // 2D
   SymmetricMatrixPtr contactMap8Ca;
@@ -186,11 +187,11 @@ protected:
   CartesianPositionVectorPtr calphaTrace;
   TertiaryStructurePtr tertiaryStructure;
 
-  static VectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
-  static VectorPtr computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure);
-  static VectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold);
+  static DoubleVectorPtr computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure);
+  static ContainerPtr computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure);
+  static DoubleVectorPtr computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold);
   static SymmetricMatrixPtr computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold);
-  static VectorPtr computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace);
+  static ContainerPtr computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace);
   static SymmetricMatrixPtr computeDisulfideBondsFromTertiaryStructure(SymmetricMatrixPtr distanceMap);
   
   static CartesianPositionVectorPtr computeCAlphaTraceFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)

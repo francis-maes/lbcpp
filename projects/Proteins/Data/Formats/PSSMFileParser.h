@@ -25,13 +25,12 @@ public:
     {}
   
   virtual TypePtr getElementsType() const
-    {return vectorClass(vectorClass(enumerationDistributionClass(aminoAcidTypeEnumeration)));}
+    {return objectVectorClass(doubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType));}
 
   virtual void parseBegin()
   {
     currentPosition = -3;
-
-    pssm = vector(enumerationDistributionClass(aminoAcidTypeEnumeration), primaryStructure->getNumElements());
+    pssm = objectVector(doubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), primaryStructure->getNumElements());
   }
 
   virtual bool parseLine(const String& line)
@@ -78,7 +77,7 @@ public:
       return false;
     }
 
-    EnumerationDistributionPtr scores = new EnumerationDistribution(aminoAcidTypeEnumeration);
+    DenseDoubleVectorPtr scores = new DenseDoubleVector(positionSpecificScoringMatrixEnumeration, probabilityType);
     for (size_t i = 0; i < AminoAcid::numStandardAminoAcid; ++i)
     {
       int begin = 10 + (int)i * 3;
@@ -96,14 +95,10 @@ public:
         return false;
       }
 
-      scores->setProbability(index, normalize(scoreI));
-      std::cout << scoreI << " ";
+      scores->getValueReference(index) = normalize(scoreI);
     }
-
     String gapScore = line.substring(153, 157).trim();
-    std::cout << gapScore << std::endl;
-    
-    scores->setProbability(aminoAcidTypeEnumeration->getNumElements(), normalize(gapScore.getIntValue()));
+    scores->getValueReference(positionSpecificScoringMatrixEnumeration->getNumElements() - 1) = gapScore.getDoubleValue() / 6;
     pssm->setElement(currentPosition, scores);
 
     ++currentPosition;
@@ -118,7 +113,7 @@ public:
   
 protected:
   VectorPtr primaryStructure;
-  VectorPtr pssm;
+  ContainerPtr pssm;
   std::vector<String> aminoAcidsIndex;
   int currentPosition;
   

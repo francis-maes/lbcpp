@@ -42,6 +42,34 @@
       <value name="acidic"/>
       <value name="basic"/>
     </enumeration>
+    
+    <enumeration name="PositionSpecificScoringMatrix">
+      <value name="alanine"             oneLetterCode="A" threeLettersCode="ALA"/>
+      <value name="arginine"            oneLetterCode="R" threeLettersCode="ARG"/>
+      <value name="asparagine"          oneLetterCode="N" threeLettersCode="ASN"/>
+      <value name="asparticAcid"        oneLetterCode="D" threeLettersCode="ASP"/>
+      <value name="cysteine"            oneLetterCode="C" threeLettersCode="CYS"/>
+
+      <value name="glutamicAcid"        oneLetterCode="E" threeLettersCode="GLU"/>
+      <value name="glutamine"           oneLetterCode="Q" threeLettersCode="GLN"/>
+      <value name="glycine"             oneLetterCode="G" threeLettersCode="GLY"/>
+      <value name="histidine"           oneLetterCode="H" threeLettersCode="HIS"/>
+      <value name="isoleucine"          oneLetterCode="I" threeLettersCode="ILE"/>
+
+      <value name="leucine"             oneLetterCode="L" threeLettersCode="LEU"/>
+      <value name="lysine"              oneLetterCode="K" threeLettersCode="LYS"/>
+      <value name="methionine"          oneLetterCode="M" threeLettersCode="MET"/>
+      <value name="phenylalanine"       oneLetterCode="F" threeLettersCode="PHE"/>
+      <value name="proline"             oneLetterCode="P" threeLettersCode="PRO"/>
+
+      <value name="serine"              oneLetterCode="S" threeLettersCode="SER"/>
+      <value name="threonine"           oneLetterCode="T" threeLettersCode="THR"/>
+      <value name="tryptophan"          oneLetterCode="W" threeLettersCode="TRP"/>
+      <value name="tyrosine"            oneLetterCode="Y" threeLettersCode="TYR"/>
+      <value name="valine"              oneLetterCode="V" threeLettersCode="VAL"/>
+      
+      <value name="gap"                 oneLetterCode="." threeLettersCode="GAP"/>
+    </enumeration>
 
     <enumeration name="SecondaryStructureElement">
       <value name="helix" oneLetterCode="H"/>
@@ -129,16 +157,16 @@
     <class name="Protein" base="NameableObject">
       <!-- Primary Structure -->
       <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
-      <variable type="ObjectVector[EnumerationDistribution[AminoAcidType]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+      <variable type="ObjectVector[DoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
       
       <!-- Secondary Structure -->
-      <variable type="GenericVector[SecondaryStructureElement]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
-      <variable type="GenericVector[DSSPSecondaryStructureElement]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
-      <variable type="GenericVector[StructuralAlphabetElement]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
+      <variable type="ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
+      <variable type="ObjectVector[DoubleVector[DSSPSecondaryStructureElement, Probability]]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
+      <variable type="ObjectVector[DoubleVector[StructuralAlphabetElement, Probability]]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
 
-      <variable type="GenericVector[Probability]" name="solventAccessibility" shortName="sa" description="Solvent Accessibility"/>
-      <variable type="GenericVector[Probability]" name="solventAccessibilityAt20p" shortName="sa20" description="Solvent Accessibility at 20%"/>
-      <variable type="GenericVector[Probability]" name="disorderRegions" shortName="dr" description="Disorder Regions"/>
+      <variable type="DoubleVector[PositiveIntegerEnumeration, Double]" name="solventAccessibility" shortName="sa" description="Solvent Accessibility"/>
+      <variable type="DoubleVector[PositiveIntegerEnumeration, Probability]" name="solventAccessibilityAt20p" shortName="sa20" description="Solvent Accessibility at 20%"/>
+      <variable type="DoubleVector[PositiveIntegerEnumeration, Probability]" name="disorderRegions" shortName="dr" description="Disorder Regions"/>
       
       <!-- Contact Maps -->
       <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortName="cma8" description="Contact Map C-alpha 8"/>

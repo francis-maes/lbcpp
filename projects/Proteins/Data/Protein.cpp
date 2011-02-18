@@ -171,28 +171,28 @@ Variable Protein::getTargetOrComputeIfMissing(size_t index) const
 /*
 ** Compute Missing Targets
 */
-VectorPtr Protein::getSecondaryStructure() const
+ContainerPtr Protein::getSecondaryStructure() const
 {
   if (!secondaryStructure && dsspSecondaryStructure)
     const_cast<Protein* >(this)->secondaryStructure = computeSecondaryStructureFromDSSPSecondaryStructure(dsspSecondaryStructure);
   return secondaryStructure;
 }
 
-VectorPtr Protein::getSolventAccessibilityAt20p() const
+DoubleVectorPtr Protein::getSolventAccessibilityAt20p() const
 {
   if (!solventAccessibilityAt20p && solventAccessibility)
     const_cast<Protein* >(this)->solventAccessibilityAt20p = computeBinarySolventAccessibilityFromSolventAccessibility(solventAccessibility, 0.2);
   return solventAccessibilityAt20p;
 }
 
-VectorPtr Protein::getDisorderRegions() const
+DoubleVectorPtr Protein::getDisorderRegions() const
 {
   if (!disorderRegions && tertiaryStructure)
     const_cast<Protein* >(this)->disorderRegions = computeDisorderRegionsFromTertiaryStructure(tertiaryStructure);
   return disorderRegions;
 }
 
-VectorPtr Protein::getStructuralAlphabetSequence() const
+ContainerPtr Protein::getStructuralAlphabetSequence() const
 {
   if (!structuralAlphabetSequence)
   {
@@ -254,30 +254,29 @@ CartesianPositionVectorPtr Protein::getCAlphaTrace() const
 /*
 ** Converters
 */
-VectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
+DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructurePtr tertiaryStructure)
 {
   if (!tertiaryStructure)
   {
     jassert(false);
-    return VectorPtr();
+    return DoubleVectorPtr();
   }
-  
+
   size_t n = tertiaryStructure->getNumResidues();
-  
-  VectorPtr res = vector(probabilityType, n);
+  DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, n);
   for (size_t i = 0; i < n; ++i)
-    res->setElement(i, Variable(tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0, probabilityType));
+    res->getValueReference(i) = tertiaryStructure->getResidue(i) == ResiduePtr() ? 1.0 : 0.0;
   
   static const int minimumDisorderLength = 4;
   for (size_t i = 0; i < n; )
   {
-    if (res->getElement(i).getDouble() == 1.0)
+    if (res->getValueReference(i) == 1.0)
     {
       size_t j = i + 1;
-      while (j < n && res->getElement(j).getDouble() == 1.0) ++j;
+      while (j < n && res->getValueReference(j) == 1.0) ++j;
       if ((j - i) < (size_t)minimumDisorderLength)
         for (size_t ii = i; ii < j; ++ii)
-          res->setElement(ii, Variable(0.0, probabilityType));
+          res->getValueReference(ii) = 0.0;
       i = j;
     }
     else
@@ -287,28 +286,32 @@ VectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStructure
   return res;
 }
 
-VectorPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(VectorPtr dsspSecondaryStructure)
+ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
 {
   size_t n = dsspSecondaryStructure->getNumElements();
-  VectorPtr res = vector(secondaryStructureElementEnumeration, n);
+  ContainerPtr res = objectVector(denseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable var = dsspSecondaryStructure->getElement(i);
     if (var.exists())
-      res->setElement(i, Variable(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), res->getElementsType()));
+    {
+      SparseDoubleVectorPtr value = new SparseDoubleVector(res->getElementsType(), probabilityType);
+      value->appendValue(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), 1.0);
+      res->setElement(i, value);
+    }
   }
   return res;
 }
 
-VectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(VectorPtr solventAccessibility, double threshold)
+DoubleVectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibility(DoubleVectorPtr solventAccessibility, double threshold)
 {
   size_t n = solventAccessibility->getNumElements();
-  VectorPtr res = vector(probabilityType, n);
+  DenseDoubleVectorPtr res = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, n);
   for (size_t i = 0; i < n; ++i)
   {
     Variable sa = solventAccessibility->getElement(i);
     if (sa.exists())
-      res->setElement(i, Variable(sa.getDouble() > threshold ? 1.0 : 0.0, probabilityType));
+      res->getValueReference(i) = sa.getDouble() > threshold ? 1.0 : 0.0;
   }
   return res;
 }
@@ -388,7 +391,7 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromTertiaryStructure(Symmetric
   return res;
 }
 
-VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
+ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPositionVectorPtr calphaTrace)
 {
   /*
   ** Descriptors from "A HMM derived structural alphabet for proteins" (2004)
@@ -424,7 +427,7 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
   };
 
   size_t n = calphaTrace->getNumElements();
-  VectorPtr res = vector(structuralAlphabetElementEnumeration, n);
+  ContainerPtr res = objectVector(denseDoubleVectorClass(structuralAlphabetElementEnumeration, probabilityType), n);
   for (size_t i = 3; i < n; ++i)
   {
     impl::Vector3 a = calphaTrace->getPosition(i - 3);
@@ -464,8 +467,9 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
         bestGroup = (int)j;
       }
     }
-    res->setElement(i - 2, Variable(bestGroup, structuralAlphabetElementEnumeration));
-    //std::cout << d1 << "\t" << d2 << "\t" << d3 << "\t" << d4 << "\t\t" << bestGroup << std::endl;
+    SparseDoubleVectorPtr value = new SparseDoubleVector(res->getElementsType(), probabilityType);
+    value->appendValue(bestGroup, 1.0); 
+    res->setElement(i - 2, value);
   }
   return res;
 }
@@ -473,17 +477,20 @@ VectorPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(CartesianPos
 /*
 ** Create Empty Targets
 */
-VectorPtr Protein::createEmptyPositionSpecificScoringMatrix() const
-  {return vector(enumerationDistributionClass(aminoAcidTypeEnumeration), getLength());}
+ContainerPtr Protein::createEmptyPositionSpecificScoringMatrix() const
+  {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), getLength());}
 
-VectorPtr Protein::createEmptySecondaryStructure() const
-  {return vector(secondaryStructureElementEnumeration, getLength());}
+ContainerPtr Protein::createEmptySecondaryStructure() const
+  {return objectVector(denseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), getLength());}
 
-VectorPtr Protein::createEmptyDSSPSecondaryStructure() const
-  {return vector(dsspSecondaryStructureElementEnumeration, getLength());}
+ContainerPtr Protein::createEmptyDSSPSecondaryStructure() const
+  {return objectVector(denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType), getLength());}
 
-VectorPtr Protein::createEmptyProbabilitySequence() const
-  {return vector(probabilityType, getLength());}
+DoubleVectorPtr Protein::createEmptyProbabilitySequence() const
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, getLength());}
+
+DoubleVectorPtr Protein::createEmptyDoubleSequence() const
+  {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, getLength());}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap() const
   {return new SymmetricMatrix(probabilityType, getLength());}

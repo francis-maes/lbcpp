@@ -30,7 +30,7 @@ protected:
   File inputFile;
   File outputFile;
 };
-  
+
 };
 
 #endif //!LBCPP_PROTEINS_CONVERT_PDB_TO_PROTEIN_WORK_UNIT_H_
