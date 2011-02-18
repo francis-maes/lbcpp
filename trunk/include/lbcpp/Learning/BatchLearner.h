@@ -26,6 +26,9 @@ public:
 
   virtual TypePtr getRequiredExamplesType() const
     {return objectClass;}
+  
+  virtual bool checkHasAtLeastOneExemples(const std::vector<ObjectPtr>& data) const
+    {return data.size() != 0;}
 
   // Function
   virtual size_t getMinimumNumRequiredInputs() const
@@ -58,11 +61,78 @@ public:
 
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;
 
+class BatchLearnerDecorator : public BatchLearner
+{
+public:
+  BatchLearnerDecorator(BatchLearnerPtr decorated)
+    : decorated(decorated) {}
+
+  BatchLearnerDecorator() {}
+  
+  /* Batch Learner */
+  virtual TypePtr getRequiredFunctionType() const
+    {return decorated->getRequiredFunctionType();}
+  
+  virtual TypePtr getRequiredExamplesType() const
+    {return decorated->getRequiredExamplesType();}
+  
+  virtual bool checkHasAtLeastOneExemples(const std::vector<ObjectPtr>& data) const
+    {return decorated->checkHasAtLeastOneExemples(data);}
+  
+  /* Function - Type checking */
+  virtual size_t getNumRequiredInputs() const
+    {return decorated->getNumRequiredInputs();}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return decorated->getMinimumNumRequiredInputs();}
+  
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return decorated->getMaximumNumRequiredInputs();}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return decorated->getRequiredInputType(index, numInputs);}
+
+  /* Function - Static computation */
+  virtual String getOutputPostFix() const
+    {return decorated->getOutputPostFix();}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return decorated->initializeFunction(context, inputVariables, outputName, outputShortName);}
+
+  /* Function - Dynamic computation */
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {return decorated->computeFunction(context, &input);} // FIXME: !!!
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {return decorated->computeFunction(context, inputs);}
+  
+  virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
+    {return decorated->getDescription(context, inputs);}
+  
+  /* Object */
+  virtual String toString() const
+    {return decorated->toString();}
+
+  virtual String toShortString() const
+    {return decorated->toShortString();}
+
+  virtual String getName() const
+    {return decorated->getName();}
+  
+protected:
+  friend class BatchLearnerDecoratorClass;
+  
+  BatchLearnerPtr decorated;
+};
+
+typedef ReferenceCountedObjectPtr<BatchLearnerDecorator> BatchLearnerDecoratorPtr;
 
 extern BatchLearnerPtr proxyFunctionBatchLearner();
 extern BatchLearnerPtr frameBasedFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
 extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
+
+extern BatchLearnerDecoratorPtr supervisedExamplesBatchLearner(BatchLearnerPtr decorated);
 
 }; /* namespace lbcpp */
 

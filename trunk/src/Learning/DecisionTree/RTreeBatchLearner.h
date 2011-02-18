@@ -21,6 +21,9 @@ public:
   RTreeBatchLearner()
     {numInputs = 2;}
   
+  virtual TypePtr getRequiredFunctionType() const
+    {return rTreeFunctionClass;}
+  
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const;
 };
 

@@ -425,6 +425,7 @@ SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
   Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
   Learning/BatchLearner/FrameBasedFunctionBatchLearner.h
+  Learning/BatchLearner/SupervisedExamplesBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp
 )
