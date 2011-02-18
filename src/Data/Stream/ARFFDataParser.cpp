@@ -25,7 +25,7 @@ bool ARFFDataParser::parseLine(const String& line)
   String record = line.substring(0, juce::jmin(10, line.length())).toLowerCase();
   if (record.startsWith(T("@attribute")))
       return parseAttributeLine(line);
-  if (record.startsWith(T("@relation")))    // @relation *must* be declared before
+  if (record.startsWith(T("@relation")))  // @relation *must* be declared before
   {                                       // any @attribute declaration
     if (attributesType.size())
     {
@@ -43,8 +43,9 @@ bool ARFFDataParser::parseLine(const String& line)
     }
     supervisionType = attributesType.back(); // The last attribute is considered
     attributesType.pop_back();               // as the supervision
+    
     shouldReadData = true;     // Indicate that the remaining lines will be data
-    return checkSupervisionType();
+    return checkOrAddAttributesTypeToFeatures() && checkSupervisionType();
   }
   context.warningCallback(T("ARFFDataParser::parseLine"), T("Unknown expression: ") + line.quoted());
   return false;
@@ -62,6 +63,15 @@ bool ARFFDataParser::parseAttributeLine(const String& line)
     return false;
   }
 
+  StringArray tokens;
+  tokens.addTokens(line.substring(0, b).trim(), T(" \t"), T("'\""));
+  if (tokens.size() != 2)
+  {
+    context.errorCallback(T("ARFFDataParser::parseAttributeLine"), T("Malformatted attribute name: ") + line.quoted());
+    return false;
+  }
+  attributesName.push_back(tokens[1].unquoted());
+  
   String attributeTypeName = line.substring(b + 1).toLowerCase();
   if (attributeTypeName == T("float")
       || attributeTypeName == T("real")
@@ -141,6 +151,7 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
     return false;
   }
   String enumerationName = trimmedLine.substring(0, e).unquoted();
+  attributesName.push_back(enumerationName);
   trimmedLine = trimmedLine.substring(e);
   // get enumeration values
   int b = trimmedLine.lastIndexOfChar(T('{'));
@@ -176,6 +187,36 @@ bool ARFFDataParser::parseEnumerationAttributeLine(const String& line)
   return true;
 }
 
+bool ARFFDataParser::checkOrAddAttributesTypeToFeatures()
+{
+  size_t n = attributesType.size();
+  if (features->getNumMemberVariables() == 0)
+  {
+    for (size_t i = 0; i < n; ++i)
+      if (features->addMemberVariable(context, attributesType[i], attributesName[i]) == (size_t)-1)
+        return false;
+    return true;
+  }
+
+  if (features->getNumMemberVariables() != n)
+  {
+    context.errorCallback(T("ARFFDataParser::checkOrAddAttributesTypeToFeatures"), T("The number of variables of the expected type does not match the number of attributes"));
+    return false;
+  }
+  for (size_t i = 0; i < n; ++i)
+    if (attributesType[i]->inheritsFrom(enumValueType))
+    {
+      if (attributesType[i].staticCast<Enumeration>()->compare(features->getMemberVariable(i)->getType()) != 0)
+        return false;
+    }
+    else if (attributesType[i] != features->getMemberVariable(i)->getType())
+    {
+      context.errorCallback(T("ARFFDataParser::checkOrAddAttributesTypeToFeatures"), T("The attribute type does not match the expected type"));
+      return false;
+    }
+  return true;
+}
+
 static Variable createFromString(ExecutionContext& context, const TypePtr& type, const String& str)
 {
   if (str.length() == 1 && str == T("?"))
@@ -196,9 +237,9 @@ bool ARFFDataParser::parseDataLine(const String& line)
     return false;
   }
   // get attributes
-  VectorPtr inputs = variableVector(n);
+  DenseGenericObjectPtr inputs = new DenseGenericObject(features);
   for (size_t i = 0; i < n; ++i)
-    inputs->setElement(i, createFromString(context, attributesType[i], tokens[i]));
+    inputs->setVariable(i, createFromString(context, attributesType[i], tokens[i]));
 
   setResult(finalizeData(Variable::pair(inputs, createFromString(context, supervisionType, tokens[n]), getElementsType())));
   return true;
@@ -218,7 +259,7 @@ bool ARFFDataParser::parseSparseDataLine(const String& line)
   
   // get attributes
   Variable supervision;
-  VectorPtr inputs = variableVector(n);
+  DenseGenericObjectPtr inputs = new DenseGenericObject(features);
   for (size_t i = 0; i < numTokens; ++i)
   {
     int e = tokens[i].indexOfAnyOf(T(" \t"));
@@ -238,12 +279,12 @@ bool ARFFDataParser::parseSparseDataLine(const String& line)
       supervision = createFromString(context, supervisionType, tokens[i].substring(e).trim());
     else
     {
-      if (inputs->getElement(index).exists())
+      if (inputs->getVariable(index).exists())
       {
         context.errorCallback(T("ARFFDataParser::parseSparseDataLine"), T("Duplicate index '" + String((int)index) + "' in: ") + tokens[i].quoted());
         return false;
       }
-      inputs->setElement(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));
+      inputs->setVariable(index, createFromString(context, attributesType[index], tokens[i].substring(e).trim()));
     }
   }
   setResult(finalizeData(Variable::pair(inputs, supervision, getElementsType())));

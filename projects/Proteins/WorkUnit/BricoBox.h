@@ -50,7 +50,7 @@ public:
 
     for (size_t i = 0; i < (size_t)files.size(); ++i)
     {
-      VectorPtr data = classificationARFFDataParser(context, *files[i], new DefaultEnumeration(T("output")))->load();
+      VectorPtr data = classificationARFFDataParser(context, *files[i], new DynamicClass(T("features")), new DefaultEnumeration(T("output")))->load();
       context.resultCallback(files[i]->getFileName(), data);
     }
 

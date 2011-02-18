@@ -89,6 +89,8 @@ public:
   int findElementByOneLetterCode(const juce::tchar c) const;
 
   bool hasOneLetterCodes() const;
+  
+  virtual int compare(ObjectPtr otherObject) const;
 
   lbcpp_UseDebuggingNewOperator
 };
