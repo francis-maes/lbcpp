@@ -18,95 +18,72 @@ namespace lbcpp
 class CompositeFunctionBatchLearner : public BatchLearner
 {
 public:
-  virtual TypePtr getRequiredExamplesType() const
-    {return objectClass;} // frameObjectClass
+  virtual TypePtr getRequiredFunctionType() const
+    {return compositeFunctionClass;}
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& f, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
   {
     const CompositeFunctionPtr& function = f.staticCast<CompositeFunction>();
-    FrameClassPtr frameClass = function->getFrameClass();
 
     // make initial frames
-    std::vector<FramePtr> trainingFrames;
-    makeInitialFrames(trainingData, frameClass, trainingFrames);
-    std::vector<FramePtr> validationFrames;
+    std::vector<ObjectPtr> trainingStates;
+    makeInitialStates(function, trainingData, trainingStates);
+    std::vector<ObjectPtr> validationStates;
     if (validationData.size())
-      makeInitialFrames(validationData, frameClass, validationFrames);
+      makeInitialStates(function, validationData, validationStates);
 
-    // for each frame operator:
-    for (size_t i = 0; i < frameClass->getNumMemberVariables(); ++i)
-    {
-      FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(i).dynamicCast<FrameOperatorSignature>();
-      if (signature)
+    // for each function
+    for (size_t step = 0; step < function->getNumSteps(); ++step)
+      if (function->getStepType(step) == CompositeFunction::functionStep)
       {
-        if (signature->getFunction()->hasBatchLearner())
-        {
-          if (!learnSubFunction(context, frameClass, i, signature, trainingFrames, validationFrames))
-            return false;
-        }
-        if (trainingFrames.size())
-          computeSubFunction(i, trainingFrames);
-        if (validationFrames.size())
-          computeSubFunction(i, validationFrames);
-      }
-    }
+        size_t subFunctionIndex = function->getStepArgument(step);
+        const FunctionPtr& subFunction = function->getSubFunction(subFunctionIndex);
+        if (subFunction->hasBatchLearner() && !learnSubFunction(context, function, step, trainingStates, validationStates))
+          return false;
 
+        computeSubFunction(context, function, step, trainingStates);
+        if (validationStates.size())
+          computeSubFunction(context, function, step, validationStates);
+      }
     return true;
   }
 
 protected:
-  void makeInitialFrames(const std::vector<ObjectPtr>& data, const FrameClassPtr& frameClass, std::vector<FramePtr>& res) const
+  void makeInitialStates(const CompositeFunctionPtr& function, const std::vector<ObjectPtr>& data, std::vector<ObjectPtr>& res) const
   {
     size_t n = data.size();
     res.resize(n);
     for (size_t i = 0; i < n; ++i)
-    {
-      FramePtr frame = new Frame(frameClass);
-      size_t numInputVariables = data[i]->getNumVariables();
-      jassert(numInputVariables < frame->getNumVariables());
-      for (size_t j = 0; j < numInputVariables; ++j)
-        frame->setVariable(j, data[i]->getVariable(j));
-      res[i] = frame;
-    }
+      res[i] = function->makeInitialState(data[i]);
   }
 
-  ObjectVectorPtr makeSubInputs(const FrameClassPtr& frameClass, const std::vector<FramePtr>& frames, size_t variableIndex) const
+  ObjectVectorPtr makeSubInputs(const CompositeFunctionPtr& function, size_t stepNumber, const std::vector<ObjectPtr>& states) const
   {
-    FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(variableIndex).staticCast<FrameOperatorSignature>();
-    const FunctionPtr& function = signature->getFunction();
+    const FunctionPtr& subFunction = function->getSubFunction(function->getStepArgument(stepNumber));
     const DynamicClassPtr& subInputsClass = function->getInputsClass();
 
-    size_t n = frames.size();
-    size_t numInputs = function->getNumInputs();
-    jassert(numInputs == signature->getNumInputs());
-
-    ObjectVectorPtr res = new ObjectVector(subInputsClass, n);
+    ObjectVectorPtr res = new ObjectVector(subInputsClass, states.size());
     std::vector<ObjectPtr>& v = res->getObjects();
-    for (size_t i = 0; i < n; ++i)
-    {
-      const FramePtr& frame = frames[i];
-      DenseGenericObjectPtr subInput(new DenseGenericObject(subInputsClass));
-      for (size_t j = 0; j < numInputs; ++j)
-        subInput->setVariable(j, frame->getOrComputeVariable(signature->getInputIndex(j)));
-      v[i] = subInput;
-    }
+    for (size_t i = 0; i < states.size(); ++i)
+      v[i] = function->makeSubInputsObject(stepNumber, states[i]);
     return res;
   }
 
-  bool learnSubFunction(ExecutionContext& context, const FrameClassPtr& frameClass, size_t variableIndex, const FrameOperatorSignaturePtr& signature, const std::vector<FramePtr>& trainingFrames, const std::vector<FramePtr>& validationFrames) const
+  bool learnSubFunction(ExecutionContext& context, const CompositeFunctionPtr& function, size_t stepNumber,
+                          const std::vector<ObjectPtr>& trainingStates, const std::vector<ObjectPtr>& validationStates) const
   {
-    const FunctionPtr& function = signature->getFunction();
-    ObjectVectorPtr subTrainingData = makeSubInputs(frameClass, trainingFrames, variableIndex);
+    const FunctionPtr& subFunction = function->getSubFunction(function->getStepArgument(stepNumber));
+    ObjectVectorPtr subTrainingData = makeSubInputs(function, stepNumber, trainingStates);
     ObjectVectorPtr subValidationData;
-    if (validationFrames.size())
-      subValidationData = makeSubInputs(frameClass, validationFrames, variableIndex);
-    return function->train(context, subTrainingData, subValidationData);
+    if (validationStates.size())
+      subValidationData = makeSubInputs(function, stepNumber, validationStates);
+    return subFunction->train(context, subTrainingData, subValidationData);
   }
 
-  void computeSubFunction(size_t variableIndex, std::vector<FramePtr>& frames) const
+  void computeSubFunction(ExecutionContext& context, const CompositeFunctionPtr& function, size_t stepNumber, std::vector<ObjectPtr>& states) const
   {
-    for (size_t i = 0; i < frames.size(); ++i)
-      frames[i]->getOrComputeVariable(variableIndex);
+    for (size_t i = 0; i < states.size(); ++i)
+      function->updateState(context, stepNumber, states[i]);
   }
 };
 

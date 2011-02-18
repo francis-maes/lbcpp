@@ -88,7 +88,7 @@ void SupervisedNumericalFunction::buildFunction(CompositeFunctionBuilder& builde
 
   FunctionPtr postProcessingFunction = createPostProcessing();
   if (postProcessingFunction)
-    frameClass->addMemberOperator(builder.getContext(), postProcessingFunction, learnableFunction);
+    builder.addFunction(postProcessingFunction, learnableFunction);
 
   setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
 }

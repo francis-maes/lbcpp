@@ -44,5 +44,17 @@
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Function" name="function"/>
   </class>
+
+  <!-- Loading functions -->
+  <class name="LoadFromFileFunction" base="Function">
+    <constructor arguments="TypePtr expectedType"/>
+    <variable type="Type" name="expectedType"/>
+  </class>
+
+  <class name="LoadFromFilePairFunction" base="Function">
+    <constructor arguments="TypePtr expectedType1, TypePtr expectedType2"/>
+    <variable type="Type" name="expectedType1"/>
+    <variable type="Type" name="expectedType2"/>
+  </class>
   
 </library>

@@ -77,20 +77,6 @@ protected:
     if (function->hasOnlineLearner())
       res.push_back(function);
     
-    CompositeFunctionPtr frameBasedFunction = function.dynamicCast<CompositeFunction>();
-    if (frameBasedFunction)
-    {
-      FrameClassPtr frameClass = frameBasedFunction->getFrameClass();
-      size_t n = frameClass->getNumMemberVariables();
-      for (size_t i = 0; i < n; ++i)
-      {
-        FrameOperatorSignaturePtr signature = frameClass->getMemberVariable(i).dynamicCast<FrameOperatorSignature>();
-        if (signature)
-          getAllFunctionsThatHaveAnOnlineLearner(signature->getFunction(), res);
-      }
-      return;
-    }
-
     size_t n = function->getNumVariables();
     for (size_t i = 0; i < n; ++i)
     {

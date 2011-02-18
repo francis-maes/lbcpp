@@ -28,7 +28,7 @@ public:
     {return function->getOutputType(target->getElementsType());}
 
   virtual Variable getElement(size_t index) const
-    {return function->computeFunction(*(ExecutionContext* )0, target->getElement(index));} // FIXME: Context
+    {return function->compute(*(ExecutionContext* )0, target->getElement(index));} // FIXME: Context
 
   virtual void setElement(size_t index, const Variable& value)
     {jassert(false);}

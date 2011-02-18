@@ -57,12 +57,14 @@ public:
     if (numInputs == 1)
     {
       ContainerPtr input = inputs[0].getObjectAndCast<Container>();
+      if (!input)
+        return Variable::missingValue(getOutputType());
       size_t n = input->getNumElements();
       VectorPtr res = vector(function->getOutputType(), n);
       for (size_t i = 0; i < n; ++i)
       {
         Variable element = input->getElement(i);
-        res->setElement(i, function->computeFunction(context, element));
+        res->setElement(i, function->compute(context, element));
       }
       return res;
     }
@@ -83,7 +85,7 @@ public:
       {
         for (size_t j = 0; j < numInputs; ++j)
           elements[j] = containers[j]->getElement(i);
-        res->setElement(i, function->computeFunction(context, &elements[0]));
+        res->setElement(i, function->compute(context, &elements[0]));
       }
       return res; 
     }

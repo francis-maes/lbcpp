@@ -81,7 +81,7 @@ bool FrameClass::initializeFunctionTypes(ExecutionContext& context, const FrameO
   if (!function->initialize(context, inputVariables))
     return false;
 
-  FrameOperatorSignaturePtr autoSignature = function->getOutputVariable();
+  VariableSignaturePtr autoSignature = function->getOutputVariable();
   signature->setType(autoSignature->getType());
   if (signature->getName().isEmpty())
     signature->setName(autoSignature->getName());

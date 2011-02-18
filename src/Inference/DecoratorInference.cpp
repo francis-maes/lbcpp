@@ -58,7 +58,7 @@ DecoratorInferenceStatePtr PreProcessInference::prepareInference(ExecutionContex
                                                                  const Variable& input,
                                                                  const Variable& supervision) const
 {
-  Variable decoratedInput = preProcessingFunction->computeFunction(context, input);
+  Variable decoratedInput = preProcessingFunction->compute(context, input);
   DecoratorInferenceStatePtr res = new DecoratorInferenceState(decoratedInput, supervision);
   res->setSubInference(decorated, decoratedInput, supervision);
   return res;
@@ -78,4 +78,4 @@ TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
   {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
 
 Variable PostProcessInference::finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
-  {return postProcessingFunction->computeFunction(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}
+  {return postProcessingFunction->compute(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}

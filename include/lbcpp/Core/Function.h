@@ -35,7 +35,7 @@ typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 class Function : public Object
 {
 public:
-  Function() : numInputs(0), pushIntoStack(false) {}
+  Function() : numInputs(0) {}
 
   /*
   ** Type checking
@@ -86,14 +86,8 @@ public:
     {return outputVariable->getType();}
 
   /*
-  ** Dynamic computation
+  ** Description
   */
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {jassert(getNumInputs() == 1); return computeFunction(context, &input);}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {jassert(getNumInputs() == 1); return computeFunction(context, *inputs);}
- 
   virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
     {return T("FIXME");}
 
@@ -121,15 +115,6 @@ public:
         return;
       }
   }
-
-  /*
-  ** Push into stack flag
-  */
-  void setPushIntoStackFlag(bool value)
-    {pushIntoStack = value;}
-
-  bool hasPushIntoStackFlag() const
-    {return pushIntoStack;}
 
   /*
   ** Learner
@@ -193,6 +178,13 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassert(getNumInputs() == 1); return computeFunction(context, &input);}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+    {jassert(getNumInputs() == 1); return computeFunction(context, *inputs);}
+
+protected:
   friend class FunctionClass;
   
   size_t numInputs;
@@ -202,7 +194,6 @@ protected:
   std::vector<FunctionCallbackPtr> postCallbacks;
   FunctionPtr batchLearner;
   OnlineLearnerPtr onlineLearner;
-  bool pushIntoStack;
 
   DynamicClassPtr inputsClass;
 };
@@ -213,8 +204,13 @@ extern ClassPtr functionClass;
 extern FunctionPtr getVariableFunction(size_t variableIndex);
 extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
+
+extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
+extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass);
+
 extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction);
+
 extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 
 extern FunctionPtr signedScalarToProbabilityFunction();
@@ -223,9 +219,6 @@ extern FunctionPtr signedScalarToProbabilityFunction();
 extern FunctionPtr identityFunction(TypePtr type);
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 extern FunctionPtr multiplyDoubleFunction();
-
-extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // File -> Object
-extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass);
 
 extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 extern FunctionPtr selectVariableFunction(int index);
@@ -253,7 +246,7 @@ class SimpleUnaryFunction : public SimpleFunction
 {
 public:
   SimpleUnaryFunction(TypePtr inputType, TypePtr outputType, const String& outputPostFix)
-    : SimpleFunction(outputType, outputPostFix), inputType(inputType) {}
+    : SimpleFunction(outputType, outputPostFix), inputType(inputType) {numInputs = 1;}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -269,7 +262,7 @@ class SimpleBinaryFunction : public SimpleFunction
 {
 public:
   SimpleBinaryFunction(TypePtr inputType1, TypePtr inputType2, TypePtr outputType, const String& outputPostFix)
-    : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {}
+    : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {numInputs = 2;}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}

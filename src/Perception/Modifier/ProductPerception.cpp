@@ -55,7 +55,7 @@ private:
     if (subPerception)
       targetCallback->sense(index, subPerception, p);
     else
-      targetCallback->sense(index, owner->getMultiplyFunction()->computeFunction(context, p));
+      targetCallback->sense(index, owner->getMultiplyFunction()->compute(context, p));
   }
 };
 
@@ -197,7 +197,7 @@ protected:
   }
 
   Variable productWith(const Variable& value) const
-    {return owner->getMultiplyFunction()->computeFunction(context, makePairWith(value));}
+    {return owner->getMultiplyFunction()->compute(context, makePairWith(value));}
 };
 
 ProductWithVariablePerception::ProductWithVariablePerception(FunctionPtr multiplyFunction, PerceptionPtr perception, TypePtr variableType, bool swapVariables)

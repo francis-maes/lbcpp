@@ -28,7 +28,7 @@ ProteinInferenceFactory::~ProteinInferenceFactory()
 InferencePtr ProteinInferenceFactory::createInferenceStep(const String& targetName) const
 {
   InferencePtr res = new ProteinInferenceStep(targetName, createTargetInference(targetName));
-  res->getBatchLearner()->setPushIntoStackFlag(true);
+  //res->getBatchLearner()->setPushIntoStackFlag(true);
   return res;
 }
 

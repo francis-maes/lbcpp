@@ -35,7 +35,7 @@ public:
   }
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
-    {callback->sense(0, function->computeFunction(context, input));}
+    {callback->sense(0, function->compute(context, input));}
 
   lbcpp_UseDebuggingNewOperator
 

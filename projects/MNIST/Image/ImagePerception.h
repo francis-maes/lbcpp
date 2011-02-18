@@ -25,7 +25,7 @@ public:
   
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    Variable v = function->computeFunction(context, input);
+    Variable v = function->compute(context, input);
     jassert(v.isObject() && v.getType()->inheritsFrom(imageClass));
     
     ImagePtr image = v.getObjectAndCast<Image>(context);

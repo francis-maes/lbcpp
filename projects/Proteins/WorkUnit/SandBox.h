@@ -81,7 +81,7 @@ public:
       const ProteinPtr& inputProtein = proteinPair->getFirst().getObjectAndCast<Protein>();
       const ProteinPtr& supervisionProtein = proteinPair->getSecond().getObjectAndCast<Protein>();
       jassert(inputProtein && supervisionProtein);
-      VectorPtr residueFeatures = computeResidueFeaturesFunction->computeFunction(context, inputProtein).getObjectAndCast<Vector>();
+      VectorPtr residueFeatures = computeResidueFeaturesFunction->compute(context, inputProtein).getObjectAndCast<Vector>();
       makeSecondaryStructureExamples(residueFeatures, supervisionProtein, res);
     }
     return res;    

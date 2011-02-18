@@ -167,7 +167,7 @@ public:
   {
     if (sendInputAsResult)
       context.resultCallback(T("input"), input);
-    Variable out = function->computeFunction(context, input);
+    Variable out = function->compute(context, input);
     if (output)
       *output = out;
     return out;

@@ -50,7 +50,7 @@ public:
           distribution->getSubDistribution(j),
           currentGuess->getVariable(j)));
         
-        Variable bestValue = baseOptimizer->computeFunction(context, subOptimizerInput);
+        Variable bestValue = baseOptimizer->compute(context, subOptimizerInput);
         if (bestValue.isNil())
           return Variable();
         
