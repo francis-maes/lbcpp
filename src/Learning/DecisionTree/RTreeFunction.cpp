@@ -10,8 +10,7 @@
 #include "RTreeBatchLearner.h"
 #include <lbcpp/Core/ReferenceCountedObject.h>
 #include <lbcpp/Core/DynamicObject.h>
-#include <lbcpp/Distribution/DiscreteDistribution.h>
-#include <lbcpp/Distribution/DistributionBuilder.h>
+#include <lbcpp/Data/DoubleVector.h>
 
 #define LOAD_MULTIREGR
 #define LOAD_OK3
@@ -91,10 +90,10 @@ public:
     /* on cree la table */
     float* output = (float*)MyMalloc((size_t)nb_goal_multiregr * sizeof(float));
     jassert(output);
-    
+
     /* on teste */
     get_multiregr_ens_pred_savepred(0, output);
-    
+
     Variable res;
     if (outputType->inheritsFrom(booleanType) || outputType->inheritsFrom(probabilityType))
       res = Variable((double)*output, probabilityType);
@@ -102,24 +101,10 @@ public:
       res = Variable((double)*output, doubleType);
     else if (outputType->inheritsFrom(enumValueType))
     {
-      
-      DistributionBuilderPtr builder = enumerationDistributionBuilder(outputType);
+      DenseDoubleVectorPtr resVector = new DenseDoubleVector(outputType, doubleType);
       for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
-      {
-        builder->addElement(Variable((int)i, outputType), output[i]);
-      }
-      res = builder->build(context);
-      
-      /*
-      size_t index;
-      double bestScore = -DBL_MAX;
-      for (size_t i = 0; i < (size_t)nb_goal_multiregr; ++i)
-        if (output[i] > bestScore)
-        {
-          bestScore = output[i];
-          index = i;
-        }
-      res = Variable(index, outputType);*/
+        resVector->getValueReference(i) = output[i];
+      res = resVector;
     }
     else
     {
@@ -129,11 +114,11 @@ public:
     /* Liberation de la mémoire */
     MyFree(core_table);
     MyFree(output);
-    
+
     /* on remet la coretable (pour les variables importances) */
     core_table = saved_core_table;
     nb_obj_in_core_table = saved_nb_obj_in_core_table;
-    
+
     return res;
   }
   
@@ -294,7 +279,10 @@ bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& func
   const RTreeFunctionPtr& rTreeFunction = function.staticCast<RTreeFunction>();
 
   if (!checkHasAtLeastOneExemples(trainingData))
+  {
+    context.errorCallback(T("No training examples"));
     return false;
+  }
 
   size_t n = trainingData.size();
   context.resultCallback(T("Num Attributes"), function->getInputsClass()->getNumMemberVariables());

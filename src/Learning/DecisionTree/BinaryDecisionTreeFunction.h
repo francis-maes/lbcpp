@@ -19,12 +19,16 @@ namespace lbcpp
 class BinaryDecisionTreeFunction : public LearnableFunction
 {
 public:
+  BinaryDecisionTreeFunction();
+
+  virtual TypePtr getSupervisionType() const = 0;
+  
   /* Function */
   virtual size_t getNumRequiredInputs() const
     {return 2;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? (TypePtr)objectVectorClass(objectClass) : anyType;}
+    {return index == 0 ? (TypePtr)objectClass : getSupervisionType();}
   
   virtual String getOutputPostFix() const
     {return T("BinaryTree");}
@@ -59,22 +63,31 @@ typedef ReferenceCountedObjectPtr<BinaryDecisionTreeFunction> BinaryDecisionTree
 class RegressionBinaryDecisionTreeFunction : public BinaryDecisionTreeFunction
 {
 public:
+  virtual TypePtr getSupervisionType() const
+    {return doubleType;}
+  
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(doubleType)); return doubleType;}
+    {return doubleType;}
 };
 
 class BinaryClassificationBinaryDecisionTreeFunction : public BinaryDecisionTreeFunction
 {
 public:
+  virtual TypePtr getSupervisionType() const
+    {return sumType(booleanType, probabilityType);}
+
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(sumType(booleanType, probabilityType))); return probabilityType;}
+    {return probabilityType;}
 };
 
 class ClassificationBinaryDecisionTreeFunction : public BinaryDecisionTreeFunction
 {
 public:
+  virtual TypePtr getSupervisionType() const
+    {return enumValueType;}
+  
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {jassert(inputVariables[1]->getType()->inheritsFrom(enumValueType)); return inputVariables[1]->getType();}
+    {return inputVariables[1]->getType();}
 };
 
 }; /* namespace lbcpp */

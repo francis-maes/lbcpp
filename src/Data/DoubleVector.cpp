@@ -224,6 +224,14 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, dou
   values = new std::vector<double>(initialSize, initialValue);
 }
 
+DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize, double initialValue)
+  : DoubleVector(denseDoubleVectorClass(enumeration, elementsType)), ownValues(true)
+{
+  if (initialSize == (size_t)-1)
+    initialSize = getElementsEnumeration()->getNumElements();
+  values = new std::vector<double>(initialSize, initialValue);
+}
+
 DenseDoubleVector::DenseDoubleVector()
   : values(NULL), ownValues(false)
 {
