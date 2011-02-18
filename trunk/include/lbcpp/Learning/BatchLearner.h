@@ -27,7 +27,7 @@ public:
   virtual TypePtr getRequiredExamplesType() const
     {return objectClass;}
   
-  virtual bool checkHasAtLeastOneExemples(const std::vector<ObjectPtr>& data) const
+  bool checkHasAtLeastOneExemples(const std::vector<ObjectPtr>& data) const
     {return data.size() != 0;}
 
   // Function
@@ -46,6 +46,9 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return functionClass;}
 
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassertfalse; return Variable();}
+  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
@@ -61,13 +64,13 @@ public:
 
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;
 
-class BatchLearnerDecorator : public BatchLearner
+class DecoratorBatchLearner : public BatchLearner
 {
 public:
-  BatchLearnerDecorator(BatchLearnerPtr decorated)
+  DecoratorBatchLearner(BatchLearnerPtr decorated)
     : decorated(decorated) {}
 
-  BatchLearnerDecorator() {}
+  DecoratorBatchLearner() {}
   
   /* Batch Learner */
   virtual TypePtr getRequiredFunctionType() const
@@ -101,7 +104,7 @@ public:
 
   /* Function - Dynamic computation */
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return decorated->computeFunction(context, &input);} // FIXME: !!!
+    {return decorated->computeFunction(context, input);}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return decorated->computeFunction(context, inputs);}
@@ -120,19 +123,19 @@ public:
     {return decorated->getName();}
   
 protected:
-  friend class BatchLearnerDecoratorClass;
+  friend class DecoratorBatchLearnerClass;
   
   BatchLearnerPtr decorated;
 };
 
-typedef ReferenceCountedObjectPtr<BatchLearnerDecorator> BatchLearnerDecoratorPtr;
+typedef ReferenceCountedObjectPtr<DecoratorBatchLearner> DecoratorBatchLearnerPtr;
 
 extern BatchLearnerPtr proxyFunctionBatchLearner();
 extern BatchLearnerPtr frameBasedFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
 extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
 
-extern BatchLearnerDecoratorPtr supervisedExamplesBatchLearner(BatchLearnerPtr decorated);
+extern DecoratorBatchLearnerPtr supervisedExamplesBatchLearner(BatchLearnerPtr decorated);
 
 }; /* namespace lbcpp */
 
