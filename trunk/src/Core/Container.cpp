@@ -100,12 +100,13 @@ void Container::saveToXml(XmlExporter& exporter) const
   Object::saveToXml(exporter);
   size_t n = getNumElements();
   exporter.setAttribute(T("size"), (int)n);
-  TypePtr elementsType = getElementsType();
+  //TypePtr elementsType = getElementsType();
+  TypePtr actuallyType = computeElementsCommonBaseType();
   for (size_t i = 0; i < n; ++i)
   {
     Variable element = getElement(i);
     if (!element.isMissingValue())
-      exporter.saveElement(i, getElement(i), elementsType);
+      exporter.saveElement(i, getElement(i), actuallyType);
   }
 }
 

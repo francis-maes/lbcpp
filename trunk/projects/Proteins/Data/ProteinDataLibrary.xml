@@ -157,12 +157,12 @@
     <class name="Protein" base="NameableObject">
       <!-- Primary Structure -->
       <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
-      <variable type="ObjectVector[DoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+      <variable type="Container[DoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
       
       <!-- Secondary Structure -->
-      <variable type="ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
-      <variable type="ObjectVector[DoubleVector[DSSPSecondaryStructureElement, Probability]]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
-      <variable type="ObjectVector[DoubleVector[StructuralAlphabetElement, Probability]]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
+      <variable type="Container[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>
+      <variable type="Container[DoubleVector[DSSPSecondaryStructureElement, Probability]]" name="dsspSecondaryStructure" shortName="ss8" description="DSSP Secondary Structure"/>
+      <variable type="Container[DoubleVector[StructuralAlphabetElement, Probability]]" name="structuralAlphabetSequence" shortName="stal" description="Structural Alphabet"/>
 
       <variable type="DoubleVector[PositiveIntegerEnumeration, Double]" name="solventAccessibility" shortName="sa" description="Solvent Accessibility"/>
       <variable type="DoubleVector[PositiveIntegerEnumeration, Probability]" name="solventAccessibilityAt20p" shortName="sa20" description="Solvent Accessibility at 20%"/>
