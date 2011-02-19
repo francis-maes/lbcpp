@@ -24,6 +24,11 @@
     <constructor/>
   </class>
 
+  <class name="GetElementInVariableFunction" base="CompositeFunction">
+    <constructor arguments="const String&amp; variableName" returnType="Function"/>
+    <variable type="String" name="variableName"/>
+  </class>
+
   <class name="CreateObjectFunction" base="Function">
     <constructor arguments="ClassPtr objectClass"/>
     <variable type="Class" name="objectClass"/>

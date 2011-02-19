@@ -10,6 +10,7 @@
 # define LBCPP_CORE_FUNCTION_GET_ELEMENT_H_
 
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/Core/Container.h>
 
 namespace lbcpp
@@ -43,6 +44,30 @@ public:
 
     return Variable::missingValue(getOutputType());
   }
+};
+
+// object, position -> element
+class GetElementInVariableFunction : public CompositeFunction
+{
+public:
+  GetElementInVariableFunction(const String& variableName = String::empty)
+    : variableName(variableName) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(objectClass);
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t container = builder.addFunction(getVariableFunction(variableName), input);
+    builder.addFunction(getElementFunction(), container, position);
+  }
+
+protected:
+  friend class GetElementInVariableFunctionClass;
+
+  String variableName;
 };
 
 }; /* namespace lbcpp */

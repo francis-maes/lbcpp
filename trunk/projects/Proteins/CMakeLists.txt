@@ -7,7 +7,7 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(Geometry/GeometryLibrary.xml GeometryLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionLibrary.xml ProteinPerceptionLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Frame/ProteinFrameLibrary.xml ProteinFrameLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredictorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
 
@@ -77,13 +77,13 @@ SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionLibrary.cpp
 )
 
-SET(LBCPP_PROTEIN_FRAME_SOURCES
-  Frame/ProteinFrame.h
-  Frame/ProteinFrame.cpp
-  Frame/ProteinResidueFrame.h
-  Frame/ProteinResidueFrame.cpp
-  Frame/ProteinFrameLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinFrameLibrary.cpp
+SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
+  Predictor/ProteinPredictor.h
+  Predictor/ProteinPredictor.cpp
+  Predictor/ProteinPredictorParameters.h
+  Predictor/ProteinPredictorParameters.cpp
+  Predictor/ProteinPredictorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_INFERENCE_SOURCES
@@ -144,7 +144,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_DATA_SOURCES}
   ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES}
   ${LBCPP_PROTEIN_PERCEPTION_SOURCES}
-  ${LBCPP_PROTEIN_FRAME_SOURCES}
+  ${LBCPP_PROTEIN_PREDICTOR_SOURCES}
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
@@ -166,7 +166,7 @@ SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(Data FILES ${LBCPP_PROTEIN_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
 SOURCE_GROUP(Perception FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
-SOURCE_GROUP(Frame FILES ${LBCPP_PROTEIN_FRAME_SOURCES})
+SOURCE_GROUP(Predictor FILES ${LBCPP_PROTEIN_PREDICTOR_SOURCES})
 SOURCE_GROUP(Inference FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
