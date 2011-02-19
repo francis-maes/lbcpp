@@ -2,3 +2,4 @@
 - new script to "install" a new version of the application
 - send workunit to BOINC server through sendworkunit (LBCpp) + new workgenerator
 - boinc execution context (progress file)
+- output.xml -> output.txt
