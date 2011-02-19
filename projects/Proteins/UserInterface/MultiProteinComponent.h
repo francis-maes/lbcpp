@@ -78,8 +78,8 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         TypePtr type = proteinClass->getMemberVariableType(i);
-        if (type->inheritsFrom(genericVectorClass(anyType))
-         || type->inheritsFrom(objectVectorClass(enumerationDistributionClass(anyType))))
+        if (type->inheritsFrom(doubleVectorClass(enumValueType, probabilityType))
+            || type->inheritsFrom(objectVectorClass(doubleVectorClass())))
         {
           String friendlyName = proteinClass->getMemberVariableDescription(i);
           addObjectNameIfExists(friendlyName, i, sequenceIndex);

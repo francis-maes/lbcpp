@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Distribution.h      | Probability Distributions       |
+| Filename: Distribution.h                 | Probability Distributions       |
 | Author  : Francis Maes                   |                                 |
 | Started : 06/07/2010 15:15               |                                 |
 `------------------------------------------/                                 |
@@ -10,6 +10,7 @@
 # define LBCPP_OBJECT_PROBABILITY_DISTRIBUTION_H_
 
 # include "../Data/RandomGenerator.h"
+# include "../Core/Variable.h"
 
 namespace lbcpp
 {
