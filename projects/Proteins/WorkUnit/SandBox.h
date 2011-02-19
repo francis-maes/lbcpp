@@ -52,7 +52,6 @@ public:
     ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxProteins, T("Loading"));
     if (!proteins)
       return false;
-    jassert(proteins->getElementsType() == pairClass(proteinClass, proteinClass));
 
     // make train and test proteins
     ContainerPtr trainingProteins = proteins->invFold(0, numFolds);
@@ -63,6 +62,8 @@ public:
     // create predictor
     ProteinPredictorParametersPtr parameters = new MyProteinPredictorParameters(maxLearningIterations);
     ProteinPredictorPtr predictor = new ProteinPredictor(parameters);
+    predictor->addTarget(sa20Target);
+    predictor->addTarget(drTarget);
     predictor->addTarget(ss3Target);
     predictor->addTarget(ss8Target);
   

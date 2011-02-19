@@ -40,7 +40,7 @@ public:
   LinearBinaryClassifier() {}
 
   virtual TypePtr getSupervisionType() const
-    {return booleanType;}
+    {return anyType;} // boolean or probability
 
   virtual FunctionPtr createPostProcessing() const
     {return signedScalarToProbabilityFunction();}
@@ -57,7 +57,7 @@ public:
   LinearMultiClassClassifier() {}
 
   virtual TypePtr getSupervisionType() const
-    {return enumValueType;}
+    {return anyType;} // enumValue or doubleVector[enumValue]
 
   virtual FunctionPtr createPostProcessing() const
     {return mapContainerFunction(signedScalarToProbabilityFunction());}

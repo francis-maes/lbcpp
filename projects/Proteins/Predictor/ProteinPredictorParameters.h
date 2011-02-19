@@ -43,13 +43,22 @@ public:
   virtual FunctionPtr labelVectorPredictor(ProteinTarget target) const
     {return mapContainerFunction(multiClassClassifier(target));}
 
+  virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
+    {return mapContainerFunction(binaryClassifier(target));}
+
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
+    FunctionPtr res;
     if (target == ss3Target || target == ss8Target || target == stalTarget)
-      return labelVectorPredictor(target);
-
-    jassert(false);
-    return FunctionPtr();
+      res = labelVectorPredictor(target);
+    else if (target == sa20Target || target == drTarget)
+      res = probabilityVectorPredictor(target);
+    else
+    {
+      jassert(false);
+      return FunctionPtr();
+    }
+    return res;
   }
 };
 
