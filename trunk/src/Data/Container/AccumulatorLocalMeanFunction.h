@@ -42,7 +42,7 @@ public:
 
     int position = inputs[1].getInteger();
     jassert(position >= 0 && position < (int)n);
-    int startPosition = -1 - (int)(windowSize / 2);
+    int startPosition = position - (int)(windowSize / 2);
     int endPosition = startPosition + windowSize;
     int numMissingBegin = 0, numMissingEnd = 0;
 
@@ -66,7 +66,7 @@ public:
       begin->addWeightedTo(res, 0, -Z);
 
     // the last element is supposed to be the "missing" frequency
-    res->incrementValue(res->getNumElements() - 1, Z * (numMissingEnd - numMissingBegin));
+    res->incrementValue(res->getNumElements() - 1, Z * (numMissingEnd + numMissingBegin));
     return res;
   }
 

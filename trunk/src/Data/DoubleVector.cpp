@@ -336,6 +336,18 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
+double DenseDoubleVector::computeEntropy() const
+{
+  double res = 0.0;
+  for (size_t i = 0; i < values->size(); ++i)
+  {
+    double p = (*values)[i];
+    if (p > 1e-9)
+      res -= p * log2(p);
+  }
+  return res;
+}
+
 // DoubleVector
 size_t DenseDoubleVector::l0norm() const
   {return values ? defaultL0Norm(*this) : 0;}

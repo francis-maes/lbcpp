@@ -21,15 +21,10 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    //size_t entropy = builder.addFunction(distributionEntropyFunction(), input);
-
-    builder.startSelection();
-      size_t input = builder.addInput(doubleVectorClass(enumValueType, probabilityType));
-
-      //builder.addFunction(enumerationDistributionFeatureGenerator(), input, T("p"));
-      //builder.addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), entropy, T("e"));
-
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    size_t input = builder.addInput(denseDoubleVectorClass(enumValueType, probabilityType), T("p"));
+    size_t entropy = builder.addFunction(denseDoubleVectorEntropyFunction(), input);
+    size_t entropyFeatures = builder.addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), entropy, T("e"));
+    builder.addFunction(concatenateFeatureGenerator(false), input, entropyFeatures);
   }
 };
 

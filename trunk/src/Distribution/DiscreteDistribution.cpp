@@ -165,6 +165,7 @@ double EnumerationDistribution::computeEntropy() const
   ScopedLock _(cachedEntropyLock);
   if (cachedEntropy.exists())
     return cachedEntropy.getDouble();
+  // todo: use DenseDoubleVector::computeEntropy() and remove cachedEntropy
   double res = 0.0;
   for (size_t i = 0; i < values.size(); ++i)
     if (values[i] > 1e-9)

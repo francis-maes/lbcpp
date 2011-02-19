@@ -11,6 +11,7 @@
 
 # include <lbcpp/Distribution/Distribution.h>
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -22,7 +23,7 @@ public:
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return distributionClass(anyType);}
+    {return distributionClass();}
 
   virtual String getOutputPostFix() const
     {return T("Entropy");}
@@ -37,6 +38,32 @@ public:
       return distribution->computeEntropy();
     else
       return Variable::missingValue(getOutputType());
+  }
+};
+
+// todo: move ?, ComputeEntropyFunction(ProxyFunction) ?
+class DenseDoubleVectorEntropyFunction : public Function
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return denseDoubleVectorClass(enumValueType, probabilityType);}
+
+  virtual String getOutputPostFix() const
+    {return T("Entropy");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return negativeLogProbabilityType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const DenseDoubleVectorPtr& distribution = inputs[0].getObjectAndCast<DenseDoubleVector>();
+    if (distribution)
+      return Variable(distribution->computeEntropy(), negativeLogProbabilityType);
+    else
+      return Variable::missingValue(negativeLogProbabilityType);
   }
 };
 
