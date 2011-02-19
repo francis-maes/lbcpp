@@ -230,15 +230,34 @@ private:
     TypePtr type = sequence->getElementsType();
     Variable value = sequence->getElement(index);
 
-    if (type->inheritsFrom(enumValueType))
+    if (type->inheritsFrom(enumValueType) || type->inheritsFrom(sparseDoubleVectorClass(enumValueType, probabilityType)))
     {
+      EnumerationPtr enumeration;
+      if (type->inheritsFrom(enumValueType))
+        enumeration = type.staticCast<Enumeration>();
+      else
+        enumeration = DoubleVector::getElementsEnumeration(type);
+
       g.setFont(12.f);
       String res = T("?");
       if (value.exists())
       {
-        EnumerationElementPtr element = type.dynamicCast<Enumeration>()->getElement(value.getInteger());
-        if (element->getOneLetterCode().length() == 1)
-          res[0] = element->getOneLetterCode()[0];
+        int enumValue = -1;
+        if (type->inheritsFrom(enumValueType))
+          enumValue = value.getInteger();
+        else
+        {
+          SparseDoubleVectorPtr doubleVector = value.getObjectAndCast<SparseDoubleVector>();
+          if (doubleVector)
+            enumValue = doubleVector->getIndexOfMaximumValue();
+        }
+
+        if (enumValue >= 0)
+        {
+          EnumerationElementPtr element = enumeration->getElement(enumValue);
+          if (element->getOneLetterCode().length() == 1)
+            res[0] = element->getOneLetterCode()[0];
+        }
       }
       g.drawText(res, x, y, w, h, Justification::centred, true);
       return;
@@ -261,17 +280,20 @@ private:
       return;
     }
 
-    if (type->canBeCastedTo(enumerationDistributionClass(aminoAcidTypeEnumeration)))
+    if (type->canBeCastedTo(denseDoubleVectorClass(enumValueType, probabilityType)))
     {
-      EnumerationDistributionPtr probs = sequence->getElement(index).getObjectAndCast<EnumerationDistribution>();
-      size_t numVariables = probs->getEnumeration()->getNumElements();
-      for (int i = 0; i < (int)numVariables; ++i)
+      DenseDoubleVectorPtr probs = sequence->getElement(index).getObjectAndCast<DenseDoubleVector>();
+      if (probs)
       {
-        juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - probs->getVariable(i).getDouble()));
-        g.setColour(Colour(255, level, level));
-        int y1 = y + i * h / (int)numVariables;
-        int y2 = y + (i + 1) * h / (int)numVariables;
-        g.fillRect(x, y1, w, y2 - y1);
+        size_t numVariables = probs->getElementsEnumeration()->getNumElements();
+        for (int i = 0; i < (int)numVariables; ++i)
+        {
+          juce::uint8 level = (juce::uint8)(255 * juce::jlimit(0.0, 1.0, 1.0  - probs->getValue(i)));
+          g.setColour(Colour(255, level, level));
+          int y1 = y + i * h / (int)numVariables;
+          int y2 = y + (i + 1) * h / (int)numVariables;
+          g.fillRect(x, y1, w, y2 - y1);
+        }
       }
       return;
     }

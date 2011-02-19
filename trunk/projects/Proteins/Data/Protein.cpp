@@ -289,7 +289,7 @@ DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStr
 ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
 {
   size_t n = dsspSecondaryStructure->getNumElements();
-  ContainerPtr res = objectVector(denseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
+  ContainerPtr res = objectVector(sparseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
   for (size_t i = 0; i < n; ++i)
   {
     DoubleVectorPtr dssp = dsspSecondaryStructure->getElement(i).getObjectAndCast<DoubleVector>();
@@ -427,7 +427,7 @@ ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(Cartesian
   };
 
   size_t n = calphaTrace->getNumElements();
-  ContainerPtr res = objectVector(denseDoubleVectorClass(structuralAlphabetElementEnumeration, probabilityType), n);
+  ContainerPtr res = objectVector(sparseDoubleVectorClass(structuralAlphabetElementEnumeration, probabilityType), n);
   for (size_t i = 3; i < n; ++i)
   {
     impl::Vector3 a = calphaTrace->getPosition(i - 3);
