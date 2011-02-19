@@ -292,11 +292,11 @@ ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(Contai
   ContainerPtr res = objectVector(denseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
   for (size_t i = 0; i < n; ++i)
   {
-    Variable var = dsspSecondaryStructure->getElement(i);
-    if (var.exists())
+    DoubleVectorPtr dssp = dsspSecondaryStructure->getElement(i).getObjectAndCast<DoubleVector>();
+    if (dssp)
     {
       SparseDoubleVectorPtr value = new SparseDoubleVector(res->getElementsType(), probabilityType);
-      value->appendValue(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)var.getInteger()), 1.0);
+      value->appendValue(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)dssp->getIndexOfMaximumValue()), 1.0);
       res->setElement(i, value);
     }
   }

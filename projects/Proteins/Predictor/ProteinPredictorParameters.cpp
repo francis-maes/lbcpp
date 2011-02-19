@@ -12,7 +12,7 @@
 #include <lbcpp/Learning/Numerical.h>
 using namespace lbcpp;
 
-// distribution[enumeration] -> features
+// DV[enumeration, probabilityType] -> features
 class EnumerationDistributionFeaturesFunction : public CompositeFunction
 {
 public:
@@ -21,13 +21,13 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t input = builder.addInput(enumerationDistributionClass());
-    size_t entropy = builder.addFunction(distributionEntropyFunction(), input);
+    //size_t entropy = builder.addFunction(distributionEntropyFunction(), input);
 
     builder.startSelection();
+      size_t input = builder.addInput(doubleVectorClass(enumValueType, probabilityType));
 
-      builder.addFunction(enumerationDistributionFeatureGenerator(), input, T("p"));
-      builder.addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), entropy, T("e"));
+      //builder.addFunction(enumerationDistributionFeatureGenerator(), input, T("p"));
+      //builder.addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), entropy, T("e"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }

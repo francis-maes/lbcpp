@@ -20,18 +20,26 @@ namespace lbcpp
 class MyProteinPredictorParameters : public NumericalProteinPredictorParameters
 {
 public:
+  MyProteinPredictorParameters(size_t maxLearningIterations)
+    : maxLearningIterations(maxLearningIterations)
+  {
+  }
+
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
     StochasticGDParametersPtr parameters = new StochasticGDParameters();
-    parameters->setMaxIterations(100);
+    parameters->setMaxIterations(maxLearningIterations);
     return linearLearningMachine(parameters);
   }
+
+protected:
+  size_t maxLearningIterations;
 };
 
 class SandBox : public WorkUnit
 {
 public:
-  SandBox() : maxProteins(0), numFolds(7) {}
+  SandBox() : maxProteins(0), numFolds(7), maxLearningIterations(100) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -53,7 +61,7 @@ public:
                                String((int)testingProteins->getNumElements()) + T(" testing proteins"));
     
     // create predictor
-    ProteinPredictorParametersPtr parameters = new MyProteinPredictorParameters();
+    ProteinPredictorParametersPtr parameters = new MyProteinPredictorParameters(maxLearningIterations);
     ProteinPredictorPtr predictor = new ProteinPredictor(parameters);
     predictor->addTarget(ss3Target);
     predictor->addTarget(ss8Target);
@@ -79,6 +87,7 @@ protected:
   File supervisionDirectory;
   size_t maxProteins;
   size_t numFolds;
+  size_t maxLearningIterations;
 };
 
 }; /* namespace lbcpp */

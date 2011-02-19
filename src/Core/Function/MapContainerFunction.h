@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Container.h>
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Learning/BatchLearner.h>
+# include <lbcpp/Data/DoubleVector.h>
 
 namespace lbcpp
 {
@@ -52,7 +53,18 @@ public:
 
     outputName = function->getOutputVariable()->getName() + T("Container");
     outputShortName = T("[") + function->getOutputVariable()->getShortName() + T("]");
-    return vectorClass(function->getOutputType());
+    TypePtr outputType = function->getOutputType();
+    if (outputType->inheritsFrom(objectClass))
+      return objectVectorClass(outputType);
+    else if (outputType->inheritsFrom(doubleType))
+    {
+      EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
+      if (!enumeration)
+        enumeration = positiveIntegerEnumerationEnumeration;
+      return doubleVectorClass(enumeration, outputType);
+    }
+    else
+      return vectorClass(outputType);
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const

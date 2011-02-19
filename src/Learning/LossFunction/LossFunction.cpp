@@ -61,7 +61,7 @@ TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, co
   jassert(classes);
 
   TypePtr supervisionType = inputVariables[1]->getType();
-  if (classes != supervisionType && classes != Distribution::getTemplateParameter(supervisionType))
+  if (supervisionType != classes  && DoubleVector::getElementsEnumeration(supervisionType) != classes)
   {
     context.errorCallback(T("Type mismatch: double vector type is ") + classes->getName() + T(" supervision type is ") + inputVariables[1]->getType()->getName());
     return TypePtr();
@@ -78,7 +78,11 @@ void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVector
   if (otherInputs[0].isInteger())
     correct = otherInputs[0].getInteger();
   else
-    correct = otherInputs[0].getObjectAndCast<Distribution>()->sampleBest(RandomGenerator::getInstance()).getInteger();
+  {
+    size_t index;
+    otherInputs[0].getObjectAndCast<DoubleVector>()->getMaximumValue(&index);
+    correct = (int)index;
+  }
 
   jassert(correct >= 0 && correct < (int)numClasses);
   computeMultiClassLoss(scores, (size_t)correct, numClasses, output, gradientTarget, gradientWeight);

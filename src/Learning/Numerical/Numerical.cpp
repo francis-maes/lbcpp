@@ -44,7 +44,7 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
       lossFunction = hingeDiscriminativeLossFunction();
     else if (supervisionType == doubleType)
       lossFunction = squareRegressionLossFunction();
-    else if (supervisionType->inheritsFrom(enumValueType))
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
     else
     {

@@ -51,9 +51,9 @@ double FeatureGenerator::sumOfSquares(const Variable* inputs) const
   return callback.res;
 }
 
-double FeatureGenerator::getMaximumValue(const Variable* inputs) const
+double FeatureGenerator::getMaximumValue(const Variable* inputs, size_t* index) const
 {
-  ComputeMaximumValueFeatureGeneratorCallback callback;
+  ComputeMaximumValueFeatureGeneratorCallback callback(index);
   computeFeatures(&inputs[0], callback);
   return callback.res;
 }
