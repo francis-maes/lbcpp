@@ -33,14 +33,21 @@ size_t DiscriminativeLossFunction::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr DiscriminativeLossFunction::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index ? booleanType : doubleType;}
+  {return index ? sumType(booleanType, probabilityType) : doubleType;}
 
 String DiscriminativeLossFunction::getOutputPostFix() const
   {return T("Loss");}
 
 void DiscriminativeLossFunction::computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
 {
-  bool isPositive = otherInputs[0].getBoolean();
+  bool isPositive;
+  if (otherInputs[0].isBoolean())
+    isPositive = otherInputs[0].getBoolean();
+  else if (otherInputs[0].getType() == probabilityType)
+    isPositive = otherInputs[0].getDouble() > 0.5;
+  else
+    jassert(false);
+
   computeDiscriminativeLoss(isPositive ? input : -input, output, derivative);
   if (derivative && !isPositive)
     *derivative = - (*derivative);
@@ -53,7 +60,7 @@ size_t MultiClassLossFunction::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr MultiClassLossFunction::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index == 1 ? anyType : (TypePtr)denseDoubleVectorClass();}
+  {return index == 1 ? sumType(enumValueType, doubleVectorClass(enumValueType, probabilityType)) : (TypePtr)denseDoubleVectorClass();}
 
 TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {

@@ -88,7 +88,9 @@ inline double defaultGetMaximumValue(const VectorType& vector, size_t* index)
 EnumerationPtr DoubleVector::getElementsEnumeration(TypePtr doubleVectorType)
 {
   TypePtr dvType = doubleVectorType->findBaseTypeFromTemplateName(T("DoubleVector"));
-  jassert(dvType && dvType->getNumTemplateArguments() == 2);
+  if (!dvType)
+    return EnumerationPtr();
+  jassert(dvType->getNumTemplateArguments() == 2);
   TypePtr res = dvType->getTemplateArgument(0);
   jassert(res);
   return res;

@@ -40,7 +40,7 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
   if (!lossFunction)
   {
     // create default loss function
-    if (supervisionType == booleanType)
+    if (supervisionType == booleanType || supervisionType == probabilityType)
       lossFunction = hingeDiscriminativeLossFunction();
     else if (supervisionType == doubleType)
       lossFunction = squareRegressionLossFunction();
