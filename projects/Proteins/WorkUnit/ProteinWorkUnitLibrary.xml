@@ -111,8 +111,6 @@
   </class>
   
   <!-- New SandBox -->
-  <class name="GetProteinTargetFunction" base="Function"/>
-  <class name="MakeProteinFunction" base="Function"/>
   <class name="ProteinPredictor" base="CompositeFunction"/>
   
   <class name="SandBox" base="WorkUnit">

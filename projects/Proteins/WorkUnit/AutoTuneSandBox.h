@@ -16,7 +16,7 @@
 # include "../Inference/ProteinInference.h"
 # include "../Inference/ContactMapInference.h"
 # include "../Evaluator/ProteinEvaluator.h"
-# include "../Frame/ProteinFrame.h"
+//# include "../Frame/ProteinFrame.h"
 
 namespace lbcpp
 {

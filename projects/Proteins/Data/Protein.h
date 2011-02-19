@@ -20,6 +20,21 @@
 namespace lbcpp
 {
 
+enum ProteinTarget
+{
+  noTarget = 0, // corresponds to "name" variable
+  aaTarget,
+  pssmTarget,
+  ss3Target,
+  ss8Target,
+  stalTarget,
+  saTarget,
+  sa20Target,
+  drTarget,
+
+  // todo: continue
+};
+
 class Protein;
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
