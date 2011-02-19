@@ -61,18 +61,9 @@ protected:
       return -1;
     if (value.isEnumeration())
       return value.getInteger();
-
-    DenseDoubleVectorPtr scores = value.dynamicCast<DenseDoubleVector>();
+    DoubleVectorPtr scores = value.dynamicCast<DoubleVector>();
     if (scores)
-    {
-      const std::vector<double>& scoreValues = scores->getValues();
-      double bestScore = -DBL_MAX;
-      int bestIndex = -1;
-      for (size_t i = 0; i < scoreValues.size(); ++i)
-        if (scoreValues[i] > bestScore)
-          bestScore = scoreValues[i], bestIndex = (int)i;
-      return bestIndex;
-    }
+      return scores->getIndexOfMaximumValue();
 
     jassert(false);
     return -1;

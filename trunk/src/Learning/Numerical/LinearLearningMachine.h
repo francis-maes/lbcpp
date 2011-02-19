@@ -90,7 +90,7 @@ public:
       return linearRegressor(learnerParameters);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return linearBinaryClassifier(learnerParameters);
-    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(enumerationDistributionClass()))
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       return linearMultiClassClassifier(learnerParameters);
     else
       return FunctionPtr();

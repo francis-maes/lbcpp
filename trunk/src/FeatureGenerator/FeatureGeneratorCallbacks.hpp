@@ -76,24 +76,38 @@ public:
 class ComputeMaximumValueFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
-  ComputeMaximumValueFeatureGeneratorCallback() : res(-DBL_MAX) {}
+  ComputeMaximumValueFeatureGeneratorCallback(size_t* index)
+    : res(-DBL_MAX), index(index) {}
 
   virtual void sense(size_t index, double value)
-    {add(value);}
+    {add(index, value);}
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {add(vector->getMaximumValue() * weight);}
+  {
+    size_t best;
+    double value = vector->getMaximumValue(&best) * weight;
+    add(best, value);
+  }
 
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {add(featureGenerator->getMaximumValue(inputs) * weight);}
+  {
+    size_t best;
+    double value = featureGenerator->getMaximumValue(inputs, &best) * weight;
+    add(best, value);
+  }
 
-  void add(double value)
+  void add(size_t index, double value)
   {
     if (value > res)
+    {
       res = value;
+      if (this->index)
+        *this->index = index;
+    }
   }
 
   double res;
+  size_t* index;
 };
 
 class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback

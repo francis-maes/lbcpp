@@ -54,11 +54,15 @@ public:
 
   virtual size_t l0norm() const = 0;
   virtual double sumOfSquares() const = 0;
-  virtual double getMaximumValue() const = 0;
+  virtual double getMaximumValue(size_t* index = NULL) const = 0;
+  
   virtual void multiplyByScalar(double scalar) = 0;
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
+
+  int getIndexOfMaximumValue() const
+    {size_t res; getMaximumValue(&res); return (int)res;}
 
   double l2norm() const
     {return sqrt(sumOfSquares());}
@@ -106,7 +110,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue() const;
+  virtual double getMaximumValue(size_t* index = NULL) const;
   virtual void multiplyByScalar(double scalar);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -182,7 +186,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue() const;
+  virtual double getMaximumValue(size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -235,7 +239,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue() const;
+  virtual double getMaximumValue(size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -288,7 +292,7 @@ public:
   // DoubleVector
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue() const;
+  virtual double getMaximumValue(size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;

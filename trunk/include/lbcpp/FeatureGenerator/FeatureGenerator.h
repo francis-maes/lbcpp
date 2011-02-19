@@ -53,7 +53,7 @@ public:
 
   virtual size_t l0norm(const Variable* inputs) const;
   virtual double sumOfSquares(const Variable* inputs) const;
-  virtual double getMaximumValue(const Variable* inputs) const;
+  virtual double getMaximumValue(const Variable* inputs, size_t* index) const;
   virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;

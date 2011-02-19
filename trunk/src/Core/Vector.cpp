@@ -449,7 +449,7 @@ VectorPtr lbcpp::vector(TypePtr elementsType, size_t initialSize)
   else if (elementsType->inheritsFrom(objectClass))
     return objectVector(elementsType, initialSize);
   else if (elementsType->inheritsFrom(doubleType))
-    return new DenseDoubleVector(denseDoubleVectorClass(), initialSize);
+    return new DenseDoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, elementsType), initialSize);
   else if (elementsType == anyType)
     return variableVector(initialSize);
   else

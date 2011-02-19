@@ -37,6 +37,8 @@ public:
     jassert(featuresEnumeration);
     outputsEnumeration = inputVariables[1]->getType().dynamicCast<Enumeration>();
     if (!outputsEnumeration)
+      outputsEnumeration = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
+    if (!outputsEnumeration)
     {
       context.errorCallback(T("Could not identify elements enumeration"));
       return TypePtr();

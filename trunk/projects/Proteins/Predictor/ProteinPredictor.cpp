@@ -37,7 +37,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     size_t targetPredictorInput;
     TypePtr elementsType = Container::getTemplateParameter(proteinClass->getMemberVariableType(target));
     jassert(elementsType);
-    if (elementsType->inheritsFrom(enumValueType)) 
+    if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType))) 
       targetPredictorInput = residueFeatures; // label sequence -> residue features
     else
       jassert(false);

@@ -75,9 +75,9 @@ inline double defaultSumOfSquares(const VectorType& vector)
 }
 
 template<class VectorType>
-inline double defaultGetMaximumValue(const VectorType& vector)
+inline double defaultGetMaximumValue(const VectorType& vector, size_t* index)
 {
-  ComputeMaximumValueFeatureGeneratorCallback callback;
+  ComputeMaximumValueFeatureGeneratorCallback callback(index);
   computeFeatures(vector, callback);
   return callback.res;
 }
@@ -141,11 +141,10 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
   for (size_t i = 0; i < (size_t)tokens.size(); ++i)
   {
     int e = tokens[i].indexOfChar(T(':'));
-    Variable index = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[i].substring(0, e));
-    Variable value = Variable::createFromString(importer.getContext(), elementType, tokens[i].substring(e + 1));
-    if (!index.exists() || !value.exists())
+    int index = tokens[i].substring(0, e).getIntValue();
+    if (index < 0)
       return false;
-    setElement(index.getInteger(), value);
+    setElement((size_t)index, tokens[i].substring(e + 1).getDoubleValue());
   }
   return true;
 }
@@ -157,8 +156,8 @@ size_t SparseDoubleVector::l0norm() const
 double SparseDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
 
-double SparseDoubleVector::getMaximumValue() const
-  {return defaultGetMaximumValue(*this);}
+double SparseDoubleVector::getMaximumValue(size_t* index) const
+  {return defaultGetMaximumValue(*this, index);}
 
 void SparseDoubleVector::multiplyByScalar(double scalar)
 {
@@ -291,12 +290,7 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   TypePtr elementType = getElementsType();
   ensureSize(n);
   for (size_t i = 0; i < n; ++i)
-  {
-    Variable value = Variable::createFromString(importer.getContext(), elementType, tokens[i]);
-    if (!value.exists())
-      return false;
-    getValueReference(i) = value.getDouble();
-  }
+    getValueReference(i) = tokens[i].getDoubleValue();
   return true;
 }
 
@@ -347,8 +341,8 @@ size_t DenseDoubleVector::l0norm() const
 double DenseDoubleVector::sumOfSquares() const
   {return values ? defaultSumOfSquares(*this) : 0.0;}
 
-double DenseDoubleVector::getMaximumValue() const
-  {return defaultGetMaximumValue(*this);}
+double DenseDoubleVector::getMaximumValue(size_t* index) const
+  {return defaultGetMaximumValue(*this, index);}
 
 void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
 {
@@ -482,8 +476,8 @@ size_t LazyDoubleVector::l0norm() const
 double LazyDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
 
-double LazyDoubleVector::getMaximumValue() const
-  {return defaultGetMaximumValue(*this);}
+double LazyDoubleVector::getMaximumValue(size_t* index) const
+  {return defaultGetMaximumValue(*this, index);}
 
 void LazyDoubleVector::multiplyByScalar(double scalar)
   {jassert(false);}
@@ -563,8 +557,8 @@ size_t CompositeDoubleVector::l0norm() const
 double CompositeDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
 
-double CompositeDoubleVector::getMaximumValue() const
-  {return defaultGetMaximumValue(*this);}
+double CompositeDoubleVector::getMaximumValue(size_t* index) const
+  {return defaultGetMaximumValue(*this, index);}
 
 void CompositeDoubleVector::multiplyByScalar(double scalar)
 {

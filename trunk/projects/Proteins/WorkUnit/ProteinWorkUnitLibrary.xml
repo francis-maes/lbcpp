@@ -118,6 +118,7 @@
     <variable type="File" name="inputDirectory" shortName="d"/>
     <variable type="PositiveInteger" name="maxProteins" shortName="m"/>
     <variable type="PositiveInteger" name="numFolds" shortName="f"/>
+    <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
   </class>
          
   <!-- BricoBox -->

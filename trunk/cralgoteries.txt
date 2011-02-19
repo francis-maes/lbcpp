@@ -1,5 +1,3 @@
-
-
 - integrate new protein frame
 - parallel learning
  
@@ -24,22 +22,9 @@ AFTER Rewriting CompositeFunction:
 WITH NEW DESIGN - evaluate on whole proteins:
   PDBSmall: 33 s / 998 ms / 125 ms
   
-
-
-But1: SS3 propre
- * LabelSequencePredictor (Vector[Features], Vector[Supervision] -> Vector[DDV])
- * Debut de ProteinInferenceStep
-
-But2: SS3/SS8/STAL/SA/DR simultané
- * CompositeBatchLearner parallel
- * Trois fonctions cles: compose(functions, treatAdditionalInputsAsGlobals), map(function, treatAdditionalInputsAsGlobals), createAndSetVariables(type, matchVariablesByType)
-
 Misc:
  * More AQTime
- * Stream::load, Container::apply: initialiser les fonctions
- * Mettre a jour le compose, et eventuellement faire un compose learner
  * Ne pas utiliser le SupervisedNumericalFunction pour la regression (utilise le LearnableLinear directement)
- * Barre de progression loading de proteins: voir pour mettre l'unité en "Proteins"
 
 From Julien:
  * Bug during the serialization of shared PerceptionRewriter. I

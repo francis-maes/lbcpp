@@ -163,6 +163,7 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, 
 
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature)
 {
+  jassert(signature);
   size_t res = variables.size();
   variablesMap[signature->getName()] = res;
   variables.push_back(signature);
