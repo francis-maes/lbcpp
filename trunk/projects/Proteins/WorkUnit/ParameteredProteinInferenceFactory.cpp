@@ -8,10 +8,10 @@
 using namespace lbcpp;
 
 /*
-** ProteinTarget
+** ProteinTargetsArgument
 */
 
-bool ProteinTarget::loadFromString(ExecutionContext& context, const String& value)
+bool ProteinTargetsArgument::loadFromString(ExecutionContext& context, const String& value)
 {
   tasks.clear();
   description = value;
@@ -21,7 +21,7 @@ bool ProteinTarget::loadFromString(ExecutionContext& context, const String& valu
     int end = value.indexOfChar(begin, T(')'));
     if (value[begin] != T('(') || end == -1)
     {
-      context.errorCallback(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
+      context.errorCallback(T("ProteinTargetsArgument::loadFromString"), value.quoted() + T(" is not a valid target expression"));
       return false;
     }
     
@@ -35,7 +35,7 @@ bool ProteinTarget::loadFromString(ExecutionContext& context, const String& valu
     Variable nbPass = Variable::createFromString(context, positiveIntegerType, value.substring(++end, begin));
     if (nbPass.isMissingValue())
     {
-      context.errorCallback(T("ProteinTarget::loadFromString"), value.quoted() + T(" is not a valid target expression"));
+      context.errorCallback(T("ProteinTargetsArgument::loadFromString"), value.quoted() + T(" is not a valid target expression"));
       return false;
     }
     
@@ -56,7 +56,7 @@ bool ProteinTarget::loadFromString(ExecutionContext& context, const String& valu
           pass.push_back(T("structuralAlphabetSequence"));
         else
         {
-          context.errorCallback(T("ProteinTarget::loadFromString"), taskValues[i].quoted() + T(" is not a valid task"));
+          context.errorCallback(T("ProteinTargetsArgument::loadFromString"), taskValues[i].quoted() + T(" is not a valid task"));
           return false;
         }
       }
@@ -105,7 +105,7 @@ void ParameteredProteinInferenceFactory::setTargetInferenceToOptimize(const Stri
   targetStageToOptimize = targetStage;
 }
 
-InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetPtr proteinTarget) const
+InferencePtr ParameteredProteinInferenceFactory::createInference(ProteinTargetsArgumentPtr proteinTarget) const
 {
   ProteinSequentialInferencePtr inference = new ProteinSequentialInference("Main flow");
   for (size_t i = 0; i < proteinTarget->getNumPasses(); ++i)

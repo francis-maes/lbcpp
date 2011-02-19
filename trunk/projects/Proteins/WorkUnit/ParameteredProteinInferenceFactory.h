@@ -10,12 +10,12 @@
 namespace lbcpp
 {
 
-class ProteinTarget : public Object
+class ProteinTargetsArgument : public Object
 {
 public:
-  ProteinTarget(ExecutionContext& context, const String& targets)
+  ProteinTargetsArgument(ExecutionContext& context, const String& targets)
     {loadFromString(context, targets);}
-  ProteinTarget() {}
+  ProteinTargetsArgument() {}
   
   size_t getNumPasses() const
     {return tasks.size();}
@@ -32,13 +32,13 @@ public:
   virtual bool loadFromString(ExecutionContext& context, const String& str);
   
 protected:
-  friend class ProteinTargetClass;
+  friend class ProteinTargetsArgumentClass;
 
   std::vector<std::vector<String> > tasks;
   String description;
 };
 
-typedef ReferenceCountedObjectPtr<ProteinTarget> ProteinTargetPtr;
+typedef ReferenceCountedObjectPtr<ProteinTargetsArgument> ProteinTargetsArgumentPtr;
 
 
 class ParameteredProteinInferenceFactory : public ProteinInferenceFactory
@@ -54,7 +54,7 @@ public:
   
   virtual void setTargetInferenceToOptimize(const String& targetName, size_t targetStage);
 
-  virtual InferencePtr createInference(ProteinTargetPtr proteinTarget) const;
+  virtual InferencePtr createInference(ProteinTargetsArgumentPtr proteinTarget) const;
   virtual InferencePtr createOptimizer(const String& targetName, InferencePtr inference) const;
 
 

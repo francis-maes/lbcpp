@@ -127,7 +127,7 @@ void ProductPerception::computePerception(ExecutionContext& context, const Varia
 void ProductPerception::addOutputVariable(const String& name, TypePtr type1, PerceptionPtr sub1, TypePtr type2, PerceptionPtr sub2)
 {
   if (!sub1 && !sub2)
-    Perception::addOutputVariable(multiplyFunction->getOutputType(pairClass(type1, type2)), name, PerceptionPtr());
+    Perception::addOutputVariable(multiplyFunction->getOutputType(), name, PerceptionPtr());
   else
   {
     ProductPerceptionPtr product;
@@ -252,7 +252,8 @@ void ProductWithVariablePerception::computeOutputType()
       TypePtr type2 = variableType;
       if (this->swapVariables)
         juce::swapVariables(type1, type2);
-      TypePtr outputType = multiplyFunction->getOutputType(pairClass(type1, type2));
+      jassert(false);
+      TypePtr outputType; // broken = multiplyFunction->getOutputType(pairClass(type1, type2));
       addOutputVariable(outputType, perception->getOutputVariableName(i), PerceptionPtr());
     }
   }

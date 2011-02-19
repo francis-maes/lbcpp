@@ -38,7 +38,7 @@ public:
     {return 3;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? getRequiredFunctionType() : (TypePtr)objectVectorClass(getRequiredExamplesType());}
+    {return index == 0 ? getRequiredFunctionType() : (TypePtr)containerClass(getRequiredExamplesType());}
 
   virtual String getOutputPostFix() const
     {return T("Learned");}
@@ -52,14 +52,31 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
-    const ObjectVectorPtr& trainingData = inputs[1].getObjectAndCast<ObjectVector>();
-    ObjectVectorPtr validationData = (getNumInputs() == 3 ? inputs[2].getObjectAndCast<ObjectVector>() : ObjectVectorPtr());
+    ObjectVectorPtr trainingData = makeObjectVector(inputs[1].getObjectAndCast<Container>());
+    ObjectVectorPtr validationData = makeObjectVector(getNumInputs() == 3 ? inputs[2].getObjectAndCast<Container>() : ContainerPtr());
     return train(context, function, trainingData->getObjects(), validationData ? validationData->getObjects() : std::vector<ObjectPtr>());
   }
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const = 0;
 
   lbcpp_UseDebuggingNewOperator
+
+protected:
+  static ObjectVectorPtr makeObjectVector(const ContainerPtr& container)
+  {
+    if (!container)
+      return ObjectVectorPtr();
+    ObjectVectorPtr res = container.dynamicCast<ObjectVector>();
+    if (!res)
+    {
+      size_t n = container->getNumElements();
+      res = new ObjectVector(container->getElementsType(), n);
+      std::vector<ObjectPtr>& objects = res->getObjects();
+      for (size_t i = 0; i < n; ++i)
+        objects[i] = container->getElement(i).getObject();
+    }
+    return res;
+  }
 };
 
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;
@@ -134,6 +151,7 @@ extern BatchLearnerPtr proxyFunctionBatchLearner();
 extern BatchLearnerPtr compositeFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true);
 extern BatchLearnerPtr stochasticBatchLearner(const std::vector<FunctionPtr>& functionsToLearn, size_t maxIterations = 100, bool randomizeExamples = true);
+extern BatchLearnerPtr mapContainerFunctionBatchLearner();
 
 extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
 

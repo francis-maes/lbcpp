@@ -173,7 +173,7 @@ class ApplyFunctionInContainerWorkUnit : public WorkUnit
 public:
   ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
     : description(function->getDescription(source->getElement(index))), source(source),
-      function(function), target(target), index(index), progressionUnit(function->getInputType()->getName() + T("s")){}
+      function(function), target(target), index(index), progressionUnit(function->getRequiredInputType(0, 1)->getName() + T("s")){}
 
   virtual String toString() const
     {return description;}
@@ -192,12 +192,15 @@ protected:
 
 ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, ApplyComputeMode computeMode, const String& workUnitName) const
 {
+  if (!function->initialize(context, getElementsType()))
+    return ContainerPtr();
+
   if (computeMode == lazyApply)
     return applyFunctionContainer(refCountedPointerFromThis(this), function);
   else
   {
     size_t n = getNumElements();
-    VectorPtr res = vector(function->getOutputType(getElementsType()), n);
+    VectorPtr res = vector(function->getOutputType(), n);
     if (computeMode == sequentialApply)
     {
       for (size_t i = 0; i < n; ++i)
@@ -208,7 +211,7 @@ ContainerPtr Container::apply(ExecutionContext& context, FunctionPtr function, A
       CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(workUnitName.isEmpty() ? function->toString() : workUnitName, n));
       for (size_t i = 0; i < n; ++i)
         workUnits->setWorkUnit(i, new ApplyFunctionInContainerWorkUnit(refCountedPointerFromThis(this), function, res, i));
-      workUnits->setProgressionUnit(function->getInputType()->getName() + T("s"));
+      workUnits->setProgressionUnit(function->getOutputType()->getName() + T("s"));
       context.run(workUnits);
     }
     else

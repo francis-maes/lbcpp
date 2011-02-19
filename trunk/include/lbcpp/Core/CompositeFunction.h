@@ -10,7 +10,7 @@
 # define LBCPP_CORE_COMPOSITE_FUNCTION_H_
 
 # include "Function.h"
-# include "Frame.h" // tmp
+# include "DynamicObject.h"
 
 namespace lbcpp
 {
@@ -22,7 +22,7 @@ class CompositeFunctionBuilder;
 class CompositeFunction : public Function
 {
 public:
-  CompositeFunction() : maxNumFunctionInputs(0) {}
+  CompositeFunction();
 
   virtual void buildFunction(CompositeFunctionBuilder& builder) = 0;
 
@@ -129,13 +129,14 @@ public:
 
   size_t addInput(TypePtr type, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
-  size_t addConstant(const Variable& value, const String& name = T("constant"), const String& shortName = T("C"));
+  size_t addConstant(const Variable& value, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
   size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
 
   void startSelection();
+  void addInSelection(size_t index) {currentSelection.push_back(index);}
   const std::vector<size_t>& finishSelection();
   size_t finishSelectionWithFunction(const FunctionPtr& function);
 

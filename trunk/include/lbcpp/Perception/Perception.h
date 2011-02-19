@@ -57,6 +57,10 @@ class Perception : public Function
 public:
   Perception();
 
+  // old function
+  virtual TypePtr getInputType() const
+    {return anyType;}
+
   // Perception
   virtual TypePtr getOutputType() const;
   

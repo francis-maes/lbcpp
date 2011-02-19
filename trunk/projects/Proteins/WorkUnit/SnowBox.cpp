@@ -26,7 +26,7 @@ public:
 class EvaluationInferenceCallback : public ExecutionCallback
 {
 public:
-  EvaluationInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, ContainerPtr validationData, ProteinTargetPtr target, File output)
+  EvaluationInferenceCallback(InferencePtr inference, ContainerPtr trainingData, ContainerPtr testingData, ContainerPtr validationData, ProteinTargetsArgumentPtr target, File output)
     : inference(inference), trainingData(trainingData), testingData(testingData), passNumber(0), startingTime(Time::getMillisecondCounter())
   {
     for (size_t i = 0; i < target->getNumPasses(); ++i)

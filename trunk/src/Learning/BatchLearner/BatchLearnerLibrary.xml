@@ -26,5 +26,9 @@
   <class name="FilterUnsupervisedExamplesBatchLearner" base="DecoratorBatchLearner">
     <constructor arguments="BatchLearnerPtr decorated"/>
   </class>
+
+  <class name="MapContainerFunctionBatchLearner" base="BatchLearner">
+    <constructor/>
+  </class>
   
 </library>

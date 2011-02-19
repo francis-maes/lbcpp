@@ -1,3 +1,7 @@
+
+- integrate new protein frame
+- parallel learning
+ 
 baseline:  train    test      numTrainProt  numTestProt numTrainSS3 numTestSS3
 
 PDBSmall:  70.36%  65.22%      86             14           16411      2329          1min10  / 296 ms / 46ms
@@ -15,6 +19,11 @@ AFTER Rewriting CompositeFunction:
  PDBMedium: 3min48 / 983 ms / 186 ms
  
  Mem sur PDB30Small = 73Mb - 30Mb
+ 
+WITH NEW DESIGN - evaluate on whole proteins:
+  PDBSmall: 33 s / 998 ms / 125 ms
+  
+
 
 But1: SS3 propre
  * LabelSequencePredictor (Vector[Features], Vector[Supervision] -> Vector[DDV])

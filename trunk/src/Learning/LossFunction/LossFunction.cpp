@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Learning/LossFunction.h>
+#include <lbcpp/Distribution/Distribution.h>
 #include <algorithm>
 using namespace lbcpp;
 
@@ -52,13 +53,15 @@ size_t MultiClassLossFunction::getNumRequiredInputs() const
   {return 2;}
 
 TypePtr MultiClassLossFunction::getRequiredInputType(size_t index, size_t numInputs) const
-  {return index == 1 ? enumValueType : (TypePtr)denseDoubleVectorClass();}
+  {return index == 1 ? anyType : (TypePtr)denseDoubleVectorClass();}
 
 TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   classes = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
   jassert(classes);
-  if (classes != inputVariables[1]->getType())
+
+  TypePtr supervisionType = inputVariables[1]->getType();
+  if (classes != supervisionType && classes != Distribution::getTemplateParameter(supervisionType))
   {
     context.errorCallback(T("Type mismatch: double vector type is ") + classes->getName() + T(" supervision type is ") + inputVariables[1]->getType()->getName());
     return TypePtr();
@@ -69,9 +72,14 @@ TypePtr MultiClassLossFunction::initializeFunction(ExecutionContext& context, co
 void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVectorPtr& scores, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
 {
   jassert(classes);
-  int correct = otherInputs[0].getInteger();
   size_t numClasses = classes->getNumElements();
   jassert(numClasses > 1);
+  int correct;
+  if (otherInputs[0].isInteger())
+    correct = otherInputs[0].getInteger();
+  else
+    correct = otherInputs[0].getObjectAndCast<Distribution>()->sampleBest(RandomGenerator::getInstance()).getInteger();
+
   jassert(correct >= 0 && correct < (int)numClasses);
   computeMultiClassLoss(scores, (size_t)correct, numClasses, output, gradientTarget, gradientWeight);
 }

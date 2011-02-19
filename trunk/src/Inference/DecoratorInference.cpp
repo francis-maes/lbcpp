@@ -52,7 +52,7 @@ PreProcessInference::PreProcessInference(InferencePtr decorated, FunctionPtr pre
     preProcessingFunction(preProcessingFunction) {}
 
 TypePtr PreProcessInference::getInputType() const
-  {return preProcessingFunction->getInputType();}
+{jassert(false); return TypePtr();}// broken preProcessingFunction->getInputType();}
 
 DecoratorInferenceStatePtr PreProcessInference::prepareInference(ExecutionContext& context,
                                                                  const Variable& input,
@@ -75,7 +75,7 @@ PostProcessInference::PostProcessInference(InferencePtr decorated, FunctionPtr p
 }
 
 TypePtr PostProcessInference::getOutputType(TypePtr inputType) const
-  {return postProcessingFunction->getOutputType(pairClass(inputType, decorated->getOutputType(inputType)));}
+  {return postProcessingFunction->getOutputType();}
 
 Variable PostProcessInference::finalizeInference(ExecutionContext& context, const DecoratorInferenceStatePtr& finalState) const
   {return postProcessingFunction->compute(context, Variable::pair(finalState->getInput(), finalState->getSubOutput()));}

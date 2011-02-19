@@ -64,6 +64,15 @@ public:
   virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
 
   /*
+  ** Max Iterations
+  */
+  size_t getMaxIterations() const
+    {return maxIterations;}
+
+  void setMaxIterations(size_t maxIterations)
+    {this->maxIterations = maxIterations;}
+
+  /*
   ** Loss Function
   */
   const FunctionPtr& getLossFunction() const

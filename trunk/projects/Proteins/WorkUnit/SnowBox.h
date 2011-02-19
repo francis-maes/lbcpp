@@ -67,7 +67,7 @@ public:
             , baseLearner(T("OneAgainstAllLinearSVM")), maxIterations(15)
             , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
             , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
-            , target(new ProteinTarget(defaultExecutionContext(), T("(SS3-DR)2")))
+            , target(new ProteinTargetsArgument(defaultExecutionContext(), T("(SS3-DR)2")))
             , exportPerceptions(false), optimizeLearningParameter(false)
             , saveIntermediatePredictions(false), targetToOptimize(T("secondaryStructure"))
             , stageToOptimize(0) {}
@@ -108,7 +108,7 @@ protected:
   size_t numAttributesPerSplit;
   size_t numForSplitting;
   
-  ProteinTargetPtr target;
+  ProteinTargetsArgumentPtr target;
   
   bool exportPerceptions;
   bool optimizeLearningParameter;
@@ -131,7 +131,7 @@ private:
 class LearningParameterObjectiveFunction : public ObjectiveFunction
 {
 public:
-  LearningParameterObjectiveFunction(ParameteredProteinInferenceFactoryPtr factory, ProteinTargetPtr target,
+  LearningParameterObjectiveFunction(ParameteredProteinInferenceFactoryPtr factory, ProteinTargetsArgumentPtr target,
                                      const String& targetName, size_t targetStage,
                                      ContainerPtr learningData, ContainerPtr validationData)
   : factory(factory), target(target), 
@@ -150,7 +150,7 @@ protected:
   CriticalSection lock;
   
   ParameteredProteinInferenceFactoryPtr factory;
-  ProteinTargetPtr target;
+  ProteinTargetsArgumentPtr target;
   String targetName;
   size_t targetStage;
   ContainerPtr learningData;

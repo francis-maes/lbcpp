@@ -21,8 +21,8 @@ public:
   ComputeScoreOnlineLearner(const String& scoreName, FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency)
     : UpdatableOnlineLearner(computeFrequency), scoreName(scoreName), scoreFunction(scoreFunction), lastScoreValue(0.0)
   {
-    checkInheritance(scoreFunction->getInputType(), inferenceClass);
-    checkInheritance(scoreFunction->getOutputType(inferenceClass), doubleType);
+    //checkInheritance(scoreFunction->getInputType(), inferenceClass);
+    //checkInheritance(scoreFunction->getOutputType(inferenceClass), doubleType);
   }
   ComputeScoreOnlineLearner() : lastScoreValue(0.0) {}
 

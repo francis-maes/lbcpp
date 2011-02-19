@@ -39,6 +39,8 @@ bool Function::initialize(ExecutionContext& context, const std::vector<TypePtr>&
 
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
+  jassert(!isInitialized());
+
   // check inputs
   numInputs = inputVariables.size();
   size_t minInputs = getMinimumNumRequiredInputs();

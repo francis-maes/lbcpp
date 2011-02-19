@@ -25,12 +25,13 @@ public:
   virtual String toString() const
     {return classNameToOutputClassName(function->getClassName());}
 
-  virtual TypePtr getInputType() const
-    {return function->getInputType();}
+  // broken
+  //virtual TypePtr getInputType() const
+  //  {return function->getInputType();}
 
   virtual void computeOutputType()
   {
-    addOutputVariable(T("value"), function->getOutputType(getInputType()));
+    addOutputVariable(T("value"), function->getOutputType());
     Perception::computeOutputType();
   }
 
