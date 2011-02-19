@@ -29,6 +29,8 @@ public:
   {
     StochasticGDParametersPtr parameters = new StochasticGDParameters();
     parameters->setMaxIterations(maxLearningIterations);
+
+    parameters->setEvaluator(classificationAccuracyEvaluator()); // tmp
     return linearLearningMachine(parameters);
   }
 
@@ -62,10 +64,10 @@ public:
     // create predictor
     ProteinPredictorParametersPtr parameters = new MyProteinPredictorParameters(maxLearningIterations);
     ProteinPredictorPtr predictor = new ProteinPredictor(parameters);
-    predictor->addTarget(sa20Target);
-    predictor->addTarget(drTarget);
+    //predictor->addTarget(sa20Target);
+    //predictor->addTarget(drTarget);
     predictor->addTarget(ss3Target);
-    predictor->addTarget(ss8Target);
+    //predictor->addTarget(ss8Target);
   
     if (!predictor->train(context, trainingProteins, ContainerPtr(), T("Training"), true))
       return false;
