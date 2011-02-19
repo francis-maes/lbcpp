@@ -57,7 +57,7 @@ public:
 
 //////////////////////////////////////////////
 
-void NumericalProteinFunctionFactory::primaryResidueFeatures(CompositeFunctionBuilder& builder) const 
+void NumericalProteinPredictorParameters::primaryResidueFeatures(CompositeFunctionBuilder& builder) const 
 {
   builder.addInput(positiveIntegerType, T("position"));
   builder.addInput(proteinClass, T("protein"));
@@ -77,14 +77,14 @@ void NumericalProteinFunctionFactory::primaryResidueFeatures(CompositeFunctionBu
   builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 }
 
-void NumericalProteinFunctionFactory::primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
+void NumericalProteinPredictorParameters::primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
 {
   builder.addInput(proteinClass, T("protein"));
   builder.addFunction(proteinLengthFunction(), 0);
-  builder.addFunction(createVectorFunction(function(&NumericalProteinFunctionFactory::primaryResidueFeatures)), 1, 0);
+  builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), 1, 0);
 }
 
-void NumericalProteinFunctionFactory::residueFeatures(CompositeFunctionBuilder& builder) const
+void NumericalProteinPredictorParameters::residueFeatures(CompositeFunctionBuilder& builder) const
 {
   size_t position = builder.addInput(positiveIntegerType);
   size_t primaryResidueFeatures = builder.addInput(vectorClass(doubleVectorClass()));
@@ -102,18 +102,18 @@ void NumericalProteinFunctionFactory::residueFeatures(CompositeFunctionBuilder& 
 
 }
 
-void NumericalProteinFunctionFactory::residueFeaturesVector(CompositeFunctionBuilder& builder) const
+void NumericalProteinPredictorParameters::residueFeaturesVector(CompositeFunctionBuilder& builder) const
 {
   size_t protein = builder.addInput(proteinClass, T("protein"));
 
   builder.startSelection();
 
     builder.addFunction(proteinLengthFunction(), protein);
-    size_t primaryFeatures = builder.addFunction(function(&NumericalProteinFunctionFactory::primaryResidueFeaturesVector), protein);
+    size_t primaryFeatures = builder.addFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeaturesVector), protein);
     size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
     builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
 
-    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinFunctionFactory::residueFeatures)));
+    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)));
 }
 
 namespace lbcpp
@@ -121,8 +121,8 @@ namespace lbcpp
 
   FunctionPtr proteinResidueFeaturesVectorFunction()
   {
-    NumericalProteinFunctionFactoryPtr factory = new NumericalProteinFunctionFactory();
-    return factory->function(&NumericalProteinFunctionFactory::residuePerceptions);
+    NumericalProteinPredictorParametersPtr factory = new NumericalProteinPredictorParameters();
+    return factory->function(&NumericalProteinPredictorParameters::residueVectorPerception);
   }
 
 };

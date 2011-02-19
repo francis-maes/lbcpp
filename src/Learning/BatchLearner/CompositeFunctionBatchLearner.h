@@ -73,11 +73,19 @@ protected:
                           const std::vector<ObjectPtr>& trainingStates, const std::vector<ObjectPtr>& validationStates) const
   {
     const FunctionPtr& subFunction = function->getSubFunction(function->getStepArgument(stepNumber));
+
     ObjectVectorPtr subTrainingData = makeSubInputs(function, stepNumber, trainingStates);
     ObjectVectorPtr subValidationData;
     if (validationStates.size())
       subValidationData = makeSubInputs(function, stepNumber, validationStates);
-    return subFunction->train(context, subTrainingData, subValidationData);
+
+    // todo: factorize this code somewhere:
+    String description = T("Learning ") + subFunction->getOutputVariable()->getName() + T(" with ");
+    description += String((int)subTrainingData->getNumElements()) + T(" train examples");
+    if (subValidationData)
+      description += T(" and ") + String((int)subValidationData->getNumElements()) + T(" validation examples");
+    // -
+    return subFunction->train(context, subTrainingData, subValidationData, description);
   }
 
   void computeSubFunction(ExecutionContext& context, const CompositeFunctionPtr& function, size_t stepNumber, std::vector<ObjectPtr>& states) const

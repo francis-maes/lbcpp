@@ -60,8 +60,6 @@ public:
     StochasticGDParametersPtr params = new StochasticGDParameters();
     params->setEvaluator(regressionErrorEvaluator(T("xor-error")));
     builder.addFunction(linearLearningMachine(params), features, supervision);
-    
-    setBatchLearner(compositeFunctionBatchLearner());
   }
 };
 

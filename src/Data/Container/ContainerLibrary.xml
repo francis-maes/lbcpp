@@ -12,7 +12,7 @@
 
   <template name="ApplyFunctionContainer" base="DecoratorContainer[elementsType]">
     <parameter name="elementsType"/>
-    <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType(container->getElementsType())"/>
+    <constructor arguments="ContainerPtr container, FunctionPtr function" parameters="function->getOutputType()"/>
     <variable type="Function" name="function"/>
   </template>
 

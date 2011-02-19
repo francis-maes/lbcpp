@@ -13,6 +13,7 @@
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/NumericalLearning/LossFunctions.h>
 # include <lbcpp/Function/StoppingCriterion.h>
+# include <lbcpp/Distribution/DiscreteDistribution.h>
 
 namespace lbcpp
 {
@@ -89,7 +90,7 @@ public:
       return linearRegressor(learnerParameters);
     else if (supervisionType == probabilityType || supervisionType == booleanType)
       return linearBinaryClassifier(learnerParameters);
-    else if (supervisionType->inheritsFrom(enumValueType))
+    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(enumerationDistributionClass()))
       return linearMultiClassClassifier(learnerParameters);
     else
       return FunctionPtr();

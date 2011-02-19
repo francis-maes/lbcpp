@@ -165,11 +165,11 @@ public:
 
   /////////////////////////////////////////////////////////////
   // old
-  virtual TypePtr getInputType() const
+  /*virtual TypePtr getInputType() const
     {return anyType;}
 
   virtual TypePtr getOutputType(TypePtr inputType) const
-    {return anyType;}
+    {return anyType;}*/
 
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
@@ -213,13 +213,13 @@ extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction);
 
 extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 
+extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
+
 extern FunctionPtr signedScalarToProbabilityFunction();
 
 // old
 extern FunctionPtr identityFunction(TypePtr type);
-extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 extern FunctionPtr multiplyDoubleFunction();
-
 extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
 extern FunctionPtr selectVariableFunction(int index);
 extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));

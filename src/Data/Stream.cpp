@@ -66,9 +66,9 @@ namespace lbcpp
 
 StreamPtr Stream::apply(FunctionPtr function) const
 {
-  return context.checkInheritance(getElementsType(), function->getInputType())
-    ? applyFunctionStream(refCountedPointerFromThis(this), function)
-    : StreamPtr();
+  if (!function->initialize(context, getElementsType()))
+    return StreamPtr();
+  return applyFunctionStream(refCountedPointerFromThis(this), function);
 }
 
 /*

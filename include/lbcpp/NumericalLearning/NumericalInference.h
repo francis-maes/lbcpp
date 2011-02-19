@@ -53,8 +53,8 @@ public:
   NumericalInference(const String& name, PerceptionPtr perception);
   NumericalInference() {}
 
-  virtual TypePtr getInputType() const
-    {return getPerception()->getInputType();}
+  //virtual TypePtr getInputType() const
+  //  {return getPerception()->getInputType();}
 
   virtual TypePtr getWeightsType(TypePtr perceptionOutputType) const = 0;
 

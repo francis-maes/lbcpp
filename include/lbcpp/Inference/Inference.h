@@ -48,10 +48,16 @@ public:
   Inference(const String& name = T("Unnamed"))
     : name(name) {}
   virtual ~Inference();
-
+  
   /*
   ** Types
   */
+  virtual TypePtr getInputType() const
+    {return anyType;}
+
+  virtual TypePtr getOutputType(TypePtr inputType) const
+    {return anyType;}
+
   virtual TypePtr getSupervisionType() const
     {return anyType;}
 

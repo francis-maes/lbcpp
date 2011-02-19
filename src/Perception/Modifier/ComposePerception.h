@@ -24,8 +24,8 @@ public:
   virtual String toString() const
     {return perception->toString() + T("(") + function->toString() + T(")");}
 
-  virtual TypePtr getInputType() const
-    {return function->getInputType();}
+//  virtual TypePtr getInputType() const
+//    {return function->getInputType();}
 
   virtual TypePtr getOutputType() const
     {return perception->getOutputType();}
@@ -45,7 +45,7 @@ public:
 
   virtual void computePerception(ExecutionContext& context, const Variable& input, PerceptionCallbackPtr callback) const
   {
-    if (context.checkInheritance(function->getOutputType(input.getType()), perceptionInputType))
+    if (context.checkInheritance(function->getOutputType(), perceptionInputType))
     {
       Variable intermediate = function->compute(context, input);
       perception->computePerception(context, intermediate, callback);

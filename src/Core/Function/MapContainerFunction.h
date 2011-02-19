@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Container.h>
 # include <lbcpp/Core/Function.h>
+# include <lbcpp/Learning/BatchLearner.h>
 
 namespace lbcpp
 {
@@ -18,8 +19,12 @@ namespace lbcpp
 class MapContainerFunction : public Function
 {
 public:
-  MapContainerFunction(FunctionPtr function = FunctionPtr())
-    : function(function) {}
+  MapContainerFunction(FunctionPtr function)
+    : function(function)
+  {
+    setBatchLearner(mapContainerFunctionBatchLearner());
+  }
+  MapContainerFunction() {}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -38,7 +43,7 @@ public:
     std::vector<VariableSignaturePtr> subInputVariables(inputVariables.size());
     for (size_t i = 0; i < subInputVariables.size(); ++i)
     {
-      const VariableSignaturePtr& inputVariable = inputVariables[0];
+      const VariableSignaturePtr& inputVariable = inputVariables[i];
       TypePtr elementsType = Container::getTemplateParameter(inputVariable->getType());
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));
     }

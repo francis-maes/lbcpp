@@ -7,11 +7,17 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Core/CompositeFunction.h>
+#include <lbcpp/Learning/BatchLearner.h>
 using namespace lbcpp;
 
 /*
 ** CompositeFunction
 */
+CompositeFunction::CompositeFunction() : maxNumFunctionInputs(0)
+{
+  setBatchLearner(compositeFunctionBatchLearner());
+}
+
 TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   stateClass = new DynamicClass(getClassName() + T("State"));
@@ -92,7 +98,7 @@ ObjectPtr CompositeFunction::makeSubInputsObject(size_t stepNumber, const Object
   const FunctionPtr& function = functions[functionIndex];
   const std::vector<size_t>& inputIndices = functionInputs[functionIndex];
 
-  ObjectPtr res = function->getInputsClass();
+  ObjectPtr res = new DenseGenericObject(function->getInputsClass());
   for (size_t i = 0; i < inputIndices.size(); ++i)
     res->setVariable(i, state->getVariable(inputIndices[i]));
   return res;
@@ -130,8 +136,11 @@ CompositeFunctionBuilder::CompositeFunctionBuilder(ExecutionContext& context, Co
 
 size_t CompositeFunctionBuilder::addVariable(TypePtr type, const String& name, const String& shortName, CompositeFunction::StepType stepType, size_t stepArgument)
 {
-  size_t res = function->steps.size();
-  function->stateClass->addMemberVariable(context, type, name, shortName);
+  jassert(function->steps.size() == function->stateClass->getNumMemberVariables());
+  size_t res = function->stateClass->addMemberVariable(context, type, name, shortName);
+  if (res == invalidIndex())
+    return res;
+
   function->steps.push_back(std::make_pair(stepType, stepArgument));
   currentSelection.push_back(res);
   return res;
@@ -140,6 +149,12 @@ size_t CompositeFunctionBuilder::addVariable(TypePtr type, const String& name, c
 size_t CompositeFunctionBuilder::addInput(TypePtr type, const String& optionalName, const String& optionalShortName)
 {
   size_t stepArgument = numInputs++;
+  if (stepArgument >= inputVariables.size())
+  {
+    context.errorCallback(T("Missing input #") + String((int)numInputs) + T(" of type ") + type->getName());
+    return returnError();
+  }
+
   const VariableSignaturePtr& inputVariable = inputVariables[stepArgument];
   if (!context.checkInheritance(inputVariable->getType(), type))
     return returnError();
@@ -149,13 +164,18 @@ size_t CompositeFunctionBuilder::addInput(TypePtr type, const String& optionalNa
   return addVariable(inputVariable->getType(), name, shortName, CompositeFunction::inputStep, stepArgument);
 }
 
-size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String& name, const String& shortName)
+size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String& optionalName, const String& optionalShortName)
 {
+  String id((int)function->constants.size() + 1);
+  String name = optionalName.isNotEmpty() ? optionalName : T("constant") + id;
+  String shortName = optionalShortName.isNotEmpty() ? optionalShortName : T("C") + id;
+
   if (!value.exists())
   {
     context.errorCallback(T("Constant " ) + name.quoted() + T(" does not exists"));
     return returnError();
   }
+
   size_t stepArgument = function->constants.size();
   function->constants.push_back(value);
   return addVariable(value.getType(), name, shortName, CompositeFunction::constantStep, stepArgument);
@@ -174,6 +194,7 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t
 
 size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, const std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
 {
+  jassert(function->steps.size() == function->stateClass->getNumMemberVariables());
   std::vector<VariableSignaturePtr> inputVariables(inputs.size());
   for (size_t i = 0; i < inputVariables.size(); ++i)
   {

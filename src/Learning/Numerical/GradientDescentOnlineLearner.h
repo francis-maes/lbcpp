@@ -25,8 +25,8 @@ class GradientDescentOnlineLearner : public OnlineLearner, public FunctionCallba
 public:
   GradientDescentOnlineLearner(const FunctionPtr& lossFunction, const IterationFunctionPtr& learningRate, bool normalizeLearningRate)
     : context(NULL), maxIterations(0), numberOfActiveFeatures(T("NumActiveFeatures"), 100), 
-      lossFunction(lossFunction), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0) {}
-  GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0) {}
+      lossFunction(lossFunction), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0), failure(false) {}
+  GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0), failure(false) {}
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
@@ -36,6 +36,7 @@ public:
     this->context = &context;
     this->function = function;
     this->maxIterations = maxIterations;
+    failure = false;
   }
 
   virtual void learningStep(const Variable* inputs, const Variable& output) = 0;
@@ -66,27 +67,40 @@ public:
   {
     function->removePostCallback(this);
     bool isLearningFinished = false;
-    if (lossValue.getCount())
+    if (!lossValue.getCount())
     {
-      const NumericalLearnableFunctionPtr& numericalFunction = function.staticCast<NumericalLearnableFunction>();
-      const DoubleVectorPtr& parameters = numericalFunction->getParameters();
-
-      double mean = lossValue.getMean();
-      context->resultCallback(T("Empirical Risk"), mean);
-      context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
-      context->resultCallback(T("Num Params"), parameters->l0norm());
-      context->resultCallback(T("Params Norm"), parameters->l2norm());
-      context->resultCallback(T("Epoch"), epoch);
-      
-      lossValue.clear();
-
-      if (objectiveValueToMinimize == DBL_MAX)
-        objectiveValueToMinimize = mean;
-
-      if (mean == 0.0)
-        isLearningFinished = true;
+      // no examples
+      context->errorCallback(T("Learning failed: no examples"));
+      failure = true;
+      return true;
     }
-    return isLearningFinished;
+
+    const NumericalLearnableFunctionPtr& numericalFunction = function.staticCast<NumericalLearnableFunction>();
+    const DoubleVectorPtr& parameters = numericalFunction->getParameters();
+    double l2norm = parameters->l2norm();
+
+    double mean = lossValue.getMean();
+    context->resultCallback(T("Empirical Risk"), mean);
+    context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
+    context->resultCallback(T("Num Params"), parameters->l0norm());
+    context->resultCallback(T("Params Norm"), l2norm);
+    context->resultCallback(T("Epoch"), epoch);
+    lossValue.clear();
+
+    if (!isNumberValid(l2norm))
+    {
+      context->errorCallback(T("Learning failed: parameters have diverged"));
+      failure = true;
+      return true;
+    }
+
+    if (objectiveValueToMinimize == DBL_MAX)
+      objectiveValueToMinimize = mean;
+
+    if (mean == 0.0)
+      isLearningFinished = true;
+
+    return failure || isLearningFinished;
   }
 
   virtual void finishLearning()
@@ -108,6 +122,7 @@ protected:
   IterationFunctionPtr learningRate;
   bool normalizeLearningRate;
   size_t epoch;
+  bool failure;
 
   void gradientDescentStep(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double weight = 1.0)
   {
@@ -119,10 +134,20 @@ protected:
 
   void computeAndAddGradient(const NumericalLearnableFunctionPtr& function, const Variable* inputs, const Variable& output, DoubleVectorPtr& target, double weight)
   {
-    ++epoch;
+    if (failure || !inputs[1].exists())
+      return; // failed or no supervision
+
     double exampleLossValue = 0.0;
     if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
+    {
+      ++epoch;
       lossValue.push(exampleLossValue);
+    }
+    else
+    {
+      context->errorCallback(T("Learning failed: could not compute loss gradient"));
+      failure = true;
+    }
   }
 
   double computeLearningRate() const

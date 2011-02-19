@@ -188,6 +188,7 @@
     <variable type="VariableVector" name="constants"/>
     <variable type="ObjectVector[Function]" name="functions"/>
   </class>
+  <class name="MethodBasedCompositeFunction" base="CompositeFunction" abstract="yes"/>
 
     <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">

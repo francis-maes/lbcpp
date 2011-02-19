@@ -153,6 +153,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/CreateVectorFunction.h
   Core/Function/LoadFromFileFunction.h
   Core/Function/MapContainerFunction.h
+  Core/Function/ComposeFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
   Core/Function/CoreFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreFunctionLibrary.cpp
@@ -317,7 +318,6 @@ SET(LBCPP_FUNCTION_SOURCES
 SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/SelectVariableFunctions.h
   Function/MiscFunctions/IdentityFunction.h
-  Function/MiscFunctions/ComposeFunction.h
   Function/MiscFunctions/MultiplyFunction.h
   Function/MiscFunctions/SetFieldFunction.h
   Function/MiscFunctions/MiscFunctionsLibrary.xml
@@ -434,6 +434,7 @@ SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
   Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
   Learning/BatchLearner/CompositeFunctionBatchLearner.h
+  Learning/BatchLearner/MapContainerFunctionBatchLearner.h
   Learning/BatchLearner/FilterUnsupervisedExamplesBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp
