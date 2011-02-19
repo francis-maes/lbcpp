@@ -156,7 +156,7 @@
   <class name="Protein" base="NameableObject">
     <!-- Primary Structure -->
     <variable type="GenericVector[AminoAcidType]" name="primaryStructure" shortName="aa" description="Primary Structure"/>
-    <variable type="ObjectVector[DoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
+    <variable type="ObjectVector[DenseDoubleVector[PositionSpecificScoringMatrix, Probability]]" name="positionSpecificScoringMatrix" shortName="pssm" description="PSSM"/>
     
     <!-- Secondary Structure -->
     <variable type="ObjectVector[DoubleVector[SecondaryStructureElement, Probability]]" name="secondaryStructure" shortName="ss3" description="Secondary Structure"/>

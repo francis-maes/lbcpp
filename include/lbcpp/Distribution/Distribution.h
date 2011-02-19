@@ -33,9 +33,11 @@ public:
 
 typedef ReferenceCountedObjectPtr<Distribution> DistributionPtr;
 
-extern ClassPtr distributionClass(TypePtr elementsType);
+extern ClassPtr distributionClass(TypePtr elementsType = anyType);
 
 extern FunctionPtr distributionEntropyFunction();
+extern FunctionPtr denseDoubleVectorEntropyFunction();
+
 extern FunctionPtr sampleDistributionFunction(bool sampleBest = true);
 
 }; /* namespace lbcpp */
