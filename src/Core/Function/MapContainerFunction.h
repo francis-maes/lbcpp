@@ -88,21 +88,30 @@ public:
     else
     {
       std::vector<ContainerPtr> containers(numInputs);
+      size_t numElements = (size_t)-1;
       for (size_t i = 0; i < numInputs; ++i)
       {
         containers[i] = inputs[i].getObjectAndCast<Container>();
-        jassert(containers[i]);
-        jassert(i == 0 || containers[i]->getNumElements() == containers[0]->getNumElements());
+        if (containers[i])
+        {
+          jassert(numElements == (size_t)-1 || numElements == containers[i]->getNumElements());
+          numElements = containers[i]->getNumElements();
+        }
       }
 
-      size_t n = containers[0]->getNumElements();
-      VectorPtr res = vector(function->getOutputType(), n);
-      std::vector<Variable> elements(numInputs);
-      for (size_t i = 0; i < n; ++i)
+      VectorPtr res = vector(function->getOutputType(), numElements);
+      std::vector<Variable> subInputs(numInputs);
+      for (size_t i = 0; i < numElements; ++i)
       {
         for (size_t j = 0; j < numInputs; ++j)
-          elements[j] = containers[j]->getElement(i);
-        res->setElement(i, function->compute(context, &elements[0]));
+        {
+          const ContainerPtr& container = containers[j];
+          if (container)
+            subInputs[j] = container->getElement(i);
+          else
+            subInputs[j] = Variable::missingValue(function->getInputsClass()->getMemberVariableType(j));
+        }
+        res->setElement(i, function->compute(context, subInputs));
       }
       return res; 
     }
