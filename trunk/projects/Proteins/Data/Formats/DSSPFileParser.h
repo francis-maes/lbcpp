@@ -42,7 +42,7 @@ public:
     {
       if (line.startsWith(T("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC")))
       {
-        dsspSecondaryStructureSequence = Protein::createEmptyDSSPSecondaryStructure(n);
+        dsspSecondaryStructureSequence = Protein::createEmptyDSSPSecondaryStructure(n, true);
         solventAccessibilitySequence = Protein::createEmptyDoubleSequence(n);
         ++serialNumber;
       }
@@ -100,7 +100,7 @@ public:
       context.errorCallback(T("DSSPFileParser::parseLine"), T("Unrecognized secondary structure code: '") + secondaryStructureCode + T("'"));
       return false;
     }
-    SparseDoubleVectorPtr value = new SparseDoubleVector(dsspSecondaryStructureSequence->getElementsType(), probabilityType);
+    SparseDoubleVectorPtr value = new SparseDoubleVector(dsspEnum, probabilityType);
     value->appendValue(secondaryStructureIndex, 1.0);
     dsspSecondaryStructureSequence->setElement((size_t)residueNumber, value);
 
