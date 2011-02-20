@@ -105,7 +105,7 @@ public:
   ContainerPtr getDSSPSecondaryStructure() const
     {return dsspSecondaryStructure;}
 
-  static ContainerPtr createEmptyDSSPSecondaryStructure(size_t length);
+  static ContainerPtr createEmptyDSSPSecondaryStructure(size_t length, bool useSparseVectors);
 
   void setStructuralAlphabetSequence(VectorPtr structuralAlphabetSequence)
     {this->structuralAlphabetSequence = structuralAlphabetSequence;}

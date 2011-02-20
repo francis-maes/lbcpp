@@ -27,7 +27,7 @@ public:
 
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
-    StochasticGDParametersPtr parameters = new StochasticGDParameters();
+    StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(0.1));
     parameters->setMaxIterations(maxLearningIterations);
 
     parameters->setEvaluator(classificationAccuracyEvaluator()); // tmp

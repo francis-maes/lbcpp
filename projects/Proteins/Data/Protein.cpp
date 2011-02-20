@@ -480,8 +480,13 @@ ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(Cartesian
 ContainerPtr Protein::createEmptyPositionSpecificScoringMatrix(size_t length)
   {return objectVector(denseDoubleVectorClass(positionSpecificScoringMatrixEnumeration, probabilityType), length);}
 
-ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length)
-  {return objectVector(denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType), length);}
+ContainerPtr Protein::createEmptyDSSPSecondaryStructure(size_t length, bool useSparseVectors)
+{
+  TypePtr elementsType = useSparseVectors
+    ? sparseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType)
+    : denseDoubleVectorClass(dsspSecondaryStructureElementEnumeration, probabilityType);
+  return objectVector(elementsType, length);
+}
 
 DoubleVectorPtr Protein::createEmptyProbabilitySequence(size_t length)
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType, length);}
