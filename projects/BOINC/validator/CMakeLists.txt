@@ -31,6 +31,16 @@ IF(UNIX)
 
       TARGET_LINK_LIBRARIES(sample_trivial_validator ${LIBS})
 
+      ADD_EXECUTABLE(lbcpp_validator
+        lbcpp_validator.cpp
+        #credit.cpp
+        #validator.cpp
+        #validate_util.cpp
+        #validate_util2.cpp
+      )
+
+      TARGET_LINK_LIBRARIES(lbcpp_validator ${LIBS} lbcpp-core${NAME_FILE_SUFFIX})
+
     ENDIF(CMAKE_SIZEOF_VOID_P MATCHES 4)
   ENDIF(NOT APPLE)
 ENDIF(UNIX)      
