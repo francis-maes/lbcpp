@@ -334,6 +334,8 @@ private:
     {size_t tmp = a; a = b; b = tmp;}
 };
 
+extern ClassPtr randomGeneratorClass;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_RANDOM_GENERATOR_H_
