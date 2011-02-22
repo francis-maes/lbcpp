@@ -18,8 +18,11 @@
 
   <!-- Search Heuristic -->
   <class name="SearchHeuristic" base="Function" abstract="yes"/>
-  <class name="MinDepthSearchHeuristic" base="SearchHeuristic"/>
-  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic">
+  <class name="MinDepthSearchHeuristic" base="SearchHeuristic" shortName="minDepth">
+    <constructor/>
+  </class>
+  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic" shortName="optimisticPlanning">
+    <constructor arguments="double discountFactor"/>
     <variable type="Double" name="discountFactor"/>
   </class>
   

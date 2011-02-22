@@ -107,23 +107,31 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs) co
 Variable Function::compute(ExecutionContext& context, const Variable& input) const
   {jassert(getNumInputs() == 1); return compute(context, &input);}
 
+static inline void fastVariableCopy(juce::int64* dst, const Variable& source)
+{
+  const juce::int64* src = (const juce::int64* )&source;
+  dst[0] = src[0];
+  dst[1] = src[1];
+}
+
 Variable Function::compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const
 {
   jassert(getNumInputs() == 2);
-  Variable v[2];
-  v[0] = input1;
-  v[1] = input2;
-  return compute(context, v);
+  jassert(sizeof (Variable) == sizeof (juce::int64) * 2);
+  juce::int64 tmp[4];
+  fastVariableCopy(tmp, input1);
+  fastVariableCopy(tmp + 2, input2);
+  return compute(context, (const Variable* )tmp);
 }
 
 Variable Function::compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const
 {
   jassert(getNumInputs() == 3);
-  Variable v[3];
-  v[0] = input1;
-  v[1] = input2;
-  v[2] = input3;
-  return compute(context, v);
+  juce::int64 tmp[6];
+  fastVariableCopy(tmp, input1);
+  fastVariableCopy(tmp + 2, input2);
+  fastVariableCopy(tmp + 4, input3);
+  return compute(context, (const Variable* )tmp);
 }
 
 Variable Function::compute(ExecutionContext& context, const std::vector<Variable>& inputs) const
