@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionCore" directory="Core">
+
+  <!-- SequentialDecisionProblem -->
+  <class name="SequentialDecisionProblem" base="Object">
+    <variable type="Function" name="initialStateSampler"/>
+    <variable type="Function" name="transitionFunction"/>
+    <variable type="Function" name="rewardFunction"/>
+  </class>
+
+  <!-- Search Space -->
+  <class name="SearchSpaceNode" base="Object">
+    <variable type="Variable" name="state"/>
+    <variable type="PositiveInteger" name="depth"/>
+  </class>
+  <class name="SortedSearchSpace" base="Object"/>
+
+  <!-- Search Heuristic -->
+  <class name="SearchHeuristic" base="Function" abstract="yes"/>
+  <class name="MinDepthSearchHeuristic" base="SearchHeuristic"/>
+  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic">
+    <variable type="Double" name="discountFactor"/>
+  </class>
+  
+</library>

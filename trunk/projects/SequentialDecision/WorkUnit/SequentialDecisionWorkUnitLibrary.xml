@@ -2,18 +2,6 @@
 
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
-  <class name="SearchSpaceNode" base="Object">
-    <variable type="Variable" name="state"/>
-    <variable type="PositiveInteger" name="depth"/>
-  </class>
-  <class name="SortedSearchSpace" base="Object"/>
-
-  <class name="SearchHeuristic" base="Function" abstract="yes"/>
-  <class name="MinDepthSearchHeuristic" base="SearchHeuristic"/>
-  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic">
-    <variable type="Double" name="discountFactor"/>
-  </class>
-
   <class name="SequentialDecisionSandBox" base="WorkUnit"/>
   
 </library>

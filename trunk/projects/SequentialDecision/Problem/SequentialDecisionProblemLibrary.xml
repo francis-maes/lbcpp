@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionProblem" directory="Problem">
+
+  <!-- LinearPointPhysic System -->
+  <class name="LinearPointPhysicState">
+    <variable type="Double" name="position"/>
+    <variable type="Double" name="velocity"/>
+  </class>
+  <class name="LinearPointPhysicStateSampler" base="Function"/>
+  <class name="LinearPointPhysicTransitionFunction" base="Function"/>
+  <class name="LinearPointPhysicRewardFunction" base="Function"/>
+
+</library>
