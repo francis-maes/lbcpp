@@ -85,7 +85,7 @@ public:
   /*
   ** Results
   */
-  Variable getReturnValue() const
+  const Variable& getReturnValue() const
     {return returnValue;}
 
   void setReturnValue(const Variable& value)
@@ -103,7 +103,7 @@ public:
   void setProgression(const ProgressionStatePtr& progression)
     {this->progression = progression;}
 
-  ProgressionStatePtr getProgression() const
+  const ProgressionStatePtr& getProgression() const
     {return progression;}
 
   /*

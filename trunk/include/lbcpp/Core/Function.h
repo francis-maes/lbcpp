@@ -246,7 +246,7 @@ protected:
 class SimpleUnaryFunction : public SimpleFunction
 {
 public:
-  SimpleUnaryFunction(TypePtr inputType, TypePtr outputType, const String& outputPostFix)
+  SimpleUnaryFunction(TypePtr inputType, TypePtr outputType, const String& outputPostFix = String::empty)
     : SimpleFunction(outputType, outputPostFix), inputType(inputType) {numInputs = 1;}
 
   virtual size_t getNumRequiredInputs() const
@@ -262,7 +262,7 @@ protected:
 class SimpleBinaryFunction : public SimpleFunction
 {
 public:
-  SimpleBinaryFunction(TypePtr inputType1, TypePtr inputType2, TypePtr outputType, const String& outputPostFix)
+  SimpleBinaryFunction(TypePtr inputType1, TypePtr inputType2, TypePtr outputType, const String& outputPostFix = String::empty)
     : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {numInputs = 2;}
 
   virtual size_t getNumRequiredInputs() const

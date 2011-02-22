@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecision" dynamic="yes">
+
+  <import name="SequentialDecisionSystem"/>
+  <import name="SequentialDecisionWorkUnit"/>
+
+</library>
