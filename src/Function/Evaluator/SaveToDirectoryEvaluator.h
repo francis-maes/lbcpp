@@ -8,16 +8,16 @@
 #ifndef LBCPP_FUNCTION_EVALUATOR_SAVE_TO_DIRECTORY_H_
 # define LBCPP_FUNCTION_EVALUATOR_SAVE_TO_DIRECTORY_H_
 
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 
 namespace lbcpp
 {
 
-class SaveToDirectoryEvaluator : public Evaluator
+class SaveToDirectoryEvaluator : public OldEvaluator
 {
 public:
   SaveToDirectoryEvaluator(const File& directory, const String& extension)
-    : Evaluator(T("Save To ") + directory.getFileName()), directory(directory), extension(extension), savedCount(0) {}
+    : OldEvaluator(T("Save To ") + directory.getFileName()), directory(directory), extension(extension), savedCount(0) {}
   SaveToDirectoryEvaluator() : savedCount(0) {}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)

@@ -12,7 +12,7 @@
 # include <lbcpp/Execution/TestUnit.h>
 # include <lbcpp/Perception/Perception.h>
 # include <lbcpp/DecisionTree/DecisionTree.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 
 namespace lbcpp
 {
@@ -86,12 +86,12 @@ protected:
     InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
 
     inference->train(context, learningData, ContainerPtr());
-    EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
+    OldEvaluatorPtr evaluator = oldClassificationAccuracyEvaluator(T("x3TestEvaluator"));
     
     inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
     checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
     
-    evaluator = classificationAccuracyEvaluator(T("x3TestEvaluator"));
+    evaluator = oldClassificationAccuracyEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
   }
@@ -112,11 +112,11 @@ protected:
 
     inference->train(context, learningData, ContainerPtr());
  
-    EvaluatorPtr evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
+    OldEvaluatorPtr evaluator = oldRegressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, learningData, evaluator);
     checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
 
-    evaluator = regressionErrorEvaluator(T("x3TestEvaluator"));
+    evaluator = oldRegressionErrorEvaluator(T("x3TestEvaluator"));
     inference->evaluate(context, testingData, evaluator);
     checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
   }

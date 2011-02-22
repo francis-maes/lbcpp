@@ -42,13 +42,13 @@ public:
           perStep, invLinearIterationFunction(pow(10.0, logLearningRate), (size_t)(pow(10.0, logLearningRateDecrease))), true,
           perStepMiniBatch20, l2RegularizerFunction(pow(10.0, logRegularizer)));
 
-    EvaluatorPtr evaluator = classificationAccuracyEvaluator();
+    OldEvaluatorPtr evaluator = oldClassificationAccuracyEvaluator();
 
-    EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>();
+    OldEvaluatorPtr trainEvaluator = evaluator->cloneAndCast<OldEvaluator>();
     trainEvaluator->setName(T("trainScore"));
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(trainEvaluator, false));
 
-    EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>();
+    OldEvaluatorPtr validationEvaluator = evaluator->cloneAndCast<OldEvaluator>();
     validationEvaluator->setName(T("validationScore"));
     lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
 

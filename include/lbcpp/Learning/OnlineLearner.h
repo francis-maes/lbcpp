@@ -34,7 +34,7 @@ public:
 
 OnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion);
 OnlineLearnerPtr restoreBestParametersOnlineLearner();
-OnlineLearnerPtr evaluatorOnlineLearner(EvaluatorPtr evaluator);
+OnlineLearnerPtr evaluatorOnlineLearner(OldEvaluatorPtr evaluator);
 
 OnlineLearnerPtr compositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners);
 OnlineLearnerPtr compositeOnlineLearner(const OnlineLearnerPtr& learner1,

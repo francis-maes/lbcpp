@@ -15,7 +15,7 @@ using namespace lbcpp;
 StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate,
                                                 StoppingCriterionPtr stoppingCriterion,
                                                 size_t maxIterations,
-                                                EvaluatorPtr evaluator,
+                                                OldEvaluatorPtr evaluator,
                                                 bool doPerEpisodeUpdates,
                                                 bool normalizeLearningRate,
                                                 bool restoreBestParameters,

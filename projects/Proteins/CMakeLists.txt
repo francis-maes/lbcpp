@@ -118,9 +118,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
   WorkUnit/SandBox.h
-  WorkUnit/LearningParameter.h
-  WorkUnit/ParameteredProteinInferenceFactory.h
-  WorkUnit/ParameteredProteinInferenceFactory.cpp
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
   WorkUnit/ProteinWorkUnitLibrary.xml

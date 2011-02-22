@@ -21,7 +21,7 @@
   </code>
 
   <class name="EvaluationInference" base="RunOnSupervisedExamplesParallelInference">
-    <constructor arguments="const InferencePtr&amp; inference, const EvaluatorPtr&amp; evaluator" returnType="ParallelInference"/>
+    <constructor arguments="const InferencePtr&amp; inference, const OldEvaluatorPtr&amp; evaluator" returnType="ParallelInference"/>
     <variable type="Evaluator" name="evaluator"/>
   </class>
 
@@ -31,7 +31,7 @@
   </class>
   
   <class name="CrossValidationInference" base="SharedParallelInference">
-    <constructor arguments="const String&amp; name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds"/>
+    <constructor arguments="const String&amp; name, OldEvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds"/>
     <variable type="Inference" name="inferenceModel"/>
     <variable type="Integer" name="numFolds"/>
   </class>

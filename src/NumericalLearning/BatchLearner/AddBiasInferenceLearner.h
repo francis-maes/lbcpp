@@ -11,7 +11,7 @@
 
 # include "../Inference/AddBiasInference.h"
 # include <lbcpp/Core/Pair.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 
 namespace lbcpp

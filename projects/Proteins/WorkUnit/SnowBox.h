@@ -1,63 +1,45 @@
 
-
 #include <lbcpp/lbcpp.h>
-#include "Inference/ProteinInferenceFactory.h"
-#include "Inference/ProteinInference.h"
-#include "LearningParameter.h"
-#include "ParameteredProteinInferenceFactory.h"
+#include "../Data/Protein.h"
+#include "../Data/ProteinFunctions.h"
+#include "../Predictor/ProteinPredictor.h"
 
 namespace lbcpp {
 
-class SaveObjectProgram : public WorkUnit
+class ProteinTargetsArgument : public Object
 {
+public:
+  ProteinTargetsArgument(ExecutionContext& context, const String& targets)
+    {loadFromString(context, targets);}
+
+  ProteinTargetsArgument() {}
+  
+  size_t getNumStages() const
+    {return stages.size();}
+  
+  size_t getNumTasks(size_t stageIndex) const
+    {jassert(stageIndex < getNumStages()); return stages[stageIndex].size();}
+  
+  String getTaskName(size_t stageIndex, size_t taskIndex) const
+    {jassert(taskIndex < getNumTasks(stageIndex)); return proteinClass->getMemberVariableName(stages[stageIndex][taskIndex]);}
+  
+  ProteinTarget getTask(size_t stageIndex, size_t taskIndex) const
+    {jassert(taskIndex < getNumTasks(stageIndex)); return (ProteinTarget)stages[stageIndex][taskIndex];}
+  
   virtual String toString() const
-    {return T("SaveObjectProgram is able to serialize a object.");}
+    {return description;}
   
-  virtual Variable run(ExecutionContext& context)
-  {
-    if (className == String::empty)
-    {
-      context.warningCallback(T("SaveObjectProgram::run"), T("No class name specified"));
-      return false;
-    }
-
-    if (outputFile == File::nonexistent)
-      outputFile = File::getCurrentWorkingDirectory().getChildFile(className + T(".xml"));
-    
-    std::cout << "Loading class " << className.quoted() << " ... ";
-    std::flush(std::cout);
-
-    TypePtr type = typeManager().getType(context, className);
-    if (!type)
-    {
-      std::cout << "Fail" << std::endl;
-      return false;
-    }
-
-    ObjectPtr obj = Object::create(type);
-    if (!obj)
-    {
-      std::cout << "Fail" << std::endl;
-      return false;
-    }
-
-    std::cout << "OK" << std::endl;
-    std::cout << "Saving class to " << outputFile.getFileName().quoted() << " ... ";
-    std::flush(std::cout);
-
-    obj->saveToFile(context, outputFile);
-
-    std::cout << "OK" << std::endl;
-    return true;
-  }
-
+  virtual bool loadFromString(ExecutionContext& context, const String& str);
+  
 protected:
-  friend class SaveObjectProgramClass;
-  
-  String className;
-  File outputFile;
+  friend class ProteinTargetsArgumentClass;
+
+  std::vector<std::vector<int> > stages;
+  String description;
 };
-  
+
+typedef ReferenceCountedObjectPtr<ProteinTargetsArgument> ProteinTargetsArgumentPtr;
+
 class SnowBox : public WorkUnit
 {
 public:
@@ -65,7 +47,6 @@ public:
             , maxProteinsToLoad(0), numberOfFolds(7), currentFold(0)
             , useCrossValidation(false), partAsValidation(0)
             , baseLearner(T("OneAgainstAllLinearSVM")), maxIterations(15)
-            , defaultParameter(new NumericalLearningParameter(0.0, 4.0, -10.0))
             , numTrees(100), numAttributesPerSplit(20), numForSplitting(1)
             , target(new ProteinTargetsArgument(defaultExecutionContext(), T("(SS3-DR)2")))
             , exportPerceptions(false), optimizeLearningParameter(false)
@@ -74,7 +55,7 @@ public:
   
   virtual String toString() const
   {
-    return String("SnowBox is ... a snow box ! It's a flexible program allowing"    \
+    return String("SnowBox is ... a snow box ! It's a flexible program allowing" \
               " you to learn, save, resume models. Just by giving the targets"   \
               " to learn and a training dataset. You can specified the learning" \
               " based-model, the learning rate for each target and each passes," \
@@ -102,8 +83,6 @@ protected:
 
   String baseLearner;
   size_t maxIterations;
-  std::vector<std::pair<String, std::pair<LearningParameterPtr, LearningParameterPtr> > > learningParameters;
-  LearningParameterPtr defaultParameter;
   size_t numTrees;
   size_t numAttributesPerSplit;
   size_t numForSplitting;
@@ -123,39 +102,9 @@ private:
   ContainerPtr validationData;
 
   bool loadData(ExecutionContext& context);
-  ProteinInferenceFactoryPtr createFactory(ExecutionContext& context) const;
-  ProteinSequentialInferencePtr loadOrCreateIfFailInference(ExecutionContext& context, ParameteredProteinInferenceFactoryPtr factory) const;
+  ProteinPredictorParametersPtr createParameters(ExecutionContext& context) const;
+  ProteinSequencialPredictorPtr loadPredictorOrCreateIfFail(ExecutionContext& context) const;
   void printInformation(ExecutionContext& context) const;
 };
-/*
-class LearningParameterObjectiveFunction : public ObjectiveFunction
-{
-public:
-  LearningParameterObjectiveFunction(ParameteredProteinInferenceFactoryPtr factory, ProteinTargetsArgumentPtr target,
-                                     const String& targetName, size_t targetStage,
-                                     ContainerPtr learningData, ContainerPtr validationData)
-  : factory(factory), target(target), 
-  targetName(targetName), targetStage(targetStage),
-  learningData(learningData), validationData(validationData) {}
-  LearningParameterObjectiveFunction() {}
-  
-  virtual double compute(ExecutionContext& context, const Variable& input) const;
-  
-  virtual String toString() 
-    {return T("");}
-  
-protected:
-  friend class LearningParameterObjectiveFunctionClass;
-  
-  CriticalSection lock;
-  
-  ParameteredProteinInferenceFactoryPtr factory;
-  ProteinTargetsArgumentPtr target;
-  String targetName;
-  size_t targetStage;
-  ContainerPtr learningData;
-  ContainerPtr validationData;
-};
-*/
 
 };

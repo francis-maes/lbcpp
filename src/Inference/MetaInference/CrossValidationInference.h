@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_META_CROSS_VALIDATION_H_
 
 # include <lbcpp/Core/Pair.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Inference/ParallelInference.h>
 
 namespace lbcpp
@@ -19,7 +19,7 @@ namespace lbcpp
 class CrossValidateStepInference : public Inference
 {
 public:
-  CrossValidateStepInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel)
+  CrossValidateStepInference(const String& name, OldEvaluatorPtr evaluator, InferencePtr inferenceModel)
     : Inference(name), evaluator(evaluator), inferenceModel(inferenceModel) {}
   CrossValidateStepInference() {}
 
@@ -36,7 +36,7 @@ public:
 protected:
   friend class CrossValidateStepInferenceClass;
 
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
   InferencePtr inferenceModel;
 
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
@@ -56,7 +56,7 @@ protected:
 class CrossValidationInference : public SharedParallelInference
 {
 public:
-  CrossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds)
+  CrossValidationInference(const String& name, OldEvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds)
     : SharedParallelInference(name, new CrossValidateStepInference(name + T(" step"), evaluator, inferenceModel)), inferenceModel(inferenceModel), numFolds(numFolds) {}
   CrossValidationInference() {}
 

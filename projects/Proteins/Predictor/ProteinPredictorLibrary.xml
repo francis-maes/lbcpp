@@ -2,4 +2,10 @@
 
 <library name="ProteinPredictor" directory="Predictor">
 
+  <class name="ProteinPredictor" base="CompositeFunction"/>
+  
+  <class name="ProteinSequencialPredictor" base="CompositeFunction">
+    <variable type="ObjectVector[ProteinPredictor]" name="predictors"/>
+  </class>
+
 </library>

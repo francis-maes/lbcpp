@@ -46,7 +46,7 @@
   </class>
 
   <class name="ComputeEvaluatorOnlineLearner" base="InferenceOnlineLearner">
-    <constructor arguments="EvaluatorPtr evaluator, bool computeOnValidationData"/>
+    <constructor arguments="OldEvaluatorPtr evaluator, bool computeOnValidationData"/>
     <variable type="Evaluator" name="evaluator"/>
     <variable type="Boolean" name="computeOnValidationData"/>
     <variable type="ObjectVector[Pair[String,Double]]" name="lastScores"/>

@@ -8,7 +8,7 @@
 
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Execution/ExecutionStack.h>
-#include <lbcpp/Function/Evaluator.h>
+#include <lbcpp/Function/OldEvaluator.h>
 #include <lbcpp/Inference/Inference.h>
 #include <lbcpp/Inference/ParallelInference.h>
 #include <lbcpp/Inference/InferenceCallback.h>
@@ -137,7 +137,7 @@ bool Inference::train(ExecutionContext& context, const InferenceBatchLearnerInpu
   return true;
 }
 
-bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName) const
+bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, OldEvaluatorPtr evaluator, const String& workUnitName) const
 {
   InferencePtr inference = refCountedPointerFromThis(this);
   ParallelInferencePtr evaluatorInference = evaluationInference(inference, evaluator);
@@ -146,7 +146,7 @@ bool Inference::evaluate(ExecutionContext& context, ContainerPtr examples, Evalu
   return true;
 }
 
-bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName) const
+bool Inference::crossValidate(ExecutionContext& context, ContainerPtr examples, OldEvaluatorPtr evaluator, size_t numFolds, const String& workUnitName) const
 {
   InferencePtr cvInference(crossValidationInference(String((int)numFolds) + T("-CV"), evaluator, refCountedPointerFromThis(this), numFolds));
   cvInference->run(context, examples, Variable(), workUnitName);

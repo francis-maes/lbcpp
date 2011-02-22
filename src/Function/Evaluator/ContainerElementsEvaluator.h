@@ -9,17 +9,17 @@
 #ifndef LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
 # define LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
 
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Core/Container.h>
 
 namespace lbcpp
 {
 
-class ContainerElementsEvaluator : public Evaluator
+class ContainerElementsEvaluator : public OldEvaluator
 {
 public:
-  ContainerElementsEvaluator(const String& name, EvaluatorPtr elementEvaluator)
-    : Evaluator(name), elementEvaluator(elementEvaluator) {}
+  ContainerElementsEvaluator(const String& name, OldEvaluatorPtr elementEvaluator)
+    : OldEvaluator(name), elementEvaluator(elementEvaluator) {}
   ContainerElementsEvaluator() {}
 
   virtual String toString() const
@@ -47,7 +47,7 @@ public:
 protected:
   friend class ContainerElementsEvaluatorClass;
 
-  EvaluatorPtr elementEvaluator;
+  OldEvaluatorPtr elementEvaluator;
 };
 
 }; /* namespace lbcpp */

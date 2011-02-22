@@ -9,17 +9,17 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 # define LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class TertiaryStructureEvaluator : public Evaluator
+class TertiaryStructureEvaluator : public OldEvaluator
 {
 public:
   TertiaryStructureEvaluator(const String& name)
-    : Evaluator(name), calphaRMSE(new ScalarVariableMean()) {}
+    : OldEvaluator(name), calphaRMSE(new ScalarVariableMean()) {}
 
   virtual String toString() const
   {

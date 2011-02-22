@@ -2,40 +2,96 @@
 
 <library name="Evaluator" directory="Function/Evaluator">
   <include file="lbcpp/Function/Evaluator.h"/>
+  <include file="lbcpp/Function/OldEvaluator.h"/>
 
+  <!-- Base Class -->
+  <class name="ScoreObject" base="Object" abstract="yes"/>
+  <class name="Evaluator" base="Function" abstract="yes"/>
+  
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix"/>
+
   <class name="ROCAnalyse"/>
+
+  <!-- Regression -->
+  <class name="RegressionErrorScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableMean" name="absoluteError"/>
+    <variable type="ScalarVariableMean" name="squaredError"/>
+  </class>
+  
+  <class name="RegressionErrorEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+
+  <class name="DihedralRegressionErrorEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+
+  <!-- Binary Classification -->
+  <class name="BinaryClassificationConfusionScoreObject" base="ScoreObject"/>
+
+  <class name="BinaryClassificationConfusionEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+  
+  <class name="ROCAnalysisScoreObject" base="ScoreObject"/>
+  
+  <class name="ROCAnalysisEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+
+  <!-- MultiClass Classification -->
+  <class name="ClassificationAccuracyScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableMean" name="accuracy"/>
+  </class>
+
+  <class name="ClassificationAccuracyEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+  
+  <!-- MultiLabel Classification -->
+  <class name="MultiLabelClassificationScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableMean" name="hammingLoss"/>
+    <variable type="ScalarVariableMean" name="accuracy"/>
+    <variable type="ScalarVariableMean" name="precision"/>
+    <variable type="ScalarVariableMean" name="recall"/>
+  </class>
+  
+  <class name="MultiLabelClassificationEvaluator" base="Evaluator">
+    <constructor/>
+  </class>
+
+  <!-- Old -->
   
   <!-- Base Class -->
-  <class name="Evaluator" base="NameableObject" abstract="yes"/>
+  <class name="OldEvaluator" base="NameableObject" abstract="yes"/>
   
   <!-- Regression -->
-  <class name="RegressionErrorEvaluator" base="Evaluator">
+  <class name="OldRegressionErrorEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
 
-  <class name="DihedralRegressionErrorEvaluator" base="RegressionErrorEvaluator">
+  <class name="OldDihedralRegressionErrorEvaluator" base="OldRegressionErrorEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
 
   <!-- Binary Classification -->
-  <class name="BinaryClassificationConfusionEvaluator" base="Evaluator">
+  <class name="OldBinaryClassificationConfusionEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
   
-  <class name="ROCAnalysisEvaluator" base="Evaluator">
+  <class name="OldROCAnalysisEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
 
   <!-- MultiClass Classification -->
-  <class name="ClassificationAccuracyEvaluator" base="Evaluator">
+  <class name="OldClassificationAccuracyEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
     <variable type="ScalarVariableMean" name="accuracy"/>
   </class>
 
   <!-- MultiLabel Classification -->
-  <class name="MultiLabelClassificationEvaluator" base="Evaluator">
+  <class name="OldMultiLabelClassificationEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
     <variable type="ScalarVariableMean" name="hammingLoss"/>
     <variable type="ScalarVariableMean" name="accuracy"/>
@@ -44,12 +100,12 @@
   </class>
   
   <!-- Misc -->
-  <class name="ContainerElementsEvaluator" base="Evaluator">
-    <constructor arguments="const String&amp; name, EvaluatorPtr elementEvaluator"/>
-    <variable type="Evaluator" name="elementEvaluator"/>
+  <class name="ContainerElementsEvaluator" base="OldEvaluator">
+    <constructor arguments="const String&amp; name, OldEvaluatorPtr elementEvaluator"/>
+    <variable type="OldEvaluator" name="elementEvaluator"/>
   </class>
 
-  <class name="SaveToDirectoryEvaluator" base="Evaluator">
+  <class name="SaveToDirectoryEvaluator" base="OldEvaluator">
     <constructor arguments="const File&amp; directory, const String&amp; extension"/>
     <variable type="File" name="directory"/>
     <variable type="String" name="extension"/>

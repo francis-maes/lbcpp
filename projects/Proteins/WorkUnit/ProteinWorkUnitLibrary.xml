@@ -1,50 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinWorkUnit" directory="WorkUnit">
-  
-  <class name="SaveObjectProgram" base="WorkUnit">
-    <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
-    <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
-  </class>
-
-  <class name="LearningParameter" base="InferenceOnlineLearnerParameters" abstract="yes"/>
-
-  <class name="NumericalLearningParameter" base="LearningParameter">
-    <variable type="Double" name="learningRate"/>
-    <variable type="Double" name="learningRateDecrease"/>
-    <variable type="Double" name="regularizer"/>
-  </class>
-  
-  <class name="SecondaryStructureNumericalLearningParameter" base="NumericalLearningParameter"/>
-  
-  <class name="ExtraTreeLearningParameter" base="LearningParameter">
-    <variable type="PositiveInteger" name="numTrees"/>
-    <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
-    <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
-  </class>
 
   <class name="ProteinTargetsArgument" base="Object">
-    <variable type="ObjectVector[GenericVector[String]]" name="tasks"/>
+    <variable type="ObjectVector[GenericVector[VariablesEnumeration[Protein]]]" name="stages"/>
     <variable type="String" name="description"/>
   </class>
-<!--  
-  <class name="ParameteredProteinInferenceFactory" base="ProteinInferenceFactory"/>
-  <class name="ExtraTreeProteinInferenceFactory" base="ParameteredProteinInferenceFactory"/>
-  <class name="NumericalProteinInferenceFactory" base="ParameteredProteinInferenceFactory"/>
-  <class name="OneAgainstAllLinearSVMProteinInferenceFactory" base="NumericalProteinInferenceFactory"/>
-  <class name="MultiClassLinearSVMProteinInferenceFactory" base="NumericalProteinInferenceFactory"/>
--->
-  
-<!--
-  <class name="LearningParameterObjectiveFunction" base="ObjectiveFunction">
-    <variable type="Object" name="factory"/>
-    <variable type="ProteinTargetsArgument" name="target"/>
-    <variable type="String" name="targetName"/>
-    <variable type="PositiveInteger" name="targetStage"/>
-    <variable type="Container[Pair[Variable,Variable]]" name="learningData"/>
-    <variable type="Container[Pair[Variable,Variable]]" name="validationData"/>
-  </class>
--->
+
   <class name="SnowBox" base="WorkUnit">
     <variable type="File" name="learningDirectory" description="The path to the learning set directory" shortName="ls"/>
     <variable type="File" name="testingDirectory" description="The path to the testing set directory" shortName="ts"/>
@@ -59,8 +21,6 @@
     <variable type="PositiveInteger" name="partAsValidation" description="The part of learning proteins to use as validation proteins." shortName="vpart"/>
     <variable type="String" name="baseLearner" description="The base learner. Available: 'OneAgainstAllLinearSVM', 'MultiClassLinearSVM', 'MultiClassLinearSVMMostViolated' and 'ExtraTree'" shortName="bl"/>
     <variable type="PositiveInteger" name="maxIterations" description="The maximum number of iteration per learner" shortName="iter"/>
-    <variable type="ObjectVector[Pair[String,Pair[NumericalLearningParameter,NumericalLearningParameter]]]" name="learningParameters" description="Numerical learning parameter of each task. You can give a parameter for the Content-Only pass and an other for remaining passes. If no parameter is given for a task and a pass, the default parameter is used (see defaultParameter)" shortName="params"/>
-    <variable type="NumericalLearningParameter" name="defaultParameter" description="The default parameter is used when a learning parameter is not specifed" shortName="dparam"/>
     <variable type="PositiveInteger" name="numTrees" description="ExtraTree's parameter: Number of trees" shortName="n3"/>
     <variable type="PositiveInteger" name="numAttributesPerSplit" description="ExtraTree's parameter: Number of sample attributes per split" shortName="k"/>
     <variable type="PositiveInteger" name="numForSplitting" description="ExtraTree's parameter: Minimum size for splitting" shortName="nmin"/>
@@ -110,9 +70,7 @@
     <variable type="File" name="dataDirectory" shortName="d"/>
   </class>
   
-  <!-- New SandBox -->
-  <class name="ProteinPredictor" base="CompositeFunction"/>
-  
+  <!-- New SandBox -->  
   <class name="SandBox" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
     <variable type="File" name="inputDirectory" shortName="d"/>
@@ -128,6 +86,11 @@
   
   <class name="CheckARFFDataFileParserWorkUnit" base="WorkUnit">
     <variable type="File" name="dataFile"/>
+  </class>
+  
+  <class name="SaveObjectProgram" base="WorkUnit">
+    <variable type="String" name="className" desc="The name of the object class to save" shortName="c"/>
+    <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
   </class>
 
 </library>

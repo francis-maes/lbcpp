@@ -73,7 +73,7 @@
 # include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
 # include "Function/StoppingCriterion.h"
-# include "Function/Evaluator.h"
+# include "Function/OldEvaluator.h"
 
 # include "FeatureGenerator/FeatureGenerator.h"
 

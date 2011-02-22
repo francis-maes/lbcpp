@@ -10,7 +10,7 @@
 # define LBCPP_LEARNING_NUMERICAL_LINEAR_LEARNABLE_FUNCTION_H_
 
 # include <lbcpp/Function/ScalarFunction.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Learning/Numerical.h>
 

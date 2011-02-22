@@ -63,4 +63,54 @@ protected:
   File dataFile;
 };
 
+class SaveObjectProgram : public WorkUnit
+{
+  virtual String toString() const
+    {return T("SaveObjectProgram is able to serialize a object.");}
+  
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (className == String::empty)
+    {
+      context.warningCallback(T("SaveObjectProgram::run"), T("No class name specified"));
+      return false;
+    }
+
+    if (outputFile == File::nonexistent)
+      outputFile = File::getCurrentWorkingDirectory().getChildFile(className + T(".xml"));
+    
+    std::cout << "Loading class " << className.quoted() << " ... ";
+    std::flush(std::cout);
+
+    TypePtr type = typeManager().getType(context, className);
+    if (!type)
+    {
+      std::cout << "Fail" << std::endl;
+      return false;
+    }
+
+    ObjectPtr obj = Object::create(type);
+    if (!obj)
+    {
+      std::cout << "Fail" << std::endl;
+      return false;
+    }
+
+    std::cout << "OK" << std::endl;
+    std::cout << "Saving class to " << outputFile.getFileName().quoted() << " ... ";
+    std::flush(std::cout);
+
+    obj->saveToFile(context, outputFile);
+
+    std::cout << "OK" << std::endl;
+    return true;
+  }
+
+protected:
+  friend class SaveObjectProgramClass;
+  
+  String className;
+  File outputFile;
+};
+
 };
