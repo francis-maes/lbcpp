@@ -67,6 +67,14 @@ inline size_t defaultL0Norm(const VectorType& vector)
 }
 
 template<class VectorType>
+inline double defaultEntropy(const VectorType& vector)
+{
+  ComputeEntropyFeatureGeneratorCallback callback;
+  computeFeatures(vector, callback);
+  return callback.res;
+}
+
+template<class VectorType>
 inline double defaultSumOfSquares(const VectorType& vector)
 {
   ComputeSumOfSquaresFeatureGeneratorCallback callback;
@@ -152,6 +160,9 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
 }
 
 // double vector
+double SparseDoubleVector::entropy() const
+  {return defaultEntropy(*this);}
+
 size_t SparseDoubleVector::l0norm() const
   {return defaultL0Norm(*this);}
 
@@ -336,19 +347,10 @@ double DenseDoubleVector::computeLogSumOfExponentials() const
   return log(res) + highestValue;
 }
 
-double DenseDoubleVector::computeEntropy() const
-{
-  double res = 0.0;
-  for (size_t i = 0; i < values->size(); ++i)
-  {
-    double p = (*values)[i];
-    if (p > 1e-9)
-      res -= p * log2(p);
-  }
-  return res;
-}
-
 // DoubleVector
+double DenseDoubleVector::entropy() const
+  {return defaultEntropy(*this);}
+
 size_t DenseDoubleVector::l0norm() const
   {return values ? defaultL0Norm(*this) : 0;}
 
@@ -484,6 +486,9 @@ LazyDoubleVector::LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const V
 }
 
 // DoubleVector
+double LazyDoubleVector::entropy() const
+  {return defaultEntropy(*this);}
+
 size_t LazyDoubleVector::l0norm() const
   {return defaultL0Norm(*this);}
 
@@ -565,6 +570,9 @@ void LazyDoubleVector::setElement(size_t index, const Variable& value)
 ** CompositeDoubleVector
 */
 // DoubleVector
+double CompositeDoubleVector::entropy() const
+  {return defaultEntropy(*this);}
+
 size_t CompositeDoubleVector::l0norm() const
   {return defaultL0Norm(*this);}
 

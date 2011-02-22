@@ -3,7 +3,7 @@
 <library name="DistributionFunction" directory="Distribution/Function">
 
   <!-- Entropy -->
-  <class name="DenseDoubleVectorEntropyFunction" base="Function">
+  <class name="DoubleVectorEntropyFunction" base="Function">
     <constructor/>
   </class>
   <class name="DistributionEntropyFunction" base="Function">

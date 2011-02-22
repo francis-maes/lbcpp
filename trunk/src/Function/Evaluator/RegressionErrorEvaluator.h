@@ -79,13 +79,6 @@ protected:
     {result.staticCast<RegressionErrorScoreObject>()->addDelta(predictedObject.getDouble() - correctObject.getDouble());}
 };
 
-class DihedralRegressionErrorEvaluator : public RegressionErrorEvaluator
-{
-protected:
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
-    {result.staticCast<RegressionErrorScoreObject>()->addDelta(normalizeAngle(predictedObject.getDouble() - correctObject.getDouble()));}
-};
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_FUNCTION_EVALUATOR_REGRESSION_ERROR_H_

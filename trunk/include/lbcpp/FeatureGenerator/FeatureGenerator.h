@@ -51,6 +51,7 @@ public:
   virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const;
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const;
 
+  virtual double entropy(const Variable* inputs) const;
   virtual size_t l0norm(const Variable* inputs) const;
   virtual double sumOfSquares(const Variable* inputs) const;
   virtual double getMaximumValue(const Variable* inputs, size_t* index) const;

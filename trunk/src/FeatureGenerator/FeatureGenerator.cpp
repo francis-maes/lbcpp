@@ -37,6 +37,13 @@ Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Vari
     return toComputedVector(inputs);
 }
 
+double FeatureGenerator::entropy(const Variable* inputs) const
+{
+  ComputeEntropyFeatureGeneratorCallback callback;
+  computeFeatures(&inputs[0], callback);
+  return callback.res;
+}
+
 size_t FeatureGenerator::l0norm(const Variable* inputs) const
 {
   ComputeL0NormFeatureGeneratorCallback callback;

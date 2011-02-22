@@ -52,6 +52,9 @@ public:
   static EnumerationPtr getElementsEnumeration(TypePtr doubleVectorType);
   static bool getTemplateParameters(ExecutionContext& context, TypePtr type, EnumerationPtr& elementsEnumeration, TypePtr& elementsType);
 
+  // compute - sum v[i] * log2(v[i])
+  virtual double entropy() const = 0;
+
   virtual size_t l0norm() const = 0;
   virtual double sumOfSquares() const = 0;
   virtual double getMaximumValue(size_t* index = NULL) const = 0;
@@ -108,6 +111,7 @@ public:
     {lastIndex = values.size() ? (int)values.back().first : -1;}
 
   // DoubleVector
+  virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
   virtual double getMaximumValue(size_t* index = NULL) const;
@@ -181,10 +185,8 @@ public:
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors
   double computeLogSumOfExponentials() const;
 
-  // compute - sum v[i] * log2(v[i])
-  double computeEntropy() const;
-
   // DoubleVector
+  virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
   virtual double getMaximumValue(size_t* index = NULL) const;
@@ -238,6 +240,7 @@ public:
  
 
   // DoubleVector
+  virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
   virtual double getMaximumValue(size_t* index = NULL) const;
@@ -291,6 +294,7 @@ public:
   void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
 
   // DoubleVector
+  virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
   virtual double getMaximumValue(size_t* index = NULL) const;

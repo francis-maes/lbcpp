@@ -21,8 +21,8 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t input = builder.addInput(denseDoubleVectorClass(enumValueType, probabilityType), T("p"));
-    size_t entropy = builder.addFunction(denseDoubleVectorEntropyFunction(), input);
+    size_t input = builder.addInput(doubleVectorClass(enumValueType, probabilityType), T("p"));
+    size_t entropy = builder.addFunction(doubleVectorEntropyFunction(), input);
     size_t entropyFeatures = builder.addFunction(defaultPositiveDoubleFeatureGenerator(10, -1.0, 4.0), entropy, T("e"));
     builder.addFunction(concatenateFeatureGenerator(false), input, entropyFeatures);
   }
@@ -37,16 +37,16 @@ void NumericalProteinPredictorParameters::primaryResidueFeatures(CompositeFuncti
   builder.addInput(proteinClass, T("protein"));
   size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), 1, 0);
   size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), 1, 0);
-  //size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), 1, 0);
-  //size_t ss8 = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), 1, 0);
+  size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), 1, 0);
+  size_t ss8 = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), 1, 0);
 
   // feature generators
   builder.startSelection();
   
     builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
     builder.addFunction(new EnumerationDistributionFeaturesFunction(), pssmRow, T("pssm"));
-    //addFunction(new EnumerationDistributionFeaturesFunction(), ss3, T("ss3"));
-    //addFunction(new EnumerationDistributionFeaturesFunction(), ss8, T("ss8"));
+    builder.addFunction(new EnumerationDistributionFeaturesFunction(), ss3, T("ss3"));
+    builder.addFunction(new EnumerationDistributionFeaturesFunction(), ss8, T("ss8"));
 
   builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 }

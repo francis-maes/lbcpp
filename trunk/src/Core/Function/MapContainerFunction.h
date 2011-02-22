@@ -61,7 +61,7 @@ public:
       EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
       if (!enumeration)
         enumeration = positiveIntegerEnumerationEnumeration;
-      return doubleVectorClass(enumeration, outputType);
+      return denseDoubleVectorClass(enumeration, outputType);
     }
     else
       return vectorClass(outputType);

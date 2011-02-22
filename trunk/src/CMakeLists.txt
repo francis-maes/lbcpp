@@ -370,6 +370,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/ClassificationAccuracyEvaluator.h
   Function/Evaluator/RegressionErrorEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
+  Function/Evaluator/DefaultEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
