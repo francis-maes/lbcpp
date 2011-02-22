@@ -58,14 +58,14 @@ protected:
 };
 
 // Classification
-extern EvaluatorPtr ClassificationAccuracyEvaluator();
+extern EvaluatorPtr classificationAccuracyEvaluator();
 
 // Multi-label Classification
-extern EvaluatorPtr MultiLabelClassificationEvaluator();
+extern EvaluatorPtr multiLabelClassificationEvaluator();
 
 // Regression
-extern EvaluatorPtr RegressionErrorEvaluator();
-extern EvaluatorPtr DihedralRegressionErrorEvaluator();
+extern EvaluatorPtr regressionErrorEvaluator();
+extern EvaluatorPtr dihedralRegressionErrorEvaluator();
 
 class BinaryClassificationConfusionMatrix : public Object
 {
