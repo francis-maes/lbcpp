@@ -9,16 +9,18 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 # define LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 
-# include "SequentialDecisionSystem.h"
+# include "../core/SequentialDecisionProblem.h"
 
 namespace lbcpp
 {
+
+extern ClassPtr linearPointPhysicStateClass;
 
 class LinearPointPhysicState : public Object
 {
 public:
   LinearPointPhysicState(double position = 0.0, double velocity = 0.0)
-    : position(position), velocity(velocity) {}
+    : Object(linearPointPhysicStateClass), position(position), velocity(velocity) {}
 
   double getPosition() const
     {return position;}
@@ -34,8 +36,6 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<LinearPointPhysicState> LinearPointPhysicStatePtr;
-
-extern ClassPtr linearPointPhysicStateClass;
 
 class LinearPointPhysicStateSampler : public SimpleUnaryFunction
 {
@@ -87,9 +87,9 @@ public:
   }
 };
 
-inline SequentialDecisionSystemPtr linearPointPhysicSystem()
+inline SequentialDecisionProblemPtr linearPointPhysicSystem()
 {
-  return new SequentialDecisionSystem(new LinearPointPhysicStateSampler(), 
+  return new SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
                                       new LinearPointPhysicTransitionFunction(),
                                       new LinearPointPhysicRewardFunction());
 }

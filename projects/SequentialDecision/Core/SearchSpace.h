@@ -14,6 +14,9 @@
 namespace lbcpp
 {
 
+/*
+** SearchSpaceNode
+*/
 class SearchSpaceNode;
 typedef ReferenceCountedObjectPtr<SearchSpaceNode> SearchSpaceNodePtr;
 
@@ -32,7 +35,7 @@ public:
   double getCurrentReturn() const
     {return currentReturn;}
 
-  void openNode(const SequentialDecisionSystemPtr& system, const SearchSpaceNodePtr& parentNode, double discount);
+  void openNode(const SequentialDecisionProblemPtr& system, const SearchSpaceNodePtr& parentNode, double discount);
 
   void setChildrenIndices(size_t begin, size_t end)
     {childrenBeginIndex = (int)begin; childrenEndIndex = (int)end;}
@@ -57,6 +60,9 @@ protected:
 
 extern ClassPtr searchSpaceNodeClass;
 
+/*
+** SearchHeuristic
+*/
 class SearchHeuristic : public SimpleUnaryFunction
 {
 public:
@@ -70,11 +76,20 @@ public:
 
 typedef ReferenceCountedObjectPtr<SearchHeuristic> SearchHeuristicPtr;
 
+SearchHeuristicPtr minDepthSearchHeuristic();
+SearchHeuristicPtr optimisticPlanningSearchHeuristic(double discountFactor);
+
+/*
+** SortedSearchSpace
+*/
 class SortedSearchSpace : public Object
 {
 public:
-  SortedSearchSpace(SequentialDecisionSystemPtr system, SearchHeuristicPtr heuristic, double discount, const Variable& initialState);
+  SortedSearchSpace(SequentialDecisionProblemPtr system, SearchHeuristicPtr heuristic, double discount, const Variable& initialState);
   SortedSearchSpace() {}
+
+  void reserveNodes(size_t size)
+    {nodes.reserve(size);}
 
   // returns the current return
   double exploreBestNode(ExecutionContext& context);
@@ -83,7 +98,7 @@ public:
   SearchSpaceNodePtr popBestCandidate(size_t& nodeIndex);
 
 private:
-  SequentialDecisionSystemPtr system;
+  SequentialDecisionProblemPtr system;
   SearchHeuristicPtr heuristic;
   double discount;
   std::vector<SearchSpaceNodePtr> nodes;

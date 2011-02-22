@@ -23,7 +23,7 @@ SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodePtr& parentNode, size_t pa
 {
 }
 
-void SearchSpaceNode::openNode(const SequentialDecisionSystemPtr& system, const SearchSpaceNodePtr& parentNode, double discount)
+void SearchSpaceNode::openNode(const SequentialDecisionProblemPtr& system, const SearchSpaceNodePtr& parentNode, double discount)
 {
   if (!state.exists())
   {
@@ -41,7 +41,7 @@ void SearchSpaceNode::openNode(const SequentialDecisionSystemPtr& system, const 
 /*
 ** SortedSearchSpace
 */
-SortedSearchSpace::SortedSearchSpace(SequentialDecisionSystemPtr system, SearchHeuristicPtr heuristic, double discount, const Variable& initialState)
+SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr system, SearchHeuristicPtr heuristic, double discount, const Variable& initialState)
   : system(system), heuristic(heuristic), discount(discount)
 {
   addCandidate(new SearchSpaceNode(initialState));
@@ -69,7 +69,6 @@ double SortedSearchSpace::exploreBestNode(ExecutionContext& context)
   size_t firstChildIndex = nodes.size();
   node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
 
-  nodes.reserve(nodes.size() + actions.size());
   for (size_t i = 0; i < actions.size(); ++i)
     addCandidate(new SearchSpaceNode(node, nodeIndex, actions[i]));
 

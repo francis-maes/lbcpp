@@ -118,6 +118,12 @@ public:
 	    max = val;
   }
 
+  void push(const std::vector<double>& values)
+  {
+    for (size_t i = 0; i < values.size(); ++i)
+      push(values[i]);
+  }
+
   void push(double val, double weight)
   {
     ScalarVariableMeanAndVariance::push(val, weight);

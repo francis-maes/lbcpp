@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SequentialDecisionSystem.h     | Sequential Decision System      |
+| Filename: SequentialDecisionProblem.h    | Sequential Decision System      |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/02/2011 16:19               |                                 |
 `------------------------------------------/                                 |
@@ -15,11 +15,11 @@
 namespace lbcpp
 {
 
-class SequentialDecisionSystem : public Object
+class SequentialDecisionProblem : public Object
 {
 public:
-  SequentialDecisionSystem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction);
-  SequentialDecisionSystem() {}
+  SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction);
+  SequentialDecisionProblem() {}
 
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
@@ -44,7 +44,7 @@ public:
     {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();} // todo: support for different kind of reward functions
 
 private:
-  friend class SequentialDecisionSystemClass;
+  friend class SequentialDecisionProblemClass;
 
   FunctionPtr initialStateSampler;
   FunctionPtr transitionFunction;
@@ -54,7 +54,7 @@ private:
   TypePtr actionType;
 };
 
-typedef ReferenceCountedObjectPtr<SequentialDecisionSystem> SequentialDecisionSystemPtr;
+typedef ReferenceCountedObjectPtr<SequentialDecisionProblem> SequentialDecisionProblemPtr;
 
 }; /* namespace lbcpp */
 

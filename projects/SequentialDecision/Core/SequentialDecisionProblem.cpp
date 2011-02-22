@@ -1,20 +1,20 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SequentialDecisionSystem.cpp   | Sequential Decision System      |
+| Filename: SequentialDecisionProblem.cpp   | Sequential Decision System      |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/02/2011 16:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include "SequentialDecisionSystem.h"
+#include "SequentialDecisionProblem.h"
 using namespace lbcpp;
 
-SequentialDecisionSystem::SequentialDecisionSystem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction)
+SequentialDecisionProblem::SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction)
   : initialStateSampler(initialStateSampler), transitionFunction(transitionFunction), rewardFunction(rewardFunction)
 {
 }
 
-bool SequentialDecisionSystem::initialize(ExecutionContext& context)
+bool SequentialDecisionProblem::initialize(ExecutionContext& context)
 {
   if (!initialStateSampler || !transitionFunction || !rewardFunction)
   {
@@ -62,7 +62,7 @@ bool SequentialDecisionSystem::initialize(ExecutionContext& context)
   return true;
 }
 
-void SequentialDecisionSystem::getAvailableActions(const Variable& state, std::vector<Variable>& actions) const
+void SequentialDecisionProblem::getAvailableActions(const Variable& state, std::vector<Variable>& actions) const
 {
   jassert(stateType && actionType);
   if (actionType == booleanType)

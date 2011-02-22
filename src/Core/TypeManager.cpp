@@ -200,6 +200,8 @@ TypePtr TypeManager::getType(ExecutionContext& context, const String& name) cons
 
 String TypeManager::removeAllSpaces(const String& str)
 {
+  if (str.indexOfAnyOf(T(" \t\n\r")) < 0)
+    return str;
   String res;
   for (int i = 0; i < str.length(); ++i)
     if (str[i] != ' ' && str[i] != '\t')
