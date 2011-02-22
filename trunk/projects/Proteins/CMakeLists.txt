@@ -8,6 +8,7 @@ GENERATE_INTROSPECTION_CODE(Geometry/GeometryLibrary.xml GeometryLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionLibrary.xml ProteinPerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredictorLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Evaluator/ProteinEvaluatorLibrary.xml ProteinEvaluatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
 
@@ -101,6 +102,8 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/TertiaryStructureEvaluator.h
   Evaluator/ContactMapEvaluator.h
   Evaluator/ProteinEvaluator.h
+  Evaluator/ProteinEvaluatorLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinEvaluatorLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES

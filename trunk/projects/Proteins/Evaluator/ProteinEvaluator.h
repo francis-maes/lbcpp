@@ -15,112 +15,121 @@
 namespace lbcpp
 {
 
-class ProteinEvaluator : public OldEvaluator
+class ProteinScoreObject : public ScoreObject
 {
 public:
-  ProteinEvaluator() : OldEvaluator(T("Protein")), numProteins(0)
+  virtual double getScoreToMinimize() const
+    {jassertfalse; return 0.0;}
+
+  virtual void getScores(std::vector< std::pair<String, double> >& res) const
   {
-    // 1D
-    addEvaluator(T("secondaryStructure"), sequenceLabelingAccuracyEvaluator(T("SS3")));
-    addEvaluator(T("dsspSecondaryStructure"), sequenceLabelingAccuracyEvaluator(T("SS8")));
-    addEvaluator(T("solventAccessibilityAt20p"), binarySequenceLabelingConfusionEvaluator(T("SA2")));
-    addEvaluator(T("disorderRegions"), binarySequenceLabelingConfusionEvaluator(T("DR")));
-    addEvaluator(T("structuralAlphabetSequence"), sequenceLabelingAccuracyEvaluator(T("StAl")));
-
-    // 2D
-    addEvaluator(T("contactMap8Ca"), new ContactMapEvaluator(T("RRa"), 6));
-    addEvaluator(T("contactMap8Cb"), new ContactMapEvaluator(T("RRb"), 6));
-    addEvaluator(T("disulfideBonds"), new ContactMapEvaluator(T("DSB"), 1));
-
-    // 3D
-    addEvaluator(T("tertiaryStructure"), new TertiaryStructureEvaluator(T("TS")));
+    for (size_t i = 0; i < scores.size(); ++i)
+    {
+      std::vector<std::pair<String, double> > childScores;
+      scores[i]->getScores(childScores);
+      for (size_t j = 0; j < scores.size(); ++j)
+        res.push_back(std::make_pair(scores[i]->getName() + T("[") + childScores[j].first + T("]"), childScores[j].second));
+    }
   }
 
+  void pushScoreObject(const ScoreObjectPtr& score)
+    {scores.push_back(score);}
+  
+  ScoreObjectPtr getScoreObject(size_t index) const
+    {return scores[index];}
+  
   virtual String toString() const
   {
     String res;
-    res += String((int)numProteins) + T(" proteins");
-    res += "\n";
-    for (size_t i = 0; i < evaluators.size(); ++i)
+    for (size_t i = 0; i < scores.size(); ++i)
     {
-      String str = evaluators[i].second->toString();
+      String str = scores[i]->toString();
       if (str.isNotEmpty())
         res += str + T("\n");
     }
     return res;
   }
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
-  {
-    if (!correctObject.exists() || !predictedObject.exists())
-      return;
-
-    const ProteinPtr& predicted = predictedObject.getObjectAndCast<Protein>(context);
-    const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>(context);
-
-    ++numProteins;
-    for (size_t i = 0; i < evaluators.size(); ++i)
-    {
-      size_t variableIndex = evaluators[i].first;
-      Variable predictedVariable = predicted->getVariable(variableIndex);
-      if (predictedVariable.exists())
-      {
-        Variable correctVariable = correct->getTargetOrComputeIfMissing(variableIndex);
-        evaluators[i].second->addPrediction(context, predictedVariable, correctVariable);
-      }
-    }
-  }
-
-  OldEvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, const String& targetName) const
-  {
-    int variableIndex = proteinClass->findMemberVariable(targetName);
-    if (variableIndex < 0)
-    {
-      context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
-      return OldEvaluatorPtr();
-    }
-
-    for (size_t i = 0; i < evaluators.size(); ++i)
-      if (evaluators[i].first == (size_t)variableIndex)
-        return evaluators[i].second;
-    
-    context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator for target ") + targetName);
-    return OldEvaluatorPtr();
-  }
   
-  virtual double getDefaultScore() const
-    {return 0.0;}
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
-  {
-    for (size_t i = 0; i < evaluators.size(); ++i)
-    {
-      OldEvaluatorPtr evaluator = evaluators[i].second;
-      std::vector<std::pair<String, double> > scores;
-      evaluator->getScores(scores);
-      
-      for (size_t j = 0; j < scores.size(); ++j)
-        res.push_back(std::make_pair(evaluator->getName() + T("[") + scores[j].first + T("]"), scores[j].second));
-    }
-  }
+  lbcpp_UseDebuggingNewOperator
   
-  void getScoresForTarget(ExecutionContext& context, const String& targetName, std::vector< std::pair<String, double> >& res) const
+protected:
+  friend class ProteinScoreObjectClass;
+
+  std::vector<ScoreObjectPtr> scores;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinScoreObject> ProteinScoreObjectPtr;
+
+class ProteinEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr getRequiredPredictedElementsType() const
+    {return proteinClass;}
+  
+  virtual TypePtr getRequiredSupervisionElementsType() const
+    {return proteinClass;}
+  
+  ProteinEvaluator()
   {
-    OldEvaluatorPtr evaluator = getEvaluatorForTarget(context, targetName);
-    jassert(evaluator);
-    evaluator->getScores(res);
+    // 1D
+    addEvaluator(ss3Target,  classificationAccuracyEvaluator());
+    addEvaluator(ss8Target,  classificationAccuracyEvaluator());
+    addEvaluator(sa20Target, binaryClassificationConfusionEvaluator());
+    addEvaluator(drTarget,   binaryClassificationConfusionEvaluator());
+    addEvaluator(stalTarget, classificationAccuracyEvaluator());
+
+    // 2D
+//    addEvaluator(T("contactMap8Ca"), new ContactMapEvaluator(T("RRa"), 6));
+//    addEvaluator(T("contactMap8Cb"), new ContactMapEvaluator(T("RRb"), 6));
+//    addEvaluator(T("disulfideBonds"), new ContactMapEvaluator(T("DSB"), 1));
+
+    // 3D
+//    addEvaluator(T("tertiaryStructure"), new TertiaryStructureEvaluator(T("TS")));
   }
 
 protected:
-  size_t numProteins;
+  std::vector<std::pair<ProteinTarget, EvaluatorPtr> > evaluators;
 
-  std::vector<std::pair<size_t, OldEvaluatorPtr> > evaluators;
-
-  void addEvaluator(const String& variableName, OldEvaluatorPtr evaluator)
+  virtual ScoreObjectPtr createEmptyScoreObject() const
   {
-    int variableIndex = proteinClass->findMemberVariable(variableName);
-    jassert(variableIndex >= 0);
-    evaluators.push_back(std::make_pair(variableIndex, evaluator));
+    ProteinScoreObjectPtr res = new ProteinScoreObject();
+    for (size_t i = 0; i < evaluators.size(); ++i)
+      res->pushScoreObject(evaluators[i].second->createEmptyScoreObject());
+    return res;
+  }
+
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+  {
+    const ProteinPtr& predicted = predictedObject.getObjectAndCast<Protein>(context);
+    const ProteinPtr& correct = correctObject.getObjectAndCast<Protein>(context);
+    for (size_t i = 0; i < evaluators.size(); ++i)
+    {
+      ProteinTarget target = evaluators[i].first;
+      Variable predictedVariable = predicted->getVariable(target);
+      Variable correctVariable = correct->getTargetOrComputeIfMissing(target);
+      ScoreObjectPtr score = result.staticCast<ProteinScoreObject>()->getScoreObject(i);
+      evaluators[i].second->addPrediction(context, predictedVariable, correctVariable, score);
+    }
+  }
+/*
+  void getScoresForTarget(ExecutionContext& context, const String& targetName, std::vector< std::pair<String, double> >& res) const
+  {
+    EvaluatorPtr evaluator = getEvaluatorForTarget(context, targetName);
+    jassert(evaluator);
+    evaluator->getScores(res);
+  }
+*/
+  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator)
+    {evaluators.push_back(std::make_pair(target, evaluator));}
+
+  EvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, ProteinTarget target) const
+  {
+    for (size_t i = 0; i < evaluators.size(); ++i)
+      if (evaluators[i].first == target)
+        return evaluators[i].second;
+    
+    context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator"));
+    return EvaluatorPtr();
   }
 };
 

@@ -64,7 +64,7 @@
     <variable type="Double" name="logRegularizer" shortName="r"/>
   </class>
 
-  <class name="AutoTuneSandBox" base="WorkUnit"/>
+<!--  <class name="AutoTuneSandBox" base="WorkUnit"/> -->
 
   <class name="ComputeProteinFeaturesSandBox" base="WorkUnit">
     <variable type="File" name="dataDirectory" shortName="d"/>

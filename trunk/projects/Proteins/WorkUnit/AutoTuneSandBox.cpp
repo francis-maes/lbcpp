@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#if 0
 #include "AutoTuneSandBox.h"
 using namespace lbcpp;
 
@@ -299,17 +300,14 @@ Variable AutoTuneSandBox::run(ExecutionContext& context)
   */
 
   {
-    evaluator = new ProteinEvaluator();
-    inference->evaluate(context, trainProteins, evaluator, T("Evaluating on training data"));
-    std::cout << evaluator->toString() << std::endl << std::endl;
+    ScoreObjectPtr score = inference->evaluate(context, trainProteins, new ProteinEvaluator(), T("Evaluating on training data"));
+    std::cout << score->toString() << std::endl << std::endl;
 
-    evaluator = new ProteinEvaluator();
-    inference->evaluate(context, validationProteins, evaluator, T("Evaluating on validation data"));
-    std::cout << evaluator->toString() << std::endl << std::endl;
+    score = inference->evaluate(context, validationProteins, new ProteinEvaluator(), T("Evaluating on validation data"));
+    std::cout << score->toString() << std::endl << std::endl;
 
-    OldEvaluatorPtr evaluator = new ProteinEvaluator();
-    inference->evaluate(context, testProteins, evaluator, T("Evaluating on testing data"));
-    std::cout << evaluator->toString() << std::endl << std::endl;
+    score = inference->evaluate(context, testProteins, new ProteinEvaluator(), T("Evaluating on testing data"));
+    std::cout << score->toString() << std::endl << std::endl;
   }
 
   context.informationCallback(T("Saving inference"));
@@ -323,12 +321,11 @@ Variable AutoTuneSandBox::run(ExecutionContext& context)
   for (size_t i = 7; i <= 7; i += 1)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
-    OldEvaluatorPtr evaluator = new ProteinEvaluator();
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
-    inference->evaluate(*context, trainProteins, evaluator);
+    ScoreObjectPtr score = inference->evaluate(*context, trainProteins, new ProteinEvaluator());
   //  inference->crossValidate(context, proteins, evaluator, 2);
     std::cout << "============================" << std::endl << std::endl;
-    std::cout << evaluator->toString() << std::endl << std::endl;
+    std::cout << score->toString() << std::endl << std::endl;
   }
 
 #if 0
@@ -351,3 +348,4 @@ Variable AutoTuneSandBox::run(ExecutionContext& context)
 #endif // 0
   return true;
 }
+#endif

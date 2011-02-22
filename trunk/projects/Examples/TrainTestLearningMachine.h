@@ -35,7 +35,7 @@ class LearningProblem : public Object
 public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file) = 0;
   //virtual InferencePtr createInference(ExecutionContext& context, LearningMachineFamilyPtr learningMachineFamily, size_t numStacks, const Variable& arguments) = 0;
-  virtual OldEvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context) = 0;
 
   virtual String toString() const
     {return getClass()->getShortName();}
@@ -49,8 +49,8 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return regressionARFFDataParser(context, file, features);}
 
-  virtual OldEvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return oldRegressionErrorEvaluator(T("regression"));}
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return regressionErrorEvaluator();}
 
 protected:
   DynamicClassPtr features;
@@ -64,8 +64,8 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return binaryClassificationLibSVMDataParser(context, file, features);}
 
-  virtual OldEvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return oldBinaryClassificationConfusionEvaluator(T("binary"));}
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return binaryClassificationConfusionEvaluator();}
 
 protected:
   DefaultEnumerationPtr features;
@@ -81,8 +81,8 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return classificationARFFDataParser(context, file, features, labels);}
 
-  virtual OldEvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return oldClassificationAccuracyEvaluator();}
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return classificationAccuracyEvaluator();}
 
 protected:
   DynamicClassPtr features;
@@ -102,8 +102,8 @@ public:
   virtual StreamPtr createDataParser(ExecutionContext& context, const File& file)
     {return multiLabelClassificationLibSVMDataParser(context, file, features, labels);}
 
-  virtual OldEvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return oldMultiLabelClassificationEvaluator();}
+  virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
+    {return multiLabelClassificationEvaluator();}
 
 protected:
   DefaultEnumerationPtr features;

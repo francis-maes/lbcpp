@@ -49,12 +49,12 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return scoreObjectClass;}
 
+  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
+  
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const = 0;
+  
 protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-
-  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const = 0;
 };
 
 // Classification
