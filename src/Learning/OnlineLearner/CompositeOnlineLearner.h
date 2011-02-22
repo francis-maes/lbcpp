@@ -40,16 +40,16 @@ public:
       learners[i]->startLearningIteration(i);
   }
 
-  virtual void startEpisode()
+  virtual void startEpisode(const ObjectPtr& inputs)
   {
     for (size_t i = 0; i < learners.size(); ++i)
-      learners[i]->startEpisode();
+      learners[i]->startEpisode(inputs);
   }
 
-  virtual void finishEpisode()
+  virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output)
   {
     for (size_t i = 0; i < learners.size(); ++i)
-      learners[i]->finishEpisode();
+      learners[i]->finishEpisode(inputs, output);
   }
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)

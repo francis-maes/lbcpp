@@ -25,6 +25,14 @@
     <variable type="String" name="description"/>
   </class>
   
+  <class name="FunctionWorkUnit" base="WorkUnit">
+    <constructor arguments="const FunctionPtr&amp; function, const std::vector&lt;Variable&gt;&amp; input, const String&amp; description, Variable* output"/>
+    <variable type="Function" name="function"/>
+    <variable type="VariableVector" name="inputs"/>
+    <variable type="String" name="description"/>
+    <variable type="Boolean" name="sendInputAsResult"/>
+  </class>
+
   <!-- Test Unit -->
   <class name="TestUnit" base="WorkUnit" abstract="yes"/>
 

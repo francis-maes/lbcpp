@@ -210,7 +210,7 @@ extern FunctionPtr loadFromFileFunction(TypePtr expectedType = objectClass); // 
 extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass);
 
 extern FunctionPtr createObjectFunction(ClassPtr objectClass);
-extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction);
+extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction = true);
 
 extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 

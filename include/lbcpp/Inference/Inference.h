@@ -159,64 +159,22 @@ extern ParallelInferencePtr evaluationInference(const InferencePtr& inference, c
 extern SharedParallelInferencePtr crossValidationInference(const String& name, OldEvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
 
-class FunctionWorkUnit : public WorkUnit
-{
-public:
-  FunctionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
-    : function(function), input(input), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
-  FunctionWorkUnit() : output(NULL) {}
-
-  virtual String toString() const
-    {return description.isEmpty() ? function->getDescription(input) : description;}
-
-  virtual Variable run(ExecutionContext& context)
-  {
-    if (sendInputAsResult)
-      context.resultCallback(T("input"), input);
-    Variable out = function->compute(context, input);
-    if (output)
-      *output = out;
-    return out;
-  }
-
-  const FunctionPtr& getFunction() const
-    {return function;}
-
-  const Variable& getInput() const
-    {return input;}
-
-  Variable* getOutput() const
-    {return output;}
-
-  void setSendInputAsResultFlag(bool value = true)
-    {sendInputAsResult = value;}
-
-protected:
-  friend class FunctionWorkUnitClass;
-
-  FunctionPtr function;
-  Variable input;
-  String description;
-  Variable* output;
-  bool sendInputAsResult;
-};
-
 class InferenceWorkUnit : public FunctionWorkUnit
 {
 public:
   InferenceWorkUnit(const InferencePtr& inference, const Variable& input, const Variable& supervision, const String& description = String::empty, Variable* output = NULL)
-    : FunctionWorkUnit(inference, input, description, output), supervision(supervision) {}
+    : FunctionWorkUnit(inference, std::vector<Variable>(1, input), description, output), supervision(supervision) {}
   InferenceWorkUnit() {}
 
   virtual String toString() const
-    {return description.isEmpty() ? getInference()->getDescription(defaultExecutionContext(), input, supervision) : description;}
+    {return description.isEmpty() ? getInference()->getDescription(defaultExecutionContext(), inputs[0], supervision) : description;}
 
   virtual Variable run(ExecutionContext& context)
   {
     if (sendInputAsResult)
-      context.resultCallback(T("input"), input); 
+      context.resultCallback(T("input"), inputs[0]); 
     //context.resultCallback(T("supervision"), supervision); 
-    Variable out = getInference()->computeInference(context, input, supervision);
+    Variable out = getInference()->computeInference(context, inputs[0], supervision);
     if (output) *output = out;
     return out;
   }
@@ -234,6 +192,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<InferenceWorkUnit> InferenceWorkUnitPtr;
+extern WorkUnitPtr inferenceWorkUnit(const InferencePtr& inference, const Variable& input, const Variable& supervision, const String& description = String::empty, Variable* output = NULL);
 
 }; /* namespace lbcpp */
 

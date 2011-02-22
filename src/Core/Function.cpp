@@ -39,7 +39,11 @@ bool Function::initialize(ExecutionContext& context, const std::vector<TypePtr>&
 
 bool Function::initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables)
 {
-  jassert(!isInitialized());
+  if (isInitialized())
+  {
+    // todo: check that inputVariables type has not changed
+    return true;
+  }
 
   // check inputs
   numInputs = inputVariables.size();

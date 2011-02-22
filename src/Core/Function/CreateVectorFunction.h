@@ -19,8 +19,8 @@ namespace lbcpp
 class CreateVectorFunction : public Function
 {
 public:
-  CreateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
-    : elementGeneratorFunction(elementGeneratorFunction) {}
+  CreateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr(), bool transmitIndexToGeneratorFunction = true)
+    : elementGeneratorFunction(elementGeneratorFunction), transmitIndexToGeneratorFunction(transmitIndexToGeneratorFunction) {}
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -36,6 +36,10 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
+    std::vector<VariableSignaturePtr> inputVars = inputVariables;
+    if (!transmitIndexToGeneratorFunction)
+      inputVars.erase(inputVars.begin());
+
     if (!elementGeneratorFunction->initialize(context, inputVariables))
       return TypePtr();
 
@@ -49,17 +53,31 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     size_t numInputs = getNumInputs();
-    std::vector<Variable> subInputs(numInputs);
-    for (size_t i = 1; i < subInputs.size(); ++i)
-      subInputs[i] = inputs[i];
-
     size_t n = (size_t)inputs[0].getInteger();
     VectorPtr res = vector(elementGeneratorFunction->getOutputType(), n);
-    for (size_t i = 0; i < n; ++i)
+
+    if (transmitIndexToGeneratorFunction)
     {
-      subInputs[0] = Variable(i);
-      res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
+      std::vector<Variable> subInputs(numInputs);
+      for (size_t i = 1; i < subInputs.size(); ++i)
+        subInputs[i] = inputs[i];
+
+      for (size_t i = 0; i < n; ++i)
+      {
+        subInputs[0] = Variable(i);
+        res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
+      }
     }
+    else
+    {
+      std::vector<Variable> subInputs(numInputs - 1);
+      for (size_t i = 0; i < subInputs.size(); ++i)
+        subInputs[i] = inputs[i + 1];
+
+      for (size_t i = 0; i < n; ++i)
+        res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
+    }
+
     return res;
   }
 
@@ -67,6 +85,7 @@ protected:
   friend class CreateVectorFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
+  bool transmitIndexToGeneratorFunction;
 };
 
 }; /* namespace lbcpp */
