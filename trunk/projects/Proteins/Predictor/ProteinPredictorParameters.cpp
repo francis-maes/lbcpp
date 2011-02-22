@@ -39,6 +39,9 @@ void NumericalProteinPredictorParameters::primaryResidueFeatures(CompositeFuncti
   size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), 1, 0);
   size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), 1, 0);
   size_t ss8 = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), 1, 0);
+  size_t stal = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), 1, 0);
+  size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), 1, 0);
+  size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), 1, 0);
 
   // feature generators
   builder.startSelection();
@@ -47,6 +50,9 @@ void NumericalProteinPredictorParameters::primaryResidueFeatures(CompositeFuncti
     builder.addFunction(new EnumerationDistributionFeaturesFunction(), pssmRow, T("pssm"));
     builder.addFunction(new EnumerationDistributionFeaturesFunction(), ss3, T("ss3"));
     builder.addFunction(new EnumerationDistributionFeaturesFunction(), ss8, T("ss8"));
+    builder.addFunction(new EnumerationDistributionFeaturesFunction(), stal, T("stal"));
+    builder.addFunction(defaultProbabilityFeatureGenerator(10), sa20, T("sa20"));
+    builder.addFunction(defaultProbabilityFeatureGenerator(10), dr, T("dr"));
 
   builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 }
