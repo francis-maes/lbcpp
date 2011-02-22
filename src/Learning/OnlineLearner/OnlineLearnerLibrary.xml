@@ -14,8 +14,8 @@
   </class>
 
   <class name="EvaluatorOnlineLearner" base="OnlineLearner">
-    <constructor arguments="OldEvaluatorPtr evaluator"/>
-    <variable type="OldEvaluator" name="evaluator"/>
+    <constructor arguments="EvaluatorPtr evaluator"/>
+    <variable type="Evaluator" name="evaluator"/>
   </class>
   
   <class name="CompositeOnlineLearner" base="OnlineLearner">

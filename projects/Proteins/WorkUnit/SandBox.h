@@ -30,7 +30,7 @@ public:
     StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(0.1));
     parameters->setMaxIterations(maxLearningIterations);
 
-    parameters->setEvaluator(oldClassificationAccuracyEvaluator()); // tmp
+    parameters->setEvaluator(classificationAccuracyEvaluator()); // tmp
     return linearLearningMachine(parameters);
   }
 

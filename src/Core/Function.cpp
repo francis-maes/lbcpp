@@ -211,75 +211,79 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
 bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData, const String& scopeName, bool returnLearnedFunction)
   {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData), scopeName, returnLearnedFunction);}
 
-bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const OldEvaluatorPtr& evaluator, const String& scopeName) const
+ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
 {
   bool doScope = scopeName.isNotEmpty();
-  bool res = true;
 
   if (doScope)
     context.enterScope(scopeName);
 
   if (!checkIsInitialized(context))
-    res = false;
-  else
-  {
-    // todo: parallel evaluation
-    size_t n = examples->getNumElements();
+    return ScoreObjectPtr();
+  
 
-    ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
-    if (objectExamples)
+  // todo: parallel evaluation
+  size_t n = examples->getNumElements();
+  VectorPtr predictedVector = vector(getOutputType(), n);
+  VectorPtr correctVector;
+
+  ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
+  if (objectExamples)
+  {
+    if (examples->getElementsType()->inheritsFrom(pairClass(anyType, anyType)))
     {
-      if (examples->getElementsType()->inheritsFrom(pairClass(anyType, anyType)))
+      // fast version for pair vectors
+      const std::vector<PairPtr>& pairs = objectExamples->getObjectsAndCast<Pair>();
+      correctVector = vector(examples->getElementsType()->getTemplateArgument(1), n);
+      for (size_t i = 0; i < n; ++i)
       {
-        // fast version for pair vectors
-        const std::vector<PairPtr>& pairs = objectExamples->getObjectsAndCast<Pair>();
-        for (size_t i = 0; i < n; ++i)
-        {
-          const PairPtr& example = pairs[i];
-          evaluator->addPrediction(context, compute(context, &example->getFirst()), example->getSecond());
-        }
-      }
-      else
-      {
-        // fast version for object vectors
-        const std::vector<ObjectPtr>& objects = objectExamples->getObjects();
-        for (size_t i = 0; i < n; ++i)
-        {
-          const ObjectPtr& example = objects[i];
-          Variable prediction = computeWithInputsObject(context, example);
-          Variable correct = example->getVariable(example->getNumVariables() - 1);
-          evaluator->addPrediction(context, prediction, correct);
-        }
+        const PairPtr& example = pairs[i];
+        predictedVector->setElement(i, compute(context, &example->getFirst()));
+        correctVector->setElement(i, example->getSecond());
       }
     }
     else
     {
-      // generic version
+      // fast version for object vectors
+      const std::vector<ObjectPtr>& objects = objectExamples->getObjects();
+      correctVector = vector(examples->getElementsType()->getMemberVariableType(examples->getElementsType()->getNumMemberVariables() - 1), n);
       for (size_t i = 0; i < n; ++i)
       {
-        ObjectPtr example = examples->getElement(i).getObject();
-        Variable prediction = computeWithInputsObject(context, example);
-        Variable correct = example->getVariable(example->getNumVariables() - 1);
-        evaluator->addPrediction(context, prediction, correct);
+        const ObjectPtr& example = objects[i];
+        predictedVector->setElement(i, computeWithInputsObject(context, example));
+        correctVector->setElement(i, example->getVariable(example->getNumVariables() - 1));
       }
     }
-
-    if (doScope)
+  }
+  else
+  {
+    // generic version
+    correctVector = vector(examples->getElementsType()->getMemberVariableType(examples->getElementsType()->getNumMemberVariables() - 1), n);
+    for (size_t i = 0; i < n; ++i)
     {
-      std::vector< std::pair<String, double> > results;
-      evaluator->getScores(results);
-      for (size_t i = 0; i < results.size(); ++i)
-        context.resultCallback(results[i].first, results[i].second);
+      ObjectPtr example = examples->getElement(i).getObject();
+      predictedVector->setElement(i, computeWithInputsObject(context, example));
+      correctVector->setElement(i, example->getVariable(example->getNumVariables() - 1));
     }
+  }
+  
+  ScoreObjectPtr score = evaluator->compute(context, predictedVector, correctVector).getObjectAndCast<ScoreObject>();
+
+  if (doScope)
+  {
+    std::vector< std::pair<String, double> > results;
+    score->getScores(results);
+    for (size_t i = 0; i < results.size(); ++i)
+      context.resultCallback(results[i].first, results[i].second);
   }
 
   if (doScope)
-    context.leaveScope(evaluator->getDefaultScore());
+    context.leaveScope(score->getScoreToMinimize());
 
-  return true;
+  return score;
 }
 
-bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const OldEvaluatorPtr& evaluator, const String& scopeName) const
+ScoreObjectPtr Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
   {return evaluate(context, new ObjectVector(examples), evaluator, scopeName);}
 
 String Function::toString() const
