@@ -2,7 +2,8 @@
 
 <library name="SequentialDecision" dynamic="yes">
 
-  <import name="SequentialDecisionSystem"/>
+  <import name="SequentialDecisionCore"/>
+  <import name="SequentialDecisionProblem"/>
   <import name="SequentialDecisionWorkUnit"/>
 
 </library>
