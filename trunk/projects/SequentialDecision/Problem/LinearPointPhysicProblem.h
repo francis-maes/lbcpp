@@ -87,7 +87,7 @@ public:
   }
 };
 
-inline SequentialDecisionProblemPtr linearPointPhysicSystem()
+inline SequentialDecisionProblemPtr linearPointPhysicProblem()
 {
   return new SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
                                       new LinearPointPhysicTransitionFunction(),

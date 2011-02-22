@@ -84,9 +84,9 @@ extern FeatureGeneratorPtr enumerationFeatureGenerator(bool includeMissingValue 
 extern FeatureGeneratorPtr enumerationDistributionFeatureGenerator(bool includeMissingValue = true);
 
 // number features
-extern FeatureGeneratorPtr hardDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures);
-extern FeatureGeneratorPtr softDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures, bool cyclicBehavior);
-extern FeatureGeneratorPtr softDiscretizedLogNumberFeatureGenerator(double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures);
+extern FeatureGeneratorPtr hardDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures = true);
+extern FeatureGeneratorPtr softDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures = true, bool cyclicBehavior = false);
+extern FeatureGeneratorPtr softDiscretizedLogNumberFeatureGenerator(double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures = true);
 extern FeatureGeneratorPtr signedNumberFeatureGenerator(FeatureGeneratorPtr positiveNumberFeatures);
 
 extern FeatureGeneratorPtr defaultPositiveIntegerFeatureGenerator(size_t numIntervals = 20, double maxPowerOfTen = 10.0);

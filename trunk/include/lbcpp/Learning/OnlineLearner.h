@@ -22,8 +22,8 @@ public:
 
   virtual void startLearningIteration(size_t iteration) {}
 
-  virtual void startEpisode() {}
-  virtual void finishEpisode() {}
+  virtual void startEpisode(const ObjectPtr& inputs) {}
+  virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output) {}
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize) {return false;} // returns true if learning is finished
 

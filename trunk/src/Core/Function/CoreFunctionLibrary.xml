@@ -40,8 +40,9 @@
 
   <!-- Generate Vector Function -->
   <class name="CreateVectorFunction" base="Function">
-    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
+    <constructor arguments="FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction"/>
     <variable type="Function" name="elementGeneratorFunction"/>
+    <variable type="Boolean" name="transmitIndexToGeneratorFunction"/>
   </class>
 
   <!-- Map Function -->

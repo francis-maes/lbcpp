@@ -40,7 +40,7 @@ public:
     for (size_t i = 0; i < numSamples; ++i)
     {
       double parameterValue = values[i];
-      workUnits->setWorkUnit(i, new FunctionWorkUnit(objective, parameterValue, String::empty, &scores[i], true));
+      workUnits->setWorkUnit(i, new FunctionWorkUnit(objective, std::vector<Variable>(1, parameterValue), String::empty, &scores[i], true));
     }
     workUnits->setPushChildrenIntoStackFlag(true);
 

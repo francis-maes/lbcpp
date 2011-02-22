@@ -11,6 +11,9 @@
 #include <lbcpp/Execution/ExecutionContext.h>
 using namespace lbcpp;
 
+/*
+** WorkUnit
+*/
 int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, char* argv[])
 {
   std::vector<String> arguments(argc - 1);
@@ -173,6 +176,9 @@ String WorkUnit::getUsageString() const
     + argumentDescriptions;
 }
 
+/*
+** CompositeWorkUnit
+*/
 Variable CompositeWorkUnit::run(ExecutionContext& context)
 {
   size_t n = getNumWorkUnits();
@@ -182,4 +188,20 @@ Variable CompositeWorkUnit::run(ExecutionContext& context)
     context.run(workUnit, pushChildrenIntoStack);
   }
   return Variable();
+}
+
+/*
+** FunctionWorkUnit
+*/
+Variable FunctionWorkUnit::run(ExecutionContext& context)
+{
+  if (sendInputAsResult)
+  {
+    for (size_t i = 0; i < inputs.size(); ++i)
+      context.resultCallback(T("input") + String((int)i + 1), inputs[i]);
+  }
+  Variable out = function->compute(context, inputs);
+  if (output)
+    *output = out;
+  return out;
 }

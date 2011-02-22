@@ -12,6 +12,7 @@
 # include "predeclarations.h"
 # include "../Core/Variable.h"
 # include "../Core/Vector.h"
+# include "../Core/Function.h"
 
 namespace lbcpp
 {
@@ -135,8 +136,43 @@ protected:
   virtual Variable run(ExecutionContext& context);
 };
 
-extern WorkUnitPtr functionWorkUnit(const FunctionPtr& function, const Variable& input, const String& description = String::empty, Variable* output = NULL);
-extern WorkUnitPtr inferenceWorkUnit(const InferencePtr& inference, const Variable& input, const Variable& supervision, const String& description = String::empty, Variable* output = NULL);
+class FunctionWorkUnit : public WorkUnit
+{
+public:
+  FunctionWorkUnit(const FunctionPtr& function, const std::vector<Variable>& inputs, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
+    : function(function), inputs(inputs), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
+  FunctionWorkUnit() : output(NULL) {}
+
+  virtual String toString() const
+    {return description;}
+
+  virtual Variable run(ExecutionContext& context);
+
+  const FunctionPtr& getFunction() const
+    {return function;}
+
+  const std::vector<Variable>& getInputs() const
+    {return inputs;}
+
+  Variable* getOutput() const
+    {return output;}
+
+  void setSendInputAsResultFlag(bool value = true)
+    {sendInputAsResult = value;}
+
+protected:
+  friend class FunctionWorkUnitClass;
+
+  FunctionPtr function;
+  std::vector<Variable> inputs;
+  String description;
+  Variable* output;
+  bool sendInputAsResult;
+};
+
+inline WorkUnitPtr functionWorkUnit(const FunctionPtr& function, const std::vector<Variable>& inputs,
+                                    const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
+  {return new FunctionWorkUnit(function, inputs, description, output, sendInputAsResult);}
 
 }; /* namespace lbcpp */
 

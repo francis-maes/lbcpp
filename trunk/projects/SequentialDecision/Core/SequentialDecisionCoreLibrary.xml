@@ -13,15 +13,17 @@
   <class name="SearchSpaceNode" base="Object">
     <variable type="Variable" name="state"/>
     <variable type="PositiveInteger" name="depth"/>
+    <variable type="Double" name="reward"/>
+    <variable type="Double" name="currentReturn"/>
+    <variable type="Variable" name="previousAction"/>
   </class>
   <class name="SortedSearchSpace" base="Object"/>
 
   <!-- Search Heuristic -->
-  <class name="SearchHeuristic" base="Function" abstract="yes"/>
-  <class name="MinDepthSearchHeuristic" base="SearchHeuristic" shortName="minDepth">
+  <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepthHeuristic">
     <constructor/>
   </class>
-  <class name="OptimisticPlanningSearchHeuristic" base="SearchHeuristic" shortName="optimisticPlanning">
+  <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimisticPlanningHeuristic">
     <constructor arguments="double discountFactor"/>
     <variable type="Double" name="discountFactor"/>
   </class>

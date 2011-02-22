@@ -11,40 +11,32 @@ using namespace lbcpp;
 /*
 ** SearchSpaceNode
 */
-SearchSpaceNode::SearchSpaceNode(const Variable& initialState)
-  : state(initialState), depth(0), reward(0.0), currentReturn(0.0),
+SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState)
+  : allNodes(allNodes), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
     parentIndex(-1), childrenBeginIndex(-1), childrenEndIndex(-1)
 {
 }
 
-SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodePtr& parentNode, size_t parentIndex, const Variable& action)
-  : depth(parentNode->depth + 1), previousAction(action), reward(0.0), currentReturn(parentNode->currentReturn),
-    parentIndex((int)parentIndex), childrenBeginIndex(-1), childrenEndIndex(-1)
+SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount)
+  : allNodes(allNodes), previousAction(action), reward(0.0), parentIndex((int)parentIndex), childrenBeginIndex(-1), childrenEndIndex(-1)
 {
-}
-
-void SearchSpaceNode::openNode(const SequentialDecisionProblemPtr& system, const SearchSpaceNodePtr& parentNode, double discount)
-{
-  if (!state.exists())
-  {
-    jassert(parentNode && depth >= 1);
-
-    state = system->computeTransition(parentNode->state, previousAction);
-    reward = system->computeReward(parentNode->state, previousAction, state);
-    jassert(state.exists());
-    if (reward)
-      currentReturn += reward * pow(discount, (double)(depth - 1));
-  }
+  const SearchSpaceNodePtr& parentNode = allNodes[parentIndex];
+  jassert(parentNode);
+  depth = parentNode->depth + 1;
+  reward = problem->computeReward(parentNode->state, action);
+  currentReturn = parentNode->currentReturn + reward * pow(discount, (double)parentNode->depth);
+  state = problem->computeTransition(parentNode->state, action);
+  jassert(state.exists());
 }
 
 
 /*
 ** SortedSearchSpace
 */
-SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr system, SearchHeuristicPtr heuristic, double discount, const Variable& initialState)
-  : system(system), heuristic(heuristic), discount(discount)
+SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, const Variable& initialState)
+  : problem(problem), heuristic(heuristic), discount(discount)
 {
-  addCandidate(new SearchSpaceNode(initialState));
+  addCandidate(new SearchSpaceNode(nodes, initialState));
 }
 
 // returns the current return
@@ -59,18 +51,13 @@ double SortedSearchSpace::exploreBestNode(ExecutionContext& context)
   size_t nodeIndex;
   SearchSpaceNodePtr node = popBestCandidate(nodeIndex);
   jassert(node);
-  int parentIndex = node->getParentIndex();
-  SearchSpaceNodePtr parentNode = (parentIndex >= 0 ? nodes[parentIndex] : SearchSpaceNodePtr());
-  
-  node->openNode(system, parentNode, discount);
 
   std::vector<Variable> actions;
-  system->getAvailableActions(node->getState(), actions);
+  problem->getAvailableActions(node->getState(), actions);
   size_t firstChildIndex = nodes.size();
   node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
-
   for (size_t i = 0; i < actions.size(); ++i)
-    addCandidate(new SearchSpaceNode(node, nodeIndex, actions[i]));
+    addCandidate(new SearchSpaceNode(nodes, problem, nodeIndex, actions[i], discount));
 
   return node->getCurrentReturn();
 }
@@ -79,12 +66,14 @@ void SortedSearchSpace::addCandidate(SearchSpaceNodePtr node)
 {
   size_t index = nodes.size();
   nodes.push_back(node);
-  candidates.insert(std::make_pair(-heuristic->computeHeuristic(node), index));
+  double heuristicValue = heuristic->compute(defaultExecutionContext(), node).getDouble();
+  candidates.insert(std::make_pair(-heuristicValue, index));
 }
 
 SearchSpaceNodePtr SortedSearchSpace::popBestCandidate(size_t& nodeIndex)
 {
   nodeIndex = candidates.begin()->second;
   candidates.erase(candidates.begin());
+  openedNodes.push_back(nodeIndex);
   return nodes[nodeIndex];
 }

@@ -21,6 +21,18 @@ public:
   SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction);
   SequentialDecisionProblem() {}
 
+  /*
+  ** Types
+  */
+  const TypePtr& getStateType() const
+    {return stateType;}
+
+  const TypePtr& getActionType() const
+    {return actionType;}
+
+  /*
+  ** Functions
+  */
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
 
@@ -32,6 +44,9 @@ public:
 
   bool initialize(ExecutionContext& context);
 
+  /*
+  ** Shortcuts
+  */
   Variable sampleInitialState(RandomGeneratorPtr random) const
     {return initialStateSampler->compute(defaultExecutionContext(), random);}
 
@@ -40,8 +55,8 @@ public:
   Variable computeTransition(const Variable& state, const Variable& action) const
     {return transitionFunction->compute(defaultExecutionContext(), state, action);}
 
-  double computeReward(const Variable& state, const Variable& action, const Variable& newState) const
-    {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();} // todo: support for different kind of reward functions
+  double computeReward(const Variable& state, const Variable& action) const
+    {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();}
 
 private:
   friend class SequentialDecisionProblemClass;
@@ -55,6 +70,8 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<SequentialDecisionProblem> SequentialDecisionProblemPtr;
+
+extern ClassPtr sequentialDecisionProblemClass;
 
 }; /* namespace lbcpp */
 

@@ -3,7 +3,10 @@ Proteins:
  * Multipasse
  * Bias learning for DR
  * Load/Save des fonction apprises
- * MapContainerFunction: la transformer en ProxyFunction
+ 
+Function:
+ * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
+ * Function::evaluate: eventuellement utiliser un composeFunction(mapContainerFunction(examples), evaluator)
  
 Boinc:
  * Faire la work unit d'evaluation (pb sur les features, après la passe CO, learning rate cst = 1)

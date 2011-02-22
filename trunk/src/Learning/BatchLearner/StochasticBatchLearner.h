@@ -104,9 +104,9 @@ protected:
 
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const
   {
-    onlineLearner->startEpisode();
-    function->computeWithInputsObject(context, inputs);
-    onlineLearner->finishEpisode();
+    onlineLearner->startEpisode(inputs);
+    Variable output = function->computeWithInputsObject(context, inputs);
+    onlineLearner->finishEpisode(inputs, output);
   }
 
   Variable doLearningIteration(ExecutionContext& context, size_t iteration, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, CompositeOnlineLearnerPtr compositeOnlineLearner) const

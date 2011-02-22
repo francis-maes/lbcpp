@@ -14,14 +14,14 @@
 namespace lbcpp
 {
 
-class MinDepthSearchHeuristic : public SearchHeuristic
+class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
   virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
     {return -(double)node->getDepth();}
 };
 
-class OptimisticPlanningSearchHeuristic : public SearchHeuristic
+class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
   OptimisticPlanningSearchHeuristic(double discountFactor = 0.9) : discountFactor(discountFactor)
