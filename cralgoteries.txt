@@ -2,7 +2,11 @@ Proteins:
  * Parallel Learning
  * Multipasse
  * Bias learning for DR
-
+ * Load/Save des fonction apprises
+ 
+Boinc:
+ * Faire la work unit d'evaluation (pb sur les features, après la passe CO, learning rate cst = 1)
+ 
 Misc:
  * Ne pas utiliser le SupervisedNumericalFunction pour la regression (utilise le LearnableLinear directement)
  * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
