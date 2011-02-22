@@ -58,6 +58,9 @@ protected:
 };
 
 // Classification
+extern EvaluatorPtr binaryClassificationConfusionEvaluator();
+extern EvaluatorPtr rocAnalysisEvaluator();
+
 extern EvaluatorPtr classificationAccuracyEvaluator();
 
 // Multi-label Classification
@@ -65,7 +68,6 @@ extern EvaluatorPtr multiLabelClassificationEvaluator();
 
 // Regression
 extern EvaluatorPtr regressionErrorEvaluator();
-extern EvaluatorPtr dihedralRegressionErrorEvaluator();
 
 class BinaryClassificationConfusionMatrix : public Object
 {

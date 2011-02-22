@@ -45,6 +45,8 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
+    if (!inputs[0].exists())
+      return;
     double value = getValue(inputs[0]);
     double halfWidth = (maximumValue - minimumValue) / numIntervals;
 

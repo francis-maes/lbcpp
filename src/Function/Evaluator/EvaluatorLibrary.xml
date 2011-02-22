@@ -23,10 +23,6 @@
     <constructor/>
   </class>
 
-  <class name="DihedralRegressionErrorEvaluator" base="Evaluator">
-    <constructor/>
-  </class>
-
   <!-- Binary Classification -->
   <class name="BinaryClassificationConfusionScoreObject" base="ScoreObject"/>
 
@@ -60,6 +56,9 @@
   <class name="MultiLabelClassificationEvaluator" base="Evaluator">
     <constructor/>
   </class>
+
+  <!-- Default Evaluator -->
+  <class name="DefaultEvaluator" base="ProxyFunction"/>
 
   <!-- Old -->
   

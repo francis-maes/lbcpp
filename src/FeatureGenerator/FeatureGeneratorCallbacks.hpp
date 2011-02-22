@@ -56,6 +56,23 @@ public:
   size_t res;
 };
 
+class ComputeEntropyFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  ComputeEntropyFeatureGeneratorCallback() : res(0) {}
+
+  virtual void sense(size_t index, double value)
+    {if (value > 10e-9) res -= value * log2(value);}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {if (weight) res += vector->entropy() * weight;}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {if (weight) res += featureGenerator->entropy(inputs) * weight;}
+
+  double res;
+};
+
 class ComputeSumOfSquaresFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:

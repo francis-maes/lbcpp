@@ -42,14 +42,14 @@ public:
 };
 
 // todo: move ?, ComputeEntropyFunction(ProxyFunction) ?
-class DenseDoubleVectorEntropyFunction : public Function
+class DoubleVectorEntropyFunction : public Function
 {
 public:
   virtual size_t getNumRequiredInputs() const
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return denseDoubleVectorClass(enumValueType, probabilityType);}
+    {return doubleVectorClass(enumValueType, probabilityType);}
 
   virtual String getOutputPostFix() const
     {return T("Entropy");}
@@ -59,9 +59,9 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const DenseDoubleVectorPtr& distribution = inputs[0].getObjectAndCast<DenseDoubleVector>();
+    const DoubleVectorPtr& distribution = inputs[0].getObjectAndCast<DoubleVector>();
     if (distribution)
-      return Variable(distribution->computeEntropy(), negativeLogProbabilityType);
+      return Variable(distribution->entropy(), negativeLogProbabilityType);
     else
       return Variable::missingValue(negativeLogProbabilityType);
   }
