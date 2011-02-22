@@ -54,7 +54,7 @@ public:
   StochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
                           StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
                           size_t maxIterations = 100,
-                          EvaluatorPtr evaluator = EvaluatorPtr(),
+                          OldEvaluatorPtr evaluator = OldEvaluatorPtr(),
                           bool doPerEpisodeUpdates = false,
                           bool normalizeLearningRate = true,
                           bool restoreBestParameters = true,
@@ -84,10 +84,10 @@ public:
   /*
   ** Evaluator
   */
-  const EvaluatorPtr& getEvaluator() const
+  const OldEvaluatorPtr& getEvaluator() const
     {return evaluator;}
 
-  void setEvaluator(EvaluatorPtr evaluator)
+  void setEvaluator(OldEvaluatorPtr evaluator)
     {this->evaluator = evaluator;}
 
 protected:
@@ -97,7 +97,7 @@ protected:
   IterationFunctionPtr learningRate;
   StoppingCriterionPtr stoppingCriterion;
   size_t maxIterations;
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
   bool doPerEpisodeUpdates;
   bool normalizeLearningRate;
   bool restoreBestParameters;

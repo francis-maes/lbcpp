@@ -12,7 +12,7 @@
 # include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Learning/OnlineLearner.h>
 # include <lbcpp/Function/StoppingCriterion.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include "../OnlineLearner/CompositeOnlineLearner.h"
 
@@ -68,7 +68,7 @@ protected:
   friend class StochasticBatchLearnerClass;
 
   std::vector<FunctionPtr> functionsToLearn;
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
   size_t maxIterations;
   bool randomizeExamples;
   

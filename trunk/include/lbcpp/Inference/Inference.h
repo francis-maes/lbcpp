@@ -70,8 +70,8 @@ public:
   Variable run(ExecutionContext& context, const Variable& input, const Variable& supervision, const String& workUnitName = String::empty) const;
   bool train(ExecutionContext& context, ContainerPtr trainingExamples, ContainerPtr validationExamples, const String& workUnitName = String::empty);
   bool train(ExecutionContext& context, const InferenceBatchLearnerInputPtr& learnerInput, const String& workUnitName = String::empty);
-  bool evaluate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, const String& workUnitName = String::empty) const;
-  bool crossValidate(ExecutionContext& context, ContainerPtr examples, EvaluatorPtr evaluator, size_t numFolds, const String& workUnitName = String::empty) const;
+  bool evaluate(ExecutionContext& context, ContainerPtr examples, OldEvaluatorPtr evaluator, const String& workUnitName = String::empty) const;
+  bool crossValidate(ExecutionContext& context, ContainerPtr examples, OldEvaluatorPtr evaluator, size_t numFolds, const String& workUnitName = String::empty) const;
 
   /*
   ** Description
@@ -155,8 +155,8 @@ extern SharedParallelInferencePtr sharedParallelVectorInference(const String& na
 
 // Meta
 extern InferencePtr runOnSupervisedExamplesInference(InferencePtr inference, bool doInParallel);
-extern ParallelInferencePtr evaluationInference(const InferencePtr& inference, const EvaluatorPtr& evaluator);
-extern SharedParallelInferencePtr crossValidationInference(const String& name, EvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
+extern ParallelInferencePtr evaluationInference(const InferencePtr& inference, const OldEvaluatorPtr& evaluator);
+extern SharedParallelInferencePtr crossValidationInference(const String& name, OldEvaluatorPtr evaluator, InferencePtr inferenceModel, size_t numFolds);
 extern StaticDecoratorInferencePtr callbackBasedDecoratorInference(const String& name, InferencePtr decoratedInference, ExecutionCallbackPtr callback);
 
 class FunctionWorkUnit : public WorkUnit

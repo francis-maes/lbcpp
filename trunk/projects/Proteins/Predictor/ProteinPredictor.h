@@ -18,7 +18,7 @@ namespace lbcpp
 class ProteinPredictor : public CompositeFunction
 {
 public:
-  ProteinPredictor(ProteinPredictorParametersPtr factory);
+  ProteinPredictor(ProteinPredictorParametersPtr parameters);
   ProteinPredictor() {}
 
   void addTarget(ProteinTarget target);
@@ -26,11 +26,36 @@ public:
   virtual void buildFunction(CompositeFunctionBuilder& builder);
 
 protected:
-  ProteinPredictorParametersPtr factory;
+  ProteinPredictorParametersPtr parameters;
   std::vector< std::pair<ProteinTarget, FunctionPtr> > targetPredictors;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinPredictor> ProteinPredictorPtr;
+  
+// protein, protein -> protein
+class ProteinSequencialPredictor : public CompositeFunction
+{
+public:
+  void addPredictor(ProteinPredictorPtr predictor)
+    {jassert(predictor); predictors.push_back(predictor);}
+  
+  void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(proteinClass, T("input"));
+    size_t supervision = builder.addInput(proteinClass, T("supervision"));
+    
+    size_t lastPredictor = input;
+    for (size_t i = 0; i < predictors.size(); ++i)
+      lastPredictor = builder.addFunction(predictors[i], lastPredictor, supervision, T("Stage ") + String((int)i));
+  }
+  
+protected:
+  friend class ProteinSequencialPredictorClass;
+  
+  std::vector<ProteinPredictorPtr> predictors;
+};
+
+typedef ReferenceCountedObjectPtr<ProteinSequencialPredictor> ProteinSequencialPredictorPtr;
 
 }; /* namespace lbcpp */
 

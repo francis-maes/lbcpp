@@ -22,6 +22,7 @@ class ProteinPredictorParameters : public Object
 public:
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
+  // Protein -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residueVectorPerception);
@@ -46,6 +47,7 @@ public:
   virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
     {return mapContainerFunction(binaryClassifier(target));}
 
+  // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
   {
     FunctionPtr res;

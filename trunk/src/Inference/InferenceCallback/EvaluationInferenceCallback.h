@@ -9,7 +9,7 @@
 #ifndef LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 # define LBCPP_INFERENCE_CALLBACK_EVALUATION_H_
 
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Inference/Inference.h>
 
@@ -19,7 +19,7 @@ namespace lbcpp
 class EvaluationInferenceCallback : public ExecutionCallback
 {
 public:
-  EvaluationInferenceCallback(const InferencePtr& inference, const EvaluatorPtr& evaluator)
+  EvaluationInferenceCallback(const InferencePtr& inference, const OldEvaluatorPtr& evaluator)
     : inference(inference), evaluator(evaluator) {}
   EvaluationInferenceCallback() {}
 
@@ -37,7 +37,7 @@ private:
 
   InferencePtr inference;
   CriticalSection evaluatorLock;
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
 };
 
 }; /* namespace lbcpp */

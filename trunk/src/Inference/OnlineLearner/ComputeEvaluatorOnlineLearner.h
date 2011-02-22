@@ -11,7 +11,7 @@
 
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Core/Vector.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Inference/InferenceOnlineLearner.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
 
@@ -21,13 +21,13 @@ namespace lbcpp
 class ComputeEvaluatorOnlineLearner : public InferenceOnlineLearner
 {
 public:
-  ComputeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData)
+  ComputeEvaluatorOnlineLearner(OldEvaluatorPtr evaluator, bool computeOnValidationData)
     : evaluator(evaluator), computeOnValidationData(computeOnValidationData), lastDefaultScore(0.0) {}
   ComputeEvaluatorOnlineLearner() : computeOnValidationData(false), lastDefaultScore(0.0) {}
 
   virtual void passFinishedCallback(ExecutionContext& context, const InferencePtr& inference, const InferenceBatchLearnerInputPtr& batchLearnerInput)
   {
-    EvaluatorPtr eval = evaluator->cloneAndCast<Evaluator>(context);
+    OldEvaluatorPtr eval = evaluator->cloneAndCast<OldEvaluator>(context);
     InferenceExampleVectorPtr examples = computeOnValidationData ? batchLearnerInput->getValidationExamples() : batchLearnerInput->getTrainingExamples();
     String workUnitName(T("Evaluate on "));
     workUnitName += (computeOnValidationData ? T("validation") : T("training"));
@@ -56,7 +56,7 @@ public:
 protected:
   friend class ComputeEvaluatorOnlineLearnerClass;
 
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
   bool computeOnValidationData;
 
   std::vector< std::pair<String, double> > lastScores;

@@ -63,7 +63,7 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  Variable getTargetOrComputeIfMissing(size_t variableIndex) const;
+  Variable getTargetOrComputeIfMissing(size_t targetIndex) const;
 
   size_t getLength() const
     {return primaryStructure ? primaryStructure->getNumElements() : 0;}

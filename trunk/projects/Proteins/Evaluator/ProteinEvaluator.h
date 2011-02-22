@@ -15,10 +15,10 @@
 namespace lbcpp
 {
 
-class ProteinEvaluator : public Evaluator
+class ProteinEvaluator : public OldEvaluator
 {
 public:
-  ProteinEvaluator() : Evaluator(T("Protein")), numProteins(0)
+  ProteinEvaluator() : OldEvaluator(T("Protein")), numProteins(0)
   {
     // 1D
     addEvaluator(T("secondaryStructure"), sequenceLabelingAccuracyEvaluator(T("SS3")));
@@ -71,13 +71,13 @@ public:
     }
   }
 
-  EvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, const String& targetName) const
+  OldEvaluatorPtr getEvaluatorForTarget(ExecutionContext& context, const String& targetName) const
   {
     int variableIndex = proteinClass->findMemberVariable(targetName);
     if (variableIndex < 0)
     {
       context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Unknown target ") + targetName);
-      return EvaluatorPtr();
+      return OldEvaluatorPtr();
     }
 
     for (size_t i = 0; i < evaluators.size(); ++i)
@@ -85,7 +85,7 @@ public:
         return evaluators[i].second;
     
     context.errorCallback(T("ProteinEvaluator::getEvaluatorForTarget"), T("Could not find evaluator for target ") + targetName);
-    return EvaluatorPtr();
+    return OldEvaluatorPtr();
   }
   
   virtual double getDefaultScore() const
@@ -95,7 +95,7 @@ public:
   {
     for (size_t i = 0; i < evaluators.size(); ++i)
     {
-      EvaluatorPtr evaluator = evaluators[i].second;
+      OldEvaluatorPtr evaluator = evaluators[i].second;
       std::vector<std::pair<String, double> > scores;
       evaluator->getScores(scores);
       
@@ -106,7 +106,7 @@ public:
   
   void getScoresForTarget(ExecutionContext& context, const String& targetName, std::vector< std::pair<String, double> >& res) const
   {
-    EvaluatorPtr evaluator = getEvaluatorForTarget(context, targetName);
+    OldEvaluatorPtr evaluator = getEvaluatorForTarget(context, targetName);
     jassert(evaluator);
     evaluator->getScores(res);
   }
@@ -114,9 +114,9 @@ public:
 protected:
   size_t numProteins;
 
-  std::vector<std::pair<size_t, EvaluatorPtr> > evaluators;
+  std::vector<std::pair<size_t, OldEvaluatorPtr> > evaluators;
 
-  void addEvaluator(const String& variableName, EvaluatorPtr evaluator)
+  void addEvaluator(const String& variableName, OldEvaluatorPtr evaluator)
   {
     int variableIndex = proteinClass->findMemberVariable(variableName);
     jassert(variableIndex >= 0);

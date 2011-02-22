@@ -10,7 +10,7 @@
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_BINARY_CLASSIFICATION_RANKING_H_
 
 //# include "AdditiveRankingLossFunction.h"
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 
 namespace lbcpp
 {

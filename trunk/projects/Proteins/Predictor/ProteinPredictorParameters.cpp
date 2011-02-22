@@ -53,9 +53,9 @@ void NumericalProteinPredictorParameters::primaryResidueFeatures(CompositeFuncti
 
 void NumericalProteinPredictorParameters::primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
 {
-  builder.addInput(proteinClass, T("protein"));
-  builder.addFunction(proteinLengthFunction(), 0);
-  builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), 1, 0);
+  size_t input = builder.addInput(proteinClass, T("protein"));
+  size_t length = builder.addFunction(proteinLengthFunction(), 0);
+  builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, input);
 }
 
 void NumericalProteinPredictorParameters::residueFeatures(CompositeFunctionBuilder& builder) const

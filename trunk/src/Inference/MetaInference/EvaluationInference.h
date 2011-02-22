@@ -10,7 +10,7 @@
 # define LBCPP_INFERENCE_META_EVALUATION_H_
 
 # include "RunOnSupervisedExamplesInference.h"
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 
 namespace lbcpp
 {
@@ -18,7 +18,7 @@ namespace lbcpp
 class EvaluationInference : public RunOnSupervisedExamplesParallelInference
 {
 public:
-  EvaluationInference(InferencePtr inference, EvaluatorPtr evaluator)
+  EvaluationInference(InferencePtr inference, OldEvaluatorPtr evaluator)
     : RunOnSupervisedExamplesParallelInference(inference), evaluator(evaluator) {}
   EvaluationInference() {}
 
@@ -51,7 +51,7 @@ public:
 protected:
   friend class EvaluationInferenceClass;
 
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
 };
 
 

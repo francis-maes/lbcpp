@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: MultiLabelClassificationEval..h| MultiLabel Classification       |
 | Author  : Francis Maes                   |   Evaluator                     |
-| Started : 15/01/2011 16:37               |                                 |
+| Started : 22/02/2011 14:00               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -14,51 +14,18 @@
 namespace lbcpp
 {
 
-class MultiLabelClassificationEvaluator : public Evaluator
+class MultiLabelClassificationScoreObject : public ScoreObject
 {
 public:
-  MultiLabelClassificationEvaluator(const String& name)
-    : Evaluator(name), hammingLoss(new ScalarVariableMean(T("Hamming"))), accuracy(new ScalarVariableMean(T("Accuracy"))),
-      precision(new ScalarVariableMean(T("Precision"))), recall(new ScalarVariableMean(T("Recall")))
-  {
-  }
-  MultiLabelClassificationEvaluator() {}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct)
-  {
-    if (!correct.exists())
-      return;
-
-    if (predicted.exists())
-    {
-      jassert(predicted.isObject() && correct.isObject());
-      const ObjectPtr& predictedObject = predicted.getObject();
-      const ObjectPtr& correctObject = correct.getObject();
-      jassert(predictedObject->getClass() == correctObject->getClass());
-
-      size_t n = predictedObject->getNumVariables();
-      BinaryClassificationConfusionMatrix confusionMatrix;
-      for (size_t i = 0; i < n; ++i)
-      {
-        bool p = false, c = false;
-        confusionMatrix.convertToBoolean(context, predictedObject->getVariable(i), p);
-        confusionMatrix.convertToBoolean(context, correctObject->getVariable(i), c);
-        confusionMatrix.addPrediction(p, c);
-      }
-      
-      hammingLoss->push(1.0 - confusionMatrix.computeAccuracy());
-      accuracy->push(confusionMatrix.getTruePositives() / (double)(confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()));
-      precision->push(confusionMatrix.computePrecision());
-      recall->push(confusionMatrix.computeRecall());
-    }
-    else
-    {
-      hammingLoss->push(1.0);
-      accuracy->push(0.0);
-      precision->push(0.0);
-      recall->push(0.0);
-    }
-  }
+  MultiLabelClassificationScoreObject()
+    : hammingLoss(new ScalarVariableMean(T("Hamming"))),
+      accuracy(new ScalarVariableMean(T("Accuracy"))),
+      precision(new ScalarVariableMean(T("Precision"))),
+      recall(new ScalarVariableMean(T("Recall")))
+  {}
+  
+  virtual double getScoreToMinimize() const
+    {return -accuracy->getMean();}
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
   {
@@ -67,28 +34,75 @@ public:
     res.push_back(std::make_pair(T("Precision"), precision->getMean()));
     res.push_back(std::make_pair(T("Recall"), recall->getMean()));
   }
-
+  
+  void pushHammingLoss(double value)
+    {hammingLoss->push(value);}
+  
+  void pushAccuracy(double value)
+    {accuracy->push(value);}
+  
+  void pushPrecision(double value)
+    {precision->push(value);}
+  
+  void pushRecall(double value)
+    {recall->push(value);}
+  
   virtual String toString() const
   {
     if (!hammingLoss->getCount())
       return String::empty;
-  
+    
     return getName() + T(" hammingLoss: ") + String(hammingLoss->getMean()) + 
-      T(" acc: ") + String(accuracy->getMean()) + 
-      T(" prec: ") + String(precision->getMean()) + 
-      T(" rec: ") + String(recall->getMean());
+    T(" acc: ") + String(accuracy->getMean()) + 
+    T(" prec: ") + String(precision->getMean()) + 
+    T(" rec: ") + String(recall->getMean());
   }
 
-  virtual double getDefaultScore() const
-    {return accuracy->getMean();}
-
 protected:
-  friend class MultiLabelClassificationEvaluatorClass;
-
+  friend class MultiLabelClassificationScoreObjectClass;
+  
   ScalarVariableMeanPtr hammingLoss;
   ScalarVariableMeanPtr accuracy;
   ScalarVariableMeanPtr precision;
   ScalarVariableMeanPtr recall;
+};
+
+typedef ReferenceCountedObjectPtr<MultiLabelClassificationScoreObject> MultiLabelClassificationScoreObjectPtr;
+
+class MultiLabelClassificationEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr getRequiredPredictedElementsType() const
+    {return objectClass;}
+  
+  virtual TypePtr getRequiredSupervisionElementsType() const
+    {return objectClass;}
+  
+protected:
+  virtual ScoreObjectPtr createEmptyScoreObject() const
+    {return new MultiLabelClassificationScoreObject();}
+  
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, ScoreObjectPtr& result) const
+  {
+    const ObjectPtr& predictedObject = predicted.getObject();
+    const ObjectPtr& correctObject = correct.getObject();
+    MultiLabelClassificationScoreObjectPtr score = result.staticCast<MultiLabelClassificationScoreObject>();
+    jassert(predictedObject->getClass() == correctObject->getClass());
+
+    size_t n = predictedObject->getNumVariables();
+    BinaryClassificationConfusionMatrix confusionMatrix;
+    for (size_t i = 0; i < n; ++i)
+    {
+      bool p = false, c = false;
+      confusionMatrix.convertToBoolean(context, predictedObject->getVariable(i), p);
+      confusionMatrix.convertToBoolean(context, correctObject->getVariable(i), c);
+      confusionMatrix.addPrediction(p, c);
+    }
+    score->pushHammingLoss(1.0 - confusionMatrix.computeAccuracy());
+    score->pushAccuracy(confusionMatrix.getTruePositives() / (double)(confusionMatrix.getSampleCount() - confusionMatrix.getTrueNegatives()));
+    score->pushPrecision(confusionMatrix.computePrecision());
+    score->pushRecall(confusionMatrix.computeRecall());
+  }
 };
 
 }; /* namespace lbcpp */

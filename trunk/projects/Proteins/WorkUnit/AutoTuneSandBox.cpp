@@ -148,7 +148,7 @@ public:
   }
 
 protected:
-  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0, EvaluatorPtr evaluator = EvaluatorPtr()) const
+  InferenceOnlineLearnerPtr createOnlineLearner(const String& targetName, double initialLearningRate = 1.0, OldEvaluatorPtr evaluator = OldEvaluatorPtr()) const
   {
     InferenceOnlineLearnerPtr res, lastLearner;
     if (targetName.startsWith(T("contactMap")))
@@ -165,11 +165,11 @@ protected:
 
     if (evaluator)
     {
-      EvaluatorPtr trainEvaluator = evaluator->cloneAndCast<Evaluator>(context);
+      OldEvaluatorPtr trainEvaluator = evaluator->cloneAndCast<OldEvaluator>(context);
       trainEvaluator->setName(T("trainScore"));
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(trainEvaluator, false));
 
-      EvaluatorPtr validationEvaluator = evaluator->cloneAndCast<Evaluator>(context);
+      OldEvaluatorPtr validationEvaluator = evaluator->cloneAndCast<OldEvaluator>(context);
       validationEvaluator->setName(T("validationScore"));
       lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(validationEvaluator, true));
     }
@@ -307,7 +307,7 @@ Variable AutoTuneSandBox::run(ExecutionContext& context)
     inference->evaluate(context, validationProteins, evaluator, T("Evaluating on validation data"));
     std::cout << evaluator->toString() << std::endl << std::endl;
 
-    EvaluatorPtr evaluator = new ProteinEvaluator();
+    OldEvaluatorPtr evaluator = new ProteinEvaluator();
     inference->evaluate(context, testProteins, evaluator, T("Evaluating on testing data"));
     std::cout << evaluator->toString() << std::endl << std::endl;
   }
@@ -323,7 +323,7 @@ Variable AutoTuneSandBox::run(ExecutionContext& context)
   for (size_t i = 7; i <= 7; i += 1)
   {
     std::cout << "Check Evaluating with " << (i ? i : 1) << " threads ..." << std::endl;
-    EvaluatorPtr evaluator = new ProteinEvaluator();
+    OldEvaluatorPtr evaluator = new ProteinEvaluator();
     ExecutionContextPtr context = multiThreadedExecutionContext(i ? i : 1);
     inference->evaluate(*context, trainProteins, evaluator);
   //  inference->crossValidate(context, proteins, evaluator, 2);

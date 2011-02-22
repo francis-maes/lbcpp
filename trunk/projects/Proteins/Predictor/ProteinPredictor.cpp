@@ -8,14 +8,14 @@
 #include "ProteinPredictor.h"
 using namespace lbcpp;
 
-ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr factory = ProteinPredictorParametersPtr())
-  : factory(factory)
+ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = ProteinPredictorParametersPtr())
+  : parameters(parameters)
 {
 }
 
 void ProteinPredictor::addTarget(ProteinTarget target)
 {
-  FunctionPtr targetPredictor = factory->createTargetPredictor(target);
+  FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
   targetPredictors.push_back(std::make_pair(target, targetPredictor));
 }
@@ -24,7 +24,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 {
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
-  size_t residueFeatures = builder.addFunction(factory->createResidueVectorPerception(), input);
+  size_t residuePerception = builder.addFunction(parameters->createResidueVectorPerception(), input);
   
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);
@@ -39,7 +39,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     jassert(elementsType);
     if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)) || // label sequences
         elementsType->inheritsFrom(probabilityType))                                     // probability sequences
-      targetPredictorInput = residueFeatures;                                            // -> residue features
+      targetPredictorInput = residuePerception;                                          // -> residue perceptions
     else
       jassert(false);
 

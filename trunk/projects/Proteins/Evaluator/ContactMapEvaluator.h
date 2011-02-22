@@ -9,19 +9,19 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 # define LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
-class ContactMapEvaluator : public Evaluator
+class ContactMapEvaluator : public OldEvaluator
 {
 public:
   ContactMapEvaluator(const String& name, size_t minimumDistance)
-    : Evaluator(name),
-      classificationEvaluator(binaryClassificationConfusionEvaluator(name)), 
-      rocEvaluator(rocAnalysisEvaluator(name)),
+    : OldEvaluator(name),
+      classificationEvaluator(oldBinaryClassificationConfusionEvaluator(name)), 
+      rocEvaluator(oldROCAnalysisEvaluator(name)),
       minimumDistance(minimumDistance) {}
 
   virtual String toString() const
@@ -69,8 +69,8 @@ public:
   }
 
 protected:
-  EvaluatorPtr classificationEvaluator;
-  EvaluatorPtr rocEvaluator;
+  OldEvaluatorPtr classificationEvaluator;
+  OldEvaluatorPtr rocEvaluator;
   size_t minimumDistance;
 };
 

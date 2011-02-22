@@ -309,7 +309,7 @@ SET(LBCPP_FUNCTION_SOURCES
   ../include/lbcpp/Function/IterationFunction.h
   ../include/lbcpp/Function/StoppingCriterion.h
   ../include/lbcpp/Function/Predicate.h
-  ../include/lbcpp/Function/Evaluator.h  
+  ../include/lbcpp/Function/Evaluator.h
   Function/Evaluator.cpp
   Function/FunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/FunctionLibrary.cpp
@@ -366,12 +366,10 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 )
 
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
-  Function/Evaluator/ContainerElementsEvaluator.h
   Function/Evaluator/BinaryClassificationConfusionEvaluator.h
   Function/Evaluator/ClassificationAccuracyEvaluator.h
-  Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/RegressionErrorEvaluator.h
-  Function/Evaluator/SaveToDirectoryEvaluator.h
+  Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
@@ -648,7 +646,7 @@ SET(LBCPP_INFERENCE_ONLINE_LEARNER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/InferenceOnlineLearnerLibrary.cpp
 )
 
-#### NumericalLearning ####
+#### NumericalLearning (Old) ####
 
 SET(LBCPP_NUMERICAL_LEARNING_SOURCES
   ../include/lbcpp/NumericalLearning/LossFunctions.h
@@ -718,7 +716,7 @@ SET(LBCPP_NUMERICAL_LEARNING_ONLINE_LEARNER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningOnlineLearnerLibrary.cpp
 )
 
-#### DecisionTree ####
+#### DecisionTree (Old) ####
 
 SET(LBCPP_DECISION_TREE_SOURCES
   ../include/lbcpp/DecisionTree/predeclarations.h
@@ -746,6 +744,22 @@ SET(LBCPP_DECISION_TREE_RTREE_SOURCES
   DecisionTree/RTree/tree-model.c
   DecisionTree/RTree/tree-multiregr.c
   DecisionTree/RTree/tree-ok3.c
+)
+
+#### Function (Old) ####
+
+SET(LBCPP_OLD_FUNCTION_SOURCES
+  ../include/lbcpp/Function/OldEvaluator.h  
+  Function/OldEvaluator.cpp
+)
+
+SET(LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES
+  Function/Evaluator/ContainerElementsEvaluator.h
+  Function/Evaluator/OldBinaryClassificationConfusionEvaluator.h
+  Function/Evaluator/OldClassificationAccuracyEvaluator.h
+  Function/Evaluator/OldMultiLabelClassificationEvaluator.h
+  Function/Evaluator/OldRegressionErrorEvaluator.h
+  Function/Evaluator/SaveToDirectoryEvaluator.h
 )
 
 #### UserInterface ####
@@ -921,6 +935,9 @@ SET(LBCPP_CORE
     ${LBCPP_DECISION_TREE_INFERENCE_SOURCES}
   #  ${LBCPP_DECISION_TREE_RTREE_SOURCES}
   
+  ${LBCPP_OLD_FUNCTION_SOURCES}
+    ${LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES}
+  
   ######### <-- old  ############
 )
 
@@ -960,6 +977,7 @@ SOURCE_SUB_GROUP(Function IterationFunction FILES ${LBCPP_FUNCTION_ITERATION_SOU
 SOURCE_SUB_GROUP(Function StoppingCriterion FILES ${LBCPP_FUNCTION_STOPPING_CRITERION_SOURCES})
 SOURCE_SUB_GROUP(Function Predicate FILES ${LBCPP_FUNCTION_PREDICATE_SOURCES})
 SOURCE_SUB_GROUP(Function Evaluator FILES ${LBCPP_FUNCTION_EVALUATOR_SOURCES})
+
 
 ## FeatureGenerator
 SOURCE_GROUP(FeatureGenerator FILES ${LBCPP_FEATURE_GENERATOR_SOURCES})
@@ -1018,6 +1036,11 @@ SOURCE_SUB_GROUP("Old - NumericalLearning" OnlineLearner FILES ${LBCPP_NUMERICAL
 SOURCE_GROUP("Old - DecisionTree" FILES ${LBCPP_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP("Old - DecisionTree" Inference FILES ${LBCPP_DECISION_TREE_INFERENCE_SOURCES})
 SOURCE_SUB_GROUP("Old - DecisionTree" RTree FILES ${LBCPP_DECISION_TREE_RTREE_SOURCES})
+
+## Evaluator
+SOURCE_GROUP("Old - Function" FILES ${LBCPP_OLD_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP("Old - Function" Evaluator FILES ${LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES})
+
 
 ######### <-- old  ############
 

@@ -7,7 +7,7 @@
                                `--------------------------------------------*/
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Core/Frame.h>
-#include <lbcpp/Function/Evaluator.h>
+#include <lbcpp/Function/OldEvaluator.h>
 #include <lbcpp/Learning/BatchLearner.h>
 using namespace lbcpp;
 
@@ -199,7 +199,7 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
 bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData, const String& scopeName, bool returnLearnedFunction)
   {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData), scopeName, returnLearnedFunction);}
 
-bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
+bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const OldEvaluatorPtr& evaluator, const String& scopeName) const
 {
   bool doScope = scopeName.isNotEmpty();
   bool res = true;
@@ -267,7 +267,7 @@ bool Function::evaluate(ExecutionContext& context, const ContainerPtr& examples,
   return true;
 }
 
-bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
+bool Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const OldEvaluatorPtr& evaluator, const String& scopeName) const
   {return evaluate(context, new ObjectVector(examples), evaluator, scopeName);}
 
 String Function::toString() const

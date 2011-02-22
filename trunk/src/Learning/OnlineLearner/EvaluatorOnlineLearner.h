@@ -10,7 +10,7 @@
 # define LBCPP_LEARNING_ONLINE_LEARNER_EVALUATOR_H_
 
 # include <lbcpp/Learning/OnlineLearner.h>
-# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/OldEvaluator.h>
 
 namespace lbcpp
 {
@@ -18,7 +18,7 @@ namespace lbcpp
 class EvaluatorOnlineLearner : public OnlineLearner
 {
 public:
-  EvaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr())
+  EvaluatorOnlineLearner(OldEvaluatorPtr evaluator = OldEvaluatorPtr())
     : evaluator(evaluator), context(NULL), trainingData(NULL), validationData(NULL) {}
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
@@ -33,13 +33,13 @@ public:
   {
     if (trainingData)
     {
-      EvaluatorPtr evaluator = evaluate(*trainingData, T("Train"));
+      OldEvaluatorPtr evaluator = evaluate(*trainingData, T("Train"));
       objectiveValueToMinimize = -evaluator->getDefaultScore();
     }
 
     if (validationData)
     {
-      EvaluatorPtr evaluator = evaluate(*trainingData, T("Validation"));
+      OldEvaluatorPtr evaluator = evaluate(*trainingData, T("Validation"));
       objectiveValueToMinimize = -evaluator->getDefaultScore();
     }
     return false;
@@ -53,16 +53,16 @@ public:
 protected:
   friend class EvaluatorOnlineLearnerClass;
 
-  EvaluatorPtr evaluator;
+  OldEvaluatorPtr evaluator;
 
   ExecutionContext* context;
   FunctionPtr function;
   const std::vector<ObjectPtr>* trainingData;
   const std::vector<ObjectPtr>* validationData;
 
-  EvaluatorPtr evaluate(const std::vector<ObjectPtr>& data, const String& name)
+  OldEvaluatorPtr evaluate(const std::vector<ObjectPtr>& data, const String& name)
   {
-    EvaluatorPtr evaluator = this->evaluator->cloneAndCast<Evaluator>();
+    OldEvaluatorPtr evaluator = this->evaluator->cloneAndCast<OldEvaluator>();
     function->evaluate(*context, data, evaluator);
 
     std::vector< std::pair<String, double> > results;

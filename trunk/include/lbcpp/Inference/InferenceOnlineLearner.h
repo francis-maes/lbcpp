@@ -105,7 +105,7 @@ extern UpdatableOnlineLearnerPtr randomizerOnlineLearner(LearnerUpdateFrequency 
 extern UpdatableOnlineLearnerPtr oldStoppingCriterionOnlineLearner(StoppingCriterionPtr criterion, bool restoreBestParametersWhenLearningStops = true, LearnerUpdateFrequency criterionTestFrequency = perPass);
 
 extern UpdatableOnlineLearnerPtr computeScoreOnlineLearner(FunctionPtr scoreFunction, LearnerUpdateFrequency computeFrequency = perPass);
-extern InferenceOnlineLearnerPtr computeEvaluatorOnlineLearner(EvaluatorPtr evaluator, bool computeOnValidationData = false);
+extern InferenceOnlineLearnerPtr computeEvaluatorOnlineLearner(OldEvaluatorPtr evaluator, bool computeOnValidationData = false);
 
 extern UpdatableOnlineLearnerPtr saveScoresToGnuPlotFileOnlineLearner(const File& outputFile, LearnerUpdateFrequency updateFrequency = perPass);
 

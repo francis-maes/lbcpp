@@ -59,7 +59,7 @@ protected:
 
   ObjectVectorPtr makeSubInputs(const CompositeFunctionPtr& function, size_t stepNumber, const std::vector<ObjectPtr>& states) const
   {
-    const FunctionPtr& subFunction = function->getSubFunction(function->getStepArgument(stepNumber));
+    //const FunctionPtr& subFunction = function->getSubFunction(function->getStepArgument(stepNumber));
     const DynamicClassPtr& subInputsClass = function->getInputsClass();
 
     ObjectVectorPtr res = new ObjectVector(subInputsClass, states.size());

@@ -29,8 +29,8 @@ typedef FunctionCallback* FunctionCallbackPtr;
 
 class OnlineLearner;
 typedef ReferenceCountedObjectPtr<OnlineLearner> OnlineLearnerPtr;
-class Evaluator;
-typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
+class OldEvaluator;
+typedef ReferenceCountedObjectPtr<OldEvaluator> OldEvaluatorPtr;
 
 class Function : public Object
 {
@@ -144,8 +144,8 @@ public:
   bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
   bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
 
-  bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
-  bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
+  bool evaluate(ExecutionContext& context, const ContainerPtr& examples, const OldEvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
+  bool evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const OldEvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
 
   /*
   ** High level dynamic computation (calls callbacks and push into stack if requested)
