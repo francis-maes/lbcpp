@@ -3,6 +3,7 @@ Proteins:
  * Multipasse
  * Bias learning for DR
  * Load/Save des fonction apprises
+ * MapContainerFunction: la transformer en ProxyFunction
  
 Boinc:
  * Faire la work unit d'evaluation (pb sur les features, après la passe CO, learning rate cst = 1)
