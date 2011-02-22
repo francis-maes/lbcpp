@@ -24,7 +24,7 @@ bool SequentialDecisionSystem::initialize(ExecutionContext& context)
   if (!initialStateSampler->initialize(context, (TypePtr)randomGeneratorClass))
     return false;
   
-  TypePtr stateType = initialStateSampler->getOutputType();
+  stateType = initialStateSampler->getOutputType();
 
   if (transitionFunction->getNumRequiredInputs() != 2 || 
     !stateType->inheritsFrom(transitionFunction->getRequiredInputType(0, 2)))
@@ -33,7 +33,7 @@ bool SequentialDecisionSystem::initialize(ExecutionContext& context)
     return false;
   }
   
-  TypePtr actionType = transitionFunction->getRequiredInputType(1, 2);
+  actionType = transitionFunction->getRequiredInputType(1, 2);
   if (!transitionFunction->initialize(context, stateType, actionType))
     return false;
   if (!transitionFunction->getOutputType()->inheritsFrom(stateType))
@@ -60,4 +60,17 @@ bool SequentialDecisionSystem::initialize(ExecutionContext& context)
   }
 
   return true;
+}
+
+void SequentialDecisionSystem::getAvailableActions(const Variable& state, std::vector<Variable>& actions) const
+{
+  jassert(stateType && actionType);
+  if (actionType == booleanType)
+  {
+    actions.push_back(Variable(false));
+    actions.push_back(Variable(true));
+    return;
+  }
+
+  jassert(false);
 }

@@ -32,12 +32,26 @@ public:
 
   bool initialize(ExecutionContext& context);
 
+  Variable sampleInitialState(RandomGeneratorPtr random) const
+    {return initialStateSampler->compute(defaultExecutionContext(), random);}
+
+  void getAvailableActions(const Variable& state, std::vector<Variable>& actions) const;
+
+  Variable computeTransition(const Variable& state, const Variable& action) const
+    {return transitionFunction->compute(defaultExecutionContext(), state, action);}
+
+  double computeReward(const Variable& state, const Variable& action, const Variable& newState) const
+    {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();} // todo: support for different kind of reward functions
+
 private:
   friend class SequentialDecisionSystemClass;
 
   FunctionPtr initialStateSampler;
   FunctionPtr transitionFunction;
   FunctionPtr rewardFunction;
+
+  TypePtr stateType;
+  TypePtr actionType;
 };
 
 typedef ReferenceCountedObjectPtr<SequentialDecisionSystem> SequentialDecisionSystemPtr;
