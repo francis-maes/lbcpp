@@ -76,7 +76,7 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
                                                        true, perStepMiniBatch20,
                                                        l2RegularizerFunction(regularizer));
   
-  lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(classificationAccuracyEvaluator(T("digit")), false));
+  lastLearner = lastLearner->setNextLearner(computeEvaluatorOnlineLearner(oldClassificationAccuracyEvaluator(), false));
   lastLearner = lastLearner->setNextLearner(saveScoresToGnuPlotFileOnlineLearner(output.getFullPathName() + T(".gnuplot")));
   
   StoppingCriterionPtr stoppingCriterion = maxIterationsStoppingCriterion(numIterations);
@@ -122,13 +122,13 @@ Variable LearnerProgram::run(ExecutionContext& context)
   inference->train(context, learningData, ContainerPtr());
 
   //std::cout << "----- Evaluation - Train -----  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
-  EvaluatorPtr evaluator = classificationAccuracyEvaluator(T("digit"));
+  OldEvaluatorPtr evaluator = oldClassificationAccuracyEvaluator();
   inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
 
   if (testingData && testingData->getNumElements())
   {
     //std::cout << "----- Evaluation - Test ------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
-    evaluator = classificationAccuracyEvaluator(T("digit"));
+    evaluator = oldClassificationAccuracyEvaluator();
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
   }
 
