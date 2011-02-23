@@ -40,23 +40,14 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SearchSpaceScoreObject> SearchSpaceScoreObjectPtr;
 
-class SearchSpaceEvaluator : public OutputEvaluator
+class SearchSpaceEvaluator : public Evaluator
 {
 public:
-  virtual TypePtr getRequiredOutputType() const
-    {return sortedSearchSpaceClass;}
+  virtual ScoreObjectPtr createEmptyScoreObject() const
+    {return new SearchSpaceScoreObject();}
 
-  virtual ScoreObjectPtr computeOutputEvaluator(ExecutionContext& context, const ContainerPtr& outputs) const
-  {
-    SearchSpaceScoreObjectPtr res = new SearchSpaceScoreObject();
-    size_t n = outputs->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      SortedSearchSpacePtr searchSpace = outputs->getElement(i).getObjectAndCast<SortedSearchSpace>();
-      res->add(searchSpace);
-    }
-    return res;
-  }
+  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
+    {scores.staticCast<SearchSpaceScoreObject>()->add(output.getObjectAndCast<SortedSearchSpace>());}
 };
 
 }; /* namespace lbcpp */

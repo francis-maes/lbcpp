@@ -152,8 +152,6 @@ public:
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
       return 0.0;
     EvaluatorPtr evaluator = new SearchSpaceEvaluator();
-    if (!evaluator->initialize(context, containerClass(anyType), containerClass(sortedSearchSpaceClass)))
-      return 0.0;
     ScoreObjectPtr scores = lookAHeadSearch->evaluate(context, initialStates, evaluator, T("Evaluating heuristic ") + heuristic->toShortString());
     return scores ? -scores->getScoreToMinimize() : 0.0;
   }

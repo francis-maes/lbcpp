@@ -106,10 +106,10 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new MultiLabelClassificationScoreObject();}
   
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {score.staticCast<MultiLabelClassificationScoreObject>()->finalize();}
   
-  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, ScoreObjectPtr& result) const
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const   ScoreObjectPtr& result) const
   {
     const ObjectPtr& predictedObject = predicted.getObject();
     const ObjectPtr& correctObject = correct.getObject();
