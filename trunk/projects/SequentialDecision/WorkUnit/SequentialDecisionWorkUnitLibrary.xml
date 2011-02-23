@@ -7,21 +7,11 @@
   <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
   <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>
 
-  <class name="LookAheadTreeSearchFunction" base="Function">
-    <variable type="SequentialDecisionProblem" name="problem"/>
-    <variable type="Function" name="heuristic"/>
-    <variable type="PositiveInteger" name="maxSearchNodes"/>
-  </class>
-
-  <class name="LookAheadTreeSearchOnlineLearner" base="OnlineLearner">
-    <variable type="RankingLossFunction" name="rankingLoss"/>
-  </class>
-
-
   <class name="SequentialDecisionSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numInitialStates" shortName="n"/>
-    <variable type="PositiveInteger" name="minDepth" shortName="mindepth"/>
-    <variable type="PositiveInteger" name="maxDepth" shortName="maxdepth"/>
+    <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
+    <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
+    <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
   </class>
   
 </library>

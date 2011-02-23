@@ -20,12 +20,28 @@
   <class name="SortedSearchSpace" base="Object"/>
 
   <!-- Search Heuristic -->
+  <class name="GreedySearchHeuristic" base="Function" shortName="greedyHeuristic">
+    <constructor arguments="double discount"/>
+    <variable type="Double" name="discount"/>
+  </class>
   <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepthHeuristic">
     <constructor/>
   </class>
   <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimisticPlanningHeuristic">
     <constructor arguments="double discountFactor"/>
     <variable type="Double" name="discountFactor"/>
+  </class>
+
+  <!-- LookAheadTreeSearchFunction -->
+  <class name="LookAheadTreeSearchFunction" base="Function">
+    <variable type="SequentialDecisionProblem" name="problem"/>
+    <variable type="Function" name="heuristic"/>
+    <variable type="PositiveInteger" name="maxSearchNodes"/>
+  </class>
+
+  <class name="LookAheadTreeSearchOnlineLearner" base="OnlineLearner">
+    <constructor arguments="RankingLossFunctionPtr rankingLoss"/>
+    <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
   
 </library>

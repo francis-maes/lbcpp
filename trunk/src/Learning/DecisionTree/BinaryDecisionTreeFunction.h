@@ -46,15 +46,6 @@ public:
 
   void setTree(BinaryDecisionTreePtr tree)
     {parameters = tree;}
-
-  /* Object */
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    LearnableFunction::clone(context, target);
-    ReferenceCountedObjectPtr<BinaryDecisionTreeFunction> res = target.staticCast<BinaryDecisionTreeFunction>();
-    if (parameters)
-      res->parameters = parameters->clone(context);
-  }
 };
 
 extern ClassPtr binaryDecisionTreeFunctionClass;

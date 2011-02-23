@@ -15,6 +15,8 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
   Core/SearchSpace.h
   Core/SearchSpace.cpp
   Core/SearchHeuristic.h
+  Core/LookAheadTreeSearchFunction.h
+  Core/LookAheadTreeSearchOnlineLearner.h
   Core/SequentialDecisionCoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionCoreLibrary.cpp
 )

@@ -14,6 +14,21 @@
 namespace lbcpp
 {
 
+class GreedySearchHeuristic : public SimpleSearchHeuristic
+{
+public:
+  GreedySearchHeuristic(double discount = 1.0)
+    : discount(discount) {}
+
+  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+    {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0)
+
+protected:
+  friend class GreedySearchHeuristicClass;
+
+  double discount;
+};
+
 class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
