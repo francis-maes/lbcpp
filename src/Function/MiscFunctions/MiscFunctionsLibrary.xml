@@ -28,9 +28,4 @@
     <variable type="Type" name="inputPairClass"/>
   </class>
   
-  <class name="ConcatenateScoreObjectFunction" base="Function">
-    <constructor/>
-  </class>
-
-  
 </library>

@@ -16,32 +16,6 @@
 namespace lbcpp
 {
 
-class MergeContainerFunction : public SimpleUnaryFunction
-{
-public:
-  MergeContainerFunction()
-    : SimpleUnaryFunction(containerClass(containerClass(anyType)), containerClass(anyType))
-    {}
-  
-protected:
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    ContainerPtr inputContainer = input.getObjectAndCast<Container>();
-    VectorPtr res = vector(inputContainer->getElementsType()->getTemplateArgument(0));
-    size_t n = inputContainer->getNumElements();
-    for (size_t i = 0; i < n; ++i)
-    {
-      ContainerPtr values = inputContainer->getElement(i).getObjectAndCast<Container>();
-      const size_t numElements = values->getNumElements();
-      const size_t totalNumElements = res->getNumElements();
-      res->resize(totalNumElements + numElements);
-      for (size_t i = 0; i < numElements; ++i)
-        res->setElement(totalNumElements + i, values->getElement(i));
-    }
-    return res;
-  }
-};
-
 class ProteinEvaluatorCompositeFunction : public CompositeFunction
 {
 public:
@@ -54,10 +28,10 @@ public:
     size_t supervision = builder.addInput(containerClass(proteinClass), T("supervision"));
     
     size_t ss3 = builder.addFunction(mapContainerFunction(getVariableFunction(ss3Target)), predicted, T("ss3"));
-    ss3 = builder.addFunction(new MergeContainerFunction(), ss3, T("ss3"));
+    ss3 = builder.addFunction(concatenateContainerFunction(), ss3, T("ss3"));
     
     size_t ss3Supervision = builder.addFunction(mapContainerFunction(getVariableFunction(ss3Target)), supervision, T("ss3Supervision"));
-    ss3Supervision = builder.addFunction(new MergeContainerFunction(), ss3Supervision, T("ss3Supervision"));
+    ss3Supervision = builder.addFunction(concatenateContainerFunction(), ss3Supervision, T("ss3Supervision"));
     
     builder.startSelection();
 

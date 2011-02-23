@@ -69,5 +69,9 @@
     <variable type="Function" name="f"/>
     <variable type="Function" name="g"/>
   </class>
+  
+  <class name="ConcatenateContainerFunction" base="Function">
+    <constructor/>
+  </class>
 
 </library>
