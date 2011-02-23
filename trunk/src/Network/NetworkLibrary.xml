@@ -18,7 +18,7 @@
   </class>
   
   <class name="WorkUnitNetworkRequest" base="NetworkRequest">
-    <variable type="WorkUnit" name="workUnit"/>
+    <variable type="XmlElement" name="workUnitXmlElement"/>
   </class>
   
   <!-- NetworkInterface -->
@@ -31,9 +31,7 @@
   
   <class name="ClientNodeNetworkInterface" base="NodeNetworkInterface"/>
   <class name="SgeNodeNetworkInterface" base="NodeNetworkInterface"/>
-  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface">
-    <variable type="GenericVector[NetworkRequest]" name="requests"/>
-  </class>
+  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface"/>
   
   <!-- NetworkNotification -->
   <class name="NetworkNotification" base="Notification" abstract="yes"/>

@@ -97,7 +97,7 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
   }
   
   /* Update status */
-  std::vector<NetworkRequestPtr> requests;
+  std::vector<WorkUnitNetworkRequestPtr> requests;
   manager->getUnfinishedRequestsSentTo(nodeName, requests);
   for (size_t i = 0; i < requests.size(); ++i)
   {
@@ -105,17 +105,19 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
     int oldStatus = requests[i]->getStatus();
 
     if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
-      interface->pushWorkUnit(interface->getContext(), manager->getWorkUnit(manager->getContext(), requests[i]));
-    
-    if (status == NetworkRequest::finished && status != oldStatus)
     {
-      ExecutionTracePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]);
-      File f = manager->getContext().getFile(T("Traces/") + requests[i]->getIdentifier() + T(".trace"));
-      trace->saveToFile(manager->getContext(), f);
+      interface->pushWorkUnit(interface->getContext(), requests[i]);
+      continue;
+    }
+
+    if (status == NetworkRequest::finished && status != oldStatus) // transition to finised status
+    {
+      ExecutionTracePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]->getNetworkRequest());
+      manager->archiveTrace(manager->getContext(), requests[i], trace);
+      continue;
     }
 
     requests[i]->setStatus(status);
-    // On change : Save request
     if (oldStatus != status)
     {
       File f = manager->getContext().getFile(T("Requests/") + requests[i]->getIdentifier() + T(".request"));
@@ -200,7 +202,7 @@ Variable ClientWorkUnit::run(ExecutionContext& context)
   /* Submit jobs */
   for (size_t i = 0; i < 1; ++i)
   {
-    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(new DumbWorkUnit(), T("testProject"), clientName, T("LocalGridNode"));
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, new DumbWorkUnit(), T("testProject"), clientName, T("LocalGridNode"));
     NetworkRequestPtr res = interface->pushWorkUnit(context, request);
     interface->getWorkUnitStatus(context, res);
   }

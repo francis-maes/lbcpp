@@ -13,11 +13,10 @@
 
 using namespace lbcpp;
 
-void createDirectoryIfNotExists(ExecutionContext& context, const String& directoryName)
+void createDirectoryIfNotExists(ExecutionContext& context, const File& directory)
 {
-  File f = context.getFile(directoryName);
-  if (!f.exists())
-    f.createDirectory();
+  if (!directory.exists())
+    directory.createDirectory();
 }
 
 /*
@@ -87,11 +86,11 @@ ExecutionTracePtr ClientNodeNetworkInterface::getExecutionTrace(ExecutionContext
 SgeNodeNetworkInterface::SgeNodeNetworkInterface(ExecutionContext& context, const String& nodeName)
   : NodeNetworkInterface(context, nodeName)
 {
-  createDirectoryIfNotExists(context, T("Requests"));
-  createDirectoryIfNotExists(context, T("Waiting"));
-  createDirectoryIfNotExists(context, T("InProgress"));
-  createDirectoryIfNotExists(context, T("Finished"));
-  createDirectoryIfNotExists(context, T("Traces"));
+  createDirectoryIfNotExists(context, context.getFile(T("Requests")));
+  createDirectoryIfNotExists(context, context.getFile(T("Waiting")));
+  createDirectoryIfNotExists(context, context.getFile(T("InProgress")));
+  createDirectoryIfNotExists(context, context.getFile(T("Finished")));
+  createDirectoryIfNotExists(context, context.getFile(T("Traces")));
 }
 
 NetworkRequestPtr SgeNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
@@ -136,17 +135,18 @@ ExecutionTracePtr SgeNodeNetworkInterface::getExecutionTrace(ExecutionContext& c
 */
 
 ManagerNodeNetworkInterface::ManagerNodeNetworkInterface(ExecutionContext& context)
-  : NodeNetworkInterface(context, T("manager"))
+  : NodeNetworkInterface(context, T("manager")),
+    requestDirectory(context.getFile(T("Requests"))),
+    archiveDirectory(context.getFile(T("Archives")))
 {
-  createDirectoryIfNotExists(context, T("Requests"));
-  createDirectoryIfNotExists(context, T("WorkUnits"));
-  createDirectoryIfNotExists(context, T("Traces"));
-  
-  StreamPtr files = directoryFileStream(context, context.getFile(T("Requests/")), T("*.request"));
+  createDirectoryIfNotExists(context, requestDirectory);
+  createDirectoryIfNotExists(context, archiveDirectory);
+
+  StreamPtr files = directoryFileStream(context, requestDirectory, T("*.request"));
   while (!files->isExhausted())
   {
     NetworkRequestPtr request = NetworkRequest::createFromFile(context, files->next().getFile());
-    std::cout << request->toString() << std::endl;
+    context.informationCallback(T("Request restored: ") + request->toString());
     requests.push_back(request);
   }
 }
@@ -159,43 +159,62 @@ NetworkRequestPtr ManagerNodeNetworkInterface::pushWorkUnit(ExecutionContext& co
   request->selfGenerateIdentifier();
   request->setStatus(NetworkRequest::waitingOnManager);
   /* First, backup request */
-  NetworkRequestPtr res = request->getNetworkRequest();
-  File f = context.getFile(T("Requests/") + res->getIdentifier() + T(".request"));
-  res->saveToFile(context, f);
-  f = context.getFile(T("WorkUnits/") + res->getIdentifier() + T(".workUnit"));
-  request->getWorkUnit()->saveToFile(context, f);
-  
-  requests.push_back(res);
-  return res;
+  request->saveToFile(context, requestDirectory.getChildFile(request->getIdentifier() + T(".request")));
+
+  requests.push_back(request);
+  return request;
 }
 
 int ManagerNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
 {
-  File f = context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));
-  if (!f.exists())
-    return NetworkRequest::iDontHaveThisWorkUnit;
-  NetworkRequestPtr localRequest = NetworkRequest::createFromFile(context, f);
-  return localRequest->getStatus();
+  // Seek in Request directory
+  File f = requestDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  if (f.exists())
+    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getStatus();
+  // Otherwise, maybe in Archive directory
+  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  if (f.exists())
+    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getStatus();
+
+  return NetworkRequest::iDontHaveThisWorkUnit;
 }
 
 ExecutionTracePtr ManagerNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
 {
-  File f = context.getFile(T("Traces/") + request->getIdentifier() + T(".trace"));
+  File f = archiveDirectory.getChildFile(request->getIdentifier() + T(".trace"));
   if (!f.exists())
     return ExecutionTracePtr();
   return ExecutionTrace::createFromFile(context, f);
 }
 
-void ManagerNodeNetworkInterface::getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const
+void ManagerNodeNetworkInterface::getUnfinishedRequestsSentTo(const String& nodeName, std::vector<WorkUnitNetworkRequestPtr>& results) const
 {
   for (size_t i = 0; i < requests.size(); ++i)
-    if (requests[i]->getStatus() != NetworkRequest::finished && requests[i]->getDestination() == nodeName)
+  {
+    if (requests[i]->getStatus() == NetworkRequest::finished)
+      continue;
+    if (requests[i]->getDestination() == nodeName)
       results.push_back(requests[i]);
+  }
 }
 
-WorkUnitNetworkRequestPtr ManagerNodeNetworkInterface::getWorkUnit(ExecutionContext& context, NetworkRequestPtr request) const
+void ManagerNodeNetworkInterface::archiveTrace(ExecutionContext& context, const WorkUnitNetworkRequestPtr& request, const ExecutionTracePtr& trace)
 {
-  File f = context.getFile(T("WorkUnits/") + request->getIdentifier() + T(".workUnit"));
-  WorkUnitPtr workUnit = WorkUnit::createFromFile(context, f);
-  return new WorkUnitNetworkRequest(request, workUnit);
+  File f = requestDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  if (f.exists())
+    f.deleteFile();
+
+  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  request->saveToFile(context, f);
+
+  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".trace"));
+  trace->saveToFile(context, f);
+
+  std::vector<WorkUnitNetworkRequestPtr> res;
+  res.reserve(requests.size() - 1);
+  for (size_t i = 0; i < requests.size(); ++i)
+    if (requests[i]->getStatus() != NetworkRequest::finished)
+      res.push_back(requests[i]);
+  requests = res;
 }
+

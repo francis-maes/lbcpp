@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Object.h>
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
 {
@@ -68,19 +69,19 @@ protected:
 class WorkUnitNetworkRequest : public NetworkRequest
 {
 public:
-  WorkUnitNetworkRequest(WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
-  WorkUnitNetworkRequest(NetworkRequestPtr request, WorkUnitPtr workUnit);
+  WorkUnitNetworkRequest(ExecutionContext& context, WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
+  WorkUnitNetworkRequest(ExecutionContext& context, NetworkRequestPtr request, WorkUnitPtr workUnit);
   WorkUnitNetworkRequest() {}
   
   WorkUnitPtr getWorkUnit() const
-    {return workUnit;}
+    {return workUnitXmlElement->createObjectAndCast<WorkUnit>();}
   
   NetworkRequestPtr getNetworkRequest() const;
   
 protected:
   friend class WorkUnitNetworkRequestClass;
   
-  WorkUnitPtr workUnit;
+  XmlElementPtr workUnitXmlElement;
 };
 
 typedef ReferenceCountedObjectPtr<WorkUnitNetworkRequest> WorkUnitNetworkRequestPtr;

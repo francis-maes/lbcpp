@@ -188,7 +188,7 @@ public:
     return loadFromJuceXmlElement(exporter.getCurrentElement());
   }
   
-  ObjectPtr createObject(ExecutionContext& context)
+  ObjectPtr createObject(ExecutionContext& context) const
   {
     juce::XmlDocument newDocument(createJuceXmlElement()->createDocument(String::empty));
     XmlImporter importer(context, newDocument);
@@ -196,7 +196,10 @@ public:
     jassert(v.isObject());
     return v.getObject();
   }
-  
+
+  template<class O>
+  ReferenceCountedObjectPtr<O> createObjectAndCast(ExecutionContext& context) const;
+
   /*
   ** Tag
   */
@@ -285,5 +288,12 @@ private:
 extern ClassPtr xmlElementClass;
 
 }; /* namespace lbcpp */
+
+using namespace lbcpp;
+
+template<class O>
+inline ReferenceCountedObjectPtr<O> XmlElement::createObjectAndCast(ExecutionContext& context) const
+  {return createObject(context).dynamicCast<O>();}
+
 
 #endif // !LBCPP_CORE_XML_SERIALISATION_H_
