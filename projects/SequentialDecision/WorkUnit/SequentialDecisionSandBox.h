@@ -11,6 +11,7 @@
 
 # include "../Problem/LinearPointPhysicProblem.h"
 # include "../Core/SearchSpace.h"
+# include "../Core/LookAheadTreeSearchFunction.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Core/CompositeFunction.h>
@@ -51,34 +52,6 @@ protected:
   double maxReturn;
 };
 
-// SearchNode -> Scalar
-class LearnableSearchHeuristic : public CompositeFunction
-{
-public:
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
-  {
-    size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
-    size_t perception = builder.addFunction(perceptionFunction = createPerceptionFunction(), node);
-    size_t supervision = builder.addConstant(Variable());
-    builder.addFunction(scoringFunction = createScoringFunction(), perception, supervision);
-  }
-
-  const FunctionPtr& getPerceptionFunction() const
-    {return perceptionFunction;}
-
-  const FunctionPtr& getScoringFunction() const
-    {return scoringFunction;}
-
-protected:
-  FunctionPtr perceptionFunction;  // SearchNode -> Features
-  FunctionPtr scoringFunction;     // Features -> Score
-
-  virtual FunctionPtr createPerceptionFunction() const = 0;
-  virtual FunctionPtr createScoringFunction() const = 0;
-};
-
-typedef ReferenceCountedObjectPtr<LearnableSearchHeuristic> LearnableSearchHeuristicPtr;
-
 class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
@@ -92,212 +65,14 @@ public:
   }
 };
 
-extern OnlineLearnerPtr lookAheadTreeSearchOnlineLearner();
-
-// State -> SearchSpace
-class LookAheadTreeSearchFunction : public SimpleUnaryFunction
-{
-public:
-  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, double discount, size_t maxSearchNodes)
-    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), discount(discount), maxSearchNodes(maxSearchNodes)
-  {
-   
-  }
-  LookAheadTreeSearchFunction() : SimpleUnaryFunction(anyType, anyType) {}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    if (!heuristic)
-    {
-      context.errorCallback(T("No heuristic"));
-      return TypePtr();
-    }
-    if (!heuristic->initialize(context, (TypePtr)searchSpaceNodeClass))
-      return TypePtr();
-
-    TypePtr outputType = SimpleUnaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
-
-    const size_t maxIterations = 100;
-    if (learnerParameters)
-    {
-      setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, outputType));
-
-      std::vector<OnlineLearnerPtr> onlineLearners;
-      onlineLearners.push_back(lookAheadTreeSearchOnlineLearner());
-      if (learnerParameters->getStoppingCriterion())
-        onlineLearners.push_back(stoppingCriterionOnlineLearner(learnerParameters->getStoppingCriterion()));
-      if (learnerParameters->doRestoreBestParameters())
-        onlineLearners.push_back(restoreBestParametersOnlineLearner());
-      setOnlineLearner(compositeOnlineLearner(onlineLearners));
-
-      LearnableSearchHeuristicPtr learnableHeuristic = heuristic.dynamicCast<LearnableSearchHeuristic>();
-      if (learnableHeuristic)
-      {
-        OnlineLearnerPtr stochasticGDLearner = stochasticGDOnlineLearner(FunctionPtr(), learnerParameters->getLearningRate(), learnerParameters->doNormalizeLearningRate());
-        learnableHeuristic->getScoringFunction()->setOnlineLearner(stochasticGDLearner);
-      }
-    }
-    return outputType;
-  }
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
-  {
-    SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, initialState);
-    searchSpace->reserveNodes(2 * maxSearchNodes);
-
-    double highestReturn = 0.0;
-    for (size_t j = 0; j < maxSearchNodes; ++j)
-    {
-      double value = searchSpace->exploreBestNode(context);
-      if (value > highestReturn)
-        highestReturn = value;
-    }
-
-    return searchSpace;
-  }
-
-  const FunctionPtr& getHeuristic() const
-    {return heuristic;}
-
-protected:
-  friend class LookAheadTreeSearchFunctionClass;
-
-  SequentialDecisionProblemPtr problem;
-  FunctionPtr heuristic;
-  StochasticGDParametersPtr learnerParameters;
-  double discount;
-  size_t maxSearchNodes;
-};
-
-typedef ReferenceCountedObjectPtr<LookAheadTreeSearchFunction> LookAheadTreeSearchFunctionPtr;
-
-class LookAheadTreeSearchOnlineLearner : public OnlineLearner
-{
-public:
-  LookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction()))
-    : context(NULL), rankingLoss(rankingLoss) {}
-
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
-  {
-    this->context = &context;
-    searchFunction = f.staticCast<LookAheadTreeSearchFunction>();
-
-    LearnableSearchHeuristicPtr heuristic = searchFunction->getHeuristic().staticCast<LearnableSearchHeuristic>();
-    featuresFunction = heuristic->getPerceptionFunction();
-    scoringFunction = heuristic->getScoringFunction().staticCast<NumericalLearnableFunction>();
-    jassert(scoringFunction);
-  }
-
-  virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output)
-  {
-    const SortedSearchSpacePtr& searchSpace = output.getObjectAndCast<SortedSearchSpace>();
-
-    size_t numOpenedNodes = searchSpace->getNumOpenedNodes();
-
-    std::set<size_t> candidates;
-    candidates.insert(0);
-    std::vector<double> episodeGradient(searchSpace->getNumNodes(), 0.0);
-    double selectedNodesCostSum = 0.0;
-    for (size_t i = 0; i < numOpenedNodes; ++i)
-    {
-      size_t selectedNodeIndex = searchSpace->getOpenedNodeIndex(i);
-
-      if (i > 0)
-      {
-        std::vector<double> scores(candidates.size());
-        std::vector<double> costs(candidates.size());
-
-        size_t c = 0;
-        for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
-        {
-          SearchSpaceNodePtr node = searchSpace->getNode(*it);
-          scores[c] = node->getHeuristicScore();
-          double cost = (node == node->getParentNode()->getBestChildNode()) ? 0.0 : 1.0; // bipartite ranking for the moment
-          costs[c] = cost;
-          if (*it == selectedNodeIndex)
-            selectedNodesCostSum += cost;
-        }
-
-        // compute ranking loss
-        std::vector<double> rankingLossGradient(candidates.size(), 0.0);
-        rankingLoss->computeRankingLoss(scores, costs, NULL, &rankingLossGradient);
-
-        // update episode gradient
-        c = 0;
-        for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
-          episodeGradient[*it] += rankingLossGradient[c];
-      }
-
-      // update candidates list
-      candidates.erase(selectedNodeIndex);
-      SearchSpaceNodePtr node = searchSpace->getNode(selectedNodeIndex);
-      int begin = node->getChildBeginIndex();
-      if (begin >= 0)
-        for (int childIndex = begin; childIndex < node->getChildEndIndex(); ++childIndex)
-          candidates.insert(childIndex);
-    }
-
-    // apply episode gradient
-    double weight = 1.0 / (double)numOpenedNodes;
-    DoubleVectorPtr parametersGradient;
-    double gradientNorm = 0.0;
-    for (size_t i = 0; i < episodeGradient.size(); ++i)
-    {
-      double g = episodeGradient[i];
-      if (g)
-      {
-        DoubleVectorPtr nodeFeatures = featuresFunction->compute(*context, searchSpace->getNode(i)).getObjectAndCast<DoubleVector>();
-        scoringFunction->addGradient(g, nodeFeatures, parametersGradient, weight);
-        gradientNorm += g * g;
-      }
-    }
-    scoringFunction->compute(*context, DoubleVectorPtr(), parametersGradient);
-
-    this->selectedNodesCost.push(selectedNodesCostSum / (numOpenedNodes - 1));
-    this->gradientNorm.push(sqrt(gradientNorm));
-    this->bestReturn.push(searchSpace->getBestReturn());
-  }
-
-  virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
-  {
-    DoubleVectorPtr parameters = scoringFunction->getParameters();
-
-    context->resultCallback(T("Mean Selected Node Cost"), selectedNodesCost.getMean());
-    context->resultCallback(T("Episode Gradient Norm"), gradientNorm.getMean());
-    context->resultCallback(T("Best Return"), bestReturn.getMean());
-    //context->resultCallback(T("Parameters Norm"), parameters->l2norm());
-    //context->resultCallback(T("Num. Parameters"), parameters->l0norm());
-
-    objectiveValueToMinimize = -bestReturn.getMean();
-    selectedNodesCost.clear();
-    gradientNorm.clear();
-    bestReturn.clear();
-    return false;
-  }
+/////////////////////////////////////
 
 
-private:
-  friend class LookAheadTreeSearchOnlineLearnerClass;
-
-  ExecutionContext* context;
-  LookAheadTreeSearchFunctionPtr searchFunction;
-  FunctionPtr featuresFunction;
-  NumericalLearnableFunctionPtr scoringFunction;
-  RankingLossFunctionPtr rankingLoss;
-
-  ScalarVariableStatistics selectedNodesCost;
-  ScalarVariableStatistics gradientNorm;
-  ScalarVariableStatistics bestReturn;
-
-};
-
-OnlineLearnerPtr lookAheadTreeSearchOnlineLearner()
-  {return new LookAheadTreeSearchOnlineLearner();}
 
 class SequentialDecisionSandBox : public WorkUnit
 {
 public:
-  SequentialDecisionSandBox() : numInitialStates(1000), minDepth(2), maxDepth(18) {}
+  SequentialDecisionSandBox() : numInitialStates(1000), minDepth(2), maxDepth(18), maxLearningIterations(100) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -332,8 +107,11 @@ public:
     size_t maxSearchNodes = (size_t)pow(2.0, (double)(depth + 1)) - 1;
     context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
     
+    /*
     FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, new StochasticGDParameters(), discount, maxSearchNodes);
+    StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
+    
+    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
       return false;
 
@@ -343,7 +121,13 @@ public:
 //    context.enterScope(T("Evaluation"));
 
     double learnedHeuristicScore = evaluateSearchHeuristic(context, problem, heuristic, maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("learned"), learnedHeuristicScore);
+    context.resultCallback(T("learned"), learnedHeuristicScore);*/
+
+    double greedyScore = evaluateSearchHeuristic(context, problem, greedySearchHeuristic(), maxSearchNodes, testingStates, discount);
+    context.resultCallback(T("greedy"), greedyScore);
+
+    double discountedGreedyScore = evaluateSearchHeuristic(context, problem, greedySearchHeuristic(discount), maxSearchNodes, testingStates, discount);
+    context.resultCallback(T("discountedGreedy"), discountedGreedyScore);
 
     double optimisticScore = evaluateSearchHeuristic(context, problem, optimisticPlanningSearchHeuristic(discount), maxSearchNodes, testingStates, discount);
     context.resultCallback(T("optimistic"), optimisticScore);
@@ -394,6 +178,7 @@ private:
   size_t numInitialStates;
   size_t minDepth;
   size_t maxDepth;
+  size_t maxLearningIterations;
 };
 
 }; /* namespace lbcpp */

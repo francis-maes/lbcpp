@@ -26,7 +26,7 @@ void SearchSpaceNode::open(const SequentialDecisionProblemPtr& problem, size_t p
   jassert(parentNode);
   depth = parentNode->depth + 1;
   reward = problem->computeReward(parentNode->state, action);
-  currentReturn = parentNode->currentReturn + reward * pow(discount, (double)parentNode->depth);
+  bestReturn = currentReturn = parentNode->currentReturn + reward * pow(discount, (double)parentNode->depth);
   parentNode->updateBestReturn(currentReturn, refCountedPointerFromThis(this));
   state = problem->computeTransition(parentNode->state, action);
   jassert(state.exists());

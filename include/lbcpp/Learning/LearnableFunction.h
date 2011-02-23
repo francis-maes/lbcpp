@@ -34,6 +34,13 @@ public:
   void setParameters(const ObjectPtr& parameters)
     {this->parameters = parameters;}
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    Function::clone(context, target);
+    if (parameters)
+      target.staticCast<LearnableFunction>()->parameters = parameters->clone(context);
+  }
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

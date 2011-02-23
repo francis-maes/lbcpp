@@ -130,8 +130,9 @@ public:
     {return computeHeuristic(input.getObjectAndCast<SearchSpaceNode>());}
 };
 
+FunctionPtr greedySearchHeuristic(double discount = 1.0);
 FunctionPtr minDepthSearchHeuristic();
-FunctionPtr optimisticPlanningSearchHeuristic(double discountFactor);
+FunctionPtr optimisticPlanningSearchHeuristic(double discount);
 
 /*
 ** SortedSearchSpace
