@@ -11,9 +11,9 @@
     <variable type="String" name="projectName"/>
     <variable type="String" name="source"/>
     <variable type="String" name="destination"/>
-    <variable type="PositiveInteger" name="requiredCpus"/>
-    <variable type="PositiveInteger" name="requiredMemory"/>
-    <variable type="PositiveInteger" name="requiredTime"/>
+    <variable type="Integer" name="requiredCpus"/>
+    <variable type="Integer" name="requiredMemory"/>
+    <variable type="Integer" name="requiredTime"/>
     <variable type="Integer" name="status"/>
   </class>
   
@@ -50,14 +50,14 @@
   
   <!-- WorkUnit -->
   <class name="ManagerWorkUnit" base="WorkUnit">
-    <variable type="PositiveInteger" name="port"/>
+    <variable type="PositiveInteger" name="port" shortName="p"/>
   </class>
   
   <class name="GridWorkUnit" base="WorkUnit">
-    <variable type="String" name="gridName"/>
-    <variable type="String" name="gridEngine"/>
-    <variable type="String" name="hostName"/>
-    <variable type="PositiveInteger" name="port"/>
+    <variable type="String" name="gridName" shortName="g"/>
+    <variable type="String" name="gridEngine" shortName="e"/>
+    <variable type="String" name="hostName" shortName="h"/>
+    <variable type="PositiveInteger" name="port" shortName="p"/>
   </class>
   
   <class name="DumbWorkUnit" base="WorkUnit"/>

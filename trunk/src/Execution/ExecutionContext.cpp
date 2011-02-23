@@ -108,7 +108,7 @@ File ExecutionContext::getFile(const String& path)
   if (!projectDirectory.exists())
   {
     errorCallback(T("Project directory is not specified. Could not find path ") + path);
-    return File::nonexistent;
+    return File::getCurrentWorkingDirectory();
   }
   return projectDirectory.getChildFile(path);
 }

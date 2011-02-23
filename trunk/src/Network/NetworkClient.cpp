@@ -19,14 +19,14 @@ bool NetworkClient::sendVariable(const Variable& variable)
   String text = exporter.toString();
   if (text == String::empty)
     return false;
-  std::cout << "Send: " << text << std::endl;
+  std::cout << "----- Send -----" << std::endl
+            << text << std::endl;
   juce::MemoryBlock block(text.toUTF8(), text.length());
   return sendMessage(block);
 }
 
 bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
 {
-  std::cout << "NetworkClient - receiveVariable" << std::endl;
   juce::int64 startTime = Time::getMillisecondCounter();
   while (true)
   {
@@ -124,7 +124,8 @@ void NetworkClient::connectionLost()
 
 void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 {
-  std::cout << "Msg: " << message.toString() << std::endl;
+  std::cout << "----- Received ----- " << std::endl
+            << message.toString() << std::endl;
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);
   variableReceived(importer.isOpened() ? importer.load() : Variable());
@@ -132,7 +133,6 @@ void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 
 void NetworkClient::variableReceived(const Variable& variable)
 {
-  std::cout << "Variable received: " << variable.toString() << std::endl;
   pushVariable(variable);
   for (size_t i = 0; i < callbacks.size(); ++i)
     callbacks[i]->variableReceived(variable);
