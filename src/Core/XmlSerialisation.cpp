@@ -620,6 +620,6 @@ bool XmlElement::loadFromJuceXmlElement(juce::XmlElement* element)
 
 bool XmlElement::loadFromXml(XmlImporter& importer)
 {
-  juce::XmlElement* element = importer.getCurrentElement();
+  juce::XmlElement* element = importer.getCurrentElement()->getFirstChildElement();
   return loadFromJuceXmlElement(element);
 }

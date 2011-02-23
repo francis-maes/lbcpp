@@ -115,18 +115,39 @@ protected:
 
 class CheckXmlElementWorkUnit : public WorkUnit
 {
+public:
   virtual Variable run(ExecutionContext& context)
   {
     WorkUnitPtr wu = new SaveObjectProgram();
     
-    XmlElementPtr element = new XmlElement();
-    element->saveObject(context, wu);
+    aaa = new XmlElement();
+    aaa->saveObject(context, wu);
     
-    ObjectPtr obj = element->createObject(context);
+    saveToFile(context, context.getFile(T("testSerialisation")));
+
+    ObjectPtr o = createFromFile(context, context.getFile(T("testSerialisation")));
+    o->saveToFile(context, context.getFile(T("testReSerialisation")));
+    
+    
+    ObjectPtr obj = aaa->createObject(context);
     obj.dynamicCast<WorkUnit>()->run(context);
 
     return true;
   }
+  
+  XmlElementPtr aaa;
 };
 
+#if 0
+class UnknownFromManagerWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    std::cout << "Mouahaha, I'm Fantomas" << std::endl;
+    return true;
+  }
+};
+#endif
+  
 };
