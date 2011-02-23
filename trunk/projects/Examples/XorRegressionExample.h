@@ -58,7 +58,7 @@ public:
     size_t features = builder.addFunction(new XorFeatureGenerator(), input1, input2, T("features"));
 
     StochasticGDParametersPtr params = new StochasticGDParameters();
-    params->setEvaluator(regressionErrorEvaluator());
+    params->setEvaluator(regressionEvaluator());
     builder.addFunction(linearLearningMachine(params), features, supervision);
   }
 };
@@ -91,7 +91,7 @@ public:
       return false;
 
     // evaluate
-    xorFunction->evaluate(context, trainingExamples, regressionErrorEvaluator());
+    xorFunction->evaluate(context, trainingExamples, regressionEvaluator());
     //std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
     Variable myPrediction = xorFunction->compute(context, 1.0, 0.0, Variable::missingValue(doubleType));

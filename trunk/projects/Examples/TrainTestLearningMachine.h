@@ -50,7 +50,7 @@ public:
     {return regressionARFFDataParser(context, file, features);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return regressionErrorEvaluator();}
+    {return regressionEvaluator();}
 
 protected:
   DynamicClassPtr features;
@@ -65,7 +65,7 @@ public:
     {return binaryClassificationLibSVMDataParser(context, file, features);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return binaryClassificationConfusionEvaluator();}
+    {return binaryClassificationEvaluator();}
 
 protected:
   DefaultEnumerationPtr features;
@@ -82,7 +82,7 @@ public:
     {return classificationARFFDataParser(context, file, features, labels);}
 
   virtual EvaluatorPtr createEvaluator(ExecutionContext& context)
-    {return classificationAccuracyEvaluator();}
+    {return classificationEvaluator();}
 
 protected:
   DynamicClassPtr features;

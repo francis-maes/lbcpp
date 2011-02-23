@@ -104,7 +104,7 @@ public:
   }
 
   virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {roc.getScores(res);}
+  {}//roc.getScores(res);}
 
 private:
   ROCAnalyse roc;

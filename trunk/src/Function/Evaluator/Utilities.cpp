@@ -14,13 +14,41 @@ using namespace lbcpp;
 ** BinaryClassificationConfusionMatrix
 */
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& other)
-: truePositive(other.truePositive), falsePositive(other.falsePositive), falseNegative(other.falseNegative), trueNegative(other.trueNegative), totalCount(other.totalCount)
+  : precision(0.0),
+    recall(0.0),
+    f1score(0.0),
+    matthewsCorrelation(0.0),
+    accuracy(0.0),
+    truePositive(other.truePositive),
+    falsePositive(other.falsePositive),
+    falseNegative(other.falseNegative),
+    trueNegative(other.trueNegative),
+    totalCount(other.totalCount)
 {
+  finalize();
 }
 
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix()
-: truePositive(0), falsePositive(0), falseNegative(0), trueNegative(0), totalCount(0)
+  : precision(0.0),
+    recall(0.0),
+    f1score(0.0),
+    matthewsCorrelation(0.0),
+    accuracy(0.0),
+    truePositive(0),
+    falsePositive(0),
+    falseNegative(0),
+    trueNegative(0),
+    totalCount(0)
 {
+}
+
+void BinaryClassificationConfusionMatrix::finalize()
+{
+  precision = computePrecision();
+  recall = computeRecall();
+  f1score = computeF1Score();
+  matthewsCorrelation = computeMatthewsCorrelation();
+  accuracy = computeAccuracy();
 }
 
 inline String toFixedLengthString(const String& str, int size)
@@ -39,7 +67,12 @@ String BinaryClassificationConfusionMatrix::toString() const
 {
   return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n") +
   toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
-  toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n");
+  toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
+  + T("ACC = ") + String(accuracy * 100.0, 2)
+  + T("% P = ") + String(precision * 100.0, 2)
+  + T("% R = ") + String(recall * 100.0, 2)
+  + T("% F1 = ") + String(f1score * 100.0, 2)
+  + T("% MCC = ") + String(matthewsCorrelation, 4) + T("\n");
 }
 
 bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
@@ -233,17 +266,17 @@ double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double 
     return (lastLower->first + nxt->first) / 2.0;
 }
 
-void ROCAnalyse::getScores(std::vector< std::pair<String, double> >& res) const
+void ROCAnalyse::finalize()
 {
   ScopedLock _(lock);
-  
+
   size_t truePositives = numPositives;
   size_t falsePositives = numNegatives;
-  
+
   double bestF1Score = 0.0;
   double bestPrecAt10 = 0.0, bestPrecAt25 = 0.0, bestPrecAt50 = 0.0, bestPrecAt75 = 0.0, bestPrecAt90 = 0.0;
   double bestRecAt10 = 0.0, bestRecAt25 = 0.0, bestRecAt50 = 0.0, bestRecAt75 = 0.0, bestRecAt90 = 0.0;
-  
+
   for (std::map<double, std::pair<size_t, size_t> >::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     size_t falseNegatives = numPositives - truePositives;
@@ -278,16 +311,17 @@ void ROCAnalyse::getScores(std::vector< std::pair<String, double> >& res) const
     falsePositives -= it->second.first;
     truePositives -= it->second.second;
   }
-  
-  res.push_back(std::make_pair(T("F1"), bestF1Score));
-  res.push_back(std::make_pair(T("Prec@10"), bestPrecAt10));
-  res.push_back(std::make_pair(T("Prec@25"), bestPrecAt25));
-  res.push_back(std::make_pair(T("Prec@50"), bestPrecAt50));
-  res.push_back(std::make_pair(T("Prec@75"), bestPrecAt75));
-  res.push_back(std::make_pair(T("Prec@90"), bestPrecAt90));
-  res.push_back(std::make_pair(T("Rec@10"), bestRecAt10));
-  res.push_back(std::make_pair(T("Rec@25"), bestRecAt25));
-  res.push_back(std::make_pair(T("Rec@50"), bestRecAt50));
-  res.push_back(std::make_pair(T("Rec@75"), bestRecAt75));
-  res.push_back(std::make_pair(T("Rec@90"), bestRecAt90));
+
+  bestF1 = bestF1Score;
+
+  precision.push_back(std::make_pair(10, bestPrecAt10));
+  precision.push_back(std::make_pair(25, bestPrecAt25));
+  precision.push_back(std::make_pair(50, bestPrecAt50));
+  precision.push_back(std::make_pair(75, bestPrecAt75));
+  precision.push_back(std::make_pair(90, bestPrecAt90));
+  recall.push_back(std::make_pair(10, bestRecAt10));
+  recall.push_back(std::make_pair(25, bestRecAt25));
+  recall.push_back(std::make_pair(50, bestRecAt50));
+  recall.push_back(std::make_pair(75, bestRecAt75));
+  recall.push_back(std::make_pair(90, bestRecAt90));
 }

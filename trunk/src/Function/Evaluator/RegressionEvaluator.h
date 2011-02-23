@@ -15,22 +15,26 @@
 namespace lbcpp
 {
 
-class RegressionErrorScoreObject : public ScoreObject
+class RegressionScoreObject : public ScoreObject
 {
 public:
-  RegressionErrorScoreObject()
+  RegressionScoreObject()
     : absoluteError(new ScalarVariableMean()),
-      squaredError(new ScalarVariableMean()) {}
+      squaredError(new ScalarVariableMean()),
+      leastSquares(0.0),
+      meanSquareError(0.0),
+      rootMeanSquareError(0.0),
+      absolute(0.0){}
   
   virtual double getScoreToMinimize() const
-    {return getRMSE();}
+    {return rootMeanSquareError;}
 
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  virtual void finalize()
   {
-    res.push_back(std::make_pair(T("LS"),   squaredError->getSum()));
-    res.push_back(std::make_pair(T("MSE"),  squaredError->getMean()));
-    res.push_back(std::make_pair(T("RMSE"), getRMSE()));
-    res.push_back(std::make_pair(T("AbsE"), absoluteError->getMean()));
+    leastSquares = squaredError->getSum();
+    meanSquareError = squaredError->getMean();
+    rootMeanSquareError = sqrt(squaredError->getMean());
+    absolute = absoluteError->getMean();
   }
 
   void addDelta(double delta)
@@ -39,30 +43,42 @@ public:
     squaredError->push(delta * delta);
   }
 
-  double getRMSE() const
-    {return sqrt(squaredError->getMean());}
-
   virtual String toString() const
   {
     double count = squaredError->getCount();
     if (!count)
       return String::empty;
     return getName()
-    + T(": Least squares = ") + String(squaredError->getSum(), 4)
-    + T(", MSE = ") + String(squaredError->getMean(), 4)
-    + T(", RMSE = ") + String(getRMSE(), 4)
-    + T(", ABS = ") + String(absoluteError->getMean(), 4)
+    + T(": Least squares = ") + String(leastSquares, 4)
+    + T(", MSE = ") + String(meanSquareError, 4)
+    + T(", RMSE = ") + String(rootMeanSquareError, 4)
+    + T(", ABS = ") + String(absolute, 4)
     + T(" (") + String((int)count) + T(" examples)");
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    ScoreObject::clone(context, target);
+    ReferenceCountedObjectPtr<RegressionScoreObject> res = target.staticCast<RegressionScoreObject>();
+    if (absoluteError)
+      res->absoluteError = absoluteError->cloneAndCast<ScalarVariableMean>(context);
+    if (squaredError)
+      res->squaredError = squaredError->cloneAndCast<ScalarVariableMean>(context);
   }
 
 protected:
-  friend class RegressionErrorScoreObjectClass;
+  friend class RegressionScoreObjectClass;
   
   ScalarVariableMeanPtr absoluteError;
   ScalarVariableMeanPtr squaredError;
+  
+  double leastSquares;
+  double meanSquareError;
+  double rootMeanSquareError;
+  double absolute;
 };
 
-class RegressionErrorEvaluator : public Evaluator
+class RegressionEvaluator : public SupervisedEvaluator
 {
 public:
   virtual TypePtr getRequiredPredictedElementsType() const
@@ -73,10 +89,14 @@ public:
   
 protected:  
   virtual ScoreObjectPtr createEmptyScoreObject() const
-    {return new RegressionErrorScoreObject();}
+    {return new RegressionScoreObject();}
+  
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+    {score.staticCast<RegressionScoreObject>()->finalize();}
+
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
-    {result.staticCast<RegressionErrorScoreObject>()->addDelta(predictedObject.getDouble() - correctObject.getDouble());}
+    {result.staticCast<RegressionScoreObject>()->addDelta(predictedObject.getDouble() - correctObject.getDouble());}
 };
 
 }; /* namespace lbcpp */

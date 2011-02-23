@@ -16,44 +16,45 @@
 namespace lbcpp
 {
 
-class ClassificationAccuracyScoreObject : public ScoreObject
+class ClassificationScoreObject : public ScoreObject
 {
 public:
-  ClassificationAccuracyScoreObject()
-    : accuracy(new ScalarVariableMean()) {}
+  ClassificationScoreObject()
+    : accuracy(0.0), accuracyVector(new ScalarVariableMean()) {}
   
   virtual double getScoreToMinimize() const 
-    {return -accuracy->getMean();}
+    {return -accuracy;}
 
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {res.push_back(std::make_pair(T("Accuracy"), accuracy->getMean()));}
-  
   void push(bool isCorrect)
-    {accuracy->push(isCorrect);}
+    {accuracyVector->push(isCorrect);}
   
   virtual String toString() const
   {
-    double count = accuracy->getCount();
+    double count = accuracyVector->getCount();
     if (!count)
       return String::empty;
-    return getName() + T(": ") + String(accuracy->getMean() * 100.0, 2) + T("% (") + String((int)count) + T(" examples)");
+    return getName() + T(": ") + String(accuracy * 100.0, 2) + T("% (") + String((int)count) + T(" examples)");
   }
   
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     ScoreObject::clone(context, target);
-    target.staticCast<ClassificationAccuracyScoreObject>()->accuracy = accuracy->cloneAndCast<ScalarVariableMean>(context);
+    target.staticCast<ClassificationScoreObject>()->accuracyVector = accuracyVector->cloneAndCast<ScalarVariableMean>(context);
   }
   
-protected:
-  friend class ClassificationAccuracyScoreObjectClass;
+  void finalize()
+    {accuracy = accuracyVector->getMean();}
   
-  ScalarVariableMeanPtr accuracy;
+protected:
+  friend class ClassificationScoreObjectClass;
+  
+  double accuracy;
+  ScalarVariableMeanPtr accuracyVector;
 };
 
-typedef ReferenceCountedObjectPtr<ClassificationAccuracyScoreObject> ClassificationAccuracyScoreObjectPtr;
+typedef ReferenceCountedObjectPtr<ClassificationScoreObject> ClassificationScoreObjectPtr;
 
-class ClassificationAccuracyEvaluator : public Evaluator
+class ClassificationEvaluator : public SupervisedEvaluator
 {
 public:
   virtual TypePtr getRequiredPredictedElementsType() const
@@ -64,11 +65,14 @@ public:
   
 protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
-    {return new ClassificationAccuracyScoreObject();}
+    {return new ClassificationScoreObject();}
+  
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+    {score.staticCast<ClassificationScoreObject>()->finalize();}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
   {
-    ClassificationAccuracyScoreObjectPtr score = result.staticCast<ClassificationAccuracyScoreObject>();
+    ClassificationScoreObjectPtr score = result.staticCast<ClassificationScoreObject>();
 
     int correctLabel = getLabel(correctObject);
     if (correctLabel >= 0)

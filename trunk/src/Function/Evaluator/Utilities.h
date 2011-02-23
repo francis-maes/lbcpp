@@ -10,16 +10,23 @@
 # define LBCPP_FUNCTION_EVALUATOR_UTILITIES_H_
 
 # include <lbcpp/Core/Object.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
 
-class BinaryClassificationConfusionMatrix : public Object
+class BinaryClassificationConfusionMatrix : public ScoreObject
 {
 public:
   BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& otherMatrix);
   BinaryClassificationConfusionMatrix();
 
+  // ScoreObject
+  virtual double getScoreToMinimize() const
+    {return -computeF1Score();}
+  
+  void finalize();
+  
   virtual String toString() const;
 
   static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res);
@@ -66,7 +73,15 @@ public:
   bool operator !=(const BinaryClassificationConfusionMatrix& other) const
     {return !(*this == other);}
 
-private:
+protected:
+  friend class BinaryClassificationConfusionMatrixClass;
+
+  double precision;
+  double recall;
+  double f1score;
+  double matthewsCorrelation;
+  double accuracy;
+
  // correct: positive   negative
   size_t truePositive, falsePositive; // predicted as positive
   size_t falseNegative, trueNegative; // predicted as negative
@@ -76,15 +91,18 @@ private:
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationConfusionMatrix> BinaryClassificationConfusionMatrixPtr;
 
-class ROCAnalyse : public Object
+class ROCAnalyse : public ScoreObject
 {
 public:
-  ROCAnalyse() : numPositives(0), numNegatives(0) {}
+  ROCAnalyse() : bestF1(0.0), numPositives(0), numNegatives(0) {}
 
+  virtual double getScoreToMinimize() const
+    {return -bestF1;}
+  
   typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
 
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
-  void getScores(std::vector< std::pair<String, double> >& res) const;
+  void finalize();
   double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 
   size_t getSampleCount() const
@@ -98,6 +116,23 @@ public:
 
   void clear()
     {ScopedLock _(lock); predictedScores.clear(); numPositives = numNegatives = 0;}
+
+  virtual String toString() const
+  {
+    if (!getSampleCount())
+      return String::empty;
+    
+    double bestF1;
+    double bestThreshold = findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1);
+    return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + String(bestThreshold);
+  }
+
+protected:
+  friend class ROCAnalyseClass;
+  
+  double bestF1;
+  std::vector< std::pair<double, double> > precision;
+  std::vector< std::pair<double, double> > recall;
 
 private:
   typedef std::map<double, std::pair<size_t, size_t> > ScoresMap;
