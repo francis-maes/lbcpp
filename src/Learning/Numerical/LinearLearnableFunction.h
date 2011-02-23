@@ -51,6 +51,13 @@ public:
     return isNumberValid(res) ? Variable(res) : Variable::missingValue(doubleType);
   }
 
+  virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const
+  {
+    if (!target)
+      target = new DenseDoubleVector(parametersClass);
+    input->addWeightedTo(target, 0, weight * (lossDerivativeOrGradient.exists() ? lossDerivativeOrGradient.getDouble() : 1.0));
+  }
+
   virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
                                       double& exampleLossValue, DoubleVectorPtr& target, double weight) const
   {
@@ -64,9 +71,7 @@ public:
     if (!isNumberValid(exampleLossValue) || !isNumberValid(lossDerivative))
       return false;
 
-    if (!target)
-      target = new DenseDoubleVector(parametersClass);
-    input->addWeightedTo(target, 0, weight * lossDerivative);
+    addGradient(lossDerivative, input, target, weight);
     return true;
   }
 

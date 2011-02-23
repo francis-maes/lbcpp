@@ -33,29 +33,33 @@ BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& con
 
 OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
 {
-  TypePtr supervisionType = inputVariables[1]->getType();
-
-  // get or create loss function
   FunctionPtr lossFunction = this->lossFunction;
-  if (!lossFunction)
-  {
-    // create default loss function
-    if (supervisionType == booleanType || supervisionType == probabilityType)
-      lossFunction = hingeDiscriminativeLossFunction();
-    else if (supervisionType == doubleType)
-      lossFunction = squareRegressionLossFunction();
-    else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-      lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
-    else
-    {
-      context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
-      return OnlineLearnerPtr();
-    }
-  }
 
-  // initialize loss function
-  if (!lossFunction->initialize(context, outputType, supervisionType))
-    return OnlineLearnerPtr();
+  if (inputVariables.size() > 1)
+  {
+    TypePtr supervisionType = inputVariables[1]->getType();
+
+    // get or create loss function
+    if (!lossFunction)
+    {
+      // create default loss function
+      if (supervisionType == booleanType || supervisionType == probabilityType)
+        lossFunction = hingeDiscriminativeLossFunction();
+      else if (supervisionType == doubleType)
+        lossFunction = squareRegressionLossFunction();
+      else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+        lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+      else
+      {
+        context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
+        return OnlineLearnerPtr();
+      }
+    }
+
+    // initialize loss function
+    if (!lossFunction->initialize(context, outputType, supervisionType))
+      return OnlineLearnerPtr();
+  }
 
   // create gradient descent learner
   std::vector<OnlineLearnerPtr> learners;

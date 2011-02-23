@@ -170,7 +170,7 @@ size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String
   String name = optionalName.isNotEmpty() ? optionalName : T("constant") + id;
   String shortName = optionalShortName.isNotEmpty() ? optionalShortName : T("C") + id;
 
-  if (!value.exists())
+  if (!value.isNil() && !value.exists())
   {
     context.errorCallback(T("Constant " ) + name.quoted() + T(" does not exists"));
     return returnError();

@@ -28,6 +28,8 @@ public:
   DoubleVectorPtr& getParameters()
     {return *(DoubleVectorPtr* )&parameters;}
 
+  virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const = 0;
+
   // returns false if no supervision is available
   virtual bool computeAndAddGradient(const FunctionPtr& lossFunction,
                                      const Variable* inputs, const Variable& output,
@@ -64,6 +66,15 @@ public:
   virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
 
   /*
+  ** Learning rate
+  */
+  const IterationFunctionPtr& getLearningRate() const
+    {return learningRate;}
+
+  bool doNormalizeLearningRate() const
+    {return normalizeLearningRate;}
+
+  /*
   ** Max Iterations
   */
   size_t getMaxIterations() const
@@ -71,6 +82,15 @@ public:
 
   void setMaxIterations(size_t maxIterations)
     {this->maxIterations = maxIterations;}
+
+  /*
+  ** Stopping Criterion
+  */
+  const StoppingCriterionPtr& getStoppingCriterion() const
+    {return stoppingCriterion;}
+
+  void setStoppingCriterion(StoppingCriterionPtr stoppingCriterion)
+    {this->stoppingCriterion = stoppingCriterion;}
 
   /*
   ** Loss Function
@@ -89,6 +109,15 @@ public:
 
   void setEvaluator(EvaluatorPtr evaluator)
     {this->evaluator = evaluator;}
+
+  /*
+  ** Restore Best Parameters
+  */
+  bool doRestoreBestParameters() const
+    {return restoreBestParameters;}
+
+  void setRestoreBestParameters(bool enabled)
+    {restoreBestParameters = enabled;}
 
 protected:
   friend class StochasticGDParametersClass;

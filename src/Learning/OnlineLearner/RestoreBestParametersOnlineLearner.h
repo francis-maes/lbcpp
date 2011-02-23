@@ -49,7 +49,7 @@ public:
   {
     if (!isLastFunctionBest && bestFunction)
     {
-      context->informationCallback(T("Cloning parameters that gave score ") + String(bestFunctionValue) +
+      context->informationCallback(T("Restoring parameters that gave score ") + String(bestFunctionValue) +
           T(" at iteration ") + String((int)bestFunctionIteration)); 
       bestFunction->clone(defaultExecutionContext(), function);
     }

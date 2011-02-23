@@ -56,7 +56,7 @@ public:
   {
     bool learningIsFinished = false;
     for (size_t i = 0; i < learners.size(); ++i)
-      learningIsFinished |= learners[i]->finishLearningIteration(i, objectiveValueToMinimize);
+      learningIsFinished |= learners[i]->finishLearningIteration(iteration, objectiveValueToMinimize);
     return learningIsFinished;
   }
 
@@ -90,7 +90,7 @@ public:
     {
       const OnlineLearnerPtr& learner = learners[i];
       double objectiveValue = DBL_MAX;
-      if (learner->finishLearningIteration(i, objectiveValue))
+      if (learner->finishLearningIteration(iteration, objectiveValue))
         learner->finishLearning();
       else
         remainingLearners.push_back(learner);

@@ -31,6 +31,9 @@ public:
   ObjectPtr& getParameters()
     {return parameters;}
 
+  void setParameters(const ObjectPtr& parameters)
+    {this->parameters = parameters;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
