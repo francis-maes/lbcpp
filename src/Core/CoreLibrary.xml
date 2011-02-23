@@ -10,6 +10,7 @@
   <include file="lbcpp/Core/Frame.h"/>
   <include file="lbcpp/Core/CompositeFunction.h"/>
   <include file="lbcpp/Learning/OnlineLearner.h"/>
+  <include file="lbcpp/Core/XmlSerialisation.h"/>
 
   <!-- Pair -->
   <template name="Pair" base="Object">
@@ -190,12 +191,20 @@
   </class>
   <class name="MethodBasedCompositeFunction" base="CompositeFunction" abstract="yes"/>
 
-    <!-- Frame -->
+  <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">
     <variable type="Function" name="function"/>
     <variable type="GenericVector[PositiveInteger]" name="inputs"/>
   </class>
 
   <class name="FrameClass" base="DefaultClass"/>
-  
+
+  <!-- XmlElement -->
+  <class name="XmlElement" base="Object">
+    <variable type="String" name="tagName"/>
+    <variable type="ObjectVector[XmlElement]" name="childElements"/>
+    <variable type="ObjectVector[Pair[String, String]]" name="attributes"/>
+    <variable type="String" name="text"/>
+  </class>
+
 </library>

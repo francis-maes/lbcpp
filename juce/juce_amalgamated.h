@@ -8639,7 +8639,7 @@ protected:
 */
 #define forEachXmlChildElement(parentXmlElement, childElementVariableName) \
 \
-    for (XmlElement* childElementVariableName = (parentXmlElement).getFirstChildElement(); \
+    for (juce::XmlElement* childElementVariableName = (parentXmlElement).getFirstChildElement(); \
          childElementVariableName != 0; \
          childElementVariableName = childElementVariableName->getNextElement())
 
@@ -8668,7 +8668,7 @@ protected:
 */
 #define forEachXmlChildElementWithTagName(parentXmlElement, childElementVariableName, requiredTagName) \
 \
-    for (XmlElement* childElementVariableName = (parentXmlElement).getChildByName (requiredTagName); \
+    for (juce::XmlElement* childElementVariableName = (parentXmlElement).getChildByName (requiredTagName); \
          childElementVariableName != 0; \
          childElementVariableName = childElementVariableName->getNextElementWithTagName (requiredTagName))
 
