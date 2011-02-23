@@ -13,22 +13,38 @@ using namespace lbcpp;
 */
 SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState)
   : allNodes(allNodes), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
-    parentIndex(-1), childrenBeginIndex(-1), childrenEndIndex(-1)
+    parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0), heuristicScore(0.0)
 {
 }
 
-SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount)
-  : allNodes(allNodes), previousAction(action), reward(0.0), parentIndex((int)parentIndex), childrenBeginIndex(-1), childrenEndIndex(-1)
+void SearchSpaceNode::open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount)
 {
+  this->parentIndex = parentIndex;
+  this->previousAction = action;
+
   const SearchSpaceNodePtr& parentNode = allNodes[parentIndex];
   jassert(parentNode);
   depth = parentNode->depth + 1;
   reward = problem->computeReward(parentNode->state, action);
   currentReturn = parentNode->currentReturn + reward * pow(discount, (double)parentNode->depth);
+  parentNode->updateBestReturn(currentReturn, refCountedPointerFromThis(this));
   state = problem->computeTransition(parentNode->state, action);
   jassert(state.exists());
 }
 
+void SearchSpaceNode::computeHeuristicScore(const FunctionPtr& heuristic)
+  {heuristicScore = heuristic->compute(defaultExecutionContext(), this).getDouble();}
+
+void SearchSpaceNode::updateBestReturn(double newReturn, SearchSpaceNodePtr childNode)
+{
+  if (newReturn > bestReturn)
+  {
+    bestReturn = newReturn;
+    bestChildNode = childNode;
+    if (parentIndex >= 0)
+      allNodes[parentIndex]->updateBestReturn(bestReturn, refCountedPointerFromThis(this));
+  }
+}
 
 /*
 ** SortedSearchSpace
@@ -57,7 +73,11 @@ double SortedSearchSpace::exploreBestNode(ExecutionContext& context)
   size_t firstChildIndex = nodes.size();
   node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
   for (size_t i = 0; i < actions.size(); ++i)
-    addCandidate(new SearchSpaceNode(nodes, problem, nodeIndex, actions[i], discount));
+  {
+    SearchSpaceNodePtr node = new SearchSpaceNode(nodes);
+    node->open(problem, nodeIndex, actions[i], discount);
+    addCandidate(node);
+  }
 
   return node->getCurrentReturn();
 }
@@ -66,8 +86,8 @@ void SortedSearchSpace::addCandidate(SearchSpaceNodePtr node)
 {
   size_t index = nodes.size();
   nodes.push_back(node);
-  double heuristicValue = heuristic->compute(defaultExecutionContext(), node).getDouble();
-  candidates.insert(std::make_pair(-heuristicValue, index));
+  node->computeHeuristicScore(heuristic);
+  candidates.insert(std::make_pair(-node->getHeuristicScore(), index));
 }
 
 SearchSpaceNodePtr SortedSearchSpace::popBestCandidate(size_t& nodeIndex)

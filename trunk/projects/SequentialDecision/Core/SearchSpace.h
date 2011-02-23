@@ -24,9 +24,10 @@ typedef std::vector<SearchSpaceNodePtr> SearchSpaceNodeVector;
 class SearchSpaceNode : public Object
 {
 public:
-  SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount);
-  SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState);
+  SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState = Variable());
   SearchSpaceNode() : allNodes(*(const SearchSpaceNodeVector* )0) {}
+
+  void open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount);
 
   /*
   ** Properties
@@ -49,13 +50,47 @@ public:
     {return depth;}
 
   /*
-  ** Parent/Children Indices
+  ** Heuristic
+  */
+  double getHeuristicScore() const
+    {return heuristicScore;}
+
+  void computeHeuristicScore(const FunctionPtr& heuristic);
+
+  /*
+  ** Parent
   */
   int getParentIndex() const
     {return parentIndex;}
 
+  SearchSpaceNodePtr getParentNode() const
+    {return parentIndex >= 0 ? allNodes[parentIndex] : SearchSpaceNodePtr();}
+
+  /*
+  ** Children
+  */
   void setChildrenIndices(size_t begin, size_t end)
-    {childrenBeginIndex = (int)begin; childrenEndIndex = (int)end;}
+    {childBeginIndex = (int)begin; childEndIndex = (int)end;}
+
+  int getChildBeginIndex() const
+    {return childBeginIndex;}
+
+  int getChildEndIndex() const
+    {return childEndIndex;}
+
+  /*
+  ** Best Return
+  */
+  void updateBestReturn(double newReturn, SearchSpaceNodePtr childNode);
+
+  double getBestReturn() const
+    {return bestReturn;}
+
+  const Variable& getBestAction() const
+    {static Variable empty; return bestChildNode ? bestChildNode->getPreviousAction() : empty;}
+
+  const SearchSpaceNodePtr& getBestChildNode() const
+    {return bestChildNode;}
 
 protected:
   friend class SearchSpaceNodeClass;
@@ -70,8 +105,13 @@ protected:
   double currentReturn; // received from the beginning until entering state
 
   int parentIndex;
-  int childrenBeginIndex;
-  int childrenEndIndex;
+  int childBeginIndex;
+  int childEndIndex;
+
+  SearchSpaceNodePtr bestChildNode;
+  double bestReturn;
+
+  double heuristicScore;
 };
 
 extern ClassPtr searchSpaceNodeClass;
@@ -122,6 +162,27 @@ public:
 
   SearchSpaceNodePtr getOpenedNode(size_t index) const
     {return nodes[openedNodes[index]];}
+
+  size_t getOpenedNodeIndex(size_t index) const
+    {return openedNodes[index];}
+
+  /*
+  ** All nodes
+  */
+  size_t getNumNodes() const
+    {return nodes.size();}
+
+  SearchSpaceNodePtr getNode(size_t index) const
+    {jassert(index < nodes.size()); return nodes[index];}
+
+  SearchSpaceNodePtr getRootNode() const
+    {jassert(nodes.size()); return nodes[0];}
+
+  double getBestReturn() const
+    {return getRootNode()->getBestReturn();}
+
+  const Variable& getBestAction() const
+    {return getRootNode()->getBestAction();}
 
 private:
   SequentialDecisionProblemPtr problem;

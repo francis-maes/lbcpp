@@ -154,6 +154,8 @@ juce::Component* ExecutionTraceTreeView::createComponentForVariable(ExecutionCon
 
 void ExecutionTraceTreeView::timerCallback()
 {
+  if (!context)
+    context = &defaultExecutionContext();
   DelayToUserInterfaceExecutionCallback::timerCallback();
   if (!isSelectionUpToDate)
   {

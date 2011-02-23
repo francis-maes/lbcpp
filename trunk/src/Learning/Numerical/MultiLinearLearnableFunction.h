@@ -83,6 +83,23 @@ public:
     return res;
   }
 
+  virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const
+  {
+    CompositeDoubleVectorPtr compositeTarget = target.dynamicCast<CompositeDoubleVector>();
+    if (!target || !compositeTarget->getNumSubVectors())
+    {
+      compositeTarget = new CompositeDoubleVector(parametersClass);
+      createCompositeSubVectors(compositeTarget);
+      target = compositeTarget;
+    }
+
+    const DenseDoubleVectorPtr& lossGradient = lossDerivativeOrGradient.getObjectAndCast<DenseDoubleVector>();
+    size_t n = lossGradient->getNumElements();
+    jassert(compositeTarget && compositeTarget->getNumSubVectors() == n);
+    for (size_t i = 0; i < n; ++i)
+      input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
+  }
+
   virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
                                       double& exampleLossValue, DoubleVectorPtr& target, double weight) const
   {
@@ -96,19 +113,8 @@ public:
     scalarVectorFunction->computeScalarVectorFunction(predictedScores, &supervision, &exampleLossValue, &lossGradient, 1.0);
     if (!isNumberValid(exampleLossValue) || !isNumberValid(lossGradient->l2norm()))
       return false;
-    size_t n = lossGradient->getNumElements();
 
-    CompositeDoubleVectorPtr compositeTarget = target.dynamicCast<CompositeDoubleVector>();
-    if (!target || !compositeTarget->getNumSubVectors())
-    {
-      compositeTarget = new CompositeDoubleVector(parametersClass);
-      createCompositeSubVectors(compositeTarget);
-      target = compositeTarget;
-    }
-
-    jassert(compositeTarget && compositeTarget->getNumSubVectors() == n);
-    for (size_t i = 0; i < n; ++i)
-      input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
+    addGradient(lossGradient, input, target, weight);
     return true;
   }
 

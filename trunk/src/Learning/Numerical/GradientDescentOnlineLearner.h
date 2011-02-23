@@ -69,9 +69,11 @@ public:
     bool isLearningFinished = false;
     if (!lossValue.getCount())
     {
+      objectiveValueToMinimize = 0.0;
       // no examples
-      context->errorCallback(T("Learning failed: no examples"));
-      failure = true;
+      //context->errorCallback(T("Learning failed: no examples"));
+      //failure = true;
+      isLearningFinished = true;
       return true;
     }
 
@@ -137,16 +139,28 @@ protected:
     if (failure || !inputs[1].exists())
       return; // failed or no supervision
 
-    double exampleLossValue = 0.0;
-    if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
+    if (inputs[1].getType() == function->getParametersClass())
     {
+      // the supervision is already computed gradient
+      const DoubleVectorPtr& gradient = inputs[1].getObjectAndCast<DoubleVector>();
+      jassert(gradient);
+      function->addGradient(Variable(), gradient, target, weight);
       ++epoch;
-      lossValue.push(exampleLossValue);
+      lossValue.push(gradient->l2norm());
     }
     else
     {
-      context->errorCallback(T("Learning failed: could not compute loss gradient"));
-      failure = true;
+      double exampleLossValue = 0.0;
+      if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
+      {
+        ++epoch;
+        lossValue.push(exampleLossValue);
+      }
+      else
+      {
+        context->errorCallback(T("Learning failed: could not compute loss gradient"));
+        failure = true;
+      }
     }
   }
 
