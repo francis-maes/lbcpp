@@ -13,6 +13,7 @@ IF(UNIX)
       )
 
       SET(LIBS
+        lbcpp-core${NAME_FILE_SUFFIX}
         ${MYSQL_LIBRARIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libsched.a
         ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libboinc.a
@@ -28,6 +29,14 @@ IF(UNIX)
       )
 
       TARGET_LINK_LIBRARIES(sample_assimilator ${LIBS})
+
+      ADD_EXECUTABLE(LBCppAssimilator
+        LBCppAssimilator.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/../validator/validate_util.cpp
+        assimilator.cpp
+      )
+
+      TARGET_LINK_LIBRARIES(LBCppAssimilator ${LIBS})
 
     ENDIF(CMAKE_SIZEOF_VOID_P MATCHES 4)
   ENDIF(NOT APPLE)
