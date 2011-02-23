@@ -155,6 +155,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/MapContainerFunction.h
   Core/Function/ComposeFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
+  Core/Function/ConcatenateContainerFunction.h
   Core/Function/CoreFunctionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CoreFunctionLibrary.cpp
 )
@@ -320,7 +321,6 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/MultiplyFunction.h
   Function/MiscFunctions/SetFieldFunction.h
-  Function/MiscFunctions/ConcatenateScoreObjectFunction.h
   Function/MiscFunctions/MiscFunctionsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsLibrary.cpp
 )
@@ -375,6 +375,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/FunctionBasedEvaluator.h
   Function/Evaluator/Utilities.h
   Function/Evaluator/Utilities.cpp
+  Function/Evaluator/ConcatenateScoreObjectFunction.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
