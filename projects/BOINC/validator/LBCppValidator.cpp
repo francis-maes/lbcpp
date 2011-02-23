@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Vector.h                       | BOINC validator                 |
+| Filename: LBCppValidator.cpp             | BOINC validator                 |
 | Author  : Arnaud Schoofs                 | Implementation based on :       |
 | Started : 21/02/2011 14:00               | sample_bitwise_validator.cpp    |
 `------------------------------------------/                                 |
@@ -18,8 +18,6 @@
 #include <sched_util.h>
 #include <sched_msgs.h>
 #include <validate_util.h>
-
-using std::string;
 
 using namespace lbcpp;
 
