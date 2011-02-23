@@ -165,7 +165,7 @@ Variable Frame::getOrComputeVariable(size_t index)
     return Variable::missingValue(signature->getType());
 
   // compute variable
-  Variable value = operatorSignature->getFunction()->compute(defaultExecutionContext(), &inputs[0]);
+  Variable value = operatorSignature->getFunction()->compute(defaultExecutionContext(), inputs);
   setVariable(index, value);
   return value;
 }

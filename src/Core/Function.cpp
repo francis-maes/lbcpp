@@ -41,12 +41,24 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
 {
   if (isInitialized())
   {
-    // todo: check that inputVariables type has not changed
+    // check that input variable type have not changed
+    if (inputVariables.size() != this->inputVariables.size())
+    {
+      context.errorCallback(T("Number of inputs has changed"));
+      return false;
+    }
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+      if (inputVariables[i]->getType() != this->inputVariables[i]->getType())
+      {
+        context.errorCallback(T("Input type has changed"));
+        return false;
+      }
     return true;
   }
+  this->inputVariables = inputVariables;
 
   // check inputs
-  numInputs = inputVariables.size();
+  size_t numInputs = inputVariables.size();
   size_t minInputs = getMinimumNumRequiredInputs();
   if (minInputs && numInputs < minInputs)
   {
@@ -96,8 +108,26 @@ void Function::setBatchLearner(const FunctionPtr& batchLearner)
   this->batchLearner = batchLearner;
 }
 
-Variable Function::compute(ExecutionContext& context, const Variable* inputs) const
+Variable Function::compute(ExecutionContext& context, const Variable* inputs, size_t numInputs) const
 {
+  if (!isInitialized())
+  {
+    std::vector<VariableSignaturePtr> inputVariables(numInputs);
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+    {
+      TypePtr type = inputs[i].getType();
+      inputVariables[i] = new VariableSignature(type, T("input") + String((int)i + 1));
+    }
+    context.informationCallback(T("Auto-initialize function ") + toShortString());
+    if (!const_cast<Function* >(this)->initialize(context, inputVariables))
+      return Variable();
+  }
+  if (numInputs != getNumInputs())
+  {
+    context.errorCallback(T("Invalid number of inputs"));
+    return Variable();
+  }
+
   for (size_t i = 0; i < preCallbacks.size(); ++i)
     preCallbacks[i]->functionCalled(context, refCountedPointerFromThis(this), inputs);
 
@@ -109,7 +139,7 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs) co
 }
 
 Variable Function::compute(ExecutionContext& context, const Variable& input) const
-  {jassert(getNumInputs() == 1); return compute(context, &input);}
+  {return compute(context, &input, 1);}
 
 static inline void fastVariableCopy(juce::int64* dst, const Variable& source)
 {
@@ -120,33 +150,31 @@ static inline void fastVariableCopy(juce::int64* dst, const Variable& source)
 
 Variable Function::compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const
 {
-  jassert(getNumInputs() == 2);
   jassert(sizeof (Variable) == sizeof (juce::int64) * 2);
   juce::int64 tmp[4];
   fastVariableCopy(tmp, input1);
   fastVariableCopy(tmp + 2, input2);
-  return compute(context, (const Variable* )tmp);
+  return compute(context, (const Variable* )tmp, 2);
 }
 
 Variable Function::compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const
 {
-  jassert(getNumInputs() == 3);
   juce::int64 tmp[6];
   fastVariableCopy(tmp, input1);
   fastVariableCopy(tmp + 2, input2);
   fastVariableCopy(tmp + 4, input3);
-  return compute(context, (const Variable* )tmp);
+  return compute(context, (const Variable* )tmp, 3);
 }
 
 Variable Function::compute(ExecutionContext& context, const std::vector<Variable>& inputs) const
-  {return compute(context, &inputs[0]);}
+  {return compute(context, &inputs[0], inputs.size());}
 
 Variable Function::computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const
 {
   if (getNumInputs() == 1 && inputsObject->getClass()->inheritsFrom(getRequiredInputType(0, 1)))
   {
     Variable in(inputsObject);
-    return compute(context, &in);
+    return compute(context, in);
   }
 
   PairPtr inputPair = inputsObject.dynamicCast<Pair>();
@@ -155,14 +183,14 @@ Variable Function::computeWithInputsObject(ExecutionContext& context, const Obje
     // faster version for pairs
     const Variable* inputs = &inputPair->getFirst();
     jassert(inputs + 1 == &inputPair->getSecond());
-    return compute(context, inputs);
+    return compute(context, inputs, 2);
   }
   else
   {
     std::vector<Variable> inputs(getNumInputs());
     for (size_t j = 0; j < inputs.size(); ++j)
       inputs[j] = inputsObject->getVariable(j);
-    return compute(context, &inputs[0]);
+    return compute(context, inputs);
   }
 }
 
@@ -176,6 +204,17 @@ bool Function::checkIsInitialized(ExecutionContext& context) const
   return true;
 }
 
+bool Function::initializeWithInputsObjectClass(ExecutionContext& context, ClassPtr inputsObjectClass)
+{
+  if (getNumRequiredInputs() == 1 && inputsObjectClass->inheritsFrom(getRequiredInputType(0, 1)))
+    return initialize(context, (TypePtr)inputsObjectClass);
+
+  std::vector<VariableSignaturePtr> inputSignatures(inputsObjectClass->getNumMemberVariables());
+  for (size_t i = 0; i < inputSignatures.size(); ++i)
+    inputSignatures[i] = inputsObjectClass->getMemberVariable(i);
+  return initialize(context, inputSignatures);
+}
+
 bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData, const String& scopeName, bool returnLearnedFunction)
 {
   bool doScope = scopeName.isNotEmpty();
@@ -183,18 +222,10 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
     context.enterScope(scopeName);
   bool res = true;
 
-  if (!isInitialized())
-  {
-    // auto-initialize given examples type
-    TypePtr examplesType = trainingData->getElementsType();
-    std::vector<VariableSignaturePtr> inputSignatures(examplesType->getNumMemberVariables());
-    for (size_t i = 0; i < inputSignatures.size(); ++i)
-      inputSignatures[i] = examplesType->getMemberVariable(i);
-    if (!initialize(context, inputSignatures))
-      res = false;
-  }
-
-  if (res)
+  // auto-initialize given examples type
+  if (!isInitialized() && !initializeWithInputsObjectClass(context, trainingData->getElementsType()))
+    res = false;
+  else
   {
     if (!batchLearner)
     {
@@ -202,7 +233,10 @@ bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData
       res = false;
     }
     else
-      res = batchLearner->compute(context, this, trainingData, validationData).getBoolean();
+    {
+      Variable result = batchLearner->compute(context, this, trainingData, Variable(validationData, trainingData->getClass()));
+      res = result.exists() && result.getBoolean();
+    }
   }
 
   if (doScope)
@@ -258,6 +292,17 @@ String Function::toShortString() const
     return thisClass->getName();
 }
 
+ObjectPtr Function::clone(ExecutionContext& context) const
+  {return Object::clone(context);}
+
+void Function::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  Object::clone(context, t);
+  const FunctionPtr& target = t.staticCast<Function>();
+  if (isInitialized())
+    target->initialize(context, inputVariables);
+}
+
 /*
 ** ProxyFunction
 */
@@ -283,4 +328,4 @@ Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variabl
   {jassert(implementation); return implementation->compute(context, input);}
 
 Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {jassert(implementation); return implementation->compute(context, inputs);}
+  {jassert(implementation); return implementation->compute(context, inputs, getNumInputs());}

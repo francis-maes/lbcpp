@@ -40,6 +40,7 @@ public:
   {
     ObjectPtr res = Object::create(objectClass);
     jassert(res);
+    size_t numInputs = getNumInputs();
     for (size_t i = 0; i < numInputs; ++i)
       res->setVariable(i, inputs[i]);
     return res;

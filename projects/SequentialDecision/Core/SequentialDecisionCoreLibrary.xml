@@ -24,6 +24,9 @@
     <constructor arguments="double discount"/>
     <variable type="Double" name="discount"/>
   </class>
+  <class name="MaxReturnSearchHeuristic" base="Function" shortName="maxReturn">
+    <constructor/>
+  </class>
   <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepth">
     <constructor/>
   </class>
@@ -37,6 +40,7 @@
   <class name="LookAheadTreeSearchFunction" base="Function">
     <variable type="SequentialDecisionProblem" name="problem"/>
     <variable type="Function" name="heuristic"/>
+    <variable type="Double" name="discount"/>
     <variable type="PositiveInteger" name="maxSearchNodes"/>
   </class>
 

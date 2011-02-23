@@ -29,7 +29,7 @@ Variable ScalarFunction::computeFunction(ExecutionContext& context, const Variab
 {
   double input = inputs[0].getDouble();
   double output = 0.0;
-  computeScalarFunction(input, numInputs > 1 ? inputs + 1 : NULL, &output, NULL);
+  computeScalarFunction(input, getNumInputs() > 1 ? inputs + 1 : NULL, &output, NULL);
   return output;
 }
 
@@ -53,6 +53,6 @@ Variable ScalarVectorFunction::computeFunction(ExecutionContext& context, const 
   const DenseDoubleVectorPtr& doubleVector = inputs[0].getObjectAndCast<DenseDoubleVector>();
   jassert(doubleVector);
   double res = 0.0;
-  computeScalarVectorFunction(doubleVector, numInputs > 1 ? inputs + 1 : NULL, &res, NULL, 1.0);
+  computeScalarVectorFunction(doubleVector, getNumInputs() > 1 ? inputs + 1 : NULL, &res, NULL, 1.0);
   return res;      
 }

@@ -39,8 +39,7 @@ public:
     std::vector<VariableSignaturePtr> inputVars = inputVariables;
     if (!transmitIndexToGeneratorFunction)
       inputVars.erase(inputVars.begin());
-
-    if (!elementGeneratorFunction->initialize(context, inputVariables))
+    if (!elementGeneratorFunction->initialize(context, inputVars))
       return TypePtr();
 
     VariableSignaturePtr elementsSignature = elementGeneratorFunction->getOutputVariable();
@@ -65,7 +64,7 @@ public:
       for (size_t i = 0; i < n; ++i)
       {
         subInputs[0] = Variable(i);
-        res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
+        res->setElement(i, elementGeneratorFunction->compute(context, subInputs));
       }
     }
     else
@@ -75,7 +74,7 @@ public:
         subInputs[i] = inputs[i + 1];
 
       for (size_t i = 0; i < n; ++i)
-        res->setElement(i, elementGeneratorFunction->compute(context, &subInputs[0]));
+        res->setElement(i, elementGeneratorFunction->compute(context, subInputs));
     }
 
     return res;

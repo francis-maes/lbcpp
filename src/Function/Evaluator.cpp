@@ -83,7 +83,7 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
   const ContainerPtr& examples = inputs[1].getObjectAndCast<Container>();
 
   ScoreObjectPtr res = createEmptyScoreObject();
-  if (context.isMultiThread())
+  if (false)//context.isMultiThread())
     computeEvaluatorMultiThread(context, function, examples, res);
   else
     computeEvaluatorSingleThread(context, function, examples, res);

@@ -22,30 +22,20 @@ public:
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
-    size_t perception = builder.addFunction(perceptionFunction = createPerceptionFunction(), node);
+    size_t perception = builder.addFunction(createPerceptionFunction(), node);
     size_t supervision = builder.addConstant(Variable());
-    builder.addFunction(scoringFunction = createScoringFunction(), perception, supervision);
+    builder.addFunction(createScoringFunction(), perception, supervision);
   }
 
   const FunctionPtr& getPerceptionFunction() const
-    {return perceptionFunction;}
+    {return functions[0];}
 
   const FunctionPtr& getScoringFunction() const
-    {return scoringFunction;}
- 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    CompositeFunction::clone(context, target);
-    if (scoringFunction)
-      target.staticCast<LearnableSearchHeuristic>()->scoringFunction = scoringFunction->clone(context);
-  }
+    {return functions[1];}
  
 protected:
-  FunctionPtr perceptionFunction;  // SearchNode -> Features
-  FunctionPtr scoringFunction;     // Features -> Score
-
-  virtual FunctionPtr createPerceptionFunction() const = 0;
-  virtual FunctionPtr createScoringFunction() const = 0;
+  virtual FunctionPtr createPerceptionFunction() const = 0; // SearchNode -> Features
+  virtual FunctionPtr createScoringFunction() const = 0;    // Features -> Score
 };
 
 typedef ReferenceCountedObjectPtr<LearnableSearchHeuristic> LearnableSearchHeuristicPtr;
@@ -83,6 +73,8 @@ public:
 
       std::vector<OnlineLearnerPtr> onlineLearners;
       onlineLearners.push_back(lookAheadTreeSearchOnlineLearner(learnerParameters->getLossFunction().dynamicCast<RankingLossFunction>()));
+      if (learnerParameters->getEvaluator())
+        onlineLearners.push_back(evaluatorOnlineLearner(learnerParameters->getEvaluator()));
       if (learnerParameters->getStoppingCriterion())
         onlineLearners.push_back(stoppingCriterionOnlineLearner(learnerParameters->getStoppingCriterion()));
       if (learnerParameters->doRestoreBestParameters())

@@ -30,7 +30,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleVectorClass();}
+    {return doubleType;}
   
   virtual String getOutputPostFix() const
     {return T("Concatenated");}
@@ -59,6 +59,7 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
+    size_t numInputs = getNumInputs();
     for (size_t i = 0; i < numInputs; ++i)
     {
       double value = inputs[i].getDouble();

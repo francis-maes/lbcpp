@@ -23,7 +23,7 @@ public:
     : context(NULL), rankingLoss(rankingLoss)
   {
     if (!rankingLoss)
-      rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
+      this->rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)

@@ -17,9 +17,6 @@ namespace lbcpp
 class ConcatenateContainerFunction : public Function
 {
 public:
-  ConcatenateContainerFunction()
-    {numInputs = 1;}
-  
   virtual size_t getNumRequiredInputs() const
     {return 1;}
 

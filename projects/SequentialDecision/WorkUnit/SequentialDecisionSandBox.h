@@ -27,7 +27,7 @@ namespace lbcpp
 class HeuristicSearchSpaceNodeFeaturesFunction : public CompositeFunction
 {
 public:
-  HeuristicSearchSpaceNodeFeaturesFunction() : discount(discount) {}
+  HeuristicSearchSpaceNodeFeaturesFunction(double discount = 0.9) : discount(discount) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
@@ -35,10 +35,11 @@ public:
 
     builder.startSelection();
 
-      builder.addFunction(greedySearchHeuristic(), node);
-      builder.addFunction(greedySearchHeuristic(discount), node);
-      builder.addFunction(optimisticPlanningSearchHeuristic(discount), node);
-      builder.addFunction(minDepthSearchHeuristic(), node);
+      builder.addFunction(greedySearchHeuristic(), node, T("maxReward"));
+      builder.addFunction(greedySearchHeuristic(discount), node, T("maxDiscountedReward"));
+      builder.addFunction(maxReturnSearchHeuristic(), node, T("maxReturn"));
+      builder.addFunction(optimisticPlanningSearchHeuristic(discount), node, T("optimistic"));
+      builder.addFunction(minDepthSearchHeuristic(), node, T("minDepth"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -81,7 +82,7 @@ class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
   virtual FunctionPtr createPerceptionFunction() const
-    {return new GenericClosedSearchSpaceNodeFeaturesFunction();}
+    {return new HeuristicSearchSpaceNodeFeaturesFunction();}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -134,12 +135,17 @@ public:
     context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
     
     StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
-    trainAndEvaluate(context, T("baseline"), parameters, maxSearchNodes, trainingStates, testingStates);
+    if (rankingLoss)
+      parameters->setLossFunction(rankingLoss);
+    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(0.001));
 
-    evaluate(context, T("greedy"), greedySearchHeuristic(), maxSearchNodes, testingStates);
-    evaluate(context, T("discountedGreedy"), greedySearchHeuristic(discount), maxSearchNodes, testingStates);
+    evaluate(context, T("maxReturn"), maxReturnSearchHeuristic(), maxSearchNodes, testingStates);
+    evaluate(context, T("maxReward"), greedySearchHeuristic(), maxSearchNodes, testingStates);
+    evaluate(context, T("maxDiscountedReward"), greedySearchHeuristic(discount), maxSearchNodes, testingStates);
     evaluate(context, T("optimistic"), optimisticPlanningSearchHeuristic(discount), maxSearchNodes, testingStates);
     evaluate(context, T("uniform"), minDepthSearchHeuristic(), maxSearchNodes, testingStates);
+
+    trainAndEvaluate(context, T("baseline"), parameters, maxSearchNodes, trainingStates, testingStates);
     return true;
   }
 
@@ -161,11 +167,12 @@ protected:
 
   FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
+    parameters->setEvaluator(new SearchSpaceEvaluator());
     FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
+    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
       return FunctionPtr();
-    return heuristic;
+    return lookAHeadSearch->getHeuristic();
   }
 
   bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
@@ -179,6 +186,7 @@ private:
   friend class SequentialDecisionSandBoxClass;
 
   SequentialDecisionProblemPtr problem;
+  RankingLossFunctionPtr rankingLoss;
 
   size_t numInitialStates;
   size_t minDepth;

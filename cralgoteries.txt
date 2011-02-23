@@ -1,10 +1,10 @@
 
+ * SequentialDecision: Make the RestoreBestParametersOnlineLearner work
+
 SequentialDecision:
  * FeatureGenerator avec seulement les 4 heuristic: greedy, discountedGreedy, optimistic, uniform
  * Tester la normalization par le nombre de candidates
  * Tester les autres loss de ranking
- * Tester avec apprentissage batch
- * Fixer crash
 
 Proteins:
  * Parallel Learning
