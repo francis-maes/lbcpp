@@ -42,11 +42,11 @@ String NetworkRequest::generateIdentifier()
 */
 
 WorkUnitNetworkRequest::WorkUnitNetworkRequest(ExecutionContext& context, WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-  : NetworkRequest(generateIdentifier(), projectName, source, destination, requiredCpus, requiredMemory, requiredTime), workUnitXmlElement(new XmlElement())
+  : NetworkRequest(generateIdentifier(), projectName, source, destination, requiredCpus, requiredMemory, requiredTime), context(context), workUnitXmlElement(new XmlElement())
 {workUnitXmlElement->saveObject(context, workUnit);}
 
 WorkUnitNetworkRequest::WorkUnitNetworkRequest(ExecutionContext& context, NetworkRequestPtr request, WorkUnitPtr workUnit)
-  : NetworkRequest(request), workUnitXmlElement(new XmlElement())
+  : NetworkRequest(request), context(context), workUnitXmlElement(new XmlElement())
 {workUnitXmlElement->saveObject(context, workUnit);}
   
 NetworkRequestPtr WorkUnitNetworkRequest::getNetworkRequest() const
