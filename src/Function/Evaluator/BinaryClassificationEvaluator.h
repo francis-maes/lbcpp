@@ -28,10 +28,10 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new BinaryClassificationConfusionMatrix();}
   
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {score.staticCast<BinaryClassificationConfusionMatrix>()->finalize();}
   
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
     {result.staticCast<BinaryClassificationConfusionMatrix>()->addPredictionIfExists(context, predictedObject, correctObject);}
 };
 
@@ -47,8 +47,6 @@ public:
   
   void addPrediction(ExecutionContext& context, double predicted, bool correct)
     {roc.addPrediction(context, predicted, correct);}
-  
-  
   
 private:
   ROCAnalyse roc;
@@ -67,10 +65,7 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new ROCAnalyse();}
   
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
-  {}
-  
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
     {result.staticCast<ROCAnalysisScoreObject>()->addPrediction(context, predictedObject.getDouble(), correctObject.getBoolean());}
 };
 

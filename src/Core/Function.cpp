@@ -224,56 +224,20 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
   if (!checkIsInitialized(context))
     return ScoreObjectPtr();
 
+  if (!evaluator->isInitialized() && !evaluator->initialize(context, functionClass, examples->getClass()))
+    return ScoreObjectPtr();
+
   if (doScope)
     context.enterScope(scopeName);
 
-  // todo: parallel evaluation
-  size_t n = examples->getNumElements();
-  VectorPtr predictions = vector(getOutputType(), n);
-
-  ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
-  if (objectExamples)
-  {
-    if (examples->getElementsType()->inheritsFrom(pairClass(anyType, anyType)))
-    {
-      // fast version for pair vectors
-      const std::vector<PairPtr>& pairs = objectExamples->getObjectsAndCast<Pair>();
-      for (size_t i = 0; i < n; ++i)
-      {
-        const PairPtr& example = pairs[i];
-        predictions->setElement(i, compute(context, &example->getFirst()));
-      }
-    }
-    else
-    {
-      // fast version for object vectors
-      const std::vector<ObjectPtr>& objects = objectExamples->getObjects();
-      for (size_t i = 0; i < n; ++i)
-      {
-        const ObjectPtr& example = objects[i];
-        predictions->setElement(i, computeWithInputsObject(context, example));
-      }
-    }
-  }
-  else
-  {
-    // generic version
-    for (size_t i = 0; i < n; ++i)
-    {
-      ObjectPtr example = examples->getElement(i).getObject();
-      predictions->setElement(i, computeWithInputsObject(context, example));
-    }
-  }
-  
-  ScoreObjectPtr score = evaluator->compute(context, examples, predictions).getObjectAndCast<ScoreObject>();
+  ScoreObjectPtr res = evaluator->compute(context, refCountedPointerFromThis(this), examples).getObjectAndCast<ScoreObject>();
 
   if (doScope)
   {
-    context.resultCallback(T("score"), score);
-    context.leaveScope(score->getScoreToMinimize());
+    context.resultCallback(T("score"), res);
+    context.leaveScope(-res->getScoreToMinimize());
   }
-
-  return score;
+  return res;
 }
 
 ScoreObjectPtr Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName) const

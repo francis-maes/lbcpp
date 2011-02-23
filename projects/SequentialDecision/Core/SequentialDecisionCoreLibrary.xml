@@ -50,6 +50,6 @@
     <variable type="ScalarVariableStatistics" name="bestReturn"/>
     <variable type="ScalarVariableMean" name="numOpenedNodes"/>
   </class>
-  <class name="SearchSpaceEvaluator" base="OutputEvaluator"/>
+  <class name="SearchSpaceEvaluator" base="Evaluator"/>
 
 </library>

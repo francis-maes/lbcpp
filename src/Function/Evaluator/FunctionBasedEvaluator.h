@@ -34,13 +34,13 @@ protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return function->compute(context, inputs);}
   
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {jassertfalse;}
   
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {jassertfalse; return ScoreObjectPtr();}
   
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
     {jassertfalse;}
 };
   

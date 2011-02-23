@@ -15,6 +15,9 @@
 namespace lbcpp
 {
 
+/*
+** ScoreObject
+*/
 class ScoreObject : public Object
 {
 public:
@@ -22,74 +25,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
-
-extern ClassPtr scoreObjectClass;
-
-class Evaluator : public Function
-{
-public:
-  /* Function */
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(anyType);}
-
-  virtual String getOutputPostFix() const
-    {return T("Evaluated");}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return scoreObjectClass;}
-};
-
-class SupervisedEvaluator : public Evaluator
-{
-public:
-  virtual TypePtr getRequiredPredictionType() const = 0;
-  virtual TypePtr getRequiredSupervisionType() const = 0;
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(index == 0 ? anyType : getRequiredPredictionType());}
-
-protected:
-  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
-  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, ScoreObjectPtr& result) const = 0;
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const = 0;
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-};
-
-typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
-
-class OutputEvaluator : public Evaluator
-{
-public:
-  virtual TypePtr getRequiredOutputType() const = 0;
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(index == 0 ? anyType : getRequiredOutputType());}
-
-  virtual ScoreObjectPtr computeOutputEvaluator(ExecutionContext& context, const ContainerPtr& outputs) const = 0;
-
-protected:
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-};
-
-typedef ReferenceCountedObjectPtr<OutputEvaluator> OutputEvaluatorPtr;
-
-// Classification
-extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
-extern SupervisedEvaluatorPtr rocAnalysisEvaluator();
-
-extern SupervisedEvaluatorPtr classificationEvaluator();
-
-// Multi-label Classification
-extern SupervisedEvaluatorPtr multiLabelClassificationEvaluator();
-
-// Regression
-extern SupervisedEvaluatorPtr regressionEvaluator();
-
-extern EvaluatorPtr functionBasedEvaluator(const FunctionPtr& function);
 
 class CompositeScoreObject : public ScoreObject
 {
@@ -113,6 +48,68 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<CompositeScoreObject> CompositeScoreObjectPtr;
+
+extern ClassPtr scoreObjectClass;
+
+/*
+** Evaluator
+*/
+// Function, Container[InputsObject] -> ScoreObject
+class Evaluator : public Function
+{
+public:
+  /* Function */
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? functionClass : containerClass(objectClass);}
+
+  virtual String getOutputPostFix() const
+    {return T("Evaluated");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return scoreObjectClass;}
+
+protected:
+  friend struct EvaluateExampleWorkUnit;
+
+  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
+  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  void computeEvaluatorMultiThread(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& examples, const ScoreObjectPtr& scores) const;
+  void computeEvaluatorSingleThread(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& examples, const ScoreObjectPtr& scores) const;
+};
+
+class SupervisedEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr getRequiredPredictionType() const = 0;
+  virtual TypePtr getRequiredSupervisionType() const = 0;
+
+protected:
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const = 0;
+  virtual void updateScoreObject(const ScoreObjectPtr& score, const ObjectPtr& inputsObject, const Variable& output) const;
+};
+
+typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
+
+// Classification
+extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
+extern SupervisedEvaluatorPtr rocAnalysisEvaluator();
+
+extern SupervisedEvaluatorPtr classificationEvaluator();
+
+// Multi-label Classification
+extern SupervisedEvaluatorPtr multiLabelClassificationEvaluator();
+
+// Regression
+extern SupervisedEvaluatorPtr regressionEvaluator();
+
+extern EvaluatorPtr functionBasedEvaluator(const FunctionPtr& function);
 
 };
 

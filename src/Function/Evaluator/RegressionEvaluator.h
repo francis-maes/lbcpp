@@ -91,11 +91,10 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new RegressionScoreObject();}
   
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {score.staticCast<RegressionScoreObject>()->finalize();}
 
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
     {result.staticCast<RegressionScoreObject>()->addDelta(predictedObject.getDouble() - correctObject.getDouble());}
 };
 

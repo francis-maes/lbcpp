@@ -91,7 +91,7 @@ public:
       return false;
 
     // evaluate
-    xorFunction->evaluate(context, trainingExamples, regressionEvaluator());
+    xorFunction->evaluate(context, trainingExamples, regressionEvaluator(), T("Evaluate"));
     //std::cout << "Evaluation: " << evaluator->toString() << std::endl;
 
     Variable myPrediction = xorFunction->compute(context, 1.0, 0.0, Variable::missingValue(doubleType));
