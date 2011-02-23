@@ -8,6 +8,16 @@
   <class name="ScoreObject" base="Object" abstract="yes"/>
   <class name="Evaluator" base="Function" abstract="yes"/>
   
+  <class name="CompositeScoreObject" base="ScoreObject">
+    <variable type="ObjectVector[ScoreObject]" name="scores"/>
+    <variable type="PositiveInteger" name="scoreToMinimizeIndex"/>
+  </class>
+  
+  <class name="FunctionBasedEvaluator" base="Function">
+    <constructor arguments="const FunctionPtr&amp; function"/>
+    <variable type="Function" name="function"/>
+  </class>
+  
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix"/>
 

@@ -8,4 +8,7 @@
   
   <class name="ProteinEvaluator" base="Evaluator"/>
   
+  <class name="MergeContainerFunction" base="SimpleUnaryFunction"/>
+  
+  <class name="ProteinEvaluatorCompositeFunction" base="CompositeFunction"/>
 </library>

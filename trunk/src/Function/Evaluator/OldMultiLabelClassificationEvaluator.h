@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_OLD_EVALUATOR_MULTI_LABEL_CLASSIFICATION_H_
 
 # include <lbcpp/Function/OldEvaluator.h>
+# include "Utilities.h"
 
 namespace lbcpp
 {

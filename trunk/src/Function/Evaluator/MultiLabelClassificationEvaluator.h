@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_EVALUATOR_MULTI_LABEL_CLASSIFICATION_H_
 
 # include <lbcpp/Function/Evaluator.h>
+# include "Utilities.h"
 
 namespace lbcpp
 {
