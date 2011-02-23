@@ -15,8 +15,8 @@ IF(UNIX)
         # ${CMAKE_CURRENT_SOURCE_DIR}/../include/api ${CMAKE_CURRENT_SOURCE_DIR}/../include/client
       )
       
-      SET(SSL_LIB /usr/lib/libssl.a)
       SET(LIBS
+        lbcpp-core${NAME_FILE_SUFFIX}
         ${MYSQL_LIBRARIES}
         ${OPENSSL_LIBRARIES}
         ${CMAKE_CURRENT_SOURCE_DIR}/../lib/libsched.a
@@ -30,6 +30,12 @@ IF(UNIX)
       )
       
       TARGET_LINK_LIBRARIES(sample_work_generator ${LIBS})
+
+      ADD_EXECUTABLE(LBCppWorkGenerator
+        LBCppWorkGenerator.cpp
+      )
+      
+      TARGET_LINK_LIBRARIES(LBCppWorkGenerator ${LIBS})
       
     ENDIF(CMAKE_SIZEOF_VOID_P MATCHES 4)
   ENDIF(NOT APPLE)
