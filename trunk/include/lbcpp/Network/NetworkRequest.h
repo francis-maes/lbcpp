@@ -71,15 +71,16 @@ class WorkUnitNetworkRequest : public NetworkRequest
 public:
   WorkUnitNetworkRequest(ExecutionContext& context, WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
   WorkUnitNetworkRequest(ExecutionContext& context, NetworkRequestPtr request, WorkUnitPtr workUnit);
-  WorkUnitNetworkRequest() {}
+  WorkUnitNetworkRequest() : context (*(ExecutionContext*)NULL){}
   
   WorkUnitPtr getWorkUnit() const
-    {return workUnitXmlElement->createObjectAndCast<WorkUnit>();}
+    {return workUnitXmlElement->createObjectAndCast<WorkUnit>(context);}
   
   NetworkRequestPtr getNetworkRequest() const;
   
 protected:
   friend class WorkUnitNetworkRequestClass;
+  ExecutionContext& context;
   
   XmlElementPtr workUnitXmlElement;
 };
