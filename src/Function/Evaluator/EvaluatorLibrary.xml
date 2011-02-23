@@ -7,68 +7,84 @@
   <!-- Base Class -->
   <class name="ScoreObject" base="Object" abstract="yes"/>
   <class name="Evaluator" base="Function" abstract="yes"/>
+  <class name="SupervisedEvaluator" base="Evaluator" abstract="yes"/>
   
   <class name="CompositeScoreObject" base="ScoreObject">
     <variable type="ObjectVector[ScoreObject]" name="scores"/>
     <variable type="PositiveInteger" name="scoreToMinimizeIndex"/>
   </class>
   
-  <class name="FunctionBasedEvaluator" base="Function">
+  <class name="FunctionBasedEvaluator" base="Evaluator">
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Function" name="function"/>
   </class>
   
   <!-- Utility Classes -->
-  <class name="BinaryClassificationConfusionMatrix"/>
+  <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
+    <variable type="Double" name="precision"/>
+    <variable type="Double" name="recall"/>
+    <variable type="Double" name="f1score"/>
+    <variable type="Double" name="matthewsCorrelation"/>
+    <variable type="Double" name="accuracy"/>
+    <variable type="PositiveInteger" name="truePositive"/>
+    <variable type="PositiveInteger" name="falsePositive"/>
+    <variable type="PositiveInteger" name="falseNegative"/>
+    <variable type="PositiveInteger" name="trueNegative"/>
+    <variable type="PositiveInteger" name="totalCount"/>
+  </class>
 
-  <class name="ROCAnalyse"/>
+  <class name="ROCAnalyse" base="ScoreObject">
+    <variable type="Double" name="bestF1"/>
+    <variable type="ObjectVector[Pair[Double, Double]]" name="precision"/>
+    <variable type="ObjectVector[Pair[Double, Double]]" name="recall"/>
+  </class>
 
   <!-- Regression -->
-  <class name="RegressionErrorScoreObject" base="ScoreObject">
-    <variable type="ScalarVariableMean" name="absoluteError"/>
-    <variable type="ScalarVariableMean" name="squaredError"/>
+  <class name="RegressionScoreObject" base="ScoreObject">
+    <variable type="Double" name="leastSquares"/>
+    <variable type="Double" name="meanSquareError"/>
+    <variable type="Double" name="rootMeanSquareError"/>
+    <variable type="Double" name="absolute"/>
   </class>
   
-  <class name="RegressionErrorEvaluator" base="Evaluator">
+  <class name="RegressionEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
 
   <!-- Binary Classification -->
-  <class name="BinaryClassificationConfusionScoreObject" base="ScoreObject"/>
-
-  <class name="BinaryClassificationConfusionEvaluator" base="Evaluator">
+  <class name="BinaryClassificationEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
   
   <class name="ROCAnalysisScoreObject" base="ScoreObject"/>
   
-  <class name="ROCAnalysisEvaluator" base="Evaluator">
+  <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
 
   <!-- MultiClass Classification -->
-  <class name="ClassificationAccuracyScoreObject" base="ScoreObject">
-    <variable type="ScalarVariableMean" name="accuracy"/>
+  <class name="ClassificationScoreObject" base="ScoreObject">
+    <variable type="Double" name="accuracy"/>
   </class>
 
-  <class name="ClassificationAccuracyEvaluator" base="Evaluator">
+  <class name="ClassificationEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
   
   <!-- MultiLabel Classification -->
   <class name="MultiLabelClassificationScoreObject" base="ScoreObject">
-    <variable type="ScalarVariableMean" name="hammingLoss"/>
-    <variable type="ScalarVariableMean" name="accuracy"/>
-    <variable type="ScalarVariableMean" name="precision"/>
-    <variable type="ScalarVariableMean" name="recall"/>
+    <variable type="Double" name="hammingLoss"/>
+    <variable type="Double" name="accuracy"/>
+    <variable type="Double" name="precision"/>
+    <variable type="Double" name="recall"/>
   </class>
   
-  <class name="MultiLabelClassificationEvaluator" base="Evaluator">
+  <class name="MultiLabelClassificationEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
 
   <!-- Default Evaluator -->
-  <class name="DefaultEvaluator" base="ProxyFunction"/>
+  <class name="DefaultSupervisedEvaluator" base="ProxyFunction"/>
 
   <!-- Old -->
   

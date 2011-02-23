@@ -2,13 +2,8 @@
 
 <library name="ProteinEvaluator" directory="Evaluator">
 
-  <class name="ProteinScoreObject" base="ScoreObject">
-    <variable type="ObjectVector[ScoreObject]" name="scores"/>
-  </class>
-  
-  <class name="ProteinEvaluator" base="Evaluator"/>
-  
   <class name="MergeContainerFunction" base="SimpleUnaryFunction"/>
   
   <class name="ProteinEvaluatorCompositeFunction" base="CompositeFunction"/>
+
 </library>

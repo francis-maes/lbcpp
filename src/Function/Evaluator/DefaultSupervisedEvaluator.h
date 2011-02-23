@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class DefaultEvaluator : public ProxyFunction
+class DefaultSupervisedEvaluator : public ProxyFunction
 {
 public:
   virtual size_t getNumRequiredInputs() const
@@ -29,11 +29,11 @@ public:
     TypePtr supervisionType = inputVariables[1]->getType()->getTemplateArgument(0);
     
     if (supervisionType == doubleType)
-      return regressionErrorEvaluator();
+      return regressionEvaluator();
     if (supervisionType == booleanType || supervisionType == probabilityType)
-      return binaryClassificationConfusionEvaluator();
+      return binaryClassificationEvaluator();
     if (supervisionType->inheritsFrom(enumValueType))
-      return classificationAccuracyEvaluator();
+      return classificationEvaluator();
     if (supervisionType->inheritsFrom(objectClass) && supervisionType == predictedType)
       return multiLabelClassificationEvaluator();
     return FunctionPtr();

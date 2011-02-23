@@ -64,12 +64,7 @@ protected:
   {
     EvaluatorPtr evaluator = this->evaluator->cloneAndCast<Evaluator>();
     ScoreObjectPtr score = function->evaluate(*context, data, evaluator);
-
-    std::vector< std::pair<String, double> > results;
-    score->getScores(results);
-    for (size_t i = 0; i < results.size(); ++i)
-      context->resultCallback(name + T(" ") + results[i].first, results[i].second);
-
+    context->resultCallback(name + T(" score"), score);
     return score;
   }
 };

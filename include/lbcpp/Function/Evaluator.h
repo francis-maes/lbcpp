@@ -19,7 +19,6 @@ class ScoreObject : public Object
 {
 public:
   virtual double getScoreToMinimize() const = 0;
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
@@ -28,8 +27,15 @@ extern ClassPtr scoreObjectClass;
 
 class Evaluator : public Function
 {
+protected:
+  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const = 0;
+};
+
+class SupervisedEvaluator : public Evaluator
+{
 public:
-  Evaluator()
+  SupervisedEvaluator()
     {numInputs = 2;}
 
   virtual TypePtr getRequiredPredictedElementsType() const = 0;
@@ -51,25 +57,25 @@ public:
 
 protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-  
-  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const = 0;
 };
 
-// Classification
-extern EvaluatorPtr binaryClassificationConfusionEvaluator();
-extern EvaluatorPtr rocAnalysisEvaluator();
+typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
 
-extern EvaluatorPtr classificationAccuracyEvaluator();
+// Classification
+extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
+extern SupervisedEvaluatorPtr rocAnalysisEvaluator();
+
+extern SupervisedEvaluatorPtr classificationEvaluator();
 
 // Multi-label Classification
-extern EvaluatorPtr multiLabelClassificationEvaluator();
+extern SupervisedEvaluatorPtr multiLabelClassificationEvaluator();
 
 // Regression
-extern EvaluatorPtr regressionErrorEvaluator();
+extern SupervisedEvaluatorPtr regressionEvaluator();
 
-extern FunctionPtr functionBasedEvaluator(const FunctionPtr& function);
+extern EvaluatorPtr functionBasedEvaluator(const FunctionPtr& function);
 
 class CompositeScoreObject : public ScoreObject
 {
@@ -78,8 +84,6 @@ public:
 
   virtual double getScoreToMinimize() const
     {return scoreToMinimizeIndex == (size_t)-1 ? 0.0 : scores[scoreToMinimizeIndex]->getScoreToMinimize();}
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const;
 
   void pushScoreObject(const ScoreObjectPtr& score)
     {scores.push_back(score);}

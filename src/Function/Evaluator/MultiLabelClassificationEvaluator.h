@@ -19,58 +19,81 @@ class MultiLabelClassificationScoreObject : public ScoreObject
 {
 public:
   MultiLabelClassificationScoreObject()
-    : hammingLoss(new ScalarVariableMean(T("Hamming"))),
-      accuracy(new ScalarVariableMean(T("Accuracy"))),
-      precision(new ScalarVariableMean(T("Precision"))),
-      recall(new ScalarVariableMean(T("Recall")))
+    : hammingLoss(0.0),
+      accuracy(0.0),
+      precision(0.0),
+      recall(0.0),
+      hammingLossVector(new ScalarVariableMean(T("Hamming"))),
+      accuracyVector(new ScalarVariableMean(T("Accuracy"))),
+      precisionVector(new ScalarVariableMean(T("Precision"))),
+      recallVector(new ScalarVariableMean(T("Recall")))
   {}
   
   virtual double getScoreToMinimize() const
-    {return -accuracy->getMean();}
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
-  {
-    res.push_back(std::make_pair(T("HammingLoss"), hammingLoss->getMean()));
-    res.push_back(std::make_pair(T("Accuracy"), accuracy->getMean()));
-    res.push_back(std::make_pair(T("Precision"), precision->getMean()));
-    res.push_back(std::make_pair(T("Recall"), recall->getMean()));
-  }
+    {return -accuracy;}
   
   void pushHammingLoss(double value)
-    {hammingLoss->push(value);}
+    {hammingLossVector->push(value);}
   
   void pushAccuracy(double value)
-    {accuracy->push(value);}
+    {accuracyVector->push(value);}
   
   void pushPrecision(double value)
-    {precision->push(value);}
+    {precisionVector->push(value);}
   
   void pushRecall(double value)
-    {recall->push(value);}
+    {recallVector->push(value);}
   
   virtual String toString() const
   {
-    if (!hammingLoss->getCount())
+    if (!hammingLossVector->getCount())
       return String::empty;
     
-    return getName() + T(" hammingLoss: ") + String(hammingLoss->getMean()) + 
-    T(" acc: ") + String(accuracy->getMean()) + 
-    T(" prec: ") + String(precision->getMean()) + 
-    T(" rec: ") + String(recall->getMean());
+    return getName() + T(" hammingLoss: ") + String(hammingLoss) + 
+    T(" acc: ") + String(accuracy) + 
+    T(" prec: ") + String(precision) + 
+    T(" rec: ") + String(recall);
+  }
+  
+  void finalize()
+  {
+    hammingLoss = hammingLossVector->getMean();
+    accuracy = accuracyVector->getMean();
+    precision = precisionVector->getMean();
+    recall = recallVector->getMean();
+  }
+  
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    ScoreObject::clone(context, target);
+    ReferenceCountedObjectPtr<MultiLabelClassificationScoreObject> res = target.staticCast<MultiLabelClassificationScoreObject>();
+    if (hammingLossVector)
+      res->hammingLossVector = hammingLossVector->cloneAndCast<ScalarVariableMean>(context);
+    if (accuracyVector)
+      res->accuracyVector = accuracyVector->cloneAndCast<ScalarVariableMean>(context);
+    if (precisionVector)
+      res->precisionVector = precisionVector->cloneAndCast<ScalarVariableMean>(context);
+    if (recallVector)
+      res->recallVector = recallVector->cloneAndCast<ScalarVariableMean>(context);
   }
 
 protected:
   friend class MultiLabelClassificationScoreObjectClass;
   
-  ScalarVariableMeanPtr hammingLoss;
-  ScalarVariableMeanPtr accuracy;
-  ScalarVariableMeanPtr precision;
-  ScalarVariableMeanPtr recall;
+  double hammingLoss;
+  double accuracy;
+  double precision;
+  double recall;
+  
+  ScalarVariableMeanPtr hammingLossVector;
+  ScalarVariableMeanPtr accuracyVector;
+  ScalarVariableMeanPtr precisionVector;
+  ScalarVariableMeanPtr recallVector;
 };
 
 typedef ReferenceCountedObjectPtr<MultiLabelClassificationScoreObject> MultiLabelClassificationScoreObjectPtr;
 
-class MultiLabelClassificationEvaluator : public Evaluator
+class MultiLabelClassificationEvaluator : public SupervisedEvaluator
 {
 public:
   virtual TypePtr getRequiredPredictedElementsType() const
@@ -82,6 +105,9 @@ public:
 protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new MultiLabelClassificationScoreObject();}
+  
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+    {score.staticCast<MultiLabelClassificationScoreObject>()->finalize();}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, ScoreObjectPtr& result) const
   {

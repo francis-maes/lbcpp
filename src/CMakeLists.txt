@@ -367,11 +367,11 @@ SET(LBCPP_FUNCTION_PREDICATE_SOURCES
 )
 
 SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
-  Function/Evaluator/BinaryClassificationConfusionEvaluator.h
-  Function/Evaluator/ClassificationAccuracyEvaluator.h
-  Function/Evaluator/RegressionErrorEvaluator.h
+  Function/Evaluator/BinaryClassificationEvaluator.h
+  Function/Evaluator/ClassificationEvaluator.h
+  Function/Evaluator/RegressionEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
-  Function/Evaluator/DefaultEvaluator.h
+  Function/Evaluator/DefaultSupervisedEvaluator.h
   Function/Evaluator/FunctionBasedEvaluator.h
   Function/Evaluator/Utilities.h
   Function/Evaluator/Utilities.cpp

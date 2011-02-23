@@ -16,9 +16,6 @@ namespace lbcpp
 
 class ConcatenateScoreObjectFunction : public Function
 {
-  virtual size_t getNumRequiredInputs() const
-    {return 0;}
-  
   virtual size_t getMinimumNumRequiredInputs() const
     {return 0;}
   

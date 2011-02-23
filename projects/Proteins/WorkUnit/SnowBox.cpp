@@ -37,9 +37,9 @@ protected:
 
     String targetName = proteinClass->getMemberVariableName(target);
     if (target == ss3Target || target == ss8Target || target == stalTarget)
-      res->setEvaluator(classificationAccuracyEvaluator());
+      res->setEvaluator(classificationEvaluator());
     else if (target == drTarget || target == saTarget || target == sa20Target)
-      res->setEvaluator(binaryClassificationConfusionEvaluator());
+      res->setEvaluator(binaryClassificationEvaluator());
     return res;
   }
 };

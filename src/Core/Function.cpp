@@ -277,14 +277,9 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
 
   if (doScope)
   {
-    std::vector< std::pair<String, double> > results;
-    score->getScores(results);
-    for (size_t i = 0; i < results.size(); ++i)
-      context.resultCallback(results[i].first, results[i].second);
-  }
-
-  if (doScope)
+    context.resultCallback(T("score"), score);
     context.leaveScope(score->getScoreToMinimize());
+  }
 
   return score;
 }

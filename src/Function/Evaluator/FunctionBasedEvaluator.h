@@ -26,12 +26,6 @@ public:
   virtual TypePtr getRequiredSupervisionElementsType() const
     {return function->getRequiredInputType(1, 2);}
 
-  virtual ScoreObjectPtr createEmptyScoreObject() const
-    {jassertfalse; return ScoreObjectPtr();}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
-    {jassertfalse;}
-
 protected:
   friend class FunctionBasedEvaluatorClass;
 
@@ -39,6 +33,15 @@ protected:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return function->compute(context, inputs);}
+  
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const
+    {jassertfalse;}
+  
+  virtual ScoreObjectPtr createEmptyScoreObject() const
+    {jassertfalse; return ScoreObjectPtr();}
+  
+  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const
+    {jassertfalse;}
 };
   
 };
