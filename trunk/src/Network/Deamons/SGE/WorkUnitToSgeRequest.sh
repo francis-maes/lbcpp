@@ -25,7 +25,7 @@ do
     ln -s /scratch/jbecker/data/ $rootProjectDirectory/$projectName/data
   fi
   
-  qsub << EOF
+  cat > job.qsub << EOF
 #$ -l h_vmem=${requiredMemory}G
 #$ -l h_rt=${requiredTime}:10:00
 #$ -cwd
@@ -38,6 +38,9 @@ cd $programDirectory
 ./RunWorkUnit $inProgressFile --trace $trace --projectDirectory $rootProjectDirectory/$projectName
 mv $inProgressFile $finishedFile
 EOF
+
+export SGE_ROOT="/cvos/shared/apps/sge/6.1/"
+/cvos/shared/apps/sge/6.1/bin/lx26-amd64/qsub job.qsub
 
 done
 
