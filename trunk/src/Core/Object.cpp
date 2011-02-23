@@ -395,7 +395,7 @@ void Object::saveVariablesToXmlAttributes(XmlExporter& exporter) const
 
 bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
 {
-  XmlElement* xml = importer.getCurrentElement();
+  juce::XmlElement* xml = importer.getCurrentElement();
   size_t n = getNumVariables();
   for (size_t i = 0; i < n; ++i)
   {

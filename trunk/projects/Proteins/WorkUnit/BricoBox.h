@@ -113,4 +113,20 @@ protected:
   File outputFile;
 };
 
+class CheckXmlElementWorkUnit : public WorkUnit
+{
+  virtual Variable run(ExecutionContext& context)
+  {
+    WorkUnitPtr wu = new SaveObjectProgram();
+    
+    XmlElementPtr element = new XmlElement();
+    element->saveObject(context, wu);
+    
+    ObjectPtr obj = element->createObject(context);
+    obj.dynamicCast<WorkUnit>()->run(context);
+
+    return true;
+  }
+};
+
 };

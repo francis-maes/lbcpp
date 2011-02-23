@@ -41,7 +41,7 @@ public:
   bool saveToFile(const File& file);
   String toString();
 
-  XmlElement* getCurrentElement();
+  juce::XmlElement* getCurrentElement();
 
   void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
   void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
@@ -60,7 +60,7 @@ public:
   void setAttribute(const String& name, const TT& value)
     {getCurrentElement()->setAttribute(name, value);}
 
-  void addChildElement(XmlElement* elt)
+  void addChildElement(juce::XmlElement* elt)
     {getCurrentElement()->addChildElement(elt);}
 
   void flushSave();
@@ -70,8 +70,8 @@ public:
 
 private:
   ExecutionContext& context;
-  XmlElement* root;
-  std::vector<XmlElement* > currentStack;
+  juce::XmlElement* root;
+  std::vector<juce::XmlElement* > currentStack;
 
   struct SavedObject
   {
@@ -82,8 +82,8 @@ private:
 
     String identifier;
     ObjectPtr object;
-    XmlElement* elt;
-    std::vector<XmlElement* > references; // XmlElements refering to this object
+    juce::XmlElement* elt;
+    std::vector<juce::XmlElement* > references; // XmlElements refering to this object
     std::set<size_t> dependencies; // dependencies on other savedObjects 
     bool ordered;
   };
@@ -120,7 +120,7 @@ public:
 
   Variable load();
 
-  XmlElement* getCurrentElement() const
+  juce::XmlElement* getCurrentElement() const
     {return stack.back();}
 
   String getTagName() const
@@ -144,9 +144,9 @@ public:
   String getStringAttribute(const String& attributeName, const String& defaultResult = String::empty) const
     {return getCurrentElement()->getStringAttribute(attributeName, defaultResult);}
 
-  Variable loadVariable(XmlElement* child, TypePtr expectedType);
+  Variable loadVariable(juce::XmlElement* child, TypePtr expectedType);
 
-  void enter(XmlElement* child);
+  void enter(juce::XmlElement* child);
   bool enter(const String& childTagName);
   TypePtr loadType(TypePtr expectedType);
   Variable loadVariable(TypePtr expectedType);
@@ -157,14 +157,132 @@ public:
 
 private:
   ExecutionContext& context;
-  XmlElement* root;
+  juce::XmlElement* root;
 
-  std::vector<XmlElement* > stack;
+  std::vector<juce::XmlElement* > stack;
   std::vector<SharedObjectMap> sharedObjectsStack;
 
   bool loadSharedObjects();
   ObjectPtr getReferencedObject() const;
 };
+
+class XmlElement;
+typedef ReferenceCountedObjectPtr<XmlElement> XmlElementPtr;
+
+class XmlElement : public Object
+{
+public:
+  XmlElement(const String& tagName)
+    : tagName(tagName) {}
+  XmlElement() {}
+
+  static XmlElementPtr createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
+  bool loadFromJuceXmlElement(juce::XmlElement* element);
+  juce::XmlElement* createJuceXmlElement() const;
+  
+  bool saveObject(ExecutionContext& context, const ObjectPtr& value)
+  {
+    XmlExporter exporter(context, T("variable"), 0);
+    exporter.writeVariable(value, objectClass);
+    exporter.flushSave();
+    return loadFromJuceXmlElement(exporter.getCurrentElement());
+  }
+  
+  ObjectPtr createObject(ExecutionContext& context)
+  {
+    juce::XmlDocument newDocument(createJuceXmlElement()->createDocument(String::empty));
+    XmlImporter importer(context, newDocument);
+    Variable v = importer.isOpened() ? importer.load() : Variable();
+    jassert(v.isObject());
+    return v.getObject();
+  }
+  
+  /*
+  ** Tag
+  */
+  String getTagName() const
+    {return tagName;}
+
+  void setTagName(const String& tagName)
+    {this->tagName = tagName;}
+
+  /*
+  ** Attributes
+  */
+  size_t getNumAttributes() const
+    {return attributes.size();}
+  
+  const String& getAttributeName(size_t index) const
+    {return attributes[index].first;}
+
+  void setAttributeName(size_t index, const String& name)
+    {attributes[index].first = name;}
+
+  const String& getAttributeValue(size_t index) const
+    {return attributes[index].second;}
+
+  void setAttribute(const String& name, const String& value);
+  void setAttribute(const String& name, int value)
+    {setAttribute(name, String(value));}
+
+  void removeAttribute(const String& name);
+
+  String getStringAttribute(const String& name, const String& defaultValue = String::empty) const;
+  int getIntAttribute(const String& name, int defaultValue = 0) const;
+
+  /*
+  ** Text
+  */
+  bool isTextElement() const
+    {return tagName.isEmpty();}
+
+  String getText() const
+    {return text;}
+  String getAllSubText() const;
+
+  /*
+  ** Child Elements
+  */
+  size_t getNumChildElements() const
+    {return childElements.size();}
+
+  XmlElementPtr getChildElement(size_t index) const
+    {return childElements[index];}
+
+  XmlElementPtr getChildByName(const String& name) const;
+
+  void addChildElement(XmlElementPtr element)
+    {childElements.push_back(element);}
+
+  void addTextElement(const String& text)
+  {
+    XmlElementPtr element(new XmlElement(String::empty));
+    element->text = text;
+    addChildElement(element);
+  }
+
+  void removeChildElements()
+    {childElements.clear();}
+
+  void setChildElements(const std::vector<XmlElementPtr>& childs)
+    {childElements = childs;}
+
+  /* Object */
+  virtual void saveToXml(XmlExporter& exporter) const
+    {exporter.addChildElement(createJuceXmlElement());}
+
+  virtual bool loadFromXml(XmlImporter& importer);
+
+private:
+  friend class XmlElementClass;
+  
+  String tagName;
+  std::vector<XmlElementPtr> childElements;
+  std::vector< std::pair<String, String> > attributes;
+  String text;
+};
+
+extern ClassPtr xmlElementClass;
 
 }; /* namespace lbcpp */
 

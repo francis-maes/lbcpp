@@ -93,4 +93,6 @@
     <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
   </class>
 
+  <class name="CheckXmlElementWorkUnit" base="WorkUnit"/>
+
 </library>
