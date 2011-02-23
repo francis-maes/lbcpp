@@ -107,9 +107,11 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
     if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
     {
       interface->pushWorkUnit(interface->getContext(), requests[i]);
+      requests[i]->setStatus(NetworkRequest::waitingOnServer);
       continue;
     }
 
+    requests[i]->setStatus(status);
     if (status == NetworkRequest::finished && status != oldStatus) // transition to finised status
     {
       ExecutionTracePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]->getNetworkRequest());
@@ -117,7 +119,6 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
       continue;
     }
 
-    requests[i]->setStatus(status);
     if (oldStatus != status)
     {
       File f = manager->getContext().getFile(T("Requests/") + requests[i]->getIdentifier() + T(".request"));
