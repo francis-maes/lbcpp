@@ -106,20 +106,22 @@ class ManagerNodeNetworkInterface : public NodeNetworkInterface
 public:
   ManagerNodeNetworkInterface(ExecutionContext& context);
   ManagerNodeNetworkInterface() {}
-  
+
   virtual void closeCommunication(ExecutionContext& context);
-  
+
   virtual NetworkRequestPtr pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request);
   virtual int getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const;
   virtual ExecutionTracePtr getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const;
-  
-  void getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const;
-  WorkUnitNetworkRequestPtr getWorkUnit(ExecutionContext& context, NetworkRequestPtr request) const;
-  
+
+  void getUnfinishedRequestsSentTo(const String& nodeName, std::vector<WorkUnitNetworkRequestPtr>& results) const;
+  void archiveTrace(ExecutionContext& context, const WorkUnitNetworkRequestPtr& request, const ExecutionTracePtr& trace);
+
 protected:
   friend class ManagerNodeNetworkInterfaceClass;
 
-  std::vector<NetworkRequestPtr> requests;
+  File requestDirectory;
+  File archiveDirectory;
+  std::vector<WorkUnitNetworkRequestPtr> requests;
 };
 
 typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
