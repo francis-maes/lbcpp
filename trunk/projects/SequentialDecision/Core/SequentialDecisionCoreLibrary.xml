@@ -3,10 +3,10 @@
 <library name="SequentialDecisionCore" directory="Core">
 
   <!-- SequentialDecisionProblem -->
-  <class name="SequentialDecisionProblem" base="Object">
-    <variable type="Function" name="initialStateSampler"/>
+  <class name="SequentialDecisionProblem" base="Object" abstract="yes">
+    <!-- <variable type="Function" name="initialStateSampler"/>
     <variable type="Function" name="transitionFunction"/>
-    <variable type="Function" name="rewardFunction"/>
+    <variable type="Function" name="rewardFunction"/> -->
   </class>
 
   <!-- Search Space -->
@@ -20,17 +20,18 @@
   <class name="SortedSearchSpace" base="Object"/>
 
   <!-- Search Heuristic -->
-  <class name="GreedySearchHeuristic" base="Function" shortName="greedyHeuristic">
+  <class name="GreedySearchHeuristic" base="Function" shortName="greedy">
     <constructor arguments="double discount"/>
     <variable type="Double" name="discount"/>
   </class>
-  <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepthHeuristic">
+  <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepth">
     <constructor/>
   </class>
-  <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimisticPlanningHeuristic">
-    <constructor arguments="double discountFactor"/>
-    <variable type="Double" name="discountFactor"/>
+  <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimistic">
+    <constructor arguments="double discount"/>
+    <variable type="Double" name="discount"/>
   </class>
+  <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
 
   <!-- LookAheadTreeSearchFunction -->
   <class name="LookAheadTreeSearchFunction" base="Function">
@@ -43,5 +44,12 @@
     <constructor arguments="RankingLossFunctionPtr rankingLoss"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
-  
+
+  <!-- SearchSpace Evaluator -->
+  <class name="SearchSpaceScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableStatistics" name="bestReturn"/>
+    <variable type="ScalarVariableMean" name="numOpenedNodes"/>
+  </class>
+  <class name="SearchSpaceEvaluator" base="OutputEvaluator"/>
+
 </library>

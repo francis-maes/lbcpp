@@ -11,6 +11,7 @@
 
 # include "../Problem/LinearPointPhysicProblem.h"
 # include "../Core/SearchSpace.h"
+# include "../Core/SearchSpaceEvaluator.h"
 # include "../Core/LookAheadTreeSearchFunction.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
@@ -18,9 +19,11 @@
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/LossFunction.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
+
 
 class GenericClosedSearchSpaceNodeFeaturesFunction : public CompositeFunction
 {
@@ -67,8 +70,6 @@ public:
 
 /////////////////////////////////////
 
-
-
 class SequentialDecisionSandBox : public WorkUnit
 {
 public:
@@ -76,7 +77,12 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
-    SequentialDecisionProblemPtr problem = linearPointPhysicProblem();
+    if (!problem)
+    {
+      context.errorCallback(T("No decision problem"));
+      return false;
+    }
+
     if (!problem->initialize(context))
       return false;
 
@@ -142,38 +148,20 @@ public:
   // todo: use new Evaluator here
   double evaluateSearchHeuristic(ExecutionContext& context, SequentialDecisionProblemPtr problem, FunctionPtr heuristic, size_t maxSearchNodes, ContainerPtr initialStates, double discount) const
   {
-    RandomGeneratorPtr random = new RandomGenerator();
-    
-    //FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
     FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, LearnerParametersPtr(), discount, maxSearchNodes);
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
       return 0.0;
-
-    size_t n = initialStates->getNumElements();
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating heuristic ") + heuristic->toShortString(), n);
-    std::vector<Variable> results(n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable state = initialStates->getElement(i);
-      workUnit->setWorkUnit(i, functionWorkUnit(lookAHeadSearch, std::vector<Variable>(1, state), String::empty, &results[i]));
-    }
-    workUnit->setProgressionUnit(T("Samples"));
-    workUnit->setPushChildrenIntoStackFlag(false);
-    context.run(workUnit);
-
-    ScalarVariableStatistics stats;
-    for (size_t i = 0; i < n; ++i)
-    {
-      const SortedSearchSpacePtr& searchSpace = results[i].getObjectAndCast<SortedSearchSpace>();
-      stats.push(searchSpace->getBestReturn());
-    }
-
-    //context.informationCallback(stats.toString());
-    return stats.getMean();
+    EvaluatorPtr evaluator = new SearchSpaceEvaluator();
+    if (!evaluator->initialize(context, containerClass(anyType), containerClass(sortedSearchSpaceClass)))
+      return 0.0;
+    ScoreObjectPtr scores = lookAHeadSearch->evaluate(context, initialStates, evaluator, T("Evaluating heuristic ") + heuristic->toShortString());
+    return scores ? -scores->getScoreToMinimize() : 0.0;
   }
 
 private:
   friend class SequentialDecisionSandBoxClass;
+
+  SequentialDecisionProblemPtr problem;
 
   size_t numInitialStates;
   size_t minDepth;

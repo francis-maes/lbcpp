@@ -10,5 +10,8 @@
   <class name="LinearPointPhysicStateSampler" base="Function"/>
   <class name="LinearPointPhysicTransitionFunction" base="Function"/>
   <class name="LinearPointPhysicRewardFunction" base="Function"/>
+  <class name="LinearPointPhysicProblem" base="SequentialDecisionProblem" shortName="linearPointPhysic">
+    <constructor/>
+  </class>
 
 </library>

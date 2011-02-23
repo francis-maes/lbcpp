@@ -96,10 +96,10 @@ typedef ReferenceCountedObjectPtr<MultiLabelClassificationScoreObject> MultiLabe
 class MultiLabelClassificationEvaluator : public SupervisedEvaluator
 {
 public:
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return objectClass;}
   
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return objectClass;}
   
 protected:

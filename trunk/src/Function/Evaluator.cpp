@@ -11,15 +11,32 @@
 using namespace lbcpp;
 
 /*
-** Evaluator
+** OutputEvaluator
+*/
+Variable OutputEvaluator::computeFunction(ExecutionContext& context, const Variable* inputs) const
+{
+  const ContainerPtr& outputs = inputs[1].getObjectAndCast<Container>();
+  size_t n = outputs->getNumElements();
+  for (size_t i = 0; i < n; ++i)
+    if (!outputs->getElement(i).exists())
+    {
+      context.errorCallback(T("Evaluator::computeFunction"), T("Cannot evaluate a missing output"));
+      return ScoreObjectPtr();
+    }
+
+  return computeOutputEvaluator(context, outputs);
+}
+
+/*
+** SupervisedEvaluator
 */
 Variable SupervisedEvaluator::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  ContainerPtr predictedElements = inputs[0].getObjectAndCast<Container>();
-  ContainerPtr correctElements = inputs[1].getObjectAndCast<Container>();
+  const ContainerPtr& inputObjects = inputs[0].getObjectAndCast<Container>();
+  const ContainerPtr& predictions = inputs[1].getObjectAndCast<Container>();
   
-  size_t n = correctElements->getNumElements();
-  if (predictedElements->getNumElements() != n)
+  size_t n = inputObjects->getNumElements();
+  if (predictions->getNumElements() != n)
   {
     context.errorCallback(T("Evaluator::computeFunction"), T("The number of predicted elements is different than the number of correct elements"));
     return Variable();
@@ -28,13 +45,14 @@ Variable SupervisedEvaluator::computeFunction(ExecutionContext& context, const V
   ScoreObjectPtr res = createEmptyScoreObject();
   for (size_t i = 0; i < n; ++i)
   {
-    const Variable& predicted = predictedElements->getElement(i);
-    const Variable& correct = correctElements->getElement(i);
+    Variable predicted = predictions->getElement(i);
+    ObjectPtr input = inputObjects->getElement(i).getObject();
+    Variable correct = input->getVariable(input->getNumVariables() - 1);
     if (!correct.exists())
       continue;
     if (!predicted.exists())
     {
-      context.errorCallback(T("Evaluator::computeFunction"), T("Cannot evaluate a missing predicted value."));
+      context.errorCallback(T("Evaluator::computeFunction"), T("Cannot evaluate a missing predicted value"));
       return ScoreObjectPtr();
     }
     addPrediction(context, predicted, correct, res);

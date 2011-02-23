@@ -57,10 +57,10 @@ typedef ReferenceCountedObjectPtr<ClassificationScoreObject> ClassificationScore
 class ClassificationEvaluator : public SupervisedEvaluator
 {
 public:
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return doubleVectorClass(enumValueType, probabilityType);}
   
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return enumValueType;}
   
 protected:

@@ -15,9 +15,19 @@
   </class>
   
   <!-- Random Variable -->
-  <class name="ScalarVariableMean" base="NameableObject"/>
-  <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean"/>
-  <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance"/>
+  <class name="ScalarVariableMean" base="NameableObject">
+    <variable type="Double" name="samplesSum"/>
+    <variable type="Double" name="samplesCount"/>
+  </class>
+  
+  <class name="ScalarVariableMeanAndVariance" base="ScalarVariableMean">
+    <variable type="Double" name="samplesSumOfSquares"/>
+  </class>
+  
+  <class name="ScalarVariableStatistics" base="ScalarVariableMeanAndVariance">
+    <variable type="Double" name="minimumValue"/>
+    <variable type="Double" name="maximumValue"/>
+  </class>
 
   <class name="ScalarVariableRecentMean" base="NameableObject"/>
   <class name="ScalarVariableRecentMeanAndVariance" base="ScalarVariableRecentMean"/>

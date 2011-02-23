@@ -196,6 +196,8 @@ private:
 
 typedef ReferenceCountedObjectPtr<SortedSearchSpace> SortedSearchSpacePtr;
 
+extern ClassPtr sortedSearchSpaceClass;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_SPACE_H_

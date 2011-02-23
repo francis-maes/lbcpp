@@ -27,41 +27,55 @@ extern ClassPtr scoreObjectClass;
 
 class Evaluator : public Function
 {
-protected:
-  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
-  virtual void finalizeScoreObject(ScoreObjectPtr& score) const = 0;
-};
-
-class SupervisedEvaluator : public Evaluator
-{
 public:
-  SupervisedEvaluator()
-    {numInputs = 2;}
-
-  virtual TypePtr getRequiredPredictedElementsType() const = 0;
-
-  virtual TypePtr getRequiredSupervisionElementsType() const = 0;
-
   /* Function */
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(index == 0 ? getRequiredPredictedElementsType() : getRequiredSupervisionElementsType());}
+    {return containerClass(anyType);}
 
   virtual String getOutputPostFix() const
     {return T("Evaluated");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return scoreObjectClass;}
+};
+
+class SupervisedEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr getRequiredPredictionType() const = 0;
+  virtual TypePtr getRequiredSupervisionType() const = 0;
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(index == 0 ? anyType : getRequiredPredictionType());}
 
 protected:
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, ScoreObjectPtr& result) const = 0;
+  virtual void finalizeScoreObject(ScoreObjectPtr& score) const = 0;
 
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, ScoreObjectPtr& result) const = 0;
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
+
+class OutputEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr getRequiredOutputType() const = 0;
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(index == 0 ? anyType : getRequiredOutputType());}
+
+  virtual ScoreObjectPtr computeOutputEvaluator(ExecutionContext& context, const ContainerPtr& outputs) const = 0;
+
+protected:
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+};
+
+typedef ReferenceCountedObjectPtr<OutputEvaluator> OutputEvaluatorPtr;
 
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator();

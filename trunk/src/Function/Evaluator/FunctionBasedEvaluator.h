@@ -20,10 +20,10 @@ public:
   FunctionBasedEvaluator(FunctionPtr function) : function(function) {}
   FunctionBasedEvaluator() {}
 
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return function->getRequiredInputType(0, 2);}
 
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return function->getRequiredInputType(1, 2);}
 
 protected:
