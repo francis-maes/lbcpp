@@ -75,7 +75,9 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
           File directory(config.project_path("NetworkTest/.WorkUnit/InProgress"));
           directory.findChildFiles(foundFiles, File::findFiles, false, strcat(wu.name, ".*"));
           for (unsigned int u = 0 ; u < foundFiles.size(); ++u) {
-            if (!foundFiles[u]->moveFileTo(File(config.project_path("NetworkTest/.WorkUnit/Finished"))))
+            String newLocation("NetworkTest/.WorkUnit/Finished/");
+            newLocation += foundFiles[u]->getFileName();
+            if (!foundFiles[u]->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
               log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n",
                                 wu.id, wu.name, foundFiles[u]->getFullPathName().toUTF8() , config.project_path("NetworkTest/.WorkUnit/Finished"));
           }
