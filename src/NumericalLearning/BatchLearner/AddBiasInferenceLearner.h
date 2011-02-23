@@ -13,6 +13,7 @@
 # include <lbcpp/Core/Pair.h>
 # include <lbcpp/Function/OldEvaluator.h>
 # include <lbcpp/Inference/InferenceBatchLearner.h>
+# include "Function/Evaluator/Utilities.h"
 
 namespace lbcpp
 {

@@ -222,6 +222,8 @@ extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 
 extern FunctionPtr signedScalarToProbabilityFunction();
 
+extern FunctionPtr concatenateScoreObjectFunction();
+
 // old
 extern FunctionPtr identityFunction(TypePtr type);
 extern FunctionPtr multiplyDoubleFunction();

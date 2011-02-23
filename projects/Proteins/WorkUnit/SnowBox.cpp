@@ -102,9 +102,9 @@ Variable SnowBox::run(ExecutionContext& context)
   {
     if (!predictors->train(context, learningData, validationData, T("Training"), false))
       return false;
-    if (learningData && !predictors->evaluate(context, learningData, new ProteinEvaluator(), T("Evaluate on training data")))
+    if (learningData && !predictors->evaluate(context, learningData, functionBasedEvaluator(new ProteinEvaluatorCompositeFunction()), T("Evaluate on training data")))
       return false;
-    if (testingData && !predictors->evaluate(context, testingData, new ProteinEvaluator(), T("Evaluate on testing data")))
+    if (testingData && !predictors->evaluate(context, testingData, functionBasedEvaluator(new ProteinEvaluatorCompositeFunction()), T("Evaluate on testing data")))
       return false;
   }
   return true;

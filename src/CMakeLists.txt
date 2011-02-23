@@ -320,6 +320,7 @@ SET(LBCPP_FUNCTION_MISC_FUNCTIONS_SOURCES
   Function/MiscFunctions/IdentityFunction.h
   Function/MiscFunctions/MultiplyFunction.h
   Function/MiscFunctions/SetFieldFunction.h
+  Function/MiscFunctions/ConcatenateScoreObjectFunction.h
   Function/MiscFunctions/MiscFunctionsLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MiscFunctionsLibrary.cpp
 )
@@ -371,6 +372,9 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/RegressionErrorEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/DefaultEvaluator.h
+  Function/Evaluator/FunctionBasedEvaluator.h
+  Function/Evaluator/Utilities.h
+  Function/Evaluator/Utilities.cpp
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )

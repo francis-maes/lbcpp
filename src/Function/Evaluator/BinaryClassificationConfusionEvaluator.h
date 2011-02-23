@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
 # include <lbcpp/Function/Evaluator.h>
+# include "Utilities.h"
 
 namespace lbcpp
 {
