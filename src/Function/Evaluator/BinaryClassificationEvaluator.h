@@ -18,10 +18,10 @@ namespace lbcpp
 class BinaryClassificationEvaluator : public SupervisedEvaluator
 {
 public:
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
   
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return sumType(probabilityType, booleanType);}
 
 protected:
@@ -57,10 +57,10 @@ private:
 class ROCAnalysisEvaluator : public SupervisedEvaluator
 {
 public:
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
   
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return booleanType;}
 
 protected:

@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "ContainerCurveEditor.h"
+#include <lbcpp/Data/RandomGenerator.h>
 using namespace lbcpp;
 
 using juce::ComboBox;
@@ -142,9 +143,11 @@ public:
 
     g.setFont(16);
     g.drawText(getXAxisLabel(), rect.getX(), rect.getBottom() + bottomValuesSize, rect.getWidth(), 20, Justification::centred, false);
+
+    String yAxisLabel = getYAxisLabel();
     float transx = (float)rect.getX() - 40.f;
-    float transy = (float)rect.getY() + rect.getHeight() * 0.5f;
-    g.drawTextAsPath(getYAxisLabel(), AffineTransform::rotation(-(float)(M_PI / 2.f)).translated(transx, transy));
+    float transy = (float)rect.getY() + rect.getHeight() * (0.75f + juce::jmin(1.f, yAxisLabel.length() / 50.f)) / 2.f;
+    g.drawTextAsPath(yAxisLabel, AffineTransform::rotation(-(float)(M_PI / 2.f)).translated(transx, transy));
   }
   
   String getXAxisLabel() const
@@ -452,17 +455,32 @@ protected:
 /*
 ** ContainerCurveEditorConfiguration
 */
+
+using juce::Colour;
+using juce::Colours;
+inline Colour randomColour()
+{
+  RandomGeneratorPtr random = RandomGenerator::getInstance();
+  return Colour(random->sampleByte(), random->sampleByte(), random->sampleByte(), (unsigned char)255);
+}
+
 ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr rowType)
   : rowType(rowType), 
     xAxis(new CurveAxisConfiguration(0.0, 1000.0)),
     yAxis(new CurveAxisConfiguration(0.0, 1.0)),
     variables(rowType->getNumMemberVariables())
 {
+  const juce::Colour defaultColours[] = {
+      Colours::red, Colours::green, Colours::blue, Colours::black,
+      Colours::yellow, Colours::cyan, Colours::violet, Colours::grey
+  };
+  const size_t numDefaultColours = sizeof (defaultColours) / sizeof (juce::Colour);
+
   for (size_t i = 0; i < variables.size(); ++i)
   {
     TypePtr variableType = rowType->getMemberVariableType(i);
     if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType))
-      variables[i] = new CurveVariableConfiguration(i == 1, Colours::red, rowType->getMemberVariableName(i));
+      variables[i] = new CurveVariableConfiguration(i == 1, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
   }
   keyVariableIndex = 0;
 }

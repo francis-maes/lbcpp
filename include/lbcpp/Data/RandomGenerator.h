@@ -156,6 +156,9 @@ public:
   size_t sampleWithNormalizedProbabilities(const std::vector<double>& probabilities)
     {return sampleWithProbabilities(probabilities, 1.0);}
 
+  unsigned char sampleByte()
+    {return (unsigned char)sampleInt(256);}
+
   /** Samples an integer value uniformly.
   **
   ** @return an integer value.

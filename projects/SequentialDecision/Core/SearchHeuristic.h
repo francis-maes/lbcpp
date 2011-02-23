@@ -23,6 +23,9 @@ public:
   virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
     {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0);}
 
+  virtual String toShortString() const
+    {return T("greedy(") + String(discount) + T(")");}
+
 protected:
   friend class GreedySearchHeuristicClass;
 
@@ -39,16 +42,19 @@ public:
 class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
-  OptimisticPlanningSearchHeuristic(double discountFactor = 0.9) : discountFactor(discountFactor)
-    {jassert(discountFactor > 0.0 && discountFactor < 1.0);}
+  OptimisticPlanningSearchHeuristic(double discount = 0.9) : discount(discount)
+    {jassert(discount > 0.0 && discount < 1.0);}
+
+  virtual String toShortString() const
+    {return T("optimistic(") + String(discount) + T(")");}
 
   virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
-    {return node->getCurrentReturn() + pow(discountFactor, (double)node->getDepth()) / (1.0 - discountFactor);}
+    {return node->getCurrentReturn() + pow(discount, (double)node->getDepth()) / (1.0 - discount);}
 
 private:
   friend class OptimisticPlanningSearchHeuristicClass;
 
-  double discountFactor;
+  double discount;
 };
 
 }; /* namespace lbcpp */

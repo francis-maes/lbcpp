@@ -81,10 +81,10 @@ protected:
 class RegressionEvaluator : public SupervisedEvaluator
 {
 public:
-  virtual TypePtr getRequiredPredictedElementsType() const
+  virtual TypePtr getRequiredPredictionType() const
     {return doubleType;}
   
-  virtual TypePtr getRequiredSupervisionElementsType() const
+  virtual TypePtr getRequiredSupervisionType() const
     {return doubleType;}
   
 protected:  

@@ -221,17 +221,15 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
 {
   bool doScope = scopeName.isNotEmpty();
 
+  if (!checkIsInitialized(context))
+    return ScoreObjectPtr();
+
   if (doScope)
     context.enterScope(scopeName);
 
-  if (!checkIsInitialized(context))
-    return ScoreObjectPtr();
-  
-
   // todo: parallel evaluation
   size_t n = examples->getNumElements();
-  VectorPtr predictedVector = vector(getOutputType(), n);
-  VectorPtr correctVector;
+  VectorPtr predictions = vector(getOutputType(), n);
 
   ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
   if (objectExamples)
@@ -240,40 +238,34 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
     {
       // fast version for pair vectors
       const std::vector<PairPtr>& pairs = objectExamples->getObjectsAndCast<Pair>();
-      correctVector = vector(examples->getElementsType()->getTemplateArgument(1), n);
       for (size_t i = 0; i < n; ++i)
       {
         const PairPtr& example = pairs[i];
-        predictedVector->setElement(i, compute(context, &example->getFirst()));
-        correctVector->setElement(i, example->getSecond());
+        predictions->setElement(i, compute(context, &example->getFirst()));
       }
     }
     else
     {
       // fast version for object vectors
       const std::vector<ObjectPtr>& objects = objectExamples->getObjects();
-      correctVector = vector(examples->getElementsType()->getMemberVariableType(examples->getElementsType()->getNumMemberVariables() - 1), n);
       for (size_t i = 0; i < n; ++i)
       {
         const ObjectPtr& example = objects[i];
-        predictedVector->setElement(i, computeWithInputsObject(context, example));
-        correctVector->setElement(i, example->getVariable(example->getNumVariables() - 1));
+        predictions->setElement(i, computeWithInputsObject(context, example));
       }
     }
   }
   else
   {
     // generic version
-    correctVector = vector(examples->getElementsType()->getMemberVariableType(examples->getElementsType()->getNumMemberVariables() - 1), n);
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr example = examples->getElement(i).getObject();
-      predictedVector->setElement(i, computeWithInputsObject(context, example));
-      correctVector->setElement(i, example->getVariable(example->getNumVariables() - 1));
+      predictions->setElement(i, computeWithInputsObject(context, example));
     }
   }
   
-  ScoreObjectPtr score = evaluator->compute(context, predictedVector, correctVector).getObjectAndCast<ScoreObject>();
+  ScoreObjectPtr score = evaluator->compute(context, examples, predictions).getObjectAndCast<ScoreObject>();
 
   if (doScope)
   {

@@ -3,11 +3,11 @@
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
   <class name="GenericClosedSearchSpaceNodeFeaturesFunction" base="CompositeFunction"/>
-
-  <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
   <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>
 
+
   <class name="SequentialDecisionSandBox" base="WorkUnit">
+    <variable type="SequentialDecisionProblem" name="problem" shortName="p"/>   
     <variable type="PositiveInteger" name="numInitialStates" shortName="n"/>
     <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>

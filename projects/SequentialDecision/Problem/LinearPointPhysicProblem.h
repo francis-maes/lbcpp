@@ -87,12 +87,16 @@ public:
   }
 };
 
-inline SequentialDecisionProblemPtr linearPointPhysicProblem()
+class LinearPointPhysicProblem : public SequentialDecisionProblem
 {
-  return new SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
-                                      new LinearPointPhysicTransitionFunction(),
-                                      new LinearPointPhysicRewardFunction());
-}
+public:
+  LinearPointPhysicProblem() 
+    : SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
+                                new LinearPointPhysicTransitionFunction(),
+                                new LinearPointPhysicRewardFunction()) {}
+};
+
+extern SequentialDecisionProblemPtr linearPointPhysicProblem();
 
 }; /* namespace lbcpp */
 
