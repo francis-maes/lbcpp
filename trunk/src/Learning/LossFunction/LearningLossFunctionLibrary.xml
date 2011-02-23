@@ -13,11 +13,11 @@
   <!-- Discriminative Loss Functions -->
   <class name="DiscriminativeLossFunction" base="ScalarFunction" abstract="yes"/>
 
-  <class name="HingeDiscriminativeLossFunction" base="DiscriminativeLossFunction">
+  <class name="HingeDiscriminativeLossFunction" base="DiscriminativeLossFunction" shortName="hinge">
     <constructor arguments="double margin"/>
   </class>
   
-  <class name="LogBinomialDiscriminativeLossFunction" base="DiscriminativeLossFunction">
+  <class name="LogBinomialDiscriminativeLossFunction" base="DiscriminativeLossFunction" shortName="logBinomial">
     <constructor/>
   </class>
   
@@ -45,15 +45,15 @@
     <variable type="DiscriminativeLossFunction" name="baseLoss"/>
   </class>
 
-  <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction">
+  <class name="AllPairsRankingLossFunction" base="AdditiveRankingLossFunction" shortName="allPairs">
     <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
   </class>
 
-  <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction">
+  <class name="MostViolatedPairRankingLossFunction" base="AdditiveRankingLossFunction" shortName="mostViolatedPair">
     <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
   </class>
 
-  <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction">
+  <class name="BestAgainstAllRankingLossFunction" base="AdditiveRankingLossFunction" shortName="bestAgainstAll">
     <constructor arguments="DiscriminativeLossFunctionPtr baseLoss" returnType="RankingLossFunction"/>
   </class>
   

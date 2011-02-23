@@ -18,9 +18,6 @@ namespace lbcpp
 class RTreeBatchLearner : public BatchLearner
 {
 public:
-  RTreeBatchLearner()
-    {numInputs = 2;}
-  
   virtual TypePtr getRequiredFunctionType() const
     {return rTreeFunctionClass;}
   

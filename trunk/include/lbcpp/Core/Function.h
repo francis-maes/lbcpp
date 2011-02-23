@@ -39,8 +39,6 @@ typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
 class Function : public Object
 {
 public:
-  Function() : numInputs(0) {}
-
   /*
   ** Type checking
   */
@@ -70,6 +68,7 @@ public:
   bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
   bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputTypes);
   bool initialize(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables);
+  bool initializeWithInputsObjectClass(ExecutionContext& context, ClassPtr inputsObjectClass);
 
   bool isInitialized() const
     {return outputVariable;}
@@ -78,7 +77,10 @@ public:
   ** Static Prototype
   */
   size_t getNumInputs() const
-    {return numInputs;}
+    {return inputVariables.size();}
+
+  const VariableSignaturePtr& getInputVariable(size_t index) const
+    {jassert(index < inputVariables.size()); return inputVariables[index];}
 
   const DynamicClassPtr& getInputsClass() const
     {return inputsClass;}
@@ -155,7 +157,7 @@ public:
   ** High level dynamic computation (calls callbacks and push into stack if requested)
   */
   Variable compute(ExecutionContext& context, const std::vector<Variable>& inputs) const;
-  Variable compute(ExecutionContext& context, const Variable* inputs) const;
+  Variable compute(ExecutionContext& context, const Variable* inputs, size_t numInputs) const;
   Variable compute(ExecutionContext& context, const Variable& input) const;
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const;
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const;
@@ -166,6 +168,9 @@ public:
   */
   virtual String toString() const;
   virtual String toShortString() const;
+  
+  virtual ObjectPtr clone(ExecutionContext& context) const;
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   /////////////////////////////////////////////////////////////
   // old
@@ -191,7 +196,7 @@ protected:
 protected:
   friend class FunctionClass;
   
-  size_t numInputs;
+  std::vector<VariableSignaturePtr> inputVariables;
   VariableSignaturePtr outputVariable;
 
   std::vector<FunctionCallbackPtr> preCallbacks;
@@ -254,7 +259,7 @@ class SimpleUnaryFunction : public SimpleFunction
 {
 public:
   SimpleUnaryFunction(TypePtr inputType, TypePtr outputType, const String& outputPostFix = String::empty)
-    : SimpleFunction(outputType, outputPostFix), inputType(inputType) {numInputs = 1;}
+    : SimpleFunction(outputType, outputPostFix), inputType(inputType) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
@@ -270,7 +275,7 @@ class SimpleBinaryFunction : public SimpleFunction
 {
 public:
   SimpleBinaryFunction(TypePtr inputType1, TypePtr inputType2, TypePtr outputType, const String& outputPostFix = String::empty)
-    : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {numInputs = 2;}
+    : SimpleFunction(outputType, outputPostFix), inputType1(inputType1), inputType2(inputType2) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}

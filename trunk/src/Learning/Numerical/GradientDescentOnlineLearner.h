@@ -43,6 +43,9 @@ public:
 
   virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output)
   {
+    if (!inputs[1].exists())
+      return; // no supervision
+
     jassert(function == this->function);
     learningStep(inputs, output);
    /* if (inputs[0].isObject() && inputs[0].dynamicCast<Container>())

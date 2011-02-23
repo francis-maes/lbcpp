@@ -14,13 +14,10 @@
 namespace lbcpp
 {
 
-// Function, Container[VariableVector], optional Container[VariableVector] -> Function
+// Function, Container[VariableVector], optional Container[VariableVector] -> Boolean
 class BatchLearner : public Function
 {
 public:
-  BatchLearner()
-    {numInputs = 3;} // tmp: necessaire tant qu'on ne sait pas trop d'ou appeler le Function::initialize
-
   virtual TypePtr getRequiredFunctionType() const
     {return functionClass;}
 
@@ -44,7 +41,7 @@ public:
     {return T("Learned");}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return functionClass;}
+    {return booleanType;}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {jassertfalse; return Variable();}

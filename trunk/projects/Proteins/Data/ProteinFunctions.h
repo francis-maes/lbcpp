@@ -98,6 +98,7 @@ public:
       return Variable::missingValue(proteinClass);
 
     ProteinPtr res = inputProtein->cloneAndCast<Protein>();
+    size_t numInputs = getNumInputs();
     for (size_t i = 1; i < numInputs; i += 2)
     {
       size_t targetIndex = (size_t)inputs[i].getInteger();

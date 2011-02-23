@@ -23,10 +23,14 @@ TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const s
   stateClass = new DynamicClass(getClassName() + T("State"));
 
   // build composite function
+  functions.clear();
+  constants.clear();
+  functionInputs.clear();
   CompositeFunctionBuilder builder(context, refCountedPointerFromThis(this), inputVariables);
   buildFunction(builder);
   if (builder.hasFailed())
     return TypePtr();
+  jassert(functions.size() == functionInputs.size());
 
   // fill output variable signature
   VariableSignaturePtr lastMemberVariable = stateClass->getMemberVariable(stateClass->getNumMemberVariables() - 1);
@@ -43,6 +47,7 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
   juce::int64* tmp = (juce::int64* )malloc(sizeof (Variable) * maxNumFunctionInputs);
   jassert(sizeof (Variable) == 2 * sizeof (juce::int64));
 
+  jassert(functions.size() == functionInputs.size());
   for (size_t i = 0; i < functions.size(); ++i)
   {
     const FunctionPtr& function = functions[i];
@@ -69,7 +74,7 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
       *ptr++ = vari[1];
       //subInputs[j] = *var;
     }
-    state[i] = function->compute(context, (const Variable* )tmp);//&subInputs[0]);
+    state[i] = function->compute(context, (const Variable* )tmp, inputIndices.size());
   }
   free(tmp);
   jassert(steps.back().first == functionStep);
@@ -115,7 +120,7 @@ void CompositeFunction::updateState(ExecutionContext& context, size_t stepNumber
   {
     // optimized function for one input
     Variable v = state->getVariable(inputIndices[0]);
-    state->setVariable(stepNumber, function->compute(context, &v));
+    state->setVariable(stepNumber, function->compute(context, v));
   }
   else
   {
@@ -124,6 +129,19 @@ void CompositeFunction::updateState(ExecutionContext& context, size_t stepNumber
       inputs[i] = state->getVariable(inputIndices[i]);
     state->setVariable(stepNumber, function->compute(context, inputs));
   }
+}
+
+void CompositeFunction::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  const CompositeFunctionPtr& target = t.staticCast<CompositeFunction>();
+  Function::clone(context, target);
+  for (size_t i = 0; i < functions.size(); ++i)
+    if (functions[1])
+      target->functions[1] = functions[i]->cloneAndCast<Function>(context);
+
+  for (size_t i = 0; i < constants.size(); ++i)
+    if (constants[i].exists())
+      target->constants[i] = constants[i].clone(context);
 }
 
 /*

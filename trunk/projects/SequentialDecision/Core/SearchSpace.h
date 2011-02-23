@@ -131,6 +131,7 @@ public:
 };
 
 FunctionPtr greedySearchHeuristic(double discount = 1.0);
+FunctionPtr maxReturnSearchHeuristic();
 FunctionPtr minDepthSearchHeuristic();
 FunctionPtr optimisticPlanningSearchHeuristic(double discount);
 

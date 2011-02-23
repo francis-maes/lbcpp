@@ -8,6 +8,7 @@
 
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
 using juce::ComboBox;
@@ -60,6 +61,10 @@ public:
 
   virtual void draw(Graphics& g, const AffineTransform& transform = AffineTransform::identity) const
   {
+    static const double epsilon = 1e-9;
+    if (fabs(boundsWidth) < epsilon || fabs(boundsHeight) < epsilon)
+      return;
+
     drawZeroAxis(g, transform, configuration->getYAxis(), false);
     drawZeroAxis(g, transform, configuration->getXAxis(), true);
     drawFrame(g, transform);
@@ -277,6 +282,13 @@ protected:
         scalarValue = value.getBoolean() ? 1.0 : 0.0;
         return true;
       }
+
+      ScoreObjectPtr scoreObject = value.dynamicCast<ScoreObject>();
+      if (scoreObject)
+      {
+        scalarValue = -scoreObject->getScoreToMinimize();
+        return true;
+      }
     }
     return false;
   }
@@ -479,7 +491,8 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
   for (size_t i = 0; i < variables.size(); ++i)
   {
     TypePtr variableType = rowType->getMemberVariableType(i);
-    if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType))
+    if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType) || 
+        variableType->inheritsFrom(booleanType) || variableType->inheritsFrom(scoreObjectClass))
       variables[i] = new CurveVariableConfiguration(i == 1, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
   }
   keyVariableIndex = 0;

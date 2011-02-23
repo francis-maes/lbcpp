@@ -39,7 +39,7 @@ public:
 
     if (validationData)
     {
-      ScoreObjectPtr score = evaluate(*trainingData, T("Validation"));
+      ScoreObjectPtr score = evaluate(*validationData, T("Validation"));
       objectiveValueToMinimize = score->getScoreToMinimize();
     }
     return false;
@@ -62,8 +62,7 @@ protected:
 
   ScoreObjectPtr evaluate(const std::vector<ObjectPtr>& data, const String& name)
   {
-    EvaluatorPtr evaluator = this->evaluator->cloneAndCast<Evaluator>();
-    ScoreObjectPtr score = function->evaluate(*context, data, evaluator);
+    ScoreObjectPtr score = function->evaluate(*context, data, evaluator, T("Evaluating"));
     context->resultCallback(name + T(" score"), score);
     return score;
   }

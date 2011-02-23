@@ -47,7 +47,7 @@ public:
 
   // return g(f(x))
   virtual Variable computeFunction(ExecutionContext& context, const Variable* input) const
-    {return g->compute(context, f->compute(context, input));}
+    {return g->compute(context, f->compute(context, input, getNumInputs()));}
 
 protected:
   friend class ComposeFunctionClass;

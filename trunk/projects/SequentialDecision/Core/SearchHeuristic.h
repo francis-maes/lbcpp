@@ -32,6 +32,13 @@ protected:
   double discount;
 };
 
+class MaxReturnSearchHeuristic : public SimpleSearchHeuristic
+{
+public:
+  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+    {return node->getCurrentReturn();}
+};
+
 class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:

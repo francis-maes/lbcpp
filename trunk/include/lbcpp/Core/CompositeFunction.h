@@ -85,6 +85,11 @@ public:
   ObjectPtr makeSubInputsObject(size_t stepNumber, const ObjectPtr& state) const;
   void updateState(ExecutionContext& context, size_t stepNumber, ObjectPtr& state) const;
 
+  /*
+  ** Object
+  */
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

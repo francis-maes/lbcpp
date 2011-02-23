@@ -19,9 +19,6 @@ namespace lbcpp
 class ProteinEvaluatorCompositeFunction : public CompositeFunction
 {
 public:
-  ProteinEvaluatorCompositeFunction()
-    {numInputs = 2;}
-
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t predicted = builder.addInput(containerClass(proteinClass), T("predicted"));

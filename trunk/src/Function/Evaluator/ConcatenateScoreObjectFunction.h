@@ -16,6 +16,7 @@ namespace lbcpp
 
 class ConcatenateScoreObjectFunction : public Function
 {
+public:
   virtual size_t getMinimumNumRequiredInputs() const
     {return 0;}
   
@@ -31,6 +32,7 @@ class ConcatenateScoreObjectFunction : public Function
 protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
+    size_t numInputs = getNumInputs();
     CompositeScoreObjectPtr res = new CompositeScoreObject();
     for (size_t i = 0; i < numInputs; ++i)
       res->pushScoreObject(inputs[i].getObjectAndCast<ScoreObject>());

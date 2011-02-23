@@ -65,8 +65,8 @@ public:
     bool action = inputs[1].getBoolean();
 
     static const double deltaT = 0.1;
-    return new LinearPointPhysicState(state->getPosition() + deltaT * state->getVelocity(), 
-                                      state->getVelocity() + deltaT * (action ? 1.0 : -1.0));
+    double newVelocity = state->getVelocity() + deltaT * (action ? 1.0 : -1.0);
+    return new LinearPointPhysicState(state->getPosition() + deltaT * newVelocity, newVelocity);
   }
 };
 
@@ -82,8 +82,9 @@ public:
     bool action = inputs[1].getBoolean();
 
     static const double deltaT = 0.1;
-    double nextPosition = state->getPosition() + deltaT * state->getVelocity();
-    return juce::jmax(0.0, 1.0 - nextPosition * nextPosition);
+    double newVelocity = state->getVelocity() + deltaT * (action ? 1.0 : -1.0);
+    double newPosition = state->getPosition() + deltaT * newVelocity;
+    return juce::jmax(0.0, 1.0 - newPosition * newPosition);
   }
 };
 

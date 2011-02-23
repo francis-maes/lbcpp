@@ -202,7 +202,7 @@ Variable makePredictionTree(ExecutionContext& context, const GeneticTreePtr& tre
   std::vector<Variable> results(n);
   for (size_t i = 0; i < n; ++i)
     results[i] = makePredictionTree(context, tree, tree->getChild(node, i), inputs);
-  return function->compute(context, &results[0]);
+  return function->compute(context, results);
 }
 
 double evaluateTree(ExecutionContext& context, const GeneticTreePtr& tree, const std::vector<std::vector<double> >& inputData, const std::vector<double>& outputData)

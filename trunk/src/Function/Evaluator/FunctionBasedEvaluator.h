@@ -32,7 +32,7 @@ protected:
   FunctionPtr function;
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return function->compute(context, inputs);}
+    {return function->compute(context, inputs, getNumInputs());}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {jassertfalse;}
