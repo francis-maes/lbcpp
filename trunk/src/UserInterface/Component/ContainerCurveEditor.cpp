@@ -472,7 +472,7 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
 {
   const juce::Colour defaultColours[] = {
       Colours::red, Colours::green, Colours::blue, Colours::black,
-      Colours::yellow, Colours::cyan, Colours::violet, Colours::grey
+      Colours::yellow.withBrightness(0.5f), Colours::cyan, Colours::violet, Colours::grey
   };
   const size_t numDefaultColours = sizeof (defaultColours) / sizeof (juce::Colour);
 

@@ -1,5 +1,4 @@
 
-
 SequentialDecision:
  * FeatureGenerator avec seulement les 4 heuristic: greedy, discountedGreedy, optimistic, uniform
  * Tester la normalization par le nombre de candidates

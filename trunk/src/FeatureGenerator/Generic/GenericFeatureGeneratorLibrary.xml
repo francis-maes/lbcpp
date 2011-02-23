@@ -2,8 +2,17 @@
 
 <library name="GenericFeatureGenerator" directory="FeatureGenerator/Generic">
 
-  <class name="ConcatenateFeatureGenerator" base="FeatureGenerator">
+  <class name="ConcatenateDoubleFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool lazy"/>
+  </class>
+
+  <class name="ConcatenateDoubleVectorFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="bool lazy"/>
+  </class>
+
+  <class name="ConcatenateFeatureGenerator" base="ProxyFunction">
+    <constructor arguments="bool lazy" returnType="Function"/>
+    <variable type="Boolean" name="lazy"/>
   </class>
 
   <class name="WindowFeatureGenerator" base="FeatureGenerator">

@@ -24,6 +24,28 @@
 namespace lbcpp
 {
 
+class HeuristicSearchSpaceNodeFeaturesFunction : public CompositeFunction
+{
+public:
+  HeuristicSearchSpaceNodeFeaturesFunction() : discount(discount) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
+
+    builder.startSelection();
+
+      builder.addFunction(greedySearchHeuristic(), node);
+      builder.addFunction(greedySearchHeuristic(discount), node);
+      builder.addFunction(optimisticPlanningSearchHeuristic(discount), node);
+      builder.addFunction(minDepthSearchHeuristic(), node);
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+
+protected:
+  double discount;
+};
 
 class GenericClosedSearchSpaceNodeFeaturesFunction : public CompositeFunction
 {
@@ -73,7 +95,7 @@ public:
 class SequentialDecisionSandBox : public WorkUnit
 {
 public:
-  SequentialDecisionSandBox() : numInitialStates(1000), minDepth(2), maxDepth(18), maxLearningIterations(100) {}
+  SequentialDecisionSandBox() : numInitialStates(1000), minDepth(2), maxDepth(18), maxLearningIterations(100), discount(0.9) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -86,8 +108,6 @@ public:
     if (!problem->initialize(context))
       return false;
 
-    static const double discount = 0.9;
-    
     FunctionPtr sampleInitialStatesFunction = createVectorFunction(problem->getInitialStateSampler(), false);
     if (!sampleInitialStatesFunction->initialize(context, positiveIntegerType, randomGeneratorClass))
       return false;
@@ -113,47 +133,46 @@ public:
     size_t maxSearchNodes = (size_t)pow(2.0, (double)(depth + 1)) - 1;
     context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
     
-    /*
-    FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
     StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
-    
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
-    if (!lookAHeadSearch->initialize(context, problem->getStateType()))
-      return false;
+    trainAndEvaluate(context, T("baseline"), parameters, maxSearchNodes, trainingStates, testingStates);
 
-    if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training"), true))
-      return false;
-
-//    context.enterScope(T("Evaluation"));
-
-    double learnedHeuristicScore = evaluateSearchHeuristic(context, problem, heuristic, maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("learned"), learnedHeuristicScore);*/
-
-    double greedyScore = evaluateSearchHeuristic(context, problem, greedySearchHeuristic(), maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("greedy"), greedyScore);
-
-    double discountedGreedyScore = evaluateSearchHeuristic(context, problem, greedySearchHeuristic(discount), maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("discountedGreedy"), discountedGreedyScore);
-
-    double optimisticScore = evaluateSearchHeuristic(context, problem, optimisticPlanningSearchHeuristic(discount), maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("optimistic"), optimisticScore);
-
-    double minDepthScore = evaluateSearchHeuristic(context, problem, minDepthSearchHeuristic(), maxSearchNodes, testingStates, discount);
-    context.resultCallback(T("uniform"), minDepthScore);
-
-    //context.leaveScope(learnedHeuristicScore);
+    evaluate(context, T("greedy"), greedySearchHeuristic(), maxSearchNodes, testingStates);
+    evaluate(context, T("discountedGreedy"), greedySearchHeuristic(discount), maxSearchNodes, testingStates);
+    evaluate(context, T("optimistic"), optimisticPlanningSearchHeuristic(discount), maxSearchNodes, testingStates);
+    evaluate(context, T("uniform"), minDepthSearchHeuristic(), maxSearchNodes, testingStates);
     return true;
   }
 
-  // todo: use new Evaluator here
-  double evaluateSearchHeuristic(ExecutionContext& context, SequentialDecisionProblemPtr problem, FunctionPtr heuristic, size_t maxSearchNodes, ContainerPtr initialStates, double discount) const
+protected:
+  bool evaluate(ExecutionContext& context, const String& heuristicName, FunctionPtr heuristic, size_t maxSearchNodes, ContainerPtr initialStates) const
   {
     FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, LearnerParametersPtr(), discount, maxSearchNodes);
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
-      return 0.0;
+      return false;
+
     EvaluatorPtr evaluator = new SearchSpaceEvaluator();
-    ScoreObjectPtr scores = lookAHeadSearch->evaluate(context, initialStates, evaluator, T("Evaluating heuristic ") + heuristic->toShortString());
-    return scores ? -scores->getScoreToMinimize() : 0.0;
+    ScoreObjectPtr scores = lookAHeadSearch->evaluate(context, initialStates, evaluator, T("Evaluating heuristic ") + heuristicName);
+    if (!scores)
+      return false;
+
+    context.resultCallback(heuristicName, -scores->getScoreToMinimize());
+    return true;
+  }
+
+  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  {
+    FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
+    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
+    if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
+      return FunctionPtr();
+    return heuristic;
+  }
+
+  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  {
+    FunctionPtr heuristic = train(context, name, parameters, maxSearchNodes, trainingStates, testingStates);
+    return heuristic && evaluate(context, name + T("-train"), heuristic, maxSearchNodes, trainingStates) 
+        && evaluate(context, name + T("-test"), heuristic, maxSearchNodes, testingStates);
   }
 
 private:
@@ -165,6 +184,7 @@ private:
   size_t minDepth;
   size_t maxDepth;
   size_t maxLearningIterations;
+  double discount;
 };
 
 }; /* namespace lbcpp */

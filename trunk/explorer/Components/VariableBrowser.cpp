@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "VariableBrowser.h"
+#include "../ExplorerProject.h"
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -66,8 +67,12 @@ struct VariableRelatedCommand
   {
     if (command.name == T("Save"))
     {
-      File directory = File::getSpecialLocation(File::userHomeDirectory); // FIXME: better default directory
-      FileChooser chooser("Select the file to save...", directory, "*.*");
+      File defaultDirectory = File::getSpecialLocation(File::userHomeDirectory);
+      ExplorerProjectPtr project = ExplorerProject::getCurrentProject();
+      if (project)
+        defaultDirectory = project->getRootDirectory();
+
+      FileChooser chooser("Select the file to save...", defaultDirectory, "*.*");
       if (chooser.browseForFileToSave(true))
         variable.saveToFile(defaultExecutionContext(), chooser.getResult());
     }
