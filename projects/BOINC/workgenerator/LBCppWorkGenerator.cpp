@@ -204,3 +204,4 @@ int main(int argc, char** argv)
   log_messages.printf(MSG_NORMAL, "Starting\n");
   main_loop();
 }
+
