@@ -93,6 +93,10 @@
     <variable type="File" name="outputFile" desc="The output file" shortName="o"/>
   </class>
 
-  <class name="CheckXmlElementWorkUnit" base="WorkUnit"/>
+  <class name="CheckXmlElementWorkUnit" base="WorkUnit">
+    <variable type="XmlElement" name="aaa"/>
+  </class>
+  
+  <!-- <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/> -->
 
 </library>

@@ -101,7 +101,7 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
   manager->getUnfinishedRequestsSentTo(nodeName, requests);
   for (size_t i = 0; i < requests.size(); ++i)
   {
-    int status = interface->getWorkUnitStatus(interface->getContext(), requests[i]);
+    int status = interface->getWorkUnitStatus(interface->getContext(), requests[i]->getNetworkRequest());
     int oldStatus = requests[i]->getStatus();
 
     if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
