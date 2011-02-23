@@ -65,9 +65,9 @@ public:
     builder.startSelection();
 
       // max depth = 1000, max reward = 100
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxDepth), 20), depth);
-      builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 20), reward);
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(maxReturn), 20), currentReturn);
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxDepth), 7), depth);
+      builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 7), reward);
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(maxReturn), 7), currentReturn);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -137,7 +137,7 @@ public:
     StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
     if (rankingLoss)
       parameters->setLossFunction(rankingLoss);
-    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(0.001));
+    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
 
     evaluate(context, T("maxReturn"), maxReturnSearchHeuristic(), maxSearchNodes, testingStates);
     evaluate(context, T("maxReward"), greedySearchHeuristic(), maxSearchNodes, testingStates);

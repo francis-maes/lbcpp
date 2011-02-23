@@ -23,7 +23,7 @@ public:
     : context(NULL), rankingLoss(rankingLoss)
   {
     if (!rankingLoss)
-      this->rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
+      this->rankingLoss = mostViolatedPairRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
@@ -53,6 +53,7 @@ public:
 
       if (i > 0)
       {
+        jassert(candidates.size() > 1);
         std::vector<double> scores(candidates.size());
         std::vector<double> costs(candidates.size());
 
@@ -61,7 +62,7 @@ public:
         {
           SearchSpaceNodePtr node = searchSpace->getNode(*it);
           scores[c] = node->getHeuristicScore();
-          double cost = -node->getBestReturn();
+          double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
             //(node == node->getParentNode()->getBestChildNode()) ? 0.0 : 1.0; // bipartite ranking for the moment
           costs[c] = cost;
           if (*it == selectedNodeIndex)
@@ -74,8 +75,9 @@ public:
 
         // update episode gradient
         c = 0;
+        double invZ = 1.0 / (double)candidates.size();
         for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
-          episodeGradient[*it] += rankingLossGradient[c];
+          episodeGradient[*it] += invZ * rankingLossGradient[c];
       }
 
       // update candidates list
