@@ -189,10 +189,10 @@ public:
       menu.addItem(closeProjectMenu, T("Close Project"));
       menu.addSeparator();
 
-      menu.addItem(openFileMenu, T("Open File"), currentProject);
-      menu.addItem(openDirectoryMenu, T("Open Directory"), currentProject);
-      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), currentProject);
-      menu.addItem(closeMenu, T("Close"), currentProject && contentTabs->getCurrentTabIndex() >= 0);
+      menu.addItem(openFileMenu, T("Open File"), ExplorerProject::hasCurrentProject());
+      menu.addItem(openDirectoryMenu, T("Open Directory"), ExplorerProject::hasCurrentProject());
+      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), ExplorerProject::hasCurrentProject());
+      menu.addItem(closeMenu, T("Close"), ExplorerProject::hasCurrentProject() && contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
       menu.addItem(quitMenu, T("Quit"));
       return menu;
@@ -208,10 +208,10 @@ public:
 
   void closeCurrentProject()
   {
-    if (currentProject)
+    if (ExplorerProject::hasCurrentProject())
     {
-      currentProject->close(context);
-      currentProject = ExplorerProjectPtr();
+      ExplorerProject::currentProject->close(context);
+      ExplorerProject::currentProject = ExplorerProjectPtr();
     }
     contentTabs->clearTabs();
     setName(T("LBC++ Explorer"));
@@ -232,7 +232,7 @@ public:
     recentProjects->setRecentDirectory(directory.getParentDirectory());
     configuration->save(context);
     setName(T("LBC++ Explorer - ") + directory.getFileName());
-    currentProject = project;
+    ExplorerProject::currentProject = project;
     loadObjectFromFile(directory);
   }
 
@@ -284,7 +284,7 @@ public:
       case openFileMenu:
       case openDirectoryMenu:
         {
-          File directory = currentProject->getRecentDirectory();
+          File directory = ExplorerProject::currentProject->getRecentDirectory();
           if (!directory.exists())
             directory = File::getSpecialLocation(File::userHomeDirectory);
 
@@ -296,7 +296,7 @@ public:
               (menuItemID == openDirectoryMenu && chooser.browseForDirectory()))
           {
             File result = chooser.getResult();
-            currentProject->setRecentDirectory(result.getParentDirectory());
+            ExplorerProject::currentProject->setRecentDirectory(result.getParentDirectory());
             loadObjectFromFile(result);
           }
         }
@@ -306,12 +306,12 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
+          if (ExplorerProject::currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
           {
-            ExecutionTracePtr trace(new ExecutionTrace(currentProject->workUnitContext->toString()));
-            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
+            ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
+            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, ExplorerProject::currentProject->workUnitContext);
             contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
-            currentProject->workUnitContext->pushWorkUnit(workUnit);
+            ExplorerProject::currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
         }
@@ -370,8 +370,6 @@ public:
 private:
   ExecutionContext& context;
   ExplorerContentTabs* contentTabs;
-
-  ExplorerProjectPtr currentProject;
 };
 
 namespace lbcpp

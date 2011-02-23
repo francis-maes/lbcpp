@@ -286,8 +286,6 @@ protected:
 class ProxyFunction : public Function
 {
 public:
-  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
-
   const FunctionPtr& getImplementation() const
     {return implementation;}
 
@@ -307,6 +305,8 @@ protected:
   friend class ProxyFunctionClass;
 
   FunctionPtr implementation;
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ProxyFunction> ProxyFunctionPtr;

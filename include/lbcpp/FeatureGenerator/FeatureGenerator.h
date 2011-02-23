@@ -97,7 +97,10 @@ extern FeatureGeneratorPtr defaultProbabilityFeatureGenerator(size_t numInterval
 
 // generic
 extern FeatureGeneratorPtr windowFeatureGenerator(size_t windowSize);
-extern FeatureGeneratorPtr concatenateFeatureGenerator(bool lazy);
+
+extern FunctionPtr concatenateFeatureGenerator(bool lazy);
+extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy);
+extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy);
 
 }; /* namespace lbcpp */
 

@@ -12,6 +12,7 @@
     <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
     <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
+    <variable type="Double" name="discount" shortName="d"/>
   </class>
   
 </library>

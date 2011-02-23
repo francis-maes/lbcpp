@@ -120,6 +120,14 @@ public:
 
   ExecutionContextPtr workUnitContext;
 
+  static ExplorerProjectPtr currentProject;
+
+  static ExplorerProjectPtr getCurrentProject()
+    {return currentProject;}
+
+  static bool hasCurrentProject()
+    {return currentProject;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

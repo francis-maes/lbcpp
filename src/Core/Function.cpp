@@ -50,14 +50,14 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
   size_t minInputs = getMinimumNumRequiredInputs();
   if (minInputs && numInputs < minInputs)
   {
-    context.errorCallback(T("Missing input: expected ") + String((int)minInputs) + T(" inputs, found only ") + numInputs + T(" inputs"));
+    context.errorCallback(T("Missing input: expected ") + String((int)minInputs) + T(" inputs, found only ") + String((int)numInputs) + T(" inputs"));
     return false;
   }
 
   size_t maxInputs = getMaximumNumRequiredInputs();
   if (numInputs > maxInputs)
   {
-    context.errorCallback(T("Too much inputs: expected ") + String((int)maxInputs) + T(" inputs, found ") + numInputs + T(" inputs"));
+    context.errorCallback(T("Too much inputs: expected ") + String((int)maxInputs) + T(" inputs, found ") + String((int)numInputs) + T(" inputs"));
     return false;
   }
 

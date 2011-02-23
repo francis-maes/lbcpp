@@ -9,6 +9,7 @@
 #include "WorkUnitManager/NewWorkUnitDialogWindow.h"
 using namespace lbcpp;
 
+ExplorerProjectPtr ExplorerProject::currentProject;
 
 /*
 ** RecentWorkUnitConfiguration

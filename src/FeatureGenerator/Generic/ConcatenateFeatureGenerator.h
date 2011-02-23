@@ -14,10 +14,67 @@
 namespace lbcpp
 {
 
-class ConcatenateFeatureGenerator : public FeatureGenerator
+class ConcatenateDoubleFeatureGenerator : public FeatureGenerator
 {
 public:
-  ConcatenateFeatureGenerator(bool lazy = true)
+  ConcatenateDoubleFeatureGenerator(bool lazy = true)
+    : FeatureGenerator(lazy) {}
+
+  virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
+    {return compositeDoubleVectorClass(featuresEnumeration, featuresType);}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass();}
+  
+  virtual String getOutputPostFix() const
+    {return T("Concatenated");}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
+    elementsType = TypePtr();
+    size_t numInputs = inputVariables.size();
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      const VariableSignaturePtr& inputVariable = inputVariables[i];
+      elementsEnumeration->addElement(context, inputVariable->getName(), String::empty, inputVariable->getShortName());
+      if (i == 0)
+        elementsType = inputVariable->getType();
+      else
+        elementsType = Type::findCommonBaseType(elementsType, inputVariable->getType());
+    }
+    if (!elementsType->inheritsFrom(doubleType))
+    {
+      context.errorCallback(T("All elements do not inherit from double"));
+      return EnumerationPtr();
+    }
+    return elementsEnumeration;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      double value = inputs[i].getDouble();
+      if (value)
+        callback.sense(i, value);
+    }
+  }
+
+private:
+  TypePtr elementsType;
+};
+
+class ConcatenateDoubleVectorFeatureGenerator : public FeatureGenerator
+{
+public:
+  ConcatenateDoubleVectorFeatureGenerator(bool lazy = true)
     : FeatureGenerator(lazy) {}
 
   virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
@@ -99,11 +156,48 @@ public:
   }
 
 private:
+  std::vector<size_t> shifts;
+  TypePtr elementsType;
+};
+
+class ConcatenateFeatureGenerator : public ProxyFunction
+{
+public:
+  ConcatenateFeatureGenerator(bool lazy = true)
+    : lazy(lazy) {}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return sumType(doubleType, doubleVectorClass());}
+  
+  virtual String getOutputPostFix() const
+    {return T("Concatenated");}
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  {
+    bool isAllDouble = true;
+    bool isAllDoubleVector = true;
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+    {
+      isAllDouble &= inputVariables[i]->getType()->inheritsFrom(doubleType);
+      isAllDoubleVector &= inputVariables[i]->getType()->inheritsFrom(doubleVectorClass());
+    }
+    if (isAllDouble)
+      return new ConcatenateDoubleFeatureGenerator();
+    if (isAllDoubleVector)
+      return new ConcatenateDoubleVectorFeatureGenerator();
+    return FunctionPtr();
+  }
+
+protected:
   friend class ConcatenateFeatureGeneratorClass;
 
   bool lazy;
-  std::vector<size_t> shifts;
-  TypePtr elementsType;
 };
 
 }; /* namespace lbcpp */
