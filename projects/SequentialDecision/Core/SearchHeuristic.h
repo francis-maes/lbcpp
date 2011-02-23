@@ -21,7 +21,7 @@ public:
     : discount(discount) {}
 
   virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
-    {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0)
+    {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0);}
 
 protected:
   friend class GreedySearchHeuristicClass;
