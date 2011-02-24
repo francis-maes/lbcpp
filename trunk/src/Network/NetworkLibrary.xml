@@ -6,7 +6,7 @@
   <class name="NetworkClient" base="Object" abstract="yes"/>
 
   <!-- NetworkRequest -->
-  <class name="NetworkRequest" base="Object">
+  <class name="WorkUnitInformation" base="Object">
     <variable type="String" name="identifier"/>
     <variable type="String" name="projectName"/>
     <variable type="String" name="source"/>
@@ -17,13 +17,17 @@
     <variable type="Integer" name="status"/>
   </class>
   
-  <class name="WorkUnitNetworkRequest" base="NetworkRequest">
-    <variable type="XmlElement" name="workUnitXmlElement"/>
+  <class name="NetworkRequest" base="Object">
+    <variable type="WorkUnitInformation" name="information"/>
+    <variable type="XmlElement" name="workUnit"/>
+  </class>
+  
+  <class name="NetworkResponse" base="Object">
+    <variable type="XmlElement" name="trace"/>
   </class>
   
   <!-- NetworkInterface -->
   <class name="NetworkInterface" base="Object">
-  <!-- TODO: <variable type="ExecutionContext" name="context"/> -->
     <variable type="NetworkClient" name="client"/>
   </class>
   
@@ -39,13 +43,13 @@
   <class name="CloseCommunicationNotification" base="NetworkNotification"/>
   <class name="GetNodeNameNotification" base="NodeNetworkNotification"/>
   <class name="PushWorkUnitNotification" base="NodeNetworkNotification">
-    <variable type="WorkUnitNetworkRequest" name="request"/>
+    <variable type="NetworkRequest" name="request"/>
   </class>
   <class name="GetWorkUnitStatusNotification" base="NodeNetworkNotification">
-    <variable type="NetworkRequest" name="request"/>
+    <variable type="WorkUnitInformation" name="information"/>
   </class>
   <class name="GetExecutionTraceNotification" base="NodeNetworkNotification">
-    <variable type="NetworkRequest" name="request"/>
+    <variable type="WorkUnitInformation" name="information"/>
   </class>
   
   <!-- WorkUnit -->

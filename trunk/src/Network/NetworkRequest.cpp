@@ -11,21 +11,19 @@
 using namespace lbcpp;
 
 /*
-** NetworkRequest
+** WorkUnitInformation
 */
+juce::int64 WorkUnitInformation::lastIdentifier = Time::currentTimeMillis();
 
-juce::int64 NetworkRequest::lastIdentifier = Time::currentTimeMillis();
+WorkUnitInformation::WorkUnitInformation(const String& projectName, const String& source, const String& destination,
+                                         size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+  : projectName(projectName), source(source), destination(destination),
+    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime),
+    status(communicationError)
+{
+}
 
-NetworkRequest::NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-  : identifier(identifier), projectName(projectName), source(source), destination(destination),
-    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime), status(unknown) {}
-
-NetworkRequest::NetworkRequest(NetworkRequestPtr request)
-  : identifier(request->identifier), projectName(request->projectName), source(request->source),
-    destination(request->destination), requiredCpus(request->requiredCpus),
-    requiredMemory(request->requiredMemory), requiredTime(request->requiredTime), status(request->status) {}
-
-String NetworkRequest::generateIdentifier()
+String WorkUnitInformation::generateIdentifier()
 {
   juce::int64 res = Time::currentTimeMillis();
   if (res != lastIdentifier)
@@ -36,18 +34,3 @@ String NetworkRequest::generateIdentifier()
   juce::Thread::sleep(1);
   return generateIdentifier();
 }
-
-/*
-** WorkUnitNetworkRequest
-*/
-
-WorkUnitNetworkRequest::WorkUnitNetworkRequest(ExecutionContext& context, WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-  : NetworkRequest(generateIdentifier(), projectName, source, destination, requiredCpus, requiredMemory, requiredTime), context(context), workUnitXmlElement(new XmlElement())
-{workUnitXmlElement->saveObject(context, workUnit);}
-
-WorkUnitNetworkRequest::WorkUnitNetworkRequest(ExecutionContext& context, NetworkRequestPtr request, WorkUnitPtr workUnit)
-  : NetworkRequest(request), context(context), workUnitXmlElement(new XmlElement())
-{workUnitXmlElement->saveObject(context, workUnit);}
-  
-NetworkRequestPtr WorkUnitNetworkRequest::getNetworkRequest() const
-  {return new NetworkRequest(getIdentifier(), getProjectName(), getSource(), getDestination(), requiredCpus, requiredMemory, requiredTime);}

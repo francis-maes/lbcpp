@@ -97,31 +97,31 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
   }
   
   /* Update status */
-  std::vector<WorkUnitNetworkRequestPtr> requests;
+  std::vector<NetworkRequestPtr> requests;
   manager->getUnfinishedRequestsSentTo(nodeName, requests);
   for (size_t i = 0; i < requests.size(); ++i)
   {
-    int status = interface->getWorkUnitStatus(interface->getContext(), requests[i]->getNetworkRequest());
-    int oldStatus = requests[i]->getStatus();
+    WorkUnitInformation::Status status = interface->getWorkUnitStatus(interface->getContext(), requests[i]->getWorkUnitInformation());
+    int oldStatus = requests[i]->getWorkUnitInformation()->getStatus();
 
-    if (status == NetworkRequest::iDontHaveThisWorkUnit) // implicitly send new request
+    if (status == WorkUnitInformation::iDontHaveThisWorkUnit) // implicitly send new request
     {
       interface->pushWorkUnit(interface->getContext(), requests[i]);
-      requests[i]->setStatus(NetworkRequest::waitingOnServer);
+      requests[i]->getWorkUnitInformation()->setStatus(WorkUnitInformation::waitingOnServer);
       continue;
     }
 
-    requests[i]->setStatus(status);
-    if (status == NetworkRequest::finished && status != oldStatus) // transition to finised status
+    requests[i]->getWorkUnitInformation()->setStatus(status);
+    if (status == WorkUnitInformation::finished && status != oldStatus) // transition to finised status
     {
-      ExecutionTracePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]->getNetworkRequest());
+      NetworkResponsePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]->getWorkUnitInformation());
       manager->archiveTrace(manager->getContext(), requests[i], trace);
       continue;
     }
 
     if (oldStatus != status)
     {
-      File f = manager->getContext().getFile(T("Requests/") + requests[i]->getIdentifier() + T(".request"));
+      File f = manager->getContext().getFile(T("Requests/") + requests[i]->getWorkUnitInformation()->getIdentifier() + T(".request"));
       requests[i]->saveToFile(manager->getContext(), f);
     }
   }
@@ -203,8 +203,8 @@ Variable ClientWorkUnit::run(ExecutionContext& context)
   /* Submit jobs */
   for (size_t i = 0; i < 1; ++i)
   {
-    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, new DumbWorkUnit(), T("testProject"), clientName, T("LocalGridNode"));
-    NetworkRequestPtr res = interface->pushWorkUnit(context, request);
+    NetworkRequestPtr request = new NetworkRequest(context, new WorkUnitInformation(T("testProject"), clientName, T("LocalGridNode")), new DumbWorkUnit());
+    WorkUnitInformationPtr res = interface->pushWorkUnit(context, request);
     interface->getWorkUnitStatus(context, res);
   }
   

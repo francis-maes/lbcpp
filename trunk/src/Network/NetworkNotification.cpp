@@ -28,18 +28,18 @@ void GetNodeNameNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& t
 
 void PushWorkUnitNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
 {
-  NetworkRequestPtr res = target->pushWorkUnit(target->getContext(), request);
+  WorkUnitInformationPtr res = target->pushWorkUnit(target->getContext(), request);
   target->getNetworkClient()->sendVariable(res);
 }
 
 void GetWorkUnitStatusNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
 {
-  int res = target->getWorkUnitStatus(target->getContext(), request);
+  int res = target->getWorkUnitStatus(target->getContext(), information);
   target->getNetworkClient()->sendVariable(Variable(res, integerType));
 }
 
 void GetExecutionTraceNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
 {
-  ExecutionTracePtr res = target->getExecutionTrace(target->getContext(), request);
+  NetworkResponsePtr res = target->getExecutionTrace(target->getContext(), information);
   target->getNetworkClient()->sendVariable(res);
 }

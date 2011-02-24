@@ -97,6 +97,6 @@
     <variable type="XmlElement" name="aaa"/>
   </class>
   
-  <!-- <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/> -->
+  <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/>
 
 </library>

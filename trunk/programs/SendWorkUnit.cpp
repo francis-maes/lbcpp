@@ -258,9 +258,9 @@ int mainImpl(int argc, char** argv)
 
   NodeNetworkInterfacePtr interface = new ClientNodeNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
-  
-  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(*context, workUnit, projectName, source, destination, requiredCpus, requiredMemory, requiredTime);
-  NetworkRequestPtr res = interface->pushWorkUnit(*context, request);
+
+  NetworkRequestPtr request = new NetworkRequest(*context, new WorkUnitInformation(projectName, source, destination, requiredCpus, requiredMemory, requiredTime), workUnit);
+  WorkUnitInformationPtr res = interface->pushWorkUnit(*context, request);
   if (!res)
   {
     context->errorCallback(T("SendWorkUnit::run"), T("Touble - We didn't correclty receive the acknowledgement"));
