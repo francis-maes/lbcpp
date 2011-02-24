@@ -11,47 +11,54 @@
 
 # include <lbcpp/Core/Object.h>
 # include <lbcpp/Execution/WorkUnit.h>
+# include <lbcpp/Execution/ExecutionTrace.h>
 # include <lbcpp/Core/XmlSerialisation.h>
 
 namespace lbcpp
 {
 
-class NetworkRequest;
-typedef ReferenceCountedObjectPtr<NetworkRequest> NetworkRequestPtr;
-
-class NetworkRequest : public Object
+class WorkUnitInformation : public Object
 {
 public:
-  enum {communicationError, unknown, waitingOnManager, waitingOnServer, running, finished, iDontHaveThisWorkUnit};
-  
-  NetworkRequest(const String& identifier, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
-  NetworkRequest(NetworkRequestPtr request);
-  NetworkRequest() {}
-  
-  String getIdentifier() const
+  enum Status
+  {
+    communicationError,
+    workUnitError,       // Server is not updated and can't interprete work unit
+    waitingOnManager,
+    waitingOnServer,
+    running,
+    finished,
+    iDontHaveThisWorkUnit
+  };
+
+  WorkUnitInformation(const String& projectName, const String& source, const String& destination,
+                 size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
+  WorkUnitInformation() {}
+
+  const String& getIdentifier() const
     {return identifier;}
-  
-  String getProjectName() const
+
+  const String& getProjectName() const
     {return projectName;}
-  
-  String getSource() const
+
+  const String& getSource() const
     {return source;}
-  
-  String getDestination() const
+
+  const String& getDestination() const
     {return destination;}
-  
-  int getStatus() const
-    {return status;}
-  
-  void setStatus(int status)
-    {this->status = status;}
-  
+
+  Status getStatus() const
+    {return (Status)status;}
+
+  void setStatus(Status status)
+    {this->status = (int)status;}
+
   void selfGenerateIdentifier()
     {identifier = generateIdentifier();}
-  
+
 protected:
-  friend class NetworkRequestClass;
-  
+  friend class WorkUnitInformationClass;
+
   String identifier;
   String projectName;
   String source;
@@ -66,26 +73,48 @@ protected:
   static String generateIdentifier();
 };
 
-class WorkUnitNetworkRequest : public NetworkRequest
+typedef ReferenceCountedObjectPtr<WorkUnitInformation> WorkUnitInformationPtr;
+
+class NetworkRequest : public Object
 {
 public:
-  WorkUnitNetworkRequest(ExecutionContext& context, WorkUnitPtr workUnit, const String& projectName, const String& source, const String& destination, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
-  WorkUnitNetworkRequest(ExecutionContext& context, NetworkRequestPtr request, WorkUnitPtr workUnit);
-  WorkUnitNetworkRequest() : context (*(ExecutionContext*)NULL){}
+  NetworkRequest(ExecutionContext& context, WorkUnitInformationPtr information, WorkUnitPtr workUnit)
+    : information(information), workUnit(new XmlElement())
+    {this->workUnit->saveObject(context, workUnit);}
+  NetworkRequest() {}
   
-  WorkUnitPtr getWorkUnit() const
-    {return workUnitXmlElement->createObjectAndCast<WorkUnit>(context);}
+  const WorkUnitInformationPtr& getWorkUnitInformation() const
+    {return information;}
   
-  NetworkRequestPtr getNetworkRequest() const;
+  WorkUnitPtr getWorkUnit(ExecutionContext& context) const
+    {return workUnit ? workUnit->createObjectAndCast<WorkUnit>(context) : WorkUnitPtr();}
   
 protected:
-  friend class WorkUnitNetworkRequestClass;
-  ExecutionContext& context;
+  friend class NetworkRequestClass;
   
-  XmlElementPtr workUnitXmlElement;
+  WorkUnitInformationPtr information;
+  XmlElementPtr workUnit;
 };
 
-typedef ReferenceCountedObjectPtr<WorkUnitNetworkRequest> WorkUnitNetworkRequestPtr;
+typedef ReferenceCountedObjectPtr<NetworkRequest> NetworkRequestPtr;
+
+class NetworkResponse : public Object
+{
+public:
+  NetworkResponse(ExecutionContext& context, ExecutionTracePtr executionTrace) : trace(new XmlElement())
+    {this->trace->saveObject(context, executionTrace);}
+  NetworkResponse() {}
+
+  ExecutionTracePtr getExecutionTrace(ExecutionContext& context) const
+    {return trace ? trace->createObjectAndCast<ExecutionTrace>(context) : ExecutionTracePtr();}
+
+protected:
+  friend class NetworkResponseClass;
+  
+  XmlElementPtr trace;
+};
+
+typedef ReferenceCountedObjectPtr<NetworkResponse> NetworkResponsePtr;
 
 }; /* namespace */
 

@@ -44,7 +44,7 @@ public:
 class PushWorkUnitNotification : public NodeNetworkNotification
 {
 public:
-  PushWorkUnitNotification(WorkUnitNetworkRequestPtr request) : request(request) {}
+  PushWorkUnitNotification(NetworkRequestPtr request) : request(request) {}
   PushWorkUnitNotification() {}
   
   virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
@@ -52,13 +52,13 @@ public:
 protected:
   friend class PushWorkUnitNotificationClass;
   
-  WorkUnitNetworkRequestPtr request;
+  NetworkRequestPtr request;
 };
 
 class GetWorkUnitStatusNotification : public NodeNetworkNotification
 {
 public:
-  GetWorkUnitStatusNotification(NetworkRequestPtr request) : request(request) {}
+  GetWorkUnitStatusNotification(WorkUnitInformationPtr information) : information(information) {}
   GetWorkUnitStatusNotification() {}
   
   virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
@@ -66,13 +66,13 @@ public:
 protected:
   friend class GetWorkUnitStatusNotificationClass;
 
-  NetworkRequestPtr request;
+  WorkUnitInformationPtr information;
 };
 
 class GetExecutionTraceNotification : public NodeNetworkNotification
 {
 public:
-  GetExecutionTraceNotification(NetworkRequestPtr request) : request(request) {}
+  GetExecutionTraceNotification(WorkUnitInformationPtr information) : information(information) {}
   GetExecutionTraceNotification() {}
   
   virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
@@ -80,7 +80,7 @@ public:
 protected:
   friend class GetExecutionTraceNotificationClass;
   
-  NetworkRequestPtr request;
+  WorkUnitInformationPtr information;
 };
 
 }; /* namespace */

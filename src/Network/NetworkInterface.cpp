@@ -13,7 +13,7 @@
 
 using namespace lbcpp;
 
-void createDirectoryIfNotExists(ExecutionContext& context, const File& directory)
+static void createDirectoryIfNotExists(ExecutionContext& context, const File& directory)
 {
   if (!directory.exists())
     directory.createDirectory();
@@ -22,7 +22,6 @@ void createDirectoryIfNotExists(ExecutionContext& context, const File& directory
 /*
 ** NetworkInterface
 */
-
 void NetworkInterface::sendInterfaceClass()
   {client->sendVariable(getClassName());}
     
@@ -32,7 +31,6 @@ void NetworkInterface::closeCommunication(ExecutionContext& context)
 /*
 ** NodeNetworkInterface - ClientNodeNetworkInterface
 */
-
 ClientNodeNetworkInterface::ClientNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
   : NodeNetworkInterface(context, client, nodeName) {}
 
@@ -52,29 +50,29 @@ String ClientNodeNetworkInterface::getNodeName(ExecutionContext& context) const
   return res;
 }
 
-NetworkRequestPtr ClientNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+WorkUnitInformationPtr ClientNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request)
 {
   client->sendVariable(new PushWorkUnitNotification(request));
-  NetworkRequestPtr res;
-  if (!client->receiveObject<NetworkRequest>(10000, res))
+  WorkUnitInformationPtr res;
+  if (!client->receiveObject<WorkUnitInformation>(10000, res))
     context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::pushWorkUnit"));
   return res;
 }
 
-int ClientNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+WorkUnitInformation::Status ClientNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
-  client->sendVariable(new GetWorkUnitStatusNotification(request));
-  int res = NetworkRequest::communicationError;
+  client->sendVariable(new GetWorkUnitStatusNotification(information));
+  int res = (int)WorkUnitInformation::communicationError;
   if (!client->receiveInteger(10000, res))
     context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::getWorkUnitStatut"));
-  return res;
+  return (WorkUnitInformation::Status)res;
 }
 
-ExecutionTracePtr ClientNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+NetworkResponsePtr ClientNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
-  client->sendVariable(new GetExecutionTraceNotification(request));
-  ExecutionTracePtr res;
-  if (!client->receiveObject<ExecutionTrace>(10000, res))
+  client->sendVariable(new GetExecutionTraceNotification(information));
+  NetworkResponsePtr res;
+  if (!client->receiveObject<NetworkResponse>(10000, res))
     context.warningCallback(client->getConnectedHostName(), T("ClientNodeNetworkInterface::getExecutionTrace"));
   return res;
 }
@@ -82,7 +80,6 @@ ExecutionTracePtr ClientNodeNetworkInterface::getExecutionTrace(ExecutionContext
 /*
 ** NodeNetworkInterface - SgeNodeNetworkInterface
 */
-
 SgeNodeNetworkInterface::SgeNodeNetworkInterface(ExecutionContext& context, const String& nodeName)
   : NodeNetworkInterface(context, nodeName)
 {
@@ -93,47 +90,56 @@ SgeNodeNetworkInterface::SgeNodeNetworkInterface(ExecutionContext& context, cons
   createDirectoryIfNotExists(context, context.getFile(T("Traces")));
 }
 
-NetworkRequestPtr SgeNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+WorkUnitInformationPtr SgeNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request)
 {
-  File f = context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));
-  request->getNetworkRequest()->saveToFile(context, f);
+  WorkUnitInformationPtr res = request->getWorkUnitInformation();
+  /* Check the validity of the work unit */
+  WorkUnitPtr workUnit = request->getWorkUnit(context);
+  if (!workUnit)
+  {
+    res->setStatus(WorkUnitInformation::workUnitError);
+    return res;
+  }
 
-  f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
-  request->getWorkUnit()->saveToFile(context, f);
+  res->setStatus(WorkUnitInformation::waitingOnServer);
 
-  return request->getNetworkRequest();
+  File f = context.getFile(T("Requests/") + request->getWorkUnitInformation()->getIdentifier() + T(".request"));
+  res->saveToFile(context, f);
+
+  f = context.getFile(T("Waiting/") + request->getWorkUnitInformation()->getIdentifier() + T(".workUnit"));
+  workUnit->saveToFile(context, f);
+
+  return res;
 }
 
-int SgeNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+WorkUnitInformation::Status SgeNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
-  File f = context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));
+  File f = context.getFile(T("Waiting/") + information->getIdentifier() + T(".workUnit"));
   if (f.exists())
-    return NetworkRequest::waitingOnServer;
+    return WorkUnitInformation::waitingOnServer;
 
-  f = context.getFile(T("InProgress/") + request->getIdentifier() + T(".workUnit"));
+  f = context.getFile(T("InProgress/") + information->getIdentifier() + T(".workUnit"));
   if (f.exists())
-    return NetworkRequest::running;
+    return WorkUnitInformation::running;
 
-  f = context.getFile(T("Finished/") + request->getIdentifier() + T(".workUnit"));
+  f = context.getFile(T("Finished/") + information->getIdentifier() + T(".workUnit"));
   if (f.exists())
-    return NetworkRequest::finished;
+    return WorkUnitInformation::finished;
 
-  return NetworkRequest::iDontHaveThisWorkUnit;
+  return WorkUnitInformation::iDontHaveThisWorkUnit;
 }
 
-ExecutionTracePtr SgeNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+NetworkResponsePtr SgeNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
-  File f = context.getFile(T("Traces/") + request->getIdentifier() + T(".trace"));
+  File f = context.getFile(T("Traces/") + information->getIdentifier() + T(".trace"));
   if (!f.exists())
-    return ExecutionTracePtr();
-  
-  return ExecutionTrace::createFromFile(context, f);
+    return NetworkResponsePtr();
+  return new NetworkResponse(context, ExecutionTrace::createFromFile(context, f));
 }
 
 /*
 ** NodeNetworkInterface - ManagerNodeNetworkInterface
 */
-
 ManagerNodeNetworkInterface::ManagerNodeNetworkInterface(ExecutionContext& context)
   : NodeNetworkInterface(context, T("manager")),
     requestDirectory(context.getFile(T("Requests"))),
@@ -146,7 +152,7 @@ ManagerNodeNetworkInterface::ManagerNodeNetworkInterface(ExecutionContext& conte
   while (!files->isExhausted())
   {
     NetworkRequestPtr request = NetworkRequest::createFromFile(context, files->next().getFile());
-    context.informationCallback(T("Request restored: ") + request->toString());
+    context.informationCallback(T("Request restored: ") + request->getWorkUnitInformation()->getIdentifier());
     requests.push_back(request);
   }
 }
@@ -154,66 +160,67 @@ ManagerNodeNetworkInterface::ManagerNodeNetworkInterface(ExecutionContext& conte
 void ManagerNodeNetworkInterface::closeCommunication(ExecutionContext& context)
   {client->stopClient();}
 
-NetworkRequestPtr ManagerNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, WorkUnitNetworkRequestPtr request)
+WorkUnitInformationPtr ManagerNodeNetworkInterface::pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request)
 {
-  request->selfGenerateIdentifier();
-  request->setStatus(NetworkRequest::waitingOnManager);
+  WorkUnitInformationPtr res = request->getWorkUnitInformation();
+  res->selfGenerateIdentifier();
+  res->setStatus(WorkUnitInformation::waitingOnManager);
   /* First, backup request */
-  request->saveToFile(context, requestDirectory.getChildFile(request->getIdentifier() + T(".request")));
-
+  request->saveToFile(context, requestDirectory.getChildFile(res->getIdentifier() + T(".request")));
   requests.push_back(request);
-  return request;
+  return res;
 }
 
-int ManagerNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, NetworkRequestPtr request) const
+WorkUnitInformation::Status ManagerNodeNetworkInterface::getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
   // Seek in Request directory
-  File f = requestDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  File f = requestDirectory.getChildFile(information->getIdentifier() + T(".request"));
   if (f.exists())
-    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getStatus();
+    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getWorkUnitInformation()->getStatus();
   // Otherwise, maybe in Archive directory
-  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  f = archiveDirectory.getChildFile(information->getIdentifier() + T(".request"));
   if (f.exists())
-    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getStatus();
+    return NetworkRequest::createFromFile(context, f).staticCast<NetworkRequest>()->getWorkUnitInformation()->getStatus();
 
-  return NetworkRequest::iDontHaveThisWorkUnit;
+  return WorkUnitInformation::iDontHaveThisWorkUnit;
 }
 
-ExecutionTracePtr ManagerNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, NetworkRequestPtr request) const
+NetworkResponsePtr ManagerNodeNetworkInterface::getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const
 {
-  File f = archiveDirectory.getChildFile(request->getIdentifier() + T(".trace"));
+  File f = archiveDirectory.getChildFile(information->getIdentifier() + T(".response"));
   if (!f.exists())
-    return ExecutionTracePtr();
-  return ExecutionTrace::createFromFile(context, f);
+    return NetworkResponsePtr();
+
+  return NetworkResponse::createFromFile(context, f);
 }
 
-void ManagerNodeNetworkInterface::getUnfinishedRequestsSentTo(const String& nodeName, std::vector<WorkUnitNetworkRequestPtr>& results) const
+void ManagerNodeNetworkInterface::getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const
 {
   for (size_t i = 0; i < requests.size(); ++i)
   {
-    if (requests[i]->getStatus() == NetworkRequest::finished)
+    if (requests[i]->getWorkUnitInformation()->getStatus() == WorkUnitInformation::finished)
       continue;
-    if (requests[i]->getDestination() == nodeName)
+    if (requests[i]->getWorkUnitInformation()->getDestination() == nodeName)
       results.push_back(requests[i]);
   }
 }
 
-void ManagerNodeNetworkInterface::archiveTrace(ExecutionContext& context, const WorkUnitNetworkRequestPtr& request, const ExecutionTracePtr& trace)
+void ManagerNodeNetworkInterface::archiveTrace(ExecutionContext& context, const NetworkRequestPtr& request, const NetworkResponsePtr& trace)
 {
-  File f = requestDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  File f = requestDirectory.getChildFile(request->getWorkUnitInformation()->getIdentifier() + T(".request"));
   if (f.exists())
     f.deleteFile();
 
-  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".request"));
+  f = archiveDirectory.getChildFile(request->getWorkUnitInformation()->getIdentifier() + T(".request"));
   request->saveToFile(context, f);
 
-  f = archiveDirectory.getChildFile(request->getIdentifier() + T(".trace"));
+  f = archiveDirectory.getChildFile(request->getWorkUnitInformation()->getIdentifier() + T(".response"));
   trace->saveToFile(context, f);
 
-  std::vector<WorkUnitNetworkRequestPtr> res;
+  std::vector<NetworkRequestPtr> res;
   res.reserve(requests.size() - 1);
   for (size_t i = 0; i < requests.size(); ++i)
-    if (requests[i]->getStatus() != NetworkRequest::finished)
+    if (requests[i]->getWorkUnitInformation()->getStatus() != WorkUnitInformation::finished)
       res.push_back(requests[i]);
   requests = res;
 }

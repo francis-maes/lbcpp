@@ -180,7 +180,7 @@ public:
   bool loadFromJuceXmlElement(juce::XmlElement* element);
   juce::XmlElement* createJuceXmlElement() const;
   
-  bool saveObject(ExecutionContext& context, const ObjectPtr& value)
+  bool saveObject(ExecutionContext& context, ObjectPtr value)
   {
     XmlExporter exporter(context, T("variable"), 0);
     exporter.writeVariable(value, objectClass);
