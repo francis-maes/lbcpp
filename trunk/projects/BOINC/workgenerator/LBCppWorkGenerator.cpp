@@ -35,7 +35,7 @@ int make_job(File* file) {
   int retval;
 
   // get WU's name
-  sprintf(name, "%s", file->getFileName().toUTF8());
+  sprintf(name, "%s", file->getFileNameWithoutExtension().toUTF8());
 
   // Put the WU's file in the right place in the download dir hierarchy
   retval = config.download_path(name, path);
@@ -46,7 +46,7 @@ int make_job(File* file) {
   }
   if (!file->copyFileTo(File(path)))
   {
-    log_messages.printf(MSG_CRITICAL, "can't copy file: %s ---> %s\n", name, path);
+    log_messages.printf(MSG_CRITICAL, "can't copy file: %s ---> %s\n", file->getFullPathName().toUTF8(), path);
     return 1;
   }
 
