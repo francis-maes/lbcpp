@@ -67,22 +67,37 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
           // copy output.trace file
           retval = boinc_copy(fi.path.c_str(), config.project_path("NetworkTest/.WorkUnit/Traces/%s.trace", wu.name));
           if (retval)
+          {
             log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy output.trace file : %s -> %s\n",
                                 wu.id, wu.name, fi.path.c_str(), config.project_path("NetworkTest/.WorkUnit/Traces/%s.trace", wu.name));
+            return 1;
+          }
 
           // update WU status
           juce::OwnedArray<File> foundFiles;
           File directory(config.project_path("NetworkTest/.WorkUnit/InProgress"));
           directory.findChildFiles(foundFiles, File::findFiles, false, strcat(wu.name, ".*"));
-          for (unsigned int u = 0 ; u < foundFiles.size(); ++u) {
-            String newLocation("NetworkTest/.WorkUnit/Finished/");
-            newLocation += foundFiles[u]->getFileName();
-            if (!foundFiles[u]->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
-              log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n",
-                                wu.id, wu.name, foundFiles[u]->getFullPathName().toUTF8() , config.project_path("NetworkTest/.WorkUnit/Finished"));
+          if (foundFiles.size() == 0)
+          {
+            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't find InProgress file\n", wu.id, wu.name);
+            return 1;
+          }
+          if (foundFiles.size() > 1)
+          {
+            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] More than one InProgress file\n", wu.id, wu.name);
+            return 1;
           }
 
-          break;
+          // Only one file found
+          String newLocation("NetworkTest/.WorkUnit/Finished/");
+          newLocation += foundFiles[0]->getFileName();
+          if (!foundFiles[0]->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
+          {
+            log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, foundFiles[0]->getFullPathName().toUTF8() , config.project_path("NetworkTest/.WorkUnit/Finished"));
+            return 1;
+          }
+
+          break;  // only one file to assimilate (trace)
         }
       }
     }
