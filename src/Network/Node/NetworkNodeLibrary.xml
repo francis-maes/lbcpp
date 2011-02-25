@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="NetworkNode" directory="Network/Node">
+
+  <!-- NetworkRequest -->
+  <class name="WorkUnitInformation" base="Object">
+    <variable type="String" name="identifier"/>
+    <variable type="String" name="projectName"/>
+    <variable type="String" name="source"/>
+    <variable type="String" name="destination"/>
+    <variable type="Integer" name="requiredCpus"/>
+    <variable type="Integer" name="requiredMemory"/>
+    <variable type="Integer" name="requiredTime"/>
+    <variable type="Integer" name="status"/>
+  </class>
+  
+  <class name="NetworkRequest" base="Object">
+    <variable type="WorkUnitInformation" name="information"/>
+    <variable type="XmlElement" name="workUnit"/>
+  </class>
+  
+  <class name="NetworkResponse" base="Object">
+    <variable type="XmlElement" name="trace"/>
+  </class>
+  
+  <!-- NetworkInterface -->
+  <class name="NodeNetworkInterface" base="NetworkInterface" abstract="yes"/>
+  
+  <class name="ClientNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="SgeNodeNetworkInterface" base="NodeNetworkInterface"/>
+  <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface"/>
+  
+  <!-- NetworkNotification -->
+  <class name="NodeNetworkNotification" base="NetworkNotification" abstract="yes"/>
+  <class name="CloseCommunicationNotification" base="NetworkNotification"/>
+  <class name="GetNodeNameNotification" base="NodeNetworkNotification"/>
+  <class name="PushWorkUnitNotification" base="NodeNetworkNotification">
+    <variable type="NetworkRequest" name="request"/>
+  </class>
+  <class name="GetWorkUnitStatusNotification" base="NodeNetworkNotification">
+    <variable type="WorkUnitInformation" name="information"/>
+  </class>
+  <class name="GetExecutionTraceNotification" base="NodeNetworkNotification">
+    <variable type="WorkUnitInformation" name="information"/>
+  </class>
+
+</library>

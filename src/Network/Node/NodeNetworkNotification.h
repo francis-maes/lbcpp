@@ -1,26 +1,19 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NetworkNotification.h          | Network Notification            |
+| Filename: NodeNetworkNotification.h      | Node Network Notification       |
 | Author  : Julien Becker                  |                                 |
 | Started : 01/02/2011 19:38               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NETWORK_NOTIFICATION_H_
-# define LBCPP_NETWORK_NOTIFICATION_H_
+#ifndef LBCPP_NODE_NETWORK_NOTIFICATION_H_
+# define LBCPP_NODE_NETWORK_NOTIFICATION_H_
 
-# include <lbcpp/Network/NetworkInterface.h>
-# include <lbcpp/Execution/Notification.h>
+# include <lbcpp/Network/NetworkNotification.h>
+# include "NodeNetworkInterface.h"
 
 namespace lbcpp
 {
-
-class NetworkNotification : public Notification
-{
-public:
-  virtual void notify(const ObjectPtr& target);  
-  virtual void notifyNetwork(const NetworkInterfacePtr& target) = 0;
-};
 
 class NodeNetworkNotification : public NetworkNotification
 {
@@ -85,4 +78,4 @@ protected:
 
 }; /* namespace */
   
-#endif // !LBCPP_NETWORK_NOTIFICATION_H_
+#endif // !LBCPP_NODE_NETWORK_NOTIFICATION_H_

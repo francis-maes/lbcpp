@@ -15,6 +15,8 @@ GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 IF(LBCPP_NETWORKING)
   GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Network/Node/NetworkNodeLibrary.xml NetworkNodeLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Network/WorkUnit/NetworkWorkUnitLibrary.xml NetworkWorkUnitLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
 GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLibrary.cpp)
@@ -257,17 +259,30 @@ IF(LBCPP_NETWORKING)
     ../include/lbcpp/Network/NetworkServer.h
     Network/NetworkServer.cpp
     ../include/lbcpp/Network/NetworkCallback.h
-    ../include/lbcpp/Network/NetworkRequest.h
-    Network/NetworkRequest.cpp
     ../include/lbcpp/Network/NetworkInterface.h
-    Network/NetworkInterface.cpp
-    Network/NetworkNotification.h
-    Network/NetworkNotification.cpp
-    Network/NetworkWorkUnit.h
-    Network/NetworkWorkUnit.cpp
+    ../include/lbcpp/Network/NetworkNotification.h
     Network/NetworkLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
-)
+  )
+
+  SET(LBCPP_NETWORK_NODE_SOURCES
+    Network/Node/NetworkRequest.h
+    Network/Node/NetworkRequest.cpp
+    Network/Node/NodeNetworkInterface.h
+    Network/Node/NodeNetworkInterface.cpp
+    Network/Node/NodeNetworkNotification.h
+    Network/Node/NodeNetworkNotification.cpp
+    Network/Node/NetworkNodeLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/NetworkNodeLibrary.cpp
+  )
+  
+  SET(LBCPP_NETWORK_WORK_UNIT_SOURCES
+    Network/WorkUnit/NetworkWorkUnit.h
+    Network/WorkUnit/NetworkWorkUnit.cpp
+    Network/WorkUnit/NetworkWorkUnitLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/NetworkWorkUnitLibrary.cpp
+  )
+
 ENDIF(LBCPP_NETWORKING)
 
 #### Distribution ####
@@ -861,6 +876,8 @@ SET(LBCPP_CORE
   
   # Network
   ${LBCPP_NETWORK_SOURCES}
+    ${LBCPP_NETWORK_NODE_SOURCES}
+    ${LBCPP_NETWORK_WORK_UNIT_SOURCES}
   
   # Distribution
   ${LBCPP_DISTRIBUTION_SOURCES}
@@ -963,6 +980,8 @@ SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
 
 ## Network
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
+SOURCE_SUB_GROUP(Network Node FILES ${LBCPP_NETWORK_NODE_SOURCES})
+SOURCE_SUB_GROUP(Network WorkUnit FILES ${LBCPP_NETWORK_WORK_UNIT_SOURCES})
 
 ## Distribution
 SOURCE_GROUP(Distribution FILES ${LBCPP_DISTRIBUTION_SOURCES})

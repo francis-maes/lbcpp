@@ -1,21 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NetworkNotification.h          | Network Notification            |
+| Filename: NodeNetworkNotification.cpp    | Node Network Notification       |
 | Author  : Julien Becker                  |                                 |
 | Started : 01/02/2011 19:38               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include "NetworkNotification.h"
+#include "NodeNetworkNotification.h"
 
 using namespace lbcpp;
 
 /*
- ** NetworkNotification
+ ** NodeNetworkNotification
  */
-void NetworkNotification::notify(const ObjectPtr& target)
-  {notifyNetwork(target);}
-
 void NodeNetworkNotification::notifyNetwork(const NetworkInterfacePtr& target)
   {notifyNodeNetwork(target);}
 
