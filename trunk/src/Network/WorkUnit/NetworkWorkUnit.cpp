@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#include "NetworkNotification.h"
+#include "../Node/NodeNetworkNotification.h"
 #include "NetworkWorkUnit.h"
 
 #include <lbcpp/Network/NetworkServer.h>

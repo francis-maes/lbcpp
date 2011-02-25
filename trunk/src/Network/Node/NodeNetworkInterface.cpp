@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NetworkInterface.cpp           | Network Interface               |
+| Filename: NodeNetworkInterface.cpp       | Node Network Interface          |
 | Author  : Julien Becker                  |                                 |
 | Started : 01/02/2011 19:30               |                                 |
 `------------------------------------------/                                 |
@@ -8,8 +8,8 @@
 
 #include <lbcpp/Data/Stream.h>
 
-#include <lbcpp/Network/NetworkInterface.h>
-#include "NetworkNotification.h"
+#include "NodeNetworkInterface.h"
+#include "NodeNetworkNotification.h"
 
 using namespace lbcpp;
 
@@ -18,15 +18,6 @@ static void createDirectoryIfNotExists(ExecutionContext& context, const File& di
   if (!directory.exists())
     directory.createDirectory();
 }
-
-/*
-** NetworkInterface
-*/
-void NetworkInterface::sendInterfaceClass()
-  {client->sendVariable(getClassName());}
-    
-void NetworkInterface::closeCommunication(ExecutionContext& context)
-  {client->stopClient();}
 
 /*
 ** NodeNetworkInterface - ClientNodeNetworkInterface

@@ -10,7 +10,7 @@
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
 #include <lbcpp/Network/NetworkClient.h>
-#include <lbcpp/Network/NetworkInterface.h>
+#include "../src/Network/Node/NodeNetworkInterface.h"
 
 using namespace lbcpp;
 
