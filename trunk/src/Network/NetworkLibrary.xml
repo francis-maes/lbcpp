@@ -9,7 +9,9 @@
   <include file="lbcpp/Network/NetworkInterface.h"/>
 
   <class name="NetworkClient" base="Object" abstract="yes"/>
-  
+
+  <class name="NetworkNotification" base="Notification" abstract="yes"/>
+
   <!-- NetworkInterface -->
   <class name="NetworkInterface" base="Object">
     <variable type="NetworkClient" name="client"/>
