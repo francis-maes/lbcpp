@@ -96,14 +96,13 @@ public:
     SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, initialState);
     searchSpace->reserveNodes(2 * maxSearchNodes);
 
-    double highestReturn = 0.0;
     for (size_t j = 0; j < maxSearchNodes; ++j)
     {
-      double value = searchSpace->exploreBestNode(context);
-      if (value > highestReturn)
-        highestReturn = value;
+      if (RandomGenerator::getInstance()->sampleBool(0.1))
+        searchSpace->exploreRandomNode(context);
+      else
+        searchSpace->exploreBestNode(context);
     }
-
     return searchSpace;
   }
 

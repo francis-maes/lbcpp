@@ -78,6 +78,9 @@ public:
   int getChildEndIndex() const
     {return childEndIndex;}
 
+  bool isExplored() const
+    {return childBeginIndex >= 0;}
+
   /*
   ** Best Return
   */
@@ -149,8 +152,10 @@ public:
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
 
-  // returns the current return
-  double exploreBestNode(ExecutionContext& context);
+  void exploreBestNode(ExecutionContext& context);
+  void exploreRandomNode(ExecutionContext& context);
+  void exploreNode(ExecutionContext& context, size_t nodeIndex);
+
 
   /*
   ** Candidates

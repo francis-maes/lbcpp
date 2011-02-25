@@ -71,17 +71,9 @@ SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr problem, Funct
   addCandidate(new SearchSpaceNode(nodes, initialState));
 }
 
-// returns the current return
-double SortedSearchSpace::exploreBestNode(ExecutionContext& context)
+void SortedSearchSpace::exploreNode(ExecutionContext& context, size_t nodeIndex)
 {
-  if (candidates.empty())
-  {
-    context.errorCallback(T("No more candidates to explore"));
-    return 0.0;
-  }
-
-  size_t nodeIndex;
-  SearchSpaceNodePtr node = popBestCandidate(nodeIndex);
+  SearchSpaceNodePtr node = getNode(nodeIndex);
   jassert(node);
 
   std::vector<Variable> actions;
@@ -94,8 +86,37 @@ double SortedSearchSpace::exploreBestNode(ExecutionContext& context)
     node->open(problem, nodeIndex, actions[i], discount);
     addCandidate(node);
   }
+}
 
-  return node->getCurrentReturn();
+// returns the current return
+void SortedSearchSpace::exploreBestNode(ExecutionContext& context)
+{
+  if (candidates.empty())
+  {
+    context.errorCallback(T("No more candidates to explore"));
+    return;
+  }
+
+  size_t nodeIndex;
+  popBestCandidate(nodeIndex);
+  exploreNode(context, nodeIndex);
+}
+
+void SortedSearchSpace::exploreRandomNode(ExecutionContext& context)
+{
+  if (candidates.empty())
+  {
+    context.errorCallback(T("No more candidates to explore"));
+    return;
+  }
+  size_t nodeIndex;
+  while (true)
+  {
+    nodeIndex = RandomGenerator::getInstance()->sampleSize(nodes.size());
+    if (!nodes[nodeIndex]->isExplored())
+      break;
+  }
+  exploreNode(context, nodeIndex);
 }
 
 void SortedSearchSpace::addCandidate(SearchSpaceNodePtr node)
