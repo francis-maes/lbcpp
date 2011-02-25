@@ -9,7 +9,8 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 # define LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 
-# include "../core/SequentialDecisionProblem.h"
+# include "../Core/SequentialDecisionProblem.h"
+# include "../Data/RandomGenerator.h"
 
 namespace lbcpp
 {

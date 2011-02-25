@@ -46,6 +46,22 @@ void SearchSpaceNode::updateBestReturn(double newReturn, SearchSpaceNodePtr chil
   }
 }
 
+double SearchSpaceNode::getBestReturnWithoutChild(SearchSpaceNodePtr childNode) const
+{
+  if (childNode->getBestReturn() < bestReturn)
+    return bestReturn;
+  jassert(childBeginIndex >= 0);
+  double best = 0.0;
+  for (int i = childBeginIndex; i < childEndIndex; ++i)
+    if (allNodes[i] != childNode)
+    {
+      double childBestReturn = allNodes[i]->getBestReturn();
+      if (childBestReturn > best)
+        best = childBestReturn;
+    }
+  return best;
+}
+
 /*
 ** SortedSearchSpace
 */

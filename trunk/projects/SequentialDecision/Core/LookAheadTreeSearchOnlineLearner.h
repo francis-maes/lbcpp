@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_ONLINE_LEARNER_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_ONLINE_LEARNER_H_
 
-# include "LookAHeadTreeSearchFunction.h"
+# include "LookAheadTreeSearchFunction.h"
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Data/RandomVariable.h>
 
@@ -23,7 +23,7 @@ public:
     : context(NULL), rankingLoss(rankingLoss)
   {
     if (!rankingLoss)
-      this->rankingLoss = mostViolatedPairRankingLossFunction(hingeDiscriminativeLossFunction());
+      this->rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
@@ -62,7 +62,11 @@ public:
         {
           SearchSpaceNodePtr node = searchSpace->getNode(*it);
           scores[c] = node->getHeuristicScore();
-          double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
+
+          double cost = searchSpace->getBestReturn() == node->getBestReturn() ? -node->getReward() : 0.0;
+
+          //double cost = node->getParentNode()->getBestReturnWithoutChild(node) - node->getParentNode()->getBestReturn();
+          //double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
             //(node == node->getParentNode()->getBestChildNode()) ? 0.0 : 1.0; // bipartite ranking for the moment
           costs[c] = cost;
           if (*it == selectedNodeIndex)
@@ -75,7 +79,7 @@ public:
 
         // update episode gradient
         c = 0;
-        double invZ = 1.0 / (double)candidates.size();
+        double invZ = 1.0;// / (double)candidates.size();
         for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
           episodeGradient[*it] += invZ * rankingLossGradient[c];
       }
