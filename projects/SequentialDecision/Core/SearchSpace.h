@@ -86,6 +86,8 @@ public:
   double getBestReturn() const
     {return bestReturn;}
 
+  double getBestReturnWithoutChild(SearchSpaceNodePtr childNode) const;
+
   const Variable& getBestAction() const
     {static Variable empty; return bestChildNode ? bestChildNode->getPreviousAction() : empty;}
 
