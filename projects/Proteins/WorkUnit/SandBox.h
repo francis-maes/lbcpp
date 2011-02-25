@@ -73,11 +73,11 @@ public:
       return false;
 
     // evaluate on training data
-    if (!predictor->evaluate(context, trainingProteins, functionBasedEvaluator(new ProteinEvaluatorCompositeFunction()), T("Evaluate on training data")))
+    if (!predictor->evaluate(context, trainingProteins, new ProteinEvaluator(), T("Evaluate on training data")))
       return false;
     
     // evaluate on testing data
-    if (!predictor->evaluate(context, testingProteins, functionBasedEvaluator(new ProteinEvaluatorCompositeFunction()), T("Evaluate on testing data")))
+    if (!predictor->evaluate(context, testingProteins, new ProteinEvaluator(), T("Evaluate on testing data")))
       return false;
 
     return true;

@@ -17,8 +17,11 @@ namespace lbcpp
 class NetworkServer : public InterprocessConnectionServer, public Object
 {
 public:
-  NetworkServer(ExecutionContext& context) : context(context) {}
-  
+  NetworkServer(ExecutionContext& context)
+    : context(context) {}
+  NetworkServer()
+    : context(*(ExecutionContext*)NULL) {}
+
   bool startServer(int port);
   void stopServer();
 
@@ -35,7 +38,7 @@ protected:
   ExecutionContext& context;
   std::deque<NetworkClientPtr> acceptedClients;
   CriticalSection lock;
-  
+
   NetworkClientPtr popClient();
 };
 

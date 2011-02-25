@@ -16,27 +16,61 @@
 namespace lbcpp
 {
 
-class ProteinEvaluatorCompositeFunction : public CompositeFunction
+class ProteinEvaluator : public CompositeEvaluator
 {
 public:
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  ProteinEvaluator()
   {
-    size_t predicted = builder.addInput(containerClass(proteinClass), T("predicted"));
-    size_t supervision = builder.addInput(containerClass(proteinClass), T("supervision"));
+    addEvaluator(ss3Target,  classificationEvaluator());
+    addEvaluator(ss8Target,  classificationEvaluator());
+    addEvaluator(sa20Target, binaryClassificationEvaluator());
+    addEvaluator(drTarget,   binaryClassificationEvaluator());
+    addEvaluator(stalTarget, classificationEvaluator());
+  }
+  
+  /* Evaluator */
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? functionClass : containerClass(pairClass(proteinClass, proteinClass));}
+  
+  /* CompositeEvaluator */
+  virtual void updateScoreObject(const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
+  {
+    CompositeScoreObjectPtr scores = scoreObject.staticCast<CompositeScoreObject>();
+    //ProteinPtr input = example->getVariable(0).getObjectAndCast<Protein>();
+    ProteinPtr supervision = example->getVariable(1).getObjectAndCast<Protein>();
+    ProteinPtr predicted = output.getObjectAndCast<Protein>();
+    /* Strore container for fast access */
+    size_t numTargets = targets.size();
+    //std::vector<ContainerPtr> inputContainer(numTargets);
+    std::vector<ContainerPtr> supervisionContainer(numTargets);
+    std::vector<ContainerPtr> predictedContainer(numTargets);
     
-    size_t ss3 = builder.addFunction(mapContainerFunction(getVariableFunction(ss3Target)), predicted, T("ss3"));
-    ss3 = builder.addFunction(concatenateContainerFunction(), ss3, T("ss3"));
-    
-    size_t ss3Supervision = builder.addFunction(mapContainerFunction(getVariableFunction(ss3Target)), supervision, T("ss3Supervision"));
-    ss3Supervision = builder.addFunction(concatenateContainerFunction(), ss3Supervision, T("ss3Supervision"));
-    
-    builder.startSelection();
-
-      builder.addFunction(classificationEvaluator(), ss3, ss3Supervision, T("ss3"));
-
-    builder.finishSelectionWithFunction(concatenateScoreObjectFunction());
+    for (size_t i = 0; i < numTargets; ++i)
+    {
+      //inputContainer[i] = input->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
+      supervisionContainer[i] = supervision->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
+      predictedContainer[i] = predicted->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
+    }
+    /* Call updataScoreObject for each (sub)example and each evaluator */
+    size_t n = supervision->getLength();
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = 0; j < numTargets; ++j)
+      {
+        if (predictedContainer[j])
+          evaluators[j]->updateScoreObject(scores->getScoreObject(j),
+                                           new Pair(pairClass(anyType, anyType), Variable(), supervisionContainer[j]->getElement(i)),
+                                           predictedContainer[j]->getElement(i));
+      }
   }
 
+protected:
+  std::vector<ProteinTarget> targets;
+  
+  void addEvaluator(ProteinTarget target, EvaluatorPtr evaluator)
+  {
+    targets.push_back(target);
+    CompositeEvaluator::addEvaluator(evaluator);
+  }
 };
 
 }; /* namespace lbcpp */

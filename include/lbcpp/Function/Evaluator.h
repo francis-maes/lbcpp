@@ -34,11 +34,14 @@ public:
   virtual double getScoreToMinimize() const
     {return scoreToMinimizeIndex == (size_t)-1 ? 0.0 : scores[scoreToMinimizeIndex]->getScoreToMinimize();}
 
-  void pushScoreObject(const ScoreObjectPtr& score)
+  void addScoreObject(const ScoreObjectPtr& score)
     {scores.push_back(score);}
 
   void setAsScoreToMinimize(size_t index)
     {jassert(index < scores.size()); scoreToMinimizeIndex = index;}
+  
+  const ScoreObjectPtr& getScoreObject(size_t index) const
+    {jassert(index < scores.size()); return scores[index];}
 
 protected:
   friend class CompositeScoreObjectClass;
@@ -71,12 +74,13 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return scoreObjectClass;}
 
-protected:
-  friend struct EvaluateExampleWorkUnit;
-
+  /* Evaluator */
   virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
   virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
+  
+protected:
+  friend struct EvaluateExampleWorkUnit;
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
@@ -96,6 +100,21 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
+
+class CompositeEvaluator : public Evaluator
+{
+public:
+  void addEvaluator(EvaluatorPtr evaluator)
+    {evaluators.push_back(evaluator);}
+  
+  /* Evaluator */
+  virtual ScoreObjectPtr createEmptyScoreObject() const;
+  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
+
+protected:
+  std::vector<EvaluatorPtr> evaluators;
+};
 
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator();

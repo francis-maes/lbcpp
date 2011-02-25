@@ -97,6 +97,35 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
 void SupervisedEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
 {
   Variable supervision = inputsObject->getVariable(inputsObject->getNumVariables() - 1);
-  if (supervision.exists())
-    addPrediction(defaultExecutionContext(), output, supervision, scores);
+  if (!supervision.exists())
+    return;
+  if (!output.exists())
+  {
+    defaultExecutionContext().errorCallback(T("SupervisedEvaluator::updateScoreObject"), T(""));
+    return;
+  }
+  addPrediction(defaultExecutionContext(), output, supervision, scores);
+}
+
+/*
+** CompositeEvaluator
+*/
+ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject() const
+{
+  CompositeScoreObjectPtr res = new CompositeScoreObject();
+  for (size_t i = 0; i < evaluators.size(); ++i)
+    res->addScoreObject(evaluators[i]->createEmptyScoreObject());
+  return res;
+}
+
+void CompositeEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+{
+  for (size_t i = 0; i < evaluators.size(); ++i)
+    evaluators[i]->updateScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i), example, output);
+}
+
+void CompositeEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
+{
+  for (size_t i = 0; i < evaluators.size(); ++i)
+    evaluators[i]->finalizeScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i));
 }

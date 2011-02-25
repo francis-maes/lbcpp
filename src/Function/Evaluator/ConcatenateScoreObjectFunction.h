@@ -35,7 +35,7 @@ protected:
     size_t numInputs = getNumInputs();
     CompositeScoreObjectPtr res = new CompositeScoreObject();
     for (size_t i = 0; i < numInputs; ++i)
-      res->pushScoreObject(inputs[i].getObjectAndCast<ScoreObject>());
+      res->addScoreObject(inputs[i].getObjectAndCast<ScoreObject>());
     return res;
   }
 };

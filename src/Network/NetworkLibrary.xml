@@ -6,11 +6,15 @@
   <import name="NetworkWorkUnit"/>
 
   <include file="lbcpp/Network/NetworkClient.h"/>
+  <include file="lbcpp/Network/NetworkServer.h"/>
   <include file="lbcpp/Network/NetworkInterface.h"/>
 
   <class name="NetworkClient" base="Object" abstract="yes"/>
+  <class name="NetworkServer" base="Object"/>
 
   <class name="NetworkNotification" base="Notification" abstract="yes"/>
+
+  <class name="NetworkCallback" base="Object" abstract="yes"/>
 
   <!-- NetworkInterface -->
   <class name="NetworkInterface" base="Object">
