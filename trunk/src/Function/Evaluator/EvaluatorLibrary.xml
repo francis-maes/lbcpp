@@ -8,6 +8,7 @@
   <class name="ScoreObject" base="Object" abstract="yes"/>
   <class name="Evaluator" base="Function" abstract="yes"/>
   <class name="SupervisedEvaluator" base="Evaluator" abstract="yes"/>
+  <class name="CompositeEvaluator" base="Evaluator"/>
   
   <class name="CompositeScoreObject" base="ScoreObject">
     <variable type="ObjectVector[ScoreObject]" name="scores"/>

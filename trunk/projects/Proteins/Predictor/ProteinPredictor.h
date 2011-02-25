@@ -36,6 +36,9 @@ typedef ReferenceCountedObjectPtr<ProteinPredictor> ProteinPredictorPtr;
 class ProteinSequencialPredictor : public CompositeFunction
 {
 public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
   void addPredictor(ProteinPredictorPtr predictor)
     {jassert(predictor); predictors.push_back(predictor);}
   

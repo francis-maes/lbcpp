@@ -16,7 +16,8 @@ namespace lbcpp
 class AcceptedNetworkClient : public NetworkClient
 {
 public:
-  AcceptedNetworkClient(ExecutionContext& context) : NetworkClient(context) {}
+  AcceptedNetworkClient(ExecutionContext& context)
+    : NetworkClient(context) {}
   
   virtual bool startClient(const String& host, int port)
     {jassertfalse; return false;}

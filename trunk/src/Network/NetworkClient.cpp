@@ -190,8 +190,10 @@ class NetworkConnectionThread : public Thread
 {
 public:
   NetworkConnectionThread(NetworkClientPtr client, const String& host, int port, bool autoReconnect)
-    : Thread(T("Network ") + host + T(":") + String(port)), client(client), host(host), port(port), connected(false), autoReconnect(autoReconnect) {}
-
+    : Thread(T("Network ") + host + T(":") + String(port)),
+      client(client), host(host), port(port),
+      autoReconnect(autoReconnect), connected(false) {}
+  
   void disconnected()
     {connected = false;}
 
@@ -215,8 +217,8 @@ protected:
   NetworkClientPtr client;
   String host;
   int port;
-  bool connected;
   bool autoReconnect;
+  bool connected;
 };
 
 typedef ReferenceCountedObjectPtr<NetworkConnectionThread> NetworkConnectionThreadPtr;

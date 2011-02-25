@@ -2,6 +2,6 @@
 
 <library name="ProteinEvaluator" directory="Evaluator">
   
-  <class name="ProteinEvaluatorCompositeFunction" base="CompositeFunction"/>
+  <class name="ProteinEvaluator" base="CompositeEvaluator"/>
 
 </library>

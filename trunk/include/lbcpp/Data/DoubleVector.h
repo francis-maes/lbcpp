@@ -316,6 +316,9 @@ public:
   virtual Variable getElement(size_t index) const;
   virtual void setElement(size_t index, const Variable& value);
 
+  // Object
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  
   lbcpp_UseDebuggingNewOperator
 
 private:

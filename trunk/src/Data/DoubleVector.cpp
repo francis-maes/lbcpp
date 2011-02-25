@@ -684,3 +684,9 @@ void CompositeDoubleVector::appendSubVector(size_t shift, const DoubleVectorPtr&
   jassert(vectors.empty() || shift >= (vectors.back().first + vectors.back().second->getElementsEnumeration()->getNumElements()));
   vectors.push_back(std::make_pair(shift, subVector));
 }
+
+void CompositeDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  const CompositeDoubleVectorPtr& target = t.staticCast<CompositeDoubleVector>();
+  target->vectors = vectors;
+}
