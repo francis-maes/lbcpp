@@ -29,7 +29,8 @@ protected:
   size_t port;
   
   void serverCommunication(NodeNetworkInterfacePtr interface) const;
-  void clientCommunication(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager) const;
+  void clientCommunication(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager);
+  void updateStatus(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager, NetworkRequestPtr request, WorkUnitInformationPtr info);
 };
 
 class GridWorkUnit : public WorkUnit

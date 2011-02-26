@@ -259,7 +259,7 @@ int mainImpl(int argc, char** argv)
   NodeNetworkInterfacePtr interface = new ClientNodeNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
 
-  NetworkRequestPtr request = new NetworkRequest(*context, new WorkUnitInformation(projectName, source, destination, requiredCpus, requiredMemory, requiredTime), workUnit);
+  NetworkRequestPtr request = new NetworkRequest(*context, new WorkUnitInformation(projectName, source, destination), workUnit, requiredCpus, requiredMemory, requiredTime);
   WorkUnitInformationPtr res = interface->pushWorkUnit(*context, request);
   if (!res)
   {

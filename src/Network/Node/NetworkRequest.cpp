@@ -15,10 +15,8 @@ using namespace lbcpp;
 */
 juce::int64 WorkUnitInformation::lastIdentifier = Time::currentTimeMillis();
 
-WorkUnitInformation::WorkUnitInformation(const String& projectName, const String& source, const String& destination,
-                                         size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+WorkUnitInformation::WorkUnitInformation(const String& projectName, const String& source, const String& destination)
   : projectName(projectName), source(source), destination(destination),
-    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime),
     status(communicationError)
 {
 }
@@ -33,4 +31,12 @@ String WorkUnitInformation::generateIdentifier()
   }
   juce::Thread::sleep(1);
   return generateIdentifier();
+}
+
+NetworkRequest::NetworkRequest(ExecutionContext& context, WorkUnitInformationPtr information, WorkUnitPtr workUnit,
+               size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+  : information(information), workUnit(new XmlElement()),
+    requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime)
+{
+  this->workUnit->saveObject(context, workUnit);
 }

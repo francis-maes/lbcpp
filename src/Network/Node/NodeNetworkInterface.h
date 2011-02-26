@@ -31,6 +31,7 @@ public:
   virtual WorkUnitInformationPtr pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request) = 0;
   virtual WorkUnitInformation::Status getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const = 0;
   virtual NetworkResponsePtr getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const = 0;
+  virtual ObjectVectorPtr getModifiedStatusSinceLastConnection(ExecutionContext& context) const = 0;
 
 protected:
   String nodeName;
@@ -55,6 +56,7 @@ public:
   virtual WorkUnitInformationPtr pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request);
   virtual WorkUnitInformation::Status getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const;
   virtual NetworkResponsePtr getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const;
+  virtual ObjectVectorPtr getModifiedStatusSinceLastConnection(ExecutionContext& context) const;
 };
 
 
@@ -67,6 +69,7 @@ public:
   virtual WorkUnitInformationPtr pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request);
   virtual WorkUnitInformation::Status getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const;
   virtual NetworkResponsePtr getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const;
+  virtual ObjectVectorPtr getModifiedStatusSinceLastConnection(ExecutionContext& context) const;
 };
 
 class ManagerNodeNetworkInterface : public NodeNetworkInterface
@@ -82,17 +85,23 @@ public:
   virtual WorkUnitInformationPtr pushWorkUnit(ExecutionContext& context, NetworkRequestPtr request);
   virtual WorkUnitInformation::Status getWorkUnitStatus(ExecutionContext& context, WorkUnitInformationPtr information) const;
   virtual NetworkResponsePtr getExecutionTrace(ExecutionContext& context, WorkUnitInformationPtr information) const;
+  virtual ObjectVectorPtr getModifiedStatusSinceLastConnection(ExecutionContext& context) const;
 
   /* ManagerNodeNetworkInterface */
-  void getUnfinishedRequestsSentTo(const String& nodeName, std::vector<NetworkRequestPtr>& results) const;
-  void archiveTrace(ExecutionContext& context, const NetworkRequestPtr& request, const NetworkResponsePtr& trace);
+  void getRequestsWithStatus(const String& nodeName, WorkUnitInformation::Status status, std::vector<NetworkRequestPtr>& results) const;
+  void archiveRequest(ExecutionContext& context, NetworkRequestPtr request, NetworkResponsePtr trace);
+  void setRequestAsFail(ExecutionContext& context, NetworkRequestPtr request, NetworkResponsePtr response);
+  void saveRequest(ExecutionContext& context, NetworkRequestPtr request) const;
+
+  /* Data structure operations */
+  void addRequest(NetworkRequestPtr request);
+  void removeRequest(WorkUnitInformationPtr info);
+  NetworkRequestPtr getRequest(WorkUnitInformationPtr info) const;
 
 protected:
   friend class ManagerNodeNetworkInterfaceClass;
 
-  File requestDirectory;
-  File archiveDirectory;
-  std::vector<NetworkRequestPtr> requests;
+  std::map<String, std::map<String, NetworkRequestPtr> > requests;
 };
 
 typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
