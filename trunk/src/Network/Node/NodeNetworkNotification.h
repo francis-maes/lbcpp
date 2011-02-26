@@ -76,6 +76,12 @@ protected:
   WorkUnitInformationPtr information;
 };
 
+class GetModifiedStatusSinceLastConnection : public NodeNetworkNotification
+{
+public:
+  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
+};
+
 }; /* namespace */
   
 #endif // !LBCPP_NODE_NETWORK_NOTIFICATION_H_

@@ -31,8 +31,7 @@ public:
     iDontHaveThisWorkUnit
   };
 
-  WorkUnitInformation(const String& projectName, const String& source, const String& destination,
-                 size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
+  WorkUnitInformation(const String& projectName, const String& source, const String& destination);
   WorkUnitInformation() {}
 
   const String& getIdentifier() const
@@ -55,6 +54,9 @@ public:
 
   void selfGenerateIdentifier()
     {identifier = generateIdentifier();}
+  
+  juce::int64 getCreationTime()
+    {return identifier.getLargeIntValue();}
 
 protected:
   friend class WorkUnitInformationClass;
@@ -63,9 +65,6 @@ protected:
   String projectName;
   String source;
   String destination;
-  size_t requiredCpus;
-  size_t requiredMemory; // Gb
-  size_t requiredTime; // Hour
   int status;
 
   static juce::int64 lastIdentifier;
@@ -73,14 +72,15 @@ protected:
   static String generateIdentifier();
 };
 
+extern ClassPtr workUnitInformationClass;
+
 typedef ReferenceCountedObjectPtr<WorkUnitInformation> WorkUnitInformationPtr;
 
 class NetworkRequest : public Object
 {
 public:
-  NetworkRequest(ExecutionContext& context, WorkUnitInformationPtr information, WorkUnitPtr workUnit)
-    : information(information), workUnit(new XmlElement())
-    {this->workUnit->saveObject(context, workUnit);}
+  NetworkRequest(ExecutionContext& context, WorkUnitInformationPtr information, WorkUnitPtr workUnit,
+                 size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
   NetworkRequest() {}
   
   const WorkUnitInformationPtr& getWorkUnitInformation() const
@@ -91,9 +91,12 @@ public:
   
 protected:
   friend class NetworkRequestClass;
-  
+
   WorkUnitInformationPtr information;
   XmlElementPtr workUnit;
+  size_t requiredCpus;
+  size_t requiredMemory; // Gb
+  size_t requiredTime; // Hour
 };
 
 typedef ReferenceCountedObjectPtr<NetworkRequest> NetworkRequestPtr;
@@ -115,6 +118,28 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<NetworkResponse> NetworkResponsePtr;
+
+class NetworkArchive : public Object
+{
+public:
+  NetworkArchive(NetworkRequestPtr request, NetworkResponsePtr response)
+    : request(request), response(response) {}
+  NetworkArchive() {}
+  
+  const NetworkRequestPtr& getNetworkRequest() const
+    {return request;}
+  
+  const NetworkResponsePtr& getNetworkResponse() const
+    {return response;}
+  
+protected:
+  friend class NetworkArchiveClass;
+  
+  NetworkRequestPtr request;
+  NetworkResponsePtr response;
+};
+
+typedef ReferenceCountedObjectPtr<NetworkArchive> NetworkArchivePtr;
 
 }; /* namespace */
 

@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include "NodeNetworkNotification.h"
+#include "NetworkRequest.h"
 
 using namespace lbcpp;
 
@@ -14,14 +15,19 @@ using namespace lbcpp;
  ** NodeNetworkNotification
  */
 void NodeNetworkNotification::notifyNetwork(const NetworkInterfacePtr& target)
-  {notifyNodeNetwork(target);}
+{
+  notifyNodeNetwork(target);
+}
 
 void CloseCommunicationNotification::notifyNetwork(const NetworkInterfacePtr& target)
-  {target->closeCommunication(target->getContext());}
+{
+  target->closeCommunication(target->getContext());
+}
 
 void GetNodeNameNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
-  {target->getNetworkClient()->sendVariable(Variable(target->getNodeName(target->getContext()), stringType));}
-
+{
+  target->getNetworkClient()->sendVariable(Variable(target->getNodeName(target->getContext()), stringType));
+}
 
 void PushWorkUnitNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
 {
@@ -38,5 +44,11 @@ void GetWorkUnitStatusNotification::notifyNodeNetwork(const NodeNetworkInterface
 void GetExecutionTraceNotification::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
 {
   NetworkResponsePtr res = target->getExecutionTrace(target->getContext(), information);
+  target->getNetworkClient()->sendVariable(res);
+}
+
+void GetModifiedStatusSinceLastConnection::notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
+{
+  ObjectVectorPtr res = target->getModifiedStatusSinceLastConnection(target->getContext());
   target->getNetworkClient()->sendVariable(res);
 }

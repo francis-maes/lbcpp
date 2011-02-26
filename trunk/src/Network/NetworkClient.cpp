@@ -19,8 +19,10 @@ bool NetworkClient::sendVariable(const Variable& variable)
   String text = exporter.toString();
   if (text == String::empty)
     return false;
+#ifdef JUCE_DEBUG
   std::cout << "----- Send -----" << std::endl
             << text << std::endl;
+#endif // !JUCE_DEBUG
   juce::MemoryBlock block(text.toUTF8(), text.length());
   return sendMessage(block);
 }
@@ -40,7 +42,9 @@ bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
     juce::int64 elapsedTime = Time::getMillisecondCounter() - startTime;
     if (elapsedTime >= timeout || disconnected)
       return false;
+#ifdef JUCE_DEBUG
     std::cout << "NetworkClient - time left: " << timeout - elapsedTime << std::endl;
+#endif // !JUCE_DEBUG
     juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
     if (!timeToSleep)
       return false;
@@ -124,8 +128,10 @@ void NetworkClient::connectionLost()
 
 void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 {
+#ifdef JUCE_DEBUG
   std::cout << "----- Received ----- " << std::endl
             << message.toString() << std::endl;
+#endif // !JUCE_DEBUG
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);
   variableReceived(importer.isOpened() ? importer.load() : Variable());

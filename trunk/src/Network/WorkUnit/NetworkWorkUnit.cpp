@@ -87,7 +87,7 @@ void ManagerWorkUnit::serverCommunication(NodeNetworkInterfacePtr interface) con
   }
 }
   
-void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager) const
+void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager)
 {
   String nodeName = interface->getNodeName(interface->getContext());
   if (nodeName == String::empty)
@@ -95,36 +95,74 @@ void ManagerWorkUnit::clientCommunication(NodeNetworkInterfacePtr interface, Man
     interface->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Fail - Empty node name"));
     return;
   }
-  
-  /* Update status */
-  std::vector<NetworkRequestPtr> requests;
-  manager->getUnfinishedRequestsSentTo(nodeName, requests);
-  for (size_t i = 0; i < requests.size(); ++i)
+
+  /* Send new requests */
+  std::vector<NetworkRequestPtr> waitingRequests;
+  manager->getRequestsWithStatus(nodeName, WorkUnitInformation::waitingOnManager, waitingRequests);
+  for (size_t i = 0; i < waitingRequests.size(); ++i)
   {
-    WorkUnitInformation::Status status = interface->getWorkUnitStatus(interface->getContext(), requests[i]->getWorkUnitInformation());
-    int oldStatus = requests[i]->getWorkUnitInformation()->getStatus();
-
-    if (status == WorkUnitInformation::iDontHaveThisWorkUnit) // implicitly send new request
-    {
-      interface->pushWorkUnit(interface->getContext(), requests[i]);
-      requests[i]->getWorkUnitInformation()->setStatus(WorkUnitInformation::waitingOnServer);
-      continue;
-    }
-
-    requests[i]->getWorkUnitInformation()->setStatus(status);
-    if (status == WorkUnitInformation::finished && status != oldStatus) // transition to finised status
-    {
-      NetworkResponsePtr trace = interface->getExecutionTrace(interface->getContext(), requests[i]->getWorkUnitInformation());
-      manager->archiveTrace(manager->getContext(), requests[i], trace);
-      continue;
-    }
-
-    if (oldStatus != status)
-    {
-      File f = manager->getContext().getFile(T("Requests/") + requests[i]->getWorkUnitInformation()->getIdentifier() + T(".request"));
-      requests[i]->saveToFile(manager->getContext(), f);
-    }
+    WorkUnitInformationPtr info = interface->pushWorkUnit(interface->getContext(), waitingRequests[i]);
+    updateStatus(interface, manager, waitingRequests[i], info);
   }
+
+  /* Update status */
+  ObjectVectorPtr modifiedRequests = interface->getModifiedStatusSinceLastConnection(interface->getContext());
+  if (!modifiedRequests)
+    return;
+  
+  size_t n = modifiedRequests->getNumElements();
+  for (size_t i = 0; i < n; ++i)
+  {
+    WorkUnitInformationPtr info = modifiedRequests->getAndCast<WorkUnitInformation>(i);
+    if (!info)
+    {
+      manager->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Empty modified request"));
+      continue;
+    }
+    updateStatus(interface, manager, manager->getRequest(info), info);
+  }
+}
+
+void ManagerWorkUnit::updateStatus(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager, NetworkRequestPtr request, WorkUnitInformationPtr info)
+{
+  if (!request || !info)
+  {
+    manager->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Request or WorkUntInformation does not exists in ManagerWorkUnit::updateStatus"));
+    return;
+  }
+
+  WorkUnitInformation::Status oldStatus = request->getWorkUnitInformation()->getStatus();
+  WorkUnitInformation::Status newStatus = info->getStatus();
+
+  if (newStatus == oldStatus)
+    return;
+
+  request->getWorkUnitInformation()->setStatus(newStatus);
+
+  if (newStatus == WorkUnitInformation::iDontHaveThisWorkUnit)
+  {
+    manager->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("WorkUnitInformation::iDontHaveThisWorkUnit - Re-send work unit"));
+    interface->pushWorkUnit(interface->getContext(), request);
+    request->getWorkUnitInformation()->setStatus(WorkUnitInformation::waitingOnServer);
+    return;
+  }
+  
+  if (newStatus == WorkUnitInformation::workUnitError)
+  {
+    manager->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("WorkUnitInformation::workUnitError - Node have trouble with this work unit: ") + info->getProjectName() + T("/") + info->getIdentifier());
+    NetworkResponsePtr response = interface->getExecutionTrace(interface->getContext(), info); // to remove server files
+    manager->setRequestAsFail(manager->getContext(), request, response);
+    return;
+  }
+  
+  if (newStatus == WorkUnitInformation::finished)
+  {
+    NetworkResponsePtr response = interface->getExecutionTrace(interface->getContext(), info);
+    manager->archiveRequest(manager->getContext(), request, response);
+    return;
+  }
+
+  manager->saveRequest(manager->getContext(), request);
 }
 
 /*
