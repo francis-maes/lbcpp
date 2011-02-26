@@ -18,7 +18,7 @@
 
   <!-- NetworkInterface -->
   <class name="NetworkInterface" base="Object">
-    <variable type="NetworkClient" name="client"/>
+    <!-- <variable type="NetworkClient" name="client"/> -->
   </class>
 
 </library>

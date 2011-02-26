@@ -12,6 +12,8 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Network/NetworkInterface.h>
 # include "../Node/NodeNetworkInterface.h"
+# include "../Node/ManagerNode/ManagerNodeNetworkInterface.h"
+# include "../Node/GridNode/GridNodeNetworkInterface.h"
 
 namespace lbcpp
 {
@@ -25,12 +27,12 @@ public:
 
 protected:
   friend class ManagerWorkUnitClass;
-  
+
   size_t port;
-  
-  void serverCommunication(NodeNetworkInterfacePtr interface) const;
-  void clientCommunication(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager);
-  void updateStatus(NodeNetworkInterfacePtr interface, ManagerNodeNetworkInterfacePtr manager, NetworkRequestPtr request, WorkUnitInformationPtr info);
+  NetworkProjectFileManagerPtr fileManager;
+
+  void serverCommunication(ExecutionContext& context, ManagerNodeNetworkInterfacePtr interface) const;
+  void clientCommunication(ExecutionContext& context, GridNodeNetworkInterfacePtr interface);
 };
 
 class GridWorkUnit : public WorkUnit

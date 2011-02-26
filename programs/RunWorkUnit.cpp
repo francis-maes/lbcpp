@@ -173,6 +173,8 @@ int mainImpl(int argc, char** argv)
   }
 
   // replace default context
+  if (projectDirectory == File::nonexistent)
+    projectDirectory = File::getCurrentWorkingDirectory();
   ExecutionContextPtr context = (numThreads == 1 ? singleThreadedExecutionContext(projectDirectory) : multiThreadedExecutionContext(numThreads, projectDirectory));
   setDefaultExecutionContext(context);
   context->appendCallback(consoleExecutionCallback());

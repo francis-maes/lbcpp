@@ -10,7 +10,7 @@
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
 #include <lbcpp/Network/NetworkClient.h>
-#include "../src/Network/Node/NodeNetworkInterface.h"
+#include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
 
 using namespace lbcpp;
 
@@ -81,7 +81,7 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
       else
       {
         managerHostName = address.substring(0, position);
-        int port = address.substring(position).getIntValue();
+        int port = address.substring(position + 1).getIntValue();
         if (port < 1)
         {
           context.errorCallback(T("Invalid number of port"));
@@ -223,7 +223,7 @@ int mainImpl(int argc, char** argv)
   size_t requiredMemory = 2;
   size_t requiredTime = 10;
   
-  ExecutionContextPtr context = singleThreadedExecutionContext();
+  ExecutionContextPtr context = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());
   if (!parseTopLevelArguments(*context, argc, argv, arguments, projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime)
       || projectName == String::empty || source == String::empty || destination == String::empty)
   {
@@ -248,31 +248,33 @@ int mainImpl(int argc, char** argv)
 
   if (!workUnit)
     return false;
-  
+
   NetworkClientPtr client = blockingNetworkClient(*context);
   if (!client->startClient(managerHostName, managerPort))
   {
     context->errorCallback(T("SendWorkUnit::run"), T("Not connected !"));
     return false;
   }
+  context->informationCallback(managerHostName, T("Connected !"));
 
-  NodeNetworkInterfacePtr interface = new ClientNodeNetworkInterface(*context, client, source);
+  ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
 
-  NetworkRequestPtr request = new NetworkRequest(*context, new WorkUnitInformation(projectName, source, destination), workUnit, requiredCpus, requiredMemory, requiredTime);
-  WorkUnitInformationPtr res = interface->pushWorkUnit(*context, request);
-  if (!res)
+  NetworkRequestPtr request = new NetworkRequest(*context, projectName, source, destination, workUnit, requiredCpus, requiredMemory, requiredTime);
+  String res = interface->pushWorkUnit(request);
+  if (res == T("Error"))
   {
     context->errorCallback(T("SendWorkUnit::run"), T("Touble - We didn't correclty receive the acknowledgement"));
-    interface->closeCommunication(*context);
+    interface->closeCommunication();
     return false;
   }
-  context->resultCallback(T("WorkUnitIdentifier"), res->getIdentifier());
+  request->setIdentifier(res);
+  context->resultCallback(T("WorkUnitIdentifier"), request->getIdentifier());
+
+  File f = context->getFile(projectName + T(".") + request->getIdentifier() + T(".request"));
+  request->saveToFile(*context, f);
   
-  File f = File::getCurrentWorkingDirectory().getChildFile(projectName + T(".") + res->getIdentifier() + T(".request"));
-  res->saveToFile(*context, f);
-  
-  interface->closeCommunication(*context);
+  interface->closeCommunication();
   return true;
 }
 
