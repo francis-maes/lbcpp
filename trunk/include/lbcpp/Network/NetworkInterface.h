@@ -37,9 +37,9 @@ public:
     {return client;}
 
   virtual void sendInterfaceClass()
-    {client->sendVariable(getClassName());}
+    {client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(this));}
 
-  virtual void closeCommunication(ExecutionContext& context)
+  virtual void closeCommunication()
     {client->stopClient();}
 
 protected:

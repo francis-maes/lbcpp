@@ -18,69 +18,21 @@ namespace lbcpp
 class NodeNetworkNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNetwork(const NetworkInterfacePtr& target);  
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+    {notifyNodeNetwork(target);}
+
   virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target) = 0;
 };
 
 class CloseCommunicationNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNetwork(const NetworkInterfacePtr& target);
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+    {target->closeCommunication();}
 };
 
-class GetNodeNameNotification : public NodeNetworkNotification
-{
-public:
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
-};
 
-class PushWorkUnitNotification : public NodeNetworkNotification
-{
-public:
-  PushWorkUnitNotification(NetworkRequestPtr request) : request(request) {}
-  PushWorkUnitNotification() {}
-  
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
-  
-protected:
-  friend class PushWorkUnitNotificationClass;
-  
-  NetworkRequestPtr request;
-};
 
-class GetWorkUnitStatusNotification : public NodeNetworkNotification
-{
-public:
-  GetWorkUnitStatusNotification(WorkUnitInformationPtr information) : information(information) {}
-  GetWorkUnitStatusNotification() {}
-  
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
-
-protected:
-  friend class GetWorkUnitStatusNotificationClass;
-
-  WorkUnitInformationPtr information;
-};
-
-class GetExecutionTraceNotification : public NodeNetworkNotification
-{
-public:
-  GetExecutionTraceNotification(WorkUnitInformationPtr information) : information(information) {}
-  GetExecutionTraceNotification() {}
-  
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
-  
-protected:
-  friend class GetExecutionTraceNotificationClass;
-  
-  WorkUnitInformationPtr information;
-};
-
-class GetModifiedStatusSinceLastConnection : public NodeNetworkNotification
-{
-public:
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target);
-};
 
 }; /* namespace */
   
