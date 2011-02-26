@@ -128,7 +128,7 @@ WorkUnitInformationPtr SgeNodeNetworkInterface::pushWorkUnit(ExecutionContext& c
   res->setStatus(WorkUnitInformation::waitingOnServer);
 
   File f = context.getFile(T("Requests/") + request->getWorkUnitInformation()->getIdentifier() + T(".request"));
-  res->saveToFile(context, f);
+  request->saveToFile(context, f);
 
   f = context.getFile(T("Waiting/") + request->getWorkUnitInformation()->getIdentifier() + T(".workUnit"));
   workUnit->saveToFile(context, f);
