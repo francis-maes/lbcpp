@@ -75,7 +75,7 @@ protected:
     {return context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));}
 
   File getWaitingFile(NetworkRequestPtr request)
-    {return context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));}
+    {return context.getFile(T("PreProcessing/") + request->getIdentifier() + T(".workUnit"));}
 
   File getFinishDirectory()
     {return context.getProjectDirectory().getChildFile(T("Finished"));}
