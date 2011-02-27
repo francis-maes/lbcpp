@@ -99,6 +99,7 @@ public:
     }
     String gapScore = line.substring(153, 157).trim();
     scores->getValueReference(positionSpecificScoringMatrixEnumeration->getNumElements() - 1) = gapScore.getDoubleValue() / 6;
+
     pssm->setElement(currentPosition, scores);
 
     ++currentPosition;

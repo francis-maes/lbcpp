@@ -34,20 +34,25 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     NetworkClientPtr client = server->acceptClient(INT_MAX);
     if (!client)
       continue;
-    context.informationCallback(client->getConnectedHostName(), T("connected"));
+
+    String connectedHostName = client->getConnectedHostName();
+    context.informationCallback(connectedHostName, T("Connected"));
     
     /* Which kind of connection ? */
     NodeNetworkInterfacePtr remoteInterface;
     if (!client->receiveObject<NodeNetworkInterface>(10000, remoteInterface) || !remoteInterface)
     {
-      context.warningCallback(client->getConnectedHostName(), T("Fail - Client type (1)"));
+      context.warningCallback(connectedHostName, T("Unknown NodeNetworkInterface - Need to update Manager and/or Client? Invalid NetworkInterface?"));
       client->stopClient();
       continue;
     }
 
+    context.informationCallback(connectedHostName, T("Node name: ") + remoteInterface->getNodeName());
+    context.informationCallback(connectedHostName, T("Interface: ") + remoteInterface->getClassName());
+
     ClassPtr type = remoteInterface->getClass();
     /* Strat communication (depending of the type) */
-    NetworkInterfacePtr interface;
+    NodeNetworkInterfacePtr interface;
     if (type->inheritsFrom(clientManagerNodeNetworkInterfaceClass))
     {
       interface = new FileSystemManagerNodeNetworkInterface(context, client, T("Manager"), fileManager);
@@ -55,19 +60,19 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     }
     else if (type->inheritsFrom(gridNodeNetworkInterfaceClass))
     {
-      interface = new ClientGridNodeNetworkInterface(context, client, T("Manager"));
+      interface = new ClientGridNodeNetworkInterface(context, client, remoteInterface->getNodeName());
       clientCommunication(context, interface);
     }
     else
     {
-      context.warningCallback(client->getConnectedHostName(), T("Fail - Client type (2)"));
+      context.warningCallback(connectedHostName, T("Unknown NodeNetworkInterface - No communication protocol specified for this interface"));
       client->stopClient();
       continue;
     }
     
     /* Terminate the connection */
     interface->closeCommunication();
-    context.informationCallback(client->getConnectedHostName(), T("disconnected"));
+    context.informationCallback(connectedHostName, T("Disconnected"));
   }
 }
 
@@ -147,14 +152,14 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
 
 Variable GridWorkUnit::run(ExecutionContext& context)
 {
-  if (gridEngine != T("SGE"))
+  if (gridEngine != T("SGE") && gridEngine != T("BOINC"))
     return false;
   
   /* Establishing a connection */
   NetworkClientPtr client = blockingNetworkClient(context, 3);
   if (!client->startClient(hostName, port))
   {
-    context.warningCallback(T("NetworkContext::run"), T("Connection to ") + hostName.quoted() + ("fail !"));
+    context.warningCallback(T("NetworkContext::run"), T("Connection to ") + hostName.quoted() + (" fail !"));
     client->stopClient();
     return Variable();
   }
@@ -163,6 +168,8 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   NodeNetworkInterfacePtr interface;
   if (gridEngine == T("SGE"))
     interface = new SgeGridNodeNetworkInterface(context, client, gridName);
+  else if (gridEngine == T("BOINC"))
+    interface = new BoincGridNodeNetworkInterface(context, client, gridName);
   else
   {
     jassertfalse;

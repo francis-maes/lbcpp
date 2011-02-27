@@ -53,6 +53,7 @@ SgeGridNodeNetworkInterface::SgeGridNodeNetworkInterface(ExecutionContext& conte
   createDirectoryIfNotExists(T("Waiting"));
   createDirectoryIfNotExists(T("Finished"));
   createDirectoryIfNotExists(T("Traces"));
+  createDirectoryIfNotExists(T("Jobs"));
 }
 
 ContainerPtr SgeGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
