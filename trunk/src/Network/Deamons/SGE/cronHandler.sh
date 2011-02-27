@@ -21,9 +21,12 @@ touch $workUnitDirectory/.lock
 cd $programDirectory
 ./RunWorkUnit GridWorkUnit --hostName $masterHostname --gridName $serverName --gridEngine SGE --projectDirectory $workUnitDirectory
 
-# Launch the waiting workUnit
+# Convert the waiting workUnits to SGE jobs
 cd $workUnitDirectory
 source ./WorkUnitToSgeRequest.sh
+
+# Launch Jobs in an asyncronous way (because SGE don't work anytime and sometime induce very long latency)
+./SubmitJobs.sh ${workUnitDirectory} &
 
 rm $workUnitDirectory/.lock
 

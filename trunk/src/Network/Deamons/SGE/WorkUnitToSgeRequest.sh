@@ -1,17 +1,18 @@
 #!/bin/bash
 
-workUnits=`ls ${workUnitDirectory}/Waiting`
+workUnits=`ls ${workUnitDirectory}/PreProcessing`
 
 for f in $workUnits
 do
   fileName=`echo $f | cut -f 1 -d '.'`
 
-  waitingFile="${workUnitDirectory}/Waiting/$f"
-  inProgressFile="${workUnitDirectory}/InProgress/$f"
-  finishedFile="${workUnitDirectory}/Finished/$f"
+  preProcessingFile="${workUnitDirectory}/PreProcessing/$f"
+  workUnitFile="${workUnitDirectory}/WorkUnits/$f"
+  finishedFile="${workUnitDirectory}/Finished/$fileName"
+  traceFile="${workUnitDirectory}/Traces/$fileName.trace"
+  jobFile="${workUnitDirectory}/Jobs/$fileName.qsub"
   requestFile="${workUnitDirectory}/Requests/$fileName.request"
   
-  trace="${workUnitDirectory}/Traces/$fileName.trace"
   projectName=`cat $requestFile | grep "projectName" | cut -f 2 -d '>' | cut -f 1 -d '<'`
   requiredCpus=`cat $requestFile | grep "requiredCpus" | cut -f 2 -d '>' | cut -f 1 -d '<'`
   requiredMemory=`cat $requestFile | grep "requiredMemory" | cut -f 2 -d '>' | cut -f 1 -d '<'`
@@ -24,8 +25,10 @@ do
 
     ln -s /scratch/jbecker/data/ $rootProjectDirectory/$projectName/data
   fi
-  
-  cat > job.qsub << EOF
+
+  mv $preProcessingFile $workUnitFile
+
+  cat > $jobFile << EOF
 #$ -l h_vmem=${requiredMemory}G
 #$ -l h_rt=${requiredTime}:10:00
 #$ -cwd
@@ -33,14 +36,11 @@ do
 #$ -e $rootProjectDirectory/$projectName/$fileName.e
 #$ -j y
 #$ -N ${projectName}_$fileName
-mv $waitingFile $inProgressFile
-cd $programDirectory
-./RunWorkUnit $inProgressFile --trace $trace --projectDirectory $rootProjectDirectory/$projectName
-mv $inProgressFile $finishedFile
-EOF
 
-export SGE_ROOT="/cvos/shared/apps/sge/6.1/"
-/cvos/shared/apps/sge/6.1/bin/lx26-amd64/qsub job.qsub
+cd $programDirectory
+./RunWorkUnit $workUnitFile --trace $traceFile --projectDirectory $rootProjectDirectory/$projectName
+touch $finishedFile
+EOF
 
 done
 

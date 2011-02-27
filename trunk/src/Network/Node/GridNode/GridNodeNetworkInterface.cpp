@@ -50,7 +50,8 @@ SgeGridNodeNetworkInterface::SgeGridNodeNetworkInterface(ExecutionContext& conte
   : GridNodeNetworkInterface(context, client, nodeName)
 {
   createDirectoryIfNotExists(T("Requests"));
-  createDirectoryIfNotExists(T("Waiting"));
+  createDirectoryIfNotExists(T("PreProcessing"));
+  createDirectoryIfNotExists(T("WorkUnits"));
   createDirectoryIfNotExists(T("Finished"));
   createDirectoryIfNotExists(T("Traces"));
   createDirectoryIfNotExists(T("Jobs"));
@@ -100,6 +101,8 @@ void SgeGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResp
     f = context.getFile(T("Requests/") + identifier + T(".request"));
     f.deleteFile();
     f = context.getFile(T("Finished/") + identifier);
+    f.deleteFile();
+    f = context.getFile(T("WorkUnits/") + identifier + T(".workUnit"));
     f.deleteFile();
   }
 }
