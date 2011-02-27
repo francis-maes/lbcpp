@@ -40,21 +40,32 @@ public:
         context.informationCallback(T("Request restored: ") + f.getFileNameWithoutExtension());
         requests[request->getIdentifier()] = request;
       }
+      files = directoryFileStream(context, projectDirectories[i]->getChildFile(T("Waiting")), T("*"));
+      while (!files->isExhausted())
+      {
+        File f = files->next().getFile();
+        NetworkRequestPtr request = getRequest(f.getFileName());
+        if (!request)
+          f.deleteFile();
+        context.informationCallback(T("Waiting request: ") + f.getFileName());
+        waitingRequests.push_back(request);
+      }
       context.leaveScope(Variable());
     }
   }
   
   void addRequest(NetworkRequestPtr request)
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     requests[request->getIdentifier()] = request;
     request->saveToFile(context, createFullPathOfFile(getRequestFile(context, request)));
+    createFullPathOfFile(getWaitingFile(context, request));
     waitingRequests.push_back(request);
   }
 
   void archiveRequest(NetworkArchivePtr archive)
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     NetworkRequestPtr request = archive->getNetworkRequest();
     archive->saveToFile(context, createFullPathOfFile(getArchiveFile(context, request)));
     getRequestFile(context, request).deleteFile();
@@ -63,7 +74,7 @@ public:
   
   void crachedRequest(NetworkRequestPtr request)
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     request->saveToFile(context, createFullPathOfFile(getCrachedFile(context, request)));
     getRequestFile(context, request).deleteFile();
     requests.erase(request->getIdentifier());
@@ -71,36 +82,41 @@ public:
 
   NetworkRequestPtr getRequest(const String& identifier) const
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     std::map<String, NetworkRequestPtr>::const_iterator res = requests.find(identifier);
     if (res == requests.end())
       return NetworkRequestPtr();
     return res->second;
   }
   
-  void statusHasChanged(const NetworkRequestPtr& request)
-  {
-    ScopedLock _(globalLock);
-    request->saveToFile(context, createFullPathOfFile(getRequestFile(context, request)));
-  }
-  
   void getWaitingRequests(const String& nodeName, std::vector<NetworkRequestPtr>& results)
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     std::vector<NetworkRequestPtr> remainingRequests;
+    std::cout << "Num requests: " << requests.size() << std::endl;
+    std::cout << "Num waiting requests: " << waitingRequests.size() << std::endl;
     for (size_t i = 0; i < waitingRequests.size(); ++i)
+    {
+      std::cout << "  Dst: " << waitingRequests[i]->getDestination() << " ?= " << nodeName << std::endl;
       if (waitingRequests[i]->getDestination() == nodeName)
+      {
         results.push_back(waitingRequests[i]);
+        getWaitingFile(context, waitingRequests[i]).deleteFile();
+      }
       else
         remainingRequests.push_back(waitingRequests[i]);
+    }
     waitingRequests = remainingRequests;
   }
   
   void setAsWaitingRequests(const std::vector<NetworkRequestPtr>& networkRequests)
   {
-    ScopedLock _(globalLock);
+//    ScopedLock _(globalLock);
     for (size_t i = 0; i < networkRequests.size(); ++i)
+    {
       waitingRequests.push_back(networkRequests[i]);
+      createFullPathOfFile(getWaitingFile(context, networkRequests[i]));
+    }
   }
   
 protected:
@@ -132,6 +148,11 @@ protected:
     Time time(request->getCreationTime());
     return context.getFile(request->getProjectName() + time.formatted(T("%Y-%m-%d")) + T("/Error/") + request->getIdentifier() + T(".request"));
   }
+
+  File getWaitingFile(ExecutionContext& context, NetworkRequestPtr request) const
+  {
+    return context.getFile(request->getProjectName() + T("/Waiting/") + request->getIdentifier());
+  }
 };
 
 typedef ReferenceCountedObjectPtr<NetworkProjectFileManager> NetworkProjectFileManagerPtr;
@@ -139,3 +160,4 @@ typedef ReferenceCountedObjectPtr<NetworkProjectFileManager> NetworkProjectFileM
 }; /* namespace */
   
 #endif // !LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
+

@@ -42,11 +42,11 @@ public:
 
 extern ClassPtr clientManagerNodeNetworkInterfaceClass;
 
-class FileSystemManagerNodeNetworkInterface : public NodeNetworkInterface
+class FileSystemManagerNodeNetworkInterface : public ManagerNodeNetworkInterface
 {
 public:
   FileSystemManagerNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name, NetworkProjectFileManagerPtr fileManager)
-    : NodeNetworkInterface(context, client, name), fileManager(fileManager) {}
+    : ManagerNodeNetworkInterface(context, client, name), fileManager(fileManager) {}
   FileSystemManagerNodeNetworkInterface() {}
 
   virtual String pushWorkUnit(NetworkRequestPtr request)
