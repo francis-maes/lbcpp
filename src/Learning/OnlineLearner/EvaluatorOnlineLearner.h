@@ -63,7 +63,7 @@ protected:
   ScoreObjectPtr evaluate(const std::vector<ObjectPtr>& data, const String& name)
   {
     ScoreObjectPtr score = function->evaluate(*context, data, evaluator, T("Evaluating"));
-    context->resultCallback(name + T(" score"), score);
+    context->resultCallback(name + T(" score"), score->getScoreToMinimize());
     return score;
   }
 };

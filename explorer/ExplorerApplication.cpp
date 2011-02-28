@@ -395,6 +395,7 @@ public:
 #endif // JUCE_MAC
     lbcpp::importLibrariesFromDirectory(currentExecutableDirectory);
     lbcpp::importLibrary(explorerLibrary());
+    defaultExecutionContext().setProjectDirectory(currentExecutableDirectory);
 
     theCommandManager = new ApplicationCommandManager();
 
