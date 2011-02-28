@@ -24,7 +24,7 @@ ContainerPtr ClientGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkR
 {
   client->sendVariable(new PushWorkUnitsNotification(networkRequests));
   ContainerPtr res;
-  if (!client->receiveObject<Container>(10000, res))
+  if (!client->receiveObject<Container>(300000, res))
     context.warningCallback(client->getConnectedHostName(), T("ClientGridNodeNetworkInterface::pushWorkUnits"));
   return res;
 }
@@ -33,7 +33,7 @@ ContainerPtr ClientGridNodeNetworkInterface::getFinishedExecutionTraces()
 {
   client->sendVariable(new GetFinishedExecutionTraces());
   ContainerPtr res;
-  if (!client->receiveObject<Container>(10000, res))
+  if (!client->receiveObject<Container>(300000, res))
     context.warningCallback(client->getConnectedHostName(), T("ClientGridNodeNetworkInterface::getFinishedExecutionTraces"));
   else
     client->sendVariable(true);

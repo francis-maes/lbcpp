@@ -74,6 +74,12 @@ ProteinPredictorParametersPtr SnowBox::createParameters(ExecutionContext& contex
 
 Variable SnowBox::run(ExecutionContext& context)
 {
+  learningDirectory = context.getFile(learningDirectory.getFullPathName());
+  testingDirectory = context.getFile(testingDirectory.getFullPathName());
+  validationDirectory = context.getFile(validationDirectory.getFullPathName());
+  output = context.getFile(output.getFullPathName());
+  inputDirectory = context.getFile(inputDirectory.getFullPathName());
+  
   if (!loadData(context))
     return false;
 

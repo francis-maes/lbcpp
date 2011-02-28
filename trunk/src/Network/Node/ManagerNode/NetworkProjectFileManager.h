@@ -93,11 +93,8 @@ public:
   {
 //    ScopedLock _(globalLock);
     std::vector<NetworkRequestPtr> remainingRequests;
-    std::cout << "Num requests: " << requests.size() << std::endl;
-    std::cout << "Num waiting requests: " << waitingRequests.size() << std::endl;
     for (size_t i = 0; i < waitingRequests.size(); ++i)
     {
-      std::cout << "  Dst: " << waitingRequests[i]->getDestination() << " ?= " << nodeName << std::endl;
       if (waitingRequests[i]->getDestination() == nodeName)
       {
         results.push_back(waitingRequests[i]);
@@ -146,7 +143,7 @@ protected:
   File getCrachedFile(ExecutionContext& context, NetworkRequestPtr request) const
   {
     Time time(request->getCreationTime());
-    return context.getFile(request->getProjectName() + time.formatted(T("%Y-%m-%d")) + T("/Error/") + request->getIdentifier() + T(".request"));
+    return context.getFile(request->getProjectName() + T("/") + time.formatted(T("%Y-%m-%d")) + T("/Error/") + request->getIdentifier() + T(".request"));
   }
 
   File getWaitingFile(ExecutionContext& context, NetworkRequestPtr request) const

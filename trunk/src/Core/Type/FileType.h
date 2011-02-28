@@ -44,7 +44,7 @@ public:
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
-    File file = context.getFile(value);
+    File file = value;
     if (file == File::nonexistent)
       return Variable::missingValue(refCountedPointerFromThis(this));
     else
