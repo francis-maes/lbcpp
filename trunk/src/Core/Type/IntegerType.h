@@ -67,6 +67,30 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+class PositiveIntegerType : public IntegerType
+{
+public:
+  PositiveIntegerType(const String& typeName, TypePtr baseType)
+    : IntegerType(typeName, baseType) {}
+  PositiveIntegerType() : IntegerType(T("PositiveInteger"), integerType) {}
+
+  virtual Variable createFromString(ExecutionContext& context, const String& value) const
+  {
+    if (!value.trim().containsOnly(T("+e0123456789")))
+    {
+      context.errorCallback(T("IntegerType::createFromString"), value.quoted() + T(" is not a valid integer"));
+      return Variable::missingValue(refCountedPointerFromThis(this));
+    }
+    int intValue = value.getIntValue();
+    if (intValue < 0)
+    {
+      context.errorCallback(T("A positive integer cannot be negative"));
+      return Variable::missingValue(refCountedPointerFromThis(this));
+    }
+    return Variable(intValue, refCountedPointerFromThis(this));
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_INTEGER_H_
