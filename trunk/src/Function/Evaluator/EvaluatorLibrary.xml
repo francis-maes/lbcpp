@@ -14,6 +14,7 @@
     <variable type="ObjectVector[ScoreObject]" name="scores"/>
     <variable type="PositiveInteger" name="scoreToMinimizeIndex"/>
   </class>
+  <class name="ProxyEvaluator" base="Evaluator" abstract="yes"/>
   
   <class name="FunctionBasedEvaluator" base="Evaluator">
     <constructor arguments="const FunctionPtr&amp; function"/>
@@ -85,7 +86,9 @@
   </class>
 
   <!-- Default Evaluator -->
-  <class name="DefaultSupervisedEvaluator" base="ProxyFunction"/>
+  <class name="DefaultSupervisedEvaluator" base="ProxyEvaluator">
+    <constructor returnType="Evaluator"/>
+  </class>
 
   <!-- Function -->
   <class name="ConcatenateScoreObjectFunction" base="Function">

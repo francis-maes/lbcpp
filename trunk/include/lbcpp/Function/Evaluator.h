@@ -80,6 +80,7 @@ public:
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
   
 protected:
+  friend class ProxyEvaluator;
   friend struct EvaluateExampleWorkUnit;
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
@@ -116,6 +117,22 @@ protected:
   std::vector<EvaluatorPtr> evaluators;
 };
 
+class ProxyEvaluator : public Evaluator
+{
+public:
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  virtual ScoreObjectPtr createEmptyScoreObject() const;
+  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
+
+protected:
+  EvaluatorPtr implementation;
+
+  virtual EvaluatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
+};
+
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
 extern SupervisedEvaluatorPtr rocAnalysisEvaluator();
@@ -127,6 +144,9 @@ extern SupervisedEvaluatorPtr multiLabelClassificationEvaluator();
 
 // Regression
 extern SupervisedEvaluatorPtr regressionEvaluator();
+
+// Default supervised evaluator
+extern EvaluatorPtr defaultSupervisedEvaluator();
 
 extern EvaluatorPtr functionBasedEvaluator(const FunctionPtr& function);
 

@@ -234,7 +234,11 @@ String Object::defaultToStringImplementation(bool useShortString) const
         else
           res += T("--") + name;
         if (!value.isBoolean())
+        {
+          if (valueString.indexOfAnyOf(T(" \t\r\n")) >= 0)
+            valueString = valueString.quoted();
           res += T(" ") + valueString;
+        }
       }
     }
   }

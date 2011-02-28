@@ -426,7 +426,12 @@ public:
       else if (typeValue == fileType)
         res += T(" ") + context.getFilePath(File(value.getString()));
       else
-        res += T(" ") + value.toString();
+      {
+        String stringValue = value.toString();
+        if (stringValue.indexOfAnyOf(T(" \t\n\r")) >= 0)
+          stringValue = stringValue.quoted();
+        res += T(" ") + stringValue;
+      }
     }
     return res;
   }

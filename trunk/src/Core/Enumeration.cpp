@@ -34,12 +34,26 @@ Variable Enumeration::createFromString(ExecutionContext& context, const String& 
   String str = value.trim();
   size_t n = getNumElements();
   size_t res = n;
+
+  // try element names
   for (size_t i = 0; i < n; ++i)
     if (str == getElementName(i))
     {
       res = i;
       break;
     }
+
+  // try element short names
+  if (res == n)
+  {
+    for (size_t i = 0; i < n; ++i)
+      if (str == getElement(i)->getShortName())
+      {
+        res = i;
+        break;
+      }
+  }
+
   if (res == n)
     context.errorCallback(T("Enumeration::createFromString"), T("Could not find enumeration value ") + value.quoted());
   return Variable(res, refCountedPointerFromThis(this));

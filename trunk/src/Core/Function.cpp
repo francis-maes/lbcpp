@@ -247,9 +247,6 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
 {
   bool doScope = scopeName.isNotEmpty();
 
-  if (!checkIsInitialized(context))
-    return ScoreObjectPtr();
-
   if (!evaluator->isInitialized() && !evaluator->initialize(context, functionClass, examples->getClass()))
     return ScoreObjectPtr();
 
