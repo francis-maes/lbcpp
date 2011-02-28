@@ -44,12 +44,15 @@ public:
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {
-    File file = value;
+    File file = context.getFile(value);
     if (file == File::nonexistent)
       return Variable::missingValue(refCountedPointerFromThis(this));
     else
       return Variable(file.getFullPathName(), refCountedPointerFromThis(this));
   }
+  
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
+    {exporter.addTextElement(File(value.getString()).getRelativePathFrom(exporter.getContext().getProjectDirectory()));}
   
 private:
   File getFile(const VariableValue& value) const

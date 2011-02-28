@@ -109,19 +109,21 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
     for (size_t i = 0; i < waitingRequests.size(); ++i)
       vec->set(i, waitingRequests[i]);
     ContainerPtr results = interface->pushWorkUnits(vec);
-    size_t n = results->getNumElements();
-    if (n != waitingRequests.size())
+    if (!results || results->getNumElements() != waitingRequests.size())
     {
       context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
       fileManager->setAsWaitingRequests(waitingRequests);
       return;
     }
-
-    for (size_t i = 0; i < n; ++i)
+    else
     {
-      String result = results->getElement(i).getString();
-      if (result == T("Error"))
-        fileManager->crachedRequest(waitingRequests[i]);
+      size_t n = results->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        String result = results->getElement(i).getString();
+        if (result == T("Error"))
+          fileManager->crachedRequest(waitingRequests[i]);
+      }
     }
   }
 
