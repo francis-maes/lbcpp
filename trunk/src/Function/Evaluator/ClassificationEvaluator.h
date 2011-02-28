@@ -23,7 +23,7 @@ public:
     : accuracy(0.0), accuracyVector(new ScalarVariableMean()) {}
   
   virtual double getScoreToMinimize() const 
-    {return -accuracy;}
+    {return 1.0 - accuracy;}
 
   void push(bool isCorrect)
     {accuracyVector->push(isCorrect);}

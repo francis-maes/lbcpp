@@ -156,7 +156,7 @@ double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
 }
 
 double BinaryClassificationConfusionMatrix::computeAccuracy() const
-{return (truePositive + trueNegative) / (double)totalCount;}
+  {return totalCount ? (truePositive + trueNegative) / (double)totalCount : 0.0;}
 
 void BinaryClassificationConfusionMatrix::computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const
 {

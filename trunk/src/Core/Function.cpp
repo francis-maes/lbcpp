@@ -98,15 +98,7 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
 }
 
 void Function::setBatchLearner(const FunctionPtr& batchLearner)
-{
-/*  jassert(frameClass);
-  std::vector<TypePtr> types(3);
-  types[0] = getClass();
-  types[1] = containerClass(frameClass);
-  types[2] = containerClass(frameClass);
-  learner->initialize(defaultExecutionContext(), types);*/
-  this->batchLearner = batchLearner;
-}
+  {this->batchLearner = batchLearner;}
 
 Variable Function::compute(ExecutionContext& context, const Variable* inputs, size_t numInputs) const
 {
@@ -118,7 +110,7 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs, si
       TypePtr type = inputs[i].getType();
       inputVariables[i] = new VariableSignature(type, T("input") + String((int)i + 1));
     }
-    context.informationCallback(T("Auto-initialize function ") + toShortString());
+    //context.informationCallback(T("Auto-initialize function ") + toShortString());
     if (!const_cast<Function* >(this)->initialize(context, inputVariables))
       return Variable();
   }
@@ -206,7 +198,7 @@ bool Function::checkIsInitialized(ExecutionContext& context) const
 
 bool Function::initializeWithInputsObjectClass(ExecutionContext& context, ClassPtr inputsObjectClass)
 {
-  if (getNumRequiredInputs() == 1 && inputsObjectClass->inheritsFrom(getRequiredInputType(0, 1)))
+  if (getMinimumNumRequiredInputs() == 1 && getMaximumNumRequiredInputs() == 1 && inputsObjectClass->inheritsFrom(getRequiredInputType(0, 1)))
     return initialize(context, (TypePtr)inputsObjectClass);
 
   std::vector<VariableSignaturePtr> inputSignatures(inputsObjectClass->getNumMemberVariables());
