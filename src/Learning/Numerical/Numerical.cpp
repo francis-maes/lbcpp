@@ -86,13 +86,31 @@ void SupervisedNumericalFunction::buildFunction(CompositeFunctionBuilder& builde
   size_t input = builder.addInput(doubleVectorClass());
   size_t supervision = builder.addInput(anyType);
 
-  FunctionPtr learnableFunctionFunction = createLearnableFunction();
-  size_t learnableFunction = builder.addFunction(learnableFunctionFunction, input, supervision);
-  learnableFunctionFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
+  FunctionPtr learnableFunction = createLearnableFunction();
+  size_t prediction = builder.addFunction(learnableFunction, input, supervision);
+  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
+  learnableFunction->setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
 
-  FunctionPtr postProcessingFunction = createPostProcessing();
-  if (postProcessingFunction)
-    builder.addFunction(postProcessingFunction, learnableFunction);
-
-  setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
+  buildPostProcessing(builder, prediction, supervision);
 }
+
+/*
+** Conversion stuff
+*/
+bool lbcpp::convertSupervisionVariableToBoolean(const Variable& supervision, bool& result)
+{
+  if (!supervision.exists())
+    return false;
+  if (supervision.isBoolean())
+  {
+    result = supervision.getBoolean();
+    return true;
+  }
+  if (supervision.getType() == probabilityType)
+  {
+    result = supervision.getDouble() > 0.5;
+    return true;
+  }
+  return false;
+}
+

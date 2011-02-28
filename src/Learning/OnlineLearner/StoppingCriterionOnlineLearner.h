@@ -19,13 +19,18 @@ class StoppingCriterionOnlineLearner : public OnlineLearner
 {
 public:
   StoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr())
-    : stoppingCriterion(stoppingCriterion) {}
+    : stoppingCriterion(stoppingCriterion), context(NULL) {}
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
-    {stoppingCriterion->reset();}
+    {stoppingCriterion->reset(); this->context = &context;}
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
-    {return stoppingCriterion->shouldStop(objectiveValueToMinimize);}
+  {
+    bool shouldStop = stoppingCriterion->shouldStop(objectiveValueToMinimize);
+    if (shouldStop)
+      context->informationCallback(T("Stopping criterion: ") + stoppingCriterion->toShortString());
+    return shouldStop;
+  }
 
   virtual void clone(const ObjectPtr& target) const
   {
@@ -39,6 +44,7 @@ protected:
   friend class StoppingCriterionOnlineLearnerClass;
 
   StoppingCriterionPtr stoppingCriterion;
+  ExecutionContext* context;
 };
 
 }; /* namespace lbcpp */

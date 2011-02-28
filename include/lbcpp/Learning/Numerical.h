@@ -14,6 +14,7 @@
 # include "../Data/DoubleVector.h"
 # include "../Function/StoppingCriterion.h"
 # include "../Function/IterationFunction.h"
+# include "../Function/Evaluator.h"
 # include "../NumericalLearning/LossFunctions.h"
 
 namespace lbcpp
@@ -43,12 +44,6 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnableFunctionPtr;
-
-extern NumericalLearnableFunctionPtr linearLearnableFunction();
-extern NumericalLearnableFunctionPtr multiLinearLearnableFunction();
-
-extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
-extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
 class StochasticGDParameters : public LearnerParameters
 {
@@ -143,8 +138,8 @@ public:
     : learnerParameters(learnerParameters) {}
 
   virtual TypePtr getSupervisionType() const = 0;
-  virtual FunctionPtr createPostProcessing() const {return FunctionPtr();}
   virtual FunctionPtr createLearnableFunction() const = 0;
+  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex) {}
 
   // Function
   virtual size_t getNumRequiredInputs() const
@@ -163,10 +158,27 @@ protected:
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
+// atomic learnable functions
+extern LearnableFunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
+extern NumericalLearnableFunctionPtr linearLearnableFunction();
+extern NumericalLearnableFunctionPtr multiLinearLearnableFunction();
+
+// batch learners
+extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+
+// online learners
+extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
+extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
+
+// high-level learning machines
 extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters);
-extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters);
+extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, bool incorporateBias = false, BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters);
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
+
+
+// conversion utilities
+extern bool convertSupervisionVariableToBoolean(const Variable& supervision, bool& result);
 
 }; /* namespace lbcpp */
 

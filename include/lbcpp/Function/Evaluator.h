@@ -133,9 +133,16 @@ protected:
   virtual EvaluatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
 };
 
+enum BinaryClassificationScore
+{
+  binaryClassificationAccuracyScore = 0,
+  binaryClassificationF1Score,
+  binaryClassificationMCCScore
+};
+
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
-extern SupervisedEvaluatorPtr rocAnalysisEvaluator();
+extern SupervisedEvaluatorPtr rocAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 
 extern SupervisedEvaluatorPtr classificationEvaluator();
 

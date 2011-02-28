@@ -104,6 +104,8 @@ public:
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
   void finalize();
   double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
+  
+  double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
 
   size_t getSampleCount() const
     {ScopedLock _(lock); return predictedScores.size();}

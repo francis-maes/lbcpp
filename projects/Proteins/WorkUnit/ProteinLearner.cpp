@@ -13,6 +13,10 @@ using namespace lbcpp;
 ProteinLearner::ProteinLearner()
   : maxProteins(0), numFolds(7), maxLearningIterations(100), numStacks(1)
 {
+  proteinTargets.push_back(ss3Target);
+  proteinTargets.push_back(ss8Target);
+  proteinTargets.push_back(sa20Target);
+  proteinTargets.push_back(drTarget);
 }
 
 FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const
