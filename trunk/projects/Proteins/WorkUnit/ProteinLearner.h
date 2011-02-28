@@ -69,8 +69,11 @@ protected:
   std::vector<ProteinTarget> proteinTargets;
   size_t numStacks;
 
+  File predictionDirectory;
+
   FunctionPtr createPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
+  bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;
 };
 
 inline void variableToNative(ExecutionContext& context, ProteinTarget& dest, const Variable& source)

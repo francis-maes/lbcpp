@@ -89,7 +89,7 @@ public:
   ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration())
   {
     int numCpus = juce::SystemStats::getNumCpus();
-    workUnitContext = multiThreadedExecutionContext(numCpus > 1 ? numCpus - 1 : 1);
+    workUnitContext =  multiThreadedExecutionContext(numCpus > 1 ? numCpus - 1 : 1);
   }
 
   static ExplorerProjectPtr createProject(ExecutionContext& context, const File& rootDirectory);

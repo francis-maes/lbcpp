@@ -22,7 +22,7 @@ struct EvaluateExampleWorkUnit : public WorkUnit
   {
     Variable output = function->computeWithInputsObject(context, example);
     ScopedLock _(lock);
-    evaluator->updateScoreObject(scores, example, output);
+    evaluator->updateScoreObject(context, scores, example, output);
     return Variable();
   }
   
@@ -55,6 +55,8 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
 
   ProgressionStatePtr progression = new ProgressionState(0, n, T("Examples"));
   ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
+
+  juce::uint32 lastProgressionTime = 0;
   if (objectExamples)
   {
     // fast version for object vectors
@@ -63,10 +65,16 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     {
       const ObjectPtr& example = objects[i];
       Variable output = function->computeWithInputsObject(context, example);
-      updateScoreObject(scores, example, output);
+      if (!updateScoreObject(context, scores, example, output))
+        return;
       
-      progression->setValue(i + 1);
-      context.progressCallback(progression);
+      juce::uint32 time = Time::getApproximateMillisecondCounter();
+      if ((i == n - 1) || (time > lastProgressionTime + 1000))
+      {
+        progression->setValue(i + 1);
+        context.progressCallback(progression);
+        lastProgressionTime = time;
+      }
     }
   }
   else
@@ -76,10 +84,16 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     {
       ObjectPtr example = examples->getElement(i).getObject();
       Variable output = function->computeWithInputsObject(context, example);
-      updateScoreObject(scores, example, output);
+      if (!updateScoreObject(context, scores, example, output))
+        return;
 
-      progression->setValue(i + 1);
-      context.progressCallback(progression);
+      juce::uint32 time = Time::getApproximateMillisecondCounter();
+      if ((i == n - 1) || (time > lastProgressionTime + 1000))
+      {
+        progression->setValue(i + 1);
+        context.progressCallback(progression);
+        lastProgressionTime = time;
+      }
     }
   }
 }
@@ -101,17 +115,17 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
 /*
 ** SupervisedEvaluator
 */
-void SupervisedEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
+bool SupervisedEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
 {
-  Variable supervision = inputsObject->getVariable(inputsObject->getNumVariables() - 1);
-  if (!supervision.exists())
-    return;
   if (!output.exists())
   {
-    defaultExecutionContext().errorCallback(T("SupervisedEvaluator::updateScoreObject"), T(""));
-    return;
+    context.errorCallback(T("SupervisedEvaluator::updateScoreObject"), T("Missing output"));
+    return false;
   }
-  addPrediction(defaultExecutionContext(), output, supervision, scores);
+  Variable supervision = inputsObject->getVariable(inputsObject->getNumVariables() - 1);
+  if (supervision.exists())
+    addPrediction(context, output, supervision, scores);
+  return true;
 }
 
 /*
@@ -125,10 +139,12 @@ ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject() const
   return res;
 }
 
-void CompositeEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+bool CompositeEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
 {
+  bool res = true;
   for (size_t i = 0; i < evaluators.size(); ++i)
-    evaluators[i]->updateScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i), example, output);
+    res &= evaluators[i]->updateScoreObject(context, scores.staticCast<CompositeScoreObject>()->getScoreObject(i), example, output);
+  return res;
 }
 
 void CompositeEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
@@ -157,8 +173,8 @@ Variable ProxyEvaluator::computeFunction(ExecutionContext& context, const Variab
 ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject() const
   {jassert(implementation); return implementation->createEmptyScoreObject();}
 
-void ProxyEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
-  {jassert(implementation); implementation->updateScoreObject(scores, example, output);}
+bool ProxyEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+  {jassert(implementation); return implementation->updateScoreObject(context, scores, example, output);}
 
 void ProxyEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
   {jassert(implementation); implementation->finalizeScoreObject(scores);}

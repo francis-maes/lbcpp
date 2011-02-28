@@ -124,7 +124,6 @@ protected:
     else
       for (size_t i = 0; i < trainingData.size(); ++i)
         doEpisode(context, function, trainingData[i], compositeOnlineLearner);
-
     return compositeOnlineLearner->finishLearningIterationAndRemoveFinishedLearners(iteration);
   }
 };

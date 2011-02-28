@@ -40,8 +40,8 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {jassertfalse; return ScoreObjectPtr();}
   
-  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
-    {jassertfalse;}
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+    {jassertfalse; return false;}
 };
   
 };

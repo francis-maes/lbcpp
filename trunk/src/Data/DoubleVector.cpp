@@ -688,5 +688,10 @@ void CompositeDoubleVector::appendSubVector(size_t shift, const DoubleVectorPtr&
 void CompositeDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   const CompositeDoubleVectorPtr& target = t.staticCast<CompositeDoubleVector>();
-  target->vectors = vectors;
+  target->vectors.resize(vectors.size());
+  for (size_t i = 0; i < vectors.size(); ++i)
+  {
+    target->vectors[i].first = vectors[i].first;
+    target->vectors[i].second = vectors[i].second->cloneAndCast<DoubleVector>();
+  }
 }

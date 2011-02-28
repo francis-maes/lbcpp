@@ -287,9 +287,9 @@ ObjectPtr Function::clone(ExecutionContext& context) const
 void Function::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   Object::clone(context, t);
-  const FunctionPtr& target = t.staticCast<Function>();
-  if (isInitialized())
-    target->initialize(context, inputVariables);
+  //const FunctionPtr& target = t.staticCast<Function>();
+  //if (isInitialized())
+  //  target->initialize(context, inputVariables);
 }
 
 /*

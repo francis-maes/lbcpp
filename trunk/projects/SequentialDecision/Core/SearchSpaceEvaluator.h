@@ -46,8 +46,8 @@ public:
   virtual ScoreObjectPtr createEmptyScoreObject() const
     {return new SearchSpaceScoreObject();}
 
-  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
-    {scores.staticCast<SearchSpaceScoreObject>()->add(output.getObjectAndCast<SortedSearchSpace>());}
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
+    {scores.staticCast<SearchSpaceScoreObject>()->add(output.getObjectAndCast<SortedSearchSpace>()); return true;}
 };
 
 }; /* namespace lbcpp */

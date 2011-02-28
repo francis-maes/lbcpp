@@ -106,11 +106,8 @@ Object::Object(ClassPtr thisClass)
 {
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
   ScopedLock _(objectsCountPerTypeLock);
-  if (thisClass)
-  {
-    classNameUnderWhichThisIsKnown = thisClass->getName();
-    objectsCountPerType[classNameUnderWhichThisIsKnown]++;
-  }
+  classNameUnderWhichThisIsKnown = thisClass ? thisClass->getName() : T("<Unknown Class: ") + getTypeName(typeid(*this)) + T(">");
+  objectsCountPerType[classNameUnderWhichThisIsKnown]++;
 #endif // LBCPP_DEBUG_OBJECT_ALLOCATION
 }
 
@@ -119,8 +116,9 @@ void Object::setThisClass(ClassPtr thisClass)
   this->thisClass = thisClass;
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
   ScopedLock _(objectsCountPerTypeLock);
-  if (thisClass && classNameUnderWhichThisIsKnown.isEmpty())
+  if (thisClass && classNameUnderWhichThisIsKnown.startsWith(T("<Unknown Class:")))
   {
+    objectsCountPerType[classNameUnderWhichThisIsKnown]--;
     classNameUnderWhichThisIsKnown = thisClass->getName();
     objectsCountPerType[classNameUnderWhichThisIsKnown]++;
   }
