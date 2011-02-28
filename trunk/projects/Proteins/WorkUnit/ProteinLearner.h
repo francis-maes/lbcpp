@@ -29,8 +29,21 @@ public:
   {
     StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(0.1));
     parameters->setMaxIterations(maxLearningIterations);
-    parameters->setEvaluator(defaultSupervisedEvaluator());
-    return linearLearningMachine(parameters);
+
+    switch (target)
+    {
+    case drTarget:
+      parameters->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+      return linearBinaryClassifier(parameters, true, binaryClassificationMCCScore);
+
+    case sa20Target:
+      parameters->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+      return linearBinaryClassifier(parameters, true, binaryClassificationAccuracyScore);
+
+    default:
+      parameters->setEvaluator(defaultSupervisedEvaluator());
+      return linearLearningMachine(parameters);
+    };
   }
 
 protected:

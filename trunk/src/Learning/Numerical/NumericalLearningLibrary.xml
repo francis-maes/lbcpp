@@ -32,6 +32,16 @@
   </class>
 
   <!-- Low-level Learnable Functions -->
+  <class name="AddBiasLearnableFunction" base="LearnableFunction">
+    <constructor arguments="BinaryClassificationScore scoreToOptimize, double initialBias"/>
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+    <variable type="Double" name="bias"/>
+  </class>
+  <class name="AddBiasBatchLearner" base="BatchLearner">
+    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+  </class>
+  
   <class name="NumericalLearnableFunction" base="LearnableFunction" abstract="yes"/>
   
   <class name="LinearLearnableFunction" base="NumericalLearnableFunction">
@@ -52,7 +62,9 @@
   </class>
   
   <class name="LinearBinaryClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">
-    <constructor arguments="LearnerParametersPtr learnerParameters"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters, bool incorporateBias, BinaryClassificationScore scoreToOptimize"/>
+    <variable type="Boolean" name="incorporateBias"/>
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
   
   <class name="LinearMultiClassClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">

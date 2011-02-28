@@ -50,6 +50,8 @@ protected:
   ClassPtr parametersClass;
 };
 
+typedef ReferenceCountedObjectPtr<LearnableFunction> LearnableFunctionPtr;
+
 class LearnerParameters : public Object
 {
 public:

@@ -10,6 +10,7 @@
 # define LBCPP_FUNCTION_EVALUATOR_BINARY_CLASSIFICATION_CONFUSION_H_
 
 # include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 # include "Utilities.h"
 
 namespace lbcpp
@@ -38,23 +39,26 @@ protected:
 class ROCAnalysisScoreObject : public ScoreObject
 {
 public:
+  ROCAnalysisScoreObject(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
+    : scoreToOptimize(scoreToOptimize) {}
+
   virtual double getScoreToMinimize() const
-  {
-    double bestF1;
-    roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1);
-    return -bestF1;
-  }
+    {double bestScore; roc.findBestThreshold(scoreToOptimize, bestScore); return 1.0 - bestScore;}
   
   void addPrediction(ExecutionContext& context, double predicted, bool correct)
     {roc.addPrediction(context, predicted, correct);}
   
 private:
   ROCAnalyse roc;
+  BinaryClassificationScore scoreToOptimize;
 };
 
 class ROCAnalysisEvaluator : public SupervisedEvaluator
 {
 public:
+  ROCAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
+    : scoreToOptimize(scoreToOptimize) {}
+
   virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
   
@@ -62,11 +66,21 @@ public:
     {return booleanType;}
 
 protected:
+  friend class ROCAnalysisEvaluatorClass;
+
+  BinaryClassificationScore scoreToOptimize;
+
   virtual ScoreObjectPtr createEmptyScoreObject() const
-    {return new ROCAnalyse();}
+    {return new ROCAnalysisScoreObject(scoreToOptimize);}
   
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const
-    {result.staticCast<ROCAnalysisScoreObject>()->addPrediction(context, predictedObject.getDouble(), correctObject.getBoolean());}
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& result) const
+  {
+    bool isPositive;
+    if (convertSupervisionVariableToBoolean(correct, isPositive))
+      result.staticCast<ROCAnalysisScoreObject>()->addPrediction(context, predicted.getDouble(), isPositive);
+    else
+      jassert(false);
+  }
 };
 
 }; /* namespace lbcpp */

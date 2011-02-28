@@ -20,7 +20,14 @@
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Function" name="function"/>
   </class>
-  
+
+  <!-- Score Enumerations -->
+  <enumeration name="BinaryClassificationScore">
+    <value name="accuracyScore" oneLetterCode="a"/>
+    <value name="f1Score" oneLetterCode="f"/>
+    <value name="mccScore" oneLetterCode="m"/>
+  </enumeration>
+
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
     <variable type="Double" name="precision"/>
@@ -61,7 +68,8 @@
   <class name="ROCAnalysisScoreObject" base="ScoreObject"/>
   
   <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">
-    <constructor/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
 
   <!-- MultiClass Classification -->

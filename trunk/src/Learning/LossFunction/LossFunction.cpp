@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Learning/LossFunction.h>
+#include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 #include <lbcpp/Distribution/Distribution.h>
 #include <algorithm>
 using namespace lbcpp;
@@ -41,16 +42,14 @@ String DiscriminativeLossFunction::getOutputPostFix() const
 void DiscriminativeLossFunction::computeScalarFunction(double input, const Variable* otherInputs, double* output, double* derivative) const
 {
   bool isPositive;
-  if (otherInputs[0].isBoolean())
-    isPositive = otherInputs[0].getBoolean();
-  else if (otherInputs[0].getType() == probabilityType)
-    isPositive = otherInputs[0].getDouble() > 0.5;
+  if (convertSupervisionVariableToBoolean(otherInputs[0], isPositive))
+  {
+    computeDiscriminativeLoss(isPositive ? input : -input, output, derivative);
+    if (derivative && !isPositive)
+      *derivative = - (*derivative);
+  }
   else
     jassert(false);
-
-  computeDiscriminativeLoss(isPositive ? input : -input, output, derivative);
-  if (derivative && !isPositive)
-    *derivative = - (*derivative);
 }
 
 /*

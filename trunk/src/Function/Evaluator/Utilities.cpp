@@ -195,6 +195,31 @@ void ROCAnalyse::addPrediction(ExecutionContext& context, double predictedScore,
     ++counters.first;
 }
 
+double ROCAnalyse::findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const
+{
+  ScoreFunction scoreFunction;
+  switch (scoreToOptimize)
+  {
+  case binaryClassificationAccuracyScore:
+    scoreFunction = &BinaryClassificationConfusionMatrix::computeAccuracy;
+    break;
+
+  case binaryClassificationF1Score:
+    scoreFunction = &BinaryClassificationConfusionMatrix::computeF1Score;
+    break;
+
+  case binaryClassificationMCCScore:
+    scoreFunction = &BinaryClassificationConfusionMatrix::computeMatthewsCorrelation;
+    break;
+
+  default:
+    jassert(false);
+    return 0.0;
+  };
+
+  return findBestThreshold(scoreFunction, bestScore);
+}
+
 double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
 {
   ScopedLock _(lock);

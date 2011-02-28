@@ -501,6 +501,8 @@ SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
 
 SET(LBCPP_LEARNING_NUMERICAL_SOURCES
   Learning/Numerical/Numerical.cpp
+  Learning/Numerical/AddBiasLearnableFunction.h
+  Learning/Numerical/AddBiasBatchLearner.h
   Learning/Numerical/GradientDescentOnlineLearner.h
   Learning/Numerical/StochasticGDOnlineLearner.h
   Learning/Numerical/PerEpisodeGDOnlineLearner.h

@@ -35,18 +35,28 @@ public:
 class LinearBinaryClassifier : public SupervisedNumericalFunction
 {
 public:
-  LinearBinaryClassifier(LearnerParametersPtr learnerParameters)
-    : SupervisedNumericalFunction(learnerParameters) {}
+  LinearBinaryClassifier(LearnerParametersPtr learnerParameters, bool incorporateBias, BinaryClassificationScore scoreToOptimize)
+    : SupervisedNumericalFunction(learnerParameters), incorporateBias(incorporateBias), scoreToOptimize(scoreToOptimize) {}
   LinearBinaryClassifier() {}
 
   virtual TypePtr getSupervisionType() const
-    {return anyType;} // boolean or probability
+    {return sumType(booleanType, probabilityType);}
 
-  virtual FunctionPtr createPostProcessing() const
-    {return signedScalarToProbabilityFunction();}
+  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex)
+  {
+    if (incorporateBias)
+      predictionIndex = builder.addFunction(addBiasLearnableFunction(scoreToOptimize), predictionIndex, supervisionIndex);
+    builder.addFunction(signedScalarToProbabilityFunction(), predictionIndex);
+  }
 
   virtual FunctionPtr createLearnableFunction() const
     {return linearLearnableFunction();}
+
+protected:
+  friend class LinearBinaryClassifierClass;
+
+  bool incorporateBias;
+  BinaryClassificationScore scoreToOptimize;
 };
 
 class LinearMultiClassClassifier : public SupervisedNumericalFunction
@@ -59,8 +69,12 @@ public:
   virtual TypePtr getSupervisionType() const
     {return anyType;} // enumValue or doubleVector[enumValue]
 
-  virtual FunctionPtr createPostProcessing() const
-    {return mapContainerFunction(signedScalarToProbabilityFunction());}
+  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex)
+  {
+    FunctionPtr scoresToProbabilities = mapContainerFunction(signedScalarToProbabilityFunction());
+    builder.addFunction(scoresToProbabilities, predictionIndex);
+    scoresToProbabilities->setBatchLearner(BatchLearnerPtr());
+  }
 
   virtual FunctionPtr createLearnableFunction() const
     {return multiLinearLearnableFunction();}

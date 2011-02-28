@@ -1,19 +1,25 @@
- 
- 
- * Evaluation après chaque passe
- 
+'''AddBias learnable function -> apply to DR and SA20 tasks'''
+
+ * New LearnableFunction: AddBiasLearnableFunction
+ * New BatchLearner: AddBiasBatchLearner
+ * Evaluators: new enumeration: BinaryClassificationScore
+ * RocAnalysis: findBestThreshold version that takes a BinaryClassificationScore
+ * LinearBinaryClassifier: new option "incorporateBias"
+ * RocAnalysisEvaluator now takes a "BinaryClassificationScore scoreToOptimize" argument
+ * ProteinLearner: Use AddBias for the DR and SA20 tasks
 
 
-Proteins:
- * Bias learning for DR
- * Load/Save des fonction apprises
- 
+* Objectif 1: Faire marcher le DR -> bias learning
+* Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
+* Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
+* Objectif 4: valider l'utilisation boinc
+
+ProteinLearner:
+ * Evaluation après chaque passe (attacher un Evaluator aux Function ?)
+
 Function:
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
 
-Boinc:
- * Faire la work unit d'evaluation (pb sur les features, après la passe CO, learning rate cst = 1)
- 
 Misc:
  * Ne pas utiliser le SupervisedNumericalFunction pour la regression (utilise le LearnableLinear directement)
  * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
