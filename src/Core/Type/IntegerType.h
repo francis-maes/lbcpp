@@ -89,6 +89,11 @@ public:
     }
     return Variable(intValue, refCountedPointerFromThis(this));
   }
+
+  virtual VariableValue getMissingValue() const
+  {
+    return VariableValue((size_t)-1);
+  }
 };
 
 }; /* namespace lbcpp */
