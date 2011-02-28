@@ -23,6 +23,7 @@
 
   <type name="String" base="Variable" implementation="StringType"/>
     <type name="File" base="String" implementation="FileType"/>
+      <type name="LocalFile" base="File" implementation="LocalFileType"/>
 
   <!-- Object -->
   <class name="Object" base="Variable" abstract="yes">

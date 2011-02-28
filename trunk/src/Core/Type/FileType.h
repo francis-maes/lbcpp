@@ -59,6 +59,16 @@ private:
     {return isMissingValue(value) ? File::nonexistent : File(value.getString());}
 };
 
+class LocalFileType : public FileType
+{
+public:
+  LocalFileType(const String& name, TypePtr baseType)
+    : FileType(name, baseType) {}
+
+  virtual void saveToXml(XmlExporter& exporter, const VariableValue& value) const
+    {exporter.addTextElement(value.getString());}
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OBJECT_TYPE_FILE_H_
