@@ -50,7 +50,7 @@ public:
     target->getNetworkClient()->sendVariable(res);
     /* Short way that avoid to use network trafic */
     bool ack = false;
-    if (!target->getNetworkClient()->receiveBoolean(10000, ack) || !ack)
+    if (!target->getNetworkClient()->receiveBoolean(300000, ack) || !ack)
       return;
     target->removeExecutionTraces(res);
   }

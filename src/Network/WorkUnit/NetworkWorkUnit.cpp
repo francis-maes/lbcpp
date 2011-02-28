@@ -40,7 +40,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     
     /* Which kind of connection ? */
     NodeNetworkInterfacePtr remoteInterface;
-    if (!client->receiveObject<NodeNetworkInterface>(10000, remoteInterface) || !remoteInterface)
+    if (!client->receiveObject<NodeNetworkInterface>(300000, remoteInterface) || !remoteInterface)
     {
       context.warningCallback(connectedHostName, T("Unknown NodeNetworkInterface - Need to update Manager and/or Client? Invalid NetworkInterface?"));
       client->stopClient();
@@ -82,7 +82,7 @@ void ManagerWorkUnit::serverCommunication(ExecutionContext& context, ManagerNode
   while (client->isConnected() || client->hasVariableInQueue())
   {
     NotificationPtr notification;
-    if (!client->receiveObject<Notification>(10000, notification) || !notification)
+    if (!client->receiveObject<Notification>(300000, notification) || !notification)
     {
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return;
@@ -181,7 +181,7 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   while (client->isConnected() || client->hasVariableInQueue())
   {
     NotificationPtr notification;
-    if (!client->receiveObject<Notification>(10000, notification) || !notification)
+    if (!client->receiveObject<Notification>(300000, notification) || !notification)
     {
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return false;
