@@ -43,6 +43,7 @@ public:
   virtual void setElement(size_t index, const Variable& value) = 0;
 
   virtual String toString() const;
+  virtual String toShortString() const;
   VectorPtr toVector() const;
 
   virtual void saveToXml(XmlExporter& exporter) const;

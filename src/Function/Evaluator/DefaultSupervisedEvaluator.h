@@ -14,29 +14,27 @@
 namespace lbcpp
 {
 
-class DefaultSupervisedEvaluator : public ProxyFunction
+class DefaultSupervisedEvaluator : public ProxyEvaluator
 {
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-  
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return containerClass(anyType);}
-  
-  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+public: 
+  virtual EvaluatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
   {
-    TypePtr predictedType = inputVariables[0]->getType()->getTemplateArgument(0);
-    TypePtr supervisionType = inputVariables[1]->getType()->getTemplateArgument(0);
+    TypePtr functionInputsType = Container::getTemplateParameter(inputVariables[1]->getType());
+    if (!functionInputsType)
+      return EvaluatorPtr();
+    TypePtr supervisionType = functionInputsType->getLastMemberVariable()->getType();
+    if (!supervisionType)
+      return EvaluatorPtr();
     
     if (supervisionType == doubleType)
       return regressionEvaluator();
     if (supervisionType == booleanType || supervisionType == probabilityType)
       return binaryClassificationEvaluator();
-    if (supervisionType->inheritsFrom(enumValueType))
+    if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       return classificationEvaluator();
-    if (supervisionType->inheritsFrom(objectClass) && supervisionType == predictedType)
-      return multiLabelClassificationEvaluator();
-    return FunctionPtr();
+    //if (supervisionType->inheritsFrom(objectClass) && supervisionType == predictedType)
+    //  return multiLabelClassificationEvaluator();
+    return EvaluatorPtr();
   }
 };
 

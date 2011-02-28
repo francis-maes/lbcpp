@@ -67,6 +67,22 @@ bool Vector::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
+bool Vector::loadFromString(ExecutionContext& context, const String& stringValue)
+{
+  TypePtr elementsType = getElementsType();
+  StringArray tokens;
+  tokens.addTokens(stringValue, T(","), T("\""));
+  resize(tokens.size());
+  for (int i = 0; i < tokens.size(); ++i)
+  {
+    Variable variable = Variable::createFromString(context, elementsType, tokens[i]);
+    if (!variable.exists())
+      return false;
+    setElement(i, variable);
+  }
+  return true;
+}
+
 void Vector::clone(ExecutionContext& context, const ObjectPtr& target) const
 {
   VectorPtr targetVector = target.staticCast<Vector>();

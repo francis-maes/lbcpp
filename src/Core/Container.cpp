@@ -48,15 +48,35 @@ VectorPtr Container::toVector() const
 
 String Container::toString() const
 {
-  String res = T("[");
+  String res;
   size_t n = getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    res += getElement(i).toShortString();
+    res += getElement(i).toString();
     if (i < n - 1)
-      res += T(",\n  ");
+      res += T(", ");
   }
-  return res + T("]");
+  return res;
+}
+
+String Container::toShortString() const
+{
+  size_t n = getNumElements(); 
+  if (n == 0)
+    return T("<empty>");
+  if (n < 10)
+  {
+    String res;
+    for (size_t i = 0; i < n; ++i)
+    {
+      res += getElement(i).toShortString();
+      if (i < n - 1)
+        res += T(", ");
+    }
+    return res;
+  }
+  else
+    return String((int)n) + T(" elements...");
 }
 
 void Container::clone(ExecutionContext& context, const ObjectPtr& target) const

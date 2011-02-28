@@ -34,6 +34,7 @@ public:
   ** Object
   */
   virtual String toString() const;
+  virtual bool loadFromString(ExecutionContext& context, const String& stringValue);
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 

@@ -56,7 +56,7 @@
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
 
-  <!-- Previous SandBox -->
+  <!-- Previous ProteinLearner -->
   <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
     <variable type="Double" name="logLearningRate" shortName="a"/>
     <variable type="Double" name="logLearningRateDecrease" shortName="b"/>
@@ -69,13 +69,15 @@
     <variable type="File" name="dataDirectory" shortName="d"/>
   </class>
   
-  <!-- New SandBox -->  
-  <class name="SandBox" base="WorkUnit">
+  <!-- ProteinLearner -->  
+  <class name="ProteinLearner" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
     <variable type="File" name="inputDirectory" shortName="d"/>
-    <variable type="PositiveInteger" name="maxProteins" shortName="m"/>
+    <variable type="PositiveInteger" name="maxProteins" shortName="m" description="The maximum number of proteins to load per dataset; 0 if not maximum"/>
     <variable type="PositiveInteger" name="numFolds" shortName="f"/>
-    <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
+    <variable type="PositiveInteger" name="maxLearningIterations" shortName="i" description="The maximum number of learning iterations per elementary learning machine"/>
+    <variable type="GenericVector[VariablesEnumeration[Protein]]" name="proteinTargets" shortName="t" description="The protein targets to be learned, to choose among: ss3,ss8,stal,sa20,dr"/>
+    <variable type="PositiveInteger" name="numStacks" shortName="n" description="The number of re-estimation stacks"/>
   </class>
          
   <!-- BricoBox -->

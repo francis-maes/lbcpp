@@ -120,7 +120,8 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/AutoTuneSandBox.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
-  WorkUnit/SandBox.h
+  WorkUnit/ProteinLearner.h
+  WorkUnit/ProteinLearner.cpp
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
   WorkUnit/ProteinWorkUnitLibrary.xml

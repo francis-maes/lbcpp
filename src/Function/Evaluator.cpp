@@ -129,3 +129,29 @@ void CompositeEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
   for (size_t i = 0; i < evaluators.size(); ++i)
     evaluators[i]->finalizeScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i));
 }
+
+/*
+** ProxyEvaluator
+*/
+TypePtr ProxyEvaluator::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+{
+  implementation = createImplementation(inputVariables);
+  if (!implementation)
+  {
+    context.errorCallback(T("Could not create implementation of Evaluator"));
+    return TypePtr();
+  }
+  return Evaluator::initializeFunction(context, inputVariables, outputName, outputShortName);
+}
+
+Variable ProxyEvaluator::computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {jassert(implementation); return implementation->computeFunction(context, inputs);}
+
+ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject() const
+  {jassert(implementation); return implementation->createEmptyScoreObject();}
+
+void ProxyEvaluator::updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+  {jassert(implementation); implementation->updateScoreObject(scores, example, output);}
+
+void ProxyEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
+  {jassert(implementation); implementation->finalizeScoreObject(scores);}
