@@ -53,6 +53,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
 {
   size_t n = examples->getNumElements();
 
+  ProgressionStatePtr progression = new ProgressionState(0, n, T("Examples"));
   ObjectVectorPtr objectExamples = examples.dynamicCast<ObjectVector>();
   if (objectExamples)
   {
@@ -63,6 +64,9 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
       const ObjectPtr& example = objects[i];
       Variable output = function->computeWithInputsObject(context, example);
       updateScoreObject(scores, example, output);
+      
+      progression->setValue(i + 1);
+      context.progressCallback(progression);
     }
   }
   else
@@ -73,6 +77,9 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
       ObjectPtr example = examples->getElement(i).getObject();
       Variable output = function->computeWithInputsObject(context, example);
       updateScoreObject(scores, example, output);
+
+      progression->setValue(i + 1);
+      context.progressCallback(progression);
     }
   }
 }

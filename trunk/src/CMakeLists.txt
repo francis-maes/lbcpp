@@ -461,6 +461,7 @@ SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
 )
 
 SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
+  Learning/BatchLearner/BatchLearner.cpp
   Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
   Learning/BatchLearner/CompositeFunctionBatchLearner.h

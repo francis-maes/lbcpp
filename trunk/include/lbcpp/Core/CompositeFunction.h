@@ -47,6 +47,9 @@ public:
   const FunctionPtr& getSubFunction(size_t index) const
     {jassert(index < functions.size()); return functions[index];}
 
+  const std::vector<size_t>& getSubFunctionInputs(size_t index) const
+    {jassert(index < functionInputs.size()); return functionInputs[index];}
+
   /*
   ** Constants
   */
@@ -136,14 +139,14 @@ public:
 
   size_t addConstant(const Variable& value, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
-  size_t addFunction(const FunctionPtr& function, size_t input, const String& outputName = String::empty, const String& outputShortName = String::empty);
-  size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName = String::empty, const String& outputShortName = String::empty);
-  size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& outputName = String::empty, const String& outputShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, size_t input, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
   void startSelection();
   void addInSelection(size_t index) {currentSelection.push_back(index);}
   const std::vector<size_t>& finishSelection();
-  size_t finishSelectionWithFunction(const FunctionPtr& function);
+  size_t finishSelectionWithFunction(const FunctionPtr& function, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
   TypePtr getOutputType() const;
 

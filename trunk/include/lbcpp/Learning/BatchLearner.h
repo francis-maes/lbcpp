@@ -46,34 +46,15 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {jassertfalse; return Variable();}
   
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
-    ObjectVectorPtr trainingData = makeObjectVector(inputs[1].getObjectAndCast<Container>());
-    ObjectVectorPtr validationData = makeObjectVector(getNumInputs() == 3 ? inputs[2].getObjectAndCast<Container>() : ContainerPtr());
-    return train(context, function, trainingData->getObjects(), validationData ? validationData->getObjects() : std::vector<ObjectPtr>());
-  }
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const = 0;
 
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  static ObjectVectorPtr makeObjectVector(const ContainerPtr& container)
-  {
-    if (!container)
-      return ObjectVectorPtr();
-    ObjectVectorPtr res = container.dynamicCast<ObjectVector>();
-    if (!res)
-    {
-      size_t n = container->getNumElements();
-      res = new ObjectVector(container->getElementsType(), n);
-      std::vector<ObjectPtr>& objects = res->getObjects();
-      for (size_t i = 0; i < n; ++i)
-        objects[i] = container->getElement(i).getObject();
-    }
-    return res;
-  }
+  static ObjectVectorPtr makeObjectVector(const ContainerPtr& container);
+  static bool trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData);
 };
 
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;

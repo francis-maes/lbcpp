@@ -93,7 +93,7 @@ void NumericalProteinPredictorParameters::residueFeaturesVector(CompositeFunctio
     size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
     builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
 
-  builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)));
+  builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)), T("residueFeatureVectors"));
 }
 
 FunctionPtr NumericalProteinPredictorParameters::learningMachine(ProteinTarget target) const

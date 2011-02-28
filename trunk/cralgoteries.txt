@@ -1,6 +1,10 @@
+ 
+ 
+ * Evaluation après chaque passe
+ 
+
 
 Proteins:
- * Parallel Learning
  * Bias learning for DR
  * Load/Save des fonction apprises
  
