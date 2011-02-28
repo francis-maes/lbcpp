@@ -78,6 +78,7 @@
     <variable type="PositiveInteger" name="maxLearningIterations" shortName="i" description="The maximum number of learning iterations per elementary learning machine"/>
     <variable type="GenericVector[VariablesEnumeration[Protein]]" name="proteinTargets" shortName="t" description="The protein targets to be learned, to choose among: ss3,ss8,stal,sa20,dr"/>
     <variable type="PositiveInteger" name="numStacks" shortName="n" description="The number of re-estimation stacks"/>
+    <variable type="File" name="predictionDirectory" shortName="o" description="The directory where to save predictions (optional)"/>
   </class>
          
   <!-- BricoBox -->

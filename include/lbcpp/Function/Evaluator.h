@@ -76,7 +76,7 @@ public:
 
   /* Evaluator */
   virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
-  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
   
 protected:
@@ -97,7 +97,7 @@ public:
 
 protected:
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const = 0;
-  virtual void updateScoreObject(const ScoreObjectPtr& score, const ObjectPtr& inputsObject, const Variable& output) const;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& score, const ObjectPtr& inputsObject, const Variable& output) const;
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedEvaluator> SupervisedEvaluatorPtr;
@@ -110,7 +110,7 @@ public:
   
   /* Evaluator */
   virtual ScoreObjectPtr createEmptyScoreObject() const;
-  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
 
 protected:
@@ -124,7 +124,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
   virtual ScoreObjectPtr createEmptyScoreObject() const;
-  virtual void updateScoreObject(const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
 
 protected:

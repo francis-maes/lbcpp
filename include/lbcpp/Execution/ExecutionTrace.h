@@ -153,6 +153,7 @@ protected:
   WorkUnitPtr workUnit;
 };
 
+extern ClassPtr executionTraceNodeClass;
 typedef ReferenceCountedObjectPtr<ExecutionTraceNode> ExecutionTraceNodePtr;
 
 class ExecutionTrace : public Object

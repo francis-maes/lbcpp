@@ -33,7 +33,7 @@ public:
     {return index == 0 ? functionClass : containerClass(pairClass(proteinClass, proteinClass));}
   
   /* CompositeEvaluator */
-  virtual void updateScoreObject(const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
   {
     CompositeScoreObjectPtr scores = scoreObject.staticCast<CompositeScoreObject>();
     //ProteinPtr input = example->getVariable(0).getObjectAndCast<Protein>();
@@ -53,14 +53,16 @@ public:
     }
     /* Call updataScoreObject for each (sub)example and each evaluator */
     size_t n = supervision->getLength();
+    bool res = true;
     for (size_t i = 0; i < n; ++i)
       for (size_t j = 0; j < numTargets; ++j)
       {
         if (predictedContainer[j])
-          evaluators[j]->updateScoreObject(scores->getScoreObject(j),
+          res &= evaluators[j]->updateScoreObject(context, scores->getScoreObject(j),
                                            new Pair(pairClass(anyType, anyType), Variable(), supervisionContainer[j]->getElement(i)),
                                            predictedContainer[j]->getElement(i));
       }
+    return res;
   }
 
 protected:
