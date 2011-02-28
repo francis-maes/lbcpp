@@ -37,20 +37,16 @@ public:
           context.errorCallback(T("ManagerNodeNetworkInterface::ManagerNodeNetworkInterface"), T("Fail to restore: ") + f.getFileName());
           continue;
         }
-        context.informationCallback(T("Request restored: ") + f.getFileNameWithoutExtension());
+        
         requests[request->getIdentifier()] = request;
+        if (getWaitingFile(context, request).exists())
+        {
+          context.informationCallback(T("Waiting request restored: ") + f.getFileNameWithoutExtension());
+          waitingRequests.push_back(request);
+        }
+        else
+          context.informationCallback(T("Request restored: ") + f.getFileNameWithoutExtension());
       }
-      files = directoryFileStream(context, projectDirectories[i]->getChildFile(T("Waiting")), T("*"));
-      while (!files->isExhausted())
-      {
-        File f = files->next().getFile();
-        NetworkRequestPtr request = getRequest(f.getFileName());
-        if (!request)
-          f.deleteFile();
-        context.informationCallback(T("Waiting request: ") + f.getFileName());
-        waitingRequests.push_back(request);
-      }
-      context.leaveScope(Variable());
     }
   }
   
@@ -148,7 +144,7 @@ protected:
 
   File getWaitingFile(ExecutionContext& context, NetworkRequestPtr request) const
   {
-    return context.getFile(request->getProjectName() + T("/Waiting/") + request->getIdentifier());
+    return context.getFile(request->getProjectName() + T(".") + request->getIdentifier());
   }
 };
 

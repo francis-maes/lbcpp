@@ -47,7 +47,11 @@ public:
   virtual void notifyGridNodeNetwork(const GridNodeNetworkInterfacePtr& target)
   {
     ContainerPtr res = target->getFinishedExecutionTraces();
-    target->getNetworkClient()->sendVariable(res);
+    if (!target->getNetworkClient()->sendVariable(res))
+    {
+      target->getContext().warningCallback(T("GetFinishedExecutionTraces"), T("Tace not sent"));
+      return;
+    }
     /* Short way that avoid to use network trafic */
     bool ack = false;
     if (!target->getNetworkClient()->receiveBoolean(300000, ack) || !ack)
