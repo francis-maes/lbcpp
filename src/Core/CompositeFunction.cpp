@@ -239,9 +239,11 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, con
     function->maxNumFunctionInputs = inputs.size();
 
   VariableSignaturePtr signature = subFunction->getOutputVariable();
-  String name = optionalName.isNotEmpty() ? optionalName : signature->getName();
-  String shortName = optionalShortName.isNotEmpty() ? optionalShortName : signature->getShortName();
-  return addVariable(signature->getType(), name, shortName, CompositeFunction::functionStep, stepArgument);
+  if (optionalName.isNotEmpty())
+    signature->setName(optionalName);
+  if (optionalShortName.isNotEmpty())
+    signature->setShortName(optionalShortName);
+  return addVariable(signature->getType(), signature->getName(), signature->getShortName(), CompositeFunction::functionStep, stepArgument);
 }
 
 void CompositeFunctionBuilder::startSelection()
@@ -250,9 +252,9 @@ void CompositeFunctionBuilder::startSelection()
 const std::vector<size_t>& CompositeFunctionBuilder::finishSelection()
   {return currentSelection;}
 
-size_t CompositeFunctionBuilder::finishSelectionWithFunction(const FunctionPtr& function)
+size_t CompositeFunctionBuilder::finishSelectionWithFunction(const FunctionPtr& function, const String& optionalName, const String& optionalShortName)
 {
-  size_t res = addFunction(function, currentSelection);
+  size_t res = addFunction(function, currentSelection, optionalName, optionalShortName);
   currentSelection.clear();
   return res;
 }
