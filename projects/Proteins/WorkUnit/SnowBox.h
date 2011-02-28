@@ -102,7 +102,7 @@ private:
 
   bool loadData(ExecutionContext& context);
   ProteinPredictorParametersPtr createParameters(ExecutionContext& context) const;
-  ProteinSequencialPredictorPtr loadPredictorOrCreateIfFail(ExecutionContext& context) const;
+  ProteinSequentialPredictorPtr loadPredictorOrCreateIfFail(ExecutionContext& context) const;
   void printInformation(ExecutionContext& context) const;
 };
 

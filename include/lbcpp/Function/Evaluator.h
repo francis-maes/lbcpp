@@ -29,7 +29,7 @@ typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
 class CompositeScoreObject : public ScoreObject
 {
 public:
-  CompositeScoreObject() : scoreToMinimizeIndex(positiveIntegerType->getMissingValue().getInteger()) {}
+  CompositeScoreObject() : scoreToMinimizeIndex((size_t)positiveIntegerType->getMissingValue().getInteger()) {}
 
   virtual double getScoreToMinimize() const
     {return scoreToMinimizeIndex == (size_t)positiveIntegerType->getMissingValue().getInteger() ? 0.0 : scores[scoreToMinimizeIndex]->getScoreToMinimize();}

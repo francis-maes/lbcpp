@@ -4,7 +4,7 @@
 
   <class name="ProteinPredictor" base="CompositeFunction"/>
   
-  <class name="ProteinSequencialPredictor" base="CompositeFunction">
+  <class name="ProteinSequentialPredictor" base="CompositeFunction">
     <variable type="ObjectVector[ProteinPredictor]" name="predictors"/>
   </class>
 

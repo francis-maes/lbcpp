@@ -83,7 +83,7 @@ Variable SnowBox::run(ExecutionContext& context)
 
   printInformation(context);
 
-  ProteinSequencialPredictorPtr predictors = loadPredictorOrCreateIfFail(context);
+  ProteinSequentialPredictorPtr predictors = loadPredictorOrCreateIfFail(context);
   for (size_t i = 0; i < target->getNumStages(); ++i)
   {
     ProteinPredictorPtr predictor = new ProteinPredictor(parameters);
@@ -200,9 +200,9 @@ void SnowBox::printInformation(ExecutionContext& context) const
   }
 }
 
-ProteinSequencialPredictorPtr SnowBox::loadPredictorOrCreateIfFail(ExecutionContext& context) const
+ProteinSequentialPredictorPtr SnowBox::loadPredictorOrCreateIfFail(ExecutionContext& context) const
 {
-  return new ProteinSequencialPredictor();
+  return new ProteinSequentialPredictor();
   /*
    ProteinSequentialInferencePtr inference;
    if (inferenceFile != File::nonexistent)

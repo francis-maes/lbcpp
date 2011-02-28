@@ -33,7 +33,7 @@ protected:
 typedef ReferenceCountedObjectPtr<ProteinPredictor> ProteinPredictorPtr;
   
 // protein, protein -> protein
-class ProteinSequencialPredictor : public CompositeFunction
+class ProteinSequentialPredictor : public CompositeFunction
 {
 public:
   virtual size_t getNumRequiredInputs() const
@@ -53,12 +53,12 @@ public:
   }
   
 protected:
-  friend class ProteinSequencialPredictorClass;
+  friend class ProteinSequentialPredictorClass;
   
   std::vector<ProteinPredictorPtr> predictors;
 };
 
-typedef ReferenceCountedObjectPtr<ProteinSequencialPredictor> ProteinSequencialPredictorPtr;
+typedef ReferenceCountedObjectPtr<ProteinSequentialPredictor> ProteinSequentialPredictorPtr;
 
 }; /* namespace lbcpp */
 
