@@ -72,7 +72,7 @@
   <!-- ProteinLearner -->  
   <class name="ProteinLearner" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
-    <variable type="File" name="inputDirectory" shortName="d"/>
+    <variable type="File" name="inputDirectory" shortName="i"/>
     <variable type="PositiveInteger" name="maxProteins" shortName="m" description="The maximum number of proteins to load per dataset; 0 if not maximum"/>
     <variable type="ProteinPredictorParameters" name="parameters" shortName="p" description="Protein predictor parameters"/>
     <variable type="GenericVector[VariablesEnumeration[Protein]]" name="proteinTargets" shortName="t" description="The protein targets to be learned, to choose among: ss3,ss8,stal,sa20,dr"/>

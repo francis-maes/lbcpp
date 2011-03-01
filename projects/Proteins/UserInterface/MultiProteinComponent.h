@@ -66,7 +66,7 @@ public:
     else if (tabName == T("Residue Features"))
     {
       NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
-      featuresParameters->pssmDiscretization = 1;
+     /* featuresParameters->pssmDiscretization = 1;
       featuresParameters->pssmEntropyDiscretization = 5;
       featuresParameters->ss3Discretization = 1;
       featuresParameters->ss8Discretization = 2;
@@ -75,7 +75,7 @@ public:
 
       featuresParameters->residueWindowSize = 5;
       featuresParameters->residueGlobalFeatures = false;
-      featuresParameters->residueLocalMeanSize = 8;
+      featuresParameters->residueLocalMeanSize = 8;*/
 
       ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
 

@@ -43,16 +43,17 @@ protected:
 };
 
 // Pair<File,File> -> Pair<Variable,Variable>
-class LoadFromFilePairFunction : public SimpleBinaryFunction
+class LoadFromFilePairFunction : public SimpleUnaryFunction
 {
 public:
   LoadFromFilePairFunction(TypePtr expectedType1 = objectClass, TypePtr expectedType2 = objectClass)
-    : SimpleBinaryFunction(fileType, fileType, pairClass(expectedType1, expectedType2), T("Loaded")), expectedType1(expectedType1), expectedType2(expectedType2) {}
+    : SimpleUnaryFunction(pairClass(fileType, fileType), pairClass(expectedType1, expectedType2), T("Loaded")), expectedType1(expectedType1), expectedType2(expectedType2) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    File file1 = inputs[0].getFile();
-    File file2 = inputs[1].getFile();
+    const PairPtr& filePair = inputs[0].getObjectAndCast<Pair>();
+    File file1 = filePair->getFirst().getFile();
+    File file2 = filePair->getSecond().getFile();
 
     Variable res1 = Variable::createFromFile(context, file1);
     Variable res2 = Variable::createFromFile(context, file2);

@@ -10,7 +10,6 @@
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include "../Core/Object/SparseVectorHelper.h"
 #include "../FeatureGenerator/FeatureGeneratorCallbacks.hpp"
-
 using namespace lbcpp;
 
 /*

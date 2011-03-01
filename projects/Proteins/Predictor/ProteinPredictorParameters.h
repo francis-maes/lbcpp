@@ -71,10 +71,10 @@ class NumericalProteinFeaturesParameters : public Object
 {
 public:
   NumericalProteinFeaturesParameters()
-    : pssmDiscretization(5), pssmEntropyDiscretization(5),
-      ss3Discretization(5), ss3EntropyDiscretization(5),
-      ss8Discretization(5), ss8EntropyDiscretization(5),
-      stalDiscretization(5), stalEntropyDiscretization(5),
+    : pssmDiscretization(1), pssmEntropyDiscretization(3),
+      ss3Discretization(5), ss3EntropyDiscretization(3),
+      ss8Discretization(5), ss8EntropyDiscretization(3),
+      stalDiscretization(2), stalEntropyDiscretization(3),
       sa20Discretization(5),
       drDiscretization(5),
       residueGlobalFeatures(true), residueWindowSize(15), residueLocalMeanSize(15), residueMediumMeanSize(50)
