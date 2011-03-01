@@ -75,6 +75,8 @@ Variable ProteinLearner::run(ExecutionContext& context)
     if (predictionDirectory != File::nonexistent)
       savePredictionsToDirectory(context, predictor, testProteins, predictionDirectory.getChildFile(T("test")));
   }
+
+
   return true;
 }
 

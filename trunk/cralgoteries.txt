@@ -1,13 +1,23 @@
-* Objectif: valider l'utilisation boinc
+Boinc:
  - preparer le dataset
+   * proteines de supervision: preprocesser les .xml pour ne garder que les champs necessaire
+   
  - progression globale
- - verifier l'utilisation memoire
- - verifier l'enregistrement des traces  
+ 
+ - retourner les resultats pour l'optimiseur:
+     * train/validation/test scores
+     * numFeaturesPerResidue
+     * meanNumActiveFeaturesPerResidue
+     
+ - reduire l'utilisation memoire:
+     * stocker le ScoreAccumulator avec des float, et faire un echantillonage plus eparse
+     * chercher les autres coupables
 
-* Ajouter des features de segments
-
+ - verifier que l'enregistrement des traces marche bien
+ 
 ProteinLearner:
  * Evaluation après chaque passe (attacher un Evaluator aux Function ?)
+ * Ajouter des features de segments
 
 Misc:
  * MultiLinearLearnableFunction: faire un nouveau type d'enum template "EnumerationCartesianProduct" pour le type des parameters 

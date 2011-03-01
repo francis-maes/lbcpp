@@ -56,7 +56,7 @@ public:
     }
 
     if (features.size() > 1)
-      builder.addFunction(concatenateFeatureGenerator(false), features);
+      builder.addFunction(concatenateFeatureGenerator(true), features);
   }
 
 protected:
