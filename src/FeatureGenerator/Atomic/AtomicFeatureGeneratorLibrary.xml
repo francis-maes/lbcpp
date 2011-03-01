@@ -13,11 +13,6 @@
     <constructor arguments="bool includeMissingValue"/>
     <variable type="Boolean" name="includeMissingValue"/>
   </class>
-  
-  <class name="EnumerationDistributionFeatureGenerator" base="FeatureGenerator">
-    <constructor arguments="bool includeMissingValue"/>
-    <variable type="Boolean" name="includeMissingValue"/>
-  </class>
 
   <!-- Number Features -->
   <class name="DiscretizedNumberFeatureGenerator" base="FeatureGenerator" abstract="yes">

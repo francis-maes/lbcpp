@@ -21,9 +21,6 @@ public:
     : maxIterationsWithoutImprovement(maxIterationsWithoutImprovement), numIterationsWithoutImprovement(0), bestValue(-DBL_MAX)
     {reset();}
 
-  virtual String toString() const
-    {return "MaxIterationsWithoutImprovement(" + String((int)maxIterationsWithoutImprovement) + ")";}
-
   virtual void reset()
     {numIterationsWithoutImprovement = 0; bestValue = DBL_MAX;}
 

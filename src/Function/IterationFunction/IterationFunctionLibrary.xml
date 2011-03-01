@@ -5,12 +5,12 @@
 
   <class name="IterationFunction" base="Function" abstract="yes"/>
   
-  <class name="ConstantIterationFunction" base="IterationFunction">
+  <class name="ConstantIterationFunction" base="IterationFunction" shortName="constant">
     <constructor arguments="double value"/>
     <variable type="Double" name="value"/>
   </class>
 
-  <class name="InvLinearIterationFunction" base="IterationFunction">
+  <class name="InvLinearIterationFunction" base="IterationFunction" shortName="invLinear">
     <constructor arguments="double initialValue, size_t numberIterationsToReachHalfInitialValue"/>
     <variable type="Double" name="initialValue"/>
     <variable type="Integer" name="numberIterationsToReachHalfInitialValue"/>

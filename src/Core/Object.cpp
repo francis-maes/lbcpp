@@ -201,9 +201,10 @@ void Object::setVariable(size_t index, const Variable& value)
 */
 String Object::toString() const
 {
-  String res = getClassName();
+  ClassPtr thisClass = getClass();
+  String res = thisClass->getShortName().isNotEmpty() ? thisClass->getShortName() : thisClass->getName();
   if (getNumVariables())
-    res += T("{") + defaultToStringImplementation(false) + T("}");
+    res += T("(") + defaultToStringImplementation(false) + T(")");
   return res;
 }
 
@@ -218,6 +219,7 @@ String Object::defaultToStringImplementation(bool useShortString) const
   for (size_t i = 0; i < n; ++i)
   {
     Variable value = getVariable(i);
+    /*
     if (value.exists())
     {
       String valueString = useShortString ? value.toShortString() : value.toString();
@@ -238,7 +240,10 @@ String Object::defaultToStringImplementation(bool useShortString) const
           res += T(" ") + valueString;
         }
       }
-    }
+    }*/
+    res += (useShortString ? value.toShortString() : value.toString());
+    if (i < n - 1)
+      res += T(", ");
   }
   return res;
 }
@@ -416,8 +421,61 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
 
 bool Object::loadFromString(ExecutionContext& context, const String& str)
 {
-  context.errorCallback(T("Object::loadFromString"), T("Not implemented"));
-  return false;
+ /* String arguments;
+  int b = str.indexOfChar('(');
+  if (b >= 0)
+  {
+    String name = str.substring(0, b).trim();
+    if (name != getClassName() && name != getClass()->getShortName())
+    {
+      context.errorCallback(T("Unrecognized name: ") + name);
+      return false;
+    }
+    int e = str.lastIndexOfChar(')');
+    if (e < 0)
+    {
+      context.errorCallback(T("Unmatched parenthesis"));
+      return false;
+    }
+    arguments = str.substring(b + 1, e);
+    String remaining = str.substring(e + 1).trim();
+    if (remaining.isNotEmpty())
+      context.warningCallback(remaining.quoted() + T(" is beyond parenthesis => skipped"));
+  }
+  else
+    arguments = str.trim();
+
+  return arguments.isEmpty() || loadArgumentsFromString(context, arguments);*/
+  return loadArgumentsFromString(context, str);
+}
+
+namespace lbcpp
+{
+  extern bool parseListWithParenthesis(ExecutionContext& context, const String& str, char openParenthesis, char closeParenthesis, char comma, std::vector<String>& res);
+};
+
+bool Object::loadArgumentsFromString(ExecutionContext& context, const String& str)
+{
+  std::vector<String> tokens;
+  if (!parseListWithParenthesis(context, str, '(', ')', ',', tokens))
+    return false;
+
+  size_t n = getNumVariables();
+  if (tokens.size() > n)
+  {
+    context.errorCallback(T("Could not parse ") + str.quoted() + T(": too much tokens"));
+    return false;
+  }
+  bool ok = true;
+  for (size_t i = 0; i < tokens.size(); ++i)
+  {
+    Variable value = Variable::createFromString(context, getVariableType(i), tokens[i]);
+    if (!value.isNil())
+      setVariable(i, value);
+    else
+      ok = false;
+  }
+  return ok;
 }
 
 void Object::saveToFile(ExecutionContext& context, const File& file) const

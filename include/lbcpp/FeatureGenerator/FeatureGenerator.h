@@ -81,14 +81,14 @@ typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 // atomic
 extern FeatureGeneratorPtr booleanFeatureGenerator(bool includeMissingValue = true);
 extern FeatureGeneratorPtr enumerationFeatureGenerator(bool includeMissingValue = true);
-extern FeatureGeneratorPtr enumerationDistributionFeatureGenerator(bool includeMissingValue = true);
 
-// number features
+// atomic - number features
 extern FeatureGeneratorPtr hardDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures = true);
 extern FeatureGeneratorPtr softDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures = true, bool cyclicBehavior = false);
 extern FeatureGeneratorPtr softDiscretizedLogNumberFeatureGenerator(double minimumLogValue, double maximumLogValue, size_t numIntervals, bool doOutOfBoundsFeatures = true);
 extern FeatureGeneratorPtr signedNumberFeatureGenerator(FeatureGeneratorPtr positiveNumberFeatures);
 
+// atomic - number features presets
 extern FeatureGeneratorPtr defaultPositiveIntegerFeatureGenerator(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
 extern FeatureGeneratorPtr defaultIntegerFeatureGenerator(size_t numIntervals = 20, double maxPowerOfTen = 10.0);
 extern FeatureGeneratorPtr defaultDoubleFeatureGenerator(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
@@ -97,10 +97,12 @@ extern FeatureGeneratorPtr defaultProbabilityFeatureGenerator(size_t numInterval
 
 // generic
 extern FeatureGeneratorPtr windowFeatureGenerator(size_t windowSize);
-
 extern FunctionPtr concatenateFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy);
+
+// composite
+extern CompositeFunctionPtr enumerationDistributionFeatureGenerator(size_t probabilityDiscretization = 1, size_t entropyDiscretization = 10, double minEntropy = -1.0, double maxEntropy = 4.0);
 
 }; /* namespace lbcpp */
 

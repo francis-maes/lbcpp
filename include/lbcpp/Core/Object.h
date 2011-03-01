@@ -197,6 +197,7 @@ protected:
 
   // utilities
   String defaultToStringImplementation(bool useShortString) const;
+  bool loadArgumentsFromString(ExecutionContext& context, const String& str);
   String variablesToString(const String& separator, bool includeTypes = true) const;
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlImporter& importer);

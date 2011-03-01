@@ -20,9 +20,6 @@ public:
   IsAboveValueStoppingCriterion(double referenceValue = 0.0)
     : referenceValue(referenceValue) {}
 
-  virtual String toString() const
-    {return T("IsAboveValue(") + String(referenceValue) + T(")");}
-
   virtual void reset()
     {}
 
@@ -42,9 +39,6 @@ class MaxIterationsStoppingCriterion : public StoppingCriterion
 public:
   MaxIterationsStoppingCriterion(size_t maxIterations = 0)
     : iterations(0), maxIterations(maxIterations) {}
-
-  virtual String toString() const
-    {return "MaxIterations(" + String((int)maxIterations) + ")";}
 
   virtual void reset()
     {iterations = 0;}

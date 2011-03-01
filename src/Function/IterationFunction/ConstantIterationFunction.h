@@ -22,9 +22,6 @@ public:
   virtual double computeIterationFunction(size_t iteration) const
     {return value;}
     
-  virtual String toString() const
-    {return "ConstantIterationFunction(" + String(value) + ")";}
-  
 private:
   friend class ConstantIterationFunctionClass;
 

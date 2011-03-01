@@ -266,11 +266,6 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
 ScoreObjectPtr Function::evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
   {return evaluate(context, new ObjectVector(examples), evaluator, scopeName);}
 
-String Function::toString() const
-{
-  return toShortString();
-}
-
 String Function::toShortString() const
 {
   ClassPtr thisClass = getClass();

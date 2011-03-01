@@ -23,10 +23,6 @@ public:
   virtual double computeIterationFunction(size_t iteration) const
     {return initialValue * numberIterationsToReachHalfInitialValue / (double)(numberIterationsToReachHalfInitialValue + iteration);}
 
-  virtual String toString() const
-    {return "InvLinearIterationFunction(" + String(initialValue) + 
-       ", " + String((int)numberIterationsToReachHalfInitialValue) + ")";}
-
 private:
   friend class InvLinearIterationFunctionClass;
 

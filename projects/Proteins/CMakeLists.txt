@@ -82,7 +82,7 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/ProteinPredictor.h
   Predictor/ProteinPredictor.cpp
   Predictor/ProteinPredictorParameters.h
-  Predictor/ProteinPredictorParameters.cpp
+  Predictor/NumericalProteinPredictorParameters.h
   Predictor/ProteinPredictorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
 )
