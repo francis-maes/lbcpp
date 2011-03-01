@@ -3,15 +3,15 @@ workUnitDirectory="/home/boincadm/projects/evo/Network/.WorkUnit"
 BoincProjectDir="/home/boincadm/projects/evo"
 rootProjectDirectory="/home/boincadm/projects/evo/Network/Projects"
 
-workUnits=`ls ${workUnitDirectory}/PreProcessing`
+workUnits=`ls ${workUnitDirectory}/Waiting`
 
 for f in $workUnits
 do
   fileName=`echo $f | cut -f 1 -d '.'`
   
-  preProcessingFile="${workUnitDirectory}/PreProcessing/$f"
-  workUnitFile="${workUnitDirectory}/WorkUnits/$f"
-  finishedFile="${workUnitDirectory}/Finished/$fileName"
+  waitingFile="${workUnitDirectory}/Waiting/$f"
+  inProgressFile="${workUnitDirectory}/InProgress/$f"
+  finishedFile="${workUnitDirectory}/Finished/$f"
   traceFile="${workUnitDirectory}/Traces/$fileName.trace"
   requestFile="${workUnitDirectory}/Requests/$fileName.request"
   
@@ -28,10 +28,10 @@ do
   #  ln -s /scratch/jbecker/data/ $rootProjectDirectory/$projectName/data
   #fi
 
-  mv $preProcessingFile $workUnitFile
+  mv $waitingFile $inProgressFile
 
   cd $BoincProjectDir
-  cp $workUnitFile `./bin/dir_hier_path $f`
+  cp $inProgressFile `./bin/dir_hier_path $f`
   ./bin/create_work --appname LBCppBeta --wu_name $fileName --wu_template ./templates/LBCPP_wu --result_template ./templates/LBCPP_result $f
 done
 
