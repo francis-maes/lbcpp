@@ -1,7 +1,8 @@
 
 * Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
-   - mem leaks
-
+ - memleak: evaluatorOnlineLearner
+ - crash sur l'evaluation
+ 
 * Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
 * Objectif 4: valider l'utilisation boinc
 

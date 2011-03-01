@@ -91,24 +91,23 @@ protected:
 
 typedef ReferenceCountedObjectPtr<BinaryClassificationConfusionMatrix> BinaryClassificationConfusionMatrixPtr;
 
-class ROCAnalyse : public ScoreObject
+class ROCScoreObject : public ScoreObject
 {
 public:
-  ROCAnalyse() : bestF1(0.0), numPositives(0), numNegatives(0) {}
+  ROCScoreObject(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
+    : scoreToOptimize(scoreToOptimize), bestThreshold(0.0), bestThresholdScore(0.0), numPositives(0), numNegatives(0) {}
 
   virtual double getScoreToMinimize() const
-    {return -bestF1;}
+    {return 1.0 - bestThresholdScore;}
   
   typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
 
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
   void finalize();
-  double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
-  
   double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
 
   size_t getSampleCount() const
-    {ScopedLock _(lock); return predictedScores.size();}
+    {ScopedLock _(lock); return numPositives + numNegatives;}
 
   size_t getNumPositives() const
     {ScopedLock _(lock); return numPositives;}
@@ -123,16 +122,15 @@ public:
   {
     if (!getSampleCount())
       return String::empty;
-    
-    double bestF1;
-    double bestThreshold = findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1);
-    return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + String(bestThreshold);
+    return T("tuned score: ") + String(bestThresholdScore * 100, 2) + T("% threshold = ") + String(bestThreshold);
   }
 
 protected:
-  friend class ROCAnalyseClass;
+  friend class ROCScoreObjectClass;
   
-  double bestF1;
+  BinaryClassificationScore scoreToOptimize;
+  double bestThreshold;
+  double bestThresholdScore;
   std::vector< std::pair<double, double> > precision;
   std::vector< std::pair<double, double> > recall;
 
@@ -144,6 +142,7 @@ private:
   size_t numPositives, numNegatives;
 
   double getBestThreshold(ScoresMap::const_iterator lastLower, double margin = 1.0) const;
+  double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 };
 
 };
