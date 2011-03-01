@@ -11,6 +11,22 @@
   <class name="ProteinPredictorParameters" base="Object" abstract="yes"/>
 
   <class name="NumericalProteinFeaturesParameters" shortName="features">
+    <variable type="PositiveInteger" name="pssmDiscretization"/>
+    <variable type="PositiveInteger" name="pssmEntropyDiscretization"/>
+
+    <variable type="PositiveInteger" name="ss3Discretization"/>
+    <variable type="PositiveInteger" name="ss3EntropyDiscretization"/>
+
+    <variable type="PositiveInteger" name="ss8Discretization"/>
+    <variable type="PositiveInteger" name="ss8EntropyDiscretization"/>
+
+    <variable type="PositiveInteger" name="stalDiscretization"/>
+    <variable type="PositiveInteger" name="stalEntropyDiscretization"/>
+
+    <variable type="PositiveInteger" name="sa20Discretization"/>
+    
+    <variable type="PositiveInteger" name="drDiscretization"/>
+
     <variable type="Boolean" name="residueGlobalFeatures" description="Incorporate global mean features"/>
     <variable type="PositiveInteger" name="residueWindowSize" description="The size of the residues window"/>
     <variable type="PositiveInteger" name="residueLocalMeanSize" description="The size of the first residue local mean"/>

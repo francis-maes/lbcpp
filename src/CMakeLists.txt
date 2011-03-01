@@ -431,6 +431,7 @@ SET(LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES
 SET(LBCPP_FEATURE_GENERATOR_ATOMIC_SOURCES
   FeatureGenerator/Atomic/BooleanFeatureGenerator.h
   FeatureGenerator/Atomic/EnumerationFeatureGenerator.h
+  FeatureGenerator/Atomic/DoubleFeatureGenerator.h
   FeatureGenerator/Atomic/DiscretizedNumberFeatureGenerator.h
   FeatureGenerator/Atomic/HardDiscretizedNumberFeatureGenerator.h
   FeatureGenerator/Atomic/SoftDiscretizedNumberFeatureGenerator.h

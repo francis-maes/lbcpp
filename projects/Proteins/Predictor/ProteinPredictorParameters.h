@@ -71,8 +71,39 @@ class NumericalProteinFeaturesParameters : public Object
 {
 public:
   NumericalProteinFeaturesParameters()
-    : residueGlobalFeatures(true), residueWindowSize(15), residueLocalMeanSize(15), residueMediumMeanSize(50) {}
+    : pssmDiscretization(5), pssmEntropyDiscretization(10),
+      ss3Discretization(5), ss3EntropyDiscretization(10),
+      ss8Discretization(5), ss8EntropyDiscretization(10),
+      stalDiscretization(5), stalEntropyDiscretization(10),
+      sa20Discretization(5),
+      drDiscretization(5),
+      residueGlobalFeatures(true), residueWindowSize(15), residueLocalMeanSize(15), residueMediumMeanSize(50)
+  {
+  }
 
+  // pssm
+  size_t pssmDiscretization;
+  size_t pssmEntropyDiscretization;
+
+  // ss3
+  size_t ss3Discretization;
+  size_t ss3EntropyDiscretization;
+
+  // ss8
+  size_t ss8Discretization;
+  size_t ss8EntropyDiscretization;
+
+  // stal
+  size_t stalDiscretization;
+  size_t stalEntropyDiscretization;
+
+  // sa
+  size_t sa20Discretization;
+
+  // dr
+  size_t drDiscretization;
+
+  // global
   bool residueGlobalFeatures;
   size_t residueWindowSize;
   size_t residueLocalMeanSize;

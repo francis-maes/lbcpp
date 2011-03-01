@@ -1,12 +1,10 @@
 
-
-* todo: EnumerationDistributionFeatureGenerator: utiliser le probabilityDiscretization
- 
 * Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
 * Objectif 4: valider l'utilisation boinc
    - progression globale
-   - sequence (train,validation) puis test
-   
+   - sequence (train,validation) puis test  
+
+* Objectif 5: ajouter des features de segments
 
 ProteinLearner:
  * Evaluation après chaque passe (attacher un Evaluator aux Function ?)
@@ -14,6 +12,5 @@ ProteinLearner:
 Misc:
  * MultiLinearLearnableFunction: faire un nouveau type d'enum template "EnumerationCartesianProduct" pour le type des parameters 
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
- * Ne pas utiliser le SupervisedNumericalFunction pour la regression (utilise le LearnableLinear directement)
  * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
  * Explorer: Améliorer le système de colonnes

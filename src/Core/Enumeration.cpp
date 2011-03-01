@@ -12,6 +12,26 @@
 #include <map>
 using namespace lbcpp;
 
+/*
+** EnumerationElement
+*/
+EnumerationElement::EnumerationElement(const String& name, const String& oneLetterCode, const String& shortName, const String& description)
+  : name(name), oneLetterCode(oneLetterCode), shortName(shortName), description(description)
+{
+}
+
+String EnumerationElement::toShortString() const
+{
+  if (oneLetterCode.isNotEmpty())
+    return oneLetterCode;
+  if (shortName.isNotEmpty())
+    return shortName;
+  return name;
+}
+
+/*
+** Enumeration
+*/
 Enumeration::Enumeration(const String& name, const String& baseTypeName)
   : Type(name, lbcpp::getType(baseTypeName))
 {

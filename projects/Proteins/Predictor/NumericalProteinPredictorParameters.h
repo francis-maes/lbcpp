@@ -27,29 +27,43 @@ public:
     : featuresParameters(new NumericalProteinFeaturesParameters()),
       learningParameters(new StochasticGDParameters(constantIterationFunction(0.1))) {}
 
+  void addEnumerationDistributionFeatureGenerator(CompositeFunctionBuilder& builder, size_t inputIndex, const String& outputName, size_t probabilityDiscretization, size_t entropyDiscretization) const
+  {
+    if (probabilityDiscretization || entropyDiscretization)
+      builder.addFunction(enumerationDistributionFeatureGenerator(probabilityDiscretization, entropyDiscretization), inputIndex, outputName);
+  }
+
+  void addBinaryDistributionFeatureGenerator(CompositeFunctionBuilder& builder, size_t inputIndex, const String& outputName, size_t discretization) const
+  {
+    if (discretization)
+      builder.addFunction(defaultProbabilityFeatureGenerator(discretization), inputIndex, outputName);
+  }
+
   // Features
   void primaryResidueFeatures(CompositeFunctionBuilder& builder) const
   {
-    builder.addInput(positiveIntegerType, T("position"));
-    builder.addInput(proteinClass, T("protein"));
-    size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), 1, 0);
-    size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), 1, 0);
-    size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), 1, 0);
-    size_t ss8 = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), 1, 0);
-    size_t stal = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), 1, 0);
-    size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), 1, 0);
-    size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), 1, 0);
+    size_t position = builder.addInput(positiveIntegerType, T("position"));
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+
+    size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position);
+    size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position);
+    size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position);
+    size_t ss8 = builder.addFunction(getElementInVariableFunction(T("dsspSecondaryStructure")), protein, position);
+    size_t stal = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position);
+    size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position);
+    size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position);
 
     // feature generators
     builder.startSelection();
     
       builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
-      builder.addFunction(enumerationDistributionFeatureGenerator(), pssmRow, T("pssm"));
-      builder.addFunction(enumerationDistributionFeatureGenerator(), ss3, T("ss3"));
-      builder.addFunction(enumerationDistributionFeatureGenerator(), ss8, T("ss8"));
-      builder.addFunction(enumerationDistributionFeatureGenerator(), stal, T("stal"));
-      builder.addFunction(defaultProbabilityFeatureGenerator(10), sa20, T("sa20"));
-      builder.addFunction(defaultProbabilityFeatureGenerator(10), dr, T("dr"));
+
+      addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
+      addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
+      addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
