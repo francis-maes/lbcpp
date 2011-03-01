@@ -76,9 +76,6 @@ protected:
   bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;
 };
 
-inline void variableToNative(ExecutionContext& context, ProteinTarget& dest, const Variable& source)
-  {jassert(source.isEnumeration()); dest = (ProteinTarget)source.getInteger();}
-
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_WORK_UNIT_SAND_BOX_H_
