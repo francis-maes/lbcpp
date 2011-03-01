@@ -1,7 +1,5 @@
 
 
-* MultiClassLinearClassifier: normalize output probabilities
-
 * Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
 
  

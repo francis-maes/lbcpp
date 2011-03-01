@@ -155,9 +155,10 @@ CompositeFunctionBuilder::CompositeFunctionBuilder(ExecutionContext& context, Co
 size_t CompositeFunctionBuilder::addVariable(TypePtr type, const String& name, const String& shortName, CompositeFunction::StepType stepType, size_t stepArgument)
 {
   jassert(function->steps.size() == function->stateClass->getNumMemberVariables());
-  size_t res = function->stateClass->addMemberVariable(context, type, name, shortName);
+  String uniqueName = function->stateClass->makeUniqueMemberVariableName(name);
+  size_t res = function->stateClass->addMemberVariable(context, type, uniqueName, shortName);
   if (res == invalidIndex())
-    return res;
+    return returnError();
 
   function->steps.push_back(std::make_pair(stepType, stepArgument));
   currentSelection.push_back(res);
