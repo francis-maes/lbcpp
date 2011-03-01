@@ -47,9 +47,12 @@ public:
   }
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}  // TODO arnaud : if no a prioric
-  // TODO arnaud : check initial guess and a priori distribution
-  
+  {    
+    // TODO arnaud : check initial guess and apriori distribution
+    return variableType;
+    //return inputVariables[2]->getType();  // TODO arnaud : if no apriori !
+  } 
+    
   /*virtual TypePtr getInputType() const
     {return optimizerInputClass;}
 
