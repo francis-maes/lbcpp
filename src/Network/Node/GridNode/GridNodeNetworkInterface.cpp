@@ -145,7 +145,7 @@ ContainerPtr BoincGridNodeNetworkInterface::getFinishedExecutionTraces()
   StreamPtr files = directoryFileStream(context, getFinishDirectory(), T("*.workUnit"));
   while (!files->isExhausted())
   {
-    String identifier = files->next().getFile().getFileName();
+    String identifier = files->next().getFile().getFileNameWithoutExtension();
     res->append(getNetworkResponse(identifier));
   }
   return res;
