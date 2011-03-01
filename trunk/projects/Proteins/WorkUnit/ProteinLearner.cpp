@@ -47,7 +47,7 @@ Variable ProteinLearner::run(ExecutionContext& context)
                               String((int)validationProteins->getNumElements()) + T(" validation proteins"));
 
   // train
-  if (!predictor->train(context, trainProteins, validationProteins, T("Training"), true))
+  if (!predictor->train(context, trainProteins, validationProteins, T("Training")))
     return false;
 
   // evaluate

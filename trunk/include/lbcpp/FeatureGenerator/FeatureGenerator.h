@@ -81,6 +81,7 @@ typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;
 // atomic
 extern FeatureGeneratorPtr booleanFeatureGenerator(bool includeMissingValue = true);
 extern FeatureGeneratorPtr enumerationFeatureGenerator(bool includeMissingValue = true);
+extern FeatureGeneratorPtr doubleFeatureGenerator();
 
 // atomic - number features
 extern FeatureGeneratorPtr hardDiscretizedNumberFeatureGenerator(double minimumValue, double maximumValue, size_t numIntervals, bool doOutOfBoundsFeatures = true);

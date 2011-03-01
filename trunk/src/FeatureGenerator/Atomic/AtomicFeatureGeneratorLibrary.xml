@@ -2,18 +2,21 @@
 
 <library name="AtomicFeatureGenerator" directory="FeatureGenerator/Atomic">
 
-  <!-- Boolean Features -->     
+  <!-- Atomic types: Boolean, Enumeration, Double -->
   <class name="BooleanFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool includeMissingValue"/>
     <variable type="Boolean" name="includeMissingValue"/>
   </class>
 
-  <!-- Enumeration and EnumerationDistribution Features -->
   <class name="EnumerationFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool includeMissingValue"/>
     <variable type="Boolean" name="includeMissingValue"/>
   </class>
 
+  <class name="DoubleFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+  
   <!-- Number Features -->
   <class name="DiscretizedNumberFeatureGenerator" base="FeatureGenerator" abstract="yes">
     <variable type="Double" name="minimumValue"/>

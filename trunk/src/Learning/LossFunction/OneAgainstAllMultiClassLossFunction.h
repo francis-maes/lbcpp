@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-// 1/(n-1) * sum_{i | i != correctClass} binaryLoss(score_{correctClass} - score_i)
+// sum_{i | i != correctClass} binaryLoss(score_{correctClass} - score_i)
 class OneAgainstAllMultiClassLossFunction : public MultiClassLossFunction
 {
 public:
@@ -28,10 +28,7 @@ public:
   virtual void computeMultiClassLoss(const DenseDoubleVectorPtr& scores, size_t correctClass, size_t numClasses, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
     double correctValue = scores ? scores->getValue(correctClass) : 0.0;
-
     jassert(!gradientTarget || (*gradientTarget)->getNumElements() == numClasses);
-    double invZ = 1.0 / (numClasses - 1.0);
-    gradientWeight *= invZ;
 
     double correctValueDerivative = 0.0;
     for (size_t i = 0; i < numClasses; ++i)
@@ -42,7 +39,7 @@ public:
         double out = 0.0;
         binaryLoss->computeDiscriminativeLoss(deltaValue, output ? &out : NULL,  gradientTarget ? &derivative : NULL);
         if (output)
-          *output += out * invZ;
+          *output += out;
         if (gradientTarget)
         {
           correctValueDerivative += derivative;

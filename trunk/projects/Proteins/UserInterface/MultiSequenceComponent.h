@@ -229,8 +229,9 @@ private:
     
     TypePtr type = sequence->getElementsType();
     Variable value = sequence->getElement(index);
+    String text = T("?");
 
-    if (type->inheritsFrom(enumValueType) || type->inheritsFrom(sparseDoubleVectorClass(enumValueType, probabilityType)))
+    if (type->inheritsFrom(enumValueType) || type->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
     {
       EnumerationPtr enumeration;
       if (type->inheritsFrom(enumValueType))
@@ -238,8 +239,6 @@ private:
       else
         enumeration = DoubleVector::getElementsEnumeration(type);
 
-      g.setFont(12.f);
-      String res = T("?");
       if (value.exists())
       {
         int enumValue = -1;
@@ -247,7 +246,7 @@ private:
           enumValue = value.getInteger();
         else
         {
-          SparseDoubleVectorPtr doubleVector = value.getObjectAndCast<SparseDoubleVector>();
+          DoubleVectorPtr doubleVector = value.getObjectAndCast<DoubleVector>();
           if (doubleVector)
             enumValue = doubleVector->getIndexOfMaximumValue();
         }
@@ -256,28 +255,21 @@ private:
         {
           EnumerationElementPtr element = enumeration->getElement(enumValue);
           if (element->getOneLetterCode().length() == 1)
-            res[0] = element->getOneLetterCode()[0];
+            text[0] = element->getOneLetterCode()[0];
         }
       }
-      g.drawText(res, x, y, w, h, Justification::centred, true);
-      return;
     }
 
     if (type->canBeCastedTo(probabilityType))
     {
-      String str = T("?");
       if (sequence->getElement(index).exists())
       {
         g.setColour(Colours::red);
         double realValue = sequence->getElement(index).getDouble();
         double limitedValue = juce::jlimit(0.0, 1.0, realValue);
         g.fillRect(x, y + (int)(h * (1 - limitedValue)), w, (int)(h * limitedValue + 1));
-        str = String(realValue, 2);
+        text = String(realValue, 2);
       }
-      g.setColour(Colours::black);
-      g.setFont(8);
-      g.drawText(str, x, y, w, h, Justification::centred, true);
-      return;
     }
 
     if (type->canBeCastedTo(denseDoubleVectorClass(enumValueType, probabilityType)))
@@ -295,10 +287,14 @@ private:
           g.fillRect(x, y1, w, y2 - y1);
         }
       }
-      return;
     }
-    std::cout << "No paint action implemented for element of type: " << type->toString() << std::endl;
-    jassert(false);
+
+    if (text.isNotEmpty())
+    {
+      g.setColour(Colours::black);
+      g.setFont(text.length() > 1 ? 8.f : 12.f);
+      g.drawText(text, x, y, w, h, Justification::centred, true);
+    }
   }
 
   void paintInterSequenceInterval(Graphics& g, size_t begin, size_t end, int x1, int y, ContainerPtr sequence1, ContainerPtr sequence2)

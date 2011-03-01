@@ -29,9 +29,34 @@ public:
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t input = builder.addInput(doubleVectorClass(enumValueType, probabilityType), T("p"));
-    size_t entropy = builder.addFunction(doubleVectorEntropyFunction(), input);
-    size_t entropyFeatures = builder.addFunction(defaultPositiveDoubleFeatureGenerator(entropyDiscretization, minEntropy, maxEntropy), entropy, T("e"));
-    builder.addFunction(concatenateFeatureGenerator(false), input, entropyFeatures);
+
+    EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(builder.getProvidedInput(0)->getType());
+    if (!enumeration)
+      return;
+    
+    std::vector<size_t> features;
+    if (probabilityDiscretization)
+    {
+      if (probabilityDiscretization == 1)
+        features.push_back(input);
+      else
+        for (size_t i = 0; i < enumeration->getNumElements(); ++i)
+        {
+          size_t position = builder.addConstant(i);
+          size_t probability = builder.addFunction(getElementFunction(), input, position);
+          EnumerationElementPtr element = enumeration->getElement(i);
+          features.push_back(builder.addFunction(defaultProbabilityFeatureGenerator(probabilityDiscretization), probability, T("p[") + element->toShortString() + T("]")));
+        }
+    }
+
+    if (entropyDiscretization)
+    {
+      size_t entropy = builder.addFunction(doubleVectorEntropyFunction(), input);
+      features.push_back(builder.addFunction(defaultPositiveDoubleFeatureGenerator(entropyDiscretization, minEntropy, maxEntropy), entropy, T("e")));
+    }
+
+    if (features.size() > 1)
+      builder.addFunction(concatenateFeatureGenerator(false), features);
   }
 
 protected:

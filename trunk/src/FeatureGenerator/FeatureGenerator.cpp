@@ -97,7 +97,13 @@ FeatureGeneratorPtr lbcpp::defaultIntegerFeatureGenerator(size_t numIntervals, d
   {return signedNumberFeatureGenerator(softDiscretizedLogNumberFeatureGenerator(0.0, maxPowerOfTen, numIntervals, true));}
 
 FeatureGeneratorPtr lbcpp::defaultProbabilityFeatureGenerator(size_t numIntervals)
-  {return softDiscretizedNumberFeatureGenerator(0.0, 1.0, numIntervals, false, false);}
+{
+  jassert(numIntervals);
+  if (numIntervals == 1)
+    return doubleFeatureGenerator();
+  else
+    return softDiscretizedNumberFeatureGenerator(0.0, 1.0, numIntervals, false, false);
+}
 
 FeatureGeneratorPtr lbcpp::defaultPositiveDoubleFeatureGenerator(size_t numIntervals, double minPowerOfTen, double maxPowerOfTen)
   {return softDiscretizedLogNumberFeatureGenerator(minPowerOfTen, maxPowerOfTen, numIntervals, true);}

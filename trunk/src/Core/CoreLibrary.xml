@@ -157,7 +157,11 @@
       }
     </code>
   </template>
-
+  
+  <enumeration name="Singleton">
+    <value name="singleton" oneLetterCode="e"/>
+  </enumeration>
+  
   <enumeration name="ExistOrMissing">
     <value name="exist" oneLetterCode="e"/>
     <value name="missing" oneLetterCode="m"/>

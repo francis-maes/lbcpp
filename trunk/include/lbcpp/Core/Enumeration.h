@@ -35,8 +35,7 @@ namespace lbcpp
 class EnumerationElement : public Object
 {
 public:
-  EnumerationElement(const String& name = String::empty, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty)
-    : name(name), oneLetterCode(oneLetterCode), shortName(shortName), description(description) {}
+  EnumerationElement(const String& name = String::empty, const String& oneLetterCode = String::empty, const String& shortName = String::empty, const String& description = String::empty);
 
   virtual String getName() const
     {return name;}
@@ -49,6 +48,8 @@ public:
 
   const String& getDescription() const
     {return description;}
+
+  virtual String toShortString() const;
 
 private:
   friend class EnumerationElementClass;
@@ -97,6 +98,7 @@ public:
 
 extern EnumerationPtr addMissingToEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr addEntropyToEnumerationEnumeration(TypePtr type);
+extern EnumerationPtr singletonEnumeration;
 extern EnumerationPtr existOrMissingEnumeration;
 extern EnumerationPtr falseOrTrueEnumeration;
 extern EnumerationPtr falseTrueOrMissingEnumeration;
