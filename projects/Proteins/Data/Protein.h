@@ -35,6 +35,18 @@ enum ProteinTarget
   // todo: continue
 };
 
+inline void variableToNative(ExecutionContext& context, ProteinTarget& dest, const Variable& source)
+  {jassert(source.isEnumeration()); dest = (ProteinTarget)source.getInteger();}
+
+inline void variableToNative(ExecutionContext& context, std::vector<ProteinTarget>& dest, const Variable& source)
+{
+  ContainerPtr sourceContainer = source.dynamicCast<Container>();
+  jassert(sourceContainer);
+  dest.resize(sourceContainer->getNumElements());
+  for (size_t i = 0; i < dest.size(); ++i)
+    dest[i] = (ProteinTarget)sourceContainer->getElement(i).getInteger();
+}
+
 class Protein;
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 
