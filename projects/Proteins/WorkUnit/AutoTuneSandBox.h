@@ -41,8 +41,8 @@ public:
     res = lastLearner = gradientDescentOnlineLearner(
           perStep, invLinearIterationFunction(pow(10.0, logLearningRate), (size_t)(pow(10.0, logLearningRateDecrease))), true,
           perStepMiniBatch20, l2RegularizerFunction(pow(10.0, logRegularizer)));
-
-    OldEvaluatorPtr evaluator = oldClassificationAccuracyEvaluator();
+    jassertfalse;
+    OldEvaluatorPtr evaluator = OldEvaluatorPtr(); // FIXME
 
     OldEvaluatorPtr trainEvaluator = evaluator->cloneAndCast<OldEvaluator>();
     trainEvaluator->setName(T("trainScore"));

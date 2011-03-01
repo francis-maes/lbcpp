@@ -20,9 +20,9 @@ class ContactMapEvaluator : public OldEvaluator
 public:
   ContactMapEvaluator(const String& name, size_t minimumDistance)
     : OldEvaluator(name),
-      classificationEvaluator(oldBinaryClassificationConfusionEvaluator(name)), 
-      rocEvaluator(oldROCAnalysisEvaluator(name)),
-      minimumDistance(minimumDistance) {}
+      classificationEvaluator(OldEvaluatorPtr()),  // FIXME
+      rocEvaluator(OldEvaluatorPtr()), // FIXME
+    minimumDistance(minimumDistance) {jassertfalse;}
 
   virtual String toString() const
   {

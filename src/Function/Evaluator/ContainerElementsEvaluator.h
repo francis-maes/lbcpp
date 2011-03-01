@@ -9,45 +9,38 @@
 #ifndef LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
 # define LBCPP_FUNCTION_EVALUATOR_CONTAINER_ELEMENTS_H_
 
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Core/Container.h>
 
 namespace lbcpp
 {
 
-class ContainerElementsEvaluator : public OldEvaluator
+class ContainerElementsEvaluator : public Evaluator
 {
 public:
-  ContainerElementsEvaluator(const String& name, OldEvaluatorPtr elementEvaluator)
-    : OldEvaluator(name), elementEvaluator(elementEvaluator) {}
+  ContainerElementsEvaluator(EvaluatorPtr elementEvaluator)
+    : elementEvaluator(elementEvaluator) {}
   ContainerElementsEvaluator() {}
 
-  virtual String toString() const
-    {return elementEvaluator->toString();}
-
-  virtual double getDefaultScore() const
-    {return elementEvaluator->getDefaultScore();}
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
-    {elementEvaluator->getScores(res);}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
+  virtual ScoreObjectPtr createEmptyScoreObject() const
+    {return elementEvaluator->createEmptyScoreObject();}
+  
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
   {
-    if (!predictedObject.exists() || !correctObject.exists())
-      return;
-
-    ContainerPtr predicted = predictedObject.dynamicCast<Container>();
-    ContainerPtr correct = correctObject.dynamicCast<Container>();
-    size_t n = predicted->getNumElements();
-    jassert(correct->getNumElements() == n);
+    ContainerPtr examplesContainer = example.dynamicCast<Container>();
+    ContainerPtr outputContainer = output.dynamicCast<Container>();
+    size_t n = outputContainer->getNumElements();
+    jassert(examplesContainer->getNumElements() == n);
     for (size_t i = 0; i < n; ++i)
-      elementEvaluator->addPrediction(context, predicted->getElement(i), correct->getElement(i));
+      if (!elementEvaluator->updateScoreObject(context, scores, examplesContainer->getElement(i).getObject(), outputContainer->getElement(i).getObject()))
+        return false;
+    return true;
   }
 
 protected:
   friend class ContainerElementsEvaluatorClass;
 
-  OldEvaluatorPtr elementEvaluator;
+  EvaluatorPtr elementEvaluator;
 };
 
 }; /* namespace lbcpp */
