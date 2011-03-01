@@ -22,8 +22,8 @@ public:
     : elementEvaluator(elementEvaluator) {}
   ContainerElementsEvaluator() {}
 
-  virtual ScoreObjectPtr createEmptyScoreObject() const
-    {return elementEvaluator->createEmptyScoreObject();}
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+    {return elementEvaluator->createEmptyScoreObject(context);}
   
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
   {
