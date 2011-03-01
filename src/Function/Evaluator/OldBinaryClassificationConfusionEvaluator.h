@@ -92,14 +92,14 @@ public:
       return String::empty;
 
     double bestF1;
-    double bestThreshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1);
+    double bestThreshold = roc.findBestThreshold(binaryClassificationF1Score, bestF1);
     return T("tuned F1: ") + String(bestF1 * 100, 2) + T("% threshold = ") + String(bestThreshold);
   }
 
   virtual double getDefaultScore() const
   {
     double bestF1;
-    roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1);
+    roc.findBestThreshold(binaryClassificationF1Score, bestF1);
     return bestF1;
   }
 
@@ -107,7 +107,7 @@ public:
   {}//roc.getScores(res);}
 
 private:
-  ROCAnalyse roc;
+  ROCScoreObject roc;
 };
 
 }; /* namespace lbcpp */

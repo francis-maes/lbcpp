@@ -36,23 +36,6 @@ protected:
     {result.staticCast<BinaryClassificationConfusionMatrix>()->addPredictionIfExists(context, predictedObject, correctObject);}
 };
 
-class ROCAnalysisScoreObject : public ScoreObject
-{
-public:
-  ROCAnalysisScoreObject(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
-    : scoreToOptimize(scoreToOptimize) {}
-
-  virtual double getScoreToMinimize() const
-    {double bestScore; roc.findBestThreshold(scoreToOptimize, bestScore); return 1.0 - bestScore;}
-  
-  void addPrediction(ExecutionContext& context, double predicted, bool correct)
-    {roc.addPrediction(context, predicted, correct);}
-  
-private:
-  ROCAnalyse roc;
-  BinaryClassificationScore scoreToOptimize;
-};
-
 class ROCAnalysisEvaluator : public SupervisedEvaluator
 {
 public:
@@ -71,16 +54,19 @@ protected:
   BinaryClassificationScore scoreToOptimize;
 
   virtual ScoreObjectPtr createEmptyScoreObject() const
-    {return new ROCAnalysisScoreObject(scoreToOptimize);}
+    {return new ROCScoreObject(scoreToOptimize);}
   
-  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& result) const
+  virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& scores) const
   {
     bool isPositive;
     if (convertSupervisionVariableToBoolean(correct, isPositive))
-      result.staticCast<ROCAnalysisScoreObject>()->addPrediction(context, predicted.getDouble(), isPositive);
+      scores.staticCast<ROCScoreObject>()->addPrediction(context, predicted.getDouble(), isPositive);
     else
       jassert(false);
   }
+
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const
+    {scores.staticCast<ROCScoreObject>()->finalize();}
 };
 
 }; /* namespace lbcpp */

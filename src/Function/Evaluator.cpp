@@ -67,7 +67,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
       Variable output = function->computeWithInputsObject(context, example);
       if (!updateScoreObject(context, scores, example, output))
         return;
-      
+
       juce::uint32 time = Time::getApproximateMillisecondCounter();
       if ((i == n - 1) || (time > lastProgressionTime + 1000))
       {

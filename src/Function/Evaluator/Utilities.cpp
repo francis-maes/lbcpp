@@ -182,9 +182,9 @@ bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassification
   falseNegative == other.falseNegative && trueNegative == other.trueNegative && totalCount == other.totalCount;}
 
 /*
-** ROCAnalyse
+** ROCScoreObject
 */
-void ROCAnalyse::addPrediction(ExecutionContext& context, double predictedScore, bool isPositive)
+void ROCScoreObject::addPrediction(ExecutionContext& context, double predictedScore, bool isPositive)
 {
   ScopedLock _(lock);
   isPositive ? ++numPositives : ++numNegatives;
@@ -195,7 +195,7 @@ void ROCAnalyse::addPrediction(ExecutionContext& context, double predictedScore,
     ++counters.first;
 }
 
-double ROCAnalyse::findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const
+double ROCScoreObject::findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const
 {
   ScoreFunction scoreFunction;
   switch (scoreToOptimize)
@@ -220,7 +220,7 @@ double ROCAnalyse::findBestThreshold(BinaryClassificationScore scoreToOptimize, 
   return findBestThreshold(scoreFunction, bestScore);
 }
 
-double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
+double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScore, double margin) const
 {
   ScopedLock _(lock);
   
@@ -281,7 +281,7 @@ double ROCAnalyse::findBestThreshold(ScoreFunction measure, double& bestScore, d
   return bestThreshold;
 }
 
-double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
+double ROCScoreObject::getBestThreshold(ScoresMap::const_iterator lastLower, double margin) const
 {
   ScoresMap::const_iterator nxt = lastLower;
   ++nxt;
@@ -291,7 +291,7 @@ double ROCAnalyse::getBestThreshold(ScoresMap::const_iterator lastLower, double 
     return (lastLower->first + nxt->first) / 2.0;
 }
 
-void ROCAnalyse::finalize()
+void ROCScoreObject::finalize()
 {
   ScopedLock _(lock);
 
@@ -337,7 +337,7 @@ void ROCAnalyse::finalize()
     truePositives -= it->second.second;
   }
 
-  bestF1 = bestF1Score;
+  bestThreshold = findBestThreshold(scoreToOptimize, bestThresholdScore);
 
   precision.push_back(std::make_pair(10, bestPrecAt10));
   precision.push_back(std::make_pair(25, bestPrecAt25));
@@ -349,4 +349,6 @@ void ROCAnalyse::finalize()
   recall.push_back(std::make_pair(50, bestRecAt50));
   recall.push_back(std::make_pair(75, bestRecAt75));
   recall.push_back(std::make_pair(90, bestRecAt90));
+
+  predictedScores.clear();
 }

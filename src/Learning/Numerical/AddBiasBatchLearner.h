@@ -30,7 +30,7 @@ public:
   {
     const AddBiasLearnableFunctionPtr& function = f.staticCast<AddBiasLearnableFunction>();
 
-    ROCAnalyse roc;
+    ROCScoreObject roc;
     for (size_t i = 0; i < trainingData.size(); ++i)
     {
       const ObjectPtr& example = trainingData[i];

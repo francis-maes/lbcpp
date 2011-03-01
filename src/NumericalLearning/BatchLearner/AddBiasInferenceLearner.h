@@ -27,7 +27,7 @@ public:
   virtual Variable computeInference(ExecutionContext& context, const Variable& input, const Variable& supervision) const
   {
     const InferenceBatchLearnerInputPtr& learnerInput = input.getObjectAndCast<InferenceBatchLearnerInput>(context);
-    ROCAnalyse roc;
+    ROCScoreObject roc;
     size_t n = learnerInput->getNumTrainingExamples();
     for (size_t i = 0; i < n; ++i)
     {
@@ -41,10 +41,10 @@ public:
     if (n)
     {
       double bestF1Score;
-      double threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeF1Score, bestF1Score);
+      double threshold = roc.findBestThreshold(binaryClassificationF1Score, bestF1Score);
       context.informationCallback(T("Best threshold F1: ") + String(threshold) + T(" (F1: ") + String(bestF1Score * 100.0) + T("%) - ") + String((int)roc.getSampleCount()) + T(" samples"));
       double bestMcc;
-      threshold = roc.findBestThreshold(&BinaryClassificationConfusionMatrix::computeMatthewsCorrelation, bestMcc);
+      threshold = roc.findBestThreshold(binaryClassificationMCCScore, bestMcc);
       context.informationCallback(T("Best threshold MCC: ") + String(threshold) + T(" (MCC: ") + String(bestMcc) + T(")"));
 
       learnerInput->getTargetInference().staticCast<AddBiasInference>()->setBias(-threshold);

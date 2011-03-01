@@ -42,8 +42,10 @@
     <variable type="PositiveInteger" name="totalCount"/>
   </class>
 
-  <class name="ROCAnalyse" base="ScoreObject">
-    <variable type="Double" name="bestF1"/>
+  <class name="ROCScoreObject" base="ScoreObject">
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+    <variable type="Double" name="bestThreshold"/>
+    <variable type="Double" name="bestThresholdScore"/>
     <variable type="ObjectVector[Pair[Double, Double]]" name="precision"/>
     <variable type="ObjectVector[Pair[Double, Double]]" name="recall"/>
   </class>
@@ -64,8 +66,6 @@
   <class name="BinaryClassificationEvaluator" base="SupervisedEvaluator">
     <constructor/>
   </class>
-  
-  <class name="ROCAnalysisScoreObject" base="ScoreObject"/>
   
   <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">
     <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
