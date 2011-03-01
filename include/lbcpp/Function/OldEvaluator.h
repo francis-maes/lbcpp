@@ -78,6 +78,7 @@ inline OldEvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
   {return containerElementsEvaluator(name, oldClassificationAccuracyEvaluator(name));}
 inline OldEvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
   {return containerElementsEvaluator(name, oldBinaryClassificationConfusionEvaluator(name));}
+#endif // 0
 
 }; /* namespace lbcpp */
 
