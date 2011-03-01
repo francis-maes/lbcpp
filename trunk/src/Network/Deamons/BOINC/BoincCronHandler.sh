@@ -1,8 +1,8 @@
 #!/bin/bash
 
-workUnitDirectory="/home/boincadm/projects/evo/NetworkTest/.WorkUnit"
+workUnitDirectory="/home/boincadm/projects/evo/Network/.WorkUnit"
 programDirectory="/home/boincadm/LBCPP/bin/Release"
-rootProjectDirectory="/home/boincadm/projects/evo/NetworkTest/Projects"
+rootProjectDirectory="/home/boincadm/projects/evo/Network/Projects"
 
 serverName="boincadm@boinc.run"
 masterHostname="monster24.montefiore.ulg.ac.be"
