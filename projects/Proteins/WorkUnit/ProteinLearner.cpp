@@ -78,6 +78,8 @@ bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, Funct
     return false;
   }
 
+  bool ok = true;
+  context.enterScope(T("Saving predictions to directory ") + predictionDirectory.getFileName());
   size_t n = proteinPairs->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
@@ -87,11 +89,12 @@ bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, Funct
     if (!predictedProtein)
     {
       context.errorCallback(T("No prediction for protein ") + inputProtein->getName());
-      return false;
+      ok = false;
     }
     predictedProtein->saveToFile(context, predictionDirectory.getChildFile(predictedProtein->getName() + T(".xml")));
   }
-  return true;
+  context.leaveScope(ok);
+  return ok;
 }
 
 FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const

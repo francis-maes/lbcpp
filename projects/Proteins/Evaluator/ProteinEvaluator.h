@@ -57,10 +57,11 @@ public:
     for (size_t i = 0; i < n; ++i)
       for (size_t j = 0; j < numTargets; ++j)
       {
-        if (predictedContainer[j])
+        const ContainerPtr& prediction = predictedContainer[j];
+        const ContainerPtr& supervision = supervisionContainer[j];
+        if (prediction && supervision)
           res &= evaluators[j]->updateScoreObject(context, scores->getScoreObject(j),
-                                           new Pair(pairClass(anyType, anyType), Variable(), supervisionContainer[j]->getElement(i)),
-                                           predictedContainer[j]->getElement(i));
+                new Pair(pairClass(anyType, anyType), Variable(), supervision->getElement(i)), prediction->getElement(i));
       }
     return res;
   }
