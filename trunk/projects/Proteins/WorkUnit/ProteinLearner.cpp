@@ -9,9 +9,7 @@
 #include "../Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;
 
-
-ProteinLearner::ProteinLearner()
-  : maxProteins(0), numFolds(7), numStacks(1)
+ProteinLearner::ProteinLearner() : maxProteins(0), numStacks(1)
 {
   parameters = numericalProteinPredictorParameters();
   proteinTargets.push_back(ss3Target);
@@ -39,72 +37,58 @@ Variable ProteinLearner::run(ExecutionContext& context)
     context.errorCallback(T("Invalid supervision directory"));
     return false;
   }
-  ContainerPtr proteins = Protein::loadProteinsFromDirectoryPair(context, inputDirectory, supervisionDirectory, maxProteins, T("Loading"));
-  if (!proteins)
+
+  ContainerPtr trainProteins = loadProteinPairs(context, T("train"));
+  ContainerPtr validationProteins = loadProteinPairs(context, T("validation"));
+  if (!trainProteins || !validationProteins)
     return false;
 
-  // make train and test proteins
-  ContainerPtr trainingProteins = proteins->invFold(0, numFolds);
-  ContainerPtr testingProteins = proteins->fold(0, numFolds);
-  context.informationCallback(String((int)trainingProteins->getNumElements()) + T(" training proteins, ") +
-                             String((int)testingProteins->getNumElements()) + T(" testing proteins"));
-  
+  context.informationCallback(String((int)trainProteins->getNumElements()) + T(" training proteins, ") +
+                              String((int)validationProteins->getNumElements()) + T(" validation proteins"));
 
   // train
-  if (!predictor->train(context, trainingProteins, ContainerPtr(), T("Training"), true))
+  if (!predictor->train(context, trainProteins, validationProteins, T("Training"), true))
     return false;
 
-  // evaluate on training data
-  if (!predictor->evaluate(context, trainingProteins, new ProteinEvaluator(), T("Evaluate on training data")))
-    return false;
-  
-  // evaluate on testing data
-  if (!predictor->evaluate(context, testingProteins, new ProteinEvaluator(), T("Evaluate on testing data")))
+  // evaluate
+  if (!predictor->evaluate(context, trainProteins, new ProteinEvaluator(), T("Evaluate on train proteins")) ||
+      !predictor->evaluate(context, validationProteins, new ProteinEvaluator(), T("Evaluate on validation proteins")))
     return false;
 
   // save predictions to directory
   if (predictionDirectory != File::nonexistent)
-    savePredictionsToDirectory(context, predictor, proteins, predictionDirectory);
+  {
+    savePredictionsToDirectory(context, predictor, trainProteins, predictionDirectory.getChildFile(T("train")));
+    savePredictionsToDirectory(context, predictor, validationProteins, predictionDirectory.getChildFile(T("validation")));
+  }
+  trainProteins = ContainerPtr();
+  validationProteins = ContainerPtr();
+
+  // evaluate/save predictions on test proteins
+  ContainerPtr testProteins = loadProteinPairs(context, T("test"));
+  if (testProteins)
+  {
+    context.informationCallback(String((int)testProteins->getNumElements()) + T(" test proteins"));
+    if (!predictor->evaluate(context, testProteins, new ProteinEvaluator(), T("Evaluate on test proteins")))
+      return false;
+
+    if (predictionDirectory != File::nonexistent)
+      savePredictionsToDirectory(context, predictor, testProteins, predictionDirectory.getChildFile(T("test")));
+  }
   return true;
+}
+
+ContainerPtr ProteinLearner::loadProteinPairs(ExecutionContext& context, const String& name) const
+{
+  File input = inputDirectory.exists() ? inputDirectory.getChildFile(name) : File::nonexistent;
+  File supervision = supervisionDirectory.getChildFile(name);
+  return Protein::loadProteinsFromDirectoryPair(context, input, supervision, maxProteins, T("Loading ") + name + T(" proteins"));
 }
 
 bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const
 {
-  /*
-  if (!predictionDirectory.exists())
-  {
-    if (!predictionDirectory.createDirectory())
-    {
-      context.errorCallback(T("Could not create directory ") + predictionDirectory.getFullPathName());
-      return false;
-    }
-  }
-  else if (!predictionDirectory.isDirectory())
-  {
-    context.errorCallback(predictionDirectory.getFullPathName() + T(" is not a directory"));
-    return false;
-  }
-*/
   return predictor->evaluate(context, proteinPairs, saveToDirectoryEvaluator(predictionDirectory, T(".xml")),
     T("Saving predictions to directory ") + predictionDirectory.getFileName());
-/*
-  bool ok = true;
-  context.enterScope(T("Saving predictions to directory ") + predictionDirectory.getFileName());
-  size_t n = proteinPairs->getNumElements();
-  for (size_t i = 0; i < n; ++i)
-  {
-    ObjectPtr proteinPair = proteinPairs->getElement(i).getObject();
-    ProteinPtr inputProtein = proteinPair->getVariable(0).getObjectAndCast<Protein>();
-    ProteinPtr predictedProtein = predictor->compute(context, Variable(inputProtein), Variable(ProteinPtr(), proteinClass)).getObjectAndCast<Protein>();
-    if (!predictedProtein)
-    {
-      context.errorCallback(T("No prediction for protein ") + inputProtein->getName());
-      ok = false;
-    }
-    predictedProtein->saveToFile(context, predictionDirectory.getChildFile(predictedProtein->getName() + T(".xml")));
-  }
-  context.leaveScope(ok);
-  return ok;*/
 }
 
 FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const
