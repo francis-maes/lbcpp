@@ -64,7 +64,7 @@ public:
     {return enumValueType;}
   
 protected:
-  virtual ScoreObjectPtr createEmptyScoreObject() const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
     {return new ClassificationScoreObject();}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const

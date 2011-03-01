@@ -26,7 +26,7 @@ public:
     {return sumType(probabilityType, booleanType);}
 
 protected:
-  virtual ScoreObjectPtr createEmptyScoreObject() const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
     {return new BinaryClassificationConfusionMatrix();}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
@@ -53,7 +53,7 @@ protected:
 
   BinaryClassificationScore scoreToOptimize;
 
-  virtual ScoreObjectPtr createEmptyScoreObject() const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
     {return new ROCScoreObject(scoreToOptimize);}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& scores) const

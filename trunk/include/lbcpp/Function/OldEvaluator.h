@@ -79,9 +79,6 @@ inline OldEvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
 inline OldEvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
   {return containerElementsEvaluator(name, oldBinaryClassificationConfusionEvaluator(name));}
 
-// Save To Directory
-extern OldEvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
-#endif
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OLD_EVALUATOR_H_

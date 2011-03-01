@@ -43,7 +43,7 @@ typedef ReferenceCountedObjectPtr<SearchSpaceScoreObject> SearchSpaceScoreObject
 class SearchSpaceEvaluator : public Evaluator
 {
 public:
-  virtual ScoreObjectPtr createEmptyScoreObject() const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
     {return new SearchSpaceScoreObject();}
 
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const

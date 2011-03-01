@@ -88,7 +88,7 @@ public:
     {return doubleType;}
   
 protected:  
-  virtual ScoreObjectPtr createEmptyScoreObject() const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
     {return new RegressionScoreObject();}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const

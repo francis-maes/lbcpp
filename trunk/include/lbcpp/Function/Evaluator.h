@@ -26,6 +26,13 @@ public:
 
 typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
 
+class DummyScoreObject : public ScoreObject
+{
+public:
+  virtual double getScoreToMinimize() const
+    {return 0.0;}
+};
+
 class CompositeScoreObject : public ScoreObject
 {
 public:
@@ -75,7 +82,7 @@ public:
     {return scoreObjectClass;}
 
   /* Evaluator */
-  virtual ScoreObjectPtr createEmptyScoreObject() const = 0;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const = 0;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
   
@@ -109,7 +116,7 @@ public:
     {evaluators.push_back(evaluator);}
   
   /* Evaluator */
-  virtual ScoreObjectPtr createEmptyScoreObject() const;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
 
@@ -123,7 +130,7 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  virtual ScoreObjectPtr createEmptyScoreObject() const;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
 
@@ -155,8 +162,12 @@ extern SupervisedEvaluatorPtr regressionEvaluator();
 // Default supervised evaluator
 extern EvaluatorPtr defaultSupervisedEvaluator();
 
+// Save To Directory
+extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
+
 // Container<T> -> T
 extern EvaluatorPtr containerElementsEvaluator();
+
 };
 
 #endif // !LBCPP_FUNCTION_EVALUATOR_H_
