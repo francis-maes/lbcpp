@@ -25,7 +25,7 @@ int write_error(char* p)
     static FILE* f = 0;
     if (!f)
     {
-        f = fopen(config.project_path("NetworkTest/.WorkUnit/errors"), "a");
+        f = fopen(config.project_path("Network/.WorkUnit/errors"), "a");
         if (!f)
           return ERR_FOPEN;
     }
@@ -39,16 +39,16 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
   int retval;
 
   // Check directories
-  retval = boinc_mkdir(config.project_path("NetworkTest/.WorkUnit/Finished"));
+  retval = boinc_mkdir(config.project_path("Network/.WorkUnit/Finished"));
   if (retval)
   {
-    log_messages.printf(MSG_CRITICAL, "Can't create NetworkTest/.WorkUnit/Finished directory\n");
+    log_messages.printf(MSG_CRITICAL, "Can't create Network/.WorkUnit/Finished directory\n");
     return retval;
   }
-  retval = boinc_mkdir(config.project_path("NetworkTest/.WorkUnit/Traces"));
+  retval = boinc_mkdir(config.project_path("Network/.WorkUnit/Traces"));
   if (retval)
   {
-    log_messages.printf(MSG_CRITICAL, "NetworkTest/.WorkUnit/Traces directory\n");
+    log_messages.printf(MSG_CRITICAL, "Network/.WorkUnit/Traces directory\n");
     return retval;
   }
 
@@ -65,17 +65,22 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
         if (!fi.no_validate)
         {
           // copy output.trace file
-          retval = boinc_copy(fi.path.c_str(), config.project_path("NetworkTest/.WorkUnit/Traces/%s.trace", wu.name));
+          retval = boinc_copy(fi.path.c_str(), config.project_path("Network/.WorkUnit/Traces/%s.trace", wu.name));
           if (retval)
           {
             log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy output.trace file : %s -> %s\n",
-                                wu.id, wu.name, fi.path.c_str(), config.project_path("NetworkTest/.WorkUnit/Traces/%s.trace", wu.name));
+                                wu.id, wu.name, fi.path.c_str(), config.project_path("Network/.WorkUnit/Traces/%s.trace", wu.name));
             return 1;
           }
 
           // update WU status
+          String finishedFileName("Network/.WorkUnit/Finished/");
+          finishedFileName += wu.name;
+          File finished(config.project_path(finishedFileName.toUTF8()));	// touch
+          
+          /*
           juce::OwnedArray<File> foundFiles;
-          File directory(config.project_path("NetworkTest/.WorkUnit/InProgress"));
+          File directory(config.project_path("Network/.WorkUnit/InProgress"));
           directory.findChildFiles(foundFiles, File::findFiles, false, strcat(wu.name, ".*"));
           if (foundFiles.size() == 0)
           {
@@ -87,8 +92,11 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
             log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] More than one InProgress file\n", wu.id, wu.name);
             return 1;
           }
+          */
+
 
           // Only one file found
+          /*
           String newLocation("NetworkTest/.WorkUnit/Finished/");
           newLocation += foundFiles[0]->getFileName();
           if (!foundFiles[0]->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
@@ -96,6 +104,7 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
             log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, foundFiles[0]->getFullPathName().toUTF8() , config.project_path("NetworkTest/.WorkUnit/Finished"));
             return 1;
           }
+          */
 
           break;  // only one file to assimilate (trace)
         }
