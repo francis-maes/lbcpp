@@ -37,17 +37,18 @@ public:
         if (numInputs != 3) 
         {
           jassert(false);
-          return anyType;
+          return anyType; // TODO arnaud
         } else
           return variableType;
       default:
         jassert(false);
-        return anyType;
+        return anyType; // TODO arnaud
     }
   }
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return inputVariables[0]->getType();}  // TODO arnaud : check initial guess and a priori distribution
+    {return inputVariables[2]->getType();}  // TODO arnaud : if no a prioric
+  // TODO arnaud : check initial guess and a priori distribution
   
   /*virtual TypePtr getInputType() const
     {return optimizerInputClass;}
