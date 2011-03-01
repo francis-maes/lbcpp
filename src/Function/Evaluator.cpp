@@ -103,7 +103,10 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
   const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
   const ContainerPtr& examples = inputs[1].getObjectAndCast<Container>();
 
-  ScoreObjectPtr res = createEmptyScoreObject();
+  ScoreObjectPtr res = createEmptyScoreObject(context);
+  if (!res)
+    return Variable::missingValue(getOutputType());
+
   if (false)//context.isMultiThread())
     computeEvaluatorMultiThread(context, function, examples, res);
   else
@@ -131,11 +134,11 @@ bool SupervisedEvaluator::updateScoreObject(ExecutionContext& context, const Sco
 /*
 ** CompositeEvaluator
 */
-ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject() const
+ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject(ExecutionContext& context) const
 {
   CompositeScoreObjectPtr res = new CompositeScoreObject();
   for (size_t i = 0; i < evaluators.size(); ++i)
-    res->addScoreObject(evaluators[i]->createEmptyScoreObject());
+    res->addScoreObject(evaluators[i]->createEmptyScoreObject(context));
   return res;
 }
 
@@ -170,8 +173,8 @@ TypePtr ProxyEvaluator::initializeFunction(ExecutionContext& context, const std:
 Variable ProxyEvaluator::computeFunction(ExecutionContext& context, const Variable* inputs) const
   {jassert(implementation); return implementation->computeFunction(context, inputs);}
 
-ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject() const
-  {jassert(implementation); return implementation->createEmptyScoreObject();}
+ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject(ExecutionContext& context) const
+  {jassert(implementation); return implementation->createEmptyScoreObject(context);}
 
 bool ProxyEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
   {jassert(implementation); return implementation->updateScoreObject(context, scores, example, output);}

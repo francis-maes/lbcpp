@@ -398,6 +398,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/RegressionEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/DefaultSupervisedEvaluator.h
+  Function/Evaluator/SaveToDirectoryEvaluator.h
   Function/Evaluator/Utilities.h
   Function/Evaluator/Utilities.cpp
   Function/Evaluator/ConcatenateScoreObjectFunction.h
@@ -786,6 +787,7 @@ SET(LBCPP_DECISION_TREE_RTREE_SOURCES
 SET(LBCPP_OLD_FUNCTION_SOURCES
   ../include/lbcpp/Function/OldEvaluator.h  
 )
+
 
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)

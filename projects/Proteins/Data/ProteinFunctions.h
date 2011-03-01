@@ -121,7 +121,13 @@ public:
     : SimpleUnaryFunction(proteinClass, proteinClass->getMemberVariableType(target), T("Target")), target(target) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input.getObjectAndCast<Protein>()->getTargetOrComputeIfMissing(context, target);}
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>();
+    if (protein)
+      return protein->getTargetOrComputeIfMissing(context, target);
+    else
+      return Variable::missingValue(getOutputType());
+  }
 
 protected:
   friend class GetProteinTargetFunctionClass;

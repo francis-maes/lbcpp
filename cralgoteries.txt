@@ -1,7 +1,8 @@
 
-* Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
- - crash sur l'evaluation
 
+* MultiClassLinearClassifier: normalize output probabilities
+
+* Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
 
  
 * Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features

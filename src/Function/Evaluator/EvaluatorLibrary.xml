@@ -4,16 +4,18 @@
   <include file="lbcpp/Function/Evaluator.h"/>
   <include file="lbcpp/Function/OldEvaluator.h"/>
 
-  <!-- Base Classes -->
+  <!-- ScoreObject Base Classes -->
   <class name="ScoreObject" base="Object" abstract="yes"/>
-  <class name="Evaluator" base="Function" abstract="yes"/>
-  <class name="SupervisedEvaluator" base="Evaluator" abstract="yes"/>
-  <class name="CompositeEvaluator" base="Evaluator"/>
-  
+  <class name="DummyScoreObject" base="ScoreObject"/>
   <class name="CompositeScoreObject" base="ScoreObject">
     <variable type="ObjectVector[ScoreObject]" name="scores"/>
     <variable type="PositiveInteger" name="scoreToMinimizeIndex"/>
   </class>
+
+  <!-- Evaluator Base Classes -->
+  <class name="Evaluator" base="Function" abstract="yes"/>
+  <class name="SupervisedEvaluator" base="Evaluator" abstract="yes"/>
+  <class name="CompositeEvaluator" base="Evaluator"/>
   <class name="ProxyEvaluator" base="Evaluator" abstract="yes"/>
 
   <!-- Score Enumerations -->
@@ -92,21 +94,25 @@
   <class name="DefaultSupervisedEvaluator" base="ProxyEvaluator">
     <constructor returnType="Evaluator"/>
   </class>
-
+ 
   <!-- Function -->
   <class name="ConcatenateScoreObjectFunction" base="Function">
     <constructor/>
   </class>
 
   <!-- Misc -->
+  <class name="SaveToDirectoryEvaluator" base="Evaluator">
+    <constructor arguments="const File&amp; directory, const String&amp; extension"/>
+    <variable type="File" name="directory"/>
+    <variable type="String" name="extension"/>
+  </class>
+  
   <class name="ContainerElementsEvaluator" base="Evaluator">
     <constructor arguments="EvaluatorPtr elementEvaluator"/>
     <variable type="Evaluator" name="elementEvaluator"/>
   </class>
 
   <!-- Old -->
-  
-
   <class name="OldEvaluator" base="NameableObject" abstract="yes"/>
   
 <!--
@@ -142,12 +148,5 @@
     <variable type="ScalarVariableMean" name="recall"/>
   </class>
   
-
-
-  <class name="SaveToDirectoryEvaluator" base="OldEvaluator">
-    <constructor arguments="const File&amp; directory, const String&amp; extension"/>
-    <variable type="File" name="directory"/>
-    <variable type="String" name="extension"/>
-  </class>
 -->
 </library>

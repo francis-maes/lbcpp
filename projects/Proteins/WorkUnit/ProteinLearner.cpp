@@ -57,13 +57,14 @@ Variable ProteinLearner::run(ExecutionContext& context)
     return false;
 
   // save predictions to directory
-  if (predictionDirectory.exists())
+  if (predictionDirectory != File::nonexistent)
     savePredictionsToDirectory(context, predictor, proteins, predictionDirectory);
   return true;
 }
 
 bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const
 {
+  /*
   if (!predictionDirectory.exists())
   {
     if (!predictionDirectory.createDirectory())
@@ -77,7 +78,10 @@ bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, Funct
     context.errorCallback(predictionDirectory.getFullPathName() + T(" is not a directory"));
     return false;
   }
-
+*/
+  return predictor->evaluate(context, proteinPairs, saveToDirectoryEvaluator(predictionDirectory, T(".xml")),
+    T("Saving predictions to directory ") + predictionDirectory.getFileName());
+/*
   bool ok = true;
   context.enterScope(T("Saving predictions to directory ") + predictionDirectory.getFileName());
   size_t n = proteinPairs->getNumElements();
@@ -94,7 +98,7 @@ bool ProteinLearner::savePredictionsToDirectory(ExecutionContext& context, Funct
     predictedProtein->saveToFile(context, predictionDirectory.getChildFile(predictedProtein->getName() + T(".xml")));
   }
   context.leaveScope(ok);
-  return ok;
+  return ok;*/
 }
 
 FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const
