@@ -23,7 +23,7 @@ public:
 
   // ScoreObject
   virtual double getScoreToMinimize() const
-    {return -computeF1Score();}
+    {return 1.0 - computeF1Score();}
   
   void finalize();
   

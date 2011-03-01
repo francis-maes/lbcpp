@@ -1,10 +1,10 @@
+* Objectif: valider l'utilisation boinc
+ - preparer le dataset
+ - progression globale
+ - verifier l'utilisation memoire
+ - verifier l'enregistrement des traces  
 
-* Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
-* Objectif 4: valider l'utilisation boinc
-   - progression globale
-   - sequence (train,validation) puis test  
-
-* Objectif 5: ajouter des features de segments
+* Ajouter des features de segments
 
 ProteinLearner:
  * Evaluation après chaque passe (attacher un Evaluator aux Function ?)
