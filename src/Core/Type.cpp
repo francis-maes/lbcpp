@@ -206,6 +206,19 @@ Variable Type::getMemberVariableValue(const Object* pthis, size_t index) const
 void Type::setMemberVariableValue(Object* pthis, size_t index, const Variable& subValue) const
   {if (baseType) baseType->setMemberVariableValue(pthis, index, subValue);}
 
+String Type::makeUniqueMemberVariableName(const String& name) const
+{
+  if (findMemberVariable(name) < 0)
+    return name;
+  for (int i = 2; true; ++i)
+  {
+    String res = name + String(i);
+    if (findMemberVariable(res) < 0)
+      return res;
+  }
+  return String::empty;
+}
+
 VariableSignaturePtr Type::getLastMemberVariable() const
 {
   size_t n = getNumMemberVariables();

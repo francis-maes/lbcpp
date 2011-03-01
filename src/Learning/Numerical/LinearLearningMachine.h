@@ -59,6 +59,50 @@ protected:
   BinaryClassificationScore scoreToOptimize;
 };
 
+class MultiClassScoresToDistributionFunction : public SimpleUnaryFunction
+{
+public:
+  MultiClassScoresToDistributionFunction() : SimpleUnaryFunction(denseDoubleVectorClass(), denseDoubleVectorClass()) {}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    classes = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
+    jassert(classes);
+    outputName = T("probabilities");
+    outputShortName = T("probs");
+    return denseDoubleVectorClass(classes, probabilityType);
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DenseDoubleVectorPtr& scores = input.getObjectAndCast<DenseDoubleVector>();
+    if (!scores)
+      return Variable::missingValue(getOutputType());
+
+    jassert(classes);
+    jassert(scores->getNumElements() == classes->getNumElements());
+    size_t n = scores->getNumElements();
+
+    static const double temperature = 1.0;
+
+    DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType(), n);
+    double sum = 0.0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      double score = scores->getValue(i);
+      double prob = 1.0 / (1.0 + exp(-score * temperature));
+      sum += prob;
+      res->setValue(i, prob);
+    }
+    if (sum)
+      res->multiplyByScalar(1.0 / sum);
+    return res;
+  }
+
+protected:
+  EnumerationPtr classes;
+};
+
 class LinearMultiClassClassifier : public SupervisedNumericalFunction
 {
 public:
@@ -71,7 +115,7 @@ public:
 
   virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex)
   {
-    FunctionPtr scoresToProbabilities = mapContainerFunction(signedScalarToProbabilityFunction());
+    FunctionPtr scoresToProbabilities = new MultiClassScoresToDistributionFunction();
     builder.addFunction(scoresToProbabilities, predictionIndex);
     scoresToProbabilities->setBatchLearner(BatchLearnerPtr());
   }
