@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-// ObjectiveFunction, DistributionClass, [Variable] -> Variable
+// Function, DistributionClass, [Variable] -> Variable
 class Optimizer : public Function
 {
 public:  
@@ -30,7 +30,7 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) objectiveFunctionClass;
+        return (TypePtr) functionClass;
       case 1:
         return (TypePtr) distributionClass(anyType);
       case 2:
@@ -47,7 +47,7 @@ public:
   }
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return inputVariables[2]->getType();}  // TODO arnaud : if no a prioric
+    {return doubleType;}  // TODO arnaud : if no a prioric
   // TODO arnaud : check initial guess and a priori distribution
   
   /*virtual TypePtr getInputType() const
