@@ -48,7 +48,7 @@ public:
 
       if (!supervisionContainer || !predictedContainer)
         continue;
-
+      
       if (!evaluators[i]->updateScoreObject(context,
                                             scores->getScoreObject(i),
                                             new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer),

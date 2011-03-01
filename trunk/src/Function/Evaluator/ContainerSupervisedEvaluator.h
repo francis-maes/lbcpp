@@ -1,7 +1,7 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: ContainerElementsEvaluator.h   | Container Evaluator             |
 | Author  : Francis Maes                   |                                 |
-| Started : 27/04/2010 16:02               |                                 |
+| Started : 01/03/2011 16:02               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
@@ -55,6 +55,9 @@ public:
 
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
     {elementEvaluator->addPrediction(context, prediction, supervision, result);}
+
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const
+    {elementEvaluator->finalizeScoreObject(scores);}
 
 protected:
   friend class ContainerSupervisedEvaluatorClass;
