@@ -107,46 +107,12 @@
     <variable type="String" name="extension"/>
   </class>
   
-  <class name="ContainerElementsEvaluator" base="Evaluator">
-    <constructor arguments="EvaluatorPtr elementEvaluator"/>
-    <variable type="Evaluator" name="elementEvaluator"/>
+  <class name="ContainerSupervisedEvaluator" base="SupervisedEvaluator">
+    <constructor arguments="SupervisedEvaluatorPtr elementEvaluator"/>
+    <variable type="SupervisedEvaluator" name="elementEvaluator"/>
   </class>
 
   <!-- Old -->
   <class name="OldEvaluator" base="NameableObject" abstract="yes"/>
-  
-<!--
-  <class name="OldRegressionErrorEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name"/>
-  </class>
 
-  <class name="OldDihedralRegressionErrorEvaluator" base="OldRegressionErrorEvaluator">
-    <constructor arguments="const String&amp; name"/>
-  </class>
-
-
-  <class name="OldBinaryClassificationConfusionEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name"/>
-  </class>
-  
-  <class name="OldROCAnalysisEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name"/>
-  </class>
-
-
-  <class name="OldClassificationAccuracyEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name"/>
-    <variable type="ScalarVariableMean" name="accuracy"/>
-  </class>
-
-
-  <class name="OldMultiLabelClassificationEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name"/>
-    <variable type="ScalarVariableMean" name="hammingLoss"/>
-    <variable type="ScalarVariableMean" name="accuracy"/>
-    <variable type="ScalarVariableMean" name="precision"/>
-    <variable type="ScalarVariableMean" name="recall"/>
-  </class>
-  
--->
 </library>
