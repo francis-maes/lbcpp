@@ -74,7 +74,7 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
           }
 
           // update WU status
-          File fileToMove(config.project_path("Network/.WorkUnit/Waiting/%s.workUnit", wu.name));
+          File fileToMove(config.project_path("Network/.WorkUnit/InProgress/%s.workUnit", wu.name));
           if (!fileToMove.moveFileTo(File(config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name))))
           {
           	log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, fileToMove.getFullPathName().toUTF8() , config.project_path("Network/.WorkUnit/Finished/%s.workUnit", wu.name));
