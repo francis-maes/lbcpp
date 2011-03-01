@@ -13,6 +13,8 @@
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 
+// TODO arnaud : update needed to use new Function interface
+
 namespace lbcpp
 {
 

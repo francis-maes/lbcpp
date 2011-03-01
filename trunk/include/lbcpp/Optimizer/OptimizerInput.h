@@ -12,7 +12,7 @@
 # include "ObjectiveFunction.h"
 # include "../Distribution/Distribution.h"
 
-// TODO arnaud : file not used -> remove
+// TODO arnaud : unused -> delete ?
 
 namespace lbcpp
 {

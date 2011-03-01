@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FUNCTION_OBJECTIVE_H_
-# define LBCPP_FUNCTION_OBJECTIVE_H_
+#ifndef LBCPP_OBJECTIVE_FUNCTION_H_
+# define LBCPP_OBJECTIVE_FUNCTION_H_
 
 # include "../Core/Function.h"
 # include "../Execution/WorkUnit.h"
@@ -27,13 +27,6 @@ public:
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return doubleType;}
-  
-  
-// TODO arnaud : necessary ?
-//  virtual double compute(ExecutionContext& context, const Variable& input) const = 0;   
-protected:  
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return compute(context, input);}
 
 };
 
@@ -45,4 +38,4 @@ extern ObjectiveFunctionPtr marginalObjectiveFunction(const ObjectiveFunctionPtr
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FUNCTION_OBJECTIVE_H_
+#endif // !LBCPP_OBJECTIVE_FUNCTION_H_

@@ -33,7 +33,7 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) functionClass;
+        return (TypePtr) objectiveFunctionClass;
       case 1:
         return (TypePtr) uniformDistributionClass;
       default:
