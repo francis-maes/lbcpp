@@ -21,9 +21,6 @@ public:
     : criterion1(criterion1), criterion2(criterion2) {}
   LogicalOrStoppingCriterion() {}
 
-  virtual String toString() const
-    {return criterion1->toString() + " || " + criterion2->toString();}
-
   virtual void reset()
     {criterion1->reset(); criterion2->reset();}
 

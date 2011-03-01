@@ -19,7 +19,11 @@ class StoppingCriterionOnlineLearner : public OnlineLearner
 {
 public:
   StoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion = StoppingCriterionPtr())
-    : stoppingCriterion(stoppingCriterion), context(NULL) {}
+    : context(NULL)
+  {
+    if (stoppingCriterion)
+      this->stoppingCriterion = stoppingCriterion->cloneAndCast<StoppingCriterion>(defaultExecutionContext());
+  }
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
     {stoppingCriterion->reset(); this->context = &context;}
@@ -28,12 +32,13 @@ public:
   {
     bool shouldStop = stoppingCriterion->shouldStop(objectiveValueToMinimize);
     if (shouldStop)
-      context->informationCallback(T("Stopping criterion: ") + stoppingCriterion->toShortString());
+      context->informationCallback(T("Stopping criterion: ") + stoppingCriterion->toString());
     return shouldStop;
   }
 
-  virtual void clone(const ObjectPtr& target) const
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
+    OnlineLearner::clone(context, target);
     if (stoppingCriterion)
       target.staticCast<StoppingCriterionOnlineLearner>()->stoppingCriterion = stoppingCriterion->cloneAndCast<StoppingCriterion>();
   }

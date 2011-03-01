@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/CompositeFunction.h>
 # include <lbcpp/Learning/BatchLearner.h>
+# include <lbcpp/Learning/Numerical.h>
 # include "../Data/Protein.h"
 # include "../Data/ProteinFunctions.h"
 
@@ -66,31 +67,35 @@ public:
 
 typedef ReferenceCountedObjectPtr<ProteinPredictorParameters> ProteinPredictorParametersPtr;
 
-class NumericalProteinPredictorParameters : public ProteinPredictorParameters
+class NumericalProteinFeaturesParameters : public Object
 {
 public:
-  // Features
-  virtual void primaryResidueFeatures(CompositeFunctionBuilder& builder) const;
-  virtual void primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const;
-  virtual void residueFeatures(CompositeFunctionBuilder& builder) const;
-  virtual void residueFeaturesVector(CompositeFunctionBuilder& builder) const;
+  NumericalProteinFeaturesParameters()
+    : residueGlobalFeatures(true), residueWindowSize(15), residueLocalMeanSize(15), residueMediumMeanSize(50) {}
 
-  virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
-    {residueFeaturesVector(builder);}
+  bool residueGlobalFeatures;
+  size_t residueWindowSize;
+  size_t residueLocalMeanSize;
+  size_t residueMediumMeanSize;
 
-  typedef void (NumericalProteinPredictorParameters::*ThisClassFunctionBuildFunction)(CompositeFunctionBuilder& builder) const; 
+  virtual String toString() const
+    {return T("(") + defaultToStringImplementation(false) + T(")");}
 
-  FunctionPtr function(ThisClassFunctionBuildFunction buildFunc) const
-    {return function((FunctionBuildFunction)buildFunc);}
-
-  FunctionPtr function(FunctionBuildFunction buildFunc) const
-    {return new MethodBasedCompositeFunction(refCountedPointerFromThis(this), buildFunc);}
-
-  // Learning Machine
-  virtual FunctionPtr learningMachine(ProteinTarget target) const;
+  virtual bool loadFromString(ExecutionContext& context, const String& str)
+  {
+    if (str.length() < 2 || str[0] != '(' || str[str.length() - 1] != ')')
+    {
+      context.errorCallback(T("Invalid syntax: ") + str.quoted());
+      return false;
+    }
+    return Object::loadFromString(context, str.substring(1, str.length() - 1));
+  }
 };
 
-typedef ReferenceCountedObjectPtr<NumericalProteinPredictorParameters> NumericalProteinPredictorParametersPtr;
+typedef ReferenceCountedObjectPtr<NumericalProteinFeaturesParameters> NumericalProteinFeaturesParametersPtr;
+
+ProteinPredictorParametersPtr numericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters);
+ProteinPredictorParametersPtr numericalProteinPredictorParameters();
 
 }; /* namespace lbcpp */
 

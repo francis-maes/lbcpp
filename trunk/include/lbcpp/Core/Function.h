@@ -166,23 +166,13 @@ public:
   /*
   ** Object
   */
-  virtual String toString() const;
   virtual String toShortString() const;
   
   virtual ObjectPtr clone(ExecutionContext& context) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  /////////////////////////////////////////////////////////////
-  // old
-  /*virtual TypePtr getInputType() const
-    {return anyType;}
-
-  virtual TypePtr getOutputType(TypePtr inputType) const
-    {return anyType;}*/
-
   virtual String getDescription(const Variable& input) const
     {return getClassName() + T("(") + input.toShortString() + T(")");}
-  // -
   
   lbcpp_UseDebuggingNewOperator
 

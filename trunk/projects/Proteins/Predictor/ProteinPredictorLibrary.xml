@@ -8,4 +8,20 @@
     <variable type="ObjectVector[ProteinPredictor]" name="predictors"/>
   </class>
 
+  <class name="ProteinPredictorParameters" base="Object" abstract="yes"/>
+
+  <class name="NumericalProteinFeaturesParameters" shortName="features">
+    <variable type="Boolean" name="residueGlobalFeatures" description="Incorporate global mean features"/>
+    <variable type="PositiveInteger" name="residueWindowSize" description="The size of the residues window"/>
+    <variable type="PositiveInteger" name="residueLocalMeanSize" description="The size of the first residue local mean"/>
+    <variable type="PositiveInteger" name="residueMediumMeanSize" description="The size of the second residue local mean"/>
+  </class>
+  
+  <class name="NumericalProteinPredictorParameters" base="ProteinPredictorParameters" shortName="numerical">
+    <constructor arguments="NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters"/>
+    <constructor/>
+    <variable type="NumericalProteinFeaturesParameters" name="featuresParameters" shortName="f"/>
+    <variable type="LearnerParameters" name="learningParameters" shortName="l"/>
+  </class>
+  
 </library>

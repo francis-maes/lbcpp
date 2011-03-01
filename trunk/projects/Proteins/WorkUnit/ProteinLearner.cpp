@@ -11,8 +11,9 @@ using namespace lbcpp;
 
 
 ProteinLearner::ProteinLearner()
-  : maxProteins(0), numFolds(7), maxLearningIterations(100), numStacks(1)
+  : maxProteins(0), numFolds(7), numStacks(1)
 {
+  parameters = numericalProteinPredictorParameters();
   proteinTargets.push_back(ss3Target);
   proteinTargets.push_back(ss8Target);
   proteinTargets.push_back(sa20Target);
@@ -21,8 +22,13 @@ ProteinLearner::ProteinLearner()
 
 Variable ProteinLearner::run(ExecutionContext& context)
 {
+  if (!parameters)
+  {
+    context.errorCallback(T("No predictor parameters"));
+    return false;
+  }
+
   // create predictor
-  ProteinPredictorParametersPtr parameters = new MyProteinPredictorParameters(maxLearningIterations);
   FunctionPtr predictor = createPredictor(context, parameters);
   if (!predictor)
     return false;

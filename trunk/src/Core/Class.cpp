@@ -44,6 +44,8 @@ int Class::compare(const VariableValue& value1, const VariableValue& value2) con
 
 inline ObjectPtr createObjectFromShortNameOrName(ExecutionContext& context, ClassPtr baseClass, const String& nameOrShortName)
 {
+  if (nameOrShortName == T("Missing"))
+    return ObjectPtr();
   TypePtr type = typeManager().getTypeByShortName(context, nameOrShortName);
   if (!type)
     type = typeManager().getType(context, nameOrShortName);
@@ -60,6 +62,9 @@ inline ObjectPtr createObjectFromStringWithAbstractClass(ExecutionContext& conte
   if (n >= 0)
   {
     ObjectPtr res = createObjectFromShortNameOrName(context, baseClass, value.substring(0, n));
+    if (!res)
+      return ObjectPtr();
+
     int e = value.lastIndexOfChar(')');
     if (e <= n)
     {

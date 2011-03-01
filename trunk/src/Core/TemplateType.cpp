@@ -14,48 +14,54 @@ using namespace lbcpp;
 bool TemplateType::isInstanciatedTypeName(const String& name)
   {return name.indexOfChar('<') >= 0;}
 
-static bool parseTypeList(ExecutionContext& context, const String& str, std::vector<String>& res)
+namespace lbcpp
 {
-  int b = 0;
-  while (b < str.length())
+  bool parseListWithParenthesis(ExecutionContext& context, const String& str, char openParenthesis, char closeParenthesis, char comma, std::vector<String>& res)
   {
-    int e = b;
-
-    // eat identifier
-    while (e < str.length() && juce::CharacterFunctions::isLetterOrDigit(str[e]))
-      ++e;
-
-    // eat subtypelist
-    if (e < str.length() && str[e] == '<')
+    int b = 0;
+    while (b < str.length())
     {
-      int depth = 1;
-      for (++e; e < str.length(); ++e)
+      int e = b;
+
+      // eat identifier
+      while (e < str.length() && str[e] != openParenthesis && str[e] != closeParenthesis && str[e] != comma)
+        ++e;
+
+      // eat subtypelist
+      if (e < str.length() && str[e] == openParenthesis)
       {
-        if (str[e] == '<')
-          ++depth;
-        else if (str[e] == '>')
+        int depth = 1;
+        for (++e; e < str.length(); ++e)
         {
-          --depth;
-          if (depth == 0)
+          if (str[e] == openParenthesis)
+            ++depth;
+          else if (str[e] == closeParenthesis)
           {
-            ++e;
-            break;
+            --depth;
+            if (depth == 0)
+            {
+              ++e;
+              break;
+            }
           }
         }
       }
+      String identifier = str.substring(b, e);
+      jassert(identifier.trim() == identifier);
+      res.push_back(identifier);
+
+      // eat comma and spaces
+      while (e < str.length() && (str[e] == comma || juce::CharacterFunctions::isWhitespace(str[e])))
+        ++e;
+      b = e;
     }
-    String identifier = str.substring(b, e);
-    jassert(identifier.trim() == identifier);
-    res.push_back(identifier);
-
-    // eat comma and spaces
-    while (e < str.length() && !juce::CharacterFunctions::isLetterOrDigit(str[e]))
-      ++e;
-
-    b = e;
+    return true;
   }
-  return true;
-}
+
+};
+
+static bool parseTypeList(ExecutionContext& context, const String& str, std::vector<String>& res)
+  {return lbcpp::parseListWithParenthesis(context, str, '<', '>', ',', res);}
 
 bool TemplateType::parseInstanciatedTypeName(ExecutionContext& context, const String& typeName, String& templateName, std::vector<String>& arguments)
 {

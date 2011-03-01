@@ -9,5 +9,6 @@
 
   <import name="GenericFeatureGenerator"/>
   <import name="AtomicFeatureGenerator"/>
+  <import name="CompositeFeatureGenerator"/>
 
 </library>

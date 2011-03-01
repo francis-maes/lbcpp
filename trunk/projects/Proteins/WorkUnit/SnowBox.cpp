@@ -3,7 +3,7 @@
 #include "Evaluator/ProteinEvaluator.h"
 
 using namespace lbcpp;
-
+/*
 class LinearMultiClassNumericalProteinPredictorParameters : public NumericalProteinPredictorParameters
 {
 public:
@@ -42,11 +42,12 @@ protected:
       res->setEvaluator(binaryClassificationEvaluator());
     return res;
   }
-};
+};*/
 
 ProteinPredictorParametersPtr SnowBox::createParameters(ExecutionContext& context) const
 {
-  return new LinearMultiClassNumericalProteinPredictorParameters(maxIterations);
+  jassert(false); // broken
+  return ProteinPredictorParametersPtr();//new LinearMultiClassNumericalProteinPredictorParameters(maxIterations);
   /*
   if (baseLearner == T("ExtraTree"))
     return new ExtraTreeProteinInferenceFactory(context, new ExtraTreeLearningParameter(numTrees, numAttributesPerSplit, numForSplitting));

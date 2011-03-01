@@ -21,9 +21,6 @@ class AverageImprovementStoppingCriterion : public StoppingCriterion
 public:
   AverageImprovementStoppingCriterion(double tolerance = 0.001, bool relativeImprovement = false)
     : tolerance(tolerance), relativeImprovement(relativeImprovement) {}
-    
-  virtual String toString() const
-    {return "AvgImprovment(" + String(tolerance) + ")";}
 
   virtual void reset()
     {prevs.clear();}

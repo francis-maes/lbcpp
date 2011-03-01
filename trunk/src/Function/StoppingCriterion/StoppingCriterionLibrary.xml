@@ -5,32 +5,31 @@
   
   <class name="StoppingCriterion" base="Object" abstract="yes"/>
 
-  <class name="IsAboveValueStoppingCriterion" base="StoppingCriterion">
+  <class name="IsAboveValueStoppingCriterion" base="StoppingCriterion" shortName="isAbove">
     <constructor arguments="double referenceValue"/>
     <variable type="Double" name="referenceValue"/>
   </class>
 
-  <class name="MaxIterationsStoppingCriterion" base="StoppingCriterion">
+  <class name="MaxIterationsStoppingCriterion" base="StoppingCriterion" shortName="maxIterations">
     <constructor arguments="size_t maxIterations"/>
     <variable type="Integer" name="maxIterations"/>
   </class>
 
-  <class name="MaxIterationsWithoutImprovementStoppingCriterion" base="StoppingCriterion">
+  <class name="MaxIterationsWithoutImprovementStoppingCriterion" base="StoppingCriterion" shortName="maxIterationsWithoutImprovement">
     <constructor arguments="size_t maxIterationsWithoutImprovement"/>
     <variable type="Integer" name="maxIterationsWithoutImprovement"/>
   </class>
 
-  <class name="AverageImprovementStoppingCriterion" base="StoppingCriterion">
+  <class name="AverageImprovementStoppingCriterion" base="StoppingCriterion" shortName="averageImprovement">
     <constructor arguments="double tolerance, bool relativeImprovment"/>
     <variable type="Double" name="tolerance"/>
     <variable type="Boolean" name="relativeImprovement"/>
   </class>
 
-  <class name="LogicalOrStoppingCriterion" base="StoppingCriterion">
+  <class name="LogicalOrStoppingCriterion" base="StoppingCriterion" shortName="or">
     <constructor arguments="StoppingCriterionPtr criterion1, StoppingCriterionPtr criterion2"/>
     <variable type="StoppingCriterion" name="criterion1"/>
     <variable type="StoppingCriterion" name="criterion2"/>
   </class>
-
 
 </library>

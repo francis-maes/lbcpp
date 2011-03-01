@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="CompositeFeatureGenerator" directory="FeatureGenerator/Composite">
+
+  <class name="EnumerationDistributionFeatureGenerator" base="CompositeFunction">
+    <constructor arguments="size_t probabilityDiscretization, size_t entropyDiscretization, double minEntropy, double maxEntropy"/>
+    <variable type="PositiveInteger" name="probabilityDiscretization"/>
+    <variable type="PositiveInteger" name="entropyDiscretization"/>
+    <variable type="Double" name="minEntropy"/>
+    <variable type="Double" name="maxEntropy"/>
+  </class>
+  
+</library>

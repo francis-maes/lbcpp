@@ -52,7 +52,7 @@ public:
     }
     addTab(T("Protein 1D"), Colours::white);
     addTab(T("Protein 2D"), Colours::white);
-    addTab(T("Protein Frame"), Colours::white);
+    addTab(T("Residue Features"), Colours::white);
   }
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
@@ -63,10 +63,16 @@ public:
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
     else if (tabName == T("Perception"))
       return new ProteinPerceptionComponent(proteins[0]);
-    else if (tabName == T("Protein Frame"))
+    else if (tabName == T("Residue Features"))
     {
-      ProteinPredictorParametersPtr parameters = new NumericalProteinPredictorParameters();
-      FunctionPtr function = parameters->createResidueVectorPerception();
+      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
+      featuresParameters->residueWindowSize = 5;
+      featuresParameters->residueGlobalFeatures = false;
+      featuresParameters->residueLocalMeanSize = 8;
+
+      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+
+      FunctionPtr function = predictorParameters->createResidueVectorPerception();
       function->initialize(context, (TypePtr)proteinClass);
       Variable description = function->compute(context, proteins[0]);
       return userInterfaceManager().createVariableTreeView(context, description);

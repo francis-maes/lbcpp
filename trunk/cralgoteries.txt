@@ -1,11 +1,12 @@
 
 
-* Objectif 2: Faire tourner le bazar sur PDB30Large et sauver les predictions
-
+* todo: EnumerationDistributionFeatureGenerator: utiliser le probabilityDiscretization
  
 * Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
 * Objectif 4: valider l'utilisation boinc
+   - repertoires train/test/validation
    - progression globale
+   - sequence (train,validation) puis test
    
 
 ProteinLearner:
