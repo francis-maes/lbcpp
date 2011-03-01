@@ -58,6 +58,8 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<UniformDistribution> UniformDistributionPtr;
+extern ClassPtr uniformDistributionClass;
+
 
 class GaussianDistribution : public ContinuousDistribution
 {

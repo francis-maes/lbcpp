@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+// TODO arnaud : unused -> delete ?
 class MarginalObjectiveFunction : public ObjectiveFunction
 {
 public:
@@ -27,7 +27,7 @@ public:
     {return inputType;}
 
   virtual double compute(ExecutionContext& context, const Variable& input) const
-    {return objective->compute(context, makeValue(context, input));}
+    {return objective->compute(context, makeValue(context, input)).getDouble();}
 
   virtual String getDescription(const Variable& input) const
     {return objective->getDescription(makeValue(defaultExecutionContext(), input));}

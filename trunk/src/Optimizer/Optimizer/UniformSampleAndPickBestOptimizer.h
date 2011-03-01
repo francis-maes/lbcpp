@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: UniformSampleAndPickBestOpti..h| Uniform sample and pick best    |
-| Author  : Francis Maes                   |  optimizer                      |
+| Author  : Francis Maes, Arnaud Schoofs   |  optimizer                      |
 | Started : 21/12/2010 23:43               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -25,17 +25,34 @@ public:
   UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
     : numSamples(numSamples) {}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& i) const
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return 2;} // do not use initial guess
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
   {
-    const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
-    const ObjectiveFunctionPtr& objective = input->getObjective();
-    ContinuousDistributionPtr apriori = input->getAprioriDistribution().dynamicCast<ContinuousDistribution>();
-    jassert(apriori);
+    switch (index) 
+    {
+      case 0:
+        return (TypePtr) objectiveFunctionClass;
+      case 1:
+        return (TypePtr) uniformDistributionClass;
+      default:
+        jassert(false); // TODO arnaud
+        return anyType;
+    }
+  }
 
+protected:
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const ObjectiveFunctionPtr& objective = inputs[0].getObjectAndCast<ObjectiveFunction>();
+    ContinuousDistributionPtr apriori = inputs[1].getObjectAndCast<ContinuousDistribution>();
+    jassert(apriori);
+    
     std::vector<double> values;
     std::vector<Variable> scores(numSamples);
     apriori->sampleUniformly(numSamples, values);
-
+    
     CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimize ") + objective->toString(), numSamples));
     for (size_t i = 0; i < numSamples; ++i)
     {
@@ -43,7 +60,7 @@ public:
       workUnits->setWorkUnit(i, new FunctionWorkUnit(objective, std::vector<Variable>(1, parameterValue), String::empty, &scores[i], true));
     }
     workUnits->setPushChildrenIntoStackFlag(true);
-
+    
     context.enterScope(workUnits);
     context.run(workUnits, false);
     double bestScore = -DBL_MAX;
@@ -60,7 +77,7 @@ public:
         worstScore = score;
     }
     context.leaveScope(bestScore);
-
+    
     std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
     return res;
   }

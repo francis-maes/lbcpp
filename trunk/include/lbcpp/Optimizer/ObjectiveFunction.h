@@ -30,7 +30,7 @@ public:
   
   
 // TODO arnaud : necessary ?
-  virtual double compute(ExecutionContext& context, const Variable& input) const = 0;   
+//  virtual double compute(ExecutionContext& context, const Variable& input) const = 0;   
 protected:  
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {return compute(context, input);}
