@@ -60,4 +60,7 @@
     <variable type="Double" name="probOfReproduction"/>
     <variable type="Double" name="probOfMutation"/>
   </class>
+  
+  <!-- Optimizer Example -->
+  <class name="OptimizerExampleWorkUnit" base="WorkUnit"/>
 </library>

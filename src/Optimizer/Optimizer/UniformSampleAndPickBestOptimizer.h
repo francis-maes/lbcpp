@@ -33,7 +33,7 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) objectiveFunctionClass;
+        return (TypePtr) functionClass;
       case 1:
         return (TypePtr) uniformDistributionClass;
       default:
@@ -45,7 +45,7 @@ public:
 protected:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const ObjectiveFunctionPtr& objective = inputs[0].getObjectAndCast<ObjectiveFunction>();
+    const FunctionPtr& objective = inputs[0].getObjectAndCast<Function>();
     ContinuousDistributionPtr apriori = inputs[1].getObjectAndCast<ContinuousDistribution>();
     jassert(apriori);
     
