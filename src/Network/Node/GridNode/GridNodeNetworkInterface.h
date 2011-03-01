@@ -91,16 +91,12 @@ protected:
 class BoincGridNodeNetworkInterface : public GridNodeNetworkInterface
 {
 public:
-  BoincGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : GridNodeNetworkInterface(context, client, nodeName) {}
+  BoincGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
   BoincGridNodeNetworkInterface() {}
 
-  virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests)
-    {jassertfalse; return ContainerPtr();}
-  virtual ContainerPtr getFinishedExecutionTraces()
-    {jassertfalse; return ContainerPtr();}
-  virtual void removeExecutionTraces(ContainerPtr networkResponses)
-    {jassertfalse;}
+  virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
+  virtual ContainerPtr getFinishedExecutionTraces();
+  virtual void removeExecutionTraces(ContainerPtr networkResponses);
   
 protected:
   NetworkResponsePtr getNetworkResponse(const String& identifier)
