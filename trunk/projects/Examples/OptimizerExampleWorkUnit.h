@@ -14,7 +14,6 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Function/ScalarFunction.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
-# include <lbcpp/Core/CompositeFunction.h>
 
 namespace lbcpp
 {
@@ -31,7 +30,6 @@ namespace lbcpp
       
       Variable var = optimizer->compute(context, square, apriori);
       return var;
-
     }
     
   };
