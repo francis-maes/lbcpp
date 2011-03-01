@@ -258,7 +258,7 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
   if (doScope)
   {
     context.resultCallback(T("score"), res);
-    context.leaveScope(-res->getScoreToMinimize());
+    context.leaveScope(res->getScoreToMinimize());
   }
   return res;
 }
