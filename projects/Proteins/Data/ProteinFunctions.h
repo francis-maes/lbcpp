@@ -50,7 +50,7 @@ public:
     {
       protein->getDisorderRegions(); // be sure that disordered regions are computed
       protein->getStructuralAlphabetSequence(); // be sure that structural alphabet is computed
-      protein->getDisulfideBonds();
+      protein->getDisulfideBonds(context);
 
       protein->setTertiaryStructure(TertiaryStructurePtr()); // remove tertiary structure
       protein->setCAlphaTrace(CartesianPositionVectorPtr()); // remove c-alpha trace
@@ -121,7 +121,7 @@ public:
     : SimpleUnaryFunction(proteinClass, proteinClass->getMemberVariableType(target), T("Target")), target(target) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {return input.getObjectAndCast<Protein>()->getTargetOrComputeIfMissing(target);}
+    {return input.getObjectAndCast<Protein>()->getTargetOrComputeIfMissing(context, target);}
 
 protected:
   friend class GetProteinTargetFunctionClass;

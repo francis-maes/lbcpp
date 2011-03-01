@@ -43,7 +43,7 @@ public:
       return;
 
     // check that disulfide bonds exists
-    const SymmetricMatrixPtr& disulfideBonds = protein->getDisulfideBonds();    
+    const SymmetricMatrixPtr& disulfideBonds = protein->getDisulfideBonds(context);    
     if (!disulfideBonds)
       return;
 
@@ -88,7 +88,7 @@ public:
       return;
 
     // check that disulfide bonds exists
-    const SymmetricMatrixPtr& disulfideBonds = protein->getDisulfideBonds();    
+    const SymmetricMatrixPtr& disulfideBonds = protein->getDisulfideBonds(context);    
     if (!disulfideBonds)
       return;
   

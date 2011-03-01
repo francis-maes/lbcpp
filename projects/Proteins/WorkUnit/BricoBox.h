@@ -17,7 +17,7 @@ public:
     
     size_t numBridges = 0;
     for (size_t i = 0; i < proteins->getNumElements(); ++i)
-      numBridges += getNumBridges(proteins->getElement(i).getObjectAndCast<Protein>());
+      numBridges += getNumBridges(context, proteins->getElement(i).getObjectAndCast<Protein>());
     std::cout << numBridges << std::endl;
     return Variable();
   }
@@ -27,7 +27,7 @@ protected:
 
   File proteinDirectory;
 
-  static size_t getNumBridges(ProteinPtr protein);
+  static size_t getNumBridges(ExecutionContext& context, ProteinPtr protein);
   static bool checkConsistencyOfBridges(SymmetricMatrixPtr bridges);
 };
 

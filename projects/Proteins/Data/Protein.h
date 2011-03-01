@@ -63,7 +63,7 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  Variable getTargetOrComputeIfMissing(size_t targetIndex) const;
+  Variable getTargetOrComputeIfMissing(ExecutionContext& context, size_t targetIndex) const;
 
   size_t getLength() const
     {return primaryStructure ? primaryStructure->getNumElements() : 0;}
@@ -141,18 +141,18 @@ public:
   /*
   ** Contact maps / Distance maps
   */
-  SymmetricMatrixPtr getContactMap(double threshold = 8, bool betweenCBetaAtoms = false) const;
+  SymmetricMatrixPtr getContactMap(ExecutionContext& context, double threshold = 8, bool betweenCBetaAtoms = false) const;
   void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
   SymmetricMatrixPtr createEmptyContactMap() const;
 
-  SymmetricMatrixPtr getDistanceMap(bool betweenCBetaAtoms = false) const;
+  SymmetricMatrixPtr getDistanceMap(ExecutionContext& context, bool betweenCBetaAtoms = false) const;
   void setDistanceMap(SymmetricMatrixPtr contactMap, bool betweenCBetaAtoms = false);
   SymmetricMatrixPtr createEmptyDistanceMap() const;
 
   /*
   ** Disulfide Bonds
   */
-  const SymmetricMatrixPtr& getDisulfideBonds() const;
+  const SymmetricMatrixPtr& getDisulfideBonds(ExecutionContext& context) const;
 
   /*
   ** Tertiary Structure

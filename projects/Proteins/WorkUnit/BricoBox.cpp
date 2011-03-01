@@ -2,9 +2,9 @@
 
 using namespace lbcpp;
 
-size_t CheckDisulfideBondsWorkUnit::getNumBridges(ProteinPtr protein)
+size_t CheckDisulfideBondsWorkUnit::getNumBridges(ExecutionContext& context, ProteinPtr protein)
 {
-  SymmetricMatrixPtr bridges = protein->getDisulfideBonds();
+  SymmetricMatrixPtr bridges = protein->getDisulfideBonds(context);
   
   if (!checkConsistencyOfBridges(bridges))
   {

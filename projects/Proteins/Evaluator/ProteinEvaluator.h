@@ -48,8 +48,8 @@ public:
     for (size_t i = 0; i < numTargets; ++i)
     {
       //inputContainer[i] = input->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
-      supervisionContainer[i] = supervision->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
-      predictedContainer[i] = predicted->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
+      supervisionContainer[i] = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+      predictedContainer[i] = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
     }
     /* Call updataScoreObject for each (sub)example and each evaluator */
     size_t n = supervision->getLength();
