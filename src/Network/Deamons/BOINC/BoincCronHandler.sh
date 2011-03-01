@@ -19,7 +19,7 @@ touch $workUnitDirectory/.lock
 
 # Communication with Monster24
 cd $programDirectory
-./RunWorkUnit GridWorkUnit --hostName $masterHostname --gridName $serverName --gridEngine SGE --projectDirectory $workUnitDirectory
+./RunWorkUnit GridWorkUnit --hostName $masterHostname --gridName $serverName --gridEngine BOINC --projectDirectory $workUnitDirectory
 
 rm $workUnitDirectory/.lock
 

@@ -101,6 +101,30 @@ public:
     {jassertfalse; return ContainerPtr();}
   virtual void removeExecutionTraces(ContainerPtr networkResponses)
     {jassertfalse;}
+  
+protected:
+  NetworkResponsePtr getNetworkResponse(const String& identifier)
+  {
+    File f = context.getFile(T("Traces/") + identifier + T(".trace"));
+    if (!f.exists())
+      return new NetworkResponse(context, identifier);
+    ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f);
+    return new NetworkResponse(context, identifier, trace);
+  }
+  
+  File getRequestFile(NetworkRequestPtr request)
+    {return context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));}
+  File getWaitingFile(NetworkRequestPtr request)
+    {return context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));}
+  File getFinishDirectory()
+    {return context.getProjectDirectory().getChildFile(T("Finished"));}
+  void createDirectoryIfNotExists(const String& directory)
+  {
+    File f = context.getFile(directory);
+    if (!f.exists())
+      f.createDirectory();
+  }
+  
 };
 
 };

@@ -51,7 +51,7 @@ int make_job(File* file) {
   }
 
   // Update LBCpp WU's status
-  String newLocation("Network/.WorkUnit/WorkUnits/");
+  String newLocation("Network/.WorkUnit/InProgress/");
   newLocation += file->getFileName();
   if (!file->moveFileTo(File(config.project_path(newLocation.toUTF8()))))
   {
@@ -93,7 +93,7 @@ void main_loop()
 {
   int retval;
   juce::OwnedArray<File> foundFiles;
-  File directory(config.project_path("Network/.WorkUnit/PreProcessing"));
+  File directory(config.project_path("Network/.WorkUnit/Waiting"));
 
   while (1) {
     check_stop_daemons();
@@ -123,7 +123,7 @@ void usage(char *name)
   fprintf(stderr, "This is the LBCpp work generator.\n"
           "This work generator has the following properties:\n"
           "- Runs as a daemon\n"
-          "- Creates a job for each file (WU) found in Network/.WorkUnit/PreProcessing/\n\n"
+          "- Creates a job for each file (WU) found in Network/.WorkUnit/Waiting/\n\n"
           "Usage: %s [OPTION]...\n\n"
           "Options:\n"
           "  [ --app X                Application name (default: LBCppBeta)\n"
