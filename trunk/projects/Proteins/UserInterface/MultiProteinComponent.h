@@ -112,7 +112,7 @@ protected:
   void addObjectNameIfExists(const String& friendlyName, size_t variableIndex, std::vector< std::pair<String, size_t> >& res)
   {
     for (size_t i = 0; i < proteins.size(); ++i)
-      if (proteins[i]->getTargetOrComputeIfMissing(variableIndex).exists())
+      if (proteins[i]->getTargetOrComputeIfMissing(defaultExecutionContext(), variableIndex).exists())
       {
         res.push_back(std::make_pair(friendlyName, variableIndex));
         return;

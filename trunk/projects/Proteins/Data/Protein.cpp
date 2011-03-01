@@ -139,7 +139,7 @@ void Protein::setDistanceMap(SymmetricMatrixPtr distanceMap, bool betweenCBetaAt
     distanceMapCa = distanceMap;
 }
 
-Variable Protein::getTargetOrComputeIfMissing(size_t index) const
+Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t index) const
 {
   // skip base class variables
   size_t baseClassVariables = nameableObjectClass->getNumMemberVariables();
@@ -157,11 +157,11 @@ Variable Protein::getTargetOrComputeIfMissing(size_t index) const
   case 5: return getSolventAccessibility();
   case 6: return getSolventAccessibilityAt20p();
   case 7: return getDisorderRegions();
-  case 8: return getContactMap(8, false);
-  case 9: return getContactMap(8, true);
-  case 10: return getDistanceMap(false);
-  case 11: return getDistanceMap(true);
-  case 12: return getDisulfideBonds();
+  case 8: return getContactMap(context, 8, false);
+  case 9: return getContactMap(context, 8, true);
+  case 10: return getDistanceMap(context, false);
+  case 11: return getDistanceMap(context, true);
+  case 12: return getDisulfideBonds(context);
   case 13: return getCAlphaTrace();
   case 14: return getTertiaryStructure();
   default: jassert(false); return Variable();
@@ -203,29 +203,29 @@ ContainerPtr Protein::getStructuralAlphabetSequence() const
   return structuralAlphabetSequence;
 }
 
-SymmetricMatrixPtr Protein::getDistanceMap(bool betweenCBetaAtoms) const
+SymmetricMatrixPtr Protein::getDistanceMap(ExecutionContext& context, bool betweenCBetaAtoms) const
 {
   if (betweenCBetaAtoms)
   {
     if (!distanceMapCb && tertiaryStructure && tertiaryStructure->hasBackboneAndCBetaAtoms())
-      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(defaultExecutionContext(), tertiaryStructure, true);
+      const_cast<Protein* >(this)->distanceMapCb = computeDistanceMapFromTertiaryStructure(context, tertiaryStructure, true);
     return distanceMapCb;
   }
   else
   {
     if (!distanceMapCa && tertiaryStructure && tertiaryStructure->hasCAlphaAtoms())
-      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(defaultExecutionContext(), tertiaryStructure, false);
+      const_cast<Protein* >(this)->distanceMapCa = computeDistanceMapFromTertiaryStructure(context, tertiaryStructure, false);
     return distanceMapCa;
   }
 }
 
-SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAtoms) const
+SymmetricMatrixPtr Protein::getContactMap(ExecutionContext& context, double threshold, bool betweenCBetaAtoms) const
 {
   jassert(threshold == 8.0);
   SymmetricMatrixPtr* res = const_cast<SymmetricMatrixPtr* >(betweenCBetaAtoms ? &contactMap8Cb : &contactMap8Ca);
   if (!*res)
   {
-    SymmetricMatrixPtr distanceMap = getDistanceMap(betweenCBetaAtoms);
+    SymmetricMatrixPtr distanceMap = getDistanceMap(context, betweenCBetaAtoms);
     if (distanceMap)
       *res = computeContactMapFromDistanceMap(distanceMapCa, threshold);
 
@@ -233,11 +233,11 @@ SymmetricMatrixPtr Protein::getContactMap(double threshold, bool betweenCBetaAto
   return *res;
 }
 
-const SymmetricMatrixPtr& Protein::getDisulfideBonds() const
+const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) const
 {
   if (!disulfideBonds && tertiaryStructure)
   {
-    SymmetricMatrixPtr distanceMap = tertiaryStructure->makeSulfurDistanceMatrix(defaultExecutionContext(), cysteinIndices);
+    SymmetricMatrixPtr distanceMap = tertiaryStructure->makeSulfurDistanceMatrix(context, cysteinIndices);
     if (distanceMap)
       const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromTertiaryStructure(distanceMap);
   }

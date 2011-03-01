@@ -5,6 +5,8 @@
  
 * Objectif 3: features reglable: -> Prendre en argument tout ce qu'il faut pour changer la fonction features
 * Objectif 4: valider l'utilisation boinc
+   - progression globale
+   
 
 ProteinLearner:
  * Evaluation après chaque passe (attacher un Evaluator aux Function ?)

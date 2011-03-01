@@ -172,7 +172,7 @@ DecoratorInferenceStatePtr ProteinInferenceStep::prepareInference(ExecutionConte
   Variable targetSupervision;
   const ProteinPtr& supervisionProtein = supervision.getObjectAndCast<Protein>(context);
   if (supervisionProtein)
-    targetSupervision = supervisionProtein->getTargetOrComputeIfMissing((int)targetIndex - 1);
+    targetSupervision = supervisionProtein->getTargetOrComputeIfMissing(context, (int)targetIndex - 1);
   if (targetSupervision.isNil())
     targetSupervision = Variable::missingValue(proteinClass->getMemberVariableType(targetIndex));
   res->setSubInference(decorated, input, targetSupervision);

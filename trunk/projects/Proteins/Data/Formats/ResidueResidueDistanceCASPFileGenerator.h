@@ -30,7 +30,7 @@ public:
     VectorPtr primaryStructure = protein->getPrimaryStructure();
     printPrimarySequence(primaryStructure);
     
-    SymmetricMatrixPtr residueResidueContactMatrix8Cb = protein->getContactMap(8, true);
+    SymmetricMatrixPtr residueResidueContactMatrix8Cb = protein->getContactMap(defaultExecutionContext(), 8, true);
     jassert(residueResidueContactMatrix8Cb && residueResidueContactMatrix8Cb->getDimension() == n);
     size_t lineCount = 0;
     for (size_t i = 0; i < n; ++i)
