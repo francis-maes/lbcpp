@@ -30,7 +30,6 @@ protected:
   File inputDirectory;
   File supervisionDirectory;
   size_t maxProteins;
-  size_t numFolds;
   ProteinPredictorParametersPtr parameters;
 
   std::vector<ProteinTarget> proteinTargets;
@@ -40,6 +39,7 @@ protected:
 
   FunctionPtr createPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
+  ContainerPtr loadProteinPairs(ExecutionContext& context, const String& subDirectoryName) const;
   bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;
 };
 
