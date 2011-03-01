@@ -402,7 +402,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/Utilities.h
   Function/Evaluator/Utilities.cpp
   Function/Evaluator/ConcatenateScoreObjectFunction.h
-  Function/Evaluator/ContainerElementsEvaluator.h
+  Function/Evaluator/ContainerSupervisedEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )

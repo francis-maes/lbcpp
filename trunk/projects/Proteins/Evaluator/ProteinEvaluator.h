@@ -21,11 +21,11 @@ class ProteinEvaluator : public CompositeEvaluator
 public:
   ProteinEvaluator()
   {
-    addEvaluator(ss3Target,  classificationEvaluator());
-    addEvaluator(ss8Target,  classificationEvaluator());
-    addEvaluator(sa20Target, binaryClassificationEvaluator());
-    addEvaluator(drTarget,   binaryClassificationEvaluator());
-    addEvaluator(stalTarget, classificationEvaluator());
+    addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()));
+    addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()));
+    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator()));
+    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator()));
+    addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
   }
   
   /* Evaluator */
@@ -36,34 +36,26 @@ public:
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
   {
     CompositeScoreObjectPtr scores = scoreObject.staticCast<CompositeScoreObject>();
-    //ProteinPtr input = example->getVariable(0).getObjectAndCast<Protein>();
     ProteinPtr supervision = example->getVariable(1).getObjectAndCast<Protein>();
     ProteinPtr predicted = output.getObjectAndCast<Protein>();
+
     /* Strore container for fast access */
     size_t numTargets = targets.size();
-    //std::vector<ContainerPtr> inputContainer(numTargets);
-    std::vector<ContainerPtr> supervisionContainer(numTargets);
-    std::vector<ContainerPtr> predictedContainer(numTargets);
-    
     for (size_t i = 0; i < numTargets; ++i)
     {
-      //inputContainer[i] = input->getTargetOrComputeIfMissing((int)targets[i]).getObjectAndCast<Container>();
-      supervisionContainer[i] = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
-      predictedContainer[i] = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+      ContainerPtr supervisionContainer = supervision->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+      ContainerPtr predictedContainer = predicted->getTargetOrComputeIfMissing(context, (int)targets[i]).getObjectAndCast<Container>();
+
+      if (!supervisionContainer || !predictedContainer)
+        continue;
+
+      if (!evaluators[i]->updateScoreObject(context,
+                                            scores->getScoreObject(i),
+                                            new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer),
+                                            predictedContainer))
+        return false;
     }
-    /* Call updataScoreObject for each (sub)example and each evaluator */
-    size_t n = supervision->getLength();
-    bool res = true;
-    for (size_t i = 0; i < n; ++i)
-      for (size_t j = 0; j < numTargets; ++j)
-      {
-        const ContainerPtr& prediction = predictedContainer[j];
-        const ContainerPtr& supervision = supervisionContainer[j];
-        if (prediction && supervision)
-          res &= evaluators[j]->updateScoreObject(context, scores->getScoreObject(j),
-                new Pair(pairClass(anyType, anyType), Variable(), supervision->getElement(i)), prediction->getElement(i));
-      }
-    return res;
+    return true;
   }
 
 protected:

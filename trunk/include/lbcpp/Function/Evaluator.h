@@ -102,7 +102,6 @@ public:
   virtual TypePtr getRequiredPredictionType() const = 0;
   virtual TypePtr getRequiredSupervisionType() const = 0;
 
-protected:
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const = 0;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& score, const ObjectPtr& inputsObject, const Variable& output) const;
 };
@@ -165,8 +164,8 @@ extern EvaluatorPtr defaultSupervisedEvaluator();
 // Save To Directory
 extern EvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
 
-// Container<T> -> T
-extern EvaluatorPtr containerElementsEvaluator();
+// Container[Pair[T_Input,T_Supervision]> -> T_Supervision
+extern SupervisedEvaluatorPtr containerSupervisedEvaluator(SupervisedEvaluatorPtr elementEvaluator);
 
 };
 
