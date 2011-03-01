@@ -49,7 +49,7 @@ public:
     ContainerPtr res = target->getFinishedExecutionTraces();
     if (!target->getNetworkClient()->sendVariable(res))
     {
-      target->getContext().warningCallback(T("GetFinishedExecutionTraces"), T("Tace not sent"));
+      target->getContext().warningCallback(T("GetFinishedExecutionTraces"), T("Trace not sent"));
       return;
     }
     /* Short way that avoid to use network trafic */

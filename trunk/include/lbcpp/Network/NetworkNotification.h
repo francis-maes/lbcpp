@@ -24,6 +24,13 @@ public:
   virtual void notifyNetwork(const NetworkInterfacePtr& target) = 0;
 };
 
+class CloseCommunicationNotification : public NetworkNotification
+{
+public:
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+    {target->closeCommunication();}
+};
+
 }; /* namespace */
   
 #endif // !LBCPP_NETWORK_NOTIFICATION_H_

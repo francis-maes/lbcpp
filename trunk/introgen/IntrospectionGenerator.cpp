@@ -46,7 +46,7 @@ public:
     }
 
     newLine();
-    closeScope(T("; /* namespace ") + namespaceName + T(" */"));
+    closeScope(T("; /* namespace ") + namespaceName + T(" */\n"));
   }
 
 protected:

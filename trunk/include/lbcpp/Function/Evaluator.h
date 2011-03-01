@@ -155,8 +155,8 @@ extern SupervisedEvaluatorPtr regressionEvaluator();
 // Default supervised evaluator
 extern EvaluatorPtr defaultSupervisedEvaluator();
 
-extern EvaluatorPtr functionBasedEvaluator(const FunctionPtr& function);
-
+// Container<T> -> T
+extern EvaluatorPtr containerElementsEvaluator();
 };
 
 #endif // !LBCPP_FUNCTION_EVALUATOR_H_

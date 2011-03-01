@@ -15,11 +15,6 @@
     <variable type="PositiveInteger" name="scoreToMinimizeIndex"/>
   </class>
   <class name="ProxyEvaluator" base="Evaluator" abstract="yes"/>
-  
-  <class name="FunctionBasedEvaluator" base="Evaluator">
-    <constructor arguments="const FunctionPtr&amp; function"/>
-    <variable type="Function" name="function"/>
-  </class>
 
   <!-- Score Enumerations -->
   <enumeration name="BinaryClassificationScore">
@@ -103,13 +98,18 @@
     <constructor/>
   </class>
 
+  <!-- Misc -->
+  <class name="ContainerElementsEvaluator" base="Evaluator">
+    <constructor arguments="EvaluatorPtr elementEvaluator"/>
+    <variable type="Evaluator" name="elementEvaluator"/>
+  </class>
 
   <!-- Old -->
   
-  <!-- Base Class -->
+
   <class name="OldEvaluator" base="NameableObject" abstract="yes"/>
   
-  <!-- Regression -->
+<!--
   <class name="OldRegressionErrorEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
@@ -118,7 +118,7 @@
     <constructor arguments="const String&amp; name"/>
   </class>
 
-  <!-- Binary Classification -->
+
   <class name="OldBinaryClassificationConfusionEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
   </class>
@@ -127,13 +127,13 @@
     <constructor arguments="const String&amp; name"/>
   </class>
 
-  <!-- MultiClass Classification -->
+
   <class name="OldClassificationAccuracyEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
     <variable type="ScalarVariableMean" name="accuracy"/>
   </class>
 
-  <!-- MultiLabel Classification -->
+
   <class name="OldMultiLabelClassificationEvaluator" base="OldEvaluator">
     <constructor arguments="const String&amp; name"/>
     <variable type="ScalarVariableMean" name="hammingLoss"/>
@@ -142,16 +142,12 @@
     <variable type="ScalarVariableMean" name="recall"/>
   </class>
   
-  <!-- Misc -->
-  <class name="ContainerElementsEvaluator" base="OldEvaluator">
-    <constructor arguments="const String&amp; name, OldEvaluatorPtr elementEvaluator"/>
-    <variable type="OldEvaluator" name="elementEvaluator"/>
-  </class>
+
 
   <class name="SaveToDirectoryEvaluator" base="OldEvaluator">
     <constructor arguments="const File&amp; directory, const String&amp; extension"/>
     <variable type="File" name="directory"/>
     <variable type="String" name="extension"/>
   </class>
-  
+-->
 </library>

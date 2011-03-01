@@ -398,10 +398,10 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/RegressionEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/DefaultSupervisedEvaluator.h
-  Function/Evaluator/FunctionBasedEvaluator.h
   Function/Evaluator/Utilities.h
   Function/Evaluator/Utilities.cpp
   Function/Evaluator/ConcatenateScoreObjectFunction.h
+  Function/Evaluator/ContainerElementsEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )
@@ -785,16 +785,6 @@ SET(LBCPP_DECISION_TREE_RTREE_SOURCES
 
 SET(LBCPP_OLD_FUNCTION_SOURCES
   ../include/lbcpp/Function/OldEvaluator.h  
-  Function/OldEvaluator.cpp
-)
-
-SET(LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES
-  Function/Evaluator/ContainerElementsEvaluator.h
-  Function/Evaluator/OldBinaryClassificationConfusionEvaluator.h
-  Function/Evaluator/OldClassificationAccuracyEvaluator.h
-  Function/Evaluator/OldMultiLabelClassificationEvaluator.h
-  Function/Evaluator/OldRegressionErrorEvaluator.h
-  Function/Evaluator/SaveToDirectoryEvaluator.h
 )
 
 #### UserInterface ####
@@ -975,7 +965,6 @@ SET(LBCPP_CORE
   #  ${LBCPP_DECISION_TREE_RTREE_SOURCES}
   
   ${LBCPP_OLD_FUNCTION_SOURCES}
-    ${LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES}
   
   ######### <-- old  ############
 )
@@ -1082,8 +1071,6 @@ SOURCE_SUB_GROUP("Old - DecisionTree" RTree FILES ${LBCPP_DECISION_TREE_RTREE_SO
 
 ## Evaluator
 SOURCE_GROUP("Old - Function" FILES ${LBCPP_OLD_FUNCTION_SOURCES})
-SOURCE_SUB_GROUP("Old - Function" Evaluator FILES ${LBCPP_OLD_FUNCTION_EVALUATOR_SOURCES})
-
 
 ######### <-- old  ############
 

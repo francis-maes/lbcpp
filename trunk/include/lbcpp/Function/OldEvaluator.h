@@ -30,7 +30,7 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 };
-
+#if 0
 class OldRegressionErrorEvaluator : public OldEvaluator
 {
 public:
@@ -81,7 +81,7 @@ inline OldEvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& na
 
 // Save To Directory
 extern OldEvaluatorPtr saveToDirectoryEvaluator(const File& directory, const String& extension = T(".xml"));
-
+#endif
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OLD_EVALUATOR_H_

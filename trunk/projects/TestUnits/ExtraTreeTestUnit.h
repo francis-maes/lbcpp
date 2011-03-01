@@ -86,12 +86,13 @@ protected:
     InferencePtr inference = classificationExtraTreeInference(T("x3Test"), perception, waveFormTypeEnumeration, numTrees, numAttributes, minSplitSize);
 
     inference->train(context, learningData, ContainerPtr());
-    OldEvaluatorPtr evaluator = oldClassificationAccuracyEvaluator(T("x3TestEvaluator"));
+    jassertfalse;
+    OldEvaluatorPtr evaluator = OldEvaluatorPtr(); // FIXME
     
     inference->evaluate(context, learningData, evaluator, T("Evaluating on training data"));
     checkIsCloseTo(context, 1.0, 0.0, evaluator->getDefaultScore());
-    
-    evaluator = oldClassificationAccuracyEvaluator(T("x3TestEvaluator"));
+    jassertfalse;
+    evaluator = OldEvaluatorPtr(); //FIXME
     inference->evaluate(context, testingData, evaluator, T("Evaluating on testing data"));
     checkIsCloseTo(context, 0.85, 0.03, evaluator->getDefaultScore());
   }
@@ -111,12 +112,12 @@ protected:
     InferencePtr inference = regressionExtraTreeInference(T("x3Test"), perception, numTrees, numAttributes, minSplitSize);
 
     inference->train(context, learningData, ContainerPtr());
- 
-    OldEvaluatorPtr evaluator = oldRegressionErrorEvaluator(T("x3TestEvaluator"));
+    jassertfalse;
+    OldEvaluatorPtr evaluator = OldEvaluatorPtr(); //FIXME
     inference->evaluate(context, learningData, evaluator);
     checkIsCloseTo(context, 0.0, 0.0001, evaluator->getDefaultScore());
-
-    evaluator = oldRegressionErrorEvaluator(T("x3TestEvaluator"));
+    jassertfalse;
+    evaluator = OldEvaluatorPtr(); // FIXME
     inference->evaluate(context, testingData, evaluator);
     checkIsCloseTo(context, 2.2, 0.3, -evaluator->getDefaultScore());
   }
