@@ -7,11 +7,11 @@
   <import name="ObjectiveFunction"/>
   <import name="OptimizerOptimizer"/>
 
-  <class name="OptimizerInput" base="Object">
+  <!-- <class name="OptimizerInput" base="Object">
     <variable type="ObjectiveFunction" name="objective"/>
     <variable type="Distribution[Variable]" name="aprioriDistribution"/>
     <variable type="Variable" name="initialGuess"/>
-  </class>
+  </class> -->
 
   <class name="Optimizer" base="Function" abstract="yes"/>
 

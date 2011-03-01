@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: Optimizer.h                    | Optimizers                      |
-| Author  : Francis Maes                   |                                 |
+| Author  : Francis Maes, Arnaud Schoofs   |                                 |
 | Started : 21/12/2010 23:39               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
@@ -14,9 +14,10 @@
 namespace lbcpp
 {
 
+// ObjectiveFunction, DistributionClass, [Variable] -> Variable
 class Optimizer : public Function
 {
-public:
+public:  
   virtual size_t getNumRequiredInputs() const 
     {return getMinimumNumRequiredInputs();}
   virtual size_t getMinimumNumRequiredInputs() const 
@@ -26,11 +27,12 @@ public:
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
   {
-    switch (index) {
+    switch (index) 
+    {
       case 0:
-        return (TypePtr) functionClass;
+        return (TypePtr) objectiveFunctionClass;
       case 1:
-        return (TypePtr) distributionClass(anyType);  // TODO
+        return (TypePtr) distributionClass(anyType);
       case 2:
         if (numInputs != 3) 
         {
@@ -43,6 +45,9 @@ public:
         return anyType;
     }
   }
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return inputVariables[0]->getType();}  // TODO arnaud : check initial guess and a priori distribution
   
   /*virtual TypePtr getInputType() const
     {return optimizerInputClass;}
