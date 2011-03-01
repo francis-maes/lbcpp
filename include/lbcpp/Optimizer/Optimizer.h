@@ -30,7 +30,7 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) functionClass;
+        return (TypePtr) objectiveFunctionClass;
       case 1:
         return (TypePtr) distributionClass(anyType);
       case 2:
@@ -49,15 +49,11 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {    
     // TODO arnaud : check initial guess and apriori distribution
-    return variableType;
-    //return inputVariables[2]->getType();  // TODO arnaud : if no apriori !
-  } 
+    if (inputVariables.size() == 3) 
+      return inputVariables[2]->getType();  // type of initial guess
     
-  /*virtual TypePtr getInputType() const
-    {return optimizerInputClass;}
-
-  virtual TypePtr getOutputType(TypePtr ) const
-    {return variableType;}*/
+    return variableType;  // TODO arnaud : build type from apriori or from function ?
+  } 
 };
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
