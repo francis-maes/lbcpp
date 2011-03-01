@@ -30,55 +30,6 @@ public:
 
   lbcpp_UseDebuggingNewOperator
 };
-#if 0
-class OldRegressionErrorEvaluator : public OldEvaluator
-{
-public:
-  OldRegressionErrorEvaluator(const String& name);
-  OldRegressionErrorEvaluator() {}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject);
-  virtual void addDelta(double delta);
-
-  virtual String toString() const;
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const;
-
-  virtual double getDefaultScore() const
-    {return -getRMSE();}
-
-  double getRMSE() const;
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  ScalarVariableMeanPtr absoluteError;
-  ScalarVariableMeanPtr squaredError;
-};
-
-typedef ReferenceCountedObjectPtr<OldRegressionErrorEvaluator> OldRegressionErrorEvaluatorPtr;
-
-// Classification
-extern OldEvaluatorPtr oldClassificationAccuracyEvaluator(const String& name = T("accuracy"));
-extern OldEvaluatorPtr oldBinaryClassificationConfusionEvaluator(const String& name);
-extern OldEvaluatorPtr oldROCAnalysisEvaluator(const String& name);
-
-// Multi-label Classification
-extern OldEvaluatorPtr oldMultiLabelClassificationEvaluator(const String& name = T("multi-label"));
-
-// Regression
-extern OldEvaluatorPtr oldRegressionErrorEvaluator(const String& name);
-extern OldRegressionErrorEvaluatorPtr oldDihedralRegressionErrorEvaluator(const String& name);
-
-// Structured
-extern OldEvaluatorPtr containerElementsEvaluator(const String& name, OldEvaluatorPtr elementEvaluator);
-inline OldEvaluatorPtr sequenceLabelingAccuracyEvaluator(const String& name)
-  {return containerElementsEvaluator(name, oldClassificationAccuracyEvaluator(name));}
-inline OldEvaluatorPtr binarySequenceLabelingConfusionEvaluator(const String& name)
-  {return containerElementsEvaluator(name, oldBinaryClassificationConfusionEvaluator(name));}
-#endif // 0
 
 }; /* namespace lbcpp */
 
