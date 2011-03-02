@@ -104,6 +104,47 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<EnumerationDistribution> EnumerationDistributionPtr;
+  
+  
+class IntegerGaussianDistribution : public DiscreteDistribution
+{
+public:
+  // TODO arnaud complete implementation
+  IntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : mean(mean), variance(variance) {}
+  
+  virtual TypePtr getElementsType() const
+    {return integerType;}
+  
+  virtual double computeEntropy() const
+    {jassert(false); return 0;} // not implemented !
+  
+  virtual double computeProbability(const Variable& value) const
+    {jassert(false); return 0;} // not implemented !
+  
+  virtual Variable sample(RandomGeneratorPtr random) const
+    {return Variable((int) round(random->sampleDoubleFromGaussian(getMean(), getVariance())), integerType);} // FIXME: variance or stddev ? // TODO arnaud
+
+  virtual Variable sampleBest(RandomGeneratorPtr random) const
+    {jassert(false); return Variable();} // not implemented !
+
+  double getMean() const
+    {return mean;}
+  
+  double getVariance() const
+    {return variance;}
+  
+  juce_UseDebuggingNewOperator
+  
+protected:  
+  double mean;
+  double variance;
+  
+  friend class IntegerGaussianDistributionClass;
+};
+  
+typedef ReferenceCountedObjectPtr<IntegerGaussianDistribution> IntegerGaussianDistributionPtr;
+  
+  
 
 extern ClassPtr bernoulliDistributionClass;
 

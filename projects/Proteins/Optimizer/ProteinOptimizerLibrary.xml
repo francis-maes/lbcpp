@@ -2,4 +2,5 @@
 
 <library name="ProteinOptimizer" directory="Optimizer">
   <class name="ProteinGridEvoOptimizer" base="GridEvoOptimizer"/>
+  <class name="ProteinGridEvoOptimizerState" base="Object"/>
 </library>

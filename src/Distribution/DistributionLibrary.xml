@@ -25,6 +25,11 @@
     <variable type="Double" name="pFalse"/>
   </class>
   
+  <class name="IntegerGaussianDistribution" base="DiscreteDistribution[Integer]">
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="variance"/>
+  </class>
+  
   <template name="EnumerationDistribution" base="DiscreteDistribution[enumeration]">
     <parameter name="enumeration" type="EnumValue"/>
 
