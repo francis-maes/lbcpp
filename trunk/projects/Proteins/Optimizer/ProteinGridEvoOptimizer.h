@@ -23,11 +23,10 @@ namespace lbcpp
   public:
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) {
-      Variable var = distributions->sample(RandomGenerator::getInstance());
-      std::cout << var.toString() << std::endl;
-    }
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) {}
     
+    NumericalProteinFeaturesParametersPtr sampleParameters() const;
+
   protected:
     IndependentMultiVariateDistributionPtr distributions;
     
@@ -41,7 +40,7 @@ namespace lbcpp
   {
   public:
     virtual size_t getMaximumNumRequiredInputs() const
-    {return 2;} // do not use initial guess
+      {return 2;} // do not use initial guess
     
     virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {
@@ -59,6 +58,7 @@ namespace lbcpp
     
   protected:
     virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+    void generateSampleWU(ExecutionContext& context, ProteinGridEvoOptimizerStatePtr state, const String& name) const;
     
     friend class ProteinGridEvoOptimizerClass;
   };  

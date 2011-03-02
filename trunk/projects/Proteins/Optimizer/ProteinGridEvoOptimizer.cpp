@@ -12,11 +12,21 @@
 Variable ProteinGridEvoOptimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
   ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>());
-  /*for (int i = 0; i < 5; ++i) {
-    // TODO arnaud : wrap RunWorkUnit in a function
-    WorkUnitPtr wu = new ProteinLearner();
-    wu->parseArguments(context, "-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical((1,3,5,3,5,3,2,3,5,5,True,15,15,50),sgd)\" -t ss3 -n 1 -m 20");
-    wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + String(i) + T(".xml")));
-  }*/
+  generateNewWU(context, state, "test");
   return Variable(0); 
+}
+
+NumericalProteinFeaturesParametersPtr ProteinGridEvoOptimizerState::sampleParameters() const 
+{
+  // TODO arnaud : set seed
+  NumericalProteinFeaturesParametersPtr test = (distributions->sample(RandomGenerator::getInstance())).getObjectAndCast<NumericalProteinFeaturesParameters>();
+  return test;
+}
+
+
+void ProteinGridEvoOptimizer::generateNewWU(ExecutionContext& context, ProteinGridEvoOptimizerStatePtr state, const String& name) const
+{
+  WorkUnitPtr wu = new ProteinLearner();
+  wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + state->sampleParameters()->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
+  wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
 }
