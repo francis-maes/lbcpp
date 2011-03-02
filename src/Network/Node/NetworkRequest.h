@@ -74,7 +74,7 @@ public:
   NetworkResponse(ExecutionContext& context, const String& identifier, ExecutionTracePtr executionTrace)
     : identifier(identifier), trace(new XmlElement())
     {this->trace->saveObject(context, executionTrace);}
-  NetworkResponse(ExecutionContext& context, const String& identifier)
+  NetworkResponse(const String& identifier)
     : identifier(identifier) {}
   NetworkResponse() {}
 

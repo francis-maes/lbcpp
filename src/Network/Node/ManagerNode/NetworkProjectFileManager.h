@@ -47,6 +47,7 @@ public:
         else
           context.informationCallback(T("Request restored: ") + f.getFileNameWithoutExtension());
       }
+      context.leaveScope(Variable());
     }
   }
   

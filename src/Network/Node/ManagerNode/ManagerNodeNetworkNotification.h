@@ -41,6 +41,44 @@ protected:
   NetworkRequestPtr request;
 };
 
+class IsWorkUnitFinishedNotification : public ManagerNodeNetworkNotification
+{
+public:
+  IsWorkUnitFinishedNotification(const String& identifier)
+    : identifier(identifier) {}
+  IsWorkUnitFinishedNotification() {}
+  
+  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target)
+  {
+    bool res = target->isFinished(identifier);
+    target->getNetworkClient()->sendVariable(res);
+  }
+  
+protected:
+  friend class IsWorkUnitFinishedNotificationClass;
+  
+  String identifier;
+};
+
+class GetExecutionTraceNotification : public ManagerNodeNetworkNotification
+{
+public:
+  GetExecutionTraceNotification(const String& identifier)
+    : identifier(identifier) {}
+  GetExecutionTraceNotification() {}
+  
+  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target)
+  {
+    NetworkResponsePtr res = target->getExecutionTrace(identifier);
+    target->getNetworkClient()->sendVariable(res);
+  }
+
+protected:
+  friend class GetExecutionTraceNotificationClass;
+  
+  String identifier;
+};
+
 }; /* namespace */
   
 #endif // !LBCPP_MANAGER_NODE_NETWORK_NOTIFICATION_H_
