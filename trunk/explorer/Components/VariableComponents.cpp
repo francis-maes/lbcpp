@@ -12,6 +12,7 @@
 #include "VariableBrowser.h"
 #include "HexadecimalFileComponent.h"
 #include "../Utilities/FileType.h"
+
 using namespace lbcpp;
 
 extern void flushErrorAndWarningMessages(const String& title);
@@ -22,6 +23,9 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
 
   if (!object)
     return NULL;
+
+  if (object->getClass()->inheritsFrom(xmlElementClass))
+    object = object.staticCast<XmlElement>()->createObject(context);
 
   // old
   Component* res = object->createComponent();
@@ -112,7 +116,11 @@ Component* lbcpp::createComponentForVariable(ExecutionContext& context, const Va
     return NULL;
   Component* res = createComponentForVariableImpl(context, variable, explicitName);
   if (topLevelComponent && dynamic_cast<VariableSelector* >(res))
+  {
+    if (variable.getType()->inheritsFrom(xmlElementClass))
+      return createComponentForObject(context, variable.getObjectAndCast<XmlElement>()->createObject(context), explicitName);
     res = new VariableBrowser(variable, res);
+  }
   String title = T("Create Component");
   if (explicitName.isNotEmpty())
     title += T(" for ") + explicitName;
