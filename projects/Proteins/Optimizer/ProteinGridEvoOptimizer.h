@@ -23,12 +23,27 @@ namespace lbcpp
   public:
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) {}
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) 
+    {
+      // TODO arnaud : if state.xml loaded
+      numberGeneratedWU = 0;
+      numberEvaluatedWU = 0;
+    }
     
     NumericalProteinFeaturesParametersPtr sampleParameters() const;
+    void generateSampleWU(ExecutionContext& context, const String& name);
+    
+    size_t getNumberGeneratedWU() const 
+      {return numberGeneratedWU;}
+    
+    size_t getNumberEvaluatedWU() const 
+    {return numberEvaluatedWU;}
 
   protected:
     IndependentMultiVariateDistributionPtr distributions;
+    
+    size_t numberGeneratedWU;
+    size_t numberEvaluatedWU;
     
     friend class ProteinGridEvoOptimizerStateClass;
 
@@ -58,7 +73,6 @@ namespace lbcpp
     
   protected:
     virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-    void generateSampleWU(ExecutionContext& context, ProteinGridEvoOptimizerStatePtr state, const String& name) const;
     
     friend class ProteinGridEvoOptimizerClass;
   };  

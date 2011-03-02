@@ -25,11 +25,33 @@ Variable ProteinGridEvoOptimizer::computeFunction(ExecutionContext& context, con
    *  select best X results and update state.distributions
    *  generate Y WUs, wait and get results
    * }
+   *
+   * Remarks:
+   * synchronous : generate -> evaluate
+   * asynchronous : sendWorkUnit -> extract score from trace file
    */
   
+  // TODO arnaud : until now, not Grid but syncrhonous version for debug
+  
   ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>());
-  generateSampleWU(context, state, "test");
+  
+  // generate
+  while (state->getNumberGeneratedWU() < 10) {
+    state->generateSampleWU(context, String((int) state->getNumberGeneratedWU()) + T(".xml"));
+  }
+  
   return Variable(0); 
+}
+
+
+
+void ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context, const String& name)
+{
+  WorkUnitPtr wu = new ProteinLearner();
+  // TODO arnaud : set some parameters to 0 (disabled)
+  wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + sampleParameters()->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
+  wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name));
+  numberGeneratedWU++;
 }
 
 NumericalProteinFeaturesParametersPtr ProteinGridEvoOptimizerState::sampleParameters() const 
@@ -37,12 +59,4 @@ NumericalProteinFeaturesParametersPtr ProteinGridEvoOptimizerState::sampleParame
   // TODO arnaud : set seed
   NumericalProteinFeaturesParametersPtr test = (distributions->sample(RandomGenerator::getInstance())).getObjectAndCast<NumericalProteinFeaturesParameters>();
   return test;
-}
-
-
-void ProteinGridEvoOptimizer::generateSampleWU(ExecutionContext& context, ProteinGridEvoOptimizerStatePtr state, const String& name) const
-{
-  WorkUnitPtr wu = new ProteinLearner();
-  wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + state->sampleParameters()->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
-  wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
 }
