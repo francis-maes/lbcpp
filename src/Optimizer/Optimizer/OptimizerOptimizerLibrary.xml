@@ -15,5 +15,7 @@
     <variable type="Double" name="reductionFactor"/>
     <variable type="Optimizer" name="baseOptimizer"/>
   </class>
+  
+  <class name="GridEvoOptimizer" base="Optimizer"/>
 
 </library>

@@ -11,6 +11,8 @@ GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredict
 GENERATE_INTROSPECTION_CODE(Evaluator/ProteinEvaluatorLibrary.xml ProteinEvaluatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/ProteinOptimizerLibrary.xml ProteinOptimizerLibrary.cpp)
+
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
@@ -124,8 +126,16 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinLearner.cpp
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
+  WorkUnit/OptimizerTest.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_OPTIMIZER_SOURCES
+  Optimizer/ProteinGridEvoOptimizer.h
+  Optimizer/ProteinGridEvoOptimizer.cpp
+  Optimizer/ProteinOptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinOptimizerLibrary.cpp
 )
 
 IF(LBCPP_USER_INTERFACE)
@@ -149,6 +159,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_INFERENCE_SOURCES}
   ${LBCPP_PROTEIN_EVALUATOR_SOURCES}
   ${LBCPP_PROTEIN_WORK_UNIT_SOURCES}
+  ${LBCPP_PROTEIN_OPTIMIZER_SOURCES}
   ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
   
   ProteinLibrary.xml
@@ -171,6 +182,7 @@ SOURCE_GROUP("Old - Perception" FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
 SOURCE_GROUP("Old - Inference" FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
+SOURCE_GROUP(Optimizer FILES ${LBCPP_PROTEIN_OPTIMIZER_SOURCES})
 SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 
 ADD_LIBRARY(proteins${NAME_FILE_SUFFIX} SHARED ${PROTEINS_SOURCES})

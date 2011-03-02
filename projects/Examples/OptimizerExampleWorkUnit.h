@@ -54,7 +54,6 @@ namespace lbcpp
       
       Variable var = optimizer->compute(context, f, apriori);
       return var;
-      //return Variable();
     }
     
   };
