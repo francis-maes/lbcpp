@@ -525,7 +525,7 @@ XmlElementPtr XmlElement::createFromXml(juce::XmlElement* element, bool deleteEl
     res->text = element->getText();
   res->childElements.reserve(element->getNumChildElements());
   forEachXmlChildElement(*element, child)
-  res->childElements.push_back(XmlElement::createFromXml(child, false));
+    res->childElements.push_back(XmlElement::createFromXml(child, false));
   if (deleteElementOnceConverted)
     delete element;
   return res;
@@ -614,7 +614,7 @@ bool XmlElement::loadFromJuceXmlElement(juce::XmlElement* element)
   childElements.clear();
   childElements.reserve(element->getNumChildElements());
   forEachXmlChildElement(*element, child)
-  childElements.push_back(XmlElement::createFromXml(child, false));
+    childElements.push_back(XmlElement::createFromXml(child, false));
   return true;
 }
 

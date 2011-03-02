@@ -16,6 +16,57 @@
 namespace lbcpp
 {
 
+class ProteinScoreObject : public ScoreObject
+{
+public:
+  virtual double getScoreToMinimize() const
+  {
+    double sum = 0.0;
+    for (size_t i = 0; i < scores.size(); ++i)
+      sum += scores[i]->getScoreToMinimize();
+    return sum / scores.size();
+  }
+  
+  void addScoreObject(const ScoreObjectPtr& score)
+    {scores.push_back(score);}
+  
+protected:
+  friend class ProteinScoreObjectClass;
+
+  std::vector<ScoreObjectPtr> scores;
+};
+
+class ObjectiveProteinScoreObject : public ScoreObject
+{
+public:
+  ObjectiveProteinScoreObject(ScoreObjectPtr train, ScoreObjectPtr validation, ScoreObjectPtr test, size_t numFeaturesPerResidue)
+    : train(train), validation(validation), test(test), numFeaturesPerResidue(numFeaturesPerResidue) {}
+  ObjectiveProteinScoreObject() {}
+  
+  virtual double getScoreToMinimize() const
+    {return getValidatinScoreToMinimize();}
+  
+  double getTrainScoreToMinimize() const
+    {return train ? train->getScoreToMinimize() : DBL_MAX;}
+  
+  double getValidatinScoreToMinimize() const
+    {return validation ? validation->getScoreToMinimize() : DBL_MAX;}
+  
+  double getTestScoreToMinimize() const
+    {return test ? test->getScoreToMinimize() : DBL_MAX;}
+  
+  size_t getNumFeaturesPerResidue() const
+    {return numFeaturesPerResidue;}
+  
+protected:
+  friend class ObjectiveProteinScoreObjectClass;
+
+  ScoreObjectPtr train;
+  ScoreObjectPtr validation;
+  ScoreObjectPtr test;
+  size_t numFeaturesPerResidue;
+};
+
 class ProteinEvaluator : public CompositeEvaluator
 {
 public:
@@ -56,6 +107,14 @@ public:
         return false;
     }
     return true;
+  }
+  
+  ScoreObjectPtr getScoreObjectOfTarget(const CompositeScoreObjectPtr& scores, ProteinTarget target)
+  {
+    for (size_t i = 0; i < targets.size(); ++i)
+      if (targets[i] == target)
+        return scores->getScoreObject(i);
+    return ScoreObjectPtr();
   }
 
 protected:

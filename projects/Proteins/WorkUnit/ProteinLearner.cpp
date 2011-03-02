@@ -51,8 +51,9 @@ Variable ProteinLearner::run(ExecutionContext& context)
     return false;
 
   // evaluate
-  if (!predictor->evaluate(context, trainProteins, new ProteinEvaluator(), T("Evaluate on train proteins")) ||
-      !predictor->evaluate(context, validationProteins, new ProteinEvaluator(), T("Evaluate on validation proteins")))
+  ScoreObjectPtr trainScore = predictor->evaluate(context, trainProteins, new ProteinEvaluator(), T("Evaluate on train proteins"));
+  ScoreObjectPtr validationScore = predictor->evaluate(context, validationProteins, new ProteinEvaluator(), T("Evaluate on validation proteins"));
+  if (!trainScore || !validationScore)
     return false;
 
   // save predictions to directory
@@ -66,18 +67,20 @@ Variable ProteinLearner::run(ExecutionContext& context)
 
   // evaluate/save predictions on test proteins
   ContainerPtr testProteins = loadProteinPairs(context, T("test"));
+  ScoreObjectPtr testScore;
   if (testProteins)
   {
     context.informationCallback(String((int)testProteins->getNumElements()) + T(" test proteins"));
-    if (!predictor->evaluate(context, testProteins, new ProteinEvaluator(), T("Evaluate on test proteins")))
+    testScore = predictor->evaluate(context, testProteins, new ProteinEvaluator(), T("Evaluate on test proteins"));
+    if (!testScore)
       return false;
 
     if (predictionDirectory != File::nonexistent)
       savePredictionsToDirectory(context, predictor, testProteins, predictionDirectory.getChildFile(T("test")));
   }
 
-
-  return true;
+  //size_t numFeaturesPerResidue = parameters->createResidueVectorPerception()->getOutputType()->getNumMemberVariables();
+  return new ObjectiveProteinScoreObject(trainScore, validationScore, testScore, 0);//, numFeaturesPerResidue);
 }
 
 ContainerPtr ProteinLearner::loadProteinPairs(ExecutionContext& context, const String& name) const
