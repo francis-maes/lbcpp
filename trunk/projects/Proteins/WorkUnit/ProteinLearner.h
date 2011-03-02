@@ -41,6 +41,7 @@ protected:
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   ContainerPtr loadProteinPairs(ExecutionContext& context, const String& subDirectoryName) const;
   bool savePredictionsToDirectory(ExecutionContext& context, FunctionPtr predictor, ContainerPtr proteinPairs, const File& predictionDirectory) const;
+  ScoreObjectPtr selectScoresFromTargets(EvaluatorPtr evaluator, ScoreObjectPtr scores) const;
 };
 
 }; /* namespace lbcpp */

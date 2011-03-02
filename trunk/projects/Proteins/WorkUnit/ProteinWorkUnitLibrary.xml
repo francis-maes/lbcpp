@@ -69,17 +69,7 @@
     <variable type="File" name="dataDirectory" shortName="d"/>
   </class>
   
-  <!-- ProteinLearner -->  
-  <class name="ProteinScoreObject" base="ScoreObject">
-    <variable type="GenericVector[ScoreObject]" name="scores"/>
-  </class>
-  
-  <class name="ObjectiveProteinScoreObject" base="ScoreObject">
-    <variable type="ScoreObject" name="train"/>
-    <variable type="ScoreObject" name="validation"/>
-    <variable type="ScoreObject" name="test"/>
-    <variable type="PositiveInteger" name="numFeaturesPerResidue"/>
-  </class>
+  <!-- ProteinLearner -->
   
   <class name="ProteinLearner" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
