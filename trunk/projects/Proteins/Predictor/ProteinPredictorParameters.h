@@ -125,6 +125,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<NumericalProteinFeaturesParameters> NumericalProteinFeaturesParametersPtr;
 
+extern ClassPtr numericalProteinFeaturesParametersClass;
+
 ProteinPredictorParametersPtr numericalProteinPredictorParameters(NumericalProteinFeaturesParametersPtr featuresParameters, LearnerParametersPtr learningParameters);
 ProteinPredictorParametersPtr numericalProteinPredictorParameters();
 

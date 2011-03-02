@@ -231,3 +231,4 @@ bool EnumerationDistribution::loadFromString(ExecutionContext& context, const St
 
 bool EnumerationDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
+

@@ -10,12 +10,51 @@
 #define PROTEIN_GRID_EVO_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
+# include <lbcpp/Core/Enumeration.h>
 # include "../../../src/Optimizer/Optimizer/GridEvoOptimizer.h"
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
+# include <lbcpp/Distribution/ContinuousDistribution.h>
 # include "../WorkUnit/ProteinLearner.h"
+# include "../Predictor/ProteinPredictorParameters.h"
 
 namespace lbcpp
 {
+  class ProteinGridEvoOptimizerState : public Object {
+  public:
+    ProteinGridEvoOptimizerState() {
+      distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);
+      //EnumerationPtr enumeration = positiveIntegerEnumerationEnumeration();
+      
+      distributions->setSubDistribution(0, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(1, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(2, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(3, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(4, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(5, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(6, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(7, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(8, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(9, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+      distributions->setSubDistribution(11, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(12, new IntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(13, new IntegerGaussianDistribution(5,1));
+
+
+      //distributions->setSubDistribution(9, new UniformDistribution(0,10));
+      //distributions->setSubDistribution(10, new UniformDistribution(0,10));
+      Variable var = distributions->sample(RandomGenerator::getInstance());
+      std::cout << var.toString() << std::endl;
+    }
+    
+  protected:
+    friend class ProteinGridEvoOptimizerStateClass;
+    
+  private:
+    IndependentMultiVariateDistributionPtr distributions;
+  };
+  typedef ReferenceCountedObjectPtr<ProteinGridEvoOptimizerState> ProteinGridEvoOptimizerStatePtr;
+
   
   class ProteinGridEvoOptimizer : public GridEvoOptimizer
   {
@@ -38,20 +77,9 @@ namespace lbcpp
     }
     
   protected:
-    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {
-      
-      for (int i = 0; i < 5; ++i) {
-        // TODO arnaud : wrap RunWorkUnit in a function
-        WorkUnitPtr wu = new ProteinLearner();
-        wu->parseArguments(context, "-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical((1,3,5,3,5,3,2,3,5,5,True,15,15,50),sgd)\" -t ss3 -n 1 -m 20");
-        wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + String(i) + T(".xml")));
-      }
-      return Variable(0); 
-    }
+    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
     
     friend class ProteinGridEvoOptimizerClass;
-    
   };  
   
 
