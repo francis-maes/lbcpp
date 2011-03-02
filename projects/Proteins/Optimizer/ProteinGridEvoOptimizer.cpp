@@ -11,7 +11,7 @@
 
 Variable ProteinGridEvoOptimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState();
+  ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>());
   /*for (int i = 0; i < 5; ++i) {
     // TODO arnaud : wrap RunWorkUnit in a function
     WorkUnitPtr wu = new ProteinLearner();

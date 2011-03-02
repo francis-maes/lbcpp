@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Variable.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Distribution/Distribution.h>
+# include <algorithm>
 
 namespace lbcpp
 {
@@ -144,6 +145,26 @@ protected:
   
 typedef ReferenceCountedObjectPtr<IntegerGaussianDistribution> IntegerGaussianDistributionPtr;
   
+  
+class PositiveIntegerGaussianDistribution : public IntegerGaussianDistribution
+{
+public:
+  // TODO arnaud complete implementation
+  PositiveIntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : IntegerGaussianDistribution(mean, variance) {}
+  
+  virtual TypePtr getElementsType() const
+    {return positiveIntegerType;}
+  
+  virtual Variable sample(RandomGeneratorPtr random) const
+    {return Variable((int) std::max(0.0, round(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
+  
+  juce_UseDebuggingNewOperator
+  
+protected:  
+  friend class PositiveIntegerGaussianDistributionClass;
+};
+  
+typedef ReferenceCountedObjectPtr<PositiveIntegerGaussianDistribution> PositiveIntegerGaussianDistributionPtr;  
   
 
 extern ClassPtr bernoulliDistributionClass;

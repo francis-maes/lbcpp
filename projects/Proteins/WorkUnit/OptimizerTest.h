@@ -15,6 +15,8 @@
 # include <lbcpp/Optimizer/ObjectiveFunction.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include "../Optimizer/ProteinGridEvoOptimizer.h"
+# include <lbcpp/Distribution/MultiVariateDistribution.h>
+# include "../Predictor/ProteinPredictorParameters.h"
 
 namespace lbcpp
 {
@@ -26,7 +28,25 @@ namespace lbcpp
     virtual Variable run(ExecutionContext& context)
     {
       OptimizerPtr optimizer = new ProteinGridEvoOptimizer();
-      Variable var = optimizer->compute(context, new ObjectiveFunction(), new IndependentMultiVariateDistribution(doubleType));
+      
+      IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+      distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+      distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
+      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
+      
+      
+      Variable var = optimizer->compute(context, new ObjectiveFunction(), distributions);
       return var;
       
     }

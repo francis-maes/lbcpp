@@ -30,6 +30,8 @@
     <variable type="Double" name="variance"/>
   </class>
   
+  <class name="PositiveIntegerGaussianDistribution" base="IntegerGaussianDistribution"/>
+  
   <template name="EnumerationDistribution" base="DiscreteDistribution[enumeration]">
     <parameter name="enumeration" type="EnumValue"/>
 
