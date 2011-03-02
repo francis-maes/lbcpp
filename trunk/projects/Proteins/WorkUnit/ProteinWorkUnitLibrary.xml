@@ -101,6 +101,11 @@
   
   <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/>
   
+  <class name="Save1DProteinTargets" base="WorkUnit">
+    <variable type="File" name="inputProtein" shortName="in"/>
+    <variable type="File" name="outputProtein" shortName="out"/>
+  </class>
+  
   <class name="OptimizerTest" base="WorkUnit"/>
 
 </library>

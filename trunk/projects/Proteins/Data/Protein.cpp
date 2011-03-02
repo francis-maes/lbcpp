@@ -467,7 +467,7 @@ ContainerPtr Protein::computeStructuralAlphabetSequenceFromCAlphaTrace(Cartesian
         bestGroup = (int)j;
       }
     }
-    SparseDoubleVectorPtr value = new SparseDoubleVector(res->getElementsType(), probabilityType);
+    SparseDoubleVectorPtr value = new SparseDoubleVector(structuralAlphabetElementEnumeration, probabilityType);
     value->appendValue(bestGroup, 1.0); 
     res->setElement(i - 2, value);
   }

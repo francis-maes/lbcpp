@@ -138,6 +138,33 @@ public:
   XmlElementPtr aaa;
 };
 
+class Save1DProteinTargets : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!inputProtein.exists() || outputProtein == File::nonexistent)
+      return false;
+
+    ProteinPtr protein = Protein::createFromXml(context, inputProtein);
+    if (!protein)
+      return false;
+
+    protein->getDisorderRegions();
+    protein->getStructuralAlphabetSequence();
+    protein->setTertiaryStructure(TertiaryStructurePtr());
+    protein->saveToFile(context, outputProtein);
+
+    return true;
+  }
+  
+protected:
+  friend class Save1DProteinTargetsClass;
+  
+  File inputProtein;
+  File outputProtein;
+};
+
 #if 1
 class UnknownFromManagerWorkUnit : public WorkUnit
 {
