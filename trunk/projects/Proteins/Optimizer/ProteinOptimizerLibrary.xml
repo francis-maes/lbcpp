@@ -2,5 +2,9 @@
 
 <library name="ProteinOptimizer" directory="Optimizer">
   <class name="ProteinGridEvoOptimizer" base="GridEvoOptimizer"/>
-  <class name="ProteinGridEvoOptimizerState" base="Object"/>
+  
+  <class name="ProteinGridEvoOptimizerState" base="Object">
+    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
+  </class>
+  
 </library>

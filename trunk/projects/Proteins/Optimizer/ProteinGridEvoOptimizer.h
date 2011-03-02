@@ -21,37 +21,18 @@ namespace lbcpp
 {
   class ProteinGridEvoOptimizerState : public Object {
   public:
-    ProteinGridEvoOptimizerState() {
-      distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);
-      //EnumerationPtr enumeration = positiveIntegerEnumerationEnumeration();
-      
-      distributions->setSubDistribution(0, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(1, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(2, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(3, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(4, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(5, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(6, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(7, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(8, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(9, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
-      distributions->setSubDistribution(11, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(12, new IntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(13, new IntegerGaussianDistribution(5,1));
-
-
-      //distributions->setSubDistribution(9, new UniformDistribution(0,10));
-      //distributions->setSubDistribution(10, new UniformDistribution(0,10));
+    ProteinGridEvoOptimizerState()
+      {jassert(false);} // TODO arnaud
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) {
       Variable var = distributions->sample(RandomGenerator::getInstance());
       std::cout << var.toString() << std::endl;
     }
     
   protected:
-    friend class ProteinGridEvoOptimizerStateClass;
-    
-  private:
     IndependentMultiVariateDistributionPtr distributions;
+    
+    friend class ProteinGridEvoOptimizerStateClass;
+
   };
   typedef ReferenceCountedObjectPtr<ProteinGridEvoOptimizerState> ProteinGridEvoOptimizerStatePtr;
 
@@ -69,7 +50,7 @@ namespace lbcpp
         case 0:
           return (TypePtr) objectiveFunctionClass;
         case 1:
-          return (TypePtr) independentMultiVariateDistributionClass(doubleType);
+          return (TypePtr) independentMultiVariateDistributionClass(variableType);
         default:
           jassert(false); // TODO arnaud
           return anyType;
