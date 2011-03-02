@@ -206,34 +206,3 @@ Variable DumbWorkUnit::run(ExecutionContext& context)
   }
   return Variable();
 }
-
-/*
-** ClientWorkUnit
-*/
-
-
-Variable ClientWorkUnit::run(ExecutionContext& context)
-{
-  NetworkClientPtr client = blockingNetworkClient(context);
-  
-  if (!client->startClient(hostName, port))
-  {
-    context.errorCallback(T("ClientWorkUnit::run"), T("Not connected !"));
-    return Variable();
-  }
-  
-  ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(context, client, clientName);
-  interface->sendInterfaceClass();
-  
-  /* Submit jobs */
-  for (size_t i = 0; i < 1; ++i)
-  {
-    NetworkRequestPtr request = new NetworkRequest(context, T("testProject"), clientName, T("LocalGridNode"), new DumbWorkUnit());
-    String res = interface->pushWorkUnit(request);
-    request->setIdentifier(res);
-  }
-  
-  interface->closeCommunication();
-  
-  return Variable();
-}

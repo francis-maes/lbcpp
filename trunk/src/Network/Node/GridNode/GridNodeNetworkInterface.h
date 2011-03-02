@@ -66,7 +66,7 @@ protected:
   {
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     if (!f.exists())
-      return new NetworkResponse(context, identifier);
+      return new NetworkResponse(identifier);
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f);
     return new NetworkResponse(context, identifier, trace);
   }
@@ -103,7 +103,7 @@ protected:
   {
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     if (!f.exists())
-      return new NetworkResponse(context, identifier);
+      return new NetworkResponse(identifier);
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f);
     return new NetworkResponse(context, identifier, trace);
   }

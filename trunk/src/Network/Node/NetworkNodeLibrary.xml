@@ -59,5 +59,11 @@
   <class name="PushWorkUnitNotification" base="ManagerNodeNetworkNotification">
     <variable type="NetworkRequest" name="request"/>
   </class>
+  <class name="IsWorkUnitFinishedNotification" base="ManagerNodeNetworkNotification">
+    <variable type="String" name="identifier"/>
+  </class>
+  <class name="GetExecutionTraceNotification" base="ManagerNodeNetworkNotification">
+    <variable type="String" name="identifier"/>
+  </class>
 
 </library>

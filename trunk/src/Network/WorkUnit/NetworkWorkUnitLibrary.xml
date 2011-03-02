@@ -15,10 +15,11 @@
   </class>
   
   <class name="DumbWorkUnit" base="WorkUnit"/>
-  <class name="ClientWorkUnit" base="WorkUnit">
-    <variable type="String" name="clientName"/>
-    <variable type="String" name="hostName"/>
-    <variable type="PositiveInteger" name="port"/>
+
+  <class name="GetTraceWorkUnit" base="WorkUnit">
+    <variable type="String" name="workUnitIdentifier" shortName="id"/>
+    <variable type="String" name="hostName" shortName="h"/>
+    <variable type="PositiveInteger" name="port" shortName="p"/>
   </class>
 
 </library>

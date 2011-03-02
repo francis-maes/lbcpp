@@ -26,3 +26,21 @@ String ClientManagerNodeNetworkInterface::pushWorkUnit(NetworkRequestPtr request
     context.warningCallback(request->getSource(), T("ClientManagerNodeNetworkInterface::pushWorkUnit"));
   return res;
 }
+
+bool ClientManagerNodeNetworkInterface::isFinished(const String& identifier)
+{
+  client->sendVariable(new IsWorkUnitFinishedNotification(identifier));
+  bool res = false;
+  if (!client->receiveBoolean(10000, res))
+    context.warningCallback(T("ClientManagerNodeNetworkInterface::isFinished"), T("Timeout"));
+  return res;
+}
+
+NetworkResponsePtr ClientManagerNodeNetworkInterface::getExecutionTrace(const String& identifier)
+{
+  client->sendVariable(new GetExecutionTraceNotification(identifier));
+  NetworkResponsePtr res;
+  if (!client->receiveObject<NetworkResponse>(300000, res))
+    context.warningCallback(T("ClientManagerNodeNetworkInterface::getExecutionTrace"), T("Timeout"));
+  return res;
+}

@@ -61,17 +61,57 @@ public:
   virtual Variable run(ExecutionContext& context);
 };
 
-class ClientWorkUnit : public WorkUnit
+class GetTraceWorkUnit : public WorkUnit
 {
 public:
-  ClientWorkUnit() : clientName(T("jbecker-localhost")), hostName(T("monster24.montefiore.ulg.ac.be")), port(1664) {}
+  GetTraceWorkUnit()
+    : hostName(T("monster24.montefiore.ulg.ac.be")), port(1664) {}
 
-  virtual Variable run(ExecutionContext& context);
+  virtual Variable run(ExecutionContext& context)
+  {
+    NetworkClientPtr client = blockingNetworkClient(context);
+    if (!client->startClient(hostName, port))
+    {
+      context.errorCallback(T("GetTraceWorkUnit::run"), T("Not connected !"));
+      return false;
+    }
+    context.informationCallback(hostName, T("Connected !"));
+    
+    ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(context, client, T("Client"));
+    interface->sendInterfaceClass();
+    
+    if (!interface->isFinished(workUnitIdentifier))
+    {
+      context.informationCallback(T("GetTraceWorkUnit::run"), T("The Woek Unit (") + workUnitIdentifier + T(") is not finished !"));
+      return true;
+    }
+    
+    NetworkResponsePtr res = interface->getExecutionTrace(workUnitIdentifier);
+    if (!res)
+    {
+      context.errorCallback(T("GetTraceWorkUnit::run"), T("No NetworkResponse received !"));
+      return false;
+    }
+
+    ExecutionTracePtr trace = res->getExecutionTrace(context);
+    if (!trace)
+    {
+      context.errorCallback(T("GetTraceWorkUnit::run"), T("No ExecutionTrace available ! Maybe due to a crash on the grid."));
+      return false;
+    }
+    
+    File dst = context.getFile(workUnitIdentifier + T(".trace"));
+    trace->saveToFile(context, dst);
+    context.informationCallback(T("The trace has been saved to ") + dst.getFullPathName().quoted());
+    
+    interface->closeCommunication();
+    return true;
+  }
 
 protected:
-  friend class ClientWorkUnitClass;
-
-  String clientName;
+  friend class GetTraceWorkUnitClass;
+  
+  String workUnitIdentifier;
   String hostName;
   size_t port;
 };

@@ -23,6 +23,8 @@ public:
   ManagerNodeNetworkInterface() {}
 
   virtual String pushWorkUnit(NetworkRequestPtr request) = 0;
+  virtual bool isFinished(const String& identifier) = 0;
+  virtual NetworkResponsePtr getExecutionTrace(const String& identifier) = 0;
 };
 
 typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
@@ -35,6 +37,8 @@ public:
   ClientManagerNodeNetworkInterface() {}
 
   virtual String pushWorkUnit(NetworkRequestPtr request);
+  virtual bool isFinished(const String& identifier);
+  virtual NetworkResponsePtr getExecutionTrace(const String& identifier);
 
   /* NetworkInterface */
   virtual void closeCommunication();
@@ -54,6 +58,20 @@ public:
     request->selfGenerateIdentifier();
     fileManager->addRequest(request);
     return request->getIdentifier();
+  }
+
+  virtual bool isFinished(const String& identifier)
+    {return fileManager->getRequest(identifier) == NetworkRequestPtr();} // light test
+
+  virtual NetworkResponsePtr getExecutionTrace(const String& identifier)
+  {
+    juce::OwnedArray<File> results;
+    if (!context.getProjectDirectory().findChildFiles(results, File::findFiles, true, identifier + T(".archive")))
+      return new NetworkResponse(identifier);
+    if (results.size() != 1)
+      context.warningCallback(T("FileSystemManagerNodeNetworkInterface::getExecutionTrace"), T("Many traces found for: ") + identifier);
+    NetworkArchivePtr archive = NetworkArchive::createFromFile(context, *results[0]);
+    return archive->getNetworkResponse();
   }
 
 protected:
