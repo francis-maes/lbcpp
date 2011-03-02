@@ -99,5 +99,7 @@
   </class>
   
   <class name="UnknownFromManagerWorkUnit" base="WorkUnit"/>
+  
+  <class name="OptimizerTest" base="WorkUnit"/>
 
 </library>

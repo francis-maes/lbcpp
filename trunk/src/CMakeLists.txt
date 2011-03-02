@@ -565,6 +565,7 @@ SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
 SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
   Optimizer/Optimizer/IterativeBracketingOptimizer.h
+  Optimizer/Optimizer/GridEvoOptimizer.h
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
