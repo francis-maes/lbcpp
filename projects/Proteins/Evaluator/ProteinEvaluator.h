@@ -36,12 +36,12 @@ protected:
   std::vector<ScoreObjectPtr> scores;
 };
 
-class ObjectiveProteinScoreObject : public ScoreObject
+class ProteinLearnerScoreObject : public ScoreObject
 {
 public:
-  ObjectiveProteinScoreObject(ScoreObjectPtr train, ScoreObjectPtr validation, ScoreObjectPtr test, size_t numFeaturesPerResidue)
+  ProteinLearnerScoreObject(ScoreObjectPtr train, ScoreObjectPtr validation, ScoreObjectPtr test, size_t numFeaturesPerResidue)
     : train(train), validation(validation), test(test), numFeaturesPerResidue(numFeaturesPerResidue) {}
-  ObjectiveProteinScoreObject() {}
+  ProteinLearnerScoreObject() {}
   
   virtual double getScoreToMinimize() const
     {return getValidatinScoreToMinimize();}
@@ -59,7 +59,7 @@ public:
     {return numFeaturesPerResidue;}
   
 protected:
-  friend class ObjectiveProteinScoreObjectClass;
+  friend class ProteinLearnerScoreObjectClass;
 
   ScoreObjectPtr train;
   ScoreObjectPtr validation;

@@ -51,8 +51,10 @@ Variable ProteinLearner::run(ExecutionContext& context)
     return false;
 
   // evaluate
-  ScoreObjectPtr trainScore = predictor->evaluate(context, trainProteins, new ProteinEvaluator(), T("Evaluate on train proteins"));
-  ScoreObjectPtr validationScore = predictor->evaluate(context, validationProteins, new ProteinEvaluator(), T("Evaluate on validation proteins"));
+  EvaluatorPtr trainEvaluator = new ProteinEvaluator();
+  ScoreObjectPtr trainScore = selectScoresFromTargets(trainEvaluator, predictor->evaluate(context, trainProteins, trainEvaluator, T("Evaluate on train proteins")));
+  EvaluatorPtr validationEvaluator = new ProteinEvaluator();
+  ScoreObjectPtr validationScore = selectScoresFromTargets(validationEvaluator, predictor->evaluate(context, validationProteins, validationEvaluator, T("Evaluate on validation proteins")));
   if (!trainScore || !validationScore)
     return false;
 
@@ -71,7 +73,8 @@ Variable ProteinLearner::run(ExecutionContext& context)
   if (testProteins)
   {
     context.informationCallback(String((int)testProteins->getNumElements()) + T(" test proteins"));
-    testScore = predictor->evaluate(context, testProteins, new ProteinEvaluator(), T("Evaluate on test proteins"));
+    EvaluatorPtr testEvaluator = new ProteinEvaluator();
+    testScore = selectScoresFromTargets(testEvaluator, predictor->evaluate(context, testProteins, testEvaluator, T("Evaluate on test proteins")));
     if (!testScore)
       return false;
 
@@ -80,7 +83,7 @@ Variable ProteinLearner::run(ExecutionContext& context)
   }
 
   //size_t numFeaturesPerResidue = parameters->createResidueVectorPerception()->getOutputType()->getNumMemberVariables();
-  return new ObjectiveProteinScoreObject(trainScore, validationScore, testScore, 0);//, numFeaturesPerResidue);
+  return new ProteinLearnerScoreObject(trainScore, validationScore, testScore, 0);//, numFeaturesPerResidue);
 }
 
 ContainerPtr ProteinLearner::loadProteinPairs(ExecutionContext& context, const String& name) const
@@ -141,4 +144,20 @@ FunctionPtr ProteinLearner::createPredictor(ExecutionContext& context, ProteinPr
     }
     return res;
   }
+}
+
+ScoreObjectPtr ProteinLearner::selectScoresFromTargets(EvaluatorPtr evaluator, ScoreObjectPtr scores) const
+{
+  ReferenceCountedObjectPtr<ProteinEvaluator> proteinEvaluator = evaluator.dynamicCast<ProteinEvaluator>();
+  if (!proteinEvaluator || !scores)
+    return ScoreObjectPtr();
+
+  ReferenceCountedObjectPtr<ProteinScoreObject> res = new ProteinScoreObject();
+  for (size_t i = 0; i < proteinTargets.size(); ++i)
+  {
+    ScoreObjectPtr score = proteinEvaluator->getScoreObjectOfTarget(scores, proteinTargets[i]);
+    if (score)
+      res->addScoreObject(score);
+  }
+  return res;
 }
