@@ -15,7 +15,7 @@
 namespace lbcpp
 {
 
-  // Accumulator<T> => DenseDoubleVector<T>
+// Accumulator<T> => DenseDoubleVector<T>
 class AccumulatorGlobalMeanFunction : public Function
 {
 public:
@@ -33,13 +33,13 @@ public:
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    const ObjectVectorPtr& accumulator = input.getObjectAndCast<ObjectVector>();
+    const CumulativeScoreVectorPtr& accumulator = input.getObjectAndCast<CumulativeScoreVector>();
     size_t n = accumulator->getNumElements();
     if (!n)
       return Variable::missingValue(getOutputType());
 
     DenseDoubleVectorPtr res = new DenseDoubleVector(getOutputType());
-    accumulator->get(n - 1).staticCast<DenseDoubleVector>()->addWeightedTo(res, 0, 1.0 / (double)n);
+    accumulator->getElement(n - 1).getObjectAndCast<DenseDoubleVector>()->addWeightedTo(res, 0, 1.0 / (double)n);
     return res;
   }
 };

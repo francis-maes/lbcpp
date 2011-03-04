@@ -36,7 +36,8 @@ public:
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const ObjectVectorPtr& accumulator = inputs[0].getObjectAndCast<ObjectVector>();
+    return Variable::missingValue(getOutputType());
+    const ContainerPtr& accumulator = inputs[0].getObjectAndCast<Container>();
     size_t n = accumulator->getNumElements();
     jassert(windowSize);
 
@@ -48,14 +49,14 @@ public:
 
     DenseDoubleVectorPtr begin, end;
     if (startPosition > 0)
-      begin = accumulator->get(startPosition);
+      begin = accumulator->getElement(startPosition).getObjectAndCast<DenseDoubleVector>();
     else
       numMissingBegin = -startPosition;
     if (endPosition < (int)n)
-      end = accumulator->get(endPosition);
+      end = accumulator->getElement(endPosition).getObjectAndCast<DenseDoubleVector>();
     else
     {
-      end = accumulator->get(n - 1);
+      end = accumulator->getElement(n - 1).getObjectAndCast<DenseDoubleVector>();
       numMissingEnd = endPosition - (int)n + 1;
     }
 
