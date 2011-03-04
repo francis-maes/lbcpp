@@ -18,35 +18,89 @@ namespace lbcpp
 
 extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 
-class CumulativeScoreVector : public ObjectVector
+class CumulativeScoreVector : public Container
 {
 public:
   CumulativeScoreVector(ClassPtr thisClass, EnumerationPtr scores, size_t size)
-    : ObjectVector(thisClass), elementsType(denseDoubleVectorClass(scores))
+    : Container(thisClass), elementsType(denseDoubleVectorClass(scores)), numElements(size)
   {
-    objects->resize(size);
-    (*objects)[0] = new DenseDoubleVector(elementsType, scores->getNumElements(), 0.0);
+    values = new float*[size];
+    numSubElements = scores->getNumElements();
+    if (size > 0)
+    {
+      values[0] = new float[scores->getNumElements()];
+      for (size_t i = 0; i < numSubElements; ++i)
+        values[0][i] = 0.0;
+    }
   }
 
   CumulativeScoreVector() {}
 
+  ~CumulativeScoreVector()
+  {
+    for (size_t i = 0; i < numElements; ++i)
+      delete [] values[i];
+    delete [] values;
+  }
+
   virtual TypePtr getElementsType() const
     {return elementsType;}
 
-  const DenseDoubleVectorPtr& getVector(size_t index) const
-    {return (*objects)[index].staticCast<DenseDoubleVector>();}
-
-  const DenseDoubleVectorPtr& computeStep(size_t i)
+  void computeStep(size_t index)
   {
-    if (i > 0)
-      (*objects)[i] = (*objects)[i - 1]->clone(defaultExecutionContext());
-    return getVector(i);
+    jassert(index < numElements);
+    if (index > 0)
+    {
+      values[index] = new float[numSubElements];
+      for (size_t i = 0; i < numSubElements; ++i)
+        values[index][i] = values[index - 1][i];
+    }
+  }
+
+  void incrementValue(size_t i, size_t j, double value)
+  {
+    jassert(i < numElements && j < numSubElements);
+    values[i][j] += (float)value;
+  }
+  
+  double getValue(size_t i, size_t j)
+  {
+    jassert(i < numElements && j < numSubElements);
+    return (double)values[i][j];
+  }
+
+  size_t getNumElements(size_t index) const
+    {return numSubElements;}
+
+  /* Container */
+  virtual size_t getNumElements() const
+    {return numElements;}
+
+  virtual Variable getElement(size_t index) const
+  {
+    jassert(index < numElements);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(elementsType, numSubElements);
+    for (size_t i = 0; i < numSubElements; ++i)
+      res->setValue(i, values[index][i]);
+    return res;
+  }
+
+  virtual void setElement(size_t index, const Variable& value)
+  {
+    jassert(index < numElements);
+    DenseDoubleVectorPtr res = value.dynamicCast<DenseDoubleVector>();
+    jassert(res);
+    for (size_t i = 0; i < numSubElements; ++i)
+      values[index][i] = res->getValue(i);
   }
 
   lbcpp_UseDebuggingNewOperator
 
 private:
   TypePtr elementsType;
+  size_t numElements;
+  size_t numSubElements;
+  float** values;
 };
 
 typedef ReferenceCountedObjectPtr<CumulativeScoreVector> CumulativeScoreVectorPtr;
@@ -100,8 +154,8 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      const DenseDoubleVectorPtr& scores = res->computeStep(i);
-      scores->incrementValue(container->getElement(i).getInteger(), 1.0);
+      res->computeStep(i);
+      res->incrementValue(i, container->getElement(i).getInteger(), 1.0);
     }
   }
 };
@@ -129,15 +183,14 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      const DenseDoubleVectorPtr& scores = res->computeStep(i);
-      
+      res->computeStep(i);
       EnumerationDistributionPtr distribution = container->getElement(i).getObjectAndCast<EnumerationDistribution>();
       jassert(distribution);
       size_t enumSize = inputEnumeration->getNumElements();
       for (size_t j = 0; j < enumSize; ++j)
-        scores->incrementValue(j, distribution->computeProbability(Variable(j, inputEnumeration)));
-      scores->incrementValue(enumSize, distribution->computeEntropy());
-      scores->incrementValue(enumSize + 1, distribution->computeProbability(Variable(enumSize, inputEnumeration)));
+        res->incrementValue(i, j, distribution->computeProbability(Variable(j, inputEnumeration)));
+      res->incrementValue(i, enumSize, distribution->computeEntropy());
+      res->incrementValue(i, enumSize + 1, distribution->computeProbability(Variable(enumSize, inputEnumeration)));
     }
   }
 
@@ -157,12 +210,12 @@ public:
     size_t n = container->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
-      const DenseDoubleVectorPtr& scores = res->computeStep(i);
+      res->computeStep(i);
       Variable element = container->getElement(i);
       if (element.exists())
-        scores->incrementValue(0, element.getDouble());
+        res->incrementValue(i, 0, element.getDouble());
       else
-        scores->incrementValue(1, 1.0);
+        res->incrementValue(i, 1, 1.0);
     }
   }
 };
@@ -186,11 +239,16 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       DoubleVectorPtr vector = container->getElement(i).getObjectAndCast<DoubleVector>();
-      DenseDoubleVectorPtr scores = res->computeStep(i);
+      res->computeStep(i);
+
       if (vector)
-        vector->addTo(scores);
+      {
+        size_t n = vector->getNumElements();
+        for (size_t j = 0; j < n; ++j)
+          res->incrementValue(i, j, vector->getElement(j).getDouble());
+      }
       else
-        scores->incrementValue(scores->getNumElements() - 1, 1.0); // missing
+        res->incrementValue(i, res->getNumElements(i) - 1, 1.0); // missing
     }
   }
 };
