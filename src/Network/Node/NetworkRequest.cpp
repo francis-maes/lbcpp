@@ -35,3 +35,4 @@ NetworkRequest::NetworkRequest(ExecutionContext& context,
 {
   this->workUnit->saveObject(context, workUnit);
 }
+

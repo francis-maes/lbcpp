@@ -189,9 +189,9 @@ public:
       isAllDoubleVector &= inputVariables[i]->getType()->inheritsFrom(doubleVectorClass());
     }
     if (isAllDouble)
-      return new ConcatenateDoubleFeatureGenerator();
+      return new ConcatenateDoubleFeatureGenerator(lazy);
     if (isAllDoubleVector)
-      return new ConcatenateDoubleVectorFeatureGenerator();
+      return new ConcatenateDoubleVectorFeatureGenerator(lazy);
     return FunctionPtr();
   }
 

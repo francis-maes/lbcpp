@@ -67,7 +67,10 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
       else if (stepType == functionStep)
         var = &state[stepArgument];
       else
+      {
         jassert(false);
+        var = NULL;
+      }
 
       const juce::int64* vari = (const juce::int64* )var;
       *ptr++ = vari[0];
