@@ -12,7 +12,7 @@
 # include "MultiSequenceComponent.h"
 # include <lbcpp/UserInterface/ObjectEditor.h>
 # include "../Data/Protein.h"
-# include "../Inference/ProteinInferenceFactory.h"
+//# include "../Inference/ProteinInferenceFactory.h"
 
 namespace lbcpp
 {

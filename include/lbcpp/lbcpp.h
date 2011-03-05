@@ -73,7 +73,7 @@
 # include "Function/Predicate.h"
 # include "Function/IterationFunction.h"
 # include "Function/StoppingCriterion.h"
-# include "Function/OldEvaluator.h"
+# include "Function/Evaluator.h"
 
 # include "FeatureGenerator/FeatureGenerator.h"
 
@@ -86,23 +86,5 @@
 #ifdef LBCPP_USER_INTERFACE
 # include "UserInterface/UserInterfaceManager.h"
 #endif
-
-// Old --> 
-# include "Perception/Perception.h"
-# include "Perception/PerceptionRewriter.h"
-
-# include "Inference/Inference.h"
-# include "Inference/InferenceResultCache.h"
-# include "Inference/InferenceCallback.h"
-# include "Inference/DecoratorInference.h"
-# include "Inference/SequentialInference.h"
-# include "Inference/ParallelInference.h"
-# include "Inference/InferenceBatchLearner.h"
-# include "Inference/InferenceOnlineLearner.h"
-
-# include "NumericalLearning/NumericalLearning.h"
-
-# include "DecisionTree/DecisionTree.h"
-//  ----
 
 #endif // !LBCPP_LBCPP_H_

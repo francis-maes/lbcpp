@@ -14,6 +14,8 @@
 namespace lbcpp
 {
 
+#if 0 // broken
+
 class PerceptionComponent : public TabbedVariableSelectorComponent
 {
 public:
@@ -94,6 +96,8 @@ public:
     perception = factory.createProteinPerception(String::empty);
   }
 };
+
+#endif // 0
 
 }; /* namespace lbcpp */
 

@@ -33,9 +33,10 @@ public:
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    std::cout << "." << std::flush;
+    jassert(false); // broken
+/*    std::cout << "." << std::flush;
     Variable res = inference->computeFunction(context, input);
-    *o << res.toShortString() << "\n";
+    *o << res.toShortString() << "\n";*/
     return input;
   }
 

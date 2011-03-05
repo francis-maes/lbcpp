@@ -40,7 +40,7 @@ private:
   ContainerPtr testingData;
   
   bool loadData(ExecutionContext& context);
-  InferenceOnlineLearnerPtr createOnlineLearner() const;
+//  InferenceOnlineLearnerPtr createOnlineLearner() const;
 };
 
 };

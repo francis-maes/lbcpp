@@ -15,10 +15,4 @@
   <import name="Optimizer"/>
   <import name="UserInterfaceComponent" ifdef="LBCPP_USER_INTERFACE"/>
 
-  <!-- old -->
-  <import name="Perception"/>
-  <import name="Inference"/>
-  <import name="OldNumericalLearning"/>
-  <import name="DecisionTree"/>
-
 </library>

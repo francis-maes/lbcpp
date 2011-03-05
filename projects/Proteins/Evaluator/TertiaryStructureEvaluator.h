@@ -9,12 +9,13 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 # define LBCPP_PROTEIN_EVALUATOR_TERTIARY_STRUCTURE_H_
 
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
 {
 
+#if 0 // broken
 class TertiaryStructureEvaluator : public OldEvaluator
 {
 public:
@@ -51,6 +52,7 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<TertiaryStructureEvaluator> TertiaryStructureEvaluatorPtr;
+#endif // 0
 
 }; /* namespace lbcpp */
 

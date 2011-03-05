@@ -41,6 +41,7 @@ protected:
   File directory;
 };
 
+#if 0 // broken
 // input -> predicted output
 class PredictFunction : public Function
 {
@@ -60,6 +61,8 @@ public:
 protected:
   InferencePtr inference;
 };
+#endif // 0
+
 
 // Protein -> Protein (with input data only)
 class InputProteinFunction : public Function
@@ -92,7 +95,7 @@ Variable ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
     context.errorCallback(T("ProteinInferenceEvaluatorWorkUnit::run"), getUsageString());
     return false;
   }
-
+#if 0
   InferencePtr inference = Inference::createFromFile(context, inferenceFile);
   if (!inference)
   {
@@ -108,6 +111,8 @@ Variable ProteinInferenceEvaluatorWorkUnit::run(ExecutionContext& context)
 
   data->apply(context, FunctionPtr(new PredictFunction(inference)))
       ->apply(context, FunctionPtr(new SaveToFileFunction(outputDirectory)), Container::parallelApply);
+#endif // 0
 
+  jassert(false); // broken
   return true;
 }

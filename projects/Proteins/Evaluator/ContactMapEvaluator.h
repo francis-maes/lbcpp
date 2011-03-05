@@ -9,12 +9,12 @@
 #ifndef LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 # define LBCPP_PROTEIN_EVALUATOR_CONTACT_MAP_H_
 
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
 {
-
+/*
 class ContactMapEvaluator : public OldEvaluator
 {
 public:
@@ -72,7 +72,7 @@ protected:
   OldEvaluatorPtr classificationEvaluator;
   OldEvaluatorPtr rocEvaluator;
   size_t minimumDistance;
-};
+};*/
 
 }; /* namespace lbcpp */
 

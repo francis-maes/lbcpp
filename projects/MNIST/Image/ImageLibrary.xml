@@ -51,10 +51,11 @@
       <variable type="PositiveInteger" name="blockSize"/>
     </class>
     
-    <!-- Perception -->
+    <!-- Perception 
     <class name="ImageFunctionToFlattenPerception" base="Perception">
       <constructor arguments="ImageFunctionPtr function"/>
       <variable type="ImageFunction" name="function"/>
     </class>
+    -->
    
 </library>

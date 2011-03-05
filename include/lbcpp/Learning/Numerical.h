@@ -15,7 +15,6 @@
 # include "../Function/StoppingCriterion.h"
 # include "../Function/IterationFunction.h"
 # include "../Function/Evaluator.h"
-# include "../NumericalLearning/LossFunctions.h"
 
 namespace lbcpp
 {

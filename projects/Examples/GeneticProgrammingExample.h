@@ -1,6 +1,6 @@
 
 # include <lbcpp/Core/Function.h>
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Data/RandomGenerator.h>
 
@@ -207,11 +207,12 @@ Variable makePredictionTree(ExecutionContext& context, const GeneticTreePtr& tre
 
 double evaluateTree(ExecutionContext& context, const GeneticTreePtr& tree, const std::vector<std::vector<double> >& inputData, const std::vector<double>& outputData)
 {
-  jassertfalse;
-  OldEvaluatorPtr evaluator = OldEvaluatorPtr(); // FIXME
+  jassertfalse; // broken
+/*  EvaluatorPtr evaluator = EvaluatorPtr();
   for (size_t i = 0; i < inputData.size(); ++i)
     evaluator->addPrediction(context, makePredictionTree(context, tree, 0, inputData[i]), Variable(outputData[i], doubleType));
-  return evaluator->getDefaultScore();
+  return evaluator->getDefaultScore();*/
+  return 0.0;
 }
 
 void inducePointMutation(RandomGeneratorPtr& random, size_t numInputVariables, const std::vector<FunctionPtr>& functions, const GeneticTreePtr& tree, size_t node, double probOfMutation)

@@ -8,7 +8,6 @@
 
 #include <lbcpp/lbcpp.h>
 #include "ProteinInferenceEvaluatorWorkUnit.h"
-#include "Inference/ProteinInference.h"
 
 using namespace lbcpp;
 
@@ -16,6 +15,8 @@ namespace lbcpp { extern LibraryPtr proteinLibrary; };
 
 ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory, size_t maxCount = 0)
 {
+  jassert(false); // broken
+#if 0
   if (fileOrDirectory.isDirectory())
   {
     ContainerPtr res = directoryFileStream(context, fileOrDirectory, T("*.xml"))
@@ -33,7 +34,7 @@ ContainerPtr loadProteins(ExecutionContext& context, const File& fileOrDirectory
     if (res->getNumElements())
       return res;
   }
-
+#endif // 0
   return ContainerPtr();
 }
 

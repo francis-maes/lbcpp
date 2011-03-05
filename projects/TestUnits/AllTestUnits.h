@@ -9,6 +9,7 @@
 # define LBCPP_TEST_UNIT_ALL_H_
 
 # include "ExtraTreeTestUnit.h"
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {
@@ -18,7 +19,7 @@ class AllTestUnits : public CompositeWorkUnit
 public:
   AllTestUnits() : CompositeWorkUnit(T("AllTestUnits"))
   {
-    workUnits->append(new ExtraTreeTestUnit());
+    //workUnits->append(new ExtraTreeTestUnit());
   }
 };
 

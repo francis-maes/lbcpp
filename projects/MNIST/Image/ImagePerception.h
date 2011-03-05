@@ -6,6 +6,8 @@
 namespace lbcpp
 {
 
+#if 0
+  // broken 
 class ImageFunctionToFlattenPerception : public Perception
 {
 public:
@@ -48,6 +50,8 @@ protected:
   
   ImageFunctionPtr function;
 };
+
+#endif // 0
 
 };
 

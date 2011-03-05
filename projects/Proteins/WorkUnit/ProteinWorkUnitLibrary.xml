@@ -56,21 +56,7 @@
     <variable type="File" name="outputFile" description="The Protein (resp. PDB) output file" shortName="o"/>
   </class>
 
-  <!-- Previous ProteinLearner -->
-  <class name="MyLearningParameters" base="InferenceOnlineLearnerParameters">
-    <variable type="Double" name="logLearningRate" shortName="a"/>
-    <variable type="Double" name="logLearningRateDecrease" shortName="b"/>
-    <variable type="Double" name="logRegularizer" shortName="r"/>
-  </class>
-
-<!--  <class name="AutoTuneSandBox" base="WorkUnit"/> -->
-
-  <class name="ComputeProteinFeaturesSandBox" base="WorkUnit">
-    <variable type="File" name="dataDirectory" shortName="d"/>
-  </class>
-  
   <!-- ProteinLearner -->
-  
   <class name="ProteinLearner" base="WorkUnit">
     <variable type="File" name="supervisionDirectory" shortName="s"/>
     <variable type="File" name="inputDirectory" shortName="i"/>
