@@ -5,10 +5,9 @@
  `------------------------------------------/                                 |
                                 |                                             |
                                 `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ProteinInferenceEvaluatorWorkUnit.h"
 #include "../Data/Protein.h"
-
 using namespace lbcpp;
 
 // Variable -> File

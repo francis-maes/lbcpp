@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/Execution/ExecutionStack.h>
 #include <lbcpp/Execution/WorkUnit.h>

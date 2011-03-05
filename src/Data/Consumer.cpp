@@ -6,6 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
+#include "precompiled.h"
 #include <lbcpp/Data/Consumer.h>
 #include <lbcpp/Data/Stream.h>
 #include <lbcpp/Core/Container.h>

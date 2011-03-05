@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Data/Stream.h>
 #include "GridNodeNetworkInterface.h"
 #include "GridNodeNetworkNotification.h"

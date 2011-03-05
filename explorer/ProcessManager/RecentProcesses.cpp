@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "RecentProcesses.h"
 using namespace lbcpp;
 

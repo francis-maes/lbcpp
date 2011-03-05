@@ -5,7 +5,7 @@
  `------------------------------------------/                                |
                                 |                                            |
                                 `-------------------------------------------*/
-
+#include "precompiled.h"
 #include "SplitScoringFunction.h"
 #include <lbcpp/Distribution/DistributionBuilder.h>
 

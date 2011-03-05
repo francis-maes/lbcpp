@@ -5,9 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "DecisionTreeExampleVector.h"
-
 using namespace lbcpp;
 
 bool DecisionTreeExampleVector::isAttributeConstant(size_t variableIndex) const

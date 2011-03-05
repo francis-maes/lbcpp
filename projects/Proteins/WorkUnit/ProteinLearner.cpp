@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "ProteinLearner.h"
 #include "../Evaluator/ProteinEvaluator.h"
 using namespace lbcpp;

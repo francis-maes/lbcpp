@@ -5,13 +5,11 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "../Node/NodeNetworkNotification.h"
 #include "../Node/NetworkRequest.h"
 #include "NetworkWorkUnit.h"
-
 #include <lbcpp/Network/NetworkServer.h>
-
 using namespace lbcpp;
 
 /*

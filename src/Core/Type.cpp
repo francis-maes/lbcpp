@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/XmlSerialisation.h>

@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Core/CompositeFunction.h>
 #include <lbcpp/Learning/BatchLearner.h>
 using namespace lbcpp;

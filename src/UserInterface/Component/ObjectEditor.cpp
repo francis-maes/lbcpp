@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/UserInterface/ObjectEditor.h>
 using namespace lbcpp;
 

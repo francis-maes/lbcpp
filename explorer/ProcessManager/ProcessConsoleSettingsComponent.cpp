@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ProcessManagerComponent.h"
 #include "../ExplorerConfiguration.h"
 using namespace lbcpp;

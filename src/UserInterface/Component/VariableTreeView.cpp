@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "VariableTreeView.h"
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Data/DoubleVector.h>

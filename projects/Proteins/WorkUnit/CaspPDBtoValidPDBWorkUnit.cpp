@@ -5,9 +5,9 @@
  `------------------------------------------/                                 |
                                 |                                             |
                                 `--------------------------------------------*/
+#include "precompiled.h"
 #include "CaspPDBtoValidPDBWorkUnit.h"
 #include "../Data/Formats/FASTAFileParser.h"
-
 using namespace lbcpp;
 
 Variable CaspPDBtoValidPDBWorkUnit::run(ExecutionContext& context)

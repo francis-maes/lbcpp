@@ -5,9 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Network/NetworkServer.h>
-
 using namespace lbcpp;
 
 namespace lbcpp

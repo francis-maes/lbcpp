@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "ProcessManagerComponent.h"
 #include "NewProcessDialogWindow.h"
 #include "../Components/ContainerSelectorComponent.h"

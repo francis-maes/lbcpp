@@ -5,9 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "NetworkRequest.h"
-
 using namespace lbcpp;
 
 /*

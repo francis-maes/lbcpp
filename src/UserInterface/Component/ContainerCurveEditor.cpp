@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Function/Evaluator.h>

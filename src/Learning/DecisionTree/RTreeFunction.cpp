@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "RTreeFunction.h"
 #include "RTreeBatchLearner.h"
 #include <lbcpp/Core/ReferenceCountedObject.h>

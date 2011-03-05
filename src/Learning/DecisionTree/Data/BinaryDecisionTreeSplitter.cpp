@@ -2,9 +2,10 @@
  | Filename: BinaryDecisionTreeSplitter.cpp| BinaryDecisionTreeSplitter      |
  | Author  : Julien Becker                 |                                 |
  | Started : 25/11/2010 14:00              |                                 |
- `------------------------------------------/                                |
+ `-----------------------------------------/                                 |
                                 |                                            |
                                 `-------------------------------------------*/
+#include "precompiled.h"
 #include "BinaryDecisionTreeSplitter.h"
 using namespace lbcpp;
 

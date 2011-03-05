@@ -5,10 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Network/NetworkClient.h>
 #include <lbcpp/Core/XmlSerialisation.h>
-
 using namespace lbcpp;
 
 /** NetworkClient **/

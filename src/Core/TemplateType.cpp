@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Core/TemplateType.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Vector.h>

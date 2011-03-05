@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Learning/Numerical.h>
 #include <lbcpp/Learning/LossFunction.h>
 using namespace lbcpp;

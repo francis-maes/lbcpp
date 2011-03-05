@@ -5,9 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "BinaryDecisionTree.h"
-
 using namespace lbcpp;
 
 Variable BinaryDecisionTree::makePrediction(ExecutionContext& context, const Variable& input, size_t nodeIndex) const

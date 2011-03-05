@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Core/Enumeration.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Vector.h>

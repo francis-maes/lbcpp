@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Type.h>
 #include <lbcpp/Core/Class.h>

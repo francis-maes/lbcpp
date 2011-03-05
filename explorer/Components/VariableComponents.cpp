@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "VariableProxyComponent.h"
 #include "ContainerSelectorComponent.h"
 #include "StringComponent.h"

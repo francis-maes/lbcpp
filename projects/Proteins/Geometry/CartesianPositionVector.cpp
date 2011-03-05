@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "CartesianPositionVector.h"
 #include <lbcpp/Core/XmlSerialisation.h>
 using namespace lbcpp;

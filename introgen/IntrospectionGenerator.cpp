@@ -119,6 +119,7 @@ protected:
     // header
     ostr << "/* ====== Introspection for file '" << fileName << "', generated on "
       << Time::getCurrentTime().toString(true, true, false) << " ====== */";
+    writeLine(T("#include \"precompiled.h\""));
     writeLine(T("#include <lbcpp/Core/Variable.h>"));
     writeLine(T("#include <lbcpp/Core/Library.h>"));
     writeLine(T("#include <lbcpp/library.h>"));

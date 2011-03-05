@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Learning/LossFunction.h>
 #include <lbcpp/Learning/Numerical.h> // for convertSupervisionVariableToBoolean
 #include <lbcpp/Distribution/Distribution.h>

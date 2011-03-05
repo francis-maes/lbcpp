@@ -5,8 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "LibSVMDataParser.h"
-
 using namespace lbcpp;
 
 // FIXME: Duplicate with Stream.cpp ! This function must be incorporated into String class, no ?

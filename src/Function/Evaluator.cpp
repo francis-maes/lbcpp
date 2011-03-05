@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Function/Evaluator.h>
 #include <lbcpp/Execution/WorkUnit.h>
 using namespace lbcpp;

@@ -5,12 +5,11 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "CompileProteinsWorkUnit.h"
 #include "../Data/Protein.h"
 #include "../Data/Formats/PSSMFileParser.h"
 #include "../Data/Formats/DSSPFileParser.h"
-
 using namespace lbcpp;
 
 bool loadPSSMFile(ProteinPtr protein, const File& pssmFile, ExecutionContext& context)

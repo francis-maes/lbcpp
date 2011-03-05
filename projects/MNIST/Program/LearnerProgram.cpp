@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/lbcpp.h>
 #include "LearnerProgram.h"
 #include "../Image/Image.h"

@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Distribution/ContinuousDistribution.h>
 using namespace lbcpp;

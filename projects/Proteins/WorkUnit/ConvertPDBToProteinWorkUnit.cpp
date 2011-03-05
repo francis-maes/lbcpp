@@ -5,10 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ConvertPDBToProteinWorkUnit.h"
 #include "../Data/Protein.h"
-
 using namespace lbcpp;
 
 bool convertPDBToProtein(ExecutionContext& context, const File& inputFile, const File& outputFile)

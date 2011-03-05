@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Execution/ExecutionCallback.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include "Callback/ExecutionNotifications.h"
