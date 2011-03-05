@@ -51,6 +51,7 @@ public:
   Variable(const File& fileValue, TypePtr type = fileType);
   Variable(const ObjectPtr& object);
   template<class T> Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType = nilType);
+  Variable(Object* object, TypePtr type);
   Variable(Object* object);
   Variable(const Variable& other);
   Variable();

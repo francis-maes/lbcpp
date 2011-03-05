@@ -48,8 +48,8 @@ extern OnlineLearnerPtr lookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr 
 class LookAheadTreeSearchFunction : public SimpleUnaryFunction
 {
 public:
-  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, double discount, size_t maxSearchNodes)
-    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), discount(discount), maxSearchNodes(maxSearchNodes)
+  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, double discount, size_t maxSearchNodes, size_t beamSize)
+    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
   {
    
   }
@@ -94,15 +94,15 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
   {
-    SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, initialState);
+    SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, beamSize, initialState);
     searchSpace->reserveNodes(2 * maxSearchNodes);
 
     for (size_t j = 0; j < maxSearchNodes; ++j)
     {
-      if (RandomGenerator::getInstance()->sampleBool(0.1))
-        searchSpace->exploreRandomNode(context);
-      else
-        searchSpace->exploreBestNode(context);
+      //if (RandomGenerator::getInstance()->sampleBool(0.1))
+      //  searchSpace->exploreRandomNode(context);
+      //else
+      searchSpace->exploreBestNode(context);
     }
     return searchSpace;
   }
@@ -125,6 +125,7 @@ protected:
   StochasticGDParametersPtr learnerParameters;
   double discount;
   size_t maxSearchNodes;
+  size_t beamSize;
 };
 
 typedef ReferenceCountedObjectPtr<LookAheadTreeSearchFunction> LookAheadTreeSearchFunctionPtr;

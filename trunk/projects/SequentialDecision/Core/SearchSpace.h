@@ -146,8 +146,8 @@ FunctionPtr optimisticPlanningSearchHeuristic(double discount);
 class SortedSearchSpace : public Object
 {
 public:
-  SortedSearchSpace(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, const Variable& initialState);
-  SortedSearchSpace() {}
+  SortedSearchSpace(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, size_t beamSize, const Variable& initialState);
+  SortedSearchSpace() : beamSize(0) {}
 
   void reserveNodes(size_t size)
     {nodes.reserve(size);}
@@ -198,7 +198,12 @@ private:
   FunctionPtr heuristic;
   double discount;
   std::vector<SearchSpaceNodePtr> nodes;
+  
+
+  size_t beamSize;
   std::multimap<double, size_t> candidates;
+  double worstScore;
+
   std::vector<size_t> openedNodes;
 };
 

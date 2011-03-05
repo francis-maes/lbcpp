@@ -59,6 +59,9 @@ inline Variable::Variable(const File& fileValue, TypePtr type)
 inline Variable::Variable(const ObjectPtr& object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
+inline Variable::Variable(Object* object, TypePtr type)
+  : type(type), value(object) {jassert(type);}
+
 inline Variable::Variable(Object* object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 

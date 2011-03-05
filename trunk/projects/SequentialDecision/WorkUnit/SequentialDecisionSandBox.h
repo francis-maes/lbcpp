@@ -96,7 +96,7 @@ public:
 class SequentialDecisionSandBox : public WorkUnit
 {
 public:
-  SequentialDecisionSandBox() : numInitialStates(1000), minDepth(2), maxDepth(18), maxLearningIterations(100), discount(0.9) {}
+  SequentialDecisionSandBox() : numInitialStates(1000), maxSearchNodes(100000), beamSize(10000), maxLearningIterations(100), discount(0.9) {}
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -117,16 +117,28 @@ public:
     ContainerPtr trainingStates = sampleInitialStatesFunction->compute(context, numInitialStates, random).getObjectAndCast<Container>();
     ContainerPtr testingStates = sampleInitialStatesFunction->compute(context, numInitialStates, random).getObjectAndCast<Container>();
 
+    /*
     for (size_t depth = minDepth; depth <= maxDepth; ++depth)
     {
       context.enterScope(T("Computing scores for depth = ") + String((int)depth));
       runAtDepth(context, depth, problem, trainingStates, testingStates, discount);
       context.leaveScope(true);
-    }
+    }*/
+
+    FunctionPtr href = optimisticPlanningSearchHeuristic(discount);
+    FunctionPtr h1 = learnHeuristic(context, problem, href, trainingStates, testingStates, discount);
 
     return true;
   }
 
+  FunctionPtr learnHeuristic(ExecutionContext& context, SequentialDecisionProblemPtr problem, FunctionPtr href, const ContainerPtr& trainingStates, const ContainerPtr& testingStates, double discount) const
+  {
+    evaluate(context, T("href-train"), href, trainingStates);
+    evaluate(context, T("href-test"), href, testingStates);
+    return FunctionPtr();
+  }
+
+  /*
   bool runAtDepth(ExecutionContext& context, size_t depth, SequentialDecisionProblemPtr problem, const ContainerPtr& trainingStates, const ContainerPtr& testingStates, double discount) const
   {
     context.resultCallback(T("depth"), depth);
@@ -147,12 +159,12 @@ public:
 
     trainAndEvaluate(context, T("baseline"), parameters, maxSearchNodes, trainingStates, testingStates);
     return true;
-  }
+  }*/
 
 protected:
-  bool evaluate(ExecutionContext& context, const String& heuristicName, FunctionPtr heuristic, size_t maxSearchNodes, ContainerPtr initialStates) const
+  bool evaluate(ExecutionContext& context, const String& heuristicName, FunctionPtr heuristic, ContainerPtr initialStates) const
   {
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, LearnerParametersPtr(), discount, maxSearchNodes);
+    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, LearnerParametersPtr(), discount, maxSearchNodes, beamSize);
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
       return false;
 
@@ -165,21 +177,21 @@ protected:
     return true;
   }
 
-  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
     parameters->setEvaluator(new SearchSpaceEvaluator());
     FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
-    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes);
+    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes, beamSize);
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
       return FunctionPtr();
     return lookAHeadSearch->getHeuristic();
   }
 
-  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, size_t maxSearchNodes, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
-    FunctionPtr heuristic = train(context, name, parameters, maxSearchNodes, trainingStates, testingStates);
-    return heuristic && evaluate(context, name + T("-train"), heuristic, maxSearchNodes, trainingStates) 
-        && evaluate(context, name + T("-test"), heuristic, maxSearchNodes, testingStates);
+    FunctionPtr heuristic = train(context, name, parameters, trainingStates, testingStates);
+    return heuristic && evaluate(context, name + T("-train"), heuristic, trainingStates) 
+        && evaluate(context, name + T("-test"), heuristic, testingStates);
   }
 
 private:
@@ -189,6 +201,8 @@ private:
   RankingLossFunctionPtr rankingLoss;
 
   size_t numInitialStates;
+  size_t maxSearchNodes;
+  size_t beamSize;
   size_t minDepth;
   size_t maxDepth;
   size_t maxLearningIterations;

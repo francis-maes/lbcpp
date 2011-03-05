@@ -42,6 +42,7 @@
     <variable type="Function" name="heuristic"/>
     <variable type="Double" name="discount"/>
     <variable type="PositiveInteger" name="maxSearchNodes"/>
+    <variable type="PositiveInteger" name="beamSize"/>
   </class>
 
   <class name="LookAheadTreeSearchOnlineLearner" base="OnlineLearner">
