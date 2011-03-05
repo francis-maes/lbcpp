@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_HEURISTIC_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_HEURISTIC_H_
 
-# include "SearchSpace.h"
+# include "SearchTree.h"
 
 namespace lbcpp
 {
@@ -20,7 +20,7 @@ public:
   GreedySearchHeuristic(double discount = 1.0)
     : discount(discount) {}
 
-  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  virtual double computeHeuristic(const SearchTreeNodePtr& node) const
     {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0);}
 
   virtual String toShortString() const
@@ -35,14 +35,14 @@ protected:
 class MaxReturnSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
-  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  virtual double computeHeuristic(const SearchTreeNodePtr& node) const
     {return node->getCurrentReturn();}
 };
 
 class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
-  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  virtual double computeHeuristic(const SearchTreeNodePtr& node) const
     {return -log10(1.0 + (double)node->getDepth());}
 };
 
@@ -55,7 +55,7 @@ public:
   virtual String toShortString() const
     {return T("optimistic(") + String(discount) + T(")");}
 
-  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  virtual double computeHeuristic(const SearchTreeNodePtr& node) const
     {return node->getCurrentReturn() + pow(discount, (double)node->getDepth()) / (1.0 - discount);}
 
 private:
@@ -73,13 +73,13 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!heuristic1->initialize(context, (TypePtr)searchSpaceNodeClass) ||
-        !heuristic2->initialize(context, (TypePtr)searchSpaceNodeClass))
+    if (!heuristic1->initialize(context, (TypePtr)searchTreeNodeClass) ||
+        !heuristic2->initialize(context, (TypePtr)searchTreeNodeClass))
       return TypePtr();
     return SimpleSearchHeuristic::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 
-  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  virtual double computeHeuristic(const SearchTreeNodePtr& node) const
   {
     double h1 = heuristic1->compute(defaultExecutionContext(), node).getDouble();
     double h2 = heuristic2->compute(defaultExecutionContext(), node).getDouble();

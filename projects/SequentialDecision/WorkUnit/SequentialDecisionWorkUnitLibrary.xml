@@ -2,12 +2,10 @@
 
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
-  <class name="SearchSpaceNodeIndexFeatureGenerator" base="FeatureGenerator">
-    <variable type="PositiveInteger" name="maxSearchNodes"/>
-  </class>
+  <class name="SearchTreeNodeIndexFeatureGenerator" base="FeatureGenerator"/>
   
-  <class name="HeuristicSearchSpaceNodeFeaturesFunction" base="CompositeFunction"/>
-  <class name="GenericClosedSearchSpaceNodeFeaturesFunction" base="CompositeFunction"/>
+  <class name="HeuristicSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
+  <class name="GenericClosedSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
   <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>
 
   <class name="SequentialDecisionSandBox" base="WorkUnit">
@@ -17,7 +15,7 @@
     <variable type="PositiveInteger" name="maxSearchNodes" shortName="m"/>
     <variable type="PositiveInteger" name="beamSize" shortName="b"/>
     <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
-    <variable type="Double" name="discount" shortName="d"/>
+    <variable type="PositiveInteger" name="numPasses" shortName="N"/>
   </class>
   
-</library>
+ </library>

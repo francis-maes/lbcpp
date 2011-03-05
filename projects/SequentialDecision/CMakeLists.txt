@@ -12,12 +12,15 @@ GENERATE_INTROSPECTION_CODE(SequentialDecisionLibrary.xml SequentialDecisionLibr
 SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
   Core/SequentialDecisionProblem.h
   Core/SequentialDecisionProblem.cpp
-  Core/SearchSpace.h
-  Core/SearchSpace.cpp
+  Core/Policy.h
+  Core/SearchTree.h
+  Core/SearchTreeNode.h
+  Core/SearchTree.cpp
   Core/SearchHeuristic.h
-  Core/LookAheadTreeSearchFunction.h
-  Core/LookAheadTreeSearchOnlineLearner.h
-  Core/SearchSpaceEvaluator.h
+  Core/SearchPolicy.h
+  Core/SearchFunction.h
+  Core/SearchFunctionOnlineLearner.h
+  Core/SearchTreeEvaluator.h
   Core/SequentialDecisionCoreLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionCoreLibrary.cpp
 )

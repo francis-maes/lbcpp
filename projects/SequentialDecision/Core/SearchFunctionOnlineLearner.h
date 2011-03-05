@@ -1,38 +1,42 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LookAheadTreeSearchOnlineLearner.h | Online Learner              |
+| Filename: SearchFunctionOnlineLearner.h  | Search Function Online Learner  |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/02/2011 12:40               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_ONLINE_LEARNER_H_
-# define LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_ONLINE_LEARNER_H_
+#ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_ONLINE_LEARNER_H_
+# define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_ONLINE_LEARNER_H_
 
-# include "LookAheadTreeSearchFunction.h"
+# include "SearchFunction.h"
+# include "SearchPolicy.h"
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {
 
-class LookAheadTreeSearchOnlineLearner : public OnlineLearner
+class SearchFunctionOnlineLearner : public OnlineLearner
 {
 public:
-  LookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr rankingLoss)
+  SearchFunctionOnlineLearner(RankingLossFunctionPtr rankingLoss)
     : context(NULL), rankingLoss(rankingLoss)
   {
     if (!rankingLoss)
       this->rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 
-  LookAheadTreeSearchOnlineLearner() : context(NULL) {}
+  SearchFunctionOnlineLearner() : context(NULL) {}
 
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     this->context = &context;
-    searchFunction = f.staticCast<LookAheadTreeSearchFunction>();
-    LearnableSearchHeuristicPtr learnedHeuristic = searchFunction->getHeuristic().dynamicCast<LearnableSearchHeuristic>();
+    searchFunction = f.staticCast<SearchFunction>();
+    
+    searchPolicy = searchFunction->getSearchPolicy().dynamicCast<BestFirstSearchPolicy>();
+    jassert(searchPolicy);
+    LearnableSearchHeuristicPtr learnedHeuristic = searchPolicy->getHeuristic().dynamicCast<LearnableSearchHeuristic>();
     jassert(learnedHeuristic);
     featuresFunction = learnedHeuristic->getPerceptionFunction();
     scoringFunction = learnedHeuristic->getScoringFunction().staticCast<NumericalLearnableFunction>();
@@ -41,10 +45,12 @@ public:
 
   virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output)
   {
-    const SortedSearchSpacePtr& searchSpace = output.getObjectAndCast<SortedSearchSpace>();
+    const SearchTreePtr& searchSpace = output.getObjectAndCast<SearchTree>();
 
     size_t numOpenedNodes = searchSpace->getNumOpenedNodes();
-    size_t beamSize = searchFunction->getBeamSize();
+    size_t beamSize = searchFunction->getMaxSearchNodes();
+    if (searchPolicy.dynamicCast<BeamSearchPolicy>())
+      beamSize = searchPolicy.staticCast<BeamSearchPolicy>()->getBeamSize();
 
     std::set<size_t> candidates;
     candidates.insert(0);
@@ -63,7 +69,7 @@ public:
         size_t c = 0;
         for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
         {
-          SearchSpaceNodePtr node = searchSpace->getNode(*it);
+          SearchTreeNodePtr node = searchSpace->getNode(*it);
           scores[c] = node->getHeuristicScore();
 
           double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
@@ -89,7 +95,7 @@ public:
 
       // update candidates list
       candidates.erase(selectedNodeIndex);
-      SearchSpaceNodePtr node = searchSpace->getNode(selectedNodeIndex);
+      SearchTreeNodePtr node = searchSpace->getNode(selectedNodeIndex);
       int begin = node->getChildBeginIndex();
       if (begin >= 0)
         for (int childIndex = begin; childIndex < node->getChildEndIndex(); ++childIndex)
@@ -136,21 +142,21 @@ public:
   }
 
 private:
-  friend class LookAheadTreeSearchOnlineLearnerClass;
+  friend class SearchFunctionOnlineLearnerClass;
 
   ExecutionContext* context;
   RankingLossFunctionPtr rankingLoss;
 
-  LookAheadTreeSearchFunctionPtr searchFunction;
+  SearchFunctionPtr searchFunction;
+  BestFirstSearchPolicyPtr searchPolicy;
   FunctionPtr featuresFunction;
   NumericalLearnableFunctionPtr scoringFunction;
 
   ScalarVariableStatistics selectedNodesCost;
   ScalarVariableStatistics gradientNorm;
   ScalarVariableStatistics bestReturn;
-
 };
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_FUNCTION_H_
+#endif // !LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_ONLINE_LEARNER_H_

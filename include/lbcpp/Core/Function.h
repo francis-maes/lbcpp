@@ -114,15 +114,7 @@ public:
   void addPostCallback(const FunctionCallbackPtr& callback)
     {postCallbacks.push_back(callback);}
 
-  void removePostCallback(const FunctionCallbackPtr& callback)
-  {
-    for (size_t i = 0; i < postCallbacks.size(); ++i)
-      if (postCallbacks[i] == callback)
-      {
-        postCallbacks.erase(postCallbacks.begin() + i);
-        return;
-      }
-  }
+  void removePostCallback(const FunctionCallbackPtr& callback);
 
   /*
   ** Learner

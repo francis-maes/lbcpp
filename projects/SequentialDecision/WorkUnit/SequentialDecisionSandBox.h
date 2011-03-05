@@ -10,9 +10,10 @@
 # define LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SAND_BOX_H_
 
 # include "../Problem/LinearPointPhysicProblem.h"
-# include "../Core/SearchSpace.h"
-# include "../Core/SearchSpaceEvaluator.h"
-# include "../Core/LookAheadTreeSearchFunction.h"
+# include "../Core/SearchTree.h"
+# include "../Core/SearchTreeEvaluator.h"
+# include "../Core/SearchFunction.h"
+# include "../Core/SearchPolicy.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Core/CompositeFunction.h>
@@ -24,60 +25,34 @@
 namespace lbcpp
 {
 
-class SearchSpaceNodeIndexFeatureGenerator : public FeatureGenerator
+class SearchTreeNodeIndexFeatureGenerator : public FeatureGenerator
 {
 public:
-  SearchSpaceNodeIndexFeatureGenerator(size_t maxSearchNodes = 0)
-    : maxSearchNodes(maxSearchNodes) {}
-  
   virtual size_t getNumRequiredInputs() const
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return searchSpaceNodeClass;}
-  /*
-  struct Enum : public Enumeration
-  {
-    Enum(size_t n)
-      : Enumeration(T("SearchSpaceNodeIndex")), n(n) {}
-
-    size_t n;
-
-    virtual size_t getNumElements() const
-      {return n;}
-
-    virtual EnumerationElementPtr getElement(size_t index) const
-    {
-      String str((int)index);
-      return new EnumerationElement(T("Node ") + str, String::empty, str);
-    }
-  };
-*/
+    {return searchTreeNodeClass;}
+  
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
     {return positiveIntegerEnumerationEnumeration;}// new Enum(maxSearchNodes);}
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    const SearchSpaceNodePtr& node = inputs[0].getObjectAndCast<SearchSpaceNode>();
+    const SearchTreeNodePtr& node = inputs[0].getObjectAndCast<SearchTreeNode>();
     size_t index = node->getNodeIndex();
-    //jassert(index < maxSearchNodes);
     callback.sense(index, 1.0);
   }
-
-private:
-  friend class SearchSpaceNodeIndexFeatureGeneratorClass;
-        
-  size_t maxSearchNodes;
 };
 
-class HeuristicSearchSpaceNodeFeaturesFunction : public CompositeFunction
+class HeuristicSearchTreeNodeFeaturesFunction : public CompositeFunction
 {
 public:
-  HeuristicSearchSpaceNodeFeaturesFunction(double discount = 0.9) : discount(discount) {}
+  HeuristicSearchTreeNodeFeaturesFunction(double discount = 0.9) : discount(discount) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
 
     builder.startSelection();
 
@@ -94,15 +69,15 @@ protected:
   double discount;
 };
 
-class GenericClosedSearchSpaceNodeFeaturesFunction : public CompositeFunction
+class GenericClosedSearchTreeNodeFeaturesFunction : public CompositeFunction
 {
 public:
-  GenericClosedSearchSpaceNodeFeaturesFunction(size_t maxDepth = 1000, double maxReward = 1.0, double maxReturn = 10.0)
+  GenericClosedSearchTreeNodeFeaturesFunction(size_t maxDepth = 1000, double maxReward = 1.0, double maxReturn = 10.0)
     : maxDepth(maxDepth), maxReward(maxReward), maxReturn(maxReturn) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
     size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
@@ -127,13 +102,8 @@ protected:
 class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
-  LinearLearnableSearchHeuristic(size_t maxSearchNodes = 0)
-    : maxSearchNodes(maxSearchNodes) {}
-
-  size_t maxSearchNodes;
-
   virtual FunctionPtr createPerceptionFunction() const
-    {return new SearchSpaceNodeIndexFeatureGenerator(maxSearchNodes);}
+    {return new SearchTreeNodeIndexFeatureGenerator();}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -147,7 +117,12 @@ public:
 class SequentialDecisionSandBox : public WorkUnit
 {
 public:
-  SequentialDecisionSandBox() : numInitialStates(1000), maxSearchNodes(100000), beamSize(10000), maxLearningIterations(100), discount(0.9) {}
+  // default values
+  SequentialDecisionSandBox() : numInitialStates(1000), maxSearchNodes(100000), beamSize(10000), maxLearningIterations(100), numPasses(10)
+  {
+    problem = linearPointPhysicProblem(0.9);
+    rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
+  }
 
   virtual Variable run(ExecutionContext& context)
   {
@@ -176,87 +151,81 @@ public:
       context.leaveScope(true);
     }*/
 
-    FunctionPtr href = optimisticPlanningSearchHeuristic(discount);
-    FunctionPtr h1 = learnHeuristic(context, problem, href, trainingStates, testingStates, discount);
+    FunctionPtr href = optimisticPlanningSearchHeuristic(problem->getDiscount());
+    PolicyPtr currentSearchPolicy = beamSearchPolicy(href, beamSize);
 
-    return true;
-  }
+    evaluate(context, T("href-train"), currentSearchPolicy, trainingStates);
+    evaluate(context, T("href-test"), currentSearchPolicy, testingStates);
 
-  FunctionPtr learnHeuristic(ExecutionContext& context, SequentialDecisionProblemPtr problem, FunctionPtr href, const ContainerPtr& trainingStates, const ContainerPtr& testingStates, double discount) const
-  {
-    evaluate(context, T("href-train"), href, trainingStates);
-    evaluate(context, T("href-test"), href, testingStates);
-    
-    StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
-    if (rankingLoss)
-      parameters->setLossFunction(rankingLoss);
-    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
-    FunctionPtr hnew = train(context, T("pouet"), parameters, href, trainingStates, testingStates);
-
-    for (double k = 0.9; k <= 1.0; k += 0.01)
+    for (size_t i = 0; i < numPasses; ++i)
     {
-      FunctionPtr interpolated = linearInterpolatedSearchHeuristic(href, hnew, k);
-      //evaluate(context, T("interpolated-train ") + String(k), interpolated, trainingStates);
-      evaluate(context, T("interpolated ") + String(k), interpolated, testingStates);
+      StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
+      if (rankingLoss)
+        parameters->setLossFunction(rankingLoss);
+      parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
+
+      PolicyPtr newSearchPolicy = train(context, T("iter-") + String((int)i), parameters, currentSearchPolicy, trainingStates, testingStates);
+
+      context.enterScope(T("Evaluating candidate mixtures"));
+      double bestMixtureScore = -DBL_MAX;
+      double bestMixtureCoefficient;
+      PolicyPtr bestMixturePolicy;
+
+      for (double k = 0.0; k <= 1.0; k += 0.01)
+      {
+        PolicyPtr policy = mixturePolicy(currentSearchPolicy, newSearchPolicy, k);
+        double score = evaluate(context, T("mixt(") + String(k) + T(")"), policy, testingStates, k);
+        if (score > bestMixtureScore)
+        {
+          bestMixtureScore = score;
+          bestMixturePolicy = policy;
+          bestMixtureCoefficient = k;
+        }
+      }
+      if (!bestMixturePolicy)
+      {
+        context.errorCallback(T("Could not find best mixture policy"));
+        break;
+      }
+      context.leaveScope(new Pair(bestMixtureScore, bestMixtureCoefficient));
+
+      currentSearchPolicy = bestMixturePolicy;
     }
-    return hnew;
-  }
-
-  /*
-  bool runAtDepth(ExecutionContext& context, size_t depth, SequentialDecisionProblemPtr problem, const ContainerPtr& trainingStates, const ContainerPtr& testingStates, double discount) const
-  {
-    context.resultCallback(T("depth"), depth);
-
-    size_t maxSearchNodes = (size_t)pow(2.0, (double)(depth + 1)) - 1;
-    context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
-    
-    StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
-    if (rankingLoss)
-      parameters->setLossFunction(rankingLoss);
-    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
-
-    evaluate(context, T("maxReturn"), maxReturnSearchHeuristic(), maxSearchNodes, testingStates);
-    evaluate(context, T("maxReward"), greedySearchHeuristic(), maxSearchNodes, testingStates);
-    evaluate(context, T("maxDiscountedReward"), greedySearchHeuristic(discount), maxSearchNodes, testingStates);
-    evaluate(context, T("optimistic"), optimisticPlanningSearchHeuristic(discount), maxSearchNodes, testingStates);
-    evaluate(context, T("uniform"), minDepthSearchHeuristic(), maxSearchNodes, testingStates);
-
-    trainAndEvaluate(context, T("baseline"), parameters, maxSearchNodes, trainingStates, testingStates);
     return true;
-  }*/
+  }
 
 protected:
-  bool evaluate(ExecutionContext& context, const String& heuristicName, FunctionPtr heuristic, ContainerPtr initialStates) const
+  double evaluate(ExecutionContext& context, const String& heuristicName, PolicyPtr searchPolicy, ContainerPtr initialStates, const Variable& argument = Variable()) const
   {
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, discount, maxSearchNodes, beamSize);
-    if (!lookAHeadSearch->initialize(context, problem->getStateType()))
-      return false;
+    FunctionPtr searchFunction = new SearchFunction(problem, searchPolicy, maxSearchNodes);
+    if (!searchFunction->initialize(context, problem->getStateType()))
+      return -1.0;
 
-    EvaluatorPtr evaluator = new SearchSpaceEvaluator();
-    ScoreObjectPtr scores = lookAHeadSearch->evaluate(context, initialStates, evaluator, T("Evaluating heuristic ") + heuristicName);
-    if (!scores)
-      return false;
+    String scopeName = T("Evaluating heuristic ") + heuristicName;
 
-    context.resultCallback(heuristicName, -scores->getScoreToMinimize());
-    return true;
+    context.enterScope(scopeName);
+    EvaluatorPtr evaluator = new SearchTreeEvaluator();
+    ScoreObjectPtr scores = searchFunction->evaluate(context, initialStates, evaluator);
+    if (argument.exists())
+      context.resultCallback(T("argument"), argument);
+    context.leaveScope(scores);
+
+    double bestReturn = scores ? -scores->getScoreToMinimize() : -1.0;
+    context.resultCallback(heuristicName, bestReturn);
+    return bestReturn;
   }
 
-  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, FunctionPtr explorationHeuristic, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  PolicyPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, PolicyPtr explorationPolicy, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
-    parameters->setEvaluator(new SearchSpaceEvaluator());
-    LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic(maxSearchNodes);
-    learnedHeuristic->initialize(context, (TypePtr)searchSpaceNodeClass);
-    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, learnedHeuristic, parameters, explorationHeuristic, discount, maxSearchNodes, beamSize);
+    parameters->setEvaluator(new SearchTreeEvaluator());
+    LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
+    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
+    PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
+
+    SearchFunctionPtr lookAHeadSearch = new SearchFunction(problem, learnedSearchPolicy, parameters, explorationPolicy, maxSearchNodes);
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
-      return FunctionPtr();
-    return learnedHeuristic;
-  }
-
-  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, FunctionPtr explorationHeuristic, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
-  {
-    FunctionPtr heuristic = train(context, name, parameters, explorationHeuristic, trainingStates, testingStates);
-    return heuristic && evaluate(context, name + T("-train"), heuristic, trainingStates) 
-        && evaluate(context, name + T("-test"), heuristic, testingStates);
+      return PolicyPtr();
+    return learnedSearchPolicy;
   }
 
 private:
@@ -271,7 +240,7 @@ private:
   size_t minDepth;
   size_t maxDepth;
   size_t maxLearningIterations;
-  double discount;
+  size_t numPasses;
 };
 
 }; /* namespace lbcpp */

@@ -11,7 +11,7 @@
   <class name="LinearPointPhysicTransitionFunction" base="Function"/>
   <class name="LinearPointPhysicRewardFunction" base="Function"/>
   <class name="LinearPointPhysicProblem" base="SequentialDecisionProblem" shortName="linearPointPhysic">
-    <constructor/>
+    <constructor arguments="double discount"/>
   </class>
 
 </library>

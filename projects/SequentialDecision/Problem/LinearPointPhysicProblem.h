@@ -92,13 +92,13 @@ public:
 class LinearPointPhysicProblem : public SequentialDecisionProblem
 {
 public:
-  LinearPointPhysicProblem() 
+  LinearPointPhysicProblem(double discount = 1.0) 
     : SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
                                 new LinearPointPhysicTransitionFunction(),
-                                new LinearPointPhysicRewardFunction()) {}
+                                new LinearPointPhysicRewardFunction(), discount) {}
 };
 
-extern SequentialDecisionProblemPtr linearPointPhysicProblem();
+extern SequentialDecisionProblemPtr linearPointPhysicProblem(double discount);
 
 }; /* namespace lbcpp */
 
