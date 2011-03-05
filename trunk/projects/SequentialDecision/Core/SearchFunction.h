@@ -1,15 +1,16 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: LookAheadTreeSearchFunction.h  | Look AHead Tree Search Function |
+| Filename: SearchFunction.h               | Look AHead Tree Search Function |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/02/2011 12:38               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_FUNCTION_H_
-# define LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_FUNCTION_H_
+#ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_H_
+# define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_H_
 
-# include "SearchSpace.h"
+# include "SearchTree.h"
+# include "Policy.h"
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/LossFunction.h>
 
@@ -22,7 +23,7 @@ class LearnableSearchHeuristic : public CompositeFunction
 public:
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchSpaceNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
     size_t perception = builder.addFunction(createPerceptionFunction(), node);
     size_t supervision = builder.addConstant(Variable());
     builder.addFunction(createScoringFunction(), perception, supervision);
@@ -42,31 +43,29 @@ protected:
 typedef ReferenceCountedObjectPtr<LearnableSearchHeuristic> LearnableSearchHeuristicPtr;
 
 
-extern OnlineLearnerPtr lookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr lossFunction);
+extern OnlineLearnerPtr searchFunctionOnlineLearner(RankingLossFunctionPtr lossFunction);
 
 // State -> SearchSpace
-class LookAheadTreeSearchFunction : public SimpleUnaryFunction
+class SearchFunction : public SimpleUnaryFunction
 {
 public:
-  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, FunctionPtr explorationHeuristic, double discount, size_t maxSearchNodes, size_t beamSize)
-    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), explorationHeuristic(explorationHeuristic), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
+  SearchFunction(SequentialDecisionProblemPtr problem, PolicyPtr searchPolicy, StochasticGDParametersPtr learnerParameters, PolicyPtr explorationPolicy, size_t maxSearchNodes)
+    : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), learnerParameters(learnerParameters), explorationPolicy(explorationPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
-  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, size_t maxSearchNodes, size_t beamSize)
-    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
+  SearchFunction(SequentialDecisionProblemPtr problem, PolicyPtr searchPolicy, size_t maxSearchNodes)
+    : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
-  LookAheadTreeSearchFunction() : SimpleUnaryFunction(anyType, anyType) {}
+  SearchFunction() : SimpleUnaryFunction(anyType, anyType) {}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!heuristic)
+    if (!searchPolicy)
     {
-      context.errorCallback(T("No heuristic"));
+      context.errorCallback(T("No search policy"));
       return TypePtr();
     }
-    if (!heuristic->initialize(context, (TypePtr)searchSpaceNodeClass))
-      return TypePtr();
 
     TypePtr outputType = SimpleUnaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 
@@ -75,7 +74,7 @@ public:
       setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, outputType));
 
       std::vector<OnlineLearnerPtr> onlineLearners;
-      onlineLearners.push_back(lookAheadTreeSearchOnlineLearner(learnerParameters->getLossFunction().dynamicCast<RankingLossFunction>()));
+      onlineLearners.push_back(searchFunctionOnlineLearner(learnerParameters->getLossFunction().dynamicCast<RankingLossFunction>()));
       if (learnerParameters->getEvaluator())
         onlineLearners.push_back(evaluatorOnlineLearner(learnerParameters->getEvaluator()));
       if (learnerParameters->getStoppingCriterion())
@@ -84,7 +83,7 @@ public:
         onlineLearners.push_back(restoreBestParametersOnlineLearner());
       setOnlineLearner(compositeOnlineLearner(onlineLearners));
 
-      LearnableSearchHeuristicPtr learnedHeuristic = heuristic.dynamicCast<LearnableSearchHeuristic>();
+      LearnableSearchHeuristicPtr learnedHeuristic = searchPolicy->getVariable(0).dynamicCast<LearnableSearchHeuristic>();
       if (learnedHeuristic)
       {
         OnlineLearnerPtr stochasticGDLearner = stochasticGDOnlineLearner(FunctionPtr(), learnerParameters->getLearningRate(), learnerParameters->doNormalizeLearningRate());
@@ -95,47 +94,66 @@ public:
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
-    {return search(context, isCurrentlyLearning() ? explorationHeuristic : heuristic, initialState);}
-
-  SortedSearchSpacePtr search(ExecutionContext& context, const FunctionPtr& heuristic, const Variable& initialState) const
   {
-    SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, beamSize, initialState);
-    searchSpace->reserveNodes(2 * maxSearchNodes);
-    for (size_t j = 0; j < maxSearchNodes; ++j)
-      searchSpace->exploreBestNode(context);
-    return searchSpace;
+    SearchTreePtr searchTree = new SearchTree(problem, initialState, maxSearchNodes);
+    jassert(searchTree->getBestReturn() == 0.0);
+    double lastReward = 0.0;
+    double bestReturn = 0.0;
+
+    PolicyPtr policy = isCurrentlyLearning() ? explorationPolicy : searchPolicy;
+
+    for (size_t i = 0; i < maxSearchNodes; ++i)
+    {
+      ContainerPtr actions;
+      Variable selectedNode;
+      if (i == 0)
+        selectedNode = policy->policyStart(context, searchTree, actions);
+      else
+        selectedNode = policy->policyStep(context, lastReward, searchTree, actions);
+      if (!selectedNode.exists())
+      {
+        context.errorCallback(T("No selected node"));
+        break;
+      }
+
+      searchTree->exploreNode(context, (size_t)selectedNode.getInteger());
+      double newBestReturn = searchTree->getBestReturn();
+      lastReward = newBestReturn - bestReturn;
+      jassert(lastReward >= 0.0);
+      bestReturn = newBestReturn;
+    }
+    policy->policyEnd(context, lastReward, searchTree);
+    return searchTree;
   }
+   
+  void setSearchPolicy(const PolicyPtr& searchPolicy)
+    {this->searchPolicy = searchPolicy;}
 
-  void setHeuristic(const FunctionPtr& heuristic)
-    {this->heuristic = heuristic;}
+  const PolicyPtr& getSearchPolicy() const
+    {return searchPolicy;}
 
-  const FunctionPtr& getHeuristic() const
-    {return heuristic;}
-
-  size_t getBeamSize() const
-    {return beamSize;}
+  size_t getMaxSearchNodes() const
+    {return maxSearchNodes;}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     SimpleUnaryFunction::clone(context, target);
-    if (heuristic)
-      target.staticCast<LookAheadTreeSearchFunction>()->heuristic = heuristic->clone(context);
+    if (searchPolicy)
+      target.staticCast<SearchFunction>()->searchPolicy = searchPolicy->clone(context);
   }
 
 protected:
-  friend class LookAheadTreeSearchFunctionClass;
+  friend class SearchFunctionClass;
 
   SequentialDecisionProblemPtr problem;
-  FunctionPtr heuristic;
+  PolicyPtr searchPolicy;
   StochasticGDParametersPtr learnerParameters;
-  FunctionPtr explorationHeuristic;
-  double discount;
+  PolicyPtr explorationPolicy;
   size_t maxSearchNodes;
-  size_t beamSize;
 };
 
-typedef ReferenceCountedObjectPtr<LookAheadTreeSearchFunction> LookAheadTreeSearchFunctionPtr;
+typedef ReferenceCountedObjectPtr<SearchFunction> SearchFunctionPtr;
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SEQUENTIAL_DECISION_CORE_LOOK_AHEAD_TREE_SEARCH_FUNCTION_H_
+#endif // !LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_H_

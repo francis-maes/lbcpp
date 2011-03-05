@@ -90,10 +90,11 @@ public:
     return Variable(intValue, refCountedPointerFromThis(this));
   }
 
+  virtual bool isMissingValue(const VariableValue& value) const
+    {return value.getInteger() == -1;}
+
   virtual VariableValue getMissingValue() const
-  {
-    return VariableValue((size_t)-1);
-  }
+    {return VariableValue((size_t)-1);}
 };
 
 }; /* namespace lbcpp */

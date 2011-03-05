@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SearchSpaceEvaluator.h         | SearchSpace Evaluator           |
+| Filename: SearchTreeEvaluator.h          | SearchSpace Evaluator           |
 | Author  : Francis Maes                   |                                 |
 | Started : 23/02/2011 16:30               |                                 |
 `------------------------------------------/                                 |
@@ -9,45 +9,45 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_SPACE_EVALUATOR_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_SPACE_EVALUATOR_H_
 
-# include "../Core/SearchSpace.h"
+# include "SearchTree.h"
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {
 
-class SearchSpaceScoreObject : public ScoreObject
+class SearchTreeScoreObject : public ScoreObject
 {
 public:
-  SearchSpaceScoreObject()
+  SearchTreeScoreObject()
     : bestReturn(new ScalarVariableStatistics()), numOpenedNodes(new ScalarVariableMean()) {}
 
   virtual double getScoreToMinimize() const
     {return -bestReturn->getMean();}
 
-  void add(const SortedSearchSpacePtr& searchSpace)
+  void add(const SearchTreePtr& searchTree)
   {
-    bestReturn->push(searchSpace->getBestReturn());
-    numOpenedNodes->push((double)searchSpace->getNumOpenedNodes());
+    bestReturn->push(searchTree->getBestReturn());
+    numOpenedNodes->push((double)searchTree->getNumOpenedNodes());
   }
 
 protected:
-  friend class SearchSpaceScoreObjectClass;
+  friend class SearchTreeScoreObjectClass;
 
   ScalarVariableStatisticsPtr bestReturn;
   ScalarVariableMeanPtr numOpenedNodes;
 };
 
-typedef ReferenceCountedObjectPtr<SearchSpaceScoreObject> SearchSpaceScoreObjectPtr;
+typedef ReferenceCountedObjectPtr<SearchTreeScoreObject> SearchTreeScoreObjectPtr;
 
-class SearchSpaceEvaluator : public Evaluator
+class SearchTreeEvaluator : public Evaluator
 {
 public:
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
-    {return new SearchSpaceScoreObject();}
+    {return new SearchTreeScoreObject();}
 
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& inputsObject, const Variable& output) const
-    {scores.staticCast<SearchSpaceScoreObject>()->add(output.getObjectAndCast<SortedSearchSpace>()); return true;}
+    {scores.staticCast<SearchTreeScoreObject>()->add(output.getObjectAndCast<SearchTree>()); return true;}
 };
 
 }; /* namespace lbcpp */

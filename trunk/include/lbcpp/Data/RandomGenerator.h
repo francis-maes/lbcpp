@@ -104,7 +104,7 @@ public:
   ** @return True or False (see above).
   */
   bool sampleBool(double probabilityOfTrue)
-    {return probabilityOfTrue && sampleDouble() <= probabilityOfTrue;}
+    {return sampleDouble() < probabilityOfTrue;}
 
 
   /** Samples a number given a discrete probability distribution.

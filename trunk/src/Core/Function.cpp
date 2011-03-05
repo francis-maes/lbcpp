@@ -291,6 +291,17 @@ void Function::clone(ExecutionContext& context, const ObjectPtr& t) const
   //  target->initialize(context, inputVariables);
 }
 
+
+void Function::removePostCallback(const FunctionCallbackPtr& callback)
+{
+  for (size_t i = 0; i < postCallbacks.size(); ++i)
+    if (postCallbacks[i] == callback)
+    {
+      postCallbacks.erase(postCallbacks.begin() + i);
+      return;
+    }
+}
+
 /*
 ** ProxyFunction
 */

@@ -9,8 +9,8 @@
 #include "SequentialDecisionProblem.h"
 using namespace lbcpp;
 
-SequentialDecisionProblem::SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction)
-  : initialStateSampler(initialStateSampler), transitionFunction(transitionFunction), rewardFunction(rewardFunction)
+SequentialDecisionProblem::SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction, double discount)
+  : initialStateSampler(initialStateSampler), transitionFunction(transitionFunction), rewardFunction(rewardFunction), discount(discount)
 {
 }
 

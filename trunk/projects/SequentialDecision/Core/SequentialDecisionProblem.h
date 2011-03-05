@@ -18,7 +18,7 @@ namespace lbcpp
 class SequentialDecisionProblem : public Object
 {
 public:
-  SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction);
+  SequentialDecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction, double discount);
   SequentialDecisionProblem() {}
 
   /*
@@ -58,6 +58,12 @@ public:
   double computeReward(const Variable& state, const Variable& action) const
     {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();}
 
+  /*
+  ** Objective
+  */
+  double getDiscount() const
+    {return discount;} // in [0,1]
+
 private:
   friend class SequentialDecisionProblemClass;
 
@@ -67,6 +73,8 @@ private:
 
   TypePtr stateType;
   TypePtr actionType;
+
+  double discount;
 };
 
 typedef ReferenceCountedObjectPtr<SequentialDecisionProblem> SequentialDecisionProblemPtr;

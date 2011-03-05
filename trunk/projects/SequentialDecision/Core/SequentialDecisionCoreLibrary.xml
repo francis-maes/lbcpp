@@ -7,18 +7,45 @@
     <!-- <variable type="Function" name="initialStateSampler"/>
     <variable type="Function" name="transitionFunction"/>
     <variable type="Function" name="rewardFunction"/> -->
+    <variable type="Double" name="discount"/>
   </class>
 
-  <!-- Search Space -->
-  <class name="SearchSpaceNode" base="Object">
+  <class name="Policy" base="Object" abstract="yes"/>
+
+  <class name="MixturePolicy" base="Policy">
+    <constructor arguments="const PolicyPtr&amp; policy1, const PolicyPtr&amp; policy2, double k"/>
+    <variable type="Policy" name="policy1"/>
+    <variable type="Policy" name="policy2"/>
+    <variable type="Double" name="k"/>
+  </class>
+
+  <!-- Search Tree -->
+  <class name="SearchTreeNode" base="Object">
     <variable type="Variable" name="state"/>
     <variable type="PositiveInteger" name="depth"/>
     <variable type="Double" name="reward"/>
     <variable type="Double" name="currentReturn"/>
     <variable type="Variable" name="previousAction"/>
   </class>
-  <class name="SortedSearchSpace" base="Object"/>
+  <class name="SearchTree" base="Object"/>
 
+  <!-- Search Policy -->
+  <class name="SearchPolicy" base="Policy" abstract="yes"/>
+
+  <class name="RandomSearchPolicy" base="SearchPolicy">
+    <constructor/>
+  </class>
+
+  <class name="BestFirstSearchPolicy" base="SearchPolicy">
+    <constructor arguments="FunctionPtr heuristic"/>
+    <variable type="Function" name="heuristic"/>
+  </class>
+
+  <class name="BeamSearchPolicy" base="BestFirstSearchPolicy">
+    <constructor arguments="FunctionPtr heuristic, size_t beamSize" returnType="SearchPolicy"/>
+    <variable type="PositiveInteger" name="beamSize"/>
+  </class>
+  
   <!-- Search Heuristic -->
   <class name="GreedySearchHeuristic" base="Function" shortName="greedy">
     <constructor arguments="double discount"/>
@@ -43,27 +70,25 @@
   
   <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
 
-  <!-- LookAheadTreeSearchFunction -->
-  <class name="LookAheadTreeSearchFunction" base="Function">
+  <!-- SearchFunction -->
+  <class name="SearchFunction" base="Function">
     <variable type="SequentialDecisionProblem" name="problem"/>
-    <variable type="Function" name="heuristic"/>
+    <variable type="Policy" name="searchPolicy"/>
     <variable type="StochasticGDParameters" name="learnerParameters"/>
-    <variable type="Function" name="explorationHeuristic"/>
-    <variable type="Double" name="discount"/>
+    <variable type="Policy" name="explorationPolicy"/>
     <variable type="PositiveInteger" name="maxSearchNodes"/>
-    <variable type="PositiveInteger" name="beamSize"/>
   </class>
 
-  <class name="LookAheadTreeSearchOnlineLearner" base="OnlineLearner">
+  <class name="SearchFunctionOnlineLearner" base="OnlineLearner">
     <constructor arguments="RankingLossFunctionPtr rankingLoss"/>
     <variable type="RankingLossFunction" name="rankingLoss"/>
   </class>
 
   <!-- SearchSpace Evaluator -->
-  <class name="SearchSpaceScoreObject" base="ScoreObject">
+  <class name="SearchTreeScoreObject" base="ScoreObject">
     <variable type="ScalarVariableStatistics" name="bestReturn"/>
     <variable type="ScalarVariableMean" name="numOpenedNodes"/>
   </class>
-  <class name="SearchSpaceEvaluator" base="Evaluator"/>
+  <class name="SearchTreeEvaluator" base="Evaluator"/>
 
 </library>
