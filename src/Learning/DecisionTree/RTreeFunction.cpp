@@ -220,7 +220,7 @@ extern BatchLearnerPtr rTreeBatchLearner();
 }; /* namespace lbcpp */
 
 /*
-** RTreeInference
+** RTreeFunction
 */
 
 RTreeFunction::RTreeFunction(size_t numTrees,
@@ -245,9 +245,8 @@ Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variabl
 }
 
 /*
-** RTreeInferenceLearner
+** RTreeBatchLearner
 */
-
 void exportData(ExecutionContext& context)
 {
   File f = File::getCurrentWorkingDirectory().getChildFile(T("x.train"));
@@ -270,7 +269,7 @@ void exportData(ExecutionContext& context)
     *o << core_table_y[i] << "\n";
   delete o;
   
-  context.informationCallback(T("RTreeInferenceLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
+  context.informationCallback(T("RTreeBatchLearner::exportData"), T("Training data saved: ") + f.getFullPathName());
 }
 
 bool RTreeBatchLearner::train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const

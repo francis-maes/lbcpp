@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Core/Frame.h>
-#include <lbcpp/Function/OldEvaluator.h>
 #include <lbcpp/Learning/BatchLearner.h>
+#include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
 bool Function::initialize(ExecutionContext& context, TypePtr inputType)

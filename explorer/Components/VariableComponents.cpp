@@ -37,13 +37,6 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
   if (res)
     return res;
 
-
-/*  if (object->getClass() == pairClass(proteinClass, positiveIntegerType))
-    return new ResiduePerceptionComponent(object);
-
-  if (object->getClass() == pairClass(proteinClass, pairClass(positiveIntegerType, positiveIntegerType)))
-    return new ResiduePairPerceptionComponent(object); 
-*/
   ContainerPtr container = object.dynamicCast<Container>();
   if (container)
   {

@@ -11,7 +11,6 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Function.h>
-#include <lbcpp/Inference/Inference.h>
 using namespace lbcpp;
 
 /*

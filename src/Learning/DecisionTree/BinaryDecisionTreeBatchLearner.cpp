@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExtraTreeInferenceLearner.h    | Extra Tree Batch Learner        |
+| Filename: BinaryDecisionTreeBatchLearner.h| Extra Tree Batch Learner       |
 | Author  : Francis Maes                   |                                 |
 | Started : 25/06/2010 18:41               |                                 |
 `------------------------------------------/                                 |

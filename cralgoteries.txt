@@ -1,4 +1,7 @@
-Voir pour enlever MiscFunctions
+ * Voir pour enlever MiscFunctions
+ * Enlever les anciennes methodes de Function
+ 
+ * Utiliser des headers precompilés ...
 
 Boinc:
  - progression globale

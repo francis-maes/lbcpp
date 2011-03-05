@@ -12,6 +12,7 @@
 
 using namespace lbcpp;
 
+#if 0 // broken
 class SavePredictionFunction : public Function
 {
 public:
@@ -45,8 +46,11 @@ protected:
   OutputStream* o;
 };
 
+#endif // 0
+
 Variable PredictorProgram::run(ExecutionContext& context)
 {
+#if 0 // broken
   ContainerPtr data = parseDataFile(context, dataFile);
   jassert(data && data->getNumElements());
   std::cout << "Data : " << data->getNumElements() << std::endl;
@@ -58,5 +62,6 @@ Variable PredictorProgram::run(ExecutionContext& context)
   std::cout << "Prediction : " << output.getFullPathName() << std::endl;
 
   data->apply(context, FunctionPtr(new SavePredictionFunction(inference, output)), Container::sequentialApply);
+#endif // 0
   return true;
 }

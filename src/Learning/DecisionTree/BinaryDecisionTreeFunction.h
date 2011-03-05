@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ExtraTreeInference.h           | Extra Tree Inference            |
+| Filename: BinaryDecisionTreeFunction.h   | Extra Tree Inference            |
 | Author  : Francis Maes                   |                                 |
 | Started : 25/06/2010 18:39               |                                 |
 `------------------------------------------/                                 |

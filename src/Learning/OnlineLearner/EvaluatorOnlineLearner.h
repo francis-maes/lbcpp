@@ -10,7 +10,7 @@
 # define LBCPP_LEARNING_ONLINE_LEARNER_EVALUATOR_H_
 
 # include <lbcpp/Learning/OnlineLearner.h>
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Function/Evaluator.h>
 
 namespace lbcpp
 {

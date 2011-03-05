@@ -14,7 +14,7 @@
 
 namespace lbcpp
 {
-/*
+#if 0 // broken
 class ContactMapEvaluator : public OldEvaluator
 {
 public:
@@ -72,7 +72,8 @@ protected:
   OldEvaluatorPtr classificationEvaluator;
   OldEvaluatorPtr rocEvaluator;
   size_t minimumDistance;
-};*/
+};
+#endif // 0
 
 }; /* namespace lbcpp */
 
