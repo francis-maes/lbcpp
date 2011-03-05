@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Core/Frame.h>
 #include <lbcpp/Core/Function.h>
 using namespace lbcpp;

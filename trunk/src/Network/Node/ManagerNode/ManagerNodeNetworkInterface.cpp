@@ -5,10 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ManagerNodeNetworkInterface.h"
 #include "ManagerNodeNetworkNotification.h"
-
 using namespace lbcpp;  
 
 void ClientManagerNodeNetworkInterface::closeCommunication()

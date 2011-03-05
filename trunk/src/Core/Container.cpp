@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Core/Container.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Core/XmlSerialisation.h>

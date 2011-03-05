@@ -1,11 +1,11 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: SequentialDecisionProblem.cpp   | Sequential Decision System      |
+| Filename: SequentialDecisionProblem.cpp  | Sequential Decision System      |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/02/2011 16:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "SequentialDecisionProblem.h"
 using namespace lbcpp;
 

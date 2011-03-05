@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Data/DoubleVector.h>
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include "../Core/Object/SparseVectorHelper.h"

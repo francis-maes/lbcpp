@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Data/SymmetricMatrix.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 using namespace lbcpp;

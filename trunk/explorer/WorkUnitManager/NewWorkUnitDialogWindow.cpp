@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "NewWorkUnitDialogWindow.h"
 using namespace lbcpp;
 

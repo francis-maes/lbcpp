@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Data/Cache.h>
 #include <lbcpp/Data/RandomVariable.h>
 using namespace lbcpp;

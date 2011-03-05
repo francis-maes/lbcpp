@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "VariableBrowser.h"
 #include "../ExplorerProject.h"
 using namespace lbcpp;

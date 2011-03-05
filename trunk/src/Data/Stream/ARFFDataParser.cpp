@@ -5,8 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "ARFFDataParser.h"
-
 using namespace lbcpp;
 
 bool ARFFDataParser::parseLine(const String& line)

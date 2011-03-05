@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Function/Predicate.h>
 #include <lbcpp/Core/Vector.h>
 #include "BinaryDecisionTreeBatchLearner.h"

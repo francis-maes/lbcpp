@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/lbcpp.h>
 #include "PredictorProgram.h"
 #include "MatlabFileParser.h"

@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/Core/Function.h>
 #include <lbcpp/Core/Frame.h>
 #include <lbcpp/Learning/BatchLearner.h>

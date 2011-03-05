@@ -5,9 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "Utilities.h"
 #include <lbcpp/Core/Variable.h>
-
 using namespace lbcpp;
 
 /*

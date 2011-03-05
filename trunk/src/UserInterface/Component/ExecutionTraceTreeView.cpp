@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "ExecutionTraceTreeView.h"
 #include "ContainerCurveEditor.h"
 #include <lbcpp/Execution/ExecutionStack.h>

@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Function/ScalarFunction.h>
 #include <lbcpp/Function/ScalarVectorFunction.h>
 using namespace lbcpp;

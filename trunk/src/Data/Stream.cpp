@@ -5,11 +5,10 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Data/Stream.h>
 #include <lbcpp/Core/Vector.h>
 #include <lbcpp/Core/DynamicObject.h>
-
 using namespace lbcpp;
 
 /*

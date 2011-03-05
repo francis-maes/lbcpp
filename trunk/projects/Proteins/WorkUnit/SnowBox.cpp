@@ -1,4 +1,4 @@
-
+#include "precompiled.h"
 #include "SnowBox.h"
 #include "Evaluator/ProteinEvaluator.h"
 

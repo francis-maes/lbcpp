@@ -1,3 +1,4 @@
+#include "precompiled.h"
 #include "BricoBox.h"
 
 using namespace lbcpp;

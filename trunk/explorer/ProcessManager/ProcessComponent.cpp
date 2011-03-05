@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "ProcessManagerComponent.h"
 #include <lbcpp/UserInterface/ComponentWithPreferedSize.h>
 using namespace lbcpp;

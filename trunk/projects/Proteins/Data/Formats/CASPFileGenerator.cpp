@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "CASPFileGenerator.h"
 #include "PDBFileGenerator.h"
 using namespace lbcpp;

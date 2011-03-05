@@ -23,6 +23,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include <lbcpp/library.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>

@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 #include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;

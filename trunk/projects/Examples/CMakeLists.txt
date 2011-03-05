@@ -6,6 +6,8 @@ INCLUDE_DIRECTORIES(
 GENERATE_INTROSPECTION_CODE(ExamplesLibrary.xml ExamplesLibrary.cpp)
 
 SET(LBCPP_EXAMPLES_SOURCES
+  precompiled.h
+  precompiled.cpp
   FeatureGeneratorsExample.h
   MissingValuesExample.h
   SimpleIntrospectionExample.h
@@ -17,6 +19,8 @@ SET(LBCPP_EXAMPLES_SOURCES
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )
+
+GENERATE_LBCPP_PRECOMPILED(precompiled LBCPP_EXAMPLES_SOURCES)
 
 ADD_LIBRARY(lbcpp-examples${NAME_FILE_SUFFIX} SHARED ${LBCPP_EXAMPLES_SOURCES})
 TARGET_LINK_LIBRARIES(lbcpp-examples${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})

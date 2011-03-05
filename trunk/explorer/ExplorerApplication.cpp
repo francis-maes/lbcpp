@@ -5,7 +5,7 @@
 `------------------------------|                                             |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "Utilities/FileType.h"
 #include "Components/VariableBrowser.h"
 #include "ExplorerConfiguration.h"

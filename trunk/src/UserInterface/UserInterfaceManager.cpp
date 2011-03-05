@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <lbcpp/UserInterface/UserInterfaceManager.h>

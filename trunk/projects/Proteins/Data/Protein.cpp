@@ -5,7 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include "Protein.h"
 #include "Formats/PDBFileParser.h"
 #include "Formats/PDBFileGenerator.h"
