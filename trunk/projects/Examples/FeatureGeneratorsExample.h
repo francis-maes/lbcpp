@@ -33,24 +33,6 @@ public:
     
     testFeatureGenerator(context, T("probability"), defaultProbabilityFeatureGenerator(), myProb);
     testFeatureGenerator(context, T("integer1"), defaultPositiveIntegerFeatureGenerator(), myInteger1);
-
-    /*concatenateFeatureGenerator(false);
-
-    composite->addPerception(T("base20"), defaultPositiveIntegerFeatures(20));
-    composite->addPerception(T("base2"), defaultPositiveIntegerFeatures(2));*/
-    
-
-    // Composed
-    /*CompositePerceptionPtr composite = compositePerception(positiveIntegerType, T("combo"));
-    composite->addPerception(T("base20"), defaultPositiveIntegerFeatures(20));
-    composite->addPerception(T("base2"), defaultPositiveIntegerFeatures(2));
-    testFeatureGenerator(context, T("integer2"), composite, myInteger2);
-
-    // Product and conjunction
-    FunctionPtr makePairFunction = identityFunction(pairClass(anyType, anyType));
-    testFeatureGenerator(context, T("pair (I1,I2)"), productPerception(makePairFunction, defaultPositiveIntegerFeatures(), composite, false), myIntegerPair);
-    testFeatureGenerator(context, T("pair (I1,I2) features"), conjunctionFeatures(composite, composite, false), myIntegerPair);
-*/
     return Variable();
   }
 

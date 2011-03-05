@@ -32,9 +32,6 @@ typedef ReferenceCountedObjectPtr<ScalarVectorFunction> ScalarVectorFunctionPtr;
 class Evaluator;
 typedef ReferenceCountedObjectPtr<Evaluator> EvaluatorPtr;
 
-class OldEvaluator;
-typedef ReferenceCountedObjectPtr<OldEvaluator> OldEvaluatorPtr;
-
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_INFERENCE_PREDECLARATIONS_H_

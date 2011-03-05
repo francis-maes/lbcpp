@@ -13,7 +13,6 @@
 # include <lbcpp/Execution/ExecutionStack.h>
 # include <lbcpp/Execution/Notification.h>
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Inference/Inference.h>
 
 namespace lbcpp
 {

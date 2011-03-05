@@ -111,7 +111,4 @@
     <variable type="SupervisedEvaluator" name="elementEvaluator"/>
   </class>
 
-  <!-- Old -->
-  <class name="OldEvaluator" base="NameableObject" abstract="yes"/>
-
 </library>

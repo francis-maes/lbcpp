@@ -17,9 +17,6 @@ namespace lbcpp
 class Function;
 typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 
-class Inference;
-typedef ReferenceCountedObjectPtr<Inference> InferencePtr;
-
 class ExecutionCallback;
 typedef ReferenceCountedObjectPtr<ExecutionCallback> ExecutionCallbackPtr;
 

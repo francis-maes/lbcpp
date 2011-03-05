@@ -7,8 +7,7 @@
                                `--------------------------------------------*/
 
 #include <lbcpp/Execution/ExecutionCallback.h>
-#include <lbcpp/Inference/Inference.h>
-#include <lbcpp/Core/XmlSerialisation.h> // for ProgressionState
+#include <lbcpp/Core/XmlSerialisation.h>
 #include "Callback/ExecutionNotifications.h"
 using namespace lbcpp;
 

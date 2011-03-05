@@ -24,7 +24,7 @@
   <class name="BinaryClassificationBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
   <class name="ClassificationBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
   
-  <class name="BinaryDecisionTreeBatchLearner" base="Inference">
+  <class name="BinaryDecisionTreeBatchLearner" base="BatchLearner">
     <variable type="Integer" name="numAttributeSamplesPerSplit"/>
     <variable type="Integer" name="minimumSizeForSplitting"/>
   </class>

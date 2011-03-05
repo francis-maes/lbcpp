@@ -9,7 +9,7 @@
 #ifndef LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_HINGE_H_
 # define LBCPP_NUMERICAL_LEARNING_LOSS_FUNCTION_HINGE_H_
 
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {
