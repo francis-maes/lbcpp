@@ -25,8 +25,8 @@ public:
   virtual String toString() const
     {return T("Load ") + expectedType->getName() + T(" From File");}
 
-  virtual String getDescription(const Variable& input) const
-    {return T("Load ") + input.toShortString();}
+  virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
+    {return T("Load ") + inputs[0].toShortString();}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {

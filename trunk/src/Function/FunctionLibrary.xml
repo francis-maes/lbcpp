@@ -2,7 +2,6 @@
 
 <library name="Function" directory="Function">
 
-  <import name="MiscFunctions"/>
   <import name="ScalarFunction"/>
   <import name="ScalarVectorFunction"/>
   <import name="IterationFunction"/>

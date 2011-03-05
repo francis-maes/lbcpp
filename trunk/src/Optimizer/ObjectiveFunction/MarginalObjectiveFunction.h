@@ -29,8 +29,11 @@ public:
   virtual double compute(ExecutionContext& context, const Variable& input) const
     {return objective->compute(context, makeValue(context, input)).getDouble();}
 
-  virtual String getDescription(const Variable& input) const
-    {return objective->getDescription(makeValue(defaultExecutionContext(), input));}
+  virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
+  {
+    Variable value = makeValue(defaultExecutionContext(), inputs[0]);
+    return objective->getDescription(context, &value);
+  }
 
   String toString() const
     {return objective->toString() + T(" (") + referenceValue->getVariableName(variableIndex) + T(")");}

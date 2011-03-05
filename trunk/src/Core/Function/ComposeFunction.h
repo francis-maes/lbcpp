@@ -32,8 +32,8 @@ public:
   virtual String toString() const
     {return f->toString() + T(" -> ") + g->toString();}
 
-  virtual String getDescription(const Variable& input) const
-    {return f->getDescription(input);}
+  virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
+    {return f->getDescription(context, inputs);}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {

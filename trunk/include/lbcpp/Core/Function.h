@@ -95,7 +95,7 @@ public:
   ** Description
   */
   virtual String getDescription(ExecutionContext& context, const Variable* inputs) const
-    {return T("FIXME");}
+    {return T("Executing Function");}
 
   /*
   ** Callbacks
@@ -171,9 +171,6 @@ public:
   virtual ObjectPtr clone(ExecutionContext& context) const;
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
-  virtual String getDescription(const Variable& input) const
-    {return getClassName() + T("(") + input.toShortString() + T(")");}
-  
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -199,7 +196,9 @@ protected:
 
 extern ClassPtr functionClass;
 
-// new
+/*
+** Core functions
+*/
 extern FunctionPtr getVariableFunction(size_t variableIndex);
 extern FunctionPtr getVariableFunction(const String& variableName);
 extern FunctionPtr getElementFunction();
@@ -220,14 +219,9 @@ extern FunctionPtr signedScalarToProbabilityFunction();
 extern FunctionPtr concatenateScoreObjectFunction();
 extern FunctionPtr concatenateContainerFunction();
 
-// old
-extern FunctionPtr identityFunction(TypePtr type);
-extern FunctionPtr multiplyDoubleFunction();
-extern FunctionPtr setFieldFunction(size_t fieldIndex); // (Object,Any) Pair -> Object
-extern FunctionPtr selectVariableFunction(int index);
-extern FunctionPtr selectPairVariablesFunction(int index1 = -1, int index2 = -1, TypePtr inputPairClass = pairClass(anyType, anyType));
-// -
-
+/*
+** SimpleFunction base classes
+*/
 class SimpleFunction : public Function
 {
 public:
