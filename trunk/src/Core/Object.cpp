@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Core/Object.h>
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/Container.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Execution/ExecutionContext.h>
 #include <fstream>
@@ -280,6 +281,37 @@ int Object::compareVariables(ObjectPtr otherObject) const
   }
   return 0;
 }
+
+static void getAllChildObjectsRecursively(const ObjectPtr& object, std::set<ObjectPtr>& res)
+{
+  if (res.find(object) == res.end())
+  {
+    res.insert(object);
+
+    size_t n = object->getNumVariables();
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable v = object->getVariable(i);
+      if (v.isObject() && v.exists())
+        getAllChildObjectsRecursively(v.getObject(), res);
+    }
+
+    ContainerPtr container = object.dynamicCast<Container>();
+    if (container && container->getElementsType()->inheritsFrom(objectClass))
+    {
+      size_t n = container->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        ObjectPtr object = container->getElement(i).getObject();
+        if (object)
+          getAllChildObjectsRecursively(object, res);
+      }
+    }
+  }
+}
+
+void Object::getAllChildObjects(std::set<ObjectPtr>& res) const
+  {return getAllChildObjectsRecursively(refCountedPointerFromThis(this), res);}
 
 /*
 ** Clone

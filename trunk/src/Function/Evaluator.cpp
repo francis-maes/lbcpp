@@ -107,7 +107,7 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
   if (!res)
     return Variable::missingValue(getOutputType());
 
-  if (context.isMultiThread())
+  if (false)//context.isMultiThread())
     computeEvaluatorMultiThread(context, function, examples, res);
   else
     computeEvaluatorSingleThread(context, function, examples, res);

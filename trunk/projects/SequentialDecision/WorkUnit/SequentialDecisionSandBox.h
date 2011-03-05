@@ -40,7 +40,7 @@ public:
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const SearchTreeNodePtr& node = inputs[0].getObjectAndCast<SearchTreeNode>();
-    size_t index = node->getNodeIndex();
+    size_t index = node->getNodeUid();
     callback.sense(index, 1.0);
   }
 };
@@ -69,6 +69,80 @@ protected:
   double discount;
 };
 
+class CartesianProductEnumeration : public Enumeration
+{
+public:
+  CartesianProductEnumeration(EnumerationPtr enumeration1, EnumerationPtr enumeration2)
+    : Enumeration(enumeration1->getName() + T(" x ") + enumeration2->getName()),
+      enumeration1(enumeration1), enumeration2(enumeration2), n1(enumeration1->getNumElements()), n2(enumeration2->getNumElements())
+  {
+    jassert(n1 && n2);
+  }
+
+  virtual size_t getNumElements() const
+    {return n1 * n2;}
+
+  virtual EnumerationElementPtr getElement(size_t index) const
+  {
+    EnumerationElementPtr e1 = enumeration1->getElement(index % n1);
+    EnumerationElementPtr e2 = enumeration2->getElement(index / n1);
+    return new EnumerationElement(e1->getName() + T(", ") + e2->getName(), String::empty, e1->getShortName() + T(", ") + e2->getShortName());
+  }
+
+protected:
+  EnumerationPtr enumeration1;
+  EnumerationPtr enumeration2;
+  size_t n1, n2;
+};
+
+class CartesianProductFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleVectorClass();}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    EnumerationPtr enum1 = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
+    EnumerationPtr enum2 = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
+    jassert(enum1 && enum2);
+    n1 = enum1->getNumElements();
+    return new CartesianProductEnumeration(enum1, enum2);
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+
+    SparseDoubleVectorPtr s1 = v1.dynamicCast<SparseDoubleVector>();
+    SparseDoubleVectorPtr s2 = v2.dynamicCast<SparseDoubleVector>();
+    if (s1 && s2)
+    {
+      for (size_t i = 0; i < s2->getValues().size(); ++i)
+      {
+        std::pair<size_t, double> indexAndWeight2 = s2->getValues()[i];
+        if (!indexAndWeight2.second)
+          continue;
+        size_t startIndex = indexAndWeight2.first * n1;
+        for (size_t j = 0; j < s1->getValues().size(); ++j)
+        {
+          std::pair<size_t, double> indexAndWeight1 = s1->getValues()[j];
+          callback.sense(startIndex + indexAndWeight1.first, indexAndWeight1.second * indexAndWeight2.second);
+        }
+      }
+    }
+    else
+      jassert(false);
+  }
+
+protected:
+  size_t n1;
+};
+
 class GenericClosedSearchTreeNodeFeaturesFunction : public CompositeFunction
 {
 public:
@@ -90,7 +164,9 @@ public:
       builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 7), reward);
       builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(maxReturn), 7), currentReturn);
 
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+    size_t allFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+
+    builder.addFunction(new CartesianProductFeatureGenerator(), allFeatures, allFeatures, T("conjunctions"));
   }
 
 protected:
@@ -103,7 +179,7 @@ class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
   virtual FunctionPtr createPerceptionFunction() const
-    {return new SearchTreeNodeIndexFeatureGenerator();}
+    {return new GenericClosedSearchTreeNodeFeaturesFunction();}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -159,10 +235,10 @@ public:
 
     for (size_t i = 0; i < numPasses; ++i)
     {
-      StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
+      StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(0.01), StoppingCriterionPtr(), maxLearningIterations);
       if (rankingLoss)
         parameters->setLossFunction(rankingLoss);
-      parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
+      //parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
 
       PolicyPtr newSearchPolicy = train(context, T("iter-") + String((int)i), parameters, currentSearchPolicy, trainingStates, testingStates);
 
@@ -171,7 +247,7 @@ public:
       double bestMixtureCoefficient;
       PolicyPtr bestMixturePolicy;
 
-      for (double k = 0.0; k <= 1.0; k += 0.01)
+      for (double k = 0.0; k <= 1.005; k += 0.01)
       {
         PolicyPtr policy = mixturePolicy(currentSearchPolicy, newSearchPolicy, k);
         double score = evaluate(context, T("mixt(") + String(k) + T(")"), policy, testingStates, k);

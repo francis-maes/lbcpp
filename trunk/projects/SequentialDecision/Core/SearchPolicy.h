@@ -82,7 +82,7 @@ public:
 
   virtual void candidateAdded(ExecutionContext& context, const SearchTreePtr& searchTree, size_t nodeIndex)
   {
-    double scoreToMinimize = computeScoreToMinimize(searchTree->getNode(nodeIndex));
+    double scoreToMinimize = computeScoreToMinimize(context, searchTree->getNode(nodeIndex));
     candidates.insert(std::make_pair(scoreToMinimize, nodeIndex));
   }
 
@@ -118,8 +118,8 @@ protected:
     return res;
   }
 
-  double computeScoreToMinimize(const SearchTreeNodePtr& node) const
-    {node->computeHeuristicScore(heuristic); return -node->getHeuristicScore();}
+  double computeScoreToMinimize(ExecutionContext& context, const SearchTreeNodePtr& node) const
+    {return -heuristic->compute(context, Variable(node, searchTreeNodeClass)).getDouble();}
 };
 
 typedef ReferenceCountedObjectPtr<BestFirstSearchPolicy> BestFirstSearchPolicyPtr;
@@ -139,7 +139,7 @@ public:
 
   virtual void candidateAdded(ExecutionContext& context, const SearchTreePtr& searchTree, size_t nodeIndex)
   {
-    double scoreToMinimize = computeScoreToMinimize(searchTree->getNode(nodeIndex));
+    double scoreToMinimize = computeScoreToMinimize(context, searchTree->getNode(nodeIndex));
     if (candidates.size() >= beamSize && scoreToMinimize > worstScore)
       return; // score is not good enough
 
