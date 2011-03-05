@@ -191,8 +191,15 @@ public:
     if (rankingLoss)
       parameters->setLossFunction(rankingLoss);
     parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
-    trainAndEvaluate(context, T("pouet"), parameters, href, trainingStates, testingStates);
-    return FunctionPtr();
+    FunctionPtr hnew = train(context, T("pouet"), parameters, href, trainingStates, testingStates);
+
+    for (double k = 0.9; k <= 1.0; k += 0.01)
+    {
+      FunctionPtr interpolated = linearInterpolatedSearchHeuristic(href, hnew, k);
+      //evaluate(context, T("interpolated-train ") + String(k), interpolated, trainingStates);
+      evaluate(context, T("interpolated ") + String(k), interpolated, testingStates);
+    }
+    return hnew;
   }
 
   /*

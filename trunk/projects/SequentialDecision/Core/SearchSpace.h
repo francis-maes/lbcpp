@@ -143,6 +143,7 @@ FunctionPtr greedySearchHeuristic(double discount = 1.0);
 FunctionPtr maxReturnSearchHeuristic();
 FunctionPtr minDepthSearchHeuristic();
 FunctionPtr optimisticPlanningSearchHeuristic(double discount);
+FunctionPtr linearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k);
 
 /*
 ** SortedSearchSpace

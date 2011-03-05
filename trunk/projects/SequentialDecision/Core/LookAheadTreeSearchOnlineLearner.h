@@ -82,7 +82,7 @@ public:
 
         // update episode gradient
         c = 0;
-        double invZ = 1.0;// / (double)candidates.size();
+        double invZ = 1.0 / (double)candidates.size();
         for (std::set<size_t>::const_iterator it = candidates.begin(); it != candidates.end(); ++it, ++c)
           episodeGradient[*it] += invZ * rankingLossGradient[c];
       }
