@@ -67,8 +67,9 @@ void SequentialDecisionProblem::getAvailableActions(const Variable& state, std::
   jassert(stateType && actionType);
   if (actionType == booleanType)
   {
-    actions.push_back(Variable(false));
-    actions.push_back(Variable(true));
+    actions.resize(2);
+    actions[0] = Variable(false);
+    actions[1] = Variable(true);
     return;
   }
 

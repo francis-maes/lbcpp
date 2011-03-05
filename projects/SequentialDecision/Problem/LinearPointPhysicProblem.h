@@ -67,7 +67,7 @@ public:
 
     static const double deltaT = 0.1;
     double newVelocity = state->getVelocity() + deltaT * (action ? 1.0 : -1.0);
-    return new LinearPointPhysicState(state->getPosition() + deltaT * newVelocity, newVelocity);
+    return Variable(new LinearPointPhysicState(state->getPosition() + deltaT * newVelocity, newVelocity), getOutputType());
   }
 };
 

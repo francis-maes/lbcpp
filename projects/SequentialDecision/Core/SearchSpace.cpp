@@ -34,7 +34,7 @@ void SearchSpaceNode::open(const SequentialDecisionProblemPtr& problem, size_t p
 }
 
 void SearchSpaceNode::computeHeuristicScore(const FunctionPtr& heuristic)
-  {heuristicScore = heuristic->compute(defaultExecutionContext(), this).getDouble();}
+  {heuristicScore = heuristic->compute(defaultExecutionContext(), Variable(this, searchSpaceNodeClass)).getDouble();}
 
 void SearchSpaceNode::updateBestReturn(double newReturn, SearchSpaceNodePtr childNode)
 {
@@ -66,9 +66,10 @@ double SearchSpaceNode::getBestReturnWithoutChild(SearchSpaceNodePtr childNode) 
 /*
 ** SortedSearchSpace
 */
-SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, const Variable& initialState)
-  : problem(problem), heuristic(heuristic), discount(discount)
+SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, size_t beamSize, const Variable& initialState)
+  : problem(problem), heuristic(heuristic), discount(discount), beamSize(beamSize), worstScore(DBL_MAX)
 {
+  nodes.reserve(beamSize);
   addCandidate(new SearchSpaceNode(nodes, initialState));
 }
 
@@ -124,8 +125,19 @@ void SortedSearchSpace::addCandidate(SearchSpaceNodePtr node)
 {
   size_t index = nodes.size();
   nodes.push_back(node);
+
   node->computeHeuristicScore(heuristic);
-  candidates.insert(std::make_pair(-node->getHeuristicScore(), index));
+  double scoreToMinimize = -node->getHeuristicScore();
+  if (candidates.size() >= beamSize && scoreToMinimize > worstScore)
+    return; // score is not good enough
+
+  candidates.insert(std::make_pair(scoreToMinimize, index));
+  if (candidates.size() > beamSize)
+  {
+    jassert(candidates.size() == beamSize + 1);
+    candidates.erase(--candidates.end());
+    worstScore = candidates.rbegin()->first;
+  }
 }
 
 SearchSpaceNodePtr SortedSearchSpace::popBestCandidate(size_t& nodeIndex)
