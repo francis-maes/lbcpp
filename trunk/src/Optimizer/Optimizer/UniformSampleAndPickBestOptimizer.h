@@ -11,7 +11,7 @@
 
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
-# include <lbcpp/Inference/Inference.h> // for FunctionWorkUnit
+# include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
 {

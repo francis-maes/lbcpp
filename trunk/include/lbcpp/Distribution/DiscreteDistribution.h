@@ -123,7 +123,7 @@ public:
     {jassert(false); return 0;} // not implemented !
   
   virtual Variable sample(RandomGeneratorPtr random) const
-    {return Variable((int) round(random->sampleDoubleFromGaussian(getMean(), getVariance())), integerType);} // FIXME: variance or stddev ? // TODO arnaud
+    {return Variable((int)roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance())), integerType);} // FIXME: variance or stddev ? // TODO arnaud
 
   virtual Variable sampleBest(RandomGeneratorPtr random) const
     {jassert(false); return Variable();} // not implemented !
@@ -137,10 +137,21 @@ public:
   juce_UseDebuggingNewOperator
   
 protected:  
+  friend class IntegerGaussianDistributionClass;
+
   double mean;
   double variance;
   
-  friend class IntegerGaussianDistributionClass;
+  static inline int roundPositiveDouble(double value)
+    {return (int)(value + 0.5);}
+
+  static inline int roundDouble(double value)
+  {
+    if (value >= 0)
+      return roundPositiveDouble(value);
+    else
+      return -roundPositiveDouble(-value);
+  }
 };
   
 typedef ReferenceCountedObjectPtr<IntegerGaussianDistribution> IntegerGaussianDistributionPtr;
@@ -156,7 +167,7 @@ public:
     {return positiveIntegerType;}
   
   virtual Variable sample(RandomGeneratorPtr random) const
-    {return Variable((int) std::max(0.0, round(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
+    {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
   
   juce_UseDebuggingNewOperator
   

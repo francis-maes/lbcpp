@@ -1,18 +1,9 @@
-Boinc:
- - preparer le dataset
-   * proteines de supervision: preprocesser les .xml pour ne garder que les champs necessaire
-   
- - progression globale
- 
- - retourner les resultats pour l'optimiseur:
-     * train/validation/test scores
-     * numFeaturesPerResidue
-     * meanNumActiveFeaturesPerResidue
-     
- - reduire l'utilisation memoire:
-     * stocker le ScoreAccumulator avec des float, et faire un echantillonage plus eparse
-     * chercher les autres coupables
+Voir pour enlever MiscFunctions
 
+Boinc:
+ - progression globale
+ - retourner les resultats pour l'optimiseur:
+     * meanNumActiveFeaturesPerResidue
  - verifier que l'enregistrement des traces marche bien
  
 ProteinLearner:

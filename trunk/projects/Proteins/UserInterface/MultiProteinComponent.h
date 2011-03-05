@@ -48,7 +48,7 @@ public:
     if (proteins.size() == 1)
     {
       addTab(T("Data"), Colours::white);
-      addTab(T("Perception"), Colours::white);
+      //addTab(T("Perception"), Colours::white);
     }
     addTab(T("Protein 1D"), Colours::white);
     addTab(T("Protein 2D"), Colours::white);
@@ -61,8 +61,8 @@ public:
 
     if (tabName == T("Data"))
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
-    else if (tabName == T("Perception"))
-      return new ProteinPerceptionComponent(proteins[0]);
+//    else if (tabName == T("Perception"))
+//      return new ProteinPerceptionComponent(proteins[0]);
     else if (tabName == T("Residue Features"))
     {
       NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();

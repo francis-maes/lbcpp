@@ -11,6 +11,7 @@
 
 # include "SearchSpace.h"
 # include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {

@@ -12,14 +12,10 @@
 # include <lbcpp/Core/Variable.h>
 # include <lbcpp/Core/Container.h>
 # include <lbcpp/Data/Stream.h>
-# include <lbcpp/Inference/Inference.h>
-# include <lbcpp/Inference/ParallelInference.h>
-# include <lbcpp/NumericalLearning/NumericalLearning.h>
-# include <lbcpp/DecisionTree/DecisionTree.h>
-# include <lbcpp/Function/OldEvaluator.h>
+# include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Learning/DecisionTree.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/StoppingCriterion.h>
-
-# include <lbcpp/Inference/SequentialInference.h>
 
 namespace lbcpp
 {

@@ -11,7 +11,7 @@
 
 # include <lbcpp/Core/Frame.h>
 # include <lbcpp/Learning/Numerical.h>
-# include <lbcpp/NumericalLearning/LossFunctions.h>
+# include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 

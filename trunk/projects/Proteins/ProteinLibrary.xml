@@ -4,10 +4,8 @@
 
   <import name="Geometry"/>
   <import name="ProteinData"/>
-  <import name="ProteinPerception"/>
   <import name="ProteinPredictor"/>
   <import name="ProteinEvaluator"/>
-  <import name="ProteinInference"/>
   <import name="ProteinWorkUnit"/>
   <import name="ProteinUserInterface" ifdef="LBCPP_USER_INTERFACE"/>
 

@@ -13,7 +13,7 @@
 
 namespace lbcpp
 {
-
+/*
 InferenceOnlineLearnerPtr createOnlineLearner()
 {
   InferenceOnlineLearnerPtr res, lastLearner;
@@ -42,7 +42,7 @@ InferencePtr createRankingInference(PerceptionPtr perception)
   NumericalSupervisedInferencePtr res = allPairsRankingLinearSVMInference(T("numbers-ranker"), perception);
   res->setStochasticLearner(createOnlineLearner());
   return res;
-}
+}*/
 
 ////////////////////////
 
@@ -94,6 +94,7 @@ double binomialProbability(double numSuccess, double numTrials, double probabili
   return log(binomialProbability(featureValue, 
 }*/
 
+#if 0
 ObjectPtr estimateFeaturesExpectation(ExecutionContext& context, PerceptionPtr perception, ContainerPtr inputs)
 {
   if (!context.checkInheritance(inputs->getElementsType(), perception->getInputType()))
@@ -205,6 +206,8 @@ private:
   }
 };
 
+#endif // 0
+
 class NumbersSandBoxWorkUnit : public WorkUnit
 {
 public:
@@ -213,6 +216,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+#if 0
     // Perception
     PerceptionPtr numberPerception = twoDigitNumberFeatures();
     PerceptionPtr numberPairPerception = pairBidirectionalPerception(numberPairIsMultipleFeatures(2, 10));
@@ -238,6 +242,7 @@ public:
     ContainerPtr problem = parseNumberSequence(T("1 2 4 8 16"));
     EnrichedNumberSequencePtr enrichedProblem = new EnrichedNumberSequence(problem);
     featuresInfo.printMostRelevantFeatures(context, enrichedProblem);
+#endif // 0
     return Variable();
   }
 };

@@ -12,12 +12,14 @@
     <variable type="ObjectVector[Pair[Integer, Integer]]" name="differencesPairs"/>
   </class>
 
+  <!--
   <class name="EnrichedNumberSequencePerception" base="Perception">
     <constructor arguments="PerceptionPtr numbersPerception, PerceptionPtr pairsPerception, PerceptionPtr tripletsPerception"/>
     <variable type="Perception" name="numbersPerception"/>
     <variable type="Perception" name="pairsPerception"/>
     <variable type="Perception" name="tripletsPerception"/>
   </class>
+  -->
   
   <!-- Numbers Serie Problem -->
   <class name="NumbersSerieProblem" base="Object">
@@ -27,9 +29,10 @@
     <variable type="Integer" name="target"/>
   </class>
 
+  <!--
   <class name="NumbersSerieProblemGetNumbersPairFunction" base="Function"/>
 
-  <!-- Number Features -->
+  -- Number Features
   <class name="NumberPairIsMultipleFeatures" base="Perception">
     <constructor arguments="int firstMultiple, int lastMultiple"/>
     <variable type="Integer" name="firstMultiple"/>
@@ -50,7 +53,7 @@
   </class>
   
 
-  <!-- Generic Perceptions -->
+  -- Generic Perceptions
   <class name="ContainerIsConstantFeature" base="Perception">
     <constructor/>
   </class>
@@ -64,6 +67,7 @@
     <constructor arguments="PerceptionPtr directionalPerception"/>
     <variable type="Perception" name="directionalPerception"/>
   </class>
+  -->
 
   <!-- WorkUnit -->
   <class name="NumbersSandBoxWorkUnit" base="WorkUnit"/>

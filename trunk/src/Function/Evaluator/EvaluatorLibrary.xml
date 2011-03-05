@@ -2,7 +2,6 @@
 
 <library name="Evaluator" directory="Function/Evaluator">
   <include file="lbcpp/Function/Evaluator.h"/>
-  <include file="lbcpp/Function/OldEvaluator.h"/>
 
   <!-- ScoreObject Base Classes -->
   <class name="ScoreObject" base="Object" abstract="yes"/>

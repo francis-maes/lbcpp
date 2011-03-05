@@ -52,7 +52,7 @@ bool LearnerProgram::loadData(ExecutionContext& context)
 
   return true;
 }
-
+/*
 PerceptionPtr rewritePerception(PerceptionPtr perception)
 {
   PerceptionRewriterPtr rewriter = new PerceptionRewriter(false);
@@ -84,7 +84,7 @@ InferenceOnlineLearnerPtr LearnerProgram::createOnlineLearner() const
   
   return learner;
 }
-
+*/
 Variable LearnerProgram::run(ExecutionContext& context)
 {
   juce::uint32 startingTime = Time::getMillisecondCounter();
@@ -96,6 +96,8 @@ Variable LearnerProgram::run(ExecutionContext& context)
   std::cout << "Learning images : " << learningData->getNumElements() << std::endl;
   std::cout << "Testing images  : " << testingData->getNumElements() << std::endl;
 
+#if 0
+  jassert(false); // broken
 
   /* Perception */
   CompositePerceptionPtr perception = compositePerception(imageClass, T("Image"));
@@ -136,5 +138,7 @@ Variable LearnerProgram::run(ExecutionContext& context)
 
   inference->saveToFile(context, output.getFullPathName() + T(".inference"));
   //std::cout << "------------ Bye -------------  " << String((Time::getMillisecondCounter() - startingTime) / 1000.0) << std::endl;
+
+#endif // 0
   return true;
 }

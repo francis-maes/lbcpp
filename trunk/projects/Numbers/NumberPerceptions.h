@@ -11,8 +11,9 @@
 
 # include <lbcpp/Data/RandomGenerator.h>
 # include <lbcpp/Core/Pair.h>
-# include <lbcpp/Perception/Perception.h>
-# include <lbcpp/NumericalLearning/NumericalLearning.h>
+# include <lbcpp/Core/Vector.h>
+/*# include <lbcpp/Perception/Perception.h>
+# include <lbcpp/NumericalLearning/NumericalLearning.h>*/
 
 namespace lbcpp
 {
@@ -91,6 +92,7 @@ private:
 typedef ReferenceCountedObjectPtr<EnrichedNumberSequence> EnrichedNumberSequencePtr;
 extern ClassPtr enrichedNumberSequenceClass;
 
+/*
 extern PerceptionPtr containerSumFeatures(PerceptionPtr elementFeatures);
 extern PerceptionPtr enrichedNumberSequencePerception(PerceptionPtr numbersPerception, PerceptionPtr pairsPerception, PerceptionPtr tripletsPerception);
 
@@ -191,7 +193,7 @@ protected:
   friend class ContainerSumFeaturesClass;
   PerceptionPtr elementFeatures;
 };
-
+*/
 //////////////////////////////////////////////////////////////////
 class NumbersSerieProblem;
 typedef ReferenceCountedObjectPtr<NumbersSerieProblem> NumbersSerieProblemPtr;
@@ -273,7 +275,7 @@ private:
   std::vector<int> previousNumbers;
   int target;
 };
-
+#if 0
 class NumbersSerieProblemGetNumbersPairFunction : public Function
 {
 public:
@@ -289,7 +291,8 @@ public:
     return Variable::pair(problem->getTargetNumber(), problem->getLastPreviousNumber());
   }
 };
-
+#endif // 0
+/*
 extern PerceptionPtr numberPairDifferencePerception(PerceptionPtr differencePerception);
 
 extern PerceptionPtr singleDigitNumberFeatures();
@@ -463,7 +466,7 @@ protected:
 
   PerceptionPtr directionalPerception;
 };
-
+*/
 };
 
 #endif // !LBCPP_NUMBERS_PERCEPTION_H_

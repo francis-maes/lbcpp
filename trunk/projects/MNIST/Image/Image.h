@@ -68,7 +68,7 @@ extern ImageFunctionPtr binarizeImageFunction(size_t inputWidth, size_t inputHei
 extern ImageFunctionPtr minimumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize);
 extern ImageFunctionPtr maximumImageFunction(size_t inputWidth, size_t inputHeight, size_t blockSize);
 
-extern PerceptionPtr imageFunctionToFlattenPerception(ImageFunctionPtr function);
+//extern PerceptionPtr imageFunctionToFlattenPerception(ImageFunctionPtr function);
 
 };
 

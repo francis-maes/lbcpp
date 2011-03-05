@@ -6,10 +6,8 @@ INCLUDE_DIRECTORIES(
 
 GENERATE_INTROSPECTION_CODE(Geometry/GeometryLibrary.xml GeometryLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Perception/ProteinPerceptionLibrary.xml ProteinPerceptionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredictorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Evaluator/ProteinEvaluatorLibrary.xml ProteinEvaluatorLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Inference/ProteinInferenceLibrary.xml ProteinInferenceLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/ProteinOptimizerLibrary.xml ProteinOptimizerLibrary.cpp)
 
@@ -70,16 +68,6 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
   Data/Formats/DSSPFileParser.h
 )
 
-SET(LBCPP_PROTEIN_PERCEPTION_SOURCES
-  Perception/ProteinPerception.h
-  Perception/ProteinPerception.cpp
-  Perception/ResidueToResiduePairPerception.h
-  Perception/DisulfideBondsResiduePerception.h
-  Perception/SeparationDistanceResiduePairPerception.h
-  Perception/ProteinPerceptionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinPerceptionLibrary.cpp
-)
-
 SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/ProteinPredictor.h
   Predictor/ProteinPredictor.cpp
@@ -87,17 +75,6 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/NumericalProteinPredictorParameters.h
   Predictor/ProteinPredictorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinPredictorLibrary.cpp
-)
-
-SET(LBCPP_PROTEIN_INFERENCE_SOURCES
-  Inference/ContactMapInference.h
-  Inference/DisulfideBondsInference.h
-  Inference/ProteinInference.h
-  Inference/ProteinInference.cpp
-  Inference/ProteinInferenceFactory.h
-  Inference/ProteinInferenceFactory.cpp
-  Inference/ProteinInferenceLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinInferenceLibrary.cpp
 )
 
 SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
@@ -118,8 +95,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinInferenceEvaluator.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.cpp
   WorkUnit/ProteinInferenceEvaluatorWorkUnit.h
-  WorkUnit/AutoTuneSandBox.h
-  WorkUnit/AutoTuneSandBox.cpp
   WorkUnit/SnowBox.cpp
   WorkUnit/SnowBox.h
   WorkUnit/ProteinLearner.h
@@ -178,8 +153,6 @@ SOURCE_GROUP(Geometry FILES ${LBCPP_PROTEIN_GEOMETRY_SOURCES})
 SOURCE_GROUP(Data FILES ${LBCPP_PROTEIN_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Formats FILES ${LBCPP_PROTEIN_DATA_FORMATS_SOURCES})
 SOURCE_GROUP(Predictor FILES ${LBCPP_PROTEIN_PREDICTOR_SOURCES})
-SOURCE_GROUP("Old - Perception" FILES ${LBCPP_PROTEIN_PERCEPTION_SOURCES})
-SOURCE_GROUP("Old - Inference" FILES ${LBCPP_PROTEIN_INFERENCE_SOURCES})
 SOURCE_GROUP(Evaluator FILES ${LBCPP_PROTEIN_EVALUATOR_SOURCES})
 SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_PROTEIN_OPTIMIZER_SOURCES})
@@ -187,6 +160,3 @@ SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 
 ADD_LIBRARY(proteins${NAME_FILE_SUFFIX} SHARED ${PROTEINS_SOURCES})
 TARGET_LINK_LIBRARIES(proteins${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
-
-#ADD_EXECUTABLE(BoincEvaluator Programs/BoincEvaluator.cpp)
-#TARGET_LINK_LIBRARIES(BoincEvaluator} proteins)
