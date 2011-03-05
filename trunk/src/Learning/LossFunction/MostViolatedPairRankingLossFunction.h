@@ -28,8 +28,9 @@ public:
     std::pair<size_t, size_t> mostViolatedPair;
     bool hasViolation;    
 
-    if (areCostsBipartite(costs))
-      hasViolation = findMaxViolationBipartite(scores, costs, mostViolatedPair);
+    bool zeroIsPositive;
+    if (areCostsBipartite(costs, zeroIsPositive))
+      hasViolation = findMaxViolationBipartite(scores, costs, zeroIsPositive, mostViolatedPair);
     else
     {    
       std::map<double, std::pair<size_t, size_t> > scoreRangePerCost;
@@ -55,7 +56,7 @@ private:
     return violation * deltaCost;
   }
   
-  bool findMaxViolationBipartite(const std::vector<double>& scores, const std::vector<double>& costs, std::pair<size_t, size_t>& mostViolatedPair) const
+  bool findMaxViolationBipartite(const std::vector<double>& scores, const std::vector<double>& costs, bool zeroIsPositive, std::pair<size_t, size_t>& mostViolatedPair) const
   {
     size_t n = scores.size();
     size_t maxNegative = (size_t)-1;
@@ -66,15 +67,15 @@ private:
     for (size_t i = 0; i < n; ++i)
     {
       double score = scores[i];
-      if (costs[i])
-      {
-        if (score > maxNegativeScore)
-          maxNegativeScore = score, maxNegative = i;
-      }
-      else
+      if (isPositiveCost(costs[i], zeroIsPositive))
       {
         if (score < minPositiveScore)
           minPositiveScore = score, minPositive = i;
+      }
+      else
+      {
+        if (score > maxNegativeScore)
+          maxNegativeScore = score, maxNegative = i;
       }
     }
     

@@ -48,11 +48,14 @@ extern OnlineLearnerPtr lookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr 
 class LookAheadTreeSearchFunction : public SimpleUnaryFunction
 {
 public:
-  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, double discount, size_t maxSearchNodes, size_t beamSize)
-    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
-  {
-   
-  }
+  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, StochasticGDParametersPtr learnerParameters, FunctionPtr explorationHeuristic, double discount, size_t maxSearchNodes, size_t beamSize)
+    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), learnerParameters(learnerParameters), explorationHeuristic(explorationHeuristic), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
+    {}
+
+  LookAheadTreeSearchFunction(SequentialDecisionProblemPtr problem, FunctionPtr heuristic, double discount, size_t maxSearchNodes, size_t beamSize)
+    : SimpleUnaryFunction(anyType, anyType), problem(problem), heuristic(heuristic), discount(discount), maxSearchNodes(maxSearchNodes), beamSize(beamSize)
+    {}
+
   LookAheadTreeSearchFunction() : SimpleUnaryFunction(anyType, anyType) {}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
@@ -67,7 +70,6 @@ public:
 
     TypePtr outputType = SimpleUnaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
 
-    const size_t maxIterations = 100;
     if (learnerParameters)
     {
       setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, outputType));
@@ -82,33 +84,36 @@ public:
         onlineLearners.push_back(restoreBestParametersOnlineLearner());
       setOnlineLearner(compositeOnlineLearner(onlineLearners));
 
-      LearnableSearchHeuristicPtr learnableHeuristic = heuristic.dynamicCast<LearnableSearchHeuristic>();
-      if (learnableHeuristic)
+      LearnableSearchHeuristicPtr learnedHeuristic = heuristic.dynamicCast<LearnableSearchHeuristic>();
+      if (learnedHeuristic)
       {
         OnlineLearnerPtr stochasticGDLearner = stochasticGDOnlineLearner(FunctionPtr(), learnerParameters->getLearningRate(), learnerParameters->doNormalizeLearningRate());
-        learnableHeuristic->getScoringFunction()->setOnlineLearner(stochasticGDLearner);
+        learnedHeuristic->getScoringFunction()->setOnlineLearner(stochasticGDLearner);
       }
     }
     return outputType;
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
+    {return search(context, isCurrentlyLearning() ? explorationHeuristic : heuristic, initialState);}
+
+  SortedSearchSpacePtr search(ExecutionContext& context, const FunctionPtr& heuristic, const Variable& initialState) const
   {
     SortedSearchSpacePtr searchSpace = new SortedSearchSpace(problem, heuristic, discount, beamSize, initialState);
     searchSpace->reserveNodes(2 * maxSearchNodes);
-
     for (size_t j = 0; j < maxSearchNodes; ++j)
-    {
-      //if (RandomGenerator::getInstance()->sampleBool(0.1))
-      //  searchSpace->exploreRandomNode(context);
-      //else
       searchSpace->exploreBestNode(context);
-    }
     return searchSpace;
   }
 
+  void setHeuristic(const FunctionPtr& heuristic)
+    {this->heuristic = heuristic;}
+
   const FunctionPtr& getHeuristic() const
     {return heuristic;}
+
+  size_t getBeamSize() const
+    {return beamSize;}
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
@@ -123,6 +128,7 @@ protected:
   SequentialDecisionProblemPtr problem;
   FunctionPtr heuristic;
   StochasticGDParametersPtr learnerParameters;
+  FunctionPtr explorationHeuristic;
   double discount;
   size_t maxSearchNodes;
   size_t beamSize;

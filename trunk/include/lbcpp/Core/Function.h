@@ -39,6 +39,8 @@ typedef ReferenceCountedObjectPtr<ScoreObject> ScoreObjectPtr;
 class Function : public Object
 {
 public:
+  Function() : learning(false) {}
+
   /*
   ** Type checking
   */
@@ -153,6 +155,9 @@ public:
   ScoreObjectPtr evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
   ScoreObjectPtr evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
 
+  bool isCurrentlyLearning() const
+    {return learning;}
+
   /*
   ** High level dynamic computation (calls callbacks and push into stack if requested)
   */
@@ -182,6 +187,7 @@ protected:
 
 protected:
   friend class FunctionClass;
+  friend class BatchLearner;
   
   std::vector<VariableSignaturePtr> inputVariables;
   VariableSignaturePtr outputVariable;
@@ -192,6 +198,7 @@ protected:
   OnlineLearnerPtr onlineLearner;
 
   DynamicClassPtr inputsClass;
+  bool learning;
 };
 
 extern ClassPtr functionClass;

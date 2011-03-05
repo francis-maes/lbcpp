@@ -19,21 +19,23 @@ namespace lbcpp
 class LookAheadTreeSearchOnlineLearner : public OnlineLearner
 {
 public:
-  LookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr rankingLoss = RankingLossFunctionPtr())
+  LookAheadTreeSearchOnlineLearner(RankingLossFunctionPtr rankingLoss)
     : context(NULL), rankingLoss(rankingLoss)
   {
     if (!rankingLoss)
       this->rankingLoss = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
   }
 
+  LookAheadTreeSearchOnlineLearner() : context(NULL) {}
+
   virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     this->context = &context;
     searchFunction = f.staticCast<LookAheadTreeSearchFunction>();
-
-    LearnableSearchHeuristicPtr heuristic = searchFunction->getHeuristic().staticCast<LearnableSearchHeuristic>();
-    featuresFunction = heuristic->getPerceptionFunction();
-    scoringFunction = heuristic->getScoringFunction().staticCast<NumericalLearnableFunction>();
+    LearnableSearchHeuristicPtr learnedHeuristic = searchFunction->getHeuristic().dynamicCast<LearnableSearchHeuristic>();
+    jassert(learnedHeuristic);
+    featuresFunction = learnedHeuristic->getPerceptionFunction();
+    scoringFunction = learnedHeuristic->getScoringFunction().staticCast<NumericalLearnableFunction>();
     jassert(scoringFunction);
   }
 
@@ -42,6 +44,7 @@ public:
     const SortedSearchSpacePtr& searchSpace = output.getObjectAndCast<SortedSearchSpace>();
 
     size_t numOpenedNodes = searchSpace->getNumOpenedNodes();
+    size_t beamSize = searchFunction->getBeamSize();
 
     std::set<size_t> candidates;
     candidates.insert(0);
@@ -63,7 +66,7 @@ public:
           SearchSpaceNodePtr node = searchSpace->getNode(*it);
           scores[c] = node->getHeuristicScore();
 
-          double cost = searchSpace->getBestReturn() == node->getBestReturn() ? -node->getReward() : 0.0;
+          double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
 
           //double cost = node->getParentNode()->getBestReturnWithoutChild(node) - node->getParentNode()->getBestReturn();
           //double cost = node->getParentNode()->getBestReturn() - node->getBestReturn();
@@ -91,6 +94,9 @@ public:
       if (begin >= 0)
         for (int childIndex = begin; childIndex < node->getChildEndIndex(); ++childIndex)
           candidates.insert(childIndex);
+      if (beamSize)
+        while (candidates.size() > beamSize)
+          candidates.erase(--candidates.end());
     }
 
     // apply episode gradient
@@ -129,15 +135,15 @@ public:
     return false;
   }
 
-
 private:
   friend class LookAheadTreeSearchOnlineLearnerClass;
 
   ExecutionContext* context;
+  RankingLossFunctionPtr rankingLoss;
+
   LookAheadTreeSearchFunctionPtr searchFunction;
   FunctionPtr featuresFunction;
   NumericalLearnableFunctionPtr scoringFunction;
-  RankingLossFunctionPtr rankingLoss;
 
   ScalarVariableStatistics selectedNodesCost;
   ScalarVariableStatistics gradientNorm;

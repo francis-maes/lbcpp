@@ -28,8 +28,9 @@ public:
     if (hingeLoss && !output)
     {
       // todo: implement output computation in specialized versions
-      if (areCostsBipartite(costs))
-        computeAllPairsBipartiteLargeMargin(scores, costs, hingeLoss->getMargin(), output, gradient);
+      bool zeroIsPositive;
+      if (areCostsBipartite(costs, zeroIsPositive))
+        computeAllPairsBipartiteLargeMargin(scores, costs, zeroIsPositive, hingeLoss->getMargin(), output, gradient);
       else
       {
         std::vector<size_t> order;
@@ -74,10 +75,11 @@ public:
       }
         
       // test "bipartite"
-      if (areCostsBipartite(costs))
+      bool zeroIsPositive;
+      if (areCostsBipartite(costs, zeroIsPositive))
       {
         std::vector<double> gradient(n, 0.0);
-        computeAllPairsBipartiteLargeMargin(scores, costs, hingeLoss->getMargin(), NULL, &gradient);
+        computeAllPairsBipartiteLargeMargin(scores, costs, zeroIsPositive, hingeLoss->getMargin(), NULL, &gradient);
         jassert(gradient == refGradient);
       }
     }
@@ -107,7 +109,7 @@ protected:
       multiplyOutputAndGradient(output, gradient, 1.0 / numPairs);
   }
   
-  void computeAllPairsBipartiteLargeMargin(const std::vector<double>& scores, const std::vector<double>& costs, double margin, 
+  void computeAllPairsBipartiteLargeMargin(const std::vector<double>& scores, const std::vector<double>& costs, bool zeroIsPositive, double margin, 
                                 double* output, std::vector<double>* gradient) const
   {
     jassert(!output); // value computation not implemented yet
@@ -122,7 +124,7 @@ protected:
       int forwardIndex = (int)n - 1;
       double forwardCosts = 0;
       for (int i = (int)n - 1; i >= 0; --i)
-        if (costs[order[i]]) // negative
+        if (!isPositiveCost(order[i], zeroIsPositive)) // negative
         {
           double scorePlusMargin = scores[order[i]] + margin;
           while (forwardIndex >= 0 && scores[order[forwardIndex]] <= scorePlusMargin)
@@ -138,7 +140,7 @@ protected:
       size_t backwardIndex = 0;
       double backwardCosts = 0;
       for (size_t i = 0; i < n; ++i)
-        if (costs[order[i]] == 0) // positive
+        if (isPositiveCost(order[i], zeroIsPositive)) // positive
         {
           double scoreMinusMargin = scores[order[i]] - margin;
           while (backwardIndex < n && scores[order[backwardIndex]] >= scoreMinusMargin)
@@ -155,7 +157,7 @@ protected:
     size_t numNegatives = 0;
     double cost = 1.0;
     for (size_t i = 0; i < n; ++i)
-      if (costs[i])
+      if (!isPositiveCost(i, zeroIsPositive))
         ++numNegatives, cost = costs[i];
       else
         ++numPositives;

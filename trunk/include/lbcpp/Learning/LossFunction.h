@@ -106,7 +106,8 @@ protected:
   static void sortScores(const std::vector<double>& scores, std::vector<size_t>& res);
 
   // returns true if all costs are equal to 0 or equal to a shared positive constant
-  static bool areCostsBipartite(const std::vector<double>& costs);
+  static bool areCostsBipartite(const std::vector<double>& costs, bool& zeroIsPositive);
+  static bool isPositiveCost(double cost, bool& zeroIsPositive);
 
   // returns a map from costs to (argmin scores, argmax scores) pairs
   static void getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res);

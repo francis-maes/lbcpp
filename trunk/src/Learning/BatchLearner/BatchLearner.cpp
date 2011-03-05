@@ -14,7 +14,11 @@ Variable BatchLearner::computeFunction(ExecutionContext& context, const Variable
   const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
   ObjectVectorPtr trainingData = makeObjectVector(inputs[1].getObjectAndCast<Container>());
   ObjectVectorPtr validationData = makeObjectVector(getNumInputs() == 3 ? inputs[2].getObjectAndCast<Container>() : ContainerPtr());
-  return train(context, function, trainingData->getObjects(), validationData ? validationData->getObjects() : std::vector<ObjectPtr>());
+  jassert(!function->learning);
+  function->learning = true;
+  Variable res = train(context, function, trainingData->getObjects(), validationData ? validationData->getObjects() : std::vector<ObjectPtr>());
+  function->learning = false;
+  return res;
 }
 
 ObjectVectorPtr BatchLearner::makeObjectVector(const ContainerPtr& container)

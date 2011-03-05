@@ -24,6 +24,52 @@
 namespace lbcpp
 {
 
+class SearchSpaceNodeIndexFeatureGenerator : public FeatureGenerator
+{
+public:
+  SearchSpaceNodeIndexFeatureGenerator(size_t maxSearchNodes = 0)
+    : maxSearchNodes(maxSearchNodes) {}
+  
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return searchSpaceNodeClass;}
+  /*
+  struct Enum : public Enumeration
+  {
+    Enum(size_t n)
+      : Enumeration(T("SearchSpaceNodeIndex")), n(n) {}
+
+    size_t n;
+
+    virtual size_t getNumElements() const
+      {return n;}
+
+    virtual EnumerationElementPtr getElement(size_t index) const
+    {
+      String str((int)index);
+      return new EnumerationElement(T("Node ") + str, String::empty, str);
+    }
+  };
+*/
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+    {return positiveIntegerEnumerationEnumeration;}// new Enum(maxSearchNodes);}
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const SearchSpaceNodePtr& node = inputs[0].getObjectAndCast<SearchSpaceNode>();
+    size_t index = node->getNodeIndex();
+    //jassert(index < maxSearchNodes);
+    callback.sense(index, 1.0);
+  }
+
+private:
+  friend class SearchSpaceNodeIndexFeatureGeneratorClass;
+        
+  size_t maxSearchNodes;
+};
+
 class HeuristicSearchSpaceNodeFeaturesFunction : public CompositeFunction
 {
 public:
@@ -81,8 +127,13 @@ protected:
 class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
+  LinearLearnableSearchHeuristic(size_t maxSearchNodes = 0)
+    : maxSearchNodes(maxSearchNodes) {}
+
+  size_t maxSearchNodes;
+
   virtual FunctionPtr createPerceptionFunction() const
-    {return new HeuristicSearchSpaceNodeFeaturesFunction();}
+    {return new SearchSpaceNodeIndexFeatureGenerator(maxSearchNodes);}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -135,6 +186,12 @@ public:
   {
     evaluate(context, T("href-train"), href, trainingStates);
     evaluate(context, T("href-test"), href, testingStates);
+    
+    StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(1.0), StoppingCriterionPtr(), maxLearningIterations);
+    if (rankingLoss)
+      parameters->setLossFunction(rankingLoss);
+    parameters->setStoppingCriterion(averageImprovementStoppingCriterion(10e-6));
+    trainAndEvaluate(context, T("pouet"), parameters, href, trainingStates, testingStates);
     return FunctionPtr();
   }
 
@@ -164,7 +221,7 @@ public:
 protected:
   bool evaluate(ExecutionContext& context, const String& heuristicName, FunctionPtr heuristic, ContainerPtr initialStates) const
   {
-    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, LearnerParametersPtr(), discount, maxSearchNodes, beamSize);
+    FunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, discount, maxSearchNodes, beamSize);
     if (!lookAHeadSearch->initialize(context, problem->getStateType()))
       return false;
 
@@ -177,19 +234,20 @@ protected:
     return true;
   }
 
-  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  FunctionPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, FunctionPtr explorationHeuristic, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
     parameters->setEvaluator(new SearchSpaceEvaluator());
-    FunctionPtr heuristic = new LinearLearnableSearchHeuristic();
-    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, heuristic, parameters, discount, maxSearchNodes, beamSize);
+    LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic(maxSearchNodes);
+    learnedHeuristic->initialize(context, (TypePtr)searchSpaceNodeClass);
+    LookAheadTreeSearchFunctionPtr lookAHeadSearch = new LookAheadTreeSearchFunction(problem, learnedHeuristic, parameters, explorationHeuristic, discount, maxSearchNodes, beamSize);
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
       return FunctionPtr();
-    return lookAHeadSearch->getHeuristic();
+    return learnedHeuristic;
   }
 
-  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
+  bool trainAndEvaluate(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, FunctionPtr explorationHeuristic, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
-    FunctionPtr heuristic = train(context, name, parameters, trainingStates, testingStates);
+    FunctionPtr heuristic = train(context, name, parameters, explorationHeuristic, trainingStates, testingStates);
     return heuristic && evaluate(context, name + T("-train"), heuristic, trainingStates) 
         && evaluate(context, name + T("-test"), heuristic, testingStates);
   }

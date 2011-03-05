@@ -149,6 +149,7 @@ protected:
       jassert(gradient);
       function->addGradient(Variable(), gradient, target, weight);
       ++epoch;
+      updateNumberOfActiveFeatures(gradient);
       lossValue.push(gradient->l2norm());
     }
     else
