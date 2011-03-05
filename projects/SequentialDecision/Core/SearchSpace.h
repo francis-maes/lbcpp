@@ -24,8 +24,8 @@ typedef std::vector<SearchSpaceNodePtr> SearchSpaceNodeVector;
 class SearchSpaceNode : public Object
 {
 public:
-  SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState = Variable());
-  SearchSpaceNode() : allNodes(*(const SearchSpaceNodeVector* )0) {}
+  SearchSpaceNode(const SearchSpaceNodeVector& allNodes, size_t nodeIndex, const Variable& initialState = Variable());
+  SearchSpaceNode() : nodeIndex(0), allNodes(*(const SearchSpaceNodeVector* )0) {}
 
   void open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action, double discount);
 
@@ -60,6 +60,9 @@ public:
   /*
   ** Parent
   */
+  size_t getNodeIndex() const
+    {return nodeIndex;}
+
   int getParentIndex() const
     {return parentIndex;}
 
@@ -101,6 +104,7 @@ protected:
   friend class SearchSpaceNodeClass;
 
   const SearchSpaceNodeVector& allNodes;
+  size_t nodeIndex;
 
   Variable state;
   size_t depth;

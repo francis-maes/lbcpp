@@ -138,7 +138,7 @@ void RankingLossFunction::computeRankingLoss(const std::vector<double>& scores, 
   jassert(false);
 }
 
-bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs)
+bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs, bool& zeroIsPositive)
 {
   double positiveCost = 0.0;
   bool positiveCostDefined = false;
@@ -151,12 +151,19 @@ bool RankingLossFunction::areCostsBipartite(const std::vector<double>& costs)
           return false;
       }
       else
-        positiveCost = costs[i], positiveCostDefined = true;
+        positiveCost = costs[i], positiveCostDefined = true, zeroIsPositive = (costs[i] > 0);
     }
     
   return positiveCostDefined;
 }
 
+bool RankingLossFunction::isPositiveCost(double cost, bool& zeroIsPositive)
+{
+  if (cost == 0)
+    return zeroIsPositive;
+  else
+    return !zeroIsPositive;
+}
 
 // returns a map from costs to (argmin scores, argmax scores) pairs
 void RankingLossFunction::getScoreRangePerCost(const std::vector<double>& scores, const std::vector<double>& costs, std::map<double, std::pair<size_t, size_t> >& res)

@@ -76,6 +76,15 @@ protected:
     if (function->hasOnlineLearner())
       res.push_back(function);
     
+    // special case for composite functions
+    CompositeFunctionPtr compositeFunction = function.dynamicCast<CompositeFunction>();
+    if (compositeFunction)
+    {
+      for (size_t i = 0; i < compositeFunction->getNumSubFunctions(); ++i)
+        getAllFunctionsThatHaveAnOnlineLearner(compositeFunction->getSubFunction(i), res);
+      return;
+    }
+
     size_t n = function->getNumVariables();
     for (size_t i = 0; i < n; ++i)
     {

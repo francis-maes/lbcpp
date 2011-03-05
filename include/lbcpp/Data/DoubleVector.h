@@ -166,7 +166,7 @@ public:
     {jassert(values && index <= values->size()); return &(*values)[0] + index;}
 
   double& getValueReference(size_t index)
-    {return *getValuePointer(index);}
+    {ensureSize(index + 1); return *getValuePointer(index);}
 
   double getValue(size_t index) const
     {jassert(values); return index < values->size() ? (*values)[index] : 0.0;}

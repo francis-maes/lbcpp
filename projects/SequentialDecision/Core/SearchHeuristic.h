@@ -43,7 +43,7 @@ class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
   virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
-    {return -(double)node->getDepth();}
+    {return -log10(1.0 + (double)node->getDepth());}
 };
 
 class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic

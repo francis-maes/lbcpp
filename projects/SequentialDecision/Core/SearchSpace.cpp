@@ -12,8 +12,8 @@ using namespace lbcpp;
 /*
 ** SearchSpaceNode
 */
-SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, const Variable& initialState)
-  : allNodes(allNodes), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
+SearchSpaceNode::SearchSpaceNode(const SearchSpaceNodeVector& allNodes, size_t nodeIndex, const Variable& initialState)
+  : allNodes(allNodes), nodeIndex(nodeIndex), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
     parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0), heuristicScore(0.0)
 {
 }
@@ -70,7 +70,7 @@ SortedSearchSpace::SortedSearchSpace(SequentialDecisionProblemPtr problem, Funct
   : problem(problem), heuristic(heuristic), discount(discount), beamSize(beamSize), worstScore(DBL_MAX)
 {
   nodes.reserve(beamSize);
-  addCandidate(new SearchSpaceNode(nodes, initialState));
+  addCandidate(new SearchSpaceNode(nodes, 0, initialState));
 }
 
 void SortedSearchSpace::exploreNode(ExecutionContext& context, size_t nodeIndex)
@@ -84,7 +84,7 @@ void SortedSearchSpace::exploreNode(ExecutionContext& context, size_t nodeIndex)
   node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
   for (size_t i = 0; i < actions.size(); ++i)
   {
-    SearchSpaceNodePtr node = new SearchSpaceNode(nodes);
+    SearchSpaceNodePtr node = new SearchSpaceNode(nodes, firstChildIndex + i);
     node->open(problem, nodeIndex, actions[i], discount);
     addCandidate(node);
   }

@@ -40,6 +40,8 @@
   <class name="LookAheadTreeSearchFunction" base="Function">
     <variable type="SequentialDecisionProblem" name="problem"/>
     <variable type="Function" name="heuristic"/>
+    <variable type="StochasticGDParameters" name="learnerParameters"/>
+    <variable type="Function" name="explorationHeuristic"/>
     <variable type="Double" name="discount"/>
     <variable type="PositiveInteger" name="maxSearchNodes"/>
     <variable type="PositiveInteger" name="beamSize"/>

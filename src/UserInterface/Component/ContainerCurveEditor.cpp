@@ -320,6 +320,12 @@ protected:
         boundsWidth = length * 1.2;
         return;
       }
+      else if (maxValue == minValue)
+      {
+        boundsX = minValue - 1.1;
+        boundsWidth = 2.2;
+        return;
+      }
     }
     boundsX = axis->getRangeMin();
     boundsWidth = axis->getRangeMax() - axis->getRangeMin();
@@ -338,6 +344,12 @@ protected:
         double length = maxValue - minValue;
         boundsY = minValue - length * 0.1;
         boundsHeight = length * 1.2;
+        return;
+      }
+      else if (maxValue == minValue)
+      {
+        boundsY = minValue - 1.1;
+        boundsHeight = 2.2;
         return;
       }
     }

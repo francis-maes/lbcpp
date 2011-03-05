@@ -254,7 +254,10 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
   if (doScope)
     context.enterScope(scopeName);
 
+  bool learningFlag = learning;
+  const_cast<Function* >(this)->learning = false;
   ScoreObjectPtr res = evaluator->compute(context, refCountedPointerFromThis(this), examples).getObjectAndCast<ScoreObject>();
+  const_cast<Function* >(this)->learning = learningFlag;
 
   if (doScope)
   {
