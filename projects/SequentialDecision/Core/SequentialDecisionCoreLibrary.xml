@@ -34,6 +34,13 @@
     <constructor arguments="double discount"/>
     <variable type="Double" name="discount"/>
   </class>
+  <class name="LinearInterpolatedSearchHeuristic" base="Function" shortName="lerp">
+    <constructor arguments="FunctionPtr heuristic1, FunctionPtr heuristic2, double k"/>
+    <variable type="Function" name="heuristic1"/>
+    <variable type="Function" name="heuristic2"/>
+    <variable type="Double" name="k"/>
+  </class>
+  
   <class name="LearnableSearchHeuristic" base="CompositeFunction" abstract="yes"/>
 
   <!-- LookAheadTreeSearchFunction -->

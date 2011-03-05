@@ -64,6 +64,36 @@ private:
   double discount;
 };
 
+class LinearInterpolatedSearchHeuristic : public SimpleSearchHeuristic
+{
+public:
+  LinearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k)
+    : heuristic1(heuristic1), heuristic2(heuristic2), k(k) {}
+  LinearInterpolatedSearchHeuristic() : k(0.0) {}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    if (!heuristic1->initialize(context, (TypePtr)searchSpaceNodeClass) ||
+        !heuristic2->initialize(context, (TypePtr)searchSpaceNodeClass))
+      return TypePtr();
+    return SimpleSearchHeuristic::initializeFunction(context, inputVariables, outputName, outputShortName);
+  }
+
+  virtual double computeHeuristic(const SearchSpaceNodePtr& node) const
+  {
+    double h1 = heuristic1->compute(defaultExecutionContext(), node).getDouble();
+    double h2 = heuristic2->compute(defaultExecutionContext(), node).getDouble();
+    return h1 + k * (h2 - h1);
+  }
+
+protected:
+  friend class LinearInterpolatedSearchHeuristicClass;
+
+  FunctionPtr heuristic1;
+  FunctionPtr heuristic2;
+  double k;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SAND_BOX_H_
