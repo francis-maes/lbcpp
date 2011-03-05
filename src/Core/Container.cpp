@@ -192,7 +192,7 @@ class ApplyFunctionInContainerWorkUnit : public WorkUnit
 {
 public:
   ApplyFunctionInContainerWorkUnit(ContainerPtr source, FunctionPtr function, ContainerPtr target, size_t index)
-    : description(function->getDescription(source->getElement(index))), source(source),
+    : description(T("Applying function")), source(source),
       function(function), target(target), index(index), progressionUnit(function->getRequiredInputType(0, 1)->getName() + T("s")){}
 
   virtual String toString() const

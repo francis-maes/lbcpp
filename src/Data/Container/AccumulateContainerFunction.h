@@ -91,7 +91,7 @@ public:
     DenseDoubleVectorPtr res = value.dynamicCast<DenseDoubleVector>();
     jassert(res);
     for (size_t i = 0; i < numSubElements; ++i)
-      values[index][i] = res->getValue(i);
+      values[index][i] = (float)res->getValue(i);
   }
 
   lbcpp_UseDebuggingNewOperator
