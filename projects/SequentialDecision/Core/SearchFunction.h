@@ -34,7 +34,13 @@ public:
 
   const FunctionPtr& getScoringFunction() const
     {return functions[1];}
- 
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    Variable res = CompositeFunction::computeFunction(context, inputs);
+    return res.exists() ? res.getDouble() : 0.0;
+  }
+
 protected:
   virtual FunctionPtr createPerceptionFunction() const = 0; // SearchNode -> Features
   virtual FunctionPtr createScoringFunction() const = 0;    // Features -> Score

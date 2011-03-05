@@ -114,6 +114,16 @@ public:
   const NumericalLearnableFunctionPtr& getNumericalLearnableFunction() const
     {return function.staticCast<NumericalLearnableFunction>();}
 
+  void addComputedGradient(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double lossValue)
+  {
+    double weight = -computeLearningRate();
+    jassert(gradient);
+    function->addGradient(Variable(), gradient, function->getParameters(), weight);
+    ++epoch;
+    updateNumberOfActiveFeatures(gradient);
+    this->lossValue.push(lossValue);
+  }
+
 protected:
   friend class GradientDescentOnlineLearnerClass;
 
@@ -142,29 +152,16 @@ protected:
     if (failure || !inputs[1].exists())
       return; // failed or no supervision
 
-    if (inputs[1].getType() == function->getParametersClass())
+    double exampleLossValue = 0.0;
+    if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
     {
-      // the supervision is already computed gradient
-      const DoubleVectorPtr& gradient = inputs[1].getObjectAndCast<DoubleVector>();
-      jassert(gradient);
-      function->addGradient(Variable(), gradient, target, weight);
       ++epoch;
-      updateNumberOfActiveFeatures(gradient);
-      lossValue.push(gradient->l2norm());
+      lossValue.push(exampleLossValue);
     }
     else
     {
-      double exampleLossValue = 0.0;
-      if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
-      {
-        ++epoch;
-        lossValue.push(exampleLossValue);
-      }
-      else
-      {
-        context->errorCallback(T("Learning failed: could not compute loss gradient"));
-        failure = true;
-      }
+      context->errorCallback(T("Learning failed: could not compute loss gradient"));
+      failure = true;
     }
   }
 

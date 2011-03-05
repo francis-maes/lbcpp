@@ -2,8 +2,10 @@
 
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
+  <class name="CartesianProductFeatureGenerator" base="FeatureGenerator"/>
+
   <class name="SearchTreeNodeIndexFeatureGenerator" base="FeatureGenerator"/>
-  
+
   <class name="HeuristicSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
   <class name="GenericClosedSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
   <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>

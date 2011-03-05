@@ -24,7 +24,7 @@ typedef std::vector<SearchTreeNodePtr> SearchTreeNodeVector;
 class SearchTreeNode : public Object
 {
 public:
-  SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, const Variable& initialState = Variable());
+  SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const Variable& initialState = Variable());
   SearchTreeNode() : nodeIndex(0), allNodes(*(const SearchTreeNodeVector* )0) {}
 
   void open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
@@ -50,18 +50,13 @@ public:
     {return depth;}
 
   /*
-  ** Heuristic
-  */
-  double getHeuristicScore() const
-    {return heuristicScore;}
-
-  void computeHeuristicScore(const FunctionPtr& heuristic);
-
-  /*
   ** Parent
   */
   size_t getNodeIndex() const
     {return nodeIndex;}
+
+  size_t getNodeUid() const
+    {return nodeUid;}
 
   int getParentIndex() const
     {return parentIndex;}
@@ -105,6 +100,7 @@ protected:
 
   const SearchTreeNodeVector& allNodes;
   size_t nodeIndex;
+  size_t nodeUid;
 
   Variable state;
   size_t depth;
@@ -119,8 +115,6 @@ protected:
 
   SearchTreeNodePtr bestChildNode;
   double bestReturn;
-
-  double heuristicScore;
 };
 
 extern ClassPtr searchTreeNodeClass;

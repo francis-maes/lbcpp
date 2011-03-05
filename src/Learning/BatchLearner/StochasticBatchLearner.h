@@ -71,8 +71,18 @@ protected:
   size_t maxIterations;
   bool randomizeExamples;
   
+
   static void getAllFunctionsThatHaveAnOnlineLearner(const FunctionPtr& function, std::vector<FunctionPtr>& res)
   {
+    std::set<ObjectPtr> objects;
+    function->getAllChildObjects(objects);
+    for (std::set<ObjectPtr>::const_iterator it = objects.begin(); it != objects.end(); ++it)
+    {
+      FunctionPtr fun = it->dynamicCast<Function>();
+      if (fun && fun->hasOnlineLearner())
+        res.push_back(fun);
+    }
+/*    
     if (function->hasOnlineLearner())
       res.push_back(function);
     
@@ -107,7 +117,7 @@ protected:
             getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
         }
       }
-    }
+    }*/
   }
 
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const

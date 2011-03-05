@@ -12,9 +12,9 @@ using namespace lbcpp;
 /*
 ** SearchTreeNode
 */
-SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, const Variable& initialState)
-  : allNodes(allNodes), nodeIndex(nodeIndex), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
-    parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0), heuristicScore(0.0)
+SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const Variable& initialState)
+  : allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
+    parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0)
 {
 }
 
@@ -32,9 +32,6 @@ void SearchTreeNode::open(const SequentialDecisionProblemPtr& problem, size_t pa
   state = problem->computeTransition(parentNode->state, action);
   jassert(state.exists());
 }
-
-void SearchTreeNode::computeHeuristicScore(const FunctionPtr& heuristic)
-  {heuristicScore = heuristic->compute(defaultExecutionContext(), Variable(this, searchTreeNodeClass)).getDouble();}
 
 void SearchTreeNode::updateBestReturn(double newReturn, SearchTreeNodePtr childNode)
 {
@@ -71,13 +68,14 @@ SearchTree::SearchTree(SequentialDecisionProblemPtr problem, const Variable& ini
 {
   nodes.reserve(2 * maxOpenedNodes + 1);
   openedNodes.reserve(maxOpenedNodes);
-  addCandidate(defaultExecutionContext(), new SearchTreeNode(nodes, 0, initialState));
+  addCandidate(defaultExecutionContext(), new SearchTreeNode(nodes, 0, 1, initialState));
 }
 
 void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
 {
   SearchTreeNodePtr node = getNode(nodeIndex);
   jassert(node);
+  openedNodes.push_back(nodeIndex);
 
   std::vector<Variable> actions;
   problem->getAvailableActions(node->getState(), actions);
@@ -85,9 +83,9 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
   for (size_t i = 0; i < actions.size(); ++i)
   {
-    SearchTreeNodePtr node = new SearchTreeNode(nodes, firstChildIndex + i);
-    node->open(problem, nodeIndex, actions[i]);
-    addCandidate(context, node);
+    SearchTreeNodePtr childNode = new SearchTreeNode(nodes, firstChildIndex + i, node->getNodeUid() * actions.size() + i);
+    childNode->open(problem, nodeIndex, actions[i]);
+    addCandidate(context, childNode);
   }
 }
 

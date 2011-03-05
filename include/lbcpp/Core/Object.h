@@ -158,6 +158,8 @@ public:
   virtual Variable getVariable(size_t index) const;
   virtual void setVariable(size_t index, const Variable& value);
 
+  void getAllChildObjects(std::set<ObjectPtr>& res) const;
+  
   class VariableIterator
   {
   public:
