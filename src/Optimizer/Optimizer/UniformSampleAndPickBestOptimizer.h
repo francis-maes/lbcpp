@@ -13,6 +13,9 @@
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include <lbcpp/Execution/WorkUnit.h>
 
+
+// TODO arnaud : modified to use new Function interface but not tested yet
+
 namespace lbcpp
 {
 
@@ -33,7 +36,7 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) objectiveFunctionClass;
+        return (TypePtr) functionClass;
       case 1:
         return (TypePtr) uniformDistributionClass;
       default:

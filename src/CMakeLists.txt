@@ -515,9 +515,7 @@ SET(LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES
 #### Optimizer ####
 
 SET(LBCPP_OPTIMIZER_SOURCES
-  ../include/lbcpp/Optimizer/OptimizerInput.h
   ../include/lbcpp/Optimizer/Optimizer.h
-  ../include/lbcpp/Optimizer/ObjectiveFunction.h
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
 )

@@ -12,8 +12,9 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
+# include "../ObjectiveFunction/MarginalObjectiveFunction.h"
 
-// TODO arnaud : update needed to use new Function interface
+// TODO arnaud : modified to use new Function interface but not tested yet
 
 namespace lbcpp
 {
@@ -27,13 +28,13 @@ public:
     : numPasses(numPasses), reductionFactor(reductionFactor), baseOptimizer(baseOptimizer) {}
   IterativeBracketingOptimizer() {}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& i) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
-    const ObjectiveFunctionPtr& objective = input->getObjective();
-    IndependentMultiVariateDistributionPtr distribution = input->getAprioriDistribution()->cloneAndCast<IndependentMultiVariateDistribution>(context);
+    //const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
+    const FunctionPtr& objective = inputs[0].getObjectAndCast<Function>();
+    IndependentMultiVariateDistributionPtr distribution = inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>(context);
     jassert(distribution);
-    ObjectPtr currentGuess = input->getInitialGuess().getObject()->clone(context);
+    ObjectPtr currentGuess = inputs[2].getObject()->clone(context);
 
     TypePtr parametersType = distribution->getElementsType();
     size_t numVariables = parametersType->getNumMemberVariables();
@@ -47,12 +48,12 @@ public:
         if (!marginalDistribution)
           continue;
 
-        OptimizerInputPtr subOptimizerInput(new OptimizerInput(
+        /*OptimizerInputPtr subOptimizerInput(new OptimizerInput(
           marginalObjectiveFunction(objective, currentGuess, j),
           distribution->getSubDistribution(j),
-          currentGuess->getVariable(j)));
+          currentGuess->getVariable(j)));*/
         
-        Variable bestValue = baseOptimizer->compute(context, subOptimizerInput);
+        Variable bestValue = baseOptimizer->compute(context, marginalObjectiveFunction(objective, currentGuess, j), distribution->getSubDistribution(j), currentGuess->getVariable(j));
         if (bestValue.isNil())
           return Variable();
         

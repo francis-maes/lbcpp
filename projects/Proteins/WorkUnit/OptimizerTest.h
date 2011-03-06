@@ -12,7 +12,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Optimizer/ObjectiveFunction.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include "../Optimizer/ProteinGridEvoOptimizer.h"
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
@@ -46,7 +45,7 @@ namespace lbcpp
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
       
       
-      Variable var = optimizer->compute(context, new ObjectiveFunction(), distributions);
+      Variable var = optimizer->compute(context, new Function(), distributions);
       return var;
       
     }
