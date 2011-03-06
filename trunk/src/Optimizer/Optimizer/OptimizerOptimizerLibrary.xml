@@ -16,6 +16,6 @@
     <variable type="Optimizer" name="baseOptimizer"/>
   </class>
   
-  <class name="GridEvoOptimizer" base="Optimizer"/>
+  <class name="GridEvoOptimizer" base="Optimizer" abstract="yes"/>
 
 </library>

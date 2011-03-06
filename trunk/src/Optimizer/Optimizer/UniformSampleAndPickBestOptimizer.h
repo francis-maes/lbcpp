@@ -28,33 +28,17 @@ public:
   UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
     : numSamples(numSamples) {}
 
+  virtual TypePtr getRequiredAprioriType() const
+    {return uniformDistributionClass;}  // TODO arnaud : continuousDistributionClass ?
+  
   virtual size_t getMaximumNumRequiredInputs() const
     {return 2;} // do not use initial guess
   
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const DistributionPtr& apriori, const Variable& guess) const
   {
-    switch (index) 
-    {
-      case 0:
-        return (TypePtr) functionClass;
-      case 1:
-        return (TypePtr) uniformDistributionClass;
-      default:
-        jassert(false); // TODO arnaud
-        return anyType;
-    }
-  }
-
-protected:
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const FunctionPtr& objective = inputs[0].getObjectAndCast<Function>();
-    ContinuousDistributionPtr apriori = inputs[1].getObjectAndCast<ContinuousDistribution>();
-    jassert(apriori);
-    
     std::vector<double> values;
     std::vector<Variable> scores(numSamples);
-    apriori->sampleUniformly(numSamples, values);
+    apriori.dynamicCast<ContinuousDistribution>()->sampleUniformly(numSamples, values);
     
     CompositeWorkUnitPtr workUnits(new CompositeWorkUnit(T("Optimize ") + objective->toString(), numSamples));
     for (size_t i = 0; i < numSamples; ++i)
@@ -83,8 +67,9 @@ protected:
     
     std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
     return res;
+    
   }
-
+  
 protected:
   friend class UniformSampleAndPickBestOptimizerClass;
   size_t numSamples;

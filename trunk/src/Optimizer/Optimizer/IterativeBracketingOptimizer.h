@@ -15,6 +15,7 @@
 # include "../ObjectiveFunction/MarginalObjectiveFunction.h"
 
 // TODO arnaud : modified to use new Function interface but not tested yet
+// TODO arnaud : initial guess necessary ?
 
 namespace lbcpp
 {
@@ -27,15 +28,17 @@ public:
   IterativeBracketingOptimizer(size_t numPasses, double reductionFactor, const OptimizerPtr& baseOptimizer)
     : numPasses(numPasses), reductionFactor(reductionFactor), baseOptimizer(baseOptimizer) {}
   IterativeBracketingOptimizer() {}
+  
+  virtual TypePtr getRequiredAprioriType() const
+    {return independentMultiVariateDistributionClass(variableType);}
 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const DistributionPtr& apriori, const Variable& guess) const
   {
-    //const OptimizerInputPtr& input = i.getObjectAndCast<OptimizerInput>();
-    const FunctionPtr& objective = inputs[0].getObjectAndCast<Function>();
-    IndependentMultiVariateDistributionPtr distribution = inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>(context);
+    IndependentMultiVariateDistributionPtr distribution = apriori.dynamicCast<IndependentMultiVariateDistribution>();
     jassert(distribution);
-    ObjectPtr currentGuess = inputs[2].getObject()->clone(context);
-
+    ObjectPtr currentGuess = guess.getObject()->clone(context);
+    // TODO arnaud : jassert
+    
     TypePtr parametersType = distribution->getElementsType();
     size_t numVariables = parametersType->getNumMemberVariables();
     for (size_t i = 0; i < numPasses; ++i)
@@ -43,15 +46,15 @@ public:
       for (size_t j = 0; j < numVariables; ++j)
       {
         //Object::displayObjectAllocationInfo(std::cerr);
-
+        
         DistributionPtr marginalDistribution = distribution->getSubDistribution(j);
         if (!marginalDistribution)
           continue;
-
+        
         /*OptimizerInputPtr subOptimizerInput(new OptimizerInput(
-          marginalObjectiveFunction(objective, currentGuess, j),
-          distribution->getSubDistribution(j),
-          currentGuess->getVariable(j)));*/
+         marginalObjectiveFunction(objective, currentGuess, j),
+         distribution->getSubDistribution(j),
+         currentGuess->getVariable(j)));*/
         
         Variable bestValue = baseOptimizer->compute(context, marginalObjectiveFunction(objective, currentGuess, j), distribution->getSubDistribution(j), currentGuess->getVariable(j));
         if (bestValue.isNil())
@@ -60,7 +63,7 @@ public:
         currentGuess->setVariable(j, bestValue);
         marginalDistribution = updateMarginalDistribution(marginalDistribution, bestValue);
         distribution->setSubDistribution(j, marginalDistribution);
-
+        
         context.informationCallback(T("Pass ") + String((int)i + 1) + T(" Param ") + currentGuess->getVariableName(j) + T(" Guess ") + currentGuess->toShortString());
         Variable(distribution).printRecursively(std::cout);
       }

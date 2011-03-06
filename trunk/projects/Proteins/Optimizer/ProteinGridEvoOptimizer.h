@@ -54,25 +54,16 @@ namespace lbcpp
   class ProteinGridEvoOptimizer : public GridEvoOptimizer
   {
   public:
+    virtual TypePtr getRequiredAprioriType() const
+      {return independentMultiVariateDistributionClass(variableType);}  // TODO arnaud : continuousDistributionClass ?
+    
     virtual size_t getMaximumNumRequiredInputs() const
       {return 2;} // do not use initial guess
     
-    virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {
-      switch (index) 
-      {
-        case 0:
-          return (TypePtr) functionClass;
-        case 1:
-          return (TypePtr) independentMultiVariateDistributionClass(variableType);
-        default:
-          jassert(false); // TODO arnaud
-          return anyType;
-      }
-    }
+    virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const;
     
   protected:
-    virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+    //virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
     
     friend class ProteinGridEvoOptimizerClass;
   };  
