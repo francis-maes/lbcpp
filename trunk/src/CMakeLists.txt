@@ -51,6 +51,7 @@ GENERATE_INTROSPECTION_CODE(Learning/LossFunction/LearningLossFunctionLibrary.xm
 GENERATE_INTROSPECTION_CODE(Optimizer/OptimizerLibrary.xml OptimizerLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Optimizer/State/OptimizerStateLibrary.xml OptimizerStateLibrary.cpp)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/Component/UserInterfaceComponentLibrary.xml UserInterfaceComponentLibrary.cpp)
@@ -534,6 +535,12 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
 
+SET(LBCPP_OPTIMIZER_STATE_SOURCES
+  Optimizer/State/GridEvoOptimizerState.h
+  Optimizer/State/OptimizerStateLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/OptimizerStateLibrary.cpp
+)
+
 #### UserInterface ####
 IF(LBCPP_USER_INTERFACE)
 
@@ -676,6 +683,7 @@ SET(LBCPP_SOURCES
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
+    ${LBCPP_OPTIMIZER_STATE_SOURCES}
     
   # User Interface
   ${LBCPP_USER_INTERFACE_SOURCES}
@@ -749,6 +757,7 @@ SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TRE
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(Optimizer State FILES ${LBCPP_OPTIMIZER_STATE_SOURCES})
 
 ## UserInterface
 SOURCE_GROUP(UserInterface FILES ${LBCPP_USER_INTERFACE_SOURCES})

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="OptimizerState" directory="Optimizer/State">
+
+  <class name="GridEvoOptimizerState" base="Object">
+    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
+  </class>
+
+</library>

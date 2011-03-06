@@ -27,14 +27,11 @@ class UniformSampleAndPickBestOptimizer : public Optimizer
 public:
   UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
     : numSamples(numSamples) {}
-
-  virtual TypePtr getRequiredAprioriType() const
+  
+  virtual TypePtr getRequestedPriorKnowledgeType() const
     {return uniformDistributionClass;}  // TODO arnaud : continuousDistributionClass ?
-  
-  virtual size_t getMaximumNumRequiredInputs() const
-    {return 2;} // do not use initial guess
-  
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const DistributionPtr& apriori, const Variable& guess) const
+    
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
   {
     std::vector<double> values;
     std::vector<Variable> scores(numSamples);

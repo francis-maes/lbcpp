@@ -29,14 +29,14 @@ public:
     : numPasses(numPasses), reductionFactor(reductionFactor), baseOptimizer(baseOptimizer) {}
   IterativeBracketingOptimizer() {}
   
-  virtual TypePtr getRequiredAprioriType() const
-    {return independentMultiVariateDistributionClass(variableType);}
-
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const DistributionPtr& apriori, const Variable& guess) const
+  virtual TypePtr getRequestedPriorKnowledgeType() const
+    {return independentMultiVariateDistributionClass(variableType);}  // TODO arnaud : multiVariateDistributionClass
+  
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
   {
     IndependentMultiVariateDistributionPtr distribution = apriori.dynamicCast<IndependentMultiVariateDistribution>();
     jassert(distribution);
-    ObjectPtr currentGuess = guess.getObject()->clone(context);
+    ObjectPtr currentGuess = distribution->sampleBest(RandomGenerator::getInstance()).getObject();  // TODO arnaud : before it was : guess.getObject()->clone(context);
     // TODO arnaud : jassert
     
     TypePtr parametersType = distribution->getElementsType();
@@ -50,11 +50,6 @@ public:
         DistributionPtr marginalDistribution = distribution->getSubDistribution(j);
         if (!marginalDistribution)
           continue;
-        
-        /*OptimizerInputPtr subOptimizerInput(new OptimizerInput(
-         marginalObjectiveFunction(objective, currentGuess, j),
-         distribution->getSubDistribution(j),
-         currentGuess->getVariable(j)));*/
         
         Variable bestValue = baseOptimizer->compute(context, marginalObjectiveFunction(objective, currentGuess, j), distribution->getSubDistribution(j), currentGuess->getVariable(j));
         if (bestValue.isNil())

@@ -63,5 +63,5 @@
   
   <!-- Optimizer Example -->
   <class name="OptimizerExampleWorkUnit" base="WorkUnit"/>
-  <class name="TestObjectiveFunction" base="ObjectiveFunction"/>
+  <class name="TestObjectiveFunction" base="Function"/>
 </library>
