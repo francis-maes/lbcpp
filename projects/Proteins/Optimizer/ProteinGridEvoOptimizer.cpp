@@ -9,7 +9,7 @@
 #include "precompiled.h"
 #include "ProteinGridEvoOptimizer.h"
 
-Variable ProteinGridEvoOptimizer::computeFunction(ExecutionContext& context, const Variable* inputs) const
+Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const
 {
   /** 
    * Main idea :
@@ -33,7 +33,7 @@ Variable ProteinGridEvoOptimizer::computeFunction(ExecutionContext& context, con
   
   // TODO arnaud : until now, not Grid but syncrhonous version for debug
   
-  ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(inputs[1].getObjectAndCast<IndependentMultiVariateDistribution>());
+  ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(apriori.dynamicCast<IndependentMultiVariateDistribution>());
   
   // generate
   while (state->getNumberGeneratedWU() < 10) {

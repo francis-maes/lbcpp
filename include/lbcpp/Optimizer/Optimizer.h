@@ -18,7 +18,17 @@ namespace lbcpp
 // Function, Distribution, [Variable] -> Variable
 class Optimizer : public Function
 {
-public:  
+public:
+  virtual TypePtr getRequiredFunctionType() const
+    {return functionClass;}
+  virtual TypePtr getRequiredAprioriType() const
+    {return distributionClass(anyType);}
+  virtual TypePtr getRequiredGuessType() const
+    {return variableType;}
+  
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const = 0;
+  
+  // Function
   virtual size_t getMinimumNumRequiredInputs() const 
     {return 2;}
   virtual size_t getMaximumNumRequiredInputs() const
@@ -29,13 +39,16 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) functionClass;
+        return getRequiredFunctionType();
       case 1:
-        return (TypePtr) distributionClass(anyType);
+        return getRequiredAprioriType();
       default:
-        return variableType;
+        return getRequiredGuessType();
     }
   }
+  
+  virtual String getOutputPostFix() const
+    {return T("Optimized");}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {    
@@ -44,7 +57,17 @@ public:
       return inputVariables[2]->getType();  // type of initial guess
 
     return variableType;  // TODO arnaud : build type from apriori or from function ?
-  } 
+  }
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+    {jassertfalse; return Variable();}
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    FunctionPtr function = inputs[0].getObjectAndCast<Function>();
+    DistributionPtr apriori = inputs[1].getObjectAndCast<Distribution>();
+    return optimize(context, function, apriori, Variable()); // TODO arnaud
+  }
+  
 };
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
