@@ -12,14 +12,13 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Optimizer/ObjectiveFunction.h>
 # include <lbcpp/Function/ScalarFunction.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 
 namespace lbcpp
 {
 
-  class TestObjectiveFunction : public ObjectiveFunction 
+  class TestObjectiveFunction : public Function 
   {
   public:
     TestObjectiveFunction() 

@@ -9,7 +9,8 @@
 #ifndef LBCPP_DECISION_TREE_SPLIT_SCORING_FUNCTION_H_
 # define LBCPP_DECISION_TREE_SPLIT_SCORING_FUNCTION_H_
 
-# include <lbcpp/Optimizer/ObjectiveFunction.h>
+//# include <lbcpp/Optimizer/ObjectiveFunction.h>   //TODO arnaud : ObjectiveFunction -> Function : not tested
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
 # include "DecisionTreeExampleVector.h"
@@ -44,7 +45,7 @@ public:
 typedef ReferenceCountedObjectPtr<SplitScoringInput> SplitScoringInputPtr;
 extern ClassPtr splitScoringInputClass;
 
-class SplitScoringFunction : public ObjectiveFunction
+class SplitScoringFunction : public Function
 {
 public:
   SplitScoringFunction(TypePtr labelsType)

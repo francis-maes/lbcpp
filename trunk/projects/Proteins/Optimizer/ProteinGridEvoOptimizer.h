@@ -62,7 +62,7 @@ namespace lbcpp
       switch (index) 
       {
         case 0:
-          return (TypePtr) objectiveFunctionClass;
+          return (TypePtr) functionClass;
         case 1:
           return (TypePtr) independentMultiVariateDistributionClass(variableType);
         default:

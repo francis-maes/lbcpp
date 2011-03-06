@@ -9,15 +9,14 @@
 #ifndef LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_MARGINAL_H_
 # define LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_MARGINAL_H_
 
-# include <lbcpp/Optimizer/ObjectiveFunction.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
-// TODO arnaud : unused -> delete ?
-class MarginalObjectiveFunction : public ObjectiveFunction
+class MarginalObjectiveFunction : public Function
 {
 public:
-  MarginalObjectiveFunction(ObjectiveFunctionPtr objective, const ObjectPtr& referenceValue, size_t variableIndex)
+  MarginalObjectiveFunction(FunctionPtr objective, const ObjectPtr& referenceValue, size_t variableIndex)
     : objective(objective), referenceValue(referenceValue), variableIndex(variableIndex)
     {inputType = referenceValue->getVariableType(variableIndex);}
 
@@ -41,7 +40,7 @@ public:
 protected:
   friend class MarginalObjectiveFunctionClass;
 
-  ObjectiveFunctionPtr objective;
+  FunctionPtr objective;
   ObjectPtr referenceValue;
   size_t variableIndex;
   TypePtr inputType;
@@ -53,6 +52,8 @@ protected:
     return res;
   }
 };
+  
+extern FunctionPtr marginalObjectiveFunction(const FunctionPtr& objective, const ObjectPtr& referenceValue, size_t variableIndex);
 
 }; /* namespace lbcpp */
 

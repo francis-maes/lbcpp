@@ -9,17 +9,16 @@
 #ifndef LBCPP_OPTIMIZER_H_
 # define LBCPP_OPTIMIZER_H_
 
-# include "OptimizerInput.h"
+# include "../Core/Function.h"
+# include "../Distribution/Distribution.h"
 
 namespace lbcpp
 {
 
-// Function, DistributionClass, [Variable] -> Variable
+// Function, Distribution, [Variable] -> Variable
 class Optimizer : public Function
 {
 public:  
-  virtual size_t getNumRequiredInputs() const 
-    {return getMinimumNumRequiredInputs();}
   virtual size_t getMinimumNumRequiredInputs() const 
     {return 2;}
   virtual size_t getMaximumNumRequiredInputs() const
@@ -30,28 +29,20 @@ public:
     switch (index) 
     {
       case 0:
-        return (TypePtr) objectiveFunctionClass;
+        return (TypePtr) functionClass;
       case 1:
         return (TypePtr) distributionClass(anyType);
-      case 2:
-        if (numInputs != 3) 
-        {
-          jassert(false);
-          return anyType; // TODO arnaud
-        } else
-          return variableType;
       default:
-        jassert(false);
-        return anyType; // TODO arnaud
+        return variableType;
     }
   }
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {    
-    // TODO arnaud : check initial guess and apriori distribution
+    // TODO arnaud : check that initial guess and apriori distribution match ?
     if (inputVariables.size() == 3) 
       return inputVariables[2]->getType();  // type of initial guess
-    
+
     return variableType;  // TODO arnaud : build type from apriori or from function ?
   } 
 };
