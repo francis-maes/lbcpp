@@ -11,6 +11,7 @@
 
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
+# include "../State/GridEvoOptimizerState.h"
 
 // TODO arnaud : will contain common code for GridEvoOptimizer
 // TODO arnaud : move file to include directory
@@ -18,13 +19,22 @@
 namespace lbcpp
 {
 
-  class GridEvoOptimizer : public Optimizer
+class GridEvoOptimizer : public Optimizer
+{
+public:
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const
   {
+    // TODO arnaud
+    // load state
+    // goto ...
     
-  protected:
-    friend class GridEvoOptimizerClass;
+    return Variable();
+  }
     
-  };
+protected:
+  friend class GridEvoOptimizerClass;
+    
+};
 
 }; /* namespace lbcpp */
 

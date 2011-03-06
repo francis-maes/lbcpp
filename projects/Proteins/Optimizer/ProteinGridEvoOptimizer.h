@@ -14,8 +14,14 @@
 # include "../../../src/Optimizer/Optimizer/GridEvoOptimizer.h"
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
+# include <lbcpp/Distribution/DistributionBuilder.h>
+# include <lbcpp/Distribution/Distribution.h>
+# include "../../src/Distribution/Builder/GaussianDistributionBuilder.h"
 # include "../WorkUnit/ProteinLearner.h"
 # include "../Predictor/ProteinPredictorParameters.h"
+#include <map>
+#include <set>
+#include <lbcpp/Core/Vector.h>
 
 namespace lbcpp
 {
@@ -37,7 +43,10 @@ namespace lbcpp
       {return numberGeneratedWU;}
     
     size_t getNumberEvaluatedWU() const 
-    {return numberEvaluatedWU;}
+      {return numberEvaluatedWU;}
+    
+    std::set<String> inProgressWUs;
+    std::multimap<double, String> evaluatedWUs;
 
   protected:
     IndependentMultiVariateDistributionPtr distributions;
@@ -54,14 +63,12 @@ namespace lbcpp
   class ProteinGridEvoOptimizer : public GridEvoOptimizer
   {
   public:
-    virtual TypePtr getRequiredAprioriType() const
-      {return independentMultiVariateDistributionClass(variableType);}  // TODO arnaud : continuousDistributionClass ?
     
-    virtual size_t getMaximumNumRequiredInputs() const
-      {return 2;} // do not use initial guess
+    virtual TypePtr getRequestedPriorKnowledgeType() const
+      {return independentMultiVariateDistributionClass(variableType);}
     
-    virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const;
-    
+    virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const;
+        
   protected:
     //virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
     

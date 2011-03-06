@@ -15,57 +15,34 @@
 namespace lbcpp
 {
 
-// Function, Distribution, [Variable] -> Variable
+// Function, Variable -> Variable
 class Optimizer : public Function
 {
 public:
   virtual TypePtr getRequiredFunctionType() const
     {return functionClass;}
-  virtual TypePtr getRequiredAprioriType() const
-    {return distributionClass(anyType);}
-  virtual TypePtr getRequiredGuessType() const
-    {return variableType;}
   
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const = 0;
+  virtual TypePtr getRequestedPriorKnowledgeType() const = 0;
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const Variable& priorKnowledge) const = 0;
   
   // Function
-  virtual size_t getMinimumNumRequiredInputs() const 
+  virtual size_t getNumRequiredInputs() const
     {return 2;}
-  virtual size_t getMaximumNumRequiredInputs() const
-    {return 3;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-  {
-    switch (index) 
-    {
-      case 0:
-        return getRequiredFunctionType();
-      case 1:
-        return getRequiredAprioriType();
-      default:
-        return getRequiredGuessType();
-    }
-  }
+    {return index == 0 ? getRequiredFunctionType() : getRequestedPriorKnowledgeType();}
   
   virtual String getOutputPostFix() const
     {return T("Optimized");}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {    
-    // TODO arnaud : check that initial guess and apriori distribution match ?
-    if (inputVariables.size() == 3) 
-      return inputVariables[2]->getType();  // type of initial guess
-
-    return variableType;  // TODO arnaud : build type from apriori or from function ?
-  }
+    {return variableType;}  // TODO arnaud : more precise needed ?
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
     {jassertfalse; return Variable();}
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    FunctionPtr function = inputs[0].getObjectAndCast<Function>();
-    DistributionPtr apriori = inputs[1].getObjectAndCast<Distribution>();
-    return optimize(context, function, apriori, Variable()); // TODO arnaud
+    return optimize(context, inputs[0].getObjectAndCast<Function>(), inputs[1]);
   }
   
 };
