@@ -29,31 +29,24 @@ namespace lbcpp
   public:
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) 
-    {
-      // TODO arnaud : if state.xml loaded
-      numberGeneratedWU = 0;
-      numberEvaluatedWU = 0;
-    }
-    
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions);
+
     NumericalProteinFeaturesParametersPtr sampleParameters() const;
     void generateSampleWU(ExecutionContext& context, const String& name);
+    void clearBuilders();
     
-    size_t getNumberGeneratedWU() const 
-      {return numberGeneratedWU;}
     
-    size_t getNumberEvaluatedWU() const 
-      {return numberEvaluatedWU;}
-    
+    // TODO arnaud : implement accessors
+    size_t totalNumberGeneratedWUs;
+    size_t totalNumberEvaluatedWUs;
+        
     std::set<String> inProgressWUs;
-    std::multimap<double, String> evaluatedWUs;
+    std::multimap<double, String> currentEvaluatedWUs;
+    ObjectVectorPtr distributionsBuilders;
 
-  protected:
     IndependentMultiVariateDistributionPtr distributions;
     
-    size_t numberGeneratedWU;
-    size_t numberEvaluatedWU;
-    
+  protected:    
     friend class ProteinGridEvoOptimizerStateClass;
 
   };
