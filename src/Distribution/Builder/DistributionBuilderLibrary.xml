@@ -3,28 +3,38 @@
 <library name="DistributionBuilder" directory="Distribution/Builder">
 
   <include file="lbcpp/Core/Vector.h"/>
+  <include file="lbcpp/Distribution/DistributionBuilder.h"/>
+  <!-- <include file="lbcpp/Distribution/GaussianDistributionBuilder.h"/>
+  <include file="lbcpp/Distribution/BernoulliDistributionBuilder.h"/>
+  <include file="lbcpp/Distribution/EnumerationDistributionBuilder.h"/>
+  <include file="lbcpp/Distribution/IndependentMultiVariateDistributionBuilder.h"/> -->
 
-  <!-- Probability Distribution Builder -->
-  <class name="DistributionBuilder" base="Object" abstract="yes"/>
+  <!-- Distribution Builder -->
+  <template name="DistributionBuilder" base="Object" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
 
-  <class name="EnumerationDistributionBuilder" base="DistributionBuilder">
+  <class name="EnumerationDistributionBuilder" base="DistributionBuilder[Enumeration]">
     <constructor arguments="EnumerationPtr enumeration"/>
     <variable type="Enumeration" name="enumeration"/>
     <variable type="DenseDoubleVector[EnumValue, Double]" name="elementValues"/>
     <variable type="DenseDoubleVector[EnumValue, Double]" name="distributionValues"/>
   </class>
 
-  <class name="GaussianDistributionBuilder" base="DistributionBuilder">
-    <constructor/>
+  <class name="GaussianDistributionBuilder" base="DistributionBuilder[Double]">
     <variable type="ScalarVariableMean" name="means"/>
     <variable type="ScalarVariableMean" name="variances"/>
     <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
   </class>
 
-  <class name="BernoulliDistributionBuilder" base="DistributionBuilder">
-    <constructor/>
+  <class name="BernoulliDistributionBuilder" base="DistributionBuilder[Boolean]">
     <variable type="Double" name="pTrue"/>
     <variable type="PositiveInteger" name="count"/>
   </class>
+  
+  <template name="IndependentMultiVariateDistributionBuilder" base="DistributionBuilder[elementsType]">
+    <parameter name="elementsType" type="Object"/>
+    <variable type="ObjectVector[DistributionBuilder[Variable]]" name="distributionsBuilders"/>
+  </template>
 
 </library>

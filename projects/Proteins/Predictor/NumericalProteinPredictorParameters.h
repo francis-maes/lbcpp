@@ -145,13 +145,18 @@ public:
     };
   }
 
+  NumericalProteinFeaturesParametersPtr featuresParameters; // TODO arnaud : accessor
+
 protected:
   friend class NumericalProteinPredictorParametersClass;
 
-  NumericalProteinFeaturesParametersPtr featuresParameters;
   LearnerParametersPtr learningParameters;
 };
 
+typedef ReferenceCountedObjectPtr<NumericalProteinPredictorParameters> NumericalProteinPredictorParametersPtr;
+  
+extern ClassPtr numericalProteinPredictorParametersClass;  
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_PREDICTOR_NUMERICAL_PARAMETERS_H_
