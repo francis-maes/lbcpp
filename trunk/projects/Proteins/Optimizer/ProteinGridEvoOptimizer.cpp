@@ -16,28 +16,6 @@ ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVaria
   // TODO arnaud : if state.xml loaded
   totalNumberGeneratedWUs = 0;
   totalNumberEvaluatedWUs = 0;
-  distributionsBuilders = objectVector(distributionBuilderClass, 14);
-  distributionsBuilders->setElement(0, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(1, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(2, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(3, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(4, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(5, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(6, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(7, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(8, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(9, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(10, bernoulliDistributionBuilder());
-  distributionsBuilders->setElement(11, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(12, gaussianDistributionBuilder());
-  distributionsBuilders->setElement(13, gaussianDistributionBuilder());
-}
-
-void ProteinGridEvoOptimizerState::clearBuilders()
-{
-  for (size_t i = 0; i < distributionsBuilders->getNumElements(); ++i) {
-    distributionsBuilders->getAndCast<DistributionBuilder>(i)->clear();
-  }
 }
 
 Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
@@ -73,7 +51,7 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
     
   // handle finished WU's
   while (state->currentEvaluatedWUs.size() < 10) {
-    juce::Thread::sleep(5000);
+    juce::Thread::sleep(1000);
     std::set<String>::iterator it;
     for(it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
     {
@@ -97,11 +75,34 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   std::multimap<double, String>::reverse_iterator it;
   for ( it=state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend(); it++ )
   {
-    state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->addElement(5.0);
+    //state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->addElement(5.0);
     std::cout << (*it).first << " => " << (*it).second << std::endl;
   }
-  state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->build(context);
+  //state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->build(context);
+  File f(String("/Users/arnaudschoofs/Proteins/traces/9.trace"));
+  XmlImporter importer(context, f);
+  juce::XmlElement* elmt = importer.getCurrentElement()->getChildByName(T("variable"))->getChildByName(T("node"))->getChildByName(T("result"));
+  Variable v = importer.loadVariable(elmt, numericalProteinPredictorParametersClass);
+  NumericalProteinPredictorParametersPtr test = v.getObjectAndCast<NumericalProteinPredictorParameters>();
+  std::cout << test->featuresParameters->toString() << std::endl;
   
+  IndependentMultiVariateDistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
+  builder->setSubDistributionBuilder(0, new GaussianDistributionBuilder());  // TODO arnaud : integer gaussian distribution builder
+  builder->setSubDistributionBuilder(1, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(2, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(3, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(4, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(5, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(6, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(7, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(8, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(9, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
+  builder->setSubDistributionBuilder(11, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(12, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(13, new GaussianDistributionBuilder());
+  
+  builder->addElement(test->featuresParameters);
   return Variable(0); 
 }
 

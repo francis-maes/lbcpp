@@ -283,7 +283,6 @@ SET(LBCPP_DISTRIBUTION_SOURCES
   Distribution/ContinuousDistribution.cpp
   ../include/lbcpp/Distribution/MultiVariateDistribution.h
   Distribution/MultiVariateDistribution.cpp
-  ../include/lbcpp/Distribution/DistributionBuilder.h
   Distribution/DistributionLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionLibrary.cpp
 )
@@ -296,9 +295,12 @@ SET(LBCPP_DISTRIBUTION_FUNCTION_SOURCES
 )
 
 SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
+  ../include/lbcpp/Distribution/DistributionBuilder.h
   Distribution/Builder/EnumerationDistributionBuilder.h
   Distribution/Builder/GaussianDistributionBuilder.h
   Distribution/Builder/BernoulliDistributionBuilder.h
+  Distribution/Builder/IndependentMultiVariateDistributionBuilder.h
+  Distribution/Builder/IndependentMultiVariateDistributionBuilder.cpp
   Distribution/Builder/DistributionBuilderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
 )

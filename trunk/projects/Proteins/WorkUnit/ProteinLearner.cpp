@@ -26,7 +26,8 @@ Variable ProteinLearner::run(ExecutionContext& context)
     context.errorCallback(T("No predictor parameters"));
     return false;
   }
-
+  context.resultCallback(T("parameters"), parameters);
+  
   // create predictor
   FunctionPtr predictor = createPredictor(context, parameters);
   if (!predictor)

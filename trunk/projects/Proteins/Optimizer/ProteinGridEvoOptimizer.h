@@ -17,8 +17,11 @@
 # include <lbcpp/Distribution/DistributionBuilder.h>
 # include <lbcpp/Distribution/Distribution.h>
 # include "../../src/Distribution/Builder/GaussianDistributionBuilder.h"
+# include "../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
+# include "../../src/Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 # include "../WorkUnit/ProteinLearner.h"
 # include "../Predictor/ProteinPredictorParameters.h"
+# include "../Predictor/NumericalProteinPredictorParameters.h"
 #include <map>
 #include <set>
 #include <lbcpp/Core/Vector.h>
@@ -42,7 +45,6 @@ namespace lbcpp
         
     std::set<String> inProgressWUs;
     std::multimap<double, String> currentEvaluatedWUs;
-    ObjectVectorPtr distributionsBuilders;
 
     IndependentMultiVariateDistributionPtr distributions;
     
