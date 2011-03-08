@@ -16,6 +16,23 @@ ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVaria
   // TODO arnaud : if state.xml loaded
   totalNumberGeneratedWUs = 0;
   totalNumberEvaluatedWUs = 0;
+  
+  distributionsBuilder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
+  distributionsBuilder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
+  
 }
 
 Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
@@ -71,38 +88,24 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
     }
   }
     
-  // TODO arnaud : select best results, update distributions, builder for IntegerGaussian
+  // TODO arnaud : select best results, update distributions
+  size_t nb = 0;
   std::multimap<double, String>::reverse_iterator it;
-  for ( it=state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend(); it++ )
+  for ( it=state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend() && nb < 5; it++ )
   {
-    //state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->addElement(5.0);
+    File f(T("/Users/arnaudschoofs/Proteins/traces/") + String((*it).second) + T(".trace"));
+    XmlImporter importer(context, f);
+    juce::XmlElement* elmt = importer.getCurrentElement()->getChildByName(T("variable"))->getChildByName(T("node"))->getChildByName(T("result"));
+    Variable v = importer.loadVariable(elmt, numericalProteinPredictorParametersClass);
+    NumericalProteinPredictorParametersPtr test = v.getObjectAndCast<NumericalProteinPredictorParameters>();  
+    state->distributionsBuilder->addElement(test->featuresParameters);
     std::cout << (*it).first << " => " << (*it).second << std::endl;
+    nb++;
   }
-  //state->distributionsBuilders->getAndCast<DistributionBuilder>(0)->build(context);
-  File f(String("/Users/arnaudschoofs/Proteins/traces/9.trace"));
-  XmlImporter importer(context, f);
-  juce::XmlElement* elmt = importer.getCurrentElement()->getChildByName(T("variable"))->getChildByName(T("node"))->getChildByName(T("result"));
-  Variable v = importer.loadVariable(elmt, numericalProteinPredictorParametersClass);
-  NumericalProteinPredictorParametersPtr test = v.getObjectAndCast<NumericalProteinPredictorParameters>();
-  std::cout << test->featuresParameters->toString() << std::endl;
   
-  IndependentMultiVariateDistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
-  builder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());  // TODO arnaud : integer gaussian distribution builder
-  builder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
-  builder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
+  IndependentMultiVariateDistributionPtr newDistri = state->distributionsBuilder->build(context);
+  std::cout << newDistri->sample(RandomGenerator::getInstance()).toString() << std::endl;
   
-  builder->addElement(test->featuresParameters);
   return Variable(0); 
 }
 
