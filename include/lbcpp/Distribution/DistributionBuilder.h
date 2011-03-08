@@ -54,9 +54,13 @@ extern ClassPtr distributionBuilderClass(TypePtr elementsType = anyType);
   
 extern ClassPtr bernoulliDistributionBuilderClass;
 extern ClassPtr gaussianDistributionBuilderClass;
+extern ClassPtr integerGaussianDistributionBuilderClass;
+extern ClassPtr positiveGaussianDistributionBuilderClass;
 extern ClassPtr independentMultiVariateDistributionBuilderClass(TypePtr elementsType);
 
 extern DistributionBuilderPtr gaussianDistributionBuilder();
+extern DistributionBuilderPtr integerGaussianDistributionBuilder();
+extern DistributionBuilderPtr positiveIntegerGaussianDistributionBuilder();
 extern DistributionBuilderPtr enumerationDistributionBuilder(EnumerationPtr enumeration);
 extern DistributionBuilderPtr bernoulliDistributionBuilder();
   

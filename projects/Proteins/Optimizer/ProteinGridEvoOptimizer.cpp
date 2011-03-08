@@ -87,20 +87,20 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   std::cout << test->featuresParameters->toString() << std::endl;
   
   IndependentMultiVariateDistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
-  builder->setSubDistributionBuilder(0, new GaussianDistributionBuilder());  // TODO arnaud : integer gaussian distribution builder
-  builder->setSubDistributionBuilder(1, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(2, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(3, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(4, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(5, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(6, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(7, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(8, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(9, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());  // TODO arnaud : integer gaussian distribution builder
+  builder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
   builder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
-  builder->setSubDistributionBuilder(11, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(12, new GaussianDistributionBuilder());
-  builder->setSubDistributionBuilder(13, new GaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
+  builder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
   
   builder->addElement(test->featuresParameters);
   return Variable(0); 

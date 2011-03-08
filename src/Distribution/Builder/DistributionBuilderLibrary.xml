@@ -26,6 +26,10 @@
     <variable type="ScalarVariableMean" name="variances"/>
     <variable type="ScalarVariableMeanAndVariance" name="meanAndVariances"/>
   </class>
+  
+  <class name="IntegerGaussianDistributionBuilder" base="GaussianDistributionBuilder"/>
+  
+  <class name="PositiveIntegerGaussianDistributionBuilder" base="IntegerGaussianDistributionBuilder"/>
 
   <class name="BernoulliDistributionBuilder" base="DistributionBuilder[Boolean]">
     <variable type="Double" name="pTrue"/>
