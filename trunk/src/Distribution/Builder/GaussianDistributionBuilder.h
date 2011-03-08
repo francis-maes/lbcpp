@@ -79,8 +79,7 @@ protected:
   ScalarVariableMeanPtr variances;
   // from elements
   ScalarVariableMeanAndVariancePtr meanAndVariances;
-  
-private:
+
   void ensureScalarMeanAreInitialized()
   {
     jassert((!means && !variances) || (means && variances));
@@ -97,6 +96,56 @@ private:
       meanAndVariances = new ScalarVariableMeanAndVariance();
   }
 };
+  
+class IntegerGaussianDistributionBuilder : public GaussianDistributionBuilder
+{
+  virtual TypePtr getInputType() const
+    {return integerType;}
+  
+  virtual void addElement(const Variable& element, double weight)
+  {
+    if (!checkInheritance(element.getType(), getInputType()))
+      return;
+    ensureScalarMeanAndVarianceIsInitialized();
+    meanAndVariances->push(element.getInteger());
+  }
+  
+  virtual DistributionPtr build(ExecutionContext& context) const
+  {
+    jassert((means && variances) != meanAndVariances);
+    
+    if (means)
+      return new IntegerGaussianDistribution(means->getMean(), variances->getMean());
+    if (meanAndVariances)
+      return new IntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
+    
+    jassertfalse;
+    return IntegerGaussianDistributionPtr();
+  }
+  
+};
+  
+class PositiveIntegerGaussianDistributionBuilder : public IntegerGaussianDistributionBuilder
+{
+  virtual TypePtr getInputType() const
+    {return positiveIntegerType;}
+  
+  virtual DistributionPtr build(ExecutionContext& context) const
+  {
+    jassert((means && variances) != meanAndVariances);
+    
+    if (means)
+      return new PositiveIntegerGaussianDistribution(means->getMean(), variances->getMean());
+    if (meanAndVariances)
+      return new PositiveIntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
+    
+    jassertfalse;
+    return PositiveIntegerGaussianDistributionPtr();
+  }
+    
+};
+  
+
   
 }; /* namespace lbcpp */
 
