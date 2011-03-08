@@ -47,7 +47,8 @@ namespace lbcpp
     std::multimap<double, String> currentEvaluatedWUs;
 
     IndependentMultiVariateDistributionPtr distributions;
-    
+    IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
+
   protected:    
     friend class ProteinGridEvoOptimizerStateClass;
 
