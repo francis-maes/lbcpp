@@ -61,10 +61,38 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   
   ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(apriori.dynamicCast<IndependentMultiVariateDistribution>());
   
-  // Init generation
-  while (state->totalNumberGeneratedWUs < 10) {
-    state->generateSampleWU(context, String((int) state->totalNumberGeneratedWUs));
+  // Init generation and send
+  
+  NetworkClientPtr client = blockingNetworkClient(context);
+  if (!client->startClient(T("monster24.montefiore.ulg.ac.be"), 1664));
+  {
+    context.errorCallback(T("SendWorkUnit::run"), T("Not connected !"));
+    return false;
   }
+  context.informationCallback(T("monster24.montefiore.ulg.ac.be"), T("Connected !"));
+  ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(context, client, T("GridEvoOptimizer"));
+  interface->sendInterfaceClass();
+  while (state->totalNumberGeneratedWUs < 10) {
+    WorkUnitPtr wu = state->generateSampleWU(context, String((int) state->totalNumberGeneratedWUs));
+    NetworkRequestPtr request = new NetworkRequest(context, T("BoincFirstStage"), T("GridEvoOptimizer"), T("boincadm@boinc.run"), wu, 1, 1, 1);
+    String res = interface->pushWorkUnit(request);
+    if (res == T("Error"))
+    {
+      context.errorCallback(T("SendWorkUnit::run"), T("Touble - We didn't correclty receive the acknowledgement"));
+      break;
+    }
+    state->totalNumberGeneratedWUs++;
+    state->inProgressWUs.insert(res);
+    
+    //request->setIdentifier(res);
+    context.resultCallback(T("WorkUnitIdentifier"), res);
+    
+    //File f = context.getFile(projectName + T(".") + request->getIdentifier() + T(".request"));
+    //request->saveToFile(*context, f);
+  }
+  interface->closeCommunication();
+  
+  /*
     
   // handle finished WU's
   while (state->currentEvaluatedWUs.size() < 10) {
@@ -106,20 +134,23 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   IndependentMultiVariateDistributionPtr newDistri = state->distributionsBuilder->build(context);
   std::cout << newDistri->sample(RandomGenerator::getInstance()).toString() << std::endl;
   
+  */
+   
   return Variable(0); 
 }
 
 
 
-void ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context, const String& name)
+WorkUnitPtr ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context, const String& name)
 {
   WorkUnitPtr wu = new ProteinLearner();
   // TODO arnaud : set some parameters to 0 (disabled)
   //wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + sampleParameters()->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
   wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical((1,3,5,3,5,3,2,3,5,5,True,15,15,50),sgd)\" -t ss3 -n 1 -m 10"));
-  wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
-  totalNumberGeneratedWUs++;
-  inProgressWUs.insert(name);
+  //wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
+  //totalNumberGeneratedWUs++;
+  //inProgressWUs.insert(name);
+  return wu;
 }
 
 NumericalProteinFeaturesParametersPtr ProteinGridEvoOptimizerState::sampleParameters() const 
