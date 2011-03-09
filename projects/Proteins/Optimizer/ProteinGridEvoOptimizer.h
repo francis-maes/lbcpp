@@ -25,6 +25,8 @@
 #include <map>
 #include <set>
 #include <lbcpp/Core/Vector.h>
+#include <lbcpp/Network/NetworkClient.h>
+#include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
 
 namespace lbcpp
 {
@@ -35,7 +37,7 @@ namespace lbcpp
     ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions);
 
     NumericalProteinFeaturesParametersPtr sampleParameters() const;
-    void generateSampleWU(ExecutionContext& context, const String& name);
+    WorkUnitPtr generateSampleWU(ExecutionContext& context, const String& name);
     void clearBuilders();
     
     
