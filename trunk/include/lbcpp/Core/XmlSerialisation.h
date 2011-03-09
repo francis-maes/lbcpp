@@ -293,7 +293,10 @@ using namespace lbcpp;
 
 template<class O>
 inline ReferenceCountedObjectPtr<O> XmlElement::createObjectAndCast(ExecutionContext& context) const
-  {return createObject(context).dynamicCast<O>();}
+{
+  ObjectPtr res = createObject(context);
+  return res.staticCast<O>();
+}
 
 
 #endif // !LBCPP_CORE_XML_SERIALISATION_H_
