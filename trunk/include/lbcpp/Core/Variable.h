@@ -227,6 +227,11 @@ private:
 
   TypePtr type;
   VariableValue value;
+#ifndef JUCE_64BIT
+# ifdef JUCE_MAC
+  void* dummy; // ensure that sizeof (Variable) == sizeof (int64) * 2
+# endif // JUCE_MAC
+#endif 
 };
 
 inline Variable probability(double p)
