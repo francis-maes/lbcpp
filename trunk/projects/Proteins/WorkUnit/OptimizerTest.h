@@ -27,9 +27,11 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
-      ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
+      //ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
       //ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace")));
-      //ProteinGridEvoOptimizerPtr optimizer = new ProteinGridEvoOptimizer();
+      ProteinGridEvoOptimizerPtr optimizer = new ProteinGridEvoOptimizer();
+      return optimizer->optimize(context, new Function(), Variable());
+      
       //std::cout << optimizer->getVariableFromTrace(trace) << std::endl;
       
       
@@ -43,7 +45,7 @@ namespace lbcpp
       
       
       //Variable var = optimizer->compute(context, new Function(), distributions);
-      return Variable();
+      //return Variable();
       
     }
   protected:

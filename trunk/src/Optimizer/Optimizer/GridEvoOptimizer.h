@@ -10,10 +10,10 @@
 #define GRID_EVO_OPTIMIZER_H_
 
 // TODO use variable dynamically loaded (constructor or state e.g)
-#define NB_WU_TO_EVALUATE 20
-#define NB_MIN_WU_IN_PROGRESS 5
-#define NB_WU_TO_UPDATE 10
-#define RATIO_WU_USED_TO_UPDATE 2
+#define NB_WU_TO_EVALUATE 4
+#define NB_MIN_WU_IN_PROGRESS 2
+#define NB_WU_TO_UPDATE 2
+#define RATIO_WU_USED_TO_UPDATE 1
 
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
@@ -38,6 +38,9 @@ public:
     
     while (state->totalNumberEvaluatedWUs < NB_WU_TO_EVALUATE) 
     {
+      // don't stress the manager
+      juce::Thread::sleep(10000);
+      
       // Send WU's on network
       if (state->inProgressWUs.size() < NB_MIN_WU_IN_PROGRESS) 
       {
@@ -66,7 +69,7 @@ public:
       
       
       // don't stress the manager
-      juce::Thread::sleep(5000);
+      juce::Thread::sleep(10000);
       
 
       // handle finished WUs
@@ -79,11 +82,18 @@ public:
       {
         if(interface->isFinished(*it))
         {
-          ExecutionTracePtr trace = interface->getExecutionTrace(*it)->getExecutionTrace(context);
-          trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory
-          double score = getScoreFromTrace(trace);
-          state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
-          state->inProgressWUs.erase(it);
+          NetworkResponsePtr res = interface->getExecutionTrace(*it);
+          if (res)
+          {  
+            ExecutionTracePtr trace = interface->getExecutionTrace(*it)->getExecutionTrace(context);
+            trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory
+            double score = getScoreFromTrace(trace);
+            state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
+            state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
+            state->inProgressWUs.erase(it);
+          }
+          else
+            ++it;
         }
         else 
           ++it;
@@ -104,7 +114,7 @@ public:
           nb++;
         }
         state->distributions = state->distributionsBuilder->build(context);
-        state->distributionsBuilder.clear();
+        state->distributionsBuilder->clear();
         
         // other results : delete them
         for ( ; it != state->currentEvaluatedWUs.rend(); it++) {
