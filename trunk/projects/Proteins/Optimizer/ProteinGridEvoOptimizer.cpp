@@ -60,16 +60,16 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   // TODO arnaud : until now, not Grid but syncrhonous version for debug
   
   ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(apriori.dynamicCast<IndependentMultiVariateDistribution>());
-  
+                        
   // Init generation and send : OK
   String projectName(T("BoincFirstStage"));
   String source(T("boincadm@boinc.run"));
   String destination(T("boincadm@boinc.run"));
   String managerHostName(T("monster24.montefiore.ulg.ac.be"));
-  size_t managerPort = 1664;
-  size_t requiredCpus = 1;
-  size_t requiredMemory = 2;
-  size_t requiredTime = 10;
+  //size_t managerPort = 1664;
+  //size_t requiredCpus = 1;
+  //size_t requiredMemory = 2;
+  //size_t requiredTime = 10;
   /*
   NetworkClientPtr client = blockingNetworkClient(context);
   if (!client->startClient(managerHostName, managerPort))
@@ -121,6 +121,7 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
 
   
   // handle finished WU's
+  /*
   while (state->currentEvaluatedWUs.size() < 10) {
     juce::Thread::sleep(5000);
     
@@ -156,6 +157,8 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
       else 
         ++it;
       
+   */
+   
       /*File f(String("/Users/arnaudschoofs/Proteins/traces/") + *it + T(".trace"));
       if (f.existsAsFile())
       {
@@ -170,8 +173,8 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
       }
       else ++it;*/
   
-    }
-  }
+  //  }
+  //}
   
   
 
