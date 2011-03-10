@@ -14,6 +14,7 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include "../Optimizer/ProteinGridEvoOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/GridEvoOptimizer.h"
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include "../Predictor/ProteinPredictorParameters.h"
 
@@ -26,30 +27,12 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
+      ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
+      //ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace")));
+      //ProteinGridEvoOptimizerPtr optimizer = new ProteinGridEvoOptimizer();
+      //std::cout << optimizer->getVariableFromTrace(trace) << std::endl;
       
-      ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace")));
       
-      
-      
-      /*OptimizerPtr optimizer = new ProteinGridEvoOptimizer();
-      
-      IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
-      distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
-      distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
-      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
-      */
-            
       /*XmlExporter exporter(context);                      
       distributions->saveToXml(exporter);
       exporter.saveToFile(File(T("/Users/arnaudschoofs/Proteins/traces/test.xml")));*/

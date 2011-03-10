@@ -11,7 +11,46 @@
 #include <map>
 
 
-ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : GridEvoOptimizerState(distributions) 
+/*GridEvoOptimizerStatePtr ProteinGridEvoOptimizer::loadState() const 
+{
+  // TODO arnaud : distribution.getNewBuilder()
+  IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+  distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+  distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
+  distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
+  
+  IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
+  distributionsBuilder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
+  distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
+  
+  return new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
+}
+*/
+
+/*ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : GridEvoOptimizerState(distributions) 
 {
   // TODO arnaud : if state.xml loaded
   totalNumberGeneratedWUs = 0;
@@ -32,7 +71,7 @@ ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVaria
   distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
   distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
   distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
-}
+}*/
 
 WorkUnitPtr ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context) const
 {
@@ -50,9 +89,9 @@ WorkUnitPtr ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& con
 
 double ProteinGridEvoOptimizer::getScoreFromTrace(ExecutionTracePtr trace) const
 {
-  // TODO arnaud : implement when bug serialization fixed
-  jassertfalse; // not implemented
-  return 0;
+  std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();
+  ExecutionTraceNodePtr traceNode = vec[0].staticCast<ExecutionTraceNode>();
+  return 1 - ((traceNode->getReturnValue()).dynamicCast<ProteinLearnerScoreObject>())->getScoreToMinimize();
   
   // OLD
   /*
@@ -70,7 +109,11 @@ double ProteinGridEvoOptimizer::getScoreFromTrace(ExecutionTracePtr trace) const
 
 Variable ProteinGridEvoOptimizer::getVariableFromTrace(ExecutionTracePtr trace) const 
 {
-  // TODO arnaud : implement when bug serialization fixed
+  std::vector<ExecutionTraceItemPtr> vec = trace->getRootNode()->getSubItems();
+  ExecutionTraceNodePtr traceNode = vec[0].staticCast<ExecutionTraceNode>();
+  std::vector< std::pair<String, Variable> > results = traceNode->getResults();
+  return results[0].second.dynamicCast<NumericalProteinPredictorParameters>()->featuresParameters;
+  
   jassertfalse; // not implemented
   return Variable();
   

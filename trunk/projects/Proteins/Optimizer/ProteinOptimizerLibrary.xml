@@ -4,7 +4,7 @@
   <class name="ProteinGridEvoOptimizer" base="GridEvoOptimizer"/>
   
   <class name="ProteinGridEvoOptimizerState" base="GridEvoOptimizerState">
-    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
+   <constructor arguments="IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder"/>
   </class>
   
 </library>
