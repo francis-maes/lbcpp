@@ -84,6 +84,12 @@ Variable ProteinLearner::run(ExecutionContext& context)
       savePredictionsToDirectory(context, predictor, testProteins, predictionDirectory.getChildFile(T("test")));
   }
 
+  if (learnedModelFile != File::nonexistent)
+  {
+    context.informationCallback(T("Saving predictions to file ") + learnedModelFile.getFileName());
+    predictor->saveToFile(context, learnedModelFile);
+  }
+  
   //size_t numFeaturesPerResidue = parameters->createResidueVectorPerception()->getOutputType()->getNumMemberVariables();
   return new ProteinLearnerScoreObject(trainScore, validationScore, testScore, 0);//, numFeaturesPerResidue);
 }

@@ -47,6 +47,38 @@ inline void variableToNative(ExecutionContext& context, std::vector<ProteinTarge
     dest[i] = (ProteinTarget)sourceContainer->getElement(i).getInteger();
 }
 
+template<class TT>
+inline void variableToNative(ExecutionContext& context, std::pair<ProteinTarget, TT>& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const PairPtr& sourcePair = source.getObjectAndCast<Pair>(context);
+  if (sourcePair)
+  {
+    lbcpp::variableToNative(context, dest.first, sourcePair->getFirst());
+    lbcpp::variableToNative(context, dest.second, sourcePair->getSecond());
+  }
+  else
+  {
+    dest.first = noTarget;
+    dest.second = TT();
+  }
+}
+
+template<class TT>
+inline void variableToNative(ExecutionContext& context, std::vector< std::pair<ProteinTarget, TT> >& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
+  if (sourceVector)
+  {
+    dest.resize(sourceVector->getNumElements());
+    for (size_t i = 0; i < dest.size(); ++i)
+      lbcpp::variableToNative(context, dest[i], sourceVector->getElement(i));
+  }
+  else
+    dest.clear();
+}
+
 class Protein;
 typedef ReferenceCountedObjectPtr<Protein> ProteinPtr;
 

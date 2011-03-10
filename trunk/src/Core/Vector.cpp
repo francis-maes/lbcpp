@@ -455,6 +455,15 @@ Variable VariableVector::getElement(size_t index) const
 void VariableVector::setElement(size_t index, const Variable& value)
   {jassert(index < variables.size()); variables[index] = value;}
 
+void VariableVector::saveToXml(XmlExporter& exporter) const
+{
+  size_t n = getNumElements();
+  exporter.setAttribute(T("size"), (int)n);
+  for (size_t i = 0; i < n; ++i)
+    exporter.saveElement(i, getElement(i), anyType);
+}
+
+
 /*
 ** Vector Constructor Method
 */

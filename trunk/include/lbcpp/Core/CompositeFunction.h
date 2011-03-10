@@ -193,6 +193,41 @@ protected:
   FunctionBuildFunction buildFunctionFunction;
 };
 
+inline void variableToNative(ExecutionContext& context, CompositeFunction::StepType& dest, const Variable& source)
+  {jassert(source.isInteger()); dest = (CompositeFunction::StepType)source.getInteger();}
+
+template<class TT>
+inline void variableToNative(ExecutionContext& context, std::pair<CompositeFunction::StepType, TT>& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const PairPtr& sourcePair = source.getObjectAndCast<Pair>(context);
+  if (sourcePair)
+  {
+    lbcpp::variableToNative(context, dest.first, sourcePair->getFirst());
+    lbcpp::variableToNative(context, dest.second, sourcePair->getSecond());
+  }
+  else
+  {
+    dest.first = CompositeFunction::inputStep;
+    dest.second = TT();
+  }
+}
+
+template<class TT>
+inline void variableToNative(ExecutionContext& context, std::vector< std::pair<CompositeFunction::StepType, TT> >& dest, const Variable& source)
+{
+  jassert(source.isObject());
+  const VectorPtr& sourceVector = source.getObjectAndCast<Vector>(context);
+  if (sourceVector)
+  {
+    dest.resize(sourceVector->getNumElements());
+    for (size_t i = 0; i < dest.size(); ++i)
+      lbcpp::variableToNative(context, dest[i], sourceVector->getElement(i));
+  }
+  else
+    dest.clear();
+}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_COMPOSITE_FUNCTION_H_
