@@ -186,6 +186,36 @@
         {String str((int)index); return new EnumerationElement(T("[") + str + T("]"), String::empty, str);}
     </code>
   </class>
+  
+  <template name="CartesianProductEnumeration" metaclass="Enumeration">
+    <parameter name="firstEnumeration" type="EnumValue"/>
+    <parameter name="secondEnumeration" type="EnumValue"/>
+    <code>
+      EnumerationPtr getFirstEnumeration() const
+        {return getTemplateArgument(0).dynamicCast&lt;Enumeration&gt;();}
+      
+      EnumerationPtr getSecondEnumeration() const
+        {return getTemplateArgument(1).dynamicCast&lt;Enumeration&gt;();}
+ 
+      virtual size_t getNumElements() const
+        {return getFirstEnumeration()-&gt;getNumElements() * getSecondEnumeration()-&gt;getNumElements();}
+
+      virtual EnumerationElementPtr getElement(size_t index) const
+      {
+        if (index &gt;= getNumElements())
+          return new EnumerationElement(T("missing"), T("_"), String::empty, T("Missing Value"));
+
+        EnumerationPtr secondEnumeration = getSecondEnumeration();
+        size_t numSecondElements = secondEnumeration-&gt;getNumElements();
+        EnumerationElementPtr firstElement = getFirstEnumeration()->getElement(index / numSecondElements);
+        EnumerationElementPtr secondElement = secondEnumeration->getElement(index % numSecondElements);
+
+        return new EnumerationElement(firstElement-&gt;getName() + T(" * ") + secondEnumeration-&gt;getName(),
+                                      String::empty, String::empty,
+                                      T("Cartesian Product Enumeration (") + firstElement-&gt;getDescription() + T(") * (") + secondElement-&gt;getDescription() + T(")"));
+      }
+      </code>
+  </template>
 
   <!-- Function -->
   <class name="Function" abstract="yes"/>
