@@ -11,25 +11,25 @@
 #include <map>
 
 
-/*GridEvoOptimizerStatePtr ProteinGridEvoOptimizer::loadState() const 
+GridEvoOptimizerStatePtr ProteinGridEvoOptimizer::loadState() const 
 {
   // TODO arnaud : distribution.getNewBuilder()
   IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
-  distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
-  distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
-  distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
-  
+  distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,0));
+  distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,0));
+  distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,0));
+  distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,0));
+  distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,0));
+  distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,0));
+  distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,0));
+  distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,0));
+  distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,0));
+  distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,0));
+  distributions->setSubDistribution(10, new BernoulliDistribution(1));
+  distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,0));
+  distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
+  distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
+
   IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
   distributionsBuilder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());
   distributionsBuilder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
@@ -48,7 +48,7 @@
   
   return new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
 }
-*/
+
 
 /*ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : GridEvoOptimizerState(distributions) 
 {
