@@ -29,7 +29,7 @@ namespace lbcpp
 class GridEvoOptimizer : public Optimizer
 {
 public:
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const DistributionPtr& apriori, const Variable& guess) const
+  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const Variable& priorKnowledge) const
   {
     // TODO add callbacks infos
     
@@ -105,6 +105,7 @@ public:
           nb++;
         }
         state->distributions = state->distributionsBuilder->build(context);
+        state->distributionsBuilder.clear();
         
         // other results : delete them
         for ( ; it != state->currentEvaluatedWUs.rend(); it++) {

@@ -26,7 +26,12 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
-      OptimizerPtr optimizer = new ProteinGridEvoOptimizer();
+      
+      ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace")));
+      
+      
+      
+      /*OptimizerPtr optimizer = new ProteinGridEvoOptimizer();
       
       IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
       distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(5,1));
@@ -43,7 +48,7 @@ namespace lbcpp
       distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(5,1));
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
-      
+      */
             
       /*XmlExporter exporter(context);                      
       distributions->saveToXml(exporter);
@@ -54,8 +59,8 @@ namespace lbcpp
 
       
       
-      Variable var = optimizer->compute(context, new Function(), distributions);
-      return var;
+      //Variable var = optimizer->compute(context, new Function(), distributions);
+      return Variable();
       
     }
   protected:

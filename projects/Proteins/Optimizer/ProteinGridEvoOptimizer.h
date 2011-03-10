@@ -30,26 +30,13 @@
 
 namespace lbcpp
 {
-  class ProteinGridEvoOptimizerState : public Object {
+  class ProteinGridEvoOptimizerState : public GridEvoOptimizerState {
   public:
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
     ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions);
     
-    NumericalProteinFeaturesParametersPtr sampleParameters() const;
-    virtual WorkUnitPtr generateSampleWU(ExecutionContext& context, const String& name);
-    void clearBuilders();
-    
-    
-    // TODO arnaud : implement accessors
-    size_t totalNumberGeneratedWUs;
-    size_t totalNumberEvaluatedWUs;
-        
-    std::set<String> inProgressWUs;
-    std::multimap<double, String> currentEvaluatedWUs;
-
-    IndependentMultiVariateDistributionPtr distributions;
-    IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
+    virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const;
     
   protected:    
     friend class ProteinGridEvoOptimizerStateClass;
@@ -64,17 +51,13 @@ namespace lbcpp
     
     virtual TypePtr getRequestedPriorKnowledgeType() const
       {return independentMultiVariateDistributionClass(variableType);}
-    
-    virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const;
-        
-  protected:
-    //virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
-    
+            
+  protected:    
     virtual GridEvoOptimizerStatePtr loadState() const {jassertfalse; return NULL;} //not implemented
     virtual bool saveState() const {jassertfalse; return false;}  //not implemented
-    virtual double getScoreFromTrace(ExecutionTracePtr trace) const {jassertfalse; return 0;}  //not implemented
-    virtual Variable getVariableFromTrace(ExecutionTracePtr trace) const {jassertfalse; return Variable();}  //not implemented
-
+    virtual double getScoreFromTrace(ExecutionTracePtr trace) const;
+    virtual Variable getVariableFromTrace(ExecutionTracePtr trace) const;
+    
     friend class ProteinGridEvoOptimizerClass;
   };  
   
