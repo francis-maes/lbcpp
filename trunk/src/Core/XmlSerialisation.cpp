@@ -261,6 +261,7 @@ void XmlExporter::flushSave()
     savedObject.elt->setTagName(T("shared"));
     savedObject.identifier = makeUniqueIdentifier(savedObject.object, sharedObjectIdentifiers);
     savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
+    savedObject.elt->setAttribute(T("type"), savedObject.object->getClassName());
     root->insertChildElement(savedObject.elt, 0);
     resolveSharedObjectReferences(savedObject);
     savedObject.elt = NULL;

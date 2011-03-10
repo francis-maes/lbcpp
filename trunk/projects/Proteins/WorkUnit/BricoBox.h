@@ -209,5 +209,46 @@ protected:
   File modelFile;
   File proteinDirectory;
 };
+
+class DebugExecutionTraceLoading : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (traceFile == File::nonexistent)
+    {
+      context.errorCallback(T("DebugExecutionTraceLoading::run"), T("Trace not found !"));
+      return false;
+    }
+
+    ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, traceFile).dynamicCast<ExecutionTrace>();
+    if (!trace)
+    {
+      context.errorCallback(T("DebugExecutionTraceLoading::run"), T("Trace not exists !"));
+      return false;
+    }
+    
+    context.informationCallback(trace->toString());
+    
+    context.informationCallback(T("Saving trace ..."));
+    File f(traceFile.getFullPathName() + T(".saved"));
+    trace->saveToFile(context, f);
+    
+    context.informationCallback(T("Loading saved trace ..."));
+    trace = ExecutionTrace::createFromFile(context, f).dynamicCast<ExecutionTrace>();
+    if (!trace)
+    {
+      context.errorCallback(T("DebugExecutionTraceLoading::run"), T("Saved trace not exists !"));
+      return false;
+    }
+
+    return true;
+  }
+  
+protected:
+  friend class DebugExecutionTraceLoadingClass;
+  
+  File traceFile;
+};
   
 };

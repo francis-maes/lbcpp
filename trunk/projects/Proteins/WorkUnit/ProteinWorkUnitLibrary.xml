@@ -98,6 +98,10 @@
     <variable type="File" name="proteinDirectory" shortName="i"/>
   </class>
   
+  <class name="DebugExecutionTraceLoading" base="WorkUnit">
+    <variable type="File" name="traceFile" shortName="i"/>
+  </class>
+  
   <class name="OptimizerTest" base="WorkUnit"/>
   
   <class name="ConvertFabienFileToProtein" base="WorkUnit">
