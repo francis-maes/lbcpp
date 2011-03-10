@@ -44,6 +44,8 @@ public:
     }
 
     // make parameters class
+    EnumerationPtr parametersEnumeration = cartesianProductEnumerationEnumeration(outputsEnumeration, featuresEnumeration);
+/*
     DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("MultiLinearParameters"));
     //size_t numFeatures = featuresEnumeration->getNumElements();
     size_t numOutputs = outputsEnumeration->getNumElements();
@@ -52,6 +54,7 @@ public:
       EnumerationElementPtr output = outputsEnumeration->getElement(i);
       parametersEnumeration->addElementsWithPrefix(context, featuresEnumeration, output->getName() + T("."), output->getShortName() + T("."));
     }
+*/
     parametersClass = compositeDoubleVectorClass(parametersEnumeration);
 
     // output and learner

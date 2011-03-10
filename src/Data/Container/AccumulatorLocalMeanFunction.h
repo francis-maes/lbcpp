@@ -36,7 +36,6 @@ public:
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    return Variable::missingValue(getOutputType());
     const ContainerPtr& accumulator = inputs[0].getObjectAndCast<Container>();
     size_t n = accumulator->getNumElements();
     jassert(windowSize);

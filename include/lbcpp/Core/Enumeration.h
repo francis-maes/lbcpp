@@ -105,6 +105,8 @@ extern EnumerationPtr falseTrueOrMissingEnumeration;
 extern EnumerationPtr variablesEnumerationEnumeration(TypePtr type);
 extern EnumerationPtr positiveIntegerEnumerationEnumeration;
 
+extern EnumerationPtr cartesianProductEnumerationEnumeration(TypePtr firstType, TypePtr secondType);
+
 class DefaultEnumeration : public Enumeration
 {
 public:
