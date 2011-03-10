@@ -1,5 +1,6 @@
 #include <lbcpp/lbcpp.h>
 #include "Data/Protein.h"
+#include "../Evaluator/ProteinEvaluator.h"
 
 /*
 ** BricoBox - Some non-important test tools
@@ -176,5 +177,37 @@ public:
   }
 };
 #endif
+
+class LoadModelAndEvaluate : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    FunctionPtr predictor = Function::createFromFile(context, modelFile).dynamicCast<Function>();
+    if (!predictor)
+    {
+      context.errorCallback(T("LoadModelAndEvaluate::run"), T("No predictor loaded !"));
+      return false;
+    }
+    
+    ContainerPtr testProteins = Protein::loadProteinsFromDirectoryPair(context, File::nonexistent, proteinDirectory.getChildFile(T("test")), 0, T("Loading test proteins"));
+    if (!testProteins || !testProteins->getNumElements())
+    {
+      context.errorCallback(T("LoadModelAndEvaluate::run"), T("No test proteins"));
+      return false;
+    }
+    
+    EvaluatorPtr evaluator = new ProteinEvaluator();
+    ScoreObjectPtr scores = predictor->evaluate(context, testProteins, evaluator, T("Evaluate on test proteins"));
+
+    return scores;
+  }
+
+protected:
+  friend class LoadModelAndEvaluateClass;
+  
+  File modelFile;
+  File proteinDirectory;
+};
   
 };

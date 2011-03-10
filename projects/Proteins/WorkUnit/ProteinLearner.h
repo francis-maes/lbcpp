@@ -36,6 +36,7 @@ protected:
   size_t numStacks;
 
   File predictionDirectory;
+  File learnedModelFile;
 
   FunctionPtr createPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;
   FunctionPtr createOneStackPredictor(ExecutionContext& context, ProteinPredictorParametersPtr parameters) const;

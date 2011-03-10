@@ -190,8 +190,12 @@
   <!-- Function -->
   <class name="Function" abstract="yes"/>
   <class name="CompositeFunction" base="Function" abstract="yes">
+<!--    <variable type="DynamicClass" name="stateClass"/> -->
     <variable type="VariableVector" name="constants"/>
     <variable type="ObjectVector[Function]" name="functions"/>
+    <variable type="GenericVector[GenericVector[PositiveInteger]]" name="functionInputs"/>
+    <variable type="PositiveInteger" name="maxNumFunctionInputs"/>
+    <variable type="GenericVector[Pair[PositiveInteger, PositiveInteger]]" name="steps"/>
   </class>
   <class name="MethodBasedCompositeFunction" base="CompositeFunction" abstract="yes"/>
 

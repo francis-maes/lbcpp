@@ -26,6 +26,8 @@ public:
   virtual void buildFunction(CompositeFunctionBuilder& builder);
 
 protected:
+  friend class ProteinPredictorClass;
+  
   ProteinPredictorParametersPtr parameters;
   std::vector< std::pair<ProteinTarget, FunctionPtr> > targetPredictors;
 };

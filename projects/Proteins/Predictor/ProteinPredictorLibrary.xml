@@ -2,7 +2,10 @@
 
 <library name="ProteinPredictor" directory="Predictor">
 
-  <class name="ProteinPredictor" base="CompositeFunction"/>
+  <class name="ProteinPredictor" base="CompositeFunction">
+    <variable type="ProteinPredictorParameters" name="parameters"/>
+    <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>
+  </class>
   
   <class name="ProteinSequentialPredictor" base="CompositeFunction">
     <variable type="ObjectVector[ProteinPredictor]" name="predictors"/>
