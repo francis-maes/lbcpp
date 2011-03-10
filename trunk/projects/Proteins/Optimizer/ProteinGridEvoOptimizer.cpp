@@ -11,7 +11,7 @@
 #include <map>
 
 
-ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions) 
+ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : GridEvoOptimizerState(distributions) 
 {
   // TODO arnaud : if state.xml loaded
   totalNumberGeneratedWUs = 0;
@@ -32,31 +32,67 @@ ProteinGridEvoOptimizerState::ProteinGridEvoOptimizerState(IndependentMultiVaria
   distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
   distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
   distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
+}
+
+WorkUnitPtr ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context) const
+{
+  WorkUnitPtr wu = new ProteinLearner();
+  NumericalProteinFeaturesParametersPtr parameters = (distributions->sample(RandomGenerator::getInstance())).getObjectAndCast<NumericalProteinFeaturesParameters>();
+  // TODO arnaud args for location of data
+  wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + parameters->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
+
+  // FOR DEBUG
+  //wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical((1,3,5,3,5,3,2,3,5,5,True,15,15,50),sgd)\" -t ss3 -n 1 -m 10"));
+  //wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
+  
+  return wu;
+}
+
+double ProteinGridEvoOptimizer::getScoreFromTrace(ExecutionTracePtr trace) const
+{
+  // TODO arnaud : implement when bug serialization fixed
+  jassertfalse; // not implemented
+  return 0;
+  
+  // OLD
+  /*
+  ExecutionTracePtr trace = interface->getExecutionTrace(*it)->getExecutionTrace(context);
+  File f(T("/Users/arnaudschoofs/Proteins/traces/") + (*it) + T(".trace"));
+  trace->saveToFile(context,f);
+  XmlImporter importer(context, f);
+  if (!importer.isOpened())
+  {jassertfalse;}
+  if (!importer.enter("shared"))
+  {jassertfalse;}
+  double score = ((importer.getCurrentElement())->getNextElement()->getChildElementAllSubText(String("variable"), String("error"))).getDoubleValue();
+  */
+}
+
+Variable ProteinGridEvoOptimizer::getVariableFromTrace(ExecutionTracePtr trace) const 
+{
+  // TODO arnaud : implement when bug serialization fixed
+  jassertfalse; // not implemented
+  return Variable();
+  
+  // OLD
+  /*
+  File f(T("/Users/arnaudschoofs/Proteins/traces/") + String((*it).second) + T(".trace"));
+  XmlImporter importer(context, f);
+  juce::XmlElement* elmt = importer.getCurrentElement()->getChildByName(T("variable"))->getChildByName(T("node"))->getChildByName(T("result"));
+  Variable v = importer.loadVariable(elmt, numericalProteinPredictorParametersClass);
+  NumericalProteinPredictorParametersPtr test = v.getObjectAndCast<NumericalProteinPredictorParameters>();  
+  state->distributionsBuilder->addElement(test->featuresParameters);
+  */
   
 }
 
+
+
+// OLD code
+/*
 Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
 {
-  /** 
-   * Main idea :
-   * if (state.xml exists) -> load state.xml
-   * else -> new state (uses apriori distribution)
-   * 
-   * in state save number of evaluated results and number of generated results
-   * in state save sorted pairs (map?) : id_wu <-> score
-   *
-   * if state.nbEvaluatedResults < threshold -> generate and/or wait for nbEvaluatedResults == threshold
-   *
-   * while( stopcriterion ) {
-   *  select best X results and update state.distributions
-   *  generate Y WUs, wait and get results
-   * }
-   *
-   * Remarks:
-   * synchronous : generate -> evaluate
-   * asynchronous : sendWorkUnit -> extract score from trace file
-   */
-  
+    
   // TODO arnaud : until now, not Grid but syncrhonous version for debug
   
   ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(apriori.dynamicCast<IndependentMultiVariateDistribution>());
@@ -70,7 +106,7 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   //size_t requiredCpus = 1;
   //size_t requiredMemory = 2;
   //size_t requiredTime = 10;
-  /*
+
   NetworkClientPtr client = blockingNetworkClient(context);
   if (!client->startClient(managerHostName, managerPort))
   {
@@ -105,23 +141,22 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
     //request->saveToFile(*context, f);
   }
   interface->closeCommunication();
-  */
   
   
-  state->inProgressWUs.insert(T("1299675529047"));
-  state->inProgressWUs.insert(T("1299675566221"));
-  /*state->inProgressWUs.insert(T("1299672901904"));
+  //state->inProgressWUs.insert(T("1299675529047"));
+  //state->inProgressWUs.insert(T("1299675566221"));
+  state->inProgressWUs.insert(T("1299672901904"));
   state->inProgressWUs.insert(T("1299672903018"));
   state->inProgressWUs.insert(T("1299672904089"));
   state->inProgressWUs.insert(T("1299672905175"));
   state->inProgressWUs.insert(T("1299672906244"));
   state->inProgressWUs.insert(T("1299672907319"));
   state->inProgressWUs.insert(T("1299672908395"));
-  state->inProgressWUs.insert(T("1299672910479"));*/
+  state->inProgressWUs.insert(T("1299672910479"));
 
   
   // handle finished WU's
-  /*
+
   while (state->currentEvaluatedWUs.size() < 10) {
     juce::Thread::sleep(5000);
     
@@ -157,29 +192,26 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
       else 
         ++it;
       
-   */
    
-      /*File f(String("/Users/arnaudschoofs/Proteins/traces/") + *it + T(".trace"));
-      if (f.existsAsFile())
-      {
-        XmlImporter importer(context, f);
-        if (!importer.isOpened())
-          {jassertfalse;}
-        if (!importer.enter("shared"))
-          {jassertfalse;}
-        double score = ((importer.getCurrentElement())->getNextElement()->getChildElementAllSubText(String("variable"), String("error"))).getDoubleValue();
-        state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
-        state->inProgressWUs.erase(it++);
-      }
-      else ++it;*/
+      //File f(String("/Users/arnaudschoofs/Proteins/traces/") + *it + T(".trace"));
+      //if (f.existsAsFile())
+      //{
+      //  XmlImporter importer(context, f);
+      //  if (!importer.isOpened())
+      //    {jassertfalse;}
+      //  if (!importer.enter("shared"))
+      //    {jassertfalse;}
+      //  double score = ((importer.getCurrentElement())->getNextElement()->getChildElementAllSubText(String("variable"), String("error"))).getDoubleValue();
+      //  state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
+      //  state->inProgressWUs.erase(it++);
+      //}
+      //else ++it;
   
-  //  }
-  //}
+    }
+  }
   
-  
-
   // TODO arnaud : select best results, update distributions
-  /*size_t nb = 0;
+  size_t nb = 0;
   std::multimap<double, String>::reverse_iterator it;
   for ( it=state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend() && nb < 5; it++ )
   {
@@ -195,28 +227,7 @@ Variable ProteinGridEvoOptimizer::optimize(ExecutionContext& context, const Func
   
   IndependentMultiVariateDistributionPtr newDistri = state->distributionsBuilder->build(context);
   std::cout << newDistri->sample(RandomGenerator::getInstance()).toString() << std::endl;
-  */
    
   return Variable(0); 
 }
-
-
-
-WorkUnitPtr ProteinGridEvoOptimizerState::generateSampleWU(ExecutionContext& context, const String& name)
-{
-  WorkUnitPtr wu = new ProteinLearner();
-  // TODO arnaud : set some parameters to 0 (disabled)
-  //wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + sampleParameters()->toString() + T(",sgd)\" -t ss3 -n 1 -m 20"));
-  wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical((1,3,5,3,5,3,2,3,5,5,True,15,15,50),sgd)\" -t ss3 -n 1 -m 10"));
-  //wu->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/wu/") + name + T(".xml")));
-  //totalNumberGeneratedWUs++;
-  //inProgressWUs.insert(name);
-  return wu;
-}
-
-NumericalProteinFeaturesParametersPtr ProteinGridEvoOptimizerState::sampleParameters() const 
-{
-  // TODO arnaud : set seed
-  NumericalProteinFeaturesParametersPtr test = (distributions->sample(RandomGenerator::getInstance())).getObjectAndCast<NumericalProteinFeaturesParameters>();
-  return test;
-}
+*/
