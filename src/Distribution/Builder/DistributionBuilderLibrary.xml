@@ -4,10 +4,6 @@
 
   <include file="lbcpp/Core/Vector.h"/>
   <include file="lbcpp/Distribution/DistributionBuilder.h"/>
-  <!-- <include file="lbcpp/Distribution/GaussianDistributionBuilder.h"/>
-  <include file="lbcpp/Distribution/BernoulliDistributionBuilder.h"/>
-  <include file="lbcpp/Distribution/EnumerationDistributionBuilder.h"/>
-  <include file="lbcpp/Distribution/IndependentMultiVariateDistributionBuilder.h"/> -->
 
   <!-- Distribution Builder -->
   <template name="DistributionBuilder" base="Object" abstract="yes">

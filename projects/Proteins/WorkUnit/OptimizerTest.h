@@ -44,6 +44,15 @@ namespace lbcpp
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(5,1));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(5,1));
       
+            
+      /*XmlExporter exporter(context);                      
+      distributions->saveToXml(exporter);
+      exporter.saveToFile(File(T("/Users/arnaudschoofs/Proteins/traces/test.xml")));*/
+      
+      /*distributions->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/test.xml"))); 
+      IndependentMultiVariateDistributionPtr test = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/test.xml"))).staticCast<IndependentMultiVariateDistribution>();*/  
+
+      
       
       Variable var = optimizer->compute(context, new Function(), distributions);
       return var;

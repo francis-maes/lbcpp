@@ -13,9 +13,8 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Core/Enumeration.h>
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
+# include "../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 # include <lbcpp/Distribution/ContinuousDistribution.h>
-
-// TODO arnaud
 
 namespace lbcpp
 {
@@ -23,30 +22,28 @@ namespace lbcpp
   public:
     GridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) 
+    GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions)
     {
-      this->distributions = distributions->cloneAndCast<IndependentMultiVariateDistribution>();
-      // TODO arnaud : if state.xml loaded
-      numberGeneratedWU = 0;
-      numberEvaluatedWU = 0;
+      // TODO arnaud : clone init distribution ?
+      totalNumberGeneratedWUs = 0;
+      totalNumberEvaluatedWUs = 0;
     }
     
-    //NumericalProteinFeaturesParametersPtr sampleParameters() const;
-    //void generateSampleWU(ExecutionContext& context, const String& name);
-    
-    size_t getNumberGeneratedWU() const 
-      {return numberGeneratedWU;}
-    
-    size_t getNumberEvaluatedWU() const 
-      {return numberEvaluatedWU;}
+    virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const = 0;
     
   protected:
-    IndependentMultiVariateDistributionPtr distributions;
+    size_t totalNumberGeneratedWUs;
+    size_t totalNumberEvaluatedWUs;
     
-    size_t numberGeneratedWU;
-    size_t numberEvaluatedWU;
+    std::vector<String> inProgressWUs;
+    std::multimap<double, String> currentEvaluatedWUs;
+    
+    IndependentMultiVariateDistributionPtr distributions;
+    IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
     
     friend class GridEvoOptimizerStateClass;
+    friend class GridEvoOptimizer;
+    friend class GridEvoOptimizerClass; // TODO arnaud necessary ?
     
   };
   typedef ReferenceCountedObjectPtr<GridEvoOptimizerState> GridEvoOptimizerStatePtr;

@@ -35,9 +35,9 @@ namespace lbcpp
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
     ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions);
-
+    
     NumericalProteinFeaturesParametersPtr sampleParameters() const;
-    WorkUnitPtr generateSampleWU(ExecutionContext& context, const String& name);
+    virtual WorkUnitPtr generateSampleWU(ExecutionContext& context, const String& name);
     void clearBuilders();
     
     
@@ -50,7 +50,7 @@ namespace lbcpp
 
     IndependentMultiVariateDistributionPtr distributions;
     IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
-
+    
   protected:    
     friend class ProteinGridEvoOptimizerStateClass;
 
@@ -70,6 +70,11 @@ namespace lbcpp
   protected:
     //virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
     
+    virtual GridEvoOptimizerStatePtr loadState() const {jassertfalse; return NULL;} //not implemented
+    virtual bool saveState() const {jassertfalse; return false;}  //not implemented
+    virtual double getScoreFromTrace(ExecutionTracePtr trace) const {jassertfalse; return 0;}  //not implemented
+    virtual Variable getVariableFromTrace(ExecutionTracePtr trace) const {jassertfalse; return Variable();}  //not implemented
+
     friend class ProteinGridEvoOptimizerClass;
   };  
   
