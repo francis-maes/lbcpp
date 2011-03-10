@@ -21,6 +21,7 @@
 # include "../../src/Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 # include "../WorkUnit/ProteinLearner.h"
 # include "../Predictor/ProteinPredictorParameters.h"
+# include "../Evaluator/ProteinEvaluator.h"
 # include "../Predictor/NumericalProteinPredictorParameters.h"
 #include <map>
 #include <set>
@@ -34,7 +35,8 @@ namespace lbcpp
   public:
     ProteinGridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions);
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder) :
+    GridEvoOptimizerState(distributions, distributionsBuilder) {}
     
     virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const;
     
@@ -53,7 +55,7 @@ namespace lbcpp
       {return independentMultiVariateDistributionClass(variableType);}
             
   protected:    
-    virtual GridEvoOptimizerStatePtr loadState() const {jassertfalse; return NULL;} //not implemented
+    virtual GridEvoOptimizerStatePtr loadState() const {jassertfalse; return NULL;}  //not implemented
     virtual bool saveState() const {jassertfalse; return false;}  //not implemented
     virtual double getScoreFromTrace(ExecutionTracePtr trace) const;
     virtual Variable getVariableFromTrace(ExecutionTracePtr trace) const;
@@ -61,6 +63,8 @@ namespace lbcpp
     friend class ProteinGridEvoOptimizerClass;
   };  
   
+  typedef ReferenceCountedObjectPtr<ProteinGridEvoOptimizer> ProteinGridEvoOptimizerPtr;
+
 
 }; /* namespace lbcpp */
 

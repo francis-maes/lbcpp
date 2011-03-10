@@ -98,7 +98,6 @@ public:
         // best results : use them then delete
         for (it = state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend() && nb < state->currentEvaluatedWUs.size()/RATIO_WU_USED_TO_UPDATE; it++)
         {
-          // TODO arnaud : not working because of bug in xml serialization !! FIXME
           ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace"))).staticCast<ExecutionTrace>();
           state->distributionsBuilder->addElement(getVariableFromTrace(trace));
           File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace")).deleteFile();
@@ -167,8 +166,9 @@ private:
     NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
   }
-    
 };
+  
+typedef ReferenceCountedObjectPtr<GridEvoOptimizer> GridEvoOptimizerPtr;
 
 }; /* namespace lbcpp */
 

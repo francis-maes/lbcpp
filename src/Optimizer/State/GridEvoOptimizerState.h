@@ -22,7 +22,8 @@ namespace lbcpp
   public:
     GridEvoOptimizerState()
       {jassert(false);} // TODO arnaud
-    GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions)
+    GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder) : 
+    distributions(distributions), distributionsBuilder(distributionsBuilder)
     {
       // TODO arnaud : clone init distribution ?
       totalNumberGeneratedWUs = 0;
