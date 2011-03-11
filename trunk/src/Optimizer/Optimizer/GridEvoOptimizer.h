@@ -21,15 +21,14 @@
 # include "../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 
 // TODO arnaud : move file to include directory ?
+// TODO delete Ptr ?
 namespace lbcpp
 {
 
 class GridEvoOptimizerState : public GridOptimizerState {
 public:
-  GridEvoOptimizerState()
-    {jassertfalse;} // TODO arnaud
-  GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder) : 
-  distributions(distributions), distributionsBuilder(distributionsBuilder)
+  GridEvoOptimizerState() {} // TODO arnaud OK?
+  GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions)
   {
     // TODO arnaud : clone init distribution ?
     totalNumberGeneratedWUs = 0;
@@ -43,10 +42,11 @@ protected:
   size_t totalNumberEvaluatedWUs;
   
   std::vector<String> inProgressWUs;
-  std::multimap<double, String> currentEvaluatedWUs;
+  std::vector<String> currentEvaluatedWUs;
+  //std::multimap<double, String> currentEvaluatedWUs;
   
   IndependentMultiVariateDistributionPtr distributions;
-  IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
+  //IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
   
   friend class GridEvoOptimizerStateClass;
   friend class GridEvoOptimizer;
@@ -115,10 +115,11 @@ public:
           NetworkResponsePtr res = interface->getExecutionTrace(*it);
           if (res)
           {  
-            ExecutionTracePtr trace = interface->getExecutionTrace(*it)->getExecutionTrace(context);
+            ExecutionTracePtr trace = res->getExecutionTrace(context);
             trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory ?
-            double score = getScoreFromTrace->compute(context, trace).getDouble();
-            state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
+            //double score = getScoreFromTrace->compute(context, trace).getDouble();
+            state->currentEvaluatedWUs.push_back(*it);
+            //state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
             state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
             state->inProgressWUs.erase(it);
           }
@@ -133,22 +134,33 @@ public:
       // enough WUs evaluated -> update distribution (with best results)
       if (state->currentEvaluatedWUs.size() >= NB_WU_TO_UPDATE) 
       {
-        size_t nb = 0;
-        std::multimap<double, String>::reverse_iterator it;
-        // best results : use them then delete
-        for (it = state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend() && nb < state->currentEvaluatedWUs.size()/RATIO_WU_USED_TO_UPDATE; it++)
+        
+        std::multimap<double, Variable> resultsMap; // mutlimap used to sort results by score
+        std::vector<String>::iterator it;
+        for(it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) 
         {
-          ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace"))).staticCast<ExecutionTrace>();
-          state->distributionsBuilder->addElement(getVariableFromTrace->compute(context, trace));
-          File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace")).deleteFile();
+          ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace"))).staticCast<ExecutionTrace>();
+          double score = getScoreFromTrace->compute(context, trace).getDouble();
+          Variable var = getVariableFromTrace->compute(context, trace);
+          resultsMap.insert(std::pair<double, Variable>(score,var));
+        }
+        
+        IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = state->distributions->createBuilder();
+        size_t nb = 0;
+        std::multimap<double, Variable>::reverse_iterator mapIt;
+        // best results : use them then delete
+        for (mapIt = resultsMap.rbegin(); mapIt != resultsMap.rend() && nb < state->currentEvaluatedWUs.size()/RATIO_WU_USED_TO_UPDATE; mapIt++)
+        {
+          //ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace"))).staticCast<ExecutionTrace>();
+          distributionsBuilder->addElement((*mapIt).second);
+          //File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace")).deleteFile();
           nb++;
         }
-        state->distributions = state->distributionsBuilder->build(context);
-        state->distributionsBuilder->clear();
+        state->distributions = distributionsBuilder->build(context);
         
         // other results : delete them
-        for ( ; it != state->currentEvaluatedWUs.rend(); it++) {
-          File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace")).deleteFile();
+        for (it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) {
+          File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")).deleteFile();
         }
         
         state->currentEvaluatedWUs.clear(); // clear map

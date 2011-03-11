@@ -21,9 +21,9 @@
   <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
     <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
     <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
-    <variable type="GenericVector[String]" name="distributions"/>
-    <variable type="IndependentMultiVariateDistribution[Variable]" name="inProgressWUs"/>
-    <variable type="IndependentMultiVariateDistributionBuilder[Variable]" name="distributionsBuilder"/>
+    <variable type="GenericVector[String]" name="inProgressWUs"/>
+    <variable type="GenericVector[String]" name="currentEvaluatedWUs"/>
+    <variable type="IndependentMultiVariateDistribution[Variable]" name="distributions"/>
   </class>
 
 </library>
