@@ -20,10 +20,9 @@ namespace lbcpp
 {
   class ProteinGridEvoOptimizerState : public GridEvoOptimizerState {
   public:
-    ProteinGridEvoOptimizerState()
-      {jassert(false);} // TODO arnaud
-    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder) :
-    GridEvoOptimizerState(distributions, distributionsBuilder) {}
+    ProteinGridEvoOptimizerState() {} // TODO arnaud : OK?
+    ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) :
+    GridEvoOptimizerState(distributions) {}
     
     virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const 
     {

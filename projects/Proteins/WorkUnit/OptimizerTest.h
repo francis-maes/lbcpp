@@ -46,16 +46,17 @@ namespace lbcpp
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
       
-      IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = distributions->createBuilder();
+      //IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = distributions->createBuilder();
       
       
       GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
-      return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions, distributionsBuilder), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+      return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
-      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
+      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
       //state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))); // --->  Could not find type ProteinGridEvoOptimizerState (in TypeManager::getType()) 
       
-      
+      //ProteinGridEvoOptimizerStatePtr state2 = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+
       
       /*
       ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
