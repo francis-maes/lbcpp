@@ -113,6 +113,7 @@ public:
   //DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes = String::empty);
   //DefaultEnumeration(const String& name, const String& oneLetterCodes);
   DefaultEnumeration(const String& name, const String& baseTypeName = T("EnumValue"));
+  DefaultEnumeration();
 
   virtual size_t getNumElements() const
     {return elements.size();}
@@ -129,6 +130,8 @@ public:
     {elements.reserve(size);}
 
 private:
+  friend class DefaultEnumerationClass;
+  
   std::vector<EnumerationElementPtr> elements;
 };
 

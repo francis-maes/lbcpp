@@ -56,7 +56,6 @@ public:
     }
 */
     parametersClass = compositeDoubleVectorClass(parametersEnumeration);
-
     // output and learner
     outputName = T("prediction");
     outputShortName = T("p");

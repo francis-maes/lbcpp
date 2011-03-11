@@ -66,7 +66,7 @@ private:
     instances[arguments] = res;
     bool isNamedType = true;
     for (size_t i = 0; i < arguments.size(); ++i)
-      isNamedType |= arguments[i]->isNamedType();
+      isNamedType &= arguments[i]->isNamedType();
     res->namedType = isNamedType;
     return res;
   }

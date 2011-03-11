@@ -149,6 +149,12 @@ DefaultEnumeration::DefaultEnumeration(const String& name, const String& baseTyp
   : Enumeration(name, baseTypeName)
 {
 }
+
+DefaultEnumeration::DefaultEnumeration()
+ : Enumeration(T("UnnamedEnumeration"), T("EnumValue"))
+{
+}
+
 /*
 DefaultEnumeration::DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
   : Enumeration(name)
