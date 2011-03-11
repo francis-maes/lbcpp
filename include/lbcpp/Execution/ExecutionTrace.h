@@ -194,6 +194,7 @@ protected:
   Time startTime;
   Time saveTime;
 };
+extern ClassPtr executionTraceClass;  
 
 }; /* namespace lbcpp */
 

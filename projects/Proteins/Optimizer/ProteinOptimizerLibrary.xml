@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="ProteinOptimizer" directory="Optimizer">
-  <class name="ProteinGridEvoOptimizer" base="GridEvoOptimizer"/>
   
   <class name="ProteinGridEvoOptimizerState" base="GridEvoOptimizerState">
    <constructor arguments="IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder"/>

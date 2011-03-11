@@ -30,6 +30,9 @@ public:
   virtual double computeProbability(const Variable& value) const = 0;
   virtual Variable sample(RandomGeneratorPtr random) const = 0;
   virtual Variable sampleBest(RandomGeneratorPtr random) const = 0;
+  
+  //virtual DistributionBuilderPtr getBuilder() const = 0;
+  
 };
 
 typedef ReferenceCountedObjectPtr<Distribution> DistributionPtr;

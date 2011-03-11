@@ -46,6 +46,9 @@ public:
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
   
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {return new BernoulliDistributionBuilder();}
+  
 protected:
   friend class BernoulliDistributionClass;
   
@@ -73,6 +76,9 @@ public:
   virtual Variable sample(RandomGeneratorPtr random) const;
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
+  
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {return new EnumerationDistributionBuilder(getEnumeration());}
   
   // Object
   virtual String toString() const;
@@ -134,6 +140,9 @@ public:
   double getVariance() const
     {return variance;}
   
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {return new IntegerGaussianDistributionBuilder();}
+  
   juce_UseDebuggingNewOperator
   
 protected:  
@@ -168,6 +177,9 @@ public:
   
   virtual Variable sample(RandomGeneratorPtr random) const
     {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
+  
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {return new PositiveIntegerGaussianDistributionBuilder();}
   
   juce_UseDebuggingNewOperator
   
