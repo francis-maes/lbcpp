@@ -78,6 +78,10 @@
         {return Type::createFromXml(importer);}
     </code>
   </class>
+  
+  <class name="DefaultEnumeration" base="Enumeration">
+    <variable type="GenericVector[EnumerationElement]" name="elements"/>
+  </class>
 
   <class name="Class" base="Type" abstract="yes">
     <code>
