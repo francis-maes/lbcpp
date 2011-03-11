@@ -11,10 +11,11 @@
 
 # include "../Data/RandomGenerator.h"
 # include "../Core/Variable.h"
+# include "predeclarations.h"
 
 namespace lbcpp
-{
-
+{ 
+  
 class Distribution : public Object
 {
 public:
@@ -31,7 +32,7 @@ public:
   virtual Variable sample(RandomGeneratorPtr random) const = 0;
   virtual Variable sampleBest(RandomGeneratorPtr random) const = 0;
   
-  //virtual DistributionBuilderPtr getBuilder() const = 0;
+  virtual DistributionBuilderPtr createBuilder() const = 0;
   
 };
 

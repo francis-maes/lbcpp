@@ -7,6 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Distribution/MultiVariateDistribution.h>
+#include "Builder/IndependentMultiVariateDistributionBuilder.h"
+
 using namespace lbcpp;
 
 /*
@@ -46,4 +48,12 @@ Variable IndependentMultiVariateDistribution::sampleBest(RandomGeneratorPtr rand
   for (size_t i = 0; i < distributions.size(); ++i)
     res->setVariable(i, distributions[i]->sampleBest(random));
   return res;
+}
+
+DistributionBuilderPtr IndependentMultiVariateDistribution::createBuilder() const
+{
+  IndependentMultiVariateDistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(getElementsType());
+  for (size_t i = 0; i < distributions.size(); ++i)
+    builder->setSubDistributionBuilder(i, distributions[i]->createBuilder());
+  return builder;
 }

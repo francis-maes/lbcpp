@@ -279,6 +279,7 @@ ENDIF(LBCPP_NETWORKING)
 #### Distribution ####
 
 SET(LBCPP_DISTRIBUTION_SOURCES
+  ../include/lbcpp/Distribution/predeclarations.h
   ../include/lbcpp/Distribution/Distribution.h
   ../include/lbcpp/Distribution/DiscreteDistribution.h
   Distribution/DiscreteDistribution.cpp
@@ -301,6 +302,7 @@ SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
   ../include/lbcpp/Distribution/DistributionBuilder.h
   Distribution/Builder/EnumerationDistributionBuilder.h
   Distribution/Builder/GaussianDistributionBuilder.h
+  Distribution/Builder/GaussianDistributionBuilder.cpp
   Distribution/Builder/BernoulliDistributionBuilder.h
   Distribution/Builder/IndependentMultiVariateDistributionBuilder.h
   Distribution/Builder/IndependentMultiVariateDistributionBuilder.cpp

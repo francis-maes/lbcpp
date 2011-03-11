@@ -48,15 +48,7 @@ public:
   void setSubDistribution(size_t index, const DistributionPtr& distribution)
     {jassert(index < distributions.size()); distributions[index] = distribution;}
   
-  /*
-  virtual DistributionBuilderPtr getBuilder() const
-  {
-    DistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(elementsType);
-    for (size_t i = 0; i < distributions.size(); ++i)
-      builder->setSubDistributionBuilder(i, distributions[i]->getBuilder());
-    return builder;
-  }
-   */
+  virtual DistributionBuilderPtr createBuilder() const;
    
   lbcpp_UseDebuggingNewOperator
 

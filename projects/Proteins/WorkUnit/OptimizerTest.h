@@ -46,28 +46,14 @@ namespace lbcpp
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
       
-      IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
-      distributionsBuilder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
-      distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
+      IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = distributions->createBuilder();
       
       
-      //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
-      //return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions, distributionsBuilder), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+      GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
+      return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions, distributionsBuilder), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
-      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
-      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))); // --->  Could not find type ProteinGridEvoOptimizerState (in TypeManager::getType()) 
+      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
+      //state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))); // --->  Could not find type ProteinGridEvoOptimizerState (in TypeManager::getType()) 
       
       
       

@@ -9,6 +9,10 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Data/RandomGenerator.h>
 #include <lbcpp/Distribution/DiscreteDistribution.h>
+#include "Builder/BernoulliDistributionBuilder.h"
+#include "Builder/EnumerationDistributionBuilder.h"
+#include "Builder/GaussianDistributionBuilder.h"
+
 using namespace lbcpp;
 
 // todo: ranger
@@ -72,6 +76,9 @@ double BernoulliDistribution::computeEntropy() const
     res -= p * log2(p);
   return res;
 }
+
+DistributionBuilderPtr BernoulliDistribution::createBuilder() const
+  {return new BernoulliDistributionBuilder();}
 
 /*
  ** EnumerationDistribution
@@ -177,6 +184,9 @@ double EnumerationDistribution::computeEntropy() const
   return res;
 }
 
+DistributionBuilderPtr EnumerationDistribution::createBuilder() const
+  {return new EnumerationDistributionBuilder(getEnumeration());}
+
 void EnumerationDistribution::saveToXml(XmlExporter& exporter) const
   {exporter.addTextElement(toString());}
 
@@ -232,3 +242,14 @@ bool EnumerationDistribution::loadFromString(ExecutionContext& context, const St
 bool EnumerationDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
 
+/*
+ ** IntegerGaussianDistribution
+ */
+DistributionBuilderPtr IntegerGaussianDistribution::createBuilder() const
+  {return new IntegerGaussianDistributionBuilder();}
+
+/*
+ ** PositiveIntegerGaussianDistribution
+ */
+DistributionBuilderPtr PositiveIntegerGaussianDistribution::createBuilder() const
+  {return new PositiveIntegerGaussianDistributionBuilder();}
