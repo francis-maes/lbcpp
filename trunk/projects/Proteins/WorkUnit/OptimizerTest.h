@@ -11,12 +11,13 @@
 #define OPTIMIZER_TEST_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/ContinuousDistribution.h>
+# include <lbcpp/Optimizer/GridOptimizer.h>
 # include "../Optimizer/ProteinGridEvoOptimizer.h"
 # include "../../../src/Optimizer/Optimizer/GridEvoOptimizer.h"
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include "../Predictor/ProteinPredictorParameters.h"
+# include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
+# include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
 
 namespace lbcpp
 {
@@ -27,25 +28,61 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
-      //ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
-      //ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace")));
-      ProteinGridEvoOptimizerPtr optimizer = new ProteinGridEvoOptimizer();
-      return optimizer->optimize(context, new Function(), Variable());
       
-      //std::cout << optimizer->getVariableFromTrace(trace) << std::endl;
+      // TODO arnaud : add getBuilder() in Distribution.h
+      IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+      distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,0));
+      distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,0));
+      distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,0));
+      distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,0));
+      distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,0));
+      distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,0));
+      distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,0));
+      distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,0));
+      distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,0));
+      distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,0));
+      distributions->setSubDistribution(10, new BernoulliDistribution(1));
+      distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,0));
+      distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
+      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
+      
+      IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = new IndependentMultiVariateDistributionBuilder(numericalProteinFeaturesParametersClass);
+      distributionsBuilder->setSubDistributionBuilder(0, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(1, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(2, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(3, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(4, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(5, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(6, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(7, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(8, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(9, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(10, new BernoulliDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(11, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(12, new PositiveIntegerGaussianDistributionBuilder());
+      distributionsBuilder->setSubDistributionBuilder(13, new PositiveIntegerGaussianDistributionBuilder());
       
       
-      /*XmlExporter exporter(context);                      
-      distributions->saveToXml(exporter);
-      exporter.saveToFile(File(T("/Users/arnaudschoofs/Proteins/traces/test.xml")));*/
+      //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
+      //return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions, distributionsBuilder), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
-      /*distributions->saveToFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/test.xml"))); 
-      IndependentMultiVariateDistributionPtr test = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/test.xml"))).staticCast<IndependentMultiVariateDistribution>();*/  
-
+      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions, distributionsBuilder);
+      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))); // --->  Could not find type ProteinGridEvoOptimizerState (in TypeManager::getType()) 
       
       
-      //Variable var = optimizer->compute(context, new Function(), distributions);
-      //return Variable();
+      
+      /*
+      ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
+      FunctionPtr f1 = new ProteinGetScoreFromTraceFunction();
+      std::cout << f1->compute(context, trace).toString() << std::endl;
+      
+      FunctionPtr f2 = new ProteinGetVariableFromTraceFunction();
+      std::cout << f2->compute(context, trace).toString() << std::endl;
+      */
+          
+            
+      
+      return Variable();
       
     }
   protected:

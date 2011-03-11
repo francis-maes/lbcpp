@@ -61,6 +61,9 @@
 # include "Distribution/ContinuousDistribution.h"
 # include "Distribution/MultiVariateDistribution.h"
 
+# include "Distribution/DistributionBuilder.h"
+
+
 # include "Execution/ExecutionStack.h"
 # include "Execution/ExecutionContext.h"
 # include "Execution/ExecutionTrace.h"

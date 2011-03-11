@@ -15,26 +15,56 @@
 #define NB_WU_TO_UPDATE 2
 #define RATIO_WU_USED_TO_UPDATE 1
 
-# include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/MultiVariateDistribution.h>
-# include "../State/GridEvoOptimizerState.h"
+# include <lbcpp/Optimizer/GridOptimizer.h>
 # include <lbcpp/Network/NetworkClient.h>
 # include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
+# include "../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 
 // TODO arnaud : move file to include directory ?
-// TODO arnaud : fit to new Optimizer interface or create special interface for GridOptimizer (best solution I think)
 namespace lbcpp
 {
 
-class GridEvoOptimizer : public Optimizer
+class GridEvoOptimizerState : public GridOptimizerState {
+public:
+  GridEvoOptimizerState()
+    {jassertfalse;} // TODO arnaud
+  GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions, IndependentMultiVariateDistributionBuilderPtr distributionsBuilder) : 
+  distributions(distributions), distributionsBuilder(distributionsBuilder)
+  {
+    // TODO arnaud : clone init distribution ?
+    totalNumberGeneratedWUs = 0;
+    totalNumberEvaluatedWUs = 0;
+  }
+  
+  virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const = 0;
+  
+protected:
+  size_t totalNumberGeneratedWUs;
+  size_t totalNumberEvaluatedWUs;
+  
+  std::vector<String> inProgressWUs;
+  std::multimap<double, String> currentEvaluatedWUs;
+  
+  IndependentMultiVariateDistributionPtr distributions;
+  IndependentMultiVariateDistributionBuilderPtr distributionsBuilder;
+  
+  friend class GridEvoOptimizerStateClass;
+  friend class GridEvoOptimizer;
+  
+};
+typedef ReferenceCountedObjectPtr<GridEvoOptimizerState> GridEvoOptimizerStatePtr;  
+  
+  
+class GridEvoOptimizer : public GridOptimizer
 {
 public:
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& function, const Variable& priorKnowledge) const
+  virtual Variable optimize(ExecutionContext& context, const GridOptimizerStatePtr& state_, const FunctionPtr& getVariableFromTrace, const FunctionPtr& getScoreFromTrace) const
   {
     // TODO add callbacks infos
+    // TODO add some state-saveToFile()
     
-    // Load state of optimizer
-    GridEvoOptimizerStatePtr state = loadState();
+    
+    GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
     
     while (state->totalNumberEvaluatedWUs < NB_WU_TO_EVALUATE) 
     {
@@ -86,8 +116,8 @@ public:
           if (res)
           {  
             ExecutionTracePtr trace = interface->getExecutionTrace(*it)->getExecutionTrace(context);
-            trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory
-            double score = getScoreFromTrace(trace);
+            trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory ?
+            double score = getScoreFromTrace->compute(context, trace).getDouble();
             state->currentEvaluatedWUs.insert(std::pair<double, String>(score,*it));
             state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
             state->inProgressWUs.erase(it);
@@ -109,7 +139,7 @@ public:
         for (it = state->currentEvaluatedWUs.rbegin(); it != state->currentEvaluatedWUs.rend() && nb < state->currentEvaluatedWUs.size()/RATIO_WU_USED_TO_UPDATE; it++)
         {
           ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace"))).staticCast<ExecutionTrace>();
-          state->distributionsBuilder->addElement(getVariableFromTrace(trace));
+          state->distributionsBuilder->addElement(getVariableFromTrace->compute(context, trace));
           File::getCurrentWorkingDirectory().getChildFile(String((*it).second) + T(".trace")).deleteFile();
           nb++;
         }
@@ -128,12 +158,7 @@ public:
     return Variable();  // TODO arnaud : store best results ?
   }
     
-protected:
-  virtual GridEvoOptimizerStatePtr loadState() const = 0;
-  virtual bool saveState() const = 0;
-  virtual double getScoreFromTrace(ExecutionTracePtr trace) const = 0; // use function of optimizer
-  virtual Variable getVariableFromTrace(ExecutionTracePtr trace) const = 0; // use function of optimizer
-  
+protected:  
   friend class GridEvoOptimizerClass;
   
 private:

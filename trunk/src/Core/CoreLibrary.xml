@@ -48,6 +48,17 @@
   <class name="VariableVector" base="Vector[Variable]">
     <constructor arguments="size_t initialSize"/>
   </class>
+  
+  <!-- Map -->
+  <template name="Map" base="Object" abstract="yes">
+    <parameter name="keysType"/>
+    <parameter name="valuesType"/>
+  </template>
+  
+  <template name="OrderedMap" base="Map[keysType,valuesType]" abstract="yes">
+    <parameter name="keysType"/>
+    <parameter name="valuesType"/>
+  </template>
 
   <!-- Dynamic Object -->
   <class name="DynamicClass" base="DefaultClass" abstract="yes"/>

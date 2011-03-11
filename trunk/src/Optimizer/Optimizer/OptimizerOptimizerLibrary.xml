@@ -3,6 +3,7 @@
 <library name="OptimizerOptimizer" directory="Optimizer/Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
+  <include file="lbcpp/Optimizer/GridOptimizer.h"/>
 
   <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
     <constructor arguments="size_t numSamples"/>
@@ -16,6 +17,13 @@
     <variable type="Optimizer" name="baseOptimizer"/>
   </class>
   
-  <class name="GridEvoOptimizer" base="Optimizer" abstract="yes"/>
+  <class name="GridEvoOptimizer" base="GridOptimizer"/>
+  <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
+    <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
+    <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
+    <variable type="GenericVector[String]" name="distributions"/>
+    <variable type="IndependentMultiVariateDistribution[Variable]" name="inProgressWUs"/>
+    <variable type="IndependentMultiVariateDistributionBuilder[Variable]" name="distributionsBuilder"/>
+  </class>
 
 </library>

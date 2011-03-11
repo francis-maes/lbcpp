@@ -109,7 +109,6 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
 
 SET(LBCPP_PROTEIN_OPTIMIZER_SOURCES
   Optimizer/ProteinGridEvoOptimizer.h
-  Optimizer/ProteinGridEvoOptimizer.cpp
   Optimizer/ProteinOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinOptimizerLibrary.cpp
 )

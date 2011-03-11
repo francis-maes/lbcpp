@@ -47,6 +47,9 @@ public:
 
   double getMaximum() const
     {return maximum;}
+  
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {jassertfalse; return NULL;}  // not implemented // TODO arnaud
 
   juce_UseDebuggingNewOperator
 
@@ -80,6 +83,9 @@ public:
 
   double getVariance() const
     {return variance;}
+  
+  //virtual DistributionBuilderPtr getBuilder() const
+  //  {return new GaussianDistributionBuilder();}
 
   juce_UseDebuggingNewOperator
 

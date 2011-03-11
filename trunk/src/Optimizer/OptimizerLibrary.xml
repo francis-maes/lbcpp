@@ -3,17 +3,13 @@
 <library name="Optimizer" directory="Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
+  <include file="lbcpp/Optimizer/GridOptimizer.h"/>
 
   <!-- <import name="ObjectiveFunction"/> -->
   <import name="OptimizerOptimizer"/>
-  <import name="OptimizerState"/>
-
-  <!-- <class name="OptimizerInput" base="Object">
-    <variable type="ObjectiveFunction" name="objective"/>
-    <variable type="Distribution[Variable]" name="aprioriDistribution"/>
-    <variable type="Variable" name="initialGuess"/>
-  </class> -->
 
   <class name="Optimizer" base="Function" abstract="yes"/>
+  <class name="GridOptimizer" base="Function" abstract="yes"/>
+  <class name="GridOptimizerState" base="Object" abstract="yes"/>
 
 </library>
