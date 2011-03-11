@@ -8,6 +8,9 @@
 #include "precompiled.h"
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Distribution/ContinuousDistribution.h>
+#include "Builder/GaussianDistributionBuilder.h"
+
+
 using namespace lbcpp;
 
 /*
@@ -64,4 +67,7 @@ void GaussianDistribution::sampleUniformly(size_t numSamples, std::vector<double
 {
   jassert(false); // not implemented !
 }
+
+DistributionBuilderPtr GaussianDistribution::createBuilder() const
+  {return new GaussianDistributionBuilder();}
 

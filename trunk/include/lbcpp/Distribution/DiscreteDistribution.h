@@ -16,7 +16,7 @@
 
 namespace lbcpp
 {
-
+  
 class DiscreteDistribution : public Distribution
 {
 public:
@@ -46,9 +46,8 @@ public:
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
   
-  //virtual DistributionBuilderPtr getBuilder() const
-  //  {return new BernoulliDistributionBuilder();}
-  
+  virtual DistributionBuilderPtr createBuilder() const;
+
 protected:
   friend class BernoulliDistributionClass;
   
@@ -77,8 +76,7 @@ public:
   virtual Variable sampleBest(RandomGeneratorPtr random) const;
   virtual double computeEntropy() const;
   
-  //virtual DistributionBuilderPtr getBuilder() const
-  //  {return new EnumerationDistributionBuilder(getEnumeration());}
+  virtual DistributionBuilderPtr createBuilder() const;
   
   // Object
   virtual String toString() const;
@@ -140,8 +138,7 @@ public:
   double getVariance() const
     {return variance;}
   
-  //virtual DistributionBuilderPtr getBuilder() const
-  //  {return new IntegerGaussianDistributionBuilder();}
+  virtual DistributionBuilderPtr createBuilder() const;
   
   juce_UseDebuggingNewOperator
   
@@ -178,8 +175,7 @@ public:
   virtual Variable sample(RandomGeneratorPtr random) const
     {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
   
-  //virtual DistributionBuilderPtr getBuilder() const
-  //  {return new PositiveIntegerGaussianDistributionBuilder();}
+  virtual DistributionBuilderPtr createBuilder() const;
   
   juce_UseDebuggingNewOperator
   
