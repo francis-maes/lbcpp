@@ -4,13 +4,32 @@
 
   <include file="lbcpp/Optimizer/GridOptimizer.h"/>
   
-  <class name="GridEvoOptimizer" base="GridOptimizer"/>
+  <class name="GridEvoOptimizer" base="GridOptimizer">
+    <constructor arguments="size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, String projectName, String source, String destination,
+                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep"/>
+    <variable type="PositiveInteger" name="totalNumberWuRequested"/>
+    <variable type="PositiveInteger" name="numberWuToUpdate"/>
+    <variable type="PositiveInteger" name="numberWuInProgress"/>
+    <variable type="PositiveInteger" name="ratioUsedForUpdate"/>
+    <variable type="String" name="projectName"/>
+    <variable type="String" name="source"/>
+    <variable type="String" name="destination"/>
+    <variable type="String" name="managerHostName"/>
+    <variable type="PositiveInteger" name="managerPort"/>
+    <variable type="PositiveInteger" name="requiredCpus"/>
+    <variable type="PositiveInteger" name="requiredMemory"/>  
+    <variable type="PositiveInteger" name="requiredTime"/>  
+    <variable type="PositiveInteger" name="timeToSleep"/>
+  </class>
+  
   <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
     <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
     <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
     <variable type="GenericVector[String]" name="inProgressWUs"/>
     <variable type="GenericVector[String]" name="currentEvaluatedWUs"/>
     <variable type="IndependentMultiVariateDistribution[Variable]" name="distributions"/>
+    <variable type="Variable" name="bestVariable"/>
+    <variable type="Double" name="bestScore"/>
   </class>
 
 </library>
