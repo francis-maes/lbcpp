@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="OptimizerOptimizerGrid" directory="Optimizer/Optimizer/Grid">
+
+  <include file="lbcpp/Optimizer/GridOptimizer.h"/>
+  
+  <class name="GridEvoOptimizer" base="GridOptimizer"/>
+  <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
+    <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
+    <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
+    <variable type="GenericVector[String]" name="inProgressWUs"/>
+    <variable type="GenericVector[String]" name="currentEvaluatedWUs"/>
+    <variable type="IndependentMultiVariateDistribution[Variable]" name="distributions"/>
+  </class>
+
+</library>
