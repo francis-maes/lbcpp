@@ -9,7 +9,7 @@
 #ifndef PROTEIN_GRID_EVO_OPTIMIZER_H_
 #define PROTEIN_GRID_EVO_OPTIMIZER_H_
 
-# include "../../../src/Optimizer/Optimizer/GridEvoOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
 # include "../WorkUnit/ProteinLearner.h"
 # include "../Evaluator/ProteinEvaluator.h"
 # include "../Predictor/NumericalProteinPredictorParameters.h"

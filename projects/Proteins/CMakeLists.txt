@@ -9,8 +9,10 @@ GENERATE_INTROSPECTION_CODE(Data/ProteinDataLibrary.xml ProteinDataLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Predictor/ProteinPredictorLibrary.xml ProteinPredictorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Evaluator/ProteinEvaluatorLibrary.xml ProteinEvaluatorLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(WorkUnit/ProteinWorkUnitLibrary.xml ProteinWorkUnitLibrary.cpp)
-GENERATE_INTROSPECTION_CODE(Optimizer/ProteinOptimizerLibrary.xml ProteinOptimizerLibrary.cpp)
 
+IF(LBCPP_NETWORKING)
+  GENERATE_INTROSPECTION_CODE(Optimizer/ProteinOptimizerLibrary.xml ProteinOptimizerLibrary.cpp)
+ENDIF(LBCPP_NETWORKING)
 
 IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
@@ -101,17 +103,19 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/ProteinLearner.cpp
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
-  WorkUnit/OptimizerTest.h
   WorkUnit/FabienBox.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
 
-SET(LBCPP_PROTEIN_OPTIMIZER_SOURCES
-  Optimizer/ProteinGridEvoOptimizer.h
-  Optimizer/ProteinOptimizerLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ProteinOptimizerLibrary.cpp
-)
+IF(LBCPP_NETWORKING)
+  SET(LBCPP_PROTEIN_OPTIMIZER_SOURCES
+    Optimizer/OptimizerTest.h
+    Optimizer/ProteinGridEvoOptimizer.h
+    Optimizer/ProteinOptimizerLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/ProteinOptimizerLibrary.cpp
+  )
+ENDIF(LBCPP_NETWORKING)
 
 IF(LBCPP_USER_INTERFACE)
   SET(LBCPP_PROTEIN_USER_INTERFACE_SOURCES
