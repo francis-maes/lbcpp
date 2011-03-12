@@ -65,6 +65,7 @@ public:
     
     
     GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
+    state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
     
     while (state->totalNumberEvaluatedWUs < NB_WU_TO_EVALUATE) 
     {
@@ -157,13 +158,17 @@ public:
           nb++;
         }
         state->distributions = distributionsBuilder->build(context);
-        
+               
         // other results : delete them
         for (it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) {
           File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")).deleteFile();
         }
         
         state->currentEvaluatedWUs.clear(); // clear map
+        
+        File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
+        state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
+        // TODO arnaud : save more often ?
       }
     }
     
