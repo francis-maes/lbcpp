@@ -30,7 +30,7 @@ namespace lbcpp
     {
       
       // TODO arnaud : add getBuilder() in Distribution.h
-      IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+      /*IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
       distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,0));
       distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,0));
       distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,0));
@@ -44,18 +44,18 @@ namespace lbcpp
       distributions->setSubDistribution(10, new BernoulliDistribution(1));
       distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,0));
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
-      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
+      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));*/
       
       //IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = distributions->createBuilder();
+      ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+      
+      GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
+      return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
       
-      //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
-      //return optimizer->optimize(context, new ProteinGridEvoOptimizerState(distributions), new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
-      
-      
-      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
-      WorkUnitPtr wu = state->generateSampleWU(context);
-      wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("wu.xml")));
+      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
+      //WorkUnitPtr wu = state->generateSampleWU(context);
+      //wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("wu.xml")));
       
       
       //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);

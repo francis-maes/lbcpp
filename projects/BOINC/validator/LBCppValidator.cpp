@@ -23,28 +23,54 @@ using namespace lbcpp;
 
 int getScoreImpl(const char* fileName, double& score)
 {
-  File file(fileName);
-  XmlImporter importer(defaultExecutionContext(), file);
-  if (!importer.isOpened())
-  {
-    log_messages.printf(MSG_CRITICAL, "Can't load XmlImporter\n");
+  
+  // TODO arnaud : throw catch ?
+  
+  ObjectPtr obj = Object::createFromFile(context, File(fileName));
+  if (!obj) {
+    log_messages.printf(MSG_CRITICAL, "Can't create an Object from file : %s\n", fileName);
+    return 1;
+  }
+  
+  ExecutionTracePtr trace = obj.dynamicCast<ExecutionTrace>();
+  if (!trace) {
+    log_messages.printf(MSG_CRITICAL, "This file is not a valide ExecutionTrace : %s\n", fileName);
+    return 1;
+  }
+  
+  ExecutionTraceNodePtr root = trace->getRootNode();
+  if (!root) {
+    log_messages.printf(MSG_CRITICAL, "Can't get root from ExecutionTrace : %s\n", fileName);
+    return 1;
+  }
+  
+  std::vector<ExecutionTraceItemPtr> vec = root->getSubItems();  
+  if (vec.empty()) {
+    log_messages.printf(MSG_CRITICAL, "Can't get subitems from ExecutionTrace : %s\n", fileName);
+    return 1;
+  }
+  
+  ExecutionTraceNodePtr traceNode = vec[0].dynamicCast<ExecutionTraceNode>();
+  if (!traceNode) {
+    log_messages.printf(MSG_CRITICAL, "Can't get node from ExecutionTrace : %s\n", fileName);
     return 1;
   }
 
-  if (!importer.enter("variable") || !importer.enter("node") || !importer.enter("return"))
-  {
-    log_messages.printf(MSG_CRITICAL, "Syntax error in Xml file\n");
+  Variable returnValue = traceNode->getReturnValue();
+  if (!returnValue) {
+    log_messages.printf(MSG_CRITICAL, "No return value in ExecutionTrace : %s\n", fileName);
     return 1;
   }
-
-  Variable var = importer.loadVariable(TypePtr());
-  if (!var.exists() || !var.isDouble())
-  {
-    log_messages.printf(MSG_CRITICAL, "Score not defined or not Double\n");
+  
+  ScoreObjectPtr scoreObject = returnValue.dynamicCast<ScoreObject>();
+  if (!scoreObject) {
+    log_messages.printf(MSG_CRITICAL, "Return value in ExecutionTrace is not a ScoreObject : %s\n", fileName);
     return 1;
   }
-
-  score = var.getDouble();
+  
+  score = 1 - scoreObject->getScoreToMinimize();  
+  
+  return 0;
 }
 
 int getScore(const char* fileName, double& score)
