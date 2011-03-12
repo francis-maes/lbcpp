@@ -11,7 +11,7 @@
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/library.h>
-
+#include <lbcpp/Function/Evaluator.h>
 // BOINC includes
 #include <config.h>
 #include <util.h>
@@ -26,7 +26,7 @@ int getScoreImpl(const char* fileName, double& score)
   
   // TODO arnaud : throw catch ?
   
-  ObjectPtr obj = Object::createFromFile(context, File(fileName));
+  ObjectPtr obj = Object::createFromFile(defaultExecutionContext(), File(fileName));
   if (!obj) {
     log_messages.printf(MSG_CRITICAL, "Can't create an Object from file : %s\n", fileName);
     return 1;
@@ -57,7 +57,7 @@ int getScoreImpl(const char* fileName, double& score)
   }
 
   Variable returnValue = traceNode->getReturnValue();
-  if (!returnValue) {
+  if (!returnValue.exists() || !returnValue.isObject()) {
     log_messages.printf(MSG_CRITICAL, "No return value in ExecutionTrace : %s\n", fileName);
     return 1;
   }
