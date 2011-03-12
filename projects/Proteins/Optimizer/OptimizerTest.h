@@ -30,7 +30,7 @@ namespace lbcpp
     {
       
       // TODO arnaud : add getBuilder() in Distribution.h
-      /*IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+      IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
       distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,0));
       distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,0));
       distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,0));
@@ -44,12 +44,25 @@ namespace lbcpp
       distributions->setSubDistribution(10, new BernoulliDistribution(1));
       distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,0));
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
-      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));*/
+      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
       
-      //IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = distributions->createBuilder();
-      ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions); //Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
       
-      GridEvoOptimizerPtr optimizer = new GridEvoOptimizer();
+      size_t totalNumberWuRequested = 4;
+      size_t numberWuToUpdate = 2;
+      size_t numberWuInProgress = 2;
+      size_t ratioUsedForUpdate = 1;
+      String projectName(T("BoincFirstStage"));
+      String source(T("boincadm@boinc.run"));
+      String destination(T("boincadm@boinc.run"));
+      String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+      size_t managerPort = 1664;
+      size_t requiredMemory = 2;
+      size_t requiredTime = 10;
+      size_t timeToSleep = 10;  // in seconds
+      
+      GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
+                                                           managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
       return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
       
@@ -73,10 +86,6 @@ namespace lbcpp
       std::cout << f2->compute(context, trace).toString() << std::endl;
       */
           
-            
-      
-      return Variable();
-      
     }
   protected:
     friend class OptimizerTestClass;
