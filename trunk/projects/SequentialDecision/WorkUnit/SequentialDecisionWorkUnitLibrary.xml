@@ -41,6 +41,8 @@
   <class name="GoState" base="Object">
     <variable type="PositiveInteger" name="time"/>
     <variable type="GoBoard" name="board"/>
+    <variable type="PositiveInteger" name="whitePrisonerCount"/>
+    <variable type="PositiveInteger" name="blackPrisonerCount"/>
   </class>
   <class name="GoStateSampler" base="Function">
     <variable type="PositiveInteger" name="minSize"/>

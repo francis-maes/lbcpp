@@ -23,6 +23,7 @@
 # include <lbcpp/UserInterface/VariableSelector.h>
 using namespace juce;
 
+# include <list>
 
 namespace lbcpp
 {
@@ -129,11 +130,66 @@ public:
     : ShortEnumerationMatrix(playerEnumeration, size, size, 0) {}
   GoBoard() {}
 
-  void set(size_t row, size_t column, Player player)
-    {elements[makeIndex(row, column)] = (char)player;}
+  typedef std::pair<size_t, size_t> Position;
 
-  Player get(size_t row, size_t column) const
-    {return (Player)elements[makeIndex(row, column)];}
+  void set(const Position& position, Player player)
+    {elements[makeIndex(position)] = (char)player;}
+
+  void set(const std::set<Position>& positions, Player player)
+  {
+    for (std::set<Position>::const_iterator it = positions.begin(); it != positions.end(); ++it)
+      set(*it, player);
+  }
+
+  Player get(const Position& position) const
+    {return (Player)elements[makeIndex(position)];}
+
+  void getAdjacentPositions(const Position& position, std::vector<Position>& res)
+  {
+    size_t x = position.first;
+    size_t y = position.second;
+    res.clear();
+    res.reserve(4);
+    if (x > 0)
+      res.push_back(Position(x - 1, y));
+    if (y > 0)
+      res.push_back(Position(x, y - 1));
+    if (x < numColumns - 1)
+      res.push_back(Position(x + 1, y));
+    if (y < numRows - 1)
+      res.push_back(Position(x, y + 1));
+  }
+
+  void getGroup(const Position& position, std::set<Position>& res, size_t& numLiberties)
+  {
+    std::list<Position> toExplore;
+    toExplore.push_back(position);
+    Player player = get(position);
+    numLiberties = 0;
+
+    while (toExplore.size())
+    {
+      Position explored = toExplore.front();
+      toExplore.pop_front();
+      res.insert(explored);
+
+      std::vector<Position> adj;
+      getAdjacentPositions(explored, adj);
+      for (size_t i = 0; i < adj.size(); ++i)
+      {
+        Position candidate = adj[i];
+        Player p = get(candidate);
+        if (p == player && res.find(candidate) == res.end())
+          toExplore.push_back(candidate);
+        else if (p == noPlayers)
+          ++numLiberties;
+      }
+    }
+  }
+
+protected:
+  size_t makeIndex(const Position& position) const
+    {return ShortEnumerationMatrix::makeIndex(position.second, position.first);}
 };
 
 typedef ReferenceCountedObjectPtr<GoBoard> GoBoardPtr;
@@ -143,8 +199,8 @@ extern ClassPtr goStateClass;
 class GoState : public Object
 {
 public:
-  GoState(size_t time, GoBoardPtr board)
-    : Object(goStateClass), time(time), board(board) {}
+  GoState(size_t time, GoBoardPtr board, size_t whitePrisonerCount, size_t blackPrisonerCount)
+    : Object(goStateClass), time(time), board(board), whitePrisonerCount(whitePrisonerCount), blackPrisonerCount(blackPrisonerCount) {}
   GoState() : time(0) {}
 
   size_t getTime() const
@@ -153,11 +209,61 @@ public:
   const GoBoardPtr& getBoard() const
     {return board;}
 
+  typedef GoBoard::Position Position;
+
+  void addStone(size_t x, size_t y, Player player)
+  {
+    Position position(x, y);
+    board->set(position, player);
+    checkForCapture(position, player);
+    checkForSuicide(position, player);
+    ++time;
+  }
+
+  void checkForCapture(const Position& position, Player player)
+  {
+    std::vector<Position> adjacentPositions;
+    board->getAdjacentPositions(position, adjacentPositions);
+    Player opponent = (player == blackPlayer ? whitePlayer : blackPlayer);
+
+    for (size_t i = 0; i < adjacentPositions.size(); ++i)
+      checkLiberties(adjacentPositions[i], opponent);
+  }
+
+  void checkForSuicide(const Position& position, Player player)
+    {checkLiberties(position, player);}
+
+  void checkLiberties(const Position& position, Player player)
+  {
+    if (board->get(position) == player)
+    {
+      size_t numLiberties;
+      std::set<Position> group;
+      board->getGroup(position, group, numLiberties);
+      if (!numLiberties)
+      {
+        board->set(group, noPlayers);
+        if (player == whitePlayer)
+          whitePrisonerCount += group.size();
+        else
+          blackPrisonerCount += group.size();
+      }
+    }
+  }
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target)
+  {
+    Object::clone(context, target);
+    target.staticCast<GoState>()->board = board->cloneAndCast<GoBoard>(context);
+  }
+
 protected:
   friend class GoStateClass;
 
   size_t time;
   GoBoardPtr board;
+  size_t whitePrisonerCount;
+  size_t blackPrisonerCount;
 };
 
 typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
@@ -171,7 +277,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
-    return new GoState(0, new GoBoard(random->sampleSize(minSize, maxSize)));
+    return new GoState(0, new GoBoard(random->sampleSize(minSize, maxSize)), 0, 0);
   }
 
 protected:
@@ -193,17 +299,14 @@ public:
   {
     const GoStatePtr& state = inputs[0].getObjectAndCast<GoState>();
     const PairPtr& action = inputs[1].getObjectAndCast<Pair>();
-    size_t row = (size_t)action->getFirst().getInteger();
-    size_t column = (size_t)action->getSecond().getInteger();
+    size_t x = (size_t)action->getFirst().getInteger();
+    size_t y = (size_t)action->getSecond().getInteger();
 
     size_t time = state->getTime();
 
-    GoBoardPtr newBoard = state->getBoard()->cloneAndCast<GoBoard>();
-    newBoard->set(row, column, (time % 2) == 0 ? blackPlayer : whitePlayer);
-    
-    // todo: ...
-
-    return new GoState(time + 1, newBoard);
+    GoStatePtr newState = state->cloneAndCast<GoState>();
+    newState->addStone(x, y, (time % 2) == 0 ? blackPlayer : whitePlayer);
+    return newState;
   }
 };
 
@@ -374,16 +477,16 @@ public:
         context.errorCallback(T("Invalid move: ") + value);
         return Variable::missingValue(outputType);
       }
-      size_t column = letterToIndex(context, value[0]);
-      size_t row = letterToIndex(context, value[1]);
-      if (row == (size_t)-1 || column == (size_t)-1)
+      size_t x = letterToIndex(context, value[0]);
+      size_t y = letterToIndex(context, value[1]);
+      if (x == (size_t)-1 || y == (size_t)-1)
         return Variable::missingValue(outputType);
 
-      trajectory->set(i - 1, new Pair(actionType, row, column));
+      trajectory->set(i - 1, new Pair(actionType, x, y));
       isBlackTurn = !isBlackTurn;
     }
 
-    return Variable(new Pair(outputType, new GoState(0, new GoBoard(size)), trajectory), outputType);
+    return Variable(new Pair(outputType, new GoState(0, new GoBoard(size), 0, 0), trajectory), outputType);
   }
 
 private:
