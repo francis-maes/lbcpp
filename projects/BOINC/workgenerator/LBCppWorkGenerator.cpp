@@ -87,15 +87,15 @@ int make_job(File* file) {
   wu.clear();
   wu.appid = app.id;
   strcpy(wu.name, name);
-  wu.rsc_fpops_est = 1.2e12;
+  wu.rsc_fpops_est = 4.5e12;
   wu.rsc_fpops_bound = 1.5e13;
-  wu.rsc_memory_bound = 0.5e9;
-  wu.rsc_disk_bound = 500e6;
-  wu.delay_bound = 5*86400;
+  wu.rsc_memory_bound = 1.25e9;
+  wu.rsc_disk_bound = 1e9;
+  wu.delay_bound = 3*86400;
   wu.min_quorum = REPLICATION_FACTOR;
   wu.target_nresults = REPLICATION_FACTOR;
-  wu.max_error_results = REPLICATION_FACTOR*4;
-  wu.max_total_results = REPLICATION_FACTOR*8;
+  wu.max_error_results = REPLICATION_FACTOR*3;
+  wu.max_total_results = REPLICATION_FACTOR*6;
   wu.max_success_results = REPLICATION_FACTOR*4;;
   infiles[0] = name;
 
