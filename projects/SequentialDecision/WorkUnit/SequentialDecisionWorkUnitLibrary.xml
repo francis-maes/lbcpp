@@ -49,6 +49,7 @@
   <class name="GoTransitionFunction" base="Function"/>
   <class name="GoRewardFunction" base="Function"/>
   <class name="GoProblem" base="DecisionProblem"/>
+  <uicomponent name="GoStateComponent" type="GoState"/>
 
   <class name="SGFFileParser" base="TextParser"/>
   <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
