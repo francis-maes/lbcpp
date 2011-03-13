@@ -29,7 +29,7 @@ namespace lbcpp
       WorkUnitPtr wu = new ProteinLearner();
       NumericalProteinFeaturesParametersPtr parameters = (distributions->sample(RandomGenerator::getInstance())).getObjectAndCast<NumericalProteinFeaturesParameters>();
       // TODO arnaud args for location of data
-      wu->parseArguments(context, T("-s /Users/arnaudschoofs/Proteins/PDB30Boinc -i /Users/arnaudschoofs/Proteins/PDB30BoincInitialProteins/ -p \"numerical(") + parameters->toString() + T(",sgd)\" -t ss3 -n 1 -m 250"));
+      wu->parseArguments(context, T("-s ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/supervision -i ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/predicted -p \"numerical(") + parameters->toString() + T(",sgd)\" -t ss3 -n 1 -m 250"));
       return wu;
     }
     
