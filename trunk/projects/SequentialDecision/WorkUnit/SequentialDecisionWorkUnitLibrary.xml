@@ -12,7 +12,7 @@
   <class name="LinearLearnableSearchHeuristic" base="LearnableSearchHeuristic"/>
 
   <class name="SequentialDecisionSandBox" base="WorkUnit">
-    <variable type="SequentialDecisionProblem" name="problem" shortName="p"/>
+    <variable type="DecisionProblem" name="problem" shortName="p"/>
     <variable type="RankingLossFunction" name="rankingLoss" shortName="l" description="E.g. mostViolatedPair(hinge), allPairs(logBinomial)"/>
     <variable type="PositiveInteger" name="numInitialStates" shortName="n"/>
     <variable type="PositiveInteger" name="maxSearchNodes" shortName="m"/>
@@ -37,16 +37,22 @@
     <value name="bothPlayers" shortName="both" oneLetterCode="+"/>
   </enumeration>
 
-  <class name="GoBoard" base="ShortEnumerationMatrix[GoPositionState]"/>
+  <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
   <class name="GoState" base="Object">
     <variable type="PositiveInteger" name="time"/>
     <variable type="GoBoard" name="board"/>
   </class>
+  <class name="GoStateSampler" base="Function">
+    <variable type="PositiveInteger" name="minSize"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+  </class>
   <class name="GoTransitionFunction" base="Function"/>
   <class name="GoRewardFunction" base="Function"/>
-  <class name="GoProblem" base="SequentialDecisionProblem"/>
+  <class name="GoProblem" base="DecisionProblem"/>
 
   <class name="SGFFileParser" base="TextParser"/>
+  <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
+  
   <class name="GoSandBox" base="WorkUnit">
     <variable type="File" name="fileToParse"/>
   </class>

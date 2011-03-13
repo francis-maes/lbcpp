@@ -71,6 +71,15 @@ public:
   void setElement(size_t index, const ElementsType& value)
     {jassert(index < elements.size()); elements[index] = value;}
   
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    BuiltinTypeMatrix<ElementsType>& target = *t.staticCast< BuiltinTypeMatrix<ElementsType> >();
+    target.elementsType = elementsType;
+    target.elements = elements;
+    target.numRows = numRows;
+    target.numColumns = numColumns;
+  }
+
 protected:
   TypePtr elementsType;
   std::vector<ElementsType> elements;
@@ -145,6 +154,26 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
 
+class GoStateSampler : public SimpleUnaryFunction
+{
+public:
+  GoStateSampler(size_t size = 19)
+    : SimpleUnaryFunction(randomGeneratorClass, goStateClass), minSize(size), maxSize(size + 1) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
+    return new GoState(0, new GoBoard(random->sampleSize(minSize, maxSize)));
+  }
+
+protected:
+  friend class GoStateSamplerClass;
+
+  size_t minSize;
+  size_t maxSize;
+};
+
+
 // state: GoState, action: Pair<PositiveInteger, PositiveInteger>
 class GoTransitionFunction : public SimpleBinaryFunction
 {
@@ -185,14 +214,16 @@ public:
   }
 };
 
-class GoProblem : public SequentialDecisionProblem
+class GoProblem : public DecisionProblem
 {
 public:
-  GoProblem(double discount = 1.0) 
-    : SequentialDecisionProblem(FunctionPtr(), // initial state sampler
-                                new GoTransitionFunction(),
-                                new GoRewardFunction(), discount) {}
+  GoProblem(size_t size = 19)
+    : DecisionProblem(new GoStateSampler(size), new GoTransitionFunction(), new GoRewardFunction(), 1.0) {}
 };
+
+typedef ReferenceCountedObjectPtr<GoProblem> GoProblemPtr;
+
+//////////////////////////////////////////////////////////////////////////
 
 class SGFFileParser : public TextParser
 {
@@ -293,6 +324,77 @@ private:
   String currentAttributeValue;
 };
 
+class ConvertSGFXmlToStateAndTrajectory : public SimpleUnaryFunction
+{
+public:
+  ConvertSGFXmlToStateAndTrajectory()
+    : SimpleUnaryFunction(xmlElementClass, pairClass(goStateClass, objectVectorClass(pairClass(positiveIntegerType, positiveIntegerType)))) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const XmlElementPtr& xml = input.getObjectAndCast<XmlElement>();
+    size_t numXmlElements = xml->getNumChildElements();
+    if (!numXmlElements)
+    {
+      context.errorCallback(T("Empty xml"));
+      return Variable::missingValue(outputType);
+
+    }
+
+    XmlElementPtr firstChild = xml->getChildElement(0);
+    size_t size = firstChild->getIntAttribute(T("SZ"), 0);
+    if (!size)
+    {
+      context.errorCallback(T("No size attribute"));
+      return Variable::missingValue(outputType);
+    }
+
+    ClassPtr actionType = pairClass(positiveIntegerType, positiveIntegerType);
+    ObjectVectorPtr trajectory = new ObjectVector(actionType, numXmlElements - 1);
+    bool isBlackTurn = true;
+    for (size_t i = 1; i < numXmlElements; ++i)
+    {
+      String attribute = (isBlackTurn ? T("B") : T("W"));
+      String value = xml->getChildElement(i)->getStringAttribute(attribute);
+      if (value.isEmpty())
+      {
+        context.errorCallback(String(T("Could not find ")) + (isBlackTurn ? T("black") : T("white")) + T(" stone at step ") + String((int)i));
+        return Variable::missingValue(outputType);
+      }
+      if (value.length() != 2)
+      {
+        context.errorCallback(T("Invalid move: ") + value);
+        return Variable::missingValue(outputType);
+      }
+      size_t row = letterToIndex(context, value[0]);
+      size_t column = letterToIndex(context, value[1]);
+      if (row == (size_t)-1 || column == (size_t)-1)
+        return Variable::missingValue(outputType);
+
+      trajectory->set(i - 1, new Pair(actionType, row, column));
+      isBlackTurn = !isBlackTurn;
+    }
+
+    return Variable(new Pair(outputType, new GoState(0, new GoBoard(size)), trajectory), outputType);
+  }
+
+private:
+  static size_t letterToIndex(ExecutionContext& context, const juce::tchar letter)
+  {
+    if (letter >= 'a' && letter <= 'z')
+      return letter - 'a';
+    else if (letter >= 'A' && letter <= 'Z')
+      return letter - 'A' + 26;
+    else
+    {
+      context.errorCallback(T("Could not parse position ") + letter);
+      return (size_t)-1;
+    }
+  }
+};
+
+//////////////////////////////////////////////////////////////////////////
+
 class GoSandBox : public WorkUnit
 {
 public:
@@ -312,9 +414,25 @@ public:
     if (!xml)
       return false;
 
-  
+    //context.resultCallback(T("XML"), xml);
 
-    context.resultCallback(T("XML"), xml);
+    FunctionPtr convert = new ConvertSGFXmlToStateAndTrajectory();
+    PairPtr stateAndTrajectory = convert->compute(context, xml).getObjectAndCast<Pair>();
+    if (!stateAndTrajectory)
+      return false;
+  
+    Variable initialState = stateAndTrajectory->getFirst();
+    ContainerPtr trajectory = stateAndTrajectory->getSecond().getObjectAndCast<Container>();
+
+    context.resultCallback(T("Initial State"), initialState);
+    context.resultCallback(T("Trajectory"), trajectory);
+
+    DecisionProblemPtr problem = new GoProblem(0);
+    if (!problem->initialize(context))
+      return false;
+
+    Variable finalState = problem->computeFinalState(context, initialState, trajectory);
+    context.resultCallback(T("Final State"), finalState);
     return true;
   }
 

@@ -55,11 +55,11 @@ extern OnlineLearnerPtr searchFunctionOnlineLearner(RankingLossFunctionPtr lossF
 class SearchFunction : public SimpleUnaryFunction
 {
 public:
-  SearchFunction(SequentialDecisionProblemPtr problem, PolicyPtr searchPolicy, StochasticGDParametersPtr learnerParameters, PolicyPtr explorationPolicy, size_t maxSearchNodes)
+  SearchFunction(DecisionProblemPtr problem, PolicyPtr searchPolicy, StochasticGDParametersPtr learnerParameters, PolicyPtr explorationPolicy, size_t maxSearchNodes)
     : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), learnerParameters(learnerParameters), explorationPolicy(explorationPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
-  SearchFunction(SequentialDecisionProblemPtr problem, PolicyPtr searchPolicy, size_t maxSearchNodes)
+  SearchFunction(DecisionProblemPtr problem, PolicyPtr searchPolicy, size_t maxSearchNodes)
     : SimpleUnaryFunction(anyType, anyType), problem(problem), searchPolicy(searchPolicy), maxSearchNodes(maxSearchNodes)
     {}
 
@@ -151,7 +151,7 @@ public:
 protected:
   friend class SearchFunctionClass;
 
-  SequentialDecisionProblemPtr problem;
+  DecisionProblemPtr problem;
   PolicyPtr searchPolicy;
   StochasticGDParametersPtr learnerParameters;
   PolicyPtr explorationPolicy;

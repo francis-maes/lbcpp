@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 # define LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_
 
-# include "../Core/SequentialDecisionProblem.h"
+# include "../Core/DecisionProblem.h"
 # include <lbcpp/Data/RandomGenerator.h>
 
 namespace lbcpp
@@ -90,16 +90,16 @@ public:
   }
 };
 
-class LinearPointPhysicProblem : public SequentialDecisionProblem
+class LinearPointPhysicProblem : public DecisionProblem
 {
 public:
   LinearPointPhysicProblem(double discount = 1.0) 
-    : SequentialDecisionProblem(new LinearPointPhysicStateSampler(), 
+    : DecisionProblem(new LinearPointPhysicStateSampler(), 
                                 new LinearPointPhysicTransitionFunction(),
                                 new LinearPointPhysicRewardFunction(), discount) {}
 };
 
-extern SequentialDecisionProblemPtr linearPointPhysicProblem(double discount);
+extern DecisionProblemPtr linearPointPhysicProblem(double discount);
 
 }; /* namespace lbcpp */
 

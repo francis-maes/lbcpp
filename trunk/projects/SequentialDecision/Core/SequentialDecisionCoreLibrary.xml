@@ -2,8 +2,8 @@
 
 <library name="SequentialDecisionCore" directory="Core">
 
-  <!-- SequentialDecisionProblem -->
-  <class name="SequentialDecisionProblem" base="Object" abstract="yes">
+  <!-- DecisionProblem -->
+  <class name="DecisionProblem" base="Object" abstract="yes">
     <!-- <variable type="Function" name="initialStateSampler"/>
     <variable type="Function" name="transitionFunction"/>
     <variable type="Function" name="rewardFunction"/> -->
@@ -72,7 +72,7 @@
 
   <!-- SearchFunction -->
   <class name="SearchFunction" base="Function">
-    <variable type="SequentialDecisionProblem" name="problem"/>
+    <variable type="DecisionProblem" name="problem"/>
     <variable type="Policy" name="searchPolicy"/>
     <variable type="StochasticGDParameters" name="learnerParameters"/>
     <variable type="Policy" name="explorationPolicy"/>

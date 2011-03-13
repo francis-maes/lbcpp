@@ -353,7 +353,7 @@ protected:
 private:
   friend class SequentialDecisionSandBoxClass;
 
-  SequentialDecisionProblemPtr problem;
+  DecisionProblemPtr problem;
   RankingLossFunctionPtr rankingLoss;
 
   size_t numInitialStates;

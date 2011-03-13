@@ -10,8 +10,8 @@ GENERATE_INTROSPECTION_CODE(WorkUnit/SequentialDecisionWorkUnitLibrary.xml Seque
 GENERATE_INTROSPECTION_CODE(SequentialDecisionLibrary.xml SequentialDecisionLibrary.cpp)
 
 SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
-  Core/SequentialDecisionProblem.h
-  Core/SequentialDecisionProblem.cpp
+  Core/DecisionProblem.h
+  Core/DecisionProblem.cpp
   Core/Policy.h
   Core/SearchTree.h
   Core/SearchTreeNode.h
