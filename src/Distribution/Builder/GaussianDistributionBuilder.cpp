@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 
-
+#include "precompiled.h"
 #include "GaussianDistributionBuilder.h"
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>

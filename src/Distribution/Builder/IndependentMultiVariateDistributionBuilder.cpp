@@ -7,7 +7,7 @@
  *
  */
 
-
+#include "precompiled.h"
 #include "IndependentMultiVariateDistributionBuilder.h"
 
 using namespace lbcpp;
