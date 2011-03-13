@@ -31,35 +31,35 @@ namespace lbcpp
       
       // TODO arnaud : add getBuilder() in Distribution.h
       IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
-      distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,0));
-      distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,0));
-      distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,0));
-      distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,0));
-      distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,0));
-      distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,0));
-      distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,0));
-      distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,0));
-      distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,0));
-      distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,0));
-      distributions->setSubDistribution(10, new BernoulliDistribution(1));
-      distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,0));
-      distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,0));
-      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,0));
+      distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,3));
+      distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,3));
+      distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,3));
+      distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,3));
+      distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,3));
+      distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,3));
+      distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,3));
+      distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,3));
+      distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,3));
+      distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,3));
+      distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+      distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,2));
+      distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,10));
+      distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,15));
       
       ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions); //Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
       
-      size_t totalNumberWuRequested = 4;
-      size_t numberWuToUpdate = 2;
-      size_t numberWuInProgress = 2;
-      size_t ratioUsedForUpdate = 1;
+      size_t totalNumberWuRequested = 60;
+      size_t numberWuToUpdate = 20;
+      size_t numberWuInProgress = 60;
+      size_t ratioUsedForUpdate = 2;
       String projectName(T("BoincFirstStage"));
       String source(T("boincadm@boinc.run"));
       String destination(T("boincadm@boinc.run"));
       String managerHostName(T("monster24.montefiore.ulg.ac.be"));
       size_t managerPort = 1664;
-      size_t requiredMemory = 2;
-      size_t requiredTime = 10;
-      size_t timeToSleep = 10;  // in seconds
+      size_t requiredMemory = 1;
+      size_t requiredTime = 1;
+      size_t timeToSleep = 10*60;  // in seconds
       
       GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
                                                            managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
