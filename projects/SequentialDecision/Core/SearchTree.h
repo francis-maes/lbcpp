@@ -53,7 +53,7 @@ typedef SearchTreeCallback* SearchTreeCallbackPtr;
 class SearchTree : public Object
 {
 public:
-  SearchTree(SequentialDecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes);
+  SearchTree(DecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes);
   SearchTree() {}
 
   /*
@@ -102,7 +102,7 @@ public:
     {callbacks.clear();}
 
 protected:
-  SequentialDecisionProblemPtr problem;
+  DecisionProblemPtr problem;
   std::vector<SearchTreeNodePtr> nodes;
   std::vector<size_t> openedNodes;
   std::vector<SearchTreeCallbackPtr> callbacks;

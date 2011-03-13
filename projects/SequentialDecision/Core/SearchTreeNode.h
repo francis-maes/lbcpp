@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_TREE_NODE_H_
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_TREE_NODE_H_
 
-# include "SequentialDecisionProblem.h"
+# include "DecisionProblem.h"
 
 namespace lbcpp
 {
@@ -27,7 +27,7 @@ public:
   SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const Variable& initialState = Variable());
   SearchTreeNode() : nodeIndex(0), allNodes(*(const SearchTreeNodeVector* )0) {}
 
-  void open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
+  void open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
 
   /*
   ** Properties

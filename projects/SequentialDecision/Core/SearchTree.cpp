@@ -18,7 +18,7 @@ SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t node
 {
 }
 
-void SearchTreeNode::open(const SequentialDecisionProblemPtr& problem, size_t parentIndex, const Variable& action)
+void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action)
 {
   this->parentIndex = parentIndex;
   this->previousAction = action;
@@ -63,7 +63,7 @@ double SearchTreeNode::getBestReturnWithoutChild(SearchTreeNodePtr childNode) co
 /*
 ** SearchTree
 */
-SearchTree::SearchTree(SequentialDecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes)
+SearchTree::SearchTree(DecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes)
   : problem(problem)
 {
   nodes.reserve(2 * maxOpenedNodes + 1);
