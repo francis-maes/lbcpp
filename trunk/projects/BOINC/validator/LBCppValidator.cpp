@@ -76,7 +76,7 @@ int getScoreImpl(const char* fileName, double& score)
 int getScore(const char* fileName, double& score)
 {
   lbcpp::initialize("validator");
-  lbcpp::importLibrariesFromDirectory(File::getCurrentWorkingDirectory());
+  lbcpp::importLibrariesFromDirectory(File(T("/home/boincadm/projects/evo/bin")));
   int exitCode = getScoreImpl(fileName, score);
   lbcpp::deinitialize();
   return exitCode;
