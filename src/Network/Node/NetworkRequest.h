@@ -40,6 +40,12 @@ public:
   const String& getDestination() const
     {return destination;}
 
+  const size_t& getRequiredMemory() const
+    {return requiredMemory;}
+
+  const size_t& getRequiredTime() const
+    {return requiredTime;}
+
   void selfGenerateIdentifier()
     {identifier = generateIdentifier();}
   

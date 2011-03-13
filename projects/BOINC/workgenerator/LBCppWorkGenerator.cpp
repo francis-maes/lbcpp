@@ -6,8 +6,15 @@
                                |                                             |
                                `--------------------------------------------*/
 
+// TODO handle NetworkRequest File
+
 // LBCpp include
-#include <lbcpp/common.h>
+#include <lbcpp/library.h>
+//#include <lbcpp/common.h>
+//#include <lbcpp/Core/Variable.h>
+//#include "../../../src/Network/Node/NetworkRequest.h"
+
+//using namespace lbcpp;
 
 // BOINC includes
 #include <boinc_db.h>
@@ -58,22 +65,38 @@ int make_job(File* file) {
     log_messages.printf(MSG_CRITICAL, "can't move file: %s ---> %s\n", file->getFullPathName().toUTF8(), config.project_path(newLocation.toUTF8()));
     return 1;
   }
+/*
+  Variable var = Object::createFromFile(defaultExecutionContext(), (file->getParentDirectory().getChildFile(T("Requests/") + String(name) + T("requests"))));
+  if (!var.exists() || !var.isObject())
+  {
+    log_messages.printf(MSG_CRITICAL, "can't read request file: %s\n", (file->getParentDirectory().getChildFile(T("Requests/") + String(name) + T("requests"))).getFileName().toUTF8());
+    return 1;
+  }
+  NetworkRequestPtr request = var.dynamicCast<NetworkRequest>();
+  if (!request)
+  {
+    log_messages.printf(MSG_CRITICAL, "Request file is not a NetworkRequest: %s\n", (file->getParentDirectory().getChildFile(T("Requests/") + String(name) + T("requests"))).getFileName().toUTF8());
+    return 1;
+  }
 
+  size_t executionTimeEst = request->getRequiredTime(); // min
+  size_t RAMConsoEst = request->getRequiredMemory();    // Mo
+*/
   // Fill in the job parameters
   // TODO : use that kind of parameters in LBCpp for the request
   wu.clear();
   wu.appid = app.id;
   strcpy(wu.name, name);
-  wu.rsc_fpops_est = 1e12;
-  wu.rsc_fpops_bound = 1e14;
-  wu.rsc_memory_bound = 1e8;
-  wu.rsc_disk_bound = 1e8;
-  wu.delay_bound = 3*86400;
+  wu.rsc_fpops_est = 1.2e12;
+  wu.rsc_fpops_bound = 1.5e13;
+  wu.rsc_memory_bound = 0.5e9;
+  wu.rsc_disk_bound = 500e6;
+  wu.delay_bound = 5*86400;
   wu.min_quorum = REPLICATION_FACTOR;
   wu.target_nresults = REPLICATION_FACTOR;
   wu.max_error_results = REPLICATION_FACTOR*4;
   wu.max_total_results = REPLICATION_FACTOR*8;
-  wu.max_success_results = REPLICATION_FACTOR*4;
+  wu.max_success_results = REPLICATION_FACTOR*4;;
   infiles[0] = name;
 
   // Register the job with BOINC

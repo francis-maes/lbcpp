@@ -51,6 +51,12 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
     log_messages.printf(MSG_CRITICAL, "Network/.WorkUnit/Traces directory\n");
     return retval;
   }
+  retval = boinc_mkdir(config.project_path("Network/.WorkUnit/Errors"));
+  if (retval)
+  {
+    log_messages.printf(MSG_CRITICAL, "Network/.WorkUnit/Errors directory\n");
+    return retval;
+  }
 
   if (wu.canonical_resultid)
   {
@@ -114,6 +120,11 @@ int assimilate_handler(WORKUNIT& wu, vector<RESULT>& /*results*/, RESULT& canoni
     }
     else
     {
+      File fileToCopy(config.project_path("Network/.WorkUnit/InProgress/%s.workUnit", wu.name));
+      if (!fileToCopy.copyFileTo(File(config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name))))
+        log_messages.printf(MSG_CRITICAL, "[WORKUNIT#%d %s] Can't copy workunit file : %s -> %s\n", wu.id, wu.name, fileToCopy.getFullPathName().toUTF8() , config.project_path("Network/.WorkUnit/Errors/%s.workUnit", wu.name));
+
+      // TODO : generate trace with socre = 0 in finished !!! 
       char buf[1024];
       sprintf(buf, "%s: 0x%x\n", wu.name, wu.error_mask);
       return write_error(buf);
