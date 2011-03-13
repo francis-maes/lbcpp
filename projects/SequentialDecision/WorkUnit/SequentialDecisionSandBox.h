@@ -166,7 +166,7 @@ public:
 
     size_t allFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 
-    builder.addFunction(new CartesianProductFeatureGenerator(), allFeatures, allFeatures, T("conjunctions"));
+//    builder.addFunction(new CartesianProductFeatureGenerator(), allFeatures, allFeatures, T("conjunctions"));
   }
 
 protected:
@@ -179,7 +179,7 @@ class LinearLearnableSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
   virtual FunctionPtr createPerceptionFunction() const
-    {return new GenericClosedSearchTreeNodeFeaturesFunction();}
+    {return new HeuristicSearchTreeNodeFeaturesFunction();}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -233,6 +233,9 @@ public:
     evaluate(context, T("href-train"), currentSearchPolicy, trainingStates);
     evaluate(context, T("href-test"), currentSearchPolicy, testingStates);
 
+    bazar(context, testingStates);
+    return true;
+
     for (size_t i = 0; i < numPasses; ++i)
     {
       StochasticGDParametersPtr parameters = new StochasticGDParameters(constantIterationFunction(0.01), StoppingCriterionPtr(), maxLearningIterations);
@@ -268,6 +271,49 @@ public:
       currentSearchPolicy = bestMixturePolicy;
     }
     return true;
+  }
+
+  void bazar(ExecutionContext& context, ContainerPtr testingStates)
+  {
+    LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
+    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
+    LearnableFunctionPtr linearFunction = learnedHeuristic->getScoringFunction().dynamicCast<LearnableFunction>();
+    PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
+
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(learnedHeuristic->getPerceptionFunction()->getOutputType());
+    DenseDoubleVectorPtr parameters = new DenseDoubleVector(linearFunction->getParametersClass());
+    parameters->setValue(0, 1.0);
+    linearFunction->setParameters(parameters);
+
+    context.enterScope(T("Bazar"));
+    for (size_t i = 0; i < maxLearningIterations; ++i)
+    {
+      size_t param = i % featuresEnumeration->getNumElements();
+      context.enterScope(T("Iteration ") + String((int)i) + T(" Param ") + featuresEnumeration->getElementName(param));
+
+      double previousValue = parameters->getValue(param);
+      double bestValue = parameters->getValue(param);
+      double bestScore = -DBL_MAX;
+      double amp = (maxLearningIterations - i) / (double)maxLearningIterations;
+      for (double k = previousValue - amp; k <= previousValue + amp; k += 2 * amp / 10.0)
+      {
+        if (fabs(k) < 10e-10)
+          k = 0.0;
+        context.enterScope(T("K = ") + String(k));
+        context.resultCallback(T("K"), k);
+        parameters->setValue(param, k);
+        double score = evaluate(context, featuresEnumeration->getElementName(param), learnedSearchPolicy, testingStates);
+        if (score > bestScore)
+          bestScore = score, bestValue = k;
+        context.leaveScope(score);
+      }
+      parameters->setValue(param, bestValue);
+      double score = evaluate(context, featuresEnumeration->getElementName(param), learnedSearchPolicy, testingStates);
+
+      context.leaveScope(bestScore);
+    }
+    context.leaveScope(true);
+
   }
 
 protected:

@@ -57,7 +57,7 @@ public:
       const SearchTreeNodePtr& node = searchTree->getNode(i);
       nodeFeatures[i] = featuresFunction->compute(*context, node).getObjectAndCast<DoubleVector>();
       nodeScores[i] = scoringFunction->compute(*context, nodeFeatures[i], Variable()).getDouble();
-      nodeCosts[i] = -node->getCurrentReturn() / (1.0 + node->getDepth());
+      nodeCosts[i] = -node->getCurrentReturn();
     }
 
     // compute ranking loss

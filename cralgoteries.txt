@@ -1,10 +1,8 @@
-* Utiliser des headers precompilés ...
+* Boinc: progression globale
+* WU arnaud -> assert CompositeFunction.cpp, line 83
+* ProteinLearner: Serialisation des models
+* RunWorkUnit: save des traces depuis un timer
 
-Boinc:
- - progression globale
- - retourner les resultats pour l'optimiseur:
-     * meanNumActiveFeaturesPerResidue
- - verifier que l'enregistrement des traces marche bien
  
 ProteinLearner:
  * Evaluation après chaque passe (attacher un Evaluator aux Function ?)

@@ -32,6 +32,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
+  WorkUnit/GoSandBox.h
   WorkUnit/SequentialDecisionSandBox.h
   WorkUnit/SequentialDecisionWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionWorkUnitLibrary.cpp
