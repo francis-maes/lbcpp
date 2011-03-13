@@ -16,13 +16,15 @@ void usage()
 
 int mainImpl(int argc, char** argv) {
   if (argc != 3) {
+    std::cerr << "Invalid number of arguments!" << std::endl;
     usage();
     return 1;
   }
   
   File file(argv[1]);
   if (!file.existsAsFile()) {
-    std::cerr << "ZipFile not found: " << argv[1] << std::endl;
+    std::cerr << "ZipFile not found:" << std::endl;
+	std::cerr << argv[1] << std::endl;
     usage();
     return 1;
   }
@@ -30,13 +32,13 @@ int mainImpl(int argc, char** argv) {
   
   File target(argv[2]);
   if (!file.exists()) {
-    std::cerr << "Destination doesn't exist: " << argv[2] << std::endl;
+    std::cerr << "Destination doesn't exist:" << std::endl;
+	std::cerr << argv[2] << std::endl;
     usage();
     return 1;
   }
   
-  zippy.uncompressTo(target, false);  // don't overwrite files that already exist
-  
+  zippy.uncompressTo(target, false);   // don't overwrite files that already exist
   return 0;
 }
 
