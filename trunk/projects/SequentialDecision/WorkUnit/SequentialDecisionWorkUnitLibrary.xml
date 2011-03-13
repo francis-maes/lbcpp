@@ -2,6 +2,7 @@
 
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
+  <!-- LinearLearnableHeuristic -->
   <class name="CartesianProductFeatureGenerator" base="FeatureGenerator"/>
 
   <class name="SearchTreeNodeIndexFeatureGenerator" base="FeatureGenerator"/>
@@ -19,5 +20,35 @@
     <variable type="PositiveInteger" name="maxLearningIterations" shortName="i"/>
     <variable type="PositiveInteger" name="numPasses" shortName="N"/>
   </class>
+
+  <!-- GO -->
+  <template name="Matrix" base="Container[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
   
- </library>
+  <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="EnumValue"/>
+  </template>
+
+  <enumeration name="Player">
+    <value name="noPlayers" shortName="no" oneLetterCode="-"/>
+    <value name="blackPlayer" shortName="black" oneLetterCode="b"/>
+    <value name="whitePlayer" shortName="white" oneLetterCode="w"/>
+    <value name="bothPlayers" shortName="both" oneLetterCode="+"/>
+  </enumeration>
+
+  <class name="GoBoard" base="ShortEnumerationMatrix[GoPositionState]"/>
+  <class name="GoState" base="Object">
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="GoBoard" name="board"/>
+  </class>
+  <class name="GoTransitionFunction" base="Function"/>
+  <class name="GoRewardFunction" base="Function"/>
+  <class name="GoProblem" base="SequentialDecisionProblem"/>
+
+  <class name="SGFFileParser" base="TextParser"/>
+  <class name="GoSandBox" base="WorkUnit">
+    <variable type="File" name="fileToParse"/>
+  </class>
+
+</library>

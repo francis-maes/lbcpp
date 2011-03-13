@@ -276,6 +276,8 @@ public:
 
   virtual bool loadFromXml(XmlImporter& importer);
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class XmlElementClass;
   
