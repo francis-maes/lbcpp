@@ -228,9 +228,9 @@ private:
   TypePtr type;
   VariableValue value;
 #ifndef JUCE_64BIT
-# ifdef JUCE_MAC
+# if defined (JUCE_MAC) || defined (JUCE_LINUX)
   void* dummy; // ensure that sizeof (Variable) == sizeof (int64) * 2
-# endif // JUCE_MAC
+# endif // JUCE_MAC || JUCE_LINUX
 #endif 
 };
 
