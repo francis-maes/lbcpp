@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# TODO may be not up to date
+
 workUnitDirectory="/home/boincadm/projects/evo/Network/.WorkUnit"
 BoincProjectDir="/home/boincadm/projects/evo"
 rootProjectDirectory="/home/boincadm/projects/evo/Network/Projects"
