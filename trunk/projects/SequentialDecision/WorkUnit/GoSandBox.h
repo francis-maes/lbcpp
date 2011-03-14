@@ -504,6 +504,29 @@ private:
   }
 };
 
+class LoadSGFFileFunction : public SimpleUnaryFunction
+{
+public:
+  LoadSGFFileFunction() : SimpleUnaryFunction(fileType, pairClass(goStateClass, pairClass(positiveIntegerType, positiveIntegerType)))
+  {
+    convertFunction = new ConvertSGFXmlToStateAndTrajectory();
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    File file = input.getFile();
+    
+    XmlElementPtr xml = (new SGFFileParser(context, file))->next().dynamicCast<XmlElement>();
+    if (!xml)
+      return Variable::missingValue(getOutputType());
+
+    return convertFunction->compute(context, xml); 
+  }
+
+protected:
+  FunctionPtr convertFunction;
+};
+
 //////////////////////////////////////////////////////////////////////////
 
 class MatrixComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
@@ -624,15 +647,37 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 
+
 class GoSandBox : public WorkUnit
 {
 public:
-  GoSandBox()
+  GoSandBox() : maxCount(0), numFolds(7)
   {
+  }
+
+  ContainerPtr loadGames(ExecutionContext& context, const File& directory, size_t maxCount)
+  {
+    if (!gamesDirectory.isDirectory())
+    {
+      context.errorCallback(T("Invalid games directory"));
+      return ContainerPtr();
+    }
+
+    return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
   }
 
   virtual Variable run(ExecutionContext& context)
   {
+    ContainerPtr games = loadGames(context, gamesDirectory, maxCount);
+    if (!games)
+      return false;
+
+    ContainerPtr trainingGames = games->invFold(0, numFolds);
+    ContainerPtr testingGames = games->fold(0, numFolds);
+    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") + String((int)testingGames->getNumElements()) + T(" testing games"));
+
+    return true;
+#if 0
     if (!fileToParse.existsAsFile())
     {
       context.errorCallback(T("File to parse does not exist"));
@@ -663,12 +708,15 @@ public:
     Variable finalState = problem->computeFinalState(context, initialState, trajectory);
     context.resultCallback(T("Final State"), finalState);
     return true;
+#endif // 0
   }
 
 private:
   friend class GoSandBoxClass;
 
-  File fileToParse;
+  File gamesDirectory;
+  size_t maxCount;
+  size_t numFolds;
 };
 
 }; /* namespace lbcpp */

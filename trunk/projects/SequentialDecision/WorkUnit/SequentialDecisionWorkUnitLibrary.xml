@@ -55,9 +55,12 @@
 
   <class name="SGFFileParser" base="TextParser"/>
   <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
+  <class name="LoadSGFFileFunction" base="Function"/>
   
   <class name="GoSandBox" base="WorkUnit">
-    <variable type="File" name="fileToParse"/>
+    <variable type="File" name="gamesDirectory"/>
+    <variable type="PositiveInteger" name="maxCount"/>
+    <variable type="PositiveInteger" name="numFolds"/>
   </class>
 
 </library>
