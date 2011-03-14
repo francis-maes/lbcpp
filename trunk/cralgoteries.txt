@@ -1,10 +1,22 @@
-* Boinc: progression globale
-* WU arnaud -> assert CompositeFunction.cpp, line 83
-* ProteinLearner: Serialisation des models
-* RunWorkUnit: save des traces depuis un timer
+Go:
+ * Split des fichiers
+
+Arnaud:
+ * WU arnaud -> assert CompositeFunction.cpp, line 83
+ * Boinc: progression globale
+ * RunWorkUnit: save des traces depuis un timer
+
+Julien:
+ * Integrer Matrix dans lbcpp-core
+ * Deriver SymmetricMatrix de Matrix
+ * Attacher un evaluator aux fonctions 
+     - voir Function::evaluate()
+     - voir StochasticGDParameters::evaluator
+     - dans BatchLearner::trainSubFunction() tester l'existence d'un evaluator et evaluer
+ * CompositeFunctionBatchLearner: liberer les variables quant elles ne sont plus utiles
+ * ProteinLearner: Serialisation des models
  
 ProteinLearner:
- * Evaluation après chaque passe (attacher un Evaluator aux Function ?)
  * Ajouter des features de segments
 
 Misc:

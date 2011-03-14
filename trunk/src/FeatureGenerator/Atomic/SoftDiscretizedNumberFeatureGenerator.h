@@ -39,7 +39,6 @@ public:
       res->addElement(context, T("close to ") + getBoundaryName(i));
     if (!cyclicBehavior)
       res->addElement(context, T("close to ") + getBoundaryName(numIntervals));
-
     return res;
   }
 

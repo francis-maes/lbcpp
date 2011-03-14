@@ -21,7 +21,7 @@ public:
     : minimumValue(minimumValue), maximumValue(maximumValue), numIntervals(numIntervals), doOutOfBoundsFeatures(doOutOfBoundsFeatures), isDouble(true)
   {
     jassert(maximumValue > minimumValue);
-    jassert(numIntervals > 1);
+    jassert(numIntervals);
   }
 
   DiscretizedNumberFeatureGenerator()
