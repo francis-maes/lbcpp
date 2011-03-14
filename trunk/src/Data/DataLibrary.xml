@@ -8,6 +8,7 @@
   <include file="lbcpp/Data/RandomVariable.h"/>
   <include file="lbcpp/Data/Cache.h"/>
   <include file="lbcpp/Data/DoubleVector.h"/>
+  <include file="lbcpp/Data/Matrix.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -64,6 +65,15 @@
   <template name="CompositeDoubleVector" base="DoubleVector[elementsEnumeration, elementsType]">
     <parameter name="elementsEnumeration" type="EnumValue"/>
     <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <!-- Matrix -->
+  <template name="Matrix" base="Container[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+
+  <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="EnumValue"/>
   </template>
 
 </library>

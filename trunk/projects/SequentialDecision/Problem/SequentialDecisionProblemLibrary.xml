@@ -13,5 +13,33 @@
   <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="linearPointPhysic">
     <constructor arguments="double discount"/>
   </class>
+  
+  <!-- Go Game -->
+  <enumeration name="Player">
+    <value name="noPlayers" shortName="no" oneLetterCode="-"/>
+    <value name="blackPlayer" shortName="black" oneLetterCode="b"/>
+    <value name="whitePlayer" shortName="white" oneLetterCode="w"/>
+    <value name="bothPlayers" shortName="both" oneLetterCode="+"/>
+  </enumeration>
 
+  <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
+  <class name="GoState" base="Object">
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="GoBoard" name="board"/>
+    <variable type="PositiveInteger" name="whitePrisonerCount"/>
+    <variable type="PositiveInteger" name="blackPrisonerCount"/>
+  </class>
+  <class name="GoStateSampler" base="Function">
+    <variable type="PositiveInteger" name="minSize"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+  </class>
+  <class name="GoTransitionFunction" base="Function"/>
+  <class name="GoRewardFunction" base="Function"/>
+  <class name="GoProblem" base="DecisionProblem"/>
+
+  <!-- Smart Game Format parser -->
+  <class name="SGFFileParser" base="TextParser"/>
+  <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
+  <class name="LoadSGFFileFunction" base="Function"/>
+  
 </library>

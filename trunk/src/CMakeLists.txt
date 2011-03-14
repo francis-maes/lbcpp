@@ -154,6 +154,7 @@ SET(LBCPP_DATA_SOURCES
   Data/Stream.cpp
   ../include/lbcpp/Data/DoubleVector.h
   Data/DoubleVector.cpp
+  ../include/lbcpp/Data/Matrix.h
   ../include/lbcpp/Data/SymmetricMatrix.h
   Data/SymmetricMatrix.cpp
   ../include/lbcpp/Data/RandomGenerator.h
