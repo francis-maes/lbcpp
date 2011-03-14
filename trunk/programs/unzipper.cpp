@@ -15,7 +15,7 @@ void usage()
 }
 
 int mainImpl(int argc, char** argv) {
-  if (argc != 3) {
+  if (argc < 3) {
     std::cerr << "Invalid number of arguments!" << std::endl;
     usage();
     return 1;
