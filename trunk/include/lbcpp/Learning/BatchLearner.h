@@ -54,7 +54,7 @@ public:
 
 protected:
   static ObjectVectorPtr makeObjectVector(const ContainerPtr& container);
-  static bool trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData);
+  static ScoreObjectPtr trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData);
 };
 
 typedef ReferenceCountedObjectPtr<BatchLearner> BatchLearnerPtr;

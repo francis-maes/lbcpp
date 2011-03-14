@@ -137,15 +137,27 @@ public:
     {this->onlineLearner = onlineLearner;}
 
   /*
+  ** Evaluator
+  */
+  bool hasEvaluator() const
+    {return evaluator;}
+
+  const EvaluatorPtr& getEvaluator() const
+    {return evaluator;}
+
+  void setEvaluator(const EvaluatorPtr& evaluator)
+    {this->evaluator = evaluator;}
+
+  /*
   ** High level learning operations
   */
   bool checkIsInitialized(ExecutionContext& context) const;
 
-  bool train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
-  bool train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
+  ScoreObjectPtr train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData = ContainerPtr(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
+  ScoreObjectPtr train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData = std::vector<ObjectPtr>(), const String& scopeName = String::empty, bool returnLearnedFunction = false);
 
-  ScoreObjectPtr evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
-  ScoreObjectPtr evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator, const String& scopeName = String::empty) const;
+  ScoreObjectPtr evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator = EvaluatorPtr(), const String& scopeName = String::empty) const;
+  ScoreObjectPtr evaluate(ExecutionContext& context, const std::vector<ObjectPtr>& examples, const EvaluatorPtr& evaluator = EvaluatorPtr(), const String& scopeName = String::empty) const;
 
   bool isCurrentlyLearning() const
     {return learning;}
@@ -186,8 +198,10 @@ protected:
 
   std::vector<FunctionCallbackPtr> preCallbacks;
   std::vector<FunctionCallbackPtr> postCallbacks;
+
   FunctionPtr batchLearner;
   OnlineLearnerPtr onlineLearner;
+  EvaluatorPtr evaluator;
 
   DynamicClassPtr inputsClass;
   bool learning;

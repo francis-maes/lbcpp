@@ -132,16 +132,25 @@ public:
     switch (target)
     {
     case drTarget:
-      parameters->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
-      return linearBinaryClassifier(parameters, true, binaryClassificationMCCScore);
+      {
+        FunctionPtr res = linearBinaryClassifier(parameters, true, binaryClassificationMCCScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
+        return res;
+      }
 
     case sa20Target:
-      parameters->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
-      return linearBinaryClassifier(parameters, true, binaryClassificationAccuracyScore);
+      {
+        FunctionPtr res = linearBinaryClassifier(parameters, true, binaryClassificationAccuracyScore);
+        res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
+        return res;
+      }
 
     default:
-      parameters->setEvaluator(defaultSupervisedEvaluator());
-      return linearLearningMachine(parameters);
+      {
+        FunctionPtr res = linearLearningMachine(parameters);
+        res->setEvaluator(defaultSupervisedEvaluator());
+        return res;
+      }
     };
   }
 

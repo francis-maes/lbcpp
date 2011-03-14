@@ -81,8 +81,8 @@ public:
 
       std::vector<OnlineLearnerPtr> onlineLearners;
       onlineLearners.push_back(searchFunctionOnlineLearner(learnerParameters->getLossFunction().dynamicCast<RankingLossFunction>()));
-      if (learnerParameters->getEvaluator())
-        onlineLearners.push_back(evaluatorOnlineLearner(learnerParameters->getEvaluator()));
+      if (learnerParameters->doEvaluateAtEachIteration())
+        onlineLearners.push_back(evaluatorOnlineLearner());
       if (learnerParameters->getStoppingCriterion())
         onlineLearners.push_back(stoppingCriterionOnlineLearner(learnerParameters->getStoppingCriterion()));
       if (learnerParameters->doRestoreBestParameters())

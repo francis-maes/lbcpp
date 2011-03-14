@@ -128,6 +128,7 @@ FunctionPtr ProteinLearner::createOneStackPredictor(ExecutionContext& context, P
   ProteinPredictorPtr res = new ProteinPredictor(parameters);
   for (size_t i = 0; i < proteinTargets.size(); ++i)
     res->addTarget(proteinTargets[i]);
+  res->setEvaluator(new ProteinEvaluator());
   return res;
 }
 

@@ -50,11 +50,11 @@ public:
   StochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
                           StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
                           size_t maxIterations = 100,
-                          EvaluatorPtr evaluator = EvaluatorPtr(),
                           bool doPerEpisodeUpdates = false,
                           bool normalizeLearningRate = true,
                           bool restoreBestParameters = true,
-                          bool randomizeExamples = true);
+                          bool randomizeExamples = true,
+                          bool evaluateAtEachIteration = true);
 
   virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
   virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
@@ -96,15 +96,6 @@ public:
     {lossFunction = function;}
 
   /*
-  ** Evaluator
-  */
-  const EvaluatorPtr& getEvaluator() const
-    {return evaluator;}
-
-  void setEvaluator(EvaluatorPtr evaluator)
-    {this->evaluator = evaluator;}
-
-  /*
   ** Restore Best Parameters
   */
   bool doRestoreBestParameters() const
@@ -113,6 +104,12 @@ public:
   void setRestoreBestParameters(bool enabled)
     {restoreBestParameters = enabled;}
 
+  /*
+  ** Evaluation
+  */
+  bool doEvaluateAtEachIteration() const
+    {return evaluateAtEachIteration;}
+
 protected:
   friend class StochasticGDParametersClass;
 
@@ -120,11 +117,11 @@ protected:
   IterationFunctionPtr learningRate;
   StoppingCriterionPtr stoppingCriterion;
   size_t maxIterations;
-  EvaluatorPtr evaluator;
   bool doPerEpisodeUpdates;
   bool normalizeLearningRate;
   bool restoreBestParameters;
   bool randomizeExamples;
+  bool evaluateAtEachIteration;
   // todo: regularizer
 };
 
