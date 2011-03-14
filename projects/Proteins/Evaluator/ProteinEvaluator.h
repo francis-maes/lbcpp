@@ -79,10 +79,6 @@ public:
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
   }
   
-  /* Evaluator */
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? functionClass : containerClass(pairClass(proteinClass, proteinClass));}
-  
   /* CompositeEvaluator */
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
   {

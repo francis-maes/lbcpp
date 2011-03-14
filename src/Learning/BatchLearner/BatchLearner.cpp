@@ -37,11 +37,12 @@ ObjectVectorPtr BatchLearner::makeObjectVector(const ContainerPtr& container)
   return res;
 }
 
-bool BatchLearner::trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData)
+ScoreObjectPtr BatchLearner::trainSubFunction(ExecutionContext& context, const FunctionPtr& subFunction, const ContainerPtr& subTrainingData, const ContainerPtr& subValidationData)
 {
   String description = T("Learning ") + subFunction->getOutputVariable()->getName() + T(" with ");
   description += String((int)subTrainingData->getNumElements()) + T(" train examples");
   if (subValidationData)
     description += T(" and ") + String((int)subValidationData->getNumElements()) + T(" validation examples");
+
   return subFunction->train(context, subTrainingData, subValidationData, description);
 }

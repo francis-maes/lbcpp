@@ -208,47 +208,71 @@ bool Function::initializeWithInputsObjectClass(ExecutionContext& context, ClassP
   return initialize(context, inputSignatures);
 }
 
-bool Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData, const String& scopeName, bool returnLearnedFunction)
+ScoreObjectPtr Function::train(ExecutionContext& context, const ContainerPtr& trainingData, const ContainerPtr& validationData, const String& scopeName, bool returnLearnedFunction)
 {
   bool doScope = scopeName.isNotEmpty();
   if (doScope)
     context.enterScope(scopeName);
-  bool res = true;
+  ScoreObjectPtr res;
+  bool failed = false;
 
   // auto-initialize given examples type
-  if (!isInitialized() && !initializeWithInputsObjectClass(context, trainingData->getElementsType()))
-    res = false;
-  else
+  if (isInitialized() || initializeWithInputsObjectClass(context, trainingData->getElementsType()))
   {
     if (!batchLearner)
-    {
       context.errorCallback(T("Function ") + toShortString(), T("No batch learners"));
-      res = false;
-    }
-    else
+    else if (batchLearner->compute(context, this, trainingData, Variable(validationData, trainingData->getClass())).getBoolean())
     {
-      Variable result = batchLearner->compute(context, this, trainingData, Variable(validationData, trainingData->getClass()));
-      res = result.exists() && result.getBoolean();
+      // evaluate
+      if (hasEvaluator())
+      {
+        ScoreObjectPtr trainScore = evaluate(context, trainingData, EvaluatorPtr(), T("Train evaluation"));
+        if (trainScore)
+        {
+          context.resultCallback(T("Train score"), trainScore->getScoreToMinimize());
+          res = trainScore;
+        }
+
+        if (validationData)
+        {
+          ScoreObjectPtr validationScore = evaluate(context, validationData, EvaluatorPtr(), T("Validation evaluation"));
+          if (validationScore)
+          {
+            context.resultCallback(T("Validation score"), validationScore->getScoreToMinimize());
+            res = validationScore;
+          }
+        }
+      }
+      else
+        res = new DummyScoreObject();
     }
   }
+
 
   if (doScope)
   {
     if (returnLearnedFunction)
       context.resultCallback(T("learned"), refCountedPointerFromThis(this));
-    context.leaveScope(Variable());
+    context.leaveScope(res ? Variable(res->getScoreToMinimize()) : Variable(false));
   }
   return res;
 }
 
-bool Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData, const String& scopeName, bool returnLearnedFunction)
+ScoreObjectPtr Function::train(ExecutionContext& context, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData, const String& scopeName, bool returnLearnedFunction)
   {return train(context, new ObjectVector(trainingData), new ObjectVector(validationData), scopeName, returnLearnedFunction);}
 
 ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr& examples, const EvaluatorPtr& evaluator, const String& scopeName) const
 {
   bool doScope = scopeName.isNotEmpty();
 
-  if (!evaluator->isInitialized() && !evaluator->initialize(context, functionClass, examples->getClass()))
+  EvaluatorPtr eval = evaluator ? evaluator : this->evaluator;
+  if (!eval)
+  {
+    context.errorCallback(T("Could not evaluate function ") + toShortString() + T(": no evaluator"));
+    return ScoreObjectPtr();
+  }
+
+  if (!eval->isInitialized() && !eval->initialize(context, functionClass, examples->getClass()))
     return ScoreObjectPtr();
 
   if (doScope)
@@ -256,7 +280,7 @@ ScoreObjectPtr Function::evaluate(ExecutionContext& context, const ContainerPtr&
 
   bool learningFlag = learning;
   const_cast<Function* >(this)->learning = false;
-  ScoreObjectPtr res = evaluator->compute(context, refCountedPointerFromThis(this), examples).getObjectAndCast<ScoreObject>();
+  ScoreObjectPtr res = eval->compute(context, refCountedPointerFromThis(this), examples).getObjectAndCast<ScoreObject>();
   const_cast<Function* >(this)->learning = learningFlag;
 
   if (doScope)
@@ -313,6 +337,7 @@ TypePtr ProxyFunction::initializeFunction(ExecutionContext& context, const std::
     context.errorCallback(T("Could not create implementation in proxy operator"));
     return TypePtr();
   }
+  implementation->setEvaluator(evaluator);
   if (!implementation->initialize(context, inputVariables))
     return TypePtr();
 

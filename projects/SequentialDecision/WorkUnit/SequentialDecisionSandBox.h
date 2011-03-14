@@ -339,12 +339,12 @@ protected:
 
   PolicyPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, PolicyPtr explorationPolicy, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
-    parameters->setEvaluator(new SearchTreeEvaluator());
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
     learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
     PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
     SearchFunctionPtr lookAHeadSearch = new SearchFunction(problem, learnedSearchPolicy, parameters, explorationPolicy, maxSearchNodes);
+    lookAHeadSearch->setEvaluator(new SearchTreeEvaluator());
     if (!lookAHeadSearch->train(context, trainingStates, testingStates, T("Training ") + name, true))
       return PolicyPtr();
     return learnedSearchPolicy;

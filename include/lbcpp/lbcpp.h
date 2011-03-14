@@ -49,6 +49,8 @@
 # include "Data/RandomGenerator.h"
 # include "Data/RandomVariable.h"
 # include "Data/Cache.h"
+# include "Data/DoubleVector.h"
+# include "Data/Matrix.h"
 
 #ifdef LBCPP_NETWORKING
 # include "Network/NetworkClient.h"

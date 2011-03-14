@@ -37,7 +37,7 @@ public:
 
     ObjectVectorPtr subTrainingData = makeSubExamples(subFunction, trainingData);
     ObjectVectorPtr subValidationData = makeSubExamples(subFunction, validationData);
-    return subFunction->train(context, subTrainingData, subValidationData);
+    return trainSubFunction(context, subFunction, subTrainingData, subValidationData);
   }
 
 protected:

@@ -16,14 +16,14 @@ using namespace lbcpp;
 StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate,
                                                 StoppingCriterionPtr stoppingCriterion,
                                                 size_t maxIterations,
-                                                EvaluatorPtr evaluator,
                                                 bool doPerEpisodeUpdates,
                                                 bool normalizeLearningRate,
                                                 bool restoreBestParameters,
-                                                bool randomizeExamples)
+                                                bool randomizeExamples,
+                                                bool evaluateAtEachIteration)
   : learningRate(learningRate), stoppingCriterion(stoppingCriterion), maxIterations(maxIterations), 
-    evaluator(evaluator), doPerEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
-    restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples)
+    doPerEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
+    restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples), evaluateAtEachIteration(evaluateAtEachIteration)
 {
 }
 
@@ -69,8 +69,8 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
     : stochasticGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate));
 
   // create other optionnal online learners
-  if (evaluator)
-    learners.push_back(evaluatorOnlineLearner(evaluator));
+  if (evaluateAtEachIteration)
+    learners.push_back(evaluatorOnlineLearner());
   if (stoppingCriterion)
     learners.push_back(stoppingCriterionOnlineLearner(stoppingCriterion));
   if (restoreBestParameters)
@@ -89,6 +89,14 @@ void SupervisedNumericalFunction::buildFunction(CompositeFunctionBuilder& builde
 
   FunctionPtr learnableFunction = createLearnableFunction();
   size_t prediction = builder.addFunction(learnableFunction, input, supervision);
+  
+  // move evaluator
+  if (evaluator)
+  {
+    learnableFunction->setEvaluator(evaluator);
+    evaluator = EvaluatorPtr();
+  }
+  // set learners
   learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
   learnableFunction->setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
 

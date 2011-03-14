@@ -1,11 +1,6 @@
 
 Julien:
- * Integrer Matrix dans lbcpp-core
  * Deriver SymmetricMatrix de Matrix
- * Attacher un evaluator aux fonctions 
-     - voir Function::evaluate()
-     - voir StochasticGDParameters::evaluator
-     - dans BatchLearner::trainSubFunction() tester l'existence d'un evaluator et evaluer
  * CompositeFunctionBatchLearner: liberer les variables quant elles ne sont plus utiles
  * ProteinLearner: Serialisation des models
 
