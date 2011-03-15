@@ -1,5 +1,7 @@
 Go:
  1) Batch learning of the ranking machine with 1 train game, 1 validation game
+      => GoActionRankingEvaluator
+    
  2) Batch learning with many games with simple features
  3) Online learning with many many games
  4) Evolved features

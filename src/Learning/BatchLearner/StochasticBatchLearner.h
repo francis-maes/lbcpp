@@ -26,7 +26,6 @@ public:
     : functionsToLearn(functionsToLearn), maxIterations(maxIterations), randomizeExamples(randomizeExamples) {}
   StochasticBatchLearner(size_t maxIterations, bool randomizeExamples)
     : maxIterations(maxIterations), randomizeExamples(randomizeExamples) {}
-
   StochasticBatchLearner() {}
 
   virtual bool train(ExecutionContext& context, const FunctionPtr& function, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) const
@@ -83,42 +82,6 @@ protected:
       if (fun && fun->hasOnlineLearner())
         res.push_back(fun);
     }
-/*    
-    if (function->hasOnlineLearner())
-      res.push_back(function);
-    
-    // special case for composite functions
-    CompositeFunctionPtr compositeFunction = function.dynamicCast<CompositeFunction>();
-    if (compositeFunction)
-    {
-      for (size_t i = 0; i < compositeFunction->getNumSubFunctions(); ++i)
-        getAllFunctionsThatHaveAnOnlineLearner(compositeFunction->getSubFunction(i), res);
-      return;
-    }
-
-    size_t n = function->getNumVariables();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable v = function->getVariable(i);
-      FunctionPtr subFunction = v.dynamicCast<Function>();
-      if (subFunction)
-      {
-        getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
-        continue;
-      }
-
-      ContainerPtr container = v.dynamicCast<Container>();
-      if (container && container->getElementsType()->inheritsFrom(functionClass))
-      {
-        size_t numSubFunctions = container->getNumElements();
-        for (size_t j = 0; j < numSubFunctions; ++j)
-        {
-          FunctionPtr subFunction = container->getElement(j).getObjectAndCast<Function>();
-          if (subFunction)
-            getAllFunctionsThatHaveAnOnlineLearner(subFunction, res);
-        }
-      }
-    }*/
   }
 
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const
