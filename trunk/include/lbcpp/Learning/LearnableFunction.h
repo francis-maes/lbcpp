@@ -16,42 +16,6 @@
 namespace lbcpp
 {
 
-class LearnableFunction : public Function
-{
-public:
-  LearnableFunction(ClassPtr parametersClass = ClassPtr(), ObjectPtr parameters = ObjectPtr())
-    : parameters(parameters), parametersClass(parametersClass) {}
-  
-  const ClassPtr& getParametersClass() const
-    {return parametersClass;}
-
-  const ObjectPtr& getParameters() const
-    {return parameters;}
-
-  ObjectPtr& getParameters()
-    {return parameters;}
-
-  void setParameters(const ObjectPtr& parameters)
-    {this->parameters = parameters;}
-
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
-  {
-    Function::clone(context, target);
-    if (parameters)
-      target.staticCast<LearnableFunction>()->parameters = parameters->clone(context);
-  }
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class LearnableFunctionClass;
-
-  ObjectPtr parameters;
-  ClassPtr parametersClass;
-};
-
-typedef ReferenceCountedObjectPtr<LearnableFunction> LearnableFunctionPtr;
-
 class LearnerParameters : public Object
 {
 public:

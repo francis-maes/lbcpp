@@ -9,7 +9,6 @@
 #include <lbcpp/Function/Predicate.h>
 #include <lbcpp/Core/Vector.h>
 #include "BinaryDecisionTreeBatchLearner.h"
-
 using namespace lbcpp;
 
 /*

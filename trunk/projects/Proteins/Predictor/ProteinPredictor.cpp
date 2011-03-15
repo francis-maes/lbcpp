@@ -26,7 +26,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
   size_t residuePerception = builder.addFunction(parameters->createResidueVectorPerception(), input);
-  size_t residuePairPerception; // = builder.addFunction(parameters->createResiduePairVectorPerception(), input); // FIXME JULIEN
+  size_t residuePairPerception = 0; // = builder.addFunction(parameters->createResiduePairVectorPerception(), input); // FIXME JULIEN
   
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);

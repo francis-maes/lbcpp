@@ -11,12 +11,12 @@
 
 # include "Data/BinaryDecisionTree.h"
 # include <lbcpp/Distribution/Distribution.h>
-# include <lbcpp/Learning/LearnableFunction.h>
+//# include <lbcpp/Learning/LearnableFunction.h>
 
 namespace lbcpp 
 {
 
-class BinaryDecisionTreeFunction : public LearnableFunction
+class BinaryDecisionTreeFunction : public Function
 {
 public:
   BinaryDecisionTreeFunction();
@@ -35,17 +35,22 @@ public:
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    if (!parameters && parameters.staticCast<BinaryDecisionTree>()->getNumNodes())
+    if (!tree || !tree->getNumNodes())
       return Variable::missingValue(getOutputType());
-    return parameters.staticCast<BinaryDecisionTree>()->makePrediction(context, inputs[0]);
+    return tree->makePrediction(context, inputs[0]);
   }
 
   /* BinaryDecisionTreeFunction */
-  BinaryDecisionTreePtr getTree() const
-    {return parameters ? parameters.staticCast<BinaryDecisionTree>() : BinaryDecisionTreePtr();}
+  const BinaryDecisionTreePtr& getTree() const
+    {return tree;}
 
-  void setTree(BinaryDecisionTreePtr tree)
-    {parameters = tree;}
+  void setTree(const BinaryDecisionTreePtr& tree)
+    {this->tree = tree;}
+
+protected:
+  friend class BinaryDecisionTreeFunctionClass;
+
+  BinaryDecisionTreePtr tree;
 };
 
 extern ClassPtr binaryDecisionTreeFunctionClass;

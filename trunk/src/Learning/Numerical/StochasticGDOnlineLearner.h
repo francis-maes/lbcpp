@@ -23,8 +23,9 @@ public:
 
   virtual void learningStep(const Variable* inputs, const Variable& output)
   {
-    const NumericalLearnableFunctionPtr& function = getNumericalLearnableFunction();
-    computeAndAddGradient(function, inputs, output, function->getParameters(), -computeLearningRate());
+    DoubleVectorPtr target = function->getParameters();
+    computeAndAddGradient(inputs, output, target, -computeLearningRate());
+    function->setParameters(target);
   }
 };
 

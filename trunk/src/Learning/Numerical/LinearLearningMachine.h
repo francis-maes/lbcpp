@@ -12,6 +12,7 @@
 # include <lbcpp/Core/Frame.h>
 # include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/LossFunction.h>
+# include <lbcpp/Function/Evaluator.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 # include "../../Core/Function/MapContainerFunction.h"
@@ -25,6 +26,7 @@ public:
   SupervisedNumericalFunction(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
     : learnerParameters(learnerParameters) {}
 
+  virtual TypePtr getInputType() const = 0;
   virtual TypePtr getSupervisionType() const = 0;
   virtual FunctionPtr createLearnableFunction() const = 0;
   virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex) {}
@@ -33,12 +35,15 @@ public:
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? anyType : getInputType();}
+
   virtual String getOutputPostFix() const
     {return T("Prediction");}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t input = builder.addInput(doubleVectorClass());
+    size_t input = builder.addInput(getInputType());
     size_t supervision = builder.addInput(anyType);
 
     FunctionPtr learnableFunction = createLearnableFunction();
@@ -69,22 +74,37 @@ class LinearRegressor : public SupervisedNumericalFunction
 {
 public:
   LinearRegressor(LearnerParametersPtr learnerParameters)
-    : SupervisedNumericalFunction(learnerParameters) {}
+    : SupervisedNumericalFunction(learnerParameters)
+  {
+  }
   LinearRegressor() {}
+
+  virtual TypePtr getInputType() const
+    {return doubleVectorClass();}
 
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
 
   virtual FunctionPtr createLearnableFunction() const
-    {return linearLearnableFunction();}
+  {
+    FunctionPtr res = linearLearnableFunction();
+    res->setEvaluator(regressionEvaluator());
+    return res;
+  }
 };
 
 class LinearBinaryClassifier : public SupervisedNumericalFunction
 {
 public:
   LinearBinaryClassifier(LearnerParametersPtr learnerParameters, bool incorporateBias, BinaryClassificationScore scoreToOptimize)
-    : SupervisedNumericalFunction(learnerParameters), incorporateBias(incorporateBias), scoreToOptimize(scoreToOptimize) {}
+    : SupervisedNumericalFunction(learnerParameters), incorporateBias(incorporateBias), scoreToOptimize(scoreToOptimize)
+  {
+  }
+
   LinearBinaryClassifier() {}
+
+  virtual TypePtr getInputType() const
+    {return doubleVectorClass();}
 
   virtual TypePtr getSupervisionType() const
     {return sumType(booleanType, probabilityType);}
@@ -97,7 +117,11 @@ public:
   }
 
   virtual FunctionPtr createLearnableFunction() const
-    {return linearLearnableFunction();}
+  {
+    FunctionPtr res = linearLearnableFunction();
+    res->setEvaluator(binaryClassificationEvaluator()); // todo: connect with scoreToOptimize
+    return res;
+  }
 
 protected:
   friend class LinearBinaryClassifierClass;
@@ -155,7 +179,11 @@ class LinearMultiClassClassifier : public SupervisedNumericalFunction
 public:
   LinearMultiClassClassifier(LearnerParametersPtr learnerParameters)
     : SupervisedNumericalFunction(learnerParameters) {}
+
   LinearMultiClassClassifier() {}
+
+  virtual TypePtr getInputType() const
+    {return doubleVectorClass();}
 
   virtual TypePtr getSupervisionType() const
     {return anyType;} // enumValue or doubleVector[enumValue]
@@ -168,57 +196,37 @@ public:
   }
 
   virtual FunctionPtr createLearnableFunction() const
-    {return multiLinearLearnableFunction();}
+  {
+    FunctionPtr res = multiLinearLearnableFunction();
+    res->setEvaluator(classificationEvaluator());
+    return res;
+  }
 };
 
-class LinearRankingMachine : public MapContainerFunction
+class LinearRankingMachine : public SupervisedNumericalFunction
 {
 public:
   LinearRankingMachine(LearnerParametersPtr learnerParameters)
-    : MapContainerFunction(linearLearnableFunction()), learnerParameters(learnerParameters) {}
+    : SupervisedNumericalFunction(learnerParameters) {}
   LinearRankingMachine() {}
 
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    TypePtr res = MapContainerFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
-    if (!res)
-      return TypePtr();
+  virtual TypePtr getInputType() const
+    {return containerClass(doubleVectorClass());}
 
-    setOnlineLearner(learnerParameters->createOnlineLearner(context));
-    setBatchLearner(learnerParameters->createBatchLearner(context));
-    return res;
+  virtual TypePtr getSupervisionType() const
+    {return doubleVectorClass(positiveIntegerEnumerationEnumeration);}
+
+  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex)
+  {
+    // todo: converter to probabilities
+
+    /*FunctionPtr scoresToProbabilities = new MultiClassScoresToDistributionFunction();
+    builder.addFunction(scoresToProbabilities, predictionIndex);
+    scoresToProbabilities->setBatchLearner(BatchLearnerPtr());*/
   }
 
-  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
-                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
-  {
-    const RankingLossFunctionPtr& rankingLoss = lossFunction.staticCast<RankingLossFunction>();
-    const ObjectVectorPtr& features = inputs[0].getObjectAndCast<ObjectVector>();
-    const DenseDoubleVectorPtr& scores = prediction.getObjectAndCast<DenseDoubleVector>();
-    const DenseDoubleVectorPtr& costs = inputs[1].getObjectAndCast<DenseDoubleVector>();
-    jassert(costs && costs->getNumElements() == scores->getNumElements());
-    size_t n = scores->getNumElements();
-    
-    exampleLossValue = 0.0;
-    DenseDoubleVectorPtr lossGradient;
-    rankingLoss->computeRankingLoss(scores, costs, &exampleLossValue, &lossGradient, 1.0);
-    jassert(lossGradient);
-
-    if (!isNumberValid(exampleLossValue))
-      return false;
-
-    const NumericalLearnableFunctionPtr& learnableFunction = function.staticCast<NumericalLearnableFunction>();
-    for (size_t i = 0; i < n; ++i)
-    {
-      DoubleVectorPtr alternativeFeatures = features->getElement(i).getObjectAndCast<DoubleVector>();
-      double alternativeLoss = lossGradient->getElement(i).getDouble();
-      learnableFunction->addGradient(alternativeLoss, alternativeFeatures, target, weight);
-    }
-    return true;
-  }
-
-protected:
-  LearnerParametersPtr learnerParameters;
+  virtual FunctionPtr createLearnableFunction() const
+    {return rankingLearnableFunction(linearLearnableFunction());}
 };
 
 class LinearLearningMachine : public ProxyFunction

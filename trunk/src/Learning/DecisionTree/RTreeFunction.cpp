@@ -226,22 +226,19 @@ extern BatchLearnerPtr rTreeBatchLearner();
 RTreeFunction::RTreeFunction(size_t numTrees,
                              size_t numAttributeSamplesPerSplit,
                              size_t minimumSizeForSplitting)
-  : LearnableFunction(objectClass), numTrees(numTrees), 
+  : numTrees(numTrees), 
     numAttributeSamplesPerSplit(numAttributeSamplesPerSplit),
     minimumSizeForSplitting(minimumSizeForSplitting)
   {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
 
-RTreeFunction::RTreeFunction() : LearnableFunction(objectClass),
-                                  numTrees(100),
-                                  numAttributeSamplesPerSplit(10),
-                                  minimumSizeForSplitting(1)
+RTreeFunction::RTreeFunction() : numTrees(100), numAttributeSamplesPerSplit(10), minimumSizeForSplitting(1)
   {setBatchLearner(filterUnsupervisedExamplesBatchLearner(rTreeBatchLearner()));}
 
 Variable RTreeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  if (!parameters)
+  if (!trees)
     Variable::missingValue(getOutputType());
-  return parameters.staticCast<RTree>()->makePrediction(context, inputs[0], getOutputType());
+  return trees.staticCast<RTree>()->makePrediction(context, inputs[0], getOutputType());
 }
 
 /*

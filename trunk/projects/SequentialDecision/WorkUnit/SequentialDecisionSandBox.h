@@ -274,11 +274,11 @@ public:
   {
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
     learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
-    LearnableFunctionPtr linearFunction = learnedHeuristic->getScoringFunction().dynamicCast<LearnableFunction>();
+    NumericalLearnableFunctionPtr linearFunction = learnedHeuristic->getScoringFunction().dynamicCast<NumericalLearnableFunction>();
     PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
     EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(learnedHeuristic->getPerceptionFunction()->getOutputType());
-    DenseDoubleVectorPtr parameters = new DenseDoubleVector(linearFunction->getParametersClass());
+    DenseDoubleVectorPtr parameters = linearFunction->createParameters();
     parameters->setValue(0, 1.0);
     linearFunction->setParameters(parameters);
 

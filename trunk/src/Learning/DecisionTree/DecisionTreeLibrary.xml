@@ -3,7 +3,7 @@
 <library name="DecisionTree" directory="Learning/DecisionTree">
 
   <!-- RTreeFunction -->
-  <class name="RTreeFunction" base="LearnableFunction" abstract="yes">
+  <class name="RTreeFunction" base="Function" abstract="yes">
     <variable type="PositiveInteger" name="numTrees"/>
     <variable type="PositiveInteger" name="numAttributeSamplesPerSplit"/>
     <variable type="PositiveInteger" name="minimumSizeForSplitting"/>
@@ -18,7 +18,9 @@
   </class>
   
   <!-- BinaryDecisionTree -->
-  <class name="BinaryDecisionTreeFunction" base="LearnableFunction" abstract="yes"/>
+  <class name="BinaryDecisionTreeFunction" base="Function" abstract="yes">
+    <variable type="BinaryDecisionTree" name="tree"/>
+  </class>
 
   <class name="RegressionBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>
   <class name="BinaryClassificationBinaryDecisionTreeFunction" base="BinaryDecisionTreeFunction"/>

@@ -23,13 +23,13 @@ public:
   PerEpisodeGDOnlineLearner() {}
  
   virtual void startEpisode(const ObjectPtr& inputs)
-    {episodeGradient =  new DenseDoubleVector(getNumericalLearnableFunction()->getParametersClass());}
+    {episodeGradient = function->createParameters();}
 
   virtual void learningStep(const Variable* inputs, const Variable& output)
-    {computeAndAddGradient(getNumericalLearnableFunction(), inputs, output, episodeGradient, 1.0);}
+    {computeAndAddGradient(inputs, output, episodeGradient, 1.0);}
 
   virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output)
-    {gradientDescentStep(getNumericalLearnableFunction(), episodeGradient);}
+    {gradientDescentStep(episodeGradient);}
 
 protected:
   DoubleVectorPtr episodeGradient;
