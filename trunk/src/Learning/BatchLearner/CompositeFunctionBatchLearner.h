@@ -40,16 +40,25 @@ public:
   }
 
 protected:
+
   /*
   ** Single Threaded
   */
   bool trainSingleThread(ExecutionContext& context, const CompositeFunctionPtr& function, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
   {
+    std::vector<size_t> referenceCounts;
+    makeInitialReferenceCounts(function, referenceCounts);
+
     // train each sub function iteratively
     for (size_t step = 0; step < function->getNumSteps(); ++step)
       if (function->getStepType(step) == CompositeFunction::functionStep)
+      {
         if (!trainFunctionStep(context, function, step, trainingStates, validationStates))
           return false;
+
+        const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
+        decrementReferenceCountsAndFreeVariables(function, inputs, referenceCounts, trainingStates, validationStates);
+      }
     return true;
   }
 
@@ -63,7 +72,10 @@ protected:
       return false;
 
     // update states
-    return computeSubFunction(context, function, step, trainingStates, validationStates);
+    if (!computeSubFunction(context, function, step, trainingStates, validationStates))
+      return false;
+    
+    return true;
   }
 
   bool computeSubFunction(ExecutionContext& context, const CompositeFunctionPtr& function, size_t step, std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
@@ -107,6 +119,10 @@ protected:
     }
     jassert(numVariablesToCompute == function->getNumSubFunctions());
 
+    // initialize reference counts
+    std::vector<size_t> referenceCounts;
+    makeInitialReferenceCounts(function, referenceCounts);
+
     // do learning blocks until all sub functions have been learned
     while (numVariablesToCompute > 0)
     {
@@ -125,9 +141,14 @@ protected:
       if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates))
         return false;
 
-      // mark these steps as ready
+      // update variableIsReady flags and step reference counts
       for (size_t i = 0; i < readySteps.size(); ++i)
-        variableIsReady[readySteps[i]] = true;
+      {
+        size_t step = readySteps[i];
+        variableIsReady[step] = true;
+        const std::vector<size_t>& inputs = function->getSubFunctionInputs(function->getStepArgument(step));
+        decrementReferenceCountsAndFreeVariables(function, inputs, referenceCounts, trainingStates, validationStates);
+      }
       numVariablesToCompute -= readySteps.size();
     }
     return true;
@@ -221,6 +242,41 @@ protected:
   {
     for (size_t i = 0; i < states.size(); ++i)
       function->updateState(context, stepNumber, states[i]);
+  }
+
+  /*
+  ** Steps reference count
+  */
+  void makeInitialReferenceCounts(const CompositeFunctionPtr& function, std::vector<size_t>& res) const
+  {
+    res.resize(function->getNumSteps(), 0);
+    for (size_t i = 0; i < function->getNumSubFunctions(); ++i)
+    {
+      const std::vector<size_t>& inputs = function->getSubFunctionInputs(i);
+      for (size_t j = 0; j < inputs.size(); ++j)
+        res[inputs[j]]++;
+    }
+  }
+
+  void decrementReferenceCountsAndFreeVariables(const CompositeFunctionPtr& function, const std::vector<size_t>& indicesToDecrement,
+                                                std::vector<size_t>& referenceCounts,
+                                                std::vector<ObjectPtr>& trainingStates, std::vector<ObjectPtr>& validationStates) const
+  {
+    for (size_t i = 0; i < indicesToDecrement.size(); ++i)
+    {
+      size_t index = indicesToDecrement[i];
+      size_t& refCount = referenceCounts[index];
+      jassert(refCount > 0);
+      --refCount;
+      if (refCount == 0)
+      {
+        Variable missing = Variable::missingValue(function->getStateClass()->getMemberVariableType(index));
+        for (size_t i = 0; i < trainingStates.size(); ++i)
+          trainingStates[i]->setVariable(index, missing);
+        for (size_t i = 0; i < validationStates.size(); ++i)
+          validationStates[i]->setVariable(index, missing);
+      }
+    }
   }
 };
 

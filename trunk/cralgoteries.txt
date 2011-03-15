@@ -1,6 +1,5 @@
 
 Julien:
- * CompositeFunctionBatchLearner: liberer les variables quant elles ne sont plus utiles
  * ProteinLearner: Serialisation des models
 
 Arnaud:
