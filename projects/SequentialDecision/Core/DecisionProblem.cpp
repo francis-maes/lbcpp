@@ -91,3 +91,34 @@ Variable DecisionProblem::computeFinalState(ExecutionContext& context, const Var
   }
   return state;
 }
+
+bool DecisionProblem::checkTrajectoryValidity(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const
+{
+  Variable state = initialState;
+  size_t n = trajectory->getNumElements();
+  
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable action = trajectory->getElement(i);
+
+    std::vector<Variable> availableActions;
+    getAvailableActions(state, availableActions);
+    size_t j;
+    for (j = 0; j < availableActions.size(); ++j)
+      if (availableActions[j] == action)
+        break;
+    if (j == availableActions.size())
+    {
+      context.errorCallback(state.toShortString(), T("Action ") + action.toShortString() + T(" is not available in this state"));
+      return false;
+    }
+
+    state = computeTransition(state, action);
+    if (!state.exists())
+    {
+      context.errorCallback(state.toShortString(), T("Reached final state"));
+      return false;
+    }
+  }
+  return true;
+}

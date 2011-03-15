@@ -584,6 +584,14 @@ int XmlElement::getIntAttribute(const String& name, int defaultValue) const
   return defaultValue;
 }
 
+bool XmlElement::hasAttribute(const String& name) const
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+      return true;
+  return false;
+}
+
 void XmlElement::removeAttribute(const String& name)
 {
   for (size_t i = 0; i < attributes.size(); ++i)

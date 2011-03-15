@@ -1,16 +1,16 @@
-
-Julien:
- * ProteinLearner: Serialisation des models
-
-Arnaud:
- * Boinc: progression globale
+Core:
  * RunWorkUnit: save des traces depuis un timer
+ * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
 
-ProteinLearner:
+Proteins:
+ * ProteinLearner: Serialisation des models
+ * Boinc: progression globale
  * Ajouter des features de segments
 
-Misc:
- * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
- * Explorer ExecutionTrace: refermer les noeuds au fur et à mesure
- * Explorer: Améliorer le système de colonnes
+Explorer:
+ * ExecutionTrace: refermer les noeuds au fur et à mesure
+ * ExecutionTrace: Améliorer le système de colonnes
  * Explorer: Faire un mecanisme general pour la gestion des FileFormat, utiliser sur les sgf par exemple
+ * Explorer: Faire une vrai classe de base ObjectComponent qui absorbe ComponentWithPreferedSize / VariableSelector et qui gere les differents cas:
+     topLevel | insideTree | oneLineComponent
+ * ...

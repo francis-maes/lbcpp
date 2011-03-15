@@ -50,7 +50,7 @@ public:
   Variable sampleInitialState(RandomGeneratorPtr random) const
     {return initialStateSampler->compute(defaultExecutionContext(), random);}
 
-  void getAvailableActions(const Variable& state, std::vector<Variable>& actions) const;
+  virtual void getAvailableActions(const Variable& state, std::vector<Variable>& actions) const;
 
   Variable computeTransition(const Variable& state, const Variable& action) const
     {return transitionFunction->compute(defaultExecutionContext(), state, action);}
@@ -62,6 +62,7 @@ public:
   ** High level operations
   */
   Variable computeFinalState(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const;
+  bool checkTrajectoryValidity(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const;
 
   /*
   ** Objective
@@ -69,7 +70,7 @@ public:
   double getDiscount() const
     {return discount;} // in [0,1]
 
-private:
+protected:
   friend class DecisionProblemClass;
 
   FunctionPtr initialStateSampler;
