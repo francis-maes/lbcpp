@@ -53,7 +53,7 @@ public:
     if (evaluator)
     {
       learnableFunction->setEvaluator(evaluator);
-      evaluator = EvaluatorPtr();
+      //evaluator = EvaluatorPtr();
     }
     // set learners
     learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext()));
@@ -226,7 +226,11 @@ public:
   }
 
   virtual FunctionPtr createLearnableFunction() const
-    {return rankingLearnableFunction(linearLearnableFunction());}
+  {
+    FunctionPtr res = rankingLearnableFunction(linearLearnableFunction());
+    res->setEvaluator(evaluator);
+    return res;
+  }
 };
 
 class LinearLearningMachine : public ProxyFunction

@@ -120,6 +120,12 @@ public:
     return res;
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    NumericalLearnableFunction::clone(context, target);
+    target.staticCast<RankingLearnableFunction>()->scoringFunction = scoringFunction->cloneAndCast<NumericalLearnableFunction>(context);
+  }
+
 protected:
   friend class RankingLearnableFunctionClass;
 

@@ -30,6 +30,11 @@
   <class name="GoActionIdentifierFeature" base="FeatureGenerator"/>
   <class name="GoStateActionFeatures" base="CompositeFunction"/>
 
+  <class name="GoActionScoringScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableMean" name="predictionRate"/>
+  </class>
+  <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
+
   <class name="GoSandBox" base="WorkUnit">
     <variable type="File" name="gamesDirectory"/>
     <variable type="PositiveInteger" name="maxCount"/>

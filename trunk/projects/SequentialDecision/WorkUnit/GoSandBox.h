@@ -161,6 +161,49 @@ public:
 
 ////////////////////////////////////////////
 
+class GoActionScoringScoreObject : public ScoreObject
+{
+public:
+  GoActionScoringScoreObject() : predictionRate(new ScalarVariableMean(T("predictionRate"))) {}
+
+  bool add(ExecutionContext& context, const DenseDoubleVectorPtr& scores, const DenseDoubleVectorPtr& costs)
+  {
+    int index = scores->getIndexOfMaximumValue();
+    if (index < 0)
+    {
+      context.errorCallback(T("Could not find maximum score"));
+      return false;
+    }
+    predictionRate->push(costs->getValue(index) < 0 ? 1.0 : 0.0);
+    return true;
+  }
+
+  virtual double getScoreToMinimize() const
+    {return 1.0 - predictionRate->getMean();} // prediction error
+
+private:
+  friend class GoActionScoringScoreObjectClass;
+
+  ScalarVariableMeanPtr predictionRate;
+};
+
+class GoActionScoringEvaluator : public SupervisedEvaluator
+{
+public:
+  virtual TypePtr getRequiredPredictionType() const
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
+
+  virtual TypePtr getRequiredSupervisionType() const
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
+
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+    {return new GoActionScoringScoreObject();}
+
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+    {result.staticCast<GoActionScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
+};
+
+//////////
 
 class GoStateComponent : public MatrixComponent
 {
@@ -208,6 +251,8 @@ public:
     for (size_t i = 0; i < numGames; ++i)
     {
       PairPtr game = games->getElement(i).getObjectAndCast<Pair>();
+      if (!game)
+        continue;
 
       DecisionProblemStatePtr state = game->getFirst().getObject()->cloneAndCast<DecisionProblemState>();
       const ContainerPtr& trajectory = game->getSecond().getObjectAndCast<Container>();
@@ -262,8 +307,8 @@ public:
     context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
                                 String((int)validationExamples->getNumElements()) + T(" validation examples"));
 
-    context.resultCallback(T("training examples"), trainingExamples);
-    context.resultCallback(T("validation examples"), validationExamples);
+    //context.resultCallback(T("training examples"), trainingExamples);
+    //context.resultCallback(T("validation examples"), validationExamples);
 
     // create ranking machine
     if (!learningParameters)
@@ -275,8 +320,11 @@ public:
     if (!rankingMachine)
       return false;
 
+    rankingMachine->setEvaluator(new GoActionScoringEvaluator());
     rankingMachine->train(context, trainingExamples, validationExamples, T("Training"), true);
-    //rankingMachine->evaluate(context, trainingExamples, EvaluatorPtr(), 
+
+    rankingMachine->evaluate(context, trainingExamples, EvaluatorPtr(), T("Evaluating on training examples"));
+    rankingMachine->evaluate(context, validationExamples, EvaluatorPtr(), T("Evaluating on validation examples"));
 
     return true;
    // return learnOnline(context, rankingMachine, trainingExamples, validationExamples);
