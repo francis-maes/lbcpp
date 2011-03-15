@@ -141,7 +141,7 @@ public:
       interface->closeCommunication();
       
       // enough WUs evaluated -> update distribution (with best results)
-      if (state->currentEvaluatedWUs.size() >= numberWuToUpdate) 
+      if (state->currentEvaluatedWUs.size() >= numberWuToUpdate || (state->totalNumberGeneratedWUs == totalNumberWuRequested && state->inProgressWUs.size() == 0)) 
       {
         context.informationCallback(T("Updating state ..."));
         std::multimap<double, Variable> resultsMap; // mutlimap used to sort results by score
@@ -160,7 +160,7 @@ public:
         // best results : use them then delete
         for (mapIt = resultsMap.rbegin(); mapIt != resultsMap.rend() && nb < state->currentEvaluatedWUs.size()/ratioUsedForUpdate; mapIt++)
         {
-          distributionsBuilder->addElement((*mapIt).second);
+          distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
           nb++;
         }
         state->distributions = distributionsBuilder->build(context);
@@ -168,7 +168,7 @@ public:
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
-          context.informationCallback(T("New best result found : ") + state->bestVariable.toString());
+          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + state->bestScore + T("% )"));
         }
                
         // delete files and clear vector
