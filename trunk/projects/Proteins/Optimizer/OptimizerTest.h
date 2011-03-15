@@ -59,7 +59,7 @@ namespace lbcpp
       size_t managerPort = 1664;
       size_t requiredMemory = 1;
       size_t requiredTime = 1;
-      size_t timeToSleep = 10*60;  // in seconds
+      size_t timeToSleep = 5*60;  // in seconds
       
       GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
                                                            managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
