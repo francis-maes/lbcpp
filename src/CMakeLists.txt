@@ -596,6 +596,7 @@ IF(LBCPP_USER_INTERFACE)
     ../include/lbcpp/UserInterface/ComponentWithPreferedSize.h
     ../include/lbcpp/UserInterface/UserInterfaceManager.h
     ../include/lbcpp/UserInterface/ObjectEditor.h
+    ../include/lbcpp/UserInterface/MatrixComponent.h
     UserInterface/UserInterfaceManager.cpp
     ${LBCPP_USER_INTEFACE_GENERATED_FILES}
   )
