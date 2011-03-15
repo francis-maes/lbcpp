@@ -49,7 +49,7 @@ bool DecisionProblemState::checkTrajectoryValidity(ExecutionContext& context, co
 
     double reward;
     state->performTransition(action, reward);
-   
   }
+  context.resultCallback(state->getName(), state);
   return true;
 }
