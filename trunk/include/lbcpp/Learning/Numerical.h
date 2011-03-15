@@ -56,8 +56,8 @@ public:
                           bool randomizeExamples = true,
                           bool evaluateAtEachIteration = true);
 
-  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
-  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const;
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const;
+  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context) const;
 
   /*
   ** Learning rate
@@ -127,33 +127,6 @@ protected:
 
 typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParametersPtr;
 
-class SupervisedNumericalFunction : public CompositeFunction
-{
-public:
-  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
-    : learnerParameters(learnerParameters) {}
-
-  virtual TypePtr getSupervisionType() const = 0;
-  virtual FunctionPtr createLearnableFunction() const = 0;
-  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex) {}
-
-  // Function
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual String getOutputPostFix() const
-    {return T("Prediction");}
-
-  virtual void buildFunction(CompositeFunctionBuilder& builder);
-
-protected:
-  friend class SupervisedNumericalFunctionClass;
-
-  LearnerParametersPtr learnerParameters;
-};
-
-typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
-
 // atomic learnable functions
 extern LearnableFunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
@@ -167,9 +140,10 @@ extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, Iter
 extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
 // high-level learning machines
-extern SupervisedNumericalFunctionPtr linearRegressor(LearnerParametersPtr parameters);
-extern SupervisedNumericalFunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, bool incorporateBias = false, BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
-extern SupervisedNumericalFunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters);
+extern FunctionPtr linearRegressor(LearnerParametersPtr parameters);
+extern FunctionPtr linearBinaryClassifier(LearnerParametersPtr parameters, bool incorporateBias = false, BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+extern FunctionPtr linearMultiClassClassifier(LearnerParametersPtr parameters);
+extern FunctionPtr linearRankingMachine(LearnerParametersPtr parameters);
 extern FunctionPtr linearLearningMachine(LearnerParametersPtr parameters);
 
 

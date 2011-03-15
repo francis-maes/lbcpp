@@ -42,8 +42,9 @@ public:
 
     // start learning
     CompositeOnlineLearnerPtr compositeOnlineLearner = new CompositeOnlineLearner();
+    bool ok = true;
     for (size_t i = 0; i < functionsToLearn.size(); ++i)
-      compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
+      ok &= compositeOnlineLearner->startLearningAndAddLearner(context, functionsToLearn[i], maxIterations, trainingData, validationData);
 
     // perform learning iterations
     double startTime = Time::getMillisecondCounterHiRes();
@@ -59,7 +60,7 @@ public:
 
     // finish learning
     compositeOnlineLearner->finishLearning();
-    return true;
+    return ok;
   }
 
   lbcpp_UseDebuggingNewOperator

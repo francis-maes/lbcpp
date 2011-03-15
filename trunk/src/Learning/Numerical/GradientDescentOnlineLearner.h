@@ -11,6 +11,7 @@
 
 # include <lbcpp/Learning/OnlineLearner.h>
 # include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Function/IterationFunction.h>
 
@@ -28,7 +29,7 @@ public:
       lossFunction(lossFunction), learningRate(learningRate), normalizeLearningRate(normalizeLearningRate), epoch(0), failure(false) {}
   GradientDescentOnlineLearner() : context(NULL), maxIterations(0), normalizeLearningRate(true), epoch(0), failure(false) {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     numberOfActiveFeatures.clear();
     lossValue.clear();
@@ -37,6 +38,27 @@ public:
     this->function = function;
     this->maxIterations = maxIterations;
     failure = false;
+    if (!lossFunction)
+    {
+      jassert(function->getNumInputs() >= 2);
+      TypePtr supervisionType = function->getInputVariable(1)->getType();
+
+      // create default loss function
+      if (supervisionType == booleanType || supervisionType == probabilityType)
+        lossFunction = hingeDiscriminativeLossFunction();
+      else if (supervisionType == doubleType)
+        lossFunction = squareRegressionLossFunction();
+      else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
+        lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
+      else if (supervisionType->inheritsFrom(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)))
+        lossFunction = allPairsRankingLossFunction(hingeDiscriminativeLossFunction());
+      else
+      {
+        context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
+        return false;
+      }
+    }
+    return true;
   }
 
   virtual void learningStep(const Variable* inputs, const Variable& output) = 0;

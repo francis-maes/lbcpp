@@ -1,3 +1,9 @@
+Go:
+ 1) Batch learning of the ranking machine with 1 train game, 1 validation game
+ 2) Batch learning with many games with simple features
+ 3) Online learning with many many games
+ 4) Evolved features
+
 Core:
  * RunWorkUnit: save des traces depuis un timer
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container

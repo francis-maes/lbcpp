@@ -21,12 +21,13 @@ public:
   EvaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr())
     : evaluator(evaluator), context(NULL), trainingData(NULL), validationData(NULL) {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     this->context = &context;
     this->function = function;
     this->trainingData = trainingData.size() ? &trainingData : NULL;
     this->validationData = validationData.size() ? &validationData : NULL;
+    return true;
   }
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)

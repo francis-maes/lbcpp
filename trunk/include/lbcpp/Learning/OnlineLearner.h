@@ -18,7 +18,7 @@ namespace lbcpp
 class OnlineLearner : public Object
 {
 public:
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) {}
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData) = 0;
 
   virtual void startLearningIteration(size_t iteration) {}
 

@@ -90,8 +90,8 @@ public:
   const VariableSignaturePtr& getOutputVariable() const
     {return outputVariable;}
 
-  const TypePtr& getOutputType() const
-    {return outputVariable->getType();}
+  TypePtr getOutputType() const
+    {return outputVariable ? outputVariable->getType() : TypePtr();}
 
   /*
   ** Description

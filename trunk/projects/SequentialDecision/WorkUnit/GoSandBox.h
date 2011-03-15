@@ -17,6 +17,151 @@
 namespace lbcpp
 {
 
+/////////////////
+
+// State, Action -> DoubleVector
+class DecisionProblemStateActionsRankingCostsFunction : public SimpleBinaryFunction
+{
+public:
+  DecisionProblemStateActionsRankingCostsFunction()
+    : SimpleBinaryFunction(decisionProblemStateClass, variableType, denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
+    const Variable& action = inputs[1];
+
+    ContainerPtr availableActions = state->getAvailableActions();
+    size_t n = availableActions->getNumElements();
+
+    DenseDoubleVectorPtr res(new DenseDoubleVector(outputType, n, 0.0));
+    for (size_t i = 0; i < n; ++i)
+      if (availableActions->getElement(i) == action)
+        res->setValue(i, -1);
+    return res;
+  }
+};
+
+// State -> Container[DoubleVector]
+class DecisionProblemStateActionsPerception : public Function
+{
+public:
+  DecisionProblemStateActionsPerception(FunctionPtr stateActionPerception = FunctionPtr())
+    : stateActionPerception(stateActionPerception) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return decisionProblemStateClass;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    if (!stateActionPerception->initialize(context, inputVariables[0]->getType(), stateActionPerception->getRequiredInputType(1, 2)))
+      return TypePtr();
+    return vectorClass(stateActionPerception->getOutputType());
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
+    ContainerPtr availableActions = state->getAvailableActions();
+    size_t n = availableActions->getNumElements();
+
+    VectorPtr res = vector(stateActionPerception->getOutputType(), n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable action = availableActions->getElement(i);
+      res->setElement(i, stateActionPerception->compute(context, state, action));
+    }
+    return res;
+  }
+
+protected:
+  friend class DecisionProblemStateActionsPerceptionClass;
+
+  FunctionPtr stateActionPerception; // State, Action -> Perception
+};
+
+// State, Supervision Action -> Ranking Example
+class DecisionProblemStateActionsRankingExample : public CompositeFunction
+{
+public:
+  DecisionProblemStateActionsRankingExample(FunctionPtr stateActionPerception = FunctionPtr())
+    : stateActionPerception(stateActionPerception) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t state = builder.addInput(decisionProblemStateClass, T("state"));
+    size_t supervision = builder.addInput(anyType, T("supervision"));
+    size_t perceptions = builder.addFunction(new DecisionProblemStateActionsPerception(stateActionPerception), state);
+    if (stateActionPerception->getOutputType())
+    {
+      size_t costs = builder.addFunction(new DecisionProblemStateActionsRankingCostsFunction(), state, supervision);
+      builder.addFunction(createObjectFunction(pairClass(vectorClass(stateActionPerception->getOutputType()), denseDoubleVectorClass())), perceptions, costs);
+    }
+  }
+
+protected:
+  FunctionPtr stateActionPerception;
+};
+
+////////////////////////////////////////////
+
+class GoActionIdentifierFeature : public FeatureGenerator
+{
+public:
+  GoActionIdentifierFeature(size_t size = 19)
+    : size(size) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return goActionClass;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("positions"));
+    for (size_t i = 0; i < size; ++i)
+      for (size_t j = 0; j < size; ++j)
+      {
+        String shortName;
+        shortName += (juce::tchar)('a' + i);
+        shortName += (juce::tchar)('a' + j);
+        res->addElement(context, String((int)i) + T(", ") + String((int)j), String::empty, shortName);
+      }
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    GoActionPtr action = inputs[0].getObjectAndCast<GoAction>();
+    callback.sense(action->getY() * size + action->getX(), 1.0);
+  }
+
+protected:
+  size_t size;
+};
+
+class GoStateActionFeatures : public CompositeFunction
+{
+public:
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? goActionClass : goStateClass;}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t state = builder.addInput(goStateClass, T("state"));
+    size_t action = builder.addInput(goActionClass, T("action"));
+    
+    builder.addFunction(new GoActionIdentifierFeature(), action);
+  }
+};
+
+////////////////////////////////////////////
+
+
 class GoStateComponent : public MatrixComponent
 {
 public:
@@ -33,12 +178,10 @@ public:
 };
 
 
-// GoState,AvailableActions,SelectedAction -> (Container[DoubleVector], Container[Double])
-
 class GoSandBox : public WorkUnit
 {
 public:
-  GoSandBox() : maxCount(0), numFolds(7)
+  GoSandBox() : maxCount(0), numFolds(7), learningParameters(new StochasticGDParameters(constantIterationFunction(1.0)))
   {
   }
 
@@ -53,6 +196,48 @@ public:
     return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
   }
 
+  ContainerPtr convertGamesToRankingExamples(ExecutionContext& context, const ContainerPtr& games) const
+  {
+    FunctionPtr createRankingExampleFunction = new DecisionProblemStateActionsRankingExample(new GoStateActionFeatures());
+    if (!createRankingExampleFunction->initialize(context, goStateClass, goActionClass))
+      return ContainerPtr();
+
+    ObjectVectorPtr res = new ObjectVector(createRankingExampleFunction->getOutputType(), 0);
+    size_t numGames = games->getNumElements();
+
+    for (size_t i = 0; i < numGames; ++i)
+    {
+      PairPtr game = games->getElement(i).getObjectAndCast<Pair>();
+
+      DecisionProblemStatePtr state = game->getFirst().getObject()->cloneAndCast<DecisionProblemState>();
+      const ContainerPtr& trajectory = game->getSecond().getObjectAndCast<Container>();
+      size_t n = trajectory->getNumElements();
+      for (size_t j = 0; j < n; ++j)
+      {
+        Variable action = trajectory->getElement(j);
+
+        res->append(createRankingExampleFunction->compute(context, state, action));
+
+        double reward;
+        state->performTransition(action, reward);
+      }
+    }
+
+    return res;
+  }
+
+  bool evaluate(ExecutionContext& context, const FunctionPtr& perceptionFunction, const FunctionPtr& rankingMachine, const ContainerPtr& games)
+  {
+    
+  }
+
+  bool learnOnline(ExecutionContext& context, const FunctionPtr& rankingMachine, const ContainerPtr& trainingGames, const ContainerPtr& testingGames)
+  {
+    
+
+    return true;
+  }
+
   virtual Variable run(ExecutionContext& context)
   {
     // create problem
@@ -62,7 +247,36 @@ public:
     ContainerPtr games = loadGames(context, gamesDirectory, maxCount);
     if (!games)
       return false;
+    ContainerPtr trainingGames = games->invFold(0, numFolds);
+    ContainerPtr validationGames = games->fold(0, numFolds);
+    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
+                                String((int)validationGames->getNumElements()) + T(" validation games"));
 
+    // make ranking examples
+    ContainerPtr trainingExamples = convertGamesToRankingExamples(context, trainingGames);
+    ContainerPtr validationExamples = convertGamesToRankingExamples(context, validationGames);
+    if (!trainingExamples || !validationExamples)
+      return false;
+    context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
+                                String((int)validationExamples->getNumElements()) + T(" validation examples"));
+
+    context.resultCallback(T("training examples"), trainingExamples);
+    context.resultCallback(T("validation examples"), validationExamples);
+
+    // create ranking machine
+    if (!learningParameters)
+    {
+      context.errorCallback(T("No learning parameters"));
+      return false;
+    }
+    FunctionPtr rankingMachine = linearRankingMachine(learningParameters);
+    if (!rankingMachine)
+      return false;
+
+    return true;
+   // return learnOnline(context, rankingMachine, trainingExamples, validationExamples);
+
+    /*
     // check validity
     context.enterScope(T("Check validity"));
     bool ok = true;
@@ -79,12 +293,9 @@ public:
     }
     context.leaveScope(ok);
     return true;
+    */
 
-    /*
-    ContainerPtr trainingGames = games->invFold(0, numFolds);
-    ContainerPtr testingGames = games->fold(0, numFolds);
-    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") + String((int)testingGames->getNumElements()) + T(" testing games"));*/
-
+  
 #if 0
     if (!fileToParse.existsAsFile())
     {
@@ -125,6 +336,7 @@ private:
   File gamesDirectory;
   size_t maxCount;
   size_t numFolds;
+  LearnerParametersPtr learningParameters;
 };
 
 }; /* namespace lbcpp */

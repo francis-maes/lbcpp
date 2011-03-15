@@ -28,10 +28,12 @@ public:
   }
   CompositeOnlineLearner() {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
+    bool ok = true;
     for (size_t i = 0; i < learners.size(); ++i)
-      learners[i]->startLearning(context, function, maxIterations, trainingData, validationData);
+      ok &= learners[i]->startLearning(context, function, maxIterations, trainingData, validationData);
+    return ok;
   }
 
   virtual void startLearningIteration(size_t iteration)
@@ -69,12 +71,17 @@ public:
   size_t getNumLearners() const
     {return learners.size();}
 
-  void startLearningAndAddLearner(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  bool startLearningAndAddLearner(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     const OnlineLearnerPtr& onlineLearner = function->getOnlineLearner();
     jassert(onlineLearner);
-    learners.push_back(onlineLearner);
-    onlineLearner->startLearning(context, function, maxIterations, trainingData, validationData);
+    if (onlineLearner->startLearning(context, function, maxIterations, trainingData, validationData))
+    {
+      learners.push_back(onlineLearner);
+      return true;
+    }
+    else
+      return false;
   }
 
   Variable finishLearningIterationAndRemoveFinishedLearners(size_t iteration)
