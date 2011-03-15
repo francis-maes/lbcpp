@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class AddBiasLearnableFunction : public LearnableFunction
+class AddBiasLearnableFunction : public Function
 {
 public:
   AddBiasLearnableFunction(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, double bias = 0.0)

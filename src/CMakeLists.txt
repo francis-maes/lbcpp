@@ -486,16 +486,26 @@ SET(LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES
 
 SET(LBCPP_LEARNING_NUMERICAL_SOURCES
   Learning/Numerical/Numerical.cpp
-  Learning/Numerical/AddBiasLearnableFunction.h
-  Learning/Numerical/AddBiasBatchLearner.h
-  Learning/Numerical/GradientDescentOnlineLearner.h
-  Learning/Numerical/StochasticGDOnlineLearner.h
-  Learning/Numerical/PerEpisodeGDOnlineLearner.h
-  Learning/Numerical/LinearLearnableFunction.h
-  Learning/Numerical/MultiLinearLearnableFunction.h
   Learning/Numerical/LinearLearningMachine.h
   Learning/Numerical/NumericalLearningLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/NumericalLearningLibrary.cpp
+)
+
+SET(LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES
+  Learning/Numerical/AddBiasLearnableFunction.h
+  Learning/Numerical/LinearLearnableFunction.h
+  Learning/Numerical/MultiLinearLearnableFunction.h
+  Learning/Numerical/RankingLearnableFunction.h
+)
+
+SET(LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES
+  Learning/Numerical/GradientDescentOnlineLearner.h
+  Learning/Numerical/StochasticGDOnlineLearner.h
+  Learning/Numerical/PerEpisodeGDOnlineLearner.h
+)
+
+SET(LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES
+  Learning/Numerical/AddBiasBatchLearner.h
 )
 
 SET(LBCPP_LEARNING_DECISION_TREE_SOURCES
@@ -688,7 +698,12 @@ SET(LBCPP_SOURCES
       ${LBCPP_LEARNING_LOSS_FUNCTION_DISCRIMINATIVE_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES}
       ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES}
+
     ${LBCPP_LEARNING_NUMERICAL_SOURCES}
+      ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES}
+      ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES}
+      ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES}
+    
     ${LBCPP_LEARNING_DECISION_TREE_SOURCES}
       ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES}
 
@@ -763,6 +778,9 @@ SOURCE_SUB_GROUP2(Learning LossFunction Discriminative FILES ${LBCPP_LEARNING_LO
 SOURCE_SUB_GROUP2(Learning LossFunction MultiClass FILES ${LBCPP_LEARNING_LOSS_FUNCTION_MULTI_CLASS_SOURCES})
 SOURCE_SUB_GROUP2(Learning LossFunction Ranking FILES ${LBCPP_LEARNING_LOSS_FUNCTION_RANKING_SOURCES})
 SOURCE_SUB_GROUP(Learning Numerical FILES ${LBCPP_LEARNING_NUMERICAL_SOURCES})
+SOURCE_SUB_GROUP2(Learning Numerical LearnableFunction FILES ${LBCPP_LEARNING_NUMERICAL_LEARNABLE_FUNCTION_SOURCES})
+SOURCE_SUB_GROUP2(Learning Numerical OnlineLearner FILES ${LBCPP_LEARNING_NUMERICAL_ONLINE_SOURCES})
+SOURCE_SUB_GROUP2(Learning Numerical BatchLearner FILES ${LBCPP_LEARNING_NUMERICAL_BATCH_SOURCES})
 SOURCE_SUB_GROUP(Learning DecisionTree FILES ${LBCPP_LEARNING_DECISION_TREE_SOURCES})
 SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES})
 

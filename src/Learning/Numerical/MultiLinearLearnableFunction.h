@@ -20,9 +20,6 @@ namespace lbcpp
 class MultiLinearLearnableFunction : public NumericalLearnableFunction
 {
 public:
-  const CompositeDoubleVectorPtr& getParameters() const
-    {return parameters.staticCast<CompositeDoubleVector>();}
-
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -44,18 +41,7 @@ public:
     }
 
     // make parameters class
-    EnumerationPtr parametersEnumeration = cartesianProductEnumerationEnumeration(outputsEnumeration, featuresEnumeration);
-/*
-    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("MultiLinearParameters"));
-    //size_t numFeatures = featuresEnumeration->getNumElements();
-    size_t numOutputs = outputsEnumeration->getNumElements();
-    for (size_t i = 0; i < numOutputs; ++i)
-    {
-      EnumerationElementPtr output = outputsEnumeration->getElement(i);
-      parametersEnumeration->addElementsWithPrefix(context, featuresEnumeration, output->getName() + T("."), output->getShortName() + T("."));
-    }
-*/
-    parametersClass = compositeDoubleVectorClass(parametersEnumeration);
+    parametersEnumeration = cartesianProductEnumerationEnumeration(outputsEnumeration, featuresEnumeration);
     // output and learner
     outputName = T("prediction");
     outputShortName = T("p");
@@ -65,7 +51,6 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const CompositeDoubleVectorPtr& parameters = getParameters();
     const DoubleVectorPtr& inputVector = inputs[0].getObjectAndCast<DoubleVector>();
 
     if (!parameters || !parameters->getNumSubVectors() || !inputVector)
@@ -84,21 +69,52 @@ public:
     return res;
   }
 
-  virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const
+  virtual DoubleVectorPtr createParameters() const
   {
-    CompositeDoubleVectorPtr compositeTarget = target.dynamicCast<CompositeDoubleVector>();
-    if (!target || !compositeTarget->getNumSubVectors())
-    {
-      compositeTarget = new CompositeDoubleVector(parametersClass);
-      createCompositeSubVectors(compositeTarget);
-      target = compositeTarget;
-    }
+    CompositeDoubleVectorPtr res = new CompositeDoubleVector(compositeDoubleVectorClass(parametersEnumeration));
+  
+    size_t n = outputsEnumeration->getNumElements();
+    size_t numFeatures = featuresEnumeration->getNumElements();
+    jassert(numFeatures);
+    ClassPtr subVectorsClass = denseDoubleVectorClass(featuresEnumeration);
+    for (size_t i = 0; i < n; ++i)
+      res->appendSubVector(i * numFeatures, new DenseDoubleVector(subVectorsClass));
+    return res;
+  }
 
+  virtual DoubleVectorPtr getParameters() const
+    {return parameters;}
+
+  virtual void setParameters(const DoubleVectorPtr& parameters)
+  {
+    CompositeDoubleVectorPtr params = parameters.dynamicCast<CompositeDoubleVector>();
+    jassert(params);
+    this->parameters = params;
+  }
+
+  virtual void addGradient(const Variable& lossDerivativeOrGradient, const Variable* inputs, const DoubleVectorPtr& target, double weight) const
+  {
     const DenseDoubleVectorPtr& lossGradient = lossDerivativeOrGradient.getObjectAndCast<DenseDoubleVector>();
     size_t n = lossGradient->getNumElements();
-    jassert(compositeTarget && compositeTarget->getNumSubVectors() == n);
-    for (size_t i = 0; i < n; ++i)
-      input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
+    const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
+
+    DenseDoubleVectorPtr denseTarget = target.dynamicCast<DenseDoubleVector>();
+    if (denseTarget)
+    {
+      for (size_t i = 0; i < n; ++i)
+        input->addWeightedTo(denseTarget, i * featuresEnumeration->getNumElements(), weight * lossGradient->getValue(i));
+      return;
+    }
+
+    CompositeDoubleVectorPtr compositeTarget = target.dynamicCast<CompositeDoubleVector>();
+    if (compositeTarget)
+    {
+      for (size_t i = 0; i < n; ++i)
+        input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
+      return;
+    }
+
+    jassert(false);
   }
  
   virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const
@@ -118,21 +134,23 @@ public:
     return true;
   }
 
+  virtual double getInputsSize(const Variable* inputs) const
+    {return (double)inputs[0].getObjectAndCast<DoubleVector>()->l0norm();}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
+  {
+    //NumericalLearnableFunction::clone(context, target);
+    target.staticCast<MultiLinearLearnableFunction>()->parameters = parameters->cloneAndCast<CompositeDoubleVector>(context);
+  }
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
+  friend class MultiLinearLearnableFunctionClass;
+
+  CompositeDoubleVectorPtr parameters;
   EnumerationPtr featuresEnumeration;
   EnumerationPtr outputsEnumeration;
-
-  void createCompositeSubVectors(const CompositeDoubleVectorPtr& composite) const
-  {
-    size_t n = outputsEnumeration->getNumElements();
-    size_t numFeatures = featuresEnumeration->getNumElements();
-    jassert(numFeatures);
-    ClassPtr subVectorsClass = denseDoubleVectorClass(featuresEnumeration);
-    for (size_t i = 0; i < n; ++i)
-      composite->appendSubVector(i * numFeatures, new DenseDoubleVector(subVectorsClass));
-  }
 };
 
 }; /* namespace lbcpp */

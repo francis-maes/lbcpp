@@ -9,12 +9,13 @@
 #ifndef LBCPP_DECISION_TREE_R_TREE_FUNCTION_H_
 # define LBCPP_DECISION_TREE_R_TREE_FUNCTION_H_
 
-# include <lbcpp/Learning/LearnableFunction.h>
+//# include <lbcpp/Learning/LearnableFunction.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
 
-class RTreeFunction : public LearnableFunction
+class RTreeFunction : public Function
 {
 public:
   RTreeFunction(size_t numTrees,
@@ -24,7 +25,7 @@ public:
 
   /* RTreeFunction */
   void setTrees(ObjectPtr trees)
-    {parameters = trees;}
+    {this->trees = trees;}
 
   size_t getNumTrees() const
     {return numTrees;}
@@ -52,6 +53,7 @@ public:
 protected:
   friend class RTreeFunctionClass;
   
+  ObjectPtr trees;
   size_t numTrees;
   size_t numAttributeSamplesPerSplit;
   size_t minimumSizeForSplitting;

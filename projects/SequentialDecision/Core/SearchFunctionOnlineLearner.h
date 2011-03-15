@@ -66,8 +66,10 @@ public:
     double exampleLoss = 0.0;
     rankingLoss->computeRankingLoss(nodeScores, nodeCosts, &exampleLoss, &rankingLossGradient);
 
+    jassert(false); // broken
+#if 0
     // apply episode gradient
-    DoubleVectorPtr parametersGradient;
+    DoubleVectorPtr parametersGradient = scoringFunction->createParameters();
     double gradientNorm = 0.0;
     for (size_t i = 0; i < n; ++i)
     {
@@ -84,6 +86,7 @@ public:
       onlineLearner->addComputedGradient(scoringFunction, parametersGradient, exampleLoss);
 
     this->gradientNorm.push(sqrt(gradientNorm));
+#endif // 0
   }
 
 #if 0

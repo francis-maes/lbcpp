@@ -4,10 +4,6 @@
 
   <include file="lbcpp/Learning/LearnableFunction.h"/>
 
-  <class name="LearnableFunction" base="Function" abstract="yes">
-    <variable type="Class" name="parametersClass"/>
-    <variable type="Object" name="parameters"/>
-  </class>
   <class name="LearnerParameters" base="Object" abstract="yes"/>
   
   <import name="BatchLearner"/>

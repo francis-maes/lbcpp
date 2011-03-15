@@ -19,23 +19,44 @@
 namespace lbcpp
 {
 
-class NumericalLearnableFunction : public LearnableFunction
+class NumericalLearnableFunction : public Function
 {
 public:
-  const DoubleVectorPtr& getParameters() const
-    {return parameters.staticCast<DoubleVector>();}
+  const EnumerationPtr& getParametersEnumeration() const
+    {return parametersEnumeration;}
 
-  DoubleVectorPtr& getParameters()
-    {return *(DoubleVectorPtr* )&parameters;}
+  virtual DoubleVectorPtr createParameters() const
+    {return new DenseDoubleVector(parametersEnumeration, doubleType);}
 
-  virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const = 0;
+  DoubleVectorPtr getOrCreateParameters()
+  {
+    DoubleVectorPtr res = getParameters();
+    if (!res)
+    {
+      res = createParameters();
+      setParameters(res);
+    }
+    return res;
+  }
+
+  virtual DoubleVectorPtr getParameters() const = 0;
+  virtual void setParameters(const DoubleVectorPtr& parameters) = 0;
+
+  virtual void addGradient(const Variable& lossDerivativeOrGradient, const Variable* inputs, const DoubleVectorPtr& target, double weight) const = 0;
   virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const = 0;
+
+  virtual double getInputsSize(const Variable* inputs) const = 0;
 
   // Function
   virtual String getOutputPostFix() const
     {return T("Prediction");}
 
   lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class NumericalLearnableFunctionClass;
+
+  EnumerationPtr parametersEnumeration;
 };
 
 typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnableFunctionPtr;
@@ -124,9 +145,10 @@ protected:
 typedef ReferenceCountedObjectPtr<StochasticGDParameters> StochasticGDParametersPtr;
 
 // atomic learnable functions
-extern LearnableFunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
+extern FunctionPtr addBiasLearnableFunction(BinaryClassificationScore scoreToOptimize, double initialBias = 0.0);
 extern NumericalLearnableFunctionPtr linearLearnableFunction();
 extern NumericalLearnableFunctionPtr multiLinearLearnableFunction();
+extern NumericalLearnableFunctionPtr rankingLearnableFunction(NumericalLearnableFunctionPtr scoringFunction);
 
 // batch learners
 extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);

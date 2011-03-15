@@ -253,8 +253,10 @@ public:
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
 
     // make ranking examples
+    context.enterScope(T("Converting games to ranking examples ..."));
     ContainerPtr trainingExamples = convertGamesToRankingExamples(context, trainingGames);
     ContainerPtr validationExamples = convertGamesToRankingExamples(context, validationGames);
+    context.leaveScope(Variable());
     if (!trainingExamples || !validationExamples)
       return false;
     context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +

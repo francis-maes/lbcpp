@@ -32,7 +32,7 @@
   </class>
 
   <!-- Low-level Learnable Functions -->
-  <class name="AddBiasLearnableFunction" base="LearnableFunction">
+  <class name="AddBiasLearnableFunction" base="Function">
     <constructor arguments="BinaryClassificationScore scoreToOptimize, double initialBias"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="bias"/>
@@ -41,15 +41,24 @@
     <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
-  
-  <class name="NumericalLearnableFunction" base="LearnableFunction" abstract="yes"/>
+
+  <class name="NumericalLearnableFunction" base="Function" abstract="yes">
+    <variable type="Enumeration" name="parametersEnumeration"/>
+  </class>
   
   <class name="LinearLearnableFunction" base="NumericalLearnableFunction">
     <constructor/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 
   <class name="MultiLinearLearnableFunction" base="NumericalLearnableFunction">
     <constructor/>
+    <variable type="CompositeDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
+  <class name="RankingLearnableFunction" base="NumericalLearnableFunction">
+    <constructor arguments="NumericalLearnableFunctionPtr scoringFunction"/>
+    <variable type="NumericalLearnableFunction" name="scoringFunction"/>
   </class>
 
   <!-- High-level Learnable Functions -->
@@ -72,7 +81,7 @@
     <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
   </class>
 
-  <class name="LinearRankingMachine" base="MapContainerFunction" shortName="linearRanker">
+  <class name="LinearRankingMachine" base="SupervisedNumericalFunction" shortName="linearRanker">
     <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
   </class>
 

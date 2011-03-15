@@ -39,11 +39,11 @@ public:
     this->function = function;
     this->maxIterations = maxIterations;
     failure = false;
+
+    jassert(function->getNumInputs() >= 2);
+    TypePtr supervisionType = function->getInputVariable(1)->getType();
     if (!lossFunction)
     {
-      jassert(function->getNumInputs() >= 2);
-      TypePtr supervisionType = function->getInputVariable(1)->getType();
-
       // create default loss function
       if (supervisionType == booleanType || supervisionType == probabilityType)
         lossFunction = hingeDiscriminativeLossFunction();
@@ -59,7 +59,7 @@ public:
         return false;
       }
     }
-    return true;
+    return lossFunction->initialize(context, function->getOutputType(), supervisionType);
   }
 
   virtual void learningStep(const Variable* inputs, const Variable& output) = 0;
@@ -71,20 +71,7 @@ public:
 
     jassert(function == this->function);
     learningStep(inputs, output);
-    if (inputs[0].dynamicCast<Container>())
-    {
-      // composite inputs (e.g. ranking)
-      const ContainerPtr& inputContainer = inputs[0].getObjectAndCast<Container>(context);
-      jassert(inputContainer->getElementsType()->inheritsFrom(doubleVectorClass()));
-      size_t n = inputContainer->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-        updateNumberOfActiveFeatures(inputContainer->getElement(i).getObjectAndCast<DoubleVector>());
-    }
-    else
-    {
-      // simple input
-      updateNumberOfActiveFeatures(inputs[0].getObjectAndCast<DoubleVector>());
-    }
+    updateMeanInputsSize(inputs);
   }
 
   virtual void startLearningIteration(size_t iteration)
@@ -104,14 +91,13 @@ public:
       return true;
     }
 
-    const NumericalLearnableFunctionPtr& numericalFunction = function.staticCast<NumericalLearnableFunction>();
-    const DoubleVectorPtr& parameters = numericalFunction->getParameters();
-    double l2norm = parameters->l2norm();
+    DoubleVectorPtr parameters = function->getParameters();
+    double l2norm = (parameters ? parameters->l2norm() : 0.0);
 
     double mean = lossValue.getMean();
     context->resultCallback(T("Empirical Risk"), mean);
     context->resultCallback(T("Mean Active Features"), numberOfActiveFeatures.getMean());
-    context->resultCallback(T("Num Params"), parameters->l0norm());
+    context->resultCallback(T("Num Params"), (parameters ? parameters->l0norm() : 0));
     context->resultCallback(T("Params Norm"), l2norm);
     context->resultCallback(T("Epoch"), epoch);
     lossValue.clear();
@@ -133,21 +119,9 @@ public:
   }
 
   virtual void finishLearning()
-    {function = FunctionPtr();}
+    {function = NumericalLearnableFunctionPtr();}
 
-  const NumericalLearnableFunctionPtr& getNumericalLearnableFunction() const
-  {
-    if (function.dynamicCast<NumericalLearnableFunction>())
-      return function.staticCast<NumericalLearnableFunction>();
-    MapContainerFunctionPtr mapFunction = function.dynamicCast<MapContainerFunction>();
-    if (mapFunction)
-      return mapFunction->getSubFunction().staticCast<NumericalLearnableFunction>(); // in case of ranking machines
-    
-    jassert(false);
-    static NumericalLearnableFunctionPtr nil;
-    return nil;
-  }
-
+/*
   void addComputedGradient(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double lossValue)
   {
     double weight = -computeLearningRate();
@@ -156,14 +130,14 @@ public:
     ++epoch;
     updateNumberOfActiveFeatures(gradient);
     this->lossValue.push(lossValue);
-  }
+  }*/
 
 protected:
   friend class GradientDescentOnlineLearnerClass;
 
   ExecutionContext* context;
   size_t maxIterations;
-  FunctionPtr function;
+  NumericalLearnableFunctionPtr function;
 
   ScalarVariableRecentMean numberOfActiveFeatures;
   ScalarVariableMean lossValue;
@@ -173,15 +147,13 @@ protected:
   size_t epoch;
   bool failure;
 
-  void gradientDescentStep(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double weight = 1.0)
+  void gradientDescentStep(const DoubleVectorPtr& gradient, double weight = 1.0)
   {
-    DoubleVectorPtr& parameters = function->getParameters();
-    if (!parameters)
-      parameters = new DenseDoubleVector(function->getParametersClass());
+    DoubleVectorPtr parameters = function->getOrCreateParameters();
     gradient->addWeightedTo(parameters, 0, -computeLearningRate() * weight);
   }
 
-  void computeAndAddGradient(const NumericalLearnableFunctionPtr& function, const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight)
+  void computeAndAddGradient(const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight)
   {
     if (failure || !inputs[1].exists())
       return; // failed or no supervision
@@ -195,7 +167,9 @@ protected:
       failure = true;
       return;
     }
-    function->addGradient(lossGradient, inputs[0].getObjectAndCast<DoubleVector>(), target, weight);
+    if (!target)
+      target = function->createParameters();
+    function->addGradient(lossGradient, inputs, target, weight);
     ++epoch;
     lossValue.push(exampleLossValue);
   }
@@ -211,14 +185,14 @@ protected:
     return res;
   }
 
-  void updateNumberOfActiveFeatures(const DoubleVectorPtr& input)
+  void updateMeanInputsSize(const Variable* inputs)
   {
-    if (normalizeLearningRate && input)
+    if (normalizeLearningRate)
     {
-      // computing the l0norm() may be long, so we make more and more sparse sampling of this quantity
+      // computing the inputsSize may be long, so we make more and more sparse sampling of this quantity
       if (!numberOfActiveFeatures.isMemoryFull() || (epoch % 20 == 0))
       {
-        double norm = input->l0norm();
+        double norm = function->getInputsSize(inputs);
         if (norm)
           numberOfActiveFeatures.push(norm);
       }
