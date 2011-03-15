@@ -19,11 +19,23 @@ class BinaryClassificationConfusionMatrix : public ScoreObject
 {
 public:
   BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& otherMatrix);
-  BinaryClassificationConfusionMatrix();
+  BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 
   // ScoreObject
   virtual double getScoreToMinimize() const
-    {return 1.0 - computeF1Score();}
+  {
+    switch (scoreToOptimize) {
+      case binaryClassificationAccuracyScore:
+        return 1.0 - computeAccuracy();
+      case binaryClassificationF1Score:
+        return 1.0 - computeF1Score();
+      case binaryClassificationMCCScore:
+        return 1.0 - computeMatthewsCorrelation();
+      default:
+        jassertfalse;
+    }
+    return DBL_MAX;
+  }
   
   void finalize();
   
@@ -75,6 +87,8 @@ public:
 
 protected:
   friend class BinaryClassificationConfusionMatrixClass;
+
+  BinaryClassificationScore scoreToOptimize;
 
   double precision;
   double recall;

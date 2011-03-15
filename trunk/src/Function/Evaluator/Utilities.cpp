@@ -28,8 +28,9 @@ BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const B
   finalize();
 }
 
-BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix()
-  : precision(0.0),
+BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToOptimize)
+  : scoreToOptimize(scoreToOptimize),
+    precision(0.0),
     recall(0.0),
     f1score(0.0),
     matthewsCorrelation(0.0),

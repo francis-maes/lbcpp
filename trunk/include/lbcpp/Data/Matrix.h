@@ -30,6 +30,22 @@ public:
   virtual Variable getElement(size_t row, size_t column) const = 0;
   virtual void setElement(size_t row, size_t column, const Variable& value) = 0;
 
+  /* Object */
+  String toString() const
+  {
+    String res;
+    for (size_t i = 0; i < getNumRows(); ++i)
+    {
+      for (size_t j = 0; j < getNumColumns(); ++j)
+        res += getElement(i, j).toString() + T(" ");
+      res += T("\n");
+    }
+    return res;
+  }
+  
+  String toShortString() const
+    {return String((int)getNumRows()) + T(" x ") + String((int)getNumColumns()) + T(" matrix");}
+
 protected:
   size_t makeIndex(size_t row, size_t column) const
     {return row * getNumColumns() + column;}

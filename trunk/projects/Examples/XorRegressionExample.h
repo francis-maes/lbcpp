@@ -58,7 +58,8 @@ public:
     size_t features = builder.addFunction(new XorFeatureGenerator(), input1, input2, T("features"));
 
     StochasticGDParametersPtr params = new StochasticGDParameters();
-    params->setEvaluator(regressionEvaluator());
+    jassertfalse;
+    //params->setEvaluator(regressionEvaluator()); FIXME
     builder.addFunction(linearLearningMachine(params), features, supervision);
   }
 };

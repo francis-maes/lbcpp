@@ -177,7 +177,7 @@ inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& p
 {
   size_t n = positions.size();
 
-  SymmetricMatrixPtr res = new SymmetricMatrix(angstromDistanceType, n);
+  SymmetricMatrixPtr res = new DoubleSymmetricMatrix(angstromDistanceType, n, 0.0);
   for (size_t i = 0; i < n; ++i)
   {
     res->setElement(i, i, Variable(0.0, angstromDistanceType));

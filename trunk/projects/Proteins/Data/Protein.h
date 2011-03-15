@@ -31,6 +31,11 @@ enum ProteinTarget
   saTarget,
   sa20Target,
   drTarget,
+  cma8Target,
+  cmb8Target,
+  dmaTarget,
+  dmbTarget,
+  dsbTarget
 
   // todo: continue
 };

@@ -18,7 +18,7 @@ namespace lbcpp
 /*
 ** ScoreObject
 */
-class ScoreObject : public Object
+class ScoreObject : public NameableObject
 {
 public:
   virtual double getScoreToMinimize() const = 0;
@@ -147,7 +147,7 @@ enum BinaryClassificationScore
 };
 
 // Classification
-extern SupervisedEvaluatorPtr binaryClassificationEvaluator();
+extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 extern SupervisedEvaluatorPtr rocAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
 
 extern SupervisedEvaluatorPtr classificationEvaluator();

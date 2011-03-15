@@ -22,11 +22,20 @@ class ProteinPredictorParameters : public Object
 {
 public:
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {jassertfalse;} // should be = 0
 
   // Protein -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residueVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  virtual FunctionPtr createResiduePairVectorPerception() const
+  {
+    FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residuePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -47,6 +56,12 @@ public:
 
   virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
     {return mapContainerFunction(binaryClassifier(target));}
+  
+  virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
+    {return mapContainerFunction(binaryClassifier(target));}
+  
+  virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
+    {return mapContainerFunction(regressor(target));}
 
   // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
@@ -56,6 +71,8 @@ public:
       res = labelVectorPredictor(target);
     else if (target == sa20Target || target == drTarget)
       res = probabilityVectorPredictor(target);
+    else if (target == dsbTarget)
+      res = contactMapPredictor(target); // to add: 
     else
     {
       jassert(false);

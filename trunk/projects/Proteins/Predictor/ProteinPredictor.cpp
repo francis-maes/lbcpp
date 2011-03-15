@@ -26,6 +26,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
   size_t residuePerception = builder.addFunction(parameters->createResidueVectorPerception(), input);
+  size_t residuePairPerception; // = builder.addFunction(parameters->createResiduePairVectorPerception(), input); // FIXME JULIEN
   
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);
@@ -41,6 +42,8 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)) || // label sequences
         elementsType->inheritsFrom(probabilityType))                                     // probability sequences
       targetPredictorInput = residuePerception;                                          // -> residue perceptions
+    else if (elementsType->inheritsFrom(symmetricMatrixClass(probabilityType)))          // contact maps
+      targetPredictorInput = residuePairPerception;                                      // -> residue pair perception
     else
       jassert(false);
 
