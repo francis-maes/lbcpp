@@ -189,6 +189,34 @@ public:
     return res;
   }
 
+  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
+                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
+  {
+    const RankingLossFunctionPtr& rankingLoss = lossFunction.staticCast<RankingLossFunction>();
+    const ObjectVectorPtr& features = inputs[0].getObjectAndCast<ObjectVector>();
+    const DenseDoubleVectorPtr& scores = prediction.getObjectAndCast<DenseDoubleVector>();
+    const DenseDoubleVectorPtr& costs = inputs[1].getObjectAndCast<DenseDoubleVector>();
+    jassert(costs && costs->getNumElements() == scores->getNumElements());
+    size_t n = scores->getNumElements();
+    
+    exampleLossValue = 0.0;
+    DenseDoubleVectorPtr lossGradient;
+    rankingLoss->computeRankingLoss(scores, costs, &exampleLossValue, &lossGradient, 1.0);
+    jassert(lossGradient);
+
+    if (!isNumberValid(exampleLossValue))
+      return false;
+
+    const NumericalLearnableFunctionPtr& learnableFunction = function.staticCast<NumericalLearnableFunction>();
+    for (size_t i = 0; i < n; ++i)
+    {
+      DoubleVectorPtr alternativeFeatures = features->getElement(i).getObjectAndCast<DoubleVector>();
+      double alternativeLoss = lossGradient->getElement(i).getDouble();
+      learnableFunction->addGradient(alternativeLoss, alternativeFeatures, target, weight);
+    }
+    return true;
+  }
+
 protected:
   LearnerParametersPtr learnerParameters;
 };

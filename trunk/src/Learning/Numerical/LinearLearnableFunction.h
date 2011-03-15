@@ -57,8 +57,7 @@ public:
     input->addWeightedTo(target, 0, weight * (lossDerivativeOrGradient.exists() ? lossDerivativeOrGradient.getDouble() : 1.0));
   }
 
-  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
-                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
+  virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const
   {
     ScalarFunctionPtr scalarFunction = lossFunction.dynamicCast<ScalarFunction>();
     jassert(scalarFunction);
@@ -66,11 +65,12 @@ public:
     const Variable& supervision = inputs[1];
 
     double lossDerivative = 0.0;
-    scalarFunction->computeScalarFunction(prediction.getDouble(), &supervision, &exampleLossValue, &lossDerivative);
-    if (!isNumberValid(exampleLossValue) || !isNumberValid(lossDerivative))
+    lossValue = 0.0;
+    scalarFunction->computeScalarFunction(prediction.getDouble(), &supervision, &lossValue, &lossDerivative);
+    if (!isNumberValid(lossValue) || !isNumberValid(lossDerivative))
       return false;
 
-    addGradient(lossDerivative, input, target, weight);
+    lossDerivativeOrGradient = lossDerivative;
     return true;
   }
 

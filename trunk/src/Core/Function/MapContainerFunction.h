@@ -117,11 +117,16 @@ public:
     }
   }
 
+  const FunctionPtr& getSubFunction() const
+    {return function;}
+
 protected:
   friend class MapContainerFunctionClass;
 
   FunctionPtr function;
 };
+
+typedef ReferenceCountedObjectPtr<MapContainerFunction> MapContainerFunctionPtr;
 
 }; /* namespace lbcpp */
 

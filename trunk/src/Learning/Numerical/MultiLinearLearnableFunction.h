@@ -100,9 +100,8 @@ public:
     for (size_t i = 0; i < n; ++i)
       input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
   }
-
-  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction,
-                                      double& exampleLossValue, DoubleVectorPtr& target, double weight) const
+ 
+  virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const
   {
     ScalarVectorFunctionPtr scalarVectorFunction = lossFunction.dynamicCast<ScalarVectorFunction>();
     jassert(scalarVectorFunction);
@@ -111,11 +110,11 @@ public:
     const DenseDoubleVectorPtr& predictedScores = prediction.getObjectAndCast<DenseDoubleVector>(); 
 
     DenseDoubleVectorPtr lossGradient = new DenseDoubleVector(getOutputType());
-    scalarVectorFunction->computeScalarVectorFunction(predictedScores, &supervision, &exampleLossValue, &lossGradient, 1.0);
-    if (!isNumberValid(exampleLossValue) || !isNumberValid(lossGradient->l2norm()))
+    scalarVectorFunction->computeScalarVectorFunction(predictedScores, &supervision, &lossValue, &lossGradient, 1.0);
+    if (!isNumberValid(lossValue) || !isNumberValid(lossGradient->l2norm()))
       return false;
 
-    addGradient(lossGradient, input, target, weight);
+    lossDerivativeOrGradient = lossGradient;
     return true;
   }
 
