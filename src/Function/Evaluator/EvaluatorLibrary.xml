@@ -4,7 +4,7 @@
   <include file="lbcpp/Function/Evaluator.h"/>
 
   <!-- ScoreObject Base Classes -->
-  <class name="ScoreObject" base="Object" abstract="yes"/>
+  <class name="ScoreObject" base="NameableObject" abstract="yes"/>
   <class name="DummyScoreObject" base="ScoreObject"/>
   <class name="CompositeScoreObject" base="ScoreObject">
     <variable type="ObjectVector[ScoreObject]" name="scores"/>
@@ -26,6 +26,7 @@
 
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="precision"/>
     <variable type="Double" name="recall"/>
     <variable type="Double" name="f1score"/>
@@ -60,7 +61,8 @@
 
   <!-- Binary Classification -->
   <class name="BinaryClassificationEvaluator" base="SupervisedEvaluator">
-    <constructor/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
   
   <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">

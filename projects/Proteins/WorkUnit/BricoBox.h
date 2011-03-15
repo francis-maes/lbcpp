@@ -250,5 +250,24 @@ protected:
   
   File traceFile;
 };
+
+class CheckSymmetricMatrixWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    SymmetricMatrixPtr mat = new DoubleSymmetricMatrix(doubleType, 5, 0.0);
+    
+    size_t n = mat->getNumElements();
+    if (n != 15)
+      context.errorCallback(T("CheckSymmetricMatrixWorkUnit::run"), T("Wrong number of elements: ") + String((int)n));
+
+    for (size_t i = 0; i < n; ++i)
+      mat->setElement(i, (double)i);
+    
+    context.informationCallback(mat->toString());
+    return true;
+  }
+};
   
 };

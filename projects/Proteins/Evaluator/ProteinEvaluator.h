@@ -74,8 +74,8 @@ public:
   {
     addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()));
     addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()));
-    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator()));
-    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator()));
+    addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)));
+    addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)));
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
   }
   
@@ -111,6 +111,15 @@ public:
       if (targets[i] == target)
         return scores->getScoreObject(i);
     return ScoreObjectPtr();
+  }
+  
+  ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  {
+    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context);
+    res->setName(T("Protein's Scores"));
+    for (size_t i = 0; i < targets.size(); ++i)
+      res->getScoreObject(i)->setName(proteinClass->getMemberVariableName((int)targets[i]));
+    return res;
   }
 
 protected:

@@ -9,6 +9,7 @@
   <include file="lbcpp/Data/Cache.h"/>
   <include file="lbcpp/Data/DoubleVector.h"/>
   <include file="lbcpp/Data/Matrix.h"/>
+  <include file="lbcpp/Data/SymmetricMatrix.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -74,6 +75,19 @@
 
   <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
     <parameter name="elementsType" type="EnumValue"/>
+  </template>
+  
+  <!-- SymmetricMatrix -->
+  <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+  
+  <template name="DoubleSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
+  <template name="ObjectSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Object"/>
   </template>
 
 </library>

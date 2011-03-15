@@ -71,7 +71,7 @@ public:
   void primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
   {
     size_t input = builder.addInput(proteinClass, T("protein"));
-    size_t length = builder.addFunction(proteinLengthFunction(), 0);
+    size_t length = builder.addFunction(proteinLengthFunction(), input);
     builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, input);
   }
 
@@ -115,6 +115,73 @@ public:
 
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
     {residueFeaturesVector(builder);}
+  
+  void residueSecondPairFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t firstPosition = builder.addInput(positiveIntegerType);
+    size_t secondPosition = builder.addInput(positiveIntegerType);
+    size_t primaryResidueFeatures = builder.addInput(vectorClass(doubleVectorClass()));
+    size_t primaryResidueFeaturesAcc = builder.addInput(containerClass());
+    size_t globalFeatures = builder.addInput(doubleVectorClass());
+    
+    builder.startSelection();
+    
+    if (featuresParameters->residueGlobalFeatures)
+      builder.addInSelection(globalFeatures);
+    
+    if (featuresParameters->residueWindowSize)
+    {
+      builder.addFunction(windowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, firstPosition, T("window1"));
+      builder.addFunction(windowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, secondPosition, T("window2"));
+    }
+    
+    if (featuresParameters->residueLocalMeanSize)
+    {
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean1") + String((int)featuresParameters->residueLocalMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean2") + String((int)featuresParameters->residueLocalMeanSize));
+    }
+    
+    if (featuresParameters->residueMediumMeanSize)
+    {
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean1") + String((int)featuresParameters->residueMediumMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean2") + String((int)featuresParameters->residueMediumMeanSize));
+    }
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+
+  void residueFirstPairFeatures(CompositeFunctionBuilder& builder) const
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    
+    builder.startSelection();
+
+      builder.addInput(positiveIntegerType);
+      builder.addInSelection(position);
+      builder.addInput(vectorClass(doubleVectorClass()));
+      builder.addInput(containerClass());
+      builder.addInput(doubleVectorClass());
+
+    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueSecondPairFeatures)), T("residueFirstPairFeatureVectors"));
+  }
+  
+  void residuePairFeaturesVector(CompositeFunctionBuilder& builder) const
+  {
+    size_t protein = builder.addInput(proteinClass, T("protein"));
+    
+    builder.startSelection();
+
+      builder.addFunction(proteinLengthFunction(), protein);
+      builder.addFunction(proteinLengthFunction(), protein);
+      size_t primaryFeatures = builder.addFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeaturesVector), protein);
+      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
+      builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
+
+    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFirstPairFeatures)), T("residuePairFeatureVectors"));
+  }
+  
+  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
+    {residuePairFeaturesVector(builder);}
 
   typedef void (NumericalProteinPredictorParameters::*ThisClassFunctionBuildFunction)(CompositeFunctionBuilder& builder) const; 
 

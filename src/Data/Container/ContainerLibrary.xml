@@ -35,15 +35,6 @@
     <parameter name="elementsType"/>
     <constructor arguments="ContainerPtr target, const std::vector&lt;size_t&gt;&amp; indices" parameters="target->getElementsType()"/>
   </template>
-  
-  <!-- SymmetricMatrix -->
-  <template name="SymmetricMatrix" base="Container[elementsType]">
-    <parameter name="elementsType"/>
-  </template>
-
-  <template name="SymmetricMatrixRow" base="Container[elementsType]">
-    <parameter name="elementsType"/>
-  </template>
 
   <!-- Accumulate Function -->
   <template name="CumulativeScoreVector" base="Container[DenseDoubleVector[scoresEnumeration,Double]]">

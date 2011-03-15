@@ -19,6 +19,9 @@ namespace lbcpp
 class BinaryClassificationEvaluator : public SupervisedEvaluator
 {
 public:
+  BinaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
+    : scoreToOptimize(scoreToOptimize) {}
+  
   virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
   
@@ -26,8 +29,12 @@ public:
     {return sumType(probabilityType, booleanType);}
 
 protected:
+  friend class BinaryClassificationEvaluatorClass;
+  
+  BinaryClassificationScore scoreToOptimize;
+  
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
-    {return new BinaryClassificationConfusionMatrix();}
+    {return new BinaryClassificationConfusionMatrix(scoreToOptimize);}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
     {score.staticCast<BinaryClassificationConfusionMatrix>()->finalize();}

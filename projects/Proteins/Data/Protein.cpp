@@ -319,7 +319,7 @@ DoubleVectorPtr Protein::computeBinarySolventAccessibilityFromSolventAccessibili
 SymmetricMatrixPtr Protein::computeContactMapFromDistanceMap(SymmetricMatrixPtr distanceMap, double threshold)
 {
   size_t n = distanceMap->getDimension();
-  SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, distanceMap->getDimension());
+  SymmetricMatrixPtr res = new DoubleSymmetricMatrix(probabilityType, distanceMap->getDimension(), 0.0);
   for (size_t i = 0; i < n; ++i)
     for (size_t j = i; j < n; ++j)
     {
@@ -373,7 +373,7 @@ SymmetricMatrixPtr Protein::computeDisulfideBondsFromTertiaryStructure(Symmetric
   static const double disulfideBondSulfurDistanceSoftThreshold = 3.0;
   jassert(distanceMap);
   size_t n = distanceMap->getDimension();
-  SymmetricMatrixPtr res = new SymmetricMatrix(probabilityType, n);
+  SymmetricMatrixPtr res = new DoubleSymmetricMatrix(probabilityType, n, 0.0);
 
   if (n == 0)
     return res;
@@ -495,7 +495,7 @@ DoubleVectorPtr Protein::createEmptyDoubleSequence(size_t length)
   {return new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, length);}
 
 SymmetricMatrixPtr Protein::createEmptyContactMap() const
-  {return new SymmetricMatrix(probabilityType, getLength());}
+  {return new DoubleSymmetricMatrix(probabilityType, getLength(), 0.0);}
 
 SymmetricMatrixPtr Protein::createEmptyDistanceMap() const
-  {return new SymmetricMatrix(angstromDistanceType, getLength());}
+  {return new DoubleSymmetricMatrix(angstromDistanceType, getLength(), 0.0);}
