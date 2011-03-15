@@ -68,7 +68,7 @@ inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr ty
 
 template<class T> 
 inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object)
-  : type(object ? (TypePtr)object->getClass() : objectClass), value(object) {}
+  : type(object ? object->getClass() : objectClass), value(object) {}
 
 inline Variable::Variable(const Variable& otherVariable)
   : type(otherVariable.type)
