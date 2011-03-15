@@ -39,21 +39,29 @@ void GoBoard::getGroup(const Position& position, PositionSet& res, PositionSet& 
   Position adjacentPositions[4];
   size_t numAdjacentPositions;
 
+  size_t size = getSize();
+  std::vector<bool> exploredFlags(size * size, false);
+
   while (toExplore.size())
   {
     Position explored = toExplore.front();
     toExplore.pop_front();
-    res.insert(explored);
 
-    getAdjacentPositions(explored, adjacentPositions, numAdjacentPositions);
-    for (size_t i = 0; i < numAdjacentPositions; ++i)
+    if (!exploredFlags[explored.first * size + explored.second])
     {
-      Position candidate = adjacentPositions[i];
-      Player p = get(candidate);
-      if (p == player && res.find(candidate) == res.end())
-        toExplore.push_back(candidate);
-      else if (p == noPlayers)
-        liberties.insert(candidate);
+      exploredFlags[explored.first * size + explored.second] = true;
+      res.insert(explored);
+    
+      getAdjacentPositions(explored, adjacentPositions, numAdjacentPositions);
+      for (size_t i = 0; i < numAdjacentPositions; ++i)
+      {
+        Position candidate = adjacentPositions[i];
+        Player p = get(candidate);
+        if (p == player && !exploredFlags[candidate.first * size + candidate.second])
+          toExplore.push_back(candidate);
+        else if (p == noPlayers)
+          liberties.insert(candidate);
+      }
     }
   }
 }

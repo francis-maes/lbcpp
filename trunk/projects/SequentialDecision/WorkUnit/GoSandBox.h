@@ -75,6 +75,7 @@ public:
         DecisionProblemStatePtr state = stateAndTrajectory->getFirst().getObject()->cloneAndCast<DecisionProblemState>();
         ok &= state->checkTrajectoryValidity(context, stateAndTrajectory->getSecond().getObjectAndCast<Container>());
       }
+      
     }
     context.leaveScope(ok);
     return true;

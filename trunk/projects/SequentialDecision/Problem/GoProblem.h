@@ -36,6 +36,9 @@ public:
   typedef std::pair<size_t, size_t> Position;
   typedef std::set<Position> PositionSet;
 
+  size_t getSize() const
+    {jassert(getNumColumns() == getNumRows()); return getNumRows();}
+
   void set(const Position& position, Player player)
     {elements[makeIndex(position)] = (char)player;}
 
