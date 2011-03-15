@@ -85,7 +85,7 @@ class ShortEnumerationMatrix : public BuiltinTypeMatrix<char>
 {
 public:
   ShortEnumerationMatrix(EnumerationPtr enumeration, size_t numRows, size_t numColumns, char defaultValue)
-    : BuiltinTypeMatrix(enumeration, numRows, numColumns, defaultValue)
+    : BuiltinTypeMatrix<char>(enumeration, numRows, numColumns, defaultValue)
     {jassert(enumeration->getNumElements() < 255);}
 
   ShortEnumerationMatrix() {}
