@@ -14,6 +14,7 @@
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Function/IterationFunction.h>
+# include "../../Core/Function/MapContainerFunction.h"
 
 namespace lbcpp
 {
@@ -70,15 +71,16 @@ public:
 
     jassert(function == this->function);
     learningStep(inputs, output);
-   /* if (inputs[0].isObject() && inputs[0].dynamicCast<Container>())
+    if (inputs[0].dynamicCast<Container>())
     {
       // composite inputs (e.g. ranking)
       const ContainerPtr& inputContainer = inputs[0].getObjectAndCast<Container>(context);
+      jassert(inputContainer->getElementsType()->inheritsFrom(doubleVectorClass()));
       size_t n = inputContainer->getNumElements();
       for (size_t i = 0; i < n; ++i)
-        updateNumberOfActiveFeatures(context, inputContainer->getElement(i).getObjectAndCast<DoubleVector>());
+        updateNumberOfActiveFeatures(inputContainer->getElement(i).getObjectAndCast<DoubleVector>());
     }
-    else*/
+    else
     {
       // simple input
       updateNumberOfActiveFeatures(inputs[0].getObjectAndCast<DoubleVector>());
@@ -134,7 +136,17 @@ public:
     {function = FunctionPtr();}
 
   const NumericalLearnableFunctionPtr& getNumericalLearnableFunction() const
-    {return function.staticCast<NumericalLearnableFunction>();}
+  {
+    if (function.dynamicCast<NumericalLearnableFunction>())
+      return function.staticCast<NumericalLearnableFunction>();
+    MapContainerFunctionPtr mapFunction = function.dynamicCast<MapContainerFunction>();
+    if (mapFunction)
+      return mapFunction->getSubFunction().staticCast<NumericalLearnableFunction>(); // in case of ranking machines
+    
+    jassert(false);
+    static NumericalLearnableFunctionPtr nil;
+    return nil;
+  }
 
   void addComputedGradient(const NumericalLearnableFunctionPtr& function, const DoubleVectorPtr& gradient, double lossValue)
   {
@@ -169,22 +181,23 @@ protected:
     gradient->addWeightedTo(parameters, 0, -computeLearningRate() * weight);
   }
 
-  void computeAndAddGradient(const NumericalLearnableFunctionPtr& function, const Variable* inputs, const Variable& output, DoubleVectorPtr& target, double weight)
+  void computeAndAddGradient(const NumericalLearnableFunctionPtr& function, const Variable* inputs, const Variable& prediction, DoubleVectorPtr& target, double weight)
   {
     if (failure || !inputs[1].exists())
       return; // failed or no supervision
 
     double exampleLossValue = 0.0;
-    if (function->computeAndAddGradient(lossFunction, inputs, output, exampleLossValue, target, weight))
-    {
-      ++epoch;
-      lossValue.push(exampleLossValue);
-    }
-    else
+
+    Variable lossGradient;
+    if (!function->computeLoss(lossFunction, inputs, prediction, exampleLossValue, lossGradient))
     {
       context->errorCallback(T("Learning failed: could not compute loss gradient"));
       failure = true;
+      return;
     }
+    function->addGradient(lossGradient, inputs[0].getObjectAndCast<DoubleVector>(), target, weight);
+    ++epoch;
+    lossValue.push(exampleLossValue);
   }
 
   double computeLearningRate() const

@@ -29,11 +29,7 @@ public:
     {return *(DoubleVectorPtr* )&parameters;}
 
   virtual void addGradient(const Variable& lossDerivativeOrGradient, const DoubleVectorPtr& input, DoubleVectorPtr& target, double weight) const = 0;
-
-  // returns false if no supervision is available
-  virtual bool computeAndAddGradient(const FunctionPtr& lossFunction,
-                                     const Variable* inputs, const Variable& output,
-                                     double& exampleLossValue, DoubleVectorPtr& target, double weight) const = 0;
+  virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const = 0;
 
   // Function
   virtual String getOutputPostFix() const

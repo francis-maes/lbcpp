@@ -98,7 +98,7 @@ public:
     if (stateActionPerception->getOutputType())
     {
       size_t costs = builder.addFunction(new DecisionProblemStateActionsRankingCostsFunction(), state, supervision);
-      builder.addFunction(createObjectFunction(pairClass(vectorClass(stateActionPerception->getOutputType()), denseDoubleVectorClass())), perceptions, costs);
+      builder.addFunction(createObjectFunction(pairClass(vectorClass(stateActionPerception->getOutputType()), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))), perceptions, costs);
     }
   }
 
@@ -272,6 +272,9 @@ public:
     FunctionPtr rankingMachine = linearRankingMachine(learningParameters);
     if (!rankingMachine)
       return false;
+
+    rankingMachine->train(context, trainingExamples, validationExamples, T("Training"), true);
+    //rankingMachine->evaluate(context, trainingExamples, EvaluatorPtr(), 
 
     return true;
    // return learnOnline(context, rankingMachine, trainingExamples, validationExamples);

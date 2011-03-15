@@ -124,6 +124,8 @@ void RankingLossFunction::computeScalarVectorFunction(const DenseDoubleVectorPtr
 void RankingLossFunction::computeRankingLoss(const DenseDoubleVectorPtr& scores, const DenseDoubleVectorPtr& costs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
 {
   jassert(scores && costs);
+  if (output)
+    *output = 0.0;
   std::vector<double> grad;
   if (gradientTarget)
     grad.resize(scores->getNumElements(), 0.0);
