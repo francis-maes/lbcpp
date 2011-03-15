@@ -32,6 +32,9 @@ public:
   }
 };
 
+
+// GoState,AvailableActions,SelectedAction -> (Container[DoubleVector], Container[Double])
+
 class GoSandBox : public WorkUnit
 {
 public:
@@ -54,8 +57,6 @@ public:
   {
     // create problem
     DecisionProblemPtr problem = new GoProblem(0);
-    if (!problem->initialize(context))
-      return false;
 
     // load games
     ContainerPtr games = loadGames(context, gamesDirectory, maxCount);
@@ -70,7 +71,10 @@ public:
       context.progressCallback(new ProgressionState(i, games->getNumElements(), T("Games")));
       PairPtr stateAndTrajectory = games->getElement(i).getObjectAndCast<Pair>();
       if (stateAndTrajectory)
-        ok &= problem->checkTrajectoryValidity(context, stateAndTrajectory->getFirst(), stateAndTrajectory->getSecond().getObjectAndCast<Container>());
+      {
+        DecisionProblemStatePtr state = stateAndTrajectory->getFirst().getObject()->cloneAndCast<DecisionProblemState>();
+        ok &= state->checkTrajectoryValidity(context, stateAndTrajectory->getSecond().getObjectAndCast<Container>());
+      }
     }
     context.leaveScope(ok);
     return true;

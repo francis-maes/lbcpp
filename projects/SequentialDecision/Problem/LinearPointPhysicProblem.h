@@ -17,17 +17,36 @@ namespace lbcpp
 
 extern ClassPtr linearPointPhysicStateClass;
 
-class LinearPointPhysicState : public Object
+class LinearPointPhysicState : public DecisionProblemState
 {
 public:
   LinearPointPhysicState(double position = 0.0, double velocity = 0.0)
-    : Object(linearPointPhysicStateClass), position(position), velocity(velocity) {}
+    : position(position), velocity(velocity) {}
 
   double getPosition() const
     {return position;}
 
   double getVelocity() const
     {return velocity;}
+
+  virtual TypePtr getActionType() const
+    {return booleanType;}
+
+  virtual ContainerPtr getAvailableActions() const
+  {
+    VectorPtr res = new GenericVector(booleanType, 2);
+    res->setElement(0, false);
+    res->setElement(0, true);
+    return res;
+  }
+
+  virtual void performTransition(const Variable& action, double& reward)
+  {
+    static const double deltaT = 0.1;
+    velocity += deltaT * (action.getBoolean() ? 1.0 : -1.0);
+    position += deltaT * velocity;
+    reward = juce::jmax(0.0, 1.0 - position * position);
+  }
 
 protected:
   friend class LinearPointPhysicStateClass;
@@ -54,49 +73,11 @@ public:
   }
 };
 
-// state: LinearPointPhysicState, action: boolean
-class LinearPointPhysicTransitionFunction : public SimpleBinaryFunction
-{
-public:
-  LinearPointPhysicTransitionFunction()
-    : SimpleBinaryFunction(linearPointPhysicStateClass, booleanType, linearPointPhysicStateClass) {}
-  
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const LinearPointPhysicStatePtr& state = inputs[0].getObjectAndCast<LinearPointPhysicState>();
-    bool action = inputs[1].getBoolean();
-
-    static const double deltaT = 0.1;
-    double newVelocity = state->getVelocity() + deltaT * (action ? 1.0 : -1.0);
-    return Variable(new LinearPointPhysicState(state->getPosition() + deltaT * newVelocity, newVelocity), getOutputType());
-  }
-};
-
-class LinearPointPhysicRewardFunction : public SimpleBinaryFunction
-{
-public:
-  LinearPointPhysicRewardFunction()
-    : SimpleBinaryFunction(linearPointPhysicStateClass, booleanType, doubleType) {}
-  
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const LinearPointPhysicStatePtr& state = inputs[0].getObjectAndCast<LinearPointPhysicState>();
-    bool action = inputs[1].getBoolean();
-
-    static const double deltaT = 0.1;
-    double newVelocity = state->getVelocity() + deltaT * (action ? 1.0 : -1.0);
-    double newPosition = state->getPosition() + deltaT * newVelocity;
-    return juce::jmax(0.0, 1.0 - newPosition * newPosition);
-  }
-};
-
 class LinearPointPhysicProblem : public DecisionProblem
 {
 public:
   LinearPointPhysicProblem(double discount = 1.0) 
-    : DecisionProblem(new LinearPointPhysicStateSampler(), 
-                                new LinearPointPhysicTransitionFunction(),
-                                new LinearPointPhysicRewardFunction(), discount) {}
+    : DecisionProblem(new LinearPointPhysicStateSampler(), discount) {}
 };
 
 extern DecisionProblemPtr linearPointPhysicProblem(double discount);

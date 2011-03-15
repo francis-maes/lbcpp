@@ -3,10 +3,9 @@
 <library name="SequentialDecisionCore" directory="Core">
 
   <!-- DecisionProblem -->
+  <class name="DecisionProblemState" base="NameableObject" abstract="yes"/>
   <class name="DecisionProblem" base="Object" abstract="yes">
-    <!-- <variable type="Function" name="initialStateSampler"/>
-    <variable type="Function" name="transitionFunction"/>
-    <variable type="Function" name="rewardFunction"/> -->
+    <variable type="Function" name="initialStateSampler"/>
     <variable type="Double" name="discount"/>
   </class>
 
@@ -21,7 +20,7 @@
 
   <!-- Search Tree -->
   <class name="SearchTreeNode" base="Object">
-    <variable type="Variable" name="state"/>
+    <variable type="DecisionProblemState" name="state"/>
     <variable type="PositiveInteger" name="depth"/>
     <variable type="Double" name="reward"/>
     <variable type="Double" name="currentReturn"/>

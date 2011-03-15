@@ -91,7 +91,7 @@ public:
 
   bool hasOneLetterCodes() const;
   
-  virtual int compare(ObjectPtr otherObject) const;
+  virtual int compare(const ObjectPtr& otherObject) const;
 
   lbcpp_UseDebuggingNewOperator
 };

@@ -28,6 +28,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
   Problem/LinearPointPhysicProblem.h
   Problem/GoProblem.h
+  Problem/GoProblem.cpp
   Problem/LoadSGFFileFunction.h
   Problem/SequentialDecisionProblemLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionProblemLibrary.cpp

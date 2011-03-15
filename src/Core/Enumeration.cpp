@@ -128,7 +128,7 @@ String Enumeration::getElementName(size_t index) const
   return element ? element->getName() : String::empty;
 }
 
-int Enumeration::compare(ObjectPtr otherObject) const
+int Enumeration::compare(const ObjectPtr& otherObject) const
 {
   EnumerationPtr other = otherObject.dynamicCast<Enumeration>();
   if (!other)

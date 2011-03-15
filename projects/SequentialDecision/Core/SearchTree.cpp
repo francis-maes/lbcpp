@@ -12,10 +12,12 @@ using namespace lbcpp;
 /*
 ** SearchTreeNode
 */
-SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const Variable& initialState)
-  : allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), state(initialState), depth(0), reward(0.0), currentReturn(0.0),
+SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState)
+  : allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
     parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0)
 {
+  if (initialState)
+    state = initialState->cloneAndCast<DecisionProblemState>();
 }
 
 void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action)
@@ -26,11 +28,12 @@ void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex,
   const SearchTreeNodePtr& parentNode = allNodes[parentIndex];
   jassert(parentNode);
   depth = parentNode->depth + 1;
-  reward = problem->computeReward(parentNode->state, action);
+
+  state = parentNode->state->cloneAndCast<DecisionProblemState>();
+  state->performTransition(parentNode->state, reward);
+
   bestReturn = currentReturn = parentNode->currentReturn + reward * pow(problem->getDiscount(), (double)parentNode->depth);
   parentNode->updateBestReturn(currentReturn, refCountedPointerFromThis(this));
-  state = problem->computeTransition(parentNode->state, action);
-  jassert(state.exists());
 }
 
 void SearchTreeNode::updateBestReturn(double newReturn, SearchTreeNodePtr childNode)
@@ -63,7 +66,7 @@ double SearchTreeNode::getBestReturnWithoutChild(SearchTreeNodePtr childNode) co
 /*
 ** SearchTree
 */
-SearchTree::SearchTree(DecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes)
+SearchTree::SearchTree(DecisionProblemPtr problem, const DecisionProblemStatePtr& initialState, size_t maxOpenedNodes)
   : problem(problem)
 {
   nodes.reserve(2 * maxOpenedNodes + 1);
@@ -77,14 +80,15 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   jassert(node);
   openedNodes.push_back(nodeIndex);
 
-  std::vector<Variable> actions;
-  problem->getAvailableActions(node->getState(), actions);
+  ContainerPtr actions = node->getState()->getAvailableActions();
+  size_t n = actions->getNumElements();
+
   size_t firstChildIndex = nodes.size();
-  node->setChildrenIndices(firstChildIndex, firstChildIndex + actions.size());
-  for (size_t i = 0; i < actions.size(); ++i)
+  node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
+  for (size_t i = 0; i < n; ++i)
   {
-    SearchTreeNodePtr childNode = new SearchTreeNode(nodes, firstChildIndex + i, node->getNodeUid() * actions.size() + i);
-    childNode->open(problem, nodeIndex, actions[i]);
+    SearchTreeNodePtr childNode = new SearchTreeNode(nodes, firstChildIndex + i, node->getNodeUid() * n + i);
+    childNode->open(problem, nodeIndex, actions->getElement(i));
     addCandidate(context, childNode);
   }
 }

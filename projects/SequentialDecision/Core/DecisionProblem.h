@@ -15,54 +15,46 @@
 namespace lbcpp
 {
 
+class DecisionProblemState : public NameableObject
+{
+public:
+  DecisionProblemState(const String& name)
+    : NameableObject(name) {}
+  DecisionProblemState() {}
+
+  virtual TypePtr getActionType() const = 0;
+  virtual ContainerPtr getAvailableActions() const = 0;
+  virtual void performTransition(const Variable& action, double& reward) = 0;
+
+  virtual bool isFinalState() const
+    {return !getAvailableActions();}
+
+  void performTrajectory(const ContainerPtr& actions, double& sumOfRewards);
+  bool checkTrajectoryValidity(ExecutionContext& context, const ContainerPtr& trajectory) const;
+};
+
+typedef ReferenceCountedObjectPtr<DecisionProblemState> DecisionProblemStatePtr;
+
 class DecisionProblem : public Object
 {
 public:
-  DecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction, double discount);
+  DecisionProblem(const FunctionPtr& initialStateSampler, double discount)
+    : initialStateSampler(initialStateSampler), discount(discount)
+  {
+  }
   DecisionProblem() {}
 
   /*
-  ** Types
+  ** Initial states
   */
   const TypePtr& getStateType() const
-    {return stateType;}
+    {return initialStateSampler->getOutputType();}
 
-  const TypePtr& getActionType() const
-    {return actionType;}
-
-  /*
-  ** Functions
-  */
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
 
-  const FunctionPtr& getTransitionFunction() const
-    {return transitionFunction;}
-
-  const FunctionPtr& getRewardFunction() const
-    {return rewardFunction;}
-
-  bool initialize(ExecutionContext& context);
-
-  /*
-  ** Shortcuts
-  */
   Variable sampleInitialState(RandomGeneratorPtr random) const
     {return initialStateSampler->compute(defaultExecutionContext(), random);}
-
-  virtual void getAvailableActions(const Variable& state, std::vector<Variable>& actions) const;
-
-  Variable computeTransition(const Variable& state, const Variable& action) const
-    {return transitionFunction->compute(defaultExecutionContext(), state, action);}
-
-  double computeReward(const Variable& state, const Variable& action) const
-    {return rewardFunction->compute(defaultExecutionContext(), state, action).getDouble();}
-
-  /*
-  ** High level operations
-  */
-  Variable computeFinalState(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const;
-  bool checkTrajectoryValidity(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const;
 
   /*
   ** Objective
@@ -74,12 +66,6 @@ protected:
   friend class DecisionProblemClass;
 
   FunctionPtr initialStateSampler;
-  FunctionPtr transitionFunction;
-  FunctionPtr rewardFunction;
-
-  TypePtr stateType;
-  TypePtr actionType;
-
   double discount;
 };
 

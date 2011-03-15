@@ -85,7 +85,7 @@ public:
   virtual bool loadFromXml(XmlImporter& importer);
   virtual bool loadFromString(ExecutionContext& context, const String& str);
   
-  virtual int compare(ObjectPtr otherObject) const
+  virtual int compare(const ObjectPtr& otherObject) const
     {return compareVariables(otherObject);}
 
   double getProbability(size_t index) const
