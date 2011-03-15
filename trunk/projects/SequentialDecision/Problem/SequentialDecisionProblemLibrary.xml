@@ -3,13 +3,11 @@
 <library name="DecisionProblem" directory="Problem">
 
   <!-- LinearPointPhysic System -->
-  <class name="LinearPointPhysicState">
+  <class name="LinearPointPhysicState" base="DecisionProblemState">
     <variable type="Double" name="position"/>
     <variable type="Double" name="velocity"/>
   </class>
   <class name="LinearPointPhysicStateSampler" base="Function"/>
-  <class name="LinearPointPhysicTransitionFunction" base="Function"/>
-  <class name="LinearPointPhysicRewardFunction" base="Function"/>
   <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="linearPointPhysic">
     <constructor arguments="double discount"/>
   </class>
@@ -23,18 +21,22 @@
   </enumeration>
 
   <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
-  <class name="GoState" base="NameableObject">
+  <class name="GoState" base="DecisionProblemState">
     <variable type="PositiveInteger" name="time"/>
     <variable type="GoBoard" name="board"/>
     <variable type="PositiveInteger" name="whitePrisonerCount"/>
     <variable type="PositiveInteger" name="blackPrisonerCount"/>
   </class>
+  
+  <class name="GoAction">
+    <variable type="PositiveInteger" name="x"/>
+    <variable type="PositiveInteger" name="y"/>
+  </class>
+
   <class name="GoStateSampler" base="Function">
     <variable type="PositiveInteger" name="minSize"/>
     <variable type="PositiveInteger" name="maxSize"/>
   </class>
-  <class name="GoTransitionFunction" base="Function"/>
-  <class name="GoRewardFunction" base="Function"/>
   <class name="GoProblem" base="DecisionProblem"/>
 
   <!-- Smart Game Format parser -->

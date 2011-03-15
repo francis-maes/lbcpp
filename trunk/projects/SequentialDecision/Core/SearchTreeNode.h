@@ -24,7 +24,7 @@ typedef std::vector<SearchTreeNodePtr> SearchTreeNodeVector;
 class SearchTreeNode : public Object
 {
 public:
-  SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const Variable& initialState = Variable());
+  SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState = DecisionProblemStatePtr());
   SearchTreeNode() : nodeIndex(0), allNodes(*(const SearchTreeNodeVector* )0) {}
 
   void open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
@@ -43,7 +43,7 @@ public:
   double getCurrentReturn() const
     {return currentReturn;}
 
-  const Variable& getState() const
+  const DecisionProblemStatePtr& getState() const
     {return state;}
 
   size_t getDepth() const
@@ -102,7 +102,7 @@ protected:
   size_t nodeIndex;
   size_t nodeUid;
 
-  Variable state;
+  DecisionProblemStatePtr state;
   size_t depth;
 
   Variable previousAction;

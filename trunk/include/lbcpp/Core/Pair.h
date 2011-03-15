@@ -51,7 +51,7 @@ public:
   virtual String toShortString() const
     {return T("(") + first.toShortString() + T(", ") + second.toShortString() + T(")");}
  
-  virtual int compare(ObjectPtr otherObject) const
+  virtual int compare(const ObjectPtr& otherObject) const
     {return compareVariables(otherObject);}
 
   virtual ObjectPtr clone(ExecutionContext& context) const

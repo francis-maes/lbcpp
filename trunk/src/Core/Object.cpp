@@ -265,7 +265,7 @@ String Object::variablesToString(const String& separator, bool includeTypes) con
   return res;
 }
 
-int Object::compareVariables(ObjectPtr otherObject) const
+int Object::compareVariables(const ObjectPtr& otherObject) const
 {
   ClassPtr c1 = getClass();
   ClassPtr c2 = otherObject->getClass();

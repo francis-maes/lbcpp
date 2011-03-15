@@ -30,18 +30,12 @@ public:
   virtual size_t getNumColumns() const
     {return getDimension();}
   
-  virtual Variable getElement(size_t row, size_t column) const = 0;
-  virtual void setElement(size_t row, size_t column, const Variable& value) = 0;
-  
   /* Container */
   virtual size_t getNumElements() const
   {
     const size_t n = getDimension();
     return n * (n + 1) / 2;
   }
-
-  virtual Variable getElement(size_t index) const = 0;
-  virtual void setElement(size_t index, const Variable& value) = 0;
   
   lbcpp_UseDebuggingNewOperator
 };

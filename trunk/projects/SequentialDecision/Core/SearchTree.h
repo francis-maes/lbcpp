@@ -53,7 +53,7 @@ typedef SearchTreeCallback* SearchTreeCallbackPtr;
 class SearchTree : public Object
 {
 public:
-  SearchTree(DecisionProblemPtr problem, const Variable& initialState, size_t maxOpenedNodes);
+  SearchTree(DecisionProblemPtr problem, const DecisionProblemStatePtr& initialState, size_t maxOpenedNodes);
   SearchTree() {}
 
   /*

@@ -208,9 +208,6 @@ public:
       return false;
     }
 
-    if (!problem->initialize(context))
-      return false;
-
     FunctionPtr sampleInitialStatesFunction = createVectorFunction(problem->getInitialStateSampler(), false);
     if (!sampleInitialStatesFunction->initialize(context, positiveIntegerType, randomGeneratorClass))
       return false;

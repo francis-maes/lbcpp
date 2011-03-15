@@ -56,9 +56,6 @@ inline Variable::Variable(const String& stringValue, TypePtr type)
 inline Variable::Variable(const File& fileValue, TypePtr type)
   : type(type), value(fileValue.getFullPathName()) {jassert(isString());}
 
-inline Variable::Variable(const ObjectPtr& object)
-  : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
-
 inline Variable::Variable(Object* object, TypePtr type)
   : type(type), value(object) {jassert(type);}
 
@@ -66,9 +63,12 @@ inline Variable::Variable(Object* object)
   : type(object ? (TypePtr)object->getClass() : nilType), value(object) {jassert(type || !object);}
 
 template<class T>
-inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr expectedType)
-  : type(object ? (TypePtr)object->getClass() : expectedType), value(object)
-  {jassert(type || !object);} // this object's class has not been declared
+inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object, TypePtr type)
+  : type(type), value(object) {}
+
+template<class T> 
+inline Variable::Variable(const ReferenceCountedObjectPtr<T>& object)
+  : type(object ? (TypePtr)object->getClass() : objectClass), value(object) {}
 
 inline Variable::Variable(const Variable& otherVariable)
   : type(otherVariable.type)

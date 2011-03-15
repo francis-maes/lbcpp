@@ -101,7 +101,7 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
   {
-    SearchTreePtr searchTree = new SearchTree(problem, initialState, maxSearchNodes);
+    SearchTreePtr searchTree = new SearchTree(problem, initialState.getObjectAndCast<DecisionProblemState>(), maxSearchNodes);
     jassert(searchTree->getBestReturn() == 0.0);
     double lastReward = 0.0;
     double bestReturn = 0.0;

@@ -9,116 +9,47 @@
 #include "DecisionProblem.h"
 using namespace lbcpp;
 
-DecisionProblem::DecisionProblem(const FunctionPtr& initialStateSampler, const FunctionPtr& transitionFunction, const FunctionPtr& rewardFunction, double discount)
-  : initialStateSampler(initialStateSampler), transitionFunction(transitionFunction), rewardFunction(rewardFunction), discount(discount)
+void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double& sumOfRewards)
 {
-}
-
-bool DecisionProblem::initialize(ExecutionContext& context)
-{
-  if (!initialStateSampler || !transitionFunction || !rewardFunction)
-  {
-    context.errorCallback(T("Missing function"));
-    return false;
-  }
-  if (!initialStateSampler->initialize(context, (TypePtr)randomGeneratorClass))
-    return false;
-  
-  stateType = initialStateSampler->getOutputType();
-
-  if (transitionFunction->getNumRequiredInputs() != 2 || 
-    !stateType->inheritsFrom(transitionFunction->getRequiredInputType(0, 2)))
-  {
-    context.errorCallback(T("Wrong prototype for transition function"));
-    return false;
-  }
-  
-  actionType = transitionFunction->getRequiredInputType(1, 2);
-  if (!transitionFunction->initialize(context, stateType, actionType))
-    return false;
-  if (!transitionFunction->getOutputType()->inheritsFrom(stateType))
-  {
-    context.errorCallback(T("Unrecognized output type for the transition function"));
-    return false;
-  }
-
-  if (rewardFunction->getNumRequiredInputs() != 2 ||
-      !stateType->inheritsFrom(rewardFunction->getRequiredInputType(0, 2)) ||
-      !actionType->inheritsFrom(rewardFunction->getRequiredInputType(1, 2)))
-  {
-    context.errorCallback(T("Wrong prototype for reward function"));
-    return false;
-  }
-
-  if (!rewardFunction->initialize(context, stateType, actionType))
-    return false;
-
-  if (!rewardFunction->getOutputType()->inheritsFrom(doubleType))
-  {
-    context.errorCallback(T("Reward function does not return scalar values"));
-    return false;
-  }
-
-  return true;
-}
-
-void DecisionProblem::getAvailableActions(const Variable& state, std::vector<Variable>& actions) const
-{
-  jassert(stateType && actionType);
-  if (actionType == booleanType)
-  {
-    actions.resize(2);
-    actions[0] = Variable(false);
-    actions[1] = Variable(true);
-    return;
-  }
-
-  jassert(false);
-}
-
-Variable DecisionProblem::computeFinalState(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const
-{
-  if (!context.checkInheritance(trajectory->getElementsType(), actionType))
-    return Variable();
-
-  Variable state = initialState;
-  size_t n = trajectory->getNumElements();
+  jassert(actions->getElementsType() == getActionType());
+  size_t n = actions->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    state = computeTransition(state, trajectory->getElement(i));
-    if (!state.exists())
-      break;
+    double reward;
+    performTransition(actions->getElement(i), reward);
+    sumOfRewards += reward;
   }
-  return state;
 }
 
-bool DecisionProblem::checkTrajectoryValidity(ExecutionContext& context, const Variable& initialState, const ContainerPtr& trajectory) const
+bool DecisionProblemState::checkTrajectoryValidity(ExecutionContext& context, const ContainerPtr& trajectory) const
 {
-  Variable state = initialState;
+  jassert(trajectory->getElementsType()->inheritsFrom(getActionType()));
+  DecisionProblemStatePtr state = cloneAndCast<DecisionProblemState>();
   size_t n = trajectory->getNumElements();
-  
   for (size_t i = 0; i < n; ++i)
   {
     Variable action = trajectory->getElement(i);
 
-    std::vector<Variable> availableActions;
-    getAvailableActions(state, availableActions);
-    size_t j;
-    for (j = 0; j < availableActions.size(); ++j)
-      if (availableActions[j] == action)
-        break;
-    if (j == availableActions.size())
+    ContainerPtr availableActions = state->getAvailableActions();
+    if (!availableActions || !availableActions->getNumElements())
     {
-      context.errorCallback(state.toShortString(), T("Action ") + action.toShortString() + T(" is not available in this state"));
+      context.errorCallback(toShortString(), T("Reached final state"));
       return false;
     }
 
-    state = computeTransition(state, action);
-    if (!state.exists())
+    size_t j;
+    for (j = 0; j < availableActions->getNumElements(); ++j)
+      if (availableActions->getElement(j) == action)
+        break;
+    if (j == availableActions->getNumElements())
     {
-      context.errorCallback(state.toShortString(), T("Reached final state"));
+      context.errorCallback(toShortString(), T("Action ") + action.toShortString() + T(" is not available in this state"));
       return false;
     }
+
+    double reward;
+    state->performTransition(action, reward);
+   
   }
   return true;
 }

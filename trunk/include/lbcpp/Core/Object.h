@@ -105,7 +105,7 @@ public:
   /*
   ** Compare
   */
-  virtual int compare(ObjectPtr otherObject) const
+  virtual int compare(const ObjectPtr& otherObject) const
     {return (int)(this - otherObject.get());}
 
   /**
@@ -203,7 +203,7 @@ protected:
   String variablesToString(const String& separator, bool includeTypes = true) const;
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlImporter& importer);
-  int compareVariables(ObjectPtr otherObject) const;
+  int compareVariables(const ObjectPtr& otherObject) const;
 };
 
 class NameableObject : public Object
