@@ -175,6 +175,7 @@ public:
   XmlElement(const String& tagName)
     : tagName(tagName) {}
   XmlElement() {}
+  virtual ~XmlElement() {}
 
   static XmlElementPtr createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
   bool loadFromJuceXmlElement(juce::XmlElement* element);
@@ -228,6 +229,7 @@ public:
   void setAttribute(const String& name, int value)
     {setAttribute(name, String(value));}
 
+  bool hasAttribute(const String& name) const;
   void removeAttribute(const String& name);
 
   String getStringAttribute(const String& name, const String& defaultValue = String::empty) const;

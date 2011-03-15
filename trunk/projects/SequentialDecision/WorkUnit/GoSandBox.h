@@ -52,15 +52,34 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+    // create problem
+    DecisionProblemPtr problem = new GoProblem(0);
+    if (!problem->initialize(context))
+      return false;
+
+    // load games
     ContainerPtr games = loadGames(context, gamesDirectory, maxCount);
     if (!games)
       return false;
 
+    // check validity
+    context.enterScope(T("Check validity"));
+    bool ok = true;
+    for (size_t i = 0; i < games->getNumElements(); ++i)
+    {
+      context.progressCallback(new ProgressionState(i, games->getNumElements(), T("Games")));
+      PairPtr stateAndTrajectory = games->getElement(i).getObjectAndCast<Pair>();
+      if (stateAndTrajectory)
+        ok &= problem->checkTrajectoryValidity(context, stateAndTrajectory->getFirst(), stateAndTrajectory->getSecond().getObjectAndCast<Container>());
+    }
+    context.leaveScope(ok);
+    return true;
+
+    /*
     ContainerPtr trainingGames = games->invFold(0, numFolds);
     ContainerPtr testingGames = games->fold(0, numFolds);
-    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") + String((int)testingGames->getNumElements()) + T(" testing games"));
+    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") + String((int)testingGames->getNumElements()) + T(" testing games"));*/
 
-    return true;
 #if 0
     if (!fileToParse.existsAsFile())
     {

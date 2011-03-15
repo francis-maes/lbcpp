@@ -148,12 +148,14 @@ Variable TextParser::next()
   }
   currentResult = Variable();
   
+  size_t lineNumber = 0;
   while (!istr->isExhausted()/* && !parsingBreaked*/)
   {
     String line = istr->readNextLine();
+    ++lineNumber;
     if (!parseLine(line))
     {
-      context.errorCallback(T("TextParser::parse"), T("Could not parse line '") + line + T("'"));
+      context.errorCallback(T("-> Could not parse line ") + String((int)lineNumber) + T(": ") + (line.length() > 10 ? line.substring(0, 10) + T("...") : line));
       delete istr;
       istr = NULL;
       return Variable();

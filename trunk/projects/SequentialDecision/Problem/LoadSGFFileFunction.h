@@ -19,7 +19,7 @@ class SGFFileParser : public TextParser
 {
 public:
   SGFFileParser(ExecutionContext& context, const File& file)
-    : TextParser(context, file) {}
+    : TextParser(context, file), fileName(file.getFileName()) {}
   SGFFileParser() {}
     
   virtual TypePtr getElementsType() const
@@ -35,63 +35,75 @@ public:
   {
     for (int i = 0; i < line.length(); ++i)
     {
-      if (line[i] == '(')
+      // skip white spaces
+      if (juce::CharacterFunctions::isWhitespace(line[i]) && 
+          (!currentElement || 
+            (isParsingAttributeValue && currentAttributeValue.isEmpty()) ||
+            (!isParsingAttributeValue && currentAttributeName.isEmpty())))
+        continue;
+ 
+      // parse '(', ')', ';'
+      if (!isParsingAttributeValue)
       {
-        XmlElementPtr node = new XmlElement(T("node"));
-        if (!res)
-          res = node;
-        stack.push_back(node);
-      }
-      else if (line[i] == ')')
-      {
-        if (stack.empty())
+        if (line[i] == '(')
         {
-          context.errorCallback(T("Missing parenthesis"));
-          return false;
+          XmlElementPtr node = new XmlElement(T("node"));
+          if (!res)
+          {
+            if (fileName.isNotEmpty())
+              node->setAttribute(T("filename"), fileName);
+            res = node;
+          }
+          stack.push_back(node);
+          continue;
         }
-        stack.pop_back();
-      }
-      else if (line[i] == ';')
-      {
-        if (stack.empty())
+
+        if (line[i] == ')')
         {
-          context.errorCallback(T("Empty stack, missing parenthesis"));
-          return false;
+          if (stack.empty())
+          {
+            context.errorCallback(fileName, T("Missing parenthesis"));
+            return false;
+          }
+          stack.pop_back();
+          continue;
         }
-        XmlElementPtr res = stack.back();
-        res->addChildElement(currentElement = new XmlElement(T("node")));
+
+        if (line[i] == ';')
+        {
+          if (stack.empty())
+          {
+            context.errorCallback(fileName, T("Empty stack, missing parenthesis"));
+            return false;
+          }
+          XmlElementPtr res = stack.back();
+          res->addChildElement(currentElement = new XmlElement(T("node")));
+          continue;
+        }
+      }
+
+      if (!currentElement)
+      {
+        context.errorCallback(fileName, T("No current element, missing parenthesis or semicolon"));
+        return false;
+      }
+      if (!isParsingAttributeValue)
+      {
+        if (line[i] == '[')
+          isParsingAttributeValue = true;
+        else
+          currentAttributeName += line[i];
       }
       else
       {
-        if (juce::CharacterFunctions::isWhitespace(line[i]) && 
-            (!currentElement || 
-              (isParsingAttributeValue && currentAttributeValue.isEmpty()) ||
-              (!isParsingAttributeValue && currentAttributeName.isEmpty())))
-          continue;
-
-        if (!currentElement)
+        if (line[i] == ']')
         {
-          context.errorCallback(T("No current element, missing parenthesis or semicolon"));
-          return false;
-        }
-        if (!isParsingAttributeValue)
-        {
-          if (line[i] == '[')
-            isParsingAttributeValue = true;
-          else
-            currentAttributeName += line[i];
+          currentElement->setAttribute(currentAttributeName, currentAttributeValue);
+          currentAttributeName = currentAttributeValue = String::empty;
+          isParsingAttributeValue = false;
         }
         else
-        {
-          if (line[i] == ']')
-          {
-            currentElement->setAttribute(currentAttributeName, currentAttributeValue);
-            currentAttributeName = currentAttributeValue = String::empty;
-            isParsingAttributeValue = false;
-          }
-          else
-            currentAttributeValue += line[i];
-        }
+          currentAttributeValue += line[i];
       }
     }
     return true;
@@ -106,6 +118,7 @@ public:
   }
 
 private:
+  String fileName;
   XmlElementPtr res;
   std::vector<XmlElementPtr> stack;
   XmlElementPtr currentElement;
@@ -123,49 +136,67 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const XmlElementPtr& xml = input.getObjectAndCast<XmlElement>();
+    String fileName = xml->getStringAttribute(T("filename"));
     size_t numXmlElements = xml->getNumChildElements();
     if (!numXmlElements)
     {
-      context.errorCallback(T("Empty xml"));
+      context.errorCallback(fileName, T("Empty xml"));
       return Variable::missingValue(outputType);
-
     }
 
     XmlElementPtr firstChild = xml->getChildElement(0);
     size_t size = firstChild->getIntAttribute(T("SZ"), 0);
     if (!size)
     {
-      context.errorCallback(T("No size attribute"));
+      context.errorCallback(fileName, T("No size attribute"));
+      return Variable::missingValue(outputType);
+    }
+
+    size_t firstMoveIndex = (firstChild->hasAttribute(T("B")) || firstChild->hasAttribute(T("W"))) ? 0 : 1;
+    if (firstMoveIndex >= numXmlElements)
+    {
+      context.errorCallback(fileName, T("Empty game"));
+      return Variable::missingValue(outputType);
+    }
+
+    if (!xml->getChildElement(firstMoveIndex)->hasAttribute(T("B")))
+    {
+      context.errorCallback(fileName, T("Game does not start with a black move"));
       return Variable::missingValue(outputType);
     }
 
     ClassPtr actionType = pairClass(positiveIntegerType, positiveIntegerType);
-    ObjectVectorPtr trajectory = new ObjectVector(actionType, numXmlElements - 1);
+    ObjectVectorPtr trajectory = new ObjectVector(actionType, numXmlElements - firstMoveIndex);
     bool isBlackTurn = true;
-    for (size_t i = 1; i < numXmlElements; ++i)
+    for (size_t i = firstMoveIndex; i < numXmlElements; ++i)
     {
       String attribute = (isBlackTurn ? T("B") : T("W"));
       String value = xml->getChildElement(i)->getStringAttribute(attribute);
       if (value.isEmpty())
       {
-        context.errorCallback(String(T("Could not find ")) + (isBlackTurn ? T("black") : T("white")) + T(" stone at step ") + String((int)i));
+        context.errorCallback(fileName, String(T("Could not find ")) + (isBlackTurn ? T("black") : T("white")) + T(" stone at step ") + String((int)i));
         return Variable::missingValue(outputType);
       }
       if (value.length() != 2)
       {
-        context.errorCallback(T("Invalid move: ") + value);
+        context.errorCallback(fileName, T("Invalid move: ") + value);
         return Variable::missingValue(outputType);
       }
       size_t x = letterToIndex(context, value[0]);
       size_t y = letterToIndex(context, value[1]);
       if (x == (size_t)-1 || y == (size_t)-1)
         return Variable::missingValue(outputType);
+      if (x >= size || y >= size)
+      {
+        context.errorCallback(fileName, T("Invalid move: ") + String((int)x) + T(", ") + String((int)y) + T(" (") + value + T(")"));
+        return Variable::missingValue(outputType);
+      }
 
-      trajectory->set(i - 1, new Pair(actionType, x, y));
+      trajectory->set(i - firstMoveIndex, new Pair(actionType, x, y));
       isBlackTurn = !isBlackTurn;
     }
 
-    return Variable(new Pair(outputType, new GoState(0, new GoBoard(size), 0, 0), trajectory), outputType);
+    return new Pair(outputType, new GoState(fileName, size), trajectory);
   }
 
 private:
@@ -195,10 +226,9 @@ public:
   {
     File file = input.getFile();
     
-    XmlElementPtr xml = (new SGFFileParser(context, file))->next().dynamicCast<XmlElement>();
+    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
     if (!xml)
       return Variable::missingValue(getOutputType());
-
     return convertFunction->compute(context, xml); 
   }
 

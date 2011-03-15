@@ -23,7 +23,7 @@
   </enumeration>
 
   <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
-  <class name="GoState" base="Object">
+  <class name="GoState" base="NameableObject">
     <variable type="PositiveInteger" name="time"/>
     <variable type="GoBoard" name="board"/>
     <variable type="PositiveInteger" name="whitePrisonerCount"/>

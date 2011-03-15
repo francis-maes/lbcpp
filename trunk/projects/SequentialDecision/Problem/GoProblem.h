@@ -35,13 +35,14 @@ public:
   GoBoard() {}
 
   typedef std::pair<size_t, size_t> Position;
+  typedef std::set<Position> PositionSet;
 
   void set(const Position& position, Player player)
     {elements[makeIndex(position)] = (char)player;}
 
-  void set(const std::set<Position>& positions, Player player)
+  void set(const PositionSet& positions, Player player)
   {
-    for (std::set<Position>::const_iterator it = positions.begin(); it != positions.end(); ++it)
+    for (PositionSet::const_iterator it = positions.begin(); it != positions.end(); ++it)
       set(*it, player);
   }
 
@@ -64,12 +65,11 @@ public:
       res.push_back(Position(x, y + 1));
   }
 
-  void getGroup(const Position& position, std::set<Position>& res, size_t& numLiberties)
+  void getGroup(const Position& position, PositionSet& res, PositionSet& liberties)
   {
     std::list<Position> toExplore;
     toExplore.push_back(position);
     Player player = get(position);
-    numLiberties = 0;
 
     while (toExplore.size())
     {
@@ -86,7 +86,7 @@ public:
         if (p == player && res.find(candidate) == res.end())
           toExplore.push_back(candidate);
         else if (p == noPlayers)
-          ++numLiberties;
+          liberties.insert(candidate);
       }
     }
   }
@@ -99,13 +99,19 @@ protected:
 typedef ReferenceCountedObjectPtr<GoBoard> GoBoardPtr;
 
 extern ClassPtr goStateClass;
+class GoState;
+typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
 
-class GoState : public Object
+class GoState : public NameableObject
 {
 public:
   GoState(size_t time, GoBoardPtr board, size_t whitePrisonerCount, size_t blackPrisonerCount)
-    : Object(goStateClass), time(time), board(board), whitePrisonerCount(whitePrisonerCount), blackPrisonerCount(blackPrisonerCount) {}
-  GoState() : time(0) {}
+    : time(time), board(board), whitePrisonerCount(whitePrisonerCount), blackPrisonerCount(blackPrisonerCount) {}
+
+  GoState(const String& name, size_t size)
+    : NameableObject(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0) {}
+
+  GoState() : time(0), whitePrisonerCount(0), blackPrisonerCount(0) {}
 
   size_t getTime() const
     {return time;}
@@ -114,14 +120,45 @@ public:
     {return board;}
 
   typedef GoBoard::Position Position;
+  typedef std::set<Position> PositionSet;
 
-  void addStone(size_t x, size_t y, Player player)
+  void addStone(Player player, size_t x, size_t y)
   {
     Position position(x, y);
     board->set(position, player);
     checkForCapture(position, player);
     checkForSuicide(position, player);
+
+    previousPositions.push_front(position);
+    if (previousPositions.size() > numPreviousPositions)
+      previousPositions.pop_back();
+
     ++time;
+  }
+
+  Player getCurrentPlayer() const
+    {return (time % 2) == 0 ? blackPlayer : whitePlayer;}
+
+  void getStonesThatWouldBeCapturedIfPlaying(Player player, const Position& stonePosition, PositionSet& res)
+  {
+    std::vector<Position> adjacentPositions;
+    board->getAdjacentPositions(stonePosition, adjacentPositions);
+    Player opponent = (player == blackPlayer ? whitePlayer : blackPlayer);
+
+    res.clear();
+    for (size_t i = 0; i < adjacentPositions.size(); ++i)
+    {
+      Position position = adjacentPositions[i];
+      if (board->get(position) == opponent)
+      {
+        PositionSet group;
+        PositionSet liberties;
+        board->getGroup(position, group, liberties);
+        if (liberties.size() == 1 && *liberties.begin() == stonePosition)
+          for (PositionSet::const_iterator it = group.begin(); it != group.end(); ++it)
+            res.insert(*it);
+      }
+    }
   }
 
   void checkForCapture(const Position& position, Player player)
@@ -130,47 +167,75 @@ public:
     board->getAdjacentPositions(position, adjacentPositions);
     Player opponent = (player == blackPlayer ? whitePlayer : blackPlayer);
 
+    capturedAtPreviousTurn.clear();
     for (size_t i = 0; i < adjacentPositions.size(); ++i)
-      checkLiberties(adjacentPositions[i], opponent);
+      checkLiberties(adjacentPositions[i], opponent, &capturedAtPreviousTurn);
   }
 
   void checkForSuicide(const Position& position, Player player)
     {checkLiberties(position, player);}
 
-  void checkLiberties(const Position& position, Player player)
+  void checkLiberties(const Position& position, Player player, PositionSet* captured = NULL)
   {
     if (board->get(position) == player)
     {
-      size_t numLiberties;
-      std::set<Position> group;
-      board->getGroup(position, group, numLiberties);
-      if (!numLiberties)
+      PositionSet group;
+      PositionSet liberties;
+      board->getGroup(position, group, liberties);
+      if (liberties.empty())
       {
         board->set(group, noPlayers);
         if (player == whitePlayer)
           whitePrisonerCount += group.size();
         else
           blackPrisonerCount += group.size();
+       
+        if (captured)
+          for (PositionSet::const_iterator it = group.begin(); it != group.end(); ++it)
+            captured->insert(*it);
       }
     }
   }
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target)
+  const Position& getLastPosition() const
+    {jassert(previousPositions.size()); return previousPositions.front();}
+
+  const std::list<Position>& getPreviousPositions() const
+    {return previousPositions;}
+
+  const PositionSet& getCapturedAtPreviousTurn() const
+    {return capturedAtPreviousTurn;}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t)
   {
-    Object::clone(context, target);
-    target.staticCast<GoState>()->board = board->cloneAndCast<GoBoard>(context);
+    Object::clone(context, t);
+    const GoStatePtr& target = t.staticCast<GoState>();
+    target->board = board->cloneAndCast<GoBoard>(context);
+    target->previousPositions = previousPositions;
+    target->capturedAtPreviousTurn = capturedAtPreviousTurn;
   }
+
+  virtual String toString() const
+    {return getName() + T(" ") + String((int)time);}
+
+  virtual String toShortString() const
+    {return getName() + T(" ") + String((int)time);}
 
 protected:
   friend class GoStateClass;
+
+  enum 
+  {
+    numPreviousPositions = 10,
+  };
 
   size_t time;
   GoBoardPtr board;
   size_t whitePrisonerCount;
   size_t blackPrisonerCount;
+  std::list<Position> previousPositions;
+  PositionSet capturedAtPreviousTurn;
 };
-
-typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
 
 class GoStateSampler : public SimpleUnaryFunction
 {
@@ -206,10 +271,8 @@ public:
     size_t x = (size_t)action->getFirst().getInteger();
     size_t y = (size_t)action->getSecond().getInteger();
 
-    size_t time = state->getTime();
-
     GoStatePtr newState = state->cloneAndCast<GoState>();
-    newState->addStone(x, y, (time % 2) == 0 ? blackPlayer : whitePlayer);
+    newState->addStone(state->getCurrentPlayer(), x, y);
     return newState;
   }
 };
@@ -234,6 +297,32 @@ class GoProblem : public DecisionProblem
 public:
   GoProblem(size_t size = 19)
     : DecisionProblem(new GoStateSampler(size), new GoTransitionFunction(), new GoRewardFunction(), 1.0) {}
+
+  virtual void getAvailableActions(const Variable& s, std::vector<Variable>& actions) const
+  {
+    const GoStatePtr& state = s.getObjectAndCast<GoState>();
+    const GoBoardPtr& board = state->getBoard();
+    actions.clear();
+
+    bool testKo = (state->getCapturedAtPreviousTurn().size() == 1);
+
+    for (size_t i = 0; i < board->getNumColumns(); ++i)
+      for (size_t j = 0; j < board->getNumRows(); ++j)
+      {
+        GoBoard::Position position(i, j);
+        if (board->get(position) == noPlayers)
+        {
+          if (testKo)
+          {
+            GoState::PositionSet captured;
+            state->getStonesThatWouldBeCapturedIfPlaying(state->getCurrentPlayer(), position, captured);
+            if (captured.find(state->getLastPosition()) != captured.end())
+              continue; // KO
+          }
+          actions.push_back(new Pair(actionType, i, j));
+        }
+      }
+  }
 };
 
 typedef ReferenceCountedObjectPtr<GoProblem> GoProblemPtr;
