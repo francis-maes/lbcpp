@@ -77,7 +77,7 @@ public:
 
     if (learnerParameters)
     {
-      setBatchLearner(learnerParameters->createBatchLearner(context, inputVariables, outputType));
+      setBatchLearner(learnerParameters->createBatchLearner(context));
 
       std::vector<OnlineLearnerPtr> onlineLearners;
       onlineLearners.push_back(searchFunctionOnlineLearner(learnerParameters->getLossFunction().dynamicCast<RankingLossFunction>()));

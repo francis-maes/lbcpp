@@ -168,7 +168,7 @@ public:
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
-          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + state->bestScore + T("% )"));
+          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T("% )"));
         }
                
         // delete files and clear vector

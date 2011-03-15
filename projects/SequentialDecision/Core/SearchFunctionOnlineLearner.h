@@ -30,7 +30,7 @@ public:
 
   SearchFunctionOnlineLearner() : context(NULL) {}
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& f, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
     this->context = &context;
     searchFunction = f.staticCast<SearchFunction>();
@@ -42,6 +42,7 @@ public:
     featuresFunction = learnedHeuristic->getPerceptionFunction();
     scoringFunction = learnedHeuristic->getScoringFunction().staticCast<NumericalLearnableFunction>();
     jassert(scoringFunction);
+    return true;
   }
 
   virtual void finishEpisode(const ObjectPtr& inputs, const Variable& output)

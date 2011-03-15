@@ -228,6 +228,9 @@ inline void variableToNative(ExecutionContext& context, juce::int64& dest, const
 
 inline void variableToNative(ExecutionContext& context, size_t& dest, const Variable& source)
   {jassert(source.isInteger() && source.getInteger() >= 0); dest = (size_t)source.getInteger();}
+ 
+inline void variableToNative(ExecutionContext& context, unsigned char& dest, const Variable& source)
+  {jassert(source.isInteger() && source.getInteger() >= 0); dest = (unsigned char)source.getInteger();}
 
 inline void variableToNative(ExecutionContext& context, double& dest, const Variable& source)
   {jassert(source.isDouble()); dest = source.getDouble();}

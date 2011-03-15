@@ -23,11 +23,18 @@
 
   <!-- GO -->
   <uicomponent name="GoStateComponent" type="GoState"/>
-  
+
+  <class name="DecisionProblemStateActionsPerception" base="Function">
+    <variable type="Function" name="stateActionPerception"/>
+  </class>
+  <class name="GoActionIdentifierFeature" base="FeatureGenerator"/>
+  <class name="GoStateActionFeatures" base="CompositeFunction"/>
+
   <class name="GoSandBox" base="WorkUnit">
     <variable type="File" name="gamesDirectory"/>
     <variable type="PositiveInteger" name="maxCount"/>
     <variable type="PositiveInteger" name="numFolds"/>
+    <variable type="LearnerParameters" name="learningParameters"/>
   </class>
 
 </library>

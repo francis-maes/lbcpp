@@ -25,8 +25,8 @@ public:
       this->stoppingCriterion = stoppingCriterion->cloneAndCast<StoppingCriterion>(defaultExecutionContext());
   }
 
-  virtual void startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
-    {stoppingCriterion->reset(); this->context = &context;}
+  virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
+    {stoppingCriterion->reset(); this->context = &context; return true;}
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {

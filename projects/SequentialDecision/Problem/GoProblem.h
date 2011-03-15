@@ -100,7 +100,8 @@ public:
   ** DecisionProblemState
   */
   virtual TypePtr getActionType() const;
-  virtual ContainerPtr getAvailableActions() const;
+  virtual ContainerPtr getAvailableActions() const
+    {return availableActions;}
   virtual void performTransition(const Variable& action, double& reward);
 
   /*
@@ -125,6 +126,9 @@ protected:
   std::list<Position> previousPositions;
   PositionSet capturedAtPreviousTurn;
   PositionSet freePositions;
+  ContainerPtr availableActions;
+
+  ContainerPtr computeAvailableActions() const;
 
   void checkForCapture(const Position& position, Player player);
   void checkForSuicide(const Position& position, Player player);
@@ -141,14 +145,14 @@ class GoAction : public Object
 {
 public:
   GoAction(size_t x, size_t y)
-    : x(x), y(y) {}
-  GoAction() : x((size_t)-1), y((size_t)-1) {}
+    : x((unsigned char)x), y((unsigned char)y) {}
+  GoAction() : x((unsigned char)-1), y((unsigned char)-1) {}
 
   size_t getX() const
-    {return x;} 
+    {return (size_t)x;} 
 
   size_t getY() const
-    {return y;}
+    {return (size_t)y;}
  
   virtual int compare(const ObjectPtr& otherObject) const
   {
@@ -162,7 +166,7 @@ public:
 protected:
   friend class GoActionClass;
 
-  size_t x, y;
+  unsigned char x, y;
 };
 
 extern ClassPtr goActionClass;

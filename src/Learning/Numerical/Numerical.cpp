@@ -27,41 +27,13 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
 {
 }
 
-BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
+BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context) const
 {
   return stochasticBatchLearner(maxIterations, randomizeExamples);
 }
 
-OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
+OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context) const
 {
-  FunctionPtr lossFunction = this->lossFunction;
-
-  if (inputVariables.size() > 1)
-  {
-    TypePtr supervisionType = inputVariables[1]->getType();
-
-    // get or create loss function
-    if (!lossFunction)
-    {
-      // create default loss function
-      if (supervisionType == booleanType || supervisionType == probabilityType)
-        lossFunction = hingeDiscriminativeLossFunction();
-      else if (supervisionType == doubleType)
-        lossFunction = squareRegressionLossFunction();
-      else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
-        lossFunction = oneAgainstAllMultiClassLossFunction(hingeDiscriminativeLossFunction());
-      else
-      {
-        context.errorCallback(T("Could not create default loss function for type ") + supervisionType->getName());
-        return OnlineLearnerPtr();
-      }
-    }
-
-    // initialize loss function
-    if (!lossFunction->initialize(context, outputType, supervisionType))
-      return OnlineLearnerPtr();
-  }
-
   // create gradient descent learner
   std::vector<OnlineLearnerPtr> learners;
   learners.push_back(doPerEpisodeUpdates
@@ -77,30 +49,6 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
     learners.push_back(restoreBestParametersOnlineLearner());
 
   return learners.size() == 1 ? learners[0] : compositeOnlineLearner(learners);
-}
-
-/*
-** SupervisedNumericalFunction
-*/
-void SupervisedNumericalFunction::buildFunction(CompositeFunctionBuilder& builder)
-{
-  size_t input = builder.addInput(doubleVectorClass());
-  size_t supervision = builder.addInput(anyType);
-
-  FunctionPtr learnableFunction = createLearnableFunction();
-  size_t prediction = builder.addFunction(learnableFunction, input, supervision);
-  
-  // move evaluator
-  if (evaluator)
-  {
-    learnableFunction->setEvaluator(evaluator);
-    evaluator = EvaluatorPtr();
-  }
-  // set learners
-  learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
-  learnableFunction->setBatchLearner(learnerParameters->createBatchLearner(builder.getContext(), builder.getProvidedInputs(), builder.getOutputType()));
-
-  buildPostProcessing(builder, prediction, supervision);
 }
 
 /*

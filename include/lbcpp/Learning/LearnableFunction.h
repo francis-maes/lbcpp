@@ -55,10 +55,10 @@ typedef ReferenceCountedObjectPtr<LearnableFunction> LearnableFunctionPtr;
 class LearnerParameters : public Object
 {
 public:
-  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
+  virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const
     {return BatchLearnerPtr();}
 
-  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, const TypePtr& outputType) const
+  virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context) const
     {return OnlineLearnerPtr();}
 };
 

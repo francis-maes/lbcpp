@@ -58,18 +58,22 @@
   </class>
 
   <class name="LinearRegressor" base="SupervisedNumericalFunction" shortName="linearRegressor">
-    <constructor arguments="LearnerParametersPtr learnerParameters"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
   </class>
   
   <class name="LinearBinaryClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">
-    <constructor arguments="LearnerParametersPtr learnerParameters, bool incorporateBias, BinaryClassificationScore scoreToOptimize"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters, bool incorporateBias, BinaryClassificationScore scoreToOptimize" returnType="Function"/>
     <variable type="Boolean" name="incorporateBias"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
 
   <class name="MultiClassScoresToDistributionFunction" base="SimpleUnaryFunction"/>
   <class name="LinearMultiClassClassifier" base="SupervisedNumericalFunction" shortName="linearBinaryClassifier">
-    <constructor arguments="LearnerParametersPtr learnerParameters"/>
+    <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
+  </class>
+
+  <class name="LinearRankingMachine" base="MapContainerFunction" shortName="linearRanker">
+    <constructor arguments="LearnerParametersPtr learnerParameters" returnType="Function"/>
   </class>
 
   <class name="LinearLearningMachine" base="ProxyFunction" shortName="linearLearningMachine">

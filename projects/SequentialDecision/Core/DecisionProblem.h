@@ -35,6 +35,8 @@ public:
 
 typedef ReferenceCountedObjectPtr<DecisionProblemState> DecisionProblemStatePtr;
 
+extern ClassPtr decisionProblemStateClass;
+
 class DecisionProblem : public Object
 {
 public:
@@ -47,7 +49,7 @@ public:
   /*
   ** Initial states
   */
-  const TypePtr& getStateType() const
+  TypePtr getStateType() const
     {return initialStateSampler->getOutputType();}
 
   const FunctionPtr& getInitialStateSampler() const

@@ -14,9 +14,56 @@
 # include <lbcpp/Learning/LossFunction.h>
 # include <lbcpp/Function/StoppingCriterion.h>
 # include <lbcpp/Distribution/DiscreteDistribution.h>
+# include "../../Core/Function/MapContainerFunction.h"
 
 namespace lbcpp
 {
+
+class SupervisedNumericalFunction : public CompositeFunction
+{
+public:
+  SupervisedNumericalFunction(LearnerParametersPtr learnerParameters = LearnerParametersPtr())
+    : learnerParameters(learnerParameters) {}
+
+  virtual TypePtr getSupervisionType() const = 0;
+  virtual FunctionPtr createLearnableFunction() const = 0;
+  virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex) {}
+
+  // Function
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual String getOutputPostFix() const
+    {return T("Prediction");}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t input = builder.addInput(doubleVectorClass());
+    size_t supervision = builder.addInput(anyType);
+
+    FunctionPtr learnableFunction = createLearnableFunction();
+    size_t prediction = builder.addFunction(learnableFunction, input, supervision);
+    
+    // move evaluator
+    if (evaluator)
+    {
+      learnableFunction->setEvaluator(evaluator);
+      evaluator = EvaluatorPtr();
+    }
+    // set learners
+    learnableFunction->setOnlineLearner(learnerParameters->createOnlineLearner(builder.getContext()));
+    learnableFunction->setBatchLearner(learnerParameters->createBatchLearner(builder.getContext()));
+
+    buildPostProcessing(builder, prediction, supervision);
+  }
+
+protected:
+  friend class SupervisedNumericalFunctionClass;
+
+  LearnerParametersPtr learnerParameters;
+};
+
+typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
 
 class LinearRegressor : public SupervisedNumericalFunction
 {
@@ -124,6 +171,28 @@ public:
     {return multiLinearLearnableFunction();}
 };
 
+class LinearRankingMachine : public MapContainerFunction
+{
+public:
+  LinearRankingMachine(LearnerParametersPtr learnerParameters)
+    : MapContainerFunction(linearLearnableFunction()), learnerParameters(learnerParameters) {}
+  LinearRankingMachine() {}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    TypePtr res = MapContainerFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
+    if (!res)
+      return TypePtr();
+
+    setOnlineLearner(learnerParameters->createOnlineLearner(context));
+    setBatchLearner(learnerParameters->createBatchLearner(context));
+    return res;
+  }
+
+protected:
+  LearnerParametersPtr learnerParameters;
+};
+
 class LinearLearningMachine : public ProxyFunction
 {
 public:
@@ -150,6 +219,8 @@ public:
       return linearBinaryClassifier(learnerParameters);
     else if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       return linearMultiClassClassifier(learnerParameters);
+    else if (supervisionType->inheritsFrom(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)))
+      return linearRankingMachine(learnerParameters);
     else
       return FunctionPtr();
   }

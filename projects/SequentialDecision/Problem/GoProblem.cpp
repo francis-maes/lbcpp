@@ -75,6 +75,7 @@ GoState::GoState(const String& name, size_t size)
   for (size_t i = 0; i < size; ++i)
     for (size_t j = 0; j < size; ++j)
       freePositions.insert(Position(i, j));
+  availableActions = computeAvailableActions();
 }
 
 GoState::GoState() : time(0), whitePrisonerCount(0), blackPrisonerCount(0) {}
@@ -91,6 +92,8 @@ void GoState::addStone(Player player, size_t x, size_t y)
   previousPositions.push_front(position);
   if (previousPositions.size() > numPreviousPositions)
     previousPositions.pop_back();
+
+  availableActions = computeAvailableActions();
 
   ++time;
 }
@@ -173,7 +176,7 @@ void GoState::removePositionsFromPositionSet(PositionSet& res, const PositionSet
 TypePtr GoState::getActionType() const
   {return goActionClass;}
 
-ContainerPtr GoState::getAvailableActions() const
+ContainerPtr GoState::computeAvailableActions() const
 {
   bool testKo = (getCapturedAtPreviousTurn().size() == 1);
 
@@ -213,6 +216,7 @@ void GoState::clone(ExecutionContext& context, const ObjectPtr& t) const
   target->previousPositions = previousPositions;
   target->capturedAtPreviousTurn = capturedAtPreviousTurn;
   target->freePositions = freePositions;
+  target->availableActions = availableActions;
 }
 
 String GoState::toString() const
