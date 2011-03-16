@@ -50,7 +50,7 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     if (!minimumDistanceFromDiagonal)
-      return function->compute(context, inputs);
+      return function->compute(context, inputs, getNumInputs());
     
     size_t numInputs = getNumInputs();
     std::vector<Variable> subInputs(numInputs);
@@ -76,12 +76,12 @@ public:
     
     size_t outputDimension = output->getDimension();
     size_t dimension = outputDimension + minimumDistanceFromDiagonal;
-    SymmetricMatrixPtr res = symmetricMatrix(output->getElementType(), dimension);
+    SymmetricMatrixPtr res = symmetricMatrix(output->getElementsType(), dimension);
     for (size_t i = 0; i < dimension; ++i)
       for (size_t j = i; j < dimension; ++j)
       {
         if (i >= outputDimension || j < i + minimumDistanceFromDiagonal)
-          res->setElement(i, j, Variable::missingValue(res->getElementType()));
+          res->setElement(i, j, Variable::missingValue(res->getElementsType()));
         else
           res->setElement(i, j, output->getElement(i, j - minimumDistanceFromDiagonal));
       }
