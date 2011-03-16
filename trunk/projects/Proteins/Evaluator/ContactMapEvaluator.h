@@ -26,9 +26,9 @@ public:
   }
   ContactMapEvaluator() {}
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
   {
-    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context);
+    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context, function);
     res->getScoreObject(0)->setName(T("Classification"));
     res->getScoreObject(1)->setName(T("Roc Analisis"));
     return res;

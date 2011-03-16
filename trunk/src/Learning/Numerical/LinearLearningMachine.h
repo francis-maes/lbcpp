@@ -230,7 +230,7 @@ public:
   virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
     NumericalLearnableFunctionPtr res = rankingLearnableFunction(linearLearnableFunction());
-    res->setEvaluator(evaluator);
+    res->setEvaluator(rankingEvaluator());
     return res;
   }
 };

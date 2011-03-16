@@ -33,7 +33,7 @@ protected:
   
   BinaryClassificationScore scoreToOptimize;
   
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new BinaryClassificationConfusionMatrix(scoreToOptimize);}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
@@ -60,7 +60,7 @@ protected:
 
   BinaryClassificationScore scoreToOptimize;
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new ROCScoreObject(scoreToOptimize);}
   
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& scores) const
@@ -72,7 +72,7 @@ protected:
       jassert(false);
   }
 
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
     {scores.staticCast<ROCScoreObject>()->finalize();}
 };
 

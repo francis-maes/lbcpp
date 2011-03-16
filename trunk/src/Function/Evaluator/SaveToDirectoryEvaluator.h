@@ -20,7 +20,7 @@ public:
     : directory(directory), extension(extension) {}
   SaveToDirectoryEvaluator() {}
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
   {
     if (!directory.exists())
     {

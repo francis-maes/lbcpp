@@ -39,6 +39,11 @@
   </class>
   <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
 
+  <class name="CallbackBasedEvaluator" base="Evaluator" abstract="yes">
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
+  <class name="GoEpisodeFunctionEvaluator" base="CallbackBasedEvaluator"/>
+
   <class name="GoEpisodeFunction" base="Function">
     <variable type="LearnerParameters" name="learningParameters"/>
     <variable type="Function" name="rankingExampleCreator"/>

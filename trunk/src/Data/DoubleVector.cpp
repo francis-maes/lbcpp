@@ -117,6 +117,13 @@ bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type
   return true;
 }  
 
+SparseDoubleVectorPtr DoubleVector::toSparseVector() const
+{
+  SparseDoubleVectorPtr res(new SparseDoubleVector(getElementsEnumeration(), getElementsType()));
+  appendTo(res, 0);
+  return res;
+}
+
 /*
 ** SparseDoubleVector
 */
@@ -522,6 +529,14 @@ double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, siz
     return computedVector->dotProduct(denseVector, offsetInDenseVector);
   else
     return featureGenerator->dotProduct(&inputs[0], denseVector, offsetInDenseVector);
+}
+
+SparseDoubleVectorPtr LazyDoubleVector::toSparseVector() const
+{
+  if (computedVector)
+    return computedVector->toSparseVector();
+  else
+    return DoubleVector::toSparseVector();
 }
 
   // Vector
