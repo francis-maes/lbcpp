@@ -19,7 +19,10 @@ class ProteinPredictor : public CompositeFunction
 {
 public:
   ProteinPredictor(ProteinPredictorParametersPtr parameters);
-  ProteinPredictor() {}
+  ProteinPredictor()
+    : activeResiduePerception(false),
+      activeResiduePairPerception(false),
+      activeDisulfideResiduePairPerception(false) {}
 
   void addTarget(ProteinTarget target);
 
@@ -27,9 +30,13 @@ public:
 
 protected:
   friend class ProteinPredictorClass;
-  
+
   ProteinPredictorParametersPtr parameters;
   std::vector< std::pair<ProteinTarget, FunctionPtr> > targetPredictors;
+
+  bool activeResiduePerception;
+  bool activeResiduePairPerception;
+  bool activeDisulfideResiduePairPerception;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinPredictor> ProteinPredictorPtr;

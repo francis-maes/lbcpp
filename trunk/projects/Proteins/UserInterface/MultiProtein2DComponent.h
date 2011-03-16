@@ -92,6 +92,7 @@ public:
     protein1->setBoundsRelative(0, 0, 0.333f, 1.f);
     protein2->setBoundsRelative(0.333f, 0, 0.333f, 1.f);
     map->setBoundsRelative(0.666f, 0, 0.333f, 1.f);
+    setSize(getWidth(), 20);
   }
 
   virtual void comboBoxChanged(juce::ComboBox* comboBoxThatHasChanged)

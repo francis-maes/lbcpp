@@ -5,6 +5,9 @@
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
     <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>
+    <variable type="Boolean" name="activeResiduePerception"/>
+    <varaible type="Boolean" name="activeResiduePairPerception"/>
+    <variable type="Boolean" name="activeDisulfideResiduePairPerception"/>
   </class>
   
   <class name="ProteinSequentialPredictor" base="CompositeFunction">

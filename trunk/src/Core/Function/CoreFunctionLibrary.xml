@@ -45,6 +45,12 @@
     <variable type="Boolean" name="transmitIndexToGeneratorFunction"/>
   </class>
 
+  <!-- Generate Symmetric Matrix Function -->
+  <class name="CreateSymmetricMatrixFunction" base="Function">
+    <constructor arguments="FunctionPtr elementGeneratorFunction"/>
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
+
   <!-- Map Function -->
   <class name="MapContainerFunction" base="Function">
     <constructor arguments="const FunctionPtr&amp; function"/>

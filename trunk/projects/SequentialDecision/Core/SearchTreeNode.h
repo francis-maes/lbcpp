@@ -25,7 +25,7 @@ class SearchTreeNode : public Object
 {
 public:
   SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState = DecisionProblemStatePtr());
-  SearchTreeNode() : nodeIndex(0), allNodes(*(const SearchTreeNodeVector* )0) {}
+  SearchTreeNode() : allNodes(*(const SearchTreeNodeVector* )0), nodeIndex(0) {}
 
   void open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
 

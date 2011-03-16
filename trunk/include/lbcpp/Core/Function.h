@@ -222,6 +222,7 @@ extern FunctionPtr loadFromFilePairFunction(TypePtr expectedType1 = objectClass,
 
 extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction = true);
+extern FunctionPtr createSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction);
 
 extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
 

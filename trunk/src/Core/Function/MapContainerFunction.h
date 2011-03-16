@@ -13,6 +13,7 @@
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Learning/BatchLearner.h>
 # include <lbcpp/Data/DoubleVector.h>
+# include <lbcpp/Data/SymmetricMatrix.h>
 
 namespace lbcpp
 {
@@ -41,20 +42,25 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
+    bool isSymmetricMatrix = true;
     std::vector<VariableSignaturePtr> subInputVariables(inputVariables.size());
     for (size_t i = 0; i < subInputVariables.size(); ++i)
     {
       const VariableSignaturePtr& inputVariable = inputVariables[i];
       TypePtr elementsType = Container::getTemplateParameter(inputVariable->getType());
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));
+
+      isSymmetricMatrix &= inputVariables[i]->getType()->inheritsFrom(symmetricMatrixClass(anyType));
     }
     if (!function->initialize(context, subInputVariables))
       return TypePtr();
-
+    
     outputName = function->getOutputVariable()->getName() + T("Container");
     outputShortName = T("[") + function->getOutputVariable()->getShortName() + T("]");
     TypePtr outputType = function->getOutputType();
-    if (outputType->inheritsFrom(objectClass))
+    if (isSymmetricMatrix)
+      return symmetricMatrixClass(outputType);
+    else if (outputType->inheritsFrom(objectClass))
       return objectVectorClass(outputType);
     else if (outputType->inheritsFrom(doubleType))
     {
