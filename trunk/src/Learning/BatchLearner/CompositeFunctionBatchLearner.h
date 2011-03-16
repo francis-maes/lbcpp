@@ -141,6 +141,13 @@ protected:
       if (!trainFunctionSteps(context, function, readySteps, trainingStates, validationStates))
         return false;
 
+      // FIXME : JULIEN
+      if (function->getClassName() == T("ProteinSequentialPredictor"))
+      {
+        std::cout << "----- MakeProteinFunction -----" << std::endl;
+        Object::displayObjectAllocationInfo(std::cout);
+      }
+
       // update variableIsReady flags and step reference counts
       for (size_t i = 0; i < readySteps.size(); ++i)
       {
