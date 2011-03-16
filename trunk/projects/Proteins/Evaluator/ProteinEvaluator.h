@@ -77,6 +77,8 @@ public:
     addEvaluator(sa20Target, containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore)));
     addEvaluator(drTarget,   containerSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore)));
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
+//    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
+//    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
   }
   
   /* CompositeEvaluator */

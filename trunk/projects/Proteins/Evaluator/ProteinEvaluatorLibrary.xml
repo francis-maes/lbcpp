@@ -14,5 +14,9 @@
   </class>
 
   <class name="ProteinEvaluator" base="CompositeEvaluator"/>
+  
+  <class name="ContactMapEvaluator" base="SupervisedEvaluator">
+    <variable type="PositiveInteger" name="minimumDistance"/>
+  </class>
 
 </library>

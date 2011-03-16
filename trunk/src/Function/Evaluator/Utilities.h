@@ -159,6 +159,8 @@ private:
   double findBestThreshold(ScoreFunction measure, double& bestScore, double margin = 1.0) const;
 };
 
+typedef ReferenceCountedObjectPtr<ROCScoreObject> ROCScoreObjectPtr;
+
 };
 
 #endif // !LBCPP_FUNCTION_EVALUATOR_UTILITIES_H_

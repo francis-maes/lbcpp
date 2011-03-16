@@ -14,66 +14,54 @@
 
 namespace lbcpp
 {
-#if 0 // broken
-class ContactMapEvaluator : public OldEvaluator
+
+class ContactMapEvaluator : public CompositeEvaluator
 {
 public:
-  ContactMapEvaluator(const String& name, size_t minimumDistance)
-    : OldEvaluator(name),
-      classificationEvaluator(OldEvaluatorPtr()),  // FIXME
-      rocEvaluator(OldEvaluatorPtr()), // FIXME
-    minimumDistance(minimumDistance) {jassertfalse;}
-
-  virtual String toString() const
+  ContactMapEvaluator(size_t minimumDistance)
+    : minimumDistance(minimumDistance)
   {
-    String res = classificationEvaluator->toString();
-    String str2 = rocEvaluator->toString();
-    if (res.isNotEmpty() && str2.isNotEmpty())
-      res += T("\n");
-    res += str2;
+    addEvaluator(classificationEvaluator());
+    addEvaluator(rocAnalysisEvaluator());
+  }
+  ContactMapEvaluator() {}
+
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  {
+    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context);
+    res->getScoreObject(0)->setName(T("Classification"));
+    res->getScoreObject(1)->setName(T("Roc Analisis"));
     return res;
   }
-
-  virtual double getDefaultScore() const
-    {return rocEvaluator->getDefaultScore();}
-
-  virtual void getScores(std::vector< std::pair<String, double> >& res) const
+  
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
   {
-    classificationEvaluator->getScores(res);
-    rocEvaluator->getScores(res);
-  }
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject)
-  {
-    if (!correctObject.exists() || !predictedObject.exists())
-      return;
-
-    const SymmetricMatrixPtr& predicted = predictedObject.getObjectAndCast<SymmetricMatrix>(context);
-    const SymmetricMatrixPtr& correct = correctObject.getObjectAndCast<SymmetricMatrix>(context);
+    CompositeScoreObjectPtr scores = scoreObject.staticCast<CompositeScoreObject>();
+    const SymmetricMatrixPtr& predicted = output.getObjectAndCast<SymmetricMatrix>(context);
+    const SymmetricMatrixPtr& correct = example->getVariable(1).getObjectAndCast<SymmetricMatrix>(context);
 
     jassert(predicted->getDimension() == predicted->getDimension());
+    
+    VectorPtr supervisionContainer = vector(correct->getElementsType(), correct->getNumElements());
+    VectorPtr predictedContainer = vector(predicted->getElementsType(), predicted->getNumElements());
+    
     size_t n = predicted->getDimension();
     for (size_t i = 0; i < n; ++i)
       for (size_t j = i + minimumDistance; j < n; ++j)
       {
-        Variable predictedElement = predicted->getElement(i, j);
-        Variable correctElement = correct->getElement(i, j);
-        jassert(predictedElement.getType() == probabilityType && correctElement.getType() == probabilityType);
-        if (predictedElement.isMissingValue() || correctElement.isMissingValue())
-          continue;
-
-        bool shouldBePositive = correctElement.getDouble() > 0.5;
-        classificationEvaluator->addPrediction(context, predictedElement.getDouble() > 0.5, shouldBePositive);
-        rocEvaluator->addPrediction(context, predictedElement.getDouble(), shouldBePositive);
+        supervisionContainer->append(correct->getElement(i, j));
+        predictedContainer->append(predicted->getElement(i, j));
       }
+
+    return evaluators[0]->updateScoreObject(context, scores->getScoreObject(0), new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer), predictedContainer)
+           && evaluators[1]->updateScoreObject(context, scores->getScoreObject(1), new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer), predictedContainer);
   }
 
 protected:
-  OldEvaluatorPtr classificationEvaluator;
-  OldEvaluatorPtr rocEvaluator;
+  friend class ContactMapEvaluatorClass;
+  
   size_t minimumDistance;
 };
-#endif // 0
 
 }; /* namespace lbcpp */
 

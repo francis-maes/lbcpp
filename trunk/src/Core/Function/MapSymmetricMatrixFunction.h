@@ -73,7 +73,7 @@ public:
     SymmetricMatrixPtr output = function->compute(context, subInputs).getObjectAndCast<SymmetricMatrix>();
     if (!output)
       return Variable::missingValue(getOutputType());
-    
+
     size_t outputDimension = output->getDimension();
     size_t dimension = outputDimension + minimumDistanceFromDiagonal;
     SymmetricMatrixPtr res = symmetricMatrix(output->getElementsType(), dimension);
