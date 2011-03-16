@@ -28,7 +28,6 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
-      
       // TODO arnaud : add getBuilder() in Distribution.h
       IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
       distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,3));
@@ -46,11 +45,11 @@ namespace lbcpp
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,10));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,15));
       
-      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions); //Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+      ProteinGridEvoOptimizerStatePtr state = /*new ProteinGridEvoOptimizerState(distributions);*/ Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
       
-      size_t totalNumberWuRequested = 60;
-      size_t numberWuToUpdate = 20;
-      size_t numberWuInProgress = 60;
+      size_t totalNumberWuRequested = 20;
+      size_t numberWuToUpdate = 10;
+      size_t numberWuInProgress = 4;
       size_t ratioUsedForUpdate = 2;
       String projectName(T("BoincFirstStage"));
       String source(T("boincadm@boinc.run"));
@@ -59,12 +58,14 @@ namespace lbcpp
       size_t managerPort = 1664;
       size_t requiredMemory = 1;
       size_t requiredTime = 1;
-      size_t timeToSleep = 5*60;  // in seconds
+      size_t timeToSleep = 10;  // in seconds
       
-      GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
-                                                           managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
+      //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
+      //                                                     managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
+      //return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+      
+      EvoOptimizerPtr optimizer = new EvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, timeToSleep);
       return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
-      
       
       //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
       //WorkUnitPtr wu = state->generateSampleWU(context);

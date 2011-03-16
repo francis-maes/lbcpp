@@ -45,10 +45,159 @@ protected:
   
   friend class GridEvoOptimizerStateClass;
   friend class GridEvoOptimizer;  // so that optimizer has access to state variables
-  
+  friend class EvoOptimizer;  //TODO arnaud
 };
 typedef ReferenceCountedObjectPtr<GridEvoOptimizerState> GridEvoOptimizerStatePtr;  
 extern ClassPtr gridEvoOptimizerStateClass; 
+  
+
+  // TODO arnaud : put this class in antoher file
+  class RunWorkUnit : public WorkUnit
+  {
+  public:
+    RunWorkUnit() {}
+    RunWorkUnit(const File f) : f(f) {}
+    virtual Variable run(ExecutionContext& context) {
+      // replace default context
+      ExecutionContextPtr newContext = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());
+      ExecutionCallbackPtr makeTraceCallback;
+      ExecutionTracePtr trace = new ExecutionTrace(newContext->toString());
+      makeTraceCallback = makeTraceExecutionCallback(trace);
+      newContext->appendCallback(makeTraceCallback);
+      
+      // run work unit either from file or from arguments
+      WorkUnitPtr wu = Object::createFromFile(*newContext, f).staticCast<WorkUnit>();
+      newContext->run(wu);
+      
+      newContext->removeCallback(makeTraceCallback);
+      trace->saveToFile(*newContext, File::getCurrentWorkingDirectory().getChildFile(f.getFileNameWithoutExtension() + T(".trace")));
+      
+      return 0;
+   
+    }
+  protected:
+    friend class RunWorkUnitClass;
+  private:
+    File f;
+  };
+// TODO arnaud : put this class in antoher file  
+class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use public Optimizer instead of GridOptimizer
+{
+public:
+  EvoOptimizer() {}
+  EvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep) :
+  totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep) {}
+  
+  virtual TypePtr getRequiredStateType() const
+    {return gridEvoOptimizerStateClass;}
+  
+  virtual Variable optimize(ExecutionContext& context, const GridOptimizerStatePtr& state_, const FunctionPtr& getVariableFromTrace, const FunctionPtr& getScoreFromTrace) const
+  {    
+    // save initial state
+    GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
+    state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));  // TODO arnaud : file name as args ?
+    
+    ExecutionContextPtr newContext = multiThreadedExecutionContext((size_t)juce::SystemStats::getNumCpus());
+    std::vector<String>::iterator it2;
+    for(it2 = state->inProgressWUs.begin(); it2 != state->inProgressWUs.end(); )  // restart WUs
+    {
+      WorkUnitPtr wu = new RunWorkUnit(File::getCurrentWorkingDirectory().getChildFile(*it2 + T(".workUnit")));
+      newContext->pushWorkUnit(wu);
+    }
+    
+    
+    while (state->totalNumberEvaluatedWUs < totalNumberWuRequested) 
+    {
+      while (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
+      {
+        WorkUnitPtr wu = state->generateSampleWU(context);
+        wu->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String((int) state->totalNumberGeneratedWUs) + T(".workUnit"))); 
+        wu = new RunWorkUnit(File::getCurrentWorkingDirectory().getChildFile(String((int) state->totalNumberGeneratedWUs) + T(".workUnit")));
+        newContext->pushWorkUnit(wu);
+        state->inProgressWUs.push_back(String((int) state->totalNumberGeneratedWUs));
+        state->totalNumberGeneratedWUs++;
+      }
+            
+      // TODO p e un if pour éviter de sauver tt le temps
+      // save state
+      File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
+      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
+      context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
+      
+      Thread::sleep(timeToSleep*1000);
+
+      std::vector<String>::iterator it;
+      for(it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
+      {
+        File f = File::getCurrentWorkingDirectory().getChildFile(*it + T(".trace"));
+        if(f.existsAsFile())
+        {
+            state->currentEvaluatedWUs.push_back(*it);
+            state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
+            File::getCurrentWorkingDirectory().getChildFile(*it + T(".workUnit")).deleteFile();
+            state->inProgressWUs.erase(it);
+        }
+        else 
+          ++it;
+      }
+      
+      // enough WUs evaluated -> update distribution (with best results)
+      if (state->currentEvaluatedWUs.size() >= numberWuToUpdate || (state->totalNumberGeneratedWUs == totalNumberWuRequested && state->inProgressWUs.size() == 0)) 
+      {
+        context.informationCallback(T("Updating state ..."));
+        std::multimap<double, Variable> resultsMap; // mutlimap used to sort results by score
+        std::vector<String>::iterator it;
+        for(it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) 
+        {
+          ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(*it + T(".trace"))).staticCast<ExecutionTrace>();
+          double score = getScoreFromTrace->compute(context, trace).getDouble();
+          Variable var = getVariableFromTrace->compute(context, trace);
+          resultsMap.insert(std::pair<double, Variable>(score,var));
+        }
+        
+        IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = state->distributions->createBuilder();
+        size_t nb = 0;
+        std::multimap<double, Variable>::reverse_iterator mapIt;
+        // best results : use them then delete
+        for (mapIt = resultsMap.rbegin(); mapIt != resultsMap.rend() && nb < state->currentEvaluatedWUs.size()/ratioUsedForUpdate; mapIt++)
+        {
+          distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
+          nb++;
+        }
+        state->distributions = distributionsBuilder->build(context);
+        
+        if ((*(resultsMap.rbegin())).first > state->bestScore) {
+          state->bestScore = (*(resultsMap.rbegin())).first;
+          state->bestVariable = (*(resultsMap.rbegin())).second;
+          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T("% )"));
+        }
+        
+        state->currentEvaluatedWUs.clear(); // clear map
+        context.informationCallback(T("State updated"));
+        
+        // save state
+        File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
+        state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
+        context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
+      }
+    }
+    
+    return state->bestVariable;
+  }
+  
+protected:  
+  friend class EvoOptimizerClass;
+  
+private:
+  size_t totalNumberWuRequested;
+  size_t numberWuToUpdate;
+  size_t numberWuInProgress;
+  size_t ratioUsedForUpdate;
+  size_t timeToSleep; // in seconds
+  
+};
+  typedef ReferenceCountedObjectPtr<EvoOptimizer> EvoOptimizerPtr;
+
   
 class GridEvoOptimizer : public GridOptimizer
 {
@@ -58,8 +207,8 @@ public:
                    String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep) : 
   totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate),
   projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), requiredMemory(requiredMemory), requiredTime(requiredTime), timeToSleep(timeToSleep) 
-  {requiredCpus = 1;}
-  
+  {requiredCpus = 1;} // TODO arnaud : edit for NIC3
+  // TODO arnaud : check nbevalute < nbinprogress
   
   
   virtual TypePtr getRequiredStateType() const
@@ -105,7 +254,7 @@ public:
         state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
         context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).getFullPathName());
         
-        continue;
+        continue; // TODO arnaud : maybe not a good idea
       }
       
       

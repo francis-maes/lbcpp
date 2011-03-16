@@ -132,7 +132,7 @@ int compare_results(RESULT & r1, void* data1, RESULT const& r2, void* data2, boo
   }
 
   for (unsigned i = 0; i < scores1->size(); ++i)
-    if (fabs(scores1->at(i) - scores2->at(i)) > 0.0000001)
+    if (fabs(scores1->at(i) - scores2->at(i)) > 0.00001)
     {
       match = false;
       return 0;

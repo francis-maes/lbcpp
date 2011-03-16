@@ -22,6 +22,19 @@
     <variable type="PositiveInteger" name="timeToSleep"/>
   </class>
   
+  <class name="EvoOptimizer" base="GridOptimizer">
+  <constructor arguments="size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep"/>
+    <variable type="PositiveInteger" name="totalNumberWuRequested"/>
+    <variable type="PositiveInteger" name="numberWuToUpdate"/>
+    <variable type="PositiveInteger" name="numberWuInProgress"/>
+    <variable type="PositiveInteger" name="ratioUsedForUpdate"/>
+    <variable type="PositiveInteger" name="timeToSleep"/>
+  </class>
+  <class name="RunWorkUnit" base="WorkUnit">
+  <constructor arguments="const File f"/>
+  <variable type="File" name="f"/>
+  </class>
+  
   <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
     <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
     <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
