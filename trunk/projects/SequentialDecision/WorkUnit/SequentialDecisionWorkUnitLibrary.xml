@@ -27,6 +27,10 @@
   <class name="DecisionProblemStateActionsPerception" base="Function">
     <variable type="Function" name="stateActionPerception"/>
   </class>
+  <class name="DecisionProblemStateActionsRankingCostsFunction" base="Function"/>
+  <class name="DecisionProblemStateActionsRankingExample" base="CompositeFunction">
+    <variable type="Function" name="stateActionPerception"/>
+  </class>
   <class name="GoActionIdentifierFeature" base="FeatureGenerator"/>
   <class name="GoStateActionFeatures" base="CompositeFunction"/>
 
@@ -34,6 +38,12 @@
     <variable type="ScalarVariableMean" name="predictionRate"/>
   </class>
   <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
+
+  <class name="GoEpisodeFunction" base="Function">
+    <variable type="LearnerParameters" name="learningParameters"/>
+    <variable type="Function" name="rankingExampleCreator"/>
+    <variable type="Function" name="rankingMachine"/>
+  </class>
 
   <class name="GoSandBox" base="WorkUnit">
     <variable type="File" name="gamesDirectory"/>

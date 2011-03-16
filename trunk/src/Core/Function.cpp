@@ -164,6 +164,8 @@ Variable Function::compute(ExecutionContext& context, const std::vector<Variable
 
 Variable Function::computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const
 {
+  jassert(inputsObject);
+
   if (getNumInputs() == 1 && inputsObject->getClass()->inheritsFrom(getRequiredInputType(0, 1)))
   {
     Variable in(inputsObject);
