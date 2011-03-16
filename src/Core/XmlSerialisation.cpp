@@ -101,6 +101,25 @@ void XmlExporter::leave()
   getCurrentElement()->addChildElement(elt);
 }
 
+void XmlExporter::addTextElement(const String& text)
+{
+  enum {lineLength = 60};
+  int n = text.length();
+  int b = 0;
+  while (b < n)
+  {
+    int e = -1;
+    if (b + lineLength < n)
+      e = text.indexOfAnyOf(T(" \t\n\r"), b + lineLength);
+    if (e < 0)
+      e = n;
+    getCurrentElement()->addTextElement(text.substring(b, e));
+    b = e;
+    if (b < n)
+      getCurrentElement()->addTextElement(T("\n"));
+  }
+}
+
 void XmlExporter::writeName(const String& name)
 {
   juce::XmlElement* elt = getCurrentElement();

@@ -28,7 +28,7 @@ public:
 
   virtual TypePtr getInputType() const = 0;
   virtual TypePtr getSupervisionType() const = 0;
-  virtual FunctionPtr createLearnableFunction() const = 0;
+  virtual NumericalLearnableFunctionPtr createLearnableFunction() const = 0;
   virtual void buildPostProcessing(CompositeFunctionBuilder& builder, size_t predictionIndex, size_t supervisionIndex) {}
 
   // Function
@@ -46,7 +46,8 @@ public:
     size_t input = builder.addInput(getInputType());
     size_t supervision = builder.addInput(anyType);
 
-    FunctionPtr learnableFunction = createLearnableFunction();
+    if (!learnableFunction)
+      learnableFunction = createLearnableFunction();
     size_t prediction = builder.addFunction(learnableFunction, input, supervision);
     
     // move evaluator
@@ -66,6 +67,7 @@ protected:
   friend class SupervisedNumericalFunctionClass;
 
   LearnerParametersPtr learnerParameters;
+  NumericalLearnableFunctionPtr learnableFunction;
 };
 
 typedef ReferenceCountedObjectPtr<SupervisedNumericalFunction> SupervisedNumericalFunctionPtr;
@@ -85,9 +87,9 @@ public:
   virtual TypePtr getSupervisionType() const
     {return doubleType;}
 
-  virtual FunctionPtr createLearnableFunction() const
+  virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
-    FunctionPtr res = linearLearnableFunction();
+    NumericalLearnableFunctionPtr res = linearLearnableFunction();
     res->setEvaluator(regressionEvaluator());
     return res;
   }
@@ -116,9 +118,9 @@ public:
     builder.addFunction(signedScalarToProbabilityFunction(), predictionIndex);
   }
 
-  virtual FunctionPtr createLearnableFunction() const
+  virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
-    FunctionPtr res = linearLearnableFunction();
+    NumericalLearnableFunctionPtr res = linearLearnableFunction();
     res->setEvaluator(binaryClassificationEvaluator()); // todo: connect with scoreToOptimize
     return res;
   }
@@ -195,9 +197,9 @@ public:
     scoresToProbabilities->setBatchLearner(BatchLearnerPtr());
   }
 
-  virtual FunctionPtr createLearnableFunction() const
+  virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
-    FunctionPtr res = multiLinearLearnableFunction();
+    NumericalLearnableFunctionPtr res = multiLinearLearnableFunction();
     res->setEvaluator(classificationEvaluator());
     return res;
   }
@@ -225,9 +227,9 @@ public:
     scoresToProbabilities->setBatchLearner(BatchLearnerPtr());*/
   }
 
-  virtual FunctionPtr createLearnableFunction() const
+  virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
-    FunctionPtr res = rankingLearnableFunction(linearLearnableFunction());
+    NumericalLearnableFunctionPtr res = rankingLearnableFunction(linearLearnableFunction());
     res->setEvaluator(evaluator);
     return res;
   }

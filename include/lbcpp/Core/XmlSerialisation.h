@@ -53,12 +53,14 @@ public:
   void writeObject(const ObjectPtr& object, TypePtr expectedType);
   void leave();
 
-  void addTextElement(const String& text)
-    {getCurrentElement()->addTextElement(text);}
+  void addTextElement(const String& text);
 
   template<class TT>
   void setAttribute(const String& name, const TT& value)
     {getCurrentElement()->setAttribute(name, value);}
+
+  void setAttribute(const String& name, size_t value)
+    {getCurrentElement()->setAttribute(name, (int)value);}
 
   void addChildElement(juce::XmlElement* elt)
     {getCurrentElement()->addChildElement(elt);}

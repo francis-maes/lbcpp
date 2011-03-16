@@ -53,7 +53,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), input) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), input) : (size_t)-1;
-  size_t disulfideResiduePairPerception = activeDisulfideResiduePairPerception ? 0.0 : (size_t)-1; // FIXME julien
+  size_t disulfideResiduePairPerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
 
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);

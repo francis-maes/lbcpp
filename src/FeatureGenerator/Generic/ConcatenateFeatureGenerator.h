@@ -37,7 +37,8 @@ public:
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
+    // create enum
+    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("concatenatedFeatures(") + String((int)inputVariables.size()) + T(" doubles)"));
     elementsType = TypePtr();
     size_t numInputs = inputVariables.size();
     for (size_t i = 0; i < numInputs; ++i)
@@ -95,7 +96,8 @@ public:
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("ConcatenatedFeatures"));
+    // make enum name
+    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("concatenatedFeatures(") + String((int)inputVariables.size()) + T(" double vectors)"));
     elementsType = TypePtr();
     size_t numInputs = inputVariables.size();
     shifts.resize(numInputs);
