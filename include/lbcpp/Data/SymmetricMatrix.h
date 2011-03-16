@@ -124,6 +124,21 @@ public:
     {BuiltinTypeSymmetricMatrix<ObjectPtr>::setElement(index, value.getObject());}
 };
 
+/*
+ ** Symmetric Matrix Constructor Method
+ */
+inline SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension)
+{
+  jassert(elementsType);
+  if (elementsType->inheritsFrom(doubleType))
+    return new DoubleSymmetricMatrix(elementsType, dimension, 0.0);
+  else if (elementsType->inheritsFrom(objectClass))
+    return new ObjectSymmetricMatrix(elementsType, dimension, ObjectPtr());
+  else
+    jassertfalse;
+  return SymmetricMatrixPtr();
+}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DATA_SYMMETRIC_MATRIX_H_

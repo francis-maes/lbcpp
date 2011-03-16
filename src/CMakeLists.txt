@@ -136,6 +136,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/GetElementFunction.h
   Core/Function/CreateObjectFunction.h
   Core/Function/CreateVectorFunction.h
+  Core/Function/CreateSymmetricMatrixFunction.h
   Core/Function/LoadFromFileFunction.h
   Core/Function/MapContainerFunction.h
   Core/Function/ComposeFunction.h

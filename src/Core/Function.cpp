@@ -216,7 +216,6 @@ ScoreObjectPtr Function::train(ExecutionContext& context, const ContainerPtr& tr
   if (doScope)
     context.enterScope(scopeName);
   ScoreObjectPtr res;
-  bool failed = false;
 
   // auto-initialize given examples type
   if (isInitialized() || initializeWithInputsObjectClass(context, trainingData->getElementsType()))

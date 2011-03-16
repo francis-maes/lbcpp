@@ -121,7 +121,7 @@ public:
   {
     ScalarVectorFunctionPtr scalarVectorFunction = lossFunction.dynamicCast<ScalarVectorFunction>();
     jassert(scalarVectorFunction);
-    const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
+    //const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
     const Variable& supervision = inputs[1];
     const DenseDoubleVectorPtr& predictedScores = prediction.getObjectAndCast<DenseDoubleVector>(); 
 

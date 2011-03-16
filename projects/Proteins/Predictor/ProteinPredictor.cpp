@@ -10,7 +10,10 @@
 using namespace lbcpp;
 
 ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = ProteinPredictorParametersPtr())
-  : parameters(parameters)
+  : parameters(parameters),
+    activeResiduePerception(false),
+    activeResiduePairPerception(false),
+    activeDisulfideResiduePairPerception(false)
 {
 }
 
@@ -19,15 +22,39 @@ void ProteinPredictor::addTarget(ProteinTarget target)
   FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
   targetPredictors.push_back(std::make_pair(target, targetPredictor));
+  switch (target) {
+    case ss3Target:
+    case ss8Target:
+    case stalTarget:
+    case saTarget:
+    case sa20Target:
+    case drTarget:
+      activeResiduePerception = true;
+      break;
+    case cma8Target:
+    case cmb8Target:
+    case dmaTarget:
+    case dmbTarget:
+      activeResiduePairPerception = true;
+      break;
+    case dsbTarget:
+      activeDisulfideResiduePairPerception = true;
+      break;
+    default:
+      jassertfalse;
+      break;
+  }
 }
 
 void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 {
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
-  size_t residuePerception = builder.addFunction(parameters->createResidueVectorPerception(), input);
-  size_t residuePairPerception = 0; // = builder.addFunction(parameters->createResiduePairVectorPerception(), input); // FIXME JULIEN
-  
+
+  size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), input) : (size_t)-1;
+  size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), input) : (size_t)-1;
+  size_t disulfideResiduePairPerception = activeDisulfideResiduePairPerception ? 0.0 : (size_t)-1; // FIXME julien
+
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);
   for (size_t i = 0; i < targetPredictors.size(); ++i)
@@ -43,7 +70,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
         elementsType->inheritsFrom(probabilityType))                                     // probability sequences
       targetPredictorInput = residuePerception;                                          // -> residue perceptions
     else if (elementsType->inheritsFrom(symmetricMatrixClass(probabilityType)))          // contact maps
-      targetPredictorInput = residuePairPerception;                                      // -> residue pair perception
+      targetPredictorInput = (target == dsbTarget) ? disulfideResiduePairPerception : residuePairPerception; // -> residue pair perception                                     
     else
       jassert(false);
 

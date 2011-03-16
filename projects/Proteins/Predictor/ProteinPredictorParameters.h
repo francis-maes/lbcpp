@@ -94,7 +94,10 @@ public:
       stalDiscretization(2), stalEntropyDiscretization(3),
       sa20Discretization(5),
       drDiscretization(5),
-      residueGlobalFeatures(true), residueWindowSize(15), residueLocalMeanSize(15), residueMediumMeanSize(50)
+      residueGlobalFeatures(true), residueWindowSize(15),
+      residueLocalMeanSize(15), residueMediumMeanSize(50),
+      residuePairGlobalFeatures(true), residuePairWindowSize(15),
+      residuePairLocalMeanSize(15), residuePairMediumMeanSize(50)
   {
   }
 
@@ -125,6 +128,12 @@ public:
   size_t residueWindowSize;
   size_t residueLocalMeanSize;
   size_t residueMediumMeanSize;
+  
+  // pair
+  bool residuePairGlobalFeatures;
+  size_t residuePairWindowSize;
+  size_t residuePairLocalMeanSize;
+  size_t residuePairMediumMeanSize;
 
   virtual String toString() const
     {return T("(") + defaultToStringImplementation(false) + T(")");}
