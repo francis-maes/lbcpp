@@ -1,8 +1,4 @@
  
-* Shared generated objects:
-    - New XmlExporter::saveGeneratedObject(const String& identifier, ObjectPtr object) -> as a shared object
-    - New ObjectPtr Object::loadGeneratedObjectFromXml(XmlImporter& importer)
-    - XmlImporter::loadGeneratedObject ...
  
 Go:
  * GoEpisodeEvaluator
@@ -12,6 +8,11 @@ Go:
 
 Proteins:
  ** ProteinLearner: Serialisation des models
+   -> Shared dynamic object
+    * Rajouter un attribute "generated" dans les Library.xml
+    * Dans function, le outputtype est generated
+    * Dans les featuregenerator, le FeaturesEnumeration est generated
+
  * Ajouter des features de segments
 
 Core:

@@ -28,8 +28,8 @@ public:
   virtual TypePtr getRequiredSupervisionType() const
     {return elementEvaluator->getRequiredSupervisionType();}
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
-    {return elementEvaluator->createEmptyScoreObject(context);}
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+    {return elementEvaluator->createEmptyScoreObject(context, function);}
   
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
   {
@@ -56,8 +56,8 @@ public:
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
     {elementEvaluator->addPrediction(context, prediction, supervision, result);}
 
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const
-    {elementEvaluator->finalizeScoreObject(scores);}
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
+    {elementEvaluator->finalizeScoreObject(scores, function);}
 
 protected:
   friend class ContainerSupervisedEvaluatorClass;

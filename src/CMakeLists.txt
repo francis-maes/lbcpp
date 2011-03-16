@@ -376,6 +376,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/BinaryClassificationEvaluator.h
   Function/Evaluator/ClassificationEvaluator.h
   Function/Evaluator/RegressionEvaluator.h
+  Function/Evaluator/RankingEvaluator.h
   Function/Evaluator/MultiLabelClassificationEvaluator.h
   Function/Evaluator/DefaultSupervisedEvaluator.h
   Function/Evaluator/SaveToDirectoryEvaluator.h

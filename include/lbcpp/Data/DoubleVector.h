@@ -79,6 +79,8 @@ public:
   void subtractFrom(const DenseDoubleVectorPtr& denseVector)
     {addWeightedTo(denseVector, 0, -1.0);}
 
+  virtual SparseDoubleVectorPtr toSparseVector() const;
+
   lbcpp_UseDebuggingNewOperator
 };
 
@@ -119,6 +121,8 @@ public:
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual SparseDoubleVectorPtr toSparseVector() const
+    {return refCountedPointerFromThis(this);}
 
   // Vector
   virtual void clear();
@@ -248,6 +252,7 @@ public:
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
+  virtual SparseDoubleVectorPtr toSparseVector() const;
 
   // Vector
   virtual void clear();

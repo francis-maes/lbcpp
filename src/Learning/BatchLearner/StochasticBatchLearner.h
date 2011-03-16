@@ -86,6 +86,8 @@ protected:
 
   void doEpisode(ExecutionContext& context, const FunctionPtr& function, const ObjectPtr& inputs, const OnlineLearnerPtr& onlineLearner) const
   {
+    if (!inputs)
+      return; // empty episode
     onlineLearner->startEpisode(inputs);
     Variable output = function->computeWithInputsObject(context, inputs);
     onlineLearner->finishEpisode(inputs, output);

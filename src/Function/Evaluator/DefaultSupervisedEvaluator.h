@@ -32,6 +32,8 @@ public:
       return binaryClassificationEvaluator();
     if (supervisionType->inheritsFrom(enumValueType) || supervisionType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)))
       return classificationEvaluator();
+    else if (supervisionType->inheritsFrom(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)))
+      return rankingEvaluator();
     //if (supervisionType->inheritsFrom(objectClass) && supervisionType == predictedType)
     //  return multiLabelClassificationEvaluator();
     return EvaluatorPtr();

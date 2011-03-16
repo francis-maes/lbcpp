@@ -82,9 +82,10 @@ public:
     {return scoreObjectClass;}
 
   /* Evaluator */
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const = 0;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const = 0;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example) const;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const {}
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const {}
   
 protected:
   friend class ProxyEvaluator;
@@ -115,9 +116,9 @@ public:
     {evaluators.push_back(evaluator);}
   
   /* Evaluator */
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const;
 
 protected:
   std::vector<EvaluatorPtr> evaluators;
@@ -129,9 +130,9 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const;
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores) const;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const;
 
 protected:
   EvaluatorPtr implementation;
@@ -157,6 +158,9 @@ extern SupervisedEvaluatorPtr multiLabelClassificationEvaluator();
 
 // Regression
 extern SupervisedEvaluatorPtr regressionEvaluator();
+
+// Ranking
+extern SupervisedEvaluatorPtr rankingEvaluator();
 
 // Default supervised evaluator
 extern EvaluatorPtr defaultSupervisedEvaluator();

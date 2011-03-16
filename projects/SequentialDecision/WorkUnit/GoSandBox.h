@@ -17,7 +17,9 @@
 namespace lbcpp
 {
 
-/////////////////
+///////////////////////////////
+// More/less generic DP stuff /
+///////////////////////////////
 
 // State, Action -> DoubleVector
 class DecisionProblemStateActionsRankingCostsFunction : public SimpleBinaryFunction
@@ -109,7 +111,9 @@ protected:
   FunctionPtr stateActionPerception;
 };
 
-////////////////////////////////////////////
+///////////////////////////////
+////////// Go Features ////////
+///////////////////////////////
 
 class GoActionIdentifierFeature : public FeatureGenerator
 {
@@ -162,51 +166,10 @@ public:
   }
 };
 
-////////////////////////////////////////////
 
-class GoActionScoringScoreObject : public ScoreObject
-{
-public:
-  GoActionScoringScoreObject() : predictionRate(new ScalarVariableMean(T("predictionRate"))) {}
-
-  bool add(ExecutionContext& context, const DenseDoubleVectorPtr& scores, size_t correctAction)
-  {
-    int index = scores->getIndexOfMaximumValue();
-    if (index < 0)
-    {
-      context.errorCallback(T("Could not find maximum score"));
-      return false;
-    }
-    predictionRate->push((size_t)index == correctAction ? 1.0 : 0.0);
-    return true;
-  }
-
-  virtual double getScoreToMinimize() const
-    {return 1.0 - predictionRate->getMean();} // prediction error
-
-private:
-  friend class GoActionScoringScoreObjectClass;
-
-  ScalarVariableMeanPtr predictionRate;
-};
-
-class GoActionScoringEvaluator : public SupervisedEvaluator
-{
-public:
-  virtual TypePtr getRequiredPredictionType() const
-    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
-
-  virtual TypePtr getRequiredSupervisionType() const
-    {return positiveIntegerType;}
-
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
-    {return new GoActionScoringScoreObject();}
-
-  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
-    {result.staticCast<GoActionScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), (size_t)supervision.getInteger());}
-};
-
-//////////
+///////////////////////////////
+/////// User Interface ////////
+///////////////////////////////
 
 class GoStateComponent : public MatrixComponent
 {
@@ -222,6 +185,10 @@ public:
     return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
   }
 };
+
+///////////////////////////////
+/////// GoEpisodeFunction /////
+///////////////////////////////
 
 // InitialState, Trajectory -> Nil
 class GoEpisodeFunction : public SimpleBinaryFunction
@@ -240,8 +207,6 @@ public:
     TypePtr rankingExampleType = rankingExampleCreator->getOutputType();
     if (!rankingMachine->initialize(context, rankingExampleType->getMemberVariableType(0), rankingExampleType->getMemberVariableType(1)))
       return TypePtr();
-    //setEvaluator(containerSupervisedEvaluator(new GoActionScoringEvaluator()));
-    setBatchLearner(learningParameters->createBatchLearner(context));
     return SimpleBinaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
  
@@ -266,6 +231,9 @@ public:
     }
     return res;
   }
+
+  const FunctionPtr& getRankingMachine() const
+    {return rankingMachine;}
  
 protected:
   friend class GoEpisodeFunctionClass;
@@ -275,7 +243,122 @@ protected:
   FunctionPtr rankingMachine;
 };
 
+typedef ReferenceCountedObjectPtr<GoEpisodeFunction> GoEpisodeFunctionPtr;
 
+///////////////////////////////
+/////// Evaluators ////////////
+///////////////////////////////
+
+class CallbackBasedEvaluator : public Evaluator
+{
+public:
+  CallbackBasedEvaluator(EvaluatorPtr evaluator)
+    : evaluator(evaluator), callback(NULL) {}
+
+  virtual FunctionPtr getFunctionToListen(const FunctionPtr& evaluatedFunction) const = 0;
+
+  struct Callback : public FunctionCallback
+  {
+    Callback(const EvaluatorPtr& evaluator, const ScoreObjectPtr& scores)
+      : evaluator(evaluator), scores(scores) {}
+
+    EvaluatorPtr evaluator;
+    ScoreObjectPtr scores;
+
+    virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output)
+    {
+      ObjectPtr inputsObject = Object::create(function->getInputsClass());
+      for (size_t i = 0; i < inputsObject->getNumVariables(); ++i)
+        inputsObject->setVariable(i, inputs[i]);
+      evaluator->updateScoreObject(context, scores, inputsObject, output);
+    }
+  };
+
+  /* Evaluator */
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+  {
+    ScoreObjectPtr res = evaluator->createEmptyScoreObject(context, function);
+    FunctionPtr functionToListen = getFunctionToListen(function);
+    functionToListen->addPostCallback(const_cast<CallbackBasedEvaluator* >(this)->callback = new Callback(evaluator, res));
+    return res;
+  }
+
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+    {return true;}
+  
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
+  {
+    evaluator->finalizeScoreObject(scores, function);
+    getFunctionToListen(function)->removePostCallback(callback);
+    deleteAndZero(const_cast<CallbackBasedEvaluator* >(this)->callback);
+  }
+
+protected:
+  friend class CallbackBasedEvaluatorClass;
+
+  EvaluatorPtr evaluator;
+  Callback* callback; // pas bien: effet de bord
+};
+
+////
+
+class GoActionScoringScoreObject : public ScoreObject
+{
+public:
+  GoActionScoringScoreObject() : predictionRate(new ScalarVariableMean(T("predictionRate"))) {}
+
+  bool add(ExecutionContext& context, const DenseDoubleVectorPtr& scores, const DenseDoubleVectorPtr& costs)
+  {
+    int index = scores->getIndexOfMaximumValue();
+    if (index < 0)
+    {
+      context.errorCallback(T("Could not find maximum score"));
+      return false;
+    }
+    predictionRate->push(costs->getValue(index) < 0 ? 1.0 : 0.0);
+    return true;
+  }
+
+  virtual double getScoreToMinimize() const
+    {return 1.0 - predictionRate->getMean();} // prediction error
+
+private:
+  friend class GoActionScoringScoreObjectClass;
+
+  ScalarVariableMeanPtr predictionRate;
+};
+
+class GoActionScoringEvaluator : public SupervisedEvaluator
+{
+public:
+  virtual TypePtr getRequiredPredictionType() const
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
+
+  virtual TypePtr getRequiredSupervisionType() const
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
+
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+    {return new GoActionScoringScoreObject();}
+
+  virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
+    {result.staticCast<GoActionScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
+};
+
+class GoEpisodeFunctionEvaluator : public CallbackBasedEvaluator
+{
+public:
+  GoEpisodeFunctionEvaluator() : CallbackBasedEvaluator(new GoActionScoringEvaluator()) {}
+
+  virtual FunctionPtr getFunctionToListen(const FunctionPtr& evaluatedFunction) const
+  {
+    const GoEpisodeFunctionPtr& episodeFunction = evaluatedFunction.staticCast<GoEpisodeFunction>();
+    return episodeFunction->getRankingMachine();
+  }
+};
+
+///////////////////////////////
+////////// SandBox ////////////
+///////////////////////////////
 class GoSandBox : public WorkUnit
 {
 public:
@@ -367,6 +450,8 @@ public:
     FunctionPtr goEpisodeFunction = new GoEpisodeFunction(learningParameters, rankingExampleCreator, rankingMachine);
     if (!goEpisodeFunction->initialize(context, goStateClass, containerClass(goActionClass)))
       return false;
+    goEpisodeFunction->setEvaluator(new GoEpisodeFunctionEvaluator());
+    goEpisodeFunction->setBatchLearner(learningParameters->createBatchLearner(context));
     
     goEpisodeFunction->train(context, trainingGames, validationGames, T("Training"), true);
 

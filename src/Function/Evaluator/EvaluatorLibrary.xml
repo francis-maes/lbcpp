@@ -91,6 +91,16 @@
     <constructor/>
   </class>
 
+  <!-- Ranking -->
+  <class name="RankingScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableStatistics" name="topRankCost"/>
+    <variable type="ScalarVariableStatistics" name="misOrderingCost"/>
+  </class>
+
+  <class name="RankingEvaluator" base="SupervisedEvaluator">
+    <constructor/>
+  </class>
+  
   <!-- Default Evaluator -->
   <class name="DefaultSupervisedEvaluator" base="ProxyEvaluator">
     <constructor returnType="Evaluator"/>

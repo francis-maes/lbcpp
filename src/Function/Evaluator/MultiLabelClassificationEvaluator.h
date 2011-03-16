@@ -103,7 +103,7 @@ public:
     {return objectClass;}
   
 protected:
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new MultiLabelClassificationScoreObject();}
   
   virtual void finalizeScoreObject(const ScoreObjectPtr& score) const

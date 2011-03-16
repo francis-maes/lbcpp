@@ -20,9 +20,8 @@ struct EvaluateExampleWorkUnit : public WorkUnit
 
   virtual Variable run(ExecutionContext& context)
   {
-    Variable output = function->computeWithInputsObject(context, example);
     ScopedLock _(lock);
-    evaluator->updateScoreObject(context, scores, example, output);
+    evaluator->updateScoreObject(context, scores, function, example);
     return Variable();
   }
   
@@ -35,6 +34,12 @@ protected:
 };
 
 }; /* namespace lbcpp */
+
+bool Evaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example) const
+{
+  Variable output = function->computeWithInputsObject(context, example);
+  return updateScoreObject(context, scores, example, output);
+}
 
 void Evaluator::computeEvaluatorMultiThread(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& examples, const ScoreObjectPtr& scores) const
 {
@@ -64,8 +69,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     for (size_t i = 0; i < n; ++i)
     {
       const ObjectPtr& example = objects[i];
-      Variable output = function->computeWithInputsObject(context, example);
-      if (!updateScoreObject(context, scores, example, output))
+      if (!updateScoreObject(context, scores, function, example))
         return;
 
       juce::uint32 time = Time::getApproximateMillisecondCounter();
@@ -83,8 +87,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr example = examples->getElement(i).getObject();
-      Variable output = function->computeWithInputsObject(context, example);
-      if (!updateScoreObject(context, scores, example, output))
+      if (!updateScoreObject(context, scores, function, example))
         return;
 
       juce::uint32 time = Time::getApproximateMillisecondCounter();
@@ -103,7 +106,7 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
   const FunctionPtr& function = inputs[0].getObjectAndCast<Function>();
   const ContainerPtr& examples = inputs[1].getObjectAndCast<Container>();
 
-  ScoreObjectPtr res = createEmptyScoreObject(context);
+  ScoreObjectPtr res = createEmptyScoreObject(context, function);
   if (!res)
     return Variable::missingValue(getOutputType());
 
@@ -111,7 +114,7 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
     computeEvaluatorMultiThread(context, function, examples, res);
   else
     computeEvaluatorSingleThread(context, function, examples, res);
-  finalizeScoreObject(res);
+  finalizeScoreObject(res, function);
   return res;
 }
 
@@ -134,11 +137,11 @@ bool SupervisedEvaluator::updateScoreObject(ExecutionContext& context, const Sco
 /*
 ** CompositeEvaluator
 */
-ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject(ExecutionContext& context) const
+ScoreObjectPtr CompositeEvaluator::createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
 {
   CompositeScoreObjectPtr res = new CompositeScoreObject();
   for (size_t i = 0; i < evaluators.size(); ++i)
-    res->addScoreObject(evaluators[i]->createEmptyScoreObject(context));
+    res->addScoreObject(evaluators[i]->createEmptyScoreObject(context, function));
   return res;
 }
 
@@ -150,10 +153,10 @@ bool CompositeEvaluator::updateScoreObject(ExecutionContext& context, const Scor
   return res;
 }
 
-void CompositeEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
+void CompositeEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
 {
   for (size_t i = 0; i < evaluators.size(); ++i)
-    evaluators[i]->finalizeScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i));
+    evaluators[i]->finalizeScoreObject(scores.staticCast<CompositeScoreObject>()->getScoreObject(i), function);
 }
 
 /*
@@ -173,11 +176,11 @@ TypePtr ProxyEvaluator::initializeFunction(ExecutionContext& context, const std:
 Variable ProxyEvaluator::computeFunction(ExecutionContext& context, const Variable* inputs) const
   {jassert(implementation); return implementation->computeFunction(context, inputs);}
 
-ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject(ExecutionContext& context) const
-  {jassert(implementation); return implementation->createEmptyScoreObject(context);}
+ScoreObjectPtr ProxyEvaluator::createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+  {jassert(implementation); return implementation->createEmptyScoreObject(context, function);}
 
 bool ProxyEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
   {jassert(implementation); return implementation->updateScoreObject(context, scores, example, output);}
 
-void ProxyEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores) const
-  {jassert(implementation); implementation->finalizeScoreObject(scores);}
+void ProxyEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
+  {jassert(implementation); implementation->finalizeScoreObject(scores, function);}

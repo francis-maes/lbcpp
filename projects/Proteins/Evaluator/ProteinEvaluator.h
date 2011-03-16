@@ -115,9 +115,9 @@ public:
     return ScoreObjectPtr();
   }
   
-  ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context) const
+  ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
   {
-    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context);
+    CompositeScoreObjectPtr res = CompositeEvaluator::createEmptyScoreObject(context, function);
     res->setName(T("Protein's Scores"));
     for (size_t i = 0; i < targets.size(); ++i)
       res->getScoreObject(i)->setName(proteinClass->getMemberVariableName((int)targets[i]));
