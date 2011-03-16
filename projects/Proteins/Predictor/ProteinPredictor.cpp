@@ -55,6 +55,11 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), input) : (size_t)-1;
   size_t disulfideResiduePairPerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
 
+  if (residuePerception != (size_t)-1)
+    residuePerceptionType = getStateClass()->getMemberVariableType(residuePerception);
+  if (residuePairPerception != (size_t)-1)
+    residuePairPerceptionType = getStateClass()->getMemberVariableType(residuePairPerception);
+
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);
   for (size_t i = 0; i < targetPredictors.size(); ++i)
@@ -81,4 +86,30 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     targetPredictor->getOutputVariable()->setName(proteinClass->getMemberVariableName(target));
   }
   builder.addFunction(new MakeProteinFunction(), makeProteinInputs);
+}
+
+bool ProteinPredictor::loadFromXml(XmlImporter& importer)
+{
+  // todo ..
+  return Object::loadFromXml(importer);
+}
+
+void ProteinPredictor::saveToXml(XmlExporter& exporter) const
+{
+  ClassPtr type = getClass();
+  size_t n = type->getNumMemberVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable variable = getVariable(i);
+    if (!variable.isMissingValue())
+      exporter.saveVariable(getVariableName(i), variable, getVariableType(i));
+
+    if (i == 0)
+    {
+     // if (residuePerceptionType)
+     //   exporter.saveDynamicType(T("residuePerceptionType"), residuePerceptionType);
+     // if (residuePairPerceptionType)
+     //   exporter.saveDynamicType(T("residuePairPerceptionType"), residuePairPerceptionType);
+    }
+  }
 }

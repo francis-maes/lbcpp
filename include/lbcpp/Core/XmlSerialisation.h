@@ -45,12 +45,16 @@ public:
 
   void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
   void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
+  
+  void saveDynamicSharedObject(const String& identifier, const ObjectPtr& object, TypePtr expectedType);
+  void saveDynamicType(const String& identifier, const TypePtr& type)
+    {saveDynamicSharedObject(identifier, type, typeClass);}
 
   void enter(const String& tagName, const String& name = String::empty);
   void writeType(TypePtr type);
   void writeName(const String& name);
   void writeVariable(const Variable& variable, TypePtr expectedType);
-  void writeObject(const ObjectPtr& object, TypePtr expectedType);
+  void writeObject(const ObjectPtr& object, TypePtr expectedType, bool isDynamic = false, const String& identifier = String::empty);
   void leave();
 
   void addTextElement(const String& text);

@@ -32,7 +32,7 @@ Variable ProteinLearner::run(ExecutionContext& context)
   FunctionPtr predictor = createPredictor(context, parameters);
   if (!predictor)
     return false;
-
+  
   // load proteins
   if (!supervisionDirectory.exists() || !supervisionDirectory.isDirectory())
   {
@@ -51,15 +51,7 @@ Variable ProteinLearner::run(ExecutionContext& context)
   // train
   if (!predictor->train(context, trainProteins, validationProteins, T("Training")))
     return false;
-  
-  // tmp --
-  if (learnedModelFile != File::nonexistent)
-  {
-    context.informationCallback(T("Saving model to file ") + learnedModelFile.getFileName());
-    predictor->saveToFile(context, learnedModelFile);
-  }
-  return true;
-  // --
+
 
   // evaluate
   EvaluatorPtr trainEvaluator = new ProteinEvaluator();
