@@ -58,7 +58,7 @@ public:
   {
     ScalarFunctionPtr scalarFunction = lossFunction.dynamicCast<ScalarFunction>();
     jassert(scalarFunction);
-    const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
+    //const DoubleVectorPtr& input = inputs[0].getObjectAndCast<DoubleVector>();
     const Variable& supervision = inputs[1];
 
     double lossDerivative = 0.0;

@@ -139,6 +139,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/CreateSymmetricMatrixFunction.h
   Core/Function/LoadFromFileFunction.h
   Core/Function/MapContainerFunction.h
+  Core/Function/MapSymmetricMatrixFunction.h
   Core/Function/ComposeFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
   Core/Function/ConcatenateContainerFunction.h

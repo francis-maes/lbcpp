@@ -56,6 +56,12 @@
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Function" name="function"/>
   </class>
+  
+  <class name="MapSymmetricMatrixFunction" base="Function">
+    <constructor arguments="const FunctionPtr&amp; function, size_t minimumDistanceFromDiagonal"/>
+    <variable type="Function" name="function"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
 
   <!-- Loading functions -->
   <class name="LoadFromFileFunction" base="Function">

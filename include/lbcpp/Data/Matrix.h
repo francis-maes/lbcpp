@@ -100,6 +100,8 @@ protected:
   size_t numRows, numColumns;
 };
 
+extern ClassPtr matrixClass(TypePtr type);
+
 class ShortEnumerationMatrix : public BuiltinTypeMatrix<char>
 {
 public:

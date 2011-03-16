@@ -58,7 +58,7 @@ public:
     {return mapContainerFunction(binaryClassifier(target));}
   
   virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
-    {return mapContainerFunction(binaryClassifier(target));}
+    {return mapSymmetricMatrixFunction(binaryClassifier(target), 6);}
   
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
     {return mapContainerFunction(regressor(target));}
