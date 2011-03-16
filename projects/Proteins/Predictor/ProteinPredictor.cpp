@@ -64,13 +64,14 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
     FunctionPtr targetPredictor = targetPredictors[i].second;
 
     size_t targetPredictorInput = 0;
-    TypePtr elementsType = Container::getTemplateParameter(proteinClass->getMemberVariableType(target));
+    TypePtr targetType = proteinClass->getMemberVariableType(target);
+    TypePtr elementsType = Container::getTemplateParameter(targetType);
     jassert(elementsType);
-    if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)) || // label sequences
+    if (targetType->inheritsFrom(symmetricMatrixClass(probabilityType)))          // contact maps
+      targetPredictorInput = (target == dsbTarget) ? disulfideResiduePairPerception : residuePairPerception; // -> residue pair perception
+    else if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)) || // label sequences
         elementsType->inheritsFrom(probabilityType))                                     // probability sequences
       targetPredictorInput = residuePerception;                                          // -> residue perceptions
-    else if (elementsType->inheritsFrom(symmetricMatrixClass(probabilityType)))          // contact maps
-      targetPredictorInput = (target == dsbTarget) ? disulfideResiduePairPerception : residuePairPerception; // -> residue pair perception                                     
     else
       jassert(false);
 

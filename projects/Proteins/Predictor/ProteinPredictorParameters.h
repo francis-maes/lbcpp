@@ -58,7 +58,7 @@ public:
     {return mapContainerFunction(binaryClassifier(target));}
   
   virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
-    {return mapSymmetricMatrixFunction(binaryClassifier(target), 6);}
+    {return mapContainerFunction(binaryClassifier(target));}
   
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
     {return mapContainerFunction(regressor(target));}
@@ -71,8 +71,8 @@ public:
       res = labelVectorPredictor(target);
     else if (target == sa20Target || target == drTarget)
       res = probabilityVectorPredictor(target);
-    else if (target == dsbTarget)
-      res = contactMapPredictor(target); // to add: 
+    else if (target == cma8Target || target == cmb8Target)
+      res = contactMapPredictor(target);
     else
     {
       jassert(false);

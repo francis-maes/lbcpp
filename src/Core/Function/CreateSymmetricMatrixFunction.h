@@ -36,7 +36,9 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!elementGeneratorFunction->initialize(context, inputVariables))
+    std::vector<VariableSignaturePtr> inputVars = inputVariables;
+    inputVars.insert(inputVars.begin(), inputVars.front());
+    if (!elementGeneratorFunction->initialize(context, inputVars))
       return TypePtr();
     
     VariableSignaturePtr elementsSignature = elementGeneratorFunction->getOutputVariable();
