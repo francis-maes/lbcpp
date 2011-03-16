@@ -293,7 +293,7 @@ public:
 
     return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
   }
-
+#if 0
   ContainerPtr convertGamesToRankingExamples(ExecutionContext& context, const ContainerPtr& games) const
   {
     FunctionPtr createRankingExampleFunction = new DecisionProblemStateActionsRankingExample(new GoStateActionFeatures());
@@ -325,7 +325,7 @@ public:
 
     return res;
   }
-
+#endif // 0
   virtual Variable run(ExecutionContext& context)
   {
     // create problem

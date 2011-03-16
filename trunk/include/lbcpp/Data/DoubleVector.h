@@ -318,6 +318,8 @@ public:
 
   // Object
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
   
   lbcpp_UseDebuggingNewOperator
 

@@ -64,6 +64,7 @@
   <!-- High-level Learnable Functions -->
   <class name="SupervisedNumericalFunction" base="CompositeFunction" abstract="yes">
     <variable type="LearnerParameters" name="learnerParameters"/>
+    <variable type="NumericalLearnableFunction" name="learnableFunction"/>
   </class>
 
   <class name="LinearRegressor" base="SupervisedNumericalFunction" shortName="linearRegressor">

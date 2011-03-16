@@ -694,3 +694,46 @@ void CompositeDoubleVector::clone(ExecutionContext& context, const ObjectPtr& t)
     target->vectors[i].second = vectors[i].second->cloneAndCast<DoubleVector>();
   }
 }
+
+bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
+{
+  int size = importer.getIntAttribute(T("numSubVectors"), -1);
+  if (size < 0)
+  {
+    importer.getContext().errorCallback(T("Unknown number of sub vectors"));
+    return false;
+  }
+  vectors.clear();
+  vectors.reserve(size);
+  forEachXmlChildElementWithTagName(*importer.getCurrentElement(), elt, T("vector"))
+  {
+    importer.enter(elt);
+    int offset = importer.getIntAttribute(T("offset"), -1);
+    Variable variable = importer.loadVariable(doubleVectorClass());
+    if (offset < 0 || !variable.exists())
+    {
+      importer.getContext().errorCallback(T("Could not read sub vector"));
+      return false;
+    }
+    vectors.push_back(std::make_pair((size_t)offset, variable.getObjectAndCast<DoubleVector>()));
+    importer.leave();
+  }
+  if (vectors.size() != size)
+  {
+    importer.getContext().errorCallback(T("Invalid number of sub vectors"));
+    return false;
+  }
+  return true;
+}
+
+void CompositeDoubleVector::saveToXml(XmlExporter& exporter) const
+{
+  exporter.setAttribute(T("numSubVectors"), vectors.size());
+  for (size_t i = 0; i < vectors.size(); ++i)
+  {
+    exporter.enter(T("vector"));
+    exporter.setAttribute(T("offset"), vectors[i].first);
+    exporter.writeVariable(vectors[i].second, doubleVectorClass());
+    exporter.leave();
+  }
+}

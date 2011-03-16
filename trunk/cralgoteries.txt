@@ -1,16 +1,23 @@
+ 
+* Shared generated objects:
+    - New XmlExporter::saveGeneratedObject(const String& identifier, ObjectPtr object) -> as a shared object
+    - New ObjectPtr Object::loadGeneratedObjectFromXml(XmlImporter& importer)
+    - XmlImporter::loadGeneratedObject ...
+ 
 Go:
+ * GoEpisodeEvaluator
  * Online learning
  * Simple Window features
  * Evolved features
 
+Proteins:
+ ** ProteinLearner: Serialisation des models
+ * Ajouter des features de segments
+
 Core:
+ ** Renommer MultiLinearLearnableFunction en ParallelLearnableFunction<T>
  * RunWorkUnit: save des traces depuis un timer
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
-
-Proteins:
- * ProteinLearner: Serialisation des models
- * Boinc: progression globale
- * Ajouter des features de segments
 
 Explorer:
  * ExecutionTrace: refermer les noeuds au fur et à mesure

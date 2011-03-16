@@ -179,27 +179,25 @@ public:
   // Learning Machine
   virtual FunctionPtr learningMachine(ProteinTarget target) const
   {
-    StochasticGDParametersPtr parameters = this->learningParameters->cloneAndCast<StochasticGDParameters>();
-
     switch (target)
     {
     case drTarget:
       {
-        FunctionPtr res = linearBinaryClassifier(parameters, true, binaryClassificationMCCScore);
+        FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
         return res;
       }
 
     case sa20Target:
       {
-        FunctionPtr res = linearBinaryClassifier(parameters, true, binaryClassificationAccuracyScore);
+        FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore));
         return res;
       }
 
     default:
       {
-        FunctionPtr res = linearLearningMachine(parameters);
+        FunctionPtr res = linearLearningMachine(learningParameters);
         res->setEvaluator(defaultSupervisedEvaluator());
         return res;
       }
