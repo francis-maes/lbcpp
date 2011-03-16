@@ -45,41 +45,46 @@ protected:
   
   friend class GridEvoOptimizerStateClass;
   friend class GridEvoOptimizer;  // so that optimizer has access to state variables
-  friend class EvoOptimizer;  //TODO arnaud
+  friend class EvoOptimizer;  //TODO arnaud : change this after retructuration
 };
 typedef ReferenceCountedObjectPtr<GridEvoOptimizerState> GridEvoOptimizerStatePtr;  
 extern ClassPtr gridEvoOptimizerStateClass; 
   
 
-  // TODO arnaud : put this class in antoher file
-  class RunWorkUnit : public WorkUnit
-  {
-  public:
-    RunWorkUnit() {}
-    RunWorkUnit(const File f) : f(f) {}
-    virtual Variable run(ExecutionContext& context) {
-      // replace default context
-      ExecutionContextPtr newContext = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());
-      ExecutionCallbackPtr makeTraceCallback;
-      ExecutionTracePtr trace = new ExecutionTrace(newContext->toString());
-      makeTraceCallback = makeTraceExecutionCallback(trace);
-      newContext->appendCallback(makeTraceCallback);
-      
-      // run work unit either from file or from arguments
-      WorkUnitPtr wu = Object::createFromFile(*newContext, f).staticCast<WorkUnit>();
-      newContext->run(wu);
-      
-      newContext->removeCallback(makeTraceCallback);
-      trace->saveToFile(*newContext, File::getCurrentWorkingDirectory().getChildFile(f.getFileNameWithoutExtension() + T(".trace")));
-      
-      return 0;
-   
-    }
-  protected:
-    friend class RunWorkUnitClass;
-  private:
-    File f;
-  };
+// TODO arnaud : put this class in antoher file
+/**
+ * Class used to run a WorkUnit as RunWorkUnit.cpp does
+ */
+class RunWorkUnit : public WorkUnit
+{
+public:
+  RunWorkUnit() {}
+  RunWorkUnit(const File f) : f(f) {}
+  virtual Variable run(ExecutionContext& context) {
+    ExecutionContextPtr newContext = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());  // one thread per WUs
+    
+    // execution trace
+    ExecutionCallbackPtr makeTraceCallback;
+    ExecutionTracePtr trace = new ExecutionTrace(newContext->toString());
+    makeTraceCallback = makeTraceExecutionCallback(trace);
+    newContext->appendCallback(makeTraceCallback);
+    
+    // run work unit from file
+    WorkUnitPtr wu = Object::createFromFile(*newContext, f).staticCast<WorkUnit>();
+    newContext->run(wu);
+    
+    // save execution trace
+    newContext->removeCallback(makeTraceCallback);
+    trace->saveToFile(*newContext, File::getCurrentWorkingDirectory().getChildFile(f.getFileNameWithoutExtension() + T(".trace")));
+    
+    return 0;
+    
+  }
+protected:
+  friend class RunWorkUnitClass;
+private:
+  File f;
+};
 // TODO arnaud : put this class in antoher file  
 class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use public Optimizer instead of GridOptimizer
 {
@@ -99,7 +104,7 @@ public:
     
     ExecutionContextPtr newContext = multiThreadedExecutionContext((size_t)juce::SystemStats::getNumCpus());
     std::vector<String>::iterator it2;
-    for(it2 = state->inProgressWUs.begin(); it2 != state->inProgressWUs.end(); )  // restart WUs
+    for(it2 = state->inProgressWUs.begin(); it2 != state->inProgressWUs.end(); it2++)  // restart WUs
     {
       WorkUnitPtr wu = new RunWorkUnit(File::getCurrentWorkingDirectory().getChildFile(*it2 + T(".workUnit")));
       newContext->pushWorkUnit(wu);
