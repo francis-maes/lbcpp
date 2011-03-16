@@ -28,6 +28,9 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder);
 
+  virtual bool loadFromXml(XmlImporter& importer);
+  virtual void saveToXml(XmlExporter& exporter) const;
+
 protected:
   friend class ProteinPredictorClass;
 
@@ -37,6 +40,9 @@ protected:
   bool activeResiduePerception;
   bool activeResiduePairPerception;
   bool activeDisulfideResiduePairPerception;
+
+  TypePtr residuePerceptionType;
+  TypePtr residuePairPerceptionType;
 };
 
 typedef ReferenceCountedObjectPtr<ProteinPredictor> ProteinPredictorPtr;

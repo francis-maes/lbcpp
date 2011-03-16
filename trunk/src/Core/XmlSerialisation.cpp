@@ -93,6 +93,16 @@ void XmlExporter::saveElement(size_t index, const Variable& variable, TypePtr ex
   leave();
 }
 
+void XmlExporter::saveDynamicSharedObject(const String& identifier, const ObjectPtr& object, TypePtr expectedType)
+{
+  writeObject(object, expectedType, true, identifier);
+/*
+  enter(T("shared"));
+  setAttribute(T("dynamic"), T("yes"));
+  setAttribute(T("identifier"), identifier);
+  leave();*/
+}
+
 void XmlExporter::leave()
 {
   jassert(currentStack.size() > 1);
@@ -169,7 +179,7 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   }
 }
 
-void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
+void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType, bool isDynamic, const String& identifier)
 {
   jassert(object->getReferenceCount());
   juce::XmlElement* currentElement = getCurrentElement();
@@ -186,6 +196,7 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
     SavedObject savedObject;
     savedObject.object = object;
     savedObject.elt = new juce::XmlElement(T("NOTAGYET"));
+    savedObject.identifier = identifier;
     savedObjects.push_back(savedObject);
 
     // save object
@@ -193,7 +204,8 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
     currentStack.push_back(savedObject.elt);
     if (expectedType != object->getClass())
       writeType(object->getClass());
-    object->saveToXml(*this);
+    if (!isDynamic)
+      object->saveToXml(*this);
     currentStack.pop_back();
     currentlySavedObjects.erase(index);
 
@@ -279,7 +291,8 @@ void XmlExporter::flushSave()
   {
     SavedObject& savedObject = savedObjects[sharedObjectsOrder[i]];
     savedObject.elt->setTagName(T("shared"));
-    savedObject.identifier = makeUniqueIdentifier(savedObject.object, sharedObjectIdentifiers);
+    if (savedObject.identifier.isEmpty())
+      savedObject.identifier = makeUniqueIdentifier(savedObject.object, sharedObjectIdentifiers);
     savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
     savedObject.elt->setAttribute(T("type"), savedObject.object->getClassName()); 
     root->insertChildElement(savedObject.elt, 0);
