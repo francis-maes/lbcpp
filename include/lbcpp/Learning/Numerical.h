@@ -71,7 +71,8 @@ public:
                           bool normalizeLearningRate = true,
                           bool restoreBestParameters = true,
                           bool randomizeExamples = true,
-                          bool evaluateAtEachIteration = true);
+                          bool evaluateAtEachIteration = true,
+                          size_t numExamplesPerIteration = 0);
 
   virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const;
   virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context) const;
@@ -96,6 +97,12 @@ public:
 
   void setMaxIterations(size_t maxIterations)
     {this->maxIterations = maxIterations;}
+
+  void setNumExamplesPerIteration(size_t numExamplesPerIteration)
+    {this->numExamplesPerIteration = numExamplesPerIteration;}
+
+  size_t getNumExamplesPerIteration() const
+    {return numExamplesPerIteration;}
 
   /*
   ** Stopping Criterion
@@ -142,6 +149,7 @@ protected:
   bool restoreBestParameters;
   bool randomizeExamples;
   bool evaluateAtEachIteration;
+  size_t numExamplesPerIteration;
   // todo: regularizer
 };
 

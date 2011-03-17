@@ -18,8 +18,9 @@ namespace lbcpp
 class EvaluatorOnlineLearner : public OnlineLearner
 {
 public:
-  EvaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr())
-    : evaluator(evaluator), context(NULL), trainingData(NULL), validationData(NULL) {}
+  EvaluatorOnlineLearner(bool evaluateOnTrainingData = true, bool evaluateOnValidationData = true)
+    : evaluateOnTrainingData(evaluateOnTrainingData), evaluateOnValidationData(evaluateOnValidationData),
+      context(NULL), trainingData(NULL), validationData(NULL) {}
 
   virtual bool startLearning(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
   {
@@ -32,14 +33,14 @@ public:
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
-    if (trainingData)
+    if (trainingData && evaluateOnTrainingData)
     {
       ScoreObjectPtr score = evaluate(*trainingData, T("Train"));
       if (score)
         objectiveValueToMinimize = score->getScoreToMinimize();
     }
 
-    if (validationData)
+    if (validationData && evaluateOnValidationData)
     {
       ScoreObjectPtr score = evaluate(*validationData, T("Validation"));
       if (score)
@@ -56,7 +57,8 @@ public:
 protected:
   friend class EvaluatorOnlineLearnerClass;
 
-  EvaluatorPtr evaluator;
+  bool evaluateOnTrainingData;
+  bool evaluateOnValidationData;
 
   ExecutionContext* context;
   FunctionPtr function;
@@ -65,7 +67,7 @@ protected:
 
   ScoreObjectPtr evaluate(const std::vector<ObjectPtr>& data, const String& name)
   {
-    ScoreObjectPtr score = function->evaluate(*context, data, evaluator, name + T(" evaluation"));
+    ScoreObjectPtr score = function->evaluate(*context, data, EvaluatorPtr(), name + T(" evaluation"));
     if (score)
       context->resultCallback(name + T(" score"), score->getScoreToMinimize());
     return score;

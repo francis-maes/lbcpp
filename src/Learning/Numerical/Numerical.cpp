@@ -20,16 +20,18 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
                                                 bool normalizeLearningRate,
                                                 bool restoreBestParameters,
                                                 bool randomizeExamples,
-                                                bool evaluateAtEachIteration)
+                                                bool evaluateAtEachIteration,
+                                                size_t numExamplesPerIteration)
   : learningRate(learningRate), stoppingCriterion(stoppingCriterion), maxIterations(maxIterations), 
     perEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
-    restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples), evaluateAtEachIteration(evaluateAtEachIteration)
+    restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples),
+    evaluateAtEachIteration(evaluateAtEachIteration), numExamplesPerIteration(numExamplesPerIteration)
 {
 }
 
 BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context) const
 {
-  return stochasticBatchLearner(maxIterations, randomizeExamples);
+  return stochasticBatchLearner(maxIterations, randomizeExamples, numExamplesPerIteration);
 }
 
 OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& context) const

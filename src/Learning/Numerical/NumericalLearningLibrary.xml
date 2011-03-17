@@ -13,6 +13,7 @@
     <variable type="Boolean" name="restoreBestParameters"/>
     <variable type="Boolean" name="randomizeExamples"/>
     <variable type="Boolean" name="evaluateAtEachIteration"/>
+    <variable type="PositiveInteger" name="numExamplesPerIteration"/>
   </class>
   
   <!-- Online Learner -->
