@@ -52,16 +52,14 @@ double GaussianDistribution::computeProbability(const Variable& value) const
 {
   jassert(value.isDouble());
   double mean = getMean();
-  double variance = getVariance(); // FIXME: Variance or Standard Deviation ?????
+  double variance = getVariance();
   double squaredNumerator = value.getDouble() - mean;
   squaredNumerator *= squaredNumerator;
-  double squaredDenominator = 2 * variance;
-  squaredDenominator *= squaredDenominator;
-  return 1 / sqrt(variance * 2 * M_PI) * exp(-squaredNumerator/squaredDenominator);
+  return 1 / sqrt(variance * 2 * M_PI) * exp(-squaredNumerator/(2*variance));
 }
 
 Variable GaussianDistribution::sample(RandomGeneratorPtr random) const
-  {return Variable(random->sampleDoubleFromGaussian(getMean(), getVariance()), doubleType);} // FIXME: variance or stddev ?
+  {return Variable(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation()), doubleType);}
 
 void GaussianDistribution::sampleUniformly(size_t numSamples, std::vector<double>& res) const
 {
