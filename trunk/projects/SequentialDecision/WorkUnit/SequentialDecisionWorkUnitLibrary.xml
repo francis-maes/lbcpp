@@ -20,12 +20,9 @@
   </class>
 
   <!-- GO -->
-  <class name="DecisionProblemStateActionsPerception" base="Function">
-    <variable type="Function" name="stateActionPerception"/>
-  </class>
   <class name="DecisionProblemStateActionsRankingCostsFunction" base="Function"/>
   <class name="DecisionProblemStateActionsRankingExample" base="CompositeFunction">
-    <variable type="Function" name="stateActionPerception"/>
+    <variable type="Function" name="actionsPerception"/>
   </class>
   
   <!-- Go Evaluator -->
@@ -54,13 +51,15 @@
   </class>
 
   <!-- Go Features -->
-  <class name="GoStatePreFeatures">
+  <class name="GoActionPositionFeature" base="FeatureGenerator"/>
+  
+  <template name="GoStatePreFeatures">
+    <parameter name="primaryFeaturesEnumeration" type="EnumValue"/>
     <variable type="GoState" name="state"/>
     <variable type="GoBoard" name="board"/>
-    <variable type="Matrix[DoubleVector[EnumValue,Double]]" name="boardPrimaryFeatures"/>
-  </class>
+    <variable type="ObjectMatrix[DoubleVector[primaryFeaturesEnumeration,Double]]" name="boardPrimaryFeatures"/>
+  </template>
 
-  <class name="GoActionPositionFeature" base="FeatureGenerator"/>
-  <class name="GoStateActionFeatures" base="CompositeFunction"/>
+  <class name="GoActionsPerception" base="CompositeFunction"/>
 
 </library>

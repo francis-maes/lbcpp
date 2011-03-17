@@ -21,7 +21,24 @@ namespace lbcpp
 // More/less generic DP stuff /
 ///////////////////////////////
 
+  // State -> Container[Action]
+class GetAvailableActionsFunction : public SimpleUnaryFunction
+{
+public:
+  GetAvailableActionsFunction(TypePtr actionType)
+    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(actionType), T("Actions")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
+    return state->getAvailableActions();
+  }
+};
+
 // State, Action -> DoubleVector
+// TODO: transform into function FindElementInContainer: 
+//     Container<T>, T -> PositiveInteger
+// et gerer la supervision avec PositiveInteger dans le Ranking
 class DecisionProblemStateActionsRankingCostsFunction : public SimpleBinaryFunction
 {
 public:
@@ -44,89 +61,34 @@ public:
   }
 };
 
-// State -> Container[DoubleVector]
-class DecisionProblemStateActionsPerception : public Function
-{
-public:
-  DecisionProblemStateActionsPerception(FunctionPtr stateActionPerception = FunctionPtr())
-    : stateActionPerception(stateActionPerception) {}
-
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return decisionProblemStateClass;}
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    if (!stateActionPerception->initialize(context, inputVariables[0]->getType(), stateActionPerception->getRequiredInputType(1, 2)))
-      return TypePtr();
-    return vectorClass(stateActionPerception->getOutputType());
-  }
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
-    ContainerPtr availableActions = state->getAvailableActions();
-    size_t n = availableActions->getNumElements();
-
-    VectorPtr res = vector(stateActionPerception->getOutputType(), n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable action = availableActions->getElement(i);
-      res->setElement(i, stateActionPerception->compute(context, state, action));
-    }
-    return res;
-  }
-
-protected:
-  friend class DecisionProblemStateActionsPerceptionClass;
-
-  FunctionPtr stateActionPerception; // State, Action -> Perception
-};
-
-
 // State, Supervision Action -> Ranking Example
 class DecisionProblemStateActionsRankingExample : public CompositeFunction
 {
 public:
-  DecisionProblemStateActionsRankingExample(FunctionPtr stateActionPerception = FunctionPtr())
-    : stateActionPerception(stateActionPerception) {}
+  DecisionProblemStateActionsRankingExample(FunctionPtr actionsPerception = FunctionPtr())
+    : actionsPerception(actionsPerception) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t state = builder.addInput(decisionProblemStateClass, T("state"));
     size_t supervision = builder.addInput(anyType, T("supervision"));
-    size_t perceptions = builder.addFunction(new DecisionProblemStateActionsPerception(stateActionPerception), state);
-    if (stateActionPerception->getOutputType())
+    size_t perceptions = builder.addFunction(actionsPerception, state);
+    if (actionsPerception->getOutputType())
     {
       size_t costs = builder.addFunction(new DecisionProblemStateActionsRankingCostsFunction(), state, supervision);
-      builder.addFunction(createObjectFunction(pairClass(vectorClass(stateActionPerception->getOutputType()), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))), perceptions, costs);
+      builder.addFunction(createObjectFunction(pairClass(actionsPerception->getOutputType(), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))), perceptions, costs);
     }
   }
 
 protected:
   friend class DecisionProblemStateActionsRankingExampleClass;
 
-  FunctionPtr stateActionPerception;
+  FunctionPtr actionsPerception; // State -> Container[DoubleVector]
 };
 
 ///////////////////////////////
 // Go Action Features ///////// NEW
 ///////////////////////////////
-
-class GetAvailableActionsFunction : public SimpleUnaryFunction
-{
-public:
-  GetAvailableActionsFunction()
-    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(), T("Actions")) {}
-
-  virtual Variable compute(ExecutionContext& context, const Variable& input) const
-  {
-    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
-    return Variable(state->getAvailableActions(), outputType);
-  }
-};
 
 // GoState -> GoBoard
 class GetGoBoardWithCurrentPlayerAsBlack : public SimpleUnaryFunction
@@ -134,69 +96,12 @@ class GetGoBoardWithCurrentPlayerAsBlack : public SimpleUnaryFunction
 public:
   GetGoBoardWithCurrentPlayerAsBlack() : SimpleUnaryFunction(goStateClass, goBoardClass, T("Board")) {}
 
-  virtual Variable compute(ExecutionContext& context, const Variable& input) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const GoStatePtr& state = input.getObjectAndCast<GoState>();
     return Variable(state->getBoardWithCurrentPlayerAsBlack(), outputType);
   }
 };
-
-class GoStatePreFeatures : public Object
-{
-public:
-  GoStatePtr state;
-  GoBoardPtr board; // with current player as black
-  MatrixPtr boardPrimaryFeatures;
-  // 4-connexity-graph
-  // 8-connexity-graph
-  // ...
-};
-
-extern ClassPtr goStatePreFeaturesClass;
-
-// GoState -> Container[DoubleVector]
-class GoActionsPerception : public CompositeFunction
-{
-public:
-  void actionFeatures(CompositeFunctionBuilder& builder)
-  {
-    size_t action = builder.addInput(goActionClass, T("action"));
-    size_t preFeatures = builder.addInput(goStatePreFeaturesClass, T("preFeatures"));
-
-    size_t boardPrimaryFeatures = builder.addFunction(getVariableFunction(T("boardPrimaryFeatures")), preFeatures);
-
-    size_t row = builder.addFunction(getVariableFunction(1), action);
-    size_t column = builder.addFunction(getVariableFunction(0), action);
-
-    builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
-  }
-
-  void preFeaturesFunction(CompositeFunctionBuilder& builder)
-  {
-    builder.startSelection();
-
-      size_t state = builder.addInput(goStateClass, T("state"));
-      size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
-      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
-
-    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass), T("goPreFeatures"));
-  }
-
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
-  {
-    size_t state = builder.addInput(goStateClass, T("state"));
-    size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
-    size_t actions = builder.addFunction(new GetAvailableActionsFunction(), state, T("actions"));
-    
-    // FIXME: mapContainer flag "treat additionalInputAsOtherContainersToMap"
-    //builder.addFunction(mapContainerFunction(memberCompositeFunction(&GoActionsPerception::actionFeatures), actions, preFeatures));
-  }
-};
-
-
-///////////////////////////////
-////////// Go Features //////// OLD
-///////////////////////////////
 
 // GoAction -> DoubleVector
 class GoActionPositionFeature : public FeatureGenerator
@@ -227,7 +132,7 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    GoActionPtr action = inputs[0].getObjectAndCast<GoAction>();
+    const GoActionPtr& action = inputs[0].getObjectAndCast<GoAction>();
     callback.sense(action->getY() * size + action->getX(), 1.0);
   }
 
@@ -235,18 +140,61 @@ protected:
   size_t size;
 };
 
-class GoStateActionFeatures : public CompositeFunction
+class GoStatePreFeatures : public Object
 {
 public:
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? goActionClass : goStateClass;}
+  GoStatePtr state;
+  GoBoardPtr board; // with current player as black
+  MatrixPtr boardPrimaryFeatures;
+  // 4-connexity-graph
+  // 8-connexity-graph
+  // ...
+};
+
+extern ClassPtr goStatePreFeaturesClass(TypePtr primaryFeaturesEnumeration);
+
+// GoState -> Container[DoubleVector]
+class GoActionsPerception : public CompositeFunction
+{
+public:
+  virtual void actionFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t action = builder.addInput(goActionClass, T("action"));
+    size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType), T("preFeatures"));
+
+    size_t boardPrimaryFeatures = builder.addFunction(getVariableFunction(T("boardPrimaryFeatures")), preFeatures);
+
+    size_t row = builder.addFunction(getVariableFunction(1), action);
+    size_t column = builder.addFunction(getVariableFunction(0), action);
+
+    builder.startSelection();
+
+      builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
+      builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+
+  virtual void preFeaturesFunction(CompositeFunctionBuilder& builder)
+  {
+    builder.startSelection();
+
+      size_t state = builder.addInput(goStateClass, T("state"));
+      size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
+      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
+      EnumerationPtr primaryFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
+      jassert(primaryFeaturesEnumeration);
+
+    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass(primaryFeaturesEnumeration)), T("goPreFeatures"));
+  }
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t state = builder.addInput(goStateClass, T("state"));
-    size_t action = builder.addInput(goActionClass, T("action"));
+    size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
+    size_t actions = builder.addFunction(new GetAvailableActionsFunction(goActionClass), state, T("actions"));
     
-    builder.addFunction(new GoActionPositionFeature(), action);
+    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, actionFeatures)), actions, preFeatures);
   }
 };
 
@@ -430,7 +378,7 @@ juce::Component* GoStateComponent::createComponentForVariable(ExecutionContext& 
   const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>();
   Variable goAction(new GoAction(position->getSecond().getInteger(), position->getFirst().getInteger()));
 
-  FunctionPtr perception = new DecisionProblemStateActionsPerception(new GoStateActionFeatures());
+  FunctionPtr perception = new GoActionsPerception();
   ContainerPtr actionPerceptions = perception->compute(context, state).getObjectAndCast<Container>();
   Variable actionPerception;
   if (actionPerceptions)
@@ -484,6 +432,7 @@ public:
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
 
 
+#if 0
     // TMP
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
     DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
@@ -495,10 +444,11 @@ public:
     }
     context.resultCallback(T("state"), state);
 
-    FunctionPtr perception = new DecisionProblemStateActionsPerception(new GoStateActionFeatures());
+    FunctionPtr perception = new GoActionsPerception();
     context.resultCallback(T("actionFeatures"), perception->compute(context, state));
     return true;
     // -
+#endif // 0
 
 
     // create ranking machine
@@ -507,7 +457,7 @@ public:
       context.errorCallback(T("No learning parameters"));
       return false;
     }
-    FunctionPtr rankingExampleCreator = new DecisionProblemStateActionsRankingExample(new GoStateActionFeatures());
+    FunctionPtr rankingExampleCreator = new DecisionProblemStateActionsRankingExample(new GoActionsPerception());
     StochasticGDParametersPtr sgdParameters = learningParameters.dynamicCast<StochasticGDParameters>();
     if (!sgdParameters)
     {

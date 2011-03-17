@@ -24,8 +24,7 @@ enum Player
 {
   noPlayers = 0,
   blackPlayer,
-  whitePlayer,
-  bothPlayers
+  whitePlayer
 };
 
 class GoBoard : public ShortEnumerationMatrix

@@ -92,7 +92,7 @@ GoBoardPtr GoState::getBoardWithCurrentPlayerAsBlack() const
     size_t n = board->getSize();
     GoBoardPtr res(new GoBoard(n));
     for (size_t i = 0; i < n; ++i)
-      for (size_t j = 0; j < n; ++i)
+      for (size_t j = 0; j < n; ++j)
       {
         Position position(i, j);
         Player pl = board->get(position);
