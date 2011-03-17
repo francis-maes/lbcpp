@@ -176,8 +176,7 @@ ProteinBackboneBondSequencePtr TertiaryStructure::makeBackbone() const
 inline SymmetricMatrixPtr makeDistanceMatrix(const std::vector<impl::Vector3>& positions)
 {
   size_t n = positions.size();
-
-  SymmetricMatrixPtr res = new DoubleSymmetricMatrix(angstromDistanceType, n, 0.0);
+  SymmetricMatrixPtr res = Protein::createEmptyDistanceMap(n);
   for (size_t i = 0; i < n; ++i)
   {
     res->setElement(i, i, Variable(0.0, angstromDistanceType));

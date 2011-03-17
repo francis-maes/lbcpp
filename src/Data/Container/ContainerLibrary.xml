@@ -60,6 +60,10 @@
     <variable type="PositiveInteger" name="windowSize"/>
   </class>
 
+  <class name="AccumulatorWindowMeanFunction" base="Function">
+    </constructor>
+  </class>
+
   <!-- Segment Function -->
   <template name="Segment" base="Object">
     <parameter name="elementType"/>

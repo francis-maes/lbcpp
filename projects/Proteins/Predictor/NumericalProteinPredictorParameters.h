@@ -149,6 +149,12 @@ public:
     if (featuresParameters->residuePairGlobalFeatures)
       builder.addInSelection(globalFeatures);
     
+    if (featuresParameters->aminoAcidDistanceFeature)
+    {
+      size_t aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
+    }
+    
     if (featuresParameters->residuePairWindowSize)
     {
       builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1"));

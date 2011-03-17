@@ -196,6 +196,7 @@ extern ClassPtr cumulativeScoreVectorClass(TypePtr scoresEnumeration);
 extern FunctionPtr accumulateContainerFunction();
 extern FunctionPtr accumulatorLocalMeanFunction(size_t windowSize);
 extern FunctionPtr accumulatorGlobalMeanFunction();
+extern FunctionPtr accumulatorWindowMeanFunction();
 
 extern FunctionPtr segmentContainerFunction();
 

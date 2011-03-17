@@ -192,11 +192,11 @@ public:
   */
   SymmetricMatrixPtr getContactMap(ExecutionContext& context, double threshold = 8, bool betweenCBetaAtoms = false) const;
   void setContactMap(SymmetricMatrixPtr contactMap, double threshold = 8, bool betweenCBetaAtoms = false);
-  SymmetricMatrixPtr createEmptyContactMap() const;
+  static SymmetricMatrixPtr createEmptyContactMap(size_t length);
 
   SymmetricMatrixPtr getDistanceMap(ExecutionContext& context, bool betweenCBetaAtoms = false) const;
   void setDistanceMap(SymmetricMatrixPtr contactMap, bool betweenCBetaAtoms = false);
-  SymmetricMatrixPtr createEmptyDistanceMap() const;
+  static SymmetricMatrixPtr createEmptyDistanceMap(size_t length);
 
   /*
   ** Disulfide Bonds
