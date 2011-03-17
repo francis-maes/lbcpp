@@ -20,12 +20,14 @@ enum ProteinPerceptionType
   disulfideBondType
 };
 
-class ProteinPerception : public Object
+extern ClassPtr numericalProteinPrimaryFeaturesClass(TypePtr type);
+
+class NumericalProteinPrimaryFeatures : public Object
 {
 public:
-  ProteinPerception(ProteinPtr protein)
-    : protein(protein) {}
-  ProteinPerception() {}
+  NumericalProteinPrimaryFeatures(TypePtr type, ProteinPtr protein)
+    : Object(numericalProteinPrimaryFeaturesClass(type)), protein(protein) {}
+  NumericalProteinPrimaryFeatures() {}
   
   void setLenght(size_t length)
     {this->length = length;}
@@ -60,7 +62,7 @@ public:
   }
   
 protected:
-  friend class ProteinPerceptionClass;
+  friend class NumericalProteinPrimaryFeaturesClass;
 
   ProteinPtr protein;
   size_t length;
@@ -69,9 +71,7 @@ protected:
   DoubleVectorPtr globalFeatures;
 };
 
-typedef ReferenceCountedObjectPtr<ProteinPerception> ProteinPerceptionPtr;
-
-extern ClassPtr proteinPerceptionClass;
+typedef ReferenceCountedObjectPtr<NumericalProteinPrimaryFeatures> NumericalProteinPrimaryFeaturesPtr;
 
 class CreateProteinPerceptionFunction : public Function
 {
@@ -95,11 +95,14 @@ public:
   }
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return proteinPerceptionClass;}
+  {
+    TypePtr res = inputVariables[4]->getType()->getTemplateArgument(0);
+    return numericalProteinPrimaryFeaturesClass(res);
+  }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    ProteinPerceptionPtr res = new ProteinPerception(inputs[0].getObject());
+    NumericalProteinPrimaryFeaturesPtr res = new NumericalProteinPrimaryFeatures(getOutputType()->getTemplateArgument(0), inputs[0].getObject());
     res->setLenght((size_t)inputs[1].getInteger());
     res->setPrimaryResidueFeatures(inputs[2].getObject());
     res->setAccumulator(inputs[3].getObject());

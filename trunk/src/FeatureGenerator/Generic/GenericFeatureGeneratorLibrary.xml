@@ -19,5 +19,9 @@
     <constructor arguments="size_t windowSize"/>
     <variable type="PositiveInteger" name="windowSize"/>
   </class>
+  
+  <class name="CartesianProductFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="bool lazy"/>
+  </class>
 
 </library>

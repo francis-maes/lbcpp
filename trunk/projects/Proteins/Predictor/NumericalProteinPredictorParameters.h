@@ -85,7 +85,7 @@ public:
   /* Residue Perception */
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(proteinPerceptionClass);
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
     
     builder.startSelection();
 
@@ -124,7 +124,7 @@ public:
   /* Residue Pair Perception */
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t proteinPerception = builder.addInput(proteinPerceptionClass);
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
     
     builder.startSelection();
     
@@ -155,22 +155,38 @@ public:
       builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
     }
     
+    if (featuresParameters->useIntervalMean)
+    {
+      std::vector<size_t> indices(3);
+      indices[0] = primaryResidueFeaturesAcc;
+      indices[1] = firstPosition;
+      indices[2] = secondPosition;
+      builder.addFunction(accumulatorWindowMeanFunction(), indices, T("interval"));
+    }
+    
     if (featuresParameters->residuePairWindowSize)
     {
-      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1"));
-      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2"));
+      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
+      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2_"));
     }
     
     if (featuresParameters->residuePairLocalMeanSize)
     {
-      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairLocalMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1") + String((int)featuresParameters->residueLocalMeanSize));
-      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairLocalMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2") + String((int)featuresParameters->residueLocalMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairLocalMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1_") + String((int)featuresParameters->residueLocalMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairLocalMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2_") + String((int)featuresParameters->residueLocalMeanSize));
     }
 
     if (featuresParameters->residuePairMediumMeanSize)
     {
-      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1") + String((int)featuresParameters->residueMediumMeanSize));
-      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2") + String((int)featuresParameters->residueMediumMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1_") + String((int)featuresParameters->residueMediumMeanSize));
+      builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2_") + String((int)featuresParameters->residueMediumMeanSize));
+    }
+    
+    if (featuresParameters->cartesianProductPrimaryWindowSize)
+    {
+      size_t w1 = builder.addFunction(windowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
+      size_t w2 = builder.addFunction(windowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
+      builder.addFunction(cartesianProductFeatureGenerator(true), w1, w2, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
     }
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));

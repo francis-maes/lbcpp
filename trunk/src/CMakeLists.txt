@@ -405,6 +405,7 @@ SET(LBCPP_FEATURE_GENERATOR_SOURCES
 SET(LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES
   FeatureGenerator/Generic/ConcatenateFeatureGenerator.h
   FeatureGenerator/Generic/WindowFeatureGenerator.h
+  FeatureGenerator/Generic/CartesianProductFeatureGenerator.h
   FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/GenericFeatureGeneratorLibrary.cpp
 )

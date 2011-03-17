@@ -3,8 +3,6 @@
 <library name="SequentialDecisionWorkUnit" directory="WorkUnit">
 
   <!-- LinearLearnableHeuristic -->
-  <class name="CartesianProductFeatureGenerator" base="FeatureGenerator"/>
-
   <class name="SearchTreeNodeIndexFeatureGenerator" base="FeatureGenerator"/>
 
   <class name="HeuristicSearchTreeNodeFeaturesFunction" base="CompositeFunction"/>
