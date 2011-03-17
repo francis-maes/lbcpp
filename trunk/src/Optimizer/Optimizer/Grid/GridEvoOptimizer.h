@@ -137,9 +137,13 @@ public:
       
       
       // save state
-      File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
-      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
-      context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
+      if (nb > 0) 
+      {
+        File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
+        state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
+        context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
+      }
+      
       
       // don't do busy waiting
       Thread::sleep(timeToSleep*1000);
@@ -245,10 +249,7 @@ public:
     state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
     
     while (state->totalNumberEvaluatedWUs < totalNumberWuRequested) 
-    {
-      // don't stress the manager
-      juce::Thread::sleep(timeToSleep*1000);
-      
+    {      
       // Send WU's on network
       if (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
       {
@@ -258,6 +259,7 @@ public:
           continue;
         context.informationCallback(T("Sending WUs ..."));
         // Send WU's
+        size_t nb = 0;
         while (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
         {
           WorkUnitPtr wu = state->generateSampleWU(context);
@@ -270,15 +272,21 @@ public:
           context.resultCallback(T("WorkUnitIdentifier"), res);
           state->inProgressWUs.push_back(res);
           state->totalNumberGeneratedWUs++;
+          nb++;
         }
         interface->closeCommunication();
+        context.informationCallback(T("WUs generation: ") + String((int) nb) + T(" WU(s) generated"));
+
         
         // save state
-        File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
-        state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
-        context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).getFullPathName());
+        if (nb > 0) 
+        {
+          File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
+          state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
+          context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).getFullPathName());
+        }
         
-        continue; // TODO arnaud : maybe not a good idea
+        //continue; // TODO arnaud : maybe not a good idea
       }
       
       
@@ -302,7 +310,8 @@ public:
             ExecutionTracePtr trace = res->getExecutionTrace(context);
             trace->saveToFile(context,File::getCurrentWorkingDirectory().getChildFile(String(*it) + T(".trace")));  // TODO arnaud : project directory ?
             state->currentEvaluatedWUs.push_back(*it);
-            state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
+            state->totalNumberEvaluatedWUs++;
+            context.informationCallback(T("WU ") + *it + T(" finished"));
             state->inProgressWUs.erase(it);
           }
           else
