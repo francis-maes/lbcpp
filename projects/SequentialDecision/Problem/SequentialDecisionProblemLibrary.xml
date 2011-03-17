@@ -17,7 +17,6 @@
     <value name="noPlayers" shortName="no" oneLetterCode="-"/>
     <value name="blackPlayer" shortName="black" oneLetterCode="b"/>
     <value name="whitePlayer" shortName="white" oneLetterCode="w"/>
-    <value name="bothPlayers" shortName="both" oneLetterCode="+"/>
   </enumeration>
 
   <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>

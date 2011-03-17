@@ -56,6 +56,10 @@
     <constructor arguments="const FunctionPtr&amp; function"/>
     <variable type="Function" name="function"/>
   </class>
+
+  <class name="MapNContainerFunction" base="MapContainerFunction">
+    <constructor arguments="const FunctionPtr&amp; function" returnType="Function"/>
+  </class>
   
   <class name="MapSymmetricMatrixFunction" base="Function">
     <constructor arguments="const FunctionPtr&amp; function, size_t minimumDistanceFromDiagonal"/>

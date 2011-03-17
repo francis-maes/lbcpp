@@ -225,6 +225,8 @@ extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction, bo
 extern FunctionPtr createSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction);
 
 extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
+extern FunctionPtr mapNContainerFunction(const FunctionPtr& mapFunction);
+
 extern FunctionPtr mapSymmetricMatrixFunction(const FunctionPtr& mapFunction, size_t minimumDistanceFromDiagonal = 0);
 
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);

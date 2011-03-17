@@ -76,7 +76,11 @@
   <template name="ShortEnumerationMatrix" base="Matrix[elementsType]">
     <parameter name="elementsType" type="EnumValue"/>
   </template>
-  
+
+  <template name="ObjectMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="Object"/>
+  </template>
+
   <!-- SymmetricMatrix -->
   <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
     <parameter name="elementsType" type="Variable"/>

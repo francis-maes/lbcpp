@@ -42,7 +42,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<SymmetricMatrix> SymmetricMatrixPtr;
 
-extern ClassPtr symmetricMatrixClass(TypePtr type);
+extern ClassPtr symmetricMatrixClass(TypePtr type = anyType);
 
 template<class ElementsType>
 class BuiltinTypeSymmetricMatrix : public SymmetricMatrix

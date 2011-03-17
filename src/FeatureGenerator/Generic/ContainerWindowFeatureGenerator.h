@@ -32,9 +32,9 @@ public:
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    TypePtr containerElementsType = Container::getTemplateParameter(inputVariables[0]->getType());
+    TypePtr doubleVectorType = Container::getTemplateParameter(inputVariables[0]->getType());
     EnumerationPtr subFeaturesEnumeration;
-    if (!DoubleVector::getTemplateParameters(context, containerElementsType, subFeaturesEnumeration, elementsType))
+    if (!DoubleVector::getTemplateParameters(context, doubleVectorType, subFeaturesEnumeration, elementsType))
       return EnumerationPtr();
 
     DefaultEnumerationPtr res = new DefaultEnumeration(T("WindowFeatures"));

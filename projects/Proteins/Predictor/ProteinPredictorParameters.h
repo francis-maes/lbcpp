@@ -60,16 +60,16 @@ public:
 
   // Vector[Input], Vector[Supervision] -> Vector[Output]
   virtual FunctionPtr labelVectorPredictor(ProteinTarget target) const
-    {return mapContainerFunction(multiClassClassifier(target));}
+    {return mapNContainerFunction(multiClassClassifier(target));}
 
   virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
-    {return mapContainerFunction(binaryClassifier(target));}
+    {return mapNContainerFunction(binaryClassifier(target));}
 
   virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
-    {return mapContainerFunction(binaryClassifier(target));}
+    {return mapNContainerFunction(binaryClassifier(target));}
 
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
-    {return mapContainerFunction(regressor(target));}
+    {return mapNContainerFunction(regressor(target));}
 
   // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const

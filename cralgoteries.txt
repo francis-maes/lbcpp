@@ -1,11 +1,13 @@
 
-- 
- * MapContainerFunction: transformer en ProxyFunction
-   * implem SingleContainerSingleThread
-   * implem MultipleContainerSingleThread 
+Go:
+ * RankingEvaluator: rankOfBest
+ * Evaluator: option pour multiThreader, Go: Multithreading de l'evaluation
+ * Per-episode stochastic gd
+
+HigherOrderFunctions:
+ /!\ MapContainer de base n'a pas de learner, Le MapContainerBatchLearner est celui du MapN
+  * Classe de base commune pour MapContainer, MapNContainer et MapSymmetricMatrixFunction
  
- * Mettre en service le GoActionsPerception
- * Virer le code désuet (GoStateActionFeatures, DecisionProblemStateActionsPerception)
 
 Proteins:
  ** ProteinLearner: Serialisation des models

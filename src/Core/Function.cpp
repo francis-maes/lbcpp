@@ -76,6 +76,12 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
 
   for (size_t i = 0; i < numInputs; ++i)
   {
+    if (!inputVariables[i])
+    {
+      context.errorCallback(T("Missing input number ") + String((int)i + 1));
+      return false;
+    }
+
     TypePtr requiredInputType = getRequiredInputType(i, numInputs);
     if (!context.checkInheritance(inputVariables[i]->getType(), requiredInputType))
       return false;
