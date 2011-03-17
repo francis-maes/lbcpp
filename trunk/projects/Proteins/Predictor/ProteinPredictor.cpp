@@ -42,27 +42,29 @@ void ProteinPredictor::addTarget(ProteinTarget target)
 
 void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
 {
+  /* Inputs */
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
 
+  /* Perceptions */
   size_t proteinPerception = builder.addFunction(parameters->createProteinPerception(), input);
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
   size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
 
+  /* Dynamic Types - Backup */
   if (residuePerception != (size_t)-1)
     residuePerceptionType = getStateClass()->getMemberVariableType(residuePerception);
   if (residuePairPerception != (size_t)-1)
     residuePairPerceptionType = getStateClass()->getMemberVariableType(residuePairPerception);
 
+  /* Associate a perception for each task */
   std::vector<size_t> makeProteinInputs;
   makeProteinInputs.push_back(input);
   for (size_t i = 0; i < targetPredictors.size(); ++i)
   {
     ProteinTarget target = targetPredictors[i].first;
     ProteinPerceptionType targetPerceptionType = ProteinPerception::typeOfProteinPerception(target);
-    String targetName = proteinClass->getMemberVariableName(target);
-    FunctionPtr targetPredictor = targetPredictors[i].second;
 
     size_t targetPredictorInput = 0;
     switch (targetPerceptionType)
@@ -80,11 +82,16 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
         jassertfalse;
     }
 
+    /* Predict */
+    String targetName = proteinClass->getMemberVariableName(target);
+    FunctionPtr targetPredictor = targetPredictors[i].second;
+
     size_t targetSupervision = builder.addFunction(new GetProteinTargetFunction(target), supervision, targetName + T("Supervision"));
     makeProteinInputs.push_back(builder.addConstant((int)target));
     makeProteinInputs.push_back(builder.addFunction(targetPredictor, targetPredictorInput, targetSupervision, targetName + T("Prediction")));
     targetPredictor->getOutputVariable()->setName(proteinClass->getMemberVariableName(target));
   }
+
   builder.addFunction(new MakeProteinFunction(), makeProteinInputs);
 }
 

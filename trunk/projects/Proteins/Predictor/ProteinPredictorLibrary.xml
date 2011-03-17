@@ -11,6 +11,7 @@
   </class>  
   
   <class name="CreateProteinPerceptionFunction" base="Function"/>
+  <class name="SubtractFunction" base="Function"/>
 
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>

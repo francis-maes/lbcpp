@@ -108,6 +108,31 @@ public:
   }
 };
 
+class SubtractFunction : public Function
+{
+public:
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+  
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return sumType(doubleType, integerType);}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    size_t numInputs = getNumInputs();
+    double res = inputs[0].isDouble() ? inputs[0].getDouble() : (double)inputs[0].getInteger();
+    for (size_t i = 1; numInputs; ++i)
+      res -= inputs[i].isDouble() ? inputs[i].getDouble() : (double)inputs[i].getInteger();
+    return Variable(res, doubleType);
+  }
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PERCEPTION_H_

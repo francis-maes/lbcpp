@@ -191,6 +191,7 @@ SET(LBCPP_DATA_CONTAINER_SOURCES
   Data/Container/AccumulateContainerFunction.h
   Data/Container/AccumulatorLocalMeanFunction.h
   Data/Container/AccumulatorGlobalMeanFunction.h
+  Data/Container/AccumulatorWindowMeanFunction.h
   Data/Container/SegmentContainerFunction.h
   Data/Container/ContainerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContainerLibrary.cpp

@@ -105,7 +105,8 @@ public:
       residueGlobalFeatures(true), residueWindowSize(15),
       residueLocalMeanSize(15), residueMediumMeanSize(50),
       residuePairGlobalFeatures(true), residuePairWindowSize(15),
-      residuePairLocalMeanSize(15), residuePairMediumMeanSize(50)
+      residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
+      aminoAcidDistanceFeature(true)
   {
   }
 
@@ -142,6 +143,7 @@ public:
   size_t residuePairWindowSize;
   size_t residuePairLocalMeanSize;
   size_t residuePairMediumMeanSize;
+  bool aminoAcidDistanceFeature;
 
   virtual String toString() const
     {return T("(") + defaultToStringImplementation(false) + T(")");}
