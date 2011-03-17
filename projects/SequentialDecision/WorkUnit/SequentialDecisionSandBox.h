@@ -95,54 +95,6 @@ protected:
   size_t n1, n2;
 };
 
-class CartesianProductFeatureGenerator : public FeatureGenerator
-{
-public:
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return doubleVectorClass();}
-
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    EnumerationPtr enum1 = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
-    EnumerationPtr enum2 = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
-    jassert(enum1 && enum2);
-    n1 = enum1->getNumElements();
-    return new CartesianProductEnumeration(enum1, enum2);
-  }
-
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
-  {
-    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
-    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
-
-    SparseDoubleVectorPtr s1 = v1.dynamicCast<SparseDoubleVector>();
-    SparseDoubleVectorPtr s2 = v2.dynamicCast<SparseDoubleVector>();
-    if (s1 && s2)
-    {
-      for (size_t i = 0; i < s2->getValues().size(); ++i)
-      {
-        std::pair<size_t, double> indexAndWeight2 = s2->getValues()[i];
-        if (!indexAndWeight2.second)
-          continue;
-        size_t startIndex = indexAndWeight2.first * n1;
-        for (size_t j = 0; j < s1->getValues().size(); ++j)
-        {
-          std::pair<size_t, double> indexAndWeight1 = s1->getValues()[j];
-          callback.sense(startIndex + indexAndWeight1.first, indexAndWeight1.second * indexAndWeight2.second);
-        }
-      }
-    }
-    else
-      jassert(false);
-  }
-
-protected:
-  size_t n1;
-};
-
 class GenericClosedSearchTreeNodeFeaturesFunction : public CompositeFunction
 {
 public:

@@ -49,7 +49,7 @@
   <class name="AccumulateContainerFunction" base="ProxyFunction">
     <constructor returnType="Function"/>
   </class>
-  
+
   <!-- Local and Global Mean -->
   <class name="AccumulatorGlobalMeanFunction" base="Function">
     <constructor/>
@@ -61,7 +61,7 @@
   </class>
 
   <class name="AccumulatorWindowMeanFunction" base="Function">
-    </constructor>
+    <constructor/>
   </class>
 
   <!-- Segment Function -->

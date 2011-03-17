@@ -101,6 +101,7 @@ extern FeatureGeneratorPtr windowFeatureGenerator(size_t windowSize);
 extern FunctionPtr concatenateFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy);
+extern FeatureGeneratorPtr cartesianProductFeatureGenerator(bool lazy = true);
 
 // composite
 extern CompositeFunctionPtr enumerationDistributionFeatureGenerator(size_t probabilityDiscretization = 1, size_t entropyDiscretization = 10, double minEntropy = -1.0, double maxEntropy = 4.0);
