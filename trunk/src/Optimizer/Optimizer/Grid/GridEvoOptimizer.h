@@ -77,16 +77,20 @@ public:
     newContext->removeCallback(makeTraceCallback);
     trace->saveToFile(*newContext, File::getCurrentWorkingDirectory().getChildFile(f.getFileNameWithoutExtension() + T(".trace")));
     
-    return 0;
-    
+    return 0; // TODO arnaud
   }
+  
 protected:
   friend class RunWorkUnitClass;
+  
 private:
   File f;
 };
+  
+// TODO arnaud : progressionCallback !  
+  
 // TODO arnaud : put this class in antoher file  
-class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use public Optimizer instead of GridOptimizer
+class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use Optimizer instead of GridOptimizer as mother class
 {
 public:
   EvoOptimizer() {}
@@ -102,7 +106,10 @@ public:
     GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
     state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));  // TODO arnaud : file name as args ?
     
+    // multi-threads execution to run the WUs
     ExecutionContextPtr newContext = multiThreadedExecutionContext((size_t)juce::SystemStats::getNumCpus());
+    
+    // restart inProgress WUs from state
     std::vector<String>::iterator it2;
     for(it2 = state->inProgressWUs.begin(); it2 != state->inProgressWUs.end(); it2++)  // restart WUs
     {
@@ -110,9 +117,12 @@ public:
       newContext->pushWorkUnit(wu);
     }
     
-    
+    // main loop
     while (state->totalNumberEvaluatedWUs < totalNumberWuRequested) 
     {
+      
+      // WU generation loop
+      size_t nb = 0;
       while (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
       {
         WorkUnitPtr wu = state->generateSampleWU(context);
@@ -121,26 +131,31 @@ public:
         newContext->pushWorkUnit(wu);
         state->inProgressWUs.push_back(String((int) state->totalNumberGeneratedWUs));
         state->totalNumberGeneratedWUs++;
+        nb++;
       }
-            
-      // TODO p e un if pour éviter de sauver tt le temps
+      context.informationCallback(T("WUs generation: ") + String((int) nb) + T(" WU(s) generated"));
+      
+      
       // save state
       File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
       state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
       context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
       
+      // don't do busy waiting
       Thread::sleep(timeToSleep*1000);
 
+      // check for finished results
       std::vector<String>::iterator it;
       for(it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
       {
         File f = File::getCurrentWorkingDirectory().getChildFile(*it + T(".trace"));
         if(f.existsAsFile())
         {
-            state->currentEvaluatedWUs.push_back(*it);
-            state->totalNumberEvaluatedWUs++; // TODO arnaud : here or when updating distri ?
-            File::getCurrentWorkingDirectory().getChildFile(*it + T(".workUnit")).deleteFile();
-            state->inProgressWUs.erase(it);
+          state->currentEvaluatedWUs.push_back(*it);
+          state->totalNumberEvaluatedWUs++;
+          File::getCurrentWorkingDirectory().getChildFile(*it + T(".workUnit")).deleteFile();
+          context.informationCallback(T("WU ") + *it + T(" finished"));
+          state->inProgressWUs.erase(it);
         }
         else 
           ++it;
@@ -150,6 +165,8 @@ public:
       if (state->currentEvaluatedWUs.size() >= numberWuToUpdate || (state->totalNumberGeneratedWUs == totalNumberWuRequested && state->inProgressWUs.size() == 0)) 
       {
         context.informationCallback(T("Updating state ..."));
+        
+        // get (and sort) : score -> variable from trace files
         std::multimap<double, Variable> resultsMap; // mutlimap used to sort results by score
         std::vector<String>::iterator it;
         for(it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) 
@@ -160,10 +177,10 @@ public:
           resultsMap.insert(std::pair<double, Variable>(score,var));
         }
         
+        // use best results to build new distri
         IndependentMultiVariateDistributionBuilderPtr distributionsBuilder = state->distributions->createBuilder();
-        size_t nb = 0;
+        nb = 0;
         std::multimap<double, Variable>::reverse_iterator mapIt;
-        // best results : use them then delete
         for (mapIt = resultsMap.rbegin(); mapIt != resultsMap.rend() && nb < state->currentEvaluatedWUs.size()/ratioUsedForUpdate; mapIt++)
         {
           distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
@@ -171,13 +188,15 @@ public:
         }
         state->distributions = distributionsBuilder->build(context);
         
+        // update best score
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
-          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T("% )"));
+          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T(" )"));
         }
         
-        state->currentEvaluatedWUs.clear(); // clear map
+        // clear
+        state->currentEvaluatedWUs.clear();
         context.informationCallback(T("State updated"));
         
         // save state
@@ -322,7 +341,7 @@ public:
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
-          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T("% )"));
+          context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T(" )"));
         }
                
         // delete files and clear vector

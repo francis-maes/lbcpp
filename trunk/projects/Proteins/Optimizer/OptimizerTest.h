@@ -28,7 +28,7 @@ namespace lbcpp
     
     virtual Variable run(ExecutionContext& context)
     {
-      // TODO arnaud : add getBuilder() in Distribution.h
+      // initial distribution
       IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
       distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,3));
       distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,3));
@@ -45,12 +45,17 @@ namespace lbcpp
       distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,10));
       distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,15));
       
-      ProteinGridEvoOptimizerStatePtr state = /*new ProteinGridEvoOptimizerState(distributions);*/ Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+      // Create initial state either from distri or from existing file
+      ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions); //Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
       
-      size_t totalNumberWuRequested = 20;
-      size_t numberWuToUpdate = 10;
-      size_t numberWuInProgress = 4;
-      size_t ratioUsedForUpdate = 2;
+      // variables used by EvoOptimizer
+      size_t totalNumberWuRequested = 20; // total number of WUs to evaluate
+      size_t numberWuToUpdate = 10;       // min number of WUs evaluated needed to update distribution
+      size_t numberWuInProgress = 4;      // number of WUs in progress (either in thread pool or in Boinc Network), should be <= totalNumberWuRequested. (for local optimizer should be a little bit higher than the number of CPUs)
+      size_t ratioUsedForUpdate = 2;      // number of WUs used to calculate new distribution is numberWuToUpdate/ratioUsedForUpdate 
+      size_t timeToSleep = 10;            // time to sleep between work generation and attemps to use finished results (avoid busy waiting)
+
+      // variables used by GridOptimizer
       String projectName(T("BoincFirstStage"));
       String source(T("boincadm@boinc.run"));
       String destination(T("boincadm@boinc.run"));
@@ -58,26 +63,34 @@ namespace lbcpp
       size_t managerPort = 1664;
       size_t requiredMemory = 1;
       size_t requiredTime = 1;
-      size_t timeToSleep = 10;  // in seconds
       
+      
+      /**
+       * EvoOptimizer is the Local Evo Optimizer.
+       * To use it you need:
+       * - implement a GridEvoOptimizerState, i.e. WorkUnitPtr generateSampleWU(ExecutionContext& context). The state should be serializable !
+       * - implement a ...GetVariableFromTraceFunction, i.e function : trace -> variable (to optimize) used for this evaluation
+       * - implement a ...GetScoreFromTraceFunction, i.e function : trace -> score to optimize (== 1 - getScoreToMinize())
+       *   NB : this function won't be necessary in the future as it is the same for every kind of trace !
+       * 
+       * Example : see ProteinGridEvoOptimizer.h
+       */
+      EvoOptimizerPtr optimizer = new EvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, timeToSleep);
+      return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+      
+      
+      /**
+       * GridEvoOptimizer
+       */
       //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
       //                                                     managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
       //return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
       
-      EvoOptimizerPtr optimizer = new EvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, timeToSleep);
-      return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
-      
-      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
-      //WorkUnitPtr wu = state->generateSampleWU(context);
-      //wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("wu.xml")));
       
       
-      //ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
-      //state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))); // --->  Could not find type ProteinGridEvoOptimizerState (in TypeManager::getType()) 
-      
-      //ProteinGridEvoOptimizerStatePtr state2 = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("test.xml"))).staticCast<ProteinGridEvoOptimizerState>();
-
-      
+      /**
+       * Tests
+       */
       /*
       ExecutionTracePtr trace = Object::createFromFile(context, File(T("/Users/arnaudschoofs/Proteins/traces/1299675529047.trace"))).staticCast<ExecutionTrace>();
       FunctionPtr f1 = new ProteinGetScoreFromTraceFunction();
