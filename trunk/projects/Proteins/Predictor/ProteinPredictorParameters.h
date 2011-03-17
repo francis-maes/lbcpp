@@ -28,7 +28,7 @@ public:
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
   {
-    FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::proteinPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, proteinPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -36,14 +36,14 @@ public:
   // Protein, ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
-    FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residueVectorPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residueVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
 
   virtual FunctionPtr createResiduePairVectorPerception() const
   {
-    FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residuePairVectorPerception);
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residuePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }

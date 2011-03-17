@@ -229,6 +229,15 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t
   return addFunction(function, inputs, outputName, outputShortName);
 }
 
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, const String& outputName, const String& outputShortName)
+{
+  std::vector<size_t> inputs(3);
+  inputs[0] = input1;
+  inputs[1] = input2;
+  inputs[2] = input3;
+  return addFunction(function, inputs, outputName, outputShortName);
+}
+
 size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, const std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
 {
   jassert(function->steps.size() == function->stateClass->getNumMemberVariables());

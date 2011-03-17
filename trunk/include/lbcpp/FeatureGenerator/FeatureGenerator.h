@@ -97,10 +97,13 @@ extern FeatureGeneratorPtr defaultPositiveDoubleFeatureGenerator(size_t numInter
 extern FeatureGeneratorPtr defaultProbabilityFeatureGenerator(size_t numIntervals = 5);
 
 // generic
-extern FeatureGeneratorPtr windowFeatureGenerator(size_t windowSize);
+extern FeatureGeneratorPtr containerWindowFeatureGenerator(size_t windowSize);
+extern FeatureGeneratorPtr matrixWindowFeatureGenerator(size_t windowRows, size_t windowColumns);
+
 extern FunctionPtr concatenateFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy);
 extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy);
+
 extern FeatureGeneratorPtr cartesianProductFeatureGenerator(bool lazy = true);
 
 // composite

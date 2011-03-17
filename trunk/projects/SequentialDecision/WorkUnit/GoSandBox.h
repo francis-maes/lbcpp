@@ -12,7 +12,7 @@
 # include "../Problem/GoProblem.h"
 # include "../Problem/LoadSGFFileFunction.h"
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/UserInterface/MatrixComponent.h>
+# include <lbcpp/Core/CompositeFunction.h>
 
 namespace lbcpp
 {
@@ -112,13 +112,97 @@ protected:
 };
 
 ///////////////////////////////
-////////// Go Features ////////
+// Go Action Features ///////// NEW
 ///////////////////////////////
 
-class GoActionIdentifierFeature : public FeatureGenerator
+class GetAvailableActionsFunction : public SimpleUnaryFunction
 {
 public:
-  GoActionIdentifierFeature(size_t size = 19)
+  GetAvailableActionsFunction()
+    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(), T("Actions")) {}
+
+  virtual Variable compute(ExecutionContext& context, const Variable& input) const
+  {
+    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
+    return Variable(state->getAvailableActions(), outputType);
+  }
+};
+
+// GoState -> GoBoard
+class GetGoBoardWithCurrentPlayerAsBlack : public SimpleUnaryFunction
+{
+public:
+  GetGoBoardWithCurrentPlayerAsBlack() : SimpleUnaryFunction(goStateClass, goBoardClass, T("Board")) {}
+
+  virtual Variable compute(ExecutionContext& context, const Variable& input) const
+  {
+    const GoStatePtr& state = input.getObjectAndCast<GoState>();
+    return Variable(state->getBoardWithCurrentPlayerAsBlack(), outputType);
+  }
+};
+
+class GoStatePreFeatures : public Object
+{
+public:
+  GoStatePtr state;
+  GoBoardPtr board; // with current player as black
+  MatrixPtr boardPrimaryFeatures;
+  // 4-connexity-graph
+  // 8-connexity-graph
+  // ...
+};
+
+extern ClassPtr goStatePreFeaturesClass;
+
+// GoState -> Container[DoubleVector]
+class GoActionsPerception : public CompositeFunction
+{
+public:
+  void actionFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t action = builder.addInput(goActionClass, T("action"));
+    size_t preFeatures = builder.addInput(goStatePreFeaturesClass, T("preFeatures"));
+
+    size_t boardPrimaryFeatures = builder.addFunction(getVariableFunction(T("boardPrimaryFeatures")), preFeatures);
+
+    size_t row = builder.addFunction(getVariableFunction(1), action);
+    size_t column = builder.addFunction(getVariableFunction(0), action);
+
+    builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
+  }
+
+  void preFeaturesFunction(CompositeFunctionBuilder& builder)
+  {
+    builder.startSelection();
+
+      size_t state = builder.addInput(goStateClass, T("state"));
+      size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
+      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
+
+    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass), T("goPreFeatures"));
+  }
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t state = builder.addInput(goStateClass, T("state"));
+    size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
+    size_t actions = builder.addFunction(new GetAvailableActionsFunction(), state, T("actions"));
+    
+    // FIXME: mapContainer flag "treat additionalInputAsOtherContainersToMap"
+    //builder.addFunction(mapContainerFunction(memberCompositeFunction(&GoActionsPerception::actionFeatures), actions, preFeatures));
+  }
+};
+
+
+///////////////////////////////
+////////// Go Features //////// OLD
+///////////////////////////////
+
+// GoAction -> DoubleVector
+class GoActionPositionFeature : public FeatureGenerator
+{
+public:
+  GoActionPositionFeature(size_t size = 19)
     : size(size) {}
 
   virtual size_t getNumRequiredInputs() const
@@ -162,27 +246,7 @@ public:
     size_t state = builder.addInput(goStateClass, T("state"));
     size_t action = builder.addInput(goActionClass, T("action"));
     
-    builder.addFunction(new GoActionIdentifierFeature(), action);
-  }
-};
-
-
-///////////////////////////////
-/////// User Interface ////////
-///////////////////////////////
-
-class GoStateComponent : public MatrixComponent
-{
-public:
-  GoStateComponent(GoStatePtr state, const String& name)
-    : MatrixComponent(state->getBoard()) {}
- 
-  virtual juce::Colour selectColour(const Variable& element) const
-  {
-    if (!element.exists())
-      return Colours::lightgrey;
-    const juce::Colour colours[] = {juce::Colours::beige, juce::Colours::black, juce::Colours::white, juce::Colours::grey};
-    return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
+    builder.addFunction(new GoActionPositionFeature(), action);
   }
 };
 
@@ -359,6 +423,34 @@ public:
 ///////////////////////////////
 ////////// SandBox ////////////
 ///////////////////////////////
+
+juce::Component* GoStateComponent::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+{
+  const PairPtr& matrixAndPosition = variable.getObjectAndCast<Pair>();
+  const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>();
+  Variable goAction(new GoAction(position->getSecond().getInteger(), position->getFirst().getInteger()));
+
+  FunctionPtr perception = new DecisionProblemStateActionsPerception(new GoStateActionFeatures());
+  ContainerPtr actionPerceptions = perception->compute(context, state).getObjectAndCast<Container>();
+  Variable actionPerception;
+  if (actionPerceptions)
+  {
+    ContainerPtr actions = state->getAvailableActions();
+    jassert(actions->getNumElements() == actionPerceptions->getNumElements());
+    for (size_t i = 0; i < actions->getNumElements(); ++i)
+      if (actions->getElement(i) == goAction)
+      {
+        actionPerception = actionPerceptions->getElement(i);
+        break;
+      }
+  }
+
+  if (actionPerception.exists())
+    return userInterfaceManager().createVariableTreeView(context, actionPerception, name + T(" perception"), false);
+  else
+    return NULL;
+}
+
 class GoSandBox : public WorkUnit
 {
 public:
@@ -376,39 +468,7 @@ public:
 
     return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
   }
-#if 0
-  ContainerPtr convertGamesToRankingExamples(ExecutionContext& context, const ContainerPtr& games) const
-  {
-    FunctionPtr createRankingExampleFunction = new DecisionProblemStateActionsRankingExample(new GoStateActionFeatures());
-    if (!createRankingExampleFunction->initialize(context, goStateClass, goActionClass))
-      return ContainerPtr();
 
-    ObjectVectorPtr res = new ObjectVector(createRankingExampleFunction->getOutputType(), 0);
-    size_t numGames = games->getNumElements();
-
-    for (size_t i = 0; i < numGames; ++i)
-    {
-      PairPtr game = games->getElement(i).getObjectAndCast<Pair>();
-      if (!game)
-        continue;
-
-      DecisionProblemStatePtr state = game->getFirst().getObject()->cloneAndCast<DecisionProblemState>();
-      const ContainerPtr& trajectory = game->getSecond().getObjectAndCast<Container>();
-      size_t n = trajectory->getNumElements();
-      for (size_t j = 0; j < n; ++j)
-      {
-        Variable action = trajectory->getElement(j);
-
-        res->append(createRankingExampleFunction->compute(context, state, action));
-
-        double reward;
-        state->performTransition(action, reward);
-      }
-    }
-
-    return res;
-  }
-#endif // 0
   virtual Variable run(ExecutionContext& context)
   {
     // create problem
@@ -423,19 +483,23 @@ public:
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
 
-    /* make ranking examples
-    context.enterScope(T("Converting games to ranking examples ..."));
-    ContainerPtr trainingExamples = convertGamesToRankingExamples(context, trainingGames);
-    ContainerPtr validationExamples = convertGamesToRankingExamples(context, validationGames);
-    context.leaveScope(Variable());
-    if (!trainingExamples || !validationExamples)
-      return false;
-    context.informationCallback(String((int)trainingExamples->getNumElements()) + T(" training examples, ") +
-                                String((int)validationExamples->getNumElements()) + T(" validation examples"));
-    */
 
-    //context.resultCallback(T("training examples"), trainingExamples);
-    //context.resultCallback(T("validation examples"), validationExamples);
+    // TMP
+    PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
+    DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
+    ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
+    for (size_t i = 0; i < 20; ++i)
+    {
+      double r;
+      state->performTransition(trajectory->getElement(i), r);
+    }
+    context.resultCallback(T("state"), state);
+
+    FunctionPtr perception = new DecisionProblemStateActionsPerception(new GoStateActionFeatures());
+    context.resultCallback(T("actionFeatures"), perception->compute(context, state));
+    return true;
+    // -
+
 
     // create ranking machine
     if (!learningParameters)
@@ -491,39 +555,6 @@ public:
     return true;
     */
 
-  
-#if 0
-    if (!fileToParse.existsAsFile())
-    {
-      context.errorCallback(T("File to parse does not exist"));
-      return false;
-    }
-
-    XmlElementPtr xml = (new SGFFileParser(context, fileToParse))->next().dynamicCast<XmlElement>();
-    if (!xml)
-      return false;
-
-    //context.resultCallback(T("XML"), xml);
-
-    FunctionPtr convert = new ConvertSGFXmlToStateAndTrajectory();
-    PairPtr stateAndTrajectory = convert->compute(context, xml).getObjectAndCast<Pair>();
-    if (!stateAndTrajectory)
-      return false;
-  
-    Variable initialState = stateAndTrajectory->getFirst();
-    ContainerPtr trajectory = stateAndTrajectory->getSecond().getObjectAndCast<Container>();
-
-    context.resultCallback(T("Initial State"), initialState);
-    context.resultCallback(T("Trajectory"), trajectory);
-
-    DecisionProblemPtr problem = new GoProblem(0);
-    if (!problem->initialize(context))
-      return false;
-
-    Variable finalState = problem->computeFinalState(context, initialState, trajectory);
-    context.resultCallback(T("Final State"), finalState);
-    return true;
-#endif // 0
   }
 
 private:

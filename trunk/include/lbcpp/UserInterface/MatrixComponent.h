@@ -64,8 +64,8 @@ public:
     if (selectedRow >= 0 && selectedColumn >= 0)
     {
       g.setColour(Colours::lightblue.withAlpha(0.7f));
-      g.fillRect(x1 + (selectedColumn - 4) * pixelsPerColumn, y1 + selectedRow * pixelsPerRow, 9 * pixelsPerColumn - 1, pixelsPerRow - 1);
-      g.fillRect(x1 + selectedColumn * pixelsPerColumn, y1 + (selectedRow - 4) * pixelsPerRow, pixelsPerColumn - 1, 9 * pixelsPerRow - 1);
+      g.fillRect(x1 + (selectedColumn - 4) * pixelsPerColumn, y1 + selectedRow * pixelsPerRow, 9 * pixelsPerColumn, pixelsPerRow);
+      g.fillRect(x1 + selectedColumn * pixelsPerColumn, y1 + (selectedRow - 4) * pixelsPerRow, pixelsPerColumn, 9 * pixelsPerRow);
     }
 
     g.setColour(Colours::black);
@@ -83,7 +83,7 @@ public:
     {
       selectedRow = y;
       selectedColumn = x;
-      sendSelectionChanged(matrix->getElement(selectedRow, selectedColumn),
+      sendSelectionChanged(Variable::pair(matrix, Variable::pair(selectedRow, selectedColumn)),
         T("Element (") + String((int)selectedRow) + T(", ") + String((int)selectedColumn) + T(")"));
       repaint();
       return;

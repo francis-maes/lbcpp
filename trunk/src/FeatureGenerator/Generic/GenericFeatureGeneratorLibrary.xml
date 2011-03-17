@@ -15,9 +15,15 @@
     <variable type="Boolean" name="lazy"/>
   </class>
 
-  <class name="WindowFeatureGenerator" base="FeatureGenerator">
+  <class name="ContainerWindowFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="size_t windowSize"/>
     <variable type="PositiveInteger" name="windowSize"/>
+  </class>
+  
+  <class name="MatrixWindowFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="size_t windowRows, size_t windowColumns"/>
+    <variable type="PositiveInteger" name="windowRows"/>
+    <variable type="PositiveInteger" name="windowColumns"/>
   </class>
   
   <class name="CartesianProductFeatureGenerator" base="FeatureGenerator">

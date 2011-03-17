@@ -1,8 +1,11 @@
 
-Go:
- * Trouver un moyen pour faire des iterations plus courtes dans le StochasticBatchLearner
- * Simple Window features
- * Evolved features
+- 
+ * MapContainerFunction: transformer en ProxyFunction
+   * implem SingleContainerSingleThread
+   * implem MultipleContainerSingleThread 
+ 
+ * Mettre en service le GoActionsPerception
+ * Virer le code désuet (GoStateActionFeatures, DecisionProblemStateActionsPerception)
 
 Proteins:
  ** ProteinLearner: Serialisation des models

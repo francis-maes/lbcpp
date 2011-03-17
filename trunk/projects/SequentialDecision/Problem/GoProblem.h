@@ -13,6 +13,7 @@
 # include <lbcpp/Data/Matrix.h>
 # include <lbcpp/Data/RandomGenerator.h>
 # include <list>
+# include <lbcpp/UserInterface/MatrixComponent.h>
 
 namespace lbcpp
 {
@@ -61,6 +62,8 @@ protected:
 
 typedef ReferenceCountedObjectPtr<GoBoard> GoBoardPtr;
 
+extern ClassPtr goBoardClass;
+
 extern ClassPtr goStateClass;
 class GoState;
 typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
@@ -77,13 +80,13 @@ public:
   const GoBoardPtr& getBoard() const
     {return board;}
 
+  Player getCurrentPlayer() const;
+  GoBoardPtr getBoardWithCurrentPlayerAsBlack() const;
+
   typedef GoBoard::Position Position;
   typedef std::set<Position> PositionSet;
 
   void addStone(Player player, size_t x, size_t y);
-
-  Player getCurrentPlayer() const
-    {return (time % 2) == 0 ? blackPlayer : whitePlayer;}
 
   void getStonesThatWouldBeCapturedIfPlaying(Player player, const Position& stonePosition, PositionSet& res) const;
 
@@ -198,6 +201,26 @@ public:
 };
 
 typedef ReferenceCountedObjectPtr<GoProblem> GoProblemPtr;
+
+class GoStateComponent : public MatrixComponent
+{
+public:
+  GoStateComponent(GoStatePtr state, const String& name)
+    : MatrixComponent(state->getBoard()), state(state) {}
+ 
+  virtual juce::Colour selectColour(const Variable& element) const
+  {
+    if (!element.exists())
+      return Colours::lightgrey;
+    const juce::Colour colours[] = {juce::Colours::beige, juce::Colours::black, juce::Colours::white, juce::Colours::grey};
+    return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
+  }
+
+  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name);
+
+protected:
+  GoStatePtr state;
+};
 
 }; /* namespace lbcpp */
 
