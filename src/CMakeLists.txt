@@ -444,6 +444,7 @@ SET(LBCPP_LEARNING_ONLINE_LEARNER_SOURCES
   Learning/OnlineLearner/RestoreBestParametersOnlineLearner.h
   Learning/OnlineLearner/EvaluatorOnlineLearner.h
   Learning/OnlineLearner/CompositeOnlineLearner.h
+  Learning/OnlineLearner/HierarchicalOnlineLearner.h
   Learning/OnlineLearner/OnlineLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OnlineLearnerLibrary.cpp
 )

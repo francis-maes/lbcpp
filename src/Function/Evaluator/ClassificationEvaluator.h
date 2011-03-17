@@ -67,7 +67,7 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new ClassificationScoreObject();}
   
-  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score, const FunctionPtr& function) const
     {score.staticCast<ClassificationScoreObject>()->finalize();}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predictedObject, const Variable& correctObject, const ScoreObjectPtr& result) const

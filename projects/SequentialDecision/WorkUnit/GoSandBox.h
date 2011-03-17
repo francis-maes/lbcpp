@@ -444,7 +444,15 @@ public:
       return false;
     }
     FunctionPtr rankingExampleCreator = new DecisionProblemStateActionsRankingExample(new GoStateActionFeatures());
-    FunctionPtr rankingMachine = linearRankingMachine(learningParameters);
+    StochasticGDParametersPtr sgdParameters = learningParameters.dynamicCast<StochasticGDParameters>();
+    if (!sgdParameters)
+    {
+      context.errorCallback(T("Learning parameters type not supported"));
+      return false;
+    }
+    FunctionPtr rankingMachine = linearRankingMachine(new StochasticGDParameters(sgdParameters->getLearningRate(), StoppingCriterionPtr(), 0,
+                                                                                 sgdParameters->doPerEpisodeUpdates(), sgdParameters->doNormalizeLearningRate(),
+                                                                                 false, true, false));
     //rankingMachine->setEvaluator(new GoActionScoringEvaluator());
 
     FunctionPtr goEpisodeFunction = new GoEpisodeFunction(learningParameters, rankingExampleCreator, rankingMachine);
@@ -452,6 +460,9 @@ public:
       return false;
     goEpisodeFunction->setEvaluator(new GoEpisodeFunctionEvaluator());
     goEpisodeFunction->setBatchLearner(learningParameters->createBatchLearner(context));
+    goEpisodeFunction->setOnlineLearner(
+      compositeOnlineLearner(evaluatorOnlineLearner(), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
+    //rankingMachine->setOnlineLearner(perEpisodeGDOnlineLearner(FunctionPtr(), constantIterationFunction(1.0), true));
     
     goEpisodeFunction->train(context, trainingGames, validationGames, T("Training"), true);
 

@@ -1,8 +1,14 @@
- 
- 
+'''Refactor StochasticBatchLearner/OnlineLearner'''
+
+ * New learner: HierarchicalOnlineLearner that inherits from CompositeOnlineLearner
+ * simplify CompositeOnlineLearner
+ * move some code from StochasticBatchLearner to HierarchicalOnlineLearner
+ * Store a hierarchical structure for Function online learner dependencies
+ * Hierachical stop
+
 Go:
- * GoEpisodeEvaluator
- * Online learning
+ * Regler histoire batchlearner/onlinelearner
+ * Trouver un moyen pour faire des iterations plus courtes dans le StochasticBatchLearner
  * Simple Window features
  * Evolved features
 

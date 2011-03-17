@@ -24,4 +24,8 @@
     <variable type="ObjectVector[OnlineLearner]" name="learners"/>
   </class>
 
+  <class name="HierarchicalOnlineLearner" base="CompositeOnlineLearner">
+    <constructor returnType="OnlineLearner"/>
+  </class>
+
 </library>

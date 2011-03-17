@@ -22,7 +22,7 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
                                                 bool randomizeExamples,
                                                 bool evaluateAtEachIteration)
   : learningRate(learningRate), stoppingCriterion(stoppingCriterion), maxIterations(maxIterations), 
-    doPerEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
+    perEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
     restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples), evaluateAtEachIteration(evaluateAtEachIteration)
 {
 }
@@ -36,7 +36,7 @@ OnlineLearnerPtr StochasticGDParameters::createOnlineLearner(ExecutionContext& c
 {
   // create gradient descent learner
   std::vector<OnlineLearnerPtr> learners;
-  learners.push_back(doPerEpisodeUpdates
+  learners.push_back(perEpisodeUpdates
     ? perEpisodeGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate)
     : stochasticGDOnlineLearner(lossFunction, learningRate, normalizeLearningRate));
 
