@@ -48,7 +48,7 @@ public:
 
       size_t protein = builder.addInput(proteinClass, T("protein"));
       size_t length = builder.addFunction(proteinLengthFunction(), protein);
-      size_t primaryFeatures = builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, protein);
+      size_t primaryFeatures = builder.addFunction(createVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, primaryResidueFeatures)), length, protein);
       size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
       builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
 
@@ -94,7 +94,8 @@ public:
       builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
       builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
 
-    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)), T("residueFeatureVectors"));
+    builder.finishSelectionWithFunction(createVectorFunction(
+            lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures)), T("residueFeatureVectors"));
   }
 
   void residueFeatures(CompositeFunctionBuilder& builder) const
@@ -110,7 +111,7 @@ public:
         builder.addInSelection(globalFeatures);
 
       if (featuresParameters->residueWindowSize)
-        builder.addFunction(windowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
+        builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
 
       if (featuresParameters->residueLocalMeanSize)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueLocalMeanSize));
@@ -133,7 +134,8 @@ public:
       builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
       builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
 
-    builder.finishSelectionWithFunction(createSymmetricMatrixFunction(function(&NumericalProteinPredictorParameters::residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
+    builder.finishSelectionWithFunction(createSymmetricMatrixFunction(
+                  lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
   }
 
   void residuePairFeatures(CompositeFunctionBuilder& builder) const
@@ -170,8 +172,8 @@ public:
     
     if (featuresParameters->residuePairWindowSize)
     {
-      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
-      builder.addFunction(windowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2_"));
+      builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
+      builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2_"));
     }
     
     if (featuresParameters->residuePairLocalMeanSize)
@@ -188,21 +190,13 @@ public:
     
     if (featuresParameters->cartesianProductPrimaryWindowSize)
     {
-      size_t w1 = builder.addFunction(windowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
-      size_t w2 = builder.addFunction(windowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
+      size_t w1 = builder.addFunction(containerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
+      size_t w2 = builder.addFunction(containerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
       builder.addFunction(cartesianProductFeatureGenerator(true), w1, w2, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
     }
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
-
-  typedef void (NumericalProteinPredictorParameters::*ThisClassFunctionBuildFunction)(CompositeFunctionBuilder& builder) const; 
-
-  FunctionPtr function(ThisClassFunctionBuildFunction buildFunc) const
-    {return function((FunctionBuildFunction)buildFunc);}
-
-  FunctionPtr function(FunctionBuildFunction buildFunc) const
-    {return new MethodBasedCompositeFunction(refCountedPointerFromThis(this), buildFunc);}
 
   // Learning Machine
   virtual FunctionPtr learningMachine(ProteinTarget target) const

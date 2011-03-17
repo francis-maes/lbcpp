@@ -20,8 +20,6 @@
   </class>
 
   <!-- GO -->
-  <uicomponent name="GoStateComponent" type="GoState"/>
-
   <class name="DecisionProblemStateActionsPerception" base="Function">
     <variable type="Function" name="stateActionPerception"/>
   </class>
@@ -29,9 +27,8 @@
   <class name="DecisionProblemStateActionsRankingExample" base="CompositeFunction">
     <variable type="Function" name="stateActionPerception"/>
   </class>
-  <class name="GoActionIdentifierFeature" base="FeatureGenerator"/>
-  <class name="GoStateActionFeatures" base="CompositeFunction"/>
-
+  
+  <!-- Go Evaluator -->
   <class name="GoActionScoringScoreObject" base="ScoreObject">
     <variable type="ScalarVariableMean" name="predictionRate"/>
   </class>
@@ -48,11 +45,22 @@
     <variable type="Function" name="rankingMachine"/>
   </class>
 
+  <!-- Go Sand Box -->
   <class name="GoSandBox" base="WorkUnit">
     <variable type="File" name="gamesDirectory"/>
     <variable type="PositiveInteger" name="maxCount"/>
     <variable type="PositiveInteger" name="numFolds"/>
     <variable type="LearnerParameters" name="learningParameters"/>
   </class>
+
+  <!-- Go Features -->
+  <class name="GoStatePreFeatures">
+    <variable type="GoState" name="state"/>
+    <variable type="GoBoard" name="board"/>
+    <variable type="Matrix[DoubleVector[EnumValue,Double]]" name="boardPrimaryFeatures"/>
+  </class>
+
+  <class name="GoActionPositionFeature" base="FeatureGenerator"/>
+  <class name="GoStateActionFeatures" base="CompositeFunction"/>
 
 </library>

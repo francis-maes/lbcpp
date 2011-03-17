@@ -80,6 +80,30 @@ GoState::GoState(const String& name, size_t size)
 
 GoState::GoState() : time(0), whitePrisonerCount(0), blackPrisonerCount(0) {}
 
+Player GoState::getCurrentPlayer() const
+  {return (time % 2) == 0 ? blackPlayer : whitePlayer;}
+
+GoBoardPtr GoState::getBoardWithCurrentPlayerAsBlack() const
+{
+  if (getCurrentPlayer() == blackPlayer)
+    return board;
+  else
+  {
+    size_t n = board->getSize();
+    GoBoardPtr res(new GoBoard(n));
+    for (size_t i = 0; i < n; ++i)
+      for (size_t j = 0; j < n; ++i)
+      {
+        Position position(i, j);
+        Player pl = board->get(position);
+        if (pl != noPlayers)
+          pl = (pl == blackPlayer ? whitePlayer : blackPlayer);
+        res->set(position, pl);
+      }
+    return res;
+  }
+}
+
 void GoState::addStone(Player player, size_t x, size_t y)
 {
   Position position(x, y);
@@ -216,7 +240,7 @@ void GoState::clone(ExecutionContext& context, const ObjectPtr& t) const
   target->previousPositions = previousPositions;
   target->capturedAtPreviousTurn = capturedAtPreviousTurn;
   target->freePositions = freePositions;
-  target->availableActions = availableActions;
+  target->availableActions = availableActions->cloneAndCast<Container>(context);
 }
 
 String GoState::toString() const

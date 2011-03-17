@@ -141,6 +141,7 @@ public:
 
   size_t addFunction(const FunctionPtr& function, size_t input, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
   void startSelection();
@@ -173,25 +174,28 @@ private:
 /*
 ** MethodBasedCompositeFunction
 */
-typedef void (Object::*FunctionBuildFunction)(CompositeFunctionBuilder& builder) const; 
+typedef void (Object::*CompositeFunctionBuilderFunction)(CompositeFunctionBuilder& builder) const; 
 
 class MethodBasedCompositeFunction : public CompositeFunction
 {
 public:
-  MethodBasedCompositeFunction(ObjectPtr factory, FunctionBuildFunction buildFunctionFunction)
-    : factory(factory), buildFunctionFunction(buildFunctionFunction) {}
+  MethodBasedCompositeFunction(ObjectPtr pthis, CompositeFunctionBuilderFunction compositeFunctionBuilderFunction)
+    : pthis(pthis), compositeFunctionBuilderFunction(compositeFunctionBuilderFunction) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    Object& object = *factory;
-    (object.*buildFunctionFunction)(builder);
-    factory = ObjectPtr(); // free reference to factory
+    Object& object = *pthis;
+    (object.*compositeFunctionBuilderFunction)(builder);
+    pthis = ObjectPtr(); // free reference to pthis
   }
 
 protected:
-  ObjectPtr factory;
-  FunctionBuildFunction buildFunctionFunction;
+  ObjectPtr pthis;
+  CompositeFunctionBuilderFunction compositeFunctionBuilderFunction;
 };
+
+# define lbcppMemberCompositeFunction(ThisClass, Fun) \
+    CompositeFunctionPtr(new MethodBasedCompositeFunction(refCountedPointerFromThis(this),  (CompositeFunctionBuilderFunction)(&ThisClass::Fun)))
 
 inline void variableToNative(ExecutionContext& context, CompositeFunction::StepType& dest, const Variable& source)
   {jassert(source.isInteger()); dest = (CompositeFunction::StepType)source.getInteger();}

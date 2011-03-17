@@ -1,24 +1,24 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: WindowFeatureGenerator.h       | Window Feature Generator        |
+| Filename: ContainerWindowFeatureGenerator.h| Container Window Features     |
 | Author  : Francis Maes                   |                                 |
 | Started : 03/02/2011 19:04               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_FEATURE_GENERATOR_GENERIC_WINDOW_H_
-# define LBCPP_FEATURE_GENERATOR_GENERIC_WINDOW_H_
+#ifndef LBCPP_FEATURE_GENERATOR_GENERIC_CONTAINER_WINDOW_H_
+# define LBCPP_FEATURE_GENERATOR_GENERIC_CONTAINER_WINDOW_H_
 
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
 
 namespace lbcpp
 {
 
-// Container[DoubleVector[.]], PositiveInteger -> DoubleVector[Window[.]]
-class WindowFeatureGenerator : public FeatureGenerator
+// Container[DoubleVector[.]], PositiveInteger -> DoubleVector[.]
+class ContainerWindowFeatureGenerator : public FeatureGenerator
 {
 public:
-  WindowFeatureGenerator(size_t windowSize = 0)
+  ContainerWindowFeatureGenerator(size_t windowSize = 0)
     : windowSize(windowSize) {}
 
   virtual size_t getNumRequiredInputs() const
@@ -87,7 +87,7 @@ public:
   }
 
 protected:
-  friend class WindowFeatureGeneratorClass;
+  friend class ContainerWindowFeatureGeneratorClass;
 
   size_t windowSize;
   size_t numFeaturesPerPosition;
@@ -95,4 +95,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_FEATURE_GENERATOR_GENERIC_WINDOW_H_
+#endif // !LBCPP_FEATURE_GENERATOR_GENERIC_CONTAINER_WINDOW_H_
