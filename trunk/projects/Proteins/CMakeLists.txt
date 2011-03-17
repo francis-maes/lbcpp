@@ -73,7 +73,7 @@ SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
 SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
   Predictor/ProteinPredictor.h
   Predictor/ProteinPredictor.cpp
-  ProteinPerception.h
+  Predictor/ProteinPerception.h
   Predictor/ProteinPredictorParameters.h
   Predictor/NumericalProteinPredictorParameters.h
   Predictor/ProteinPredictorLibrary.xml
