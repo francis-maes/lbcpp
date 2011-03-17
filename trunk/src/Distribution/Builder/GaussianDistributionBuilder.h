@@ -9,7 +9,6 @@
 #ifndef LBCPP_GAUSSIAN_PROBABILITY_DISTRIBUTION_BUILDER_H_
 # define LBCPP_GAUSSIAN_PROBABILITY_DISTRIBUTION_BUILDER_H_
 
-//# include <lbcpp/Distribution/ContinuousDistribution.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
 # include <lbcpp/Data/RandomVariable.h>
 # include <lbcpp/Core/Type.h>
@@ -42,27 +41,9 @@ public:
   }
   
   virtual void addDistribution(const DistributionPtr& value, double weight);
-  /*{
-    GaussianDistributionPtr valueDistribution = value.staticCast<GaussianDistribution>();
-    jassert(valueDistribution);
-    ensureScalarMeanAreInitialized();
-    means->push(valueDistribution->getMean());
-    variances->push(valueDistribution->getVariance());
-  }*/
-  
+    
   virtual DistributionPtr build(ExecutionContext& context) const;
-  /*{
-    jassert((means && variances) != meanAndVariances);
-
-    if (means)
-      return new GaussianDistribution(means->getMean(), variances->getMean());
-    if (meanAndVariances)
-      return new GaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
-
-    jassertfalse;
-    return GaussianDistributionPtr();
-  }*/
-  
+    
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     DistributionBuilder::clone(context, target);
@@ -111,18 +92,6 @@ class IntegerGaussianDistributionBuilder : public GaussianDistributionBuilder
   }
   
   virtual DistributionPtr build(ExecutionContext& context) const;
-  /*{
-    jassert((means && variances) != meanAndVariances);
-    
-    if (means)
-      return new IntegerGaussianDistribution(means->getMean(), variances->getMean());
-    if (meanAndVariances)
-      return new IntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
-    
-    jassertfalse;
-    return IntegerGaussianDistributionPtr();
-  }*/
-  
 };
   
 class PositiveIntegerGaussianDistributionBuilder : public IntegerGaussianDistributionBuilder
@@ -131,17 +100,6 @@ class PositiveIntegerGaussianDistributionBuilder : public IntegerGaussianDistrib
     {return positiveIntegerType;}
   
   virtual DistributionPtr build(ExecutionContext& context) const;
-  /*{
-    jassert((means && variances) != meanAndVariances);
-    
-    if (means)
-      return new PositiveIntegerGaussianDistribution(means->getMean(), variances->getMean());
-    if (meanAndVariances)
-      return new PositiveIntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
-    
-    jassertfalse;
-    return PositiveIntegerGaussianDistributionPtr();
-  }*/
     
 };
   

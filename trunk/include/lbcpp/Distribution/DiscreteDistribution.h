@@ -127,7 +127,7 @@ public:
     {jassert(false); return 0;} // not implemented !
   
   virtual Variable sample(RandomGeneratorPtr random) const
-    {return Variable((int)roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance())), integerType);} // FIXME: variance or stddev ? // TODO arnaud
+    {return Variable((int)roundDouble(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation())), integerType);}
 
   virtual Variable sampleBest(RandomGeneratorPtr random) const
     {jassert(false); return Variable();} // not implemented !
@@ -137,6 +137,9 @@ public:
   
   double getVariance() const
     {return variance;}
+  
+  double getStandardDeviation() const
+    {return sqrt(variance);}
   
   virtual DistributionBuilderPtr createBuilder() const;
   
@@ -173,7 +176,7 @@ public:
     {return positiveIntegerType;}
   
   virtual Variable sample(RandomGeneratorPtr random) const
-    {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getVariance()))), positiveIntegerType);} // FIXME: variance or stddev ? // TODO arnaud
+    {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation()))), positiveIntegerType);}
   
   virtual DistributionBuilderPtr createBuilder() const;
   

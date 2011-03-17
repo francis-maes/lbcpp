@@ -84,6 +84,9 @@ public:
   double getVariance() const
     {return variance;}
   
+  double getStandardDeviation() const
+    {return sqrt(variance);}
+  
   virtual DistributionBuilderPtr createBuilder() const;
 
   juce_UseDebuggingNewOperator
