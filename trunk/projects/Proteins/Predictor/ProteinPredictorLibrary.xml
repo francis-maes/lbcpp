@@ -2,6 +2,16 @@
 
 <library name="ProteinPredictor" directory="Predictor">
 
+  <class name="ProteinPerception" base="Object">
+    <variable type="Protein" name="protein"/>
+    <variable type="PositiveInteger" name="length"/>
+    <variable type="Vector[DoubleVector[EnumValue, Double]]" name="primaryResidueFeatures"/>
+    <variable type="Container[DoubleVector[EnumValue, Double]]" name="accumulator"/>
+    <variable type="DoubleVector[EnumValue, Double]" name="globalFeatures"/>
+  </class>  
+  
+  <class name="CreateProteinPerceptionFunction" base="Function"/>
+
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
     <variable type="GenericVector[Pair[VariablesEnumeration[Protein], Function]]" name="targetPredictors"/>

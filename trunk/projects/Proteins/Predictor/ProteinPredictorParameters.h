@@ -21,11 +21,19 @@ namespace lbcpp
 class ProteinPredictorParameters : public Object
 {
 public:
+  virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
-  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
-    {jassertfalse;} // should be = 0
+  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
-  // Protein -> Vector[Residue Perception]
+  // Protein -> ProteinPerception
+  virtual FunctionPtr createProteinPerception() const
+  {
+    FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::proteinPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  // Protein, ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
     FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residueVectorPerception);
