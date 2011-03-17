@@ -34,7 +34,7 @@ public:
 
 extern OnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion);
 extern OnlineLearnerPtr restoreBestParametersOnlineLearner();
-extern OnlineLearnerPtr evaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr());
+extern OnlineLearnerPtr evaluatorOnlineLearner(bool evaluateOnTrainingData = true, bool evaluateOnValidationData = true);
 
 extern OnlineLearnerPtr compositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners);
 extern OnlineLearnerPtr compositeOnlineLearner(const OnlineLearnerPtr& learner1,

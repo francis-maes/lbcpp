@@ -17,9 +17,10 @@
   </class>
 
   <class name="StochasticBatchLearner" base="BatchLearner">
-    <constructor arguments="size_t maxIterations, bool randomizeExamples"/>
+    <constructor arguments="size_t maxIterations, bool randomizeExamples, size_t numExamplesPerIteration"/>
     <variable type="PositiveInteger" name="maxIterations"/>
     <variable type="Boolean" name="randomizeExamples"/>
+    <variable type="PositiveInteger" name="numExamplesPerIteration"/>
   </class>
 
   <class name="FilterUnsupervisedExamplesBatchLearner" base="DecoratorBatchLearner">

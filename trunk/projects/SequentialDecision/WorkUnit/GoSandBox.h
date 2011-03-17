@@ -461,7 +461,7 @@ public:
     goEpisodeFunction->setEvaluator(new GoEpisodeFunctionEvaluator());
     goEpisodeFunction->setBatchLearner(learningParameters->createBatchLearner(context));
     goEpisodeFunction->setOnlineLearner(
-      compositeOnlineLearner(evaluatorOnlineLearner(), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
+      compositeOnlineLearner(evaluatorOnlineLearner(false, true), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
     //rankingMachine->setOnlineLearner(perEpisodeGDOnlineLearner(FunctionPtr(), constantIterationFunction(1.0), true));
     
     goEpisodeFunction->train(context, trainingGames, validationGames, T("Training"), true);

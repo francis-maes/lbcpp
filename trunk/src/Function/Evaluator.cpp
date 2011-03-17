@@ -37,6 +37,8 @@ protected:
 
 bool Evaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example) const
 {
+  if (!example)
+    return true; // skip missing examples
   Variable output = function->computeWithInputsObject(context, example);
   return updateScoreObject(context, scores, example, output);
 }

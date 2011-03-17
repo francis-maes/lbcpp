@@ -14,8 +14,9 @@
   </class>
 
   <class name="EvaluatorOnlineLearner" base="OnlineLearner">
-    <constructor arguments="EvaluatorPtr evaluator"/>
-    <variable type="Evaluator" name="evaluator"/>
+    <constructor arguments="bool evaluateOnTrainingData, bool evaluateOnValidationData"/>
+    <variable type="Boolean" name="evaluateOnTrainingData"/>
+    <variable type="Boolean" name="evaluateOnValidationData"/>
   </class>
   
   <class name="CompositeOnlineLearner" base="OnlineLearner">
