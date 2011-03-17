@@ -69,9 +69,14 @@ public:
       NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
       ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
       
-      FunctionPtr function = predictorParameters->createResiduePairVectorPerception();
-      function->initialize(context, (TypePtr)proteinClass);
-      Variable description = function->compute(context, proteins[0]);
+      FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+      proteinfunction->initialize(context, (TypePtr)proteinClass);
+      Variable proteinPerception = proteinfunction->compute(context, proteins[0]);
+      
+      FunctionPtr residuefunction = predictorParameters->createResiduePairVectorPerception();
+      residuefunction->initialize(context, proteinfunction->getOutputType());
+      Variable description = residuefunction->compute(context, proteinPerception);
+
       return userInterfaceManager().createVariableTreeView(context, description);
     }
     else if (tabName == T("Residue Features"))
@@ -90,9 +95,14 @@ public:
 
       ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
 
-      FunctionPtr function = predictorParameters->createResidueVectorPerception();
-      function->initialize(context, (TypePtr)proteinClass);
-      Variable description = function->compute(context, proteins[0]);
+      FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+      proteinfunction->initialize(context, (TypePtr)proteinClass);
+      Variable proteinPerception = proteinfunction->compute(context, proteins[0]);
+      
+      FunctionPtr residuefunction = predictorParameters->createResidueVectorPerception();
+      residuefunction->initialize(context, proteinfunction->getOutputType());
+      Variable description = residuefunction->compute(context, proteinPerception);
+
       return userInterfaceManager().createVariableTreeView(context, description);
     }
     else if (tabName == T("Protein 1D"))

@@ -26,7 +26,7 @@ public:
     {return 2;} // binary product for the moment
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return (TypePtr)containerClass(doubleVectorClass());}
+    {return (TypePtr)doubleVectorClass();}
   
   virtual String getOutputPostFix() const
     {return T("CartesianProduct");}

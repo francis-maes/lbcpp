@@ -32,7 +32,7 @@ public:
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
-  
+
   // Protein, ProteinPerception -> Vector[Residue Perception]
   virtual FunctionPtr createResidueVectorPerception() const
   {
@@ -40,7 +40,7 @@ public:
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
-  
+
   virtual FunctionPtr createResiduePairVectorPerception() const
   {
     FunctionPtr function = new MethodBasedCompositeFunction(refCountedPointerFromThis(this), (FunctionBuildFunction)&ProteinPredictorParameters::residuePairVectorPerception);
@@ -64,10 +64,10 @@ public:
 
   virtual FunctionPtr probabilityVectorPredictor(ProteinTarget target) const
     {return mapContainerFunction(binaryClassifier(target));}
-  
+
   virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
     {return mapContainerFunction(binaryClassifier(target));}
-  
+
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
     {return mapContainerFunction(regressor(target));}
 
@@ -138,7 +138,7 @@ public:
   size_t residueWindowSize;
   size_t residueLocalMeanSize;
   size_t residueMediumMeanSize;
-  
+
   // pair
   bool residuePairGlobalFeatures;
   size_t residuePairWindowSize;
@@ -172,4 +172,3 @@ ProteinPredictorParametersPtr numericalProteinPredictorParameters();
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEIN_PREDICTOR_PARAMETERS_H_
-

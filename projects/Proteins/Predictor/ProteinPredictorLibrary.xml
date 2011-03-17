@@ -2,10 +2,13 @@
 
 <library name="ProteinPredictor" directory="Predictor">
 
-  <template name="NumericalProteinPrimaryFeatures" base="Object">
-    <parameter name="featuresEnumeration"/>
+  <class name="ProteinPrimaryPerception" base="Object" abstract="yes">
     <variable type="Protein" name="protein"/>
     <variable type="PositiveInteger" name="length"/>
+  </class>
+
+  <template name="NumericalProteinPrimaryFeatures" base="ProteinPrimaryPerception">
+    <parameter name="featuresEnumeration"/>
     <variable type="Vector[DoubleVector[featuresEnumeration, Double]]" name="primaryResidueFeatures"/>
     <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[featuresEnumeration], Double]]" name="accumulator"/>
     <variable type="DenseDoubleVector[featuresEnumeration, Double]" name="globalFeatures"/>
