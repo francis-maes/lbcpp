@@ -73,7 +73,7 @@ protected:
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new RankingScoreObject();}
   
-  virtual void finalizeScoreObject(const ScoreObjectPtr& score) const
+  virtual void finalizeScoreObject(const ScoreObjectPtr& score, const FunctionPtr& function) const
     {score.staticCast<RankingScoreObject>()->finalize();}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& predicted, const Variable& correct, const ScoreObjectPtr& result) const

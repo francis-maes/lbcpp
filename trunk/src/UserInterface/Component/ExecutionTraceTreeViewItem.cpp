@@ -112,7 +112,11 @@ void ExecutionTraceTreeViewItem::paintItem(Graphics& g, int width, int height)
 
     ExecutionTraceNodePtr workUnitTrace = trace.dynamicCast<ExecutionTraceNode>();
     if (workUnitTrace)
-      g.drawText(Variable(workUnitTrace->getTimeLength(), timeType).toShortString(), w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
+    {
+      double timeLength = workUnitTrace->getTimeLength();
+      String timeLengthString = timeLength ? Variable(timeLength, timeType).toShortString() : T("...");
+      g.drawText(timeLengthString, w + timeColumnWidth, 0, timeColumnWidth, height, Justification::centredRight, false);
+    }
   }
   else
     paintIconTextAndProgression(g, width, height);

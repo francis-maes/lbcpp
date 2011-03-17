@@ -71,43 +71,6 @@ public:
   size_t getNumLearners() const
     {return learners.size();}
 
-  bool startLearningAndAddLearner(ExecutionContext& context, const FunctionPtr& function, size_t maxIterations, const std::vector<ObjectPtr>& trainingData, const std::vector<ObjectPtr>& validationData)
-  {
-    const OnlineLearnerPtr& onlineLearner = function->getOnlineLearner();
-    jassert(onlineLearner);
-    if (onlineLearner->startLearning(context, function, maxIterations, trainingData, validationData))
-    {
-      learners.push_back(onlineLearner);
-      return true;
-    }
-    else
-      return false;
-  }
-
-  Variable finishLearningIterationAndRemoveFinishedLearners(size_t iteration)
-  {
-    if (learners.empty())
-      return Variable();
-
-    std::vector<OnlineLearnerPtr> remainingLearners;
-    remainingLearners.reserve(learners.size());
-    
-    ContainerPtr res = vector(doubleType, learners.size());
-    for (size_t i = 0; i < learners.size(); ++i)
-    {
-      const OnlineLearnerPtr& learner = learners[i];
-      double objectiveValue = DBL_MAX;
-      if (learner->finishLearningIteration(iteration, objectiveValue))
-        learner->finishLearning();
-      else
-        remainingLearners.push_back(learner);
-      jassert(objectiveValue < DBL_MAX);
-      res->setElement(i, objectiveValue);
-    }
-    learners.swap(remainingLearners);
-    return learners.size() > 1 ? res : res->getElement(0);
-  }
-
   lbcpp_UseDebuggingNewOperator
 
 protected:

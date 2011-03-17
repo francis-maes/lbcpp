@@ -8,7 +8,7 @@
     <variable type="IterationFunction" name="learningRate"/>
     <variable type="StoppingCriterion" name="stoppingCriterion"/>
     <variable type="PositiveInteger" name="maxIterations"/>
-    <variable type="Boolean" name="doPerEpisodeUpdates"/>
+    <variable type="Boolean" name="perEpisodeUpdates"/>
     <variable type="Boolean" name="normalizeLearningRate"/>
     <variable type="Boolean" name="restoreBestParameters"/>
     <variable type="Boolean" name="randomizeExamples"/>

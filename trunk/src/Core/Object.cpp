@@ -287,28 +287,37 @@ static void getAllChildObjectsRecursively(const ObjectPtr& object, std::set<Obje
   if (res.find(object) == res.end())
   {
     res.insert(object);
-
-    size_t n = object->getNumVariables();
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable v = object->getVariable(i);
-      if (v.isObject() && v.exists())
-        getAllChildObjectsRecursively(v.getObject(), res);
-    }
-
-    ContainerPtr container = object.dynamicCast<Container>();
-    if (container && container->getElementsType()->inheritsFrom(objectClass))
-    {
-      size_t n = container->getNumElements();
-      for (size_t i = 0; i < n; ++i)
-      {
-        ObjectPtr object = container->getElement(i).getObject();
-        if (object)
-          getAllChildObjectsRecursively(object, res);
-      }
-    }
+    std::vector<ObjectPtr> childObjects;
+    object->getChildObjects(childObjects);
+    for (size_t i = 0; i < childObjects.size(); ++i)
+      getAllChildObjectsRecursively(childObjects[i], res);
   }
 }
+
+void Object::getChildObjects(std::vector<ObjectPtr>& res) const
+{
+  size_t n = getNumVariables();
+  for (size_t i = 0; i < n; ++i)
+  {
+    Variable v = getVariable(i);
+    if (v.isObject() && v.exists())
+      res.push_back(v.getObject());
+  }
+/*
+  ContainerPtr container = object.dynamicCast<Container>();
+  if (container && container->getElementsType()->inheritsFrom(objectClass))
+  {
+    size_t n = container->getNumElements();
+    res.reserve(res.size() + n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      ObjectPtr object = container->getElement(i).getObject();
+      if (object)
+        res.push_back(object);
+    }
+  }*/
+}
+  
 
 void Object::getAllChildObjects(std::set<ObjectPtr>& res) const
   {return getAllChildObjectsRecursively(refCountedPointerFromThis(this), res);}

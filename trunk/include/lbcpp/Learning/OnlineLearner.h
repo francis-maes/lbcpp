@@ -32,15 +32,17 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-OnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion);
-OnlineLearnerPtr restoreBestParametersOnlineLearner();
-OnlineLearnerPtr evaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr());
+extern OnlineLearnerPtr stoppingCriterionOnlineLearner(StoppingCriterionPtr stoppingCriterion);
+extern OnlineLearnerPtr restoreBestParametersOnlineLearner();
+extern OnlineLearnerPtr evaluatorOnlineLearner(EvaluatorPtr evaluator = EvaluatorPtr());
 
-OnlineLearnerPtr compositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners);
-OnlineLearnerPtr compositeOnlineLearner(const OnlineLearnerPtr& learner1,
+extern OnlineLearnerPtr compositeOnlineLearner(const std::vector<OnlineLearnerPtr>& learners);
+extern OnlineLearnerPtr compositeOnlineLearner(const OnlineLearnerPtr& learner1,
                                         const OnlineLearnerPtr& learner2,
                                         const OnlineLearnerPtr& learner3 = OnlineLearnerPtr(),
                                         const OnlineLearnerPtr& learner4 = OnlineLearnerPtr());
+
+extern OnlineLearnerPtr hierarchicalOnlineLearner();
 
 }; /* namespace lbcpp */
 

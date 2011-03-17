@@ -85,6 +85,9 @@ public:
   bool doNormalizeLearningRate() const
     {return normalizeLearningRate;}
 
+  bool doPerEpisodeUpdates() const
+    {return perEpisodeUpdates;}
+
   /*
   ** Max Iterations
   */
@@ -134,7 +137,7 @@ protected:
   IterationFunctionPtr learningRate;
   StoppingCriterionPtr stoppingCriterion;
   size_t maxIterations;
-  bool doPerEpisodeUpdates;
+  bool perEpisodeUpdates;
   bool normalizeLearningRate;
   bool restoreBestParameters;
   bool randomizeExamples;
