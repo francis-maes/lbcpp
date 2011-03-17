@@ -7,6 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "ProteinPredictor.h"
+#include "ProteinPerception.h"
+
 using namespace lbcpp;
 
 ProteinPredictor::ProteinPredictor(ProteinPredictorParametersPtr parameters = ProteinPredictorParametersPtr())
@@ -22,22 +24,14 @@ void ProteinPredictor::addTarget(ProteinTarget target)
   FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
   targetPredictors.push_back(std::make_pair(target, targetPredictor));
-  switch (target) {
-    case ss3Target:
-    case ss8Target:
-    case stalTarget:
-    case saTarget:
-    case sa20Target:
-    case drTarget:
+  switch (ProteinPerception::typeOfProteinPerception(target)) {
+    case residueType:
       activeResiduePerception = true;
       break;
-    case cma8Target:
-    case cmb8Target:
-    case dmaTarget:
-    case dmbTarget:
+    case residuePairType:
       activeResiduePairPerception = true;
       break;
-    case dsbTarget:
+    case disulfideBondType:
       activeDisulfideResiduePairPerception = true;
       break;
     default:
@@ -51,9 +45,10 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t input = builder.addInput(proteinClass, T("input"));
   size_t supervision = builder.addInput(proteinClass, T("supervision"));
 
-  size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), input) : (size_t)-1;
-  size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), input) : (size_t)-1;
-  size_t disulfideResiduePairPerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
+  size_t proteinPerception = builder.addFunction(parameters->createProteinPerception(), input);
+  size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
+  size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
+  size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
 
   if (residuePerception != (size_t)-1)
     residuePerceptionType = getStateClass()->getMemberVariableType(residuePerception);
@@ -65,20 +60,25 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   for (size_t i = 0; i < targetPredictors.size(); ++i)
   {
     ProteinTarget target = targetPredictors[i].first;
+    ProteinPerceptionType targetPerceptionType = ProteinPerception::typeOfProteinPerception(target);
     String targetName = proteinClass->getMemberVariableName(target);
     FunctionPtr targetPredictor = targetPredictors[i].second;
 
     size_t targetPredictorInput = 0;
-    TypePtr targetType = proteinClass->getMemberVariableType(target);
-    TypePtr elementsType = Container::getTemplateParameter(targetType);
-    jassert(elementsType);
-    if (targetType->inheritsFrom(symmetricMatrixClass(probabilityType)))          // contact maps
-      targetPredictorInput = (target == dsbTarget) ? disulfideResiduePairPerception : residuePairPerception; // -> residue pair perception
-    else if (elementsType->inheritsFrom(doubleVectorClass(enumValueType, probabilityType)) || // label sequences
-        elementsType->inheritsFrom(probabilityType))                                     // probability sequences
-      targetPredictorInput = residuePerception;                                          // -> residue perceptions
-    else
-      jassert(false);
+    switch (targetPerceptionType)
+    {
+      case residueType:
+        targetPredictorInput = residuePerception;
+        break;
+      case residuePairType:
+        targetPredictorInput = residuePairPerception;
+        break;
+      case disulfideBondType:
+        targetPredictorInput = disulfideResiduePerception;
+        break;
+      default:
+        jassertfalse;
+    }
 
     size_t targetSupervision = builder.addFunction(new GetProteinTargetFunction(target), supervision, targetName + T("Supervision"));
     makeProteinInputs.push_back(builder.addConstant((int)target));

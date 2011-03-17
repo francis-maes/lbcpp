@@ -733,7 +733,7 @@ bool CompositeDoubleVector::loadFromXml(XmlImporter& importer)
     vectors.push_back(std::make_pair((size_t)offset, variable.getObjectAndCast<DoubleVector>()));
     importer.leave();
   }
-  if (vectors.size() != size)
+  if (vectors.size() != (size_t)size)
   {
     importer.getContext().errorCallback(T("Invalid number of sub vectors"));
     return false;

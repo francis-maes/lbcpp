@@ -106,6 +106,9 @@ public:
       const VariableSignaturePtr& inputVariable = inputVariables[i];
 
       shifts[i] = elementsEnumeration->getNumElements();
+      if (i && !shifts[i])
+        jassertfalse;
+
       EnumerationPtr subElementsEnumeration;
       TypePtr subElementsType;
       if (!DoubleVector::getTemplateParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))

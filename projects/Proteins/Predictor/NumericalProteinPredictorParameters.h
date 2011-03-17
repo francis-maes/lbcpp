@@ -9,6 +9,8 @@
 #ifndef LBCPP_PROTEINS_PREDICTOR_NUMERICAL_PARAMETERS_H_
 # define LBCPP_PROTEINS_PREDICTOR_NUMERICAL_PARAMETERS_H_
 
+# include "ProteinPredictor.h"
+# include "ProteinPerception.h"
 # include "ProteinPredictorParameters.h"
 # include <lbcpp/Distribution/DiscreteDistribution.h>
 # include <lbcpp/FeatureGenerator/FeatureGenerator.h>
@@ -39,7 +41,20 @@ public:
       builder.addFunction(defaultProbabilityFeatureGenerator(discretization), inputIndex, outputName);
   }
 
-  // Features
+  /* Protein Perception */
+  virtual void proteinPerception(CompositeFunctionBuilder& builder) const
+  {
+    builder.startSelection();
+
+      size_t protein = builder.addInput(proteinClass, T("protein"));
+      size_t length = builder.addFunction(proteinLengthFunction(), protein);
+      size_t primaryFeatures = builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, protein);
+      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
+      builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
+
+    builder.finishSelectionWithFunction(new CreateProteinPerceptionFunction());
+  }
+  
   void primaryResidueFeatures(CompositeFunctionBuilder& builder) const
   {
     size_t position = builder.addInput(positiveIntegerType, T("position"));
@@ -55,9 +70,8 @@ public:
 
     // feature generators
     builder.startSelection();
-    
-      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
 
+      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
       addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
       addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
       addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
@@ -67,19 +81,27 @@ public:
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
-
-  void primaryResidueFeaturesVector(CompositeFunctionBuilder& builder) const
+  
+  /* Residue Perception */
+  virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t input = builder.addInput(proteinClass, T("protein"));
-    size_t length = builder.addFunction(proteinLengthFunction(), input);
-    builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, input);
+    size_t proteinPerception = builder.addInput(proteinPerceptionClass);
+    
+    builder.startSelection();
+
+      builder.addFunction(getVariableFunction(T("length")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+
+    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)), T("residueFeatureVectors"));
   }
 
   void residueFeatures(CompositeFunctionBuilder& builder) const
   {
-    size_t position = builder.addInput(positiveIntegerType);
+    size_t position = builder.addInput(positiveIntegerType);    
     size_t primaryResidueFeatures = builder.addInput(vectorClass(doubleVectorClass()));
-    size_t primaryResidueFeaturesAcc = builder.addInput(containerClass());
+    size_t primaryResidueFeaturesAcc = builder.addInput(containerClass(doubleVectorClass()));
     size_t globalFeatures = builder.addInput(doubleVectorClass());
     
     builder.startSelection();
@@ -98,33 +120,30 @@ public:
      
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
-
-  void residueFeaturesVector(CompositeFunctionBuilder& builder) const
+  
+  /* Residue Pair Perception */
+  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
   {
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-
+    size_t proteinPerception = builder.addInput(proteinPerceptionClass);
+    
     builder.startSelection();
+    
+      builder.addFunction(getVariableFunction(T("length")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
 
-      size_t length = builder.addFunction(proteinLengthFunction(), protein);
-      //size_t primaryFeatures = builder.addFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeaturesVector), protein);
-      size_t primaryFeatures = builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, protein);
-      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
-
-    builder.finishSelectionWithFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::residueFeatures)), T("residueFeatureVectors"));
+    builder.finishSelectionWithFunction(createSymmetricMatrixFunction(function(&NumericalProteinPredictorParameters::residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
   }
 
-  virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const
-    {residueFeaturesVector(builder);}
-  
   void residuePairFeatures(CompositeFunctionBuilder& builder) const
   {
-    size_t firstPosition = builder.addInput(positiveIntegerType, T("position_1"));
-    size_t secondPosition = builder.addInput(positiveIntegerType, T("position_2"));
+    size_t firstPosition = builder.addInput(positiveIntegerType);
+    size_t secondPosition = builder.addInput(positiveIntegerType);
     size_t primaryResidueFeatures = builder.addInput(vectorClass(doubleVectorClass()));
-    size_t primaryResidueFeaturesAcc = builder.addInput(containerClass());
+    size_t primaryResidueFeaturesAcc = builder.addInput(containerClass(doubleVectorClass()));
     size_t globalFeatures = builder.addInput(doubleVectorClass());
-    
+
     builder.startSelection();
     
     if (featuresParameters->residuePairGlobalFeatures)
@@ -150,23 +169,6 @@ public:
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
-  
-  void residuePairFeatureVector(CompositeFunctionBuilder& builder) const
-  {
-    size_t protein = builder.addInput(proteinClass, T("protein"));
-    
-    builder.startSelection();
-    
-      size_t length = builder.addFunction(proteinLengthFunction(), protein);
-      size_t primaryFeatures = builder.addFunction(createVectorFunction(function(&NumericalProteinPredictorParameters::primaryResidueFeatures)), length, protein);
-      size_t primaryFeaturesAcc = builder.addFunction(accumulateContainerFunction(), primaryFeatures);
-      builder.addFunction(accumulatorGlobalMeanFunction(), primaryFeaturesAcc, T("globalmean"));
-      
-    builder.finishSelectionWithFunction(createSymmetricMatrixFunction(function(&NumericalProteinPredictorParameters::residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
-  }
-  
-  virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const
-    {residuePairFeatureVector(builder);}
 
   typedef void (NumericalProteinPredictorParameters::*ThisClassFunctionBuildFunction)(CompositeFunctionBuilder& builder) const; 
 
