@@ -24,7 +24,7 @@ void ProteinPredictor::addTarget(ProteinTarget target)
   FunctionPtr targetPredictor = parameters->createTargetPredictor(target);
   jassert(targetPredictor);
   targetPredictors.push_back(std::make_pair(target, targetPredictor));
-  switch (NumericalProteinPrimaryFeatures::typeOfProteinPerception(target)) {
+  switch (typeOfProteinPerception(target)) {
     case residueType:
       activeResiduePerception = true;
       break;
@@ -64,7 +64,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   for (size_t i = 0; i < targetPredictors.size(); ++i)
   {
     ProteinTarget target = targetPredictors[i].first;
-    ProteinPerceptionType targetPerceptionType = NumericalProteinPrimaryFeatures::typeOfProteinPerception(target);
+    ProteinPerceptionType targetPerceptionType = typeOfProteinPerception(target);
 
     size_t targetPredictorInput = 0;
     switch (targetPerceptionType)

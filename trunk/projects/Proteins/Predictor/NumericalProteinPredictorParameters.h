@@ -144,16 +144,20 @@ public:
     size_t primaryResidueFeaturesAcc = builder.addInput(containerClass(doubleVectorClass()));
     size_t globalFeatures = builder.addInput(doubleVectorClass());
 
+    size_t aaDist = (size_t)-1;
+    if (featuresParameters->aminoAcidDistanceFeature)
+    {
+      aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
+      aaDist = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
+    }
+    
     builder.startSelection();
     
     if (featuresParameters->residuePairGlobalFeatures)
       builder.addInSelection(globalFeatures);
     
-    if (featuresParameters->aminoAcidDistanceFeature)
-    {
-      size_t aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
-    }
+    if (aaDist != (size_t)-1)
+      builder.addInSelection(aaDist);
     
     if (featuresParameters->useIntervalMean)
     {
