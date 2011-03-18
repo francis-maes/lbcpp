@@ -54,9 +54,16 @@ public:
     size_t n = availableActions->getNumElements();
 
     DenseDoubleVectorPtr res(new DenseDoubleVector(outputType, n, 0.0));
+    bool actionFound = false;
     for (size_t i = 0; i < n; ++i)
       if (availableActions->getElement(i) == action)
+      {
         res->setValue(i, -1);
+        actionFound = true;
+      }
+
+    if (!actionFound)
+      context.warningCallback(T("Could not find action ") + action.toShortString() + T(" in state ") + state->toShortString());
     return res;
   }
 };
@@ -170,7 +177,7 @@ public:
     builder.startSelection();
 
       builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
-      builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
+      //builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -224,8 +231,10 @@ public:
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    const GoStatePtr& state = inputs[0].getObjectAndCast<GoState>();
+    const GoStatePtr& initialState = inputs[0].getObjectAndCast<GoState>();
     const ContainerPtr& trajectory = inputs[1].getObjectAndCast<Container>();
+
+    GoStatePtr state = initialState->cloneAndCast<GoState>();
 
     size_t n = trajectory->getNumElements();
     ObjectVectorPtr res = new ObjectVector(getOutputType());

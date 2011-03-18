@@ -31,7 +31,11 @@
   <class name="PerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner">
     <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
   </class>
-
+  
+  <class name="ParallelPerEpisodeGDOnlineLearner" base="GradientDescentOnlineLearner">
+    <constructor arguments="FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate" returnType="OnlineLearner"/>
+  </class>
+  
   <!-- Low-level Learnable Functions -->
   <class name="AddBiasLearnableFunction" base="Function">
     <constructor arguments="BinaryClassificationScore scoreToOptimize, double initialBias"/>

@@ -1,8 +1,6 @@
 
 Go:
  * Parallel learning
- * Per-episode stochastic gd
-  => objectif: full utilisation des cpus
 
 HigherOrderFunctions:
  /!\ MapContainer de base n'a pas de learner, Le MapContainerBatchLearner est celui du MapN
