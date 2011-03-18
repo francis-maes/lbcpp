@@ -37,7 +37,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? containerClass(anyType) : anyType;}
+    {return index == 0 ? (TypePtr)containerClass(anyType) : anyType;}
 
   virtual String getOutputPostFix() const
     {return function->getOutputPostFix();}
