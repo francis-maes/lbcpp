@@ -69,7 +69,6 @@ protected:
 typedef ReferenceCountedObjectPtr<GoBoard> GoBoardPtr;
 
 extern ClassPtr goBoardClass;
-
 extern ClassPtr goStateClass;
 
 class GoState : public DecisionProblemState

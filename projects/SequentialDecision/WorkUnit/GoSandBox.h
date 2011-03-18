@@ -215,14 +215,14 @@ public:
   GoStatePtr state;
   GoActionVectorPtr previousActions;
   GoBoardPtr board; // with current player as black
-  MatrixPtr boardPrimaryFeatures;
+  DoubleVectorPtr globalPrimaryFeatures; // time
+  MatrixPtr actionPrimaryFeatures;
   // 4-connexity-graph
   // 8-connexity-graph
   // ...
 };
 
-extern ClassPtr goStatePreFeaturesClass(TypePtr primaryFeaturesEnumeration);
-
+extern ClassPtr goStatePreFeaturesClass(TypePtr globalFeaturesEnumeration, TypePtr actionFeaturesEnumeration);
 ////////////////////
 
 // GoState -> Container[DoubleVector]
@@ -246,10 +246,11 @@ public:
   virtual void actionFeatures(CompositeFunctionBuilder& builder)
   {
     size_t action = builder.addInput(goActionClass, T("action"));
-    size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType), T("preFeatures"));
+    size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType), T("preFeatures"));
 
     size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
-    size_t boardPrimaryFeatures = builder.addFunction(getVariableFunction(T("boardPrimaryFeatures")), preFeatures);
+    size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures);
+    size_t actionPrimaryFeatures = builder.addFunction(getVariableFunction(T("actionPrimaryFeatures")), preFeatures);
 
     size_t row = builder.addFunction(getVariableFunction(1), action);
     size_t column = builder.addFunction(getVariableFunction(0), action);
@@ -258,15 +259,28 @@ public:
                                                 relativePositionFeatures[0]->getClass());
     size_t previousActionRelationFeatures = builder.addFunction(mapContainerFunction(fun), previousActions, action);
 
+    
     builder.startSelection();
 
-      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
+      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
       size_t i2 = builder.addFunction(new GoActionPositionFeature(boardSize), action, T("position"));
+      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
+      
+      builder.addFunction(cartesianProductFeatureGenerator(), i2, globalPrimaryFeatures, T("posAndTime"));
 
-      builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
-      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i1, T("prod"));
+      //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
+      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i2, T("posWin"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+
+  virtual void globalPrimaryFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t state = builder.addInput(goStateClass, T("state"));
+    size_t time = builder.addFunction(getVariableFunction(T("time")), state);
+
+    // time
+    builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(300.0), 15, true), time, T("time"));
   }
 
   virtual void preFeaturesFunction(CompositeFunctionBuilder& builder)
@@ -274,13 +288,18 @@ public:
     builder.startSelection();
 
       size_t state = builder.addInput(goStateClass, T("state"));
+
       size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), state, T("previousActions"));
       size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
-      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
-      EnumerationPtr primaryFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
-      jassert(primaryFeaturesEnumeration);
 
-    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass(primaryFeaturesEnumeration)), T("goPreFeatures"));
+      size_t globalFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, globalPrimaryFeatures), state);
+      EnumerationPtr globalFeaturesEnumeration = DoubleVector::getElementsEnumeration(builder.getOutputType());
+
+      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
+      EnumerationPtr actionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
+      jassert(actionFeaturesEnumeration);
+
+    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass(globalFeaturesEnumeration, actionFeaturesEnumeration)), T("goPreFeatures"));
   }
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)

@@ -56,11 +56,14 @@
   <class name="GoActionPositionFeature" base="FeatureGenerator"/>
   
   <template name="GoStatePreFeatures">
-    <parameter name="primaryFeaturesEnumeration" type="EnumValue"/>
+    <parameter name="globalFeaturesEnumeration" type="EnumValue"/>
+    <parameter name="actionFeaturesEnumeration" type="EnumValue"/>
+
     <variable type="GoState" name="state"/>
     <variable type="GoActionVector" name="previousActions"/>
     <variable type="GoBoard" name="board"/>
-    <variable type="ObjectMatrix[DoubleVector[primaryFeaturesEnumeration,Double]]" name="boardPrimaryFeatures"/>
+    <variable type="DoubleVector[globalFeaturesEnumeration,Double]" name="globalPrimaryFeatures"/>
+    <variable type="ObjectMatrix[DoubleVector[actionFeaturesEnumeration,Double]]" name="actionPrimaryFeatures"/>
   </template>
 
   <class name="GoActionsPerception" base="CompositeFunction"/>
