@@ -25,14 +25,14 @@
     <variable type="GoBoard" name="board"/>
     <variable type="PositiveInteger" name="whitePrisonerCount"/>
     <variable type="PositiveInteger" name="blackPrisonerCount"/>
-    <variable type="GoActionVector" name="previousActions"/>
+    <variable type="PositiveIntegerPairVector" name="previousActions"/>
   </class>
   
-  <class name="GoAction">
-    <variable type="PositiveInteger" name="x"/>
-    <variable type="PositiveInteger" name="y"/>
+  <class name="PositiveIntegerPair">
+    <variable type="PositiveInteger" name="first"/>
+    <variable type="PositiveInteger" name="second"/>
   </class>
-  <class name="GoActionVector" base="Vector[GoAction]"/>
+  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
 
   <class name="GoStateSampler" base="Function">
     <variable type="PositiveInteger" name="minSize"/>

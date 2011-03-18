@@ -20,10 +20,10 @@ namespace lbcpp
 
 class GoState;
 typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
-class GoAction;
-typedef ReferenceCountedObjectPtr<GoAction> GoActionPtr;
-class GoActionVector;
-typedef ReferenceCountedObjectPtr<GoActionVector> GoActionVectorPtr;
+class PositiveIntegerPair;
+typedef ReferenceCountedObjectPtr<PositiveIntegerPair> PositiveIntegerPairPtr;
+class PositiveIntegerPairVector;
+typedef ReferenceCountedObjectPtr<PositiveIntegerPairVector> PositiveIntegerPairVectorPtr;
 
 extern EnumerationPtr playerEnumeration;
 
@@ -95,7 +95,7 @@ public:
 
   Position getLastPosition() const;
 
-  const GoActionVectorPtr& getPreviousActions() const
+  const PositiveIntegerPairVectorPtr& getPreviousActions() const
     {return previousActions;}
 
   const PositionSet& getCapturedAtPreviousTurn() const
@@ -128,7 +128,7 @@ protected:
   GoBoardPtr board;
   size_t whitePrisonerCount;
   size_t blackPrisonerCount;
-  GoActionVectorPtr previousActions;
+  PositiveIntegerPairVectorPtr previousActions;
   PositionSet capturedAtPreviousTurn;
   PositionSet freePositions;
   ContainerPtr availableActions;
@@ -143,79 +143,62 @@ protected:
   void removePositionsFromPositionSet(PositionSet& res, const PositionSet& positionsToRemove);
 };
 
-extern ClassPtr goActionClass;
+extern ClassPtr positiveIntegerPairClass;
 
-class GoAction : public Object
+namespace impl
+{
+  typedef std::pair<size_t, size_t> PositiveIntegerPair;
+};
+
+class PositiveIntegerPair : public Object
 {
 public:
-  GoAction(unsigned short xy)
-    : Object(goActionClass)
+  PositiveIntegerPair(const impl::PositiveIntegerPair& p)
+    : Object(positiveIntegerPairClass), first(p.first), second(p.second)
   {
-    x = ((xy >> 8) & 0xFF);
-    y = (xy & 0xFF);
   }
 
-  GoAction(size_t x, size_t y)
-    : Object(goActionClass), x((unsigned char)x), y((unsigned char)y) {}
-  GoAction() : Object(goActionClass), x((unsigned char)-1), y((unsigned char)-1) {}
+  PositiveIntegerPair(size_t first, size_t second)
+    : Object(positiveIntegerPairClass), first(first), second(second) {}
+  PositiveIntegerPair() : Object(positiveIntegerPairClass), first((size_t)-1), second((size_t)-1) {}
 
-  size_t getX() const
-    {return (size_t)x;} 
+  size_t getFirst() const
+    {return first;} 
 
-  size_t getY() const
-    {return (size_t)y;}
+  size_t getSecond() const
+    {return second;}
  
   virtual int compare(const ObjectPtr& otherObject) const
   {
-    const GoActionPtr& other = otherObject.staticCast<GoAction>();
-    if (x != other->x)
-      return (int)x - (int)other->x;
+    const PositiveIntegerPairPtr& other = otherObject.staticCast<PositiveIntegerPair>();
+    if (first != other->first)
+      return (int)first - (int)other->first;
     else
-      return (int)y - (int)other->y;
+      return (int)second - (int)other->second;
   }
 
-  unsigned short getValue() const
-    {return (x << 8) | y;}
+  impl::PositiveIntegerPair getValue() const
+    {return impl::PositiveIntegerPair(first, second);}
  
 protected:
-  friend class GoActionClass;
+  friend class PositiveIntegerPairClass;
 
-  unsigned char x, y;
+  size_t first;
+  size_t second;
 };
 
-extern ClassPtr goActionVectorClass;
+extern ClassPtr positiveIntegerPairVectorClass;
 
-class GoActionVector : public BuiltinVector<unsigned short, GoAction>
+class PositiveIntegerPairVector : public BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair>
 {
 public:
-  typedef BuiltinVector<unsigned short, GoAction> BaseClass;
+  typedef BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair> BaseClass;
 
-  GoActionVector(size_t length = 0)
-    : BaseClass(goActionVectorClass, length, 0) {}
+  PositiveIntegerPairVector(size_t length = 0)
+    : BaseClass(positiveIntegerPairVectorClass, length, impl::PositiveIntegerPair(0, 0)) {}
 
   virtual TypePtr getElementsType() const
-    {return goActionClass;}
-  
-  typedef GoBoard::Position Position;
-
-  void prepend(const Position& position)
-    {BaseClass::values.insert(BaseClass::values.begin(), makeValue(position));}
-
-  void append(const Position& position)
-    {BaseClass::values.push_back(makeValue(position));}
-
-  void set(size_t index, const Position& position)
-    {BaseClass::values[index] = makeValue(position);}
-
-  Position get(size_t index) const
-    {return makePosition(BaseClass::values[index]);}
-
-private:
-  static unsigned short makeValue(const Position& position)
-    {return (position.first << 8) | position.second;}
-
-  static Position makePosition(unsigned short xy)
-    {return Position(((xy >> 8) & 0xFF), xy & 0xFF);}
+    {return positiveIntegerPairClass;}
 };
 
 class GoStateSampler : public SimpleUnaryFunction

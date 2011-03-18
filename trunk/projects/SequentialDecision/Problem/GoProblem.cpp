@@ -73,7 +73,7 @@ void GoBoard::getGroup(const Position& position, PositionSet& res, PositionSet& 
 ** GoState
 */
 GoState::GoState(const String& name, size_t size)
-  : DecisionProblemState(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0), previousActions(new GoActionVector())
+  : DecisionProblemState(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0), previousActions(new PositiveIntegerPairVector())
 {
   for (size_t i = 0; i < size; ++i)
     for (size_t j = 0; j < size; ++j)
@@ -203,14 +203,14 @@ void GoState::removePositionsFromPositionSet(PositionSet& res, const PositionSet
 }
 
 TypePtr GoState::getActionType() const
-  {return goActionClass;}
+  {return positiveIntegerPairClass;}
 
 ContainerPtr GoState::computeAvailableActions() const
 {
   bool testKo = (getCapturedAtPreviousTurn().size() == 1);
 
   TypePtr actionType = getActionType();
-  GoActionVectorPtr res = new GoActionVector();
+  PositiveIntegerPairVectorPtr res = new PositiveIntegerPairVector();
   res->reserve(freePositions.size());
   for (PositionSet::const_iterator it = freePositions.begin(); it != freePositions.end(); ++it)
   {
@@ -232,8 +232,8 @@ ContainerPtr GoState::computeAvailableActions() const
 
 void GoState::performTransition(const Variable& a, double& reward)
 {
-  const GoActionPtr& action = a.getObjectAndCast<GoAction>();
-  addStone(getCurrentPlayer(), action->getX(), action->getY());
+  const PositiveIntegerPairPtr& action = a.getObjectAndCast<PositiveIntegerPair>();
+  addStone(getCurrentPlayer(), action->getFirst(), action->getSecond());
   reward = 0.0; // FIXME: compute reward
 }
 
@@ -242,7 +242,7 @@ void GoState::clone(ExecutionContext& context, const ObjectPtr& t) const
   Object::clone(context, t);
   const GoStatePtr& target = t.staticCast<GoState>();
   target->board = board->cloneAndCast<GoBoard>(context);
-  target->previousActions = previousActions->cloneAndCast<GoActionVector>();
+  target->previousActions = previousActions->cloneAndCast<PositiveIntegerPairVector>();
   target->capturedAtPreviousTurn = capturedAtPreviousTurn;
   target->freePositions = freePositions;
   target->availableActions = availableActions->cloneAndCast<Container>(context);
