@@ -110,66 +110,62 @@ public:
   }
 };
 
-// GoAction -> DoubleVector
-class GoActionPositionFeature : public FeatureGenerator
+// PositiveIntegerPair -> DoubleVector
+class PositiveIntegerPairPositionFeature : public FeatureGenerator
 {
 public:
-  GoActionPositionFeature(size_t size = 19)
-    : size(size) {}
+  PositiveIntegerPairPositionFeature(size_t firstMax = 0, size_t secondMax = 0)
+    : firstMax(firstMax), secondMax(secondMax) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return goActionClass;}
+    {return positiveIntegerPairClass;}
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     DefaultEnumerationPtr res = new DefaultEnumeration(T("positions"));
-    for (size_t i = 0; i < size; ++i)
-      for (size_t j = 0; j < size; ++j)
-      {
-        String shortName;
-        shortName += (juce::tchar)('a' + i);
-        shortName += (juce::tchar)('a' + j);
-        res->addElement(context, String((int)i) + T(", ") + String((int)j), String::empty, shortName);
-      }
+    for (size_t i = 0; i < firstMax; ++i)
+      for (size_t j = 0; j < secondMax; ++j)
+        res->addElement(context, String((int)i) + T(", ") + String((int)j));
     return res;
   }
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    const GoActionPtr& action = inputs[0].getObjectAndCast<GoAction>();
-    callback.sense(action->getY() * size + action->getX(), 1.0);
+    const PositiveIntegerPairPtr& action = inputs[0].getObjectAndCast<PositiveIntegerPair>();
+    callback.sense(action->getFirst() * secondMax + action->getSecond(), 1.0);
   }
 
 protected:
-  size_t size;
+  size_t firstMax;
+  size_t secondMax;
 };
 
-class GoActionDistanceFeatureGenerator : public FeatureGenerator
+class PositiveIntegerPairDistanceFeatureGenerator : public FeatureGenerator
 {
 public:
-  GoActionDistanceFeatureGenerator(size_t boardSize = 19, size_t numAxisDistanceIntervals = 10, size_t numDiagDistanceIntervals = 10)
-    : boardSize(boardSize), numAxisDistanceIntervals(numAxisDistanceIntervals), numDiagDistanceIntervals(numDiagDistanceIntervals) {}
+  PositiveIntegerPairDistanceFeatureGenerator(size_t firstMax = 0, size_t secondMax = 0, size_t numAxisDistanceIntervals = 10, size_t numDiagDistanceIntervals = 10)
+    : firstMax(firstMax), secondMax(secondMax), numAxisDistanceIntervals(numAxisDistanceIntervals), numDiagDistanceIntervals(numDiagDistanceIntervals) {}
 
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return goActionClass;}
+    {return positiveIntegerPairClass;}
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
-    axisDistanceFeatureGenerator = signedNumberFeatureGenerator(softDiscretizedLogNumberFeatureGenerator(0.0, log10(boardSize + 1.0), numAxisDistanceIntervals, false));
-    diagDistanceFeatureGenerator = softDiscretizedLogNumberFeatureGenerator(0.0, log10(sqrt((double)(boardSize * boardSize * 2)) + 1.0), numDiagDistanceIntervals, false);
+    axisDistanceFeatureGenerator = signedNumberFeatureGenerator(softDiscretizedLogNumberFeatureGenerator(0.0, log10(juce::jmax((double)firstMax, (double)secondMax) + 1.0), numAxisDistanceIntervals, false));
+    diagDistanceFeatureGenerator = softDiscretizedLogNumberFeatureGenerator(0.0, log10(sqrt((double)(firstMax * firstMax + secondMax * secondMax)) + 1.0), numDiagDistanceIntervals, false);
 
     if (!axisDistanceFeatureGenerator->initialize(context, doubleType))
       return EnumerationPtr();
     if (!diagDistanceFeatureGenerator->initialize(context, doubleType))
       return EnumerationPtr();
 
-    DefaultEnumerationPtr res = new DefaultEnumeration(T("goActionDistanceFeatures"));
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("positiveIntegerPairDistanceFeatures"));
     res->addElementsWithPrefix(context, axisDistanceFeatureGenerator->getFeaturesEnumeration(), T("hor."), T("h."));
     i1 = res->getNumElements();
     res->addElementsWithPrefix(context, axisDistanceFeatureGenerator->getFeaturesEnumeration(), T("ver."), T("v."));
@@ -180,12 +176,12 @@ public:
 
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    const GoActionPtr& action1 = inputs[0].getObjectAndCast<GoAction>();
-    const GoActionPtr& action2 = inputs[1].getObjectAndCast<GoAction>();
-    double x1 = (double)action1->getX();
-    double y1 = (double)action1->getY();
-    double x2 = (double)action2->getX();
-    double y2 = (double)action2->getY();
+    const PositiveIntegerPairPtr& pair1 = inputs[0].getObjectAndCast<PositiveIntegerPair>();
+    const PositiveIntegerPairPtr& pair2 = inputs[1].getObjectAndCast<PositiveIntegerPair>();
+    double x1 = (double)pair1->getFirst();
+    double y1 = (double)pair1->getSecond();
+    double x2 = (double)pair2->getFirst();
+    double y2 = (double)pair2->getSecond();
     double dx = x2 - x1;
     double dy = y2 - y1;
 
@@ -200,7 +196,8 @@ public:
   }
 
 private:
-  size_t boardSize;
+  size_t firstMax;
+  size_t secondMax;
   size_t numAxisDistanceIntervals;
   size_t numDiagDistanceIntervals;
 
@@ -213,7 +210,7 @@ class GoStatePreFeatures : public Object
 {
 public:
   GoStatePtr state;
-  GoActionVectorPtr previousActions;
+  PositiveIntegerPairVectorPtr previousActions;
   GoBoardPtr board; // with current player as black
   DoubleVectorPtr globalPrimaryFeatures; // time
   MatrixPtr actionPrimaryFeatures;
@@ -236,16 +233,16 @@ public:
 
   Variable getRelativePositionFeatures(ExecutionContext& context, const Variable& previousAction, const Variable& currentAction) const
   {
-    const GoActionPtr& a1 = previousAction.getObjectAndCast<GoAction>();
-    const GoActionPtr& a2 = currentAction.getObjectAndCast<GoAction>();
-    size_t index = (((a1->getX() * boardSize) + a1->getY()) * boardSize + a2->getX()) * boardSize + a2->getY();
+    const PositiveIntegerPairPtr& a1 = previousAction.getObjectAndCast<PositiveIntegerPair>();
+    const PositiveIntegerPairPtr& a2 = currentAction.getObjectAndCast<PositiveIntegerPair>();
+    size_t index = (((a1->getFirst() * boardSize) + a1->getSecond()) * boardSize + a2->getFirst()) * boardSize + a2->getSecond();
     jassert(index < relativePositionFeatures.size());
     return relativePositionFeatures[index];
   }
 
   virtual void actionFeatures(CompositeFunctionBuilder& builder)
   {
-    size_t action = builder.addInput(goActionClass, T("action"));
+    size_t action = builder.addInput(positiveIntegerPairClass, T("action"));
     size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType), T("preFeatures"));
 
     size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
@@ -255,7 +252,7 @@ public:
     size_t row = builder.addFunction(getVariableFunction(1), action);
     size_t column = builder.addFunction(getVariableFunction(0), action);
 
-    FunctionPtr fun = lbcppMemberBinaryFunction(GoActionsPerception, getRelativePositionFeatures, goActionClass, goActionClass,
+    FunctionPtr fun = lbcppMemberBinaryFunction(GoActionsPerception, getRelativePositionFeatures, positiveIntegerPairClass, positiveIntegerPairClass,
                                                 relativePositionFeatures[0]->getClass());
     size_t previousActionRelationFeatures = builder.addFunction(mapContainerFunction(fun), previousActions, action);
 
@@ -263,7 +260,7 @@ public:
     builder.startSelection();
 
       size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
-      size_t i2 = builder.addFunction(new GoActionPositionFeature(boardSize), action, T("position"));
+      size_t i2 = builder.addFunction(new PositiveIntegerPairPositionFeature(boardSize, boardSize), action, T("position"));
       size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
       
       builder.addFunction(cartesianProductFeatureGenerator(), i2, globalPrimaryFeatures, T("posAndTime"));
@@ -308,7 +305,7 @@ public:
 
     size_t state = builder.addInput(goStateClass, T("state"));
     size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
-    size_t actions = builder.addFunction(new GetAvailableActionsFunction(goActionClass), state, T("actions"));
+    size_t actions = builder.addFunction(new GetAvailableActionsFunction(positiveIntegerPairClass), state, T("actions"));
     
     builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, actionFeatures)), actions, preFeatures);
   }
@@ -322,12 +319,12 @@ private:
 
   void relativePositionFeaturesFunction(CompositeFunctionBuilder& builder)
   {
-    size_t p1 = builder.addInput(goActionClass, T("position1"));
-    size_t p2 = builder.addInput(goActionClass, T("position2"));
+    size_t p1 = builder.addInput(positiveIntegerPairClass, T("position1"));
+    size_t p2 = builder.addInput(positiveIntegerPairClass, T("position2"));
 
     builder.startSelection();
 
-      builder.addFunction(new GoActionDistanceFeatureGenerator(boardSize), p1, p2, T("dist"));
+      builder.addFunction(new PositiveIntegerPairDistanceFeatureGenerator(boardSize, boardSize), p1, p2, T("dist"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("relativePos"));
   }
@@ -335,7 +332,7 @@ private:
   bool makePrecalculations(ExecutionContext& context)
   {
     FunctionPtr function = lbcppMemberCompositeFunction(GoActionsPerception, relativePositionFeaturesFunction);
-    if (!function->initialize(context, goActionClass, goActionClass))
+    if (!function->initialize(context, positiveIntegerPairClass, positiveIntegerPairClass))
       return false;
 
     relativePositionFeatures.resize(boardSize * boardSize * boardSize * boardSize);
@@ -343,11 +340,11 @@ private:
     for (size_t x1 = 0; x1 < boardSize; ++x1)
       for (size_t y1 = 0; y1 < boardSize; ++y1)
       {
-        GoActionPtr a1(new GoAction(x1, y1));
+        PositiveIntegerPairPtr a1(new PositiveIntegerPair(x1, y1));
         for (size_t x2 = 0; x2 < boardSize; ++x2)
           for (size_t y2 = 0; y2 < boardSize; ++y2)
           {
-            GoActionPtr a2(new GoAction(x2, y2));
+            PositiveIntegerPairPtr a2(new PositiveIntegerPair(x2, y2));
             relativePositionFeatures[index++] = function->compute(context, a1, a2).getObjectAndCast<DoubleVector>();
           }
       }
@@ -365,14 +362,14 @@ class GoEpisodeFunction : public SimpleBinaryFunction
 {
 public:
   GoEpisodeFunction(LearnerParametersPtr learningParameters = LearnerParametersPtr(), FunctionPtr rankingExampleCreator = FunctionPtr(), FunctionPtr rankingMachine = FunctionPtr())
-    : SimpleBinaryFunction(goStateClass, containerClass(goActionClass), objectVectorClass(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))),
+    : SimpleBinaryFunction(goStateClass, containerClass(positiveIntegerPairClass), objectVectorClass(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))),
       learningParameters(learningParameters), rankingExampleCreator(rankingExampleCreator), rankingMachine(rankingMachine)
   {
   }
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!rankingExampleCreator->initialize(context, goStateClass, goActionClass))
+    if (!rankingExampleCreator->initialize(context, goStateClass, positiveIntegerPairClass))
       return TypePtr();
     TypePtr rankingExampleType = rankingExampleCreator->getOutputType();
     if (!rankingMachine->initialize(context, rankingExampleType->getMemberVariableType(0), rankingExampleType->getMemberVariableType(1)))
@@ -474,10 +471,10 @@ protected:
 
 ////
 
-class GoActionScoringScoreObject : public ScoreObject
+class PositiveIntegerPairScoringScoreObject : public ScoreObject
 {
 public:
-  GoActionScoringScoreObject() 
+  PositiveIntegerPairScoringScoreObject() 
     : predictionRate(new ScalarVariableMean(T("predictionRate"))), 
       rankOfAction(new ScalarVariableStatistics(T("rankOfAction"))),
       unsupervisedRate(new ScalarVariableMean(T("unsupervisedRate"))) {}
@@ -530,14 +527,14 @@ public:
     {return rankOfAction->getMean();} // mean rank of best action
 
 private:
-  friend class GoActionScoringScoreObjectClass;
+  friend class PositiveIntegerPairScoringScoreObjectClass;
 
   ScalarVariableMeanPtr predictionRate;
   ScalarVariableStatisticsPtr rankOfAction;
   ScalarVariableMeanPtr unsupervisedRate;
 };
 
-class GoActionScoringEvaluator : public SupervisedEvaluator
+class PositiveIntegerPairScoringEvaluator : public SupervisedEvaluator
 {
 public:
   virtual TypePtr getRequiredPredictionType() const
@@ -547,16 +544,16 @@ public:
     {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
 
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return new GoActionScoringScoreObject();}
+    {return new PositiveIntegerPairScoringScoreObject();}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
-    {result.staticCast<GoActionScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
+    {result.staticCast<PositiveIntegerPairScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
 };
 
 class GoEpisodeFunctionEvaluator : public CallbackBasedEvaluator
 {
 public:
-  GoEpisodeFunctionEvaluator() : CallbackBasedEvaluator(new GoActionScoringEvaluator()) {}
+  GoEpisodeFunctionEvaluator() : CallbackBasedEvaluator(new PositiveIntegerPairScoringEvaluator()) {}
 
   virtual FunctionPtr getFunctionToListen(const FunctionPtr& evaluatedFunction) const
   {
@@ -573,7 +570,7 @@ juce::Component* GoStateComponent::createComponentForVariable(ExecutionContext& 
 {
   const PairPtr& matrixAndPosition = variable.getObjectAndCast<Pair>();
   const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>();
-  Variable goAction(new GoAction(position->getSecond().getInteger(), position->getFirst().getInteger()));
+  Variable positiveIntegerPair(new PositiveIntegerPair(position->getSecond().getInteger(), position->getFirst().getInteger()));
 
   FunctionPtr perception = new GoActionsPerception();
   ContainerPtr actionPerceptions = perception->compute(context, state).getObjectAndCast<Container>();
@@ -583,7 +580,7 @@ juce::Component* GoStateComponent::createComponentForVariable(ExecutionContext& 
     ContainerPtr actions = state->getAvailableActions();
     jassert(actions->getNumElements() == actionPerceptions->getNumElements());
     for (size_t i = 0; i < actions->getNumElements(); ++i)
-      if (actions->getElement(i) == goAction)
+      if (actions->getElement(i) == positiveIntegerPair)
       {
         actionPerception = actionPerceptions->getElement(i);
         break;
@@ -662,10 +659,10 @@ public:
     FunctionPtr rankingMachine = linearRankingMachine(new StochasticGDParameters(sgdParameters->getLearningRate(), StoppingCriterionPtr(), 0,
                                                                                  sgdParameters->doPerEpisodeUpdates(), sgdParameters->doNormalizeLearningRate(),
                                                                                  false, true, false));
-    //rankingMachine->setEvaluator(new GoActionScoringEvaluator());
+    //rankingMachine->setEvaluator(new PositiveIntegerPairScoringEvaluator());
 
     FunctionPtr goEpisodeFunction = new GoEpisodeFunction(learningParameters, rankingExampleCreator, rankingMachine);
-    if (!goEpisodeFunction->initialize(context, goStateClass, containerClass(goActionClass)))
+    if (!goEpisodeFunction->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
       return false;
     EvaluatorPtr evaluator = new GoEpisodeFunctionEvaluator();
     evaluator->setUseMultiThreading(true);

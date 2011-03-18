@@ -131,7 +131,7 @@ class ConvertSGFXmlToStateAndTrajectory : public SimpleUnaryFunction
 {
 public:
   ConvertSGFXmlToStateAndTrajectory()
-    : SimpleUnaryFunction(xmlElementClass, pairClass(goStateClass, objectVectorClass(goActionClass))) {}
+    : SimpleUnaryFunction(xmlElementClass, pairClass(goStateClass, objectVectorClass(positiveIntegerPairClass))) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -165,7 +165,7 @@ public:
       return Variable::missingValue(outputType);
     }
 
-    GoActionVectorPtr trajectory = new GoActionVector(numXmlElements - firstMoveIndex);
+    PositiveIntegerPairVectorPtr trajectory = new PositiveIntegerPairVector(numXmlElements - firstMoveIndex);
     bool isBlackTurn = true;
     for (size_t i = firstMoveIndex; i < numXmlElements; ++i)
     {

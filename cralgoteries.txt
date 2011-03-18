@@ -1,6 +1,7 @@
-* Rendre les choses plus generique: remplacer GoAction par PositiveIntegerPair, rendre le PositiveIntegerDistance generique
 
 Go: Features
+ * Deplacer PositiveIntegerPair et PositiveIntegerPairDistanceFeatures dans lbcpp-core
+ * better PosAndSpace features: Pos discretisé et symetrisé, Time discretisé en 6
  * ConnexityGraph
 
 Proteins:

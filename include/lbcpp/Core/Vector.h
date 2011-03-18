@@ -284,6 +284,9 @@ public:
   void set(size_t index, const ImplementationType& value)
     {jassert(index < values.size()); values[index] = value;}
 
+  void prepend(const ImplementationType& value)
+    {values.insert(values.begin(), value);}
+
   void append(const ImplementationType& value)
     {values.push_back(value);}
 
