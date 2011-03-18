@@ -73,7 +73,7 @@ ContainerPtr Protein::loadProteinsFromDirectoryPair(ExecutionContext& context, c
       ->apply(context, loadFromFilePairFunction(proteinClass, proteinClass), Container::parallelApply, workUnitName)->randomize();
   else
     return directoryFileStream(context, supervisionDirectory, T("*.xml"))->load(maxCount, false)
-      ->apply(context, composeFunction(loadFromFileFunction(proteinClass), proteinToInputOutputPairFunction(false)), Container::parallelApply, workUnitName)
+      ->apply(context, composeFunction(loadFromFileFunction(proteinClass), proteinToInputOutputPairFunction(true)), Container::parallelApply, workUnitName)
       ->randomize();
 }
 
@@ -228,7 +228,6 @@ SymmetricMatrixPtr Protein::getContactMap(ExecutionContext& context, double thre
     SymmetricMatrixPtr distanceMap = getDistanceMap(context, betweenCBetaAtoms);
     if (distanceMap)
       *res = computeContactMapFromDistanceMap(distanceMapCa, threshold);
-
   }
   return *res;
 }

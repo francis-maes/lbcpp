@@ -56,9 +56,9 @@ public:
 
   virtual bool finishLearningIteration(size_t iteration, double& objectiveValueToMinimize)
   {
-    bool learningIsFinished = false;
+    bool learningIsFinished = true;
     for (size_t i = 0; i < learners.size(); ++i)
-      learningIsFinished |= learners[i]->finishLearningIteration(iteration, objectiveValueToMinimize);
+      learningIsFinished &= learners[i]->finishLearningIteration(iteration, objectiveValueToMinimize);
     return learningIsFinished;
   }
 

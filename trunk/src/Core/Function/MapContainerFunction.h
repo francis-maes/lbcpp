@@ -115,17 +115,17 @@ protected:
   ContainerPtr createOutputContainer(const ContainerPtr& input) const
   {
     TypePtr outputElementType = function->getOutputType();
-    if (getOutputType()->inheritsFrom(matrixClass()))
-    {
-      MatrixPtr inputMatrix = input.dynamicCast<Matrix>();
-      jassert(inputMatrix);
-      return matrix(outputElementType, inputMatrix->getNumRows(), inputMatrix->getNumColumns());
-    }
-    else if (getOutputType()->inheritsFrom(symmetricMatrixClass()))
+    if (getOutputType()->inheritsFrom(symmetricMatrixClass()))
     {
       SymmetricMatrixPtr inputSymmetricMatrix = input.dynamicCast<SymmetricMatrix>();
       jassert(inputSymmetricMatrix);
       return symmetricMatrix(outputElementType, inputSymmetricMatrix->getDimension());
+    }
+    else if (getOutputType()->inheritsFrom(matrixClass()))
+    {
+      MatrixPtr inputMatrix = input.dynamicCast<Matrix>();
+      jassert(inputMatrix);
+      return matrix(outputElementType, inputMatrix->getNumRows(), inputMatrix->getNumColumns());
     }
     else
       return vector(outputElementType, input->getNumElements());

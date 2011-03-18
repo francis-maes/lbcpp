@@ -269,5 +269,67 @@ public:
     return true;
   }
 };
+
+class CheckNetworkServerWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    NetworkServerPtr server = new NetworkServer(context);
+    if (!server->startServer(1664))
+    {
+      context.errorCallback(T("WorkUnitManagerServer::run"), T("Not able to open port"));
+      return false;
+    }
+    context.informationCallback(T("Server started !"));
+    
+    while (true)
+    {
+      /* Accept client */
+      NetworkClientPtr client = server->acceptClient(INT_MAX);
+      context.informationCallback(client->getConnectedHostName(), T("Connected"));
+      
+      String ping;
+      if (!client->receiveString(5000, ping))
+      {
+        context.informationCallback(client->getConnectedHostName(), T("Error - Ping"));
+        continue;
+      }
+
+      std::cout << ping << std::endl;
+      client->sendVariable(T("PONG"));
+    }
+  }
+};
+
+class CheckNetworkClientWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    for (size_t i = 0; i < 5; ++i)
+    {
+      NetworkClientPtr client = blockingNetworkClient(context, 3);
+      if (!client->startClient(T("localhost"), 1664))
+      {
+        context.errorCallback(T("WorkUnitManagerServer::run"), T("Not connected !"));
+        return false;
+      }
+      client->sendVariable(T("PING"));
+      
+      String pong;
+      if (!client->receiveString(5000, pong))
+      {
+        context.informationCallback(client->getConnectedHostName(), T("Error - Pong"));
+        continue;
+      }
+
+      std::cout << i << ": " << pong << std::endl;
+      
+      client->stopClient();
+    }
+    return true;
+  }
+};
   
 };

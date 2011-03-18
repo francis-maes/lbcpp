@@ -77,7 +77,8 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& target) const
   {
     NumericalLearnableFunction::clone(context, target);
-    target.staticCast<LinearLearnableFunction>()->parameters = parameters->cloneAndCast<DenseDoubleVector>(context);
+    if (parameters)
+      target.staticCast<LinearLearnableFunction>()->parameters = parameters->cloneAndCast<DenseDoubleVector>(context);
   }
 
   lbcpp_UseDebuggingNewOperator
