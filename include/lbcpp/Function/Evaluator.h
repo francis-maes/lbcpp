@@ -68,7 +68,25 @@ extern ClassPtr scoreObjectClass;
 class Evaluator : public Function
 {
 public:
-  /* Function */
+  Evaluator() : useMultiThreading(false) {}
+
+  /*
+  ** Evaluator
+  */
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const = 0;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const {}
+  
+  // multi threading
+  bool doUseMultiThreading() const
+    {return useMultiThreading;}
+
+  void setUseMultiThreading(bool enabled)
+    {useMultiThreading = enabled;}
+
+  /*
+  ** Function
+  */
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -81,15 +99,12 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return scoreObjectClass;}
 
-  /* Evaluator */
-  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const = 0;
-  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example) const;
-  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
-  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const {}
-  
 protected:
   friend class ProxyEvaluator;
   friend struct EvaluateExampleWorkUnit;
+
+  bool useMultiThreading;
+  bool evaluateExample(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example, CriticalSection* lock = NULL) const;
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
 
