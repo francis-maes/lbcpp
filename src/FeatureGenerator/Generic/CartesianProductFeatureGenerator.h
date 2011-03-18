@@ -45,7 +45,7 @@ public:
     SparseDoubleVectorPtr s1 = inputs[0].getObjectAndCast<DoubleVector>()->toSparseVector();
     SparseDoubleVectorPtr s2 = inputs[1].getObjectAndCast<DoubleVector>()->toSparseVector();
 
-    if (s1 && s2)
+    if (s1 && s2 && s1->getValues().size() && s2->getValues().size())
     {
       for (size_t i = 0; i < s2->getValues().size(); ++i)
       {
@@ -60,8 +60,6 @@ public:
         }
       }
     }
-    else
-      jassert(false);
   }
   
 protected:

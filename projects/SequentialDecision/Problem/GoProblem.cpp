@@ -70,7 +70,7 @@ void GoBoard::getGroup(const Position& position, PositionSet& res, PositionSet& 
 ** GoState
 */
 GoState::GoState(const String& name, size_t size)
-  : DecisionProblemState(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0)
+  : DecisionProblemState(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0), previousActions(new GoActionVector())
 {
   for (size_t i = 0; i < size; ++i)
     for (size_t j = 0; j < size; ++j)
@@ -104,6 +104,9 @@ GoBoardPtr GoState::getBoardWithCurrentPlayerAsBlack() const
   }
 }
 
+GoState::Position GoState::getLastPosition() const
+  {jassert(previousActions && previousActions->getNumElements()); return previousActions->get(0);}
+
 void GoState::addStone(Player player, size_t x, size_t y)
 {
   Position position(x, y);
@@ -113,12 +116,11 @@ void GoState::addStone(Player player, size_t x, size_t y)
   checkForCapture(position, player);
   checkForSuicide(position, player);
 
-  previousPositions.push_front(position);
-  if (previousPositions.size() > numPreviousPositions)
-    previousPositions.pop_back();
+  previousActions->prepend(position);
+  if (previousActions->getNumElements() > numPreviousPositions)
+    previousActions->remove(previousActions->getNumElements() - 1);
 
   availableActions = computeAvailableActions();
-
   ++time;
 }
 
@@ -237,7 +239,7 @@ void GoState::clone(ExecutionContext& context, const ObjectPtr& t) const
   Object::clone(context, t);
   const GoStatePtr& target = t.staticCast<GoState>();
   target->board = board->cloneAndCast<GoBoard>(context);
-  target->previousPositions = previousPositions;
+  target->previousActions = previousActions->cloneAndCast<GoActionVector>();
   target->capturedAtPreviousTurn = capturedAtPreviousTurn;
   target->freePositions = freePositions;
   target->availableActions = availableActions->cloneAndCast<Container>(context);

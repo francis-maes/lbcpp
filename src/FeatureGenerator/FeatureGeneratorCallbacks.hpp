@@ -139,7 +139,7 @@ public:
     {target->appendValue(offset + index, value);}
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {jassert(weight == 1.0); target->appendTo(target, offset + index);}
+    {jassert(weight == 1.0); vector->appendTo(target, offset + index);}
 
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
     {jassert(weight == 1.0); featureGenerator->appendTo(inputs, target, offset + index);}
