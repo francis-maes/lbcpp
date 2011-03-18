@@ -111,7 +111,7 @@ public:
         builder.addInSelection(globalFeatures);
 
       if (featuresParameters->residueWindowSize)
-        builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
+        builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
 
       if (featuresParameters->residueLocalMeanSize)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueLocalMeanSize));
@@ -172,8 +172,8 @@ public:
     
     if (featuresParameters->residuePairWindowSize)
     {
-      builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
-      builder.addFunction(containerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2_"));
+      builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
+      builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, secondPosition, T("window_2_"));
     }
     
     if (featuresParameters->residuePairLocalMeanSize)
@@ -190,8 +190,8 @@ public:
     
     if (featuresParameters->cartesianProductPrimaryWindowSize)
     {
-      size_t w1 = builder.addFunction(containerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
-      size_t w2 = builder.addFunction(containerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
+      size_t w1 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
+      size_t w2 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
       builder.addFunction(cartesianProductFeatureGenerator(true), w1, w2, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
     }
 

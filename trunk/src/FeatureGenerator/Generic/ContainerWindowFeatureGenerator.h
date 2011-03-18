@@ -14,21 +14,15 @@
 namespace lbcpp
 {
 
-// Container[DoubleVector[.]], PositiveInteger -> DoubleVector[.]
+// Container, ... -> DoubleVector
 class ContainerWindowFeatureGenerator : public FeatureGenerator
 {
 public:
-  ContainerWindowFeatureGenerator(size_t windowSize = 0)
-    : windowSize(windowSize) {}
-
-  virtual size_t getNumRequiredInputs() const
-    {return 2;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? positiveIntegerType : (TypePtr)containerClass(doubleVectorClass());}
-  
   virtual String getOutputPostFix() const
     {return T("Window");}
+
+  virtual void getRelativeWindow(int& startPosition, size_t& windowSize) const = 0;
+  virtual void getAbsoluteWindow(const Variable* inputs, int& startPosition, size_t& windowSize) const = 0;
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
@@ -38,11 +32,13 @@ public:
       return EnumerationPtr();
 
     DefaultEnumerationPtr res = new DefaultEnumeration(T("WindowFeatures"));
-    int startPosition = - (int)(windowSize / 2);
+    int startPosition;
+    size_t windowSize;
+    getRelativeWindow(startPosition, windowSize);
     numFeaturesPerPosition = subFeaturesEnumeration->getNumElements();
-    for (size_t i = 0; i < windowSize; ++i)
+    for (int i = 0; i < (int)windowSize; ++i)
     {
-      String pos = String((int)i + startPosition);
+      String pos = String(i + startPosition);
       res->addElementsWithPrefix(context, subFeaturesEnumeration, T("[") + pos + T("]."), pos + T("."));
     }
     return res;
@@ -51,10 +47,12 @@ public:
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
-    int position = inputs[1].getInteger();
-    int startPosition = position - (int)(windowSize / 2);
-    int n = (int)container->getNumElements();
+    int startPosition;
+    size_t windowSize;
+    
+    getAbsoluteWindow(inputs, startPosition, windowSize);
 
+    int n = (int)container->getNumElements();
     ObjectVectorPtr objectVector = container.dynamicCast<ObjectVector>();
     if (objectVector)
     {
@@ -87,10 +85,58 @@ public:
   }
 
 protected:
-  friend class ContainerWindowFeatureGeneratorClass;
+  size_t numFeaturesPerPosition;
+};
+
+// Container[DoubleVector[.]] -> DoubleVector[...]
+class FixedContainerWindowFeatureGenerator : public ContainerWindowFeatureGenerator
+{
+public:
+  FixedContainerWindowFeatureGenerator(size_t begin = 0, size_t size = 0)
+    : begin(begin), size(size) {}
+
+  virtual void getRelativeWindow(int& startPosition, size_t& windowSize) const
+    {startPosition = (int)begin; windowSize = size;}
+
+  virtual void getAbsoluteWindow(const Variable* inputs, int& startPosition, size_t& windowSize) const
+    {startPosition = (int)begin; windowSize = size;}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return containerClass(doubleVectorClass());}
+ 
+protected:
+  friend class FixedContainerWindowFeatureGeneratorClass;
+  
+  size_t begin;
+  size_t size;
+};
+
+// Container[DoubleVector[.]], PositiveInteger -> DoubleVector[...]
+class CenteredContainerWindowFeatureGenerator : public ContainerWindowFeatureGenerator
+{
+public:
+  CenteredContainerWindowFeatureGenerator(size_t windowSize = 0)
+    : windowSize(windowSize) {}
+
+  virtual void getRelativeWindow(int& startPosition, size_t& windowSize) const
+    {startPosition = (int)(windowSize / 2); windowSize = this->windowSize;}
+  
+  virtual void getAbsoluteWindow(const Variable* inputs, int& startPosition, size_t& windowSize) const
+    {startPosition = inputs[1].getInteger() - (int)(windowSize / 2); windowSize = this->windowSize;}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)containerClass(doubleVectorClass());}
+  
+protected:
+  friend class CenteredContainerWindowFeatureGeneratorClass;
 
   size_t windowSize;
-  size_t numFeaturesPerPosition;
 };
 
 }; /* namespace lbcpp */

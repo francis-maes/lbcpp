@@ -284,6 +284,32 @@ protected:
   TypePtr inputType2;
 };
 
+/*
+** MethodBasedCompositeFunction
+*/
+typedef Variable (Object::*BinaryFunctionFunction)(ExecutionContext&, const Variable& , const Variable& ) const; 
+
+class MethodBasedBinaryFunction : public SimpleBinaryFunction
+{
+public:
+  MethodBasedBinaryFunction(ObjectPtr pthis, BinaryFunctionFunction impl,
+                                TypePtr inputType1, TypePtr inputType2, TypePtr outputType)
+    : SimpleBinaryFunction(inputType1, inputType2, outputType), pthis(pthis), impl(impl) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    Object& object = *pthis;
+    return (object.*impl)(context, inputs[0], inputs[1]);
+  }
+
+protected:
+  ObjectPtr pthis;
+  BinaryFunctionFunction impl;
+};
+
+# define lbcppMemberBinaryFunction(ThisClass, Fun, InputType1, InputType2, OutputType) \
+    FunctionPtr(new MethodBasedBinaryFunction(refCountedPointerFromThis(this), (BinaryFunctionFunction)(&ThisClass::Fun), InputType1, InputType2, OutputType))
+
 class ProxyFunction : public Function
 {
 public:

@@ -15,8 +15,16 @@
     <variable type="Boolean" name="lazy"/>
   </class>
 
-  <class name="ContainerWindowFeatureGenerator" base="FeatureGenerator">
-    <constructor arguments="size_t windowSize"/>
+  <class name="ContainerWindowFeatureGenerator" base="FeatureGenerator" abstract="yes"/>
+
+  <class name="FixedContainerWindowFeatureGenerator" base="ContainerWindowFeatureGenerator">
+    <constructor arguments="size_t begin, size_t size" returnType="FeatureGenerator"/>
+    <variable type="PositiveInteger" name="begin"/>
+    <variable type="PositiveInteger" name="size"/>
+  </class>
+
+  <class name="CenteredContainerWindowFeatureGenerator" base="ContainerWindowFeatureGenerator">
+    <constructor arguments="size_t windowSize" returnType="FeatureGenerator"/>
     <variable type="PositiveInteger" name="windowSize"/>
   </class>
   

@@ -13,7 +13,10 @@ using namespace lbcpp;
 ** GoBoard
 */
 GoBoard::GoBoard(size_t size)
-  : ShortEnumerationMatrix(playerEnumeration, size, size, 0) {}
+  : ShortEnumerationMatrix(playerEnumeration, size, size, 0)
+{
+  thisClass = goBoardClass;
+}
 
 void GoBoard::getAdjacentPositions(const Position& position, Position res[4], size_t& numAdjacentPositions)
 {
