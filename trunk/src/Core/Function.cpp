@@ -360,3 +360,12 @@ Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variabl
 
 Variable ProxyFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
   {jassert(implementation); return implementation->compute(context, inputs, getNumInputs());}
+
+/*
+** UnaryHigherOrderFunction
+*/
+UnaryHigherOrderFunction::UnaryHigherOrderFunction(FunctionPtr baseFunction)
+  : baseFunction(baseFunction)
+{
+  setBatchLearner(unaryHigherOrderFunctionBatchLearner());
+}

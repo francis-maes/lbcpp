@@ -16,12 +16,28 @@
 namespace lbcpp
 {
 
-class MapSymmetricMatrixFunction : public Function
+class MapSymmetricMatrixFunction : public UnaryHigherOrderFunction
 {
 public:
-  MapSymmetricMatrixFunction(FunctionPtr function, size_t minimumDistanceFromDiagonal)
-    : function(mapContainerFunction(function)), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
+  MapSymmetricMatrixFunction(FunctionPtr baseFunction, size_t minimumDistanceFromDiagonal)
+    : UnaryHigherOrderFunction(baseFunction), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
   MapSymmetricMatrixFunction() {}
+
+   virtual size_t getNumSubInputs(const ObjectPtr& inputsObject) const
+  {
+    ContainerPtr container = inputsObject->getVariable(0).getObjectAndCast<Container>();
+    return container ? container->getNumElements() : 0;
+  }
+  
+  virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
+  {
+    ContainerPtr container = example->getVariable(0).getObjectAndCast<Container>();
+    if (!container)
+      return;
+
+    jassert(false);
+    // TODO !! see MapNContainerFunction::appendSubInputs and UnaryHigherOrderFunctionBatchLearner
+  }
 
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
@@ -32,25 +48,24 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return matrixClass(anyType);}
 
-  virtual String getOutputPostFix() const
-    {return function->getOutputPostFix();}
-
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     for (size_t i = 0; i < inputVariables.size(); ++i)
       if (!inputVariables[i]->getType()->inheritsFrom(symmetricMatrixClass(anyType)))
         return TypePtr();
 
-    if (!function->initialize(context, inputVariables))
+    if (!baseFunction->initialize(context, inputVariables))
       return TypePtr();
 
-    return function->getOutputType();
+    return baseFunction->getOutputType();
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     if (!minimumDistanceFromDiagonal)
-      return function->compute(context, inputs, getNumInputs());
+    {
+      return baseFunction->compute(context, inputs, getNumInputs());
+    }
     
     size_t numInputs = getNumInputs();
     std::vector<Variable> subInputs(numInputs);
@@ -58,7 +73,7 @@ public:
     {
       SymmetricMatrixPtr input = inputs[i].getObjectAndCast<SymmetricMatrix>();
       if (!input || input->getDimension() <= minimumDistanceFromDiagonal)
-        subInputs[i] = Variable::missingValue(function->getInputsClass()->getMemberVariableType(i));
+        subInputs[i] = Variable::missingValue(baseFunction->getInputsClass()->getMemberVariableType(i));
       else
       {
         size_t dimension = input->getDimension() - minimumDistanceFromDiagonal;
@@ -70,7 +85,7 @@ public:
       }
     }
 
-    SymmetricMatrixPtr output = function->compute(context, subInputs).getObjectAndCast<SymmetricMatrix>();
+    SymmetricMatrixPtr output = baseFunction->compute(context, subInputs).getObjectAndCast<SymmetricMatrix>();
     if (!output)
       return Variable::missingValue(getOutputType());
 
@@ -88,17 +103,11 @@ public:
     return res;
   }
 
-  const FunctionPtr& getSubFunction() const
-    {return function;}
-
 protected:
   friend class MapSymmetricMatrixFunctionClass;
 
-  FunctionPtr function;
   size_t minimumDistanceFromDiagonal;
 };
-
-typedef ReferenceCountedObjectPtr<MapContainerFunction> MapContainerFunctionPtr;
 
 }; /* namespace lbcpp */
 

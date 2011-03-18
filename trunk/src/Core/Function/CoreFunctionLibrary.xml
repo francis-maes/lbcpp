@@ -52,18 +52,16 @@
   </class>
 
   <!-- Map Function -->
-  <class name="MapContainerFunction" base="Function">
-    <constructor arguments="const FunctionPtr&amp; function"/>
-    <variable type="Function" name="function"/>
+  <class name="MapContainerFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction"/>
   </class>
 
   <class name="MapNContainerFunction" base="MapContainerFunction">
-    <constructor arguments="const FunctionPtr&amp; function" returnType="Function"/>
+    <constructor arguments="const FunctionPtr&amp; baseFunction" returnType="UnaryHigherOrderFunction"/>
   </class>
   
-  <class name="MapSymmetricMatrixFunction" base="Function">
-    <constructor arguments="const FunctionPtr&amp; function, size_t minimumDistanceFromDiagonal"/>
-    <variable type="Function" name="function"/>
+  <class name="MapSymmetricMatrixFunction" base="UnaryHigherOrderFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal"/>
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
 

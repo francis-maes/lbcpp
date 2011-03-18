@@ -224,11 +224,6 @@ extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction = true);
 extern FunctionPtr createSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction);
 
-extern FunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
-extern FunctionPtr mapNContainerFunction(const FunctionPtr& mapFunction);
-
-extern FunctionPtr mapSymmetricMatrixFunction(const FunctionPtr& mapFunction, size_t minimumDistanceFromDiagonal = 0);
-
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 
 extern FunctionPtr signedScalarToProbabilityFunction();
@@ -316,6 +311,36 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<ProxyFunction> ProxyFunctionPtr;
+
+class UnaryHigherOrderFunction : public Function
+{
+public:
+  UnaryHigherOrderFunction(FunctionPtr baseFunction);
+  UnaryHigherOrderFunction() {}
+
+  virtual size_t getNumSubInputs(const ObjectPtr& inputsObject) const = 0;
+  virtual void appendSubInputs(const ObjectPtr& inputsObject, std::vector<ObjectPtr>& res, size_t& index) const = 0;
+
+  virtual String getOutputPostFix() const
+    {return baseFunction->getOutputPostFix();}
+
+  const FunctionPtr& getBaseFunction() const
+    {return baseFunction;}
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class UnaryHigherOrderFunctionClass;
+
+  FunctionPtr baseFunction;
+};
+
+extern ClassPtr unaryHigherOrderFunctionClass;
+typedef ReferenceCountedObjectPtr<UnaryHigherOrderFunction> UnaryHigherOrderFunctionPtr;
+
+extern UnaryHigherOrderFunctionPtr mapContainerFunction(const FunctionPtr& mapFunction);
+extern UnaryHigherOrderFunctionPtr mapNContainerFunction(const FunctionPtr& mapFunction);
+extern UnaryHigherOrderFunctionPtr mapSymmetricMatrixFunction(const FunctionPtr& mapFunction, size_t minimumDistanceFromDiagonal = 0);
 
 }; /* namespace lbcpp */
 
