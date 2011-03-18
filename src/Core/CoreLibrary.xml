@@ -239,6 +239,9 @@
     <variable type="GenericVector[Pair[PositiveInteger, PositiveInteger]]" name="steps"/>-->
   </class>
   <class name="MethodBasedCompositeFunction" base="CompositeFunction" abstract="yes"/>
+  <class name="UnaryHigherOrderFunction" base="Function" abstract="yes">
+    <variable type="Function" name="baseFunction"/>
+  </class>
 
   <!-- Frame -->
   <class name="FrameOperatorSignature" base="VariableSignature">

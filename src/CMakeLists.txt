@@ -457,7 +457,7 @@ SET(LBCPP_LEARNING_BATCH_LEARNER_SOURCES
   Learning/BatchLearner/ProxyFunctionBatchLearner.h
   Learning/BatchLearner/StochasticBatchLearner.h
   Learning/BatchLearner/CompositeFunctionBatchLearner.h
-  Learning/BatchLearner/MapContainerFunctionBatchLearner.h
+  Learning/BatchLearner/UnaryHigherOrderFunctionBatchLearner.h
   Learning/BatchLearner/FilterUnsupervisedExamplesBatchLearner.h
   Learning/BatchLearner/BatchLearnerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/BatchLearnerLibrary.cpp

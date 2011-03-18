@@ -128,7 +128,7 @@ typedef ReferenceCountedObjectPtr<DecoratorBatchLearner> DecoratorBatchLearnerPt
 extern BatchLearnerPtr proxyFunctionBatchLearner();
 extern BatchLearnerPtr compositeFunctionBatchLearner();
 extern BatchLearnerPtr stochasticBatchLearner(size_t maxIterations = 100, bool randomizeExamples = true, size_t numExamplesPerIteration = 0);
-extern BatchLearnerPtr mapContainerFunctionBatchLearner();
+extern BatchLearnerPtr unaryHigherOrderFunctionBatchLearner();
 
 extern DecoratorBatchLearnerPtr filterUnsupervisedExamplesBatchLearner(BatchLearnerPtr decorated);
 

@@ -1,12 +1,4 @@
 
-Go:
- * Parallel learning
-
-HigherOrderFunctions:
- /!\ MapContainer de base n'a pas de learner, Le MapContainerBatchLearner est celui du MapN
-  * Classe de base commune pour MapContainer, MapNContainer et MapSymmetricMatrixFunction
- 
-
 Proteins:
  ** ProteinLearner: Serialisation des models
    -> Shared dynamic object

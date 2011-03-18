@@ -27,7 +27,7 @@
     <constructor arguments="BatchLearnerPtr decorated"/>
   </class>
 
-  <class name="MapContainerFunctionBatchLearner" base="BatchLearner">
+  <class name="UnaryHigherOrderFunctionBatchLearner" base="BatchLearner">
     <constructor/>
   </class>
   

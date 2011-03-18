@@ -177,7 +177,7 @@ public:
     builder.startSelection();
 
       builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
-      //builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
+      builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }

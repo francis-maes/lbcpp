@@ -20,16 +20,45 @@ namespace lbcpp
 
 // ((x1..xT)) -> (f(x1) .. f(xT))
 // ((x1...xT), additional-inputs) -> (f(x1, additional-inputs), ... f(xT, additional-inputs) )
-class MapContainerFunction : public Function
+class MapContainerFunction : public UnaryHigherOrderFunction
 {
 public:
-  MapContainerFunction(FunctionPtr function)
-    : function(function)
-  {
-    setBatchLearner(mapContainerFunctionBatchLearner());
-  }
+  MapContainerFunction(FunctionPtr baseFunction)
+    : UnaryHigherOrderFunction(baseFunction) {}
   MapContainerFunction() {}
 
+  /*
+  ** UnaryHigherOrderFunction
+  */
+  virtual size_t getNumSubInputs(const ObjectPtr& inputsObject) const
+  {
+    ContainerPtr container = inputsObject->getVariable(0).getObjectAndCast<Container>();
+    return container ? container->getNumElements() : 0;
+  }
+  
+  virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
+  {
+    ContainerPtr container = example->getVariable(0).getObjectAndCast<Container>();
+    if (!container)
+      return;
+
+    size_t n = container->getNumElements();
+    for (size_t position = 0; position < n; ++position)
+    {
+      ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
+      size_t numSubInputs = example->getNumVariables();
+      jassert(inputsClass->getNumMemberVariables() == numSubInputs);
+      
+      subExample->setVariable(0, container->getElement(position));
+      for (size_t input = 1; input < numSubInputs; ++input)
+        subExample->setVariable(input, example->getVariable(input));
+      res[index++] = subExample;
+    }
+  }
+
+  /*
+  ** Function
+  */
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
 
@@ -39,19 +68,16 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return index == 0 ? (TypePtr)containerClass(anyType) : anyType;}
 
-  virtual String getOutputPostFix() const
-    {return function->getOutputPostFix();}
-
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     std::vector<VariableSignaturePtr> subInputVariables(inputVariables);
     subInputVariables[0] = new VariableSignature(Container::getTemplateParameter(inputVariables[0]->getType()), T("element"));
-    if (!function->initialize(context, subInputVariables))
+    if (!baseFunction->initialize(context, subInputVariables))
       return TypePtr();
     
-    outputName = function->getOutputVariable()->getName() + T("Container");
-    outputShortName = T("[") + function->getOutputVariable()->getShortName() + T("]");
-    return makeOutputType(inputVariables[0]->getType(), function->getOutputType());
+    outputName = baseFunction->getOutputVariable()->getName() + T("Container");
+    outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
+    return makeOutputType(inputVariables[0]->getType(), baseFunction->getOutputType());
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
@@ -72,19 +98,12 @@ public:
     for (size_t i = 0; i < n; ++i)
     {
       subInputs[0] = input->getElement(i);
-      res->setElement(i, function->compute(context, subInputs));
+      res->setElement(i, baseFunction->compute(context, subInputs));
     }
     return res;
   }
 
-  const FunctionPtr& getSubFunction() const
-    {return function;}
-
 protected:
-  friend class MapContainerFunctionClass;
-
-  FunctionPtr function;
-
   TypePtr makeOutputType(TypePtr inputContainerType, TypePtr outputElementType) const
   {
     bool isSymmetricMatrix = inputContainerType->inheritsFrom(symmetricMatrixClass(anyType));
@@ -114,7 +133,7 @@ protected:
 
   ContainerPtr createOutputContainer(const ContainerPtr& input) const
   {
-    TypePtr outputElementType = function->getOutputType();
+    TypePtr outputElementType = baseFunction->getOutputType();
     if (getOutputType()->inheritsFrom(symmetricMatrixClass()))
     {
       SymmetricMatrixPtr inputSymmetricMatrix = input.dynamicCast<SymmetricMatrix>();
@@ -139,8 +158,32 @@ typedef ReferenceCountedObjectPtr<MapContainerFunction> MapContainerFunctionPtr;
 class MapNContainerFunction : public MapContainerFunction
 {
 public:
-  MapNContainerFunction(FunctionPtr function = FunctionPtr())
-    : MapContainerFunction(function) {}
+  MapNContainerFunction(FunctionPtr baseFunction = FunctionPtr())
+    : MapContainerFunction(baseFunction) {}
+
+  virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
+  {
+    ContainerPtr container = example->getVariable(0).getObjectAndCast<Container>();
+    if (!container)
+      return;
+
+    std::vector<ContainerPtr> containers;
+    size_t n = getInputContainers(example, containers);
+    jassert(getNumInputs() == containers.size());
+    
+    for (size_t position = 0; position < n; ++position)
+    {
+      ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
+      for (size_t input = 0; input < containers.size(); ++input)
+        if (containers[input])
+        {
+          Variable element = containers[input]->getElement(position);
+          subExample->setVariable(input, element);
+        }
+
+      res[index++] = subExample;
+    }
+  }
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return containerClass(anyType);}
@@ -154,45 +197,69 @@ public:
       TypePtr elementsType = Container::getTemplateParameter(inputVariable->getType());
       subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));
     }
-    if (!function->initialize(context, subInputVariables))
+    if (!baseFunction->initialize(context, subInputVariables))
       return TypePtr();
     
-    outputName = function->getOutputVariable()->getName() + T("Container");
-    outputShortName = T("[") + function->getOutputVariable()->getShortName() + T("]");
-    return makeOutputType(inputVariables[0]->getType(), function->getOutputType());
+    outputName = baseFunction->getOutputVariable()->getName() + T("Container");
+    outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
+    return makeOutputType(inputVariables[0]->getType(), baseFunction->getOutputType());
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    size_t numInputs = getNumInputs();
-
-    std::vector<ContainerPtr> containers(numInputs);
-    size_t numElements = (size_t)-1;
-    for (size_t i = 0; i < numInputs; ++i)
-    {
-      containers[i] = inputs[i].getObjectAndCast<Container>();
-      if (containers[i])
-      {
-        jassert(numElements == (size_t)-1 || numElements == containers[i]->getNumElements());
-        numElements = containers[i]->getNumElements();
-      }
-    }
+    std::vector<ContainerPtr> containers;
+    size_t numElements = getInputContainers(inputs, containers);
 
     ContainerPtr res = createOutputContainer(containers[0]);
-    std::vector<Variable> subInputs(numInputs);
+    std::vector<Variable> subInputs(getNumInputs());
     for (size_t i = 0; i < numElements; ++i)
     {
-      for (size_t j = 0; j < numInputs; ++j)
+      for (size_t j = 0; j < subInputs.size(); ++j)
       {
         const ContainerPtr& container = containers[j];
         if (container)
           subInputs[j] = container->getElement(i);
         else
-          subInputs[j] = Variable::missingValue(function->getInputsClass()->getMemberVariableType(j));
+          subInputs[j] = Variable::missingValue(baseFunction->getInputsClass()->getMemberVariableType(j));
       }
-      res->setElement(i, function->compute(context, subInputs));
+      res->setElement(i, baseFunction->compute(context, subInputs));
     }
     return res; 
+  }
+
+protected:
+  size_t getInputContainers(const Variable* inputs, std::vector<ContainerPtr>& res) const
+  {
+    size_t numInputs = getNumInputs();
+    res.resize(numInputs);
+    size_t numElements = (size_t)-1;
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      res[i] = inputs[i].getObjectAndCast<Container>();
+      if (res[i])
+      {
+        jassert(numElements == (size_t)-1 || numElements == res[i]->getNumElements());
+        numElements = res[i]->getNumElements();
+      }
+    }
+    return numElements;
+  }
+
+  size_t getInputContainers(const ObjectPtr& inputsObject, std::vector<ContainerPtr>& res) const
+  {
+    size_t numInputs = getNumInputs();
+    res.resize(numInputs);
+    size_t numElements = (size_t)-1;
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      res[i] = inputsObject->getVariable(i).getObjectAndCast<Container>();
+      if (res[i])
+      {
+        jassert(numElements == (size_t)-1 || numElements == res[i]->getNumElements());
+        numElements = res[i]->getNumElements();
+      }
+    }
+    return numElements;
   }
 };
 
