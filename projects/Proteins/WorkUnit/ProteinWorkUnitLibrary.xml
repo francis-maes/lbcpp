@@ -103,6 +103,9 @@
   </class>
   
   <class name="CheckSymmetricMatrixWorkUnit" base="WorkUnit"/>
+  
+  <class name="CheckNetworkServerWorkUnit" base="WorkUnit"/>
+  <class name="CheckNetworkClientWorkUnit" base="WorkUnit"/>
     
   <class name="ConvertFabienFileToProtein" base="WorkUnit">
     <variable type="File" name="inputDirectory" shortName="i"/>
