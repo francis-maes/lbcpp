@@ -31,6 +31,7 @@
     <variable type="PositiveInteger" name="x"/>
     <variable type="PositiveInteger" name="y"/>
   </class>
+  <class name="GoActionVector" base="Vector[GoAction]"/>
 
   <class name="GoStateSampler" base="Function">
     <variable type="PositiveInteger" name="minSize"/>

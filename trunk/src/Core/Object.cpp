@@ -186,8 +186,9 @@ String Object::getVariableName(size_t index) const
 
 Variable Object::getVariable(size_t index) const
 {
-  jassert(index < getClass()->getNumMemberVariables());
-  return getClass()->getMemberVariableValue(this, index);
+  ClassPtr thisClass = getClass();
+  jassert(index < thisClass->getNumMemberVariables());
+  return thisClass->getMemberVariableValue(this, index);
 }
 
 void Object::setVariable(size_t index, const Variable& value)

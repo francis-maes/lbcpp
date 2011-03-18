@@ -205,7 +205,7 @@ ContainerPtr GoState::computeAvailableActions() const
   bool testKo = (getCapturedAtPreviousTurn().size() == 1);
 
   TypePtr actionType = getActionType();
-  ObjectVectorPtr res = new ObjectVector(goActionClass, 0);
+  GoActionVectorPtr res = new GoActionVector();
   res->reserve(freePositions.size());
   for (PositionSet::const_iterator it = freePositions.begin(); it != freePositions.end(); ++it)
   {
@@ -219,7 +219,7 @@ ContainerPtr GoState::computeAvailableActions() const
         if (captured.size() == 1 && *captured.begin() == getLastPosition())
           continue; // KO
       }
-      res->getObjects().push_back(new GoAction(position.first, position.second));
+      res->append(position);
     }
   }
   return res;

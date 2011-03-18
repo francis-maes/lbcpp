@@ -165,7 +165,7 @@ public:
       return Variable::missingValue(outputType);
     }
 
-    ObjectVectorPtr trajectory = new ObjectVector(goActionClass, numXmlElements - firstMoveIndex);
+    GoActionVectorPtr trajectory = new GoActionVector(numXmlElements - firstMoveIndex);
     bool isBlackTurn = true;
     for (size_t i = firstMoveIndex; i < numXmlElements; ++i)
     {
@@ -191,7 +191,7 @@ public:
         return Variable::missingValue(outputType);
       }
 
-      trajectory->set(i - firstMoveIndex, new GoAction(x, y));
+      trajectory->set(i - firstMoveIndex, GoBoard::Position(x, y));
       isBlackTurn = !isBlackTurn;
     }
 

@@ -140,6 +140,7 @@ public:
   virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const
   {
     CompositeDoubleVectorPtr res = new CompositeDoubleVector(getOutputType());
+    res->reserve(shifts.size());
     for (size_t i = 0; i < shifts.size(); ++i)
     {
       const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();

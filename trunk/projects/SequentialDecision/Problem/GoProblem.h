@@ -143,12 +143,21 @@ protected:
 class GoAction;
 typedef ReferenceCountedObjectPtr<GoAction> GoActionPtr;
 
+extern ClassPtr goActionClass;
+
 class GoAction : public Object
 {
 public:
+  GoAction(unsigned short xy)
+    : Object(goActionClass)
+  {
+    x = ((xy >> 8) & 0xFF);
+    y = (xy & 0xFF);
+  }
+
   GoAction(size_t x, size_t y)
-    : x((unsigned char)x), y((unsigned char)y) {}
-  GoAction() : x((unsigned char)-1), y((unsigned char)-1) {}
+    : Object(goActionClass), x((unsigned char)x), y((unsigned char)y) {}
+  GoAction() : Object(goActionClass), x((unsigned char)-1), y((unsigned char)-1) {}
 
   size_t getX() const
     {return (size_t)x;} 
@@ -164,6 +173,9 @@ public:
     else
       return (int)y - (int)other->y;
   }
+
+  unsigned short getValue() const
+    {return (x << 8) | y;}
  
 protected:
   friend class GoActionClass;
@@ -171,7 +183,33 @@ protected:
   unsigned char x, y;
 };
 
-extern ClassPtr goActionClass;
+extern ClassPtr goActionVectorClass;
+
+class GoActionVector : public BuiltinVector<unsigned short, GoAction>
+{
+public:
+  typedef BuiltinVector<unsigned short, GoAction> BaseClass;
+
+  GoActionVector(size_t length = 0)
+    : BaseClass(goActionVectorClass, length, 0) {}
+
+  virtual TypePtr getElementsType() const
+    {return goActionClass;}
+  
+  typedef GoBoard::Position Position;
+
+  void append(const Position& position)
+    {BaseClass::values.push_back(makeValue(position));}
+
+  void set(size_t index, const Position& position)
+    {BaseClass::values[index] = makeValue(position);}
+
+private:
+  unsigned short makeValue(const Position& position)
+    {return (position.first << 8) | position.second;}
+};
+
+typedef ReferenceCountedObjectPtr<GoActionVector> GoActionVectorPtr;
 
 class GoStateSampler : public SimpleUnaryFunction
 {

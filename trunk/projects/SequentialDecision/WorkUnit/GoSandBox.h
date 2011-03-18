@@ -317,27 +317,64 @@ protected:
 class GoActionScoringScoreObject : public ScoreObject
 {
 public:
-  GoActionScoringScoreObject() : predictionRate(new ScalarVariableMean(T("predictionRate"))) {}
+  GoActionScoringScoreObject() 
+    : predictionRate(new ScalarVariableMean(T("predictionRate"))), 
+      rankOfAction(new ScalarVariableStatistics(T("rankOfAction"))),
+      unsupervisedRate(new ScalarVariableMean(T("unsupervisedRate"))) {}
+
+  static int getRank(const std::multimap<double, size_t>& sortedScores, size_t index)
+  {
+    int res = 0;
+    for (std::multimap<double, size_t>::const_iterator it = sortedScores.begin(); it != sortedScores.end(); ++it, ++res)
+      if (it->second == index)
+        return res;
+    return -1;
+  }
 
   bool add(ExecutionContext& context, const DenseDoubleVectorPtr& scores, const DenseDoubleVectorPtr& costs)
   {
-    int index = scores->getIndexOfMaximumValue();
-    if (index < 0)
+    std::multimap<double, size_t> sortedScores;
+    for (size_t i = 0; i < scores->getNumElements(); ++i)
+      sortedScores.insert(std::make_pair(-(scores->getValue(i)), i));
+    
+    if (sortedScores.empty())
     {
-      context.errorCallback(T("Could not find maximum score"));
+      context.errorCallback(T("No scores"));
       return false;
     }
-    predictionRate->push(costs->getValue(index) < 0 ? 1.0 : 0.0);
+
+    // prediction rate
+    size_t selectedAction = sortedScores.begin()->second;
+    predictionRate->push(costs->getValue(selectedAction) < 0 ? 1.0 : 0.0);
+
+    // rank of selected action
+    size_t index = costs->getIndexOfMinimumValue();
+    if (index >= 0 && costs->getValue(index) < 0)
+    {
+      int rank = getRank(sortedScores, index);
+      if (rank >= 0)
+      {
+        rankOfAction->push((double)rank);
+        unsupervisedRate->push(0.0);
+      }
+      else
+        unsupervisedRate->push(1.0);
+    }
+    else
+      unsupervisedRate->push(1.0);
     return true;
   }
 
   virtual double getScoreToMinimize() const
-    {return 1.0 - predictionRate->getMean();} // prediction error
+    //{return 1.0 - predictionRate->getMean();} // prediction error
+    {return rankOfAction->getMean();} // mean rank of best action
 
 private:
   friend class GoActionScoringScoreObjectClass;
 
   ScalarVariableMeanPtr predictionRate;
+  ScalarVariableStatisticsPtr rankOfAction;
+  ScalarVariableMeanPtr unsupervisedRate;
 };
 
 class GoActionScoringEvaluator : public SupervisedEvaluator
