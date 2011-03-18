@@ -216,14 +216,17 @@
         if (index &gt;= getNumElements())
           return new EnumerationElement(T("missing"), T("_"), String::empty, T("Missing Value"));
 
+        EnumerationPtr firstEnumeration = getFirstEnumeration();
         EnumerationPtr secondEnumeration = getSecondEnumeration();
         size_t numSecondElements = secondEnumeration-&gt;getNumElements();
-        EnumerationElementPtr firstElement = getFirstEnumeration()->getElement(index / numSecondElements);
+        EnumerationElementPtr firstElement = firstEnumeration->getElement(index / numSecondElements);
         EnumerationElementPtr secondElement = secondEnumeration->getElement(index % numSecondElements);
 
-        return new EnumerationElement(firstElement-&gt;getName() + T(" * ") + secondEnumeration-&gt;getName(),
-                                      String::empty, String::empty,
-                                      T("Cartesian Product Enumeration (") + firstElement-&gt;getDescription() + T(") * (") + secondElement-&gt;getDescription() + T(")"));
+        return new EnumerationElement(firstElement-&gt;getName() + T(" * ") + secondElement-&gt;getName(),
+                                      String::empty,
+                                      firstElement-&gt;getShortName() + T("x") + secondElement-&gt;getShortName(),
+                                      T("Cartesian Product Enumeration (") + firstElement-&gt;getDescription() +
+                                            T(") * (") + secondElement-&gt;getDescription() + T(")"));
       }
       </code>
   </template>

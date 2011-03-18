@@ -58,6 +58,7 @@
   <template name="GoStatePreFeatures">
     <parameter name="primaryFeaturesEnumeration" type="EnumValue"/>
     <variable type="GoState" name="state"/>
+    <variable type="GoActionVector" name="previousActions"/>
     <variable type="GoBoard" name="board"/>
     <variable type="ObjectMatrix[DoubleVector[primaryFeaturesEnumeration,Double]]" name="boardPrimaryFeatures"/>
   </template>

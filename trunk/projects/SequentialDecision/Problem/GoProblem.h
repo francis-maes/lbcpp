@@ -18,6 +18,13 @@
 namespace lbcpp
 {
 
+class GoState;
+typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
+class GoAction;
+typedef ReferenceCountedObjectPtr<GoAction> GoActionPtr;
+class GoActionVector;
+typedef ReferenceCountedObjectPtr<GoActionVector> GoActionVectorPtr;
+
 extern EnumerationPtr playerEnumeration;
 
 enum Player
@@ -64,8 +71,6 @@ typedef ReferenceCountedObjectPtr<GoBoard> GoBoardPtr;
 extern ClassPtr goBoardClass;
 
 extern ClassPtr goStateClass;
-class GoState;
-typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
 
 class GoState : public DecisionProblemState
 {
@@ -89,11 +94,10 @@ public:
 
   void getStonesThatWouldBeCapturedIfPlaying(Player player, const Position& stonePosition, PositionSet& res) const;
 
-  const Position& getLastPosition() const
-    {jassert(previousPositions.size()); return previousPositions.front();}
+  Position getLastPosition() const;
 
-  const std::list<Position>& getPreviousPositions() const
-    {return previousPositions;}
+  const GoActionVectorPtr& getPreviousActions() const
+    {return previousActions;}
 
   const PositionSet& getCapturedAtPreviousTurn() const
     {return capturedAtPreviousTurn;}
@@ -125,7 +129,7 @@ protected:
   GoBoardPtr board;
   size_t whitePrisonerCount;
   size_t blackPrisonerCount;
-  std::list<Position> previousPositions;
+  GoActionVectorPtr previousActions;
   PositionSet capturedAtPreviousTurn;
   PositionSet freePositions;
   ContainerPtr availableActions;
@@ -139,9 +143,6 @@ protected:
   void addPositionsToPositionSet(PositionSet& res, const PositionSet& newPositions);
   void removePositionsFromPositionSet(PositionSet& res, const PositionSet& positionsToRemove);
 };
-
-class GoAction;
-typedef ReferenceCountedObjectPtr<GoAction> GoActionPtr;
 
 extern ClassPtr goActionClass;
 
@@ -198,18 +199,25 @@ public:
   
   typedef GoBoard::Position Position;
 
+  void prepend(const Position& position)
+    {BaseClass::values.insert(BaseClass::values.begin(), makeValue(position));}
+
   void append(const Position& position)
     {BaseClass::values.push_back(makeValue(position));}
 
   void set(size_t index, const Position& position)
     {BaseClass::values[index] = makeValue(position);}
 
-private:
-  unsigned short makeValue(const Position& position)
-    {return (position.first << 8) | position.second;}
-};
+  Position get(size_t index) const
+    {return makePosition(BaseClass::values[index]);}
 
-typedef ReferenceCountedObjectPtr<GoActionVector> GoActionVectorPtr;
+private:
+  static unsigned short makeValue(const Position& position)
+    {return (position.first << 8) | position.second;}
+
+  static Position makePosition(unsigned short xy)
+    {return Position(((xy >> 8) & 0xFF), xy & 0xFF);}
+};
 
 class GoStateSampler : public SimpleUnaryFunction
 {

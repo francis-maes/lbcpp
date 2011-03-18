@@ -147,10 +147,73 @@ protected:
   size_t size;
 };
 
+class GoActionDistanceFeatureGenerator : public FeatureGenerator
+{
+public:
+  GoActionDistanceFeatureGenerator(size_t boardSize = 19, size_t numAxisDistanceIntervals = 10, size_t numDiagDistanceIntervals = 10)
+    : boardSize(boardSize), numAxisDistanceIntervals(numAxisDistanceIntervals), numDiagDistanceIntervals(numDiagDistanceIntervals) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return goActionClass;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    axisDistanceFeatureGenerator = signedNumberFeatureGenerator(softDiscretizedLogNumberFeatureGenerator(0.0, log10(boardSize + 1.0), numAxisDistanceIntervals, false));
+    diagDistanceFeatureGenerator = softDiscretizedLogNumberFeatureGenerator(0.0, log10(sqrt((double)(boardSize * boardSize * 2)) + 1.0), numDiagDistanceIntervals, false);
+
+    if (!axisDistanceFeatureGenerator->initialize(context, doubleType))
+      return EnumerationPtr();
+    if (!diagDistanceFeatureGenerator->initialize(context, doubleType))
+      return EnumerationPtr();
+
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("goActionDistanceFeatures"));
+    res->addElementsWithPrefix(context, axisDistanceFeatureGenerator->getFeaturesEnumeration(), T("hor."), T("h."));
+    i1 = res->getNumElements();
+    res->addElementsWithPrefix(context, axisDistanceFeatureGenerator->getFeaturesEnumeration(), T("ver."), T("v."));
+    i2 = res->getNumElements();
+    res->addElementsWithPrefix(context, diagDistanceFeatureGenerator->getFeaturesEnumeration(), T("diag."), T("d."));
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const GoActionPtr& action1 = inputs[0].getObjectAndCast<GoAction>();
+    const GoActionPtr& action2 = inputs[1].getObjectAndCast<GoAction>();
+    double x1 = (double)action1->getX();
+    double y1 = (double)action1->getY();
+    double x2 = (double)action2->getX();
+    double y2 = (double)action2->getY();
+    double dx = x2 - x1;
+    double dy = y2 - y1;
+
+    Variable h(dx);
+    callback.sense(0, axisDistanceFeatureGenerator, &h, 1.0);
+
+    Variable v(dy);
+    callback.sense(i1, axisDistanceFeatureGenerator, &v, 1.0);
+
+    Variable d(sqrt(dx * dx + dy * dy));
+    callback.sense(i2, diagDistanceFeatureGenerator, &d, 1.0);
+  }
+
+private:
+  size_t boardSize;
+  size_t numAxisDistanceIntervals;
+  size_t numDiagDistanceIntervals;
+
+  FeatureGeneratorPtr axisDistanceFeatureGenerator;
+  FeatureGeneratorPtr diagDistanceFeatureGenerator;
+  size_t i1, i2;
+};
+
 class GoStatePreFeatures : public Object
 {
 public:
   GoStatePtr state;
+  GoActionVectorPtr previousActions;
   GoBoardPtr board; // with current player as black
   MatrixPtr boardPrimaryFeatures;
   // 4-connexity-graph
@@ -160,24 +223,77 @@ public:
 
 extern ClassPtr goStatePreFeaturesClass(TypePtr primaryFeaturesEnumeration);
 
+/////////////////////
+
+/*
+** MethodBasedCompositeFunction
+*/
+typedef Variable (Object::*BinaryFunctionFunction)(ExecutionContext&, const Variable& , const Variable& ) const; 
+
+class MethodBasedBinaryFunction : public SimpleBinaryFunction
+{
+public:
+  MethodBasedBinaryFunction(ObjectPtr pthis, BinaryFunctionFunction impl,
+                                TypePtr inputType1, TypePtr inputType2, TypePtr outputType)
+    : SimpleBinaryFunction(inputType1, inputType2, outputType), pthis(pthis), impl(impl) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    Object& object = *pthis;
+    return (object.*impl)(context, inputs[0], inputs[1]);
+  }
+
+protected:
+  ObjectPtr pthis;
+  BinaryFunctionFunction impl;
+};
+
+# define lbcppMemberBinaryFunction(ThisClass, Fun, InputType1, InputType2, OutputType) \
+    FunctionPtr(new MethodBasedBinaryFunction(refCountedPointerFromThis(this), (BinaryFunctionFunction)(&ThisClass::Fun), InputType1, InputType2, OutputType))
+
+////////////////////
+
 // GoState -> Container[DoubleVector]
 class GoActionsPerception : public CompositeFunction
 {
 public:
+  GoActionsPerception(size_t boardSize = 19)
+    : boardSize(boardSize)
+  {
+  }
+
+  Variable getRelativePositionFeatures(ExecutionContext& context, const Variable& previousAction, const Variable& currentAction) const
+  {
+    const GoActionPtr& a1 = previousAction.getObjectAndCast<GoAction>();
+    const GoActionPtr& a2 = currentAction.getObjectAndCast<GoAction>();
+    size_t index = (((a1->getX() * boardSize) + a1->getY()) * boardSize + a2->getX()) * boardSize + a2->getY();
+    jassert(index < relativePositionFeatures.size());
+    return relativePositionFeatures[index];
+  }
+
   virtual void actionFeatures(CompositeFunctionBuilder& builder)
   {
     size_t action = builder.addInput(goActionClass, T("action"));
     size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType), T("preFeatures"));
 
+    size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
     size_t boardPrimaryFeatures = builder.addFunction(getVariableFunction(T("boardPrimaryFeatures")), preFeatures);
 
     size_t row = builder.addFunction(getVariableFunction(1), action);
     size_t column = builder.addFunction(getVariableFunction(0), action);
 
+    FunctionPtr fun = lbcppMemberBinaryFunction(GoActionsPerception, getRelativePositionFeatures, goActionClass, goActionClass,
+                                                relativePositionFeatures[0]->getClass());
+    size_t previousActionRelationFeatures = builder.addFunction(mapContainerFunction(fun), previousActions, action);
+    size_t previousActionHalfPos = builder.addConstant(Variable(5, positiveIntegerType));
+
     builder.startSelection();
 
-      builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
-      builder.addFunction(new GoActionPositionFeature(19), action, T("position"));
+      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
+      size_t i2 = builder.addFunction(new GoActionPositionFeature(boardSize), action, T("position"));
+
+      builder.addFunction(containerWindowFeatureGenerator(10), previousActionRelationFeatures, previousActionHalfPos, T("previousAction"));
+      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i1, T("prod"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
@@ -187,6 +303,7 @@ public:
     builder.startSelection();
 
       size_t state = builder.addInput(goStateClass, T("state"));
+      size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), state, T("previousActions"));
       size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
       size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
       EnumerationPtr primaryFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
@@ -197,11 +314,55 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
+    makePrecalculations(builder.getContext());
+
     size_t state = builder.addInput(goStateClass, T("state"));
     size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
     size_t actions = builder.addFunction(new GetAvailableActionsFunction(goActionClass), state, T("actions"));
     
     builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, actionFeatures)), actions, preFeatures);
+  }
+
+private:
+  size_t boardSize;
+
+  // x1 -> y1 -> x2 -> y2 -> features
+  std::vector<DoubleVectorPtr> relativePositionFeatures;
+  // todo: en faire une symmetricMatrix
+
+  void relativePositionFeaturesFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t p1 = builder.addInput(goActionClass, T("position1"));
+    size_t p2 = builder.addInput(goActionClass, T("position2"));
+
+    builder.startSelection();
+
+      builder.addFunction(new GoActionDistanceFeatureGenerator(boardSize), p1, p2, T("dist"));
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("relativePos"));
+  }
+
+  bool makePrecalculations(ExecutionContext& context)
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(GoActionsPerception, relativePositionFeaturesFunction);
+    if (!function->initialize(context, goActionClass, goActionClass))
+      return false;
+
+    relativePositionFeatures.resize(boardSize * boardSize * boardSize * boardSize);
+    size_t index = 0;
+    for (size_t x1 = 0; x1 < boardSize; ++x1)
+      for (size_t y1 = 0; y1 < boardSize; ++y1)
+      {
+        GoActionPtr a1(new GoAction(x1, y1));
+        for (size_t x2 = 0; x2 < boardSize; ++x2)
+          for (size_t y2 = 0; y2 < boardSize; ++y2)
+          {
+            GoActionPtr a2(new GoAction(x2, y2));
+            relativePositionFeatures[index++] = function->compute(context, a1, a2).getObjectAndCast<DoubleVector>();
+          }
+      }
+
+    return true;
   }
 };
 
@@ -477,7 +638,6 @@ public:
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
 
-
 #if 0
     // TMP
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
@@ -495,7 +655,6 @@ public:
     return true;
     // -
 #endif // 0
-
 
     // create ranking machine
     if (!learningParameters)

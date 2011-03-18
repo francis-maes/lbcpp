@@ -113,6 +113,11 @@ bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type
   }
   jassert(dvType->getNumTemplateArguments() == 2);
   elementsEnumeration = dvType->getTemplateArgument(0);
+  if (elementsEnumeration->getName() == T("EnumValue"))
+  {
+    context.errorCallback(T("No elements enumeration in DoubleVector"));
+    return false;
+  }
   elementsType = dvType->getTemplateArgument(1);
   return true;
 }  

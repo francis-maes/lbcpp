@@ -25,6 +25,7 @@
     <variable type="GoBoard" name="board"/>
     <variable type="PositiveInteger" name="whitePrisonerCount"/>
     <variable type="PositiveInteger" name="blackPrisonerCount"/>
+    <variable type="GoActionVector" name="previousActions"/>
   </class>
   
   <class name="GoAction">

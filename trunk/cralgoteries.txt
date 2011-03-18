@@ -1,4 +1,12 @@
 
+* Rendre les choses plus generique: FixedContainerWindowFeatureGenerator, remplacer GoAction par PositiveIntegerPair, rendre le PositiveItnegerDistance generique
+
+
+Go: Features
+
+ * RelationWithPreviousPositions
+ * ConnexityGraph
+
 Proteins:
  ** ProteinLearner: Serialisation des models
    -> Shared dynamic object
