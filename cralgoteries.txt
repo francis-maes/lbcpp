@@ -1,10 +1,6 @@
-
-* Rendre les choses plus generique: FixedContainerWindowFeatureGenerator, remplacer GoAction par PositiveIntegerPair, rendre le PositiveItnegerDistance generique
-
+* Rendre les choses plus generique: remplacer GoAction par PositiveIntegerPair, rendre le PositiveItnegerDistance generique
 
 Go: Features
-
- * RelationWithPreviousPositions
  * ConnexityGraph
 
 Proteins:

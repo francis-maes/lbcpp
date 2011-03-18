@@ -94,7 +94,7 @@ protected:
 };
 
 ///////////////////////////////
-// Go Action Features ///////// NEW
+// Go Action Features /////////
 ///////////////////////////////
 
 // GoState -> GoBoard
@@ -223,34 +223,6 @@ public:
 
 extern ClassPtr goStatePreFeaturesClass(TypePtr primaryFeaturesEnumeration);
 
-/////////////////////
-
-/*
-** MethodBasedCompositeFunction
-*/
-typedef Variable (Object::*BinaryFunctionFunction)(ExecutionContext&, const Variable& , const Variable& ) const; 
-
-class MethodBasedBinaryFunction : public SimpleBinaryFunction
-{
-public:
-  MethodBasedBinaryFunction(ObjectPtr pthis, BinaryFunctionFunction impl,
-                                TypePtr inputType1, TypePtr inputType2, TypePtr outputType)
-    : SimpleBinaryFunction(inputType1, inputType2, outputType), pthis(pthis), impl(impl) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    Object& object = *pthis;
-    return (object.*impl)(context, inputs[0], inputs[1]);
-  }
-
-protected:
-  ObjectPtr pthis;
-  BinaryFunctionFunction impl;
-};
-
-# define lbcppMemberBinaryFunction(ThisClass, Fun, InputType1, InputType2, OutputType) \
-    FunctionPtr(new MethodBasedBinaryFunction(refCountedPointerFromThis(this), (BinaryFunctionFunction)(&ThisClass::Fun), InputType1, InputType2, OutputType))
-
 ////////////////////
 
 // GoState -> Container[DoubleVector]
@@ -285,14 +257,13 @@ public:
     FunctionPtr fun = lbcppMemberBinaryFunction(GoActionsPerception, getRelativePositionFeatures, goActionClass, goActionClass,
                                                 relativePositionFeatures[0]->getClass());
     size_t previousActionRelationFeatures = builder.addFunction(mapContainerFunction(fun), previousActions, action);
-    size_t previousActionHalfPos = builder.addConstant(Variable(5, positiveIntegerType));
 
     builder.startSelection();
 
       size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), boardPrimaryFeatures, row, column, T("window"));
       size_t i2 = builder.addFunction(new GoActionPositionFeature(boardSize), action, T("position"));
 
-      builder.addFunction(containerWindowFeatureGenerator(10), previousActionRelationFeatures, previousActionHalfPos, T("previousAction"));
+      builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i1, T("prod"));
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
