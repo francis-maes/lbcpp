@@ -509,7 +509,9 @@ public:
     FunctionPtr goEpisodeFunction = new GoEpisodeFunction(learningParameters, rankingExampleCreator, rankingMachine);
     if (!goEpisodeFunction->initialize(context, goStateClass, containerClass(goActionClass)))
       return false;
-    goEpisodeFunction->setEvaluator(new GoEpisodeFunctionEvaluator());
+    EvaluatorPtr evaluator = new GoEpisodeFunctionEvaluator();
+    evaluator->setUseMultiThreading(true);
+    goEpisodeFunction->setEvaluator(evaluator);
     goEpisodeFunction->setBatchLearner(learningParameters->createBatchLearner(context));
     goEpisodeFunction->setOnlineLearner(
       compositeOnlineLearner(evaluatorOnlineLearner(false, true), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));

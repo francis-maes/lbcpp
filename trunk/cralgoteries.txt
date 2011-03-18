@@ -1,10 +1,8 @@
- 
- 
- * Function::evaluate(): new option "useMultiThread", move EvaluatorPtr as last argument
 
 Go:
- * Evaluator: option pour multiThreader, Go: Multithreading de l'evaluation
+ * Parallel learning
  * Per-episode stochastic gd
+  => objectif: full utilisation des cpus
 
 HigherOrderFunctions:
  /!\ MapContainer de base n'a pas de learner, Le MapContainerBatchLearner est celui du MapN

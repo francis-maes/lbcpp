@@ -20,8 +20,7 @@ struct EvaluateExampleWorkUnit : public WorkUnit
 
   virtual Variable run(ExecutionContext& context)
   {
-    ScopedLock _(lock);
-    evaluator->updateScoreObject(context, scores, function, example);
+    evaluator->evaluateExample(context, scores, function, example, &lock);
     return Variable();
   }
   
@@ -35,12 +34,17 @@ protected:
 
 }; /* namespace lbcpp */
 
-bool Evaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example) const
+bool Evaluator::evaluateExample(ExecutionContext& context, const ScoreObjectPtr& scores, const FunctionPtr& function, const ObjectPtr& example, CriticalSection* lock) const
 {
   if (!example)
     return true; // skip missing examples
   Variable output = function->computeWithInputsObject(context, example);
-  return updateScoreObject(context, scores, example, output);
+  if (lock)
+    lock->enter();
+  bool res = updateScoreObject(context, scores, example, output);
+  if (lock)
+    lock->exit();
+  return res;
 }
 
 void Evaluator::computeEvaluatorMultiThread(ExecutionContext& context, const FunctionPtr& function, const ContainerPtr& examples, const ScoreObjectPtr& scores) const
@@ -71,7 +75,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     for (size_t i = 0; i < n; ++i)
     {
       const ObjectPtr& example = objects[i];
-      if (!updateScoreObject(context, scores, function, example))
+      if (!evaluateExample(context, scores, function, example))
         return;
 
       juce::uint32 time = Time::getApproximateMillisecondCounter();
@@ -89,7 +93,7 @@ void Evaluator::computeEvaluatorSingleThread(ExecutionContext& context, const Fu
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr example = examples->getElement(i).getObject();
-      if (!updateScoreObject(context, scores, function, example))
+      if (!evaluateExample(context, scores, function, example))
         return;
 
       juce::uint32 time = Time::getApproximateMillisecondCounter();
@@ -112,7 +116,7 @@ Variable Evaluator::computeFunction(ExecutionContext& context, const Variable* i
   if (!res)
     return Variable::missingValue(getOutputType());
 
-  if (false)//context.isMultiThread())
+  if (useMultiThreading && context.isMultiThread())
     computeEvaluatorMultiThread(context, function, examples, res);
   else
     computeEvaluatorSingleThread(context, function, examples, res);
