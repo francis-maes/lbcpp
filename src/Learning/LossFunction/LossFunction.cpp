@@ -84,11 +84,7 @@ void MultiClassLossFunction::computeScalarVectorFunction(const DenseDoubleVector
   if (otherInputs[0].isInteger())
     correct = otherInputs[0].getInteger();
   else
-  {
-    size_t index;
-    otherInputs[0].getObjectAndCast<DoubleVector>()->getMaximumValue(&index);
-    correct = (int)index;
-  }
+    correct = (int)otherInputs[0].getObjectAndCast<DoubleVector>()->getIndexOfMaximumValue();
 
   jassert(correct >= 0 && correct < (int)numClasses);
   computeMultiClassLoss(scores, (size_t)correct, numClasses, output, gradientTarget, gradientWeight);

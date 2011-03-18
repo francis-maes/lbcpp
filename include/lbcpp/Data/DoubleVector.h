@@ -57,15 +57,22 @@ public:
 
   virtual size_t l0norm() const = 0;
   virtual double sumOfSquares() const = 0;
-  virtual double getMaximumValue(size_t* index = NULL) const = 0;
+  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const = 0;
   
   virtual void multiplyByScalar(double scalar) = 0;
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
 
-  int getIndexOfMaximumValue() const
-    {size_t res; getMaximumValue(&res); return (int)res;}
+  double getMaximumValue() const
+    {return getExtremumValue(true);}
+
+  int getIndexOfMaximumValue() const;
+
+  double getMinimumValue() const
+    {return getExtremumValue(false);}
+
+  int getIndexOfMinimumValue() const;
 
   double l2norm() const
     {return sqrt(sumOfSquares());}
@@ -116,7 +123,7 @@ public:
   virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue(size_t* index = NULL) const;
+  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double scalar);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -193,7 +200,7 @@ public:
   virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue(size_t* index = NULL) const;
+  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -227,7 +234,7 @@ private:
 class LazyDoubleVector : public DoubleVector
 {
 public:
-  LazyDoubleVector(FeatureGeneratorPtr featureGenerator, const Variable* inputs);
+  LazyDoubleVector(ClassPtr thisClass, FeatureGeneratorPtr featureGenerator, const Variable* inputs);
   LazyDoubleVector() {}
 
   const FeatureGeneratorPtr& getFeatureGenerator() const
@@ -247,7 +254,7 @@ public:
   virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue(size_t* index = NULL) const;
+  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
@@ -296,13 +303,16 @@ public:
   size_t getSubVectorOffset(size_t index) const
     {jassert(index < vectors.size()); return vectors[index].first;}
 
+  void reserveSubVectors(size_t count)
+    {vectors.reserve(count);}
+
   void appendSubVector(size_t shift, const DoubleVectorPtr& subVector);
 
   // DoubleVector
   virtual double entropy() const;
   virtual size_t l0norm() const;
   virtual double sumOfSquares() const;
-  virtual double getMaximumValue(size_t* index = NULL) const;
+  virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
   virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;

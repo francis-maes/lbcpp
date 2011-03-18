@@ -15,11 +15,13 @@ TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const st
   featuresType = doubleType;
   featuresEnumeration = initializeFeatures(context, inputVariables, featuresType, outputName, outputShortName);
   jassert(featuresEnumeration && featuresType);
-  return lazyComputation ? getLazyOutputType(featuresEnumeration, featuresType) : getNonLazyOutputType(featuresEnumeration, featuresType);
+  lazyOutputType = getLazyOutputType(featuresEnumeration, featuresType);
+  nonLazyOutputType = getNonLazyOutputType(featuresEnumeration, featuresType);
+  return lazyComputation ? lazyOutputType : nonLazyOutputType;
 }
 
 DoubleVectorPtr FeatureGenerator::toLazyVector(const Variable* inputs) const
-  {return new LazyDoubleVector(refCountedPointerFromThis(this), inputs);}
+  {return new LazyDoubleVector(lazyOutputType, refCountedPointerFromThis(this), inputs);}
 
 DoubleVectorPtr FeatureGenerator::toComputedVector(const Variable* inputs) const
 {
@@ -58,9 +60,9 @@ double FeatureGenerator::sumOfSquares(const Variable* inputs) const
   return callback.res;
 }
 
-double FeatureGenerator::getMaximumValue(const Variable* inputs, size_t* index) const
+double FeatureGenerator::getExtremumValue(const Variable* inputs, bool lookForMaximum, size_t* index) const
 {
-  ComputeMaximumValueFeatureGeneratorCallback callback(index);
+  ComputeExtremumValueFeatureGeneratorCallback callback(lookForMaximum, index);
   computeFeatures(&inputs[0], callback);
   return callback.res;
 }

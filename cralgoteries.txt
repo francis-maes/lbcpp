@@ -1,6 +1,8 @@
+ 
+ 
+ * Function::evaluate(): new option "useMultiThread", move EvaluatorPtr as last argument
 
 Go:
- * RankingEvaluator: rankOfBest
  * Evaluator: option pour multiThreader, Go: Multithreading de l'evaluation
  * Per-episode stochastic gd
 

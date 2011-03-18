@@ -246,7 +246,7 @@ public:
     {return new ObjectType(values[index]);}
 
   virtual void setElement(size_t index, const Variable& value)
-    {values[index] = getImplementation(*(ExecutionContext* )0, value);} // FIXME : context
+    {values[index] = getImplementation(value);}
 
   virtual void saveToXml(XmlExporter& exporter) const
     {jassert(false);}
@@ -264,10 +264,10 @@ public:
     {values.clear();}
 
   virtual void prepend(const Variable& value)
-    {values.insert(values.begin(), getImplementation(*(ExecutionContext* )0, value));} // FIXME : context
+    {values.insert(values.begin(), getImplementation(value));}
 
   virtual void append(const Variable& value)
-    {values.push_back(getImplementation(*(ExecutionContext* )0, value));} // FIXME: context
+    {values.push_back(getImplementation(value));}
 
   virtual void remove(size_t index)
     {values.erase(values.begin() + index);}
@@ -292,9 +292,9 @@ public:
 protected:
   std::vector<ImplementationType> values;
 
-  static ImplementationType getImplementation(ExecutionContext& context, const Variable& value)
+  static ImplementationType getImplementation(const Variable& value)
   {
-    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>(context);
+    const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
     return v ? v->getValue() : ImplementationType();
   }
 };

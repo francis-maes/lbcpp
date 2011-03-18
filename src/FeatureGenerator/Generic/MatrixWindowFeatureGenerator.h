@@ -58,6 +58,7 @@ public:
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
+    ObjectMatrixPtr objectMatrix = matrix.dynamicCast<ObjectMatrix>();
     int row = inputs[1].getInteger();
     int column = inputs[1].getInteger();
 
@@ -69,16 +70,25 @@ public:
     size_t index = 0;
     for (size_t i = 0; i < windowRows; ++i)
     {
-      String row = String((int)i + startRow);
+      int r = startRow + i;
       for (size_t j = 0; j < windowColumns; ++j, ++index)
       {
-        int r = startRow + i;
         int c = startColumn + j;
         if (r >= 0 && c >= 0 && r < numRows && c < numColumns)
         {
-          DoubleVectorPtr variable = matrix->getElement(r, c).getObjectAndCast<DoubleVector>();
-          if (variable)
-            callback.sense(index * numFeaturesPerPosition, variable, 1.0);
+          if (objectMatrix)
+          {
+            // faster access on object matrices
+            const DoubleVectorPtr& variable = objectMatrix->getObjectAndCast<DoubleVector>(r, c);
+            if (variable)
+              callback.sense(index * numFeaturesPerPosition, variable, 1.0);
+          }
+          else
+          {
+            DoubleVectorPtr variable = matrix->getElement(r, c).getObjectAndCast<DoubleVector>();
+            if (variable)
+              callback.sense(index * numFeaturesPerPosition, variable, 1.0);
+          }
         }
       }
     }

@@ -28,6 +28,8 @@
   <!-- Go Evaluator -->
   <class name="GoActionScoringScoreObject" base="ScoreObject">
     <variable type="ScalarVariableMean" name="predictionRate"/>
+    <variable type="ScalarVariableStatistics" name="rankOfAction"/>
+    <variable type="ScalarVariableMean" name="unsupervisedRate"/>
   </class>
   <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
 

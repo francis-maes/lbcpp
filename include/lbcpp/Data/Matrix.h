@@ -79,7 +79,11 @@ public:
     {jassert(index < elements.size()); return Variable(elements[index], elementsType);}
 
   virtual Variable getElement(size_t row, size_t column) const
-    {return getElement(makeIndex(row, column));}
+  {
+    size_t index = makeIndex(row, column);
+    jassert(index < elements.size());
+    return Variable(elements[index], elementsType);
+  }
 
   void setElement(size_t row, size_t column, const ElementsType& value)
     {setElement(makeIndex(row, column), value);}
@@ -125,16 +129,30 @@ extern ClassPtr objectMatrixClass(TypePtr elementsType);
 class ObjectMatrix : public BuiltinTypeMatrix<ObjectPtr>
 {
 public:
+  typedef BuiltinTypeMatrix<ObjectPtr> BaseClass;
+
   ObjectMatrix(ClassPtr elementsClass, size_t numRows, size_t numColumns)
-    : BuiltinTypeMatrix<ObjectPtr>(objectMatrixClass(elementsClass), numRows, numColumns, ObjectPtr()) {}
+    : BaseClass(objectMatrixClass(elementsClass), numRows, numColumns, ObjectPtr()) {}
   ObjectMatrix() {}
 
   virtual void setElement(size_t row, size_t column, const Variable& value)
-    {BuiltinTypeMatrix<ObjectPtr>::setElement(row, column, value.getObject());}
+    {BaseClass::setElement(row, column, value.getObject());}
 
   virtual void setElement(size_t index, const Variable& value)
-    {BuiltinTypeMatrix<ObjectPtr>::setElement(index, value.getObject());}
+    {BaseClass::setElement(index, value.getObject());}
+
+  const ObjectPtr& getObject(size_t row, size_t column) const
+    {return BaseClass::elements[makeIndex(row, column)];}
+
+  template<class Type>
+  const ReferenceCountedObjectPtr<Type>& getObjectAndCast(size_t row, size_t column) const
+    {return getObject(row, column).staticCast<Type>();}
+
+  void setObject(size_t row, size_t column, const ObjectPtr& object)
+    {BaseClass::elements[makeIndex(row, column)] = object;}
 };
+
+typedef ReferenceCountedObjectPtr<ObjectMatrix> ObjectMatrixPtr;
 
 inline MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns)
 {

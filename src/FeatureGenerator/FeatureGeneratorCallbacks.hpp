@@ -90,11 +90,11 @@ public:
   double res;
 };
 
-class ComputeMaximumValueFeatureGeneratorCallback : public FeatureGeneratorCallback
+class ComputeExtremumValueFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
-  ComputeMaximumValueFeatureGeneratorCallback(size_t* index)
-    : res(-DBL_MAX), index(index) {}
+  ComputeExtremumValueFeatureGeneratorCallback(bool lookForMaximum, size_t* index)
+    : res(lookForMaximum ? -DBL_MAX : DBL_MAX), lookForMaximum(lookForMaximum), index(index) {}
 
   virtual void sense(size_t index, double value)
     {add(index, value);}
@@ -102,20 +102,21 @@ public:
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
   {
     size_t best;
-    double value = vector->getMaximumValue(&best) * weight;
+    double value = vector->getExtremumValue(lookForMaximum, &best) * weight;
     add(best, value);
   }
 
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
   {
     size_t best;
-    double value = featureGenerator->getMaximumValue(inputs, &best) * weight;
+    double value = featureGenerator->getExtremumValue(inputs, lookForMaximum, &best) * weight;
     add(best, value);
   }
 
   void add(size_t index, double value)
   {
-    if (value > res)
+    if ((lookForMaximum && value > res) ||
+        (!lookForMaximum && value < res))
     {
       res = value;
       if (this->index)
@@ -124,6 +125,7 @@ public:
   }
 
   double res;
+  bool lookForMaximum;
   size_t* index;
 };
 
