@@ -63,7 +63,7 @@ public:
 
     std::vector<bool> learnersToRemove(learners.size(), false);
     ContainerPtr res = vector(doubleType, learners.size());
-    for (size_t i = 0; i < learners.size(); ++i)
+    for (int i = learners.size() - 1; i >= 0; --i)
     {
       const OnlineLearnerPtr& learner = learners[i];
       double objectiveValue = DBL_MAX;

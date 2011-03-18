@@ -167,6 +167,7 @@ extern BatchLearnerPtr addBiasBatchLearner(BinaryClassificationScore scoreToOpti
 // online learners
 extern OnlineLearnerPtr stochasticGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 extern OnlineLearnerPtr perEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
+extern OnlineLearnerPtr parallelPerEpisodeGDOnlineLearner(FunctionPtr lossFunction, IterationFunctionPtr learningRate, bool normalizeLearningRate = true);
 
 // high-level learning machines
 extern FunctionPtr linearRegressor(LearnerParametersPtr parameters);
