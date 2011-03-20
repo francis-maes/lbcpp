@@ -275,6 +275,7 @@ class CheckNetworkServerWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_NETWORKING
     NetworkServerPtr server = new NetworkServer(context);
     if (!server->startServer(1664))
     {
@@ -299,6 +300,7 @@ public:
       std::cout << ping << std::endl;
       client->sendVariable(T("PONG"));
     }
+#endif
   }
 };
 
@@ -307,6 +309,7 @@ class CheckNetworkClientWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_NETWORKING
     for (size_t i = 0; i < 5; ++i)
     {
       NetworkClientPtr client = blockingNetworkClient(context, 3);
@@ -329,6 +332,7 @@ public:
       client->stopClient();
     }
     return true;
+#endif
   }
 };
   
