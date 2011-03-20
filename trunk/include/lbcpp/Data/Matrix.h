@@ -146,8 +146,11 @@ public:
 
   template<class Type>
   const ReferenceCountedObjectPtr<Type>& getObjectAndCast(size_t row, size_t column) const
-    {return getObject(row, column).staticCast<Type>();}
-
+  {
+    const ObjectPtr& object = getObject(row, column);
+    return object.staticCast<Type>();
+  }
+  
   void setObject(size_t row, size_t column, const ObjectPtr& object)
     {BaseClass::elements[makeIndex(row, column)] = object;}
 };
