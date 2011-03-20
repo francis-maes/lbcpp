@@ -57,15 +57,36 @@
   
   <template name="GoStatePreFeatures">
     <parameter name="globalFeaturesEnumeration" type="EnumValue"/>
+    <parameter name="regionFeaturesEnumeration" type="EnumValue"/>
     <parameter name="actionFeaturesEnumeration" type="EnumValue"/>
 
     <variable type="GoState" name="state"/>
     <variable type="PositiveIntegerPairVector" name="previousActions"/>
     <variable type="GoBoard" name="board"/>
     <variable type="DoubleVector[globalFeaturesEnumeration,Double]" name="globalPrimaryFeatures"/>
+    <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="fourConnexityGraphFeatures"/>
+    <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="eightConnexityGraphFeatures"/>
     <variable type="ObjectMatrix[DoubleVector[actionFeaturesEnumeration,Double]]" name="actionPrimaryFeatures"/>
   </template>
 
   <class name="GoActionsPerception" base="CompositeFunction"/>
+
+  <!-- Segment Matrix -->
+  <template name="MatrixRegion" base="Object">
+    <parameter name="elementsType" type="Variable"/>
+    <variable type="PositiveInteger" name="index"/>
+    <variable type="elementsType" name="value"/>
+    <variable type="PositiveInteger" name="size"/>
+    <variable type="ObjectVector[Pair[PositiveInteger, PositiveInteger]]" name="positions"/>
+  </template>
+
+  <template name="SegmentedMatrix" base="Matrix[PositiveInteger]">
+    <parameter name="elementsType" type="Variable"/>
+    <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
+  </template>
+
+  <class name="SegmentMatrixFunction" base="Function">
+    <variable type="Boolean" name="use8Connexity"/>
+  </class>
 
 </library>
