@@ -103,34 +103,7 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
   /* Send new requests */
   std::vector<NetworkRequestPtr> waitingRequests;
   fileManager->getWaitingRequests(nodeName, waitingRequests);
-  if (waitingRequests.size())
-  {
-    size_t maxblocklength = 200;
-    for (size_t i = 0; i < ceil(waitingRequests.size()/(double) maxblocklength)-1; ++i) {
-      size_t nbElements = std::min((i+1)*maxblocklength, waitingRequests.size()) - i*maxblocklength;
-      ObjectVectorPtr vec = objectVector(networkRequestClass, nbElements);
-      for (size_t x = i*maxblocklength; x < i*maxblocklength+nbElements ; ++x)
-        vec->set(x-i*maxblocklength, waitingRequests[x]);
-      ContainerPtr results = interface->pushWorkUnits(vec);
-      if (!results || results->getNumElements() != nbElements)
-      {
-        context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
-        std::vector<NetworkRequestPtr> errorRequests(waitingRequests.begin()+i*maxblocklength, waitingRequests.begin()+i*maxblocklength+nbElements);        
-        fileManager->setAsWaitingRequests(errorRequests);
-        //return; // TODO arnaud
-      }
-      else
-      {
-        size_t n = results->getNumElements();
-        for (size_t x = 0; x < n; ++x)
-        {
-          String result = results->getElement(x).getString();
-          if (result == T("Error"))
-            fileManager->crachedRequest(waitingRequests[i*maxblocklength+x]);
-        }
-      }
-    }
-  }
+  sendRequests(context, interface, waitingRequests);
 
   /* Get trace */
   ContainerPtr networkResponses = interface->getFinishedExecutionTraces();
@@ -150,6 +123,43 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
     if (!request)
       continue;
     fileManager->archiveRequest(new NetworkArchive(request, response));
+  }
+}
+
+void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNodeNetworkInterfacePtr interface, const std::vector<NetworkRequestPtr>& requests) const
+{
+  const size_t numRequests = requests.size();
+  if (!numRequests)
+    return;
+  
+  size_t numRequestsSent = 0;
+  while (numRequestsSent < numRequests)
+  {
+    const size_t numThisTime = juce::jmin(numRequests - numRequestsSent, 200);
+    /* Prepare data and send */
+    ObjectVectorPtr v = objectVector(networkRequestClass, numThisTime);
+    for (size_t i = 0; i < numThisTime; ++i)
+      v->set(i, requests[numRequestsSent + i]);
+    ContainerPtr results = interface->pushWorkUnits(v);
+    /* Check acknowledgement */
+    if (!results || results->getNumElements() != numThisTime)
+    {
+      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
+      std::vector<NetworkRequestPtr> errorRequests(requests.begin() + numRequestsSent, requests.begin() + numRequestsSent + numThisTime);        
+      fileManager->setAsWaitingRequests(errorRequests);
+    }
+    else
+    {
+      size_t n = results->getNumElements();
+      for (size_t i = 0; i < n; ++i)
+      {
+        String result = results->getElement(i).getString();
+        if (result == T("Error"))
+          fileManager->crachedRequest(requests[numRequestsSent + i]);
+      }
+    }
+    
+    numRequestsSent += numThisTime;
   }
 }
 
