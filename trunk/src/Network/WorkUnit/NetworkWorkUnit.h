@@ -33,6 +33,9 @@ protected:
 
   void serverCommunication(ExecutionContext& context, ManagerNodeNetworkInterfacePtr interface) const;
   void clientCommunication(ExecutionContext& context, GridNodeNetworkInterfacePtr interface);
+  
+private:
+  void sendRequests(ExecutionContext& context, GridNodeNetworkInterfacePtr interface, const std::vector<NetworkRequestPtr>& requests) const; 
 };
 
 class GridWorkUnit : public WorkUnit
