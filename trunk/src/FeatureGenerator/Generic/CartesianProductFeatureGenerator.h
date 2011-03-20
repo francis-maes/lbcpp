@@ -23,7 +23,7 @@ public:
   CartesianProductFeatureGenerator() {}
 
   virtual size_t getNumRequiredInputs() const
-    {return 2;} // binary product for the moment
+    {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return (TypePtr)doubleVectorClass();}
@@ -36,7 +36,7 @@ public:
     EnumerationPtr firstEnum = DoubleVector::getElementsEnumeration(inputVariables[0]->getType());
     EnumerationPtr secondEnum = DoubleVector::getElementsEnumeration(inputVariables[1]->getType());
     jassert(firstEnum && secondEnum);
-    numElementsInFirstEnum = firstEnum->getNumElements();
+    numSecondElements = secondEnum->getNumElements();
     return cartesianProductEnumerationEnumeration(firstEnum, secondEnum);
   }
 
@@ -47,23 +47,23 @@ public:
 
     if (s1 && s2 && s1->getValues().size() && s2->getValues().size())
     {
-      for (size_t i = 0; i < s2->getValues().size(); ++i)
+      for (size_t i = 0; i < s1->getValues().size(); ++i)
       {
-        std::pair<size_t, double> indexAndWeight2 = s2->getValues()[i];
-        if (!indexAndWeight2.second)
+        std::pair<size_t, double> indexAndWeight1 = s1->getValues()[i];
+        if (!indexAndWeight1.second)
           continue;
-        size_t startIndex = indexAndWeight2.first * numElementsInFirstEnum;
-        for (size_t j = 0; j < s1->getValues().size(); ++j)
+        size_t startIndex = indexAndWeight1.first * numSecondElements;
+        for (size_t j = 0; j < s2->getValues().size(); ++j)
         {
-          std::pair<size_t, double> indexAndWeight1 = s1->getValues()[j];
-          callback.sense(startIndex + indexAndWeight1.first, indexAndWeight1.second * indexAndWeight2.second);
+          std::pair<size_t, double> indexAndWeight2 = s2->getValues()[j];
+          callback.sense(startIndex + indexAndWeight2.first, indexAndWeight1.second * indexAndWeight2.second);
         }
       }
     }
   }
   
 protected:
-  size_t numElementsInFirstEnum;
+  size_t numSecondElements;
 };
 
 }; /* namespace lbcpp */

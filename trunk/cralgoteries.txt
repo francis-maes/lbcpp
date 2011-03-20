@@ -1,7 +1,12 @@
 
+ * New class MethodBasedUnaryFunction and macro lbcppMemberUnaryFunction
+ * Go features: store relative position features in a SymmetricMatrix
+ * Go features: precalculate position features and store them in a Container  
+ * Explorer: enable tooltips
+ * Explorer: add tooltips to the VariableTreeView
+ * CartesianProductFeatureGenerator: fix order to make initializeFeatures() and computeFeatures() coherent 
+
 Go: Features
- * Deplacer PositiveIntegerPair et PositiveIntegerPairDistanceFeatures dans lbcpp-core
- * better PosAndSpace features: Pos discretisé et symetrisé, Time discretisé en 6
  * ConnexityGraph
 
 Proteins:

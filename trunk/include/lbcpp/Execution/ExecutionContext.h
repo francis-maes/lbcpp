@@ -43,6 +43,7 @@ public:
   void enterScope(const String& description, const WorkUnitPtr& workUnit = WorkUnitPtr());
   void enterScope(const WorkUnitPtr& workUnit);
   void leaveScope(const Variable& result);
+  void leaveScope();
 
   /*
   ** Work Units

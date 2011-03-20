@@ -251,6 +251,9 @@ protected:
   String outputPostFix;
 };
 
+/*
+** Simple Unary Function
+*/
 class SimpleUnaryFunction : public SimpleFunction
 {
 public:
@@ -267,6 +270,33 @@ protected:
   TypePtr inputType;
 };
 
+typedef Variable (Object::*UnaryMemberFunctionPointer)(ExecutionContext&, const Variable& ) const; 
+
+class MethodBasedUnaryFunction : public SimpleUnaryFunction
+{
+public:
+  MethodBasedUnaryFunction(ObjectPtr pthis, UnaryMemberFunctionPointer impl,
+                                TypePtr inputType, TypePtr outputType)
+    : SimpleUnaryFunction(inputType, outputType), pthis(pthis), impl(impl) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    Object& object = *pthis;
+    return (object.*impl)(context, input);
+  }
+
+protected:
+  ObjectPtr pthis;
+  UnaryMemberFunctionPointer impl;
+};
+
+# define lbcppMemberUnaryFunction(ThisClass, Fun, InputType, OutputType) \
+    FunctionPtr(new MethodBasedUnaryFunction(refCountedPointerFromThis(this), \
+                (UnaryMemberFunctionPointer)(&ThisClass::Fun), InputType, OutputType))
+
+/*
+** Simple Binary Function
+*/
 class SimpleBinaryFunction : public SimpleFunction
 {
 public:
@@ -284,15 +314,12 @@ protected:
   TypePtr inputType2;
 };
 
-/*
-** MethodBasedCompositeFunction
-*/
-typedef Variable (Object::*BinaryFunctionFunction)(ExecutionContext&, const Variable& , const Variable& ) const; 
+typedef Variable (Object::*BinaryMemberFunctionPointer)(ExecutionContext&, const Variable& , const Variable& ) const; 
 
 class MethodBasedBinaryFunction : public SimpleBinaryFunction
 {
 public:
-  MethodBasedBinaryFunction(ObjectPtr pthis, BinaryFunctionFunction impl,
+  MethodBasedBinaryFunction(ObjectPtr pthis, BinaryMemberFunctionPointer impl,
                                 TypePtr inputType1, TypePtr inputType2, TypePtr outputType)
     : SimpleBinaryFunction(inputType1, inputType2, outputType), pthis(pthis), impl(impl) {}
 
@@ -304,11 +331,12 @@ public:
 
 protected:
   ObjectPtr pthis;
-  BinaryFunctionFunction impl;
+  BinaryMemberFunctionPointer impl;
 };
 
 # define lbcppMemberBinaryFunction(ThisClass, Fun, InputType1, InputType2, OutputType) \
-    FunctionPtr(new MethodBasedBinaryFunction(refCountedPointerFromThis(this), (BinaryFunctionFunction)(&ThisClass::Fun), InputType1, InputType2, OutputType))
+    FunctionPtr(new MethodBasedBinaryFunction(refCountedPointerFromThis(this), \
+                (BinaryMemberFunctionPointer)(&ThisClass::Fun), InputType1, InputType2, OutputType))
 
 class ProxyFunction : public Function
 {

@@ -230,14 +230,20 @@ public:
     : boardSize(boardSize)
   {
   }
+ 
+  Variable getPositionFeatures(ExecutionContext& context, const Variable& action) const
+  {
+    const PositiveIntegerPairPtr& a = action.getObjectAndCast<PositiveIntegerPair>();
+    return positionFeatures->getElement(a->getFirst() * boardSize + a->getSecond());
+  }
 
   Variable getRelativePositionFeatures(ExecutionContext& context, const Variable& previousAction, const Variable& currentAction) const
   {
     const PositiveIntegerPairPtr& a1 = previousAction.getObjectAndCast<PositiveIntegerPair>();
     const PositiveIntegerPairPtr& a2 = currentAction.getObjectAndCast<PositiveIntegerPair>();
-    size_t index = (((a1->getFirst() * boardSize) + a1->getSecond()) * boardSize + a2->getFirst()) * boardSize + a2->getSecond();
-    jassert(index < relativePositionFeatures.size());
-    return relativePositionFeatures[index];
+    size_t i = a1->getFirst() * boardSize + a1->getSecond();
+    size_t j = a2->getFirst() * boardSize + a2->getSecond();
+    return relativePositionFeatures->getElement(i, j);
   }
 
   virtual void actionFeatures(CompositeFunctionBuilder& builder)
@@ -246,23 +252,28 @@ public:
     size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType), T("preFeatures"));
 
     size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
-    size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures);
+    size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures, T("globals"));
     size_t actionPrimaryFeatures = builder.addFunction(getVariableFunction(T("actionPrimaryFeatures")), preFeatures);
 
     size_t row = builder.addFunction(getVariableFunction(1), action);
     size_t column = builder.addFunction(getVariableFunction(0), action);
 
     FunctionPtr fun = lbcppMemberBinaryFunction(GoActionsPerception, getRelativePositionFeatures, positiveIntegerPairClass, positiveIntegerPairClass,
-                                                relativePositionFeatures[0]->getClass());
+                                                relativePositionFeatures->getElementsType());
     size_t previousActionRelationFeatures = builder.addFunction(mapContainerFunction(fun), previousActions, action);
-
     
     builder.startSelection();
 
       size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
-      size_t i2 = builder.addFunction(new PositiveIntegerPairPositionFeature(boardSize, boardSize), action, T("position"));
+
+      fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
+      size_t i2 = builder.addFunction(fun, action, T("position"));
+      //size_t i2 = builder.addFunction(new PositiveIntegerPairPositionFeature(boardSize, boardSize), action, T("position"));
       size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
-      
+
+      // tmp
+      builder.addInSelection(globalPrimaryFeatures);
+
       builder.addFunction(cartesianProductFeatureGenerator(), i2, globalPrimaryFeatures, T("posAndTime"));
 
       //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
@@ -301,7 +312,14 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    makePrecalculations(builder.getContext());
+    ExecutionContext& context = builder.getContext();
+
+    context.enterScope(T("Pre-calculating position features"));
+    precalculatePositionFeatures(context);
+    context.leaveScope();
+    context.enterScope(T("Pre-calculating position pair features"));
+    precalculateRelativePositionFeatures(context);
+    context.leaveScope();
 
     size_t state = builder.addInput(goStateClass, T("state"));
     size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
@@ -313,11 +331,43 @@ public:
 private:
   size_t boardSize;
 
-  // x1 -> y1 -> x2 -> y2 -> features
-  std::vector<DoubleVectorPtr> relativePositionFeatures;
-  // todo: en faire une symmetricMatrix
+  /*
+  ** Pre-calculated position features
+  */
+  ContainerPtr positionFeatures;
 
-  void relativePositionFeaturesFunction(CompositeFunctionBuilder& builder)
+  void precalculatePositionFeaturesFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t p = builder.addInput(positiveIntegerPairClass, T("position"));
+    size_t x = builder.addFunction(getVariableFunction(T("first")), p);
+    size_t y = builder.addFunction(getVariableFunction(T("second")), p);
+    size_t fx = builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, (double)boardSize, 7, true), x);
+    size_t fy = builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, (double)boardSize, 7, true), y);
+    builder.addFunction(cartesianProductFeatureGenerator(false), fx, fy, T("positionFeatures"));
+  }
+
+  bool precalculatePositionFeatures(ExecutionContext& context)
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(GoActionsPerception, precalculatePositionFeaturesFunction);
+    if (!function->initialize(context, (TypePtr)positiveIntegerPairClass))
+      return false;
+
+    size_t n = boardSize * boardSize;
+    positionFeatures = vector(function->getOutputType(), n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      PositiveIntegerPairPtr pos(new PositiveIntegerPair(i / boardSize, i % boardSize));
+      positionFeatures->setElement(i, function->compute(context, pos));
+    }
+    return true;
+  }
+
+  /*
+  ** Pre-calculated relative position features
+  */
+  SymmetricMatrixPtr relativePositionFeatures;
+
+  void precalculateRelativePositionFeaturesFunction(CompositeFunctionBuilder& builder)
   {
     size_t p1 = builder.addInput(positiveIntegerPairClass, T("position1"));
     size_t p2 = builder.addInput(positiveIntegerPairClass, T("position2"));
@@ -329,26 +379,23 @@ private:
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("relativePos"));
   }
 
-  bool makePrecalculations(ExecutionContext& context)
+  bool precalculateRelativePositionFeatures(ExecutionContext& context)
   {
-    FunctionPtr function = lbcppMemberCompositeFunction(GoActionsPerception, relativePositionFeaturesFunction);
+    FunctionPtr function = lbcppMemberCompositeFunction(GoActionsPerception, precalculateRelativePositionFeaturesFunction);
     if (!function->initialize(context, positiveIntegerPairClass, positiveIntegerPairClass))
       return false;
 
-    relativePositionFeatures.resize(boardSize * boardSize * boardSize * boardSize);
-    size_t index = 0;
-    for (size_t x1 = 0; x1 < boardSize; ++x1)
-      for (size_t y1 = 0; y1 < boardSize; ++y1)
+    size_t n = boardSize * boardSize;
+    relativePositionFeatures = symmetricMatrix(function->getOutputType(), boardSize * boardSize);
+    for (size_t i = 0; i < n; ++i)
+    {
+      PositiveIntegerPairPtr a1(new PositiveIntegerPair(i / boardSize, i % boardSize));
+      for (size_t j = i; j < n; ++j)
       {
-        PositiveIntegerPairPtr a1(new PositiveIntegerPair(x1, y1));
-        for (size_t x2 = 0; x2 < boardSize; ++x2)
-          for (size_t y2 = 0; y2 < boardSize; ++y2)
-          {
-            PositiveIntegerPairPtr a2(new PositiveIntegerPair(x2, y2));
-            relativePositionFeatures[index++] = function->compute(context, a1, a2).getObjectAndCast<DoubleVector>();
-          }
+        PositiveIntegerPairPtr a2(new PositiveIntegerPair(j / boardSize, j % boardSize));
+        relativePositionFeatures->setElement(i, j, function->compute(context, a1, a2));
       }
-
+    }
     return true;
   }
 };
@@ -625,8 +672,7 @@ public:
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
 
-#if 0
-    // TMP
+    /* TMP
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
     DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
     ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
@@ -641,7 +687,7 @@ public:
     context.resultCallback(T("actionFeatures"), perception->compute(context, state));
     return true;
     // -
-#endif // 0
+    */
 
     // create ranking machine
     if (!learningParameters)

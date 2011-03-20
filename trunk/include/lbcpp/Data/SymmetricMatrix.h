@@ -124,6 +124,8 @@ public:
     {BuiltinTypeSymmetricMatrix<ObjectPtr>::setElement(index, value.getObject());}
 };
 
+typedef ReferenceCountedObjectPtr<ObjectSymmetricMatrix> ObjectSymmetricMatrixPtr;
+
 /*
  ** Symmetric Matrix Constructor Method
  */
