@@ -19,6 +19,13 @@ bool Function::initialize(ExecutionContext& context, TypePtr inputType)
   return initialize(context, inputVariables);
 }
 
+bool Function::initialize(ExecutionContext& context, ClassPtr inputClass)
+{
+  std::vector<VariableSignaturePtr> inputVariables(1);
+  inputVariables[0] = new VariableSignature(inputClass, T("input"));
+  return initialize(context, inputVariables);
+}
+
 bool Function::initialize(ExecutionContext& context, TypePtr inputType1, TypePtr inputType2)
 {
   std::vector<VariableSignaturePtr> inputVariables(2);

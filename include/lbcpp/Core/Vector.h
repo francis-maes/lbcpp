@@ -347,6 +347,44 @@ inline void nativeToVariable(Variable& dest, const std::vector<TT>& source, Type
   }
 }
 
+template<class TT>
+inline void variableToNative(ExecutionContext& context, std::set<TT>& dest, const Variable& source)
+{
+  dest.clear();
+
+  jassert(source.isObject());
+  const ContainerPtr& sourceContainer = source.getObjectAndCast<Container>(context);
+  if (sourceContainer)
+  {
+    size_t n = sourceContainer->getNumElements();
+    for (size_t i = 0; i < n; ++i)
+    {
+      TT value;
+      lbcpp::variableToNative(context, value, sourceContainer->getElement(i));
+      dest.insert(value);
+    }
+  }
+}
+
+template<class TT>
+inline void nativeToVariable(Variable& dest, const std::set<TT>& source, TypePtr expectedType)
+{
+  dest = Variable::create(expectedType);
+  const ObjectPtr& destObject = dest.getObject();
+  const VectorPtr& destVector = destObject.staticCast<Vector>();
+  jassert(destVector);
+  destVector->resize(source.size());
+  TypePtr elementsType = destVector->getElementsType();
+  size_t i = 0;
+  for (std::set<TT>::const_iterator it = source.begin(); it != source.end(); ++it, ++i)
+  {
+    Variable variable;
+    nativeToVariable(variable, *it, elementsType);
+    if (variable.exists())
+      destVector->setElement(i, variable);
+  }
+}
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_VECTOR_H_

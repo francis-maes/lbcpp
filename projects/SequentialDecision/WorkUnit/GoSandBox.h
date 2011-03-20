@@ -93,6 +93,204 @@ protected:
   FunctionPtr actionsPerception; // State -> Container[DoubleVector]
 };
 
+
+///////////////////////////////
+// Segment Matrix /////////////
+///////////////////////////////
+
+extern ClassPtr matrixRegionClass(TypePtr elementType);
+
+class MatrixRegion : public Object
+{
+public:
+  MatrixRegion(TypePtr elementType, size_t index)
+    : Object(matrixRegionClass(elementType)), index(index), size(0) {}
+  MatrixRegion() : index(0), size(0) {}
+
+  size_t getIndex() const
+    {return index;}
+
+  void setValue(const Variable& value)
+    {this->value = value;}
+
+  const Variable& getValue() const
+    {return value;}
+
+  void addPosition(const std::pair<size_t, size_t>& position)
+  {
+    positions.insert(position);
+    ++size;
+  }
+
+  void addNeighboringElement(const Variable& value)
+    {neighboringElements[value]++;}
+
+  // todo: addNeighboringRegion
+
+private:
+  friend class MatrixRegionClass;
+
+  size_t index;
+  Variable value;
+  size_t size;
+  std::set<impl::PositiveIntegerPair> positions;
+  std::map<Variable, size_t> neighboringElements; // value -> num connections
+};
+
+typedef ReferenceCountedObjectPtr<MatrixRegion> MatrixRegionPtr;
+
+extern ClassPtr segmentedMatrixClass(TypePtr elementsType);
+
+class SegmentedMatrix : public BuiltinTypeMatrix<size_t>
+{
+public:
+  typedef BuiltinTypeMatrix<size_t> BaseClass;
+
+  SegmentedMatrix(TypePtr elementsType, size_t numRows, size_t numColumns)
+    : BaseClass(segmentedMatrixClass(elementsType), numRows, numColumns, (size_t)-1), elementsType(elementsType)
+  {
+    BaseClass::elementsType = positiveIntegerType;
+  }
+  SegmentedMatrix() {}
+
+  virtual void setElement(size_t row, size_t column, const Variable& value)
+    {BaseClass::setElement(row, column, (size_t)value.getInteger());}
+
+  virtual void setElement(size_t index, const Variable& value)
+    {BaseClass::setElement(index, (size_t)value.getInteger());}
+
+  bool hasElement(size_t row, size_t column) const
+    {return getElement(row, column).exists();}
+
+  bool hasElement(const std::pair<size_t, size_t>& position) const
+    {return hasElement(position.first, position.second);}
+
+  MatrixRegionPtr startRegion(const Variable& value)
+  {
+    size_t index = regions.size();
+    MatrixRegionPtr res = new MatrixRegion(elementsType, index);
+    res->setValue(value);
+    regions.push_back(res);
+    return res;
+  }
+
+  void addToCurrentRegion(const std::pair<size_t, size_t>& position)
+  {
+    jassert(regions.size());
+    MatrixRegionPtr region = regions.back();
+    region->addPosition(position);
+    BaseClass::setElement(position.first, position.second, region->getIndex());
+  }
+
+private:
+  friend class SegmentedMatrixClass;
+
+  TypePtr elementsType;
+  std::vector<size_t> elements;
+  std::vector<MatrixRegionPtr> regions;
+};
+
+typedef ReferenceCountedObjectPtr<SegmentedMatrix> SegmentedMatrixPtr;
+
+// Matrix<T> -> SegmentedMatrix<T>
+class SegmentMatrixFunction : public SimpleUnaryFunction
+{
+public:
+  SegmentMatrixFunction(bool use8Connexity = false)
+    : SimpleUnaryFunction(matrixClass(), segmentedMatrixClass(anyType)), use8Connexity(use8Connexity) {}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    elementsType = Container::getTemplateParameter(inputVariables[0]->getType());
+    jassert(elementsType);
+    return segmentedMatrixClass(elementsType);
+  }
+
+  typedef std::pair<size_t, size_t> Position;
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const MatrixPtr& matrix = input.getObjectAndCast<Matrix>();
+
+    size_t rows = matrix->getNumRows();
+    size_t columns = matrix->getNumColumns();
+
+    SegmentedMatrixPtr res = new SegmentedMatrix(elementsType, rows, columns);
+
+    for (size_t r = 0; r < rows; ++r)
+      for (size_t c = 0; c < columns; ++c)
+        if (!res->hasElement(r, c))
+          makeMatrixSegment(matrix, res,  r, c, rows, columns);
+
+    return Variable(res, getOutputType());
+  }
+
+  void makeMatrixSegment(const MatrixPtr& matrix, const SegmentedMatrixPtr& res, size_t row, size_t column, size_t numRows, size_t numColumns) const
+  {
+    Variable value = matrix->getElement(row, column);
+    jassert(value.exists()); // missing values is not supported yet
+
+    MatrixRegionPtr region = res->startRegion(value);
+    
+    std::set<Position> toExplore;
+    toExplore.insert(Position(row, column));
+    while (toExplore.size())
+    {
+      // add current position
+      Position position = *toExplore.begin();
+      toExplore.erase(toExplore.begin());
+      if (res->hasElement(position))
+        continue;
+
+      res->addToCurrentRegion(position);
+      
+      // get neighbors
+      Position neighbors[8];
+      size_t numNeighbors = 0;
+      if (position.first > 0)
+        neighbors[numNeighbors++] = Position(position.first - 1, position.second);
+      if (position.second > 0)
+        neighbors[numNeighbors++] = Position(position.first, position.second - 1);
+      if (position.first < numRows - 1)
+        neighbors[numNeighbors++] = Position(position.first + 1, position.second);
+      if (position.second < numColumns - 1)
+        neighbors[numNeighbors++] = Position(position.first, position.second + 1);
+      if (use8Connexity)
+      {
+        if (position.first > 0 && position.second > 0)
+          neighbors[numNeighbors++] = Position(position.first - 1, position.second - 1);
+        if (position.first > 0 && position.second < numColumns - 1)
+          neighbors[numNeighbors++] = Position(position.first - 1, position.second + 1);
+        if (position.first < numRows - 1 && position.second < numColumns - 1)
+          neighbors[numNeighbors++] = Position(position.first + 1, position.second + 1);
+        if (position.first < numRows - 1 && position.second > 0)
+          neighbors[numNeighbors++] = Position(position.first + 1, position.second - 1);
+      }
+
+      // add neighbors in the toExplore list
+      for (size_t i = 0; i < numNeighbors; ++i)
+      {
+        const Position& neighbor = neighbors[i];
+        if (!res->hasElement(neighbor))
+        {
+          Variable neighborValue = matrix->getElement(neighbor.first, neighbor.second);
+          if (neighborValue == value)
+            toExplore.insert(neighbor);
+          //else
+          //  region->addNeighboringElements(neighborValue);
+        }
+      }
+    }
+  }
+
+protected:
+  friend class SegmentMatrixFunctionClass;
+
+  bool use8Connexity;
+  TypePtr elementsType;
+};
+
+
 ///////////////////////////////
 // Go Action Features /////////
 ///////////////////////////////
@@ -213,14 +411,14 @@ public:
   PositiveIntegerPairVectorPtr previousActions;
   GoBoardPtr board; // with current player as black
   DoubleVectorPtr globalPrimaryFeatures; // time
+  MatrixPtr fourConnexityGraphFeatures;
+  MatrixPtr eightConnexityGraphFeatures;
   MatrixPtr actionPrimaryFeatures;
-  // 4-connexity-graph
-  // 8-connexity-graph
-  // ...
 };
 
-extern ClassPtr goStatePreFeaturesClass(TypePtr globalFeaturesEnumeration, TypePtr actionFeaturesEnumeration);
+extern ClassPtr goStatePreFeaturesClass(TypePtr globalFeaturesEnumeration, TypePtr regionFeaturesEnumeration, TypePtr actionFeaturesEnumeration);
 ////////////////////
+
 
 // GoState -> Container[DoubleVector]
 class GoActionsPerception : public CompositeFunction
@@ -231,6 +429,9 @@ public:
   {
   }
  
+  /*
+  ** Cached features
+  */
   Variable getPositionFeatures(ExecutionContext& context, const Variable& action) const
   {
     const PositiveIntegerPairPtr& a = action.getObjectAndCast<PositiveIntegerPair>();
@@ -246,13 +447,105 @@ public:
     return relativePositionFeatures->getElement(i, j);
   }
 
-  virtual void actionFeatures(CompositeFunctionBuilder& builder)
+  /*
+  ** State global features
+  */
+  void globalPrimaryFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t state = builder.addInput(goStateClass, T("state"));
+    size_t time = builder.addFunction(getVariableFunction(T("time")), state);
+
+    // time
+    builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(300.0), 15, true), time, T("time"));
+  }
+
+  /*
+  ** Region features
+  */
+  //MatrixRegion<Player> -> DoubleVector
+  void regionFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t region = builder.addInput(matrixRegionClass(playerEnumeration));
+    size_t regionPlayer = builder.addFunction(getVariableFunction(T("value")), region);
+    size_t regionSize = builder.addFunction(getVariableFunction(T("size")), region);
+
+    size_t i1 = builder.addFunction(enumerationFeatureGenerator(false), regionPlayer);
+    size_t i2 = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * boardSize)), 10, false), regionSize);
+
+    builder.addFunction(cartesianProductFeatureGenerator(false), i1, i2);
+  }
+
+  void selectionRegionFeaturesToPutInMatrix(CompositeFunctionBuilder& builder)
+  {
+    size_t position = builder.addInput(positiveIntegerType);
+    size_t perRegionFeatures = builder.addInput(vectorClass(doubleVectorClass()));
+    builder.addFunction(getElementFunction(), perRegionFeatures, position);
+  }
+
+  // SegmentedMatrix<Player> -> Matrix<DoubleVector>
+  void segmentedBoardFeatures(CompositeFunctionBuilder& builder)
+  {
+    size_t segmentedBoard = builder.addInput(segmentedMatrixClass(playerEnumeration), T("segmentedBoard"));
+    size_t regions = builder.addFunction(getVariableFunction(T("regions")), segmentedBoard);
+    size_t perRegionFeatures = builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, regionFeatures)), regions);
+    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, selectionRegionFeaturesToPutInMatrix)), segmentedBoard, perRegionFeatures);
+  }
+
+  /*
+  ** State related computation
+  */
+  void preFeaturesFunction(CompositeFunctionBuilder& builder)
+  {
+    std::vector<size_t> variables;
+    size_t state = builder.addInput(goStateClass, T("state"));
+    variables.push_back(state);
+
+    // previous actions
+    size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), state, T("previousActions"));
+    variables.push_back(previousActions);
+
+    // board with black as current
+    size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
+    variables.push_back(board);
+
+    // global features
+    size_t globalFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, globalPrimaryFeatures), state);
+    EnumerationPtr globalFeaturesEnumeration = DoubleVector::getElementsEnumeration(builder.getOutputType());
+    variables.push_back(globalFeatures);
+
+    // region features
+    size_t fourConnexityGraph = builder.addFunction(new SegmentMatrixFunction(false), board);
+    FunctionPtr fun = lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures);
+    size_t fourConnexityGraphFeatures = builder.addFunction(fun, fourConnexityGraph);
+    variables.push_back(fourConnexityGraphFeatures);
+    size_t eightConnexityGraph = builder.addFunction(new SegmentMatrixFunction(true), board);
+    size_t eightConnexityGraphFeatures = builder.addFunction(fun, eightConnexityGraph);
+    variables.push_back(eightConnexityGraphFeatures);
+    EnumerationPtr regionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
+
+    // board primary features
+    size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
+    EnumerationPtr actionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
+    jassert(actionFeaturesEnumeration);
+    variables.push_back(boardPrimaryFeatures);
+
+    builder.addFunction(createObjectFunction(goStatePreFeaturesClass(globalFeaturesEnumeration, regionFeaturesEnumeration, actionFeaturesEnumeration)), variables, T("goPreFeatures"));
+  }
+
+  /*
+  ** Per-action computations
+  */
+  void actionFeatures(CompositeFunctionBuilder& builder)
   {
     size_t action = builder.addInput(positiveIntegerPairClass, T("action"));
-    size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType), T("preFeatures"));
+    size_t preFeatures = builder.addInput(goStatePreFeaturesClass(enumValueType, enumValueType, enumValueType), T("preFeatures"));
 
     size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), preFeatures);
     size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures, T("globals"));
+
+    // matrices:
+    size_t region4Features = builder.addFunction(getVariableFunction(T("fourConnexityGraphFeatures")), preFeatures);
+    size_t region8Features = builder.addFunction(getVariableFunction(T("eightConnexityGraphFeatures")), preFeatures);
     size_t actionPrimaryFeatures = builder.addFunction(getVariableFunction(T("actionPrimaryFeatures")), preFeatures);
 
     size_t row = builder.addFunction(getVariableFunction(1), action);
@@ -264,50 +557,26 @@ public:
     
     builder.startSelection();
 
-      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
+      //size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
 
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
       //size_t i2 = builder.addFunction(new PositiveIntegerPairPositionFeature(boardSize, boardSize), action, T("position"));
-      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
+      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 5), previousActionRelationFeatures, T("previousAction"));
 
-      // tmp
+      size_t i4 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region4Features, row, column, T("reg4"));
+      size_t i5 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region8Features, row, column, T("reg8"));
+
       builder.addInSelection(globalPrimaryFeatures);
-
-      builder.addFunction(cartesianProductFeatureGenerator(), i2, globalPrimaryFeatures, T("posAndTime"));
-
       //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i2, T("posWin"));
 
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
-  }
+    size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    builder.addFunction(cartesianProductFeatureGenerator(true), features, features);
 
-  virtual void globalPrimaryFeatures(CompositeFunctionBuilder& builder)
-  {
-    size_t state = builder.addInput(goStateClass, T("state"));
-    size_t time = builder.addFunction(getVariableFunction(T("time")), state);
-
-    // time
-    builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(300.0), 15, true), time, T("time"));
-  }
-
-  virtual void preFeaturesFunction(CompositeFunctionBuilder& builder)
-  {
-    builder.startSelection();
-
-      size_t state = builder.addInput(goStateClass, T("state"));
-
-      size_t previousActions = builder.addFunction(getVariableFunction(T("previousActions")), state, T("previousActions"));
-      size_t board = builder.addFunction(new GetGoBoardWithCurrentPlayerAsBlack(), state, T("board"));
-
-      size_t globalFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, globalPrimaryFeatures), state);
-      EnumerationPtr globalFeaturesEnumeration = DoubleVector::getElementsEnumeration(builder.getOutputType());
-
-      size_t boardPrimaryFeatures = builder.addFunction(mapContainerFunction(enumerationFeatureGenerator(false)), board);
-      EnumerationPtr actionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
-      jassert(actionFeaturesEnumeration);
-
-    builder.finishSelectionWithFunction(createObjectFunction(goStatePreFeaturesClass(globalFeaturesEnumeration, actionFeaturesEnumeration)), T("goPreFeatures"));
+    /*size_t features = 
+    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
+    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);*/
   }
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
@@ -671,23 +940,33 @@ public:
     ContainerPtr validationGames = games->fold(0, numFolds);
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
-
-    /* TMP
+#if 0
+    // TMP
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
     DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
     ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
-    for (size_t i = 0; i < 20; ++i)
+    for (size_t i = 0; i < 150; ++i)
     {
       double r;
       state->performTransition(trajectory->getElement(i), r);
     }
     context.resultCallback(T("state"), state);
 
+    FunctionPtr segmentFunction4 = new SegmentMatrixFunction(false);
+    FunctionPtr segmentFunction8 = new SegmentMatrixFunction(true);
+    if (!segmentFunction4->initialize(context, goBoardClass) || !segmentFunction8->initialize(context, goBoardClass))
+      return false;
+
+    GoBoardPtr board = state.staticCast<GoState>()->getBoard();
+    context.resultCallback(T("segment4"), segmentFunction4->compute(context, board));
+    context.resultCallback(T("segment8"), segmentFunction8->compute(context, board));
+
     FunctionPtr perception = new GoActionsPerception();
     context.resultCallback(T("actionFeatures"), perception->compute(context, state));
     return true;
     // -
-    */
+#endif // 0
+    
 
     // create ranking machine
     if (!learningParameters)

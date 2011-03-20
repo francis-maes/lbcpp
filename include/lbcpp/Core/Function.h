@@ -66,6 +66,7 @@ public:
     {jassert(false); return TypePtr();} // should be =0
 
   bool initialize(ExecutionContext& context, TypePtr inputType);
+  bool initialize(ExecutionContext& context, ClassPtr inputClass);
   bool initialize(ExecutionContext& context, TypePtr inputType1, TypePtr inputType2);
   bool initialize(ExecutionContext& context, VariableSignaturePtr inputVariable);
   bool initialize(ExecutionContext& context, const std::vector<TypePtr>& inputTypes);

@@ -494,13 +494,14 @@ protected:
     else if (parameters.size() == 1)
       writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type)"),
       T("return lbcpp::getType(T(") + className.quoted() + T("), std::vector<TypePtr>(1, type));"));
-          //T("static UnaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type);"));
     else if (parameters.size() == 2)
       writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type1, TypePtr type2)"),
         T("std::vector<TypePtr> types(2); types[0] = type1; types[1] = type2; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
-          //T("static BinaryTemplateTypeCache cache(T(") + className.quoted() + T(")); return cache(type1, type2);"));
+    else if (parameters.size() == 3)
+      writeShortFunction(metaClass + T("Ptr ") + classNameWithFirstLowerCase + T("(TypePtr type1, TypePtr type2, TypePtr type3)"),
+        T("std::vector<TypePtr> types(3); types[0] = type1; types[1] = type2; types[2] = type3; return lbcpp::getType(T(") + className.quoted() + T("), types);"));
     else
-      std::cerr << "Error: Class declarator with more than 2 parameters is not implemented yet. Type: "
+      std::cerr << "Error: Class declarator with more than 3 parameters is not implemented yet. Type: "
 		<< (const char* )className << ", NumParams = " << parameters.size() << std::endl;
 
     // class constructors

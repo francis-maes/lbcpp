@@ -38,7 +38,7 @@ void ExecutionContext::leaveScope(const Variable& result)
 }
 
 void ExecutionContext::leaveScope()
-  {leaveScope(Variable());}
+  {leaveScope(Variable(true));}
 
 Variable ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
