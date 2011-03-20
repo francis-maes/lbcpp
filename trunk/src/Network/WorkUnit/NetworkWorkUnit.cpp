@@ -10,6 +10,8 @@
 #include "../Node/NetworkRequest.h"
 #include "NetworkWorkUnit.h"
 #include <lbcpp/Network/NetworkServer.h>
+#include <algorithm>
+
 using namespace lbcpp;
 
 /*
@@ -103,24 +105,29 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
   fileManager->getWaitingRequests(nodeName, waitingRequests);
   if (waitingRequests.size())
   {
-    ObjectVectorPtr vec = objectVector(networkRequestClass, waitingRequests.size());
-    for (size_t i = 0; i < waitingRequests.size(); ++i)
-      vec->set(i, waitingRequests[i]);
-    ContainerPtr results = interface->pushWorkUnits(vec);
-    if (!results || results->getNumElements() != waitingRequests.size())
-    {
-      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
-      fileManager->setAsWaitingRequests(waitingRequests);
-      return;
-    }
-    else
-    {
-      size_t n = results->getNumElements();
-      for (size_t i = 0; i < n; ++i)
+    size_t maxblocklength = 200;
+    for (size_t i = 0; i < ceil(waitingRequests.size()/(double) maxblocklength)-1; ++i) {
+      size_t nbElements = std::min((i+1)*maxblocklength, waitingRequests.size()) - i*maxblocklength;
+      ObjectVectorPtr vec = objectVector(networkRequestClass, nbElements);
+      for (size_t x = i*maxblocklength; x < i*maxblocklength+nbElements ; ++x)
+        vec->set(x-i*maxblocklength, waitingRequests[x]);
+      ContainerPtr results = interface->pushWorkUnits(vec);
+      if (!results || results->getNumElements() != nbElements)
       {
-        String result = results->getElement(i).getString();
-        if (result == T("Error"))
-          fileManager->crachedRequest(waitingRequests[i]);
+        context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
+        std::vector<NetworkRequestPtr> errorRequests(waitingRequests.begin()+i*maxblocklength, waitingRequests.begin()+i*maxblocklength+nbElements);        
+        fileManager->setAsWaitingRequests(errorRequests);
+        //return; // TODO arnaud
+      }
+      else
+      {
+        size_t n = results->getNumElements();
+        for (size_t x = 0; x < n; ++x)
+        {
+          String result = results->getElement(x).getString();
+          if (result == T("Error"))
+            fileManager->crachedRequest(waitingRequests[i*maxblocklength+x]);
+        }
       }
     }
   }
