@@ -11,6 +11,7 @@
 #include "ExplorerConfiguration.h"
 #include "ExplorerProject.h"
 using namespace lbcpp;
+using juce::TooltipWindow;
 
 ApplicationCommandManager* theCommandManager = NULL;
 
@@ -114,6 +115,8 @@ public:
   ExplorerMainWindow(ExecutionContext& context) 
     : DocumentWindow("LBC++ Explorer", Colours::whitesmoke, allButtons), context(context)
   {
+    tooltipWindow = new TooltipWindow(NULL, 15);
+    //addAndMakeVisible();
     setContentComponent(contentTabs = new ExplorerContentTabs(this));
     setMenuBar(this);
     setResizable(true, true);
@@ -128,7 +131,11 @@ public:
   }
   
   virtual ~ExplorerMainWindow()
-    {setMenuBar(NULL);}
+  {
+    //removeChildComponent(tooltipWindow);
+    deleteAndZero(tooltipWindow);
+    setMenuBar(NULL);
+  }
     
   virtual void closeButtonPressed()
   {
@@ -370,6 +377,7 @@ public:
 private:
   ExecutionContext& context;
   ExplorerContentTabs* contentTabs;
+  TooltipWindow* tooltipWindow;
 };
 
 namespace lbcpp

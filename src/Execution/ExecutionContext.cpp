@@ -37,6 +37,9 @@ void ExecutionContext::leaveScope(const Variable& result)
   postExecutionCallback(stack, entry.first, entry.second, result);
 }
 
+void ExecutionContext::leaveScope()
+  {leaveScope(Variable());}
+
 Variable ExecutionContext::run(const WorkUnitPtr& workUnit, bool pushIntoStack)
 {
   if (pushIntoStack)

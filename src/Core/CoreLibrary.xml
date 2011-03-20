@@ -222,11 +222,11 @@
         EnumerationElementPtr firstElement = firstEnumeration->getElement(index / numSecondElements);
         EnumerationElementPtr secondElement = secondEnumeration->getElement(index % numSecondElements);
 
-        return new EnumerationElement(firstElement-&gt;getName() + T(" * ") + secondElement-&gt;getName(),
+        return new EnumerationElement(T("(") + firstElement-&gt;getName() + T(", ") + secondElement-&gt;getName() + T(")"),
                                       String::empty,
                                       firstElement-&gt;getShortName() + T("x") + secondElement-&gt;getShortName(),
-                                      T("Cartesian Product Enumeration (") + firstElement-&gt;getDescription() +
-                                            T(") * (") + secondElement-&gt;getDescription() + T(")"));
+                                      T("Cartesian Product (") + firstElement-&gt;getDescription() +
+                                            T(", ") + secondElement-&gt;getDescription() + T(")"));
       }
       </code>
   </template>

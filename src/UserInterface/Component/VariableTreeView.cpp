@@ -120,7 +120,17 @@ public:
 
   Variable getVariable() const
     {return variable;}
-  
+     
+  virtual const String getTooltip()
+  {
+    String res = T("Name: ") + getUniqueName() +
+      T("\nType: ") + typeName +
+      T("\nValue: ") + shortSummary;
+    if (getNumSubItems())
+      res += T("\nNum sub variables: ") + String((int)getNumSubItems());
+    return res;
+  }
+
   virtual void paintItem(Graphics& g, int width, int height)
   {
     if (isSelected())
