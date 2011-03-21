@@ -33,6 +33,8 @@ public:
     const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
     return state->getAvailableActions();
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 // State, Action -> DoubleVector
@@ -66,6 +68,8 @@ public:
       context.warningCallback(T("Could not find action ") + action.toShortString() + T(" in state ") + state->toShortString());
     return res;
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 // State, Supervision Action -> Ranking Example
@@ -86,6 +90,8 @@ public:
       builder.addFunction(createObjectFunction(pairClass(actionsPerception->getOutputType(), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))), perceptions, costs);
     }
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DecisionProblemStateActionsRankingExampleClass;
@@ -126,6 +132,8 @@ public:
     {neighboringElements[value]++;}
 
   // todo: addNeighboringRegion
+
+  lbcpp_UseDebuggingNewOperator
 
 private:
   friend class MatrixRegionClass;
@@ -182,6 +190,8 @@ public:
     BaseClass::setElement(position.first, position.second, region->getIndex());
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   friend class SegmentedMatrixClass;
 
@@ -190,6 +200,40 @@ private:
 };
 
 typedef ReferenceCountedObjectPtr<SegmentedMatrix> SegmentedMatrixPtr;
+
+class SegmentedMatrixComponent : public MatrixComponent
+{
+public:
+  SegmentedMatrixComponent(SegmentedMatrixPtr matrix, const String& name)
+    : MatrixComponent(matrix) {}
+ 
+  virtual juce::Colour selectColour(const Variable& element)
+  {
+    if (!element.exists())
+      return Colours::lightgrey;
+
+    size_t index = (size_t)element.getInteger();
+    if (index >= colours.size())
+    {
+      size_t oldSize = colours.size();
+      colours.resize(index + 1);
+      for (size_t i = oldSize; i < colours.size(); ++i)
+        colours[i] = randomColour();
+    }
+    return colours[index];
+  }
+
+  inline juce::Colour randomColour()
+  {
+    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    return juce::Colour(random->sampleByte(), random->sampleByte(), random->sampleByte(), (unsigned char)255);
+  }
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  std::vector<juce::Colour> colours;
+};
 
 // Matrix<T> -> SegmentedMatrix<T>
 class SegmentMatrixFunction : public SimpleUnaryFunction
@@ -282,6 +326,8 @@ public:
     }
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class SegmentMatrixFunctionClass;
 
@@ -305,6 +351,8 @@ public:
     const GoStatePtr& state = input.getObjectAndCast<GoState>();
     return Variable(state->getBoardWithCurrentPlayerAsBlack(), outputType);
   }
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 // PositiveIntegerPair -> DoubleVector
@@ -334,6 +382,8 @@ public:
     const PositiveIntegerPairPtr& action = inputs[0].getObjectAndCast<PositiveIntegerPair>();
     callback.sense(action->getFirst() * secondMax + action->getSecond(), 1.0);
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   size_t firstMax;
@@ -392,6 +442,8 @@ public:
     callback.sense(i2, diagDistanceFeatureGenerator, &d, 1.0);
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 private:
   size_t firstMax;
   size_t secondMax;
@@ -410,10 +462,16 @@ public:
   PositiveIntegerPairVectorPtr previousActions;
   GoBoardPtr board; // with current player as black
   DoubleVectorPtr globalPrimaryFeatures; // time
+  SegmentedMatrixPtr fourConnexityGraph;
   MatrixPtr fourConnexityGraphFeatures;
+  SegmentedMatrixPtr eightConnexityGraph;
   MatrixPtr eightConnexityGraphFeatures;
   MatrixPtr actionPrimaryFeatures;
+
+  lbcpp_UseDebuggingNewOperator
 };
+
+typedef ReferenceCountedObjectPtr<GoStatePreFeatures> GoStatePreFeaturesPtr;
 
 extern ClassPtr goStatePreFeaturesClass(TypePtr globalFeaturesEnumeration, TypePtr regionFeaturesEnumeration, TypePtr actionFeaturesEnumeration);
 ////////////////////
@@ -474,6 +532,7 @@ public:
     size_t i2 = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * boardSize)), 10, false), regionSize);
 
     builder.addFunction(cartesianProductFeatureGenerator(false), i1, i2);
+    //builder.addFunction(concatenateFeatureGenerator(false), i1, i2);
   }
 
   void selectionRegionFeaturesToPutInMatrix(CompositeFunctionBuilder& builder)
@@ -516,10 +575,13 @@ public:
 
     // region features
     size_t fourConnexityGraph = builder.addFunction(new SegmentMatrixFunction(false), board);
+    variables.push_back(fourConnexityGraph);
     FunctionPtr fun = lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures);
     size_t fourConnexityGraphFeatures = builder.addFunction(fun, fourConnexityGraph);
     variables.push_back(fourConnexityGraphFeatures);
+
     size_t eightConnexityGraph = builder.addFunction(new SegmentMatrixFunction(true), board);
+    variables.push_back(eightConnexityGraph);
     size_t eightConnexityGraphFeatures = builder.addFunction(fun, eightConnexityGraph);
     variables.push_back(eightConnexityGraphFeatures);
     EnumerationPtr regionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
@@ -531,6 +593,12 @@ public:
     variables.push_back(boardPrimaryFeatures);
 
     builder.addFunction(createObjectFunction(goStatePreFeaturesClass(globalFeaturesEnumeration, regionFeaturesEnumeration, actionFeaturesEnumeration)), variables, T("goPreFeatures"));
+  }
+
+  GoStatePreFeaturesPtr computePreFeatures(ExecutionContext& context, const GoStatePtr& state) const
+  {
+    FunctionPtr fun = lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction);
+    return fun->compute(context, state).getObjectAndCast<GoStatePreFeatures>();
   }
 
   /*
@@ -572,16 +640,18 @@ public:
       //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i2, T("posWin"));
 
-    size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
     //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(true), i4, i4);
-    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures);
-    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);
+    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("fAndTime"));
+    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime, T("all"));
 
     /*size_t features = 
     size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
     builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);*/
   }
+
+
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
@@ -672,6 +742,8 @@ private:
     return true;
   }
 };
+
+typedef ReferenceCountedObjectPtr<GoActionsPerception> GoActionsPerceptionPtr;
 
 ///////////////////////////////
 /////// GoEpisodeFunction /////
@@ -885,32 +957,9 @@ public:
 ///////////////////////////////
 ////////// SandBox ////////////
 ///////////////////////////////
-
-juce::Component* GoStateComponent::createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
+  : MatrixComponent(state->getBoard()), state(state), actionsPerceptionFunction(new GoActionsPerception())
 {
-  const PairPtr& matrixAndPosition = variable.getObjectAndCast<Pair>();
-  const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>();
-  Variable positiveIntegerPair(new PositiveIntegerPair(position->getSecond().getInteger(), position->getFirst().getInteger()));
-
-  FunctionPtr perception = new GoActionsPerception();
-  ContainerPtr actionPerceptions = perception->compute(context, state).getObjectAndCast<Container>();
-  Variable actionPerception;
-  if (actionPerceptions)
-  {
-    ContainerPtr actions = state->getAvailableActions();
-    jassert(actions->getNumElements() == actionPerceptions->getNumElements());
-    for (size_t i = 0; i < actions->getNumElements(); ++i)
-      if (actions->getElement(i) == positiveIntegerPair)
-      {
-        actionPerception = actionPerceptions->getElement(i);
-        break;
-      }
-  }
-
-  if (actionPerception.exists())
-    return userInterfaceManager().createVariableTreeView(context, actionPerception, name + T(" perception"), false);
-  else
-    return NULL;
 }
 
 class GoSandBox : public WorkUnit
@@ -951,24 +1000,16 @@ public:
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
     DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
     ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
-    for (size_t i = 0; i < 150; ++i)
+    for (size_t i = 0; i < 151; ++i)
     {
       double r;
       state->performTransition(trajectory->getElement(i), r);
     }
     context.resultCallback(T("state"), state);
 
-    FunctionPtr segmentFunction4 = new SegmentMatrixFunction(false);
-    FunctionPtr segmentFunction8 = new SegmentMatrixFunction(true);
-    if (!segmentFunction4->initialize(context, goBoardClass) || !segmentFunction8->initialize(context, goBoardClass))
-      return false;
-
-    GoBoardPtr board = state.staticCast<GoState>()->getBoard();
-    context.resultCallback(T("segment4"), segmentFunction4->compute(context, board));
-    context.resultCallback(T("segment8"), segmentFunction8->compute(context, board));
-
-    FunctionPtr perception = new GoActionsPerception();
-    context.resultCallback(T("actionFeatures"), perception->compute(context, state));
+    GoActionsPerceptionPtr perception = new GoActionsPerception();
+    perception->initialize(context, goStateClass);
+    context.resultCallback(T("preFeatures"), perception->computePreFeatures(context, state));
     return true;
     // -
 #endif // 0

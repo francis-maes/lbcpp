@@ -64,8 +64,9 @@ public:
     if (selectedRow >= 0 && selectedColumn >= 0)
     {
       g.setColour(Colours::lightblue.withAlpha(0.7f));
-      g.fillRect(x1 + (selectedColumn - 4) * pixelsPerColumn, y1 + selectedRow * pixelsPerRow, 9 * pixelsPerColumn, pixelsPerRow);
-      g.fillRect(x1 + selectedColumn * pixelsPerColumn, y1 + (selectedRow - 4) * pixelsPerRow, pixelsPerColumn, 9 * pixelsPerRow);
+      g.drawRect(x1 + selectedColumn * pixelsPerColumn, y1 + selectedRow * pixelsPerRow, pixelsPerColumn, pixelsPerRow, 2);
+      //g.fillRect(x1 + (selectedColumn - 4) * pixelsPerColumn, y1 + selectedRow * pixelsPerRow, 9 * pixelsPerColumn, pixelsPerRow);
+      //g.fillRect(x1 + selectedColumn * pixelsPerColumn, y1 + (selectedRow - 4) * pixelsPerRow, pixelsPerColumn, 9 * pixelsPerRow);
     }
 
     g.setColour(Colours::black);
@@ -95,7 +96,7 @@ public:
   }
   
   // overidable
-  virtual juce::Colour selectColour(const Variable& element) const = 0;
+  virtual juce::Colour selectColour(const Variable& element) = 0;
   virtual void paintEntry(juce::Graphics& g, int x1, int y1, int width, int height, const Variable& element)
   {
     if (matrix)

@@ -54,14 +54,16 @@ public:
       if (doOutOfBoundsFeatures)
         callback.sense(0, 1.0);
     }
-    else if (value <= minimumValue)
+    else if (value < minimumValue)
     {
+      double k = (minimumValue - value) / halfWidth;
       if (doOutOfBoundsFeatures)
       {
-        double k = (minimumValue - value) / halfWidth;
         callback.sense(0, k);
         callback.sense(2, 1 - k); // first interval feature
       }
+      else
+        callback.sense(0, 1 - k); // first interval feature
     }
     else if (value <= maximumValue)
     {
@@ -83,14 +85,16 @@ public:
       if (k > epsilon)
         callback.sense((doOutOfBoundsFeatures ? 2 : 0) + variable2, k);
     }
-    else if (value <= maximumValue + halfWidth)
+    else if (value < maximumValue + halfWidth)
     {
+      double k = (value - maximumValue) / halfWidth;
       if (doOutOfBoundsFeatures)
       {
-        double k = (value - maximumValue) / halfWidth;
         callback.sense(1, k);
         callback.sense(2 + numIntervals, 1 - k); // last interval feature
       }
+      else
+        callback.sense(numIntervals, 1 - k); // last interval feature
     }
     else
     {

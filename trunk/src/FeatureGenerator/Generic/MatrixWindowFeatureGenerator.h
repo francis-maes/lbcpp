@@ -60,10 +60,10 @@ public:
     const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
     ObjectMatrixPtr objectMatrix = matrix.dynamicCast<ObjectMatrix>();
     int row = inputs[1].getInteger();
-    int column = inputs[1].getInteger();
+    int column = inputs[2].getInteger();
 
-    int startRow = row - (int)(row / 2);
-    int startColumn = column - (int)(column / 2);
+    int startRow = row - (int)(windowRows / 2);
+    int startColumn = column - (int)(windowColumns / 2);
     int numRows = (int)matrix->getNumRows();
     int numColumns = (int)matrix->getNumColumns();
 

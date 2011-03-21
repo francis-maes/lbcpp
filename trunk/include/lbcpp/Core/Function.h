@@ -247,6 +247,8 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return outputType;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   TypePtr outputType;
   String outputPostFix;
@@ -267,6 +269,8 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return inputType;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   TypePtr inputType;
 };
@@ -285,6 +289,8 @@ public:
     Object& object = *pthis;
     return (object.*impl)(context, input);
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   ObjectPtr pthis;
@@ -310,6 +316,8 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return index ? inputType2 : inputType1;}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   TypePtr inputType1;
   TypePtr inputType2;
@@ -329,6 +337,8 @@ public:
     Object& object = *pthis;
     return (object.*impl)(context, inputs[0], inputs[1]);
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   ObjectPtr pthis;
@@ -356,6 +366,8 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const;
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class ProxyFunctionClass;
