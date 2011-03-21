@@ -161,6 +161,7 @@ SET(LBCPP_DATA_SOURCES
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  
+  Data/RandomVariable.cpp
   ../include/lbcpp/Data/Consumer.h
   Data/Consumer.cpp
   ../include/lbcpp/Data/Cache.h

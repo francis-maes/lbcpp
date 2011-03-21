@@ -152,13 +152,14 @@ public:
 
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const
   {
-    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
+    SparseDoubleVectorPtr res = createEmptySparseVector();
     for (size_t i = 0; i < shifts.size(); ++i)
     {
       const DoubleVectorPtr& input = inputs[i].getObjectAndCast<DoubleVector>();
       if (input)
-        input->appendTo(res, shifts[i]);
+        input->appendTo(res, shifts[i], 1.0);
     }
+    const_cast<ConcatenateDoubleVectorFeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
     return res;
   }
 

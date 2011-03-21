@@ -46,10 +46,10 @@
 
   <!-- Go Sand Box -->
   <class name="GoSandBox" base="WorkUnit">
-    <variable type="File" name="gamesDirectory"/>
-    <variable type="PositiveInteger" name="maxCount"/>
-    <variable type="PositiveInteger" name="numFolds"/>
-    <variable type="LearnerParameters" name="learningParameters"/>
+    <variable type="File" name="gamesDirectory" shortName="i"/>
+    <variable type="PositiveInteger" name="maxCount" shortName="m"/>
+    <variable type="PositiveInteger" name="numFolds" shortName="n"/>
+    <variable type="LearnerParameters" name="learningParameters" shortName="p"/>
   </class>
 
   <!-- Go Features -->

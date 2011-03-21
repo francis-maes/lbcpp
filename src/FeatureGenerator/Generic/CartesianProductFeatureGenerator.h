@@ -40,24 +40,120 @@ public:
     return cartesianProductEnumerationEnumeration(firstEnum, secondEnum);
   }
 
+  virtual size_t l0norm(const Variable* inputs) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+    return v1 && v2 ? v1->l0norm() * v2->l0norm() : 0;
+  }
+
+  virtual double sumOfSquares(const Variable* inputs) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+    return v1 && v2 ? v1->sumOfSquares() * v2->sumOfSquares() : 0;
+  }
+
+  virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+
+    if (!v1 || !v2)
+      return 0.0;
+
+    double res = 0.0;
+    SparseDoubleVectorPtr s1 = v1->toSparseVector();
+    size_t n1 = s1->getNumValues();
+    if (!n1)
+      return 0.0;
+
+    for (size_t i = 0; i < n1; ++i)
+    {
+      const std::pair<size_t, double>& indexAndWeight1 = s1->getValue(i);
+      if (indexAndWeight1.second)
+      {
+        size_t startIndex = indexAndWeight1.first * numSecondElements;
+        res += indexAndWeight1.second * v2->dotProduct(denseVector, offsetInDenseVector + startIndex);
+      }
+    }
+    return res;
+  }
+
+  virtual void addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+
+    if (!v1 || !v2)
+      return;
+
+    SparseDoubleVectorPtr s1 = v1->toSparseVector();
+    size_t n1 = s1->getNumValues();
+    if (!n1)
+      return;
+
+    for (size_t i = 0; i < n1; ++i)
+    {
+      const std::pair<size_t, double>& indexAndWeight1 = s1->getValue(i);
+      if (indexAndWeight1.second)
+      {
+        size_t startIndex = indexAndWeight1.first * numSecondElements;
+        v2->addWeightedTo(denseVector, offsetInDenseVector + startIndex, weight * indexAndWeight1.second);
+      }
+    }
+  }
+
+  virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+  {
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+
+    if (!v1 || !v2)
+      return;
+    
+    SparseDoubleVectorPtr s1 = v1->toSparseVector();
+    size_t n1 = s1->getNumValues();
+    if (!n1)
+      return;
+
+    for (size_t i = 0; i < n1; ++i)
+    {
+      const std::pair<size_t, double>& indexAndWeight1 = s1->getValue(i);
+      if (indexAndWeight1.second)
+      {
+        size_t startIndex = indexAndWeight1.first * numSecondElements;
+        v2->appendTo(sparseVector, offsetInSparseVector + startIndex, weight * indexAndWeight1.second);
+      }
+    }
+  }
+
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
-    SparseDoubleVectorPtr s1 = inputs[0].getObjectAndCast<DoubleVector>()->toSparseVector();
-    SparseDoubleVectorPtr s2 = inputs[1].getObjectAndCast<DoubleVector>()->toSparseVector();
+    const DoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DoubleVector>();
+    const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
+    if (!v1 || !v2)
+      return;
 
-    if (s1 && s2 && s1->getValues().size() && s2->getValues().size())
+    SparseDoubleVectorPtr s1 = v1->toSparseVector();
+    size_t n1 = s1->getNumValues();
+
+    SparseDoubleVectorPtr s2 = v2->toSparseVector();
+    size_t n2 = s2->getNumValues();
+
+    if (!n1 || !n2)
+      return;
+
+    for (size_t i = 0; i < n1; ++i)
     {
-      for (size_t i = 0; i < s1->getValues().size(); ++i)
+      const std::pair<size_t, double>& indexAndWeight1 = s1->getValue(i);
+      if (!indexAndWeight1.second)
+        continue;
+      size_t startIndex = indexAndWeight1.first * numSecondElements;
+      for (size_t j = 0; j < n2; ++j)
       {
-        std::pair<size_t, double> indexAndWeight1 = s1->getValues()[i];
-        if (!indexAndWeight1.second)
-          continue;
-        size_t startIndex = indexAndWeight1.first * numSecondElements;
-        for (size_t j = 0; j < s2->getValues().size(); ++j)
-        {
-          std::pair<size_t, double> indexAndWeight2 = s2->getValues()[j];
-          callback.sense(startIndex + indexAndWeight2.first, indexAndWeight1.second * indexAndWeight2.second);
-        }
+        const std::pair<size_t, double>& indexAndWeight2 = s2->getValue(j);
+        callback.sense(startIndex + indexAndWeight2.first, indexAndWeight1.second * indexAndWeight2.second);
       }
     }
   }

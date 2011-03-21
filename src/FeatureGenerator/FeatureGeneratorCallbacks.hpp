@@ -24,16 +24,10 @@ public:
     {target->appendValue(index, value);}
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-  {
-    jassert(weight == 1.0);
-    vector->appendTo(target, index);
-  }
+    {vector->appendTo(target, index, weight);}
 
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-  {
-    jassert(weight == 1.0);
-    featureGenerator->appendTo(inputs, target, index);
-  }
+    {featureGenerator->appendTo(inputs, target, index, weight);}
 
 private:
   SparseDoubleVectorPtr target;
@@ -132,21 +126,22 @@ public:
 class AppendToFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
-  AppendToFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector)
-    : target(target), offset(offsetInSparseVector) {}
+  AppendToFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
+    : target(target), offset(offsetInSparseVector), weight(weight) {}
 
   virtual void sense(size_t index, double value)
-    {target->appendValue(offset + index, value);}
+    {target->appendValue(offset + index, value * weight);}
 
   virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
-    {jassert(weight == 1.0); vector->appendTo(target, offset + index);}
+    {vector->appendTo(target, offset + index, weight * this->weight);}
 
   virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
-    {jassert(weight == 1.0); featureGenerator->appendTo(inputs, target, offset + index);}
+    {featureGenerator->appendTo(inputs, target, offset + index, weight * this->weight);}
 
 protected:
   SparseDoubleVectorPtr target;
   size_t offset;
+  double weight;
 };
 
 class AddWeightedToFeatureGeneratorCallback : public FeatureGeneratorCallback

@@ -23,6 +23,7 @@ public:
   
   virtual size_t getNumRows() const = 0;
   virtual size_t getNumColumns() const = 0;
+  virtual void setSize(size_t numRows, size_t numColumns) = 0;
 
   virtual size_t getNumElements() const
     {return getNumRows() * getNumColumns();}
@@ -63,7 +64,7 @@ class BuiltinTypeMatrix : public Matrix
 {
 public:
   BuiltinTypeMatrix(TypePtr thisClass, size_t numRows, size_t numColumns, const ElementsType& initialValue)
-    : Matrix(thisClass), elementsType(thisClass->getTemplateArgument(0)), elements(numRows * numColumns, initialValue), numRows(numRows), numColumns(numColumns) {}
+    : Matrix(thisClass), elementsType(Container::getTemplateParameter(thisClass)), elements(numRows * numColumns, initialValue), numRows(numRows), numColumns(numColumns) {}
   BuiltinTypeMatrix() : numRows(0), numColumns(0) {}
 
   virtual size_t getNumRows() const
@@ -71,6 +72,16 @@ public:
 
   virtual size_t getNumColumns() const
     {return numColumns;}
+
+  virtual void setSize(size_t numRows, size_t numColumns)
+  {
+    elements.clear();
+    elements.resize(numRows * numColumns);
+    this->numRows = numRows;
+    this->numColumns = numColumns;
+    if (!elementsType)
+      elementsType = Container::getTemplateParameter(getClass());
+  }
 
   virtual TypePtr getElementsType() const
     {return elementsType;}
