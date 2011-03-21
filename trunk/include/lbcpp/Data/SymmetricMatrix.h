@@ -21,6 +21,7 @@ public:
     : Matrix(thisClass) {}
   SymmetricMatrix() {}
   
+  virtual void setDimension(size_t size) = 0;
   virtual size_t getDimension() const = 0;
   
   /* Matrix */
@@ -29,7 +30,10 @@ public:
 
   virtual size_t getNumColumns() const
     {return getDimension();}
-  
+
+  virtual void setSize(size_t numRows, size_t numColumns)
+    {jassert(numRows == numColumns); setDimension(numRows);}
+
   /* Container */
   virtual size_t getNumElements() const
   {
@@ -59,7 +63,16 @@ public:
     {jassert(index < elements.size()); elements[index] = value;}
   
   /* SymmetricMatrix */
-  size_t getDimension() const
+  virtual void setDimension(size_t size)
+  {
+    dimension = size;
+    elements.clear();
+    elements.resize(dimension * (dimension + 1) / 2);
+    if (!elementsType)
+      elementsType = Container::getTemplateParameter(getClass());
+  }
+
+  virtual size_t getDimension() const
     {return dimension;}
   
   /* Matrix */

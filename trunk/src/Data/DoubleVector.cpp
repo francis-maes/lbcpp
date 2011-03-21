@@ -18,9 +18,10 @@ using namespace lbcpp;
 template<class CallbackType>
 inline void computeFeatures(const SparseDoubleVector& sparseVector, CallbackType& callback)
 {
-  const std::vector<std::pair<size_t, double> >& values = sparseVector.getValues();
-  for (size_t i = 0; i < values.size(); ++i)
-    callback.sense(values[i].first, values[i].second);
+  const std::pair<size_t, double>* ptr = sparseVector.getValues();
+  const std::pair<size_t, double>* limit = ptr + sparseVector.getNumValues();
+  while (ptr < limit)
+    callback.sense(ptr->first, ptr->second);
 }
 
 template<class CallbackType>
@@ -125,7 +126,7 @@ bool DoubleVector::getTemplateParameters(ExecutionContext& context, TypePtr type
 SparseDoubleVectorPtr DoubleVector::toSparseVector() const
 {
   SparseDoubleVectorPtr res(new SparseDoubleVector(getElementsEnumeration(), getElementsType()));
-  appendTo(res, 0);
+  appendTo(res, 0, 1.0);
   return res;
 }
 
@@ -187,7 +188,7 @@ double SparseDoubleVector::entropy() const
   {return defaultEntropy(*this);}
 
 size_t SparseDoubleVector::l0norm() const
-  {return defaultL0Norm(*this);}
+  {return values.size();} // /!\ this may be an overestimate when values contains some null values
 
 double SparseDoubleVector::sumOfSquares() const
   {return defaultSumOfSquares(*this);}
@@ -205,16 +206,16 @@ void SparseDoubleVector::multiplyByScalar(double scalar)
     values[i].second *= scalar;
 }
 
-void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
+void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
   if (values.empty())
     return;
 
   jassert((int)offsetInSparseVector > sparseVector->lastIndex);
-  std::vector<std::pair<size_t, double> >& targetValues = sparseVector->getValues();
-  targetValues.reserve(targetValues.size() + values.size());
+  std::vector<std::pair<size_t, double> >& targetValues = sparseVector->values;
+  //targetValues.reserve(targetValues.size() + values.size());
   for (size_t i = 0; i < values.size(); ++i)
-    targetValues.push_back(std::make_pair(values[i].first + offsetInSparseVector, values[i].second));
+    targetValues.push_back(std::make_pair(values[i].first + offsetInSparseVector, values[i].second * weight));
   sparseVector->updateLastIndex();
 }
 
@@ -383,19 +384,19 @@ double DenseDoubleVector::sumOfSquares() const
 double DenseDoubleVector::getExtremumValue(bool lookForMaximum, size_t* index) const
   {return defaultGetExtremumValue(*this, lookForMaximum, index);}
 
-void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
+void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
   if (!values)
     return;
 
   jassert((int)offsetInSparseVector > sparseVector->getLastIndex());
-  std::vector< std::pair<size_t, double> >& target = sparseVector->getValues();
+  std::vector< std::pair<size_t, double> >& target = sparseVector->values;
 
-  target.reserve(target.size() + values->size());
+  //target.reserve(target.size() + values->size());
   const double* source = getValuePointer(0);
   for (size_t i = 0; i < values->size(); ++i)
     if (source[i])
-      target.push_back(std::make_pair(offsetInSparseVector + i, source[i]));
+      target.push_back(std::make_pair(offsetInSparseVector + i, source[i] * weight));
   sparseVector->updateLastIndex();
 }
 
@@ -523,12 +524,12 @@ double LazyDoubleVector::getExtremumValue(bool lookForMaximum, size_t* index) co
 void LazyDoubleVector::multiplyByScalar(double scalar)
   {jassert(false);}
 
-void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
+void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
   if (computedVector)
-    computedVector->appendTo(sparseVector, offsetInSparseVector);
+    computedVector->appendTo(sparseVector, offsetInSparseVector, weight);
   else
-    featureGenerator->appendTo(&inputs[0], sparseVector, offsetInSparseVector);
+    featureGenerator->appendTo(&inputs[0], sparseVector, offsetInSparseVector, weight);
 }
 
 void LazyDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
@@ -620,12 +621,12 @@ void CompositeDoubleVector::multiplyByScalar(double scalar)
     vectors[i].second->multiplyByScalar(scalar);
 }
 
-void CompositeDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
+void CompositeDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
   for (size_t i = 0; i < vectors.size(); ++i)
   {
     const std::pair<size_t, DoubleVectorPtr>& subVector = vectors[i];
-    subVector.second->appendTo(sparseVector, offsetInSparseVector + subVector.first);
+    subVector.second->appendTo(sparseVector, offsetInSparseVector + subVector.first, weight);
   }
 }
 

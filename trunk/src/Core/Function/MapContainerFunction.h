@@ -88,13 +88,12 @@ public:
     for (size_t i = 1; i < subInputs.size(); ++i)
       subInputs[i] = inputs[i];
 
-    ContainerPtr input = inputs[0].getObjectAndCast<Container>();
+    const ContainerPtr& input = inputs[0].getObjectAndCast<Container>();
     if (!input)
       return Variable::missingValue(getOutputType());
 
-    size_t n = input->getNumElements();
-
     ContainerPtr res = createOutputContainer(input);
+    size_t n = input->getNumElements();
     for (size_t i = 0; i < n; ++i)
     {
       subInputs[0] = input->getElement(i);
@@ -104,10 +103,12 @@ public:
   }
 
 protected:
-  TypePtr makeOutputType(TypePtr inputContainerType, TypePtr outputElementType) const
+  bool isMatrix;
+
+  TypePtr makeOutputType(TypePtr inputContainerType, TypePtr outputElementType)
   {
     bool isSymmetricMatrix = inputContainerType->inheritsFrom(symmetricMatrixClass(anyType));
-    bool isMatrix = inputContainerType->inheritsFrom(matrixClass(anyType));
+    isMatrix = inputContainerType->inheritsFrom(matrixClass(anyType));
 
     if (isSymmetricMatrix)
       return symmetricMatrixClass(outputElementType);
@@ -133,6 +134,21 @@ protected:
 
   ContainerPtr createOutputContainer(const ContainerPtr& input) const
   {
+    ContainerPtr res = Container::create(getOutputType());
+    if (isMatrix)
+    {
+      const MatrixPtr& inputMatrix = input.staticCast<Matrix>();
+      const MatrixPtr& resMatrix = res.staticCast<Matrix>();
+      resMatrix->setSize(inputMatrix->getNumRows(), inputMatrix->getNumColumns());
+    }
+    else
+    {
+      const VectorPtr& resVector = res.staticCast<Vector>();
+      resVector->resize(input->getNumElements());
+    }
+    return res;
+    /*
+
     TypePtr outputElementType = baseFunction->getOutputType();
     if (getOutputType()->inheritsFrom(symmetricMatrixClass()))
     {
@@ -147,7 +163,7 @@ protected:
       return matrix(outputElementType, inputMatrix->getNumRows(), inputMatrix->getNumColumns());
     }
     else
-      return vector(outputElementType, input->getNumElements());
+      return vector(outputElementType, input->getNumElements());*/
   }
 };
 

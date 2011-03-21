@@ -160,10 +160,10 @@ public:
     {BaseClass::setElement(index, (size_t)value.getInteger());}
 
   bool hasElement(size_t row, size_t column) const
-    {return getElement(row, column).exists();}
+    {return elements[makeIndex(row, column)] != (size_t)-1;}
 
   bool hasElement(const std::pair<size_t, size_t>& position) const
-    {return hasElement(position.first, position.second);}
+    {return elements[makeIndex(position.first, position.second)] != (size_t)-1;}
 
   MatrixRegionPtr startRegion(const Variable& value)
   {
@@ -185,8 +185,7 @@ public:
 private:
   friend class SegmentedMatrixClass;
 
-  TypePtr elementsType;
-  std::vector<size_t> elements;
+  TypePtr elementsType; // the input elementsType  /!\ this is different from BaseClass::elementsType whose value is "PositiveInteger"
   std::vector<MatrixRegionPtr> regions;
 };
 
@@ -456,7 +455,9 @@ public:
     size_t time = builder.addFunction(getVariableFunction(T("time")), state);
 
     // time
-    builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10(300.0), 15, true), time, T("time"));
+    FeatureGeneratorPtr timeFeatureGenerator = softDiscretizedLogNumberFeatureGenerator(0.0, log10(300.0), 15, true);
+    timeFeatureGenerator->setLazy(false);
+    builder.addFunction(timeFeatureGenerator, time, T("time"));
   }
 
   /*
@@ -557,22 +558,25 @@ public:
     
     builder.startSelection();
 
-      //size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
+      size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
 
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
-      //size_t i2 = builder.addFunction(new PositiveIntegerPairPositionFeature(boardSize, boardSize), action, T("position"));
+
       size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 5), previousActionRelationFeatures, T("previousAction"));
 
       size_t i4 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region4Features, row, column, T("reg4"));
-      size_t i5 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region8Features, row, column, T("reg8"));
+      //size_t i5 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region8Features, row, column, T("reg8"));
 
-      builder.addInSelection(globalPrimaryFeatures);
+      //builder.addInSelection(globalPrimaryFeatures);
       //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i2, T("posWin"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
-    builder.addFunction(cartesianProductFeatureGenerator(true), features, features);
+
+    //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(true), i4, i4);
+    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures);
+    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);
 
     /*size_t features = 
     size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
@@ -929,6 +933,8 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+    double startTime = Time::getMillisecondCounterHiRes();
+
     // create problem
     DecisionProblemPtr problem = new GoProblem(0);
 
@@ -999,9 +1005,10 @@ public:
     
     goEpisodeFunction->train(context, trainingGames, validationGames, T("Training"), true);
 
-    goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
-    goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
-    return true;
+    //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
+    //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
+
+    return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
    // return learnOnline(context, rankingMachine, trainingExamples, validationExamples);
 

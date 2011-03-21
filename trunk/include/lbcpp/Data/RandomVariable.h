@@ -27,7 +27,8 @@
 #ifndef LBCPP_RANDOM_VARIABLE_H_
 # define LBCPP_RANDOM_VARIABLE_H_
 
-# include "../Data/predeclarations.h"
+# include "predeclarations.h"
+# include "../Core/Object.h"
 # include <cfloat>
 # include <deque>
 
@@ -37,8 +38,7 @@ namespace lbcpp
 class ScalarVariableMean : public NameableObject
 {
 public:
-  ScalarVariableMean(const String& name = String::empty)
-    : NameableObject(name), samplesSum(0.0), samplesCount(0.0) {}
+  ScalarVariableMean(const String& name = String::empty);
 
   void clear()
     {samplesSum = samplesCount = 0.0;}
@@ -58,18 +58,8 @@ public:
   double getSum() const
     {return samplesSum;}
 
-  virtual String toString() const
-  {
-    String res;
-    String name = getName();
-    if (name.isNotEmpty())
-      res = name + T(" = ");
-    res += String(getMean());
-    return res;
-  }
-
-  virtual String toShortString() const
-    {return String(getMean());}
+  virtual String toString() const;
+  virtual String toShortString() const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -85,8 +75,7 @@ typedef ReferenceCountedObjectPtr<ScalarVariableMean> ScalarVariableMeanPtr;
 class ScalarVariableMeanAndVariance : public ScalarVariableMean
 {
 public:
-  ScalarVariableMeanAndVariance(const String& name = String::empty)
-    : ScalarVariableMean(name), samplesSumOfSquares(0.0) {}
+  ScalarVariableMeanAndVariance(const String& name = String::empty);
 
   void clear()
     {ScalarVariableMean::clear(); samplesSumOfSquares = 0.0;}
@@ -103,17 +92,8 @@ public:
   double getStandardDeviation() const
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}
 
-  virtual String toString() const
-    {return ScalarVariableMean::toString() + " +/- " + String(getStandardDeviation());}
-
-  virtual String toShortString() const
-  {
-    String res = ScalarVariableMean::toShortString();
-    double stddev = getStandardDeviation();
-    if (stddev)
-      res += T(" +/- ") + String(stddev);
-    return res;
-  }
+  virtual String toString() const;
+  virtual String toShortString() const;
  
 private:
   friend class ScalarVariableMeanAndVarianceClass;
@@ -129,32 +109,11 @@ typedef ReferenceCountedObjectPtr<ScalarVariableMeanAndVariance> ScalarVariableM
 class ScalarVariableStatistics : public ScalarVariableMeanAndVariance
 {
 public:
-  ScalarVariableStatistics(const String& name = String::empty)
-    : ScalarVariableMeanAndVariance(name), minimumValue(DBL_MAX), maximumValue(-DBL_MAX) {}
+  ScalarVariableStatistics(const String& name = String::empty);
 
-  void push(double val)
-  {
-    ScalarVariableMeanAndVariance::push(val);
-    if (val < minimumValue)
-	    minimumValue = val;
-    if (val > maximumValue)
-	    maximumValue = val;
-  }
-
-  void push(const std::vector<double>& values)
-  {
-    for (size_t i = 0; i < values.size(); ++i)
-      push(values[i]);
-  }
-
-  void push(double val, double weight)
-  {
-    ScalarVariableMeanAndVariance::push(val, weight);
-    if (val < minimumValue)
-	    minimumValue = val;
-    if (val > maximumValue)
-	    maximumValue = val;
-  }
+  void push(double val);
+  void push(const std::vector<double>& values);
+  void push(double val, double weight);
 
   double getMinimum() const
     {return minimumValue;}
@@ -165,14 +124,8 @@ public:
   double getRange() const
     {return maximumValue - minimumValue;}
 
-  virtual String toString() const
-  {
-    return ScalarVariableMeanAndVariance::toString() + " [" +
-      String(minimumValue) + " - " + String(maximumValue) + "]";
-  }
-
-  virtual String toShortString() const
-    {return ScalarVariableMeanAndVariance::toShortString();}
+  virtual String toString() const;
+  virtual String toShortString() const;
 
 private:
   friend class ScalarVariableStatisticsClass;
@@ -186,24 +139,12 @@ typedef ReferenceCountedObjectPtr<ScalarVariableStatistics> ScalarVariableStatis
 class ScalarVariableRecentMean : public NameableObject
 {
 public:
-  ScalarVariableRecentMean(const String& name = T("Unnamed"), size_t memorySize = 0)
-    : NameableObject(name), memorySize(memorySize), currentSum(0.0), epoch(0) {}
+  ScalarVariableRecentMean(const String& name = T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {values.clear(); currentSum = 0.0; epoch = 0;}
 
-  void push(double value)
-  {
-    currentSum += value;
-    values.push_back(value);
-    if (values.size() > memorySize)
-    {
-      currentSum -= values.front();
-      values.pop_front();
-    }
-    if (++epoch % 1000)
-      recomputeCurrentSum(); // to avoid numerical errors accumulation
-  }
+  void push(double value);
 
   double getMean() const
     {return values.size() ? currentSum / (double)values.size() : 0.0;}
@@ -225,19 +166,13 @@ protected:
   double currentSum;
   size_t epoch;
 
-  void recomputeCurrentSum()
-  {
-    currentSum = 0.0;
-    for (std::deque<double>::const_iterator it = values.begin(); it != values.end(); ++it)
-      currentSum += *it;
-  }
+  void recomputeCurrentSum();
 };
 
 class ScalarVariableRecentMeanAndVariance : public ScalarVariableRecentMean
 {
 public:
-  ScalarVariableRecentMeanAndVariance(const String& name = T("Unnamed"), size_t memorySize = 0)
-    : ScalarVariableRecentMean(name, memorySize), meansqr(name + T(" sqr"), memorySize) {}
+  ScalarVariableRecentMeanAndVariance(const String& name = T("Unnamed"), size_t memorySize = 0);
 
   void clear()
     {ScalarVariableRecentMean::clear(); meansqr.clear();}
@@ -254,6 +189,8 @@ public:
 private:
   ScalarVariableRecentMean meansqr;
 };
+
+typedef ReferenceCountedObjectPtr<ScalarVariableRecentMeanAndVariance> ScalarVariableRecentMeanAndVariancePtr;
 
 }; /* namespace lbcpp */
 

@@ -11,6 +11,7 @@
 
 # include "../Core/Function.h"
 # include "../Data/DoubleVector.h"
+# include "../Data/RandomVariable.h"
 
 namespace lbcpp
 {
@@ -28,7 +29,7 @@ public:
 class FeatureGenerator : public Function
 {
 public:
-  FeatureGenerator(bool lazy = true) : lazyComputation(lazy) {}
+  FeatureGenerator(bool lazy = true);
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName) = 0;
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const = 0;
@@ -55,7 +56,7 @@ public:
   virtual size_t l0norm(const Variable* inputs) const;
   virtual double sumOfSquares(const Variable* inputs) const;
   virtual double getExtremumValue(const Variable* inputs, bool lookForMaximum, size_t* index) const;
-  virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
 
@@ -65,6 +66,12 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName);
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const;
+
+  bool isLazy() const
+    {return lazyComputation;}
+
+  void setLazy(bool lazy)
+    {lazyComputation = lazy;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -77,6 +84,14 @@ protected:
 
   EnumerationPtr featuresEnumeration;
   TypePtr featuresType;
+
+  // stats on non-lazy outputs
+  CriticalSection meanSparseVectorSizeLock;
+  ScalarVariableRecentMeanAndVariancePtr meanSparseVectorSize;
+
+  void pushSparseVectorSize(size_t size);
+  double getSparseVectorSizeUpperBound() const;
+  SparseDoubleVectorPtr createEmptySparseVector() const;
 };
 
 typedef ReferenceCountedObjectPtr<FeatureGenerator> FeatureGeneratorPtr;

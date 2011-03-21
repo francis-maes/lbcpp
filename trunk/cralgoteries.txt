@@ -1,4 +1,16 @@
+'''Game of go: optimize'''
 
+ * FeatureGenerator: make statistics on the number of entries in sparse vector to optimize allocation
+ * ScalarVariableRecentMean: bugfix: sum was recomputed at (nearly) each iteration
+ * Split RandomVariable.h into .h and .cpp
+ * CartesianProductFeatureGenerator: optimized l0norm() and sumOfSquares() functions
+ * Optimize MapContainerFunction::createOutputContainer
+ * CartesianProductFeatureGenerator: optimized dotProduct() function
+ * CartesianProductFeatureGenerator: optimized addWeightedTo() function
+ * IntrospectionGenerator: improve efficiency of generated getMemberVariableValue() functions
+ * DoubleVector::appendTo() and FeatureGenerator::appendTo(): add a "weight" argument
+ * CartesianProductFeatureGenerator: optimized appendTo() function
+ 
 Proteins:
  ** ProteinLearner: Serialisation des models
    -> Shared dynamic object

@@ -60,7 +60,7 @@ public:
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const = 0;
   
   virtual void multiplyByScalar(double scalar) = 0;
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const = 0;
+  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const = 0;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const = 0;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const = 0;
 
@@ -107,11 +107,20 @@ public:
   void appendValue(size_t index, double value)
     {jassert((int)index > lastIndex); values.push_back(std::make_pair(index, value)); lastIndex = (int)index;}
 
-  const std::vector< std::pair<size_t, double> >& getValues() const
-    {return values;}
+  size_t getNumValues() const
+    {return values.size();}
 
-  std::vector< std::pair<size_t, double> >& getValues()
-    {return values;}
+  void reserveValues(size_t size)
+    {values.reserve(size);}
+
+  const std::pair<size_t, double>& getValue(size_t index) const
+    {jassert(index < values.size()); return values[index];}
+
+  const std::pair<size_t, double>* getValues() const
+    {return &values[0];}
+
+  std::pair<size_t, double>* getValues()
+    {return &values[0];}
 
   int getLastIndex() const
     {return lastIndex;}
@@ -125,7 +134,7 @@ public:
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double scalar);
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual SparseDoubleVectorPtr toSparseVector() const
@@ -151,6 +160,8 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 private:
+  friend class DenseDoubleVector;
+
   std::vector< std::pair<size_t, double> > values;
   int lastIndex;
 };
@@ -202,7 +213,7 @@ public:
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
 
@@ -256,7 +267,7 @@ public:
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
   virtual SparseDoubleVectorPtr toSparseVector() const;
@@ -314,7 +325,7 @@ public:
   virtual double sumOfSquares() const;
   virtual double getExtremumValue(bool lookForMaximum, size_t* index = NULL) const;
   virtual void multiplyByScalar(double value);
-  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const;
+  virtual void appendTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const;
   virtual void addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const;
   virtual double dotProduct(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const;
 

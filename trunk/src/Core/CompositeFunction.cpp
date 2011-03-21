@@ -41,7 +41,7 @@ TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const s
 
 Variable CompositeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  std::vector<Variable> state(functions.size());
+  Variable* state = new Variable[functions.size()];
 
   // Optimization: tmp is used to store sub-function inputs
   // without using Variable copy-constructor
@@ -84,19 +84,23 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
   free(tmp);
 
   // return last step
+  Variable res;
   StepType lastStepType = steps.back().first;
   size_t lastStepArgument = steps.back().second;
   if (lastStepType == inputStep)
-    return inputs[lastStepArgument];
+    res = inputs[lastStepArgument];
   else if (lastStepType == constantStep)
-    return constants[lastStepArgument];
+    res = constants[lastStepArgument];
   else if (lastStepType == functionStep)
-    return state[lastStepArgument];
+    res = state[lastStepArgument];
   else
   {
     jassert(false);
     return Variable();
   }
+
+  delete [] state;
+  return res;
 }
 
 ObjectPtr CompositeFunction::makeInitialState(const ObjectPtr& inputsObject) const

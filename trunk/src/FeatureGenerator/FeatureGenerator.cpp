@@ -10,6 +10,11 @@
 #include "FeatureGeneratorCallbacks.hpp"
 using namespace lbcpp;
 
+FeatureGenerator::FeatureGenerator(bool lazy)
+  : lazyComputation(lazy), meanSparseVectorSize(new ScalarVariableRecentMeanAndVariance(T("sparseVectorSize"), 100))
+{
+}
+
 TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
 {
   featuresType = doubleType;
@@ -23,11 +28,34 @@ TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const st
 DoubleVectorPtr FeatureGenerator::toLazyVector(const Variable* inputs) const
   {return new LazyDoubleVector(lazyOutputType, refCountedPointerFromThis(this), inputs);}
 
+void FeatureGenerator::pushSparseVectorSize(size_t size)
+{
+  ScopedLock _(meanSparseVectorSizeLock);
+  meanSparseVectorSize->push((double)size);
+}
+
+double FeatureGenerator::getSparseVectorSizeUpperBound() const
+{
+  ScopedLock _(meanSparseVectorSizeLock);
+  return meanSparseVectorSize->getMean() + 3 * meanSparseVectorSize->getStandardDeviation();
+}
+
+SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
+{
+  jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
+  SparseDoubleVectorPtr res(new SparseDoubleVector(nonLazyOutputType));
+  double sizeUpperBound = getSparseVectorSizeUpperBound();
+  if (sizeUpperBound)
+    res->reserveValues((size_t)(sizeUpperBound + 0.5));
+  return res;
+}
+
 DoubleVectorPtr FeatureGenerator::toComputedVector(const Variable* inputs) const
 {
-  SparseDoubleVectorPtr res(new SparseDoubleVector(getOutputType()));
+  SparseDoubleVectorPtr res = createEmptySparseVector();
   FillSparseVectorFeatureGeneratorCallback callback(res);
   computeFeatures(inputs, callback);
+  const_cast<FeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
   return res;
 }
 
@@ -67,9 +95,9 @@ double FeatureGenerator::getExtremumValue(const Variable* inputs, bool lookForMa
   return callback.res;
 }
 
-void FeatureGenerator::appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector) const
+void FeatureGenerator::appendTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
 {
-  AppendToFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector);
+  AppendToFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector, weight);
   computeFeatures(&inputs[0], callback);
 }
 

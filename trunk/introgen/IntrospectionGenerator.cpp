@@ -304,11 +304,12 @@ protected:
     {
       // getMemberVariableValue
       openScope(T("virtual Variable getMemberVariableValue(const Object* __thisbase__, size_t __index__) const"));
-        writeLine(T("TypePtr expectedType = getMemberVariableType(__index__);"));
-        writeLine(T("if (__index__ < baseType->getNumMemberVariables())"));
+        writeLine(T("static size_t numBaseMemberVariables = baseType->getNumMemberVariables();"));
+        writeLine(T("if (__index__ < numBaseMemberVariables)"));
         writeLine(T("return baseType->getMemberVariableValue(__thisbase__, __index__);"), 1);
-        writeLine(T("__index__ -= baseType->getNumMemberVariables();"));
+        writeLine(T("__index__ -= numBaseMemberVariables;"));
         writeLine(T("const ") + className + T("* __this__ = static_cast<const ") + className + T("* >(__thisbase__);"));
+        writeLine(T("const TypePtr& expectedType = variables[__index__]->getType();"));
         writeLine(T("Variable __res__;"));
         newLine();
         openScope(T("switch (__index__)"));
