@@ -172,6 +172,16 @@ Variable Function::compute(ExecutionContext& context, const Variable& input1, co
   return compute(context, (const Variable* )tmp, 3);
 }
 
+Variable Function::compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3, const Variable& input4) const
+{
+  juce::int64 tmp[8];
+  fastVariableCopy(tmp, input1);
+  fastVariableCopy(tmp + 2, input2);
+  fastVariableCopy(tmp + 4, input3);
+  fastVariableCopy(tmp + 6, input4);
+  return compute(context, (const Variable* )tmp, 4);
+}
+
 Variable Function::compute(ExecutionContext& context, const std::vector<Variable>& inputs) const
   {return compute(context, &inputs[0], inputs.size());}
 

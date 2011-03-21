@@ -65,9 +65,10 @@
     <variable type="GoBoard" name="board"/>
     <variable type="DoubleVector[globalFeaturesEnumeration,Double]" name="globalPrimaryFeatures"/>
     <variable type="SegmentedMatrix[Player]" name="fourConnexityGraph"/>
-    <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="fourConnexityGraphFeatures"/>
-    <variable type="SegmentedMatrix[Player]" name="eightConnexityGraph"/>
-    <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="eightConnexityGraphFeatures"/>
+    <variable type="ObjectVector[DoubleVector[regionFeaturesEnumeration,Double]]" name="fourConnexityGraphFeatures"/>
+    <!-- <variable type="SegmentedMatrix[Player]" name="eightConnexityGraph"/>
+    <variable type="ObjectVector[DoubleVector[regionFeaturesEnumeration,Double]]" name="eightConnexityGraphFeatures"/>
+    -->
     <variable type="ObjectMatrix[DoubleVector[actionFeaturesEnumeration,Double]]" name="actionPrimaryFeatures"/>
   </template>
 

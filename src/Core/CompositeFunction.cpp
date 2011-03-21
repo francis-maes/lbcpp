@@ -211,35 +211,45 @@ size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String
   String name = optionalName.isNotEmpty() ? optionalName : T("constant") + id;
   String shortName = optionalShortName.isNotEmpty() ? optionalShortName : T("C") + id;
 
-  if (!value.isNil() && !value.exists())
+  /*if (!value.isNil() && !value.exists())
   {
     context.errorCallback(T("Constant " ) + name.quoted() + T(" does not exists"));
     return returnError();
-  }
+  }*/
 
   size_t stepArgument = function->constants.size();
   function->constants.push_back(value);
   return addVariable(value.getType(), name, shortName, CompositeFunction::constantStep, stepArgument);
 }
 
-size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input, const String& outputName, const String& outputShortName)
-  {return addFunction(function, std::vector<size_t>(1, input), outputName, outputShortName);}
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input, const String& optionalName, const String& optionalShortName)
+  {return addFunction(function, std::vector<size_t>(1, input), optionalName, optionalShortName);}
 
-size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& outputName, const String& outputShortName)
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& optionalName, const String& optionalShortName)
 {
   std::vector<size_t> inputs(2);
   inputs[0] = input1;
   inputs[1] = input2;
-  return addFunction(function, inputs, outputName, outputShortName);
+  return addFunction(function, inputs, optionalName, optionalShortName);
 }
 
-size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, const String& outputName, const String& outputShortName)
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, const String& optionalName, const String& optionalShortName)
 {
   std::vector<size_t> inputs(3);
   inputs[0] = input1;
   inputs[1] = input2;
   inputs[2] = input3;
-  return addFunction(function, inputs, outputName, outputShortName);
+  return addFunction(function, inputs, optionalName, optionalShortName);
+}
+
+size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, size_t input4, const String& optionalName, const String& optionalShortName)
+{
+  std::vector<size_t> inputs(4);
+  inputs[0] = input1;
+  inputs[1] = input2;
+  inputs[2] = input3;
+  inputs[3] = input4;
+  return addFunction(function, inputs, optionalName, optionalShortName);
 }
 
 size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, const std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
