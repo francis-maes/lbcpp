@@ -61,6 +61,8 @@ public:
   void getAdjacentPositions(const Position& position, Position res[4], size_t& numAdjacentPositions);
   void getGroup(const Position& position, PositionSet& res, PositionSet& liberties);
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   size_t makeIndex(const Position& position) const
     {return ShortEnumerationMatrix::makeIndex(position.second, position.first);}
@@ -115,6 +117,8 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const;
   virtual String toString() const;
   virtual String toShortString() const;
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class GoStateClass;
@@ -179,7 +183,9 @@ public:
 
   impl::PositiveIntegerPair getValue() const
     {return impl::PositiveIntegerPair(first, second);}
- 
+
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class PositiveIntegerPairClass;
 
@@ -199,6 +205,8 @@ public:
 
   virtual TypePtr getElementsType() const
     {return positiveIntegerPairClass;}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class GoStateSampler : public SimpleUnaryFunction
@@ -213,6 +221,8 @@ public:
     return new GoState(T("Sampled"), random->sampleSize(minSize, maxSize));
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class GoStateSamplerClass;
 
@@ -225,17 +235,19 @@ class GoProblem : public DecisionProblem
 public:
   GoProblem(size_t size = 19)
     : DecisionProblem(new GoStateSampler(size), 1.0) {}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<GoProblem> GoProblemPtr;
 
-class GoStateComponent : public MatrixComponent
+class GoBoardComponent : public MatrixComponent
 {
 public:
-  GoStateComponent(GoStatePtr state, const String& name)
-    : MatrixComponent(state->getBoard()), state(state) {}
+  GoBoardComponent(GoBoardPtr board, const String& name)
+    : MatrixComponent(board) {}
  
-  virtual juce::Colour selectColour(const Variable& element) const
+  virtual juce::Colour selectColour(const Variable& element)
   {
     if (!element.exists())
       return Colours::lightgrey;
@@ -243,10 +255,53 @@ public:
     return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
   }
 
-  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name);
+  lbcpp_UseDebuggingNewOperator
+};
+
+class GoStateComponent : public MatrixComponent
+{
+public:
+  GoStateComponent(GoStatePtr state, const String& name);
+ 
+  virtual juce::Colour selectColour(const Variable& element)
+  {
+    if (!element.exists())
+      return Colours::lightgrey;
+    const juce::Colour colours[] = {juce::Colours::beige, juce::Colours::black, juce::Colours::white, juce::Colours::grey};
+    return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
+  }
+
+  virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
+  {
+    const PairPtr& matrixAndPosition = variable.getObjectAndCast<Pair>();
+    const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>(); // (row, column)
+    Variable positiveIntegerPair(new PositiveIntegerPair(position->getSecond().getInteger(), position->getFirst().getInteger())); // (x,y)
+
+    ContainerPtr actionPerceptions = actionsPerceptionFunction->compute(context, state).getObjectAndCast<Container>();
+    Variable actionPerception;
+    if (actionPerceptions)
+    {
+      ContainerPtr actions = state->getAvailableActions();
+      jassert(actions->getNumElements() == actionPerceptions->getNumElements());
+      for (size_t i = 0; i < actions->getNumElements(); ++i)
+        if (actions->getElement(i) == positiveIntegerPair)
+        {
+          actionPerception = actionPerceptions->getElement(i);
+          break;
+        }
+    }
+
+    if (actionPerception.exists())
+      return userInterfaceManager().createVariableTreeView(context, actionPerception, name + T(" perception"), false);
+    else
+      return NULL;
+  }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   GoStatePtr state;
+  FunctionPtr actionsPerceptionFunction;
 };
 
 }; /* namespace lbcpp */

@@ -41,7 +41,8 @@
   <class name="GoProblem" base="DecisionProblem"/>
 
   <uicomponent name="GoStateComponent" type="GoState"/>
-
+  <uicomponent name="GoBoardComponent" type="GoBoard"/>
+               
   <!-- Smart Game Format parser -->
   <class name="SGFFileParser" base="TextParser"/>
   <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>

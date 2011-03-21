@@ -20,6 +20,8 @@ public:
   virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions) = 0;
   virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions) = 0;
   virtual void policyEnd(ExecutionContext& context, double reward, const Variable& finalState) {}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<Policy> PolicyPtr;

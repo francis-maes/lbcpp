@@ -31,6 +31,8 @@ public:
 
   void performTrajectory(const ContainerPtr& actions, double& sumOfRewards);
   bool checkTrajectoryValidity(ExecutionContext& context, const ContainerPtr& trajectory) const;
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<DecisionProblemState> DecisionProblemStatePtr;
@@ -63,6 +65,8 @@ public:
   */
   double getDiscount() const
     {return discount;} // in [0,1]
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class DecisionProblemClass;

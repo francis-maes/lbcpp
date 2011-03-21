@@ -257,7 +257,7 @@ void SparseDoubleVector::remove(size_t index)
 
 // Container
 size_t SparseDoubleVector::getNumElements() const
-  {return (size_t)(lastIndex + 1);}
+  {return (size_t)juce::jmax((int)getElementsEnumeration()->getNumElements(), lastIndex + 1);}
 
 Variable SparseDoubleVector::getElement(size_t index) const
 {
@@ -479,7 +479,7 @@ void DenseDoubleVector::remove(size_t index)
 
 // Container
 size_t DenseDoubleVector::getNumElements() const
-{return values ? values->size() : 0;}
+  {return values ? values->size() : 0;}
 
 Variable DenseDoubleVector::getElement(size_t index) const
   {return Variable(values && index < values->size() ? (*values)[index] : 0.0, getElementsType());}

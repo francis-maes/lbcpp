@@ -86,6 +86,8 @@ public:
   virtual Variable getElement(size_t index) const
     {jassert(index < elements.size()); return Variable(elements[index], elementsType);}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   TypePtr elementsType;
   size_t dimension;
@@ -119,6 +121,8 @@ public:
   /* Container */
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeSymmetricMatrix<double>::setElement(index, value.getDouble());}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 class ObjectSymmetricMatrix : public BuiltinTypeSymmetricMatrix<ObjectPtr>
@@ -135,6 +139,8 @@ public:
   /* Container */
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeSymmetricMatrix<ObjectPtr>::setElement(index, value.getObject());}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<ObjectSymmetricMatrix> ObjectSymmetricMatrixPtr;

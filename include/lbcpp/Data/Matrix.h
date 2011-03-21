@@ -50,6 +50,8 @@ public:
   String toShortString() const
     {return String((int)getNumRows()) + T(" x ") + String((int)getNumColumns()) + T(" matrix");}
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   size_t makeIndex(size_t row, size_t column) const
     {return row * getNumColumns() + column;}
@@ -111,6 +113,8 @@ public:
     target.numColumns = numColumns;
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   TypePtr elementsType;
   std::vector<ElementsType> elements;
@@ -133,6 +137,8 @@ public:
 
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeMatrix<char>::setElement(index, value.getInteger());}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr objectMatrixClass(TypePtr elementsType);
@@ -164,6 +170,8 @@ public:
   
   void setObject(size_t row, size_t column, const ObjectPtr& object)
     {BaseClass::elements[makeIndex(row, column)] = object;}
+
+  lbcpp_UseDebuggingNewOperator
 };
 
 typedef ReferenceCountedObjectPtr<ObjectMatrix> ObjectMatrixPtr;

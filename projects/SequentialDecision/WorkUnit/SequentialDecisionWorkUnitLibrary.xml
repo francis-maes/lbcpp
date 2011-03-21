@@ -64,7 +64,9 @@
     <variable type="PositiveIntegerPairVector" name="previousActions"/>
     <variable type="GoBoard" name="board"/>
     <variable type="DoubleVector[globalFeaturesEnumeration,Double]" name="globalPrimaryFeatures"/>
+    <variable type="SegmentedMatrix[Player]" name="fourConnexityGraph"/>
     <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="fourConnexityGraphFeatures"/>
+    <variable type="SegmentedMatrix[Player]" name="eightConnexityGraph"/>
     <variable type="ObjectMatrix[DoubleVector[regionFeaturesEnumeration,Double]]" name="eightConnexityGraphFeatures"/>
     <variable type="ObjectMatrix[DoubleVector[actionFeaturesEnumeration,Double]]" name="actionPrimaryFeatures"/>
   </template>
@@ -84,6 +86,7 @@
     <parameter name="elementsType" type="Variable"/>
     <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
   </template>
+  <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
 
   <class name="SegmentMatrixFunction" base="Function">
     <variable type="Boolean" name="use8Connexity"/>
