@@ -142,6 +142,7 @@ public:
   size_t addFunction(const FunctionPtr& function, size_t input, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
+  size_t addFunction(const FunctionPtr& function, size_t input1, size_t input2, size_t input3, size_t input4, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
   size_t addFunction(const FunctionPtr& function, const std::vector<size_t>& inputs, const String& optionalName = String::empty, const String& optionalShortName = String::empty);
 
   void startSelection();
@@ -180,7 +181,7 @@ class MethodBasedCompositeFunction : public CompositeFunction
 {
 public:
   MethodBasedCompositeFunction(ObjectPtr pthis, CompositeFunctionBuilderFunction compositeFunctionBuilderFunction)
-    : pthis(pthis), compositeFunctionBuilderFunction(compositeFunctionBuilderFunction) {}
+    : pthis(pthis), compositeFunctionBuilderFunction(compositeFunctionBuilderFunction) {jassert(pthis);}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {

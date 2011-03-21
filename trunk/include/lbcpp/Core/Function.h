@@ -171,6 +171,7 @@ public:
   Variable compute(ExecutionContext& context, const Variable& input) const;
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2) const;
   Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3) const;
+  Variable compute(ExecutionContext& context, const Variable& input1, const Variable& input2, const Variable& input3, const Variable& input4) const;
   Variable computeWithInputsObject(ExecutionContext& context, const ObjectPtr& inputsObject) const;
 
   /*

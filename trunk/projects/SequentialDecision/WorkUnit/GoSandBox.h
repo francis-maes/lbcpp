@@ -131,7 +131,11 @@ public:
   void addNeighboringElement(const Variable& value)
     {neighboringElements[value]++;}
 
-  // todo: addNeighboringRegion
+  size_t getNumNeighboringElement(const Variable& value) const
+  {
+    std::map<Variable, size_t>::const_iterator it = neighboringElements.find(value);
+    return it == neighboringElements.end() ? 0 : it->second;
+  }
 
   lbcpp_UseDebuggingNewOperator
 
@@ -148,6 +152,20 @@ private:
 typedef ReferenceCountedObjectPtr<MatrixRegion> MatrixRegionPtr;
 
 extern ClassPtr segmentedMatrixClass(TypePtr elementsType);
+
+class GetMatrixRegionNumNeighboringElementsFunction : public SimpleBinaryFunction
+{
+public:
+  GetMatrixRegionNumNeighboringElementsFunction()
+    : SimpleBinaryFunction(matrixRegionClass(variableType), variableType, positiveIntegerType) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const MatrixRegionPtr& region = inputs[0].getObjectAndCast<MatrixRegion>();
+    const Variable& value = inputs[1];
+    return Variable(region->getNumNeighboringElement(value), positiveIntegerType);
+  }
+};
 
 class SegmentedMatrix : public BuiltinTypeMatrix<size_t>
 {
@@ -276,14 +294,16 @@ public:
     MatrixRegionPtr region = res->startRegion(value);
     
     std::set<Position> toExplore;
+    std::set<Position> explored;
     toExplore.insert(Position(row, column));
     while (toExplore.size())
     {
       // add current position
       Position position = *toExplore.begin();
       toExplore.erase(toExplore.begin());
-      if (res->hasElement(position))
+      if (explored.find(position) != explored.end())
         continue;
+      explored.insert(position);
 
       res->addToCurrentRegion(position);
       
@@ -314,13 +334,13 @@ public:
       for (size_t i = 0; i < numNeighbors; ++i)
       {
         const Position& neighbor = neighbors[i];
-        if (!res->hasElement(neighbor))
+        if (explored.find(neighbor) == explored.end())
         {
           Variable neighborValue = matrix->getElement(neighbor.first, neighbor.second);
           if (neighborValue == value)
             toExplore.insert(neighbor);
-          //else
-          //  region->addNeighboringElements(neighborValue);
+          else
+            region->addNeighboringElement(neighborValue);
         }
       }
     }
@@ -334,6 +354,214 @@ protected:
   bool use8Connexity;
   TypePtr elementsType;
 };
+
+///////////////////////////////
+// Connectivity Features //////
+///////////////////////////////
+
+class SumFeatureGenerator : public FeatureGenerator
+{
+public:
+  SumFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator)
+    : baseFeatureGenerator(baseFeatureGenerator) {}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+    {return baseFeatureGenerator->getFeaturesEnumeration();}
+
+protected:
+  friend class SumFeatureGeneratorClass;
+
+  FeatureGeneratorPtr baseFeatureGenerator;
+};
+
+// Matrix[Variable], Row, Column, Arg -> DoubleVector
+class MatrixNeighborhoodFeatureGenerator : public SumFeatureGenerator
+{
+public:
+  MatrixNeighborhoodFeatureGenerator(FunctionPtr relationFeatures, FunctionPtr valueFeatures)
+    : SumFeatureGenerator(cartesianProductFeatureGenerator()), relationFeatures(relationFeatures), valueFeatures(valueFeatures) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 4;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? matrixClass() : (index == 3 ? variableType : positiveIntegerType);}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    TypePtr matrixElementsType = Container::getTemplateParameter(inputVariables[0]->getType());
+    std::vector<VariableSignaturePtr> relationVariables = inputVariables;
+    relationVariables.back() = new VariableSignature(matrixElementsType, T("neighbor"));
+
+    if (!relationFeatures->initialize(context, relationVariables))
+      return false;
+    if (!valueFeatures->initialize(context, inputVariables[3]->getType(), matrixElementsType))
+      return false;
+
+    if (!baseFeatureGenerator->initialize(context, relationFeatures->getOutputType(), valueFeatures->getOutputType()))
+      return false;
+
+    return SumFeatureGenerator::initializeFeatures(context, inputVariables, elementsType, outputName, outputShortName);
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
+    size_t row = (size_t)inputs[1].getInteger();
+    size_t column = (size_t)inputs[2].getInteger();
+    const Variable& argument = inputs[3];
+
+    std::set<Variable> neighbors;
+    for (int r = (int)row - 1; r <= (int)row + 1; ++r)
+      for (int c = (int)column - 1; c <= (int)column + 1; ++c)
+        if (r >= 0 && c >= 0 && r < (int)matrix->getNumRows() && c < (int)matrix->getNumColumns())
+          neighbors.insert(matrix->getElement(r, c));
+
+    if (!neighbors.size())
+      return;
+
+    ExecutionContext& context = defaultExecutionContext(); // fixme
+    DenseDoubleVectorPtr res = new DenseDoubleVector(getFeaturesEnumeration(), doubleType);
+    double weight = 1.0 / neighbors.size();
+    for (std::set<Variable>::const_iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+    {
+      DoubleVectorPtr rel = relationFeatures->compute(context, matrix, row, column, *it).getObjectAndCast<DoubleVector>();
+      DoubleVectorPtr val = valueFeatures->compute(context, argument, *it).getObjectAndCast<DoubleVector>();
+      DoubleVectorPtr relTimesVal = baseFeatureGenerator->compute(context, rel, val).getObjectAndCast<DoubleVector>();
+      relTimesVal->addWeightedTo(res, 0, weight);
+    }
+    const std::vector<double>& values = res->getValues();
+    for (size_t i = 0; i < values.size(); ++i)
+      if (values[i])
+        callback.sense(i, values[i]);
+  }
+
+protected:
+  FunctionPtr relationFeatures; // Matrix, Row, Column, Value -> DoubleVector 
+  FunctionPtr valueFeatures;    // Matrix, Value -> DoubleVector
+};
+
+// Matrix[Variable], Row, Column, Variable -> DoubleVector
+class MatrixConnectivityFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 4;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? matrixClass() : (index == 3 ? anyType : positiveIntegerType);}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    connectivityPatternsMap.resize(1 << 9, (size_t)-1);
+
+    DefaultEnumerationPtr features = new DefaultEnumeration(T("connectivityFeatures"));
+
+    for (int i = connectivityPatternsMap.size() - 1; i >= 0; --i)
+      if (connectivityPatternsMap[i] == (size_t)-1)
+      {
+        bool values[9];
+        makePattern(i, values);
+        size_t currentElement = features->getNumElements();
+        features->addElement(context, getPatternName(values));
+ 
+        for (size_t j = 0; j < 4; ++j)
+        {
+          connectivityPatternsMap[getPatternIndex(values)] = currentElement;
+          rotatePattern(values);
+        }
+        mirrorPattern(values);
+        for (size_t j = 0; j < 4; ++j)
+        {
+          connectivityPatternsMap[getPatternIndex(values)] = currentElement;
+          rotatePattern(values);
+        }
+      }
+
+    return features;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
+    size_t row = (size_t)inputs[1].getInteger();
+    size_t column = (size_t)inputs[2].getInteger();
+    const Variable& neighborValue = inputs[3];
+
+    bool values[9];
+    for (int i = 0; i < 9; ++i)
+    {
+      int r = (int)row + (-1 + (i / 3));
+      int c = (int)column + (-1 + (i % 3));
+      values[i] = (r >= 0 && r < (int)matrix->getNumRows() && c >= 0 && c < (int)matrix->getNumColumns() && matrix->getElement(r, c) == neighborValue);
+    }
+    size_t index = getPatternIndex(values);
+    callback.sense(connectivityPatternsMap[index], 1.0);
+  }
+
+private:
+  std::vector<size_t> connectivityPatternsMap;
+
+  static String getPatternName(bool values[9])
+  {
+    String res;
+    for (size_t i = 0; i < 9; ++i)
+      if (values[i])
+      {
+        juce::tchar c = 'a' + i;
+        res += c;
+      }
+    return res.isEmpty() ? T("none") : res;
+  }
+
+  static size_t getPatternIndex(bool values[9])
+  {
+    size_t pattern = 0;
+    for (size_t i = 0; i < 9; ++i)
+    {
+      pattern <<= 1;
+      if (values[i])
+        ++pattern;
+    }
+    return pattern;
+  }
+
+  static void makePattern(size_t index, bool values[9])
+  {
+    for (int i = 8; i >= 0; --i)
+    {
+      values[i] = ((index & 0x1) == 0x1);
+      index >>= 1;
+    }
+  }
+
+  static void rotatePattern(bool values[9])
+  {
+    bool oldValues[9];
+    for (size_t i = 0; i < 9; ++i)
+      oldValues[i] = values[i];
+    
+    values[0] = oldValues[6];
+    values[1] = oldValues[3];
+    values[2] = oldValues[0];
+
+    values[3] = oldValues[7];
+    values[4] = oldValues[4];
+    values[5] = oldValues[1];
+
+    values[6] = oldValues[8];
+    values[7] = oldValues[5];
+    values[8] = oldValues[2];
+  }
+
+  static void mirrorPattern(bool values[9])
+  {
+    std::swap(values[0], values[2]);
+    std::swap(values[3], values[5]);
+    std::swap(values[6], values[8]);
+  }
+};
+
 
 
 ///////////////////////////////
@@ -463,10 +691,10 @@ public:
   GoBoardPtr board; // with current player as black
   DoubleVectorPtr globalPrimaryFeatures; // time
   SegmentedMatrixPtr fourConnexityGraph;
-  MatrixPtr fourConnexityGraphFeatures;
-  SegmentedMatrixPtr eightConnexityGraph;
-  MatrixPtr eightConnexityGraphFeatures;
-  MatrixPtr actionPrimaryFeatures;
+  VectorPtr fourConnexityGraphFeatures;   // region id -> features
+  //SegmentedMatrixPtr eightConnexityGraph;
+  //VectorPtr eightConnexityGraphFeatures;  // region id -> features
+  MatrixPtr actionPrimaryFeatures;        // position -> features
 
   lbcpp_UseDebuggingNewOperator
 };
@@ -528,27 +756,34 @@ public:
     size_t regionPlayer = builder.addFunction(getVariableFunction(T("value")), region);
     size_t regionSize = builder.addFunction(getVariableFunction(T("size")), region);
 
+    size_t noPlayers = builder.addConstant(Variable(0, playerEnumeration));
+    size_t opponentPlayer = builder.addConstant(Variable(2, playerEnumeration));
+    size_t outside = builder.addConstant(Variable::missingValue(playerEnumeration));
+
+    size_t noPlayersCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, noPlayers);
+    size_t opponentPlayerCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, opponentPlayer);
+    size_t outsideCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, outside);
+
     size_t i1 = builder.addFunction(enumerationFeatureGenerator(false), regionPlayer);
-    size_t i2 = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * boardSize)), 10, false), regionSize);
+
+    builder.startSelection();
+
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), regionSize, T("regionSize"));
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), noPlayersCount, T("noPlayersCount"));
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), opponentPlayerCount, T("opponentCount"));
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), outsideCount, T("borderCount"));
+
+    size_t i2 = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("features"));
 
     builder.addFunction(cartesianProductFeatureGenerator(false), i1, i2);
-    //builder.addFunction(concatenateFeatureGenerator(false), i1, i2);
   }
 
-  void selectionRegionFeaturesToPutInMatrix(CompositeFunctionBuilder& builder)
-  {
-    size_t position = builder.addInput(positiveIntegerType);
-    size_t perRegionFeatures = builder.addInput(vectorClass(doubleVectorClass()));
-    builder.addFunction(getElementFunction(), perRegionFeatures, position);
-  }
-
-  // SegmentedMatrix<Player> -> Matrix<DoubleVector>
+  // SegmentedMatrix<Player> -> Vector<DoubleVector>
   void segmentedBoardFeatures(CompositeFunctionBuilder& builder)
   {
     size_t segmentedBoard = builder.addInput(segmentedMatrixClass(playerEnumeration), T("segmentedBoard"));
     size_t regions = builder.addFunction(getVariableFunction(T("regions")), segmentedBoard);
-    size_t perRegionFeatures = builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, regionFeatures)), regions);
-    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, selectionRegionFeaturesToPutInMatrix)), segmentedBoard, perRegionFeatures);
+    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, regionFeatures)), regions);
   }
 
   /*
@@ -576,14 +811,14 @@ public:
     // region features
     size_t fourConnexityGraph = builder.addFunction(new SegmentMatrixFunction(false), board);
     variables.push_back(fourConnexityGraph);
-    FunctionPtr fun = lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures);
-    size_t fourConnexityGraphFeatures = builder.addFunction(fun, fourConnexityGraph);
+    size_t fourConnexityGraphFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures), fourConnexityGraph);
     variables.push_back(fourConnexityGraphFeatures);
 
+    /*
     size_t eightConnexityGraph = builder.addFunction(new SegmentMatrixFunction(true), board);
     variables.push_back(eightConnexityGraph);
-    size_t eightConnexityGraphFeatures = builder.addFunction(fun, eightConnexityGraph);
-    variables.push_back(eightConnexityGraphFeatures);
+    size_t eightConnexityGraphFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures), eightConnexityGraph);
+    variables.push_back(eightConnexityGraphFeatures);*/
     EnumerationPtr regionFeaturesEnumeration = DoubleVector::getElementsEnumeration(Container::getTemplateParameter(builder.getOutputType()));
 
     // board primary features
@@ -613,8 +848,10 @@ public:
     size_t globalPrimaryFeatures = builder.addFunction(getVariableFunction(T("globalPrimaryFeatures")), preFeatures, T("globals"));
 
     // matrices:
+    size_t region4 = builder.addFunction(getVariableFunction(T("fourConnexityGraph")), preFeatures);
     size_t region4Features = builder.addFunction(getVariableFunction(T("fourConnexityGraphFeatures")), preFeatures);
-    size_t region8Features = builder.addFunction(getVariableFunction(T("eightConnexityGraphFeatures")), preFeatures);
+    //size_t region8 = builder.addFunction(getVariableFunction(T("eightConnexityGraph")), preFeatures);
+    //size_t region8Features = builder.addFunction(getVariableFunction(T("eightConnexityGraphFeatures")), preFeatures);
     size_t actionPrimaryFeatures = builder.addFunction(getVariableFunction(T("actionPrimaryFeatures")), preFeatures);
 
     size_t row = builder.addFunction(getVariableFunction(1), action);
@@ -631,20 +868,18 @@ public:
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
 
-      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 5), previousActionRelationFeatures, T("previousAction"));
+      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
 
-      size_t i4 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region4Features, row, column, T("reg4"));
-      //size_t i5 = builder.addFunction(matrixWindowFeatureGenerator(3, 3), region8Features, row, column, T("reg8"));
-
-      //builder.addInSelection(globalPrimaryFeatures);
-      //builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("previousAction2"));
-      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i2, T("posWin"));
+      FeatureGeneratorPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
+      fun2->setLazy(false);
+      size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
+      size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
     //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(true), i4, i4);
-    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("fAndTime"));
-    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime, T("all"));
+//    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("fAndTime"));
+//    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime, T("all"));
 
     /*size_t features = 
     size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
@@ -995,6 +1230,7 @@ public:
     ContainerPtr validationGames = games->fold(0, numFolds);
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
+    
 #if 0
     // TMP
     PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
