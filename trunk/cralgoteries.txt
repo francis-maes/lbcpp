@@ -1,14 +1,6 @@
-'''ConcatenateEnumeration'''
 
- * New enumeration class: ConcatenateEnumeration, that is computed in a lazy fashion
- * Use ConcatenateEnumeration in ConcatenateFeatureGenerator -> spare lots of memory when concatenating cartesian product features
- * Fix a bug in WorkUnit::parseArguments() related to mixed names/shortNames use
-
- * Explorer, VariableTreeView: set a maximum number of elements when visualizing containers, display an item to signal the number of un-displayed elements
- * Explorer: support display of SparseVectors in very high dimensional spaces (e.g. 200.10^9 dimensions here)
 
 Go:
- * RegionFeatures: Faire marcher le "borderCount"
  * Features of successor state / delta state
 
 Proteins:

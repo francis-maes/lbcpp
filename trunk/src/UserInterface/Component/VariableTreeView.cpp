@@ -23,6 +23,7 @@ public:
     : SimpleTreeViewItem(name, NULL, true), 
       variable(variable), options(options), typeName(variable.getTypeName()), component(NULL), numUndisplayedChildElements(0)
   {
+    mightContainSubItemsFlag = false;
     shortSummary = variable.toShortString();
     TypePtr type = variable.getType();
     if (variable.exists() && variable.isObject())
@@ -59,7 +60,7 @@ public:
           }
         }
       }
-      mightContainSubItemsFlag = subVariables.size();
+      mightContainSubItemsFlag = (subVariables.size() > 0);
     }
 
     SparseDoubleVectorPtr sparseVector = variable.dynamicCast<SparseDoubleVector>();
@@ -171,7 +172,7 @@ public:
     if (options.showShortSummaries) ++numFields;
 
     int typeAndNameLength;
-    enum {wantedLength = 300};
+    enum {wantedLength = 400};
     int remainingWidth = width - x1;
     if (remainingWidth >= numFields * wantedLength)
       typeAndNameLength = wantedLength;
