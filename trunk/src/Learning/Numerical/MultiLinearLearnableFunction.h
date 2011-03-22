@@ -110,7 +110,11 @@ public:
     if (compositeTarget)
     {
       for (size_t i = 0; i < n; ++i)
-        input->addWeightedTo(compositeTarget->getSubVector(i), 0, weight * lossGradient->getValue(i));
+      {
+        DenseDoubleVectorPtr subTarget = compositeTarget->getSubVector(i).dynamicCast<DenseDoubleVector>();
+        jassert(subTarget);
+        input->addWeightedTo(subTarget, 0, weight * lossGradient->getValue(i));
+      }
       return;
     }
 

@@ -149,7 +149,8 @@ protected:
 
   void gradientDescentStep(const DoubleVectorPtr& gradient, double weight = 1.0)
   {
-    DoubleVectorPtr parameters = function->getOrCreateParameters();
+    DenseDoubleVectorPtr parameters = function->getOrCreateParameters().dynamicCast<DenseDoubleVector>();
+    jassert(parameters);
     gradient->addWeightedTo(parameters, 0, -computeLearningRate() * weight);
   }
 

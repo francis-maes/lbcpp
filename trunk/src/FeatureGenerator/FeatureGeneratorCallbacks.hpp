@@ -144,11 +144,40 @@ protected:
   double weight;
 };
 
-class AddWeightedToFeatureGeneratorCallback : public FeatureGeneratorCallback
+class AddWeightedToSparseFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:
-  AddWeightedToFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
-    : target(target), offset(offsetInSparseVector), weight(weight) {}
+  AddWeightedToSparseFeatureGeneratorCallback(const SparseDoubleVectorPtr& target, size_t offsetInSparseVector, double weight)
+    : target(target), offset(offsetInSparseVector), weight(weight), lastIndex(-1) {}
+
+  virtual void sense(size_t index, double value)
+  {
+    index += offset;
+    jassert((int)index > lastIndex);
+    if ((int)index > target->getLastIndex())
+      target->appendValue(index, value * weight);
+    else
+      target->incrementValue(index, value * weight);
+  }
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {vector->addWeightedTo(target, index + offset, weight * this->weight);}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {featureGenerator->addWeightedTo(inputs, target, offset + index, weight * this->weight);}
+
+protected:
+  SparseDoubleVectorPtr target;
+  size_t offset;
+  double weight;
+  int lastIndex;
+};
+
+class AddWeightedToDenseFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  AddWeightedToDenseFeatureGeneratorCallback(const DenseDoubleVectorPtr& target, size_t offsetInDenseVector, double weight)
+    : target(target), offset(offsetInDenseVector), weight(weight) {}
 
   virtual void sense(size_t index, double value)
     {target->getValueReference(index + offset) += value * weight;}

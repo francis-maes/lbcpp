@@ -186,6 +186,25 @@ bool SparseDoubleVector::loadFromXml(XmlImporter& importer)
   return true;
 }
 
+size_t SparseDoubleVector::incrementValue(size_t index, double delta)
+{
+  if ((int)index > lastIndex)
+  {
+    size_t res = values.size();
+    appendValue(index, delta);
+    return res;
+  }
+  int position = SparseVectorHelper<double>::findIndex(values, index);
+  if (position >= 0)
+  {
+    values[position].second += delta;
+    return (size_t)index;
+  }
+  size_t res;
+  SparseVectorHelper<double>::insert(values, index, delta, &res);
+  return res;
+}
+
 // double vector
 double SparseDoubleVector::entropy() const
   {return defaultEntropy(*this);}
@@ -220,6 +239,12 @@ void SparseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, siz
   for (size_t i = 0; i < values.size(); ++i)
     targetValues.push_back(std::make_pair(values[i].first + offsetInSparseVector, values[i].second * weight));
   sparseVector->updateLastIndex();
+}
+
+void SparseDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+{
+  jassert(false);
+  // FIXME: implement
 }
 
 void SparseDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
@@ -403,6 +428,15 @@ void DenseDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size
   sparseVector->updateLastIndex();
 }
 
+void DenseDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+{
+  if (!values)
+    return;
+
+  jassert(false);
+  // FIXME: implement
+}
+
 void DenseDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
   if (values)
@@ -535,6 +569,14 @@ void LazyDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, size_
     featureGenerator->appendTo(&inputs[0], sparseVector, offsetInSparseVector, weight);
 }
 
+void LazyDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+{
+  if (computedVector)
+    computedVector->addWeightedTo(sparseVector, offsetInSparseVector, weight);
+  else
+    featureGenerator->addWeightedTo(&inputs[0], sparseVector, offsetInSparseVector, weight);
+}
+
 void LazyDoubleVector::addWeightedTo(const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
   if (computedVector)
@@ -630,6 +672,15 @@ void CompositeDoubleVector::appendTo(const SparseDoubleVectorPtr& sparseVector, 
   {
     const std::pair<size_t, DoubleVectorPtr>& subVector = vectors[i];
     subVector.second->appendTo(sparseVector, offsetInSparseVector + subVector.first, weight);
+  }
+}
+
+void CompositeDoubleVector::addWeightedTo(const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+{
+  for (size_t i = 0; i < vectors.size(); ++i)
+  {
+    const std::pair<size_t, DoubleVectorPtr>& subVector = vectors[i];
+    subVector.second->addWeightedTo(sparseVector, offsetInSparseVector + subVector.first, weight);
   }
 }
 

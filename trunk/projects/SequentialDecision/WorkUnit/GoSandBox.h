@@ -359,14 +359,14 @@ protected:
 // Connectivity Features //////
 ///////////////////////////////
 
-class SumFeatureGenerator : public FeatureGenerator
+class SumFeatureGenerator : public Function
 {
 public:
   SumFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator)
     : baseFeatureGenerator(baseFeatureGenerator) {}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-    {return baseFeatureGenerator->getFeaturesEnumeration();}
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return sparseDoubleVectorClass(baseFeatureGenerator->getFeaturesEnumeration());}
 
 protected:
   friend class SumFeatureGeneratorClass;
@@ -387,24 +387,24 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return index == 0 ? (TypePtr)matrixClass() : (index == 3 ? variableType : positiveIntegerType);}
 
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
     TypePtr matrixElementsType = Container::getTemplateParameter(inputVariables[0]->getType());
     std::vector<VariableSignaturePtr> relationVariables = inputVariables;
     relationVariables.back() = new VariableSignature(matrixElementsType, T("neighbor"));
 
     if (!relationFeatures->initialize(context, relationVariables))
-      return false;
+      return TypePtr();
     if (!valueFeatures->initialize(context, inputVariables[3]->getType(), matrixElementsType))
-      return false;
+      return TypePtr();
 
     if (!baseFeatureGenerator->initialize(context, relationFeatures->getOutputType(), valueFeatures->getOutputType()))
-      return false;
+      return TypePtr();
 
-    return SumFeatureGenerator::initializeFeatures(context, inputVariables, elementsType, outputName, outputShortName);
+    return SumFeatureGenerator::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
 
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
     size_t row = (size_t)inputs[1].getInteger();
@@ -418,10 +418,9 @@ public:
           neighbors.insert(matrix->getElement(r, c));
 
     if (!neighbors.size())
-      return;
+      return Variable::missingValue(getOutputType());
 
-    ExecutionContext& context = defaultExecutionContext(); // fixme
-    DenseDoubleVectorPtr res = new DenseDoubleVector(getFeaturesEnumeration(), doubleType);
+    SparseDoubleVectorPtr res = new SparseDoubleVector(getOutputType());
     double weight = 1.0 / neighbors.size();
     for (std::set<Variable>::const_iterator it = neighbors.begin(); it != neighbors.end(); ++it)
     {
@@ -430,10 +429,7 @@ public:
       DoubleVectorPtr relTimesVal = baseFeatureGenerator->compute(context, rel, val).getObjectAndCast<DoubleVector>();
       relTimesVal->addWeightedTo(res, 0, weight);
     }
-    const std::vector<double>& values = res->getValues();
-    for (size_t i = 0; i < values.size(); ++i)
-      if (values[i])
-        callback.sense(i, values[i]);
+    return res;
   }
 
 protected:
@@ -864,15 +860,18 @@ public:
     builder.startSelection();
 
       size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
+      //size_t i12 = builder.addFunction(cartesianProductFeatureGenerator(true), i1, i1, T("window2"));
+      //size_t i13 = builder.addFunction(cartesianProductFeatureGenerator(true), i12, i1, T("window3"));
 
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
 
       size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
+      //size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("prevAc2"));
 
-      FeatureGeneratorPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
-      fun2->setLazy(false);
+      FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
+      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i4, T("neighborsXWindow"));
       size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));

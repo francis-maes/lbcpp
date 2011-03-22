@@ -52,7 +52,11 @@ public:
     {this->parameters = parameters;}
 
   virtual void addGradient(const Variable& lossDerivativeOrGradient, const Variable* inputs, const DoubleVectorPtr& target, double weight) const
-    {inputs[0].getObjectAndCast<DoubleVector>()->addWeightedTo(target, 0, weight * (lossDerivativeOrGradient.exists() ? lossDerivativeOrGradient.getDouble() : 1.0));}
+  {
+    DenseDoubleVectorPtr t = target.dynamicCast<DenseDoubleVector>();
+    jassert(t);
+    inputs[0].getObjectAndCast<DoubleVector>()->addWeightedTo(t, 0, weight * (lossDerivativeOrGradient.exists() ? lossDerivativeOrGradient.getDouble() : 1.0));
+  }
 
   virtual bool computeLoss(const FunctionPtr& lossFunction, const Variable* inputs, const Variable& prediction, double& lossValue, Variable& lossDerivativeOrGradient) const
   {

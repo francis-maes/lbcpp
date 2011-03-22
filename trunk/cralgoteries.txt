@@ -1,4 +1,11 @@
 
+Go:
+ * RegionFeatures: Faire marcher le "borderCount"
+ * MatrixNeighborhoodFeatureGenerator: optimizer
+ * ConcatenateFeatureGenerator: rendre l'enum de sortie lazy (pour optimiser l'utilisation memoire)
+ 
+
+
 Proteins:
  ** ProteinLearner: Serialisation des models
    -> Shared dynamic object
