@@ -9,7 +9,7 @@
 #ifndef EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 # define EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 
-# include <lbcpp/Data/CompositeMatrix.h>
+# include <lbcpp/Data/Matrix.h>
 # include <lbcpp/UserInterface/ObjectEditor.h>
 # include <lbcpp/UserInterface/MatrixComponent.h>
 # include "../Data/Protein.h"
@@ -179,8 +179,8 @@ public:
     SymmetricMatrixPtr map1 = getMap(configuration, configuration->getProtein1());
     SymmetricMatrixPtr map2 = getMap(configuration, configuration->getProtein2());
     if (!map2)
-      map2 = symmetricMatrix(map1->getElementsType(), map1->getDimension());
-    CompositeMatrixPtr contactMap = new SymmetricCompositeMatrix(map1->getElementsType(), map2, map1);
+      map2 = zeroSymmetricMatrix(map1->getElementsType(), map1->getDimension());
+    MatrixPtr contactMap = upperLowerSquareMatrix(map1->getElementsType(), map2, map1);
     ContactMapComponent* contactMapComponent = new ContactMapComponent(contactMap);
     contactMapComponent->addCallback(*this);
     return contactMapComponent;
