@@ -97,10 +97,11 @@ public:
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     // make enum name
-    DefaultEnumerationPtr elementsEnumeration = new DefaultEnumeration(T("concatenatedFeatures(") + String((int)inputVariables.size()) + T(" double vectors)"));
+    ConcatenateEnumerationPtr elementsEnumeration = new ConcatenateEnumeration(T("concatenatedFeatures(") + String((int)inputVariables.size()) + T(" double vectors)"));
     elementsType = TypePtr();
     size_t numInputs = inputVariables.size();
     shifts.resize(numInputs);
+    elementsEnumeration->reserveSubEnumerations(numInputs);
     for (size_t i = 0; i < numInputs; ++i)
     {
       const VariableSignaturePtr& inputVariable = inputVariables[i];
@@ -113,7 +114,8 @@ public:
       TypePtr subElementsType;
       if (!DoubleVector::getTemplateParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))
         return EnumerationPtr();
-      elementsEnumeration->addElementsWithPrefix(context, subElementsEnumeration, inputVariable->getName() + T("."), inputVariable->getShortName() + T("."));
+
+      elementsEnumeration->addSubEnumeration(inputVariable->getName(), subElementsEnumeration);
       if (i == 0)
         elementsType = subElementsType;
       else

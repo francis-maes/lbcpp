@@ -135,6 +135,37 @@ private:
   std::vector<EnumerationElementPtr> elements;
 };
 
+class ConcatenateEnumeration : public Enumeration
+{
+public:
+  ConcatenateEnumeration(const String& name = T("UnnamedEnumeration"));
+
+  virtual size_t getNumElements() const;
+  virtual EnumerationElementPtr getElement(size_t index) const;
+
+  size_t getNumSubEnumerations() const
+    {return subEnumerations.size();}
+
+  const String& getSubEnumerationPrefix(size_t index) const
+    {jassert(index < subEnumerations.size()); return subEnumerations[index].first;}
+
+  const EnumerationPtr& getSubEnumeration(size_t index) const
+    {jassert(index < subEnumerations.size()); return subEnumerations[index].second;}
+
+  void reserveSubEnumerations(size_t size)
+    {subEnumerations.reserve(size);}
+
+  void addSubEnumeration(const String& prefix, const EnumerationPtr& enumeration);
+
+private:
+  friend class ConcatenateEnumerationClass;
+
+  std::vector< std::pair<String, EnumerationPtr> > subEnumerations;
+  std::map<size_t, size_t> indexToBaseIndex; // element index -> base enumeration index
+};
+
+typedef ReferenceCountedObjectPtr<ConcatenateEnumeration> ConcatenateEnumerationPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_CORE_ENUMERATION_H_
