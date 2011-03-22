@@ -844,7 +844,7 @@ public:
     variables.push_back(globalFeatures);
 
     // region features
-    size_t fourConnexityGraph = builder.addFunction(new SegmentMatrixFunction(false), board);
+    size_t fourConnexityGraph = builder.addFunction(new SegmentMatrixFunction(true), board);
     variables.push_back(fourConnexityGraph);
     size_t fourConnexityGraphFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, segmentedBoardFeatures), fourConnexityGraph);
     variables.push_back(fourConnexityGraphFeatures);
@@ -912,6 +912,8 @@ public:
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i4, T("neighborsXWindow"));
       //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
+
+      size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
