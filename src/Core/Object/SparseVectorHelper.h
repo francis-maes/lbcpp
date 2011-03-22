@@ -27,10 +27,12 @@ struct SparseVectorHelper
       v.erase(v.begin() + i);
   }
   
-  static ElementType& insert(VectorType& v, size_t index, const ElementType& value)
+  static ElementType& insert(VectorType& v, size_t index, const ElementType& value, size_t* position = NULL)
   {
     if (v.empty() || index > v.back().first)
     {
+      if (position)
+        *position = v.size();
       v.push_back(std::make_pair(index, value)); 
       return v.back().second;
     }
@@ -39,6 +41,8 @@ struct SparseVectorHelper
       int pos = dichotomicSearch(v, index, 0, v.size());
       jassert(pos >= 0 && pos <= (int)v.size());
       jassert(pos >= (int)v.size() || v[pos].first != index); // element should not already exists
+      if (position)
+        *position = (size_t)pos;
       v.insert(v.begin() + pos, std::make_pair(index, value)); // new element
       return v[pos].second;
     }

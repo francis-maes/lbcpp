@@ -101,11 +101,20 @@ void FeatureGenerator::appendTo(const Variable* inputs, const SparseDoubleVector
   computeFeatures(&inputs[0], callback);
 }
 
+void FeatureGenerator::addWeightedTo(const Variable* inputs, const SparseDoubleVectorPtr& sparseVector, size_t offsetInSparseVector, double weight) const
+{
+  if (weight)
+  {
+    AddWeightedToSparseFeatureGeneratorCallback callback(sparseVector, offsetInSparseVector, weight);
+    computeFeatures(inputs, callback);
+  }
+}
+
 void FeatureGenerator::addWeightedTo(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector, double weight) const
 {
   if (weight)
   {
-    AddWeightedToFeatureGeneratorCallback callback(denseVector, offsetInDenseVector, weight);
+    AddWeightedToDenseFeatureGeneratorCallback callback(denseVector, offsetInDenseVector, weight);
     computeFeatures(inputs, callback);
   }
 }
