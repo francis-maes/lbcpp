@@ -128,8 +128,8 @@ public:
     ++size;
   }
 
-  void addNeighboringElement(const Variable& value)
-    {neighboringElements[value]++;}
+  void addNeighboringElement(const Variable& value, size_t count = 1)
+    {neighboringElements[value] += count;}
 
   size_t getNumNeighboringElement(const Variable& value) const
   {
@@ -330,18 +330,21 @@ public:
           neighbors[numNeighbors++] = Position(position.first + 1, position.second - 1);
       }
 
+      size_t numMissingNeighbors = (use8Connexity ? 8 : 4) - numNeighbors;
+      region->addNeighboringElement(Variable::missingValue(elementsType), numMissingNeighbors);
+
       // add neighbors in the toExplore list
       for (size_t i = 0; i < numNeighbors; ++i)
       {
         const Position& neighbor = neighbors[i];
-        if (explored.find(neighbor) == explored.end())
+        Variable neighborValue = matrix->getElement(neighbor.first, neighbor.second);
+        if (neighborValue == value)
         {
-          Variable neighborValue = matrix->getElement(neighbor.first, neighbor.second);
-          if (neighborValue == value)
+          if (explored.find(neighbor) == explored.end())
             toExplore.insert(neighbor);
-          else
-            region->addNeighboringElement(neighborValue);
         }
+        else
+          region->addNeighboringElement(neighborValue);
       }
     }
   }
@@ -700,6 +703,39 @@ typedef ReferenceCountedObjectPtr<GoStatePreFeatures> GoStatePreFeaturesPtr;
 extern ClassPtr goStatePreFeaturesClass(TypePtr globalFeaturesEnumeration, TypePtr regionFeaturesEnumeration, TypePtr actionFeaturesEnumeration);
 ////////////////////
 
+extern EnumerationPtr discretizedGoCountEnumeration;
+
+class GoCountFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return positiveIntegerType;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+    {elementsType = probabilityType; return discretizedGoCountEnumeration;}
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+    {callback.sense(getEnumValue((size_t)inputs[0].getInteger()), 1.0);}
+
+  static size_t getEnumValue(const size_t value)
+  {
+    if (value < 5)
+      return value;
+    if (value < 7)
+      return 5;
+    if (value < 10)
+      return 6;
+    if (value < 15)
+      return 7;
+    if (value < 20)
+      return 8;
+    return 9;
+  }
+};
+
 
 // GoState -> Container[DoubleVector]
 class GoActionsPerception : public CompositeFunction
@@ -753,21 +789,24 @@ public:
     size_t regionSize = builder.addFunction(getVariableFunction(T("size")), region);
 
     size_t noPlayers = builder.addConstant(Variable(0, playerEnumeration));
-    size_t opponentPlayer = builder.addConstant(Variable(2, playerEnumeration));
+    size_t blackPlayer = builder.addConstant(Variable(1, playerEnumeration));
+    size_t whitePlayer = builder.addConstant(Variable(2, playerEnumeration));
     size_t outside = builder.addConstant(Variable::missingValue(playerEnumeration));
 
     size_t noPlayersCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, noPlayers);
-    size_t opponentPlayerCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, opponentPlayer);
+    size_t blackPlayerCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, blackPlayer);
+    size_t whitePlayerCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, whitePlayer);
     size_t outsideCount = builder.addFunction(new GetMatrixRegionNumNeighboringElementsFunction(), region, outside);
 
     size_t i1 = builder.addFunction(enumerationFeatureGenerator(false), regionPlayer);
 
     builder.startSelection();
 
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), regionSize, T("regionSize"));
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), noPlayersCount, T("noPlayersCount"));
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), opponentPlayerCount, T("opponentCount"));
-      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, log10((double)(boardSize * 4)), 10, true), outsideCount, T("borderCount"));
+      builder.addFunction(new GoCountFeatureGenerator(), regionSize, T("regionSize"));
+      builder.addFunction(new GoCountFeatureGenerator(), noPlayersCount, T("noPlayersCount"));
+      builder.addFunction(new GoCountFeatureGenerator(), blackPlayerCount, T("blackPlayerCount"));
+      builder.addFunction(new GoCountFeatureGenerator(), whitePlayerCount, T("whitePlayerCount"));
+      builder.addFunction(new GoCountFeatureGenerator(), outsideCount, T("borderCount"));
 
     size_t i2 = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("features"));
 
@@ -872,7 +911,7 @@ public:
       FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
       //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i4, T("neighborsXWindow"));
-      size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
+      //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
