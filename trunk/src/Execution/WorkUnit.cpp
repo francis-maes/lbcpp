@@ -64,8 +64,10 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
-    variableNames[thisClass->getMemberVariableName(i)] = i;
-    variableShortNames[thisClass->getMemberVariableShortName(i)] = i;
+    String name = thisClass->getMemberVariableName(i);
+    String shortName = thisClass->getMemberVariableShortName(i);
+    variableNames[name] = i;
+    variableShortNames[shortName.isNotEmpty() ? shortName : name] = i;
   }
   
   for (size_t i = 0; i < arguments.size(); )
@@ -81,6 +83,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
         argumentValue = arguments[i].substring(end + 1);
 
       argumentName = arguments[i].substring(2, end);
+      defaultMap = variableNames;
     }
     else if (arguments[i].startsWith(T("-")))
     {

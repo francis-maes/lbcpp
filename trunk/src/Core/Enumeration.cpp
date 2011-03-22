@@ -155,26 +155,6 @@ DefaultEnumeration::DefaultEnumeration()
 {
 }
 
-/*
-DefaultEnumeration::DefaultEnumeration(const String& name, const juce::tchar** elements, const String& oneLetterCodes)
-  : Enumeration(name)
-{
-  jassert(!oneLetterCodes.containsChar('_')); // '_' is reserved to denote missing values
-  for (size_t index = 0; elements[index]; ++index)
-    addElement(defaultExecutionContext(), elements[index], (int)index < oneLetterCodes.length() ? oneLetterCodes.substring(index, index + 1) : String::empty);
-}
-
-DefaultEnumeration::DefaultEnumeration(const String& name, const String& oneLetterCodes)
-  : Enumeration(name)
-{
-  jassert(!oneLetterCodes.containsChar('_'));
-  for (int i = 0; i < oneLetterCodes.length(); ++i)
-  {
-    String oneLetterCode = oneLetterCodes.substring(i, i + 1);
-    addElement(defaultExecutionContext(), oneLetterCode, oneLetterCode);
-  }
-}
-*/
 void DefaultEnumeration::addElement(ExecutionContext& context, const String& name, const String& oneLetterCode, const String& shortName, const String& description)
 {
   if (findElementByName(name) >= 0)
@@ -204,4 +184,38 @@ void DefaultEnumeration::addElementsWithPrefix(ExecutionContext& context, const 
     EnumerationElementPtr element = enumeration->getElement(i);
     elements.push_back(new EnumerationElement(namePrefix + element->getName(), String::empty, shortNamePrefix + element->getShortName()));
   }
+}
+
+/*
+** ConcatenateEnumeration
+*/
+ConcatenateEnumeration::ConcatenateEnumeration(const String& name)
+  : Enumeration(name)
+{
+  indexToBaseIndex[0] = 0;
+}
+
+size_t ConcatenateEnumeration::getNumElements() const
+  {return indexToBaseIndex.rbegin()->first;}
+
+EnumerationElementPtr ConcatenateEnumeration::getElement(size_t index) const
+{
+  std::map<size_t, size_t>::const_iterator it = indexToBaseIndex.upper_bound(index);
+  jassert(it != indexToBaseIndex.begin() && it != indexToBaseIndex.end());
+  jassert(index < it->first);
+  --it;
+  jassert(index >= it->first);
+  index -= it->first;
+  size_t subEnumIndex = it->second;
+  jassert(subEnumIndex < subEnumerations.size() && index < subEnumerations[subEnumIndex].second->getNumElements());
+  const String& prefix = subEnumerations[subEnumIndex].first;
+  EnumerationElementPtr element = subEnumerations[subEnumIndex].second->getElement(index);
+  return new EnumerationElement(prefix + T(".") + element->getName(), String::empty, prefix + T(".") + element->getShortName());
+}
+
+void ConcatenateEnumeration::addSubEnumeration(const String& prefix, const EnumerationPtr& enumeration)
+{
+  size_t numElements = indexToBaseIndex.rbegin()->first;
+  subEnumerations.push_back(std::make_pair(prefix, enumeration));
+  indexToBaseIndex[numElements + enumeration->getNumElements()] = subEnumerations.size();
 }

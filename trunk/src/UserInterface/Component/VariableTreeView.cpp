@@ -21,7 +21,7 @@ class VariableTreeViewItem : public SimpleTreeViewItem
 public:
   VariableTreeViewItem(const String& name, const Variable& variable, const VariableTreeOptions& options)
     : SimpleTreeViewItem(name, NULL, true), 
-      variable(variable), options(options), typeName(variable.getTypeName()), component(NULL)
+      variable(variable), options(options), typeName(variable.getTypeName()), component(NULL), numUndisplayedChildElements(0)
   {
     shortSummary = variable.toShortString();
     TypePtr type = variable.getType();
@@ -59,19 +59,39 @@ public:
           }
         }
       }
+      mightContainSubItemsFlag = subVariables.size();
+    }
+
+    SparseDoubleVectorPtr sparseVector = variable.dynamicCast<SparseDoubleVector>();
+    if (sparseVector && !options.showMissingVariables) // otherwise use the default Container implementation
+    {
+      TypePtr elementsType = sparseVector->getElementsType();
+      for (size_t i = 0; i < sparseVector->getNumValues(); ++i)
+      {
+        const std::pair<size_t, double>& value = sparseVector->getValue(i);
+        addSubVariable(sparseVector->getElementName(value.first), Variable(value.second, elementsType));
+      }
+      mightContainSubItemsFlag = true;
+      return;
     }
 
     ContainerPtr container = variable.dynamicCast<Container>();
     if (container)
     {
-      subVariables.reserve(subVariables.size() + container->getNumElements());
+      static const size_t maxCount = 1000;
+      size_t count = container->getNumElements();
+      if (count > maxCount)
+      {
+        numUndisplayedChildElements = count - maxCount;
+        count = maxCount;
+      }
+      subVariables.reserve(subVariables.size() + count);
       bool isDoubleVector = container.dynamicCast<DoubleVector>();
     
       if (isDoubleVector && !options.showMissingVariables)
       {
-        size_t n = container->getNumElements();
         // skip 0 values for double vectors
-        for (size_t i = 0; i < n; ++i)
+        for (size_t i = 0; i < count; ++i)
         {
           Variable elt = container->getElement(i);
           jassert(elt.isDouble());
@@ -80,8 +100,11 @@ public:
         }
       }
       else
-        for (size_t i = 0; i < container->getNumElements(); ++i)
+        for (size_t i = 0; i < count; ++i)
           addSubVariable(container->getElementName(i), container->getElement(i));
+
+      mightContainSubItemsFlag = true;
+      return;
     }
 
     if (variable.isFile())
@@ -95,14 +118,12 @@ public:
    
         for (int i = 0; i < files.size(); ++i)
           addSubVariable(files[i]->getFileName(), Variable(files[i]->getFullPathName(), fileType));
+        mightContainSubItemsFlag = true;
       }
+      else
+        mightContainSubItemsFlag = false;
+      return;
     }
-
-    mightContainSubItemsFlag = !subVariables.empty();
-  }
-
-  virtual ~VariableTreeViewItem()
-  {
   }
 
   virtual void itemSelectionChanged(bool isNowSelected)
@@ -116,6 +137,8 @@ public:
   {
     for (size_t i = 0; i < subVariables.size(); ++i)
       addSubItem(new VariableTreeViewItem(subVariables[i].first, subVariables[i].second, options));
+    if (numUndisplayedChildElements > 0)
+      addSubItem(new SimpleTreeViewItem(String((int)numUndisplayedChildElements) + T(" other elements...")));
   }
 
   Variable getVariable() const
@@ -180,6 +203,7 @@ protected:
   String typeName;
   String shortSummary;
   Component* component;
+  size_t numUndisplayedChildElements;
 
   std::vector< std::pair<String, Variable> > subVariables;
 

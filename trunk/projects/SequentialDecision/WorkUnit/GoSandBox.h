@@ -1199,7 +1199,7 @@ GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
 class GoSandBox : public WorkUnit
 {
 public:
-  GoSandBox() : maxCount(0), numFolds(7), learningParameters(new StochasticGDParameters(constantIterationFunction(1.0)))
+  GoSandBox() : maxCount(0), numFolds(7), learningParameters(new StochasticGDParameters(constantIterationFunction(1.0))), testFeatures(false)
   {
   }
 
@@ -1211,7 +1211,8 @@ public:
       return ContainerPtr();
     }
 
-    return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
+    return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)
+        ->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
   }
 
   virtual Variable run(ExecutionContext& context)
@@ -1230,25 +1231,24 @@ public:
     context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
                                 String((int)validationGames->getNumElements()) + T(" validation games"));
     
-#if 0
-    // TMP
-    PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
-    DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
-    ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
-    for (size_t i = 0; i < 151; ++i)
+    if (testFeatures)
     {
-      double r;
-      state->performTransition(trajectory->getElement(i), r);
+      PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
+      DecisionProblemStatePtr state = pair->getFirst().getObjectAndCast<DecisionProblemState>();
+      ContainerPtr trajectory  = pair->getSecond().getObjectAndCast<Container>();
+      for (size_t i = 0; i < 150; ++i)
+      {
+        double r;
+        state->performTransition(trajectory->getElement(i), r);
+      }
+      context.resultCallback(T("state"), state);
+/*
+      GoActionsPerceptionPtr perception = new GoActionsPerception();
+      perception->initialize(context, goStateClass);
+      context.resultCallback(T("preFeatures"), perception->computePreFeatures(context, state));*/
+      return true;
     }
-    context.resultCallback(T("state"), state);
 
-    GoActionsPerceptionPtr perception = new GoActionsPerception();
-    perception->initialize(context, goStateClass);
-    context.resultCallback(T("preFeatures"), perception->computePreFeatures(context, state));
-    return true;
-    // -
-#endif // 0
-    
 
     // create ranking machine
     if (!learningParameters)
@@ -1316,6 +1316,7 @@ private:
   size_t maxCount;
   size_t numFolds;
   LearnerParametersPtr learningParameters;
+  bool testFeatures;
 };
 
 }; /* namespace lbcpp */
