@@ -11,6 +11,7 @@ GENERATE_INTROSPECTION_CODE(Core/CoreLibrary.xml CoreLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(Data/Stream/StreamLibrary.xml StreamLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/Container/ContainerLibrary.xml ContainerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Data/Matrix/MatrixLibrary.xml MatrixLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 IF(LBCPP_NETWORKING)
@@ -158,7 +159,6 @@ SET(LBCPP_DATA_SOURCES
   Data/DoubleVector.cpp
   ../include/lbcpp/Data/Matrix.h
   ../include/lbcpp/Data/SymmetricMatrix.h
-  ../include/lbcpp/Data/CompositeMatrix.h
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  
@@ -169,7 +169,14 @@ SET(LBCPP_DATA_SOURCES
   Data/Cache.cpp
   Data/DataLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DataLibrary.cpp
-)  
+)
+
+SET(LBCPP_DATA_MATRIX_SOURCES
+  Data/Matrix/Matrix.cpp
+  Data/Matrix/UpperLowerSquareMatrix.h
+  Data/Matrix/MatrixLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/MatrixLibrary.cpp
+)
 
 SET(LBCPP_DATA_STREAM_SOURCES
   Data/Stream/ApplyFunctionStream.h
@@ -666,6 +673,7 @@ SET(LBCPP_SOURCES
   ${LBCPP_DATA_SOURCES}
     ${LBCPP_DATA_STREAM_SOURCES}
     ${LBCPP_DATA_CONTAINER_SOURCES}
+    ${LBCPP_DATA_MATRIX_SOURCES}
   
   # Network
   ${LBCPP_NETWORK_SOURCES}
@@ -745,6 +753,7 @@ SOURCE_SUB_GROUP(Core Function FILES ${LBCPP_CORE_FUNCTION_SOURCES})
 SOURCE_GROUP(Data FILES ${LBCPP_DATA_SOURCES})
 SOURCE_SUB_GROUP(Data Stream FILES ${LBCPP_DATA_STREAM_SOURCES})
 SOURCE_SUB_GROUP(Data Container FILES ${LBCPP_DATA_CONTAINER_SOURCES})
+SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 
 ## Network
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})

@@ -36,20 +36,8 @@ public:
   virtual void setElement(size_t index, const Variable& value) = 0;
 
   /* Object */
-  String toString() const
-  {
-    String res;
-    for (size_t i = 0; i < getNumRows(); ++i)
-    {
-      for (size_t j = 0; j < getNumColumns(); ++j)
-        res += getElement(i, j).toString() + T(" ");
-      res += T("\n");
-    }
-    return res;
-  }
-  
-  String toShortString() const
-    {return String((int)getNumRows()) + T(" x ") + String((int)getNumColumns()) + T(" matrix");}
+  String toString() const;
+  String toShortString() const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -177,20 +165,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<ObjectMatrix> ObjectMatrixPtr;
 
-inline MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns)
-{
-  EnumerationPtr enumeration = elementsType.dynamicCast<Enumeration>();
-
-  if (enumeration && enumeration->getNumElements() < 255)
-    return new ShortEnumerationMatrix(enumeration, numRows, numColumns, (char)enumeration->getMissingValue().getInteger());
-  else if (elementsType->inheritsFrom(objectClass))
-    return new ObjectMatrix(elementsType, numRows, numColumns);
-  else
-  {
-    jassert(false);
-    return MatrixPtr();
-  }
-}
+extern MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns);
 
 }; /* namespace lbcpp */
 

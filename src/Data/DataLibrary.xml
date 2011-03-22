@@ -3,6 +3,7 @@
 <library name="Data" directory="Data">
   <import name="Stream"/>
   <import name="Container"/>
+  <import name="Matrix"/>
 
   <include file="lbcpp/Data/RandomGenerator.h"/>
   <include file="lbcpp/Data/RandomVariable.h"/>
@@ -10,7 +11,6 @@
   <include file="lbcpp/Data/DoubleVector.h"/>
   <include file="lbcpp/Data/Matrix.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
-  <include file="lbcpp/Data/CompositeMatrix.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -86,18 +86,9 @@
   <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
     <parameter name="elementsType" type="Variable"/>
   </template>
-  
+
   <class name="DoubleSymmetricMatrix" base="SymmetricMatrix[Double]"/>
 
   <class name="ObjectSymmetricMatrix" base="SymmetricMatrix[Object]"/>
-
-  <!-- CompositeMatrix -->
-  <template name="CompositeMatrix" base="Matrix[elementsType]" abstract="yes">
-    <parameter name="elementsType" type="Variable"/>
-  </template>
-  
-  <template name="SymmetricCompositeMatrix" base="CompositeMatrix[elementsType]">
-    <parameter name="elementsType" type="Variable"/>
-  </template>
 
 </library>

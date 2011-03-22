@@ -63,14 +63,7 @@ public:
     {jassert(index < elements.size()); elements[index] = value;}
   
   /* SymmetricMatrix */
-  virtual void setDimension(size_t size)
-  {
-    dimension = size;
-    elements.clear();
-    elements.resize(dimension * (dimension + 1) / 2);
-    if (!elementsType)
-      elementsType = Container::getTemplateParameter(getClass());
-  }
+  virtual void setDimension(size_t size);
 
   virtual size_t getDimension() const
     {return dimension;}
@@ -93,18 +86,7 @@ protected:
   size_t dimension;
   std::vector<ElementsType> elements;
   
-  size_t makeIndex(size_t row, size_t column) const
-  {
-    jassert(row < dimension && column < dimension);
-    if (row > column)
-    {
-      size_t swap = row;
-      row = column;
-      column = swap;
-    }
-
-    return (column - row) + (row * dimension) - ((row * (row - 1)) / 2);
-  }
+  size_t makeIndex(size_t row, size_t column) const;
 };
 
 class DoubleSymmetricMatrix : public BuiltinTypeSymmetricMatrix<double>
@@ -148,17 +130,9 @@ typedef ReferenceCountedObjectPtr<ObjectSymmetricMatrix> ObjectSymmetricMatrixPt
 /*
  ** Symmetric Matrix Constructor Method
  */
-inline SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension)
-{
-  jassert(elementsType);
-  if (elementsType->inheritsFrom(doubleType))
-    return new DoubleSymmetricMatrix(elementsType, dimension, Variable::missingValue(elementsType).getDouble());
-  else if (elementsType->inheritsFrom(objectClass))
-    return new ObjectSymmetricMatrix(elementsType, dimension, ObjectPtr());
-  else
-    jassertfalse;
-  return SymmetricMatrixPtr();
-}
+extern SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension);
+extern SymmetricMatrixPtr zeroSymmetricMatrix(TypePtr thisClass, size_t dimension);
+extern MatrixPtr upperLowerSquareMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix);
 
 }; /* namespace lbcpp */
 

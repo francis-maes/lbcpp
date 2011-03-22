@@ -67,7 +67,7 @@ class DynamicallyMappedFeatureGenerator : public FeatureGenerator
 {
 public:
   DynamicallyMappedFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy)
-    : FeatureGenerator(lazy), baseFeatureGenerator(baseFeatureGenerator), reservedSize(reservedSize) {}
+    : FeatureGenerator(lazy), reservedSize(reservedSize), baseFeatureGenerator(baseFeatureGenerator) {}
 
   DynamicallyMappedFeatureGenerator() {}
 

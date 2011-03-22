@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Matrix" directory="Data/Matrix">
+
+  <!-- CompositeMatrix -->
+  <template name="UpperLowerSquareMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="Variable"/>
+    <variable type="SymmetricMatrix" name="lowerPart"/>
+    <variable type="SymmetricMatrix" name="upperPart"/>
+  </template>
+
+</library>
+

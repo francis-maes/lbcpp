@@ -9,29 +9,18 @@
 #ifndef LBCPP_DATA_COMPOSITE_MATRIX_H_
 # define LBCPP_DATA_COMPOSITE_MATRIX_H_
 
-# include "../Data/Matrix.h"
-# include "SymmetricMatrix.h"
+# include <lbcpp/Data/SymmetricMatrix.h>
 
 namespace lbcpp
 {
 
-class CompositeMatrix : public Matrix
-{
-protected:
-  CompositeMatrix(TypePtr thisClass)
-    : Matrix(thisClass) {}
-  CompositeMatrix() {}
-};
-
-typedef ReferenceCountedObjectPtr<CompositeMatrix> CompositeMatrixPtr;
-
-class SymmetricCompositeMatrix : public CompositeMatrix
+class UpperLowerSquareMatrix : public Matrix
 {
 public:
-  SymmetricCompositeMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerPart, SymmetricMatrixPtr upperPart)
-    : CompositeMatrix(thisClass), lowerPart(lowerPart), upperPart(upperPart) 
-  {jassert(lowerPart && upperPart && lowerPart->getDimension() == upperPart->getDimension());}
-  SymmetricCompositeMatrix() {}
+  UpperLowerSquareMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerPart, SymmetricMatrixPtr upperPart)
+    : Matrix(thisClass), lowerPart(lowerPart), upperPart(upperPart) 
+    {jassert(lowerPart && upperPart && lowerPart->getDimension() == upperPart->getDimension());}
+  UpperLowerSquareMatrix() {}
 
   /* Matrix */
   virtual size_t getNumRows() const
@@ -88,11 +77,17 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class SymmetricCompositeMatrixClass;
+  friend class UpperLowerSquareMatrixClass;
 
   SymmetricMatrixPtr lowerPart;
   SymmetricMatrixPtr upperPart;
 };
+
+MatrixPtr upperLowerSquareMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix)
+  {return new UpperLowerSquareMatrix(thisClass, lowerMatrix, upperMatrix);}
+
+SymmetricMatrixPtr zeroSymmetricMatrix(TypePtr thisClass, size_t dimension)
+  {return symmetricMatrix(thisClass, dimension);}
 
 }; /* namespace lbcpp */
 
