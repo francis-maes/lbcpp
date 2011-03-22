@@ -21,7 +21,10 @@ inline void computeFeatures(const SparseDoubleVector& sparseVector, CallbackType
   const std::pair<size_t, double>* ptr = sparseVector.getValues();
   const std::pair<size_t, double>* limit = ptr + sparseVector.getNumValues();
   while (ptr < limit)
+  {
     callback.sense(ptr->first, ptr->second);
+    ++ptr;
+  }
 }
 
 template<class CallbackType>

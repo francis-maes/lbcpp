@@ -385,7 +385,7 @@ public:
     {return 4;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? matrixClass() : (index == 3 ? variableType : positiveIntegerType);}
+    {return index == 0 ? (TypePtr)matrixClass() : (index == 3 ? variableType : positiveIntegerType);}
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
@@ -449,7 +449,7 @@ public:
     {return 4;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index == 0 ? matrixClass() : (index == 3 ? anyType : positiveIntegerType);}
+    {return index == 0 ? (TypePtr)matrixClass() : (index == 3 ? anyType : positiveIntegerType);}
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {

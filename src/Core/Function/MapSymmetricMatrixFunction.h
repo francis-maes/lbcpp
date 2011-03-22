@@ -23,22 +23,39 @@ public:
     : UnaryHigherOrderFunction(baseFunction), minimumDistanceFromDiagonal(minimumDistanceFromDiagonal) {}
   MapSymmetricMatrixFunction() {}
 
+  /* UnaryHigherOrderFunction */
    virtual size_t getNumSubInputs(const ObjectPtr& inputsObject) const
   {
-    ContainerPtr container = inputsObject->getVariable(0).getObjectAndCast<Container>();
-    return container ? container->getNumElements() : 0;
+    SymmetricMatrixPtr matrix = inputsObject->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return 0;
+    const size_t dimension = matrix->getDimension() - minimumDistanceFromDiagonal;
+    return dimension * (dimension + 1) / 2;
   }
-  
+
   virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
   {
-    ContainerPtr container = example->getVariable(0).getObjectAndCast<Container>();
-    if (!container)
+    SymmetricMatrixPtr matrix = example->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
       return;
 
-    jassert(false);
-    // TODO !! see MapNContainerFunction::appendSubInputs and UnaryHigherOrderFunctionBatchLearner
+    const size_t numSubInputs = example->getNumVariables();
+    jassert(inputsClass->getNumMemberVariables() == numSubInputs);
+
+    const size_t dimension = matrix->getDimension();
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
+        subExample->setVariable(0, matrix->getElement(i, j));
+
+        for (size_t input = 1; input < numSubInputs; ++input)
+          subExample->setVariable(input, example->getVariable(input));
+        res[index++] = subExample;
+      }
   }
 
+  /* Function */
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
 
@@ -46,59 +63,38 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return matrixClass(anyType);}
+    {return index == 0 ? (TypePtr)symmetricMatrixClass(anyType) : anyType;}
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    for (size_t i = 0; i < inputVariables.size(); ++i)
-      if (!inputVariables[i]->getType()->inheritsFrom(symmetricMatrixClass(anyType)))
-        return TypePtr();
-
-    if (!baseFunction->initialize(context, inputVariables))
+    std::vector<VariableSignaturePtr> subInputs(inputVariables);
+    subInputs[0] = new VariableSignature(Container::getTemplateParameter(inputVariables[0]->getType()), T("element"));
+    if (!baseFunction->initialize(context, subInputs))
       return TypePtr();
 
-    return baseFunction->getOutputType();
+    outputName = baseFunction->getOutputVariable()->getName() + T("SymmetricMatrix");
+    outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
+    return symmetricMatrixClass(baseFunction->getOutputType());
   }
  
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
-    if (!minimumDistanceFromDiagonal)
-    {
-      return baseFunction->compute(context, inputs, getNumInputs());
-    }
-    
-    size_t numInputs = getNumInputs();
-    std::vector<Variable> subInputs(numInputs);
-    for (size_t i = 0; i < numInputs; ++i)
-    {
-      SymmetricMatrixPtr input = inputs[i].getObjectAndCast<SymmetricMatrix>();
-      if (!input || input->getDimension() <= minimumDistanceFromDiagonal)
-        subInputs[i] = Variable::missingValue(baseFunction->getInputsClass()->getMemberVariableType(i));
-      else
-      {
-        size_t dimension = input->getDimension() - minimumDistanceFromDiagonal;
-        SymmetricMatrixPtr res = symmetricMatrix(input->getElementsType(), dimension);
-        for (size_t x = 0; x < dimension; ++x)
-          for (size_t y = x; y < dimension; ++y)
-            res->setElement(x, y, input->getElement(x, y + minimumDistanceFromDiagonal));
-        subInputs[i] = res;
-      }
-    }
-
-    SymmetricMatrixPtr output = baseFunction->compute(context, subInputs).getObjectAndCast<SymmetricMatrix>();
-    if (!output)
+    const size_t numInputs = getNumInputs();
+    const SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
       return Variable::missingValue(getOutputType());
 
-    size_t outputDimension = output->getDimension();
-    size_t dimension = outputDimension + minimumDistanceFromDiagonal;
-    SymmetricMatrixPtr res = symmetricMatrix(output->getElementsType(), dimension);
-    for (size_t i = 0; i < dimension; ++i)
-      for (size_t j = i; j < dimension; ++j)
+    std::vector<Variable> subInputs(numInputs);
+    for (size_t i = 1; i < numInputs; ++i)
+      subInputs[i] = inputs[i];
+    
+    const size_t dimension = matrix->getDimension();
+    SymmetricMatrixPtr res = symmetricMatrix(Container::getTemplateParameter(getOutputType()), dimension);
+    for (size_t i = 0; i < dimension - minimumDistanceFromDiagonal; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
       {
-        if (i >= outputDimension || j < i + minimumDistanceFromDiagonal)
-          res->setElement(i, j, Variable::missingValue(res->getElementsType()));
-        else
-          res->setElement(i, j, output->getElement(i, j - minimumDistanceFromDiagonal));
+        subInputs[0] = matrix->getElement(i, j);
+        res->setElement(i, j, baseFunction->compute(context, subInputs));
       }
     return res;
   }
@@ -107,6 +103,96 @@ protected:
   friend class MapSymmetricMatrixFunctionClass;
 
   size_t minimumDistanceFromDiagonal;
+};
+
+class MapNSymmetricMatrixFunction : public MapSymmetricMatrixFunction
+{
+public:
+  MapNSymmetricMatrixFunction(FunctionPtr baseFunction, size_t minimumDistanceFromDiagonal)
+    : MapSymmetricMatrixFunction(baseFunction, minimumDistanceFromDiagonal) {}
+  MapNSymmetricMatrixFunction() {}
+
+  /* UnaryHigherOrderFunction */
+  virtual void appendSubInputs(const ObjectPtr& example, std::vector<ObjectPtr>& res, size_t& index) const
+  {
+    SymmetricMatrixPtr matrix = example->getVariable(0).getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return;
+    
+    const size_t dimension = matrix->getDimension();
+    const size_t numInputs = getNumInputs();
+
+    std::vector<SymmetricMatrixPtr> matrices(numInputs);
+    matrices[0] = matrix;
+    for (size_t i = 1; i < numInputs; ++i)
+    {
+      matrices[i] = example->getVariable(i).getObjectAndCast<SymmetricMatrix>();
+      jassert(!matrices[i] || matrices[i]->getDimension() == dimension);
+    }
+    
+    const size_t numRows = dimension - minimumDistanceFromDiagonal;
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
+        for (size_t input = 0; input < numInputs; ++input)
+          if (matrices[input])
+            subExample->setVariable(input, matrices[input]->getElement(i, j));
+        res[index++] = subExample;
+      }
+  }
+  
+  /* Function */
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return (TypePtr)symmetricMatrixClass(anyType);}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    std::vector<VariableSignaturePtr> subInputVariables(inputVariables.size());
+    for (size_t i = 0; i < subInputVariables.size(); ++i)
+    {
+      const VariableSignaturePtr& inputVariable = inputVariables[i];
+      TypePtr elementsType = Container::getTemplateParameter(inputVariable->getType());
+      subInputVariables[i] = new VariableSignature(elementsType, inputVariable->getName() + T("Element"), inputVariable->getShortName() + T("e"));
+    }
+
+    if (!baseFunction->initialize(context, subInputVariables))
+      return TypePtr();
+
+    outputName = baseFunction->getOutputVariable()->getName() + T("SymmetricMatrix");
+    outputShortName = T("[") + baseFunction->getOutputVariable()->getShortName() + T("]");
+    return symmetricMatrixClass(baseFunction->getOutputType());
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    SymmetricMatrixPtr matrix = inputs[0].getObjectAndCast<SymmetricMatrix>();
+    if (!matrix)
+      return Variable::missingValue(getOutputType());
+    
+    const size_t dimension = matrix->getDimension();
+    const size_t numInputs = getNumInputs();
+
+    std::vector<SymmetricMatrixPtr> matrices(numInputs);
+    matrices[0] = matrix;
+    for (size_t i = 1; i < numInputs; ++i)
+    {
+      matrices[i] = inputs[i].getObjectAndCast<SymmetricMatrix>();
+      jassert(!matrices[i] || matrices[i]->getDimension() == dimension);
+    }
+
+    SymmetricMatrixPtr res = symmetricMatrix(baseFunction->getOutputType(), dimension);
+    const size_t numRows = dimension - minimumDistanceFromDiagonal;
+    for (size_t i = 0; i < numRows; ++i)
+      for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
+      {
+        std::vector<Variable> subInputs(numInputs);
+        for (size_t input = 0; input < numInputs; ++input)
+          subInputs[input] = matrices[input] ? matrices[input]->getElement(i, j) : Variable::missingValue(baseFunction->getInputsClass()->getMemberVariableType(input));
+        res->setElement(i, j, baseFunction->compute(context, subInputs));
+      }
+    return res;
+  }
 };
 
 }; /* namespace lbcpp */

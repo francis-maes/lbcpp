@@ -42,13 +42,13 @@ public:
     if (!container)
       return;
 
+    size_t numSubInputs = example->getNumVariables();
+    jassert(inputsClass->getNumMemberVariables() == numSubInputs);
+
     size_t n = container->getNumElements();
     for (size_t position = 0; position < n; ++position)
     {
       ObjectPtr subExample = Object::create(baseFunction->getInputsClass());
-      size_t numSubInputs = example->getNumVariables();
-      jassert(inputsClass->getNumMemberVariables() == numSubInputs);
-      
       subExample->setVariable(0, container->getElement(position));
       for (size_t input = 1; input < numSubInputs; ++input)
         subExample->setVariable(input, example->getVariable(input));
@@ -147,30 +147,13 @@ protected:
       resVector->resize(input->getNumElements());
     }
     return res;
-    /*
-
-    TypePtr outputElementType = baseFunction->getOutputType();
-    if (getOutputType()->inheritsFrom(symmetricMatrixClass()))
-    {
-      SymmetricMatrixPtr inputSymmetricMatrix = input.dynamicCast<SymmetricMatrix>();
-      jassert(inputSymmetricMatrix);
-      return symmetricMatrix(outputElementType, inputSymmetricMatrix->getDimension());
-    }
-    else if (getOutputType()->inheritsFrom(matrixClass()))
-    {
-      MatrixPtr inputMatrix = input.dynamicCast<Matrix>();
-      jassert(inputMatrix);
-      return matrix(outputElementType, inputMatrix->getNumRows(), inputMatrix->getNumColumns());
-    }
-    else
-      return vector(outputElementType, input->getNumElements());*/
   }
 };
 
 typedef ReferenceCountedObjectPtr<MapContainerFunction> MapContainerFunctionPtr;
 
 // ((x1..xT)) -> (f(x1) .. f(xT))
-// ((x1..xT), (y1..yT)) -> (f(x1, y1) .. f(xT,yY))
+// ((x1..xT), (y1..yT)) -> (f(x1, y1) .. f(xT,yT))
 class MapNContainerFunction : public MapContainerFunction
 {
 public:
