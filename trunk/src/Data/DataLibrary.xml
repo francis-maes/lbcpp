@@ -10,6 +10,7 @@
   <include file="lbcpp/Data/DoubleVector.h"/>
   <include file="lbcpp/Data/Matrix.h"/>
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
+  <include file="lbcpp/Data/CompositeMatrix.h"/>
   
   <!-- Random Generator -->
   <class name="RandomGenerator">
@@ -89,5 +90,14 @@
   <class name="DoubleSymmetricMatrix" base="SymmetricMatrix[Double]"/>
 
   <class name="ObjectSymmetricMatrix" base="SymmetricMatrix[Object]"/>
+
+  <!-- CompositeMatrix -->
+  <template name="CompositeMatrix" base="Matrix[elementsType]" abstract="yes">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
+  
+  <template name="SymmetricCompositeMatrix" base="CompositeMatrix[elementsType]">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
 
 </library>

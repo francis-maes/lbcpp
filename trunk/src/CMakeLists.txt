@@ -158,6 +158,7 @@ SET(LBCPP_DATA_SOURCES
   Data/DoubleVector.cpp
   ../include/lbcpp/Data/Matrix.h
   ../include/lbcpp/Data/SymmetricMatrix.h
+  ../include/lbcpp/Data/CompositeMatrix.h
   ../include/lbcpp/Data/RandomGenerator.h
   Data/RandomGenerator.cpp  
   ../include/lbcpp/Data/RandomVariable.h  

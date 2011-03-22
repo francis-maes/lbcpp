@@ -9,7 +9,9 @@
 #ifndef EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 # define EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
 
+# include <lbcpp/Data/CompositeMatrix.h>
 # include <lbcpp/UserInterface/ObjectEditor.h>
+# include <lbcpp/UserInterface/MatrixComponent.h>
 # include "../Data/Protein.h"
 
 namespace lbcpp
@@ -132,103 +134,17 @@ private:
   }
 };
 
-class ContactMapComponent : public Component, public ComponentWithPreferedSize, public VariableSelector
+class ContactMapComponent : public MatrixComponent
 {
 public:
-  ContactMapComponent(SymmetricMatrixPtr map1, SymmetricMatrixPtr map2)
-    : map1(map1), map2(map2), n(0), selectedX(-1), selectedY(-1)
-  {
-    jassert(!map1 || !map2 || map1->getDimension() == map2->getDimension());
-    if (map1)
-      n = map1->getDimension();
-    else if (map2)
-      n = map2->getDimension();
-  }
+  ContactMapComponent(MatrixPtr matrix)
+    : MatrixComponent(matrix) {}
   
-  int computePixelsPerEntry(int availableWidth, int availableHeight) const
+  virtual juce::Colour selectColour(const Variable& element)
   {
-    int availableSize = juce::jmin(availableWidth, availableHeight);
-    return n ? juce::jmax(1, availableSize / (int)n) : 4;
-  }
-  
-  virtual int getPreferedWidth(int availableWidth, int availableHeight) const
-  {
-    int pixelsPerEntry = computePixelsPerEntry(availableWidth, availableHeight);
-    return juce::jmax(pixelsPerEntry * (int)n, availableWidth);
-  }
-
-  virtual int getPreferedHeight(int availableWidth, int availableHeight) const
-  {
-    int pixelsPerEntry = computePixelsPerEntry(availableWidth, availableHeight);
-    return juce::jmax(pixelsPerEntry * (int)n, availableHeight);
-  }
-
-  virtual void paint(Graphics& g)
-  {
-    int pixelsPerEntry, x1, y1;
-    getPaintCoordinates(pixelsPerEntry, x1, y1);
-  
-    for (int i = 0; i < (int)n; ++i)
-      for (int j = i; j < (int)n; ++j)
-      {
-        paintEntry(g, x1 + i * pixelsPerEntry, y1 + j * pixelsPerEntry, pixelsPerEntry, map1, i, j);
-        paintEntry(g, x1 + j * pixelsPerEntry, y1 + i * pixelsPerEntry, pixelsPerEntry, map2, i, j);
-      }
-      
-    if (selectedX >= 0 && selectedY >= 0)
+    if (element.exists())
     {
-      g.setColour(Colours::lightblue.withAlpha(0.7f));
-      g.fillRect(x1 + (selectedX - 4) * pixelsPerEntry, y1 + selectedY * pixelsPerEntry, 9 * pixelsPerEntry - 1, pixelsPerEntry - 1);
-      g.fillRect(x1 + selectedX * pixelsPerEntry, y1 + (selectedY - 4) * pixelsPerEntry, pixelsPerEntry - 1, 9 * pixelsPerEntry - 1);
-    }
-
-    g.setColour(Colours::black);
-    g.drawRect(x1, y1, (int)n * pixelsPerEntry, (int)n * pixelsPerEntry);
-    g.drawLine((float)x1, (float)y1, (float)(x1 + n * pixelsPerEntry), (float)(y1 + n * pixelsPerEntry));
-  }
-
-  virtual void mouseUp(const MouseEvent& e)
-  {
-    int pixelsPerEntry, x1, y1;
-    getPaintCoordinates(pixelsPerEntry, x1, y1);
-    jassert(pixelsPerEntry);
-    int x = (e.getMouseDownX() - x1) / pixelsPerEntry;
-    int y = (e.getMouseDownY() - y1) / pixelsPerEntry;
-    if (x >= 0 && y >= 0 && x < (int)n && y < (int)n)
-    {
-      SymmetricMatrixPtr map = x <= y ? map1 : map2;
-      if (map)
-      {
-        selectedX = x, selectedY = y;
-        sendSelectionChanged(Variable::pair(map, Variable::pair((size_t)x, (size_t)y)), T("residue pair"));
-        repaint();
-        return;
-      }
-    }
-
-    selectedX = -1, selectedY = -1;
-    sendSelectionChanged(std::vector<Variable>(), String::empty);
-    repaint();
-  }
-  
-private:
-  SymmetricMatrixPtr map1;
-  SymmetricMatrixPtr map2;
-  size_t n;
-  int selectedX, selectedY;
-    
-  void getPaintCoordinates(int& pixelsPerEntry, int& x1, int& y1) const
-  {
-    pixelsPerEntry = computePixelsPerEntry(getWidth(), getHeight());
-    x1 = (getWidth() - pixelsPerEntry * (int)n) / 2;
-    y1 = (getHeight() - pixelsPerEntry * (int)n) / 2;
-  }
-
-  static Colour selectColour(SymmetricMatrixPtr map, size_t i, size_t j)
-  {
-    if (map->getElement(i, j).exists())
-    {
-      double probability = map->getElement(i, j).getDouble();
+      double probability = element.getDouble();
       if (probability > 0.5)
       {
         // red
@@ -244,15 +160,6 @@ private:
     }
     else
       return Colours::lightgrey;
-  }
-  
-  void paintEntry(Graphics& g, int x1, int y1, int pixelsPerEntry, SymmetricMatrixPtr map, size_t i, size_t j)
-  {
-    if (map)
-    {
-      g.setColour(selectColour(map, i, j));
-      g.fillRect(x1, y1, pixelsPerEntry, pixelsPerEntry);
-    }
   }
 };
 
@@ -271,7 +178,10 @@ public:
     const MultiProtein2DConfigurationPtr& configuration = cfg.staticCast<MultiProtein2DConfiguration>();
     SymmetricMatrixPtr map1 = getMap(configuration, configuration->getProtein1());
     SymmetricMatrixPtr map2 = getMap(configuration, configuration->getProtein2());
-    ContactMapComponent* contactMapComponent = new ContactMapComponent(map1, map2);
+    if (!map2)
+      map2 = symmetricMatrix(map1->getElementsType(), map1->getDimension());
+    CompositeMatrixPtr contactMap = new SymmetricCompositeMatrix(map1->getElementsType(), map2, map1);
+    ContactMapComponent* contactMapComponent = new ContactMapComponent(contactMap);
     contactMapComponent->addCallback(*this);
     return contactMapComponent;
   }
