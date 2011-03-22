@@ -38,4 +38,11 @@
     <constructor arguments="bool lazy"/>
   </class>
 
+  <class name="DynamicSubsetEnumeration" base="Enumeration" abstract="yes"/>
+  <class name="DynamicallyMappedFeatureGenerator" base="FeatureGenerator">
+    <constructor arguments="FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy"/>
+    <variable type="FeatureGenerator" name="baseFeatureGenerator"/>
+    <variable type="PositiveInteger" name="reservedSize"/>
+  </class>
+
 </library>

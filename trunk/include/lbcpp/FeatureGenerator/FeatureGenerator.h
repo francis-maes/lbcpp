@@ -120,11 +120,11 @@ extern FeatureGeneratorPtr fixedContainerWindowFeatureGenerator(size_t begin, si
 extern FeatureGeneratorPtr centeredContainerWindowFeatureGenerator(size_t windowSize);
 extern FeatureGeneratorPtr matrixWindowFeatureGenerator(size_t windowRows, size_t windowColumns);
 
-extern FunctionPtr concatenateFeatureGenerator(bool lazy);
-extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy);
-extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy);
-
+extern FunctionPtr concatenateFeatureGenerator(bool lazy = true);
+extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy = true);
+extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr cartesianProductFeatureGenerator(bool lazy = true);
+extern FeatureGeneratorPtr dynamicallyMappedFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy = true);
 
 // composite
 extern CompositeFunctionPtr enumerationDistributionFeatureGenerator(size_t probabilityDiscretization = 1, size_t entropyDiscretization = 10, double minEntropy = -1.0, double maxEntropy = 4.0);

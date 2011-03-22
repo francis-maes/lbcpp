@@ -409,6 +409,7 @@ SET(LBCPP_FEATURE_GENERATOR_GENERIC_SOURCES
   FeatureGenerator/Generic/ContainerWindowFeatureGenerator.h
   FeatureGenerator/Generic/MatrixWindowFeatureGenerator.h
   FeatureGenerator/Generic/CartesianProductFeatureGenerator.h
+  FeatureGenerator/Generic/DynamicallyMappedFeatureGenerator.h
   FeatureGenerator/Generic/GenericFeatureGeneratorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/GenericFeatureGeneratorLibrary.cpp
 )
