@@ -376,7 +376,8 @@ inline void nativeToVariable(Variable& dest, const std::set<TT>& source, TypePtr
   destVector->resize(source.size());
   TypePtr elementsType = destVector->getElementsType();
   size_t i = 0;
-  for (std::set<TT>::const_iterator it = source.begin(); it != source.end(); ++it, ++i)
+  typedef typename std::set<TT>::const_iterator iterator;
+  for (iterator it = source.begin(); it != source.end(); ++it, ++i)
   {
     Variable variable;
     nativeToVariable(variable, *it, elementsType);

@@ -10,7 +10,6 @@
 #include "../Node/NetworkRequest.h"
 #include "NetworkWorkUnit.h"
 #include <lbcpp/Network/NetworkServer.h>
-#include <algorithm>
 
 using namespace lbcpp;
 

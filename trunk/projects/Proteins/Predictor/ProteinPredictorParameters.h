@@ -66,10 +66,10 @@ public:
     {return mapNContainerFunction(binaryClassifier(target));}
 
   virtual FunctionPtr contactMapPredictor(ProteinTarget target) const
-    {return mapNContainerFunction(binaryClassifier(target));}
+    {return mapNSymmetricMatrixFunction(binaryClassifier(target));}
 
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
-    {return mapNContainerFunction(regressor(target));}
+    {return mapNSymmetricMatrixFunction(regressor(target));}
 
   // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const

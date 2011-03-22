@@ -152,15 +152,15 @@ public:
       aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
       aaDist = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
     }
-    
+
     builder.startSelection();
-    
+
     if (featuresParameters->residuePairGlobalFeatures)
       builder.addInSelection(globalFeatures);
-    
+
     if (aaDist != (size_t)-1)
       builder.addInSelection(aaDist);
-    
+    /*
     if (featuresParameters->useIntervalMean)
     {
       std::vector<size_t> indices(3);
@@ -169,7 +169,7 @@ public:
       indices[2] = secondPosition;
       builder.addFunction(accumulatorWindowMeanFunction(), indices, T("interval"));
     }
-    
+    */
     if (featuresParameters->residuePairWindowSize)
     {
       builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
@@ -187,14 +187,14 @@ public:
       builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1_") + String((int)featuresParameters->residueMediumMeanSize));
       builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2_") + String((int)featuresParameters->residueMediumMeanSize));
     }
-    
+    /*
     if (featuresParameters->cartesianProductPrimaryWindowSize)
     {
       size_t w1 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
       size_t w2 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
       builder.addFunction(cartesianProductFeatureGenerator(true), w1, w2, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
     }
-
+    */
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }
 

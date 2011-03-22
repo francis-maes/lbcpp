@@ -64,6 +64,10 @@
     <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal"/>
     <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
   </class>
+  
+  <class name="MapNSymmetricMatrixFunction" base="MapSymmetricMatrixFunction">
+    <constructor arguments="const FunctionPtr&amp; baseFunction, size_t minimumDistanceFromDiagonal" returnType="UnaryHigherOrderFunction"/>
+  </class>
 
   <!-- Loading functions -->
   <class name="LoadFromFileFunction" base="Function">
