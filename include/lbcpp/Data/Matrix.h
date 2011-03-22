@@ -31,6 +31,7 @@ public:
   virtual Variable getElement(size_t row, size_t column) const = 0;
   virtual void setElement(size_t row, size_t column, const Variable& value) = 0;
 
+  /* Container */
   virtual Variable getElement(size_t index) const = 0;
   virtual void setElement(size_t index, const Variable& value) = 0;
 
