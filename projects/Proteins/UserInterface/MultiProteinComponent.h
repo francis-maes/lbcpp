@@ -121,7 +121,7 @@ public:
       }
 
       MultiProtein1DConfigurationPtr configuration = new MultiProtein1DConfiguration(names, sequenceIndex);
-      return new MultiProtein1DComponent(proteins, configuration);
+      return new MultiProtein1DComponent(context, proteins, configuration);
     }
     else if (tabName == T("Protein 2D"))
     {
@@ -130,7 +130,7 @@ public:
       addObjectNameIfExists(T("Cb 8 angstrom"), proteinClass->findMemberVariable(T("contactMap8Cb")), mapIndex);
       
       MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(names, mapIndex);
-      return new MultiProtein2DComponent(proteins, configuration);
+      return new MultiProtein2DComponent(context, proteins, configuration);
     }
 
     jassert(false);

@@ -12,6 +12,7 @@
 # include "MultiSequenceComponent.h"
 # include <lbcpp/UserInterface/ObjectEditor.h>
 # include "../Data/Protein.h"
+# include "../Predictor/ProteinPredictor.h"
 
 namespace lbcpp
 {
@@ -105,9 +106,27 @@ public:
 class MultiProtein1DComponent : public ObjectEditor, public VariableSelector, public VariableSelectorCallback
 {
 public:
-  MultiProtein1DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
-    : ObjectEditor(ObjectPtr(), configuration, true, false), proteins(proteins)
-    {initialize();}
+  MultiProtein1DComponent(ExecutionContext& context, const std::vector<ProteinPtr>& proteins, MultiProtein1DConfigurationPtr configuration)
+  : ObjectEditor(ObjectPtr(), configuration, true, false), proteins(proteins), features(std::vector<ContainerPtr>(proteins.size()))
+  {
+    initialize();
+    
+    /* Initialize features */
+    NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
+    ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+
+    FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+    proteinfunction->initialize(context, (TypePtr)proteinClass);
+
+    FunctionPtr residuefunction = predictorParameters->createResidueVectorPerception();
+    residuefunction->initialize(context, proteinfunction->getOutputType());
+    
+    for (size_t i = 0; i < features.size(); ++i)
+    {
+      Variable proteinPerception = proteinfunction->compute(context, proteins[i]);
+      features[i] = residuefunction->compute(context, proteinPerception).getObjectAndCast<Container>();
+    }
+  }
 
   virtual Component* createConfigurationComponent(const ObjectPtr& configuration)
     {return new MultiProtein1DConfigurationComponent(configuration);}
@@ -159,21 +178,31 @@ public:
   
 protected:
   std::vector<ProteinPtr> proteins;
+  std::vector<ContainerPtr> features;
 
   Variable makeSelection(const Variable& sequenceVariable) const
   {
     jassert(sequenceVariable.getType() == pairClass(pairClass(stringType, stringType), integerType));
-    
+
     const PairPtr& nameAndPosition = sequenceVariable.getObjectAndCast<Pair>();
     const PairPtr& names = nameAndPosition->getFirst().getObjectAndCast<Pair>();
-    //String sequenceName = names[0].getString();
-    ProteinPtr protein = findProteinWithName(names->getSecond().getString());
+    String proteinName = names->getSecond().getString();
+    ProteinPtr protein = findProteinWithName(proteinName);
     jassert(protein);
     int position = nameAndPosition->getSecond().getInteger();
     if (position < 0)
       return protein;
-    else
-      return Variable::pair(protein, (size_t)position);
+    
+    return findFeatureWithNameAndPosition(proteinName, (size_t)position);
+  }
+  
+  Variable findFeatureWithNameAndPosition(const String& proteinName, size_t position) const
+  {
+    MultiProtein1DConfigurationPtr configuration = this->configuration.staticCast<MultiProtein1DConfiguration>();
+    for (size_t i = 0; i < configuration->getNumProteins(); ++i)
+      if (configuration->getProteinName(i) == proteinName)
+        return features[i]->getElement(position);
+    return Variable::missingValue(containerClass());
   }
  
   ProteinPtr findProteinWithName(const String& proteinName) const

@@ -5,8 +5,8 @@
   <!-- CompositeMatrix -->
   <template name="UpperLowerSquareMatrix" base="Matrix[elementsType]">
     <parameter name="elementsType" type="Variable"/>
-    <variable type="SymmetricMatrix" name="lowerPart"/>
-    <variable type="SymmetricMatrix" name="upperPart"/>
+    <variable type="SymmetricMatrix[elementsType]" name="lowerPart"/>
+    <variable type="SymmetricMatrix[elementsType]" name="upperPart"/>
   </template>
 
 </library>
