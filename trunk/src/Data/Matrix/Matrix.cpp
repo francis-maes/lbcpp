@@ -105,5 +105,8 @@ SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension)
     jassertfalse;
   return SymmetricMatrixPtr();
 }
-  
+
+SymmetricMatrixPtr zeroSymmetricMatrix(size_t dimension)
+  {return symmetricMatrix(doubleType, dimension);}
+
 };

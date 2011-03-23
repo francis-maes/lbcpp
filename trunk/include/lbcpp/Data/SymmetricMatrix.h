@@ -131,8 +131,8 @@ typedef ReferenceCountedObjectPtr<ObjectSymmetricMatrix> ObjectSymmetricMatrixPt
  ** Symmetric Matrix Constructor Method
  */
 extern SymmetricMatrixPtr symmetricMatrix(TypePtr elementsType, size_t dimension);
-extern SymmetricMatrixPtr zeroSymmetricMatrix(TypePtr thisClass, size_t dimension);
-extern MatrixPtr upperLowerSquareMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix);
+extern SymmetricMatrixPtr zeroSymmetricMatrix(size_t dimension);
+extern MatrixPtr upperLowerSquareMatrix(TypePtr elementsClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix);
 
 }; /* namespace lbcpp */
 

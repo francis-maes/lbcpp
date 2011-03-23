@@ -13,6 +13,7 @@
 # include <lbcpp/UserInterface/ObjectEditor.h>
 # include <lbcpp/UserInterface/MatrixComponent.h>
 # include "../Data/Protein.h"
+# include "../Predictor/ProteinPredictor.h"
 
 namespace lbcpp
 {
@@ -166,9 +167,27 @@ public:
 class MultiProtein2DComponent : public ObjectEditor, public VariableSelector, public VariableSelectorCallback
 {
 public:
-  MultiProtein2DComponent(const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
-    : ObjectEditor(ObjectPtr(), configuration, true, true), proteins(proteins)
-    {initialize();}
+  MultiProtein2DComponent(ExecutionContext& context, const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
+    : ObjectEditor(ObjectPtr(), configuration, true, true), proteins(proteins), features(std::vector<SymmetricMatrixPtr>(proteins.size()))
+  {
+    initialize();
+    
+    /* Initialize function */
+    NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
+    ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+
+    FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+    proteinfunction->initialize(context, (TypePtr)proteinClass);
+
+    FunctionPtr residuefunction = predictorParameters->createResiduePairVectorPerception();
+    residuefunction->initialize(context, proteinfunction->getOutputType());
+
+    for (size_t i = 0; i < proteins.size(); ++i)
+    {
+      Variable proteinPerception = proteinfunction->compute(context, proteins[i]);
+      features[i] = residuefunction->compute(context, proteinPerception).getObjectAndCast<SymmetricMatrix>();
+    }
+  }
   
   virtual Component* createConfigurationComponent(const ObjectPtr& configuration)
     {return new MultiProtein2DConfigurationComponent(configuration);}
@@ -179,7 +198,7 @@ public:
     SymmetricMatrixPtr map1 = getMap(configuration, configuration->getProtein1());
     SymmetricMatrixPtr map2 = getMap(configuration, configuration->getProtein2());
     if (!map2)
-      map2 = zeroSymmetricMatrix(map1->getElementsType(), map1->getDimension());
+      map2 = zeroSymmetricMatrix(map1->getDimension());
     MatrixPtr contactMap = upperLowerSquareMatrix(map1->getElementsType(), map2, map1);
     ContactMapComponent* contactMapComponent = new ContactMapComponent(contactMap);
     contactMapComponent->addCallback(*this);
@@ -197,6 +216,7 @@ public:
 
 protected:
   std::vector<ProteinPtr> proteins;
+  std::vector<SymmetricMatrixPtr> features;
 
   SymmetricMatrixPtr getMap(const MultiProtein2DConfigurationPtr& configuration, int proteinNumber) const
   {
@@ -210,17 +230,18 @@ protected:
   {
     const PairPtr& pair = input.getObjectAndCast<Pair>();
     const MultiProtein2DConfigurationPtr& configuration = this->configuration.staticCast<MultiProtein2DConfiguration>();
-    SymmetricMatrixPtr contactMap = pair->getFirst().getObjectAndCast<SymmetricMatrix>();
+    MatrixPtr contactMap = pair->getFirst().getObjectAndCast<Matrix>();
 
-    for (size_t i = 0; i < proteins.size(); ++i)
-      if (contactMap == getMap(configuration, (int)i))
-        return new Pair(proteins[i], pair->getSecond());
-    jassert(false);
-    return Variable();
+    PairPtr position = pair->getSecond().getObject();
+    const size_t row = position->getFirst().getInteger();
+    const size_t column = position->getFirst().getInteger();
+
+    if (row < column)
+      return configuration->getProtein2() != -1 ? features[configuration->getProtein2()]->getElement(row, column) : Variable::missingValue(objectClass);
+    return configuration->getProtein1() != -1 ? features[configuration->getProtein1()]->getElement(row, column) : Variable::missingValue(objectClass);
   }
 };
 
 }; /* namespace lbcpp */
 
 #endif // !EXPLORER_PROTEIN_MULTI_2D_COMPONENT_H_
-

@@ -83,11 +83,10 @@ protected:
   SymmetricMatrixPtr upperPart;
 };
 
-MatrixPtr upperLowerSquareMatrix(TypePtr thisClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix)
-  {return new UpperLowerSquareMatrix(thisClass, lowerMatrix, upperMatrix);}
+extern ClassPtr upperLowerSquareMatrixClass(TypePtr elementsType);
 
-SymmetricMatrixPtr zeroSymmetricMatrix(TypePtr thisClass, size_t dimension)
-  {return symmetricMatrix(thisClass, dimension);}
+MatrixPtr upperLowerSquareMatrix(TypePtr elementsClass, SymmetricMatrixPtr lowerMatrix, SymmetricMatrixPtr upperMatrix)
+  {return new UpperLowerSquareMatrix(upperLowerSquareMatrixClass(elementsClass), lowerMatrix, upperMatrix);}
 
 }; /* namespace lbcpp */
 
