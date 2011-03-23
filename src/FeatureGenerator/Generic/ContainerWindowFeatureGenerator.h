@@ -122,8 +122,8 @@ public:
     : windowSize(windowSize) {}
 
   virtual void getRelativeWindow(int& startPosition, size_t& windowSize) const
-    {startPosition = (int)(this->windowSize / 2); windowSize = this->windowSize;}
-  
+    {startPosition = -(int)(this->windowSize / 2); windowSize = this->windowSize;}
+
   virtual void getAbsoluteWindow(const Variable* inputs, int& startPosition, size_t& windowSize) const
     {startPosition = inputs[1].getInteger() - (int)(this->windowSize / 2); windowSize = this->windowSize;}
 

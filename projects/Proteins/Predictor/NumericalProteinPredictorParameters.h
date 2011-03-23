@@ -150,7 +150,7 @@ public:
     if (featuresParameters->aminoAcidDistanceFeature)
     {
       aaDist = builder.addFunction(new SubtractFunction(), secondPosition, firstPosition);
-      aaDist = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10), aaDist, T("aaDistance"));
+      aaDist = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10, true), aaDist, T("aaDistance"));
     }
 
     builder.startSelection();
