@@ -241,6 +241,9 @@ protected:
 
   virtual Component* createConfigurationComponent(const ObjectPtr& configuration) = 0;
   virtual Component* createContentComponent(const ObjectPtr& object, const ObjectPtr& configuration) = 0;
+  
+  virtual size_t getConfigurationComponentHeight() const
+    {return 100;}
 };
 
 }; /* namespace lbcpp */
