@@ -240,8 +240,8 @@ protected:
     const size_t column = position->getFirst().getInteger();
 
     if (row < column)
-      return configuration->getProtein2() != -1 ? features[configuration->getProtein2()]->getElement(row, column) : Variable::missingValue(objectClass);
-    return configuration->getProtein1() != -1 ? features[configuration->getProtein1()]->getElement(row, column) : Variable::missingValue(objectClass);
+      return configuration->getProtein2() >= 0 ? features[configuration->getProtein2()]->getElement(row, column) : Variable();
+    return configuration->getProtein1() >= 0 ? features[configuration->getProtein1()]->getElement(row, column) : Variable();
   }
 };
 
