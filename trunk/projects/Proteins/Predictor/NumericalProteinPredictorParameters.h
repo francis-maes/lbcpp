@@ -71,13 +71,13 @@ public:
     // feature generators
     builder.startSelection();
 
-      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
-      addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
-      addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
+ //     builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
+ //     addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
+ //     addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
       addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
-      addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
-      addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
-      addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
+ //     addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
+ //     addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
+ //     addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
@@ -110,13 +110,13 @@ public:
       if (featuresParameters->residueGlobalFeatures)
         builder.addInSelection(globalFeatures);
 
-      if (featuresParameters->residueWindowSize)
+      if (featuresParameters->residueWindowSize && false)
         builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
 
-      if (featuresParameters->residueLocalMeanSize)
+      if (featuresParameters->residueLocalMeanSize && false)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueLocalMeanSize));
 
-      if (featuresParameters->residueMediumMeanSize)
+      if (featuresParameters->residueMediumMeanSize && false)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueMediumMeanSize));
      
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
