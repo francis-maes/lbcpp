@@ -168,7 +168,9 @@ class MultiProtein2DComponent : public ObjectEditor, public VariableSelector, pu
 {
 public:
   MultiProtein2DComponent(ExecutionContext& context, const std::vector<ProteinPtr>& proteins, MultiProtein2DConfigurationPtr configuration)
-    : ObjectEditor(ObjectPtr(), configuration, true, true), proteins(proteins), features(std::vector<SymmetricMatrixPtr>(proteins.size()))
+    : ObjectEditor(ObjectPtr(), configuration, true, true), proteins(proteins)
+    , features(std::vector<SymmetricMatrixPtr>(proteins.size()))
+    , disulfideFeatures(std::vector<SymmetricMatrixPtr>(proteins.size()))
   {
     initialize();
     
@@ -182,10 +184,14 @@ public:
     FunctionPtr residuefunction = predictorParameters->createResiduePairVectorPerception();
     residuefunction->initialize(context, proteinfunction->getOutputType());
 
+    FunctionPtr disulfidResiduefunction = predictorParameters->createDisulfideResiduePairVectorPerception();
+    residuefunction->initialize(context, proteinfunction->getOutputType());
+    
     for (size_t i = 0; i < proteins.size(); ++i)
     {
       Variable proteinPerception = proteinfunction->compute(context, proteins[i]);
       features[i] = residuefunction->compute(context, proteinPerception).getObjectAndCast<SymmetricMatrix>();
+      disulfideFeatures[i] = disulfidResiduefunction->compute(context, proteinPerception).getObjectAndCast<SymmetricMatrix>();
     }
   }
   
@@ -220,6 +226,7 @@ public:
 protected:
   std::vector<ProteinPtr> proteins;
   std::vector<SymmetricMatrixPtr> features;
+  std::vector<SymmetricMatrixPtr> disulfideFeatures;
 
   SymmetricMatrixPtr getMap(const MultiProtein2DConfigurationPtr& configuration, int proteinNumber) const
   {
@@ -237,11 +244,15 @@ protected:
 
     PairPtr position = pair->getSecond().getObject();
     const size_t row = position->getFirst().getInteger();
-    const size_t column = position->getFirst().getInteger();
+    const size_t column = position->getSecond().getInteger();
 
-    if (row < column)
-      return configuration->getProtein2() >= 0 ? features[configuration->getProtein2()]->getElement(row, column) : Variable();
-    return configuration->getProtein1() >= 0 ? features[configuration->getProtein1()]->getElement(row, column) : Variable();
+    String mapName = configuration->getMapFriendlyName(configuration->getCurrentMap());
+    const std::vector<SymmetricMatrixPtr>& f = (mapName == T("Disulfide Bonds")) ? disulfideFeatures : features;
+    std::cout << mapName << std::endl;
+    if (mapName == T("Disulfide Bonds"))
+      std::cout << "OK" << std::endl;
+    size_t proteinIndex = (row < column) ? configuration->getProtein2() : configuration->getProtein1();
+    return proteinIndex >= 0 ? f[proteinIndex]->getElement(row, column) : Variable();
   }
 };
 

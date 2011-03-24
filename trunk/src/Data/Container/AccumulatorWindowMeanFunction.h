@@ -38,6 +38,10 @@ public:
 
     int startPosition = inputs[1].getInteger();
     int endPosition = inputs[2].getInteger();
+    
+    if (startPosition == endPosition)
+      return Variable::missingValue(denseDoubleVectorClass(getOutputType()));
+    
     jassert(startPosition >= 0 && startPosition < (int)n);
     jassert(endPosition >= 0 && endPosition < (int)n);
     jassert(startPosition <= endPosition);

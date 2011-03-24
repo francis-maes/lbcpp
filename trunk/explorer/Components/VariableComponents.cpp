@@ -50,6 +50,8 @@ Component* createComponentForObject(ExecutionContext& context, ObjectPtr object,
       return createComponentForObject(context, loadedContainer, explicitName);
     }
   
+    if (elementsType->inheritsFrom(sumType(doubleType, integerType)))
+      return userInterfaceManager().createVariableTreeView(context, container);
     if (!elementsType->isNamedType() && elementsType->getNumMemberVariables() > 1)
       return userInterfaceManager().createContainerTableListBox(context, container);
     else

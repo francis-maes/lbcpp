@@ -64,6 +64,7 @@ public:
     {
       addTab(T("Residue Features"), Colours::white);
       addTab(T("Residue Pair Features"), Colours::red);
+      addTab(T("Disulfide Pair Features"), Colours::red);
     }
   }
 
@@ -75,6 +76,21 @@ public:
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
 //    else if (tabName == T("Perception"))
 //      return new ProteinPerceptionComponent(proteins[0]);
+    else if (tabName == T("Disulfide Pair Features"))
+    {
+      NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
+      ProteinPredictorParametersPtr predictorParameters = numericalProteinPredictorParameters(featuresParameters, new StochasticGDParameters());
+      
+      FunctionPtr proteinfunction = predictorParameters->createProteinPerception();
+      proteinfunction->initialize(context, (TypePtr)proteinClass);
+      Variable proteinPerception = proteinfunction->compute(context, proteins[0]);
+      
+      FunctionPtr residuefunction = predictorParameters->createDisulfideResiduePairVectorPerception();
+      residuefunction->initialize(context, proteinfunction->getOutputType());
+      Variable description = residuefunction->compute(context, proteinPerception);
+      
+      return userInterfaceManager().createVariableTreeView(context, description);
+    }
     else if (tabName == T("Residue Pair Features"))
     {
       NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();
@@ -124,7 +140,8 @@ public:
       {
         TypePtr type = proteinClass->getMemberVariableType(i);
         if (type->inheritsFrom(doubleVectorClass(enumValueType, probabilityType))
-            || type->inheritsFrom(objectVectorClass(doubleVectorClass())))
+            || type->inheritsFrom(objectVectorClass(doubleVectorClass()))
+            || type->inheritsFrom(genericVectorClass(aminoAcidTypeEnumeration)))
         {
           String friendlyName = proteinClass->getMemberVariableDescription(i);
           addObjectNameIfExists(friendlyName, i, sequenceIndex);
@@ -139,6 +156,7 @@ public:
       std::vector< std::pair<String, size_t> > mapIndex;
       addObjectNameIfExists(T("Ca 8 angstrom"), proteinClass->findMemberVariable(T("contactMap8Ca")), mapIndex);
       addObjectNameIfExists(T("Cb 8 angstrom"), proteinClass->findMemberVariable(T("contactMap8Cb")), mapIndex);
+      addObjectNameIfExists(T("Disulfide Bonds"), proteinClass->findMemberVariable(T("disulfideBonds")), mapIndex);
       
       MultiProtein2DConfigurationPtr configuration = new MultiProtein2DConfiguration(names, mapIndex);
       return new MultiProtein2DComponent(context, proteins, configuration);

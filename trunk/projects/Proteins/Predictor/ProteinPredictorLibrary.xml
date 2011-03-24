@@ -16,6 +16,9 @@
   
   <class name="CreateProteinPerceptionFunction" base="Function"/>
   <class name="SubtractFunction" base="Function"/>
+  <class name="CreateDisulfideSymmetricMatrixFunction" base="Function">
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
 
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
