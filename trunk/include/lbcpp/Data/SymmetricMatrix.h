@@ -63,7 +63,14 @@ public:
     {jassert(index < elements.size()); elements[index] = value;}
   
   /* SymmetricMatrix */
-  virtual void setDimension(size_t size);
+  virtual void setDimension(size_t size)
+  {
+    dimension = size;
+    elements.clear();
+    elements.resize(dimension * (dimension + 1) / 2);
+    if (!elementsType)
+      elementsType = Container::getTemplateParameter(getClass());
+  }
 
   virtual size_t getDimension() const
     {return dimension;}
@@ -86,7 +93,18 @@ protected:
   size_t dimension;
   std::vector<ElementsType> elements;
   
-  size_t makeIndex(size_t row, size_t column) const;
+  size_t makeIndex(size_t row, size_t column) const
+  {
+    jassert(row < dimension && column < dimension);
+    if (row > column)
+    {
+      size_t swap = row;
+      row = column;
+      column = swap;
+    }
+    
+    return (column - row) + (row * dimension) - ((row * (row - 1)) / 2);
+  }
 };
 
 class DoubleSymmetricMatrix : public BuiltinTypeSymmetricMatrix<double>
