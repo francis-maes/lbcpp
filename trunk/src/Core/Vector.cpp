@@ -409,7 +409,7 @@ Variable ObjectVector::getElement(size_t index) const
 {
   jassert(index < objects->size());
   const ObjectPtr& res = (*objects)[index];
-  TypePtr elementsType = getElementsType();
+  TypePtr elementsType = res ? (TypePtr)res->getClass() : getElementsType();
   return Variable(res, elementsType);
 }
 

@@ -32,11 +32,18 @@ public:
     size_t n = container->getNumElements();
     proteins.reserve(n);
     names.reserve(n);
+    size_t length = (size_t)-1;
     for (size_t i = 0; i < n; ++i)
     {
       ObjectPtr object = container->getElement(i).getObject();
       ProteinPtr protein = object.dynamicCast<Protein>();
       jassert(protein);
+
+      if (i == 0)
+        length = protein->getLength();
+      else if (protein->getLength() != length)
+        continue;
+
       proteins.push_back(protein);
       names.push_back(String((int)i) + T(" - ") + protein->getName());
     }
@@ -52,8 +59,12 @@ public:
     }
     addTab(T("Protein 1D"), Colours::white);
     addTab(T("Protein 2D"), Colours::white);
-    addTab(T("Residue Features"), Colours::white);
-    addTab(T("Residue Pair Features"), Colours::red);
+    
+    if (proteins.size() == 1)
+    {
+      addTab(T("Residue Features"), Colours::white);
+      addTab(T("Residue Pair Features"), Colours::red);
+    }
   }
 
   virtual Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& tabName)
