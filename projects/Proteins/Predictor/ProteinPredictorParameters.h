@@ -24,6 +24,7 @@ public:
   virtual void proteinPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
@@ -44,6 +45,13 @@ public:
   virtual FunctionPtr createResiduePairVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, residuePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, disulfideResiduePairVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -70,6 +78,9 @@ public:
 
   virtual FunctionPtr distanceMapPredictor(ProteinTarget target) const
     {return mapNSymmetricMatrixFunction(regressor(target));}
+  
+  virtual FunctionPtr disulfideBondPredictor(ProteinTarget target) const
+    {return mapNSymmetricMatrixFunction(binaryClassifier(target), 1);}
 
   // Features Container x Target supervision -> Predicted target
   virtual FunctionPtr createTargetPredictor(ProteinTarget target) const
@@ -81,6 +92,8 @@ public:
       res = probabilityVectorPredictor(target);
     else if (target == cma8Target || target == cmb8Target)
       res = contactMapPredictor(target);
+    else if (target == dsbTarget)
+      res = disulfideBondPredictor(target);
     else
     {
       jassert(false);

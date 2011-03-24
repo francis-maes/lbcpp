@@ -71,13 +71,13 @@ public:
     // feature generators
     builder.startSelection();
 
- //     builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
- //     addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
- //     addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
+      builder.addFunction(enumerationFeatureGenerator(), aminoAcid, T("aa"));
+      addEnumerationDistributionFeatureGenerator(builder, pssmRow, T("pssm"), featuresParameters->pssmDiscretization, featuresParameters->pssmEntropyDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, ss3, T("ss3"), featuresParameters->ss3Discretization, featuresParameters->ss3EntropyDiscretization);
       addEnumerationDistributionFeatureGenerator(builder, ss8, T("ss8"), featuresParameters->ss8Discretization, featuresParameters->ss8EntropyDiscretization);
- //     addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
- //     addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
- //     addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
+      addEnumerationDistributionFeatureGenerator(builder, stal, T("stal"), featuresParameters->stalDiscretization, featuresParameters->stalEntropyDiscretization);
+      addBinaryDistributionFeatureGenerator(builder, sa20, T("sa20"), featuresParameters->sa20Discretization);
+      addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
@@ -110,13 +110,13 @@ public:
       if (featuresParameters->residueGlobalFeatures)
         builder.addInSelection(globalFeatures);
 
-      if (featuresParameters->residueWindowSize && false)
+      if (featuresParameters->residueWindowSize)
         builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residueWindowSize), primaryResidueFeatures, position, T("window"));
 
-      if (featuresParameters->residueLocalMeanSize && false)
+      if (featuresParameters->residueLocalMeanSize)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueLocalMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueLocalMeanSize));
 
-      if (featuresParameters->residueMediumMeanSize && false)
+      if (featuresParameters->residueMediumMeanSize)
         builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residueMediumMeanSize), primaryResidueFeaturesAcc, position, T("mean") + String((int)featuresParameters->residueMediumMeanSize));
      
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
@@ -153,6 +153,14 @@ public:
       aaDist = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0, 3, 10, true), aaDist, T("aaDistance"));
     }
 
+    size_t cartesianFirstWindow = (size_t)-1;
+    size_t cartesianSecondWindow = (size_t)-1;
+    if (featuresParameters->cartesianProductPrimaryWindowSize)
+    {
+      cartesianFirstWindow = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
+      cartesianSecondWindow = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
+    }
+    
     builder.startSelection();
 
     if (featuresParameters->residuePairGlobalFeatures)
@@ -160,16 +168,10 @@ public:
 
     if (aaDist != (size_t)-1)
       builder.addInSelection(aaDist);
-    /*
+    
     if (featuresParameters->useIntervalMean)
-    {
-      std::vector<size_t> indices(3);
-      indices[0] = primaryResidueFeaturesAcc;
-      indices[1] = firstPosition;
-      indices[2] = secondPosition;
-      builder.addFunction(accumulatorWindowMeanFunction(), indices, T("interval"));
-    }
-    */
+      builder.addFunction(accumulatorWindowMeanFunction(), primaryResidueFeaturesAcc, firstPosition, secondPosition, T("interval"));
+
     if (featuresParameters->residuePairWindowSize)
     {
       builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->residuePairWindowSize), primaryResidueFeatures, firstPosition, T("window_1_"));
@@ -187,15 +189,26 @@ public:
       builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, firstPosition, T("mean_1_") + String((int)featuresParameters->residueMediumMeanSize));
       builder.addFunction(accumulatorLocalMeanFunction(featuresParameters->residuePairMediumMeanSize), primaryResidueFeaturesAcc, secondPosition, T("mean_2_") + String((int)featuresParameters->residueMediumMeanSize));
     }
-    /*
-    if (featuresParameters->cartesianProductPrimaryWindowSize)
-    {
-      size_t w1 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
-      size_t w2 = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
-      builder.addFunction(cartesianProductFeatureGenerator(true), w1, w2, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
-    }
-    */
+
+    if (cartesianFirstWindow != (size_t)-1 && cartesianSecondWindow != (size_t)-1)
+      builder.addFunction(cartesianProductFeatureGenerator(true), cartesianFirstWindow, cartesianSecondWindow, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
+
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+  }
+  
+  /* Dissulfide Residue Pair Perception */
+  virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
+    
+    builder.startSelection();
+    
+    builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+    
+    builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
   }
 
   // Learning Machine

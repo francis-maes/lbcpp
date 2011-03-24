@@ -50,7 +50,7 @@ void ProteinPredictor::buildFunction(CompositeFunctionBuilder& builder)
   size_t proteinPerception = builder.addFunction(parameters->createProteinPerception(), input);
   size_t residuePerception = activeResiduePerception ? builder.addFunction(parameters->createResidueVectorPerception(), proteinPerception) : (size_t)-1;
   size_t residuePairPerception = activeResiduePairPerception ? builder.addFunction(parameters->createResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
-  size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? 0 : (size_t)-1; // FIXME julien
+  size_t disulfideResiduePerception = activeDisulfideResiduePairPerception ? builder.addFunction(parameters->createDisulfideResiduePairVectorPerception(), proteinPerception) : (size_t)-1;
 
   /* Dynamic Types - Backup */
   if (residuePerception != (size_t)-1)

@@ -29,7 +29,7 @@ public:
     {return (size_t)-1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return (index == 0) ? positiveIntegerType : elementGeneratorFunction->getRequiredInputType(index, numInputs);}
+    {return (index == 0) ? positiveIntegerType : elementGeneratorFunction->getRequiredInputType(index + 1, numInputs);}
 
   virtual String getOutputPostFix() const
     {return T("Generated");}

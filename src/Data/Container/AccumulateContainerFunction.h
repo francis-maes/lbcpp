@@ -79,7 +79,7 @@ public:
   virtual Variable getElement(size_t index) const
   {
     jassert(index < numElements);
-    DenseDoubleVectorPtr res = new DenseDoubleVector(elementsType, numSubElements);
+    DenseDoubleVectorPtr res = new DenseDoubleVector(elementsType);
     for (size_t i = 0; i < numSubElements; ++i)
       res->setValue(i, values[index][i]);
     return res;

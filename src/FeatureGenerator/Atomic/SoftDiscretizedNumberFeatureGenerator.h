@@ -11,8 +11,6 @@
 
 # include "DiscretizedNumberFeatureGenerator.h"
 
-//#define DEBUG_SOFT_DISCRETIZED_FEATURES
-
 namespace lbcpp
 {
 
@@ -41,9 +39,6 @@ public:
       res->addElement(context, T("close to ") + getBoundaryName(i));
     if (!cyclicBehavior)
       res->addElement(context, T("close to ") + getBoundaryName(numIntervals));
-#ifdef DEBUG_SOFT_DISCRETIZED_FEATURES
-    res->addElement(context, T("value"));
-#endif
     return res;
   }
 
@@ -106,10 +101,6 @@ public:
       if (doOutOfBoundsFeatures)
         callback.sense(1, 1.0);
     }
-#ifdef DEBUG_SOFT_DISCRETIZED_FEATURES
-    size_t end = numIntervals + (doOutOfBoundsFeatures ? 2 : 0) + (!cyclicBehavior ? 1 : 0);
-    callback.sense(end, value);
-#endif
   }
   
 private:
