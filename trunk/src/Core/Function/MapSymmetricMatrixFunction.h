@@ -118,7 +118,7 @@ public:
     SymmetricMatrixPtr matrix = example->getVariable(0).getObjectAndCast<SymmetricMatrix>();
     if (!matrix)
       return;
-    
+
     const size_t dimension = matrix->getDimension();
     const size_t numInputs = getNumInputs();
 
@@ -129,6 +129,9 @@ public:
       matrices[i] = example->getVariable(i).getObjectAndCast<SymmetricMatrix>();
       jassert(!matrices[i] || matrices[i]->getDimension() == dimension);
     }
+
+    if (minimumDistanceFromDiagonal > dimension)
+      return;
     
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
     for (size_t i = 0; i < numRows; ++i)
@@ -182,6 +185,10 @@ public:
     }
 
     SymmetricMatrixPtr res = symmetricMatrix(baseFunction->getOutputType(), dimension);
+    
+    if (minimumDistanceFromDiagonal > dimension)
+      return res;
+
     const size_t numRows = dimension - minimumDistanceFromDiagonal;
     for (size_t i = 0; i < numRows; ++i)
       for (size_t j = i + minimumDistanceFromDiagonal; j < dimension; ++j)
