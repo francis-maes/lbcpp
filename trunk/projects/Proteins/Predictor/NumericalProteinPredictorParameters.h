@@ -216,13 +216,13 @@ public:
   {
     switch (target)
     {
+    case dsbTarget:
     case drTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
         return res;
       }
-    case dsbTarget:
     case sa20Target:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
