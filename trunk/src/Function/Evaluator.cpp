@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include <lbcpp/Function/Evaluator.h>
 #include <lbcpp/Execution/WorkUnit.h>
+#include <lbcpp/Core/DynamicObject.h>
 using namespace lbcpp;
 
 namespace lbcpp 
@@ -190,3 +191,47 @@ bool ProxyEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObj
 
 void ProxyEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
   {jassert(implementation); implementation->finalizeScoreObject(scores, function);}
+
+/*
+** CallbackBasedEvaluator
+*/
+class CallbackBasedEvaluatorCallback : public FunctionCallback
+{
+public:
+  CallbackBasedEvaluatorCallback(const EvaluatorPtr& evaluator, const ScoreObjectPtr& scores)
+    : evaluator(evaluator), scores(scores) {}
+
+  EvaluatorPtr evaluator;
+  ScoreObjectPtr scores;
+
+  virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output)
+  {
+    ObjectPtr inputsObject = Object::create(function->getInputsClass());
+    for (size_t i = 0; i < inputsObject->getNumVariables(); ++i)
+      inputsObject->setVariable(i, inputs[i]);
+    evaluator->updateScoreObject(context, scores, inputsObject, output);
+  }
+};
+
+CallbackBasedEvaluator::CallbackBasedEvaluator(EvaluatorPtr evaluator)
+  : evaluator(evaluator), callback(NULL)
+{
+}
+
+ScoreObjectPtr CallbackBasedEvaluator::createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
+{
+  ScoreObjectPtr res = evaluator->createEmptyScoreObject(context, function);
+  FunctionPtr functionToListen = getFunctionToListen(function);
+  functionToListen->addPostCallback(const_cast<CallbackBasedEvaluator* >(this)->callback = new CallbackBasedEvaluatorCallback(evaluator, res));
+  return res;
+}
+
+bool CallbackBasedEvaluator::updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const
+  {return true;}
+
+void CallbackBasedEvaluator::finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
+{
+  evaluator->finalizeScoreObject(scores, function);
+  getFunctionToListen(function)->removePostCallback(callback);
+  deleteAndZero(const_cast<CallbackBasedEvaluator* >(this)->callback);
+}
