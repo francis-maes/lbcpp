@@ -57,7 +57,7 @@
   </class>
   <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
 
-  <class name="DecisionProblemSupervisedEpisodeEvaluator" base="CallbackBasedEvaluator"/>
+  <class name="GoSupervisedEpisodeEvaluator" base="CallbackBasedEvaluator"/>
 
   <!-- Go Sand Box -->
   <class name="GoSandBox" base="WorkUnit">

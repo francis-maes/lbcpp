@@ -42,6 +42,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
   Go/GoProblem.h
   Go/GoProblem.cpp
   Go/LoadSGFFileFunction.h
+  Go/GoActionsPerception.h
   Go/GoSupervisedEpisode.h
   Go/GoSandBox.h
   Go/SequentialDecisionGoLibrary.xml
