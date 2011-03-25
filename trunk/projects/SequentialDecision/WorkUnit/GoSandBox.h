@@ -899,34 +899,22 @@ public:
     builder.startSelection();
 
       size_t i1 = builder.addFunction(matrixWindowFeatureGenerator(5, 5), actionPrimaryFeatures, row, column, T("window"));
-      //size_t i12 = builder.addFunction(cartesianProductFeatureGenerator(true), i1, i1, T("window2"));
-      //size_t i13 = builder.addFunction(cartesianProductFeatureGenerator(true), i12, i1, T("window3"));
 
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
 
       size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
-      //size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(true), i3, i3, T("prevAc2"));
+      //size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(), i3, i3, T("prev2"));
 
       FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
-      //builder.addFunction(cartesianProductFeatureGenerator(true), i1, i4, T("neighborsXWindow"));
-      //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(), i4, i4, T("neighbors2"));
-
-      size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
+      //size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
-    //size_t i42 = builder.addFunction(cartesianProductFeatureGenerator(true), i4, i4);
-//    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("fAndTime"));
-//    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime, T("all"));
-
-    /*size_t features = 
     size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
-    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);*/
+    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);
   }
-
-
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {

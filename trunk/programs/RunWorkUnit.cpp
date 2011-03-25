@@ -13,18 +13,20 @@ using namespace lbcpp;
 
 void usage()
 {
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --projectDirectory path] WorkUnitFile.xml" << std::endl;
-  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --projectDirectory path] WorkUnitName WorkUnitArguments" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --traceAutoSave 60 --projectDirectory path] WorkUnitFile.xml" << std::endl;
+  std::cerr << "Usage: RunWorkUnit [--numThreads n --library lib --trace file.trace --traceAutoSave 60 --projectDirectory path] WorkUnitName WorkUnitArguments" << std::endl;
   std::cerr << "  --numThreads : the number of threads to use. Default value: n = the number of cpus." << std::endl;
   std::cerr << "  --library : add a dynamic library to load." << std::endl;
   std::cerr << "  --trace : output file to save the execution trace." << std::endl;
+  std::cerr << "  --traceAutoSave : the interval in seconds between two execution trace auto-saves." << std::endl;
   std::cerr << "  --projectDirectory : project directory where find files." << std::endl;
 }
 
 bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
-                            size_t& numThreads, File& traceOutputFile, File& projectDirectory)
+                            size_t& numThreads, File& traceOutputFile, double& traceAutoSave, File& projectDirectory)
 {
   numThreads = (size_t)juce::SystemStats::getNumCpus();
+  traceAutoSave = 0.0; // no auto save
   
   remainingArguments.reserve(argc - 1);
   for (int i = 1; i < argc; ++i)
@@ -69,6 +71,16 @@ bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, st
       traceOutputFile = File::getCurrentWorkingDirectory().getChildFile(argv[i]);
       if (traceOutputFile.exists())
         traceOutputFile.deleteFile();
+    }
+    else if (argument == T("--traceAutoSave"))
+    {
+      ++i;
+      if (i == argc)
+      {
+        context.errorCallback(T("Invalid Syntax"));
+        return false;
+      }
+      traceAutoSave = String(argv[i]).getIntValue();
     }
     else if (argument == T("--projectDirectory"))
     {
@@ -165,8 +177,9 @@ int mainImpl(int argc, char** argv)
   std::vector<String> arguments;
   size_t numThreads;
   File traceOutputFile;
+  double traceAutoSave;
   File projectDirectory;
-  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile, projectDirectory))
+  if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile, traceAutoSave, projectDirectory))
   {
     usage();
     return 1;
@@ -184,7 +197,10 @@ int mainImpl(int argc, char** argv)
   if (traceOutputFile != File::nonexistent)
   {
     trace = new ExecutionTrace(context->toString());
-    makeTraceCallback = makeTraceExecutionCallback(trace);
+    if (traceAutoSave == 0.0)
+      makeTraceCallback = makeTraceExecutionCallback(trace);
+    else
+      makeTraceCallback = makeAndAutoSaveTraceExecutionCallback(trace, traceAutoSave, traceOutputFile);
     context->appendCallback(makeTraceCallback);
   }
 

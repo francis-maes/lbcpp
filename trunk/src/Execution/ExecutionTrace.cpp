@@ -197,6 +197,9 @@ void ExecutionTraceNode::saveSubItemsToXml(XmlExporter& exporter) const
 
 void ExecutionTraceNode::saveToXml(XmlExporter& exporter) const
 {
+  ScopedLock _1(resultsLock);
+  ScopedLock _2(subItemsLock);
+
   ExecutionTraceItem::saveToXml(exporter);
   exporter.setAttribute(T("description"), description);
   exporter.setAttribute(T("timeLength"), timeLength);
@@ -368,6 +371,7 @@ VectorPtr ExecutionTraceNode::getChildrenResultsTable(ExecutionContext& context)
 ExecutionTrace::ExecutionTrace(const String& contextDescription)
   : root(new ExecutionTraceNode(T("root"), WorkUnitPtr(), 0.0)), startTime(Time::getCurrentTime())
 {
+  ScopedLock _(lock);
   using juce::SystemStats;
 
   operatingSystem = SystemStats::getOperatingSystemName();
@@ -380,6 +384,8 @@ ExecutionTrace::ExecutionTrace(const String& contextDescription)
 
 ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) const
 {
+  ScopedLock _(lock);
+
   jassert(root);
   ExecutionTraceNodePtr res = root;
   size_t d = stack->getDepth();
@@ -395,6 +401,8 @@ ExecutionTraceNodePtr ExecutionTrace::findNode(const ExecutionStackPtr& stack) c
 
 void ExecutionTrace::saveToXml(XmlExporter& exporter) const
 {
+  ScopedLock _(lock);
+
   const_cast<ExecutionTrace* >(this)->saveTime = Time::getCurrentTime();
   exporter.setAttribute(T("os"), operatingSystem);
   exporter.setAttribute(T("is64bit"), is64BitOs ? T("yes") : T("no"));
@@ -410,6 +418,8 @@ void ExecutionTrace::saveToXml(XmlExporter& exporter) const
 
 bool ExecutionTrace::loadFromXml(XmlImporter& importer)
 {
+  ScopedLock _(lock);
+
   operatingSystem = importer.getStringAttribute(T("os"));
   is64BitOs = importer.getBoolAttribute(T("is64bit"));
   numCpus = (size_t)importer.getIntAttribute(T("numcpus"));

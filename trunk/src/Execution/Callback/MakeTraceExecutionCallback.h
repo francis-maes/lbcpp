@@ -26,8 +26,8 @@ public:
   {
     Time notificationTime = notification->getConstructionTime();
     double time = (notificationTime.toMilliseconds() - startTime.toMilliseconds()) / 1000.0;
-    jassert(time >= currentNotificationTime);
-    currentNotificationTime = time;
+    if (time > currentNotificationTime)
+      currentNotificationTime = time;
     ExecutionCallback::notificationCallback(notification);
   }
 
@@ -83,9 +83,8 @@ protected:
 class MakeTraceExecutionCallback : public DispatchByThreadExecutionCallback
 {
 public:
-  MakeTraceExecutionCallback(ExecutionTracePtr trace)
+  MakeTraceExecutionCallback(ExecutionTracePtr trace = ExecutionTracePtr())
     : trace(trace) {}
-  MakeTraceExecutionCallback() {}
 
   virtual ExecutionCallbackPtr createCallbackForThread(const ExecutionStackPtr& stack, Thread::ThreadID threadId)
   {

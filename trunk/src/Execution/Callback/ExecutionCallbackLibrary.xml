@@ -17,6 +17,12 @@
     <variable type="ExecutionTrace" name="trace"/>
   </class>
 
+  <class name="MakeAndAutoSaveTraceExecutionCallback" base="MakeTraceExecutionCallback">
+    <constructor arguments="ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File&amp; file" returnType="ExecutionCallback"/>
+    <variable type="Time" name="saveInterval"/>
+    <variable type="File" name="file"/>
+  </class>
+
   <!-- NotifierExecutionCallback -->
   <class name="ExecutionNotification" base="Notification" abstract="yes"/>
 
