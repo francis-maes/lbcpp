@@ -79,6 +79,10 @@ public:
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
 //    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore), 1));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore), 1));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore), 1));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1));
   }
   
   /* CompositeEvaluator */
@@ -97,7 +101,7 @@ public:
 
       if (!supervisionContainer || !predictedContainer)
         continue;
-      
+
       if (!evaluators[i]->updateScoreObject(context,
                                             scores->getScoreObject(i),
                                             new Pair(pairClass(anyType, anyType), supervisionContainer, supervisionContainer),
@@ -106,7 +110,7 @@ public:
     }
     return true;
   }
-  
+
   ScoreObjectPtr getScoreObjectOfTarget(const CompositeScoreObjectPtr& scores, ProteinTarget target)
   {
     for (size_t i = 0; i < targets.size(); ++i)

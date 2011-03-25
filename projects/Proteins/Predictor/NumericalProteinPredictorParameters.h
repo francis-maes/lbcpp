@@ -222,7 +222,7 @@ public:
         res->setEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore));
         return res;
       }
-
+    case dsbTarget:
     case sa20Target:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationAccuracyScore);
