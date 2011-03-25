@@ -1,5 +1,6 @@
 
 Go:
+ * Finish code cleaning
  * Features of successor state / delta state
 
 Proteins:

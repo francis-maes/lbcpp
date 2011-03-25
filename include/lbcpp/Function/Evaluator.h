@@ -155,6 +155,25 @@ protected:
   virtual EvaluatorPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const = 0;
 };
 
+class CallbackBasedEvaluator : public Evaluator
+{
+public:
+  CallbackBasedEvaluator(EvaluatorPtr evaluator = EvaluatorPtr());
+
+  virtual FunctionPtr getFunctionToListen(const FunctionPtr& evaluatedFunction) const = 0;
+
+  /* Evaluator */
+  virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const;
+  virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const;
+  virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const;
+
+protected:
+  friend class CallbackBasedEvaluatorClass;
+
+  EvaluatorPtr evaluator;
+  FunctionCallbackPtr callback; // pas bien: effet de bord
+};
+
 enum BinaryClassificationScore
 {
   binaryClassificationAccuracyScore = 0,

@@ -16,7 +16,10 @@
   <class name="SupervisedEvaluator" base="Evaluator" abstract="yes"/>
   <class name="CompositeEvaluator" base="Evaluator"/>
   <class name="ProxyEvaluator" base="Evaluator" abstract="yes"/>
-
+  <class name="CallbackBasedEvaluator" base="Evaluator" abstract="yes">
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
+  
   <!-- Score Enumerations -->
   <enumeration name="BinaryClassificationScore">
     <value name="accuracyScore" oneLetterCode="a"/>
