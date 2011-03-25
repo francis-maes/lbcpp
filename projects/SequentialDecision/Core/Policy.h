@@ -67,6 +67,41 @@ protected:
     {return random->sampleBool(k) ? a2 : a1;}
 };
 
+#if 0
+class ReproduceTrajectoryPolicy : public Policy
+{
+public:
+  ReproduceTrajectoryPolicy(const ContainerPtr& trajectory = ContainerPtr())
+    : trajectory(trajectory) {}
+
+  virtual Variable policyStart(ExecutionContext& context, const Variable& state, const ContainerPtr& actions)
+  {
+    timeStep = 0;
+    return getTrajectoryAction(timeStep);
+  }
+
+  virtual Variable policyStep(ExecutionContext& context, double reward, const Variable& state, const ContainerPtr& actions)
+  {
+    ++timeStep;
+    return getTrajectoryAction(timeStep);
+  }
+
+protected:
+  friend class ReproduceTrajectoryPolicyClass;
+
+  ContainerPtr trajectory;
+  size_t timeStep;
+
+  Variable getTrajectoryAction(size_t timeStep) const
+  {
+    if (timeStep < trajectory->getNumElements())
+      return trajectory->getElement(timeStep);
+    else
+      return Variable();
+  }
+};
+#endif // 0
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_CORE_POLICY_H_

@@ -12,40 +12,4 @@
     <constructor arguments="double discount"/>
   </class>
   
-  <!-- Go Game -->
-  <enumeration name="Player">
-    <value name="noPlayers" shortName="no" oneLetterCode="-"/>
-    <value name="blackPlayer" shortName="black" oneLetterCode="b"/>
-    <value name="whitePlayer" shortName="white" oneLetterCode="w"/>
-  </enumeration>
-
-  <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
-  <class name="GoState" base="DecisionProblemState">
-    <variable type="PositiveInteger" name="time"/>
-    <variable type="GoBoard" name="board"/>
-    <variable type="PositiveInteger" name="whitePrisonerCount"/>
-    <variable type="PositiveInteger" name="blackPrisonerCount"/>
-    <variable type="PositiveIntegerPairVector" name="previousActions"/>
-  </class>
-  
-  <class name="PositiveIntegerPair">
-    <variable type="PositiveInteger" name="first"/>
-    <variable type="PositiveInteger" name="second"/>
-  </class>
-  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
-
-  <class name="GoStateSampler" base="Function">
-    <variable type="PositiveInteger" name="minSize"/>
-    <variable type="PositiveInteger" name="maxSize"/>
-  </class>
-  <class name="GoProblem" base="DecisionProblem"/>
-
-  <uicomponent name="GoStateComponent" type="GoState"/>
-  <uicomponent name="GoBoardComponent" type="GoBoard"/>
-               
-  <!-- Smart Game Format parser -->
-  <class name="SGFFileParser" base="TextParser"/>
-  <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
-  <class name="LoadSGFFileFunction" base="Function"/>
-  
 </library>

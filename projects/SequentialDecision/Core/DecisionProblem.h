@@ -79,6 +79,25 @@ typedef ReferenceCountedObjectPtr<DecisionProblem> DecisionProblemPtr;
 
 extern ClassPtr decisionProblemClass;
 
+
+// State -> Container[Action]
+class GetAvailableActionsFunction : public SimpleUnaryFunction
+{
+public:
+  GetAvailableActionsFunction(TypePtr actionType = variableType)
+    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(actionType), T("Actions")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
+    return state->getAvailableActions();
+  }
+
+  lbcpp_UseDebuggingNewOperator
+};
+
+extern FunctionPtr getAvailableActionsFunction(TypePtr actionType);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_SYSTEM_LINEAR_POINT_PHYSIC_H_

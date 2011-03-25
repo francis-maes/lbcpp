@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="SequentialDecisionGo" directory="Go">
+
+  <!-- Go Game -->
+  <enumeration name="Player">
+    <value name="noPlayers" shortName="no" oneLetterCode="-"/>
+    <value name="blackPlayer" shortName="black" oneLetterCode="b"/>
+    <value name="whitePlayer" shortName="white" oneLetterCode="w"/>
+  </enumeration>
+
+  <class name="GoBoard" base="ShortEnumerationMatrix[Player]"/>
+  <class name="GoState" base="DecisionProblemState">
+    <variable type="PositiveInteger" name="time"/>
+    <variable type="GoBoard" name="board"/>
+    <variable type="PositiveInteger" name="whitePrisonerCount"/>
+    <variable type="PositiveInteger" name="blackPrisonerCount"/>
+    <variable type="PositiveIntegerPairVector" name="previousActions"/>
+  </class>
+
+  <class name="PositiveIntegerPair">
+    <variable type="PositiveInteger" name="first"/>
+    <variable type="PositiveInteger" name="second"/>
+  </class>
+  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
+
+  <class name="GoStateSampler" base="Function">
+    <variable type="PositiveInteger" name="minSize"/>
+    <variable type="PositiveInteger" name="maxSize"/>
+  </class>
+  <class name="GoProblem" base="DecisionProblem"/>
+
+  <uicomponent name="GoStateComponent" type="GoState"/>
+  <uicomponent name="GoBoardComponent" type="GoBoard"/>
+
+  <!-- Smart Game Format parser -->
+  <class name="SGFFileParser" base="TextParser"/>
+  <class name="ConvertSGFXmlToStateAndTrajectory" base="Function"/>
+  <class name="LoadSGFFileFunction" base="Function"/>
+  
+  <!-- Go Decision Maker -->
+  <class name="SupervisedLinearRankingBasedDecisionMaker" base="CompositeFunction">
+    <variable type="Function" name="actionsPerceptionFunction"/>
+    <variable type="StochasticGDParameters" name="sgdParameters"/>
+    <variable type="Function" name="rankingMachine"/>
+  </class>
+  
+  <class name="DecisionProblemSupervisedEpisode" base="Function">
+    <variable type="Function" name="supervisedDecisionMaker"/>
+  </class>
+
+  <!-- Go Evaluator -->
+  <class name="GoActionScoringScoreObject" base="ScoreObject">
+    <variable type="ScalarVariableMean" name="predictionRate"/>
+    <variable type="ScalarVariableStatistics" name="rankOfAction"/>
+    <variable type="ScalarVariableMean" name="unsupervisedRate"/>
+  </class>
+  <class name="GoActionScoringEvaluator" base="SupervisedEvaluator"/>
+
+  <class name="CallbackBasedEvaluator" base="Evaluator" abstract="yes">
+    <variable type="Evaluator" name="evaluator"/>
+  </class>
+  <class name="DecisionProblemSupervisedEpisodeEvaluator" base="CallbackBasedEvaluator"/>
+
+  <!-- Go Sand Box -->
+  <class name="GoSandBox" base="WorkUnit">
+    <variable type="File" name="gamesDirectory" shortName="i"/>
+    <variable type="PositiveInteger" name="maxCount" shortName="m"/>
+    <variable type="PositiveInteger" name="numFolds" shortName="n"/>
+    <variable type="LearnerParameters" name="learningParameters" shortName="p"/>
+    <variable type="Boolean" name="testFeatures"/>
+  </class>
+
+  <!-- Go Features -->
+  <template name="GoStatePreFeatures">
+    <parameter name="globalFeaturesEnumeration" type="EnumValue"/>
+    <parameter name="regionFeaturesEnumeration" type="EnumValue"/>
+    <parameter name="actionFeaturesEnumeration" type="EnumValue"/>
+
+    <variable type="GoState" name="state"/>
+    <variable type="PositiveIntegerPairVector" name="previousActions"/>
+    <variable type="GoBoard" name="board"/>
+    <variable type="DoubleVector[globalFeaturesEnumeration,Double]" name="globalPrimaryFeatures"/>
+    <variable type="SegmentedMatrix[Player]" name="fourConnexityGraph"/>
+    <variable type="ObjectVector[DoubleVector[regionFeaturesEnumeration,Double]]" name="fourConnexityGraphFeatures"/>
+    <!-- <variable type="SegmentedMatrix[Player]" name="eightConnexityGraph"/>
+    <variable type="ObjectVector[DoubleVector[regionFeaturesEnumeration,Double]]" name="eightConnexityGraphFeatures"/>
+    -->
+    <variable type="ObjectMatrix[DoubleVector[actionFeaturesEnumeration,Double]]" name="actionPrimaryFeatures"/>
+  </template>
+
+  <class name="GoActionsPerception" base="CompositeFunction"/>
+
+  <!-- Segment Matrix -->
+  <template name="MatrixRegion" base="Object">
+    <parameter name="elementsType" type="Variable"/>
+    <variable type="PositiveInteger" name="index"/>
+    <variable type="elementsType" name="value"/>
+    <variable type="PositiveInteger" name="size"/>
+    <variable type="ObjectVector[Pair[PositiveInteger, PositiveInteger]]" name="positions"/>
+  </template>
+
+  <template name="SegmentedMatrix" base="Matrix[PositiveInteger]">
+    <parameter name="elementsType" type="Variable"/>
+    <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
+  </template>
+  <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
+
+  <class name="SegmentMatrixFunction" base="Function">
+    <variable type="Boolean" name="use8Connexity"/>
+  </class>
+
+  <enumeration name="DiscretizedGoCount">
+    <value name="0"/>
+    <value name="1"/>
+    <value name="2"/>
+    <value name="3"/>
+    <value name="4"/>
+    <value name="5-6"/>
+    <value name="7-9"/>
+    <value name="10-15"/>
+    <value name="15-20"/>
+    <value name="20-"/>
+  </enumeration>
+  
+</library>

@@ -8,6 +8,9 @@
     <variable type="Function" name="initialStateSampler"/>
     <variable type="Double" name="discount"/>
   </class>
+  <class name="GetAvailableActionsFunction" base="Function">
+    <constructor arguments="TypePtr actionType"/>
+  </class>
 
   <class name="Policy" base="Object" abstract="yes"/>
 
