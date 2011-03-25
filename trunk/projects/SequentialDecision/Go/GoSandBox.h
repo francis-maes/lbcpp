@@ -9,96 +9,14 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_GO_SAND_BOX_H_
 # define LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_GO_SAND_BOX_H_
 
-# include "../Problem/GoProblem.h"
-# include "../Problem/LoadSGFFileFunction.h"
+# include "GoProblem.h"
+# include "LoadSGFFileFunction.h"
+# include "GoSupervisedEpisode.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Core/CompositeFunction.h>
 
 namespace lbcpp
 {
-
-///////////////////////////////
-// More/less generic DP stuff /
-///////////////////////////////
-
-  // State -> Container[Action]
-class GetAvailableActionsFunction : public SimpleUnaryFunction
-{
-public:
-  GetAvailableActionsFunction(TypePtr actionType)
-    : SimpleUnaryFunction(decisionProblemStateClass, containerClass(actionType), T("Actions")) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const DecisionProblemStatePtr& state = input.getObjectAndCast<DecisionProblemState>();
-    return state->getAvailableActions();
-  }
-
-  lbcpp_UseDebuggingNewOperator
-};
-
-// State, Action -> DoubleVector
-// TODO: transform into function FindElementInContainer: 
-//     Container<T>, T -> PositiveInteger
-// et gerer la supervision avec PositiveInteger dans le Ranking
-class DecisionProblemStateActionsRankingCostsFunction : public SimpleBinaryFunction
-{
-public:
-  DecisionProblemStateActionsRankingCostsFunction()
-    : SimpleBinaryFunction(decisionProblemStateClass, variableType, denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const DecisionProblemStatePtr& state = inputs[0].getObjectAndCast<DecisionProblemState>();
-    const Variable& action = inputs[1];
-
-    ContainerPtr availableActions = state->getAvailableActions();
-    size_t n = availableActions->getNumElements();
-
-    DenseDoubleVectorPtr res(new DenseDoubleVector(outputType, n, 0.0));
-    bool actionFound = false;
-    for (size_t i = 0; i < n; ++i)
-      if (availableActions->getElement(i) == action)
-      {
-        res->setValue(i, -1);
-        actionFound = true;
-      }
-
-    if (!actionFound)
-      context.warningCallback(T("Could not find action ") + action.toShortString() + T(" in state ") + state->toShortString());
-    return res;
-  }
-
-  lbcpp_UseDebuggingNewOperator
-};
-
-// State, Supervision Action -> Ranking Example
-class DecisionProblemStateActionsRankingExample : public CompositeFunction
-{
-public:
-  DecisionProblemStateActionsRankingExample(FunctionPtr actionsPerception = FunctionPtr())
-    : actionsPerception(actionsPerception) {}
-
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
-  {
-    size_t state = builder.addInput(decisionProblemStateClass, T("state"));
-    size_t supervision = builder.addInput(anyType, T("supervision"));
-    size_t perceptions = builder.addFunction(actionsPerception, state);
-    if (actionsPerception->getOutputType())
-    {
-      size_t costs = builder.addFunction(new DecisionProblemStateActionsRankingCostsFunction(), state, supervision);
-      builder.addFunction(createObjectFunction(pairClass(actionsPerception->getOutputType(), denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))), perceptions, costs);
-    }
-  }
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class DecisionProblemStateActionsRankingExampleClass;
-
-  FunctionPtr actionsPerception; // State -> Container[DoubleVector]
-};
-
 
 ///////////////////////////////
 // Segment Matrix /////////////
@@ -582,41 +500,6 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
-// PositiveIntegerPair -> DoubleVector
-class PositiveIntegerPairPositionFeature : public FeatureGenerator
-{
-public:
-  PositiveIntegerPairPositionFeature(size_t firstMax = 0, size_t secondMax = 0)
-    : firstMax(firstMax), secondMax(secondMax) {}
-
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return positiveIntegerPairClass;}
-
-  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
-  {
-    DefaultEnumerationPtr res = new DefaultEnumeration(T("positions"));
-    for (size_t i = 0; i < firstMax; ++i)
-      for (size_t j = 0; j < secondMax; ++j)
-        res->addElement(context, String((int)i) + T(", ") + String((int)j));
-    return res;
-  }
-
-  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
-  {
-    const PositiveIntegerPairPtr& action = inputs[0].getObjectAndCast<PositiveIntegerPair>();
-    callback.sense(action->getFirst() * secondMax + action->getSecond(), 1.0);
-  }
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  size_t firstMax;
-  size_t secondMax;
-};
-
 class PositiveIntegerPairDistanceFeatureGenerator : public FeatureGenerator
 {
 public:
@@ -737,7 +620,7 @@ public:
 };
 
 
-// GoState -> Container[DoubleVector]
+// GoState, Container[GoAction] -> Container[DoubleVector]
 class GoActionsPerception : public CompositeFunction
 {
 public:
@@ -928,10 +811,10 @@ public:
     context.leaveScope();
 
     size_t state = builder.addInput(goStateClass, T("state"));
+    size_t availableActions = builder.addInput(containerClass(positiveIntegerPairClass), T("actions"));
     size_t preFeatures = builder.addFunction(lbcppMemberCompositeFunction(GoActionsPerception, preFeaturesFunction), state);
-    size_t actions = builder.addFunction(new GetAvailableActionsFunction(positiveIntegerPairClass), state, T("actions"));
     
-    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, actionFeatures)), actions, preFeatures);
+    builder.addFunction(mapContainerFunction(lbcppMemberCompositeFunction(GoActionsPerception, actionFeatures)), availableActions, preFeatures);
   }
 
 private:
@@ -1009,67 +892,6 @@ private:
 typedef ReferenceCountedObjectPtr<GoActionsPerception> GoActionsPerceptionPtr;
 
 ///////////////////////////////
-/////// GoEpisodeFunction /////
-///////////////////////////////
-
-// InitialState, Trajectory -> Nil
-class GoEpisodeFunction : public SimpleBinaryFunction
-{
-public:
-  GoEpisodeFunction(LearnerParametersPtr learningParameters = LearnerParametersPtr(), FunctionPtr rankingExampleCreator = FunctionPtr(), FunctionPtr rankingMachine = FunctionPtr())
-    : SimpleBinaryFunction(goStateClass, containerClass(positiveIntegerPairClass), objectVectorClass(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration))),
-      learningParameters(learningParameters), rankingExampleCreator(rankingExampleCreator), rankingMachine(rankingMachine)
-  {
-  }
-
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-  {
-    if (!rankingExampleCreator->initialize(context, goStateClass, positiveIntegerPairClass))
-      return TypePtr();
-    TypePtr rankingExampleType = rankingExampleCreator->getOutputType();
-    if (!rankingMachine->initialize(context, rankingExampleType->getMemberVariableType(0), rankingExampleType->getMemberVariableType(1)))
-      return TypePtr();
-    return SimpleBinaryFunction::initializeFunction(context, inputVariables, outputName, outputShortName);
-  }
- 
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    const GoStatePtr& initialState = inputs[0].getObjectAndCast<GoState>();
-    const ContainerPtr& trajectory = inputs[1].getObjectAndCast<Container>();
-
-    GoStatePtr state = initialState->cloneAndCast<GoState>();
-
-    size_t n = trajectory->getNumElements();
-    ObjectVectorPtr res = new ObjectVector(getOutputType());
-    res->reserve(n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      Variable action = trajectory->getElement(i);
-
-      Variable rankingExample = rankingExampleCreator->compute(context, state, action);
-      DenseDoubleVectorPtr scores = rankingMachine->computeWithInputsObject(context, rankingExample.getObject()).getObjectAndCast<DenseDoubleVector>();
-      res->append(scores);
-
-      double reward;
-      state->performTransition(action, reward);
-    }
-    return res;
-  }
-
-  const FunctionPtr& getRankingMachine() const
-    {return rankingMachine;}
- 
-protected:
-  friend class GoEpisodeFunctionClass;
-
-  LearnerParametersPtr learningParameters;
-  FunctionPtr rankingExampleCreator;
-  FunctionPtr rankingMachine;
-};
-
-typedef ReferenceCountedObjectPtr<GoEpisodeFunction> GoEpisodeFunctionPtr;
-
-///////////////////////////////
 /////// Evaluators ////////////
 ///////////////////////////////
 
@@ -1126,10 +948,10 @@ protected:
 
 ////
 
-class PositiveIntegerPairScoringScoreObject : public ScoreObject
+class GoActionScoringScoreObject : public ScoreObject
 {
 public:
-  PositiveIntegerPairScoringScoreObject() 
+  GoActionScoringScoreObject() 
     : predictionRate(new ScalarVariableMean(T("predictionRate"))), 
       rankOfAction(new ScalarVariableStatistics(T("rankOfAction"))),
       unsupervisedRate(new ScalarVariableMean(T("unsupervisedRate"))) {}
@@ -1182,14 +1004,14 @@ public:
     {return rankOfAction->getMean();} // mean rank of best action
 
 private:
-  friend class PositiveIntegerPairScoringScoreObjectClass;
+  friend class GoActionScoringScoreObjectClass;
 
   ScalarVariableMeanPtr predictionRate;
   ScalarVariableStatisticsPtr rankOfAction;
   ScalarVariableMeanPtr unsupervisedRate;
 };
 
-class PositiveIntegerPairScoringEvaluator : public SupervisedEvaluator
+class GoActionScoringEvaluator : public SupervisedEvaluator
 {
 public:
   virtual TypePtr getRequiredPredictionType() const
@@ -1199,21 +1021,21 @@ public:
     {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
 
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
-    {return new PositiveIntegerPairScoringScoreObject();}
+    {return new GoActionScoringScoreObject();}
 
   virtual void addPrediction(ExecutionContext& context, const Variable& prediction, const Variable& supervision, const ScoreObjectPtr& result) const
-    {result.staticCast<PositiveIntegerPairScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
+    {result.staticCast<GoActionScoringScoreObject>()->add(context, prediction.getObjectAndCast<DenseDoubleVector>(), supervision.getObjectAndCast<DenseDoubleVector>());}
 };
 
-class GoEpisodeFunctionEvaluator : public CallbackBasedEvaluator
+class DecisionProblemSupervisedEpisodeEvaluator : public CallbackBasedEvaluator
 {
 public:
-  GoEpisodeFunctionEvaluator() : CallbackBasedEvaluator(new PositiveIntegerPairScoringEvaluator()) {}
+  DecisionProblemSupervisedEpisodeEvaluator() : CallbackBasedEvaluator(new GoActionScoringEvaluator()) {}
 
   virtual FunctionPtr getFunctionToListen(const FunctionPtr& evaluatedFunction) const
   {
-    const GoEpisodeFunctionPtr& episodeFunction = evaluatedFunction.staticCast<GoEpisodeFunction>();
-    return episodeFunction->getRankingMachine();
+    const DecisionProblemSupervisedEpisodePtr& episodeFunction = evaluatedFunction.staticCast<DecisionProblemSupervisedEpisode>();
+    return episodeFunction->getSupervisedDecisionMaker().staticCast<SupervisedLinearRankingBasedDecisionMaker>()->getRankingMachine();
   }
 };
 
@@ -1271,10 +1093,6 @@ public:
         state->performTransition(trajectory->getElement(i), r);
       }
       context.resultCallback(T("state"), state);
-/*
-      GoActionsPerceptionPtr perception = new GoActionsPerception();
-      perception->initialize(context, goStateClass);
-      context.resultCallback(T("preFeatures"), perception->computePreFeatures(context, state));*/
       return true;
     }
 
@@ -1285,37 +1103,31 @@ public:
       context.errorCallback(T("No learning parameters"));
       return false;
     }
-    FunctionPtr rankingExampleCreator = new DecisionProblemStateActionsRankingExample(new GoActionsPerception());
     StochasticGDParametersPtr sgdParameters = learningParameters.dynamicCast<StochasticGDParameters>();
     if (!sgdParameters)
     {
       context.errorCallback(T("Learning parameters type not supported"));
       return false;
     }
-    FunctionPtr rankingMachine = linearRankingMachine(new StochasticGDParameters(sgdParameters->getLearningRate(), StoppingCriterionPtr(), 0,
-                                                                                 sgdParameters->doPerEpisodeUpdates(), sgdParameters->doNormalizeLearningRate(),
-                                                                                 false, true, false));
-    //rankingMachine->setEvaluator(new PositiveIntegerPairScoringEvaluator());
+    FunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
 
-    FunctionPtr goEpisodeFunction = new GoEpisodeFunction(learningParameters, rankingExampleCreator, rankingMachine);
-    if (!goEpisodeFunction->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
+    FunctionPtr episode = new DecisionProblemSupervisedEpisode(goDecisionMaker);
+    if (!episode->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
       return false;
-    EvaluatorPtr evaluator = new GoEpisodeFunctionEvaluator();
+
+    EvaluatorPtr evaluator = new DecisionProblemSupervisedEpisodeEvaluator();
     evaluator->setUseMultiThreading(true);
-    goEpisodeFunction->setEvaluator(evaluator);
-    goEpisodeFunction->setBatchLearner(learningParameters->createBatchLearner(context));
-    goEpisodeFunction->setOnlineLearner(
+    episode->setEvaluator(evaluator);
+    episode->setBatchLearner(learningParameters->createBatchLearner(context));
+    episode->setOnlineLearner(
       compositeOnlineLearner(evaluatorOnlineLearner(false, true), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
-    //rankingMachine->setOnlineLearner(perEpisodeGDOnlineLearner(FunctionPtr(), constantIterationFunction(1.0), true));
     
-    goEpisodeFunction->train(context, trainingGames, validationGames, T("Training"), true);
+    episode->train(context, trainingGames, validationGames, T("Training"), true);
 
     //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
     //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
 
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
-
-   // return learnOnline(context, rankingMachine, trainingExamples, validationExamples);
 
     /*
     // check validity
@@ -1335,7 +1147,6 @@ public:
     context.leaveScope(ok);
     return true;
     */
-
   }
 
 private:

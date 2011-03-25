@@ -5,5 +5,6 @@
   <import name="SequentialDecisionCore"/>
   <import name="DecisionProblem"/>
   <import name="SequentialDecisionWorkUnit"/>
+  <import name="SequentialDecisionGo"/>
 
 </library>
