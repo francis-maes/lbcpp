@@ -394,6 +394,7 @@ SET(LBCPP_FUNCTION_EVALUATOR_SOURCES
   Function/Evaluator/Utilities.cpp
   Function/Evaluator/ConcatenateScoreObjectFunction.h
   Function/Evaluator/ContainerSupervisedEvaluator.h
+  Function/Evaluator/SymmetricMatrixSupervisedEvaluator.h
   Function/Evaluator/EvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/EvaluatorLibrary.cpp
 )

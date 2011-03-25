@@ -123,4 +123,10 @@
     <variable type="SupervisedEvaluator" name="elementEvaluator"/>
   </class>
 
+  <class name="SymmetricMatrixSupervisedEvaluator" base="SupervisedEvaluator">
+    <constructor arguments="SupervisedEvaluatorPtr elementEvaluator, size_t minimumDistanceFromDiagonal"/>
+    <variable type="SupervisedEvaluator" name="elementEvaluator"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
+
 </library>

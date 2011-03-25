@@ -248,9 +248,6 @@ protected:
 
     String mapName = configuration->getMapFriendlyName(configuration->getCurrentMap());
     const std::vector<SymmetricMatrixPtr>& f = (mapName == T("Disulfide Bonds")) ? disulfideFeatures : features;
-    std::cout << mapName << std::endl;
-    if (mapName == T("Disulfide Bonds"))
-      std::cout << "OK" << std::endl;
     size_t proteinIndex = (row < column) ? configuration->getProtein2() : configuration->getProtein1();
     return proteinIndex >= 0 ? f[proteinIndex]->getElement(row, column) : Variable();
   }
