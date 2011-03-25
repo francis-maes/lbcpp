@@ -83,6 +83,7 @@ protected:
 extern ExecutionCallbackPtr consoleExecutionCallback();
 extern ExecutionCallbackPtr userInterfaceExecutionCallback();
 extern ExecutionCallbackPtr makeTraceExecutionCallback(ExecutionTracePtr trace);
+extern ExecutionCallbackPtr makeAndAutoSaveTraceExecutionCallback(ExecutionTracePtr trace, double autoSaveIntervalInSeconds, const File& file);
 
 class CompositeExecutionCallback : public ExecutionCallback
 {

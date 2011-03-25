@@ -5,10 +5,9 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-
+#include "precompiled.h"
 #include <lbcpp/Data/Matrix.h>
 #include <lbcpp/Data/SymmetricMatrix.h>
-
 using namespace lbcpp;
 
 /* Matrix */

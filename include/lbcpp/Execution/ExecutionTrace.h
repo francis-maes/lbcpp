@@ -167,20 +167,22 @@ public:
 #endif // LBCPP_USER_INTERFACE
 
   virtual String toString() const
-    {return context + T(" Execution Trace");}
+    {ScopedLock _(lock); return context + T(" Execution Trace");}
 
   ExecutionTraceNodePtr getRootNode() const
-    {return root;}
+    {ScopedLock _(lock); return root;}
   ExecutionTraceNodePtr findNode(const ExecutionStackPtr& stack) const;
 
   Time getStartTime() const
-    {return startTime;}
+    {ScopedLock _(lock); return startTime;}
 
   virtual void saveToXml(XmlExporter& exporter) const;
   virtual bool loadFromXml(XmlImporter& importer);
 
 protected:
   friend class ExecutionTraceClass;
+
+  CriticalSection lock;
 
   String operatingSystem;
   bool is64BitOs;
