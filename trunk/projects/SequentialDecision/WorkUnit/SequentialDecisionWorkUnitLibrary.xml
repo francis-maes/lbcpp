@@ -20,6 +20,10 @@
   </class>
   
   <!-- HIV -->
+  <template name="IndependentDoubleVectorDistribution" base="MultiVariateDistribution[DenseDoubleVector[elementsEnumeration,Double]]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+  </template>
+  
   <class name="HIVSandBox" base="WorkUnit"/>
   
 </library>

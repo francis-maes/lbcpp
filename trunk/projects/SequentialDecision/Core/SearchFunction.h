@@ -10,45 +10,13 @@
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_FUNCTION_H_
 
 # include "SearchTree.h"
+# include "SearchHeuristic.h"
 # include "Policy.h"
-# include <lbcpp/Learning/Numerical.h>
 # include <lbcpp/Learning/LossFunction.h>
 
 namespace lbcpp
 {
   
-// SearchNode -> Scalar
-class LearnableSearchHeuristic : public CompositeFunction
-{
-public:
-  virtual void buildFunction(CompositeFunctionBuilder& builder)
-  {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
-    size_t perception = builder.addFunction(createPerceptionFunction(), node);
-    size_t supervision = builder.addConstant(Variable());
-    builder.addFunction(createScoringFunction(), perception, supervision);
-  }
-
-  const FunctionPtr& getPerceptionFunction() const
-    {return functions[0];}
-
-  const FunctionPtr& getScoringFunction() const
-    {return functions[1];}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    Variable res = CompositeFunction::computeFunction(context, inputs);
-    return res.exists() ? res.getDouble() : 0.0;
-  }
-
-protected:
-  virtual FunctionPtr createPerceptionFunction() const = 0; // SearchNode -> Features
-  virtual FunctionPtr createScoringFunction() const = 0;    // Features -> Score
-};
-
-typedef ReferenceCountedObjectPtr<LearnableSearchHeuristic> LearnableSearchHeuristicPtr;
-
-
 extern OnlineLearnerPtr searchFunctionOnlineLearner(RankingLossFunctionPtr lossFunction);
 
 // State -> SearchSpace
@@ -101,34 +69,9 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& initialState) const
   {
-    SearchTreePtr searchTree = new SearchTree(problem, initialState.getObjectAndCast<DecisionProblemState>(), maxSearchNodes);
-    jassert(searchTree->getBestReturn() == 0.0);
-    double lastReward = 0.0;
-    double bestReturn = 0.0;
-
     PolicyPtr policy = isCurrentlyLearning() ? explorationPolicy : searchPolicy;
-
-    for (size_t i = 0; i < maxSearchNodes; ++i)
-    {
-      ContainerPtr actions;
-      Variable selectedNode;
-      if (i == 0)
-        selectedNode = policy->policyStart(context, searchTree, actions);
-      else
-        selectedNode = policy->policyStep(context, lastReward, searchTree, actions);
-      if (!selectedNode.exists())
-      {
-        context.errorCallback(T("No selected node"));
-        break;
-      }
-
-      searchTree->exploreNode(context, (size_t)selectedNode.getInteger());
-      double newBestReturn = searchTree->getBestReturn();
-      lastReward = newBestReturn - bestReturn;
-      jassert(lastReward >= 0.0);
-      bestReturn = newBestReturn;
-    }
-    policy->policyEnd(context, lastReward, searchTree);
+    SearchTreePtr searchTree = new SearchTree(problem, initialState.getObjectAndCast<DecisionProblemState>(), maxSearchNodes);
+    searchTree->doSearchEpisode(context, policy, maxSearchNodes);
     return searchTree;
   }
    
