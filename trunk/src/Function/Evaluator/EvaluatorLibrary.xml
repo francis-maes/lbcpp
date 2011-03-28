@@ -42,6 +42,11 @@
     <variable type="PositiveInteger" name="totalCount"/>
   </class>
 
+  <class name="ROCScoreObjectElement" base="Object">
+    <variable type="Double" name="falsePositiveRate"/>
+    <variable type="Double" name="truePositiveRate"/>
+  </class>
+
   <class name="ROCScoreObject" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="bestThreshold"/>
