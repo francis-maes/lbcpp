@@ -57,8 +57,8 @@ public:
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
 
-  Variable sampleInitialState(RandomGeneratorPtr random) const
-    {return initialStateSampler->compute(defaultExecutionContext(), random);}
+  DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
+    {return initialStateSampler->compute(defaultExecutionContext(), random).getObjectAndCast<DecisionProblemState>();}
 
   /*
   ** Objective

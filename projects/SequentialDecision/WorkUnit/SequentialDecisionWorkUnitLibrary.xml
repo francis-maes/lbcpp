@@ -19,4 +19,7 @@
     <variable type="PositiveInteger" name="numPasses" shortName="N"/>
   </class>
   
+  <!-- HIV -->
+  <class name="HIVSandBox" base="WorkUnit"/>
+  
 </library>

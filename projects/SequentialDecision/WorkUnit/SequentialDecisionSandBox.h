@@ -69,32 +69,6 @@ protected:
   double discount;
 };
 
-class CartesianProductEnumeration : public Enumeration
-{
-public:
-  CartesianProductEnumeration(EnumerationPtr enumeration1, EnumerationPtr enumeration2)
-    : Enumeration(enumeration1->getName() + T(" x ") + enumeration2->getName()),
-      enumeration1(enumeration1), enumeration2(enumeration2), n1(enumeration1->getNumElements()), n2(enumeration2->getNumElements())
-  {
-    jassert(n1 && n2);
-  }
-
-  virtual size_t getNumElements() const
-    {return n1 * n2;}
-
-  virtual EnumerationElementPtr getElement(size_t index) const
-  {
-    EnumerationElementPtr e1 = enumeration1->getElement(index % n1);
-    EnumerationElementPtr e2 = enumeration2->getElement(index / n1);
-    return new EnumerationElement(e1->getName() + T(", ") + e2->getName(), String::empty, e1->getShortName() + T(", ") + e2->getShortName());
-  }
-
-protected:
-  EnumerationPtr enumeration1;
-  EnumerationPtr enumeration2;
-  size_t n1, n2;
-};
-
 class GenericClosedSearchTreeNodeFeaturesFunction : public CompositeFunction
 {
 public:
