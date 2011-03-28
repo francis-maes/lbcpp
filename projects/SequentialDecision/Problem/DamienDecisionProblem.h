@@ -19,6 +19,9 @@ namespace lbcpp
 
 extern ClassPtr damienStateClass;
 
+class DamienState;
+typedef ReferenceCountedObjectPtr<DamienState> DamienStatePtr;
+
 class DamienState : public DecisionProblemState
 {
 public:
@@ -48,7 +51,14 @@ public:
 
   virtual bool isFinalState() const
     {return problem->TerminalStateReached();}
-
+ 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    const DamienStatePtr& target = t.staticCast<DamienState>();
+    target->problem = problem;
+    target->state = state;
+  }
+ 
 private:
   friend class DamienStateClass;
 
@@ -70,16 +80,16 @@ public:
     availableActions->setElement(0, a);
 
     a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(0, 1.0);
+    a->setValue(0, 0.7);
     availableActions->setElement(1, a);
 
     a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(1, 1.0);
+    a->setValue(1, 0.3);
     availableActions->setElement(2, a);
 
     a = new DenseDoubleVector(actionClass, 2, 0.0);
-    a->setValue(0, 1.0);
-    a->setValue(1, 1.0);
+    a->setValue(0, 0.7);
+    a->setValue(1, 0.3);
     availableActions->setElement(3, a);
   }
 
@@ -87,6 +97,12 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
+  {
+    DamienState::clone(context, t);
+    t.staticCast<HIVDecisionProblemState>()->availableActions = availableActions;
+  }
 
 protected:
   ContainerPtr availableActions;

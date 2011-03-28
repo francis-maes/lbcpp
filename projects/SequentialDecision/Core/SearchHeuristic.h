@@ -10,6 +10,7 @@
 # define LBCPP_SEQUENTIAL_DECISION_CORE_SEARCH_HEURISTIC_H_
 
 # include "SearchTree.h"
+# include <lbcpp/Learning/Numerical.h>
 
 namespace lbcpp
 {
@@ -93,6 +94,38 @@ protected:
   FunctionPtr heuristic2;
   double k;
 };
+
+// SearchNode -> Scalar
+class LearnableSearchHeuristic : public CompositeFunction
+{
+public:
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t perception = builder.addFunction(createPerceptionFunction(), node);
+    size_t supervision = builder.addConstant(Variable());
+    builder.addFunction(createScoringFunction(), perception, supervision);
+  }
+
+  const FunctionPtr& getPerceptionFunction() const
+    {return functions[0];}
+
+  const FunctionPtr& getScoringFunction() const
+    {return functions[1];}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    Variable res = CompositeFunction::computeFunction(context, inputs);
+    return res.exists() ? res.getDouble() : 0.0;
+  }
+
+protected:
+  virtual FunctionPtr createPerceptionFunction() const = 0; // SearchNode -> Features
+  virtual FunctionPtr createScoringFunction() const = 0;    // Features -> Score
+};
+
+typedef ReferenceCountedObjectPtr<LearnableSearchHeuristic> LearnableSearchHeuristicPtr;
+
 
 }; /* namespace lbcpp */
 

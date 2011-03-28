@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include "SearchTree.h"
+#include "SearchPolicy.h"
 using namespace lbcpp;
 
 /*
@@ -30,7 +31,7 @@ void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex,
   depth = parentNode->depth + 1;
 
   state = parentNode->state->cloneAndCast<DecisionProblemState>();
-  state->performTransition(parentNode->state, reward);
+  state->performTransition(action, reward);
 
   bestReturn = currentReturn = parentNode->currentReturn + reward * pow(problem->getDiscount(), (double)parentNode->depth);
   parentNode->updateBestReturn(currentReturn, refCountedPointerFromThis(this));
@@ -109,4 +110,34 @@ void SearchTree::removeCallback(SearchTreeCallbackPtr callback)
       callbacks.erase(callbacks.begin() + i);
       return;
     }
+}
+
+void SearchTree::doSearchEpisode(ExecutionContext& context, const PolicyPtr& policy, size_t maxSearchNodes)
+{
+  double lastReward = 0.0;
+  double bestReturn = 0.0;
+
+  SearchTreePtr pthis = refCountedPointerFromThis(this);
+
+  for (size_t i = 0; i < maxSearchNodes; ++i)
+  {
+    ContainerPtr actions;
+    Variable selectedNode;
+    if (i == 0)
+      selectedNode = policy->policyStart(context, pthis, actions);
+    else
+      selectedNode = policy->policyStep(context, lastReward, pthis, actions);
+    if (!selectedNode.exists())
+    {
+      context.errorCallback(T("No selected node"));
+      break;
+    }
+
+    exploreNode(context, (size_t)selectedNode.getInteger());
+    double newBestReturn = getBestReturn();
+    lastReward = newBestReturn - bestReturn;
+    jassert(lastReward >= 0.0);
+    bestReturn = newBestReturn;
+  }
+  policy->policyEnd(context, lastReward, pthis);
 }
