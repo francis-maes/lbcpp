@@ -15,8 +15,30 @@
 # include <lbcpp/UserInterface/VariableSelector.h>
 # include "../Predictor/ProteinPredictor.h"
 
+# include "../../../src/Function/Evaluator/Utilities.h"
+# include "../../../src/UserInterface/Component/ContainerCurveEditor.h"
+
 namespace lbcpp
 {
+
+class ROCScoreObjectComponent : public ContainerCurveEditor
+{
+public:
+  ROCScoreObjectComponent(ROCScoreObjectPtr rocScore, const String& name)
+    : ContainerCurveEditor(defaultExecutionContext(), rocScore->createROCCurveElements(), createCurveEditorConfiguration())
+  {
+  }
+
+protected:
+  ContainerCurveEditorConfigurationPtr createCurveEditorConfiguration() const
+  {
+    ContainerCurveEditorConfigurationPtr res = new ContainerCurveEditorConfiguration(rocScoreObjectElementClass);
+    res->setXAxis(new CurveAxisConfiguration(0.0, 1.0, T("False positive rate"), false));
+    res->setYAxis(new CurveAxisConfiguration(0.0, 1.0, T("True positive rate"), false));
+    return res;
+  }
+};
+
 
 class MultiProteinComponent : public TabbedVariableSelectorComponent
 {
