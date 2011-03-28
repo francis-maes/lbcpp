@@ -180,10 +180,6 @@
   </class>
   
   <!-- Protein Functions -->
-  <class name="ProteinLengthFunction" base="SimpleUnaryFunction">
-    <constructor returnType="Function"/>
-  </class>
-  
   <class name="ProteinToInputOutputPairFunction" base="Function">
     <constructor arguments="bool keepTertiaryStructure"/>
     <variable type="Boolean" name="keepTertiaryStructure"/>

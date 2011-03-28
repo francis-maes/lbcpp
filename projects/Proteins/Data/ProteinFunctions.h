@@ -16,24 +16,6 @@ namespace lbcpp
 {
 
 /*
-** ProteinLengthFunction
-*/
-class ProteinLengthFunction : public SimpleUnaryFunction
-{
-public:
-  ProteinLengthFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("Length")) {}
-
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-  {
-    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
-    if (protein)
-      return Variable(protein->getLength(), positiveIntegerType);
-    else
-      return Variable::missingValue(positiveIntegerType);
-  }
-};
-
-/*
 ** ProteinToInputOutputPairFunction
 */
 class ProteinToInputOutputPairFunction : public SimpleUnaryFunction
