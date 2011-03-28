@@ -415,7 +415,7 @@ public:
     {
       CurveVariableConfigurationPtr curve = configuration->getCurve(i);
       if (curve)
-        addToggleButton(buttonsColumn, rowType->getMemberVariableName(i), curve->isSelected(), 4);
+        addToggleButton(buttonsColumn, rowType->getMemberVariableName(i), curve->isSelected(), 4, curve->getColour());
     }
     flushButtons(buttonsColumn);
 

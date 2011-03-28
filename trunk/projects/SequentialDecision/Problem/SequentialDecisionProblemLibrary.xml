@@ -12,4 +12,11 @@
     <constructor arguments="double discount"/>
   </class>
   
+  <!-- Damien's code wrapper -->
+  <class name="DamienState" base="DecisionProblemState" abstract="yes">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="state"/>
+  </class>
+  <class name="HIVDecisionProblemState" base="DamienState"/>
+  <class name="HIVInitialStateSampler" base="Function"/>
+  
 </library>

@@ -24,9 +24,12 @@ class BooleanButtonsComponent : public Component, public juce::ButtonListener, p
 public:
   struct ConfigurationButton : public juce::ToggleButton
   {
-    ConfigurationButton(const String& name, bool& value)
+    ConfigurationButton(const String& name, bool& value, const juce::Colour& colour = juce::Colours::black)
       : ToggleButton(name), value(value)
-      {setToggleState(value, false);}
+    {
+      setColour(textColourId, colour);
+      setToggleState(value, false);
+    }
       
     bool& value;
   };
@@ -70,9 +73,9 @@ public:
 protected:
   std::vector< std::vector<ConfigurationButton* > > buttons;
 
-  void addToggleButton(std::vector<ConfigurationButton* >& buttonsColumn, const String& name, bool& state, size_t columnsHeight)
+  void addToggleButton(std::vector<ConfigurationButton* >& buttonsColumn, const String& name, bool& state, size_t columnsHeight, const juce::Colour& colour = juce::Colours::black)
   {
-    buttonsColumn.push_back(new ConfigurationButton(name, state));
+    buttonsColumn.push_back(new ConfigurationButton(name, state, colour));
     if (buttonsColumn.size() >= columnsHeight)
       flushButtons(buttonsColumn);
   }

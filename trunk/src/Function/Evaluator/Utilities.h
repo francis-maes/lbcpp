@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Object.h>
 # include <lbcpp/Function/Evaluator.h>
+# include <algorithm>
 
 namespace lbcpp
 {
@@ -161,7 +162,7 @@ public:
     sortedPredictedScores.reserve(predictedScores.size());
     for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
       sortedPredictedScores.push_back(it->first);
-    sort(sortedPredictedScores.begin(), sortedPredictedScores.end());
+    std::sort(sortedPredictedScores.begin(), sortedPredictedScores.end());
 
     ContainerPtr res = vector(rocScoreObjectElementClass, sortedPredictedScores.size() + 2);
     res->setElement(0, new ROCScoreObjectElement(0, 0));
