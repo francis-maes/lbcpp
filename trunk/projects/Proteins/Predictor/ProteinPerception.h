@@ -49,11 +49,15 @@ public:
   void setLenght(size_t length)
     {this->length = length;}
 
+  void setNumCysteins(size_t numCysteins)
+    {this->numCysteins = numCysteins;}
+
 protected:
   friend class ProteinPrimaryPerceptionClass;
 
   ProteinPtr protein;
   size_t length;
+  size_t numCysteins;
   
   ProteinPrimaryPerception(TypePtr type)
     : Object(type) {}
@@ -92,7 +96,7 @@ class CreateProteinPerceptionFunction : public Function
 {
 public:
   virtual size_t getNumRequiredInputs() const
-    {return 5;}
+    {return 6;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
   {
@@ -100,9 +104,10 @@ public:
     {
       case 0: return proteinClass;
       case 1: return positiveIntegerType;
-      case 2: return vectorClass(doubleVectorClass());
-      case 3: return containerClass(doubleVectorClass());
-      case 4: return doubleVectorClass();
+      case 2: return positiveIntegerType;
+      case 3: return vectorClass(doubleVectorClass());
+      case 4: return containerClass(doubleVectorClass());
+      case 5: return doubleVectorClass();
       default:
         jassertfalse;
         return TypePtr();
@@ -120,10 +125,70 @@ public:
     NumericalProteinPrimaryFeaturesPtr res = new NumericalProteinPrimaryFeatures(getOutputType()->getTemplateArgument(0));
     res->setProtein(inputs[0].getObject());
     res->setLenght((size_t)inputs[1].getInteger());
-    res->setPrimaryResidueFeatures(inputs[2].getObject());
-    res->setAccumulator(inputs[3].getObject());
-    res->setGlobalFeatures(inputs[4].getObject());
+    res->setNumCysteins((size_t)inputs[2].getInteger());
+    res->setPrimaryResidueFeatures(inputs[3].getObject());
+    res->setAccumulator(inputs[4].getObject());
+    res->setGlobalFeatures(inputs[5].getObject());
     return res;
+  }
+};
+
+/*
+** ProteinLengthFunction
+*/
+class ProteinLengthFunction : public SimpleUnaryFunction
+{
+public:
+  ProteinLengthFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("Length")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    if (protein)
+      return Variable(protein->getLength(), positiveIntegerType);
+    return Variable::missingValue(positiveIntegerType);
+  }
+};
+
+class NumCysteinsFunction : public SimpleUnaryFunction
+{
+public:
+  NumCysteinsFunction() : SimpleUnaryFunction(proteinClass, positiveIntegerType, T("NumCysteins")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const ProteinPtr& protein = input.getObjectAndCast<Protein>(context);
+    if (protein)
+      return Variable(protein->getCysteinIndices().size(), positiveIntegerType);
+    return Variable::missingValue(positiveIntegerType);
+  }
+};
+
+class GetCysteinProbabilityFunction : public Function
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 4;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index == 0 ? (TypePtr)proteinClass : (index == 1 ? (TypePtr)symmetricMatrixClass(probabilityType) : positiveIntegerType);}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return probabilityType;}
+  
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>(context);
+    const SymmetricMatrixPtr& matrix = inputs[1].getObjectAndCast<SymmetricMatrix>(context);
+    size_t firstPosition = inputs[2].getInteger();
+    size_t secondPosition = inputs[3].getInteger();
+
+    const std::vector<int>& cysteinInvIndices = protein->getCysteinInvIndices();
+    int firstCysteinPosition = cysteinInvIndices[firstPosition];
+    int secondCysteinPosition = cysteinInvIndices[secondPosition];
+    if (matrix && firstCysteinPosition != -1 && secondCysteinPosition != -1)
+      return matrix->getElement(firstCysteinPosition, secondCysteinPosition);
+    return Variable::missingValue(probabilityType);
   }
 };
 

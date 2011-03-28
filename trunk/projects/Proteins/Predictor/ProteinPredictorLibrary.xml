@@ -5,6 +5,7 @@
   <class name="ProteinPrimaryPerception" base="Object" abstract="yes">
     <variable type="Protein" name="protein"/>
     <variable type="PositiveInteger" name="length"/>
+    <variable type="PositiveInteger" name="numCysteins"/>
   </class>
 
   <template name="NumericalProteinPrimaryFeatures" base="ProteinPrimaryPerception">
@@ -13,6 +14,9 @@
     <variable type="Container[DenseDoubleVector[AddMissingToEnumeration[featuresEnumeration], Double]]" name="accumulator"/>
     <variable type="DenseDoubleVector[featuresEnumeration, Double]" name="globalFeatures"/>
   </template>
+  
+  <class name="ProteinLengthFunction" base="SimpleUnaryFunction"/>
+  <class name="NumCysteinsFunction" base="SimpleUnaryFunction"/>
   
   <class name="CreateProteinPerceptionFunction" base="Function"/>
   <class name="SubtractFunction" base="Function"/>

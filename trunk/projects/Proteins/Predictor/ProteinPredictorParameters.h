@@ -115,6 +115,7 @@ public:
       stalDiscretization(2), stalEntropyDiscretization(3),
       sa20Discretization(5),
       drDiscretization(5),
+      dsbDiscretization(5),
       residueGlobalFeatures(true), residueWindowSize(15),
       residueLocalMeanSize(15), residueMediumMeanSize(50),
       residuePairGlobalFeatures(true), residuePairWindowSize(15),
@@ -145,6 +146,9 @@ public:
 
   // dr
   size_t drDiscretization;
+  
+  // dsb
+  size_t dsbDiscretization;
 
   // global
   bool residueGlobalFeatures;
