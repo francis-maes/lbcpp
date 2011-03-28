@@ -26,7 +26,7 @@ public:
     {return 2;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? anyType : decisionProblemStateClass;}
+    {return index ? anyType : (TypePtr)decisionProblemStateClass;}
 
   virtual String getOutputPostFix() const
     {return T("Action");}
