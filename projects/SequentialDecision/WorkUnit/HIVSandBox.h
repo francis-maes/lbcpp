@@ -27,7 +27,7 @@ public:
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
     {return searchTreeNodeClass;}
   
-  enum {count = 1000};
+  enum {count = 10000};
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
@@ -69,8 +69,10 @@ public:
       builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 7), reward);
       builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxReturn), 7), currentReturn);
 
+      builder.addFunction(new HIVNodeIndexFeatures(), node);
+
     size_t allFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
-    builder.addFunction(cartesianProductFeatureGenerator(), allFeatures, allFeatures);
+    //builder.addFunction(cartesianProductFeatureGenerator(), allFeatures, allFeatures);
 /*
 
     builder.startSelection();
@@ -175,15 +177,15 @@ public:
   {
     // /!\ This distribution only outputs normalized double vectors
     DenseDoubleVectorPtr res(new DenseDoubleVector(elementsType, subDistributions.size()));
-    double sumOfSquares = 0.0;
+  //  double sumOfSquares = 0.0;
     for (size_t i = 0; i < subDistributions.size(); ++i)
     {
       double value = subDistributions[i]->sample(random).getDouble();
-      sumOfSquares += value * value;
+  //    sumOfSquares += value * value;
       res->setValue(i, value);
     }
-    if (sumOfSquares)
-      res->multiplyByScalar(1.0 / sqrt(sumOfSquares)); // normalize
+ //   if (sumOfSquares)
+ //     res->multiplyByScalar(1.0 / sqrt(sumOfSquares)); // normalize
     return res;
   }
 
@@ -316,8 +318,9 @@ private:
     for (size_t i = 0; i < iterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
+      context.resultCallback(T("iteration"), i);
       double score = performEDAIteration(context, functionToOptimize, distribution);
-      context.resultCallback(T("distribution"), distribution);
+      //context.resultCallback(T("distribution"), distribution);
       context.leaveScope(score);
       if (score < bestScore)
         bestScore = score;
