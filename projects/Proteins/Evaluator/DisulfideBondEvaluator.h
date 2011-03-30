@@ -18,6 +18,9 @@ namespace lbcpp
 class DisulfidePatternScoreObject : public ScoreObject
 {
 public:
+  DisulfidePatternScoreObject()
+    : accuracyVector(new ScalarVariableMean()) {}
+
   virtual double getScoreToMinimize() const
     {return 1.0 - accuracy;}
 
