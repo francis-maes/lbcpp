@@ -112,6 +112,22 @@ void SearchTree::removeCallback(SearchTreeCallbackPtr callback)
     }
 }
 
+ContainerPtr SearchTree::getBestNodeTrajectory() const
+{
+  VectorPtr res = vector(searchTreeNodeClass, 0);
+
+  SearchTreeNodePtr node = nodes[0];
+  while (true)
+  {    
+    SearchTreeNodePtr bestChild = node->getBestChildNode();
+    if (!bestChild)
+      break;
+    res->append(bestChild);
+    node = bestChild;
+  }
+  return res;
+}
+
 void SearchTree::doSearchEpisode(ExecutionContext& context, const PolicyPtr& policy, size_t maxSearchNodes)
 {
   double lastReward = 0.0;
