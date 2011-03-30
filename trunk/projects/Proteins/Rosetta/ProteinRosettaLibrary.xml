@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosetta" directory="Rosetta">
+
+  <class name="RosettaTest" base="WorkUnit"/>
+
+</library>
