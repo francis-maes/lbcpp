@@ -108,7 +108,7 @@ public:
     double epsilon2=a[1];
     return -(Q*V+R1*epsilon1*epsilon1+R2*epsilon2*epsilon2-S*E);
   }
-  void StateVectorDot(const vector<double>& stateVector_, std::vector<double>& answer) {
+  void StateVectorDot(const vector<double>& stateVector_, double answer[]) {
     double T1Dot;
     double T2Dot;
     double T1StarDot;
@@ -139,7 +139,7 @@ public:
     //return answer;
   }
   HIV& IncreaseStep(double h=0.001) {
-    std::vector<double> tmp(6);
+    double tmp[6];
     StateVectorDot(stateVector, tmp);
     for (size_t i = 0; i < 6; ++i)
       stateVector[i] += h * tmp[i];

@@ -29,7 +29,7 @@
   <class name="HIVSandBox" base="WorkUnit">
     <variable type="Double" name="discount" shortName="d"/>
     <variable type="PositiveInteger" name="maxSearchNodes" shortName="m"/>
-    <variable type="PositiveInteger" name="samplesCount" shortName="s"/>
+    <variable type="PositiveInteger" name="maxHorizon" shortName="h"/>
     <variable type="PositiveInteger" name="iterations" shortName="i"/>
     <variable type="PositiveInteger" name="populationSize" shortName="p"/>
     <variable type="PositiveInteger" name="numBests" shortName="n"/>
