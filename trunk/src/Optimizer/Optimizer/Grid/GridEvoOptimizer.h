@@ -14,20 +14,21 @@
 # include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
 # include "../../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 
-// TODO delete Ptr ?
 namespace lbcpp
 {
 
-class GridEvoOptimizerState : public GridOptimizerState {
+class GridEvoOptimizerState : public GridOptimizerState
+{
 public:
-  GridEvoOptimizerState() {} // TODO arnaud OK?
-  GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions) : distributions(distributions)
+  GridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions)
+    : distributions(distributions)
   {
     totalNumberGeneratedWUs = 0;
     totalNumberEvaluatedWUs = 0;
     bestVariable = Variable();
     bestScore = 0.0;
   }
+  GridEvoOptimizerState() {}
   
   virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const = 0;
   
@@ -47,6 +48,7 @@ protected:
   friend class GridEvoOptimizer;  // so that optimizer has access to state variables
   friend class EvoOptimizer;  //TODO arnaud : change this after retructuration
 };
+
 typedef ReferenceCountedObjectPtr<GridEvoOptimizerState> GridEvoOptimizerStatePtr;  
 extern ClassPtr gridEvoOptimizerStateClass; 
   
@@ -58,9 +60,11 @@ extern ClassPtr gridEvoOptimizerStateClass;
 class RunWorkUnit : public WorkUnit
 {
 public:
+  RunWorkUnit(const File& f) : f(f) {}
   RunWorkUnit() {}
-  RunWorkUnit(const File f) : f(f) {}
-  virtual Variable run(ExecutionContext& context) {
+  
+  virtual Variable run(ExecutionContext& context)
+  {
     ExecutionContextPtr newContext = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());  // one thread per WUs
     
     // execution trace
@@ -93,9 +97,11 @@ private:
 class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use Optimizer instead of GridOptimizer as mother class
 {
 public:
+  EvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep)
+    : totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress),
+      ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep) {}
+
   EvoOptimizer() {}
-  EvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep) :
-  totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep) {}
   
   virtual TypePtr getRequiredStateType() const
     {return gridEvoOptimizerStateClass;}
@@ -150,10 +156,10 @@ public:
 
       // check for finished results
       std::vector<String>::iterator it;
-      for(it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
+      for (it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
       {
         File f = File::getCurrentWorkingDirectory().getChildFile(*it + T(".trace"));
-        if(f.existsAsFile())
+        if (f.existsAsFile())
         {
           state->currentEvaluatedWUs.push_back(*it);
           state->totalNumberEvaluatedWUs++;
@@ -173,7 +179,7 @@ public:
         // get (and sort) : score -> variable from trace files
         std::multimap<double, Variable> resultsMap; // mutlimap used to sort results by score
         std::vector<String>::iterator it;
-        for(it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) 
+        for (it = state->currentEvaluatedWUs.begin(); it != state->currentEvaluatedWUs.end(); it++) 
         {
           ExecutionTracePtr trace = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(*it + T(".trace"))).staticCast<ExecutionTrace>();
           double score = getScoreFromTrace->compute(context, trace).getDouble();
@@ -193,7 +199,8 @@ public:
         state->distributions = distributionsBuilder->build(context);
         
         // update best score
-        if ((*(resultsMap.rbegin())).first > state->bestScore) {
+        if ((*(resultsMap.rbegin())).first > state->bestScore)
+        {
           state->bestScore = (*(resultsMap.rbegin())).first;
           state->bestVariable = (*(resultsMap.rbegin())).second;
           context.informationCallback(T("New best result found : ") + state->bestVariable.toString() + T(" ( ") + String(state->bestScore) + T(" )"));
@@ -232,12 +239,14 @@ class GridEvoOptimizer : public GridOptimizer
 public:
   GridEvoOptimizer() {}
   GridEvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, String projectName, String source, String destination,
-                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep) : 
-  totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate),
-  projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), requiredMemory(requiredMemory), requiredTime(requiredTime), timeToSleep(timeToSleep) 
-  {requiredCpus = 1;} // TODO arnaud : edit for NIC3
+                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep)
+    : totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate),
+      projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), requiredMemory(requiredMemory),
+      requiredTime(requiredTime), timeToSleep(timeToSleep) 
+  {
+    requiredCpus = 1;
+  } // TODO arnaud : edit for NIC3
   // TODO arnaud : check nbevalute < nbinprogress
-  
   
   virtual TypePtr getRequiredStateType() const
     {return gridEvoOptimizerStateClass;}
@@ -300,9 +309,9 @@ public:
         continue;
       
       std::vector<String>::iterator it;
-      for(it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
+      for (it = state->inProgressWUs.begin(); it != state->inProgressWUs.end(); )
       {
-        if(interface->isFinished(*it))
+        if (interface->isFinished(*it))
         {
           NetworkResponsePtr res = interface->getExecutionTrace(*it);
           if (res)
