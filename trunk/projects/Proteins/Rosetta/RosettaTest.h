@@ -11,6 +11,10 @@
 
 # include "../Data/Protein.h"
 
+# undef T
+# include <core/pose/Pose.hh>
+# define T JUCE_T
+
 namespace lbcpp
 {
 

@@ -139,12 +139,21 @@ ENDIF(LBCPP_USER_INTERFACE)
 
 
 IF(LBCPP_PROTEIN_ROSETTA)
+
   SET(LBCPP_PROTEIN_ROSETTA_SOURCES
     Rosetta/RosettaTest.h
     Rosetta/ProteinRosettaLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
   )
+
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
+  INCLUDE_DIRECTORIES(
+    /home/alejandro/soft/rosetta-3.2/rosetta_source/src
+    /home/alejandro/soft/rosetta-3.2/rosetta_source/src/platform/linux
+  )
+
+  SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /home/alejandro/soft/libcore.so /home/alejandro/soft/libutility.so)
+
 ENDIF(LBCPP_PROTEIN_ROSETTA)
 
 SET(PROTEINS_CPP_SOURCES
@@ -187,4 +196,4 @@ SOURCE_GROUP(Rosetta FILES ${LBCPP_PROTEIN_ROSETTA_SOURCES})
 GENERATE_LBCPP_PRECOMPILED(precompiled PROTEINS_SOURCES)
 
 ADD_LIBRARY(proteins${NAME_FILE_SUFFIX} SHARED ${PROTEINS_SOURCES})
-TARGET_LINK_LIBRARIES(proteins${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
+TARGET_LINK_LIBRARIES(proteins${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX} ${LBCPP_PROTEIN_ROSETTA_LIBRARIES})
