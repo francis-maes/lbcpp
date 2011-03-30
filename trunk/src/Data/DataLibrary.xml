@@ -82,13 +82,21 @@
     <parameter name="elementsType" type="Object"/>
   </template>
 
+  <template name="DoubleMatrix" base="Matrix[elementsType]">
+    <parameter name="elementsType" type="Double"/>
+  </template>
+
   <!-- SymmetricMatrix -->
   <template name="SymmetricMatrix" base="Matrix[elementsType]" abstract="yes">
     <parameter name="elementsType" type="Variable"/>
   </template>
 
-  <class name="DoubleSymmetricMatrix" base="SymmetricMatrix[Double]"/>
+  <template name="DoubleSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Double"/>
+  </template>
 
-  <class name="ObjectSymmetricMatrix" base="SymmetricMatrix[Object]"/>
+  <template name="ObjectSymmetricMatrix" base="SymmetricMatrix[elementsType]">
+    <parameter name="elementsType" type="Variable"/>
+  </template>
 
 </library>

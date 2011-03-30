@@ -111,5 +111,10 @@
     <variable type="File" name="inputDirectory" shortName="i"/>
     <variable type="File" name="outputDirectory" shortName="o"/>
   </class>
+  
+  <class name="ConvertSPXFileToProteins" base="WorkUnit">
+    <variable type="File" name="spxFile"/>
+    <variable type="File" name="outputDirectory"/>
+  </class>
 
 </library>

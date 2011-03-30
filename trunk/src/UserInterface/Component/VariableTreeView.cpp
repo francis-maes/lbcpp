@@ -75,6 +75,15 @@ public:
       mightContainSubItemsFlag = true;
       return;
     }
+    
+    CompositeDoubleVectorPtr compositeVector = variable.dynamicCast<CompositeDoubleVector>();
+    if (compositeVector)
+    {
+      for (size_t i = 0; i < compositeVector->getNumSubVectors(); ++i)
+        addSubVariable(T("[") + String((int)i) + T("]"), compositeVector->getSubVector(i));
+      mightContainSubItemsFlag = true;
+      return;
+    }
 
     ContainerPtr container = variable.dynamicCast<Container>();
     if (container)

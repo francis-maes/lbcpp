@@ -18,5 +18,14 @@
   <class name="ContactMapEvaluator" base="SupervisedEvaluator">
     <variable type="PositiveInteger" name="minimumDistance"/>
   </class>
+  
+  <class name="DisulfidePatternScoreObject" base="ScoreObject">
+    <variable type="Double" name="accuracy"/>
+  </class>
+  
+  <class name="DisulfidePatternEvaluator" base="SupervisedEvaluator">
+    <variable type="Double" name="threshold"/>
+    <variable type="PositiveInteger" name="minimumDistanceFromDiagonal"/>
+  </class>
 
 </library>

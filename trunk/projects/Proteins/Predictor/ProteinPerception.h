@@ -164,6 +164,91 @@ public:
   }
 };
 
+class NormalizeDisulfideBondFunction : public SimpleUnaryFunction
+{
+public:
+  NormalizeDisulfideBondFunction() : SimpleUnaryFunction(symmetricMatrixClass(probabilityType), matrixClass(probabilityType), T("NormalizeDsb")) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const SymmetricMatrixPtr& disulfideBonds = input.getObjectAndCast<SymmetricMatrix>(context);
+    if (!disulfideBonds)
+      return Variable::missingValue(matrixClass(probabilityType));
+
+    const size_t dimension = disulfideBonds->getDimension();
+    if (dimension <= 1)
+      return Variable::missingValue(matrixClass(probabilityType));
+
+    std::vector<double> z(dimension, 0.0);
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = 0; j < dimension; ++j)
+        if (i != j)
+          z[i] += disulfideBonds->getElement(i, j).getDouble();
+
+    MatrixPtr res = matrix(probabilityType, dimension, dimension);
+    for (size_t i = 0; i < dimension; ++i)
+      for (size_t j = 0; j < dimension; ++j)
+        if (i != j)
+          res->setElement(i, j, z[i] == 0.0 ? probability(0.0) : disulfideBonds->getElement(i, j).getDouble() / z[i]);
+
+    return res;
+  }
+};
+
+class ApplyFeatureGeneratorOnCytein : public FeatureGenerator
+{
+public:
+  ApplyFeatureGeneratorOnCytein(FeatureGeneratorPtr decorated)
+    : FeatureGenerator(decorated->isLazy()), decorated(decorated) {}
+  
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 3;}
+  
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return /*(size_t)-1*/4;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+  {
+    if (index == 0)
+      return proteinClass;
+    if (index < 3)
+      return positiveIntegerType;
+    return anyType;
+  }
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    std::vector<VariableSignaturePtr> subInputs(3);
+    subInputs[0] = inputVariables[3];
+    subInputs[1] = inputVariables[1];
+    subInputs[2] = inputVariables[2];
+    return decorated->initializeFeatures(context, subInputs, elementsType, outputName, outputShortName);
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
+    if (!protein)
+      return;
+    size_t firstPosition = inputs[1].getInteger();
+    size_t secondPosition = inputs[2].getInteger();
+    jassert(firstPosition < protein->getLength() && secondPosition < protein->getLength());
+    const std::vector<int>& cysteinInvIndices = protein->getCysteinInvIndices();
+    if (cysteinInvIndices[firstPosition] < 0 || cysteinInvIndices[secondPosition] < 0)
+      return;
+
+    const size_t numInputs = getNumInputs();
+    std::vector<Variable> subInputs(numInputs - 1);
+    subInputs[0] = inputs[3]; // For MatrixWindonFeatureGenerator, the first input must be the Matrix
+    subInputs[1] = cysteinInvIndices[firstPosition];
+    subInputs[2] = cysteinInvIndices[secondPosition];
+    decorated->computeFeatures(&subInputs[0], callback);
+  }
+
+protected:
+  FeatureGeneratorPtr decorated;
+};
+
 class GetCysteinProbabilityFunction : public Function
 {
 public:
