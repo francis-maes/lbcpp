@@ -384,33 +384,42 @@ void XmlImporter::warningMessage(const String& where, const String& what) const
 Variable XmlImporter::load()
 {
   if (root->getTagName() == T("lbcpp"))
-    return loadSharedObjects() ? loadVariable(root->getChildByName(T("variable")), TypePtr()) : Variable();
+  {
+    loadSharedObjects();
+    return loadVariable(root->getChildByName(T("variable")), TypePtr());
+  }
   else
     return loadVariable(root, TypePtr());
 }
 
 bool XmlImporter::loadSharedObjects()
 {
+  bool res = true;
   forEachXmlChildElementWithTagName(*getCurrentElement(), child, T("shared"))
   {
     Variable variable = loadVariable(child, TypePtr());
     if (!variable.exists())
-      return false;
+    {
+      res = false;
+      continue;
+    }
+
     if (!variable.isObject())
     {
       errorMessage(T("XmlImporter::loadRecursively"), T("Shared variable is not an object"));
-      return false;
+      res = false;
+      continue;
     }
     String identifier = child->getStringAttribute(T("identifier"));
     if (identifier.isEmpty())
     {
       errorMessage(T("XmlImporter::loadRecursively"), T("Shared object has no identifier"));
-      return false;
+      res = false;
+      continue;
     }
     sharedObjectsStack.back()[identifier] = variable.getObject();
   }
-  //getCurrentElement()->deleteAllChildElementsWithTagName(T("shared"));
-  return true;
+  return res;
 }
 
 TypePtr XmlImporter::loadType(TypePtr expectedType)
