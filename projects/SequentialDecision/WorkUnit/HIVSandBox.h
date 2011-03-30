@@ -18,6 +18,35 @@
 namespace lbcpp
 {
 
+class HIVNodeIndexFeatures : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return searchTreeNodeClass;}
+  
+  enum {count = 1000};
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("Bla"));
+    for (size_t i = 0; i < count; ++i)
+      res->addElement(context, String((int)i));
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const SearchTreeNodePtr& node = inputs[0].getObjectAndCast<SearchTreeNode>();
+    size_t index = node->getNodeUid();
+    if (index < count)
+      callback.sense(index, 1.0);
+  }
+};
+
+
 class HIVSearchFeatures : public CompositeFunction
 {
 public:
@@ -27,6 +56,23 @@ public:
   {
     size_t node = builder.addInput(searchTreeNodeClass, T("node"));
 
+    size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
+    size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
+    size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
+    
+    builder.startSelection();
+
+    enum {maxDepth = 300, maxReward = 10000, maxReturn = 3000000};
+
+      // max depth = 1000, max reward = 100
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxDepth), 7), depth);
+      builder.addFunction(softDiscretizedNumberFeatureGenerator(0.0, maxReward, 7), reward);
+      builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxReturn), 7), currentReturn);
+
+    size_t allFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
+    builder.addFunction(cartesianProductFeatureGenerator(), allFeatures, allFeatures);
+/*
+
     builder.startSelection();
 
       builder.addFunction(greedySearchHeuristic(), node, T("maxReward"));
@@ -35,7 +81,10 @@ public:
       builder.addFunction(optimisticPlanningSearchHeuristic(discount), node, T("optimistic"));
       builder.addFunction(minDepthSearchHeuristic(), node, T("minDepth"));
 
-    builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
+    size_t heuristics = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));*/
+
+    //size_t indices = builder.addFunction(new HIVNodeIndexFeatures(), node);
+    //builder.addFunction(concatenateFeatureGenerator(true), heuristics, indices);
   }
 
 protected:
@@ -45,11 +94,11 @@ protected:
 class HIVSearchHeuristic : public LearnableSearchHeuristic
 {
 public:
-  HIVSearchHeuristic(DenseDoubleVectorPtr parameters, double discount)
-    : parameters(parameters), discount(discount) {}
+  HIVSearchHeuristic(const FunctionPtr& featuresFunction, DenseDoubleVectorPtr parameters, double discount)
+    : featuresFunction(featuresFunction), parameters(parameters), discount(discount) {}
 
   virtual FunctionPtr createPerceptionFunction() const
-    {return new HIVSearchFeatures(discount);}
+    {return featuresFunction;}
 
   virtual FunctionPtr createScoringFunction() const
   {
@@ -59,6 +108,7 @@ public:
   }
 
 protected:
+  FunctionPtr featuresFunction;
   DenseDoubleVectorPtr parameters;
   double discount;
 };
@@ -67,18 +117,17 @@ protected:
 class EvaluateHIVSearchHeuristic : public SimpleUnaryFunction
 {
 public:
-  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, size_t samplesCount, size_t maxSearchNodes, double discount)
-    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), samplesCount(samplesCount), maxSearchNodes(maxSearchNodes), discount(discount)
+  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, const FunctionPtr& featuresFunction, size_t samplesCount, size_t maxSearchNodes, double discount)
+    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction), samplesCount(samplesCount), maxSearchNodes(maxSearchNodes), discount(discount)
   {
-    FunctionPtr tmp = new HIVSearchFeatures();
-    tmp->initialize(defaultExecutionContext(), searchTreeNodeClass);
-    inputType = denseDoubleVectorClass(DenseDoubleVector::getElementsEnumeration(tmp->getOutputType()));
+    featuresFunction->initialize(defaultExecutionContext(), searchTreeNodeClass);
+    inputType = denseDoubleVectorClass(DenseDoubleVector::getElementsEnumeration(featuresFunction->getOutputType()));
   }
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
     const DenseDoubleVectorPtr& parameters = input.getObjectAndCast<DenseDoubleVector>();
-    FunctionPtr heuristic = new HIVSearchHeuristic(parameters, discount);
+    FunctionPtr heuristic = new HIVSearchHeuristic(featuresFunction, parameters, discount);
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
 
     double res = 0.0;
@@ -94,6 +143,7 @@ public:
 
 protected:
   DecisionProblemPtr problem;
+  FunctionPtr featuresFunction;
   size_t samplesCount;
   size_t maxSearchNodes;
   double discount;
@@ -231,7 +281,8 @@ public:
       return false;
     }
 
-    FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, samplesCount, maxSearchNodes, discount);
+    FunctionPtr featuresFunction = new HIVSearchFeatures(discount);
+    FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, samplesCount, maxSearchNodes, discount);
     EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
     context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
     ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
@@ -241,7 +292,6 @@ public:
       initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
     
     RandomGeneratorPtr random = RandomGenerator::getInstance();
-
     double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
 
     return performEDA(context, functionToOptimize, initialDistribution);
