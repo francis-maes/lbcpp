@@ -162,7 +162,7 @@ public:
     //    cout << "stateVector=" << stateVector << endl;
     return *this;
   }
-  HIV& PutAction(vector<double> a_) {
+  HIV& PutAction(const vector<double>& a_) {
     a=a_;
     return *this;
   }
@@ -172,7 +172,7 @@ public:
   vector<double> GetState() {
     return stateVector;
   }  
-  HIV& PutState(vector<double> stateVector_) {
+  HIV& PutState(const vector<double>& stateVector_) {
     stateVector=stateVector_;
     return *this;
   }

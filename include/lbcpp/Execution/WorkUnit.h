@@ -141,6 +141,8 @@ class FunctionWorkUnit : public WorkUnit
 public:
   FunctionWorkUnit(const FunctionPtr& function, const std::vector<Variable>& inputs, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
     : function(function), inputs(inputs), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
+  FunctionWorkUnit(const FunctionPtr& function, const Variable& input1, const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
+    : function(function), inputs(1, input1), description(description), output(output), sendInputAsResult(sendInputAsResult) {}
   FunctionWorkUnit() : output(NULL) {}
 
   virtual String toString() const
