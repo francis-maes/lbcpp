@@ -15,7 +15,7 @@ using namespace lbcpp;
 */
 SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState)
   : allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
-    parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(0.0)
+    parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(-DBL_MAX)
 {
   if (initialState)
     state = initialState->cloneAndCast<DecisionProblemState>();
@@ -131,7 +131,7 @@ ContainerPtr SearchTree::getBestNodeTrajectory() const
 void SearchTree::doSearchEpisode(ExecutionContext& context, const PolicyPtr& policy, size_t maxSearchNodes)
 {
   double lastReward = 0.0;
-  double bestReturn = 0.0;
+  double bestReturn = -DBL_MAX;
 
   SearchTreePtr pthis = refCountedPointerFromThis(this);
 
@@ -151,7 +151,7 @@ void SearchTree::doSearchEpisode(ExecutionContext& context, const PolicyPtr& pol
 
     exploreNode(context, (size_t)selectedNode.getInteger());
     double newBestReturn = getBestReturn();
-    lastReward = newBestReturn - bestReturn;
+    lastReward = (bestReturn == -DBL_MAX ? newBestReturn - bestReturn : 0.0);
     jassert(lastReward >= 0.0);
     bestReturn = newBestReturn;
   }

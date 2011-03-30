@@ -53,6 +53,12 @@ public:
   HIVSearchFeatures(double discount, size_t maxSearchNodes) : discount(discount), maxSearchNodes(maxSearchNodes) {}
   HIVSearchFeatures() : discount(1.0), maxSearchNodes(0) {}
 
+  Variable getEValueFromNode(ExecutionContext& context, const Variable& node) const
+  {
+    HIVDecisionProblemStatePtr state = node.getObjectAndCast<SearchTreeNode>()->getState().staticCast<HIVDecisionProblemState>();;
+    return state->getStateDimension(5);
+  }
+
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
     size_t node = builder.addInput(searchTreeNodeClass, T("node"));
@@ -61,7 +67,8 @@ public:
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
     size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
-    
+    size_t stateEValue = builder.addFunction(lbcppMemberUnaryFunction(HIVSearchFeatures, getEValueFromNode, searchTreeNodeClass, doubleType), node);
+/*
     builder.startSelection();
 
     enum {maxDepth = 300, maxReward = 10000, maxReturn = 3000000};
@@ -74,7 +81,7 @@ public:
     size_t discretizedFeatures = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
 
     size_t nodeUIDFeatures = builder.addFunction(new HIVNodeIndexFeatures(), node);
-
+  */
     //builder.addFunction(cartesianProductFeatureGenerator(), allFeatures, allFeatures);
 
     builder.startSelection();
@@ -82,13 +89,17 @@ public:
       builder.addFunction(greedySearchHeuristic(), node, T("maxReward"));
       builder.addFunction(greedySearchHeuristic(discount), node, T("maxDiscountedReward"));
       builder.addFunction(maxReturnSearchHeuristic(), node, T("maxReturn"));
-      builder.addFunction(optimisticPlanningSearchHeuristic(discount), node, T("optimistic"));
+     // builder.addFunction(optimisticPlanningSearchHeuristic(discount), node, T("optimistic"));
       builder.addFunction(minDepthSearchHeuristic(), node, T("minDepth"));
 
-    size_t heuristics = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("heuristics"));
+    
 
+    size_t heuristics = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("heuristics"));
     //size_t timeFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxSearchNodes), 5, false), nodeIndex, T("time"));
-    //size_t cart = builder.addFunction(cartesianProductFeatureGenerator(), discretizedFeatures, timeFeatures, T("heuristicAndTime"));
+
+    size_t eValueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, 6, 6), stateEValue, T("eval"));
+
+    size_t cart = builder.addFunction(cartesianProductFeatureGenerator(), heuristics, eValueFeatures, T("heuristicAndTime"));
 
     //builder.addFunction(concatenateFeatureGenerator(), cart, heuristics, T("f"));
 
@@ -127,8 +138,9 @@ protected:
 class EvaluateHIVSearchHeuristic : public SimpleUnaryFunction
 {
 public:
-  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, const FunctionPtr& featuresFunction, size_t samplesCount, size_t maxSearchNodes, double discount)
-    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction), samplesCount(samplesCount), maxSearchNodes(maxSearchNodes), discount(discount)
+  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, const FunctionPtr& featuresFunction, size_t maxSearchNodes, size_t maxHorizon, double discount)
+    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction),
+      maxSearchNodes(maxSearchNodes), maxHorizon(maxHorizon), discount(discount)
   {
     featuresFunction->initialize(defaultExecutionContext(), searchTreeNodeClass);
     inputType = denseDoubleVectorClass(DenseDoubleVector::getElementsEnumeration(featuresFunction->getOutputType()));
@@ -140,22 +152,27 @@ public:
     FunctionPtr heuristic = new HIVSearchHeuristic(featuresFunction, parameters, discount);
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
 
+    DecisionProblemStatePtr state = problem->sampleInitialState(RandomGenerator::getInstance());
+
     double res = 0.0;
-    for (size_t i = 0; i < samplesCount; ++i)
+    for (size_t i = 0; i < maxHorizon; ++i)
     {
-      DecisionProblemStatePtr initialState = problem->sampleInitialState(RandomGenerator::getInstance());
-      SearchTreePtr searchTree = new SearchTree(problem, initialState, maxSearchNodes);
+      SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
       searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
-      res += searchTree->getBestReturn();
-    }      
-    return -res / samplesCount;
+      Variable action = searchTree->getBestAction();
+
+      double reward = 0.0;
+      state->performTransition(action, reward);
+      res += reward * pow(discount, (double)i);
+    }
+    return -res;
   }
 
 protected:
   DecisionProblemPtr problem;
   FunctionPtr featuresFunction;
-  size_t samplesCount;
   size_t maxSearchNodes;
+  size_t maxHorizon;
   double discount;
 };
 
@@ -271,7 +288,7 @@ class HIVSandBox : public WorkUnit
 {
 public:
   // default values
-  HIVSandBox() : discount(0.98), maxSearchNodes(64), samplesCount(1),
+  HIVSandBox() : discount(0.98), maxSearchNodes(64), maxHorizon(300),
                   iterations(100), populationSize(100), numBests(10)
   {
   }
@@ -284,34 +301,50 @@ public:
       return false;
     }
 
-    DecisionProblemPtr problem = hivDecisionProblem(discount);
+    problem = hivDecisionProblem(discount);
     if (!problem)
     {
       context.errorCallback(T("No decision problem"));
       return false;
     }
 
-    FunctionPtr featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
+    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 10; ++logMaxSearchNodes)
+    {
+      maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
+      context.enterScope(T("N = ") + String((int)maxSearchNodes));
+      context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
 
-    FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, samplesCount, maxSearchNodes, discount);
-    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
-    context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
-    ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+      // BASELINES
+      computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"));
+      computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"));
+      computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"));
+      computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"));
 
-    IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
-    for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
-      initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
-  
+      // EDA
+      featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
+      FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
+      EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
+      context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
+      ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
 
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
-    double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
+      IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
+      for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
+        initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
+    
+      RandomGeneratorPtr random = RandomGenerator::getInstance();
+      //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
 
-    Variable bestParameters;
-    double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
+      Variable bestParameters;
+      double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
 
-    FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
-    SearchTreePtr searchTree = computeSearchTree(context, problem, bestHeuristic);
-    return bestScore;
+      // Evaluate EDA
+      FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
+      computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"));
+      
+      context.leaveScope();
+    }
+
+    return true;
   }
 
 private:
@@ -319,11 +352,14 @@ private:
 
   double discount;
   size_t maxSearchNodes;
-  size_t samplesCount;
+  size_t maxHorizon;
 
   size_t iterations;
   size_t populationSize;
   size_t numBests;
+
+  DecisionProblemPtr problem;
+  FunctionPtr featuresFunction;
 
   double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
   {
@@ -338,6 +374,7 @@ private:
       Variable bestIterationParameters = bestParameters;
       double score = performEDAIteration(context, functionToOptimize, distribution, bestIterationParameters);
       context.resultCallback(T("bestParameters"), bestIterationParameters);
+
       //context.resultCallback(T("distribution"), distribution);
       context.leaveScope(score);
       if (score < bestScore)
@@ -388,7 +425,7 @@ private:
     for (size_t i = 0; i < numBests; ++i, ++it)
     {
       size_t index = it->second;
-      context.informationCallback(T("Best ") + String((int)i + 1) + T(": ") + inputs[index].toShortString() + T(" (") + scores[index].toShortString() + T(")"));
+      //context.informationCallback(T("Best ") + String((int)i + 1) + T(": ") + inputs[index].toShortString() + T(" (") + scores[index].toShortString() + T(")"));
       builder->addElement(inputs[index]);
     }
     distribution = builder->build(context);
@@ -426,47 +463,48 @@ private:
     return bestScore;
   }
 
-  SearchTreePtr computeSearchTree(ExecutionContext& context, const DecisionProblemPtr& problem, const FunctionPtr& heuristic)
+  double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const FunctionPtr& heuristic, const String& name) const
   {
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
-    DecisionProblemStatePtr initialState = problem->sampleInitialState(RandomGenerator::getInstance());
-    SearchTreePtr searchTree = new SearchTree(problem, initialState, maxSearchNodes);
-    searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
-    
-    //context.resultCallback(T("search tree"), searchTree);
-    ContainerPtr bestTrajectory = searchTree->getBestNodeTrajectory();
+    DecisionProblemStatePtr state = problem->sampleInitialState(RandomGenerator::getInstance());
 
-    size_t n = bestTrajectory->getNumElements();
-    context.enterScope(T("Trajectory"));
-    for (size_t i = 0; i < n; ++i)
+    context.enterScope(T("Trajectory ") + name);
+    double res = 0.0;
+    for (size_t i = 0; i < maxHorizon; ++i)
     {
-      SearchTreeNodePtr node = bestTrajectory->getElement(i).getObjectAndCast<SearchTreeNode>();
       context.enterScope(T("element ") + String((int)i));
-      context.resultCallback(T("depth"), i + 1);
-      context.resultCallback(T("reward"), node->getReward());
-      context.resultCallback(T("return"), node->getCurrentReturn());
+
+      SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
+      searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
+      Variable bestAction = searchTree->getBestAction();
+
+      double reward = 0.0;
+      state->performTransition(bestAction, reward);
+      res += reward * pow(discount, (double)i);
+
+      //SearchTreeNodePtr node = bestTrajectory->getElement(i).getObjectAndCast<SearchTreeNode>();
+      context.resultCallback(T("time"), i + 1);
+      context.resultCallback(T("reward"), reward);
       
-      HIVDecisionProblemStatePtr state = node->getState().dynamicCast<HIVDecisionProblemState>();
-      DenseDoubleVectorPtr action = node->getPreviousAction().dynamicCast<DenseDoubleVector>();
+      HIVDecisionProblemStatePtr hivState = state.dynamicCast<HIVDecisionProblemState>();
+      DenseDoubleVectorPtr hivAction = bestAction.dynamicCast<DenseDoubleVector>();
       jassert(state);
 
-      context.resultCallback(T("RTI"), action->getValue(0) > 0.0);
-      context.resultCallback(T("PI"), action->getValue(1) > 0.0);
+      context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
+      context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
 
-      context.resultCallback(T("log10(T1)"), log10(state->getStateDimension(0)));
-      context.resultCallback(T("log10(T2)"), log10(state->getStateDimension(1)));
-      context.resultCallback(T("log10(T1*)"), log10(state->getStateDimension(2)));
-      context.resultCallback(T("log10(T2*)"), log10(state->getStateDimension(3)));
-      context.resultCallback(T("log10(V)"), log10(state->getStateDimension(4)));
-      context.resultCallback(T("log10(E)"), log10(state->getStateDimension(5)));
+      context.resultCallback(T("log10(T1)"), log10(hivState->getStateDimension(0)));
+      context.resultCallback(T("log10(T2)"), log10(hivState->getStateDimension(1)));
+      context.resultCallback(T("log10(T1*)"), log10(hivState->getStateDimension(2)));
+      context.resultCallback(T("log10(T2*)"), log10(hivState->getStateDimension(3)));
+      context.resultCallback(T("log10(V)"), log10(hivState->getStateDimension(4)));
+      context.resultCallback(T("log10(E)"), log10(hivState->getStateDimension(5)));
         
       context.leaveScope();
     }
-    context.leaveScope();
-
-    context.resultCallback(T("best trajectory"), bestTrajectory);
-
-    return searchTree;
+    context.leaveScope(res);
+    context.resultCallback(name, res);
+    return res;
   }
 };
 
