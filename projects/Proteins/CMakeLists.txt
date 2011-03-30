@@ -64,6 +64,7 @@ SET(LBCPP_PROTEIN_DATA_SOURCES
 SET(LBCPP_PROTEIN_DATA_FORMATS_SOURCES
   Data/Formats/FASTAFileParser.h
   Data/Formats/FASTAFileGenerator.h
+  Data/Formats/SPXFileParser.h
   Data/Formats/PDBFileParser.h
   Data/Formats/PDBFileParser.cpp
   Data/Formats/PDBFileGenerator.h
@@ -90,6 +91,7 @@ SET(LBCPP_PROTEIN_PREDICTOR_SOURCES
 SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/TertiaryStructureEvaluator.h
   Evaluator/ContactMapEvaluator.h
+  Evaluator/DisulfideBondEvaluator.h
   Evaluator/ProteinEvaluator.h
   Evaluator/ProteinEvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinEvaluatorLibrary.cpp

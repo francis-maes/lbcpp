@@ -107,17 +107,20 @@ protected:
   }
 };
 
+extern ClassPtr doubleSymmetricMatrixClass(TypePtr type);
+
 class DoubleSymmetricMatrix : public BuiltinTypeSymmetricMatrix<double>
 {
 public:
   DoubleSymmetricMatrix(TypePtr elementsType, size_t dimension, double defaultValue)
-    : BuiltinTypeSymmetricMatrix<double>(elementsType, dimension, defaultValue) {}
+    : BuiltinTypeSymmetricMatrix<double>(elementsType, dimension, defaultValue)
+    {setThisClass(doubleSymmetricMatrixClass(elementsType));}
   DoubleSymmetricMatrix() {}
   
   /* Matrix */
   virtual void setElement(size_t row, size_t column, const Variable& value)
     {BuiltinTypeSymmetricMatrix<double>::setElement(row, column, value.getDouble());}
-  
+
   /* Container */
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeSymmetricMatrix<double>::setElement(index, value.getDouble());}
@@ -125,17 +128,20 @@ public:
   lbcpp_UseDebuggingNewOperator
 };
 
+extern ClassPtr objectSymmetricMatrixClass(TypePtr type);
+
 class ObjectSymmetricMatrix : public BuiltinTypeSymmetricMatrix<ObjectPtr>
 {
 public:
   ObjectSymmetricMatrix(TypePtr elementsType, size_t dimension, ObjectPtr defaultValue)
-    : BuiltinTypeSymmetricMatrix<ObjectPtr>(elementsType, dimension, defaultValue) {}
+    : BuiltinTypeSymmetricMatrix<ObjectPtr>(elementsType, dimension, defaultValue)
+    {setThisClass(objectSymmetricMatrixClass(elementsType));}
   ObjectSymmetricMatrix() {}
-  
+
   /* Matrix */
   virtual void setElement(size_t row, size_t column, const Variable& value)
     {BuiltinTypeSymmetricMatrix<ObjectPtr>::setElement(row, column, value.getObject());}
-  
+
   /* Container */
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeSymmetricMatrix<ObjectPtr>::setElement(index, value.getObject());}

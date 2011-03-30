@@ -58,6 +58,9 @@ public:
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
+    std::cout << "MatrixWindowFG: " << inputs[0].toString() << std::endl;
+    if (!matrix)
+      return;
     ObjectMatrixPtr objectMatrix = matrix.dynamicCast<ObjectMatrix>();
     int row = inputs[1].getInteger();
     int column = inputs[2].getInteger();
@@ -66,7 +69,6 @@ public:
     int startColumn = column - (int)(windowColumns / 2);
     int numRows = (int)matrix->getNumRows();
     int numColumns = (int)matrix->getNumColumns();
-
     size_t index = 0;
     for (size_t i = 0; i < windowRows; ++i)
     {

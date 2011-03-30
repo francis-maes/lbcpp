@@ -87,6 +87,7 @@ public:
       addTab(T("Residue Features"), Colours::white);
       addTab(T("Residue Pair Features"), Colours::red);
       addTab(T("Disulfide Pair Features"), Colours::red);
+      addTab(T("Compute Missing"), Colours::pink);
     }
   }
 
@@ -98,6 +99,13 @@ public:
       return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
 //    else if (tabName == T("Perception"))
 //      return new ProteinPerceptionComponent(proteins[0]);
+    else if (tabName == T("Compute Missing"))
+    {
+      const size_t n = proteinClass->getNumMemberVariables();
+      for (size_t i = 0; i < n; ++i)
+        proteins[0]->getTargetOrComputeIfMissing(context, i);
+      return userInterfaceManager().createVariableTreeView(context, proteins[0], names[0]);
+    }
     else if (tabName == T("Disulfide Pair Features"))
     {
       NumericalProteinFeaturesParametersPtr featuresParameters = new NumericalProteinFeaturesParameters();

@@ -2,6 +2,8 @@
 #include "Data/Protein.h"
 #include "../Evaluator/ProteinEvaluator.h"
 
+#include "Data/Formats/SPXFileParser.h"
+
 /*
 ** BricoBox - Some non-important test tools
 */
@@ -335,5 +337,25 @@ public:
 #endif
   }
 };
-  
+
+class ConvertSPXFileToProteins : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!spxFile.exists())
+      return false;
+
+    ConsumerPtr consumer = saveToFileConsumer(outputDirectory);
+    consumer->consumeStream(context, new SPXFileParser(context, spxFile));
+    return true;
+  }
+
+protected:
+  friend class ConvertSPXFileToProteinsClass;
+
+  File spxFile;
+  File outputDirectory;
+};
+
 };

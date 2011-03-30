@@ -202,6 +202,8 @@ public:
   ** Disulfide Bonds
   */
   const SymmetricMatrixPtr& getDisulfideBonds(ExecutionContext& context) const;
+  void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
+    {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
   /*
   ** Tertiary Structure

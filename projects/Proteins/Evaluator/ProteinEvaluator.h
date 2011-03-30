@@ -12,6 +12,7 @@
 # include <lbcpp/Core/CompositeFunction.h>
 # include "ContactMapEvaluator.h"
 # include "TertiaryStructureEvaluator.h"
+# include "DisulfideBondEvaluator.h"
 
 namespace lbcpp
 {
@@ -81,10 +82,9 @@ public:
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore), 1));
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore), 1));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationMCCScore), 1));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(binaryClassificationEvaluator(binaryClassificationAccuracyScore), 1));
+    addEvaluator(dsbTarget,  new DisulfidePatternEvaluator());
   }
-  
+
   /* CompositeEvaluator */
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scoreObject, const ObjectPtr& example, const Variable& output) const
   {

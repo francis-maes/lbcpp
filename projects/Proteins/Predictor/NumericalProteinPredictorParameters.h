@@ -70,11 +70,7 @@ public:
     size_t stal = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position);
     size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position);
     size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position);
-    
-    /* 2D */
-    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein);
-    size_t dsbValue = builder.addFunction(new GetCysteinProbabilityFunction(), protein, dsb, position, position);
-    
+
     // feature generators
     builder.startSelection();
 
@@ -88,8 +84,9 @@ public:
       addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
 
       /* 2D */
-      addBinaryDistributionFeatureGenerator(builder, dsbValue, T("dsb"), featuresParameters->dsbDiscretization);
-
+      // TODO: horizontal window on normalized dsb
+      // TODO: entropy on dsb
+    
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
   
@@ -168,7 +165,7 @@ public:
 
     size_t cartesianFirstWindow = (size_t)-1;
     size_t cartesianSecondWindow = (size_t)-1;
-    if (featuresParameters->cartesianProductPrimaryWindowSize && false)
+    if (featuresParameters->cartesianProductPrimaryWindowSize)
     {
       cartesianFirstWindow = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, firstPosition);
       cartesianSecondWindow = builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cartesianProductPrimaryWindowSize), primaryResidueFeatures, secondPosition);
@@ -176,7 +173,11 @@ public:
 
     /* 2D */
     size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein);
-    size_t dsbValue = builder.addFunction(new GetCysteinProbabilityFunction(), protein, dsb, firstPosition, secondPosition);
+    size_t normalizedDsb = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
+
+    size_t discretizedDsb = (size_t)-1;
+    if (featuresParameters->dsbDiscretization)
+      discretizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbDiscretization)), normalizedDsb);
     
     builder.startSelection();
 
@@ -185,7 +186,7 @@ public:
 
     if (aaDist != (size_t)-1)
       builder.addInSelection(aaDist);
-    
+
     if (featuresParameters->useIntervalMean)
       builder.addFunction(accumulatorWindowMeanFunction(), primaryResidueFeaturesAcc, firstPosition, secondPosition, T("interval"));
 
@@ -211,7 +212,14 @@ public:
       builder.addFunction(cartesianProductFeatureGenerator(true), cartesianFirstWindow, cartesianSecondWindow, T("cartesianProduct") + String((int)featuresParameters->cartesianProductPrimaryWindowSize));
 
     /* 2D */
-    addBinaryDistributionFeatureGenerator(builder, dsbValue, T("dsb"), featuresParameters->dsbDiscretization);
+    // Disulfide Bond Window on (i,i) if i is Cystein, (j,j) if j is Cystein and (i,j) if both are Cystein
+    if (featuresParameters->dsbDiscretization && featuresParameters->dsbWindowRows && featuresParameters->dsbWindowColumns)
+    {
+      FeatureGeneratorPtr dsbFG = matrixWindowFeatureGenerator(featuresParameters->dsbWindowRows, featuresParameters->dsbWindowColumns);
+      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, firstPosition, firstPosition, discretizedDsb, T("dsbWindow1"));
+      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, secondPosition, secondPosition, discretizedDsb, T("dsbWindow2"));
+      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, firstPosition, secondPosition, discretizedDsb, T("dsbWindowBoth"));
+    }
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));
   }

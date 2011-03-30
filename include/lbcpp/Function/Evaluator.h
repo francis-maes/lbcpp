@@ -76,7 +76,7 @@ public:
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const = 0;
   virtual bool updateScoreObject(ExecutionContext& context, const ScoreObjectPtr& scores, const ObjectPtr& example, const Variable& output) const = 0;
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const {}
-  
+
   // multi threading
   bool doUseMultiThreading() const
     {return useMultiThreading;}

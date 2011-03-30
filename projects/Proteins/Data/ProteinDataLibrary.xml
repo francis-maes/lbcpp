@@ -168,11 +168,11 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Probability]" name="disorderRegions" shortName="dr" description="Disorder Regions"/>
     
     <!-- Contact Maps -->
-    <variable type="SymmetricMatrix[Probability]" name="contactMap8Ca" shortName="cma8" description="Contact Map C-alpha 8"/>
-    <variable type="SymmetricMatrix[Probability]" name="contactMap8Cb" shortName="cmb8" description="Contact Map C-beta 8"/>
-    <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
-    <variable type="SymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
-    <variable type="SymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
+    <variable type="DoubleSymmetricMatrix[Probability]" name="contactMap8Ca" shortName="cma8" description="Contact Map C-alpha 8"/>
+    <variable type="DoubleSymmetricMatrix[Probability]" name="contactMap8Cb" shortName="cmb8" description="Contact Map C-beta 8"/>
+    <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
+    <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
+    <variable type="DoubleSymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
 
     <!-- Tertiary Structure -->
     <variable type="CartesianPositionVector" name="calphaTrace" shortName="cat" description="C-alpha Trace"/>

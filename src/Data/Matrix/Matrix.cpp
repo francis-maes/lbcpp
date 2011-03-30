@@ -38,6 +38,8 @@ MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns)
     return new ShortEnumerationMatrix(enumeration, numRows, numColumns, (char)enumeration->getMissingValue().getInteger());
   else if (elementsType->inheritsFrom(objectClass))
     return new ObjectMatrix(elementsType, numRows, numColumns);
+  else if (elementsType->inheritsFrom(doubleType))
+    return new DoubleMatrix(elementsType, numRows, numColumns);
   else
   {
     jassert(false);

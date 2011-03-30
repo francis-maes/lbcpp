@@ -115,13 +115,13 @@ public:
       stalDiscretization(2), stalEntropyDiscretization(3),
       sa20Discretization(5),
       drDiscretization(5),
-      dsbDiscretization(5),
+      dsbDiscretization(5), dsbWindowRows(3), dsbWindowColumns(3),
       residueGlobalFeatures(true), residueWindowSize(15),
       residueLocalMeanSize(15), residueMediumMeanSize(50),
       residuePairGlobalFeatures(true), residuePairWindowSize(15),
       residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
       aminoAcidDistanceFeature(true), useIntervalMean(true),
-      cartesianProductPrimaryWindowSize(5)
+      cartesianProductPrimaryWindowSize(1)
   {
   }
 
@@ -149,6 +149,8 @@ public:
   
   // dsb
   size_t dsbDiscretization;
+  size_t dsbWindowRows;
+  size_t dsbWindowColumns;
 
   // global
   bool residueGlobalFeatures;
