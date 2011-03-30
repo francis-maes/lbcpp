@@ -14,14 +14,15 @@
 namespace lbcpp
 {
 
-class GridOptimizerState : public Object {
-public:
-  
+class GridOptimizerState : public Object
+{
+public:  
   virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const = 0;
   
 protected:  
   friend class GridOptimizerStateClass;    
 };
+
 typedef ReferenceCountedObjectPtr<GridOptimizerState> GridOptimizerStatePtr;  
 extern ClassPtr gridOptimizerStateClass;
   
@@ -47,7 +48,7 @@ public:
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
   {
-      switch (index) 
+    switch (index) 
     {
       case 0:
         return getRequiredStateType();
@@ -66,10 +67,8 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return variableType;}  // TODO arnaud : more precise needed ?
   
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {jassertfalse; return Variable();}
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return optimize(context, inputs[0].dynamicCast<GridOptimizerState>(), inputs[1].dynamicCast<Function>(), inputs[2].dynamicCast<Function>());}
+    {return optimize(context, inputs[0].getObjectAndCast<GridOptimizerState>(), inputs[1].getObjectAndCast<Function>(), inputs[2].getObjectAndCast<Function>());}
   
 };
 

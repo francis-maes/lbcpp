@@ -38,13 +38,8 @@ public:
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
     {return variableType;}  // TODO arnaud : more precise needed ?
   
-  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
-    {jassertfalse; return Variable();}
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    return optimize(context, inputs[0].getObjectAndCast<Function>(), inputs[1]);
-  }
-  
+    {return optimize(context, inputs[0].getObjectAndCast<Function>(), inputs[1]);}
 };
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
