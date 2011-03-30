@@ -84,7 +84,7 @@ public:
     time=time+1;
     return *this;
   }
-  invertedPendulum& PutAction(vector<double> a_) {
+  invertedPendulum& PutAction(const vector<double>& a_) {
     a=a_;
     return *this;
   }
@@ -94,7 +94,7 @@ public:
   vector<double> GetState() {
     return stateVector;
   }  
-  invertedPendulum& PutState(vector<double> stateVector_) {
+  invertedPendulum& PutState(const vector<double>& stateVector_) {
     stateVector=stateVector_;
     return *this;
   }

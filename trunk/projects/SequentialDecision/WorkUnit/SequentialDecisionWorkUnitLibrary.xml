@@ -22,8 +22,17 @@
   <!-- HIV -->
   <template name="IndependentDoubleVectorDistribution" base="MultiVariateDistribution[DenseDoubleVector[elementsEnumeration,Double]]">
     <parameter name="elementsEnumeration" type="EnumValue"/>
+    <variable type="ObjectVector[Distribution[Double]]" name="subDistributions"/>
   </template>
-  
-  <class name="HIVSandBox" base="WorkUnit"/>
+  <class name="IndependentDoubleVectorDistributionBuilder" base="DistributionBuilder[DenseDoubleVector[EnumValue,Double]]"/>
+
+  <class name="HIVSandBox" base="WorkUnit">
+    <variable type="Double" name="discount" shortName="d"/>
+    <variable type="PositiveInteger" name="maxSearchNodes" shortName="m"/>
+    <variable type="PositiveInteger" name="samplesCount" shortName="s"/>
+    <variable type="PositiveInteger" name="iterations" shortName="i"/>
+    <variable type="PositiveInteger" name="populationSize" shortName="p"/>
+    <variable type="PositiveInteger" name="numBests" shortName="n"/>
+  </class>
   
 </library>

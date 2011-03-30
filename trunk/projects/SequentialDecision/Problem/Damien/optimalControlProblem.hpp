@@ -20,9 +20,9 @@ public:
   virtual bool TerminalStateReached() =0;
   virtual double GetReward() =0;
   virtual optimalControlProblem& Transition() =0;
-  virtual optimalControlProblem& PutAction(vector<double>)  =0;
+  virtual optimalControlProblem& PutAction(const vector<double>& )  =0;
   virtual vector<double> GetAction() = 0;
-  virtual optimalControlProblem& PutState(vector<double>) =0;
+  virtual optimalControlProblem& PutState(const vector<double>& ) =0;
   virtual vector<double> GetState() = 0;
   virtual optimalControlProblem& PutTime(size_t) =0;
   virtual size_t GetTime() = 0;
