@@ -147,12 +147,20 @@ IF(LBCPP_PROTEIN_ROSETTA)
   )
 
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
+
+IF(APPLE)
+  
+  # todo: fill paths
+
+ELSE(APPLE)
+
   INCLUDE_DIRECTORIES(
     /home/alejandro/soft/rosetta-3.2/rosetta_source/src
     /home/alejandro/soft/rosetta-3.2/rosetta_source/src/platform/linux
   )
-
   SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /home/alejandro/soft/libcore.so /home/alejandro/soft/libutility.so)
+
+ENDIF(APPLE)
 
 ENDIF(LBCPP_PROTEIN_ROSETTA)
 

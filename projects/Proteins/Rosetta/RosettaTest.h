@@ -24,6 +24,10 @@ namespace lbcpp
     virtual Variable run(ExecutionContext& context)
     {
       context.informationCallback(T("Hello world"));
+
+      core::pose::Pose myPose;
+      
+      
       return Variable();
     }
   };
