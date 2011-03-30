@@ -23,15 +23,25 @@
 
   <!-- Search Tree -->
   <class name="SearchTreeNode" base="Object">
+    <variable type="PositiveInteger" name="nodeIndex"/>
     <variable type="DecisionProblemState" name="state"/>
     <variable type="PositiveInteger" name="depth"/>
     <variable type="Double" name="reward"/>
     <variable type="Double" name="currentReturn"/>
     <variable type="Variable" name="previousAction"/>
+    <variable type="PositiveInteger" name="parentIndex"/>
+    <variable type="PositiveInteger" name="childBeginIndex"/>
+    <variable type="PositiveInteger" name="childEndIndex"/>
+    <variable type="Double" name="bestReturn"/>
   </class>
-  <class name="SearchTree" base="Object"/>
+  
+  <class name="SearchTree" base="Object">
+    <variable type="DecisionProblem" name="problem"/>
+    <variable type="ObjectVector[SearchTreeNode]" name="nodes"/>
+    <variable type="GenericVector[PositiveInteger]" name="openedNodes"/>
+  </class>
 
-  <!-- Search Policy -->
+        <!-- Search Policy -->
   <class name="SearchPolicy" base="Policy" abstract="yes"/>
 
   <class name="RandomSearchPolicy" base="SearchPolicy">

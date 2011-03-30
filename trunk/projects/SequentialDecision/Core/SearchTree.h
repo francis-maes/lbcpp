@@ -100,6 +100,8 @@ public:
   const Variable& getBestAction() const
     {return getRootNode()->getBestAction();}
 
+  ContainerPtr getBestNodeTrajectory() const;
+
   /*
   ** Callbacks
   */
@@ -111,6 +113,8 @@ public:
     {callbacks.clear();}
 
 protected:
+  friend class SearchTreeClass;
+
   DecisionProblemPtr problem;
   std::vector<SearchTreeNodePtr> nodes;
   std::vector<size_t> openedNodes;

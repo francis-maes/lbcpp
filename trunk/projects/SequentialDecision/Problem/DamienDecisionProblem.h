@@ -26,9 +26,7 @@ class DamienState : public DecisionProblemState
 {
 public:
   DamienState(damien::optimalControlProblem* problem, const std::vector<double>& initialState)
-    : problem(problem), state(initialState)
-    {problem->PutState(state);}
-
+    : problem(problem), state(initialState) {}
   DamienState() : problem(NULL) {}
 
   size_t getNumDimensions() const
@@ -43,6 +41,8 @@ public:
   virtual void performTransition(const Variable& a, double& reward)
   {
     const DenseDoubleVectorPtr& action = a.getObjectAndCast<DenseDoubleVector>();
+    ScopedLock _(problemLock);
+    problem->PutState(state);
     problem->PutAction(action->getValues());
     problem->Transition();
     reward = problem->GetReward();
@@ -55,6 +55,7 @@ public:
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     const DamienStatePtr& target = t.staticCast<DamienState>();
+    ScopedLock _(problemLock);
     target->problem = problem;
     target->state = state;
   }
@@ -62,6 +63,7 @@ public:
 private:
   friend class DamienStateClass;
 
+  CriticalSection problemLock;
   damien::optimalControlProblem* problem;
   std::vector<double> state;
 };
@@ -107,6 +109,8 @@ public:
 protected:
   ContainerPtr availableActions;
 };
+
+typedef ReferenceCountedObjectPtr<HIVDecisionProblemState> HIVDecisionProblemStatePtr;
 
 class HIVInitialStateSampler : public SimpleUnaryFunction
 {

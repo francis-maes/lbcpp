@@ -29,6 +29,7 @@ public:
     if (variable.exists() && variable.isObject())
     {
       ObjectPtr object = variable.getObject();
+      type = object->getClass(); // the exact type may be different from the base type
       if (options.showMissingVariables)
       {
         subVariables.reserve(subVariables.size() + type->getNumMemberVariables());

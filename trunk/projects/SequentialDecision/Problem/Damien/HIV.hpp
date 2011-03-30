@@ -24,8 +24,8 @@ private:
 // Parameters for the system dynamics
   double lambda1;
   double d1;
-  double epsilon1;
-  double epsilon2;
+  //double epsilon1;
+  //double epsilon2;
   double k1;
   double lambda2;
   double d2;
@@ -108,7 +108,7 @@ public:
     double epsilon2=a[1];
     return -(Q*V+R1*epsilon1*epsilon1+R2*epsilon2*epsilon2-S*E);
   }
-  vector<double> StateVectorDot(vector<double> stateVector_) {
+  void StateVectorDot(const vector<double>& stateVector_, std::vector<double>& answer) {
     double T1Dot;
     double T2Dot;
     double T1StarDot;
@@ -129,7 +129,6 @@ public:
     T2StarDot=(1-f*epsilon1)*k2*V*T2-delta*T2Star-m2*E*T2Star;
     VDot=(1-epsilon2)*NT*delta*(T1Star+T2Star)-c*V-((1-epsilon1)*rho1*k1*T1+(1-f*epsilon1)*rho2*k2*T2)*V;
     EDot=lambdaE+(bE*(T1Star+T2Star)*E)/(T1Star+T2Star+Kb) - (dE*(T1Star+T2Star)*E)/(T1Star+T2Star+Kd)-deltaE*E;
-    vector<double> answer(6);
     answer[0]=T1Dot;
     answer[1]=T2Dot;
     answer[2]=T1StarDot;
@@ -137,10 +136,15 @@ public:
     answer[4]=VDot;
     answer[5]=EDot;
     //    cout << "answer" << answer << endl;
-    return answer;
+    //return answer;
   }
   HIV& IncreaseStep(double h=0.001) {
-    stateVector=stateVector+h*StateVectorDot(stateVector);
+    std::vector<double> tmp(6);
+    StateVectorDot(stateVector, tmp);
+    for (size_t i = 0; i < 6; ++i)
+      stateVector[i] += h * tmp[i];
+
+    //stateVector=stateVector+h*StateVectorDot(stateVector);
     return *this;
   }
   HIV& Transition() {
