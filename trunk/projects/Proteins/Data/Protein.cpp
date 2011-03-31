@@ -162,8 +162,9 @@ Variable Protein::getTargetOrComputeIfMissing(ExecutionContext& context, size_t 
   case 10: return getDistanceMap(context, false);
   case 11: return getDistanceMap(context, true);
   case 12: return getDisulfideBonds(context);
-  case 13: return getCAlphaTrace();
-  case 14: return getTertiaryStructure();
+  case 13: return getCysteinBondingStates(context);
+  case 14: return getCAlphaTrace();
+  case 15: return getTertiaryStructure();
   default: jassert(false); return Variable();
   }
 }
@@ -241,6 +242,37 @@ const SymmetricMatrixPtr& Protein::getDisulfideBonds(ExecutionContext& context) 
       const_cast<Protein* >(this)->disulfideBonds = computeDisulfideBondsFromTertiaryStructure(distanceMap);
   }
   return disulfideBonds;
+}
+
+const DoubleVectorPtr& Protein::getCysteinBondingStates(ExecutionContext& context) const
+{
+  const double threshold = 0.5;
+  if (cysteinBondingStates)
+    return cysteinBondingStates;
+  const SymmetricMatrixPtr& disulfideMap = getDisulfideBonds(context);
+  if (!disulfideMap)
+    return cysteinBondingStates;
+
+  const size_t n = disulfideMap->getDimension();
+  const_cast<Protein* >(this)->cysteinBondingStates = Protein::createEmptyProbabilitySequence(n);
+  for (size_t i = 0; i < n; ++i)
+    cysteinBondingStates->setElement(i, probability(0.0));
+
+  if (n < 2)
+    return cysteinBondingStates;
+  
+  for (size_t i = 0; i < n - 1; ++i)
+    for (size_t j = i + 1; j < n; ++j)
+    {
+      const double value = disulfideMap->getElement(i, j).getDouble();
+      if (value > threshold)
+      {
+        cysteinBondingStates->setElement(i, probability(value));
+        cysteinBondingStates->setElement(j, probability(value));
+      }
+    }
+
+  return cysteinBondingStates;
 }
 
 CartesianPositionVectorPtr Protein::getCAlphaTrace() const

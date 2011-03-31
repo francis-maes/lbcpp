@@ -225,7 +225,7 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
 {
   ScopedLock _(lock);
   
-  jassert(predictedScores.size());
+  //jassert(predictedScores.size());
   
   BinaryClassificationConfusionMatrix confusionMatrix;
   confusionMatrix.set(numPositives, numNegatives, 0, 0);

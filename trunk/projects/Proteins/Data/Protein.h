@@ -35,7 +35,8 @@ enum ProteinTarget
   cmb8Target,
   dmaTarget,
   dmbTarget,
-  dsbTarget
+  dsbTarget,
+  cbsTarget
 
   // todo: continue
 };
@@ -205,6 +206,8 @@ public:
   void setDisulfideBonds(const SymmetricMatrixPtr& disulfideBonds)
     {jassert(disulfideBonds->getDimension() == cysteinIndices.size()); this->disulfideBonds = disulfideBonds;}
 
+  const DoubleVectorPtr& getCysteinBondingStates(ExecutionContext& context) const;
+  
   /*
   ** Tertiary Structure
   */
@@ -247,6 +250,7 @@ protected:
   SymmetricMatrixPtr distanceMapCb;
 
   SymmetricMatrixPtr disulfideBonds;
+  DoubleVectorPtr cysteinBondingStates;
 
   // 3D
   CartesianPositionVectorPtr calphaTrace;

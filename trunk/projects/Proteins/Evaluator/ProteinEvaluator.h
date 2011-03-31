@@ -83,6 +83,7 @@ public:
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore), 1));
     addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore), 1));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator());
+    addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore)));
   }
 
   /* CompositeEvaluator */

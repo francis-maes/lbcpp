@@ -173,6 +173,7 @@
     <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCa" shortName="dma" description="Distance Map C-alpha"/>
     <variable type="DoubleSymmetricMatrix[AngstromDistance]" name="distanceMapCb" shortName="dmb" description="Distance Map C-beta"/>
     <variable type="DoubleSymmetricMatrix[Probability]" name="disulfideBonds" shortName="dsb" description="Disulfide Bonds"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Probability]" name="cysteinBondingStates" shortName="cbs" description="Cystein Bonding State"/>
 
     <!-- Tertiary Structure -->
     <variable type="CartesianPositionVector" name="calphaTrace" shortName="cat" description="C-alpha Trace"/>

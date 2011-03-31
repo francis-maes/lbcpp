@@ -23,6 +23,9 @@
   <class name="CreateDisulfideSymmetricMatrixFunction" base="Function">
     <variable type="Function" name="elementGeneratorFunction"/>
   </class>
+  <class name="CreateCysteinBondingStateVectorFunction" base="Function">
+    <variable type="Function" name="elementGeneratorFunction"/>
+  </class>
 
   <class name="ProteinPredictor" base="CompositeFunction">
     <variable type="ProteinPredictorParameters" name="parameters"/>
@@ -30,6 +33,7 @@
     <variable type="Boolean" name="activeResiduePerception"/>
     <varaible type="Boolean" name="activeResiduePairPerception"/>
     <variable type="Boolean" name="activeDisulfideResiduePairPerception"/>
+    <variable type="Boolean" name="activeCysteinResiduePerception"/>
   </class>
   
   <class name="ProteinSequentialPredictor" base="CompositeFunction">

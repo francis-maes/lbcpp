@@ -289,6 +289,21 @@ public:
     builder.addFunction(matrixWindowFeatureGenerator(2, 2), firstPosition, secondPosition, disulfideMatrix);
   }
 */
+  /* Cystein Bonding State Residue Perception */
+  virtual void cysteinBondingStateVectorPerception(CompositeFunctionBuilder& builder) const
+  {
+    size_t proteinPerception = builder.addInput(numericalProteinPrimaryFeaturesClass(enumValueType));
+    
+    builder.startSelection();
+    
+    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+    builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+    
+    builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, primaryResidueFeatures)), T("cysteinBondingStateResidueFeature"));    
+  }
 
   // Learning Machine
   virtual FunctionPtr learningMachine(ProteinTarget target) const
@@ -296,6 +311,7 @@ public:
     switch (target)
     {
     case dsbTarget:
+    case cbsTarget:
     case drTarget:
       {
         FunctionPtr res = linearBinaryClassifier(learningParameters, true, binaryClassificationMCCScore);
