@@ -109,23 +109,23 @@ class NumericalProteinFeaturesParameters : public Object
 {
 public:
   NumericalProteinFeaturesParameters()
-    : pssmDiscretization(1), pssmEntropyDiscretization(3),
-      ss3Discretization(5), ss3EntropyDiscretization(3),
-      ss8Discretization(5), ss8EntropyDiscretization(3),
-      stalDiscretization(2), stalEntropyDiscretization(3),
-      sa20Discretization(5),
-      drDiscretization(5),
-
+      : pssmDiscretization(4), pssmEntropyDiscretization(6),
+      ss3Discretization(9), ss3EntropyDiscretization(2),
+      ss8Discretization(12), ss8EntropyDiscretization(4),
+      stalDiscretization(2), stalEntropyDiscretization(5),
+      sa20Discretization(7),
+      drDiscretization(7),
+  
       dsbDiscretization(3), dsbNormalizedDiscretization(3),
       dsbWindowRows(3), dsbWindowColumns(3), dsbEntropyDiscretization(4),
-      dsbPairWindowRows(3), dsbPairWindowColumns(3)
+      dsbPairWindowRows(3), dsbPairWindowColumns(3),
 
-      residueGlobalFeatures(true), residueWindowSize(15),
-      residueLocalMeanSize(15), residueMediumMeanSize(50),
+      residueGlobalFeatures(true), residueWindowSize(9),
+      residueLocalMeanSize(18), residueMediumMeanSize(90),
       residuePairGlobalFeatures(true), residuePairWindowSize(15),
       residuePairLocalMeanSize(15), residuePairMediumMeanSize(50),
       aminoAcidDistanceFeature(true), useIntervalMean(true),
-      cartesianProductPrimaryWindowSize(1)
+      cartesianProductPrimaryWindowSize(0)
   {
   }
 
