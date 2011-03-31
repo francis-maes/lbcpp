@@ -68,22 +68,38 @@ public:
   virtual String toString(const VariableValue& value) const
     {jassert(!isMissingValue(value)); return String(value.getDouble());}
 
+  static String positiveNumberToShortString(double d)
+  {
+    int l1 = (int)log10(d);
+    int l3 = (l1 / 3) * 3;
+    
+    double Z = pow(10.0, (double)l3);
+    String res = String(d / Z, 3 - abs(l1 - l3));
+    int numZeros = 0;
+    int pos = res.length() - 1;
+    while (pos > 0 && res[pos] == '0')
+      --pos, ++numZeros;
+    if (pos > 0 && res[pos] == '.')
+      ++numZeros;
+    if (numZeros)
+      res = res.dropLastCharacters(numZeros);
+    if (l3 != 0)
+    {
+      res += T("e");
+      res += (l3 > 0 ? T("+") : T("-"));
+      res += String((int)abs(l3));
+    }
+    return res;
+  }
+
   virtual String toShortString(const VariableValue& value) const
   {
     jassert(!isMissingValue(value));
     double d = value.getDouble();
-    if (fabs(d - (double)(int)(d + 0.5)) < 10e-8)
-      return String((int)(d + 0.5));
-    else if (d > 100)
-      return String((int)(d + 0.5)) + T(".");
-    else if (d > 1)
-      return String(d, 2);
-    else if (d > 0.01)
-      return String(d, 4);
-    else if (d > 0.0001)
-      return String(d, 6);
-    else
-      return String(d);
+    if (!d)
+      return T("0");
+    String res = positiveNumberToShortString(fabs(d));
+    return d < 0.0 ? T("-") + res : res;
   }
 
   virtual int compare(const VariableValue& value1, const VariableValue& value2) const

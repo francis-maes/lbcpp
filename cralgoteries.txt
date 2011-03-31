@@ -1,8 +1,19 @@
 
-Go:
- * Finish code cleaning
- * Features of successor state / delta state
 
+Divers:
+ ** Problème de mémoire sous linux
+ ** Serialisation des modèles appris (Go, Hiv, ProteinLearner)
+ * Utilisation du manager
+ * SendWorkUnit depuis l'explorer
+ * RetrieveTraces depuis l'explorer
+ * LogScale dans les curves
+ * Systeme d'export/import de fichiers general
+ * Export as GnuPlot Data File
+ * Export as CSV
+
+Go:
+ * GoPatterns
+ 
 Proteins:
  ** ProteinLearner: Serialisation des models
    -> Shared dynamic object
@@ -22,4 +33,9 @@ Explorer:
  * Explorer: Faire un mecanisme general pour la gestion des FileFormat, utiliser sur les sgf par exemple
  * Explorer: Faire une vrai classe de base ObjectComponent qui absorbe ComponentWithPreferedSize / VariableSelector et qui gere les differents cas:
      topLevel | insideTree | oneLineComponent
- * ...
+ * Explorer: interfaces 
+     - Importer: String -> UIImporter: (getName(), doesRecognizeFile(), perform())
+     - Exporter: Type -> UIExporter: (getName(), getDefaultExtension(), perform())
+     - Command: Type -> UICommand: (getIcon(), getName(), perform())
+     - TreeItems: Type -> UITreeItemBuilder: (getIcon(), getToolTip(), getAttributes(), perform())
+     - Component: Type -> UIComponent: (preferedSize, variableSelector, parameters, ...)

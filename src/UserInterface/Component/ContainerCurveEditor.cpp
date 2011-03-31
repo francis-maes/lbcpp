@@ -110,10 +110,11 @@ public:
     if (isMainMarker)
     {
       g.setFont(11);
+      String str = Variable(value).toShortString();
       if (isHorizontal)
-        g.drawText(String(value), (int)(x - 40), (int)(y + 5), 80, bottomValuesSize - 5, Justification::centred, false);
+        g.drawText(str, (int)(x - 40), (int)(y + 5), 80, bottomValuesSize - 5, Justification::centred, false);
       else
-        g.drawText(String(value), (int)(x - 40), (int)(y - 10), 40, 20, Justification::centred, false);
+        g.drawText(str, (int)(x - 60), (int)(y - 10), 80, 20, Justification::centred, false);
     }
   }
 
