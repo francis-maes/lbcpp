@@ -40,6 +40,7 @@ protected:
   bool activeResiduePerception;
   bool activeResiduePairPerception;
   bool activeDisulfideResiduePairPerception;
+  bool activeCysteinResiduePerception;
 
   TypePtr residuePerceptionType;
   TypePtr residuePairPerceptionType;

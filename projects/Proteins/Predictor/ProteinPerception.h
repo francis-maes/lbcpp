@@ -17,7 +17,8 @@ enum ProteinPerceptionType
   noProteinPerceptionType,
   residueType,
   residuePairType,
-  disulfideBondType
+  disulfideBondType,
+  cysteinBondingStateType
 };
 
 inline ProteinPerceptionType typeOfProteinPerception(ProteinTarget target)
@@ -34,6 +35,7 @@ inline ProteinPerceptionType typeOfProteinPerception(ProteinTarget target)
     case dmaTarget:
     case dmbTarget: return residuePairType;
     case dsbTarget: return disulfideBondType;
+    case cbsTarget: return cysteinBondingStateType;
     default:
       jassertfalse;
       return noProteinPerceptionType;
@@ -431,10 +433,10 @@ public:
 
     for (size_t i = 0; i < n; ++i)
     {
-      subInputs[0] = Variable(cysteinIndices[i]);
+      subInputs[0] = Variable(cysteinIndices[i], positiveIntegerType);
       for (size_t j = i; j < n; ++j)
       {
-        subInputs[1] = Variable(cysteinIndices[j]);
+        subInputs[1] = Variable(cysteinIndices[j], positiveIntegerType);
         res->setElement(i, j, elementGeneratorFunction->compute(context, subInputs));
       }
     }
@@ -443,6 +445,64 @@ public:
 
 protected:
   friend class CreateDisulfideSymmetricMatrixFunctionClass;
+
+  FunctionPtr elementGeneratorFunction;
+};
+
+class CreateCysteinBondingStateVectorFunction : public Function
+{
+public:
+  CreateCysteinBondingStateVectorFunction(FunctionPtr elementGeneratorFunction = FunctionPtr())
+    : elementGeneratorFunction(elementGeneratorFunction) {}
+
+  virtual size_t getMinimumNumRequiredInputs() const
+    {return 1;}
+
+  virtual size_t getMaximumNumRequiredInputs() const
+    {return (size_t)-1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return (index == 0) ? (TypePtr)proteinClass : elementGeneratorFunction->getRequiredInputType(index + 1, numInputs);}
+
+  virtual String getOutputPostFix() const
+    {return T("Generated");}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+  {
+    std::vector<VariableSignaturePtr> inputVars = inputVariables;
+    inputVars[0] = new VariableSignature(positiveIntegerType, T("Position"));
+    if (!elementGeneratorFunction->initialize(context, inputVars))
+      return TypePtr();
+
+    VariableSignaturePtr elementsSignature = elementGeneratorFunction->getOutputVariable();
+    outputName = elementsSignature->getName() + T("CysteinBondingStateVector");
+    outputShortName = elementsSignature->getShortName() + T("cysVect");
+    return vectorClass(elementsSignature->getType());
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    size_t numInputs = getNumInputs();
+    ProteinPtr protein = inputs[0].getObjectAndCast<Protein>();
+
+    const std::vector<size_t> cysteinIndices = protein->getCysteinIndices();
+    const size_t n = cysteinIndices.size();
+
+    VectorPtr res = vector(elementGeneratorFunction->getOutputType(), n);
+    std::vector<Variable> subInputs(numInputs);
+    for (size_t i = 1; i < subInputs.size(); ++i)
+      subInputs[i] = inputs[i];
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      subInputs[0] = Variable(cysteinIndices[i], positiveIntegerType);
+      res->setElement(i, elementGeneratorFunction->compute(context, subInputs));
+    }
+    return res;
+  }
+
+protected:
+  friend class CreateCysteinBondingStateVectorFunctionClass;
 
   FunctionPtr elementGeneratorFunction;
 };

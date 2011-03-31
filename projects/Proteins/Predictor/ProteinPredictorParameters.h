@@ -25,6 +25,7 @@ public:
   virtual void residueVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void residuePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
   virtual void disulfideResiduePairVectorPerception(CompositeFunctionBuilder& builder) const = 0;
+  virtual void cysteinBondingStateVectorPerception(CompositeFunctionBuilder& builder) const = 0;
 
   // Protein -> ProteinPerception
   virtual FunctionPtr createProteinPerception() const
@@ -52,6 +53,13 @@ public:
   virtual FunctionPtr createDisulfideResiduePairVectorPerception() const
   {
     FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, disulfideResiduePairVectorPerception);
+    function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
+    return function;
+  }
+  
+  virtual FunctionPtr createCysteinBondingStateVectorPerception() const
+  {
+    FunctionPtr function = lbcppMemberCompositeFunction(ProteinPredictorParameters, cysteinBondingStateVectorPerception);
     function->setBatchLearner(BatchLearnerPtr()); // by default: no learning on perceptions
     return function;
   }
@@ -88,7 +96,7 @@ public:
     FunctionPtr res;
     if (target == ss3Target || target == ss8Target || target == stalTarget)
       res = labelVectorPredictor(target);
-    else if (target == sa20Target || target == drTarget)
+    else if (target == sa20Target || target == drTarget || target == cbsTarget)
       res = probabilityVectorPredictor(target);
     else if (target == cma8Target || target == cmb8Target)
       res = contactMapPredictor(target);
