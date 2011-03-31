@@ -147,8 +147,11 @@ struct VariableValue
   void setObject(Object* pointer)
     {u.objectValue = pointer; if (pointer && !pointer->hasStaticAllocationFlag()) pointer->incrementReferenceCounter();}
   
-  void setObject(ObjectPtr pointer)
+  void setObject(const ObjectPtr& pointer)
     {setObject(pointer.get());}
+
+  void moveObject(const ObjectPtr& pointer)
+    {u.objectValue = pointer.get();}
 
   const char* getRawData() const
     {return u.rawDataValue;}
