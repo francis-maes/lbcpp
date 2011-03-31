@@ -180,8 +180,11 @@ public:
     jassert(previousCounts.size());
     ScopedLock _(objectsMapLock);
     for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
-      if (it->second.size())
-        res.insert(std::make_pair(it->second.size() - previousCounts[it->first], it->first));
+    {
+      int delta = (int)it->second.size() - previousCounts[it->first];
+      if (delta > 0)
+        res.insert(std::make_pair(delta, it->first));
+    }
   }
 
   String updateMemoryInformation()
