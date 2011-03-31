@@ -70,8 +70,9 @@ public:
 
   template<class T>
   Variable(ReferenceCountedObjectPtr<T>&& other)
-    : type(other ? (TypePtr)other->getClass() : nilType), value(other)
+    : type(other ? (TypePtr)other->getClass() : nilType)
   {
+    value.moveObject(other);
     other.setPointerToNull();
   }
 
@@ -90,7 +91,7 @@ public:
   {
     clear();
     type = other ? (TypePtr)other->getClass() : nilType;
-    value = other;
+    value.moveObject(other);
     other.setPointerToNull();
     return *this;
   }
