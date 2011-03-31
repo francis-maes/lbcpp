@@ -251,8 +251,6 @@ struct ApplicationContext
   }
   ~ApplicationContext()
   {
-    defaultExecutionContext = ExecutionContextPtr();
-    //defaultRandomGenerator = RandomGeneratorPtr();
 #ifdef LBCPP_USER_INTERFACE
     delete userInterfaceManager;
 #endif
@@ -279,6 +277,8 @@ extern lbcpp::LibraryPtr lbCppLibrary();
 
 void lbcpp::initialize(const char* executableName)
 {
+  //_crtBreakAlloc = 13146;
+
   // juce
   juce::initialiseJuce_NonGUI();
   // FIXME:
@@ -299,11 +299,12 @@ void lbcpp::deinitialize()
 {
   if (applicationContext)
   {
+    applicationContext->defaultExecutionContext = ExecutionContextPtr();
+    applicationContext->defaultRandomGenerator = RandomGeneratorPtr();
+
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
     deleteAndZero(applicationContext->memoryLeakDetector);
 #endif
-
-    applicationContext->defaultExecutionContext = ExecutionContextPtr();
 
     // pre shutdown types
     applicationContext->libraryManager.preShutdown();

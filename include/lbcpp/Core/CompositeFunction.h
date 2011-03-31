@@ -121,7 +121,7 @@ extern ClassPtr compositeFunctionClass;
 class CompositeFunctionBuilder
 {
 public:
-  CompositeFunctionBuilder(ExecutionContext& context, CompositeFunctionPtr function, const std::vector<VariableSignaturePtr>& inputVariables);
+  CompositeFunctionBuilder(ExecutionContext& context, CompositeFunction& function, const std::vector<VariableSignaturePtr>& inputVariables);
 
   size_t getNumProvidedInputs() const
     {return inputVariables.size();}
@@ -160,7 +160,7 @@ public:
 
 private:
   ExecutionContext& context;
-  CompositeFunctionPtr function;
+  CompositeFunction& function;
   std::vector<VariableSignaturePtr> inputVariables;
   size_t numInputs;
   bool failed;
