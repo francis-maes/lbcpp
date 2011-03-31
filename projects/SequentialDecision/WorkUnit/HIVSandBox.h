@@ -315,7 +315,7 @@ public:
       return false;
     }
 
-    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 1; ++logMaxSearchNodes)
+    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 10; ++logMaxSearchNodes)
     {
       maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
       context.enterScope(T("N = ") + String((int)maxSearchNodes));
@@ -357,12 +357,10 @@ public:
       // Evaluate EDA
       FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
       computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"));
-    Object::displayObjectAllocationInfo(std::cout);
       
       context.leaveScope();
     }
 
-    featuresFunction = FunctionPtr();
     return true;
   }
 
@@ -411,6 +409,7 @@ private:
   double performEDAIteration(ExecutionContext& context, const FunctionPtr& functionToMinimize, DistributionPtr& distribution, Variable& bestParameters) const
   {
     jassert(numBests < populationSize);
+    Object::displayObjectAllocationInfo(std::cout);
 
     RandomGeneratorPtr random = RandomGenerator::getInstance();
     
@@ -519,7 +518,7 @@ private:
       context.resultCallback(T("log10(V)"), log10(hivState->getStateDimension(4)));
       context.resultCallback(T("log10(E)"), log10(hivState->getStateDimension(5)));
         
-      context.leaveScope();
+      context.leaveScope(res);
     }
     context.leaveScope(res);
     context.resultCallback(name, res);
