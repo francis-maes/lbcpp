@@ -64,7 +64,6 @@ public:
   {
     size_t node = builder.addInput(searchTreeNodeClass, T("node"));
 
-
     size_t nodeIndex = builder.addFunction(getVariableFunction(T("nodeIndex")), node);
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
