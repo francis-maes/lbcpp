@@ -123,6 +123,10 @@ public:
     const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     
     std::vector<double> initialState(6);
+
+    /*
+    ** Uninfected state
+    *
     initialState[0] = 1000000.0;
     initialState[1] = 3198.0;
     //initialState[2] = initialState[3] = initialState[4] = 0.0;
@@ -132,6 +136,16 @@ public:
     initialState[4]=1.;
 
     initialState[5] = 10.0;
+    */
+
+    // "non-healty" locally stable equilibrium point
+    initialState[0] = 163573;
+    initialState[1] = 5;
+    initialState[2] = 11945;
+    initialState[3] = 46;
+    initialState[4] = 63919;
+    initialState[5] = 24;
+
     return new HIVDecisionProblemState(initialState);
   }
 };
