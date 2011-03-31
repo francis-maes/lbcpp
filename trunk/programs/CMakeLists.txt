@@ -9,7 +9,6 @@ TARGET_LINK_LIBRARIES(RunWorkUnit${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFI
 
 # unzipper
 ADD_EXECUTABLE(unzipper${NAME_FILE_SUFFIX} unzipper.cpp)
-
 TARGET_LINK_LIBRARIES(unzipper${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
 
 # SendWorkUnit

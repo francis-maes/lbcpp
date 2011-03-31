@@ -4,3 +4,8 @@ FIND_PACKAGE(OpenSSL REQUIRED)
 ADD_SUBDIRECTORY(validator)
 ADD_SUBDIRECTORY(assimilator)
 ADD_SUBDIRECTORY(workgenerator)
+
+
+# RunBoincWorkUnit
+ADD_EXECUTABLE(RunBoincWorkUnit${NAME_FILE_SUFFIX} RunBoincWorkUnit.cpp)
+TARGET_LINK_LIBRARIES(RunBoincWorkUnit${NAME_FILE_SUFFIX} lbcpp-core${NAME_FILE_SUFFIX})
