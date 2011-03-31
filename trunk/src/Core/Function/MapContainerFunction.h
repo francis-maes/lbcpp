@@ -117,7 +117,7 @@ protected:
       else if (outputElementType->inheritsFrom(doubleType))
         return doubleSymmetricMatrixClass(outputElementType);
       else
-        symmetricMatrixClass(outputElementType);
+        return symmetricMatrixClass(outputElementType);
     }
     else if (isMatrix)
     {

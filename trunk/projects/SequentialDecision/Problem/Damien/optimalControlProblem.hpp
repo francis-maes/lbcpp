@@ -15,8 +15,9 @@ namespace damien
 
 using std::vector;
 
-class optimalControlProblem{
+class optimalControlProblem : public lbcpp::Object {
 public:
+  virtual ~optimalControlProblem() {}
   virtual bool TerminalStateReached() =0;
   virtual double GetReward() =0;
   virtual optimalControlProblem& Transition() =0;
@@ -27,6 +28,8 @@ public:
   virtual optimalControlProblem& PutTime(size_t) =0;
   virtual size_t GetTime() = 0;
 };
+
+typedef ReferenceCountedObjectPtr<optimalControlProblem> optimalControlProblemPtr;
 
 template<class V> inline vector<V> operator*(V c,const std::vector<V>& a) {
   vector<V> answer(a.size());

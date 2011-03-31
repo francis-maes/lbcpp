@@ -44,8 +44,9 @@ public:
     if (index < count)
       callback.sense(index, 1.0);
   }
-};
 
+  lbcpp_UseDebuggingNewOperator
+};
 
 class HIVSearchFeatures : public CompositeFunction
 {
@@ -63,11 +64,13 @@ public:
   {
     size_t node = builder.addInput(searchTreeNodeClass, T("node"));
 
+
     size_t nodeIndex = builder.addFunction(getVariableFunction(T("nodeIndex")), node);
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
     size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
     size_t stateEValue = builder.addFunction(lbcppMemberUnaryFunction(HIVSearchFeatures, getEValueFromNode, searchTreeNodeClass, doubleType), node);
+    
 /*
     builder.startSelection();
 
@@ -107,6 +110,8 @@ public:
     //builder.addFunction(concatenateFeatureGenerator(true), heuristics, indices);
   }
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   double discount;
   size_t maxSearchNodes;
@@ -127,6 +132,8 @@ public:
     function->setParameters(parameters);
     return function;
   }
+
+  lbcpp_UseDebuggingNewOperator
 
 protected:
   FunctionPtr featuresFunction;
@@ -327,6 +334,7 @@ public:
 
       // EDA
       featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
+
       FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
       
       EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
@@ -354,6 +362,7 @@ public:
       context.leaveScope();
     }
 
+    featuresFunction = FunctionPtr();
     return true;
   }
 

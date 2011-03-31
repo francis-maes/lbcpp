@@ -25,7 +25,7 @@ typedef ReferenceCountedObjectPtr<DamienState> DamienStatePtr;
 class DamienState : public DecisionProblemState
 {
 public:
-  DamienState(damien::optimalControlProblem* problem, const std::vector<double>& initialState)
+  DamienState(damien::optimalControlProblemPtr problem, const std::vector<double>& initialState)
     : problem(problem), state(initialState) {}
   DamienState() : problem(NULL) {}
 
@@ -64,7 +64,7 @@ private:
   friend class DamienStateClass;
 
   CriticalSection problemLock;
-  damien::optimalControlProblem* problem;
+  damien::optimalControlProblemPtr problem;
   std::vector<double> state;
 };
 

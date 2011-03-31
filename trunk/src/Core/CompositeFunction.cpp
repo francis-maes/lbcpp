@@ -26,11 +26,17 @@ TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const s
   functions.clear();
   constants.clear();
   functionInputs.clear();
-  CompositeFunctionBuilder builder(context, refCountedPointerFromThis(this), inputVariables);
+  CompositeFunctionBuilder builder(context, *this, inputVariables);
   buildFunction(builder);
   if (builder.hasFailed())
     return TypePtr();
   jassert(functions.size() == functionInputs.size());
+
+  if (!steps.size())
+  {
+    context.errorCallback(T("Empty composite function"));
+    return TypePtr();
+  }
 
   // fill output variable signature
   VariableSignaturePtr lastMemberVariable = stateClass->getMemberVariable(stateClass->getNumMemberVariables() - 1);
@@ -169,20 +175,20 @@ void CompositeFunction::clone(ExecutionContext& context, const ObjectPtr& t) con
 /*
 ** CompositeFunctionBuilder
 */
-CompositeFunctionBuilder::CompositeFunctionBuilder(ExecutionContext& context, CompositeFunctionPtr function, const std::vector<VariableSignaturePtr>& inputVariables)
+CompositeFunctionBuilder::CompositeFunctionBuilder(ExecutionContext& context, CompositeFunction& function, const std::vector<VariableSignaturePtr>& inputVariables)
   : context(context), function(function), inputVariables(inputVariables), numInputs(0), failed(false)
 {
 }
 
 size_t CompositeFunctionBuilder::addVariable(TypePtr type, const String& name, const String& shortName, CompositeFunction::StepType stepType, size_t stepArgument)
 {
-  jassert(function->steps.size() == function->stateClass->getNumMemberVariables());
-  String uniqueName = function->stateClass->makeUniqueMemberVariableName(name);
-  size_t res = function->stateClass->addMemberVariable(context, type, uniqueName, shortName);
+  jassert(function.steps.size() == function.stateClass->getNumMemberVariables());
+  String uniqueName = function.stateClass->makeUniqueMemberVariableName(name);
+  size_t res = function.stateClass->addMemberVariable(context, type, uniqueName, shortName);
   if (res == invalidIndex())
     return returnError();
 
-  function->steps.push_back(std::make_pair(stepType, stepArgument));
+  function.steps.push_back(std::make_pair(stepType, stepArgument));
   currentSelection.push_back(res);
   return res;
 }
@@ -207,7 +213,7 @@ size_t CompositeFunctionBuilder::addInput(TypePtr type, const String& optionalNa
 
 size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String& optionalName, const String& optionalShortName)
 {
-  String id((int)function->constants.size() + 1);
+  String id((int)function.constants.size() + 1);
   String name = optionalName.isNotEmpty() ? optionalName : T("constant") + id;
   String shortName = optionalShortName.isNotEmpty() ? optionalShortName : T("C") + id;
 
@@ -217,8 +223,8 @@ size_t CompositeFunctionBuilder::addConstant(const Variable& value, const String
     return returnError();
   }*/
 
-  size_t stepArgument = function->constants.size();
-  function->constants.push_back(value);
+  size_t stepArgument = function.constants.size();
+  function.constants.push_back(value);
   return addVariable(value.getType(), name, shortName, CompositeFunction::constantStep, stepArgument);
 }
 
@@ -254,17 +260,17 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& function, size_t
 
 size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, const std::vector<size_t>& inputs, const String& optionalName, const String& optionalShortName)
 {
-  jassert(function->steps.size() == function->stateClass->getNumMemberVariables());
+  jassert(function.steps.size() == function.stateClass->getNumMemberVariables());
   std::vector<VariableSignaturePtr> inputVariables(inputs.size());
   for (size_t i = 0; i < inputVariables.size(); ++i)
   {
     size_t inputIndex = inputs[i];
-    if (inputIndex >= function->steps.size())
+    if (inputIndex >= function.steps.size())
     {
       context.errorCallback(T("Invalid input index: ") + String((int)inputIndex));
       return returnError();
     }
-    inputVariables[i] = function->stateClass->getMemberVariable(inputIndex);
+    inputVariables[i] = function.stateClass->getMemberVariable(inputIndex);
     if (!inputVariables[i])
     {
       context.errorCallback(T("Missing variable, index = ") + String((int)inputIndex));
@@ -274,11 +280,11 @@ size_t CompositeFunctionBuilder::addFunction(const FunctionPtr& subFunction, con
   if (!subFunction->initialize(context, inputVariables))
     return returnError();
 
-  size_t stepArgument = function->functions.size();
-  function->functions.push_back(subFunction);
-  function->functionInputs.push_back(inputs);
-  if (inputs.size() > function->maxNumFunctionInputs)
-    function->maxNumFunctionInputs = inputs.size();
+  size_t stepArgument = function.functions.size();
+  function.functions.push_back(subFunction);
+  function.functionInputs.push_back(inputs);
+  if (inputs.size() > function.maxNumFunctionInputs)
+    function.maxNumFunctionInputs = inputs.size();
 
   VariableSignaturePtr signature = subFunction->getOutputVariable();
   if (optionalName.isNotEmpty())
@@ -303,7 +309,7 @@ size_t CompositeFunctionBuilder::finishSelectionWithFunction(const FunctionPtr& 
 
 TypePtr CompositeFunctionBuilder::getOutputType() const
 {
-  size_t n = function->stateClass->getNumMemberVariables();
+  size_t n = function.stateClass->getNumMemberVariables();
   jassert(n);
-  return function->stateClass->getMemberVariableType(n - 1);
+  return function.stateClass->getMemberVariableType(n - 1);
 }
