@@ -164,6 +164,32 @@ public:
   }
 };
 
+class GetCysteinIndexFromProteinIndex : public Function
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)proteinClass;}
+
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return positiveIntegerType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    const ProteinPtr& protein = inputs[0].getObjectAndCast<Protein>();
+    if (!protein)
+      return Variable::missingValue(positiveIntegerType);
+    size_t position = inputs[1].getInteger();
+    jassert(position < protein->getLength());
+    int cysteinIndex = protein->getCysteinInvIndices()[position];
+    if (cysteinIndex < 0)
+      return Variable::missingValue(positiveIntegerType);
+    return Variable((size_t)cysteinIndex, positiveIntegerType);
+  }
+};
+
 class NormalizeDisulfideBondFunction : public SimpleUnaryFunction
 {
 public:
@@ -193,6 +219,61 @@ public:
 
     return res;
   }
+};
+
+// Cystein Matrix[Probability], Cystein Index -> Double Entropy (on row or column)
+class ComputeCysteinEntropy : public Function
+{
+public:
+  ComputeCysteinEntropy(bool rowEntropy = true)
+    : rowEntropy(rowEntropy) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+  
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return index ? positiveIntegerType : (TypePtr)matrixClass(probabilityType);}
+  
+  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
+    {return doubleType;}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {
+    if (!inputs[1].exists())
+      return Variable::missingValue(doubleType);
+    const MatrixPtr& matrix = inputs[0].getObjectAndCast<Matrix>();
+    if (!matrix)
+      return Variable::missingValue(doubleType);
+    size_t position = inputs[1].getInteger();
+
+    const size_t numRows = matrix->getNumRows();
+    const size_t numColumns = matrix->getNumColumns();
+    jassert((rowEntropy && position < numRows) || (!rowEntropy && position < numColumns));
+
+    double entropy = 0.0;
+    if (rowEntropy)
+      for (size_t i = 0; i < numRows; ++i)
+      {
+        Variable v = matrix->getElement(position, i);
+        if (!v.exists() || v.getDouble() < 1e-06)
+          continue;
+        const double value = v.getDouble();
+        entropy -= value * log2(value);
+      }
+    else
+      for (size_t i = 0; i < numColumns; ++i)
+      {
+        Variable v = matrix->getElement(i, position);
+        if (!v.exists() || v.getDouble() < 1e-06)
+          continue;
+        const double value = v.getDouble();
+        entropy -= value * log2(value);
+      }
+    return Variable(entropy, doubleType);
+  }
+
+protected:
+  bool rowEntropy;
 };
 
 class ApplyFeatureGeneratorOnCytein : public FeatureGenerator
