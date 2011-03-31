@@ -62,7 +62,7 @@ public:
     size_t position = builder.addInput(positiveIntegerType, T("position"));
     size_t protein = builder.addInput(proteinClass, T("protein"));
 
-    /* 1D */
+    /* 1D - Precompute */
     size_t aminoAcid = builder.addFunction(getElementInVariableFunction(T("primaryStructure")), protein, position);
     size_t pssmRow = builder.addFunction(getElementInVariableFunction(T("positionSpecificScoringMatrix")), protein, position);
     size_t ss3 = builder.addFunction(getElementInVariableFunction(T("secondaryStructure")), protein, position);
@@ -70,6 +70,27 @@ public:
     size_t stal = builder.addFunction(getElementInVariableFunction(T("structuralAlphabetSequence")), protein, position);
     size_t sa20 = builder.addFunction(getElementInVariableFunction(T("solventAccessibilityAt20p")), protein, position);
     size_t dr = builder.addFunction(getElementInVariableFunction(T("disorderRegions")), protein, position);
+
+    /* 2D - Precompute */
+    size_t cysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, position);
+    size_t dsb = builder.addFunction(getVariableFunction(T("disulfideBonds")), protein);
+    size_t normalizedDsb = builder.addFunction(new NormalizeDisulfideBondFunction(), dsb);
+
+    size_t discretizedDsb = (size_t)-1;
+    if (featuresParameters->dsbDiscretization)
+      discretizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbDiscretization)), dsb);
+
+    size_t discretizeNormalizedDsb = (size_t)-1;
+    if (featuresParameters->dsbNormalizedDiscretization)
+      discretizeNormalizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbNormalizedDiscretization)), normalizedDsb);
+
+    size_t cysteinEntropyRow = (size_t)-1;
+    size_t cysteinEntropyColumn = (size_t)-1;
+    if (featuresParameters->dsbEntropyDiscretization)
+    {
+      cysteinEntropyRow = builder.addFunction(new ComputeCysteinEntropy(true), normalizedDsb, cysteinIndex);
+      cysteinEntropyColumn = builder.addFunction(new ComputeCysteinEntropy(false), normalizedDsb, cysteinIndex);
+    }
 
     // feature generators
     builder.startSelection();
@@ -84,9 +105,17 @@ public:
       addBinaryDistributionFeatureGenerator(builder, dr, T("dr"), featuresParameters->drDiscretization);
 
       /* 2D */
-      // TODO: horizontal window on normalized dsb
-      // TODO: entropy on dsb
-    
+      if (discretizedDsb != (size_t)-1 && featuresParameters->dsbWindowRows && featuresParameters->dsbWindowColumns)
+        builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbWindowRows, featuresParameters->dsbWindowColumns), discretizedDsb, cysteinIndex, cysteinIndex, T("dsbWindow"));
+
+      if (discretizeNormalizedDsb != (size_t)-1 && featuresParameters->dsbWindowRows && featuresParameters->dsbWindowColumns)
+        builder.addFunction(matrixWindowFeatureGenerator(featuresParameters->dsbWindowRows, featuresParameters->dsbWindowColumns), discretizeNormalizedDsb, cysteinIndex, cysteinIndex, T("dsbNormWindow"));
+
+      if (cysteinEntropyRow != (size_t)-1)
+        builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbEntropyDiscretization), cysteinEntropyRow, T("dsbEntRow"));
+      if (cysteinEntropyColumn != (size_t)-1)
+        builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbEntropyDiscretization), cysteinEntropyColumn, T("dsbEntColumn"));
+
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
   
@@ -178,7 +207,10 @@ public:
     size_t discretizedDsb = (size_t)-1;
     if (featuresParameters->dsbDiscretization)
       discretizedDsb = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbDiscretization)), normalizedDsb);
-    
+
+    size_t firstCysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, firstPosition);
+    size_t secondCysteinIndex = builder.addFunction(new GetCysteinIndexFromProteinIndex(), protein, secondPosition);
+
     builder.startSelection();
 
     if (featuresParameters->residuePairGlobalFeatures)
@@ -215,10 +247,8 @@ public:
     // Disulfide Bond Window on (i,i) if i is Cystein, (j,j) if j is Cystein and (i,j) if both are Cystein
     if (featuresParameters->dsbDiscretization && featuresParameters->dsbWindowRows && featuresParameters->dsbWindowColumns)
     {
-      FeatureGeneratorPtr dsbFG = matrixWindowFeatureGenerator(featuresParameters->dsbWindowRows, featuresParameters->dsbWindowColumns);
-      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, firstPosition, firstPosition, discretizedDsb, T("dsbWindow1"));
-      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, secondPosition, secondPosition, discretizedDsb, T("dsbWindow2"));
-      builder.addFunction(new ApplyFeatureGeneratorOnCytein(dsbFG), protein, firstPosition, secondPosition, discretizedDsb, T("dsbWindowBoth"));
+      FeatureGeneratorPtr dsbFG = matrixWindowFeatureGenerator(featuresParameters->dsbPairWindowRows, featuresParameters->dsbPairWindowColumns);
+      builder.addFunction(dsbFG, discretizedDsb, firstCysteinIndex, secondCysteinIndex, T("dsbWindowBoth"));
     }
 
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(true));

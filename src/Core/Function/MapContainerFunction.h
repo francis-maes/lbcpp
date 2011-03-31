@@ -111,7 +111,14 @@ protected:
     isMatrix = inputContainerType->inheritsFrom(matrixClass(anyType));
 
     if (isSymmetricMatrix)
-      return symmetricMatrixClass(outputElementType);
+    {
+      if (outputElementType->inheritsFrom(objectClass))
+        return objectSymmetricMatrixClass(outputElementType);
+      else if (outputElementType->inheritsFrom(doubleType))
+        return doubleSymmetricMatrixClass(outputElementType);
+      else
+        symmetricMatrixClass(outputElementType);
+    }
     else if (isMatrix)
     {
       if (outputElementType->inheritsFrom(objectClass))
