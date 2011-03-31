@@ -97,7 +97,7 @@ public:
   double getBestReturn() const
     {return getRootNode()->getBestReturn();}
 
-  const Variable& getBestAction() const
+  Variable getBestAction() const
     {return getRootNode()->getBestAction();}
 
   ContainerPtr getBestNodeTrajectory() const;

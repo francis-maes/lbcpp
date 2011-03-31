@@ -1,3 +1,5 @@
+* Leak visible sous windows
+* Leak caché sous linux
 
 
 Divers:

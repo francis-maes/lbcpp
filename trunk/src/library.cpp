@@ -27,6 +27,7 @@
 #include <lbcpp/library.h>
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
+#include <lbcpp/Data/RandomGenerator.h>
 
 #ifdef LBCPP_USER_INTERFACE
 # include <lbcpp/UserInterface/UserInterfaceManager.h>
@@ -119,9 +120,16 @@ private:
   std::vector< std::pair<LibraryPtr, void* > > libraries;
 };
 
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+
 class MemoryLeakDetector
 {
 public:
+  ~MemoryLeakDetector()
+  {
+    clear();
+  }
+
   void newObject(Object* object)
   {
     ScopedLock _(objectsMapLock);
@@ -214,35 +222,49 @@ public:
     return res;
   }
 
+  void clear()
+  {
+    objectsMap.clear();
+    previousCounts.clear();
+  }
+
 private:
   typedef std::map<String, std::set<Object* > > ObjectsMap;
   CriticalSection objectsMapLock;
   ObjectsMap objectsMap;
   std::map<String, size_t> previousCounts;
 };
+#endif // !LBCPP_DEBUG_OBJECT_ALLOCATION
 
 struct ApplicationContext
 {
   ApplicationContext()
   {
     lbcpp::applicationContext = this;
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+    memoryLeakDetector = new MemoryLeakDetector();
+#endif
+    defaultRandomGenerator = new RandomGenerator(1664518616645186LL);
 #ifdef LBCPP_USER_INTERFACE
     userInterfaceManager = new UserInterfaceManager();
 #endif
   }
   ~ApplicationContext()
   {
+    defaultExecutionContext = ExecutionContextPtr();
+    //defaultRandomGenerator = RandomGeneratorPtr();
 #ifdef LBCPP_USER_INTERFACE
     delete userInterfaceManager;
 #endif
   }
 
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-  MemoryLeakDetector memoryLeakDetector;
+  MemoryLeakDetector* memoryLeakDetector;
 #endif
   LibraryManager libraryManager;
   TypeManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
+  RandomGeneratorPtr defaultRandomGenerator;
 #ifdef LBCPP_USER_INTERFACE
   UserInterfaceManager* userInterfaceManager;
 #endif
@@ -277,6 +299,10 @@ void lbcpp::deinitialize()
 {
   if (applicationContext)
   {
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+    deleteAndZero(applicationContext->memoryLeakDetector);
+#endif
+
     applicationContext->defaultExecutionContext = ExecutionContextPtr();
 
     // pre shutdown types
@@ -299,6 +325,9 @@ void lbcpp::deinitialize()
 
 TypeManager& lbcpp::typeManager()
   {jassert(applicationContext); return applicationContext->typeManager;}
+
+RandomGeneratorPtr RandomGenerator::getInstance()
+  {jassert(applicationContext); return applicationContext->defaultRandomGenerator;}
 
 #ifdef LBCPP_USER_INTERFACE
 UserInterfaceManager& lbcpp::userInterfaceManager()
@@ -415,17 +444,18 @@ void lbcpp::deinitializeDynamicLibrary()
 Object::Object(ClassPtr thisClass)
   : thisClass(thisClass)
 {
-  lbcpp::applicationContext->memoryLeakDetector.newObject(this);
+  lbcpp::applicationContext->memoryLeakDetector->newObject(this);
 }
 
 Object::~Object()
 {
-  lbcpp::applicationContext->memoryLeakDetector.deleteObject(this);
+  if (lbcpp::applicationContext && lbcpp::applicationContext->memoryLeakDetector)
+    lbcpp::applicationContext->memoryLeakDetector->deleteObject(this);
 }
 
 void Object::displayObjectAllocationInfo(std::ostream& ostr)
 {
-  ostr << lbcpp::applicationContext->memoryLeakDetector.updateMemoryInformation() << std::endl;
+  ostr << lbcpp::applicationContext->memoryLeakDetector->updateMemoryInformation() << std::endl;
 }
 
 #else

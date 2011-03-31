@@ -308,7 +308,7 @@ public:
       return false;
     }
 
-    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 10; ++logMaxSearchNodes)
+    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 1; ++logMaxSearchNodes)
     {
       maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
       context.enterScope(T("N = ") + String((int)maxSearchNodes));
@@ -328,9 +328,13 @@ public:
       // EDA
       featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
       FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
+      
       EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
       context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
       ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+
+      if (!functionToOptimize->initialize(context, parametersClass))
+        return false;
 
       IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
       for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)

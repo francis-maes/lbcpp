@@ -44,8 +44,7 @@ public:
   **
   ** @return a reference on the RandomGenerator singleton.
   */
-  static RandomGeneratorPtr getInstance()
-    {static RandomGeneratorPtr instance(new RandomGenerator(1664518616645186LL)); return instance;}
+  static RandomGeneratorPtr getInstance();
 
   /** Constructor.
   **
@@ -60,6 +59,8 @@ public:
   */
   RandomGenerator(int seedValue)
     {setSeed(seedValue);}
+
+  virtual ~RandomGenerator() {}
 
   /** Seed setter.
   **
