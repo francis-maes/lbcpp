@@ -221,28 +221,6 @@ String Object::defaultToStringImplementation(bool useShortString) const
   for (size_t i = 0; i < n; ++i)
   {
     Variable value = getVariable(i);
-    /*
-    if (value.exists())
-    {
-      String valueString = useShortString ? value.toShortString() : value.toString();
-      if (valueString.isNotEmpty())
-      {
-        String name = type->getMemberVariableName(i);
-        String shortName = type->getMemberVariableShortName(i);
-        if (res.isNotEmpty())
-          res += T(" ");
-        if (shortName.isNotEmpty() && shortName.length() < name.length())
-          res += T("-") + shortName;
-        else
-          res += T("--") + name;
-        if (!value.isBoolean())
-        {
-          if (valueString.indexOfAnyOf(T(" \t\r\n")) >= 0)
-            valueString = valueString.quoted();
-          res += T(" ") + valueString;
-        }
-      }
-    }*/
     res += (useShortString ? value.toShortString() : value.toString());
     if (i < n - 1)
       res += T(", ");
@@ -304,19 +282,6 @@ void Object::getChildObjects(std::vector<ObjectPtr>& res) const
     if (v.isObject() && v.exists())
       res.push_back(v.getObject());
   }
-/*
-  ContainerPtr container = object.dynamicCast<Container>();
-  if (container && container->getElementsType()->inheritsFrom(objectClass))
-  {
-    size_t n = container->getNumElements();
-    res.reserve(res.size() + n);
-    for (size_t i = 0; i < n; ++i)
-    {
-      ObjectPtr object = container->getElement(i).getObject();
-      if (object)
-        res.push_back(object);
-    }
-  }*/
 }
   
 
@@ -462,34 +427,7 @@ bool Object::loadVariablesFromXmlAttributes(XmlImporter& importer)
 }
 
 bool Object::loadFromString(ExecutionContext& context, const String& str)
-{
- /* String arguments;
-  int b = str.indexOfChar('(');
-  if (b >= 0)
-  {
-    String name = str.substring(0, b).trim();
-    if (name != getClassName() && name != getClass()->getShortName())
-    {
-      context.errorCallback(T("Unrecognized name: ") + name);
-      return false;
-    }
-    int e = str.lastIndexOfChar(')');
-    if (e < 0)
-    {
-      context.errorCallback(T("Unmatched parenthesis"));
-      return false;
-    }
-    arguments = str.substring(b + 1, e);
-    String remaining = str.substring(e + 1).trim();
-    if (remaining.isNotEmpty())
-      context.warningCallback(remaining.quoted() + T(" is beyond parenthesis => skipped"));
-  }
-  else
-    arguments = str.trim();
-
-  return arguments.isEmpty() || loadArgumentsFromString(context, arguments);*/
-  return loadArgumentsFromString(context, str);
-}
+  {return loadArgumentsFromString(context, str);}
 
 namespace lbcpp
 {

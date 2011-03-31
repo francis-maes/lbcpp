@@ -21,7 +21,7 @@ int WorkUnit::main(ExecutionContext& context, WorkUnitPtr workUnit, int argc, ch
   {
     String arg = argv[i];
     arguments[i - 1] = arg;
-    if (arg == T("-h") || arg == T("--help"))
+    if (arg == T("--help"))
     {
       context.informationCallback(workUnit->getUsageString());
       return 0;
@@ -60,7 +60,6 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   /* shortcut */
   std::map<String, size_t> variableNames;
   std::map<String, size_t> variableShortNames;
-  std::map<String, size_t>& defaultMap = variableNames;
   ClassPtr thisClass = getClass();
   for (size_t i = 0; i < getNumVariables(); ++i)
   {
@@ -74,6 +73,7 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
   {
     String argumentName;
     String argumentValue;
+    std::map<String, size_t>* namesMap = NULL;
     if (arguments[i].startsWith(T("--")))
     {
       int end = arguments[i].indexOfChar(T('='));
@@ -83,22 +83,28 @@ bool WorkUnit::parseArguments(ExecutionContext& context, const std::vector<Strin
         argumentValue = arguments[i].substring(end + 1);
 
       argumentName = arguments[i].substring(2, end);
-      defaultMap = variableNames;
+      namesMap = &variableNames;
     }
     else if (arguments[i].startsWith(T("-")))
     {
       argumentName = arguments[i].substring(1);
-      defaultMap = variableShortNames;
+      namesMap = &variableShortNames;
     }
 
-    if (defaultMap.find(argumentName) == defaultMap.end())
+    if (!namesMap)
     {
       context.errorCallback(T("WorkUnit::parseArguments"), T("Unexpected expression : ") + arguments[i]);
       return false;
     }
 
-    size_t variableIndex = defaultMap[argumentName];
+    std::map<String, size_t>::const_iterator it = namesMap->find(argumentName);
+    if (it == namesMap->end())
+    {
+      context.errorCallback(T("WorkUnit::parseArguments"), T("Unknown argument: ") + argumentName);
+      return false;
+    }
 
+    size_t variableIndex = it->second;
     for (++i ; i < arguments.size() && !arguments[i].startsWith(T("-")); ++i)
       argumentValue += T(" ") + arguments[i];
     argumentValue = argumentValue.trim();
