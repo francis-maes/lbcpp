@@ -61,10 +61,8 @@ DoubleVectorPtr FeatureGenerator::toComputedVector(const Variable* inputs) const
 
 Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Variable* inputs) const
 {
-  if (lazyComputation)
-    return toLazyVector(inputs);
-  else
-    return toComputedVector(inputs);
+  DoubleVectorPtr res = lazyComputation ? toLazyVector(inputs) : toComputedVector(inputs);
+  return Variable(res, lazyComputation ? lazyOutputType : nonLazyOutputType);
 }
 
 double FeatureGenerator::entropy(const Variable* inputs) const

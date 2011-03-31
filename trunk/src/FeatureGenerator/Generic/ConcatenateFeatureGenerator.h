@@ -20,9 +20,6 @@ public:
   ConcatenateDoubleFeatureGenerator(bool lazy = true)
     : FeatureGenerator(lazy) {}
 
-  virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
-    {return compositeDoubleVectorClass(featuresEnumeration, featuresType);}
-
   virtual size_t getMinimumNumRequiredInputs() const
     {return 1;}
 
