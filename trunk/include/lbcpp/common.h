@@ -21,7 +21,7 @@
 # endif
 
 //#define LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
-//#define LBCPP_DEBUG_OBJECT_ALLOCATION
+#define LBCPP_DEBUG_OBJECT_ALLOCATION
 
 /*
 ** Standard library
