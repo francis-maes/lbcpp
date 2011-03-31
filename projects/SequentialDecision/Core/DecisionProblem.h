@@ -44,8 +44,7 @@ class DecisionProblem : public Object
 public:
   DecisionProblem(const FunctionPtr& initialStateSampler, double discount)
     : initialStateSampler(initialStateSampler), discount(discount)
-  {
-  }
+    {initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);}
   DecisionProblem() {}
 
   /*

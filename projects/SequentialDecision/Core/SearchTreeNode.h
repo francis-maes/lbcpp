@@ -89,8 +89,8 @@ public:
 
   double getBestReturnWithoutChild(SearchTreeNodePtr childNode) const;
 
-  const Variable& getBestAction() const
-    {static Variable empty; return bestChildNode ? bestChildNode->getPreviousAction() : empty;}
+  Variable getBestAction() const
+    {return bestChildNode ? bestChildNode->getPreviousAction() : Variable();}
 
   const SearchTreeNodePtr& getBestChildNode() const
     {return bestChildNode;}
