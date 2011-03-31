@@ -78,6 +78,7 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
       {
         jassert(false);
         var = NULL;
+        break;
       }
 
       const juce::int64* vari = (const juce::int64* )var;

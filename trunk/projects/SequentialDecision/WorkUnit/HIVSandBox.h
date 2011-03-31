@@ -321,16 +321,11 @@ public:
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
 
       // BASELINES
-   /* Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"));
-    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"));
-    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"));
-    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"));
-    Object::displayObjectAllocationInfo(std::cout);*/
-
+   
       // EDA
       featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
 
@@ -408,7 +403,7 @@ private:
   double performEDAIteration(ExecutionContext& context, const FunctionPtr& functionToMinimize, DistributionPtr& distribution, Variable& bestParameters) const
   {
     jassert(numBests < populationSize);
-    Object::displayObjectAllocationInfo(std::cout);
+    //Object::displayObjectAllocationInfo(std::cout);
 
     RandomGeneratorPtr random = RandomGenerator::getInstance();
     
