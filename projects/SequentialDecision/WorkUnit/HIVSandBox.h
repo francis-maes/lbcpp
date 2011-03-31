@@ -315,10 +315,15 @@ public:
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
 
       // BASELINES
+   /* Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"));
+    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"));
+    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"));
+    Object::displayObjectAllocationInfo(std::cout);
       computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"));
+    Object::displayObjectAllocationInfo(std::cout);*/
 
       // EDA
       featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
@@ -340,6 +345,7 @@ public:
       // Evaluate EDA
       FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
       computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"));
+    Object::displayObjectAllocationInfo(std::cout);
       
       context.leaveScope();
     }

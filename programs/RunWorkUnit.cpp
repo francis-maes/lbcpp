@@ -146,11 +146,8 @@ bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitC
   // look if usage is requested
   const WorkUnitPtr& workUnit = object.staticCast<WorkUnit>();
   for (size_t i = 0; i < arguments.size(); ++i)
-    if (arguments[i] == T("-h") || arguments[i] == T("--help"))
-    {
+    if (arguments[i] == T("--help"))
       context.informationCallback(workUnit->getUsageString());
-      return true;
-    }
 
   // parse arguments and run work unit
   return workUnit->parseArguments(context, arguments) && runWorkUnit(context, workUnit);
@@ -181,6 +178,7 @@ int mainImpl(int argc, char** argv)
   File projectDirectory;
   if (!parseTopLevelArguments(defaultExecutionContext(), argc, argv, arguments, numThreads, traceOutputFile, traceAutoSave, projectDirectory))
   {
+    std::cerr << "Could not parse top level arguments." << std::endl;
     usage();
     return 1;
   }

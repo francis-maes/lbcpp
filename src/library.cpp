@@ -119,13 +119,132 @@ private:
   std::vector< std::pair<LibraryPtr, void* > > libraries;
 };
 
+class MemoryLeakDetector
+{
+public:
+  void newObject(Object* object)
+  {
+    ScopedLock _(objectsMapLock);
+    if (object->thisClass)
+      object->classNameUnderWhichThisIsKnown = object->thisClass->getName();
+    objectsMap[object->classNameUnderWhichThisIsKnown].insert(object);
+  }
+
+  void deleteObject(Object* object)
+  {
+    ScopedLock _(objectsMapLock);
+    objectsMap[object->classNameUnderWhichThisIsKnown].erase(object);
+  }
+
+  void tryToRenameObject(Object* object)
+  {
+    ScopedLock _(objectsMapLock);
+    jassert(object->classNameUnderWhichThisIsKnown.isEmpty());
+    String name = object->getClassName();
+    if (name != T("Object"))
+    {
+      objectsMap[object->classNameUnderWhichThisIsKnown].erase(object);
+      object->classNameUnderWhichThisIsKnown = name;
+      objectsMap[object->classNameUnderWhichThisIsKnown].insert(object);
+    }
+  }
+
+  void tryToRenameAllUnnamedObjets()
+  {
+    ScopedLock _(objectsMapLock);
+    std::set<Object* > unnamedObjects = objectsMap[String::empty];
+    for (std::set<Object* >::iterator it = unnamedObjects.begin(); it != unnamedObjects.end(); ++it)
+      tryToRenameObject(*it);
+  }
+
+  typedef std::multimap<int, String> ObjectCountsMap;
+
+  void getSortedCounts(ObjectCountsMap& res)
+  {
+    ScopedLock _(objectsMapLock);
+    for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
+      if (it->second.size())
+        res.insert(std::make_pair(it->second.size(), it->first));
+  }
+
+  void getSortedDeltaCounts(ObjectCountsMap& res)
+  {
+    jassert(previousCounts.size());
+    ScopedLock _(objectsMapLock);
+    for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
+      if (it->second.size())
+        res.insert(std::make_pair(it->second.size() - previousCounts[it->first], it->first));
+  }
+
+  String updateMemoryInformation()
+  {
+    enum {n = 5};
+
+    tryToRenameAllUnnamedObjets();
+
+    // display most allocated objects
+    ObjectCountsMap sortedCounts;
+    getSortedCounts(sortedCounts);
+    String res = T("Most allocated objects:\n");
+    size_t i = 0;
+    for (ObjectCountsMap::const_reverse_iterator it = sortedCounts.rbegin(); it != sortedCounts.rend() && i < 20; ++it, ++i)
+      res += String(it->first) + T(" ") + it->second + T("\n");
+
+    // display biggest deltas
+    if (previousCounts.size())
+    {
+      ObjectCountsMap sortedDeltaCounts;
+      getSortedDeltaCounts(sortedDeltaCounts);
+      if (sortedDeltaCounts.size() && sortedDeltaCounts.rbegin()->first > 0)
+      {
+        res += T("Biggest allocation increases:\n");
+        i = 0;
+        for (ObjectCountsMap::const_reverse_iterator it = sortedDeltaCounts.rbegin(); it != sortedDeltaCounts.rend() && i < 20; ++it, ++i)
+          res += String(it->first) + T(" ") + it->second + T("\n");
+      }
+      else
+        res += T("No allocation increase\n");
+    }
+
+    // update previous counts
+    previousCounts.clear();
+    for (ObjectsMap::const_iterator it = objectsMap.begin(); it != objectsMap.end(); ++it)
+      previousCounts[it->first] = it->second.size();
+
+    return res;
+  }
+
+private:
+  typedef std::map<String, std::set<Object* > > ObjectsMap;
+  CriticalSection objectsMapLock;
+  ObjectsMap objectsMap;
+  std::map<String, size_t> previousCounts;
+};
+
 struct ApplicationContext
 {
+  ApplicationContext()
+  {
+    lbcpp::applicationContext = this;
+#ifdef LBCPP_USER_INTERFACE
+    userInterfaceManager = new UserInterfaceManager();
+#endif
+  }
+  ~ApplicationContext()
+  {
+#ifdef LBCPP_USER_INTERFACE
+    delete userInterfaceManager;
+#endif
+  }
+
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  MemoryLeakDetector memoryLeakDetector;
+#endif
   LibraryManager libraryManager;
   TypeManager typeManager;
   ExecutionContextPtr defaultExecutionContext;
 #ifdef LBCPP_USER_INTERFACE
-  UserInterfaceManager userInterfaceManager;
+  UserInterfaceManager* userInterfaceManager;
 #endif
 };
 
@@ -171,7 +290,7 @@ void lbcpp::deinitialize()
 
     applicationContext->libraryManager.shutdown();
 #ifdef LBCPP_USER_INTERFACE
-    applicationContext->userInterfaceManager.shutdown();
+    applicationContext->userInterfaceManager->shutdown();
 #endif
     deleteAndZero(applicationContext);
     juce::shutdownJuce_NonGUI();
@@ -183,7 +302,7 @@ TypeManager& lbcpp::typeManager()
 
 #ifdef LBCPP_USER_INTERFACE
 UserInterfaceManager& lbcpp::userInterfaceManager()
-  {jassert(applicationContext); return applicationContext->userInterfaceManager;}
+  {jassert(applicationContext); return *applicationContext->userInterfaceManager;}
 #endif
 
 ExecutionContext& lbcpp::defaultExecutionContext()
@@ -289,3 +408,34 @@ void lbcpp::deinitializeDynamicLibrary()
   lbcpp::applicationContext = NULL;
 #endif // JUCE_WIN32
 }
+
+
+#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+
+Object::Object(ClassPtr thisClass)
+  : thisClass(thisClass)
+{
+  lbcpp::applicationContext->memoryLeakDetector.newObject(this);
+}
+
+Object::~Object()
+{
+  lbcpp::applicationContext->memoryLeakDetector.deleteObject(this);
+}
+
+void Object::displayObjectAllocationInfo(std::ostream& ostr)
+{
+  ostr << lbcpp::applicationContext->memoryLeakDetector.updateMemoryInformation() << std::endl;
+}
+
+#else
+
+Object::Object(ClassPtr thisClass)
+  : thisClass(thisClass) {}
+
+Object::~Object() {}
+
+void Object::displayObjectAllocationInfo(std::ostream& ostr)
+  {ostr << "No Object Allocation Info, enable LBCPP_DEBUG_OBJECT_ALLOCATION flag in lbcpp/common.h" << std::endl;}
+
+#endif

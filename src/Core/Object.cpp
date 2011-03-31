@@ -97,61 +97,8 @@ void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
   {std::cout << "No RefCount Debug Info." << std::endl;}
 #endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
-#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-static CriticalSection objectsCountPerTypeLock;
-static std::map<String, size_t > objectsCountPerType;
-#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
-
-Object::Object(ClassPtr thisClass)
-  : thisClass(thisClass)
-{
-#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-  ScopedLock _(objectsCountPerTypeLock);
-  classNameUnderWhichThisIsKnown = thisClass ? thisClass->getName() : T("<Unknown Class: ") + getTypeName(typeid(*this)) + T(">");
-  objectsCountPerType[classNameUnderWhichThisIsKnown]++;
-#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
-}
-
 void Object::setThisClass(ClassPtr thisClass)
-{
-  this->thisClass = thisClass;
-#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-  ScopedLock _(objectsCountPerTypeLock);
-  if (thisClass && classNameUnderWhichThisIsKnown.startsWith(T("<Unknown Class:")))
-  {
-    objectsCountPerType[classNameUnderWhichThisIsKnown]--;
-    classNameUnderWhichThisIsKnown = thisClass->getName();
-    objectsCountPerType[classNameUnderWhichThisIsKnown]++;
-  }
-#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
-}
-
-Object::~Object()
-{
-#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-  if (classNameUnderWhichThisIsKnown.isNotEmpty())
-  {
-    ScopedLock _(objectsCountPerTypeLock);
-    objectsCountPerType[classNameUnderWhichThisIsKnown]--;
-  }
-#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
-}
-
-void Object::displayObjectAllocationInfo(std::ostream& ostr)
-{
-#ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
-  std::multimap<size_t, String> info;
-  {
-    ScopedLock _(objectsCountPerTypeLock);
-    for (std::map<String, size_t>::const_iterator it = objectsCountPerType.begin(); it != objectsCountPerType.end(); ++it)
-      info.insert(std::make_pair(it->second, it->first));
-  }
-  for (std::multimap<size_t, String>::const_reverse_iterator it = info.rbegin(); it != info.rend(); ++it)
-    std::cout << it->first << " " << it->second << std::endl;
-#else
-  ostr << "No Object Allocation Info, enable LBCPP_DEBUG_OBJECT_ALLOCATION flag" << std::endl;
-#endif // LBCPP_DEBUG_OBJECT_ALLOCATION
-}
+  {this->thisClass = thisClass;}
 
 String Object::getClassName() const
 {

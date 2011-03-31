@@ -14,11 +14,16 @@ using namespace lbcpp;
 ** SearchTreeNode
 */
 SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState)
-  : allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
+  : Object(searchTreeNodeClass), allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
     parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(-DBL_MAX)
 {
   if (initialState)
     state = initialState->cloneAndCast<DecisionProblemState>();
+}
+
+SearchTreeNode::SearchTreeNode()
+  : Object(searchTreeNodeClass), allNodes(*(const SearchTreeNodeVector* )0), nodeIndex(0)
+{
 }
 
 void SearchTreeNode::open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action)

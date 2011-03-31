@@ -34,6 +34,8 @@
 namespace lbcpp
 {
 
+extern ClassPtr variableSignatureClass;
+
 class VariableSignature : public NameableObject
 {
 public:
@@ -41,9 +43,9 @@ public:
                     const String& name,
                     const String& shortName = String::empty,
                     const String& description = String::empty)
-    : NameableObject(name), type(type), shortName(shortName), description(description) {}
+    : NameableObject(variableSignatureClass, name), type(type), shortName(shortName), description(description) {}
   VariableSignature(const VariableSignature& other)
-    : NameableObject(other.name), type(other.type), shortName(other.shortName), description(other.description) {}
+    : NameableObject(variableSignatureClass, other.name), type(other.type), shortName(other.shortName), description(other.description) {}
   VariableSignature() {}
 
   const TypePtr& getType() const
