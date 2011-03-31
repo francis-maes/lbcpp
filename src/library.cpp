@@ -28,6 +28,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Library.h>
 #include <lbcpp/Data/RandomGenerator.h>
+#include <lbcpp/Core/Class.h>
 
 #ifdef LBCPP_USER_INTERFACE
 # include <lbcpp/UserInterface/UserInterfaceManager.h>
