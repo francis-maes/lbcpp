@@ -99,7 +99,7 @@ inline String Variable::getTypeName() const
   {return type->getName();}
 
 inline bool Variable::exists() const
-  {return !isNil() && !isMissingValue();}
+  {return !isNil() && !type->isMissingValue(value);}
 
 inline bool Variable::isMissingValue() const
   {return !isNil() && type->isMissingValue(value);}

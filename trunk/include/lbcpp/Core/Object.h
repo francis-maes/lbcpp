@@ -192,6 +192,7 @@ protected:
   
   ClassPtr thisClass;
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
+  friend class MemoryLeakDetector;
   String classNameUnderWhichThisIsKnown;
 #endif // LBCPP_DEBUG_OBJECT_ALLOCATION
   
@@ -210,6 +211,8 @@ protected:
 class NameableObject : public Object
 {
 public:
+  NameableObject(ClassPtr thisClass, const String& name)
+    : Object(thisClass), name(name) {}
   NameableObject(const String& name = T("Unnamed"))
     : name(name) {}
 
