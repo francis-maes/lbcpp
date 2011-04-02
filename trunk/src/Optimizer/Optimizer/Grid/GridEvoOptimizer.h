@@ -97,9 +97,9 @@ private:
 class EvoOptimizer : public GridOptimizer   // TODO arnaud : change Optimizer interface to use Optimizer instead of GridOptimizer as mother class
 {
 public:
-  EvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep)
+  EvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor)
     : totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress),
-      ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep) {}
+      ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep), updateFactor(updateFactor) {}
 
   EvoOptimizer() {}
   
@@ -171,6 +171,10 @@ public:
           ++it;
       }
       
+      File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState_backup.xml")));
+      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")));
+      context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml")).getFullPathName());
+      
       // enough WUs evaluated -> update distribution (with best results)
       if (state->currentEvaluatedWUs.size() >= numberWuToUpdate || (state->totalNumberGeneratedWUs == totalNumberWuRequested && state->inProgressWUs.size() == 0)) 
       {
@@ -196,8 +200,13 @@ public:
           distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
           nb++;
         }
-        state->distributions = distributionsBuilder->build(context);
-        
+        IndependentMultiVariateDistributionPtr newDistri = distributionsBuilder->build(context);
+        distributionsBuilder->clear();
+        distributionsBuilder->addDistribution(state->distributions);  // old distri
+        for (size_t i = 0; i < updateFactor; ++i)
+          distributionsBuilder->addDistribution(newDistri);
+        state->distributions = distributionsBuilder->build(context); 
+                
         // update best score
         if ((*(resultsMap.rbegin())).first > state->bestScore)
         {
@@ -229,6 +238,7 @@ private:
   size_t numberWuInProgress;
   size_t ratioUsedForUpdate;
   size_t timeToSleep; // in seconds
+  size_t updateFactor;
   
 };
   typedef ReferenceCountedObjectPtr<EvoOptimizer> EvoOptimizerPtr;
@@ -239,10 +249,10 @@ class GridEvoOptimizer : public GridOptimizer
 public:
   GridEvoOptimizer() {}
   GridEvoOptimizer(size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, String projectName, String source, String destination,
-                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep)
+                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep, size_t updateFactor)
     : totalNumberWuRequested(totalNumberWuRequested), numberWuToUpdate(numberWuToUpdate), numberWuInProgress(numberWuInProgress), ratioUsedForUpdate(ratioUsedForUpdate),
       projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), requiredMemory(requiredMemory),
-      requiredTime(requiredTime), timeToSleep(timeToSleep) 
+      requiredTime(requiredTime), timeToSleep(timeToSleep), updateFactor(updateFactor) 
   {
     requiredCpus = 1;
   } // TODO arnaud : edit for NIC3
@@ -331,6 +341,10 @@ public:
       }
       interface->closeCommunication();
       
+      File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
+      state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
+      context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).getFullPathName());
+      
       // enough WUs evaluated -> update distribution (with best results)
       if (state->currentEvaluatedWUs.size() >= numberWuToUpdate || (state->totalNumberGeneratedWUs == totalNumberWuRequested && state->inProgressWUs.size() == 0)) 
       {
@@ -354,7 +368,13 @@ public:
           distributionsBuilder->addElement((*mapIt).second);  // TODO arnaud : maybe use all results and use weight
           nb++;
         }
-        state->distributions = distributionsBuilder->build(context);
+        
+        IndependentMultiVariateDistributionPtr newDistri = distributionsBuilder->build(context);
+        distributionsBuilder->clear();
+        distributionsBuilder->addDistribution(state->distributions);  // old distri
+        for (size_t i = 0; i < updateFactor; ++i)
+          distributionsBuilder->addDistribution(newDistri);
+        state->distributions = distributionsBuilder->build(context);        
         
         if ((*(resultsMap.rbegin())).first > state->bestScore) {
           state->bestScore = (*(resultsMap.rbegin())).first;
@@ -396,6 +416,7 @@ private:
   size_t requiredMemory;
   size_t requiredTime;
   size_t timeToSleep; // in seconds
+  size_t updateFactor;
   
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       

@@ -27,7 +27,7 @@ void GaussianDistributionBuilder::addDistribution(const DistributionPtr& value, 
 
 DistributionPtr GaussianDistributionBuilder::build(ExecutionContext& context) const
 {
-  jassert((means && variances) != meanAndVariances);
+  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
   
   if (means)
     return new GaussianDistribution(means->getMean(), variances->getMean());
@@ -43,15 +43,15 @@ DistributionPtr GaussianDistributionBuilder::build(ExecutionContext& context) co
  */
 DistributionPtr IntegerGaussianDistributionBuilder::build(ExecutionContext& context) const
 {
- jassert((means && variances) != meanAndVariances);
+  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
  
- if (means)
- return new IntegerGaussianDistribution(means->getMean(), variances->getMean());
- if (meanAndVariances)
- return new IntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
+  if (means)
+    return new IntegerGaussianDistribution(means->getMean(), variances->getMean());
+  if (meanAndVariances)
+    return new IntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
  
- jassertfalse;
- return IntegerGaussianDistributionPtr();
+  jassertfalse;
+  return IntegerGaussianDistributionPtr();
 }
 
 /**
@@ -59,13 +59,13 @@ DistributionPtr IntegerGaussianDistributionBuilder::build(ExecutionContext& cont
  */
 DistributionPtr PositiveIntegerGaussianDistributionBuilder::build(ExecutionContext& context) const
 {
- jassert((means && variances) != meanAndVariances);
- 
- if (means)
- return new PositiveIntegerGaussianDistribution(means->getMean(), variances->getMean());
- if (meanAndVariances)
- return new PositiveIntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
- 
- jassertfalse;
- return PositiveIntegerGaussianDistributionPtr();
+  //jassert((means && variances) != meanAndVariances);  // TODO arnaud
+  
+  if (means)
+    return new PositiveIntegerGaussianDistribution(means->getMean(), variances->getMean());
+  if (meanAndVariances)
+    return new PositiveIntegerGaussianDistribution(meanAndVariances->getMean(), meanAndVariances->getVariance());
+  
+  jassertfalse;
+  return PositiveIntegerGaussianDistributionPtr();
 }

@@ -99,6 +99,77 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<GaussianDistribution> GaussianDistributionPtr;
+
+class IntegerGaussianDistribution : public GaussianDistribution // TODO arnaud : should be discrete but problem with builder !
+{
+public:
+  // TODO arnaud complete implementation
+  IntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : GaussianDistribution(mean, variance) {}
+  
+  virtual TypePtr getElementsType() const
+    {return integerType;} // TODO arnaud : not used because not template
+  
+  virtual double computeEntropy() const
+    {jassert(false); return 0;} // not implemented !
+  
+  virtual double computeProbability(const Variable& value) const
+    {jassert(false); return 0;} // not implemented !
+  
+  virtual Variable sample(RandomGeneratorPtr random) const
+    {return Variable((int)roundDouble(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation())), integerType);}
+  
+  virtual Variable sampleBest(RandomGeneratorPtr random) const
+    {jassert(false); return Variable();} // not implemented !
+  virtual void sampleUniformly(size_t numSamples, std::vector<double>& res) const
+    {jassertfalse;} // not implemented !
+  
+  virtual DistributionBuilderPtr createBuilder() const;
+  
+  juce_UseDebuggingNewOperator
+  
+protected:  
+  friend class IntegerGaussianDistributionClass;
+  
+  double mean;
+  double variance;
+  
+  static inline int roundPositiveDouble(double value)
+  {return (int)(value + 0.5);}
+  
+  static inline int roundDouble(double value)
+  {
+    if (value >= 0)
+      return roundPositiveDouble(value);
+    else
+      return -roundPositiveDouble(-value);
+  }
+};
+
+typedef ReferenceCountedObjectPtr<IntegerGaussianDistribution> IntegerGaussianDistributionPtr;
+
+  
+class PositiveIntegerGaussianDistribution : public IntegerGaussianDistribution
+{
+public:
+  // TODO arnaud complete implementation
+  PositiveIntegerGaussianDistribution(double mean = 0.0, double variance = 0.0) : IntegerGaussianDistribution(mean, variance) {}
+  
+  virtual TypePtr getElementsType() const
+  {return positiveIntegerType;}
+  
+  virtual Variable sample(RandomGeneratorPtr random) const
+  {return Variable(juce::jmax(0, roundDouble(random->sampleDoubleFromGaussian(getMean(), getStandardDeviation()))), positiveIntegerType);}
+  
+  virtual DistributionBuilderPtr createBuilder() const;
+  
+  juce_UseDebuggingNewOperator
+  
+protected:  
+  friend class PositiveIntegerGaussianDistributionClass;
+};
+
+typedef ReferenceCountedObjectPtr<PositiveIntegerGaussianDistribution> PositiveIntegerGaussianDistributionPtr;  
+  
   
 }; /* namespace lbcpp */
 

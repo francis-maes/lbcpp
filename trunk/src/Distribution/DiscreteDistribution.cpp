@@ -241,15 +241,3 @@ bool EnumerationDistribution::loadFromString(ExecutionContext& context, const St
 
 bool EnumerationDistribution::loadFromXml(XmlImporter& importer)
   {return loadFromString(importer.getContext(), importer.getAllSubText());}
-
-/*
- ** IntegerGaussianDistribution
- */
-DistributionBuilderPtr IntegerGaussianDistribution::createBuilder() const
-  {return new IntegerGaussianDistributionBuilder();}
-
-/*
- ** PositiveIntegerGaussianDistribution
- */
-DistributionBuilderPtr PositiveIntegerGaussianDistribution::createBuilder() const
-  {return new PositiveIntegerGaussianDistributionBuilder();}

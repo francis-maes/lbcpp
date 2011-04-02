@@ -11,6 +11,8 @@
 
 # include "Distribution.h"
 
+// TODO arnaud : weight is NOT implemented !!!
+
 namespace lbcpp
 {
   

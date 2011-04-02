@@ -25,13 +25,6 @@
     <variable type="Double" name="pFalse"/>
   </class>
   
-  <class name="IntegerGaussianDistribution" base="DiscreteDistribution[Integer]">
-    <variable type="Double" name="mean"/>
-    <variable type="Double" name="variance"/>
-  </class>
-  
-  <class name="PositiveIntegerGaussianDistribution" base="IntegerGaussianDistribution"/>
-  
   <template name="EnumerationDistribution" base="DiscreteDistribution[enumeration]">
     <parameter name="enumeration" type="EnumValue"/>
 
@@ -82,6 +75,10 @@
     <variable type="Double" name="mean"/>
     <variable type="Double" name="variance"/>
   </class>
+  
+  <class name="IntegerGaussianDistribution" base="GaussianDistribution"/>
+    
+  <class name="PositiveIntegerGaussianDistribution" base="IntegerGaussianDistribution"/>
   
   <!-- MultiVariate Probability Distribution -->
   <template name="MultiVariateDistribution" base="Distribution[elementsType]" abstract="yes">
