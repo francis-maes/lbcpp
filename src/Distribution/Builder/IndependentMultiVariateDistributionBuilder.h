@@ -41,7 +41,15 @@ namespace lbcpp
     }
     
     virtual void addDistribution(const DistributionPtr& distribution, double weight = 1.0)
-    {jassertfalse;}  // not implemented // TODO arnaud
+    {
+      IndependentMultiVariateDistributionPtr indepDistribution = distribution.staticCast<IndependentMultiVariateDistribution>();
+      jassert(indepDistribution);
+      
+      if (indepDistribution->getElementsType() != getInputType()) jassertfalse;
+      
+      for (size_t i = 0; i < distributionsBuilders.size(); ++i) 
+        distributionsBuilders[i]->addDistribution(indepDistribution->getSubDistribution(i));
+    } 
     
     virtual DistributionPtr build(ExecutionContext& context) const
     {

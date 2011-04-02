@@ -45,15 +45,16 @@ public:
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
     
     // Create initial state either from distri or from existing file
-    ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions); //Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+    ProteinGridEvoOptimizerStatePtr state = /*new ProteinGridEvoOptimizerState(distributions);*/ Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     
     // variables used by EvoOptimizer
-    size_t totalNumberWuRequested = 50000; // total number of WUs to evaluate
-    size_t numberWuToUpdate = 2500;       // min number of WUs evaluated needed to update distribution
-    size_t numberWuInProgress = 5000;      // number of WUs in progress (either in thread pool or in Boinc Network), should be <= totalNumberWuRequested. (for local optimizer should be a little bit higher than the number of CPUs)
+    size_t totalNumberWuRequested = 50;//50000; // total number of WUs to evaluate
+    size_t numberWuToUpdate = 10;//2500;       // min number of WUs evaluated needed to update distribution
+    size_t numberWuInProgress = 25;//5000;      // number of WUs in progress (either in thread pool or in Boinc Network), should be <= totalNumberWuRequested. (for local optimizer should be a little bit higher than the number of CPUs)
     size_t ratioUsedForUpdate = 3;      // number of WUs used to calculate new distribution is numberWuToUpdate/ratioUsedForUpdate 
-    size_t timeToSleep = 10*60;            // time to sleep between work generation and attemps to use finished results (avoid busy waiting)
-
+    size_t timeToSleep = 10;//10*60;            // time to sleep between work generation and attemps to use finished results (avoid busy waiting)
+    size_t updateFactor = 1;            // preponderance of new distri vs old distri (low value avoid too quick convergence)
+    
     // variables used by GridOptimizer
     String projectName(T("BoincProteinLearner1"));
     String source(T("arnaud@monster24"));
@@ -74,16 +75,16 @@ public:
      * 
      * Example : see ProteinGridEvoOptimizer.h
      */
-    //EvoOptimizerPtr optimizer = new EvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, timeToSleep);
-    //return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+    EvoOptimizerPtr optimizer = new EvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, timeToSleep, updateFactor);
+    return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
     
     
     /**
      * GridEvoOptimizer
      */
-    GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
-                                                         managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep);
-    return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+    //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
+    //                                                     managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep, updateFactor);
+    //return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
     
     
     

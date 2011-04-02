@@ -69,3 +69,14 @@ void GaussianDistribution::sampleUniformly(size_t numSamples, std::vector<double
 DistributionBuilderPtr GaussianDistribution::createBuilder() const
   {return new GaussianDistributionBuilder();}
 
+/*
+ ** IntegerGaussianDistribution
+ */
+DistributionBuilderPtr IntegerGaussianDistribution::createBuilder() const
+  {return new IntegerGaussianDistributionBuilder();}
+
+/*
+ ** PositiveIntegerGaussianDistribution
+ */
+DistributionBuilderPtr PositiveIntegerGaussianDistribution::createBuilder() const
+  {return new PositiveIntegerGaussianDistributionBuilder();}

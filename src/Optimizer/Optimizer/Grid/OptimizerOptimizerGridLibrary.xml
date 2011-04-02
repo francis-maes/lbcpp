@@ -6,7 +6,7 @@
   
   <class name="GridEvoOptimizer" base="GridOptimizer">
     <constructor arguments="size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, String projectName, String source, String destination,
-                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep"/>
+                   String managerHostName, size_t managerPort, size_t requiredMemory, size_t requiredTime, size_t timeToSleep, size_t updateFactor"/>
     <variable type="PositiveInteger" name="totalNumberWuRequested"/>
     <variable type="PositiveInteger" name="numberWuToUpdate"/>
     <variable type="PositiveInteger" name="numberWuInProgress"/>
@@ -20,19 +20,22 @@
     <variable type="PositiveInteger" name="requiredMemory"/>  
     <variable type="PositiveInteger" name="requiredTime"/>  
     <variable type="PositiveInteger" name="timeToSleep"/>
+    <variable type="PositiveInteger" name="updateFactor"/>
   </class>
   
   <class name="EvoOptimizer" base="GridOptimizer">
-  <constructor arguments="size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep"/>
+  <constructor arguments="size_t totalNumberWuRequested, size_t numberWuToUpdate, size_t numberWuInProgress, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor"/>
     <variable type="PositiveInteger" name="totalNumberWuRequested"/>
     <variable type="PositiveInteger" name="numberWuToUpdate"/>
     <variable type="PositiveInteger" name="numberWuInProgress"/>
     <variable type="PositiveInteger" name="ratioUsedForUpdate"/>
     <variable type="PositiveInteger" name="timeToSleep"/>
+    <variable type="PositiveInteger" name="updateFactor"/>
   </class>
+  
   <class name="RunWorkUnit" base="WorkUnit">
-  <constructor arguments="const File f"/>
-  <variable type="File" name="f"/>
+    <constructor arguments="const File f"/>
+    <variable type="File" name="f"/>
   </class>
   
   <class name="GridEvoOptimizerState" base="GridOptimizerState" abstract="yes">
