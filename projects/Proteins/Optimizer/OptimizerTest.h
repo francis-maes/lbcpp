@@ -19,6 +19,10 @@
 # include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
 # include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
 
+// TODO arnaud : just to compile header file
+# include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Optimizer/OptimizerCallback.h>
+
 namespace lbcpp
 {
 
