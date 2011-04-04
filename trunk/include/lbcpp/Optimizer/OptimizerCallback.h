@@ -15,6 +15,7 @@ namespace lbcpp
 
 class OptimizerCallback : public Object
 {
+public:
   virtual void evaluationFinished(long identifier, double score) = 0;
 };
 

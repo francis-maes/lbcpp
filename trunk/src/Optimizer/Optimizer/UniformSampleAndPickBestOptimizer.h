@@ -22,7 +22,7 @@ namespace lbcpp
 // works for "double" arguments
 // uses a ContinuousDistribution apriori
 // do not use the initial guess
-class UniformSampleAndPickBestOptimizer : public Optimizer
+/*class UniformSampleAndPickBestOptimizer : public OptimizerOld
 {
 public:
   UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
@@ -70,7 +70,7 @@ public:
 protected:
   friend class UniformSampleAndPickBestOptimizerClass;
   size_t numSamples;
-};
+};*/
 
 }; /* namespace lbcpp */
 

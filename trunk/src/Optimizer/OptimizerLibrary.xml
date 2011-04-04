@@ -10,6 +10,13 @@
   <import name="OptimizerOptimizer"/>
 
   <class name="Optimizer" base="Function" abstract="yes"/>
+  
+  <class name="OptimizerState" base="Object">
+    <variable type="GenericVector[Pair[Integer, Variable]]" name="evaluationRequests"/>
+    <variable type="GenericVector[Pair[Integer, Double]]" name="evaluationResults"/>
+  </class>
+  
+  <!-- <class name="OptimizerOld" base="Function" abstract="yes"/> -->
   <class name="OptimizerContext" base="Object" abstract="yes"/>
   <class name="OptimizerCallback" base="Object" abstract="yes"/>
   <class name="GridOptimizer" base="Function" abstract="yes"/>
