@@ -109,7 +109,6 @@ public:
   }
 };
 
-
 GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
   : MatrixComponent(state->getBoard()), state(state), actionsPerceptionFunction(new GoActionsPerception())
 {
@@ -122,16 +121,21 @@ public:
   {
   }
 
-  ContainerPtr loadGames(ExecutionContext& context, const File& directory, size_t maxCount)
+  ContainerPtr loadGames(ExecutionContext& context, const File& directoryOrFile, size_t maxCount)
   {
-    if (!gamesDirectory.isDirectory())
+    if (!directoryOrFile.exists())
     {
-      context.errorCallback(T("Invalid games directory"));
+      context.errorCallback(T("File ") + directoryOrFile.getFullPathName() + T(" does not exists"));
       return ContainerPtr();
     }
-
-    return directoryFileStream(context, directory, T("*.sgf"))->load(maxCount, false)
+    if (directoryOrFile.isDirectory())
+      return directoryFileStream(context, directoryOrFile, T("*.sgf"))->load(maxCount, false)
         ->apply(context, new LoadSGFFileFunction(), Container::parallelApply);
+    else
+    {
+      FunctionPtr loader = new LoadCompositeSGFFileFunction(maxCount);
+      return loader->compute(context, directoryOrFile).getObjectAndCast<Container>();
+    }
   }
 
   virtual Variable run(ExecutionContext& context)
@@ -142,14 +146,28 @@ public:
     DecisionProblemPtr problem = new GoProblem(0);
 
     // load games
-    ContainerPtr games = loadGames(context, gamesDirectory, maxCount);
-    if (!games)
-      return false;
-    ContainerPtr trainingGames = games->invFold(0, numFolds);
-    ContainerPtr validationGames = games->fold(0, numFolds);
-    context.informationCallback(String((int)trainingGames->getNumElements()) + T(" training games, ") +
-                                String((int)validationGames->getNumElements()) + T(" validation games"));
+    context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
+    ContainerPtr trainingGames = loadGames(context, trainingFile, maxCount);
+    context.leaveScope((trainingGames ? trainingGames->getNumElements() : 0));
     
+    context.enterScope(T("Loading testing games from ") + context.getFilePath(testingFile));
+    ContainerPtr testingGames = loadGames(context, testingFile, maxCount);
+    context.leaveScope((testingGames ? testingGames->getNumElements() : 0));
+
+    ContainerPtr validationGames;
+    if (numFolds)
+    {
+      validationGames = trainingGames->fold(0, numFolds);
+      trainingGames = trainingGames->invFold(0, numFolds);
+    }
+    else
+      validationGames = testingGames; // tmp ...
+    if (!printGamesInfo(context, trainingGames, T("training")) ||
+        (validationGames && !printGamesInfo(context, validationGames, T("validation"))) ||
+        !printGamesInfo(context, testingGames, T("testing")))
+      return false;
+
+    // test features
     if (testFeatures)
     {
       PairPtr pair = trainingGames->getElement(0).getObjectAndCast<Pair>();
@@ -220,11 +238,32 @@ public:
 private:
   friend class GoSandBoxClass;
 
-  File gamesDirectory;
+  File trainingFile;
+  File testingFile;
   size_t maxCount;
   size_t numFolds;
   LearnerParametersPtr learningParameters;
   bool testFeatures;
+
+  bool printGamesInfo(ExecutionContext& context, const ContainerPtr& games, const String& name) const
+  {
+    if (!games || !games->getNumElements())
+    {
+      context.errorCallback(T("No ") + name + T(" games"));
+      return false;
+    }
+
+    size_t n = games->getNumElements();
+    size_t moves = 0;
+    for (size_t i = 0; i < n; ++i)
+    {
+      PairPtr stateAndTrajectory = games->getElement(i).getObjectAndCast<Pair>();
+      jassert(stateAndTrajectory);
+      moves += stateAndTrajectory->getSecond().getObjectAndCast<Container>()->getNumElements();
+    }
+    context.informationCallback(String((int)n) + T(" ") + name + T(" games and ") + String((int)moves) + T(" ") + name + T(" moves"));
+    return true;
+  }
 };
 
 }; /* namespace lbcpp */

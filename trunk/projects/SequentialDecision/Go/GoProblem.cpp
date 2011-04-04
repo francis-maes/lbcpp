@@ -112,6 +112,11 @@ GoState::Position GoState::getLastPosition() const
 
 void GoState::addStone(Player player, size_t x, size_t y)
 {
+  size_t size = board->getSize();
+  if (x == size && y == size)
+    return; // pass
+
+  jassert(x < size && y < size);
   Position position(x, y);
   board->set(position, player);
   freePositions.erase(position);

@@ -120,8 +120,9 @@ File ExecutionContext::getFile(const String& path)
 
 String ExecutionContext::getFilePath(const File& file) const
 {
-  if (projectDirectory.exists() && file.isAChildOf(projectDirectory))
-    return file.getRelativePathFrom(projectDirectory);
+  File dir = getProjectDirectory();
+  if (dir.exists() && file.isAChildOf(dir))
+    return file.getRelativePathFrom(dir).replaceCharacter('\\', '/');
   else
     return file.getFullPathName();
 }

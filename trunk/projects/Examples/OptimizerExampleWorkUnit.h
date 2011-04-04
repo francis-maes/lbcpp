@@ -49,10 +49,11 @@ namespace lbcpp
       
       FunctionPtr f = new TestObjectiveFunction();
       UniformDistributionPtr apriori = new UniformDistribution(0,10);
-      OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
+      //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
       
-      Variable var = optimizer->compute(context, f, apriori);
-      return var;
+      //Variable var = optimizer->compute(context, f, apriori);
+      //return var;
+      return Variable();
     }
     
   };

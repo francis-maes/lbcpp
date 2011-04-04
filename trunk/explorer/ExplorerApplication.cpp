@@ -234,6 +234,7 @@ public:
 
     File directory = project->getRootDirectory();
     defaultExecutionContext().setProjectDirectory(directory);
+    jassert(project->workUnitContext->getProjectDirectory() == directory);
 
     recentProjects->addRecentFile(directory);
     recentProjects->setRecentDirectory(directory.getParentDirectory());

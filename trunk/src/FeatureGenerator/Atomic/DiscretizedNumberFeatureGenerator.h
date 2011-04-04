@@ -42,8 +42,7 @@ public:
   {
     const VariableSignaturePtr& inputVariable = inputVariables[0];
     isDouble = inputVariable->getType()->inheritsFrom(doubleType);
-    if (!isDouble)
-      jassertfalse;
+    jassert(isDouble || inputVariable->getType()->inheritsFrom(integerType));
     elementsType = probabilityType;
     return createDiscreteNumberFeatures(context);
   }

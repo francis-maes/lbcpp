@@ -51,7 +51,9 @@ public:
   }
 
 };
-  
+
+typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
+
 // Function, Variable -> Variable
 /*class OptimizerOld : public Function
 {
