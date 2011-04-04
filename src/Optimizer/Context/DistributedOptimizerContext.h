@@ -25,7 +25,7 @@ public:
       requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {} 
   DistributedOptimizerContext() {}
   
-  virtual long evaluate(const Variable& parameters)
+  virtual juce::int64 evaluate(const Variable& parameters)
   {
     /*ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
     if (!interface)

@@ -12,4 +12,6 @@
     <variable type="PositiveInteger" name="requiredMemory"/>  
     <variable type="PositiveInteger" name="requiredTime"/>  
   </class>
+  
+  <class name="SynchroneousOptimizerContext" base="OptimizerContext"/>
 </library>

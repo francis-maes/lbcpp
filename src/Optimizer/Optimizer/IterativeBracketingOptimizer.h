@@ -22,10 +22,10 @@ namespace lbcpp
 
 // works for Objects
 // uses a MultiVariateDistribution apriori and the initial guess
-class IterativeBracketingOptimizer : public Optimizer
+/*class IterativeBracketingOptimizer : public OptimizerOld
 {
 public:
-  IterativeBracketingOptimizer(size_t numPasses, double reductionFactor, const OptimizerPtr& baseOptimizer)
+  IterativeBracketingOptimizer(size_t numPasses, double reductionFactor, const OptimizerOldPtr& baseOptimizer)
     : numPasses(numPasses), reductionFactor(reductionFactor), baseOptimizer(baseOptimizer) {}
   IterativeBracketingOptimizer() {}
   
@@ -71,7 +71,7 @@ private:
 
   size_t numPasses;
   double reductionFactor;
-  OptimizerPtr baseOptimizer;
+  OptimizerOldPtr baseOptimizer;
 
   DistributionPtr updateMarginalDistribution(const DistributionPtr& currentDistribution, const Variable& newGuess) const
   {
@@ -86,7 +86,7 @@ private:
     jassert(newMinimum < newMaximum);
     return new UniformDistribution(newMinimum, newMaximum);
   }
-};
+};*/
 
 }; /* namespace lbcpp */
 
