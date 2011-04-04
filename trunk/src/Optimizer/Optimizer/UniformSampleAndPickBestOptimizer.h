@@ -19,20 +19,50 @@
 namespace lbcpp
 {
 
-// works for "double" arguments
-// uses a ContinuousDistribution apriori
-// do not use the initial guess
-/*class UniformSampleAndPickBestOptimizer : public OptimizerOld
+class UniformSampleAndPickBestOptimizer /*: public Optimizer*/  // TODO arnaud : to compile
 {
 public:
-  UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
-    : numSamples(numSamples) {}
+  /*UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
+    : numSamples(numSamples) {}*/
   
-  virtual TypePtr getRequestedPriorKnowledgeType() const
-    {return uniformDistributionClass;}  // TODO arnaud : continuousDistributionClass ?
+  virtual void evaluationFinished(juce::int64 identifier, double score)
+    {/*optimizerState->evaluationResults.push_back(std::pair<juce::int64, double>(identifier, score));*/}
+  
+  virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  {   
+    std::vector<double> values;
+    ContinuousDistributionPtr apriori = (optimizerState->distribution).dynamicCast<ContinuousDistribution>();
+    apriori->sampleUniformly(numSamples, values);
     
-  virtual Variable optimize(ExecutionContext& context, const FunctionPtr& objective, const Variable& apriori) const
-  {
+    for (size_t i = 0; i < numSamples; ++i) 
+      optimizerContext->evaluate(values[i]);
+    
+    while (optimizerState->evaluationResults.size() < numSamples) {
+      Thread::sleep(5000);  // TODO arnaud
+    }
+    
+    // TODO arnaud : check results.size() == requests.size()
+    // TODO arnaud : sot results and requests by identifier
+    
+    double bestScore = DBL_MAX;
+    double worstScore = -DBL_MAX;
+    Variable res = Variable();
+    for (size_t i = 0; i < numSamples; ++i)
+    {
+      if (optimizerState->evaluationResults[i].second < bestScore) {
+        bestScore = optimizerState->evaluationResults[i].second;
+        res = optimizerState->evaluationRequests[i].first;
+      }
+      if (optimizerState->evaluationResults[i].second > worstScore) {
+        worstScore = optimizerState->evaluationResults[i].second;
+      }
+    }      
+    
+    std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
+    return res;
+
+    // OLD IMPLEMENTATION
+    /*
     std::vector<double> values;
     std::vector<Variable> scores(numSamples);
     apriori.dynamicCast<ContinuousDistribution>()->sampleUniformly(numSamples, values);
@@ -64,13 +94,13 @@ public:
     
     std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
     return res;
-    
+    */
   }
   
 protected:
   friend class UniformSampleAndPickBestOptimizerClass;
   size_t numSamples;
-};*/
+};
 
 }; /* namespace lbcpp */
 

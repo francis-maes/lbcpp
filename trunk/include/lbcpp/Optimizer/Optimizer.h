@@ -43,7 +43,12 @@ public:
     {return variableType;}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-    {return optimize(context, inputs[0].getObjectAndCast<OptimizerContext>(), inputs[1].getObjectAndCast<OptimizerState>());}
+  {
+    OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
+    optimizerContext->setCallback(refCountedPointerFromThis<OptimizerCallback>(this));
+    return optimize(context, optimizerContext, inputs[1].getObjectAndCast<OptimizerState>());
+    // TODO arnaud : remove callback ?
+  }
 
 };
   

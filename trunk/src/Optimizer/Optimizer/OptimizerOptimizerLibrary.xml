@@ -6,7 +6,8 @@
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
-  <!-- <class name="UniformSampleAndPickBestOptimizer" base="OptimizerOld">
+  <!--
+  <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
     <constructor arguments="size_t numSamples"/>
     <variable type="PositiveInteger" name="numSamples"/>
   </class>
@@ -16,6 +17,7 @@
     <variable type="PositiveInteger" name="numPasses"/>
     <variable type="Double" name="reductionFactor"/>
     <variable type="Optimizer" name="baseOptimizer"/>
-  </class> -->
+  </class> 
+  -->
   
 </library>
