@@ -325,6 +325,37 @@ protected:
   FunctionPtr actionsPerceptionFunction;
 };
 
+class GoStateAndScoresComponent : public GoStateComponent
+{
+public:
+  GoStateAndScoresComponent(PairPtr stateAndScores, const String& name);
+ 
+  virtual void paintEntry(juce::Graphics& g, size_t row, size_t column, int x1, int y1, int width, int height, const Variable& element)
+  {
+    Player player = state->getBoard()->get(GoBoard::Position(column, row));
+    if (player == noPlayers)
+    {
+      Variable score = scores->getElement(row, column).getDouble();
+      double normalizedScore = juce::jlimit(0.0, 1.0, score.getDouble() / 10.0 + 0.5);
+      g.setColour(juce::Colour((float)normalizedScore, 1.f, 0.75f, (juce::uint8)255));
+      g.fillRect(x1, y1, width, height);
+      g.setColour(juce::Colours::black);
+      if (width > 5)
+      {
+        g.setFont(juce::jlimit(5.f, 18.f, width / 2.f));
+        g.drawText(score.toShortString(), x1, y1, width, height, juce::Justification::centred, false); 
+      }
+    }
+    else
+      GoStateComponent::paintEntry(g, row, column, x1, y1, width, height, Variable(player, playerEnumeration));
+  }
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  MatrixPtr scores;
+};
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_PROBLEM_GO_H_

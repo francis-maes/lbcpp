@@ -31,6 +31,7 @@
   <class name="GoProblem" base="DecisionProblem"/>
 
   <uicomponent name="GoStateComponent" type="GoState"/>
+  <uicomponent name="GoStateAndScoresComponent" type="Pair[GoState,DoubleMatrix[Double]]"/>
   <uicomponent name="GoBoardComponent" type="GoBoard"/>
 
   <!-- Smart Game Format parser -->
