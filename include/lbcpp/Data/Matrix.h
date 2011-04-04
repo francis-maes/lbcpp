@@ -165,15 +165,17 @@ public:
 
 typedef ReferenceCountedObjectPtr<ObjectMatrix> ObjectMatrixPtr;
 
-extern ClassPtr doubleMatrixClass(TypePtr elementsType);
+extern ClassPtr doubleMatrixClass(TypePtr elementsType = doubleType);
 
 class DoubleMatrix : public BuiltinTypeMatrix<double>
 {
 public:
   typedef BuiltinTypeMatrix<double> BaseClass;
 
-  DoubleMatrix(ClassPtr elementsClass, size_t numRows, size_t numColumns)
-  : BaseClass(doubleMatrixClass(elementsClass), numRows, numColumns, Variable::missingValue(elementsClass).getDouble()) {}
+  DoubleMatrix(TypePtr elementsType, size_t numRows, size_t numColumns, double initialValue = 0.0)
+    : BaseClass(doubleMatrixClass(elementsType), numRows, numColumns, initialValue) {}
+  DoubleMatrix(size_t numRows, size_t numColumns, double initialValue = 0.0)
+    : BaseClass(doubleMatrixClass(), numRows, numColumns, initialValue) {}
   DoubleMatrix() {}
 
   virtual void setElement(size_t row, size_t column, const Variable& value)
@@ -182,8 +184,13 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {BaseClass::setElement(index, value.getDouble());}
 
+  void setValue(size_t row, size_t column, double value)
+    {BaseClass::setElement(row, column, value);}
+
   lbcpp_UseDebuggingNewOperator
 };
+
+typedef ReferenceCountedObjectPtr<DoubleMatrix> DoubleMatrixPtr;
 
 extern MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns);
 

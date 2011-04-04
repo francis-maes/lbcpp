@@ -115,6 +115,11 @@ GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
   availableActions = state->getAvailableActions();
 }
 
+GoStateAndScoresComponent::GoStateAndScoresComponent(PairPtr stateAndScores, const String& name)
+  : GoStateComponent(stateAndScores->getFirst().getObjectAndCast<GoState>(), name), scores(stateAndScores->getSecond().getObjectAndCast<Matrix>())
+{
+}
+
 class GoSandBox : public WorkUnit
 {
 public:
@@ -146,6 +151,20 @@ public:
     // create problem
     DecisionProblemPtr problem = new GoProblem(0);
 
+    // create ranking machine
+    if (!learningParameters)
+    {
+      context.errorCallback(T("No learning parameters"));
+      return false;
+    }
+    StochasticGDParametersPtr sgdParameters = learningParameters.dynamicCast<StochasticGDParameters>();
+    if (!sgdParameters)
+    {
+      context.errorCallback(T("Learning parameters type not supported"));
+      return false;
+    }
+    CompositeFunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
+ 
     // load games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
     ContainerPtr trainingGames = loadGames(context, trainingFile, maxCount);
@@ -168,9 +187,6 @@ public:
         !printGamesInfo(context, testingGames, T("testing")))
       return false;
 
-    if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile))
-      return false;
-  
     // test features
     if (testFeatures)
     {
@@ -186,25 +202,10 @@ public:
       return true;
     }
 
-
-    // create ranking machine
-    if (!learningParameters)
-    {
-      context.errorCallback(T("No learning parameters"));
-      return false;
-    }
-    StochasticGDParametersPtr sgdParameters = learningParameters.dynamicCast<StochasticGDParameters>();
-    if (!sgdParameters)
-    {
-      context.errorCallback(T("Learning parameters type not supported"));
-      return false;
-    }
-    FunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
-
+    // train
     FunctionPtr episode = new DecisionProblemSupervisedEpisode(goDecisionMaker);
     if (!episode->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
       return false;
-
     EvaluatorPtr evaluator = new GoSupervisedEpisodeEvaluator();
     evaluator->setUseMultiThreading(true);
     episode->setEvaluator(evaluator);
@@ -216,7 +217,10 @@ public:
 
     //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
     //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
-
+ 
+    if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile, goDecisionMaker))
+      return false;
+ 
 
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
@@ -240,7 +244,7 @@ public:
     */
   }
 
-  bool processInteractiveFile(ExecutionContext& context, const File& file) const
+  bool processInteractiveFile(ExecutionContext& context, const File& file, CompositeFunctionPtr goDecisionMaker) const
   {
     XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
     if (!xml)
@@ -257,7 +261,33 @@ public:
     double sumOfRewards = 0.0;
     state->performTrajectory(trajectory, sumOfRewards);
     context.resultCallback(T("state"), state);
-    context.resultCallback(T("sumOfRewards"), sumOfRewards);
+
+    ContainerPtr actions = state->getAvailableActions();
+    size_t n = actions->getNumElements();
+    context.resultCallback(T("actions"), actions);
+
+    std::vector<Variable> decisionMakerInputs(2);
+    decisionMakerInputs[0] = state;
+    decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
+    DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
+    if (!scoreVector)
+      scoreVector = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, n, 0.0);
+    else
+      jassert(n == scoreVector->getNumElements());
+    context.resultCallback(T("scoreVector"), scoreVector);
+    
+    size_t size = state->getBoard()->getSize();
+    DoubleMatrixPtr scores = new DoubleMatrix(size, size);
+    for (size_t i = 0; i < n; ++i)
+    {
+      PositiveIntegerPairPtr position = actions->getElement(i).getObjectAndCast<PositiveIntegerPair>();
+      if (position->getFirst() == size && position->getSecond() == size)
+        context.resultCallback(T("passScore"), scoreVector->getValue(i));
+      else
+        scores->setValue(position->getSecond(), position->getFirst(), scoreVector->getValue(i));
+    }
+    context.resultCallback(T("scores"), scores);
+    context.resultCallback(T("stateAndScores"), Variable::pair(state, scores));
     return true;
   }
 

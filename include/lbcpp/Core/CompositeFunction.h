@@ -78,6 +78,8 @@ public:
   size_t getStepArgument(size_t index) const
     {jassert(index < steps.size()); return steps[index].second;}
 
+  Variable computeUntilStep(ExecutionContext& context, const Variable* inputs, size_t stepIndex) const;
+
   /*
   ** State
   */

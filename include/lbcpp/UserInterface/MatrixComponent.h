@@ -59,7 +59,7 @@ public:
 
     for (size_t row = 0; row < numRows; ++row)
       for (size_t column = 0; column < numColumns; ++column)
-        paintEntry(g, x1 + column * pixelsPerColumn, y1 + row * pixelsPerRow, pixelsPerColumn, pixelsPerRow, matrix->getElement(row, column));
+        paintEntry(g, row, column, x1 + column * pixelsPerColumn, y1 + row * pixelsPerRow, pixelsPerColumn, pixelsPerRow, matrix->getElement(row, column));
       
     if (selectedRow >= 0 && selectedColumn >= 0)
     {
@@ -101,7 +101,7 @@ public:
   
   // overidable
   virtual juce::Colour selectColour(const Variable& element) = 0;
-  virtual void paintEntry(juce::Graphics& g, int x1, int y1, int width, int height, const Variable& element)
+  virtual void paintEntry(juce::Graphics& g, size_t row, size_t column, int x1, int y1, int width, int height, const Variable& element)
   {
     if (matrix)
     {

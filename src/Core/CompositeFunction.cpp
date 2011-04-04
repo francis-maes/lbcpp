@@ -45,8 +45,10 @@ TypePtr CompositeFunction::initializeFunction(ExecutionContext& context, const s
   return lastMemberVariable->getType();
 }
 
-Variable CompositeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+Variable CompositeFunction::computeUntilStep(ExecutionContext& context, const Variable* inputs, size_t lastStepIndex) const
 {
+  if (!steps.size())
+    return Variable();
   Variable* state = new Variable[functions.size()]();
 
   // Optimization: tmp is used to store sub-function inputs
@@ -56,44 +58,50 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
 
   // compute all functions
   jassert(functions.size() == functionInputs.size());
-  for (size_t i = 0; i < functions.size(); ++i)
-  {
-    const FunctionPtr& function = functions[i];
-    const std::vector<size_t>& inputIndices = functionInputs[i];
-    juce::int64* ptr = tmp;
+  size_t stepEnd = steps.size();
+  if (stepEnd > 0 && lastStepIndex < stepEnd - 1)
+    stepEnd = lastStepIndex + 1;
 
-    for (size_t j = 0; j < inputIndices.size(); ++j)
+  for (size_t i = 0; i < stepEnd; ++i)
+    if (steps[i].first == functionStep)
     {
-      size_t index = inputIndices[j];
-      StepType stepType = steps[index].first;
-      size_t stepArgument = steps[index].second;
-      const Variable* var;
-      if (stepType == inputStep)
-        var = &inputs[stepArgument];
-      else if (stepType == constantStep)
-        var = &constants[stepArgument];
-      else if (stepType == functionStep)
-        var = &state[stepArgument];
-      else
-      {
-        jassert(false);
-        var = NULL;
-        break;
-      }
+      size_t stepArgument = steps[i].second;
+      const FunctionPtr& function = functions[stepArgument];
+      const std::vector<size_t>& inputIndices = functionInputs[stepArgument];
+      juce::int64* ptr = tmp;
 
-      const juce::int64* vari = (const juce::int64* )var;
-      *ptr++ = vari[0];
-      *ptr++ = vari[1];
-      //subInputs[j] = *var;
+      for (size_t j = 0; j < inputIndices.size(); ++j)
+      {
+        size_t index = inputIndices[j];
+        StepType stepType = steps[index].first;
+        size_t stepArgument = steps[index].second;
+        const Variable* var;
+        if (stepType == inputStep)
+          var = &inputs[stepArgument];
+        else if (stepType == constantStep)
+          var = &constants[stepArgument];
+        else if (stepType == functionStep)
+          var = &state[stepArgument];
+        else
+        {
+          jassert(false);
+          var = NULL;
+          break;
+        }
+
+        const juce::int64* vari = (const juce::int64* )var;
+        *ptr++ = vari[0];
+        *ptr++ = vari[1];
+        //subInputs[j] = *var;
+      }
+      state[stepArgument] = function->compute(context, (const Variable* )tmp, inputIndices.size());
     }
-    state[i] = function->compute(context, (const Variable* )tmp, inputIndices.size());
-  }
   free(tmp);
 
   // return last step
   Variable res;
-  StepType lastStepType = steps.back().first;
-  size_t lastStepArgument = steps.back().second;
+  StepType lastStepType = steps[lastStepIndex].first;
+  size_t lastStepArgument = steps[lastStepIndex].second;
   if (lastStepType == inputStep)
     res = inputs[lastStepArgument];
   else if (lastStepType == constantStep)
@@ -106,6 +114,9 @@ Variable CompositeFunction::computeFunction(ExecutionContext& context, const Var
   delete [] state;
   return res;
 }
+
+Variable CompositeFunction::computeFunction(ExecutionContext& context, const Variable* inputs) const
+  {return computeUntilStep(context, inputs, steps.size() - 1);}
 
 ObjectPtr CompositeFunction::makeInitialState(const ObjectPtr& inputsObject) const
 {

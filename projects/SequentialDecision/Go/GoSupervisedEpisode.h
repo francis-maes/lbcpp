@@ -83,6 +83,8 @@ protected:
 
   Variable computeRankingCosts(ExecutionContext& context, const Variable& availableActions, const Variable& correctAction) const
   {
+    if (!correctAction.exists())
+      return Variable::missingValue(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration));
     const ContainerPtr& actions = availableActions.getObjectAndCast<Container>();
     size_t n = actions->getNumElements();
 
