@@ -629,9 +629,14 @@ public:
   /*
   ** Cached features
   */
+  bool isPassAction(const PositiveIntegerPairPtr& a) const
+    {return a->getFirst() == boardSize && a->getSecond() == boardSize;}
+
   Variable getPositionFeatures(ExecutionContext& context, const Variable& action) const
   {
     const PositiveIntegerPairPtr& a = action.getObjectAndCast<PositiveIntegerPair>();
+    if (isPassAction(a))
+      return Variable::missingValue(positionFeatures->getElementsType());
     return positionFeatures->getElement(a->getFirst() * boardSize + a->getSecond());
   }
 
@@ -639,6 +644,9 @@ public:
   {
     const PositiveIntegerPairPtr& a1 = previousAction.getObjectAndCast<PositiveIntegerPair>();
     const PositiveIntegerPairPtr& a2 = currentAction.getObjectAndCast<PositiveIntegerPair>();
+    if (isPassAction(a1) || isPassAction(a2))
+      return Variable::missingValue(relativePositionFeatures->getElementsType());
+
     size_t i = a1->getFirst() * boardSize + a1->getSecond();
     size_t j = a2->getFirst() * boardSize + a2->getSecond();
     return relativePositionFeatures->getElement(i, j);

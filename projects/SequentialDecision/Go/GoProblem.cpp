@@ -212,6 +212,7 @@ TypePtr GoState::getActionType() const
 
 ContainerPtr GoState::computeAvailableActions() const
 {
+  size_t size = board->getSize();
   bool testKo = (getCapturedAtPreviousTurn().size() == 1);
 
   TypePtr actionType = getActionType();
@@ -232,6 +233,7 @@ ContainerPtr GoState::computeAvailableActions() const
       res->append(position);
     }
   }
+  res->append(Position(size, size)); // pass
   return res;
 }
 

@@ -112,6 +112,7 @@ public:
 GoStateComponent::GoStateComponent(GoStatePtr state, const String& name)
   : MatrixComponent(state->getBoard()), state(state), actionsPerceptionFunction(new GoActionsPerception())
 {
+  availableActions = state->getAvailableActions();
 }
 
 class GoSandBox : public WorkUnit
@@ -167,6 +168,9 @@ public:
         !printGamesInfo(context, testingGames, T("testing")))
       return false;
 
+    if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile))
+      return false;
+  
     // test features
     if (testFeatures)
     {
@@ -213,6 +217,7 @@ public:
     //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
     //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
 
+
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
     /*
@@ -235,11 +240,35 @@ public:
     */
   }
 
+  bool processInteractiveFile(ExecutionContext& context, const File& file) const
+  {
+    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
+    if (!xml)
+      return false;
+
+    FunctionPtr convertFunction = new ConvertSGFXmlToStateAndTrajectory();
+    PairPtr stateAndTrajectory = convertFunction->compute(context, xml).getObjectAndCast<Pair>();
+    if (!stateAndTrajectory)
+      return false;
+
+    GoStatePtr state = stateAndTrajectory->getFirst().getObjectAndCast<GoState>();
+    ContainerPtr trajectory = stateAndTrajectory->getSecond().getObjectAndCast<Container>();
+
+    double sumOfRewards = 0.0;
+    state->performTrajectory(trajectory, sumOfRewards);
+    context.resultCallback(T("state"), state);
+    context.resultCallback(T("sumOfRewards"), sumOfRewards);
+    return true;
+  }
+
 private:
   friend class GoSandBoxClass;
 
   File trainingFile;
   File testingFile;
+
+  File interactiveFile;
+
   size_t maxCount;
   size_t numFolds;
   LearnerParametersPtr learningParameters;
