@@ -12,7 +12,7 @@
   <class name="Optimizer" base="Function" abstract="yes"/>
   
   <class name="OptimizerState" base="Object">
-    <variable type="Distribution" name="distribution"/>
+    <variable type="Distribution[Variable]" name="distribution"/>
     <variable type="GenericVector[Pair[Integer, Variable]]" name="evaluationRequests"/>
     <variable type="GenericVector[Pair[Integer, Double]]" name="evaluationResults"/>
   </class>
