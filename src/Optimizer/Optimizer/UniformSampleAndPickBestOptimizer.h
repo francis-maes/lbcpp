@@ -19,7 +19,7 @@
 namespace lbcpp
 {
 
-class UniformSampleAndPickBestOptimizer /*: public Optimizer*/  // TODO arnaud : to compile
+class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
   /*UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
