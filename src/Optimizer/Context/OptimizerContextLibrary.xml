@@ -10,7 +10,8 @@
     <variable type="PositiveInteger" name="managerPort"/>
     <variable type="PositiveInteger" name="requiredCpus"/>
     <variable type="PositiveInteger" name="requiredMemory"/>  
-    <variable type="PositiveInteger" name="requiredTime"/>  
+    <variable type="PositiveInteger" name="requiredTime"/> 
+    <variable type="GenericVector[String]" name="inProgressWUs"/>
   </class>
   
   <class name="SynchroneousOptimizerContext" base="OptimizerContext"/>

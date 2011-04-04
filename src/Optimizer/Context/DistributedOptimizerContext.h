@@ -27,19 +27,24 @@ public:
   
   virtual juce::int64 evaluate(const Variable& parameters)
   {
-    /*ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+    // TODO arnaud : defaultExecutionContext
+    ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(defaultExecutionContext());
     if (!interface)
-      continue;
-    WorkUnitPtr wu = state->generateSampleWU(context);
-    String res = sendWU(context, wu, interface);
+      return 0;
+        
+    WorkUnitPtr wu = generateWUFromFunctionAndParameters(getObjectiveFunction(), parameters);
+    String res = sendWU(defaultExecutionContext(), wu, interface);
     
     if (res == T("Error"))
     {
-      context.errorCallback(T("SendWorkUnit::run"), T("Trouble - We didn't correclty receive the acknowledgement"));
-      break;
+      defaultExecutionContext().errorCallback(T("SendWorkUnit::run"), T("Trouble - We didn't correclty receive the acknowledgement"));
+      return 0;
     }
-    interface->closeCommunication();*/
-    return 0;
+    interface->closeCommunication();
+    
+    inProgressWUs.push_back(res); // TODO arnaud : syncrhonized
+    
+    return res.getLargeIntValue();
   }
   
 protected:  
@@ -54,6 +59,8 @@ private:
   size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
+  
+  std::vector<String> inProgressWUs;  // TODO arnaud : list
   
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       
@@ -73,6 +80,13 @@ private:
   {    
     NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
+  }
+  
+  WorkUnitPtr generateWUFromFunctionAndParameters(const FunctionPtr& function, const Variable& parameters)
+  {
+    jassertfalse;
+    // TODO  arnaud
+    return NULL;
   }
   
 };
