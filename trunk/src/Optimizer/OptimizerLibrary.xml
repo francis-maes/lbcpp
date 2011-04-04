@@ -19,7 +19,6 @@
   
   <!-- <class name="OptimizerOld" base="Function" abstract="yes"/> -->
   <class name="OptimizerContext" base="Object" abstract="yes"/>
-  <class name="OptimizerCallback" base="Object" abstract="yes"/>
   <class name="GridOptimizer" base="Function" abstract="yes"/>
   <class name="GridOptimizerState" base="Object" abstract="yes"/>
 

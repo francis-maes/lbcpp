@@ -13,13 +13,13 @@
 namespace lbcpp
 {
 
-class OptimizerCallback : public Object
+class OptimizerCallback
 {
 public:
   virtual void evaluationFinished(juce::int64 identifier, double score) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<OptimizerCallback> OptimizerCallbackPtr;
+typedef OptimizerCallback* OptimizerCallbackPtr;
 
   
 };

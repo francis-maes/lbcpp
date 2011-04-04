@@ -26,7 +26,7 @@ public:
   OptimizerCallbackPtr getOptimizerCallback() const
     {return optimizerCallback;}
   
-  void setCallback(const OptimizerCallbackPtr& callback)
+  void setCallback(const OptimizerCallbackPtr callback)
     {optimizerCallback = callback;}
   
   virtual juce::int64 evaluate(const Variable& parameters) = 0;
