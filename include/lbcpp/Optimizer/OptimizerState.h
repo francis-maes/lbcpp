@@ -15,14 +15,14 @@ namespace lbcpp
   
 class OptimizerState : public Object
 {
-  
-protected:  
-  friend class OptimizerStateClass;
-  
-private:
+public:
+  // TODO arnaud : visiblility
+  DistributionPtr distribution;
   std::vector< std::pair<juce::int64, Variable> > evaluationRequests;
   std::vector< std::pair<juce::int64, double> > evaluationResults;
 
+protected:  
+  friend class OptimizerStateClass;
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
