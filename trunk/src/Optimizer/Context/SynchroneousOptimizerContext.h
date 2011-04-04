@@ -21,6 +21,7 @@ class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
   
+  // blocking method
   virtual juce::int64 evaluate(const Variable& parameters) 
   {
     const juce::int64 identifier = generateIdentifier();

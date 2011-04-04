@@ -33,6 +33,8 @@ public:
   // TODO arnaud : evalaute std::vector<Variable>
   
 protected:
+  
+  // TODO arnaud : check this method
   double getDoubleFromOutput(const Variable& variable)
   {
     if (variable.isDouble())
