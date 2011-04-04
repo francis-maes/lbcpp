@@ -29,6 +29,8 @@ public:
   {
     stack.clear();
     isParsingAttributeValue = false;
+    res = new XmlElement(T("games"));
+    stack.push_back(res);
   }
 
   virtual bool parseLine(const String& line)
@@ -48,12 +50,8 @@ public:
         if (line[i] == '(')
         {
           XmlElementPtr node = new XmlElement(T("node"));
-          if (!res)
-          {
-            if (fileName.isNotEmpty())
-              node->setAttribute(T("filename"), fileName);
-            res = node;
-          }
+          if (stack.size() == 1)
+            res->addChildElement(node);
           stack.push_back(node);
           continue;
         }
@@ -113,6 +111,15 @@ public:
   {
     if (!res)
       return false;
+    if (stack.size() != 1)
+    {
+      context.errorCallback(T("parseEnd ") + fileName, T("Missing closing parenthesis"));
+      return false;
+    }
+    if (res->getNumChildElements() == 1)
+      res = res->getChildElement(0); // single game
+    if (fileName.isNotEmpty())
+      res->setAttribute(T("filename"), fileName);
     setResult(res);
     return true;
   }
@@ -170,28 +177,38 @@ public:
     for (size_t i = firstMoveIndex; i < numXmlElements; ++i)
     {
       String attribute = (isBlackTurn ? T("B") : T("W"));
-      String value = xml->getChildElement(i)->getStringAttribute(attribute);
-      if (value.isEmpty())
+      XmlElementPtr elt = xml->getChildElement(i);
+      if (!elt->hasAttribute(attribute))
       {
         context.errorCallback(fileName, String(T("Could not find ")) + (isBlackTurn ? T("black") : T("white")) + T(" stone at step ") + String((int)i));
         return Variable::missingValue(outputType);
       }
-      if (value.length() != 2)
-      {
-        context.errorCallback(fileName, T("Invalid move: ") + value);
-        return Variable::missingValue(outputType);
-      }
-      size_t x = letterToIndex(context, value[0]);
-      size_t y = letterToIndex(context, value[1]);
-      if (x == (size_t)-1 || y == (size_t)-1)
-        return Variable::missingValue(outputType);
-      if (x >= size || y >= size)
-      {
-        context.errorCallback(fileName, T("Invalid move: ") + String((int)x) + T(", ") + String((int)y) + T(" (") + value + T(")"));
-        return Variable::missingValue(outputType);
-      }
 
-      trajectory->set(i - firstMoveIndex, GoBoard::Position(x, y));
+      size_t x, y;
+
+      String value = elt->getStringAttribute(attribute);
+      if (value.isEmpty())
+        x = y = size;
+      else if (value.length() == 2)
+      {
+        x = letterToIndex(context, value[0]);
+        y = letterToIndex(context, value[1]);
+        if (x == (size_t)-1 || y == (size_t)-1)
+          return Variable::missingValue(outputType);
+        if (!(x == size && y == size) && (x >= size || y >= size))
+        {
+          context.errorCallback(fileName, T("Invalid move: ") + String((int)x) + T(", ") + String((int)y) + T(" (") + value + T(")"));
+          return Variable::missingValue(outputType);
+        }
+      }
+      else
+      {
+        context.errorCallback(fileName, T("Could not parse move: ") + value);
+        return Variable::missingValue(outputType);
+      }
+      
+
+      trajectory->set(i - firstMoveIndex, std::make_pair(x, y));
       isBlackTurn = !isBlackTurn;
     }
 
@@ -213,10 +230,11 @@ private:
   }
 };
 
+// File -> Pair[GoState, Vector[GoAction]]
 class LoadSGFFileFunction : public SimpleUnaryFunction
 {
 public:
-  LoadSGFFileFunction() : SimpleUnaryFunction(fileType, pairClass(goStateClass, pairClass(positiveIntegerType, positiveIntegerType)))
+  LoadSGFFileFunction() : SimpleUnaryFunction(fileType, pairClass(goStateClass, positiveIntegerPairVectorClass))
   {
     convertFunction = new ConvertSGFXmlToStateAndTrajectory();
   }
@@ -232,6 +250,45 @@ public:
   }
 
 protected:
+  FunctionPtr convertFunction;
+};
+
+// File -> Vector[Pair[GoState, Vector[GoAction]]]
+class LoadCompositeSGFFileFunction : public SimpleUnaryFunction
+{
+public:
+  LoadCompositeSGFFileFunction(size_t maxCount = 0)
+    : SimpleUnaryFunction(fileType, objectVectorClass(pairClass(goStateClass, positiveIntegerPairVectorClass))), maxCount(maxCount)
+  {
+    convertFunction = new ConvertSGFXmlToStateAndTrajectory();
+    convertFunction->initialize(defaultExecutionContext(), xmlElementClass);
+  }
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    File file = input.getFile();
+    
+    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
+    if (!xml)
+      return Variable::missingValue(getOutputType());
+
+    size_t n = xml->getNumChildElements();
+    ObjectVectorPtr res = new ObjectVector(getOutputType());
+    if (maxCount && n > maxCount)
+      n = maxCount;
+    res->reserve(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+      XmlElementPtr elt = xml->getChildElement(i);
+      ObjectPtr stateAndTrajectory = convertFunction->compute(context, elt).getObject();
+      if (stateAndTrajectory)
+        res->append(stateAndTrajectory);
+    }
+    return res;
+  }
+
+protected:
+  size_t maxCount;
   FunctionPtr convertFunction;
 };
 

@@ -788,12 +788,12 @@ public:
 
       FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
-      size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
+      //size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));
 
-    size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
-    builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);
+    //size_t featuresAndTime = builder.addFunction(cartesianProductFeatureGenerator(true), features, globalPrimaryFeatures, T("wt"));
+    //builder.addFunction(concatenateFeatureGenerator(true), features, featuresAndTime);
   }
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)

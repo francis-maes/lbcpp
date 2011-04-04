@@ -39,8 +39,11 @@ public:
   FileType(const String& name, TypePtr baseType)
     : StringType(name, baseType) {}
 
+  virtual String toString(const VariableValue& value) const
+    {return defaultExecutionContext().getFilePath(getFile(value));}
+
   virtual String toShortString(const VariableValue& value) const
-    {return getFile(value).getFileName();}
+    {return defaultExecutionContext().getFilePath(getFile(value));}
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {

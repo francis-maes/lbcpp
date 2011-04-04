@@ -138,6 +138,7 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs, si
     preCallbacks[i]->functionCalled(context, refCountedPointerFromThis(this), inputs);
 
   Variable res = computeFunction(context, inputs);
+  jassert(res.inheritsFrom(getOutputType()));
 
   for (size_t i = 0; i < postCallbacks.size(); ++i)
     postCallbacks[i]->functionReturned(context, refCountedPointerFromThis(this), inputs, res);

@@ -22,6 +22,9 @@ public:
     : parent(&parentContext) {}
   SubExecutionContext() {}
 
+  virtual File getProjectDirectory() const
+    {return parent ? parent->getProjectDirectory() : ExecutionContext::getProjectDirectory();}
+
   virtual void notificationCallback(const NotificationPtr& notification)
   {
     if (parent)

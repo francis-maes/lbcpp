@@ -1,28 +1,32 @@
-* Leak visible sous windows
-* Leak caché sous linux
 
-
-Divers:
- ** Problème de mémoire sous linux
- ** Serialisation des modèles appris (Go, Hiv, ProteinLearner)
- * Utilisation du manager
- * SendWorkUnit depuis l'explorer
- * RetrieveTraces depuis l'explorer
- * LogScale dans les curves
- * Systeme d'export/import de fichiers general
- * Export as GnuPlot Data File
- * Export as CSV
+ * Game of GO: support "pass" actions in available actions
+ * Game of GO: support "pass" actions in features 
 
 Go:
+ * Objectif 1: dataset de remi
+    - faire le loader
+    - gerer l'action "passe" partout
+ * Objectif 2: voir ce qu'il se passe sur le semeai
+    - option dans le sandbox
+    - gui
+ * Objectif 3: serialisation du modele
+ * Courbes dans l'evaluateur
+
  * GoPatterns
- 
-Proteins:
- ** ProteinLearner: Serialisation des models
+ * Utilisation du manager
+
+
+** Serialisation des modèles appris (Go, Hiv, ProteinLearner)
    -> Shared dynamic object
     * Rajouter un attribute "generated" dans les Library.xml
     * Dans function, le outputtype est generated
     * Dans les featuregenerator, le FeaturesEnumeration est generated
 
+** Problèmes valgrind sur OptimizerTest
+** Plantage au lancement du RunWorkUnit
+
+
+Proteins:
  * Ajouter des features de segments
 
 Core:
@@ -30,6 +34,12 @@ Core:
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
 
 Explorer:
+ * SendWorkUnit depuis l'explorer
+ * RetrieveTraces depuis l'explorer
+ * LogScale dans les curves
+ * Systeme d'export/import de fichiers general
+ * Export as GnuPlot Data File
+ * Export as CSV
  * ExecutionTrace: refermer les noeuds au fur et à mesure
  * ExecutionTrace: Améliorer le système de colonnes
  * Explorer: Faire un mecanisme general pour la gestion des FileFormat, utiliser sur les sgf par exemple

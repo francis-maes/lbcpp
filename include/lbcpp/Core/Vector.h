@@ -166,6 +166,10 @@ public:
   void set(size_t index, ObjectPtr object)
     {(*objects)[index] = object;}
 
+  template<class Type>
+  void append(const ReferenceCountedObjectPtr<Type>& object)
+    {objects->push_back(object);}
+
   const std::vector<ObjectPtr>& getObjects() const
     {return *objects;}
 
