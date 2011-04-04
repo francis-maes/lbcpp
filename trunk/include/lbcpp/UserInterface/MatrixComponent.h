@@ -73,6 +73,22 @@ public:
     g.drawRect(x1, y1, (int)numColumns * pixelsPerColumn, (int)numRows * pixelsPerRow);
   }
 
+  virtual void makeSelection(int x, int y)
+  {
+    bool isInside = (x >= 0 && y >= 0 && x < (int)matrix->getNumColumns() && y < (int)matrix->getNumRows());
+    if (!isInside)
+      x = y = -1;
+
+    selectedRow = y;
+    selectedColumn = x;
+    if (isInside)
+      sendSelectionChanged(Variable::pair(matrix, Variable::pair(selectedRow, selectedColumn)),
+        T("Element (") + String((int)selectedRow) + T(", ") + String((int)selectedColumn) + T(")"));
+    else
+      sendSelectionChanged(std::vector<Variable>(), String::empty);
+    repaint();
+  }
+
   virtual void mouseUp(const juce::MouseEvent& e)
   {
     int pixelsPerRow, pixelsPerColumn, x1, y1;
@@ -80,19 +96,7 @@ public:
     jassert(pixelsPerRow && pixelsPerColumn);
     int x = (e.getMouseDownX() - x1) / pixelsPerColumn;
     int y = (e.getMouseDownY() - y1) / pixelsPerRow;
-    if (x >= 0 && y >= 0 && x < (int)matrix->getNumColumns() && y < (int)matrix->getNumRows())
-    {
-      selectedRow = y;
-      selectedColumn = x;
-      sendSelectionChanged(Variable::pair(matrix, Variable::pair(selectedRow, selectedColumn)),
-        T("Element (") + String((int)selectedRow) + T(", ") + String((int)selectedColumn) + T(")"));
-      repaint();
-      return;
-    }
-
-    selectedRow = selectedColumn = -1;
-    sendSelectionChanged(std::vector<Variable>(), String::empty);
-    repaint();
+    makeSelection(x, y);
   }
   
   // overidable
@@ -106,7 +110,7 @@ public:
     }
   }
 
-private:
+protected:
   MatrixPtr matrix;
   int selectedRow, selectedColumn;
 

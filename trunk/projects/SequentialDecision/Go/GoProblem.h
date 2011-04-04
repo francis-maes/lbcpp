@@ -271,13 +271,33 @@ public:
     return colours[element.getInteger() % (sizeof (colours) / sizeof (juce::Colour))];
   }
 
+  virtual void makeSelection(int x, int y)
+  {
+    bool isInside = (x >= 0 && y >= 0 && x < (int)matrix->getNumColumns() && y < (int)matrix->getNumRows());
+    if (!isInside)
+    {
+      x = (int)matrix->getNumColumns();
+      y = (int)matrix->getNumColumns();
+      selectedRow = selectedColumn = -1;
+    }
+    else
+      selectedRow = y, selectedColumn = x;
+
+    if (isInside)
+      sendSelectionChanged(Variable::pair(matrix, Variable::pair(selectedRow, selectedColumn)),
+        T("Move(") + String((int)selectedRow) + T(", ") + String((int)selectedColumn) + T(")"));
+    else
+      sendSelectionChanged(Variable::pair(matrix, Variable::pair(x, y)), T("Pass"));
+    repaint();
+  }
+
   virtual juce::Component* createComponentForVariable(ExecutionContext& context, const Variable& variable, const String& name)
   {
     const PairPtr& matrixAndPosition = variable.getObjectAndCast<Pair>();
     const PairPtr& position = matrixAndPosition->getSecond().getObjectAndCast<Pair>(); // (row, column)
     Variable positiveIntegerPair(new PositiveIntegerPair(position->getSecond().getInteger(), position->getFirst().getInteger())); // (x,y)
 
-    ContainerPtr actionPerceptions = actionsPerceptionFunction->compute(context, state).getObjectAndCast<Container>();
+    ContainerPtr actionPerceptions = actionsPerceptionFunction->compute(context, state, availableActions).getObjectAndCast<Container>();
     Variable actionPerception;
     if (actionPerceptions)
     {
@@ -301,6 +321,7 @@ public:
 
 protected:
   GoStatePtr state;
+  ContainerPtr availableActions;
   FunctionPtr actionsPerceptionFunction;
 };
 

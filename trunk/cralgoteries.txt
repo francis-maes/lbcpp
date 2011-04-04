@@ -1,11 +1,5 @@
 
- * Game of GO: support "pass" actions in available actions
- * Game of GO: support "pass" actions in features 
-
 Go:
- * Objectif 1: dataset de remi
-    - faire le loader
-    - gerer l'action "passe" partout
  * Objectif 2: voir ce qu'il se passe sur le semeai
     - option dans le sandbox
     - gui
