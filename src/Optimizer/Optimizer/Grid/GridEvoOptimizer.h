@@ -6,12 +6,18 @@
                                             |                                 |
                                             `--------------------------------*/
 
+// TODO arnaud : clean things up to compile wihtout network
+
 #ifndef GRID_EVO_OPTIMIZER_H_
 #define GRID_EVO_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/GridOptimizer.h>
+
+#ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
 # include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
+#endif
+
 # include "../../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
 
 namespace lbcpp
@@ -65,6 +71,7 @@ public:
   
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_NETWORKING
     ExecutionContextPtr newContext = singleThreadedExecutionContext(File::getCurrentWorkingDirectory());  // one thread per WUs
     
     // execution trace
@@ -80,7 +87,7 @@ public:
     // save execution trace
     newContext->removeCallback(makeTraceCallback);
     trace->saveToFile(*newContext, File::getCurrentWorkingDirectory().getChildFile(f.getFileNameWithoutExtension() + T(".trace")));
-    
+#endif   
     return 0; // TODO arnaud
   }
   
@@ -262,7 +269,8 @@ public:
     {return gridEvoOptimizerStateClass;}
   
   virtual Variable optimize(ExecutionContext& context, const GridOptimizerStatePtr& state_, const FunctionPtr& getVariableFromTrace, const FunctionPtr& getScoreFromTrace) const
-  {    
+  {   
+#ifdef LBCPP_NETWORKING
     // save initial state
     GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
     state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
@@ -397,6 +405,9 @@ public:
     }
     
     return state->bestVariable;
+#else
+    return Variable();
+#endif
   }
     
 protected:  
@@ -418,6 +429,7 @@ private:
   size_t timeToSleep; // in seconds
   size_t updateFactor;
   
+#ifdef LBCPP_NETWORKING
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       
     NetworkClientPtr client = blockingNetworkClient(context);
@@ -437,6 +449,8 @@ private:
     NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
   }
+#endif
+  
 };
   
 typedef ReferenceCountedObjectPtr<GridEvoOptimizer> GridEvoOptimizerPtr;
