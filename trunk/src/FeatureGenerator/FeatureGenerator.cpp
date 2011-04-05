@@ -22,6 +22,7 @@ TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const st
   jassert(featuresEnumeration && featuresType);
   lazyOutputType = getLazyOutputType(featuresEnumeration, featuresType);
   nonLazyOutputType = getNonLazyOutputType(featuresEnumeration, featuresType);
+  jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
   return lazyComputation ? lazyOutputType : nonLazyOutputType;
 }
 
@@ -37,7 +38,6 @@ void FeatureGenerator::pushSparseVectorSize(size_t size)
 
 SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
 {
-  jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
   SparseDoubleVectorPtr res(new SparseDoubleVector(nonLazyOutputType));
   size_t s = sparseVectorSizeUpperBound;
   if (s)

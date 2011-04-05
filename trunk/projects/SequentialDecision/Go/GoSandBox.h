@@ -255,7 +255,10 @@ public:
     if (!stateAndTrajectory)
       return false;
 
-    GoStatePtr state = stateAndTrajectory->getFirst().getObjectAndCast<GoState>();
+    GoStatePtr state = stateAndTrajectory->getFirst().clone(context).getObjectAndCast<GoState>();
+    if (!state)
+      return false;
+    size_t size = state->getBoard()->getSize();
     ContainerPtr trajectory = stateAndTrajectory->getSecond().getObjectAndCast<Container>();
 
     double sumOfRewards = 0.0;
@@ -267,7 +270,7 @@ public:
     context.resultCallback(T("actions"), actions);
 
     std::vector<Variable> decisionMakerInputs(2);
-    decisionMakerInputs[0] = state;
+    decisionMakerInputs[0] = Variable(state, goStateClass);
     decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
     DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
     if (!scoreVector)
@@ -275,8 +278,9 @@ public:
     else
       jassert(n == scoreVector->getNumElements());
     context.resultCallback(T("scoreVector"), scoreVector);
-    
-    size_t size = state->getBoard()->getSize();
+
+    if (!state)
+      return false;
     DoubleMatrixPtr scores = new DoubleMatrix(size, size);
     for (size_t i = 0; i < n; ++i)
     {

@@ -24,8 +24,8 @@ extern ClassPtr matrixRegionClass(TypePtr elementType);
 class MatrixRegion : public Object
 {
 public:
-  MatrixRegion(TypePtr elementType, size_t index)
-    : Object(matrixRegionClass(elementType)), index(index), size(0) {}
+  MatrixRegion(ClassPtr thisClass, size_t index)
+    : Object(thisClass), index(index), size(0) {}
   MatrixRegion() : index(0), size(0) {}
 
   size_t getIndex() const
@@ -91,6 +91,7 @@ public:
     : BaseClass(segmentedMatrixClass(elementsType), numRows, numColumns, (size_t)-1), elementsType(elementsType)
   {
     BaseClass::elementsType = positiveIntegerType;
+    regionClass = matrixRegionClass(elementsType);
   }
   SegmentedMatrix() {}
 
@@ -109,7 +110,7 @@ public:
   MatrixRegionPtr startRegion(const Variable& value)
   {
     size_t index = regions.size();
-    MatrixRegionPtr res = new MatrixRegion(elementsType, index);
+    MatrixRegionPtr res = new MatrixRegion(regionClass, index);
     res->setValue(value);
     regions.push_back(res);
     return res;
@@ -129,6 +130,7 @@ private:
   friend class SegmentedMatrixClass;
 
   TypePtr elementsType; // the input elementsType  /!\ this is different from BaseClass::elementsType whose value is "PositiveInteger"
+  ClassPtr regionClass; // matrixRegion(elementsType)
   std::vector<MatrixRegionPtr> regions;
 };
 
