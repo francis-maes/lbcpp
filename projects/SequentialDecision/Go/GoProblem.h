@@ -43,6 +43,9 @@ public:
   typedef std::pair<size_t, size_t> Position;
   typedef std::set<Position> PositionSet;
 
+  virtual TypePtr getElementsType() const
+    {return playerEnumeration;}
+
   size_t getSize() const
     {jassert(getNumColumns() == getNumRows()); return getNumRows();}
 
@@ -230,7 +233,7 @@ public:
 
   virtual TypePtr getElementsType() const
     {return positiveIntegerPairClass;}
-
+  
   lbcpp_UseDebuggingNewOperator
 };
 

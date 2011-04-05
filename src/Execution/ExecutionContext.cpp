@@ -110,12 +110,13 @@ File ExecutionContext::getFile(const String& path)
     return File::nonexistent;
   if (File::isAbsolutePath(path))
     return File(path);
-  if (!projectDirectory.exists())
+  File dir = getProjectDirectory();
+  if (!dir.exists())
   {
     errorCallback(T("Project directory is not specified. Could not find path ") + path);
     return File::nonexistent;
   }
-  return projectDirectory.getChildFile(path);
+  return dir.getChildFile(path);
 }
 
 String ExecutionContext::getFilePath(const File& file) const

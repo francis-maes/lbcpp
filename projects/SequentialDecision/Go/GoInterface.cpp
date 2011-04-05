@@ -8,6 +8,7 @@
 #include "precompiled.h"
 #include "GoInterface.h"
 #include "GoProblem.h"
+#include "GoPredictWorkUnit.h"
 #include <lbcpp/lbcpp.h>
 using namespace lbcpp;
 
@@ -83,23 +84,16 @@ void lbcppgo::francisCompute(int board[361], double **patternValues, double valu
 
   // compute available actions
   state->recomputeAvailableActions();
-  ContainerPtr actions = state->getAvailableActions();
-  size_t n = actions->getNumElements();
-
-  // compute scores
-  std::vector<Variable> decisionMakerInputs(2);
-  decisionMakerInputs[0] = Variable(state, goStateClass);
-  decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
-  DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
+  ContainerPtr actions;
+  DenseDoubleVectorPtr scoreVector = GoPredict::computeScores(context, state, goDecisionMaker, actions);
   if (!scoreVector)
   {
     context.warningCallback(T("No predicted scores, setting all scores to zero"));
     return;
   }
-  else
-    jassert(n == scoreVector->getNumElements());
 
   // fill output scores
+  size_t n = actions->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
     PositiveIntegerPairPtr position = actions->getElement(i).getObjectAndCast<PositiveIntegerPair>();

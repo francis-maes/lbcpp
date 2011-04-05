@@ -174,6 +174,8 @@ public:
     }*/
  
     //goDecisionMaker->initialize(context, goStateClass, positiveIntegerPairClass);
+   //if (interactiveFile.existsAsFile() && !GoPredictWorkUnit::processSgfFile(context, interactiveFile, goDecisionMaker))
+   //   return false;
 
     // load games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
@@ -230,22 +232,21 @@ public:
       context.resultCallback(T("savedGoDecisionMaker"), goDecisionMaker);
       goDecisionMaker->saveToFile(context, outputFile);
     }
-    
-    if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile, goDecisionMaker))
+    if (interactiveFile.existsAsFile() && !GoPredict::processSgfFile(context, interactiveFile, goDecisionMaker))
       return false;
 
-    // tmp
+    /* tmp
     if (outputFile != File::nonexistent)
     {
       goDecisionMaker = CompositeFunction::createFromFile(context, outputFile);
       context.resultCallback(T("loadedGoDecisionMaker"), goDecisionMaker);
       context.enterScope(T("Loading test"));
-      bool ok = !interactiveFile.existsAsFile() || processInteractiveFile(context, interactiveFile, goDecisionMaker); 
+      bool ok = !interactiveFile.existsAsFile() || GoPredict::processSgfFile(context, interactiveFile, goDecisionMaker); 
       goDecisionMaker->saveToFile(context, File(outputFile.getFullPathName() + T(".test")));
       context.leaveScope(ok);
       return true;
     }
-    // -
+    */
 
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
@@ -267,61 +268,6 @@ public:
     context.leaveScope(ok);
     return true;
     */
-  }
-
-  bool processInteractiveFile(ExecutionContext& context, const File& file, CompositeFunctionPtr goDecisionMaker) const
-  {
-    if (!goDecisionMaker->isInitialized() && !goDecisionMaker->initialize(context, goStateClass, positiveIntegerPairClass))
-      return false;
-      
-    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
-    if (!xml)
-      return false;
-
-    FunctionPtr convertFunction = new ConvertSGFXmlToStateAndTrajectory();
-    PairPtr stateAndTrajectory = convertFunction->compute(context, xml).getObjectAndCast<Pair>();
-    if (!stateAndTrajectory)
-      return false;
-
-    GoStatePtr state = stateAndTrajectory->getFirst().clone(context).getObjectAndCast<GoState>();
-    if (!state)
-      return false;
-    size_t size = state->getBoard()->getSize();
-    ContainerPtr trajectory = stateAndTrajectory->getSecond().getObjectAndCast<Container>();
-
-    double sumOfRewards = 0.0;
-    state->performTrajectory(trajectory, sumOfRewards);
-    context.resultCallback(T("state"), state);
-
-    ContainerPtr actions = state->getAvailableActions();
-    size_t n = actions->getNumElements();
-    context.resultCallback(T("actions"), actions);
-
-    std::vector<Variable> decisionMakerInputs(2);
-    decisionMakerInputs[0] = Variable(state, goStateClass);
-    decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
-    DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
-    if (!scoreVector)
-    {
-      context.warningCallback(T("No predicted scores, setting all scores to zero"));
-      scoreVector = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, n, 0.0);
-    }
-    else
-      jassert(n == scoreVector->getNumElements());
-    context.resultCallback(T("scoreVector"), scoreVector);
-
-    DoubleMatrixPtr scores = new DoubleMatrix(size, size);
-    for (size_t i = 0; i < n; ++i)
-    {
-      PositiveIntegerPairPtr position = actions->getElement(i).getObjectAndCast<PositiveIntegerPair>();
-      if (position->getFirst() == size && position->getSecond() == size)
-        context.resultCallback(T("passScore"), scoreVector->getValue(i));
-      else
-        scores->setValue(position->getSecond(), position->getFirst(), scoreVector->getValue(i));
-    }
-    context.resultCallback(T("scores"), scores);
-    context.resultCallback(T("stateAndScores"), Variable::pair(state, scores));
-    return true;
   }
 
 private:
