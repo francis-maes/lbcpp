@@ -10,9 +10,14 @@
 #ifndef LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
 # define LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
 
+// TODO arnaud : clean things to compile without network
+
 # include <lbcpp/Optimizer/OptimizerContext.h>
+
+#ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
 # include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
+#endif
 
 namespace lbcpp
 {
@@ -27,6 +32,7 @@ public:
   
   virtual juce::int64 evaluate(const Variable& parameters)
   {
+#ifdef LBCPP_NETWORKING
     // TODO arnaud : defaultExecutionContext
     ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(defaultExecutionContext());
     if (!interface)
@@ -45,6 +51,9 @@ public:
     inProgressWUs.push_back(res); // TODO arnaud : syncrhonized
     
     return res.getLargeIntValue();
+#else
+    return 0;
+#endif
   }
   
 protected:  
@@ -61,7 +70,7 @@ private:
   size_t requiredTime;
   
   std::vector<String> inProgressWUs;  // TODO arnaud : list
-  
+#ifdef LBCPP_NETWORKING 
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       
     NetworkClientPtr client = blockingNetworkClient(context);
@@ -81,6 +90,7 @@ private:
     NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
   }
+#endif
   
   WorkUnitPtr generateWUFromFunctionAndParameters(const FunctionPtr& function, const Variable& parameters)
   {
