@@ -92,7 +92,7 @@ public:
     state->performTrajectory(trajectory, sumOfRewards, maxTurns);
     context.resultCallback(T("state"), state);
     context.leaveScope(true);
-    //state->saveToFile(context, context.getFile(T("state_test.xml")));
+    state->saveToFile(context, context.getFile(T("state_test.xml")));
 
     context.enterScope(T("Computing scores"));
     ContainerPtr actions;

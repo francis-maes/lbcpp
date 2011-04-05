@@ -36,8 +36,10 @@ public:
   virtual void setElement(size_t index, const Variable& value) = 0;
 
   /* Object */
-  String toString() const;
-  String toShortString() const;
+  virtual String toString() const;
+  virtual String toShortString() const;
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
   lbcpp_UseDebuggingNewOperator
 

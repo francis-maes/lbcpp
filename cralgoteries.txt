@@ -1,4 +1,4 @@
-* Verifier que la serialisation des states fonctionne
+
 * Nouvelles features
 
 Go:
