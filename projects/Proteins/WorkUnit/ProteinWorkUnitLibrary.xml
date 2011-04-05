@@ -117,4 +117,6 @@
     <variable type="File" name="outputDirectory"/>
   </class>
 
+  <class name="DebugWorkUnit" base="WorkUnit"/>
+
 </library>

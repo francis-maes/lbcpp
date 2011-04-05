@@ -114,6 +114,7 @@ SET(LBCPP_PROTEIN_WORK_UNIT_SOURCES
   WorkUnit/BricoBox.h
   WorkUnit/BricoBox.cpp
   WorkUnit/FabienBox.h
+  WorkUnit/DebugWorkUnit.h
   WorkUnit/ProteinWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinWorkUnitLibrary.cpp
 )
