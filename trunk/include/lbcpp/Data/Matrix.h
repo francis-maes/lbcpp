@@ -206,6 +206,9 @@ public:
   MatrixRegion(ClassPtr thisClass, size_t index);
   MatrixRegion() : index(0), size(0) {}
 
+  typedef std::pair<size_t, size_t> Position;
+  typedef std::set<Position> PositionSet;
+
   size_t getIndex() const
     {return index;}
 
@@ -215,9 +218,16 @@ public:
   const Variable& getValue() const
     {return value;}
 
-  void addPosition(const std::pair<size_t, size_t>& position);
-  void addNeighboringElement(const Variable& value, size_t count = 1);
-  size_t getNumNeighboringElement(const Variable& value) const;
+  void addPosition(const Position& position);
+  void addNeighbor(const Position& position, size_t count = 1);
+
+  const PositionSet& getNeighborPositions() const;
+
+  void setMatrix(const MatrixPtr& matrix)
+    {this->matrix = matrix;}
+
+  const MatrixPtr& getMatrix() const
+    {return matrix;}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -227,8 +237,9 @@ private:
   size_t index;
   Variable value;
   size_t size;
-  std::set<impl::PositiveIntegerPair> positions;
-  std::map<Variable, size_t> neighboringElements; // value -> num connections
+  PositionSet positions;
+  PositionSet neighborPositions;
+  MatrixPtr matrix;
 };
 
 typedef ReferenceCountedObjectPtr<MatrixRegion> MatrixRegionPtr;
@@ -256,6 +267,12 @@ public:
   MatrixRegionPtr startRegion(const Variable& value);
   void addToCurrentRegion(const std::pair<size_t, size_t>& position);
 
+  const MatrixPtr& getSourceMatrix() const
+    {return sourceMatrix;}
+
+  void setSourceMatrix(const MatrixPtr& matrix)
+    {sourceMatrix = matrix;}
+
   lbcpp_UseDebuggingNewOperator
 
 private:
@@ -264,6 +281,7 @@ private:
   TypePtr elementsType; // the input elementsType  /!\ this is different from BaseClass::elementsType whose value is "PositiveInteger"
   ClassPtr regionClass; // matrixRegion(elementsType)
   std::vector<MatrixRegionPtr> regions;
+  MatrixPtr sourceMatrix;
 };
 
 typedef ReferenceCountedObjectPtr<SegmentedMatrix> SegmentedMatrixPtr;

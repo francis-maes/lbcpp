@@ -58,14 +58,11 @@ void MatrixRegion::addPosition(const std::pair<size_t, size_t>& position)
   ++size;
 }
 
-void MatrixRegion::addNeighboringElement(const Variable& value, size_t count)
-  {neighboringElements[value] += count;}
+void MatrixRegion::addNeighbor(const Position& position, size_t count)
+  {neighborPositions.insert(position);}
 
-size_t MatrixRegion::getNumNeighboringElement(const Variable& value) const
-{
-  std::map<Variable, size_t>::const_iterator it = neighboringElements.find(value);
-  return it == neighboringElements.end() ? 0 : it->second;
-}
+const MatrixRegion::PositionSet& MatrixRegion::getNeighborPositions() const
+  {return neighborPositions;}
 
 /*
 ** SegmentedMatrix
@@ -82,6 +79,7 @@ MatrixRegionPtr SegmentedMatrix::startRegion(const Variable& value)
   size_t index = regions.size();
   MatrixRegionPtr res = new MatrixRegion(regionClass, index);
   res->setValue(value);
+  res->setMatrix(sourceMatrix);
   regions.push_back(res);
   return res;
 }

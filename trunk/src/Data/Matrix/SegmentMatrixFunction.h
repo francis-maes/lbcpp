@@ -75,6 +75,7 @@ public:
     size_t columns = matrix->getNumColumns();
 
     SegmentedMatrixPtr res = new SegmentedMatrix(elementsType, rows, columns);
+    res->setSourceMatrix(matrix);
 
     for (size_t r = 0; r < rows; ++r)
       for (size_t c = 0; c < columns; ++c)
@@ -129,7 +130,7 @@ public:
       }
 
       size_t numMissingNeighbors = (use8Connexity ? 8 : 4) - numNeighbors;
-      region->addNeighboringElement(Variable::missingValue(elementsType), numMissingNeighbors);
+      //region->addNeighboringElement(Variable::missingValue(elementsType), numMissingNeighbors);
 
       // add neighbors in the toExplore list
       for (size_t i = 0; i < numNeighbors; ++i)
@@ -142,7 +143,7 @@ public:
             toExplore.insert(neighbor);
         }
         else
-          region->addNeighboringElement(neighborValue);
+          region->addNeighbor(neighbor);
       }
     }
   }
