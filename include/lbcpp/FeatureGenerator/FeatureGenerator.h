@@ -96,9 +96,9 @@ protected:
   // stats on non-lazy outputs
   CriticalSection meanSparseVectorSizeLock;
   ScalarVariableRecentMeanAndVariancePtr meanSparseVectorSize;
+  mutable size_t sparseVectorSizeUpperBound;
 
   void pushSparseVectorSize(size_t size);
-  double getSparseVectorSizeUpperBound() const;
   SparseDoubleVectorPtr createEmptySparseVector() const;
 };
 

@@ -16,6 +16,8 @@ namespace lbcpp
 class OptimizerCallback
 {
 public:
+  virtual ~OptimizerCallback() {}
+  
   virtual void evaluationFinished(juce::int64 identifier, double score) = 0;
 };
 
