@@ -264,7 +264,20 @@ public:
   {
     const MatrixRegionPtr& region = inputs[0].getObjectAndCast<MatrixRegion>();
     const Variable& value = inputs[1];
-    return Variable(region->getNumNeighboringElement(value), positiveIntegerType);
+    const MatrixPtr& matrix = region->getMatrix();
+    if (!matrix)
+      return Variable::missingValue(getOutputType());
+
+    typedef MatrixRegion::Position Position;
+
+    size_t res = 0;
+    const std::set<Position>& pos = region->getNeighborPositions();
+    for (std::set<Position>::const_iterator it = pos.begin(); it != pos.end(); ++it)
+    {
+      if (matrix->getElement(it->first, it->second) == value)
+        ++res;
+    }
+    return Variable(res, positiveIntegerType);
   }
 };
 
