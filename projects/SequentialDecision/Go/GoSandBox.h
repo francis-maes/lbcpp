@@ -208,16 +208,22 @@ public:
       return false;
     EvaluatorPtr evaluator = new GoSupervisedEpisodeEvaluator();
     evaluator->setUseMultiThreading(true);
-    episode->setEvaluator(evaluator);
+    //episode->setEvaluator(evaluator);
     episode->setBatchLearner(learningParameters->createBatchLearner(context));
     episode->setOnlineLearner(
-      compositeOnlineLearner(evaluatorOnlineLearner(false, true), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
+      compositeOnlineLearner(evaluatorOnlineLearner(false, false), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
     
     episode->train(context, trainingGames, validationGames, T("Training"), true);
 
     //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
     //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
  
+    if (outputFile != File::nonexistent)
+    {
+      context.resultCallback(T("goDecisionMaker"), goDecisionMaker);
+      goDecisionMaker->saveToFile(context, outputFile);
+    }
+    
     if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile, goDecisionMaker))
       return false;
  
@@ -279,8 +285,6 @@ public:
       jassert(n == scoreVector->getNumElements());
     context.resultCallback(T("scoreVector"), scoreVector);
 
-    if (!state)
-      return false;
     DoubleMatrixPtr scores = new DoubleMatrix(size, size);
     for (size_t i = 0; i < n; ++i)
     {
@@ -307,6 +311,8 @@ private:
   size_t numFolds;
   LearnerParametersPtr learningParameters;
   bool testFeatures;
+  
+  File outputFile;
 
   bool printGamesInfo(ExecutionContext& context, const ContainerPtr& games, const String& name) const
   {
