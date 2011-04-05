@@ -52,13 +52,15 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
     // check that input variable type have not changed
     if (inputVariables.size() != this->inputVariables.size())
     {
-      context.errorCallback(T("Number of inputs has changed"));
+      context.errorCallback(toShortString(), T("Number of inputs has changed. Previous count was ") +
+                            String((int)this->inputVariables.size()) + T(", new count is ") + String((int)inputVariables.size()));
       return false;
     }
     for (size_t i = 0; i < inputVariables.size(); ++i)
       if (inputVariables[i]->getType() != this->inputVariables[i]->getType())
       {
-        context.errorCallback(T("Input type has changed"));
+        context.errorCallback(toShortString(), T("Input #") + String((int)i + 1) + T(" type has changed. Previous type was ") +
+            this->inputVariables[i]->getType()->getName() + T(", new type is ") + inputVariables[i]->getType()->getName());
         return false;
       }
     return true;
@@ -70,14 +72,14 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
   size_t minInputs = getMinimumNumRequiredInputs();
   if (minInputs && numInputs < minInputs)
   {
-    context.errorCallback(T("Missing input: expected ") + String((int)minInputs) + T(" inputs, found only ") + String((int)numInputs) + T(" inputs"));
+    context.errorCallback(toShortString(), T("Missing input: expected ") + String((int)minInputs) + T(" inputs, found only ") + String((int)numInputs) + T(" inputs"));
     return false;
   }
 
   size_t maxInputs = getMaximumNumRequiredInputs();
   if (numInputs > maxInputs)
   {
-    context.errorCallback(T("Too much inputs: expected ") + String((int)maxInputs) + T(" inputs, found ") + String((int)numInputs) + T(" inputs"));
+    context.errorCallback(toShortString(), T("Too much inputs: expected ") + String((int)maxInputs) + T(" inputs, found ") + String((int)numInputs) + T(" inputs"));
     return false;
   }
 
@@ -85,7 +87,7 @@ bool Function::initialize(ExecutionContext& context, const std::vector<VariableS
   {
     if (!inputVariables[i])
     {
-      context.errorCallback(T("Missing input number ") + String((int)i + 1));
+      context.errorCallback(toShortString(), T("Missing input #") + String((int)i + 1));
       return false;
     }
 

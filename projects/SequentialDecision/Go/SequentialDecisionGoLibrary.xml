@@ -43,6 +43,7 @@
   <!-- Go Decision Maker -->
   <class name="SupervisedLinearRankingBasedDecisionMaker" base="CompositeFunction">
     <variable type="Function" name="actionsPerceptionFunction"/>
+    <variable type="Enumeration" name="actionFeaturesEnumeration" generated="yes"/>
     <variable type="StochasticGDParameters" name="sgdParameters"/>
     <variable type="Function" name="rankingMachine"/>
   </class>

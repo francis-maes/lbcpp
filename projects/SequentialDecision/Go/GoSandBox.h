@@ -163,6 +163,7 @@ public:
       context.errorCallback(T("Learning parameters type not supported"));
       return false;
     }
+    
     CompositeFunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
  
     // load games
@@ -220,13 +221,24 @@ public:
  
     if (outputFile != File::nonexistent)
     {
-      context.resultCallback(T("goDecisionMaker"), goDecisionMaker);
+      context.resultCallback(T("savedGoDecisionMaker"), goDecisionMaker);
       goDecisionMaker->saveToFile(context, outputFile);
     }
     
     if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile, goDecisionMaker))
       return false;
- 
+
+    // tmp
+    if (outputFile != File::nonexistent)
+    {
+      goDecisionMaker = CompositeFunction::createFromFile(context, outputFile);
+      context.resultCallback(T("loadedGoDecisionMaker"), goDecisionMaker);
+      context.enterScope(T("Loading test"));
+      bool ok = !interactiveFile.existsAsFile() || processInteractiveFile(context, interactiveFile, goDecisionMaker); 
+      context.leaveScope(ok);
+      return true;
+    }
+    // -
 
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
@@ -252,6 +264,9 @@ public:
 
   bool processInteractiveFile(ExecutionContext& context, const File& file, CompositeFunctionPtr goDecisionMaker) const
   {
+    if (!goDecisionMaker->isInitialized() && !goDecisionMaker->initialize(context, goStateClass, positiveIntegerPairClass))
+      return false;
+      
     XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
     if (!xml)
       return false;
@@ -280,7 +295,10 @@ public:
     decisionMakerInputs[1] = Variable::missingValue(positiveIntegerPairClass);
     DenseDoubleVectorPtr scoreVector = goDecisionMaker->computeUntilStep(context, &decisionMakerInputs[0], goDecisionMaker->getNumSteps() - 2).getObjectAndCast<DenseDoubleVector>();
     if (!scoreVector)
+    {
+      context.warningCallback(T("No predicted scores, setting all scores to zero"));
       scoreVector = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, n, 0.0);
+    }
     else
       jassert(n == scoreVector->getNumElements());
     context.resultCallback(T("scoreVector"), scoreVector);

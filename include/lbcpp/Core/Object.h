@@ -206,6 +206,8 @@ protected:
   void saveVariablesToXmlAttributes(XmlExporter& exporter) const;
   bool loadVariablesFromXmlAttributes(XmlImporter& importer);
   int compareVariables(const ObjectPtr& otherObject) const;
+  
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName);
 };
 
 class NameableObject : public Object

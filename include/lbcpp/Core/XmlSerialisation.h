@@ -158,6 +158,11 @@ public:
   Variable loadVariable(TypePtr expectedType);
   void leave();
 
+  // shared objects
+  bool addSharedObject(const String& name, ObjectPtr object);
+  bool removeSharedObject(const String& name, ObjectPtr object);
+  ObjectPtr getSharedObject(const String& name) const;
+
   ExecutionContext& getContext()
     {return context;}
 
@@ -169,7 +174,6 @@ private:
   std::vector<SharedObjectMap> sharedObjectsStack;
 
   bool loadSharedObjects();
-  ObjectPtr getReferencedObject() const;
 };
 
 class XmlElement;

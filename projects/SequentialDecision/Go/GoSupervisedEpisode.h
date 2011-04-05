@@ -58,10 +58,25 @@ public:
   const FunctionPtr& getRankingMachine() const
     {return rankingMachine;}
 
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
+  {
+    jassert(variableName == T("actionFeaturesEnumeration"));
+    if (!actionsPerceptionFunction->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
+      return ObjectPtr();
+    TypePtr outputType = actionsPerceptionFunction->getOutputType();
+    jassert(outputType);
+    TypePtr doubleVectorType = Container::getTemplateParameter(outputType);
+    jassert(doubleVectorType);
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(doubleVectorType);
+    jassert(featuresEnumeration);
+    return featuresEnumeration;
+  }
+
 protected:
   friend class SupervisedLinearRankingBasedDecisionMakerClass;
 
   FunctionPtr actionsPerceptionFunction; // State, Container[Action] -> Container[Perceptions] 
+  EnumerationPtr actionFeaturesEnumeration;
   StochasticGDParametersPtr sgdParameters;
   FunctionPtr rankingMachine;
 
