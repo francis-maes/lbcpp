@@ -11,7 +11,7 @@
 using namespace lbcpp;
 
 FeatureGenerator::FeatureGenerator(bool lazy)
-  : lazyComputation(lazy), meanSparseVectorSize(new ScalarVariableRecentMeanAndVariance(T("sparseVectorSize"), 100))
+  : lazyComputation(lazy), meanSparseVectorSize(new ScalarVariableRecentMeanAndVariance(T("sparseVectorSize"), 100)), sparseVectorSizeUpperBound(0)
 {
 }
 
@@ -32,21 +32,16 @@ void FeatureGenerator::pushSparseVectorSize(size_t size)
 {
   ScopedLock _(meanSparseVectorSizeLock);
   meanSparseVectorSize->push((double)size);
-}
-
-double FeatureGenerator::getSparseVectorSizeUpperBound() const
-{
-  ScopedLock _(meanSparseVectorSizeLock);
-  return meanSparseVectorSize->getMean() + 3 * meanSparseVectorSize->getStandardDeviation();
+  sparseVectorSizeUpperBound = (size_t)(0.5 + meanSparseVectorSize->getMean() + 3 * meanSparseVectorSize->getStandardDeviation());
 }
 
 SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
 {
   jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
   SparseDoubleVectorPtr res(new SparseDoubleVector(nonLazyOutputType));
-  double sizeUpperBound = getSparseVectorSizeUpperBound();
-  if (sizeUpperBound)
-    res->reserveValues((size_t)(sizeUpperBound + 0.5));
+  size_t s = sparseVectorSizeUpperBound;
+  if (s)
+    res->reserveValues(s);
   return res;
 }
 
