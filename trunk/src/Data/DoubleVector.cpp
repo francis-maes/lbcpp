@@ -595,13 +595,11 @@ double LazyDoubleVector::dotProduct(const DenseDoubleVectorPtr& denseVector, siz
 
 SparseDoubleVectorPtr LazyDoubleVector::toSparseVector() const
 {
-  if (computedVector)
-    return computedVector->toSparseVector();
-  else
-    return DoubleVector::toSparseVector();
+  const_cast<LazyDoubleVector* >(this)->ensureIsComputed();
+  return computedVector->toSparseVector();
 }
 
-  // Vector
+// Vector
 void LazyDoubleVector::clear()
   {jassert(false);}
 

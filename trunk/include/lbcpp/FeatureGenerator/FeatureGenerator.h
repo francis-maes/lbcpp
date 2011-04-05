@@ -49,7 +49,14 @@ public:
   void setLazyComputation(bool lazyComputation)
     {this->lazyComputation = lazyComputation;}
 
+  TypePtr getLazyVectorType() const
+    {return lazyOutputType;}
+    
   virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const;
+
+  TypePtr getNonLazyVectorType() const
+    {return nonLazyOutputType;}
+
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const;
 
   virtual double entropy(const Variable* inputs) const;
