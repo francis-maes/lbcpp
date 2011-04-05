@@ -252,12 +252,6 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {values[index] = getImplementation(value);}
 
-  virtual void saveToXml(XmlExporter& exporter) const
-    {jassert(false);}
-
-  virtual bool loadFromXml(XmlImporter& importer)
-    {jassert(false); return false;}
-
   virtual void reserve(size_t size)
     {values.reserve(size);}
 
