@@ -22,7 +22,7 @@
 // TODO arnaud : just to compile header file
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerCallback.h>
-
+# include "../WorkUnit/DebugWorkUnit.h"
 namespace lbcpp
 {
 
