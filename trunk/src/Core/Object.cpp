@@ -316,9 +316,16 @@ void Object::saveToXml(XmlExporter& exporter) const
   }
 }
 
+ObjectPtr Object::computeGeneratedObject(ExecutionContext& context, const String& variableName)
+{
+  jassert(false);
+  return ObjectPtr();
+}
+
 bool Object::loadFromXml(XmlImporter& importer)
 {
   ClassPtr thisClass = getClass();
+  bool ok = true;
   
   forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("variable"))
   {
@@ -326,7 +333,8 @@ bool Object::loadFromXml(XmlImporter& importer)
     if (name.isEmpty())
     {
       importer.errorMessage(T("Object::loadFromXml"), T("Could not find variable name"));
-      return false;
+      ok = false;
+      continue;
     }
     int variableNumber = thisClass->findMemberVariable(name);
     if (variableNumber < 0)
@@ -336,15 +344,33 @@ bool Object::loadFromXml(XmlImporter& importer)
     }
     TypePtr expectedType = thisClass->getMemberVariableType(variableNumber);
     jassert(expectedType);
-    Variable value = importer.loadVariable(child, expectedType);
+    
+    Variable value;
+    if (child->hasAttribute(T("generatedId")))
+    {
+      ObjectPtr object = computeGeneratedObject(importer.getContext(), name);
+      if (!object)
+      {
+        ok = false;
+        continue;
+      }
+      importer.addSharedObject(child->getStringAttribute(T("generatedId")), object);
+      value = Variable(object);
+    }
+    else
+      value = importer.loadVariable(child, expectedType);
+      
     if (value.exists())
     {
       if (!importer.getContext().checkInheritance(value, expectedType))
-        return false;
+      {
+        ok = false;
+        continue;
+      }
       setVariable((size_t)variableNumber, value);
     }
   }
-  return true;
+  return ok;
 }
 
 void Object::saveVariablesToXmlAttributes(XmlExporter& exporter) const

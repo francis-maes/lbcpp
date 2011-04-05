@@ -436,7 +436,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
       TypePtr res;
       enter(child);
       if (hasAttribute(T("reference")))
-        res = getReferencedObject().staticCast<Type>().get();
+        res = getSharedObject(getStringAttribute(T("reference"))).staticCast<Type>().get();
       else
         res = Type::loadUnnamedTypeFromXml(*this);
       leave();
@@ -451,20 +451,6 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
   }
 }
 
-ObjectPtr XmlImporter::getReferencedObject() const
-{
-  const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
-  String ref = getStringAttribute(T("reference"));
-  SharedObjectMap::const_iterator it = sharedObjects.find(ref);
-  if (it == sharedObjects.end())
-  {
-    errorMessage(T("XmlImporter::getReferencedObject"), T("Could not find shared object reference ") + ref.quoted());
-    return ObjectPtr();
-  }
-  jassert(it->second);
-  return it->second;
-}
-
 Variable XmlImporter::loadVariable(TypePtr expectedType)
 {
   TypePtr type = loadType(expectedType);
@@ -474,8 +460,10 @@ Variable XmlImporter::loadVariable(TypePtr expectedType)
   if (getStringAttribute(T("missing")) == T("true"))
     return Variable::missingValue(type);
 
+  jassert(!hasAttribute(T("generatedId")));
+
   if (hasAttribute(T("reference")))
-    return getReferencedObject();
+    return getSharedObject(getStringAttribute(T("reference")));
   else
     return Variable::createFromXml(type, *this);
 }
@@ -514,6 +502,49 @@ void XmlImporter::leave()
   jassert(sharedObjectsStack.size());
   sharedObjectsStack.pop_back();
 }
+
+bool XmlImporter::addSharedObject(const String& name, ObjectPtr object)
+{
+  jassert(sharedObjectsStack.size());
+  SharedObjectMap& m = sharedObjectsStack.back();
+  if (m.find(name) != m.end())
+  {
+    context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": this identifier is already used by another object"));
+    return false;
+  }
+  std::cerr << "addSharedObject: " << name << " " << object->toShortString() << std::endl;
+  m[name] = object;
+  return true;
+}
+
+bool XmlImporter::removeSharedObject(const String& name, ObjectPtr object)
+{
+  jassert(sharedObjectsStack.size());
+  SharedObjectMap& m = sharedObjectsStack.back();
+  if (m.find(name) == m.end())
+  {
+    context.errorCallback(T("Could not remove shared object ") + name.quoted() + T(": this object does not exists"));
+    return false;
+  }
+  std::cerr << "removeSharedObject: " << name << " " << object->toShortString() << std::endl;
+  m.erase(name);
+  return true;
+}
+
+ObjectPtr XmlImporter::getSharedObject(const String& name) const
+{
+  const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
+  SharedObjectMap::const_iterator it = sharedObjects.find(name);
+  if (it == sharedObjects.end())
+  {
+    errorMessage(T("XmlImporter::getSharedObject"), T("Could not find shared object reference ") + name.quoted());
+    return ObjectPtr();
+  }
+  std::cerr << "getSharedObject: " << name << " " << it->second->toShortString() << std::endl;
+  jassert(it->second);
+  return it->second;
+}
+
 /*
 bool XmlExporter::CompareObjectsDeterministically::operator()(const ObjectPtr& object1, const ObjectPtr& object2) const
 {
