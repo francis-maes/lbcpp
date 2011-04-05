@@ -20,10 +20,6 @@ namespace lbcpp
 
 class GoState;
 typedef ReferenceCountedObjectPtr<GoState> GoStatePtr;
-class PositiveIntegerPair;
-typedef ReferenceCountedObjectPtr<PositiveIntegerPair> PositiveIntegerPairPtr;
-class PositiveIntegerPairVector;
-typedef ReferenceCountedObjectPtr<PositiveIntegerPairVector> PositiveIntegerPairVectorPtr;
 
 extern EnumerationPtr playerEnumeration;
 
@@ -173,68 +169,6 @@ protected:
 
   void addPositionsToPositionSet(PositionSet& res, const PositionSet& newPositions);
   void removePositionsFromPositionSet(PositionSet& res, const PositionSet& positionsToRemove);
-};
-
-extern ClassPtr positiveIntegerPairClass;
-
-namespace impl
-{
-  typedef std::pair<size_t, size_t> PositiveIntegerPair;
-};
-
-class PositiveIntegerPair : public Object
-{
-public:
-  PositiveIntegerPair(const impl::PositiveIntegerPair& p)
-    : Object(positiveIntegerPairClass), first(p.first), second(p.second)
-  {
-  }
-
-  PositiveIntegerPair(size_t first, size_t second)
-    : Object(positiveIntegerPairClass), first(first), second(second) {}
-  PositiveIntegerPair() : Object(positiveIntegerPairClass), first((size_t)-1), second((size_t)-1) {}
-
-  size_t getFirst() const
-    {return first;} 
-
-  size_t getSecond() const
-    {return second;}
- 
-  virtual int compare(const ObjectPtr& otherObject) const
-  {
-    const PositiveIntegerPairPtr& other = otherObject.staticCast<PositiveIntegerPair>();
-    if (first != other->first)
-      return (int)first - (int)other->first;
-    else
-      return (int)second - (int)other->second;
-  }
-
-  impl::PositiveIntegerPair getValue() const
-    {return impl::PositiveIntegerPair(first, second);}
-
-  lbcpp_UseDebuggingNewOperator
-
-protected:
-  friend class PositiveIntegerPairClass;
-
-  size_t first;
-  size_t second;
-};
-
-extern ClassPtr positiveIntegerPairVectorClass;
-
-class PositiveIntegerPairVector : public BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair>
-{
-public:
-  typedef BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair> BaseClass;
-
-  PositiveIntegerPairVector(size_t length = 0)
-    : BaseClass(positiveIntegerPairVectorClass, length, impl::PositiveIntegerPair(0, 0)) {}
-
-  virtual TypePtr getElementsType() const
-    {return positiveIntegerPairClass;}
-  
-  lbcpp_UseDebuggingNewOperator
 };
 
 class GoStateSampler : public SimpleUnaryFunction

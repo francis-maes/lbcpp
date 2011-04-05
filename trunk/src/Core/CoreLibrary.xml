@@ -20,7 +20,12 @@
     <variable type="firstType" name="first"/>
     <variable type="secondType" name="second"/>
   </template>
-  
+
+  <class name="PositiveIntegerPair">
+    <variable type="PositiveInteger" name="first"/>
+    <variable type="PositiveInteger" name="second"/>
+  </class>
+
   <!-- Container -->
   <template name="Container" base="Object" abstract="yes">
     <parameter name="elementsType"/>
@@ -48,7 +53,9 @@
   <class name="VariableVector" base="Vector[Variable]">
     <constructor arguments="size_t initialSize"/>
   </class>
-  
+
+  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
+
   <!-- Map -->
   <template name="Map" base="Object" abstract="yes">
     <parameter name="keysType"/>

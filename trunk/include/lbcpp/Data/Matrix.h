@@ -10,6 +10,7 @@
 # define LBCPP_DATA_MATRIX_H_
 
 # include "../Core/Container.h"
+# include "../Core/Pair.h"
 
 namespace lbcpp
 {
@@ -195,6 +196,80 @@ public:
 typedef ReferenceCountedObjectPtr<DoubleMatrix> DoubleMatrixPtr;
 
 extern MatrixPtr matrix(TypePtr elementsType, size_t numRows, size_t numColumns);
+
+
+extern ClassPtr matrixRegionClass(TypePtr elementType);
+
+class MatrixRegion : public Object
+{
+public:
+  MatrixRegion(ClassPtr thisClass, size_t index);
+  MatrixRegion() : index(0), size(0) {}
+
+  size_t getIndex() const
+    {return index;}
+
+  void setValue(const Variable& value)
+    {this->value = value;}
+
+  const Variable& getValue() const
+    {return value;}
+
+  void addPosition(const std::pair<size_t, size_t>& position);
+  void addNeighboringElement(const Variable& value, size_t count = 1);
+  size_t getNumNeighboringElement(const Variable& value) const;
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class MatrixRegionClass;
+
+  size_t index;
+  Variable value;
+  size_t size;
+  std::set<impl::PositiveIntegerPair> positions;
+  std::map<Variable, size_t> neighboringElements; // value -> num connections
+};
+
+typedef ReferenceCountedObjectPtr<MatrixRegion> MatrixRegionPtr;
+
+class SegmentedMatrix : public BuiltinTypeMatrix<size_t>
+{
+public:
+  typedef BuiltinTypeMatrix<size_t> BaseClass;
+
+  SegmentedMatrix(TypePtr elementsType, size_t numRows, size_t numColumns);
+  SegmentedMatrix() {}
+
+  virtual void setElement(size_t row, size_t column, const Variable& value)
+    {BaseClass::setElement(row, column, (size_t)value.getInteger());}
+
+  virtual void setElement(size_t index, const Variable& value)
+    {BaseClass::setElement(index, (size_t)value.getInteger());}
+
+  bool hasElement(size_t row, size_t column) const
+    {return elements[makeIndex(row, column)] != (size_t)-1;}
+
+  bool hasElement(const std::pair<size_t, size_t>& position) const
+    {return elements[makeIndex(position.first, position.second)] != (size_t)-1;}
+
+  MatrixRegionPtr startRegion(const Variable& value);
+  void addToCurrentRegion(const std::pair<size_t, size_t>& position);
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class SegmentedMatrixClass;
+
+  TypePtr elementsType; // the input elementsType  /!\ this is different from BaseClass::elementsType whose value is "PositiveInteger"
+  ClassPtr regionClass; // matrixRegion(elementsType)
+  std::vector<MatrixRegionPtr> regions;
+};
+
+typedef ReferenceCountedObjectPtr<SegmentedMatrix> SegmentedMatrixPtr;
+
+extern ClassPtr segmentedMatrixClass(TypePtr elementsType);
+extern FunctionPtr segmentMatrixFunction(bool use8Connexity);
 
 }; /* namespace lbcpp */
 
