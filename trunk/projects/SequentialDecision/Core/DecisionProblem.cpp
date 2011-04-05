@@ -9,10 +9,12 @@
 #include "DecisionProblem.h"
 using namespace lbcpp;
 
-void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double& sumOfRewards)
+void DecisionProblemState::performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps)
 {
   jassert(actions->getElementsType() == getActionType());
   size_t n = actions->getNumElements();
+  if (maxSteps && n > maxSteps)
+    n = maxSteps;
   for (size_t i = 0; i < n; ++i)
   {
     double reward;

@@ -73,6 +73,11 @@
     <variable type="File" name="outputFile" shortName="o"/>
     <variable type="Boolean" name="testFeatures"/>
   </class>
+  <class name="GoPredict" base="WorkUnit">
+    <variable type="File" name="modelFile"/>
+    <variable type="File" name="sgfFile"/>
+    <variable type="PositiveInteger" name="maxTurns"/>
+  </class>
 
   <!-- Go Features -->
   <template name="GoStatePreFeatures">

@@ -53,6 +53,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
   Go/GoActionsPerception.h
   Go/GoSupervisedEpisode.h
   Go/GoSandBox.h
+  Go/GoPredictWorkUnit.h
   Go/GoInterface.h
   Go/GoInterface.cpp
   Go/SequentialDecisionGoLibrary.xml

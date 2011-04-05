@@ -29,7 +29,7 @@ public:
   virtual bool isFinalState() const
     {return !getAvailableActions();}
 
-  void performTrajectory(const ContainerPtr& actions, double& sumOfRewards);
+  void performTrajectory(const ContainerPtr& actions, double& sumOfRewards, size_t maxSteps = 0);
   bool checkTrajectoryValidity(ExecutionContext& context, const ContainerPtr& trajectory) const;
 
   lbcpp_UseDebuggingNewOperator
