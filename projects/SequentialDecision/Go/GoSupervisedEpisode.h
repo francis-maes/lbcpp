@@ -40,6 +40,8 @@ public:
     size_t availableActions = builder.addFunction(getAvailableActionsFunction(actionsType), state);
 
     size_t actionPerceptions = builder.addFunction(actionsPerceptionFunction, state, availableActions, T("perceptions"));
+    actionFeaturesEnumeration = computeGeneratedObject(builder.getContext(), T("actionFeaturesEnumeration"));
+
     size_t actionCosts = builder.addFunction(lbcppMemberBinaryFunction(SupervisedLinearRankingBasedDecisionMaker, computeRankingCosts,
                                                                         containerClass(), variableType, denseDoubleVectorClass(positiveIntegerEnumerationEnumeration)),
                                              availableActions, supervision, T("costs"));
@@ -61,7 +63,7 @@ public:
   virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
   {
     jassert(variableName == T("actionFeaturesEnumeration"));
-    if (!actionsPerceptionFunction->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
+    if (!actionsPerceptionFunction->isInitialized() && !actionsPerceptionFunction->initialize(context, goStateClass, containerClass(positiveIntegerPairClass)))
       return ObjectPtr();
     TypePtr outputType = actionsPerceptionFunction->getOutputType();
     jassert(outputType);

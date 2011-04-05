@@ -5,8 +5,10 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "GoInterface.h"
 #include <lbcpp/lbcpp.h>
+using namespace lbcpp;
 
 static CompositeFunctionPtr goDecisionMaker;
 
