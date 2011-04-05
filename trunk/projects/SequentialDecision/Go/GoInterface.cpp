@@ -8,9 +8,15 @@
 #include "GoInterface.h"
 #include <lbcpp/lbcpp.h>
 
+static CompositeFunctionPtr goDecisionMaker;
+
 void lbcppgo::francisInit()
 {
-  std::cout << "Super initi !!!" << std::endl;
+  std::cout << "Initializing lbcpp..." << std::endl;
+  lbcpp::initialize("toto");
+  std::cout << "Loading model..." << std::endl;
+  goDecisionMaker = CompositeFunction::createFromFile(defaultExecutionContext(), File::getCurrentWorkingDirectory().getChildFile(T("lbcppgo.model")));
+  std::cout << "ok for now" << std::endl;
 }
 
 void lbcppgo::francisCompute(int board[361], double **patternValues, double values[361], int blackEatenStones, int whiteEatenStones, int color,int tour, int lastMove, int lastLastMove)
