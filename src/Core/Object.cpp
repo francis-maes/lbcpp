@@ -307,12 +307,21 @@ ObjectPtr Object::cloneToNewType(ExecutionContext& context, ClassPtr newType) co
 void Object::saveToXml(XmlExporter& exporter) const
 {
   ClassPtr type = getClass();
+  DefaultClassPtr defaultClass = type.dynamicCast<DefaultClass>();
+  
   size_t n = type->getNumMemberVariables();
   for (size_t i = 0; i < n; ++i)
   {
     Variable variable = getVariable(i);
-    if (!variable.isMissingValue())
-      exporter.saveVariable(getVariableName(i), variable, getVariableType(i));
+    bool isGenerated = defaultClass && defaultClass->isMemberVariableGenerated(i);
+
+    if (isGenerated)
+      exporter.saveGeneratedVariable(getVariableName(i), getVariableType(i));
+    else
+    {
+      if (!variable.isMissingValue())
+        exporter.saveVariable(getVariableName(i), variable, getVariableType(i));
+    }
   }
 }
 

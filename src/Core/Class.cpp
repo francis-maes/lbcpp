@@ -138,7 +138,7 @@ namespace lbcpp {extern ClassPtr defaultClassClass;};
 ClassPtr DefaultClass::getClass() const
   {return defaultClassClass;}
 
-size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description)
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName, const String& description, bool isGenerated)
 {
   TypePtr type;
   if (templateType)
@@ -146,12 +146,24 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, const String& 
   else
     type = typeManager().getType(context, typeName);
   if (type)
-    return addMemberVariable(context, type, name, shortName, description);
+    return addMemberVariable(context, type, name, shortName, description, isGenerated);
   else
     return (size_t)-1;
 }
 
-size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description)
+class GeneratedVariableSignature : public VariableSignature
+{
+public:
+  GeneratedVariableSignature(TypePtr type,
+                    const String& name,
+                    const String& shortName = String::empty,
+                    const String& description = String::empty)
+    : VariableSignature(type, name, shortName, description) {}
+    
+  GeneratedVariableSignature() {}
+};
+
+size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName, const String& description, bool isGenerated)
 {
   if (!type || name.isEmpty())
   {
@@ -163,7 +175,13 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, TypePtr type, 
     context.errorCallback(T("Class::addMemberVariable"), T("Another variable with name '") + name + T("' already exists"));
     return (size_t)-1;
   }
-  return addMemberVariable(context, new VariableSignature(type, name, shortName, description));
+  VariableSignaturePtr signature;
+  if (isGenerated)
+    signature = new GeneratedVariableSignature(type, name, shortName, description);
+  else
+    signature = new VariableSignature(type, name, shortName, description);
+  
+  return addMemberVariable(context, signature);
 }
 
 size_t DefaultClass::addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature)
@@ -174,6 +192,9 @@ size_t DefaultClass::addMemberVariable(ExecutionContext& context, VariableSignat
   variables.push_back(signature);
   return res;
 }
+
+bool DefaultClass::isMemberVariableGenerated(size_t index) const
+  {return getMemberVariable(index).dynamicCast<GeneratedVariableSignature>();}
 
 size_t DefaultClass::getNumMemberVariables() const
 {

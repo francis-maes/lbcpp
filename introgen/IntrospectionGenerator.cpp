@@ -395,6 +395,9 @@ protected:
     arguments += T(", ");
     arguments += description.isEmpty() ? T("String::empty") : T("T(") + description.quoted() + T(")");
     
+    if (xml->getBoolAttribute(T("generated"), false))
+      arguments += T(", true");
+    
     writeLine(T("addMemberVariable(context, ") + arguments + T(");"));
   }
 

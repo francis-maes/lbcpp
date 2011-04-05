@@ -96,6 +96,7 @@ public:
 
   virtual size_t getNumMemberVariables() const;
   virtual VariableSignaturePtr getMemberVariable(size_t index) const;
+  bool isMemberVariableGenerated(size_t index) const;
 
   virtual int findMemberVariable(const String& name) const;
 
@@ -104,8 +105,8 @@ public:
   void reserveMemberVariables(size_t count)
     {variables.reserve(count);}
 
-  size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty);
-  size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty);
+  size_t addMemberVariable(ExecutionContext& context, TypePtr type, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
+  size_t addMemberVariable(ExecutionContext& context, const String& typeName, const String& name, const String& shortName = String::empty, const String& description = String::empty, bool isGenerated = false);
   virtual size_t addMemberVariable(ExecutionContext& context, VariableSignaturePtr signature);
 
   lbcpp_UseDebuggingNewOperator

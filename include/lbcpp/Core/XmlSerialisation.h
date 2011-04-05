@@ -44,6 +44,8 @@ public:
   juce::XmlElement* getCurrentElement();
 
   void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
+  void saveGeneratedVariable(const String& name, TypePtr expectedType);
+
   void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
   
   void saveDynamicSharedObject(const String& identifier, const ObjectPtr& object, TypePtr expectedType);

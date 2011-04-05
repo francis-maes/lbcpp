@@ -1,8 +1,9 @@
+Serialisation:
+  - radicalement simplifier le systeme des shared objects: maintenant l'object est serialiser, et si on se rend compte qu'il est shared, on lui un assigne un identifiant à la volée
+  - unifier ca avec le mecanisme des variables generé (se servir du flag "isMemberVariableGenerated" pour savoir si c'est generated ou pas; transformer le generatedId en sharedObjectId)
+
 
 Go:
- * Objectif 2: voir ce qu'il se passe sur le semeai
-    - option dans le sandbox
-    - gui
  * Objectif 3: serialisation du modele
  * Courbes dans l'evaluateur
 
