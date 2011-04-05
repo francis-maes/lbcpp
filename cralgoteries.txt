@@ -1,17 +1,10 @@
+* Verifier que la serialisation des states fonctionne
+* Nouvelles features
 
 Go:
- * Objectif 3: serialisation du modele
  * Courbes dans l'evaluateur
-
  * GoPatterns
  * Utilisation du manager
-
-
-** Serialisation des modèles appris (Go, Hiv, ProteinLearner)
-   -> Shared dynamic object
-    * Rajouter un attribute "generated" dans les Library.xml
-    * Dans function, le outputtype est generated
-    * Dans les featuregenerator, le FeaturesEnumeration est generated
 
 ** Problèmes valgrind sur OptimizerTest
 ** Plantage au lancement du RunWorkUnit
