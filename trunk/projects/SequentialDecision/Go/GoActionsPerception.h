@@ -825,6 +825,8 @@ public:
   }
 
 private:
+  friend class GoActionsPerceptionClass;
+  
   size_t boardSize;
 
   /*
