@@ -85,6 +85,15 @@ void XmlExporter::saveVariable(const String& name, const Variable& variable, Typ
   leave();
 }
 
+void XmlExporter::saveGeneratedVariable(const String& name, TypePtr expectedType)
+{
+  enter(T("variable"), name);
+  setAttribute(T("generatedId"), T("TOTO")); // FIXME
+  // FIXME: add in shared objects map
+  writeType(expectedType);
+  leave();
+}
+
 void XmlExporter::saveElement(size_t index, const Variable& variable, TypePtr expectedType)
 {
   enter(T("element"));
@@ -544,48 +553,6 @@ ObjectPtr XmlImporter::getSharedObject(const String& name) const
   jassert(it->second);
   return it->second;
 }
-
-/*
-bool XmlExporter::CompareObjectsDeterministically::operator()(const ObjectPtr& object1, const ObjectPtr& object2) const
-{
-  if (!object2)
-    return false;
-  if (!object1)
-    return true;
-  if (object1->getClass() != object2->getClass())
-  {
-    jassert(object1->getClass()->getName() != object2->getClass()->getName());
-    return object1->getClass()->getName() < object2->getClass()->getName();
-  }
-  ClassPtr cl = object1->getClass();
-  size_t n = cl->getNumMemberVariables();
-  for (size_t i = 0; i < n; ++i)
-  {
-    Variable v1 = object1->getVariable(i);
-    Variable v2 = object2->getVariable(i);
-    if (v1 == v2)
-      continue;
-    if (!v2.exists())
-      return false;
-    if (!v1.exists())
-      return true;
-    if (v1.isObject())
-    {
-      bool res1 = (*this)(v1.getObject(), v2.getObject());
-      bool res2 = (*this)(v2.getObject(), v1.getObject());
-      jassert(!res1 || !res2);
-      if (res1 != res2)
-        return res1;
-      else
-      {
-        // objects are stricly identic
-        return v1.getObject() < v2.getObject();
-      }
-    }
-  }
-  return false;
-}
-*/
 
 /*
 ** XmlElement

@@ -165,7 +165,12 @@ public:
     }
     
     CompositeFunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
- 
+    if (outputFile != File::nonexistent)
+    {
+      context.resultCallback(T("savedGoDecisionMaker"), goDecisionMaker);
+      goDecisionMaker->saveToFile(context, outputFile);
+    }
+    
     // load games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
     ContainerPtr trainingGames = loadGames(context, trainingFile, maxCount);
@@ -228,6 +233,7 @@ public:
     if (interactiveFile.existsAsFile() && !processInteractiveFile(context, interactiveFile, goDecisionMaker))
       return false;
 
+#if 0
     // tmp
     if (outputFile != File::nonexistent)
     {
@@ -235,10 +241,12 @@ public:
       context.resultCallback(T("loadedGoDecisionMaker"), goDecisionMaker);
       context.enterScope(T("Loading test"));
       bool ok = !interactiveFile.existsAsFile() || processInteractiveFile(context, interactiveFile, goDecisionMaker); 
+      goDecisionMaker->saveToFile(context, File(outputFile.getFullPathName() + T(".test")));
       context.leaveScope(ok);
       return true;
     }
     // -
+#endif // 0    
 
     return Variable((Time::getMillisecondCounterHiRes() - startTime) / 1000.0, timeType);
 
