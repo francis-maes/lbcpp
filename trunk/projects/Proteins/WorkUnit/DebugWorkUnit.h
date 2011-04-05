@@ -24,9 +24,7 @@ public:
     ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     foo(context, state);
     
-    
-    NumericalProteinFeaturesParametersPtr parameters;
-    std::cout << parameters->toString() << std::endl;
+    std::cout << numericalProteinPredictorParameters()->toString() << std::endl;
     
     return Variable();
   }
