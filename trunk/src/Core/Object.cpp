@@ -334,6 +334,7 @@ ObjectPtr Object::computeGeneratedObject(ExecutionContext& context, const String
 bool Object::loadFromXml(XmlImporter& importer)
 {
   ClassPtr thisClass = getClass();
+  DefaultClassPtr defaultClass = thisClass.dynamicCast<DefaultClass>();
   bool ok = true;
   
   forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("variable"))
@@ -351,11 +352,12 @@ bool Object::loadFromXml(XmlImporter& importer)
       importer.warningMessage(T("Object::loadFromXml"), T("Could not find variable ") + name.quoted() + T(" in class ") + thisClass->getName());
       continue;
     }
-    TypePtr expectedType = thisClass->getMemberVariableType(variableNumber);
+    TypePtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);
     jassert(expectedType);
+    bool isGenerated = defaultClass && defaultClass->isMemberVariableGenerated((size_t)variableNumber);
     
     Variable value;
-    if (child->hasAttribute(T("generatedId")))
+    if (child->getBoolAttribute(T("generated"), false))
     {
       ObjectPtr object = computeGeneratedObject(importer.getContext(), name);
       if (!object)
@@ -363,8 +365,10 @@ bool Object::loadFromXml(XmlImporter& importer)
         ok = false;
         continue;
       }
-      importer.addSharedObject(child->getStringAttribute(T("generatedId")), object);
       value = Variable(object);
+      importer.enter(child);
+      importer.linkCurrentElementToObject(object);
+      importer.leave();
     }
     else
       value = importer.loadVariable(child, expectedType);

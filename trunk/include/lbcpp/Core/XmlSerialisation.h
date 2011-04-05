@@ -261,10 +261,7 @@ public:
   Variable loadVariable(TypePtr expectedType);
   void leave();
 
-  // shared objects
-  bool addSharedObject(const String& name, ObjectPtr object);
-  bool removeSharedObject(const String& name, ObjectPtr object);
-  ObjectPtr getSharedObject(const String& name) const;
+  void linkCurrentElementToObject(ObjectPtr object);
 
   ExecutionContext& getContext()
     {return context;}
@@ -274,9 +271,12 @@ private:
   juce::XmlElement* root;
 
   std::vector<juce::XmlElement* > stack;
-  std::vector<SharedObjectMap> sharedObjectsStack;
 
-  bool loadSharedObjects();
+  typedef std::map<String, ObjectPtr> SharedObjectsMap;
+  SharedObjectsMap sharedObjects;
+
+  bool addSharedObject(const String& name, ObjectPtr object);
+  ObjectPtr getSharedObject(const String& name) const;
 };
 
 }; /* namespace lbcpp */

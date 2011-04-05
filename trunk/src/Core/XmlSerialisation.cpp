@@ -236,6 +236,7 @@ void XmlExporter::saveGeneratedVariable(const String& name, const ObjectPtr& obj
   enter(T("variable"), name);
   writeType(expectedType);
   linkObjectToCurrentElement(object);
+  setAttribute(T("generated"), T("yes"));
   leave();
 }
 
@@ -348,9 +349,9 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
       // first time this is object is referred to, need to create an identifier
       identifier = makeSharedObjectIdentifier(object);
       const XmlElementPtr& sourceElement = it->second.first;
-      sourceElement->setAttribute(T("sharedObjectId"), identifier);
+      sourceElement->setAttribute(T("id"), identifier);
     }
-    getCurrentElement()->setAttribute(T("shared"), identifier);
+    getCurrentElement()->setAttribute(T("ref"), identifier);
   }
 }
 
@@ -436,42 +437,9 @@ void XmlImporter::warningMessage(const String& where, const String& what) const
 Variable XmlImporter::load()
 {
   if (root->getTagName() == T("lbcpp"))
-  {
-    loadSharedObjects();
     return loadVariable(root->getChildByName(T("variable")), TypePtr());
-  }
   else
     return loadVariable(root, TypePtr());
-}
-
-bool XmlImporter::loadSharedObjects()
-{
-  bool res = true;
-  forEachXmlChildElementWithTagName(*getCurrentElement(), child, T("shared"))
-  {
-    Variable variable = loadVariable(child, TypePtr());
-    if (!variable.exists())
-    {
-      res = false;
-      continue;
-    }
-
-    if (!variable.isObject())
-    {
-      errorMessage(T("XmlImporter::loadRecursively"), T("Shared variable is not an object"));
-      res = false;
-      continue;
-    }
-    String identifier = child->getStringAttribute(T("identifier"));
-    if (identifier.isEmpty())
-    {
-      errorMessage(T("XmlImporter::loadRecursively"), T("Shared object has no identifier"));
-      res = false;
-      continue;
-    }
-    sharedObjectsStack.back()[identifier] = variable.getObject();
-  }
-  return res;
 }
 
 TypePtr XmlImporter::loadType(TypePtr expectedType)
@@ -487,8 +455,8 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
     {
       TypePtr res;
       enter(child);
-      if (hasAttribute(T("reference")))
-        res = getSharedObject(getStringAttribute(T("reference"))).staticCast<Type>().get();
+      if (hasAttribute(T("ref")))
+        res = getSharedObject(getStringAttribute(T("ref"))).staticCast<Type>().get();
       else
         res = Type::loadUnnamedTypeFromXml(*this);
       leave();
@@ -505,25 +473,34 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
 
 Variable XmlImporter::loadVariable(TypePtr expectedType)
 {
-  TypePtr type = loadType(expectedType);
-  if (!type)
-    return Variable();
-  
-  if (getStringAttribute(T("missing")) == T("true"))
-    return Variable::missingValue(type);
-
-  jassert(!hasAttribute(T("generatedId")));
-
-  if (hasAttribute(T("reference")))
-    return getSharedObject(getStringAttribute(T("reference")));
+  if (hasAttribute(T("ref")))
+    return getSharedObject(getStringAttribute(T("ref")));
   else
-    return Variable::createFromXml(type, *this);
+  {
+    TypePtr type = loadType(expectedType);
+    if (!type)
+      return Variable();
+    
+    if (getStringAttribute(T("missing")) == T("true"))
+      return Variable::missingValue(type);
+
+    Variable res = Variable::createFromXml(type, *this);
+    if (res.isObject())
+      linkCurrentElementToObject(res.getObject());
+    return res;
+  }
+}
+
+void XmlImporter::linkCurrentElementToObject(ObjectPtr object)
+{
+  if (hasAttribute(T("id")))
+    addSharedObject(getStringAttribute(T("id")), object);
 }
 
 Variable XmlImporter::loadVariable(juce::XmlElement* elt, TypePtr expectedType)
 {
   enter(elt);
-  Variable res = loadSharedObjects() ? loadVariable(expectedType) : Variable();
+  Variable res = loadVariable(expectedType);
   leave();
   return res;
 }
@@ -532,7 +509,6 @@ void XmlImporter::enter(juce::XmlElement* child)
 {
   jassert(child);
   stack.push_back(child);
-  sharedObjectsStack.push_back(sharedObjectsStack.size() ? sharedObjectsStack.back() : SharedObjectMap());
 }
 
 bool XmlImporter::enter(const String& childTagName)
@@ -551,48 +527,27 @@ void XmlImporter::leave()
 {
   jassert(stack.size());
   stack.pop_back();
-  jassert(sharedObjectsStack.size());
-  sharedObjectsStack.pop_back();
 }
 
 bool XmlImporter::addSharedObject(const String& name, ObjectPtr object)
 {
-  jassert(sharedObjectsStack.size());
-  SharedObjectMap& m = sharedObjectsStack.back();
-  if (m.find(name) != m.end())
+  if (sharedObjects.find(name) != sharedObjects.end())
   {
     context.errorCallback(T("Could not add shared object ") + name.quoted() + T(": this identifier is already used by another object"));
     return false;
   }
-  std::cerr << "addSharedObject: " << name << " " << object->toShortString() << std::endl;
-  m[name] = object;
-  return true;
-}
-
-bool XmlImporter::removeSharedObject(const String& name, ObjectPtr object)
-{
-  jassert(sharedObjectsStack.size());
-  SharedObjectMap& m = sharedObjectsStack.back();
-  if (m.find(name) == m.end())
-  {
-    context.errorCallback(T("Could not remove shared object ") + name.quoted() + T(": this object does not exists"));
-    return false;
-  }
-  std::cerr << "removeSharedObject: " << name << " " << object->toShortString() << std::endl;
-  m.erase(name);
+  sharedObjects[name] = object;
   return true;
 }
 
 ObjectPtr XmlImporter::getSharedObject(const String& name) const
 {
-  const SharedObjectMap& sharedObjects = sharedObjectsStack.back();
-  SharedObjectMap::const_iterator it = sharedObjects.find(name);
+  SharedObjectsMap::const_iterator it = sharedObjects.find(name);
   if (it == sharedObjects.end())
   {
     errorMessage(T("XmlImporter::getSharedObject"), T("Could not find shared object reference ") + name.quoted());
     return ObjectPtr();
   }
-  std::cerr << "getSharedObject: " << name << " " << it->second->toShortString() << std::endl;
   jassert(it->second);
   return it->second;
 }

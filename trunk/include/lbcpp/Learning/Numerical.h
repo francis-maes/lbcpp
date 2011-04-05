@@ -64,7 +64,7 @@ typedef ReferenceCountedObjectPtr<NumericalLearnableFunction> NumericalLearnable
 class StochasticGDParameters : public LearnerParameters
 {
 public:
-  StochasticGDParameters( IterationFunctionPtr learningRate = constantIterationFunction(0.1),
+  StochasticGDParameters( IterationFunctionPtr learningRate,
                           StoppingCriterionPtr stoppingCriterion = maxIterationsWithoutImprovementStoppingCriterion(20),
                           size_t maxIterations = 100,
                           bool doPerEpisodeUpdates = false,
@@ -73,6 +73,7 @@ public:
                           bool randomizeExamples = true,
                           bool evaluateAtEachIteration = true,
                           size_t numExamplesPerIteration = 0);
+  StochasticGDParameters();
 
   virtual BatchLearnerPtr createBatchLearner(ExecutionContext& context) const;
   virtual OnlineLearnerPtr createOnlineLearner(ExecutionContext& context) const;
