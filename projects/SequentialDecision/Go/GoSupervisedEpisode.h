@@ -78,7 +78,7 @@ protected:
   friend class SupervisedLinearRankingBasedDecisionMakerClass;
 
   FunctionPtr actionsPerceptionFunction; // State, Container[Action] -> Container[Perceptions] 
-  EnumerationPtr actionFeaturesEnumeration;
+  EnumerationPtr actionFeaturesEnumeration; // Generated variable
   StochasticGDParametersPtr sgdParameters;
   FunctionPtr rankingMachine;
 
