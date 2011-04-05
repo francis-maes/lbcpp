@@ -18,12 +18,6 @@
     <variable type="PositiveIntegerPairVector" name="previousActions"/>
   </class>
 
-  <class name="PositiveIntegerPair">
-    <variable type="PositiveInteger" name="first"/>
-    <variable type="PositiveInteger" name="second"/>
-  </class>
-  <class name="PositiveIntegerPairVector" base="Vector[PositiveIntegerPair]"/>
-
   <class name="GoStateSampler" base="Function">
     <variable type="PositiveInteger" name="minSize"/>
     <variable type="PositiveInteger" name="maxSize"/>
@@ -99,25 +93,6 @@
 
   <class name="GoActionsPerception" base="CompositeFunction">
     <variable type="PositiveInteger" name="boardSize"/>
-  </class>
-
-  <!-- Segment Matrix -->
-  <template name="MatrixRegion" base="Object">
-    <parameter name="elementsType" type="Variable"/>
-    <variable type="PositiveInteger" name="index"/>
-    <variable type="elementsType" name="value"/>
-    <variable type="PositiveInteger" name="size"/>
-    <variable type="ObjectVector[Pair[PositiveInteger, PositiveInteger]]" name="positions"/>
-  </template>
-
-  <template name="SegmentedMatrix" base="Matrix[PositiveInteger]">
-    <parameter name="elementsType" type="Variable"/>
-    <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
-  </template>
-  <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
-
-  <class name="SegmentMatrixFunction" base="Function">
-    <variable type="Boolean" name="use8Connexity"/>
   </class>
 
   <enumeration name="DiscretizedGoCount">

@@ -90,7 +90,62 @@ protected:
   Variable second;
 };
 
+/*
+** PositiveIntegerPair
+*/
+extern ClassPtr positiveIntegerPairClass;
 
+namespace impl
+{
+  typedef std::pair<size_t, size_t> PositiveIntegerPair;
+};
+class PositiveIntegerPair;
+typedef ReferenceCountedObjectPtr<PositiveIntegerPair> PositiveIntegerPairPtr;
+class PositiveIntegerPairVector;
+typedef ReferenceCountedObjectPtr<PositiveIntegerPairVector> PositiveIntegerPairVectorPtr;
+
+class PositiveIntegerPair : public Object
+{
+public:
+  PositiveIntegerPair(const impl::PositiveIntegerPair& p)
+    : Object(positiveIntegerPairClass), first(p.first), second(p.second)
+  {
+  }
+
+  PositiveIntegerPair(size_t first, size_t second)
+    : Object(positiveIntegerPairClass), first(first), second(second) {}
+  PositiveIntegerPair() : Object(positiveIntegerPairClass), first((size_t)-1), second((size_t)-1) {}
+
+  size_t getFirst() const
+    {return first;} 
+
+  size_t getSecond() const
+    {return second;}
+ 
+  virtual int compare(const ObjectPtr& otherObject) const
+  {
+    const PositiveIntegerPairPtr& other = otherObject.staticCast<PositiveIntegerPair>();
+    if (first != other->first)
+      return (int)first - (int)other->first;
+    else
+      return (int)second - (int)other->second;
+  }
+
+  impl::PositiveIntegerPair getValue() const
+    {return impl::PositiveIntegerPair(first, second);}
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class PositiveIntegerPairClass;
+
+  size_t first;
+  size_t second;
+};
+
+/*
+** Variable <-> Native conversions
+*/
 template<class T1, class T2>
 inline void variableToNative(ExecutionContext& context, std::pair<T1, T2>& dest, const Variable& source)
 {

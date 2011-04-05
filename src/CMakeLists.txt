@@ -175,6 +175,7 @@ SET(LBCPP_DATA_SOURCES
 SET(LBCPP_DATA_MATRIX_SOURCES
   Data/Matrix/Matrix.cpp
   Data/Matrix/UpperLowerSquareMatrix.h
+  Data/Matrix/SegmentMatrixFunction.h
   Data/Matrix/MatrixLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/MatrixLibrary.cpp
 )

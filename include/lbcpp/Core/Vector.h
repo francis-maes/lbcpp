@@ -10,6 +10,7 @@
 # define LBCPP_CORE_VECTOR_H_
 
 # include "Container.h"
+# include "Pair.h"
 
 namespace lbcpp
 {
@@ -298,6 +299,22 @@ protected:
     const ReferenceCountedObjectPtr<ObjectType>& v = value.getObjectAndCast<ObjectType>();
     return v ? v->getValue() : ImplementationType();
   }
+};
+
+extern ClassPtr positiveIntegerPairVectorClass;
+
+class PositiveIntegerPairVector : public BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair>
+{
+public:
+  typedef BuiltinVector<impl::PositiveIntegerPair, PositiveIntegerPair> BaseClass;
+
+  PositiveIntegerPairVector(size_t length = 0)
+    : BaseClass(positiveIntegerPairVectorClass, length, impl::PositiveIntegerPair(0, 0)) {}
+
+  virtual TypePtr getElementsType() const
+    {return positiveIntegerPairClass;}
+  
+  lbcpp_UseDebuggingNewOperator
 };
 
 extern ClassPtr vectorClass(TypePtr elementsType);

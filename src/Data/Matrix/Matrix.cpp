@@ -11,7 +11,9 @@
 #include <lbcpp/Data/SymmetricMatrix.h>
 using namespace lbcpp;
 
-/* Matrix */
+/*
+** Matrix
+*/
 String Matrix::toString() const
 {
   String res;
@@ -42,7 +44,59 @@ bool Matrix::loadFromXml(XmlImporter& importer)
   return Container::loadFromXml(importer);
 }
 
-/* Matrix Constructor Method */
+/*
+** MatrixRegion
+*/
+MatrixRegion::MatrixRegion(ClassPtr thisClass, size_t index)
+  : Object(thisClass), index(index), size(0)
+{
+}
+
+void MatrixRegion::addPosition(const std::pair<size_t, size_t>& position)
+{
+  positions.insert(position);
+  ++size;
+}
+
+void MatrixRegion::addNeighboringElement(const Variable& value, size_t count)
+  {neighboringElements[value] += count;}
+
+size_t MatrixRegion::getNumNeighboringElement(const Variable& value) const
+{
+  std::map<Variable, size_t>::const_iterator it = neighboringElements.find(value);
+  return it == neighboringElements.end() ? 0 : it->second;
+}
+
+/*
+** SegmentedMatrix
+*/
+SegmentedMatrix::SegmentedMatrix(TypePtr elementsType, size_t numRows, size_t numColumns)
+  : BaseClass(segmentedMatrixClass(elementsType), numRows, numColumns, (size_t)-1), elementsType(elementsType)
+{
+  BaseClass::elementsType = positiveIntegerType;
+  regionClass = matrixRegionClass(elementsType);
+}
+
+MatrixRegionPtr SegmentedMatrix::startRegion(const Variable& value)
+{
+  size_t index = regions.size();
+  MatrixRegionPtr res = new MatrixRegion(regionClass, index);
+  res->setValue(value);
+  regions.push_back(res);
+  return res;
+}
+
+void SegmentedMatrix::addToCurrentRegion(const std::pair<size_t, size_t>& position)
+{
+  jassert(regions.size());
+  MatrixRegionPtr region = regions.back();
+  region->addPosition(position);
+  BaseClass::setElement(position.first, position.second, region->getIndex());
+}
+
+/*
+** Matrix Constructor Method
+*/
 namespace lbcpp
 {
 
