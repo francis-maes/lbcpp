@@ -343,20 +343,33 @@ void DenseDoubleVector::saveToXml(XmlExporter& exporter) const
   for (size_t i = 0; i < n; ++i)
     res += String((*values)[i]) + T(" ");
   exporter.addTextElement(res.trimEnd());
+  exporter.setAttribute(T("size"), n);
 }
 
 bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
 {
   if (!Object::loadFromXml(importer))
     return false;
+
+  bool ok = true;
   StringArray tokens;
-  tokens.addTokens(importer.getAllSubText(), true);
+  String allText = importer.getAllSubText();
+  tokens.addTokens(allText, true);
+  tokens.removeEmptyStrings();
   size_t n = tokens.size();
+  int expectedSize = importer.getIntAttribute(T("size"), -1);
+  if (expectedSize != (int)n)
+  {
+    importer.getContext().errorCallback(T("Invalid number of tokens: expected ") +
+      String(expectedSize) + T(" values, found ") + String((int)n) + T(" values"));
+    ok = false;
+  }
+
   TypePtr elementType = getElementsType();
   ensureSize(n);
   for (size_t i = 0; i < n; ++i)
     getValueReference(i) = tokens[i].getDoubleValue();
-  return true;
+  return ok;
 }
 
 void DenseDoubleVector::ensureSize(size_t minimumSize)

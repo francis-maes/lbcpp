@@ -16,16 +16,22 @@ using namespace lbcpp;
 StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate,
                                                 StoppingCriterionPtr stoppingCriterion,
                                                 size_t maxIterations,
-                                                bool doPerEpisodeUpdates,
+                                                bool perEpisodeUpdates,
                                                 bool normalizeLearningRate,
                                                 bool restoreBestParameters,
                                                 bool randomizeExamples,
                                                 bool evaluateAtEachIteration,
                                                 size_t numExamplesPerIteration)
   : learningRate(learningRate), stoppingCriterion(stoppingCriterion), maxIterations(maxIterations), 
-    perEpisodeUpdates(doPerEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
+    perEpisodeUpdates(perEpisodeUpdates), normalizeLearningRate(normalizeLearningRate), 
     restoreBestParameters(restoreBestParameters), randomizeExamples(randomizeExamples),
     evaluateAtEachIteration(evaluateAtEachIteration), numExamplesPerIteration(numExamplesPerIteration)
+{
+}
+
+StochasticGDParameters::StochasticGDParameters()
+  : maxIterations(0), perEpisodeUpdates(false), normalizeLearningRate(true),
+    restoreBestParameters(true), randomizeExamples(true), evaluateAtEachIteration(true), numExamplesPerIteration(0)
 {
 }
 

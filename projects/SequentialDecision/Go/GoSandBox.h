@@ -165,14 +165,15 @@ public:
     }
     
     CompositeFunctionPtr goDecisionMaker = new SupervisedLinearRankingBasedDecisionMaker(new GoActionsPerception(), sgdParameters);
-    goDecisionMaker->initialize(context, goStateClass, positiveIntegerPairClass);
-
+ /*
     if (outputFile != File::nonexistent)
     {
-      context.resultCallback(T("savedGoDecisionMaker"), goDecisionMaker);
-      goDecisionMaker->saveToFile(context, outputFile);
-    }
-    return true;
+      goDecisionMaker = CompositeFunction::createFromFile(context, outputFile);
+      context.resultCallback(T("loadedGoDecisionMaker"), goDecisionMaker);
+      return true;
+    }*/
+ 
+    //goDecisionMaker->initialize(context, goStateClass, positiveIntegerPairClass);
 
     // load games
     context.enterScope(T("Loading training games from ") + context.getFilePath(trainingFile));
