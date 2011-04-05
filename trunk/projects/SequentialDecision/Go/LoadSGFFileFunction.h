@@ -172,6 +172,8 @@ public:
       return Variable::missingValue(outputType);
     }
 
+    if (numXmlElements > 10)
+      numXmlElements = 10; // TMP !!! 
     PositiveIntegerPairVectorPtr trajectory = new PositiveIntegerPairVector(numXmlElements - firstMoveIndex);
     bool isBlackTurn = true;
     for (size_t i = firstMoveIndex; i < numXmlElements; ++i)

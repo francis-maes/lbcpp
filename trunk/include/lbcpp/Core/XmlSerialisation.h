@@ -32,31 +32,151 @@
 namespace lbcpp
 {
 
+/*
+** XmlElement
+*/
+class XmlElement;
+typedef ReferenceCountedObjectPtr<XmlElement> XmlElementPtr;
+
+class XmlElement : public Object
+{
+public:
+  XmlElement(const String& tagName)
+    : tagName(tagName) {}
+  XmlElement() {}
+  virtual ~XmlElement() {}
+
+  static XmlElementPtr createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
+  bool loadFromJuceXmlElement(juce::XmlElement* element);
+  juce::XmlElement* createJuceXmlElement() const;
+  
+  void saveObject(ExecutionContext& context, ObjectPtr value);
+  ObjectPtr createObject(ExecutionContext& context) const;
+
+  template<class O>
+  ReferenceCountedObjectPtr<O> createObjectAndCast(ExecutionContext& context) const
+  {
+    ObjectPtr res = createObject(context);
+    return res.staticCast<O>();
+  }
+
+  /*
+  ** Tag
+  */
+  String getTagName() const
+    {return tagName;}
+
+  void setTagName(const String& tagName)
+    {this->tagName = tagName;}
+
+  /*
+  ** Attributes
+  */
+  size_t getNumAttributes() const
+    {return attributes.size();}
+  
+  const String& getAttributeName(size_t index) const
+    {return attributes[index].first;}
+
+  void setAttributeName(size_t index, const String& name)
+    {attributes[index].first = name;}
+
+  const String& getAttributeValue(size_t index) const
+    {return attributes[index].second;}
+
+  void setAttribute(const String& name, const String& value);
+  void setAttribute(const String& name, int value)
+    {setAttribute(name, String(value));}
+  void setAttribute(const String& name, double value)
+    {setAttribute(name, String(value));}
+
+  bool hasAttribute(const String& name) const;
+  void removeAttribute(const String& name);
+
+  String getStringAttribute(const String& name, const String& defaultValue = String::empty) const;
+  int getIntAttribute(const String& name, int defaultValue = 0) const;
+
+  /*
+  ** Text
+  */
+  bool isTextElement() const
+    {return tagName.isEmpty();}
+
+  String getText() const
+    {return text;}
+  String getAllSubText() const;
+
+  /*
+  ** Child Elements
+  */
+  size_t getNumChildElements() const
+    {return childElements.size();}
+
+  XmlElementPtr getChildElement(size_t index) const
+    {return childElements[index];}
+
+  XmlElementPtr getChildByName(const String& name) const;
+
+  void addChildElement(XmlElementPtr element)
+    {childElements.push_back(element);}
+
+  void addTextElement(const String& text)
+  {
+    XmlElementPtr element(new XmlElement(String::empty));
+    element->text = text;
+    addChildElement(element);
+  }
+
+  void removeChildElements()
+    {childElements.clear();}
+
+  void setChildElements(const std::vector<XmlElementPtr>& childs)
+    {childElements = childs;}
+
+  /* Object */
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
+
+  virtual String toString() const;
+  virtual String toShortString() const;
+
+  lbcpp_UseDebuggingNewOperator
+
+private:
+  friend class XmlElementClass;
+  
+  String tagName;
+  std::vector<XmlElementPtr> childElements;
+  std::vector< std::pair<String, String> > attributes;
+  String text;
+};
+
+extern ClassPtr xmlElementClass;
+
+/*
+** XmlExporter
+*/
 class XmlExporter
 {
 public:
-  XmlExporter(ExecutionContext& context, const String& rootTag = T("lbcpp"), int version = 100);
-  ~XmlExporter();
+  XmlExporter(ExecutionContext& context, const String& rootTag = T("lbcpp"), int version = 200);
+  XmlExporter(ExecutionContext& context, XmlElementPtr target);
 
   bool saveToFile(const File& file);
   String toString();
 
-  juce::XmlElement* getCurrentElement();
+  XmlElementPtr getCurrentElement();
 
   void saveVariable(const String& name, const Variable& variable, TypePtr expectedType);
-  void saveGeneratedVariable(const String& name, TypePtr expectedType);
+  void saveGeneratedVariable(const String& name, const ObjectPtr& object, TypePtr expectedType);
 
   void saveElement(size_t index, const Variable& variable, TypePtr expectedType);
   
-  void saveDynamicSharedObject(const String& identifier, const ObjectPtr& object, TypePtr expectedType);
-  void saveDynamicType(const String& identifier, const TypePtr& type)
-    {saveDynamicSharedObject(identifier, type, typeClass);}
-
   void enter(const String& tagName, const String& name = String::empty);
   void writeType(TypePtr type);
   void writeName(const String& name);
   void writeVariable(const Variable& variable, TypePtr expectedType);
-  void writeObject(const ObjectPtr& object, TypePtr expectedType, bool isDynamic = false, const String& identifier = String::empty);
+  void writeObject(const ObjectPtr& object, TypePtr expectedType);
   void leave();
 
   void addTextElement(const String& text);
@@ -68,48 +188,29 @@ public:
   void setAttribute(const String& name, size_t value)
     {getCurrentElement()->setAttribute(name, (int)value);}
 
-  void addChildElement(juce::XmlElement* elt)
+  void addChildElement(XmlElementPtr elt)
     {getCurrentElement()->addChildElement(elt);}
-
-  void flushSave();
 
   ExecutionContext& getContext()
     {return context;}
 
 private:
   ExecutionContext& context;
-  juce::XmlElement* root;
-  std::vector<juce::XmlElement* > currentStack;
+  XmlElementPtr root;
+  std::vector<XmlElementPtr> currentStack;
 
-  struct SavedObject
-  {
-    SavedObject(const SavedObject& other)
-      : identifier(other.identifier), object(other.object), elt(other.elt),
-        references(other.references), dependencies(other.dependencies), ordered(other.ordered) {}
-    SavedObject() : elt(NULL), ordered(true) {}
+  std::set<String> sharedObjectsIdentifiers;
 
-    String identifier;
-    ObjectPtr object;
-    juce::XmlElement* elt;
-    std::vector<juce::XmlElement* > references; // XmlElements refering to this object
-    std::set<size_t> dependencies; // dependencies on other savedObjects 
-    bool ordered;
-  };
+  typedef std::map<ObjectPtr, std::pair<XmlElementPtr, String> > ObjectXmlElementsMap; // Object -> (XmlElement, Identifier)
+  ObjectXmlElementsMap objectXmlElements;
 
-  std::vector<SavedObject> savedObjects;
-  typedef std::map<ObjectPtr, size_t> SavedObjectsMap;
-  SavedObjectsMap savedObjectsMap;
-  std::set<size_t> sharedObjectsIndices;
-  std::set<size_t> currentlySavedObjects;
-
-  void makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjectsIndices, std::vector<size_t>& res);
-
-  void resolveSingleObjectReference(SavedObject& savedObject);
-  void resolveSharedObjectReferences(SavedObject& savedObject);
-
-  static String makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers);
+  void linkObjectToCurrentElement(const ObjectPtr& object);
+  String makeSharedObjectIdentifier(ObjectPtr object);
 };
 
+/*
+** XmlImporter
+*/
 class XmlImporter
 {
 public:
@@ -178,141 +279,6 @@ private:
   bool loadSharedObjects();
 };
 
-class XmlElement;
-typedef ReferenceCountedObjectPtr<XmlElement> XmlElementPtr;
-
-class XmlElement : public Object
-{
-public:
-  XmlElement(const String& tagName)
-    : tagName(tagName) {}
-  XmlElement() {}
-  virtual ~XmlElement() {}
-
-  static XmlElementPtr createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted = false);
-  bool loadFromJuceXmlElement(juce::XmlElement* element);
-  juce::XmlElement* createJuceXmlElement() const;
-  
-  bool saveObject(ExecutionContext& context, ObjectPtr value)
-  {
-    XmlExporter exporter(context, T("variable"), 0);
-    exporter.writeVariable(value, objectClass);
-    exporter.flushSave();
-    return loadFromJuceXmlElement(exporter.getCurrentElement());
-  }
-  
-  ObjectPtr createObject(ExecutionContext& context) const
-  {
-    juce::XmlDocument newDocument(createJuceXmlElement()->createDocument(String::empty));
-    XmlImporter importer(context, newDocument);
-    Variable v = importer.isOpened() ? importer.load() : Variable();
-    jassert(v.isObject());
-    return v.getObject();
-  }
-
-  template<class O>
-  ReferenceCountedObjectPtr<O> createObjectAndCast(ExecutionContext& context) const;
-
-  /*
-  ** Tag
-  */
-  String getTagName() const
-    {return tagName;}
-
-  void setTagName(const String& tagName)
-    {this->tagName = tagName;}
-
-  /*
-  ** Attributes
-  */
-  size_t getNumAttributes() const
-    {return attributes.size();}
-  
-  const String& getAttributeName(size_t index) const
-    {return attributes[index].first;}
-
-  void setAttributeName(size_t index, const String& name)
-    {attributes[index].first = name;}
-
-  const String& getAttributeValue(size_t index) const
-    {return attributes[index].second;}
-
-  void setAttribute(const String& name, const String& value);
-  void setAttribute(const String& name, int value)
-    {setAttribute(name, String(value));}
-
-  bool hasAttribute(const String& name) const;
-  void removeAttribute(const String& name);
-
-  String getStringAttribute(const String& name, const String& defaultValue = String::empty) const;
-  int getIntAttribute(const String& name, int defaultValue = 0) const;
-
-  /*
-  ** Text
-  */
-  bool isTextElement() const
-    {return tagName.isEmpty();}
-
-  String getText() const
-    {return text;}
-  String getAllSubText() const;
-
-  /*
-  ** Child Elements
-  */
-  size_t getNumChildElements() const
-    {return childElements.size();}
-
-  XmlElementPtr getChildElement(size_t index) const
-    {return childElements[index];}
-
-  XmlElementPtr getChildByName(const String& name) const;
-
-  void addChildElement(XmlElementPtr element)
-    {childElements.push_back(element);}
-
-  void addTextElement(const String& text)
-  {
-    XmlElementPtr element(new XmlElement(String::empty));
-    element->text = text;
-    addChildElement(element);
-  }
-
-  void removeChildElements()
-    {childElements.clear();}
-
-  void setChildElements(const std::vector<XmlElementPtr>& childs)
-    {childElements = childs;}
-
-  /* Object */
-  virtual void saveToXml(XmlExporter& exporter) const
-    {exporter.addChildElement(createJuceXmlElement());}
-
-  virtual bool loadFromXml(XmlImporter& importer);
-
-  lbcpp_UseDebuggingNewOperator
-
-private:
-  friend class XmlElementClass;
-  
-  String tagName;
-  std::vector<XmlElementPtr> childElements;
-  std::vector< std::pair<String, String> > attributes;
-  String text;
-};
-
-extern ClassPtr xmlElementClass;
-
 }; /* namespace lbcpp */
-
-using namespace lbcpp;
-
-template<class O>
-inline ReferenceCountedObjectPtr<O> XmlElement::createObjectAndCast(ExecutionContext& context) const
-{
-  ObjectPtr res = createObject(context);
-  return res.staticCast<O>();
-}
-
 
 #endif // !LBCPP_CORE_XML_SERIALISATION_H_

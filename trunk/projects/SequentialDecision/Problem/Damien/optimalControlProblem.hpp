@@ -29,7 +29,7 @@ public:
   virtual size_t GetTime() = 0;
 };
 
-typedef ReferenceCountedObjectPtr<optimalControlProblem> optimalControlProblemPtr;
+typedef lbcpp::ReferenceCountedObjectPtr<optimalControlProblem> optimalControlProblemPtr;
 
 template<class V> inline vector<V> operator*(V c,const std::vector<V>& a) {
   vector<V> answer(a.size());

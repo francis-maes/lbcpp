@@ -12,23 +12,175 @@
 using namespace lbcpp;
 
 /*
+** XmlElement
+*/
+XmlElementPtr XmlElement::createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted)
+{
+  XmlElementPtr res(new XmlElement(element->getTagName()));
+  res->attributes.resize(element->getNumAttributes());
+  for (size_t i = 0; i < res->attributes.size(); ++i)
+    res->attributes[i] = std::make_pair(element->getAttributeName(i), element->getAttributeValue(i));
+  if (element->isTextElement())
+    res->text = element->getText();
+  res->childElements.reserve(element->getNumChildElements());
+  forEachXmlChildElement(*element, child)
+    res->childElements.push_back(XmlElement::createFromXml(child, false));
+  if (deleteElementOnceConverted)
+    delete element;
+  return res;
+}
+
+juce::XmlElement* XmlElement::createJuceXmlElement() const
+{
+  if (tagName.isEmpty())
+    return juce::XmlElement::createTextElement(text);
+  else
+  {
+    juce::XmlElement* res = new juce::XmlElement(tagName);
+    for (size_t i = 0; i < attributes.size(); ++i)
+      res->setAttribute(attributes[i].first, attributes[i].second);
+    for (size_t i = 0; i < childElements.size(); ++i)
+      res->addChildElement(childElements[i]->createJuceXmlElement());
+    return res;
+  }
+}
+
+void XmlElement::saveObject(ExecutionContext& context, ObjectPtr value)
+{
+  XmlExporter exporter(context, refCountedPointerFromThis(this));
+  exporter.writeVariable(value, objectClass);
+}
+
+ObjectPtr XmlElement::createObject(ExecutionContext& context) const
+{
+  juce::XmlDocument newDocument(createJuceXmlElement()->createDocument(String::empty));
+  XmlImporter importer(context, newDocument);
+  Variable v = importer.isOpened() ? importer.load() : Variable();
+  jassert(v.isObject());
+  return v.getObject();
+}
+
+XmlElementPtr XmlElement::getChildByName(const String& name) const
+{
+  for (size_t i = 0; i < childElements.size(); ++i)
+    if (childElements[i]->getTagName() == name)
+      return childElements[i];
+  return XmlElementPtr();
+}
+
+void XmlElement::setAttribute(const String& name, const String& value)
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+    {
+      attributes[i].second = value;
+      return;
+    }
+  attributes.push_back(std::make_pair(name, value));
+}
+
+String XmlElement::getStringAttribute(const String& name, const String& defaultValue) const
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+      return attributes[i].second;
+  return defaultValue;
+}
+
+int XmlElement::getIntAttribute(const String& name, int defaultValue) const
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+      return attributes[i].second.getIntValue();
+  return defaultValue;
+}
+
+bool XmlElement::hasAttribute(const String& name) const
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+      return true;
+  return false;
+}
+
+void XmlElement::removeAttribute(const String& name)
+{
+  for (size_t i = 0; i < attributes.size(); ++i)
+    if (attributes[i].first == name)
+    {
+      attributes.erase(attributes.begin() + i);
+      return;
+    }
+}
+
+String XmlElement::getAllSubText() const
+{
+  String res;
+  for (size_t i = 0; i < childElements.size(); ++i)
+    if (childElements[i]->isTextElement())
+      res += childElements[i]->getText();
+  return res;
+}
+
+bool XmlElement::loadFromJuceXmlElement(juce::XmlElement* element)
+{
+  tagName = element->getTagName();
+  
+  attributes.clear();
+  attributes.resize(element->getNumAttributes());
+  for (size_t i = 0; i < attributes.size(); ++i)
+    attributes[i] = std::make_pair(element->getAttributeName(i), element->getAttributeValue(i));
+  if (element->isTextElement())
+    text = element->getText();
+  
+  childElements.clear();
+  childElements.reserve(element->getNumChildElements());
+  forEachXmlChildElement(*element, child)
+    childElements.push_back(XmlElement::createFromXml(child, false));
+  return true;
+}
+
+bool XmlElement::loadFromXml(XmlImporter& importer)
+{
+  juce::XmlElement* element = importer.getCurrentElement()->getFirstChildElement();
+  return loadFromJuceXmlElement(element);
+}
+
+String XmlElement::toString() const
+{
+  juce::XmlElement* xml = createJuceXmlElement();
+  String res = xml->createDocument(String::empty);
+  delete xml;
+  return res;
+}
+
+String XmlElement::toShortString() const
+  {return T("<") + tagName + T(">");}
+
+void XmlElement::saveToXml(XmlExporter& exporter) const
+  {exporter.addChildElement(refCountedPointerFromThis(this));}
+
+
+/*
 ** XmlExporter
 */
 XmlExporter::XmlExporter(ExecutionContext& context, const String& rootTag, int version)
   : context(context)
 {
-  root = new juce::XmlElement(rootTag);
+  root = new XmlElement(rootTag);
   if (version)
     root->setAttribute(T("version"), version);
   currentStack.push_back(root);
 }
 
-XmlExporter::~XmlExporter()
-  {delete root;}
+XmlExporter::XmlExporter(ExecutionContext& context, XmlElementPtr target)
+  : context(context), root(target)
+{
+  currentStack.push_back(root);
+}
 
 bool XmlExporter::saveToFile(const File& file)
 {
-  flushSave();
   if (file.exists())
   {
     if (file.existsAsFile())
@@ -46,34 +198,28 @@ bool XmlExporter::saveToFile(const File& file)
     }
   }
   
+  juce::XmlElement* xml = root->createJuceXmlElement();
   if (!root)
   {
     context.errorCallback(T("XmlExporter::saveToFile"), T("No root xml element in file ") + file.getFullPathName());
     return false;
   }
-  bool ok = root->writeToFile(file, String::empty);
+  bool ok = xml->writeToFile(file, String::empty);
   if (!ok)
     context.errorCallback(T("XmlExporter::saveToFile"), T("Could not write file ") + file.getFullPathName());
+  delete xml;
   return ok;
 }
 
 String XmlExporter::toString()
-{
-  flushSave();
-  if (!root)
-  {
-    context.errorCallback(T("XmlExporter::toString"), T("No root xml element"));
-    return String::empty;
-  }
-  return root->createDocument(String::empty);
-}
+  {return root ? root->toString() : String::empty;}
 
-juce::XmlElement* XmlExporter::getCurrentElement()
+XmlElementPtr XmlExporter::getCurrentElement()
   {return currentStack.back();}
 
 void XmlExporter::enter(const String& tagName, const String& name)
 {
-  juce::XmlElement* elt = new juce::XmlElement(tagName);
+  XmlElementPtr elt = new XmlElement(tagName);
   currentStack.push_back(elt);
   writeName(name);
 }
@@ -85,12 +231,11 @@ void XmlExporter::saveVariable(const String& name, const Variable& variable, Typ
   leave();
 }
 
-void XmlExporter::saveGeneratedVariable(const String& name, TypePtr expectedType)
+void XmlExporter::saveGeneratedVariable(const String& name, const ObjectPtr& object, TypePtr expectedType)
 {
   enter(T("variable"), name);
-  setAttribute(T("generatedId"), T("TOTO")); // FIXME
-  // FIXME: add in shared objects map
   writeType(expectedType);
+  linkObjectToCurrentElement(object);
   leave();
 }
 
@@ -102,20 +247,10 @@ void XmlExporter::saveElement(size_t index, const Variable& variable, TypePtr ex
   leave();
 }
 
-void XmlExporter::saveDynamicSharedObject(const String& identifier, const ObjectPtr& object, TypePtr expectedType)
-{
-  writeObject(object, expectedType, true, identifier);
-/*
-  enter(T("shared"));
-  setAttribute(T("dynamic"), T("yes"));
-  setAttribute(T("identifier"), identifier);
-  leave();*/
-}
-
 void XmlExporter::leave()
 {
   jassert(currentStack.size() > 1);
-  juce::XmlElement* elt = getCurrentElement();
+  XmlElementPtr elt = getCurrentElement();
   currentStack.pop_back();
   getCurrentElement()->addChildElement(elt);
 }
@@ -141,7 +276,7 @@ void XmlExporter::addTextElement(const String& text)
 
 void XmlExporter::writeName(const String& name)
 {
-  juce::XmlElement* elt = getCurrentElement();
+  XmlElementPtr elt = getCurrentElement();
   if (name.isNotEmpty())
     elt->setAttribute(T("name"), name);
 }
@@ -151,7 +286,10 @@ void XmlExporter::writeType(TypePtr type)
   jassert(type);
   
   if (type->isNamedType())
+  {
+    jassert(!getCurrentElement()->hasAttribute(T("type")));
     setAttribute(T("type"), type->getName().replaceCharacters(T("<>"), T("[]")));
+  }
   else
   {
     enter(T("type"));
@@ -162,7 +300,7 @@ void XmlExporter::writeType(TypePtr type)
 
 void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
 {
-  juce::XmlElement* elt = getCurrentElement();
+  XmlElementPtr elt = getCurrentElement();
   
   if (variable.isMissingValue())
   {
@@ -188,150 +326,55 @@ void XmlExporter::writeVariable(const Variable& variable, TypePtr expectedType)
   }
 }
 
-void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType, bool isDynamic, const String& identifier)
+void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
 {
   jassert(object->getReferenceCount());
-  juce::XmlElement* currentElement = getCurrentElement();
-
-  size_t index;
-  SavedObjectsMap::const_iterator it = savedObjectsMap.find(object);
-  if (it == savedObjectsMap.end())
+  ObjectXmlElementsMap::iterator it = objectXmlElements.find(object);
+  if (it == objectXmlElements.end())
   {
-    // create index
-    index = savedObjects.size();
-    savedObjectsMap[object] = index;
-
-    // create SavedObject
-    SavedObject savedObject;
-    savedObject.object = object;
-    savedObject.elt = new juce::XmlElement(T("NOTAGYET"));
-    savedObject.identifier = identifier;
-    savedObjects.push_back(savedObject);
-
-    // save object
-    currentlySavedObjects.insert(index);
-    currentStack.push_back(savedObject.elt);
+    // new object
+    object->saveToXml(*this);
     if (expectedType != object->getClass())
       writeType(object->getClass());
-    if (!isDynamic)
-      object->saveToXml(*this);
-    currentStack.pop_back();
-    currentlySavedObjects.erase(index);
 
-    savedObjects[index].references.push_back(currentElement);
+    linkObjectToCurrentElement(object);
   }
   else
   {
-    index = it->second;
-    std::vector<juce::XmlElement* >& references = savedObjects[index].references;
-    references.push_back(currentElement);
-    if (references.size() == 2)
+    // shared object
+    String& identifier = it->second.second;
+    if (identifier == String::empty)
     {
-      sharedObjectsIndices.insert(it->second);
-      savedObjects[index].ordered = false;
+      // first time this is object is referred to, need to create an identifier
+      identifier = makeSharedObjectIdentifier(object);
+      const XmlElementPtr& sourceElement = it->second.first;
+      sourceElement->setAttribute(T("sharedObjectId"), identifier);
     }
-  }
-
-  for (std::set<size_t>::const_iterator it = currentlySavedObjects.begin(); it != currentlySavedObjects.end(); ++it)
-    savedObjects[*it].dependencies.insert(index);
-}
-
-void XmlExporter::makeSharedObjectsSaveOrder(const std::set<size_t>& sharedObjectsIndices, std::vector<size_t>& res)
-{
-  std::set<size_t> todo = sharedObjectsIndices;
-
-  res.reserve(todo.size());
-  size_t n = todo.size();
-  for (size_t iteration = 0; todo.size() && iteration < n; ++iteration)
-  {
-    std::set<size_t>::const_iterator nxt;
-    for (std::set<size_t>::const_iterator it = todo.begin(); it != todo.end(); it = nxt)
-    {
-      nxt = it; ++nxt;
-
-      bool areAllDependenciesDone = true;
-      const std::set<size_t>& dependencies = savedObjects[*it].dependencies;
-      for (std::set<size_t>::const_iterator it2 = dependencies.begin(); it2 != dependencies.end(); ++it2)
-        if (!savedObjects[*it2].ordered)
-        {
-          areAllDependenciesDone = false;
-          break;
-        }
-      if (areAllDependenciesDone)
-      {
-        res.push_back(*it);
-        savedObjects[*it].ordered = true;
-        todo.erase(it);
-      }
-    }
-  }
-  
-  if (todo.empty())
-    return;
-  context.errorCallback(T("XmlExporter::makeSharedObjectsSaveOrder"), T("Cyclic dependancy between shared objects"));
-}
-
-void XmlExporter::resolveSingleObjectReference(SavedObject& savedObject)
-{
-  juce::XmlElement* reference = savedObject.references[0];
-  reference->moveChildrenFrom(*savedObject.elt); 
-  for (int i = 0; i < savedObject.elt->getNumAttributes(); ++i)
-    reference->setAttribute(savedObject.elt->getAttributeName(i), savedObject.elt->getAttributeValue(i));
-  deleteAndZero(savedObject.elt);
-}
-
-void XmlExporter::resolveSharedObjectReferences(SavedObject& savedObject)
-{
-  jassert(savedObject.references.size() > 1);
-  for (size_t i = 0; i < savedObject.references.size(); ++i)
-    savedObject.references[i]->setAttribute(T("reference"), savedObject.identifier);
-}
-
-void XmlExporter::flushSave()
-{
-  // make shared object order
-  std::vector<size_t> sharedObjectsOrder;
-  makeSharedObjectsSaveOrder(sharedObjectsIndices, sharedObjectsOrder);
-  jassert(sharedObjectsOrder.size() == sharedObjectsIndices.size());
-
-  // save all shared objects and solve their references
-  std::set<String> sharedObjectIdentifiers;
-  for (int i = (int)sharedObjectsOrder.size() - 1; i >= 0; --i)
-  {
-    SavedObject& savedObject = savedObjects[sharedObjectsOrder[i]];
-    savedObject.elt->setTagName(T("shared"));
-    if (savedObject.identifier.isEmpty())
-      savedObject.identifier = makeUniqueIdentifier(savedObject.object, sharedObjectIdentifiers);
-    savedObject.elt->setAttribute(T("identifier"), savedObject.identifier);
-    savedObject.elt->setAttribute(T("type"), savedObject.object->getClassName()); 
-    root->insertChildElement(savedObject.elt, 0);
-    resolveSharedObjectReferences(savedObject);
-    savedObject.elt = NULL;
-  }
-  
-  // resolve all remaining single-references
-  for (size_t i = 0; i < savedObjects.size(); ++i)
-  {
-    SavedObject& savedObject = savedObjects[i];
-    if (savedObject.references.size() == 1)
-      resolveSingleObjectReference(savedObject);
+    getCurrentElement()->setAttribute(T("shared"), identifier);
   }
 }
 
-String XmlExporter::makeUniqueIdentifier(ObjectPtr object, std::set<String>& identifiers)
+void XmlExporter::linkObjectToCurrentElement(const ObjectPtr& object)
+{
+  jassert(objectXmlElements.find(object) == objectXmlElements.end());
+  objectXmlElements[object] = std::make_pair(getCurrentElement(), String::empty);
+}
+
+String XmlExporter::makeSharedObjectIdentifier(ObjectPtr object)
 {
   String cn = object->getClassName();
   for (int i = 1; true; ++i)
   {
     String res = cn + String(i);
-    if (identifiers.find(res) == identifiers.end())
+    if (sharedObjectsIdentifiers.find(res) == sharedObjectsIdentifiers.end())
     {
-      identifiers.insert(res);
+      sharedObjectsIdentifiers.insert(res);
       return res;
     }
   }
   return String::empty;
 }
+
 /*
 ** XmlImporter
 */
@@ -552,124 +595,4 @@ ObjectPtr XmlImporter::getSharedObject(const String& name) const
   std::cerr << "getSharedObject: " << name << " " << it->second->toShortString() << std::endl;
   jassert(it->second);
   return it->second;
-}
-
-/*
-** XmlElement
-*/
-XmlElementPtr XmlElement::createFromXml(juce::XmlElement* element, bool deleteElementOnceConverted)
-{
-  XmlElementPtr res(new XmlElement(element->getTagName()));
-  res->attributes.resize(element->getNumAttributes());
-  for (size_t i = 0; i < res->attributes.size(); ++i)
-    res->attributes[i] = std::make_pair(element->getAttributeName(i), element->getAttributeValue(i));
-  if (element->isTextElement())
-    res->text = element->getText();
-  res->childElements.reserve(element->getNumChildElements());
-  forEachXmlChildElement(*element, child)
-    res->childElements.push_back(XmlElement::createFromXml(child, false));
-  if (deleteElementOnceConverted)
-    delete element;
-  return res;
-}
-
-juce::XmlElement* XmlElement::createJuceXmlElement() const
-{
-  if (tagName.isEmpty())
-    return juce::XmlElement::createTextElement(text);
-  else
-  {
-    juce::XmlElement* res = new juce::XmlElement(tagName);
-    for (size_t i = 0; i < attributes.size(); ++i)
-      res->setAttribute(attributes[i].first, attributes[i].second);
-    for (size_t i = 0; i < childElements.size(); ++i)
-      res->addChildElement(childElements[i]->createJuceXmlElement());
-    return res;
-  }
-}
-
-XmlElementPtr XmlElement::getChildByName(const String& name) const
-{
-  for (size_t i = 0; i < childElements.size(); ++i)
-    if (childElements[i]->getTagName() == name)
-      return childElements[i];
-  return XmlElementPtr();
-}
-
-void XmlElement::setAttribute(const String& name, const String& value)
-{
-  for (size_t i = 0; i < attributes.size(); ++i)
-    if (attributes[i].first == name)
-    {
-      attributes[i].second = value;
-      return;
-    }
-  attributes.push_back(std::make_pair(name, value));
-}
-
-String XmlElement::getStringAttribute(const String& name, const String& defaultValue) const
-{
-  for (size_t i = 0; i < attributes.size(); ++i)
-    if (attributes[i].first == name)
-      return attributes[i].second;
-  return defaultValue;
-}
-
-int XmlElement::getIntAttribute(const String& name, int defaultValue) const
-{
-  for (size_t i = 0; i < attributes.size(); ++i)
-    if (attributes[i].first == name)
-      return attributes[i].second.getIntValue();
-  return defaultValue;
-}
-
-bool XmlElement::hasAttribute(const String& name) const
-{
-  for (size_t i = 0; i < attributes.size(); ++i)
-    if (attributes[i].first == name)
-      return true;
-  return false;
-}
-
-void XmlElement::removeAttribute(const String& name)
-{
-  for (size_t i = 0; i < attributes.size(); ++i)
-    if (attributes[i].first == name)
-    {
-      attributes.erase(attributes.begin() + i);
-      return;
-    }
-}
-
-String XmlElement::getAllSubText() const
-{
-  String res;
-  for (size_t i = 0; i < childElements.size(); ++i)
-    if (childElements[i]->isTextElement())
-      res += childElements[i]->getText();
-  return res;
-}
-
-bool XmlElement::loadFromJuceXmlElement(juce::XmlElement* element)
-{
-  tagName = element->getTagName();
-  
-  attributes.clear();
-  attributes.resize(element->getNumAttributes());
-  for (size_t i = 0; i < attributes.size(); ++i)
-    attributes[i] = std::make_pair(element->getAttributeName(i), element->getAttributeValue(i));
-  if (element->isTextElement())
-    text = element->getText();
-  
-  childElements.clear();
-  childElements.reserve(element->getNumChildElements());
-  forEachXmlChildElement(*element, child)
-    childElements.push_back(XmlElement::createFromXml(child, false));
-  return true;
-}
-
-bool XmlElement::loadFromXml(XmlImporter& importer)
-{
-  juce::XmlElement* element = importer.getCurrentElement()->getFirstChildElement();
-  return loadFromJuceXmlElement(element);
 }

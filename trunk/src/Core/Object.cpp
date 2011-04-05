@@ -316,7 +316,7 @@ void Object::saveToXml(XmlExporter& exporter) const
     bool isGenerated = defaultClass && defaultClass->isMemberVariableGenerated(i);
 
     if (isGenerated)
-      exporter.saveGeneratedVariable(getVariableName(i), getVariableType(i));
+      exporter.saveGeneratedVariable(getVariableName(i), variable.getObject(), getVariableType(i));
     else
     {
       if (!variable.isMissingValue())
