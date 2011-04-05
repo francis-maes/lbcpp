@@ -69,19 +69,35 @@ void GoBoard::getGroup(const Position& position, PositionSet& res, PositionSet& 
   }
 }
 
+void GoBoard::getFreePositions(PositionSet& res)
+{
+  size_t size = getSize();
+  for (size_t y = 0; y < size; ++y)
+    for (size_t x = 0; x < size; ++x)
+    {
+      Position position(x, y);
+      if (get(position) == noPlayers)
+        res.insert(position);
+    }
+}
+
 /*
 ** GoState
 */
 GoState::GoState(const String& name, size_t size)
   : DecisionProblemState(name), time(0), board(new GoBoard(size)), whitePrisonerCount(0), blackPrisonerCount(0), previousActions(new PositiveIntegerPairVector())
 {
-  for (size_t i = 0; i < size; ++i)
-    for (size_t j = 0; j < size; ++j)
-      freePositions.insert(Position(i, j));
-  availableActions = computeAvailableActions();
+  recomputeAvailableActions();
 }
 
 GoState::GoState() : time(0), whitePrisonerCount(0), blackPrisonerCount(0) {}
+
+void GoState::recomputeAvailableActions()
+{
+  freePositions.clear();
+  getBoard()->getFreePositions(freePositions);
+  availableActions = computeAvailableActions();
+}
 
 Player GoState::getCurrentPlayer() const
   {return (time % 2) == 0 ? blackPlayer : whitePlayer;}

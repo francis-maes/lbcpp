@@ -46,6 +46,9 @@ public:
   size_t getSize() const
     {jassert(getNumColumns() == getNumRows()); return getNumRows();}
 
+  void set(size_t x, size_t y, Player player)
+    {set(Position(x, y), player);}
+
   void set(const Position& position, Player player)
     {elements[makeIndex(position)] = (char)player;}
 
@@ -60,6 +63,8 @@ public:
 
   void getAdjacentPositions(const Position& position, Position res[4], size_t& numAdjacentPositions);
   void getGroup(const Position& position, PositionSet& res, PositionSet& liberties);
+
+  void getFreePositions(PositionSet& res);
 
   lbcpp_UseDebuggingNewOperator
 
@@ -81,6 +86,9 @@ public:
 
   size_t getTime() const
     {return time;}
+
+  void setTime(size_t time)
+    {this->time = time;}
 
   const GoBoardPtr& getBoard() const
     {return board;}
@@ -104,11 +112,28 @@ public:
     {return capturedAtPreviousTurn;}
 
   /*
+  ** Prisoners
+  */
+  size_t getWhitePrisonerCount() const
+    {return whitePrisonerCount;}
+
+  void setWhitePrisonerCount(int count)
+    {whitePrisonerCount = count;}
+
+  size_t getBlackPrisonerCount() const
+    {return blackPrisonerCount;}
+
+  void setBlackPrisonerCount(int count)
+    {blackPrisonerCount = count;}
+  /*
   ** DecisionProblemState
   */
   virtual TypePtr getActionType() const;
+
+  void recomputeAvailableActions();
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
+
   virtual void performTransition(const Variable& action, double& reward);
 
   /*

@@ -218,15 +218,12 @@ public:
       return false;
     EvaluatorPtr evaluator = new GoSupervisedEpisodeEvaluator();
     evaluator->setUseMultiThreading(true);
-    //episode->setEvaluator(evaluator);
+    episode->setEvaluator(evaluator);
     episode->setBatchLearner(learningParameters->createBatchLearner(context));
     episode->setOnlineLearner(
-      compositeOnlineLearner(evaluatorOnlineLearner(false, false), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
+      compositeOnlineLearner(evaluatorOnlineLearner(false, true), stoppingCriterionOnlineLearner(sgdParameters->getStoppingCriterion()), restoreBestParametersOnlineLearner()));
     
     episode->train(context, trainingGames, validationGames, T("Training"), true);
-
-    //goEpisodeFunction->evaluate(context, trainingGames, EvaluatorPtr(), T("Evaluating on training examples"));
-    //goEpisodeFunction->evaluate(context, validationGames, EvaluatorPtr(), T("Evaluating on validation examples"));
  
     if (outputFile != File::nonexistent)
     {
