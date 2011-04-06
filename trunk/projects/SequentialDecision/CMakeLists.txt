@@ -53,8 +53,10 @@ SET(LBCPP_SEQUENTIAL_DECISION_GO_SOURCES
   Go/GoRegionPerception.h
   Go/GoActionsPerception.h
   Go/GoSupervisedEpisode.h
+  Go/GoActionScoringEvaluator.h
   Go/GoSandBox.h
   Go/GoPredictWorkUnit.h
+  Go/GoSGFToGTPWorkUnit.h
   Go/GoInterface.h
   Go/GoInterface.cpp
   Go/SequentialDecisionGoLibrary.xml

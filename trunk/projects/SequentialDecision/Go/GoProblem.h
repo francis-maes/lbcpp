@@ -92,6 +92,9 @@ public:
   const GoBoardPtr& getBoard() const
     {return board;}
 
+  size_t getBoardSize() const
+    {return board->getSize();}
+
   Player getCurrentPlayer() const;
   GoBoardPtr getBoardWithCurrentPlayerAsBlack() const;
 

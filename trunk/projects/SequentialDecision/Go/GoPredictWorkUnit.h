@@ -71,12 +71,7 @@ public:
       return false;
     }
       
-    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
-    if (!xml)
-      return false;
-
-    FunctionPtr convertFunction = new ConvertSGFXmlToStateAndTrajectory();
-    PairPtr stateAndTrajectory = convertFunction->compute(context, xml).getObjectAndCast<Pair>();
+    PairPtr stateAndTrajectory = LoadSGFFileFunction::loadStateAndTrajectory(context, file);
     if (!stateAndTrajectory)
       return false;
 
