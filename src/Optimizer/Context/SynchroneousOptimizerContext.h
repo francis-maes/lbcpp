@@ -23,6 +23,8 @@ public:
   SynchroneousOptimizerContext(const FunctionPtr& objectiveFunction) : OptimizerContext(objectiveFunction) {}
   SynchroneousOptimizerContext() {}
   
+  virtual void waitAllEvaluationsFinished() const {}  // because evaluate is a blocking method
+  
   // blocking method
   virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) 
   {    
@@ -33,18 +35,6 @@ public:
 
 protected:  
   friend class SynchroneousOptimizerContextClass;
-
-private:
-  /*juce::int64 lastIdentifier; // TODO arnaud : static ?
-  
-  juce::int64 generateIdentifier()
-  {
-    juce::int64 res = Time::currentTimeMillis();
-    if (res != lastIdentifier)
-      return res;
-    juce::Thread::sleep(1);
-    return generateIdentifier();
-  }*/
 
 };
   

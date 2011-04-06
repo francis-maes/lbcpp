@@ -26,6 +26,7 @@
 
 # include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 # include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
+# include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 # include <lbcpp/Function/ScalarFunction.h>
 namespace lbcpp
 {
@@ -110,8 +111,9 @@ public:
     */
     
     
-    UniformSampleAndPickBestOptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100);
-    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    UniformSampleAndPickBestOptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
+    //OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(new UniformDistribution(-5,5));
     return optimizer->compute(context, optimizerContext, optimizerState);

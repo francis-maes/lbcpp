@@ -18,4 +18,11 @@
   <class name="SynchroneousOptimizerContext" base="OptimizerContext">
     <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
   </class>
+  
+  <class name="FunctionWithOptimizerCallbackAndStateWorkUnit" base="WorkUnit">
+    <constructor arguments="const FunctionPtr&amp; function, const Variable input, const OptimizerCallbackPtr&amp; optimizerCallback, const OptimizerStatePtr&amp; optimizerState"/>
+  </class>
+  <class name="MultiThreadsOptimizerContext" base="OptimizerContext">
+    <constructor arguments="const FunctionPtr&amp; objectiveFunction, size_t nbThreads"/>
+  </class>
 </library>
