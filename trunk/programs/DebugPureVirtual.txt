@@ -1,0 +1,50 @@
+arnaudschoofs@ubuntu64old:~/LBCPP/bin/Debug$ gdb ./DebugPureVirtual
+GNU gdb 6.4-debian
+Copyright 2005 Free Software Foundation, Inc.
+GDB is free software, covered by the GNU General Public License, and you are
+welcome to change it and/or distribute copies of it under certain conditions.
+Type "show copying" to see the conditions.
+There is absolutely no warranty for GDB.  Type "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu"...Using host libthread_db library "/lib/libthread_db.so.1".
+
+(gdb) r
+Starting program: /home/arnaudschoofs/LBCPP/bin/Debug/DebugPureVirtual
+[Thread debugging using libthread_db enabled]
+[New Thread 46912517993584 (LWP 13561)]
+JUCE v1.46
+ApplicationContex constructor (begin)
+ApplicationContex constructor (end)
+ExecutionContext constructor (begin)
+ExecutionContext constructor (end)
+ExecutionContext constructor (begin)
+ExecutionContext constructor (end)
+[New Thread 1082132832 (LWP 13564)]
+ExecutionContext constructor (begin)
+ExecutionContext constructor (end)
+[New Thread 1090525536 (LWP 13565)]
+ExecutionContext constructor (begin)
+ExecutionContext constructor (end)
+SingleThreadedExecutionContext constructor
+pure virtual method called
+terminate called without an active exception
+[Thread 1090525536 (LWP 13565) exited]
+
+Program received signal SIGABRT, Aborted.
+[Switching to Thread 1082132832 (LWP 13564)]
+0x00002aaaabd7c14d in raise () from /lib/libc.so.6
+(gdb) bt
+#0  0x00002aaaabd7c14d in raise () from /lib/libc.so.6
+#1  0x00002aaaabd7d87e in abort () from /lib/libc.so.6
+#2  0x00002aaaab977b7f in __gnu_cxx::__verbose_terminate_handler () from /usr/lib/libstdc++.so.6
+#3  0x00002aaaab975c36 in __gxx_personality_v0 () from /usr/lib/libstdc++.so.6
+#4  0x00002aaaab975c63 in std::terminate () from /usr/lib/libstdc++.so.6
+#5  0x00002aaaab97611f in __cxa_pure_virtual () from /usr/lib/libstdc++.so.6
+#6  0x00002aaaab568d2f in juce::Thread::threadEntryPoint (thread=0x505490)
+    at /home/arnaudschoofs/LBCPP/juce/juce_amalgamated.cpp:15260
+#7  0x00002aaaab568e2d in juce::juce_threadEntryPoint (userData=0x505490)
+    at /home/arnaudschoofs/LBCPP/juce/juce_amalgamated.cpp:15283
+#8  0x00002aaaab568e4a in juce::threadEntryProc (value=0x505490)
+    at /home/arnaudschoofs/LBCPP/juce/juce_amalgamated.cpp:257361
+#9  0x00002aaaab6aa12a in start_thread () from /lib/libpthread.so.0
+#10 0x00002aaaabe14d82 in clone () from /lib/libc.so.6
+#11 0x0000000000000000 in ?? ()

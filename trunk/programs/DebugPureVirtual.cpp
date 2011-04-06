@@ -6,8 +6,8 @@
                                |                                             |
                                `--------------------------------------------*/
 
-//#include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
+
 using namespace lbcpp;
 
 int main(int argc, char** argv)
