@@ -19,7 +19,13 @@ using namespace lbcpp;
 ExecutionContext::ExecutionContext(const File& projectDirectory)
   : stack(new ExecutionStack()), projectDirectory(projectDirectory)
 {
+#ifdef DEBUG_PURE_VIRTUAL
+  std::cout << "ExecutionContext constructor (begin)" << std::endl;
+#endif
   initialize(*this);
+#ifdef DEBUG_PURE_VIRTUAL
+  std::cout << "ExecutionContext constructor (end)" << std::endl;
+#endif
 }
 
 void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
