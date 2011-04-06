@@ -10,27 +10,31 @@ This GDB was configured as "x86_64-linux-gnu"...Using host libthread_db library 
 (gdb) r
 Starting program: /home/arnaudschoofs/LBCPP/bin/Debug/DebugPureVirtual
 [Thread debugging using libthread_db enabled]
-[New Thread 46912517993584 (LWP 13561)]
+[New Thread 46912517993584 (LWP 15112)]
 JUCE v1.46
 ApplicationContex constructor (begin)
 ApplicationContex constructor (end)
+defaultConsoleExecutionContext() method (begin)
 ExecutionContext constructor (begin)
 ExecutionContext constructor (end)
 ExecutionContext constructor (begin)
 ExecutionContext constructor (end)
-[New Thread 1082132832 (LWP 13564)]
+[New Thread 1082132832 (LWP 15113)]
 ExecutionContext constructor (begin)
 ExecutionContext constructor (end)
-[New Thread 1090525536 (LWP 13565)]
+[New Thread 1090525536 (LWP 15114)]
+MultiThreadedExecutionContext constructor
+defaultConsoleExecutionContext() method (end)
 ExecutionContext constructor (begin)
 ExecutionContext constructor (end)
 SingleThreadedExecutionContext constructor
+ExecutionContext destructor
 pure virtual method called
 terminate called without an active exception
-[Thread 1090525536 (LWP 13565) exited]
+[Thread 1090525536 (LWP 15114) exited]
 
 Program received signal SIGABRT, Aborted.
-[Switching to Thread 1082132832 (LWP 13564)]
+[Switching to Thread 1082132832 (LWP 15113)]
 0x00002aaaabd7c14d in raise () from /lib/libc.so.6
 (gdb) bt
 #0  0x00002aaaabd7c14d in raise () from /lib/libc.so.6
@@ -48,3 +52,4 @@ Program received signal SIGABRT, Aborted.
 #9  0x00002aaaab6aa12a in start_thread () from /lib/libpthread.so.0
 #10 0x00002aaaabe14d82 in clone () from /lib/libc.so.6
 #11 0x0000000000000000 in ?? ()
+
