@@ -289,6 +289,13 @@ public:
     : SubExecutionContext(parentContext), thread(thread) {}
   ThreadOwnedExecutionContext() : thread(NULL) {}
 
+  virtual ~ThreadOwnedExecution()
+  {
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "ThreadOwnedExecution destructor" << std::endl;
+#endif
+  }
+
   virtual bool isMultiThread() const
     {return true;}
 
