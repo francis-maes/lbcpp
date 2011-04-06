@@ -380,6 +380,11 @@ bool lbcpp::importLibrariesFromDirectory(ExecutionContext& executionContext, con
 
 LibraryPtr lbcpp::importLibraryFromFile(ExecutionContext& context, const File& file)
 {
+  if (!file.existsAsFile())
+  {
+    context.errorCallback(T("File ") + file.getFullPathName() + T(" does not exists"));
+    return LibraryPtr();
+  }
   void* handle = juce::PlatformUtilities::loadDynamicLibrary(file.getFullPathName());
   if (!handle)
   {
