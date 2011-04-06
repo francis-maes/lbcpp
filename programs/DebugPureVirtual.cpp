@@ -13,9 +13,11 @@ using namespace lbcpp;
 int main(int argc, char** argv)
 {
   lbcpp::initialize(argv[0]);
+  {
   File projectDirectory = File::getCurrentWorkingDirectory();
   ExecutionContextPtr context = singleThreadedExecutionContext(projectDirectory);
   setDefaultExecutionContext(context);
+  }
   lbcpp::deinitialize();
   return 0;
 }
