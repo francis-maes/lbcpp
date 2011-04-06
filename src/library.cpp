@@ -300,7 +300,7 @@ void lbcpp::initialize(const char* executableName)
   // application context
   jassert(!applicationContext);
   applicationContext = new ApplicationContext();
-  applicationContext->defaultExecutionContext = defaultConsoleExecutionContext();
+  applicationContext->defaultExecutionContext = defaultConsoleExecutionContext(true);
   
   // types
   importLibrary(coreLibrary());
