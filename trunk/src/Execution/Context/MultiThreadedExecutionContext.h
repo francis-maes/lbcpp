@@ -178,6 +178,12 @@ public:
     context = threadOwnedExecutionContext(parentContext, this);
     context->setProjectDirectory(parentContext.getProjectDirectory());
   }
+  virtual ~WorkUnitThread()
+  {
+    stopThread(100);
+    context = ExecutionContextPtr();
+    waitingQueue = WaitingWorkUnitQueuePtr();
+  }
 
   virtual void run()
   {
