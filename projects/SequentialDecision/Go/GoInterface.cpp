@@ -126,7 +126,7 @@ void lbcppgo::francisCompute(int boardSize, int board[361], double *patternValue
 
   std::cerr << "Francis Compute: tour = " << tour << " color = " << color << " best score: " << bestScore << " best move: (" << bestX << ", " << bestY << ")" << std::endl;
 
-#if 0
+  //#if 0
   // DBG: save state
   static int counter = 1;
   std::cerr << "Francis Compute: Saving to state" << counter << ".xml" << std::endl;
@@ -135,5 +135,5 @@ void lbcppgo::francisCompute(int boardSize, int board[361], double *patternValue
   pair = new Pair(state, patternValuesMatrix);
   pair->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("statePatt") + String(counter) + T(".xml")));
   ++counter;
-#endif // 0
+  //#endif // 0
 }

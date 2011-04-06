@@ -62,6 +62,9 @@ public:
     if (!process.writeStandardInput(initCommands))
       return ScoreObjectPtr();
 
+    
+
+
     SupervisedEvaluatorPtr evaluator = new GoActionScoringEvaluator();
     ScoreObjectPtr scores = evaluator->createEmptyScoreObject(context, FunctionPtr());
 
