@@ -6,12 +6,12 @@
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
-  <!--
   <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
     <constructor arguments="size_t numSamples"/>
     <variable type="PositiveInteger" name="numSamples"/>
   </class>
-
+  
+  <!--
   <class name="IterativeBracketingOptimizer" base="OptimizerOld">
     <constructor arguments="size_t numPasses, double reductionFactor, const OptimizerOldPtr&amp; baseOptimizer"/>
     <variable type="PositiveInteger" name="numPasses"/>

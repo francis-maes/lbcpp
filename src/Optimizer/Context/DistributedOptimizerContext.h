@@ -22,7 +22,7 @@
 namespace lbcpp
 {
 
-class DistributedOptimizerContext : public OptimizerContext
+class DistributedOptimizerContext /*: public OptimizerContext*/
 {
 public:
   DistributedOptimizerContext(String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
@@ -30,29 +30,29 @@ public:
       requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) {} 
   DistributedOptimizerContext() {}
   
-  virtual juce::int64 evaluate(const Variable& parameters)
+  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState)
   {
 #ifdef LBCPP_NETWORKING
     // TODO arnaud : defaultExecutionContext
     ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(defaultExecutionContext());
     if (!interface)
-      return 0;
+      return false;
         
-    WorkUnitPtr wu = generateWUFromFunctionAndParameters(getObjectiveFunction(), parameters);
+    WorkUnitPtr wu = NULL;//generateWUFromFunctionAndParameters(getObjectiveFunction(), parameters);
     String res = sendWU(defaultExecutionContext(), wu, interface);
     
     if (res == T("Error"))
     {
       defaultExecutionContext().errorCallback(T("SendWorkUnit::run"), T("Trouble - We didn't correclty receive the acknowledgement"));
-      return 0;
+      return false;
     }
     interface->closeCommunication();
     
     inProgressWUs.push_back(res); // TODO arnaud : syncrhonized
     
-    return res.getLargeIntValue();
+    return true;
 #else
-    return 0;
+    return false;
 #endif
   }
   

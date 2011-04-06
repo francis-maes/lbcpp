@@ -19,12 +19,7 @@ class SingleThreadedExecutionContext : public ExecutionContext
 {
 public:
   SingleThreadedExecutionContext(const File& projectDirectory)
-    : ExecutionContext(projectDirectory) 
-  {
-#ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "SingleThreadedExecutionContext constructor" << std::endl;
-#endif
-  }
+    : ExecutionContext(projectDirectory) {}
   SingleThreadedExecutionContext() {}
   
 #ifdef DEBUG_PURE_VIRTUAL  

@@ -1,9 +1,6 @@
 PROJECT(LBCpp)
 cmake_minimum_required(VERSION 2.6)
 
-# TODO arnaud : remove
-ADD_DEFINITIONS(-DDEBUG_PURE_VIRTUAL)
-
 SET(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
 
 ##

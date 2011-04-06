@@ -262,22 +262,16 @@ public:
 
   void stopAndDestroyAllThreads()
   {
-    std::cout << "stopAndDestroyAllThreads begin" << std::endl;
     for (size_t i = 0; i < threads.size(); ++i)
       if (threads[i])
         threads[i]->signalThreadShouldExit();
-    std::cout << "stopAndDestroyAllThreads threads are signaled" << std::endl;
     for (size_t i = 0; i < threads.size(); ++i)
       if (threads[i])
       {
-        std::cout << "delete..." << std::flush;
         delete threads[i];
-        std::cout << "ok." << std::endl;
         threads[i] = NULL;
       }
-    std::cout << "stopAndDestroyAllThreads threads are destroyed" << std::endl;
     threads.clear();
-    std::cout << "stopAndDestroyAllThreads threads are cleared" << std::endl;
   }
 
   size_t getNumThreads() const
@@ -301,12 +295,7 @@ public:
     : SubExecutionContext(parentContext), thread(thread) {}
   ThreadOwnedExecutionContext() : thread(NULL) {}
 
-  virtual ~ThreadOwnedExecutionContext()
-  {
-#ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "ThreadOwnedExecution destructor" << std::endl;
-#endif
-  }
+  virtual ~ThreadOwnedExecutionContext() {}
 
   virtual bool isMultiThread() const
     {return true;}
@@ -405,26 +394,14 @@ public:
     : ExecutionContext(projectDirectory)
     {
       threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));
-#ifdef DEBUG_PURE_VIRTUAL
-      std::cout << "MultiThreadedExecutionContext constructor" << std::endl;
-#endif
     }
   MultiThreadedExecutionContext() {}
 
   virtual ~MultiThreadedExecutionContext()
   {
-#ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "MultiThreadedExecutionContext destructor1" << std::endl;
-#endif
     if (threadPool)
       threadPool->stopAndDestroyAllThreads();
-#ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "MultiThreadedExecutionContext destructor2" << std::endl;
-#endif
     threadPool = WorkUnitThreadPoolPtr();
-#ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "MultiThreadedExecutionContext destructor3" << std::endl;
-#endif
   }
 
   virtual String toString() const

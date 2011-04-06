@@ -10,6 +10,8 @@
 #ifndef LBCPP_OPTIMIZER_CALLBACK_H_
 # define LBCPP_OPTIMIZER_CALLBACK_H_
 
+#include <lbcpp/Optimizer/OptimizerState.h>
+
 namespace lbcpp
 {
 
@@ -18,7 +20,7 @@ class OptimizerCallback
 public:
   virtual ~OptimizerCallback() {}
   
-  virtual void evaluationFinished(juce::int64 identifier, double score) = 0;
+  virtual void evaluationFinished(const Variable&, double score, const OptimizerStatePtr& optimizerState) = 0;
 };
 
 typedef OptimizerCallback* OptimizerCallbackPtr;

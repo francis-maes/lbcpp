@@ -10,19 +10,33 @@
 #ifndef LBCPP_OPTIMIZER_STATE_H_
 # define LBCPP_OPTIMIZER_STATE_H_
 
+#include <lbcpp/Distribution/Distribution.h>
+
 namespace lbcpp
 {
   
 class OptimizerState : public Object
 {
 public:
+  OptimizerState() : bestScore(DBL_MAX) {}
+  
+  
   // TODO arnaud : visiblility
-  DistributionPtr distribution;
-  std::vector< std::pair<juce::int64, Variable> > evaluationRequests;
-  std::vector< std::pair<juce::int64, double> > evaluationResults;
+  DistributionPtr getDistribution() const
+    {return distribution;}
+  
+  void setDistribution(const DistributionPtr& newDistribution)
+    {distribution = newDistribution;}
+  
+  Variable bestVariable;
+  double bestScore;
 
 protected:  
   friend class OptimizerStateClass;
+  
+private:
+  DistributionPtr distribution;
+
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;

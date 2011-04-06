@@ -19,6 +19,8 @@ namespace lbcpp
 class OptimizerContext : public Object
 {
 public:
+  OptimizerContext(const FunctionPtr& objectiveFunction) : objectiveFunction(objectiveFunction) {}
+  OptimizerContext() {}
   
   FunctionPtr getObjectiveFunction() const
     {return objectiveFunction;}
@@ -29,7 +31,7 @@ public:
   void setCallback(const OptimizerCallbackPtr callback)
     {optimizerCallback = callback;}
   
-  virtual juce::int64 evaluate(const Variable& parameters) = 0;
+  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) = 0;
   // TODO arnaud : evalaute std::vector<Variable>
   
 protected:

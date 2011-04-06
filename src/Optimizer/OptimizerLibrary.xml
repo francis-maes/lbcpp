@@ -13,8 +13,12 @@
   
   <class name="OptimizerState" base="Object">
     <variable type="Distribution[Variable]" name="distribution"/>
+    <variable type="Variable" name="bestVariable"/>
+    <variable type="Double" name="bestScore"/>
+    <!-- 
     <variable type="GenericVector[Pair[Integer, Variable]]" name="evaluationRequests"/>
     <variable type="GenericVector[Pair[Integer, Double]]" name="evaluationResults"/>
+    -->
   </class>
   
   <!-- <class name="OptimizerOld" base="Function" abstract="yes"/> -->

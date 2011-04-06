@@ -558,6 +558,7 @@ SET(LBCPP_LEARNING_DECISION_TREE_DATA_SOURCES
 
 SET(LBCPP_OPTIMIZER_SOURCES
   ../include/lbcpp/Optimizer/Optimizer.h
+  ../include/lbcpp/Optimizer/OptimizerState.h
   ../include/lbcpp/Optimizer/OptimizerContext.h
   ../include/lbcpp/Optimizer/OptimizerCallback.h
   ../include/lbcpp/Optimizer/GridOptimizer.h
