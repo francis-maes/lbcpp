@@ -468,6 +468,7 @@ Object::Object(ClassPtr thisClass)
 
 Object::~Object()
 {
+  jassert(lbcpp::applicationContext);
   if (lbcpp::applicationContext && lbcpp::applicationContext->memoryLeakDetector)
     lbcpp::applicationContext->memoryLeakDetector->deleteObject(this);
 }
@@ -482,7 +483,10 @@ void Object::displayObjectAllocationInfo(std::ostream& ostr)
 Object::Object(ClassPtr thisClass)
   : thisClass(thisClass) {}
 
-Object::~Object() {}
+Object::~Object()
+{
+  jassert(lbcpp::applicationContext);
+}
 
 void Object::displayObjectAllocationInfo(std::ostream& ostr)
   {ostr << "No Object Allocation Info, enable LBCPP_DEBUG_OBJECT_ALLOCATION flag in lbcpp/common.h" << std::endl;}

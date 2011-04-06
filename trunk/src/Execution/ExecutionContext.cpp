@@ -11,6 +11,7 @@
 #include <lbcpp/Core/TypeManager.h>
 #include <lbcpp/Core/Variable.h>
 #include <lbcpp/Core/Function.h>
+#include <lbcpp/library.h>
 using namespace lbcpp;
 
 /*
@@ -27,6 +28,13 @@ ExecutionContext::ExecutionContext(const File& projectDirectory)
   std::cout << "ExecutionContext constructor (end)" << std::endl;
 #endif
 }
+
+#ifdef DEBUG_PURE_VIRTUAL  
+ExecutionContext::~ExecutionContext()
+{
+  std::cout << "ExecutionContext destructor" << std::endl;
+}
+#endif
 
 void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
 {
