@@ -251,6 +251,15 @@ public:
     return convertFunction->compute(context, xml); 
   }
 
+  static PairPtr loadStateAndTrajectory(ExecutionContext& context, const File& file)
+  {
+    XmlElementPtr xml = SGFFileParser(context, file).next().dynamicCast<XmlElement>();
+    if (!xml)
+      return PairPtr();
+    FunctionPtr convertFunction = new ConvertSGFXmlToStateAndTrajectory();
+    return convertFunction->compute(context, xml).getObjectAndCast<Pair>();
+  }
+
 protected:
   FunctionPtr convertFunction;
 };

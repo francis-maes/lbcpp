@@ -72,6 +72,11 @@
     <variable type="File" name="sgfFile"/>
     <variable type="PositiveInteger" name="maxTurns"/>
   </class>
+  <class name="GoSGFToGTP" base="WorkUnit">
+    <variable type="String" name="executable"/>
+    <variable type="String" name="parameters"/>
+    <variable type="File" name="sgfFile"/>
+  </class>
 
   <!-- Go Features -->
   <template name="GoStatePreFeatures">
