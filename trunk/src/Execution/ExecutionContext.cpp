@@ -173,8 +173,14 @@ bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
 */
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
 {
+#ifdef DEBUG_PURE_VIRTUAL
+  std::cout << "defaultConsoleExecutionContext() method (begin)" << std::endl;
+#endif
   int numCpus = juce::SystemStats::getNumCpus();
   ExecutionContextPtr res = (numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext());
   res->appendCallback(consoleExecutionCallback());
+#ifdef DEBUG_PURE_VIRTUAL
+  std::cout << "defaultConsoleExecutionContext() method (end)" << std::endl;
+#endif
   return res;
 }

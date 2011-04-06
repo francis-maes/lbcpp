@@ -27,6 +27,11 @@ public:
   }
   SingleThreadedExecutionContext() {}
   
+#ifdef DEBUG_PURE_VIRTUAL  
+  virtual ~SingleThreadedExecutionContext()
+    {std::cout << "SingleThreadedExecutionContext destructor" << std::endl;}
+#endif
+
   virtual String toString() const
     {return T("SingleThreaded");}
 

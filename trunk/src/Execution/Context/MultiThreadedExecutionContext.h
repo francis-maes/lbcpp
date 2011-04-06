@@ -384,13 +384,21 @@ class MultiThreadedExecutionContext : public ExecutionContext
 public:
   MultiThreadedExecutionContext(size_t numThreads, const File& projectDirectory)
     : ExecutionContext(projectDirectory)
-    {threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));}
+    {
+      threadPool = WorkUnitThreadPoolPtr(new WorkUnitThreadPool(*this, numThreads));
+#ifdef DEBUG_PURE_VIRTUAL
+      std::cout << "MultiThreadedExecutionContext constructor" << std::endl;
+#endif
+    }
   MultiThreadedExecutionContext() {}
 
   virtual ~MultiThreadedExecutionContext()
   {
     if (threadPool)
       threadPool->stopAndDestroyAllThreads();
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "MultiThreadedExecutionContext destructor" << std::endl;
+#endif
   }
 
   virtual String toString() const

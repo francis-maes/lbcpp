@@ -19,6 +19,11 @@ class ExecutionContext : public CompositeExecutionCallback
 public:
   ExecutionContext(const File& projectDirectory = File::nonexistent);
 
+#ifdef DEBUG_PURE_VIRTUAL  
+  virtual ~ExecutionContext()
+    {std::cout << "ExecutionContext destructor" << std::endl;}
+#endif
+  
   virtual bool isMultiThread() const = 0;
 
   /*
