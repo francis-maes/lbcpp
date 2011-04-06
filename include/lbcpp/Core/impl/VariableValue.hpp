@@ -33,7 +33,7 @@ namespace lbcpp
 struct VariableValue
 {
   VariableValue(bool boolValue)
-    {u.boolValue = boolValue;}
+    {u.intValue = (boolValue ? 1 : 0);}
 
   VariableValue(size_t intValue)
     {u.intValue = (juce::int64)intValue;}
@@ -84,10 +84,10 @@ struct VariableValue
   void clearRawData();
 
   bool getBoolean() const
-    {return u.boolValue;}
+    {return u.intValue != 0;}
 
   void setBoolean(bool value)
-    {u.boolValue = value;}
+    {u.intValue = (value ? 1 : 0);}
   
   juce::int64 getInteger() const
     {return u.intValue;}
@@ -165,7 +165,6 @@ struct VariableValue
 private:
   union
   {
-    bool boolValue;
     juce::int64 intValue;
     double doubleValue;
     String* stringValue;
