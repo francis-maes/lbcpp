@@ -394,10 +394,17 @@ public:
 
   virtual ~MultiThreadedExecutionContext()
   {
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "MultiThreadedExecutionContext destructor1" << std::endl;
+#endif
     if (threadPool)
       threadPool->stopAndDestroyAllThreads();
 #ifdef DEBUG_PURE_VIRTUAL
-    std::cout << "MultiThreadedExecutionContext destructor" << std::endl;
+    std::cout << "MultiThreadedExecutionContext destructor2" << std::endl;
+#endif
+    threadPool = WorkUnitThreadPoolPtr();
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "MultiThreadedExecutionContext destructor3" << std::endl;
 #endif
   }
 
