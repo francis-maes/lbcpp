@@ -581,6 +581,7 @@ SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
 )
 
 SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
+  Optimizer/Optimizer/EDAOptimizer.h
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
   Optimizer/Optimizer/IterativeBracketingOptimizer.h
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
