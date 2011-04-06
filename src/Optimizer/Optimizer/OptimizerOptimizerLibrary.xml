@@ -11,6 +11,13 @@
     <variable type="PositiveInteger" name="numSamples"/>
   </class>
   
+  <class name="EDAOptimizer" base="Optimizer">
+    <constructor arguments="size_t nbIterations, size_t populationSize, size_t numBests"/>
+    <variable type="PositiveInteger" name="nbIterations"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
+  </class>
+  
   <!--
   <class name="IterativeBracketingOptimizer" base="OptimizerOld">
     <constructor arguments="size_t numPasses, double reductionFactor, const OptimizerOldPtr&amp; baseOptimizer"/>

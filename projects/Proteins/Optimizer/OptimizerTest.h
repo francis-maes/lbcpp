@@ -25,6 +25,7 @@
 # include "../WorkUnit/DebugWorkUnit.h"
 
 # include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
 # include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 # include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 # include <lbcpp/Function/ScalarFunction.h>
@@ -111,11 +112,13 @@ public:
     */
     
     
-    UniformSampleAndPickBestOptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
-    //OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
-    OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
+    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
+    OptimizerPtr optimizer = new EDAOptimizer(100, 10000, 1000);
+    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    //OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
-    optimizerState->setDistribution(new UniformDistribution(-5,5));
+    //optimizerState->setDistribution(new UniformDistribution(-5,5));
+    optimizerState->setDistribution(new GaussianDistribution(10, 10));
     return optimizer->compute(context, optimizerContext, optimizerState);
     
   }
