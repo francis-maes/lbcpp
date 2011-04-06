@@ -31,6 +31,8 @@ public:
   void setCallback(const OptimizerCallbackPtr callback)
     {optimizerCallback = callback;}
   
+  virtual void waitAllEvaluationsFinished() const = 0;
+  
   virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) = 0;
   // TODO arnaud : evalaute std::vector<Variable>
   

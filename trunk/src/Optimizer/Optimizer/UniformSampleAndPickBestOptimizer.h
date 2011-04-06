@@ -42,8 +42,7 @@ public:
     for (size_t i = 0; i < numSamples; ++i)
       optimizerContext->evaluate(values[i], optimizerState);
     
-    
-    // TODO arnaud : wait until all jobs done
+    optimizerContext->waitAllEvaluationsFinished();
     
     // TODO arnaud : check results.size() == requests.size()
     // TODO arnaud : sort results and requests by identifier
