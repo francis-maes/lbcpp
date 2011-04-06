@@ -18,7 +18,12 @@ class ExecutionStack : public Object
 {
 public:
   ExecutionStack(const ExecutionStackPtr& parentStack)
-    : parentStack(parentStack) {}
+    : parentStack(parentStack) 
+  {
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "ExecutionStack constructor" << std::endl;
+#endif
+  }
   ExecutionStack() {}
 
   void push(const String& description, const WorkUnitPtr& object = WorkUnitPtr());

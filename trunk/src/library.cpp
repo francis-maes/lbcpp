@@ -244,6 +244,9 @@ struct ApplicationContext
 {
   ApplicationContext()
   {
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "ApplicationContex constructor (begin)" << std::endl;
+#endif
     lbcpp::applicationContext = this;
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
     memoryLeakDetector = new MemoryLeakDetector();
@@ -252,9 +255,15 @@ struct ApplicationContext
 #ifdef LBCPP_USER_INTERFACE
     userInterfaceManager = new UserInterfaceManager();
 #endif
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "ApplicationContex constructor (end)" << std::endl;
+#endif
   }
   ~ApplicationContext()
   {
+#ifdef DEBUG_PURE_VIRTUAL
+    std::cout << "ApplicationContex destructor" << std::endl;
+#endif
 #ifdef LBCPP_USER_INTERFACE
     delete userInterfaceManager;
 #endif
