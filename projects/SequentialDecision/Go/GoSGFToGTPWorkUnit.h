@@ -120,7 +120,7 @@ public:
     char cx = 'A' + x;
     if (cx >= 'I')
       ++cx;
-    String cy = String(boardSize - 1 - y);
+    String cy = String((int)boardSize - 1 - y);
 
     String res;
     res += cx;

@@ -11,9 +11,9 @@
 
 namespace lbcppgo
 {
-  extern void francisInit();
+  extern bool francisInit();
 
-  extern void francisCompute(int board[361], double **patternValues, double values[361], int blackEatenStones, int whiteEatenStones, int color,int tour, int lastMove, int LastLastMove);
+  extern void francisCompute(int boardSize, int board[361], double *patternValues, double values[361], int blackEatenStones, int whiteEatenStones, int color,int tour, int lastMove, int LastLastMove);
 };
 
 #endif // !LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_GO_HEADER_H_
