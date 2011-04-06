@@ -37,6 +37,19 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    
+    // TESTS OPTIMIZER
+    
+    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
+    OptimizerPtr optimizer = new EDAOptimizer(10, 1000, 100);
+    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    //OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
+    OptimizerStatePtr optimizerState = new OptimizerState();
+    //optimizerState->setDistribution(new UniformDistribution(-5,5));
+    optimizerState->setDistribution(new GaussianDistribution(2, 1000));
+    return optimizer->compute(context, optimizerContext, optimizerState);
+    
+    
     /*
     // initial distribution
     IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
@@ -111,15 +124,6 @@ public:
     std::cout << f2->compute(context, trace).toString() << std::endl;
     */
     
-    
-    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
-    OptimizerPtr optimizer = new EDAOptimizer(100, 10000, 1000);
-    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
-    //OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
-    OptimizerStatePtr optimizerState = new OptimizerState();
-    //optimizerState->setDistribution(new UniformDistribution(-5,5));
-    optimizerState->setDistribution(new GaussianDistribution(10, 10));
-    return optimizer->compute(context, optimizerContext, optimizerState);
     
   }
 protected:
