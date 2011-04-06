@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <library name="OptimizerContext" directory="Optimizer/Context">
+  <!--
   <class name="DistributedOptimizerContext" base="OptimizerContext">
     <constructor arguments="String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
     <variable type="String" name="projectName"/>
@@ -13,6 +14,8 @@
     <variable type="PositiveInteger" name="requiredTime"/> 
     <variable type="GenericVector[String]" name="inProgressWUs"/>
   </class>
-  
-  <class name="SynchroneousOptimizerContext" base="OptimizerContext"/>
+  -->
+  <class name="SynchroneousOptimizerContext" base="OptimizerContext">
+    <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
+  </class>
 </library>

@@ -20,21 +20,22 @@ namespace lbcpp
 class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
+  SynchroneousOptimizerContext(const FunctionPtr& objectiveFunction) : OptimizerContext(objectiveFunction) {}
+  SynchroneousOptimizerContext() {}
   
   // blocking method
-  virtual juce::int64 evaluate(const Variable& parameters) 
-  {
-    const juce::int64 identifier = generateIdentifier();
+  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) 
+  {    
     const Variable var = getObjectiveFunction()->compute(defaultExecutionContext(), parameters);
-    getOptimizerCallback()->evaluationFinished(identifier, getDoubleFromOutput(var));
-    return identifier;
+    getOptimizerCallback()->evaluationFinished(parameters, getDoubleFromOutput(var), optimizerState);
+    return true;
   }
 
 protected:  
   friend class SynchroneousOptimizerContextClass;
 
 private:
-  juce::int64 lastIdentifier; // TODO arnaud : static ?
+  /*juce::int64 lastIdentifier; // TODO arnaud : static ?
   
   juce::int64 generateIdentifier()
   {
@@ -43,7 +44,7 @@ private:
       return res;
     juce::Thread::sleep(1);
     return generateIdentifier();
-  }
+  }*/
 
 };
   

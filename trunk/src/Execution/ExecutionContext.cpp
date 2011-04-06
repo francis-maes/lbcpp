@@ -20,21 +20,10 @@ using namespace lbcpp;
 ExecutionContext::ExecutionContext(const File& projectDirectory)
   : stack(new ExecutionStack()), projectDirectory(projectDirectory)
 {
-#ifdef DEBUG_PURE_VIRTUAL
-  std::cout << "ExecutionContext constructor (begin)" << std::endl;
-#endif
   initialize(*this);
-#ifdef DEBUG_PURE_VIRTUAL
-  std::cout << "ExecutionContext constructor (end)" << std::endl;
-#endif
 }
 
-#ifdef DEBUG_PURE_VIRTUAL  
-ExecutionContext::~ExecutionContext()
-{
-  std::cout << "ExecutionContext destructor" << std::endl;
-}
-#endif
+ExecutionContext::~ExecutionContext() {}
 
 void ExecutionContext::enterScope(const String& description, const WorkUnitPtr& workUnit)
 {
@@ -181,14 +170,8 @@ bool ExecutionStack::equals(const ExecutionStackPtr& otherStack) const
 */
 ExecutionContextPtr lbcpp::defaultConsoleExecutionContext(bool noMultiThreading)
 {
-#ifdef DEBUG_PURE_VIRTUAL
-  std::cout << "defaultConsoleExecutionContext() method (begin)" << std::endl;
-#endif
   int numCpus = juce::SystemStats::getNumCpus();
   ExecutionContextPtr res = (numCpus > 1 && !noMultiThreading ? multiThreadedExecutionContext(numCpus) : singleThreadedExecutionContext());
   res->appendCallback(consoleExecutionCallback());
-#ifdef DEBUG_PURE_VIRTUAL
-  std::cout << "defaultConsoleExecutionContext() method (end)" << std::endl;
-#endif
   return res;
 }

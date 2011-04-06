@@ -23,6 +23,10 @@
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerCallback.h>
 # include "../WorkUnit/DebugWorkUnit.h"
+
+# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
+# include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
+# include <lbcpp/Function/ScalarFunction.h>
 namespace lbcpp
 {
 
@@ -31,6 +35,7 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    /*
     // initial distribution
     IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
     distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,9));
@@ -47,10 +52,10 @@ public:
     distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
     distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
-    
+    */
     // Create initial state either from distri or from existing file
-    ProteinGridEvoOptimizerStatePtr state = /*new ProteinGridEvoOptimizerState(distributions);*/ Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
-    
+    //ProteinGridEvoOptimizerStatePtr state = /*new ProteinGridEvoOptimizerState(distributions);*/ Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("EvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+    /*
     // variables used by EvoOptimizer
     size_t totalNumberWuRequested = 10000; // total number of WUs to evaluate
     size_t numberWuToUpdate = 300;       // min number of WUs evaluated needed to update distribution
@@ -68,7 +73,7 @@ public:
     size_t requiredMemory = 1;
     size_t requiredTime = 1;
     
-    
+    */
     /**
      * EvoOptimizer is the Local Evo Optimizer.
      * To use it you need:
@@ -86,9 +91,9 @@ public:
     /**
      * GridEvoOptimizer
      */
-    GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
-                                                         managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep, updateFactor);
-    return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+    //GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
+    //                                                     managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep, updateFactor);
+    //return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
     
     
     
@@ -103,7 +108,14 @@ public:
     FunctionPtr f2 = new ProteinGetVariableFromTraceFunction();
     std::cout << f2->compute(context, trace).toString() << std::endl;
     */
-        
+    
+    
+    UniformSampleAndPickBestOptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100);
+    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    OptimizerStatePtr optimizerState = new OptimizerState();
+    optimizerState->setDistribution(new UniformDistribution(-5,5));
+    return optimizer->compute(context, optimizerContext, optimizerState);
+    
   }
 protected:
   friend class OptimizerTestClass;

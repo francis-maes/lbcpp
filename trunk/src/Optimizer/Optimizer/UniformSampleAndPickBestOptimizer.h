@@ -22,44 +22,34 @@ namespace lbcpp
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
-  /*UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
-    : numSamples(numSamples) {}*/
+  UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
+    : numSamples(numSamples) {}
   
-  virtual void evaluationFinished(juce::int64 identifier, double score)
-    {/*optimizerState->evaluationResults.push_back(std::pair<juce::int64, double>(identifier, score));*/}
+  virtual void evaluationFinished(const Variable& variable, double score, const OptimizerStatePtr& optimizerState)
+  {
+    if (optimizerState->bestScore > score) {
+      optimizerState->bestScore = score;
+      optimizerState->bestVariable = variable;
+    }
+  }
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
     std::vector<double> values;
-    ContinuousDistributionPtr apriori = (optimizerState->distribution).dynamicCast<ContinuousDistribution>();
+    ContinuousDistributionPtr apriori = (optimizerState->getDistribution()).dynamicCast<ContinuousDistribution>();
     apriori->sampleUniformly(numSamples, values);
     
-    for (size_t i = 0; i < numSamples; ++i) 
-      optimizerContext->evaluate(values[i]);
+    for (size_t i = 0; i < numSamples; ++i)
+      optimizerContext->evaluate(values[i], optimizerState);
     
-    while (optimizerState->evaluationResults.size() < numSamples) {
-      Thread::sleep(5000);  // TODO arnaud
-    }
+    
+    // TODO arnaud : wait until all jobs done
     
     // TODO arnaud : check results.size() == requests.size()
-    // TODO arnaud : sot results and requests by identifier
+    // TODO arnaud : sort results and requests by identifier
     
-    double bestScore = DBL_MAX;
-    double worstScore = -DBL_MAX;
-    Variable res = Variable();
-    for (size_t i = 0; i < numSamples; ++i)
-    {
-      if (optimizerState->evaluationResults[i].second < bestScore) {
-        bestScore = optimizerState->evaluationResults[i].second;
-        res = optimizerState->evaluationRequests[i].first;
-      }
-      if (optimizerState->evaluationResults[i].second > worstScore) {
-        worstScore = optimizerState->evaluationResults[i].second;
-      }
-    }      
-    
-    std::cout << "Scores: " << worstScore << " ... " << bestScore << std::endl;
-    return res;
+    std::cout << "Best Score: " << optimizerState->bestScore << " (" << optimizerState->bestVariable << ")" << std::endl;
+    return optimizerState->bestScore;
 
     // OLD IMPLEMENTATION
     /*
@@ -102,6 +92,8 @@ protected:
   size_t numSamples;
 };
 
+typedef ReferenceCountedObjectPtr<UniformSampleAndPickBestOptimizer> UniformSampleAndPickBestOptimizerPtr;  
+  
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_
