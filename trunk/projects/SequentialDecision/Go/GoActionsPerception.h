@@ -260,11 +260,12 @@ public:
       fun = lbcppMemberUnaryFunction(GoActionsPerception, getPositionFeatures, positiveIntegerPairClass, positionFeatures->getElementsType());
       size_t i2 = builder.addFunction(fun, action, T("position"));
 
-      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 10), previousActionRelationFeatures, T("previousAction"));
-      //size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(), i3, i3, T("prev2"));
+      size_t i3 = builder.addFunction(fixedContainerWindowFeatureGenerator(0, 2), previousActionRelationFeatures, T("previousAction"));
+      size_t i32 = builder.addFunction(cartesianProductFeatureGenerator(), i3, i3, T("prev2"));
 
       FunctionPtr fun2 = new MatrixNeighborhoodFeatureGenerator(new MatrixConnectivityFeatureGenerator(), getElementFunction());
       size_t i4 = builder.addFunction(fun2, region4, row, column, region4Features, T("neighbors"));
+      
       //size_t i42 = builder.addFunction(dynamicallyMappedFeatureGenerator(cartesianProductFeatureGenerator(), 1000000, true), i4, i4, T("neighbors2"));
 
     size_t features = builder.finishSelectionWithFunction(concatenateFeatureGenerator(false), T("f"));

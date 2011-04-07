@@ -10,13 +10,11 @@
 #include "../Node/NetworkRequest.h"
 #include "NetworkWorkUnit.h"
 #include <lbcpp/Network/NetworkServer.h>
-
 using namespace lbcpp;
 
 /*
 ** ManagerWorkUnit
 */
-
 Variable ManagerWorkUnit::run(ExecutionContext& context)
 {
   fileManager = new NetworkProjectFileManager(context);
@@ -165,7 +163,6 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNodeNetworkInt
 /*
 ** GridWorkUnit
 */
-
 Variable GridWorkUnit::run(ExecutionContext& context)
 {
   if (gridEngine != T("SGE") && gridEngine != T("BOINC"))
@@ -210,7 +207,6 @@ Variable GridWorkUnit::run(ExecutionContext& context)
 /*
 ** DumbWorkUnit
 */
-
 Variable DumbWorkUnit::run(ExecutionContext& context)
 {
   for (size_t i = 0; i < 10; ++i)

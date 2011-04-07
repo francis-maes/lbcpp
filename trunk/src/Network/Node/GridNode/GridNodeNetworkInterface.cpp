@@ -109,7 +109,7 @@ void SgeGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResp
 
 /* BoincGridNodeNetworkInterface */
 BoincGridNodeNetworkInterface::BoincGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-: GridNodeNetworkInterface(context, client, nodeName)
+  : GridNodeNetworkInterface(context, client, nodeName)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("Waiting"));

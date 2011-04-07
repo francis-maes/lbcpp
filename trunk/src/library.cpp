@@ -444,7 +444,7 @@ void lbcpp::deinitializeDynamicLibrary()
   lbCppLibraryUnCacheTypes();
   topLevelType = anyType = TypePtr();
   jassert(lbcpp::applicationContext);
-  lbcpp::applicationContext = NULL;
+  //lbcpp::applicationContext = NULL;
 #endif // JUCE_WIN32
 }
 
