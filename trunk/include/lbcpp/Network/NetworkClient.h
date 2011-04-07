@@ -14,7 +14,7 @@
 namespace lbcpp
 {
 
-class NetworkClient : public InterprocessConnection, public Object
+class NetworkClient : public Object, public InterprocessConnection
 {
 public:
   NetworkClient(ExecutionContext& context)
