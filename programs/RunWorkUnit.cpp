@@ -147,7 +147,10 @@ bool runWorkUnitFromArguments(ExecutionContext& context, const String& workUnitC
   const WorkUnitPtr& workUnit = object.staticCast<WorkUnit>();
   for (size_t i = 0; i < arguments.size(); ++i)
     if (arguments[i] == T("--help"))
+    {
       context.informationCallback(workUnit->getUsageString());
+      return false;
+    }
 
   // parse arguments and run work unit
   return workUnit->parseArguments(context, arguments) && runWorkUnit(context, workUnit);

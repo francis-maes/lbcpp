@@ -1,14 +1,33 @@
 
-* Nouvelles features
+
+Objectif 1: maitrise du reseau en local
+
+ - LocalGrid
+ - Connect to manager depuis l'explorer
+ - SendWorkUnit depuis l'explorer
+ - RetrieveTraces depuis l'explorer
+
+Objectif 2: resultats experimentaux
+
+ - HIV:
+   - heuristiques de base vs N
+   - optimistic planning with different normalizations vs N
+   - EDA learned heuristic vs N
+   - save heuristics
+   - test learned heuristic from close initial states
+   - launch everything on the two or three problems
+ - Go:
+   - learn a big model
+   - integrate's olivier last modifs
+
+Objectif 3: décrires expériences
+
 
 Go:
+ * Nouvelles features
  * Courbes dans l'evaluateur
  * GoPatterns
  * Utilisation du manager
-
-** Problèmes valgrind sur OptimizerTest
-** Plantage au lancement du RunWorkUnit
-
 
 Proteins:
  * Ajouter des features de segments
@@ -18,8 +37,6 @@ Core:
  * MapContainerFunction: la transformer en ProxyFunction, faire la version parallele, absorber le Apply des container
 
 Explorer:
- * SendWorkUnit depuis l'explorer
- * RetrieveTraces depuis l'explorer
  * LogScale dans les curves
  * Systeme d'export/import de fichiers general
  * Export as GnuPlot Data File
