@@ -460,7 +460,7 @@ void WorkUnitArgumentComponent::changeListenerCallback(void* )
 class NewWorkUnitContentComponent : public Component, public juce::ComboBoxListener, public juce::ButtonListener
 {
 public:
-  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters)
+  NewWorkUnitContentComponent(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& workUnitParameters, String& targetGrid)
     : context(context), argumentsSelector(NULL), recent(recent), workUnitName(workUnitName), workUnitParameters(workUnitParameters)
   {
     addAndMakeVisible(workUnitSelectorLabel = new Label(T("selector"), T("Work Unit")));
@@ -468,6 +468,11 @@ public:
     addAndMakeVisible(workUnitSelector = new WorkUnitSelectorComboxBox(recent, workUnitName));
     addAndMakeVisible(argumentsSelectorLabel = new Label(T("selector"), T("Arguments")));
     argumentsSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
+
+    addAndMakeVisible(targetGridSelectorLabel = new Label(T("selector"), T("Target Grid")));
+    targetGridSelectorLabel->setFont(Font(18, Font::italic | Font::bold));
+    addAndMakeVisible(targetGridSelector = new TextEditor(T("toto")));
+    targetGridSelector->setText(targetGrid);
 
     addAndMakeVisible(okButton = new TextButton(T("OK")));
     okButton->addButtonListener(this);
@@ -478,8 +483,14 @@ public:
     if (workUnitSelector->getNumItems())
       workUnitSelector->setSelectedItemIndex(0);
   }
+
+  String getTargetGrid() const
+    {return targetGridSelector->getText().trim();}
+
   virtual ~NewWorkUnitContentComponent()
-    {deleteAllChildren();}
+  {
+    deleteAllChildren();
+  }
 
   virtual void comboBoxChanged(ComboBox* comboBoxThatHasChanged)
   {
@@ -494,11 +505,14 @@ public:
       TypePtr type = getType(workUnit->getWorkUnitName());
       if (type && type->getNumMemberVariables() > 0)
       {
+        const std::vector<String>& recentArguments = workUnit->getArguments();
+        workUnitParameters = (recentArguments.size() ? recentArguments[0] : String::empty);
         addAndMakeVisible(argumentsSelector = new WorkUnitArgumentsComponent(context, workUnit, workUnitParameters));
         argumentsSelectorLabel->setText(T("Arguments"), false);
       }
       else
         argumentsSelectorLabel->setText(T("No arguments"), false);
+
       resized();
     }
   }
@@ -513,26 +527,37 @@ public:
     int h = 0;
     workUnitSelectorLabel->setBounds(x, 0, w, labelsHeight);
     h += labelsHeight + margin;
-    workUnitSelector->setBounds(x, h, w, workUnitSelectorHeight);
-    h += workUnitSelectorHeight + 2 * margin;
+    workUnitSelector->setBounds(x, h, w, comboBoxHeight);
+    h += comboBoxHeight + 2 * margin;
     argumentsSelectorLabel->setBounds(x, h, w, labelsHeight);
     h += labelsHeight + 2 * margin;
     if (argumentsSelector)
-      argumentsSelector->setBounds(x, h, w, getHeight() - h - buttonsHeight - 2 * margin);
-    h = getHeight() - margin - buttonsHeight;
+      argumentsSelector->setBounds(x, h, w, getHeight() - h - buttonsHeight - 5 * margin - comboBoxHeight - labelsHeight);
+    h = getHeight() - 4 * margin - buttonsHeight - comboBoxHeight - labelsHeight;
+    
+    targetGridSelectorLabel->setBounds(x, h, w, labelsHeight);
+    h += labelsHeight + margin;
+    targetGridSelector->setBounds(x, h, w, comboBoxHeight);
+    h += comboBoxHeight + margin;
+
     okButton->setBounds(getWidth() / 2 - buttonsWidth - margin, h, buttonsWidth, buttonsHeight);
     cancelButton->setBounds(getWidth() / 2 + margin, h, buttonsWidth, buttonsHeight);
   }
 
-  enum {workUnitSelectorHeight = 20, labelsHeight = 25, margin = 5, buttonsWidth = 80, buttonsHeight = 30};
+  enum {comboBoxHeight = 20, labelsHeight = 25, margin = 5, buttonsWidth = 80, buttonsHeight = 30};
 
 private:
   ExecutionContext& context;
 
   Label* workUnitSelectorLabel;
   WorkUnitSelectorComboxBox* workUnitSelector;
+
   Label* argumentsSelectorLabel;
   WorkUnitArgumentsComponent* argumentsSelector;
+
+  Label* targetGridSelectorLabel;
+  TextEditor* targetGridSelector;
+
   TextButton* okButton;
   TextButton* cancelButton;
 
@@ -548,18 +573,19 @@ private:
 /*
 ** NewWorkUnitDialogWindow
 */
-NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
+NewWorkUnitDialogWindow::NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid)
   : juce::DocumentWindow(T("New Work Unit"), Colour(250, 252, 255), DocumentWindow::allButtons, true), context(context)
 {
   setResizable(true, true);
   centreWithSize(800, 600);
-  setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments));
+  setContentComponent(new NewWorkUnitContentComponent(context, recent, workUnitName, arguments, targetGrid));
 }
 
-bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory)
+bool NewWorkUnitDialogWindow::run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid)
 {
-  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments, workingDirectory);
+  NewWorkUnitDialogWindow* window = new NewWorkUnitDialogWindow(context, recent, workUnitName, arguments, targetGrid);
   const int result = window->runModalLoop();
+  targetGrid = ((NewWorkUnitContentComponent* )window->getContentComponent())->getTargetGrid();
   delete window;
   return result == 1;
 }

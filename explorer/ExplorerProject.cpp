@@ -32,17 +32,6 @@ void RecentWorkUnitConfiguration::addRecentArguments(const String& args)
   arguments.insert(arguments.begin(), args);
 }
 
-void RecentWorkUnitConfiguration::addRecentWorkingDirectory(const File& workingDirectory)
-{
-  size_t i;
-  for (i = 0; i < workingDirectories.size(); ++i)
-  if (workingDirectories[i] == workingDirectory)
-    break;
-  if (i < workingDirectories.size())
-    workingDirectories.erase(workingDirectories.begin() + i);
-  workingDirectories.insert(workingDirectories.begin(), workingDirectory);
-}
-
 /*
 ** RecentWorkUnitsConfiguration
 */
@@ -73,12 +62,10 @@ RecentWorkUnitConfigurationPtr RecentWorkUnitsConfiguration::getWorkUnit(const S
   return recents[index];
 }
 
-void RecentWorkUnitsConfiguration::addRecent(const String& workUnit, const String& arguments, const File& workingDirectory)
+void RecentWorkUnitsConfiguration::addRecent(const String& workUnit, const String& arguments)
 {
   addRecentWorkUnit(workUnit);
   recents[0]->addRecentArguments(arguments);
-  if (workingDirectory.exists())
-    recents[0]->addRecentWorkingDirectory(workingDirectory);
   ExplorerConfiguration::save(defaultExecutionContext());
 }
 
@@ -163,15 +150,16 @@ void ExplorerProject::close(ExecutionContext& context)
   disconnectFromManager(context);
 }
 
-bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit)
+bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit, String& targetGrid)
 {
   String workUnitName;
   String arguments;
-  File workingDirectory;
-  if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments, workingDirectory))
+  targetGrid = recentTargetGrid;
+  if (!NewWorkUnitDialogWindow::run(context, recentWorkUnits, workUnitName, arguments, targetGrid))
     return false;
+  recentTargetGrid = targetGrid;
 
-  recentWorkUnits->addRecent(workUnitName, arguments, workingDirectory);
+  recentWorkUnits->addRecent(workUnitName, arguments);
   save(context);
 
   TypePtr workUnitType = typeManager().getType(context, workUnitName);
@@ -205,8 +193,8 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
   }
   context.informationCallback(managerHostName, T("Connected !"));
 
-  String thisSource = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
-  managerInterface = clientManagerNodeNetworkInterface(context, managerClient, thisSource);
+  thisNetworkNodeName = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
+  managerInterface = clientManagerNodeNetworkInterface(context, managerClient, thisNetworkNodeName);
   managerInterface->sendInterfaceClass();
   return true;
 }
@@ -224,4 +212,23 @@ void ExplorerProject::disconnectFromManager(ExecutionContext& context)
     managerClient->stopClient();
     managerClient = NetworkClientPtr();
   }
+}
+
+bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+{
+  if (!managerInterface)
+  {
+    context.errorCallback(T("Not connected to manager"));
+    return false;
+  }
+  NetworkRequestPtr request = new NetworkRequest(context, getName(), thisNetworkNodeName, grid, workUnit, requiredCpus, requiredMemory, requiredTime);
+  String res = managerInterface->pushWorkUnit(request);
+  if (res == T("Error"))
+  {
+    context.errorCallback(T("Error while sending work unit to manager"));
+    return false;
+  }
+  request->setIdentifier(res);
+  context.informationCallback(T("WorkUnitIdentifier: ") + request->getIdentifier());
+  return true;
 }

@@ -325,12 +325,22 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
+          String targetGrid;
+          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit, targetGrid))
           {
-            ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
-            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
-            contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
-            currentProject->workUnitContext->pushWorkUnit(workUnit);
+            if (targetGrid == String::empty) 
+            {
+              // local execution
+              ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
+              Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
+              contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
+              currentProject->workUnitContext->pushWorkUnit(workUnit);
+            }
+            else
+            {
+              // distant execution
+              currentProject->sendWorkUnitToManager(context, workUnit, targetGrid);
+            }
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
         }
