@@ -25,7 +25,7 @@ void usage()
 bool parseTopLevelArguments(ExecutionContext& context, int argc, char** argv, std::vector<String>& remainingArguments,
                             size_t& numThreads, File& traceOutputFile, double& traceAutoSave, File& projectDirectory)
 {
-  numThreads = (size_t)juce::SystemStats::getNumCpus();
+  numThreads = 1;//(size_t)juce::SystemStats::getNumCpus();
   traceAutoSave = 0.0; // no auto save
   
   remainingArguments.reserve(argc - 1);

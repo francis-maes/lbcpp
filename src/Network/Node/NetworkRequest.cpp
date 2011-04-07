@@ -33,5 +33,6 @@ NetworkRequest::NetworkRequest(ExecutionContext& context,
     requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime)
 {
   this->workUnit->saveObject(context, workUnit);
+  this->workUnit->setTagName(T("workUnit"));
 }
 

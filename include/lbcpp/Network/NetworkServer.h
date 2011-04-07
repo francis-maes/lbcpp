@@ -14,13 +14,14 @@
 namespace lbcpp
 {
 
-class NetworkServer : public InterprocessConnectionServer, public Object
+class NetworkServer : public Object, public InterprocessConnectionServer
 {
 public:
   NetworkServer(ExecutionContext& context)
     : context(context) {}
   NetworkServer()
     : context(*(ExecutionContext*)NULL) {}
+  virtual ~NetworkServer() {}
 
   bool startServer(int port);
   void stopServer();
