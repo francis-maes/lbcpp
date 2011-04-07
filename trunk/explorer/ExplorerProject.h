@@ -23,16 +23,12 @@ public:
   RecentWorkUnitConfiguration() {}
 
   void addRecentArguments(const String& args);
-  void addRecentWorkingDirectory(const File& workingDirectory);
 
   const String& getWorkUnitName() const
     {return workUnitName;}
 
   const std::vector<String>& getArguments() const
     {return arguments;}
-
-  const std::vector<File>& getWorkingDirectories() const
-    {return workingDirectories;}
 
   WorkUnitPtr createWorkUnit() const
   {
@@ -47,7 +43,6 @@ protected:
 
   String workUnitName;
   std::vector<String> arguments;
-  std::vector<File> workingDirectories;
 };
 
 typedef ReferenceCountedObjectPtr<RecentWorkUnitConfiguration> RecentWorkUnitConfigurationPtr;
@@ -66,7 +61,7 @@ public:
   RecentWorkUnitConfigurationPtr getWorkUnit(const String& name);
 
   void addRecentWorkUnit(const String& workUnitName);
-  void addRecent(const String& workUnitName, const String& arguments, const File& workingDirectory);
+  void addRecent(const String& workUnitName, const String& arguments);
 
   void clear()
     {recents.clear();}
@@ -109,6 +104,9 @@ public:
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
 
+  String getName() const
+    {return rootDirectory.getFileName();}
+
   /*
   ** Directories
   */
@@ -133,7 +131,7 @@ public:
   const RecentWorkUnitsConfigurationPtr& getRecentWorkUnits() const
     {return recentWorkUnits;}
 
-  bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit);
+  bool startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit, String& targetGrid);
 
   ExecutionContextPtr workUnitContext;
 
@@ -152,6 +150,11 @@ public:
   bool connectToManager(ExecutionContext& context, const String& hostName, int port);
   void disconnectFromManager(ExecutionContext& context);
 
+  bool sendWorkUnitToManager(ExecutionContext& context, const WorkUnitPtr& workUnit, const String& grid, size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
+
+  const String& getRecentTargetGrid() const
+    {return recentTargetGrid;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
@@ -160,11 +163,13 @@ protected:
   File rootDirectory;
   File recentDirectory;
   RecentWorkUnitsConfigurationPtr recentWorkUnits;
+  String recentTargetGrid;
 
   bool managerConnected;
   String managerHostName;
   int managerPort;
 
+  String thisNetworkNodeName;
   NetworkClientPtr managerClient;
   ManagerNodeNetworkInterfacePtr managerInterface;
 };

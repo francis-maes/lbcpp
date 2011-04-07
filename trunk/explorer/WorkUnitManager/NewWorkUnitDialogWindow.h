@@ -121,7 +121,7 @@ public:
     juce_UseDebuggingNewOperator
   };
 */
-  static bool run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+  static bool run(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid);
   
   virtual void closeButtonPressed();
 
@@ -130,7 +130,7 @@ public:
   juce_UseDebuggingNewOperator
 
 private:
-  NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, File& workingDirectory);
+  NewWorkUnitDialogWindow(ExecutionContext& context, RecentWorkUnitsConfigurationPtr recent, String& workUnitName, String& arguments, String& targetGrid);
   
   ExecutionContext& context;
 };
