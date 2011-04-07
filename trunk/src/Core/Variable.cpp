@@ -10,6 +10,7 @@
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Container.h>
+#include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
 Variable Variable::pair(const Variable& variable1, const Variable& variable2)
@@ -253,3 +254,36 @@ static bool printDifferencesRecursively(std::ostream& ostr, const Variable& vari
 
 bool Variable::printDifferencesRecursively(std::ostream& ostr, const Variable& otherVariable, const String& theseVariablesName) const
   {return ::printDifferencesRecursively(ostr, *this, otherVariable, theseVariablesName);}
+
+bool Variable::isConvertibleToDouble() const
+{
+  if (isNil())
+    return false;
+  if (isString())
+    return false;
+  if (isObject())
+    return dynamicCast<ScoreObject>();
+  return true;
+}
+
+double Variable::toDouble() const
+{
+  if (!exists())
+    return 0.0;
+
+  if (isDouble())
+    return getDouble();
+
+  if (isInteger())
+    return (double)getInteger();
+
+  if (isBoolean())
+    return getBoolean() ? 1.0 : 0.0;
+
+  ScoreObjectPtr scoreObject = dynamicCast<ScoreObject>();
+  if (scoreObject)
+    return -scoreObject->getScoreToMinimize();
+
+  jassert(false); // not convertible to double
+  return 0.0;
+}

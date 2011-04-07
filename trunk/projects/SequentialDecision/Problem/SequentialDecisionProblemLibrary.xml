@@ -18,5 +18,9 @@
   </class>
   <class name="HIVDecisionProblemState" base="DamienState"/>
   <class name="HIVInitialStateSampler" base="Function"/>
+
+  <class name="HIVDecisionProblem" base="DecisionProblem" shortName="hiv">
+    <constructor arguments="double discount"/>
+  </class>
   
 </library>

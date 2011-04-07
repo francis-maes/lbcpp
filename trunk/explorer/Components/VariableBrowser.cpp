@@ -60,6 +60,8 @@ struct VariableRelatedCommand
     std::vector<VariableRelatedCommand> res;
     if (variable.isObject())
       res.push_back(VariableRelatedCommand(T("Save"), T("Save-32.png")));
+    if (variable.inheritsFrom(containerClass(objectClass)))
+      res.push_back(VariableRelatedCommand(T("Save as gnuplot"), T("Save-32.png")));
     return res;
   }
 
@@ -67,15 +69,69 @@ struct VariableRelatedCommand
   {
     if (command.name == T("Save"))
     {
-      File defaultDirectory = File::getSpecialLocation(File::userHomeDirectory);
-      ExplorerProjectPtr project = ExplorerProject::getCurrentProject();
-      if (project)
-        defaultDirectory = project->getRootDirectory();
-
-      FileChooser chooser("Select the file to save...", defaultDirectory, "*.*");
-      if (chooser.browseForFileToSave(true))
-        variable.saveToFile(defaultExecutionContext(), chooser.getResult());
+      File outputFile = selectFileToSave(T("*.*"));
+      if (outputFile != File::nonexistent)
+        variable.saveToFile(defaultExecutionContext(), outputFile);
     }
+    else if (command.name == T("Save as gnuplot"))
+    {
+      File outputFile = selectFileToSave(T("*.data"));
+      if (outputFile != File::nonexistent)
+        saveContainerAsGnuplotData(defaultExecutionContext(), variable.getObjectAndCast<Container>(), outputFile);
+    }
+  }
+
+  static bool saveContainerAsGnuplotData(ExecutionContext& context, const ContainerPtr& container, const File& outputFile)
+  {
+    size_t numRows = container->getNumElements();
+    TypePtr rowType = container->getElementsType();
+
+    OutputStream* ostr = outputFile.createOutputStream();
+    if (!ostr)
+    {
+      context.errorCallback(T("Could not create file ") + outputFile.getFullPathName());
+      return false;
+    }
+
+    // make columns
+    std::vector<size_t> columns;
+    columns.reserve(rowType->getNumMemberVariables());
+    for (size_t i = 0; i < rowType->getNumMemberVariables(); ++i)
+      if (Variable::missingValue(rowType->getMemberVariableType(i)).isConvertibleToDouble())
+        columns.push_back(i);
+
+    // write header
+    *ostr << "# lbcpp-explorer gnu plot file\n";
+    *ostr << "#";
+    for (size_t i = 0; i < columns.size(); ++i)
+      *ostr << " " << rowType->getMemberVariableName(columns[i]);
+    *ostr << "\n\n";
+
+    // write data
+    for (size_t i = 0; i < numRows; ++i)
+    {
+      ObjectPtr object = container->getElement(i).getObject();
+      for (size_t j = 0; j < columns.size(); ++j)
+        *ostr << String(object->getVariable(columns[j]).toDouble()) << " ";
+      *ostr << "\n";
+    }
+    ostr->flush();
+    delete ostr;
+    return true;
+  }
+
+  static File selectFileToSave(const String& extension)
+  {
+    File defaultDirectory = File::getSpecialLocation(File::userHomeDirectory);
+    ExplorerProjectPtr project = ExplorerProject::getCurrentProject();
+    if (project)
+      defaultDirectory = project->getRootDirectory();
+
+    FileChooser chooser("Select the file to save...", defaultDirectory, extension);
+    if (chooser.browseForFileToSave(true))
+      return chooser.getResult();
+    else
+      return File::nonexistent;
   }
 };
 

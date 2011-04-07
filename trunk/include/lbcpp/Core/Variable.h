@@ -154,6 +154,9 @@ public:
   bool isDouble() const;
   double getDouble() const;
 
+  bool isConvertibleToDouble() const;
+  double toDouble() const;
+
   bool isString() const;
   String getString() const;
 

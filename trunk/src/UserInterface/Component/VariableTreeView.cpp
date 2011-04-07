@@ -289,8 +289,8 @@ void VariableTreeView::timerCallback()
         selectionName += item->getUniqueName();
       }
     }
-    sendSelectionChanged(selectedVariables, selectionName);
     isSelectionUpToDate = true;
+    sendSelectionChanged(selectedVariables, selectionName);
   }
 }
 

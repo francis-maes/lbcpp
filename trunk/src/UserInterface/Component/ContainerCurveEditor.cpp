@@ -262,37 +262,7 @@ protected:
   }
 
   bool getTableScalarValue(const ObjectPtr& row, size_t column, double& scalarValue) const
-  {
-    Variable value = row->getVariable(column);
-    if (value.exists())
-    {
-      if (value.isInteger())
-      {
-        scalarValue = (double)value.getInteger();
-        return true;
-      }
-
-      if (value.isDouble())
-      {
-        scalarValue = value.getDouble();
-        return true;
-      }
-
-      if (value.isBoolean())
-      {
-        scalarValue = value.getBoolean() ? 1.0 : 0.0;
-        return true;
-      }
-
-      ScoreObjectPtr scoreObject = value.dynamicCast<ScoreObject>();
-      if (scoreObject)
-      {
-        scalarValue = -scoreObject->getScoreToMinimize();
-        return true;
-      }
-    }
-    return false;
-  }
+    {scalarValue = row->getVariable(column).toDouble(); return true;}
 
   void getTableValueRange(size_t column, double& minValue, double& maxValue) const
   {

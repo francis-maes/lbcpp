@@ -150,9 +150,14 @@ public:
   }
 };
 
-inline DecisionProblemPtr hivDecisionProblem(double discount)
-  {return new DecisionProblem(new HIVInitialStateSampler(), discount);}
+class HIVDecisionProblem : public DecisionProblem
+{
+public:
+  HIVDecisionProblem(double discount = 0.9)
+    : DecisionProblem(new HIVInitialStateSampler(), discount) {}
+};
 
+extern DecisionProblemPtr hivDecisionProblem(double discount);
 
 }; /* namespace lbcpp */
 

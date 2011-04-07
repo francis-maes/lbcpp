@@ -13,6 +13,7 @@
 # include "../Core/SearchPolicy.h"
 # include "../Core/SearchHeuristic.h"
 # include "../Problem/DamienDecisionProblem.h"
+# include "../Problem/LinearPointPhysicProblem.h"
 # include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
@@ -68,7 +69,7 @@ public:
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
     size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
-    size_t stateEValue = builder.addFunction(lbcppMemberUnaryFunction(HIVSearchFeatures, getEValueFromNode, searchTreeNodeClass, doubleType), node);
+    //size_t stateEValue = builder.addFunction(lbcppMemberUnaryFunction(HIVSearchFeatures, getEValueFromNode, searchTreeNodeClass, doubleType), node);
     
 /*
     builder.startSelection();
@@ -99,9 +100,8 @@ public:
     size_t heuristics = builder.finishSelectionWithFunction(concatenateFeatureGenerator(true), T("heuristics"));
     //size_t timeFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxSearchNodes), 5, false), nodeIndex, T("time"));
 
-    size_t eValueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, 6, 6), stateEValue, T("eval"));
-
-    size_t cart = builder.addFunction(cartesianProductFeatureGenerator(), heuristics, eValueFeatures, T("heuristicAndTime"));
+    //size_t eValueFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(1, 6, 6), stateEValue, T("eval"));
+    //size_t cart = builder.addFunction(cartesianProductFeatureGenerator(), heuristics, eValueFeatures, T("heuristicAndTime"));
 
     //builder.addFunction(concatenateFeatureGenerator(), cart, heuristics, T("f"));
 
@@ -298,6 +298,7 @@ public:
                   iterations(100), populationSize(100), numBests(10),
                    baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
+    problem = hivDecisionProblem(discount);
   }
 
   virtual Variable run(ExecutionContext& context)
@@ -308,12 +309,12 @@ public:
       return false;
     }
 
-    problem = hivDecisionProblem(discount);
     if (!problem)
     {
       context.errorCallback(T("No decision problem"));
       return false;
     }
+    discount = problem->getDiscount();
 
     for (int logMaxSearchNodes = (int)log2NMin; logMaxSearchNodes <= (int)log2NMax; ++logMaxSearchNodes)
     {
@@ -332,7 +333,7 @@ public:
 
       if (optimisticHeuristics)
       {
-        for (int i = 3; i <= 24; i += 3)
+        for (int i = -9; i <= 24; i += 3)
           computeTrajectory(context, problem, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
       }
 
@@ -373,7 +374,9 @@ public:
 
 private:
   friend class HIVSandBoxClass;
-
+ 
+  DecisionProblemPtr problem;
+ 
   double discount;
   size_t log2NMin, log2NMax;
   size_t maxHorizon;
@@ -386,7 +389,6 @@ private:
   bool optimisticHeuristics;
   bool learnedHeuristic;
 
-  DecisionProblemPtr problem;
   FunctionPtr featuresFunction;
 
   double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
@@ -516,19 +518,29 @@ private:
       context.resultCallback(T("reward"), reward);
       
       HIVDecisionProblemStatePtr hivState = state.dynamicCast<HIVDecisionProblemState>();
-      DenseDoubleVectorPtr hivAction = bestAction.dynamicCast<DenseDoubleVector>();
-      jassert(state);
+      if (hivState)
+      {
+        DenseDoubleVectorPtr hivAction = bestAction.dynamicCast<DenseDoubleVector>();
 
-      context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
-      context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
+        context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
+        context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
 
-      context.resultCallback(T("log10(T1)"), log10(hivState->getStateDimension(0)));
-      context.resultCallback(T("log10(T2)"), log10(hivState->getStateDimension(1)));
-      context.resultCallback(T("log10(T1*)"), log10(hivState->getStateDimension(2)));
-      context.resultCallback(T("log10(T2*)"), log10(hivState->getStateDimension(3)));
-      context.resultCallback(T("log10(V)"), log10(hivState->getStateDimension(4)));
-      context.resultCallback(T("log10(E)"), log10(hivState->getStateDimension(5)));
-        
+        context.resultCallback(T("log10(T1)"), log10(hivState->getStateDimension(0)));
+        context.resultCallback(T("log10(T2)"), log10(hivState->getStateDimension(1)));
+        context.resultCallback(T("log10(T1*)"), log10(hivState->getStateDimension(2)));
+        context.resultCallback(T("log10(T2*)"), log10(hivState->getStateDimension(3)));
+        context.resultCallback(T("log10(V)"), log10(hivState->getStateDimension(4)));
+        context.resultCallback(T("log10(E)"), log10(hivState->getStateDimension(5)));
+      }
+
+      LinearPointPhysicStatePtr linearPointState = state.dynamicCast<LinearPointPhysicState>();
+      if (linearPointState)
+      {
+        context.resultCallback(T("action"), bestAction);
+        context.resultCallback(T("position"), linearPointState->getPosition());
+        context.resultCallback(T("velocity"), linearPointState->getVelocity());
+      }
+
       context.leaveScope(res);
     }
     context.leaveScope(res);
