@@ -50,19 +50,21 @@ public:
 class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
-  OptimisticPlanningSearchHeuristic(double discount = 0.9) : discount(discount)
-    {jassert(discount > 0.0 && discount < 1.0);}
+  OptimisticPlanningSearchHeuristic(double discount = 0.9, double maxReward = 1.0)
+      : discount(discount), maxReward(maxReward)
+    {jassert(discount > 0.0 && discount < 1.0 && maxReward != 0.0);}
 
   virtual String toShortString() const
-    {return T("optimistic(") + String(discount) + T(")");}
+    {return T("optimistic(") + String(discount) + T(", ") + String(maxReward) + T(")");}
 
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const
-    {return node->getCurrentReturn() + pow(discount, (double)node->getDepth()) / (1.0 - discount);}
+    {return node->getCurrentReturn() / maxReward + pow(discount, (double)node->getDepth()) / (1.0 - discount);}
 
 private:
   friend class OptimisticPlanningSearchHeuristicClass;
 
   double discount;
+  double maxReward;
 };
 
 class LinearInterpolatedSearchHeuristic : public SimpleSearchHeuristic

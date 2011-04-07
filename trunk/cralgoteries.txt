@@ -1,14 +1,4 @@
 
-
-Objectif 1: maitrise du reseau en local
-
- - LocalGrid
- - Connect to manager depuis l'explorer
- - SendWorkUnit depuis l'explorer
- - RetrieveTraces depuis l'explorer
-
-Objectif 2: resultats experimentaux
-
  - HIV:
    - heuristiques de base vs N
    - optimistic planning with different normalizations vs N

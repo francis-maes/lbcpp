@@ -31,7 +31,7 @@ public:
 FunctionPtr greedySearchHeuristic(double discount = 1.0);
 FunctionPtr maxReturnSearchHeuristic();
 FunctionPtr minDepthSearchHeuristic();
-FunctionPtr optimisticPlanningSearchHeuristic(double discount);
+FunctionPtr optimisticPlanningSearchHeuristic(double discount, double maxReward = 1.0);
 FunctionPtr linearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k);
 
 /*
