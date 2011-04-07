@@ -294,8 +294,9 @@ class HIVSandBox : public WorkUnit
 {
 public:
   // default values
-  HIVSandBox() : discount(0.98), maxSearchNodes(64), maxHorizon(300),
-                  iterations(100), populationSize(100), numBests(10)
+  HIVSandBox() : discount(0.98), log2NMin(1), log2NMax(10), maxHorizon(300),
+                  iterations(100), populationSize(100), numBests(10),
+                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
   }
 
@@ -314,44 +315,56 @@ public:
       return false;
     }
 
-    for (int logMaxSearchNodes = 1; logMaxSearchNodes <= 10; ++logMaxSearchNodes)
+    for (int logMaxSearchNodes = (int)log2NMin; logMaxSearchNodes <= (int)log2NMax; ++logMaxSearchNodes)
     {
-      maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
+      size_t maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
       context.enterScope(T("N = ") + String((int)maxSearchNodes));
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
 
-      // BASELINES
-      computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"));
-      computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"));
-      computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"));
-      computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"));
-   
-      // EDA
-      featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
+      if (baseHeuristics)
+      {
+        // BASELINES
+        computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
+        computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
+        computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
+        computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
+      }
 
-      FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
+      if (optimisticHeuristics)
+      {
+        for (int i = 3; i <= 24; i += 3)
+          computeTrajectory(context, problem, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
+      }
+
+      if (learnedHeuristic)
+      {
+        // EDA
+        featuresFunction = new HIVSearchFeatures(discount, maxSearchNodes);
+
+        FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
+        
+        EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
+        context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
+        ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+
+        if (!functionToOptimize->initialize(context, parametersClass))
+          return false;
+
+        IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
+        for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
+          initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
       
-      EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
-      context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
-      ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+        RandomGeneratorPtr random = RandomGenerator::getInstance();
+        //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
 
-      if (!functionToOptimize->initialize(context, parametersClass))
-        return false;
+        Variable bestParameters;
+        double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
 
-      IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
-      for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
-        initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
-    
-      RandomGeneratorPtr random = RandomGenerator::getInstance();
-      //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
+        // Evaluate EDA
+        FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
+        computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"), maxSearchNodes);        
+      }
 
-      Variable bestParameters;
-      double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
-
-      // Evaluate EDA
-      FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>(), discount);
-      computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"));
-      
       context.leaveScope();
     }
 
@@ -362,12 +375,16 @@ private:
   friend class HIVSandBoxClass;
 
   double discount;
-  size_t maxSearchNodes;
+  size_t log2NMin, log2NMax;
   size_t maxHorizon;
 
   size_t iterations;
   size_t populationSize;
   size_t numBests;
+
+  bool baseHeuristics;
+  bool optimisticHeuristics;
+  bool learnedHeuristic;
 
   DecisionProblemPtr problem;
   FunctionPtr featuresFunction;
@@ -475,7 +492,7 @@ private:
     return bestScore;
   }
 
-  double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const FunctionPtr& heuristic, const String& name) const
+  double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
   {
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
     DecisionProblemStatePtr state = problem->sampleInitialState(RandomGenerator::getInstance());

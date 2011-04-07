@@ -472,6 +472,7 @@ public:
     mainWindow = 0;
     deleteAndZero(theCommandManager); 
     ExplorerConfiguration::getInstancePtr() = ExplorerConfigurationPtr();
+    ExplorerProject::currentProject = ExplorerProjectPtr();
     explorerExecutionCallback = ExecutionCallbackPtr();
     lbcpp::deinitialize();
   }

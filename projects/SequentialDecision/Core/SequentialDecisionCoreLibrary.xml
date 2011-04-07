@@ -70,8 +70,9 @@
     <constructor/>
   </class>
   <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimistic">
-    <constructor arguments="double discount"/>
+    <constructor arguments="double discount, double maxReward"/>
     <variable type="Double" name="discount"/>
+    <variable type="Double" name="maxReward"/>
   </class>
   <class name="LinearInterpolatedSearchHeuristic" base="Function" shortName="lerp">
     <constructor arguments="FunctionPtr heuristic1, FunctionPtr heuristic2, double k"/>

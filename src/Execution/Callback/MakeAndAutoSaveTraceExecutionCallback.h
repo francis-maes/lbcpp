@@ -54,7 +54,7 @@ protected:
   void autoSave()
   {
     ExecutionContext& context = getContext();
-    context.informationCallback(T("Saving execution trace into ") + file.getFullPathName());
+    std::cerr << "Saving execution trace into " << file.getFullPathName() << std::endl;
     trace->saveToFile(context, file);
   }
 };
