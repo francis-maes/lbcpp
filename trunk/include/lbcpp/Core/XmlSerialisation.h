@@ -50,7 +50,7 @@ public:
   bool loadFromJuceXmlElement(juce::XmlElement* element);
   juce::XmlElement* createJuceXmlElement() const;
   
-  void saveObject(ExecutionContext& context, ObjectPtr value);
+  void saveObject(ExecutionContext& context, const ObjectPtr& object, const String& tagName = T("object"));
   ObjectPtr createObject(ExecutionContext& context) const;
 
   template<class O>

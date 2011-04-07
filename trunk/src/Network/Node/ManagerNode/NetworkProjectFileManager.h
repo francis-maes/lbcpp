@@ -9,8 +9,8 @@
 #ifndef LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
 # define LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
 
-# include "../NetworkRequest.h"
 # include <lbcpp/Data/Stream.h>
+# include <lbcpp/Network/NetworkRequest.h>
 
 namespace lbcpp
 {

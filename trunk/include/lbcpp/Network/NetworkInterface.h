@@ -10,6 +10,7 @@
 # define LBCPP_NETWORK_INTERFACE_H_
 
 # include <lbcpp/Network/NetworkClient.h>
+# include <lbcpp/Network/NetworkRequest.h>
 
 namespace lbcpp
 {
@@ -50,6 +51,61 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<NetworkInterface> NetworkInterfacePtr;
+
+class NodeNetworkInterface : public NetworkInterface
+{
+public:
+  NodeNetworkInterface(ExecutionContext& context, const String& nodeName = String::empty)
+    : NetworkInterface(context), nodeName(nodeName) {}
+  NodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName = String::empty)
+    : NetworkInterface(context, client), nodeName(nodeName) {}
+  NodeNetworkInterface() {}
+
+  String getNodeName() const
+    {return nodeName;}
+
+protected:
+  friend class NodeNetworkInterfaceClass;
+  
+  String nodeName;
+};
+
+typedef ReferenceCountedObjectPtr<NodeNetworkInterface> NodeNetworkInterfacePtr;
+
+class ManagerNodeNetworkInterface : public NodeNetworkInterface
+{
+public:
+  ManagerNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name)
+    : NodeNetworkInterface(context, client, name) {}
+  ManagerNodeNetworkInterface() {}
+
+  virtual String pushWorkUnit(NetworkRequestPtr request) = 0;
+  virtual bool isFinished(const String& identifier) = 0;
+  virtual NetworkResponsePtr getExecutionTrace(const String& identifier) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
+
+extern ManagerNodeNetworkInterfacePtr clientManagerNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+
+class GridNodeNetworkInterface : public NodeNetworkInterface
+{
+public:
+  GridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
+    : NodeNetworkInterface(context, client, nodeName) {}
+  GridNodeNetworkInterface() {}
+
+  // input : containerClass(networkRequestClass)
+  // return: containerClass(stringType)
+  // special return value in case of error: T("Error")
+  virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests) = 0;
+  // return: containerClass(networkResponse)
+  virtual ContainerPtr getFinishedExecutionTraces() = 0;
+  // Normally not send on network
+  virtual void removeExecutionTraces(ContainerPtr networkResponses) = 0;
+};
+
+typedef ReferenceCountedObjectPtr<GridNodeNetworkInterface> GridNodeNetworkInterfacePtr;
 
 }; /* namespace */
 

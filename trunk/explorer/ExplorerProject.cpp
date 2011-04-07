@@ -93,6 +93,12 @@ int RecentWorkUnitsConfiguration::findRecentWorkUnit(const String& workUnit) con
 /*
 ** ExplorerProject
 */
+ExplorerProject::ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration()), managerConnected(false), managerHostName(T("localhost")), managerPort(1664)
+{
+  int numCpus = juce::SystemStats::getNumCpus();
+  workUnitContext =  multiThreadedExecutionContext(numCpus > 1 ? numCpus - 1 : 1);
+}
+
 ExplorerProjectPtr ExplorerProject::createProject(ExecutionContext& context, const File& rootDirectory)
 {
   ExplorerProjectPtr res(new ExplorerProject());
@@ -140,6 +146,9 @@ ExplorerProjectPtr ExplorerProject::openProject(ExecutionContext& context, const
   else
     res->setRootDirectory(rootDirectory);
 
+  // try to connect to manager if it was previously connected
+  if (res->isManagerConnected())
+    res->connectToManager(context, res->getManagerHostName(), res->getManagerPort());
   return res;
 }
 
@@ -151,6 +160,7 @@ void ExplorerProject::save(ExecutionContext& context)
 void ExplorerProject::close(ExecutionContext& context)
 {
   save(context);
+  disconnectFromManager(context);
 }
 
 bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& workUnit)
@@ -179,4 +189,39 @@ bool ExplorerProject::startWorkUnit(ExecutionContext& context, WorkUnitPtr& work
     return false;
 
   return true;
+}
+
+bool ExplorerProject::connectToManager(ExecutionContext& context, const String& hostName, int port)
+{
+  managerHostName = hostName;
+  managerPort = port;
+  managerConnected = true;
+
+  managerClient = blockingNetworkClient(context);
+  if (!managerClient->startClient(managerHostName, managerPort))
+  {
+    context.errorCallback(T("ExplorerProject::connectToManager"), T("Could not connect to manager at ") + managerHostName + T(":") + String(port));
+    return false;
+  }
+  context.informationCallback(managerHostName, T("Connected !"));
+
+  String thisSource = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
+  managerInterface = clientManagerNodeNetworkInterface(context, managerClient, thisSource);
+  managerInterface->sendInterfaceClass();
+  return true;
+}
+
+void ExplorerProject::disconnectFromManager(ExecutionContext& context)
+{
+  managerConnected = false;
+  if (managerClient)
+  {
+    if (managerInterface)
+    {
+      managerInterface->closeCommunication();
+      managerInterface = ManagerNodeNetworkInterfacePtr();
+    }
+    managerClient->stopClient();
+    managerClient = NetworkClientPtr();
+  }
 }

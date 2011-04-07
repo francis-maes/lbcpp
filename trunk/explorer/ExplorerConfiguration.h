@@ -20,7 +20,7 @@ typedef ReferenceCountedObjectPtr<RecentFileVector> RecentFileVectorPtr;
 class RecentFileVector : public Object
 {
 public:
-  RecentFileVector() : recentFiles(vector(fileType)) {}
+  RecentFileVector() : recentFiles(vector(localFileType)) {}
 
   virtual String getName() const
     {return T("RecentFileVector");}

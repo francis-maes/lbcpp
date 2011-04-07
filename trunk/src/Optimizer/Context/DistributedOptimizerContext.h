@@ -16,7 +16,8 @@
 
 #ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
-# include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
+# include <lbcpp/Network/NetworkInterface.h>
+//# include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
 #endif
 
 namespace lbcpp
@@ -80,7 +81,7 @@ private:
       return NULL;
     }
     context.informationCallback(managerHostName, T("Connected !"));
-    ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(context, client, source);
+    ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
     interface->sendInterfaceClass();
     return interface;
   }
