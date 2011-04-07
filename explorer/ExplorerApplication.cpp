@@ -167,6 +167,9 @@ public:
     startWorkUnitMenu,
     closeMenu,
 
+    connectManagerMenu,
+    disconnectManagerMenu,
+
     quitMenu,
 
     openClearRecentProjectMenu = 100,
@@ -196,11 +199,18 @@ public:
       menu.addItem(closeProjectMenu, T("Close Project"));
       menu.addSeparator();
 
-      menu.addItem(openFileMenu, T("Open File"), ExplorerProject::hasCurrentProject());
-      menu.addItem(openDirectoryMenu, T("Open Directory"), ExplorerProject::hasCurrentProject());
-      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), ExplorerProject::hasCurrentProject());
-      menu.addItem(closeMenu, T("Close"), ExplorerProject::hasCurrentProject() && contentTabs->getCurrentTabIndex() >= 0);
+      bool hasCurrentProject = ExplorerProject::hasCurrentProject();
+
+      menu.addItem(openFileMenu, T("Open File"), hasCurrentProject);
+      menu.addItem(openDirectoryMenu, T("Open Directory"), hasCurrentProject);
+      menu.addItem(startWorkUnitMenu, T("Start Work Unit"), hasCurrentProject);
+      menu.addItem(closeMenu, T("Close"), hasCurrentProject && contentTabs->getCurrentTabIndex() >= 0);
       menu.addSeparator();
+      bool isConnectedToManager = (hasCurrentProject && ExplorerProject::getCurrentProject()->isManagerConnected());
+      menu.addItem(connectManagerMenu, T("Connect to manager"), hasCurrentProject && !isConnectedToManager);
+      menu.addItem(disconnectManagerMenu, T("Disconnect from manager"), hasCurrentProject && isConnectedToManager);
+      menu.addSeparator();
+    
       menu.addItem(quitMenu, T("Quit"));
       return menu;
     }
@@ -248,6 +258,7 @@ public:
   {
     ExplorerConfigurationPtr configuration = ExplorerConfiguration::getInstance();
     RecentFileVectorPtr recentProjects = configuration->getRecentProjects();
+    ExplorerProjectPtr currentProject = ExplorerProject::getCurrentProject();
 
     if (topLevelMenuIndex == 0)
     {
@@ -304,7 +315,7 @@ public:
               (menuItemID == openDirectoryMenu && chooser.browseForDirectory()))
           {
             File result = chooser.getResult();
-            ExplorerProject::currentProject->setRecentDirectory(result.getParentDirectory());
+            currentProject->setRecentDirectory(result.getParentDirectory());
             loadObjectFromFile(result);
           }
         }
@@ -314,12 +325,12 @@ public:
       case startWorkUnitMenu:
         {
           WorkUnitPtr workUnit;
-          if (ExplorerProject::currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
+          if (currentProject->startWorkUnit(defaultExecutionContext(), workUnit))
           {
             ExecutionTracePtr trace(new ExecutionTrace(ExplorerProject::currentProject->workUnitContext->toString()));
-            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, ExplorerProject::currentProject->workUnitContext);
+            Component* component = userInterfaceManager().createExecutionTraceInteractiveTreeView(context, trace, currentProject->workUnitContext);
             contentTabs->addVariable(context, trace, workUnit->getClassName(), new VariableBrowser(trace, component));
-            ExplorerProject::currentProject->workUnitContext->pushWorkUnit(workUnit);
+            currentProject->workUnitContext->pushWorkUnit(workUnit);
           }
           flushErrorAndWarningMessages(T("Start Work Unit"));
         }
@@ -327,6 +338,37 @@ public:
 
       case closeMenu:
         contentTabs->closeCurrentTab();
+        break;
+
+      
+      case connectManagerMenu:
+        {
+          String hostName = currentProject->getManagerHostName();
+          int port = currentProject->getManagerPort();
+          AlertWindow aw(T("Connect to Manager"), T("Enter the address of the Manager"), AlertWindow::QuestionIcon);
+          aw.addTextEditor(T("hostName"), hostName, T("Manager Host Name"));
+          aw.addTextEditor(T("port"), String((int)port), T("Manager Port"));
+          aw.addButton(T("OK"), 1, juce::KeyPress::returnKey);
+          aw.addButton(T("Cancel"), 0, juce::KeyPress::escapeKey);
+          if (aw.runModalLoop() == 1)
+          {
+            hostName = aw.getTextEditorContents(T("hostName"));
+            String portString = aw.getTextEditorContents(T("port"));
+            if (!portString.containsOnly(T("0123456789")))
+              AlertWindow::showMessageBox(AlertWindow::WarningIcon, T("Invalid port"), T("Invalid port: ") + portString);
+            else
+            {
+              port = portString.getIntValue();
+              currentProject->connectToManager(context, hostName, port);
+              ExplorerConfiguration::save(context);
+            }
+          }
+        }
+        break;
+
+      case disconnectManagerMenu:
+        currentProject->disconnectFromManager(context);
+        ExplorerConfiguration::save(context);
         break;
 
       case quitMenu:

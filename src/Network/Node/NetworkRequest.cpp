@@ -6,7 +6,7 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "NetworkRequest.h"
+#include <lbcpp/Network/NetworkRequest.h>
 using namespace lbcpp;
 
 /*
@@ -32,7 +32,6 @@ NetworkRequest::NetworkRequest(ExecutionContext& context,
   : projectName(projectName), source(source), destination(destination), workUnit(new XmlElement()),
     requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime)
 {
-  this->workUnit->saveObject(context, workUnit);
-  this->workUnit->setTagName(T("workUnit"));
+  this->workUnit->saveObject(context, workUnit, T("workUnit"));
 }
 

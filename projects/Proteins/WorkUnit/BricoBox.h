@@ -124,7 +124,7 @@ public:
     WorkUnitPtr wu = new SaveObjectProgram();
     
     aaa = new XmlElement();
-    aaa->saveObject(context, wu);
+    aaa->saveObject(context, wu, T("workUnit"));
     
     saveToFile(context, context.getFile(T("testSerialisation")));
 

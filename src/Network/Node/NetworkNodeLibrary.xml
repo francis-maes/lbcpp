@@ -41,7 +41,9 @@
 
   <class name="ManagerNodeNetworkInterface" base="NodeNetworkInterface" abstract="yes"/>
   <class name="FileSystemManagerNodeNetworkInterface" base="ManagerNodeNetworkInterface"/>
-  <class name="ClientManagerNodeNetworkInterface" base="ManagerNodeNetworkInterface"/>
+  <class name="ClientManagerNodeNetworkInterface" base="ManagerNodeNetworkInterface">
+    <constructor arguments="ExecutionContext&amp; context, NetworkClientPtr client, const String&amp; nodeName"/>
+  </class>
 
   <!-- NetworkNotification -->
   <class name="NodeNetworkNotification" base="NetworkNotification" abstract="yes"/>

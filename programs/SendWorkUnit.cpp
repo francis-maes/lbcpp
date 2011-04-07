@@ -10,8 +10,7 @@
 #include <lbcpp/Execution/ExecutionTrace.h>
 #include <lbcpp/library.h>
 #include <lbcpp/Network/NetworkClient.h>
-#include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
-
+#include <lbcpp/Network/NetworkInterface.h>
 using namespace lbcpp;
 
 void usage()
@@ -257,7 +256,7 @@ int mainImpl(int argc, char** argv)
   }
   context->informationCallback(managerHostName, T("Connected !"));
 
-  ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(*context, client, source);
+  ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
 
   NetworkRequestPtr request = new NetworkRequest(*context, projectName, source, destination, workUnit, requiredCpus, requiredMemory, requiredTime);

@@ -10,6 +10,7 @@
 # define LBCPP_EXPLORER_PROJECT_H_
 
 # include <lbcpp/lbcpp.h>
+# include <lbcpp/Network/NetworkInterface.h>
 # include "ExplorerConfiguration.h"
 
 namespace lbcpp
@@ -86,18 +87,31 @@ typedef ReferenceCountedObjectPtr<ExplorerProject> ExplorerProjectPtr;
 class ExplorerProject : public Object
 {
 public:
-  ExplorerProject() : recentWorkUnits(new RecentWorkUnitsConfiguration())
-  {
-    int numCpus = juce::SystemStats::getNumCpus();
-    workUnitContext =  multiThreadedExecutionContext(numCpus > 1 ? numCpus - 1 : 1);
-  }
+  ExplorerProject();
 
+  /*
+  ** Current project
+  */
+  static ExplorerProjectPtr currentProject;
+
+  static ExplorerProjectPtr getCurrentProject()
+    {return currentProject;}
+
+  static bool hasCurrentProject()
+    {return currentProject;}
+
+  /*
+  ** Create / Open / Save / Close
+  */
   static ExplorerProjectPtr createProject(ExecutionContext& context, const File& rootDirectory);
   static ExplorerProjectPtr openProject(ExecutionContext& context, const File& rootDirectory);
 
   void save(ExecutionContext& context);
   void close(ExecutionContext& context);
 
+  /*
+  ** Directories
+  */
   void setRootDirectory(const File& rootDirectory)
   {
     this->rootDirectory = rootDirectory;
@@ -113,6 +127,9 @@ public:
   void setRecentDirectory(const File& recentDirectory)
     {this->recentDirectory = recentDirectory;}
 
+  /*
+  ** Work Units
+  */
   const RecentWorkUnitsConfigurationPtr& getRecentWorkUnits() const
     {return recentWorkUnits;}
 
@@ -120,13 +137,20 @@ public:
 
   ExecutionContextPtr workUnitContext;
 
-  static ExplorerProjectPtr currentProject;
+  /*
+  ** Manager
+  */
+  bool isManagerConnected() const
+    {return managerConnected;}
 
-  static ExplorerProjectPtr getCurrentProject()
-    {return currentProject;}
+  const String& getManagerHostName() const
+    {return managerHostName;}
 
-  static bool hasCurrentProject()
-    {return currentProject;}
+  int getManagerPort() const
+    {return managerPort;}
+
+  bool connectToManager(ExecutionContext& context, const String& hostName, int port);
+  void disconnectFromManager(ExecutionContext& context);
 
   lbcpp_UseDebuggingNewOperator
 
@@ -136,6 +160,13 @@ protected:
   File rootDirectory;
   File recentDirectory;
   RecentWorkUnitsConfigurationPtr recentWorkUnits;
+
+  bool managerConnected;
+  String managerHostName;
+  int managerPort;
+
+  NetworkClientPtr managerClient;
+  ManagerNodeNetworkInterfacePtr managerInterface;
 };
 
 }; /* namespace lbcpp */

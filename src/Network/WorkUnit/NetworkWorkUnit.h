@@ -11,7 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Network/NetworkInterface.h>
-# include "../Node/NodeNetworkInterface.h"
 # include "../Node/ManagerNode/ManagerNodeNetworkInterface.h"
 # include "../Node/GridNode/GridNodeNetworkInterface.h"
 

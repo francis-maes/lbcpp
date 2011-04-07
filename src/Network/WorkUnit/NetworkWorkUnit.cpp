@@ -6,10 +6,9 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-#include "../Node/NodeNetworkNotification.h"
-#include "../Node/NetworkRequest.h"
-#include "NetworkWorkUnit.h"
 #include <lbcpp/Network/NetworkServer.h>
+#include "../Node/NodeNetworkNotification.h"
+#include "NetworkWorkUnit.h"
 using namespace lbcpp;
 
 /*
@@ -230,7 +229,7 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
   }
   context.informationCallback(hostName, T("Connected !"));
   
-  ManagerNodeNetworkInterfacePtr interface = new ClientManagerNodeNetworkInterface(context, client, T("Client"));
+  ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, T("Client"));
   interface->sendInterfaceClass();
   
   if (!interface->isFinished(workUnitIdentifier))

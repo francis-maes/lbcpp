@@ -29,6 +29,10 @@
     <variable type="LocalFile" name="rootDirectory"/>
     <variable type="LocalFile" name="recentDirectory"/>
     <variable type="RecentWorkUnitsConfiguration" name="recentWorkUnits"/>
+    
+    <variable type="Boolean" name="managerConnected"/>
+    <variable type="String" name="managerHostName"/>
+    <variable type="Integer" name="managerPort"/>
   </class>
 
   <!-- Old -->

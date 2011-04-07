@@ -9,30 +9,10 @@
 #ifndef LBCPP_GRID_NODE_NETWORK_INTERFACE_H_
 # define LBCPP_GRID_NODE_NETWORK_INTERFACE_H_
 
-# include "../NetworkRequest.h"
-# include "../NodeNetworkInterface.h"
+# include <lbcpp/Network/NetworkInterface.h>
 
 namespace lbcpp
 {
-
-class GridNodeNetworkInterface : public NodeNetworkInterface
-{
-public:
-  GridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : NodeNetworkInterface(context, client, nodeName) {}
-  GridNodeNetworkInterface() {}
-
-  // input : containerClass(networkRequestClass)
-  // return: containerClass(stringType)
-  // special return value in case of error: T("Error")
-  virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests) = 0;
-  // return: containerClass(networkResponse)
-  virtual ContainerPtr getFinishedExecutionTraces() = 0;
-  // Normally not send on network
-  virtual void removeExecutionTraces(ContainerPtr networkResponses) = 0;
-};
-
-typedef ReferenceCountedObjectPtr<GridNodeNetworkInterface> GridNodeNetworkInterfacePtr;
 
 extern ClassPtr gridNodeNetworkInterfaceClass;
 

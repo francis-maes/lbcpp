@@ -10,7 +10,7 @@
 # define LBCPP_NODE_NETWORK_NOTIFICATION_H_
 
 # include <lbcpp/Network/NetworkNotification.h>
-# include "NodeNetworkInterface.h"
+# include <lbcpp/Network/NetworkInterface.h>
 
 namespace lbcpp
 {

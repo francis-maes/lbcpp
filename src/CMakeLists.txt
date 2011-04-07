@@ -264,9 +264,8 @@ IF(LBCPP_NETWORKING)
   )
 
   SET(LBCPP_NETWORK_NODE_SOURCES
-    Network/Node/NetworkRequest.h
+    ../include/lbcpp/Network/NetworkRequest.h
     Network/Node/NetworkRequest.cpp
-    Network/Node/NodeNetworkInterface.h
     Network/Node/NodeNetworkNotification.h
     Network/Node/NetworkNodeLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/NetworkNodeLibrary.cpp

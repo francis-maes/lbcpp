@@ -45,10 +45,11 @@ juce::XmlElement* XmlElement::createJuceXmlElement() const
   }
 }
 
-void XmlElement::saveObject(ExecutionContext& context, ObjectPtr value)
+void XmlElement::saveObject(ExecutionContext& context, const ObjectPtr& object, const String& tagName)
 {
+  setTagName(tagName);
   XmlExporter exporter(context, refCountedPointerFromThis(this));
-  exporter.writeVariable(value, objectClass);
+  exporter.writeVariable(object, objectClass);
 }
 
 ObjectPtr XmlElement::createObject(ExecutionContext& context) const
