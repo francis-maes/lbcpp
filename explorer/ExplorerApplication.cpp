@@ -18,21 +18,36 @@ ApplicationCommandManager* theCommandManager = NULL;
 class ExplorerExecutionCallback : public ExecutionCallback
 {
 public:
+  ExplorerExecutionCallback() : numErrors(0), numWarnings(0) {}
+
   virtual void errorCallback(const String& where, const String& what)
-    {addMessage(T("Error in ") + where + T(": ") + what);}
+  {
+    ++numErrors;
+    lastError = T("Error in ") + where + T(": ") + what;
+  }
   
   virtual void warningCallback(const String& where, const String& what)
-    {addMessage(T("Warning in ") + where + T(": ") + what);}
+  {
+    ++numWarnings;
+    lastWarning = T("Warning in ") + where + T(": ") + what;
+  }
 
   virtual void informationCallback(const String& where, const String& what)
     {}
 
   void flushMessages(const String& title)
   {
-    if (text.isNotEmpty())
+    if (numErrors || numWarnings)
     {
+      String text = String(numErrors) + T(" error(s), ") + String(numWarnings) + T(" warning(s)\n");
+      if (lastError.isNotEmpty())
+        text += T("Last Error: ") + lastError + T("\n");
+      if (lastWarning.isNotEmpty())
+        text += T("Last Warning: ") + lastWarning + T("\n");
+
+      numErrors = numWarnings = 0;
+      lastError = lastWarning = String::empty;
       AlertWindow::showMessageBox(AlertWindow::WarningIcon, title, text);
-      text = String::empty;
     }
   }
 
@@ -40,6 +55,8 @@ public:
 
 private:
   String text;
+  int numErrors, numWarnings;
+  String lastError, lastWarning;
 
   void addMessage(const String& str)
   {
