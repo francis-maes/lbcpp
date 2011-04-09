@@ -294,9 +294,9 @@ class HIVSandBox : public WorkUnit
 {
 public:
   // default values
-  HIVSandBox() : discount(0.98), log2NMin(1), log2NMax(10), maxHorizon(300),
+  HIVSandBox() : discount(0.98), minDepth(0), maxDepth(10), maxHorizon(300),
                   iterations(100), populationSize(100), numBests(10),
-                   breadthFirstHeuristic(false), baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
+                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
     problem = hivDecisionProblem(discount);
   }
@@ -316,31 +316,12 @@ public:
     }
     discount = problem->getDiscount();
 
-    if (breadthFirstHeuristic)
+    size_t maxSearchNodes = 1;
+    for (size_t depth = minDepth; depth <= maxDepth; ++depth)
     {
-      size_t maxSearchNodes = 1;
-      for (size_t depth = log2NMin; depth < log2NMax; ++depth)
-      {
-        context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
-        context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
-        context.resultCallback(T("depth"), depth);
-        computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
-        computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
-        computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
-        double res = computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
-        context.leaveScope(res);
-        maxSearchNodes = maxSearchNodes * 4 + 1;
-      }
-    }
-
-    if (!(baseHeuristics || optimisticHeuristics || learnedHeuristic))
-      return true;
-
-    for (int logMaxSearchNodes = (int)log2NMin; logMaxSearchNodes <= (int)log2NMax; ++logMaxSearchNodes)
-    {
-      size_t maxSearchNodes = (size_t)pow(2.0, (double)logMaxSearchNodes);
-      context.enterScope(T("N = ") + String((int)maxSearchNodes));
+      context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
+      context.resultCallback(T("depth"), depth);
 
       if (baseHeuristics)
       {
@@ -387,6 +368,7 @@ public:
       }
 
       context.leaveScope();
+      maxSearchNodes = maxSearchNodes * 4 + 1;
     }
 
     return true;
@@ -398,7 +380,7 @@ private:
   DecisionProblemPtr problem;
  
   double discount;
-  size_t log2NMin, log2NMax;
+  size_t minDepth, maxDepth;
   size_t maxHorizon;
 
   size_t iterations;
