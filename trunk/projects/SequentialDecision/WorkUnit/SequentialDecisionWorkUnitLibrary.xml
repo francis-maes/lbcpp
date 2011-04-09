@@ -28,14 +28,13 @@
 
   <class name="HIVSandBox" base="WorkUnit">
     <variable type="DecisionProblem" name="problem" shortName="dp"/>
-    <variable type="PositiveInteger" name="log2NMin" shortName="nmin"/>
-    <variable type="PositiveInteger" name="log2NMax" shortName="nmax"/>
+    <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
+    <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
     <variable type="PositiveInteger" name="maxHorizon" shortName="h"/>
     <variable type="PositiveInteger" name="iterations" shortName="i"/>
     <variable type="PositiveInteger" name="populationSize" shortName="p"/>
     <variable type="PositiveInteger" name="numBests" shortName="n"/>
 
-    <variable type="Boolean" name="breadthFirstHeuristic"/>
     <variable type="Boolean" name="baseHeuristics"/>
     <variable type="Boolean" name="optimisticHeuristics"/>
     <variable type="Boolean" name="learnedHeuristic"/>
