@@ -296,7 +296,7 @@ public:
   // default values
   HIVSandBox() : discount(0.98), log2NMin(1), log2NMax(10), maxHorizon(300),
                   iterations(100), populationSize(100), numBests(10),
-                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
+                   breadthFirstHeuristic(false), baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
     problem = hivDecisionProblem(discount);
   }
@@ -315,6 +315,23 @@ public:
       return false;
     }
     discount = problem->getDiscount();
+
+    if (breadthFirstHeuristic)
+    {
+      size_t maxSearchNodes = 1;
+      for (size_t depth = log2NMin; depth < log2NMax; ++depth)
+      {
+        context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
+        context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
+        context.resultCallback(T("depth"), depth);
+        double res = computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
+        context.leaveScope(res);
+        maxSearchNodes = maxSearchNodes * 4 + 1;
+      }
+    }
+
+    if (!(baseHeuristics || optimisticHeuristics || learnedHeuristic))
+      return true;
 
     for (int logMaxSearchNodes = (int)log2NMin; logMaxSearchNodes <= (int)log2NMax; ++logMaxSearchNodes)
     {
@@ -385,6 +402,7 @@ private:
   size_t populationSize;
   size_t numBests;
 
+  bool breadthFirstHeuristic;
   bool baseHeuristics;
   bool optimisticHeuristics;
   bool learnedHeuristic;

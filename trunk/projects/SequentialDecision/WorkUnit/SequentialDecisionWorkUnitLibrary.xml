@@ -35,6 +35,7 @@
     <variable type="PositiveInteger" name="populationSize" shortName="p"/>
     <variable type="PositiveInteger" name="numBests" shortName="n"/>
 
+    <variable type="Boolean" name="breadthFirstHeuristic"/>
     <variable type="Boolean" name="baseHeuristics"/>
     <variable type="Boolean" name="optimisticHeuristics"/>
     <variable type="Boolean" name="learnedHeuristic"/>
