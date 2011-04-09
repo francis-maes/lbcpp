@@ -324,6 +324,9 @@ public:
         context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
         context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
         context.resultCallback(T("depth"), depth);
+        computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
+        computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
+        computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
         double res = computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
         context.leaveScope(res);
         maxSearchNodes = maxSearchNodes * 4 + 1;
