@@ -460,6 +460,7 @@ TypePtr XmlImporter::loadType(TypePtr expectedType)
         res = getSharedObject(getStringAttribute(T("ref"))).staticCast<Type>().get();
       else
         res = Type::loadUnnamedTypeFromXml(*this);
+      linkCurrentElementToObject(res);
       leave();
       return res;
     }

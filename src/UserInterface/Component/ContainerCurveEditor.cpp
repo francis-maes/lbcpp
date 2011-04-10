@@ -207,18 +207,18 @@ public:
     size_t n = table->getNumElements();
     size_t keyVariableIndex = configuration->getKeyVariableIndex();
     float x0, y0;
-    bool isX0Valid = getPointPosition(0, keyVariableIndex, index, transform, x0, y0) && isNumberValid(x0) && isNumberValid(y0);
+    bool isP0Valid = getPointPosition(0, keyVariableIndex, index, transform, x0, y0) && isNumberValid(x0) && isNumberValid(y0);
 
     g.setColour(config->getColour());
     for (size_t i = 1; i < n; ++i)
     {
       float x1, y1;
-      bool isX1Valid = getPointPosition(i, keyVariableIndex, index, transform, x1, y1) && isNumberValid(x1) && isNumberValid(y1);
-      if (isX0Valid && isX1Valid)
+      bool isP1Valid = getPointPosition(i, keyVariableIndex, index, transform, x1, y1) && isNumberValid(x1) && isNumberValid(y1);
+      if (isP0Valid && isP1Valid)
         g.drawLine(x0, y0, x1, y1);
       x0 = x1;
       y0 = y1;
-      isX0Valid = isX1Valid;
+      isP0Valid = isP1Valid;
     }
   }
 
@@ -262,7 +262,13 @@ protected:
   }
 
   bool getTableScalarValue(const ObjectPtr& row, size_t column, double& scalarValue) const
-    {scalarValue = row->getVariable(column).toDouble(); return true;}
+  {
+    Variable v = row->getVariable(column);
+    if (!v.exists() || !v.isConvertibleToDouble())
+      return false;
+    scalarValue = v.toDouble();
+    return true;
+  }
 
   void getTableValueRange(size_t column, double& minValue, double& maxValue) const
   {
