@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="OptimizerContextNetwork" directory="Optimizer/Context/Network">
+  <!--
+  <class name="DistributedOptimizerContext" base="OptimizerContext">
+    <constructor arguments="String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
+    <variable type="String" name="projectName"/>
+    <variable type="String" name="source"/>
+    <variable type="String" name="destination"/>
+    <variable type="String" name="managerHostName"/>
+    <variable type="PositiveInteger" name="managerPort"/>
+    <variable type="PositiveInteger" name="requiredCpus"/>
+    <variable type="PositiveInteger" name="requiredMemory"/>  
+    <variable type="PositiveInteger" name="requiredTime"/> 
+  </class>
+  -->
+  </library>

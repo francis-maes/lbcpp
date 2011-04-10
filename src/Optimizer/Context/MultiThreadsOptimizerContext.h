@@ -10,6 +10,7 @@
 #ifndef LBCPP_MULTI_THEADS_OPTIMIZER_CONTEXT_H_
 # define LBCPP_MULTI_THEADS_OPTIMIZER_CONTEXT_H_
 
+# include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
 
@@ -42,7 +43,6 @@ protected:
 private:
   size_t nbThreads;
   ExecutionContextPtr MTContext;
-  
 };
   
 };

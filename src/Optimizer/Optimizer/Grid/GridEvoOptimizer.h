@@ -16,7 +16,6 @@
 #ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
-//# include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
 #endif
 
 # include "../../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"

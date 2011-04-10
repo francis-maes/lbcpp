@@ -10,15 +10,9 @@
 #ifndef LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
 # define LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
 
-// TODO arnaud : clean things to compile without network
-
 # include <lbcpp/Optimizer/OptimizerContext.h>
-
-#ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
-//# include "../src/Network/Node/ManagerNode/ManagerNodeNetworkInterface.h"
-#endif
 
 namespace lbcpp
 {
