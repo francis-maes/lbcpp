@@ -8,7 +8,7 @@
     <variable type="Double" name="velocity"/>
   </class>
   <class name="LinearPointPhysicStateSampler" base="Function"/>
-  <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="linearPointPhysic">
+  <class name="LinearPointPhysicProblem" base="DecisionProblem" shortName="lpp">
     <constructor arguments="double discount"/>
   </class>
   

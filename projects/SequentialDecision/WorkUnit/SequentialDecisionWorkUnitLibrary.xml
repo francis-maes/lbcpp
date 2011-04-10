@@ -26,18 +26,40 @@
   </template>
   <class name="IndependentDoubleVectorDistributionBuilder" base="DistributionBuilder[DenseDoubleVector[EnumValue,Double]]"/>
 
+  <class name="HIVStateFeatures" base="CompositeFunction"/>
+  <class name="LPPStateFeatures" base="CompositeFunction"/>
+  
+  <class name="HIVSearchFeatures" base="CompositeFunction">
+    <variable type="Double" name="discount"/>
+    <variable type="Double" name="maxReward"/>
+    <variable type="Double" name="maxDepth"/>
+    <variable type="Function" name="stateFeatures"/>
+  </class>
+
+  <class name="HIVSearchHeuristic" base="LearnableSearchHeuristic">
+    <variable type="Function" name="featuresFunction"/>
+    <variable type="Enumeration" name="featuresEnumeration" generated="yes"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
   <class name="HIVSandBox" base="WorkUnit">
     <variable type="DecisionProblem" name="problem" shortName="dp"/>
     <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
     <variable type="PositiveInteger" name="maxHorizon" shortName="h"/>
+    <variable type="Boolean" name="verboseTrajectories"/>
+    
     <variable type="PositiveInteger" name="iterations" shortName="i"/>
     <variable type="PositiveInteger" name="populationSize" shortName="p"/>
     <variable type="PositiveInteger" name="numBests" shortName="n"/>
+    <variable type="Boolean" name="reinjectBest"/>
 
     <variable type="Boolean" name="baseHeuristics"/>
     <variable type="Boolean" name="optimisticHeuristics"/>
     <variable type="Boolean" name="learnedHeuristic"/>
+
+    <variable type="Boolean" name="normalizeHeuristics"/>
+    <variable type="Boolean" name="stateDependentHeuristic"/>
   </class>
   
 </library>

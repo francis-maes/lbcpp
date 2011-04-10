@@ -65,6 +65,12 @@ public:
   double getDiscount() const
     {return discount;} // in [0,1]
 
+  virtual double getMaxReward() const
+    {return 1.0;}
+
+  virtual size_t getFixedNumberOfActions() const
+    {return 0;}
+
   lbcpp_UseDebuggingNewOperator
 
 protected:

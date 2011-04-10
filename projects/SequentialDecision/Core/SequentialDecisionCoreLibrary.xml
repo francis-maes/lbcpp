@@ -60,14 +60,18 @@
   
   <!-- Search Heuristic -->
   <class name="GreedySearchHeuristic" base="Function" shortName="greedy">
-    <constructor arguments="double discount"/>
+    <constructor arguments="double discount, double maxReward"/>
     <variable type="Double" name="discount"/>
+    <variable type="Double" name="maxReward"/>
   </class>
   <class name="MaxReturnSearchHeuristic" base="Function" shortName="maxReturn">
-    <constructor/>
+    <constructor arguments="double maxReturn"/>
+    <variable type="Double" name="maxReturn"/>
   </class>
   <class name="MinDepthSearchHeuristic" base="Function" shortName="minDepth">
-    <constructor/>
+    <constructor arguments="double maxDepth, bool applyLogFunction"/>
+    <variable type="Double" name="maxDepth"/>
+    <variable type="Boolean" name="applyLogFunction"/>
   </class>
   <class name="OptimisticPlanningSearchHeuristic" base="Function" shortName="optimistic">
     <constructor arguments="double discount, double maxReward"/>
