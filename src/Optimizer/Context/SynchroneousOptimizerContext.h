@@ -29,7 +29,7 @@ public:
   virtual bool evaluate(const Variable& parameters) 
   {    
     objectiveFunction->compute(defaultExecutionContext(), parameters);
-    // callback is done in function !
+    // callback is done in function evaluation !
     return true;
   }
 

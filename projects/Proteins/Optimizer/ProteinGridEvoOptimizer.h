@@ -24,7 +24,7 @@ class ProteinGridEvoOptimizerState : public GridEvoOptimizerState
 public:
   ProteinGridEvoOptimizerState(IndependentMultiVariateDistributionPtr distributions)
     : GridEvoOptimizerState(distributions) {}
-  ProteinGridEvoOptimizerState() {} // TODO arnaud : OK?
+  ProteinGridEvoOptimizerState() {}
   
   virtual WorkUnitPtr generateSampleWU(ExecutionContext& context) const 
   {
