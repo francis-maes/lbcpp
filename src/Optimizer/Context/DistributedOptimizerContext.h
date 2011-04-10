@@ -22,8 +22,8 @@
 
 namespace lbcpp
 {
-
-class DistributedOptimizerContext /*: public OptimizerContext*/
+/*
+class DistributedOptimizerContext
 {
 public:
   DistributedOptimizerContext(String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
@@ -101,6 +101,6 @@ private:
   }
   
 };
-  
+  */
 };
 #endif // !LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_

@@ -15,14 +15,15 @@
     <variable type="Distribution[Variable]" name="distribution"/>
     <variable type="Variable" name="bestVariable"/>
     <variable type="Double" name="bestScore"/>
-    <!-- 
-    <variable type="GenericVector[Pair[Integer, Variable]]" name="evaluationRequests"/>
-    <variable type="GenericVector[Pair[Integer, Double]]" name="evaluationResults"/>
-    -->
+    <variable type="PositiveInteger" name="totalNumberGeneratedWUs"/>
+    <variable type="PositiveInteger" name="totalNumberEvaluatedWUs"/>
+    <variable type="GenericVector[Pair[Double, Variable]]" name="currentEvaluatedWUs"/>
+  </class>
+    
+  <class name="OptimizerContext" base="Object" abstract="yes">
+    <variable type="Function" name="objectiveFunction"/>
   </class>
   
-  <!-- <class name="OptimizerOld" base="Function" abstract="yes"/> -->
-  <class name="OptimizerContext" base="Object" abstract="yes"/>
   <class name="GridOptimizer" base="Function" abstract="yes"/>
   <class name="GridOptimizerState" base="Object" abstract="yes"/>
 

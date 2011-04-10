@@ -9,16 +9,13 @@
 #ifndef LBCPP_OPTIMIZER_H_
 # define LBCPP_OPTIMIZER_H_
 
-# include "../Core/Function.h"
-# include "../Distribution/Distribution.h"
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
-# include <lbcpp/Optimizer/OptimizerCallback.h>
 
 namespace lbcpp
 {
 
-class Optimizer : public Function, public OptimizerCallback
+class Optimizer : public Function
 {
 public:
   virtual TypePtr getRequiredContextType() const
@@ -45,11 +42,12 @@ public:
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
-    optimizerContext->setCallback((OptimizerCallbackPtr) this);
-    return optimize(context, optimizerContext, inputs[1].getObjectAndCast<OptimizerState>());
-    // TODO arnaud : remove callback ?
+    OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
+    optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());  // TODO arnaud : casting OK ?
+    Variable output = optimize(context, optimizerContext, optimizerState);
+    optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get()); // TODO arnaud : casting OK ?
+    return output;
   }
-
 };
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;

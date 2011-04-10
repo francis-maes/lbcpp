@@ -16,7 +16,7 @@
 
 namespace lbcpp
 {
-  
+
 class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
@@ -26,10 +26,10 @@ public:
   virtual void waitAllEvaluationsFinished() const {}  // because evaluate is a blocking method
   
   // blocking method
-  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) 
+  virtual bool evaluate(const Variable& parameters) 
   {    
-    const Variable var = getObjectiveFunction()->compute(defaultExecutionContext(), parameters);
-    getOptimizerCallback()->evaluationFinished(parameters, getDoubleFromOutput(var), optimizerState);
+    objectiveFunction->compute(defaultExecutionContext(), parameters);
+    // callback is done in function !
     return true;
   }
 
@@ -37,6 +37,6 @@ protected:
   friend class SynchroneousOptimizerContextClass;
 
 };
-  
+
 };
 #endif // !LBCPP_SYNCHRONEOUS_OPTIMIZER_CONTEXT_H_

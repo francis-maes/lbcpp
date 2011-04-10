@@ -14,57 +14,7 @@
 # include <lbcpp/Optimizer/OptimizerState.h>
 
 namespace lbcpp
-{
-  
-// TODO arnaud : move elsewhere  
-class FunctionWithOptimizerCallbackAndStateWorkUnit : public WorkUnit
-{
-public:
-  FunctionWithOptimizerCallbackAndStateWorkUnit(const FunctionPtr& function, const Variable input, const OptimizerCallbackPtr& optimizerCallback, const OptimizerStatePtr& optimizerState)
-  : function(function), input(input), optimizerCallback(optimizerCallback), optimizerState(optimizerState) {}
-  
-  FunctionWithOptimizerCallbackAndStateWorkUnit() {}
-  
-  virtual Variable run(ExecutionContext& context) 
-  {
-    Variable output = function->compute(context, input);
-    optimizerCallback->evaluationFinished(input, getDoubleFromOutput(output), optimizerState);
-    return output;
-  }
-  
-protected:
-  friend class FunctionWithOptimizerCallbackAndStateWorkUnitClass;
-  
-private:
-  FunctionPtr function;
-  Variable input;
-  OptimizerCallbackPtr optimizerCallback;
-  OptimizerStatePtr optimizerState;
-  
-  
-  // TODO arnaud : method is already in OptimizerContext ...
-  double getDoubleFromOutput(const Variable& variable)
-  {
-    if (variable.isDouble())
-      return variable.getDouble();
-    
-    if (!variable.isObject()) {
-      jassertfalse;
-      return 1;
-    }
-    
-    ObjectPtr object = variable.getObject();
-    
-    if (!object->getClass()->inheritsFrom(scoreObjectClass)) {
-      jassertfalse;
-      return 1;
-    }
-    
-    return object.staticCast<ScoreObject>()->getScoreToMinimize();
-    
-  }
-};
-  
+{  
   
 class MultiThreadsOptimizerContext : public OptimizerContext
 {
@@ -79,10 +29,11 @@ public:
   }
   
   // blocking method
-  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) 
+  virtual bool evaluate(const Variable& parameters) 
   {  
-    WorkUnitPtr wu = new FunctionWithOptimizerCallbackAndStateWorkUnit(getObjectiveFunction(), parameters, getOptimizerCallback(), optimizerState);
+    WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
     MTContext->pushWorkUnit(wu);
+    // callback is done in function
     return true;
   }
   
