@@ -28,12 +28,11 @@ public:
     MTContext->waitUntilAllWorkUnitsAreDone();
   }
   
-  // blocking method
   virtual bool evaluate(const Variable& parameters) 
   {  
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
     MTContext->pushWorkUnit(wu);
-    // callback is done in function
+    // callback is done in function evaluation !
     return true;
   }
   

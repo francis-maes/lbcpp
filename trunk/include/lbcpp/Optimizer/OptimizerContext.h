@@ -19,7 +19,8 @@ namespace lbcpp
 class OptimizerContext : public Object
 {
 public:
-  OptimizerContext(const FunctionPtr& objectiveFunction) : objectiveFunction(objectiveFunction) {}
+  OptimizerContext(const FunctionPtr& objectiveFunction) : objectiveFunction(objectiveFunction) 
+    {jassert(objectiveFunction->getNumRequiredInputs() == 1);}
   OptimizerContext() {}
   
   void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
@@ -31,7 +32,6 @@ public:
   virtual void waitAllEvaluationsFinished() const = 0;
   
   virtual bool evaluate(const Variable& parameters) = 0;
-  // TODO arnaud : evalaute std::vector<Variable>
   
   static double getDoubleFromOutput(const Variable& variable)
   {
@@ -51,7 +51,6 @@ public:
     }
     
     return object.staticCast<ScoreObject>()->getScoreToMinimize();
-    
   }  
   
 protected:

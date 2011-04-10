@@ -12,9 +12,6 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Distribution/ContinuousDistribution.h>
 
-
-// TODO arnaud : modified to use new Function interface but not tested yet
-
 namespace lbcpp
 {
 
@@ -27,31 +24,31 @@ public:
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
     std::vector<double> values;
-    ContinuousDistributionPtr apriori = optimizerState->distribution.dynamicCast<ContinuousDistribution>();
+    ContinuousDistributionPtr apriori = optimizerState->getDistribution().dynamicCast<ContinuousDistribution>();
     apriori->sampleUniformly(numSamples, values);
     
     for (size_t i = 0; i < numSamples; ++i) 
     {
       optimizerContext->evaluate(values[i]);
-      optimizerState->totalNumberGeneratedWUs++;
+      optimizerState->incTotalNumberOfRequests();
     }
     
     optimizerContext->waitAllEvaluationsFinished();
     
-    // TODO arnaud : check results.size() == requests.size()    
+    std::vector< std::pair<double, Variable> >::const_iterator it;
     {
-      ScopedLock _(optimizerState->lock);
-      std::vector< std::pair<double, Variable> >::iterator it;
-      for (it = optimizerState->currentEvaluatedWUs.begin(); it < optimizerState->currentEvaluatedWUs.end(); it++) {
-        if (it->first < optimizerState->bestScore) {
-          optimizerState->bestScore = it->first;
-          optimizerState->bestVariable = it->second;
+      ScopedLock _(optimizerState->getLock());
+      jassert(optimizerState->getNumberOfUnprocessedEvaluations() == numSamples);
+      for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++) {
+        if (it->first < optimizerState->getBestScore()) {
+          optimizerState->setBestScore(it->first);
+          optimizerState->setBestVariable(it->second);
         }
       }
+      optimizerState->clearUnprocessedEvaluations();
     }
-    
-    std::cout << "Best Score: " << optimizerState->bestScore << " (" << optimizerState->bestVariable << ")" << std::endl;
-    return optimizerState->bestScore;
+    std::cout << "Best Score: " << optimizerState->getBestScore() << " (" << optimizerState->getBestVariable() << ")" << std::endl;
+    return optimizerState->getBestScore();
  }
   
 protected:

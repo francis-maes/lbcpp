@@ -13,9 +13,6 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
 
-
-// TODO arnaud : modified to use new Function interface but not tested yet
-
 namespace lbcpp
 {
 
@@ -31,30 +28,28 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    //std::cout << "HERE" << std::endl;
-    //optimizerContext->evaluate(4.0, optimizerState);
     context.enterScope(T("Optimizing"));
-    std::cout << optimizerState->distribution->toString() << std::endl;
+    std::cout << optimizerState->getDistribution()->toString() << std::endl;
     for (size_t i = 0; i < nbIterations; ++i)
     {
       context.enterScope(T("Iteration ") + String((int)i + 1));
       context.resultCallback(T("iteration"), i);
-      Variable bestIterationParameters = optimizerState->bestVariable;
+      Variable bestIterationParameters = optimizerState->getBestVariable();
       double score = performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState);
       context.resultCallback(T("bestParameters"), bestIterationParameters);
-      std::cout << optimizerState->distribution->toString() << std::endl;
+      std::cout << optimizerState->getDistribution()->toString() << std::endl;
       
       context.leaveScope(score);
-      if (score < optimizerState->bestScore)
+      if (score < optimizerState->getBestScore())
       {
-        optimizerState->bestScore = score;
-        optimizerState->bestVariable = bestIterationParameters;
+        optimizerState->setBestScore(score);
+        optimizerState->setBestVariable(bestIterationParameters);
       }
       context.progressCallback(new ProgressionState(i + 1, nbIterations, T("Iterations")));
     }
-    context.resultCallback(T("bestParameters"), optimizerState->bestVariable);
-    context.leaveScope(optimizerState->bestScore);
-    return optimizerState->bestScore;
+    context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
+    context.leaveScope(optimizerState->getBestScore());
+    return optimizerState->getBestScore();
     return Variable();
   }
   
@@ -80,34 +75,38 @@ private:
         input = bestParameters;
       else 
       {
-        input = optimizerState->distribution->sample(random);
+        input = optimizerState->getDistribution()->sample(random);
         
       }
       optimizerContext->evaluate(input);
-      optimizerState->totalNumberGeneratedWUs++;
+      optimizerState->incTotalNumberOfRequests();
     }
     
     // wait and sort results
     optimizerContext->waitAllEvaluationsFinished();
-    
     std::multimap<double, Variable> sortedScores;
     {
-      ScopedLock _(optimizerState->lock);
-      jassert(optimizerState->currentEvaluatedWUs.size() == populationSize);
+      ScopedLock _(optimizerState->getLock());
+      jassert(optimizerState->getNumberOfUnprocessedEvaluations() == populationSize);
+      /*while (optimizerState->getNumberOfUnprocessedEvaluations() != populationSize)
+      {
+        std::cout << optimizerState->getNumberOfUnprocessedEvaluations() << " VS " << populationSize << std::endl;
+        Thread::sleep(1000);
+      }*/
       
       // sort results
-      std::vector< std::pair<double, Variable> >::iterator it;
-      for (it = optimizerState->currentEvaluatedWUs.begin(); it < optimizerState->currentEvaluatedWUs.end(); it++)
+      std::vector< std::pair<double, Variable> >::const_iterator it;
+      for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++)
         sortedScores.insert(*it);
-      optimizerState->currentEvaluatedWUs.clear();
+      optimizerState->clearUnprocessedEvaluations();
     }
     
     // build new distribution
     std::multimap<double, Variable>::const_iterator it2 = sortedScores.begin();
-    DistributionBuilderPtr builder = optimizerState->distribution->createBuilder();
+    DistributionBuilderPtr builder = optimizerState->getDistribution()->createBuilder();
     for (size_t i = 0; i < numBests; ++i, ++it2)
       builder->addElement(it2->second);
-    optimizerState->distribution = builder->build(context);
+    optimizerState->setDistribution(builder->build(context));
     
     // return best score
     bestParameters = sortedScores.begin()->second;

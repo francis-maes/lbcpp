@@ -313,8 +313,6 @@ public:
           state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
           context.informationCallback(T("State file saved in : ") + File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).getFullPathName());
         }
-        
-        //continue; // TODO arnaud : maybe not a good idea
       }
       
       

@@ -22,6 +22,8 @@
   
   <class name="MultiThreadsOptimizerContext" base="OptimizerContext">
     <constructor arguments="const FunctionPtr&amp; objectiveFunction, size_t nbThreads"/>
+    <variable type="PositiveInteger" name="nbThreads"/>
+    <variable type="ExecutionContext" name="MTContext"/>
   </class>
   
 </library>

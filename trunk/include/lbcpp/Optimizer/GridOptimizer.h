@@ -65,7 +65,7 @@ public:
     {return T("Optimized");}
   
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return variableType;}  // TODO arnaud : more precise needed ?
+    {return variableType;}
   
   virtual Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
     {return optimize(context, inputs[0].getObjectAndCast<GridOptimizerState>(), inputs[1].getObjectAndCast<Function>(), inputs[2].getObjectAndCast<Function>());}
