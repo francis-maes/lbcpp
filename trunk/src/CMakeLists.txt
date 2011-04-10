@@ -54,6 +54,7 @@ GENERATE_INTROSPECTION_CODE(Optimizer/Context/OptimizerContextLibrary.xml Optimi
 GENERATE_INTROSPECTION_CODE(Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml ObjectiveFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/OptimizerOptimizerLibrary.xml OptimizerOptimizerLibrary.cpp)
 IF(LBCPP_NETWORKING)
+  GENERATE_INTROSPECTION_CODE(Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml OptimizerContextNetworkLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(Optimizer/Optimizer/Grid/OptimizerOptimizerGridLibrary.xml OptimizerOptimizerGridLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
@@ -567,7 +568,6 @@ SET(LBCPP_OPTIMIZER_SOURCES
 SET(LBCPP_OPTIMIZER_CONTEXT_SOURCES
   Optimizer/Context/SynchroneousOptimizerContext.h
   Optimizer/Context/MultiThreadsOptimizerContext.h
-  Optimizer/Context/DistributedOptimizerContext.h
   Optimizer/Context/OptimizerContextLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextLibrary.cpp
 )
@@ -587,6 +587,13 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
 )
 
 IF(LBCPP_NETWORKING)
+  SET(LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES
+    Optimizer/Context/Network/DistributedOptimizerContext.h
+    Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextNetworkLibrary.cpp
+    ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES}
+  )
+
   SET(LBCPP_OPTIMIZER_OPTIMIZER_GRID_SOURCES
     Optimizer/Optimizer/Grid/GridEvoOptimizer.h
     Optimizer/Optimizer/Grid/OptimizerOptimizerGridLibrary.xml
@@ -742,6 +749,7 @@ SET(LBCPP_SOURCES
   # Optimizer
   ${LBCPP_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_CONTEXT_SOURCES}
+    ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES}
     ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES}
     ${LBCPP_OPTIMIZER_OPTIMIZER_GRID_SOURCES}
@@ -820,7 +828,7 @@ SOURCE_SUB_GROUP2(Learning DecisionTree Data FILES ${LBCPP_LEARNING_DECISION_TRE
 
 ## Optimizer
 SOURCE_GROUP(Optimizer FILES ${LBCPP_OPTIMIZER_SOURCES})
-SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES})
+SOURCE_SUB_GROUP(Optimizer Context FILES ${LBCPP_OPTIMIZER_CONTEXT_SOURCES} ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES})
 SOURCE_SUB_GROUP(Optimizer ObjectiveFunction FILES ${LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Optimizer Optimizer FILES ${LBCPP_OPTIMIZER_OPTIMIZER_SOURCES})
 SOURCE_SUB_GROUP2(Optimizer Optimizer Grid FILES ${LBCPP_OPTIMIZER_OPTIMIZER_GRID_SOURCES})

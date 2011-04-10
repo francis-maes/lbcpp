@@ -27,14 +27,19 @@ public:
   
   // blocking method
   virtual bool evaluate(const Variable& parameters) 
-  {    
+  {  
+    inProgressEvaluation = parameters;
     objectiveFunction->compute(defaultExecutionContext(), parameters);
+    inProgressEvaluation = Variable();
     // callback is done in function evaluation !
     return true;
   }
-
+  
 protected:  
   friend class SynchroneousOptimizerContextClass;
+  
+private:
+  Variable inProgressEvaluation;
 
 };
 
