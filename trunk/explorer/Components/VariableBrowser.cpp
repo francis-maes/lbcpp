@@ -86,6 +86,9 @@ struct VariableRelatedCommand
     size_t numRows = container->getNumElements();
     TypePtr rowType = container->getElementsType();
 
+    if (outputFile.existsAsFile())
+      outputFile.deleteFile();
+
     OutputStream* ostr = outputFile.createOutputStream();
     if (!ostr)
     {

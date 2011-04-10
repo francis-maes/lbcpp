@@ -136,7 +136,10 @@ public:
   */
   template<class O>
   ReferenceCountedObjectPtr(const ReferenceCountedObjectPtr<O>& other) : ptr(static_cast<T* >(other.get()))
-    {if (ptr != 0) cast(ptr).incrementReferenceCounter();}
+  {
+    jassert(!other.get() || dynamic_cast<T* >(other.get()));
+    if (ptr != 0) cast(ptr).incrementReferenceCounter();
+  }
 
   /** Copies another pointer.
 
@@ -162,6 +165,7 @@ public:
   template<class O>
   ReferenceCountedObjectPtr(ReferenceCountedObjectPtr<O>&& other)
   {
+    jassert(!other.get() || dynamic_cast<T* >(other.get()));
     ptr = (T* )other.get();
     other.setPointerToNull();
   }
@@ -194,7 +198,11 @@ public:
   */
   template<class O>
   ReferenceCountedObjectPtr<T>& operator =(const ReferenceCountedObjectPtr<O>& other)
-    {changePtr(static_cast<T* >(other.get())); return *this;}
+  {
+    jassert(!other.get() || dynamic_cast<T* >(other.get()));
+    changePtr(static_cast<T* >(other.get()));
+    return *this;
+  }
 
 #ifdef LBCPP_ENABLE_CPP0X_RVALUES
   ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<T>&& other)
@@ -209,6 +217,7 @@ public:
   template<class O>
   ReferenceCountedObjectPtr<T>& operator =(ReferenceCountedObjectPtr<O>&& other)
   {
+    jassert(!other.get() || dynamic_cast<T* >(other.get()));
     if (ptr)
       cast(ptr).decrementReferenceCounter();
     ptr = (T* )other.get();

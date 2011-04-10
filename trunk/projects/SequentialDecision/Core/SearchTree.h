@@ -28,9 +28,9 @@ public:
     {return computeHeuristic(input.getObjectAndCast<SearchTreeNode>());}
 };
 
-FunctionPtr greedySearchHeuristic(double discount = 1.0);
-FunctionPtr maxReturnSearchHeuristic();
-FunctionPtr minDepthSearchHeuristic();
+FunctionPtr greedySearchHeuristic(double discount = 1.0, double maxReward = 1.0);
+FunctionPtr maxReturnSearchHeuristic(double maxReturn = 1.0);
+FunctionPtr minDepthSearchHeuristic(double maxDepth = 1.0, bool applyLogFunction = false);
 FunctionPtr optimisticPlanningSearchHeuristic(double discount, double maxReward = 1.0);
 FunctionPtr linearInterpolatedSearchHeuristic(FunctionPtr heuristic1, FunctionPtr heuristic2, double k);
 

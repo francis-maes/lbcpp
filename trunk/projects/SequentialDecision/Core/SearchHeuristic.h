@@ -18,33 +18,54 @@ namespace lbcpp
 class GreedySearchHeuristic : public SimpleSearchHeuristic
 {
 public:
-  GreedySearchHeuristic(double discount = 1.0)
-    : discount(discount) {}
+  GreedySearchHeuristic(double discount = 1.0, double maxReward = 1.0)
+    : discount(discount), maxReward(maxReward) {}
 
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const
-    {return node->getReward() * pow(discount, (double)node->getDepth() - 1.0);}
+    {return (node->getReward() / maxReward) * pow(discount, (double)node->getDepth() - 1.0);}
 
   virtual String toShortString() const
-    {return T("greedy(") + String(discount) + T(")");}
+    {return T("greedy(") + String(discount) + T(", ") + String(maxReward) + T(")");}
 
 protected:
   friend class GreedySearchHeuristicClass;
 
   double discount;
+  double maxReward;
 };
 
 class MaxReturnSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
+  MaxReturnSearchHeuristic(double maxReturn = 1.0)
+    : maxReturn(maxReturn) {}
+
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const
-    {return node->getCurrentReturn();}
+    {return node->getCurrentReturn() / maxReturn;}
+
+protected:
+  friend class MaxReturnSearchHeuristicClass;
+
+  double maxReturn;
 };
 
 class MinDepthSearchHeuristic : public SimpleSearchHeuristic
 {
 public:
+  MinDepthSearchHeuristic(double maxDepth = 1.0, bool applyLogFunction = false)
+    : maxDepth(maxDepth), applyLogFunction(applyLogFunction) {}
+
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const
-    {return -(double)node->getDepth();}
+  {
+    double d = node->getDepth() / maxDepth;
+    return -(applyLogFunction ? log10(1.0 + d) : d);
+  }
+
+protected:
+  friend class MinDepthSearchHeuristicClass;
+
+  double maxDepth;
+  bool applyLogFunction;
 };
 
 class OptimisticPlanningSearchHeuristic : public SimpleSearchHeuristic

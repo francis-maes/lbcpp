@@ -36,7 +36,7 @@ public:
   {
     VectorPtr res = new GenericVector(booleanType, 2);
     res->setElement(0, false);
-    res->setElement(0, true);
+    res->setElement(1, true);
     return res;
   }
 
@@ -76,8 +76,14 @@ public:
 class LinearPointPhysicProblem : public DecisionProblem
 {
 public:
-  LinearPointPhysicProblem(double discount = 1.0) 
+  LinearPointPhysicProblem(double discount = 0.9) 
     : DecisionProblem(new LinearPointPhysicStateSampler(), discount) {}
+
+  virtual double getMaxReward() const
+    {return 1.0;}
+
+  virtual size_t getFixedNumberOfActions() const
+    {return 2;}
 };
 
 extern DecisionProblemPtr linearPointPhysicProblem(double discount);

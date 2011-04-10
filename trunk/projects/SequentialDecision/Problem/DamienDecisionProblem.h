@@ -153,10 +153,17 @@ public:
 class HIVDecisionProblem : public DecisionProblem
 {
 public:
-  HIVDecisionProblem(double discount = 0.9)
+  HIVDecisionProblem(double discount = 0.98)
     : DecisionProblem(new HIVInitialStateSampler(), discount) {}
+
+  virtual double getMaxReward() const
+    {return 360e6;}
+
+  virtual size_t getFixedNumberOfActions() const
+    {return 4;}
 };
 
+extern ClassPtr hivDecisionProblemStateClass;
 extern DecisionProblemPtr hivDecisionProblem(double discount);
 
 }; /* namespace lbcpp */
