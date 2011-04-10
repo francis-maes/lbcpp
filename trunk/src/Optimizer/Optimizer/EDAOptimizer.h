@@ -10,7 +10,6 @@
 # define LBCPP_EDA_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
 
 namespace lbcpp
@@ -98,7 +97,7 @@ private:
       std::vector< std::pair<double, Variable> >::const_iterator it;
       for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++)
         sortedScores.insert(*it);
-      optimizerState->clearUnprocessedEvaluations();
+      optimizerState->clearUnprocessedEvaluations();  // TODO arnaud : maybe do that after building new distri
     }
     
     // build new distribution

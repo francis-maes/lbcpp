@@ -25,6 +25,7 @@
 
 # include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 # include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
+# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
 # include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 # include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 # include <lbcpp/Function/ScalarFunction.h>
@@ -40,7 +41,8 @@ public:
     // TESTS OPTIMIZER
     
     //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(1000);
-    OptimizerPtr optimizer = new EDAOptimizer(100, 1000, 100);
+    //OptimizerPtr optimizer = new EDAOptimizer(100, 1000, 100);
+    OptimizerPtr optimizer = new AsyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
     //OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
     OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();

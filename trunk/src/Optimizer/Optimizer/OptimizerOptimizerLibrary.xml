@@ -18,6 +18,16 @@
     <variable type="PositiveInteger" name="numBests"/>
   </class>
   
+  <class name="AsyncEDAOptimizer" base="Optimizer">
+    <constructor arguments="size_t totalNumberEvaluationsRequested, size_t numberEvaluationsToUpdate, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor, size_t numberEvaluationsInProgress"/>
+    <variable type="PositiveInteger" name="totalNumberEvaluationsRequested"/>
+    <variable type="PositiveInteger" name="numberEvaluationsToUpdate"/>
+    <variable type="PositiveInteger" name="ratioUsedForUpdate"/>
+    <variable type="PositiveInteger" name="timeToSleep"/>
+    <variable type="PositiveInteger" name="updateFactor"/>
+    <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
+  </class>
+     
   <!--
   <class name="IterativeBracketingOptimizer" base="OptimizerOld">
     <constructor arguments="size_t numPasses, double reductionFactor, const OptimizerOldPtr&amp; baseOptimizer"/>
