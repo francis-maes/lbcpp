@@ -21,7 +21,6 @@
 
 // TODO arnaud : just to compile header file
 # include <lbcpp/Optimizer/OptimizerContext.h>
-# include <lbcpp/Optimizer/OptimizerCallback.h>
 # include "../WorkUnit/DebugWorkUnit.h"
 
 # include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
@@ -40,15 +39,17 @@ public:
     
     // TESTS OPTIMIZER
     
-    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(100000);
-    OptimizerPtr optimizer = new EDAOptimizer(10, 1000, 100);
-    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
-    //OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
+    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(1000);
+    OptimizerPtr optimizer = new EDAOptimizer(100, 1000, 100);
+    //OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
     //optimizerState->setDistribution(new UniformDistribution(-5,5));
     optimizerState->setDistribution(new GaussianDistribution(2, 1000));
     return optimizer->compute(context, optimizerContext, optimizerState);
     
+    
+    return Variable();
     
     /*
     // initial distribution

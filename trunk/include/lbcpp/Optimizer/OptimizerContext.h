@@ -10,8 +10,8 @@
 #ifndef LBCPP_OPTIMIZER_CONTEXT_H_
 # define LBCPP_OPTIMIZER_CONTEXT_H_
 
-#include <lbcpp/Optimizer/OptimizerCallback.h>
-#include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Function/Evaluator.h>
+# include <lbcpp/Core/Function.h>
 
 namespace lbcpp
 {
@@ -22,24 +22,18 @@ public:
   OptimizerContext(const FunctionPtr& objectiveFunction) : objectiveFunction(objectiveFunction) {}
   OptimizerContext() {}
   
-  FunctionPtr getObjectiveFunction() const
-    {return objectiveFunction;}
+  void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
+    {objectiveFunction->addPostCallback(callback);}
   
-  OptimizerCallbackPtr getOptimizerCallback() const
-    {return optimizerCallback;}
-  
-  void setCallback(const OptimizerCallbackPtr callback)
-    {optimizerCallback = callback;}
+  void removePostEvaluationCallback(const FunctionCallbackPtr& callback)
+    {objectiveFunction->removePostCallback(callback);}
   
   virtual void waitAllEvaluationsFinished() const = 0;
   
-  virtual bool evaluate(const Variable& parameters, const OptimizerStatePtr& optimizerState) = 0;
+  virtual bool evaluate(const Variable& parameters) = 0;
   // TODO arnaud : evalaute std::vector<Variable>
   
-protected:
-  
-  // TODO arnaud : check this method
-  double getDoubleFromOutput(const Variable& variable)
+  static double getDoubleFromOutput(const Variable& variable)
   {
     if (variable.isDouble())
       return variable.getDouble();
@@ -58,11 +52,12 @@ protected:
     
     return object.staticCast<ScoreObject>()->getScoreToMinimize();
     
-  }
+  }  
   
-private:
+protected:
+  friend class OptimizerContextClass;
+  
   FunctionPtr objectiveFunction;
-  OptimizerCallbackPtr optimizerCallback;
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
