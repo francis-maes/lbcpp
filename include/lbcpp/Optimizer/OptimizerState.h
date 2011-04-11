@@ -22,55 +22,71 @@ class OptimizerState : public Object, public FunctionCallback
 public:
   OptimizerState() : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestScore(DBL_MAX) {}
   
-  // OptimizerState
-  const CriticalSection& getLock() const
-    {return lock;}
-  
+  // this should be in an inherited class
   const DistributionPtr& getDistribution() const
     {return distribution;}
   void setDistribution(const DistributionPtr& newDistribution)
     {distribution = newDistribution;}
   
+  /*
+  ** Requests
+  */
   size_t getTotalNumberOfRequests() const
     {return totalNumberOfRequests;}
+
   void incTotalNumberOfRequests()
     {totalNumberOfRequests++;}
   
   size_t getTotalNumberOfEvaluations() const
     {return totalNumberOfEvaluations;}
+
   void incTotalNumberOfEvaluations()
     {totalNumberOfEvaluations++;}
   
+  /*
+  ** Unprocessed requests
+  */
+  size_t getNumberOfUnprocessedEvaluations() const
+    {return unprocessedEvaluations.size();}
+
+  const std::vector< std::pair<double, Variable> >& getUnprocessedEvaluations() const
+    {return unprocessedEvaluations;}
+
+  void clearUnprocessedEvaluations()
+    {unprocessedEvaluations.clear();}
+
+  /*
+  ** Best variable and score
+  */
   const Variable& getBestVariable() const
     {return bestVariable;}
+
   void setBestVariable(const Variable& variable)
     {bestVariable = variable;}
   
   double getBestScore() const
     {return bestScore;}
+
   void setBestScore(double score)
     {bestScore = score;}
-  
-  size_t getNumberOfUnprocessedEvaluations() const
-    {return unprocessedEvaluations.size();}
-  const std::vector< std::pair<double, Variable> >& getUnprocessedEvaluations() const
-    {return unprocessedEvaluations;}
-  void clearUnprocessedEvaluations()
-    {unprocessedEvaluations.clear();}
 
-  
+  /*
+  ** Critical Section
+  */
+  const CriticalSection& getLock() const
+    {return lock;}
+
   // FunctionCallback
   virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) 
   {
     ScopedLock _(lock);
-    unprocessedEvaluations.push_back(std::make_pair(OptimizerContext::getDoubleFromOutput(output),inputs[0]));
+    unprocessedEvaluations.push_back(std::make_pair(OptimizerContext::getDoubleFromOutput(output), inputs[0]));
     incTotalNumberOfEvaluations();
   }
 
 protected:  
   friend class OptimizerStateClass;
   
-private:
   CriticalSection lock;
   
   DistributionPtr distribution;
@@ -86,7 +102,6 @@ private:
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 extern ClassPtr optimizerStateClass;
-
   
 }; /* namespace lbcpp */
 

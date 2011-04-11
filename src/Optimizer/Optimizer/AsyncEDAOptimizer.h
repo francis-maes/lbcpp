@@ -113,7 +113,6 @@ public:
 protected:
   friend class AsyncEDAOptimizerClass;
   
-private:
   RandomGeneratorPtr random;
   
   size_t totalNumberEvaluationsRequested; // total number of Variable to evaluate
@@ -122,8 +121,6 @@ private:
   size_t timeToSleep;                     // time to sleep to avoid busy waiting
   size_t updateFactor;                    // preponderance of new distri vs old distri (low value avoid too quick convergence)
   size_t numberEvaluationsInProgress;              // number of evaluations in progress to maintain
-
-  
 };
 
 typedef ReferenceCountedObjectPtr<AsyncEDAOptimizer> AsyncEDAOptimizerPtr;  
