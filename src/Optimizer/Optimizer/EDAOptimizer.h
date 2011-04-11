@@ -82,22 +82,22 @@ private:
     }
     
     // wait and sort results
-    optimizerContext->waitAllEvaluationsFinished();
+    optimizerContext->waitUntilAllRequestsAreProcessed();
     std::multimap<double, Variable> sortedScores;
     {
       ScopedLock _(optimizerState->getLock());
-      jassert(optimizerState->getNumberOfUnprocessedEvaluations() == populationSize);
-      /*while (optimizerState->getNumberOfUnprocessedEvaluations() != populationSize)
+      jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
+      /*while (optimizerState->getNumberOfProcessedRequests() != populationSize)
       {
-        std::cout << optimizerState->getNumberOfUnprocessedEvaluations() << " VS " << populationSize << std::endl;
+        std::cout << optimizerState->getNumberOfProcessedRequests() << " VS " << populationSize << std::endl;
         Thread::sleep(1000);
       }*/
       
       // sort results
       std::vector< std::pair<double, Variable> >::const_iterator it;
-      for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++)
+      for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
         sortedScores.insert(*it);
-      optimizerState->clearUnprocessedEvaluations();  // TODO arnaud : maybe do that after building new distri
+      optimizerState->flushProcessedRequests();  // TODO arnaud : maybe do that after building new distri
     }
     
     // build new distribution

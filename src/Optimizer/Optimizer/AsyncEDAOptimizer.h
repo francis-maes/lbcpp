@@ -35,11 +35,11 @@ public:
     while (optimizerState->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
     {      
       // Send WU's on network
-      if (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfUnprocessedEvaluations() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
+      if (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
       {
         context.informationCallback(T("Asking evaluations ..."));
         size_t nb = 0;
-        while (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfUnprocessedEvaluations() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
+        while (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
         {
           Variable input = optimizerState->getDistribution()->sample(random);
           if (!optimizerContext->evaluate(input))
@@ -58,12 +58,10 @@ public:
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*1000);
-      std::cout << "HERE" << std::endl;
-      
+      juce::Thread::sleep(timeToSleep*1000);      
       
       // enough WUs evaluated -> update distribution (with best results)
-      if (optimizerState->getNumberOfUnprocessedEvaluations() >= numberEvaluationsToUpdate || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) == 0)) 
+      if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) == 0)) 
       {
         context.informationCallback(T("Updating state ..."));
         
@@ -72,9 +70,9 @@ public:
         {
           ScopedLock _(optimizerState->getLock());
           std::vector< std::pair<double, Variable> >::const_iterator it;
-          for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++)
+          for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
             sortedScores.insert(*it);
-          optimizerState->clearUnprocessedEvaluations();  // TODO arnaud : maybe do that after building new distri
+          optimizerState->flushProcessedRequests();  // TODO arnaud : maybe do that after building new distri
         }
         
         

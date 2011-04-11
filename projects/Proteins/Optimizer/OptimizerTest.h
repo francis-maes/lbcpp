@@ -29,6 +29,7 @@
 # include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 # include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
 # include <lbcpp/Function/ScalarFunction.h>
+
 namespace lbcpp
 {
 

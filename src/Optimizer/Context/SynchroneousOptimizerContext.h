@@ -23,7 +23,7 @@ public:
   SynchroneousOptimizerContext(const FunctionPtr& objectiveFunction) : OptimizerContext(objectiveFunction) {}
   SynchroneousOptimizerContext() {}
   
-  virtual void waitAllEvaluationsFinished() const {}  // because evaluate is a blocking method
+  virtual void waitUntilAllRequestsAreProcessed() const {}  // because evaluate is a blocking method
   
   // blocking method
   virtual bool evaluate(const Variable& parameters) 

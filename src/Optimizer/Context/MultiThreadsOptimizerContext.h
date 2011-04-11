@@ -20,19 +20,19 @@ namespace lbcpp
 class MultiThreadsOptimizerContext : public OptimizerContext
 {
 public:
-  MultiThreadsOptimizerContext(const FunctionPtr& objectiveFunction, size_t nbThreads = (size_t)juce::SystemStats::getNumCpus()) : OptimizerContext(objectiveFunction), nbThreads(nbThreads) 
-    {MTContext = multiThreadedExecutionContext(nbThreads);}
+  MultiThreadsOptimizerContext(const FunctionPtr& objectiveFunction, size_t numThreads = (size_t)juce::SystemStats::getNumCpus()) : OptimizerContext(objectiveFunction), numThreads(numThreads) 
+    {multiThreadedContext = multiThreadedExecutionContext(numThreads);}
   MultiThreadsOptimizerContext() {}
   
-  virtual void waitAllEvaluationsFinished() const 
+  virtual void waitUntilAllRequestsAreProcessed() const 
   {
-    MTContext->waitUntilAllWorkUnitsAreDone();
+    multiThreadedContext->waitUntilAllWorkUnitsAreDone();
   }
   
   virtual bool evaluate(const Variable& parameters) 
   {  
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
-    MTContext->pushWorkUnit(wu);
+    multiThreadedContext->pushWorkUnit(wu);
     // callback is done in function evaluation !
     return true;
   }
@@ -41,8 +41,8 @@ protected:
   friend class MultiThreadsOptimizerContextClass;
   
 private:
-  size_t nbThreads;
-  ExecutionContextPtr MTContext;
+  size_t numThreads;
+  ExecutionContextPtr multiThreadedContext;
 };
   
 };
