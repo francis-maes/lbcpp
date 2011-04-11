@@ -33,19 +33,19 @@ public:
       optimizerState->incTotalNumberOfRequests();
     }
     
-    optimizerContext->waitAllEvaluationsFinished();
+    optimizerContext->waitUntilAllRequestsAreProcessed();
     
     std::vector< std::pair<double, Variable> >::const_iterator it;
     {
       ScopedLock _(optimizerState->getLock());
-      jassert(optimizerState->getNumberOfUnprocessedEvaluations() == numSamples);
-      for (it = optimizerState->getUnprocessedEvaluations().begin(); it < optimizerState->getUnprocessedEvaluations().end(); it++) {
+      jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
+      for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++) {
         if (it->first < optimizerState->getBestScore()) {
           optimizerState->setBestScore(it->first);
           optimizerState->setBestVariable(it->second);
         }
       }
-      optimizerState->clearUnprocessedEvaluations();
+      optimizerState->flushProcessedRequests();
     }
     std::cout << "Best Score: " << optimizerState->getBestScore() << " (" << optimizerState->getBestVariable() << ")" << std::endl;
     return optimizerState->getBestScore();
