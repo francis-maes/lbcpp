@@ -1,20 +1,25 @@
-
-
- - HIV:
-   - heuristiques de base vs N
-   - optimistic planning with different normalizations vs N
-   - EDA learned heuristic vs N
-   - save heuristics
-   - test learned heuristic from close initial states
-   - launch everything on the two or three problems
- - Go:
-   - learn a big model
-   - integrate's olivier last modifs
-
-Objectif 3: décrires expériences
-
+Arnaud:
+ * Faire les headers dans le meme style que le reste de la librairie
+ * OptimizerState: enlever incTotalNumberOfRequests() et incTotalNumberOfEvaluations() / mettre en private (?)
+ * OptimizerState: renommer *UnprocessedEvaluations en *ProcessedRequests
+ * Classe dérivé: DistributionBasedOptimizerState
+ * OptimizerContext: enlever getDoubleFromOutput; utiliser Variable::toDouble()
+ * OptimizerContext: renommer waitAllEvaluationsFinished -> waitUntilAllRequestsAreProcessed()
+ * OptimizerContext: soit bool evaluate(ExecutionContext& , const Variable& ) si ca peut deconner, 
+                 soit void evaluate(const Variable& ) si ca marche toujours
+             (Une function qui renvoie false doit "justifier" pourquoi en appelant errorCallback au préalable sur le context donné en argument)
+ * MultiThreadsOptimizerContext: renommer MTContext en multiThreadedContext / executionContext (Les noms de variables doivent toujours commencer par une minuscule)
+ * MultiThreadsOptimizerContext: renommer nbThreads en numThreads (pour rester homogène avec le reste du code)
+ * UniformSampleAndPickBestOptimizer: remplacer le std::cout par un informationCallback
+        ... ou mieux: faire faire le informationCallback par la classe de base Optimizer
+         (pour que tous les optimizers aient une manière cohérente de faire les informationCallback / resultCallback)
+   => Au passage, la manière dont les enterScope/leaveScope/informationCallback/resultCallback sont fait, est "optimisé" pour un bon affichage dans l'explorer
+       Donc, n'hésite pas à utiliser l'explorer pour tester tes optimiseurs; et verifier qu'on a un accès facile à tous les résultats intermédiare qui nous intéresse
+ * GridOptimizer => code mort?    
 
 Go:
+ * learn a big model
+ * integrate's olivier last modifs
  * Nouvelles features
  * Courbes dans l'evaluateur
  * GoPatterns
