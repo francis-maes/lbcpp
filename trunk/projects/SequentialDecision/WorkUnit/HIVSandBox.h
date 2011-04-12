@@ -19,12 +19,62 @@
 namespace lbcpp
 {
 
+class GenericSearchNodeFeatureGenerator : public CompositeFunction
+{
+public:
+  GenericSearchNodeFeatureGenerator(bool includeAction, bool includeReward, bool includeState, bool includeDepth, bool includeReturn)
+    : includeAction(includeAction), includeReward(includeReward), includeState(includeState), includeDepth(includeDepth), includeReturn(includeReturn) {}
+  GenericSearchNodeFeatureGenerator() : includeAction(false), includeReward(false), includeState(false), includeDepth(false), includeReturn(false) {}
+
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t state = builder.addFunction(getVariableFunction(T("state")), node);
+    // FIXME: type
+
+    std::vector<size_t> features;
+    if (includeAction)
+    {
+      // FIXME: not implemented
+    }
+    if (includeReward)
+      features.push_back(builder.addFunction(getVariableFunction(T("reward")), node, T("r")));
+    if (includeState)
+      features.push_back(builder.addFunction(objectDoubleMembersFeatureGenerator(), state, T("s")));
+    if (includeDepth)
+    {
+      FunctionPtr convertFunction = lbcppMemberUnaryFunction(GenericSearchNodeFeatureGenerator, convertToDoubleFunction, variableType, doubleType);
+      size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
+      features.push_back(builder.addFunction(convertFunction, depth, T("d")));
+    }
+    if (includeReturn)
+      features.push_back(builder.addFunction(getVariableFunction(T("currentReturn")), node, T("R")));
+
+    if (features.size() > 1)
+      builder.addFunction(concatenateFeatureGenerator(true), features);
+  }
+
+  Variable convertToDoubleFunction(ExecutionContext& context, const Variable& input) const
+    {return input.toDouble();}
+  
+protected:
+  friend class GenericSearchNodeFeatureGeneratorClass;
+
+  bool includeAction;
+  bool includeReward;
+  bool includeState;
+  bool includeDepth;
+  bool includeReturn;
+};
+
+///////////////////////////////////////////////////
+
 // HIVState -> Features
 class HIVStateFeatures : public CompositeFunction
 {
 public:
   Variable getEValueFromState(ExecutionContext& context, const Variable& state) const
-    {return state.getObjectAndCast<HIVDecisionProblemState>()->getStateDimension(5);}
+    {return state.getObjectAndCast<HIVDecisionProblemState>()->getE();}
  
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
@@ -576,12 +626,12 @@ private:
           context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
           context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
 
-          context.resultCallback(T("log10(T1)"), log10(hivState->getStateDimension(0)));
-          context.resultCallback(T("log10(T2)"), log10(hivState->getStateDimension(1)));
-          context.resultCallback(T("log10(T1*)"), log10(hivState->getStateDimension(2)));
-          context.resultCallback(T("log10(T2*)"), log10(hivState->getStateDimension(3)));
-          context.resultCallback(T("log10(V)"), log10(hivState->getStateDimension(4)));
-          context.resultCallback(T("log10(E)"), log10(hivState->getStateDimension(5)));
+          for (size_t i = 0; i < 6; ++i)
+          {
+            String name = hivState->getVariableName(i);
+            double value = hivState->getVariable(i).getDouble();
+            context.resultCallback(T("log10(") + name + T(")"), log10(value));
+          }
         }
 
         LinearPointPhysicStatePtr linearPointState = state.dynamicCast<LinearPointPhysicState>();

@@ -42,5 +42,10 @@
     <constructor arguments="FeatureGeneratorPtr positiveNumberFeatures"/>
     <variable type="FeatureGenerator" name="positiveNumberFeatures"/>
   </class>
-  
+
+  <!-- Object Features -->
+  <class name="ObjectDoubleMembersFeatureGenerator" base="FeatureGenerator">
+    <constructor/>
+  </class>
+
 </library>
