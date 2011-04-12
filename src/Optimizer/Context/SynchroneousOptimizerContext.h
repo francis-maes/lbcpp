@@ -12,8 +12,6 @@
 
 # include <lbcpp/Optimizer/OptimizerContext.h>
 
-// TODO arnaud : replace defaultexecutioncontext
-
 namespace lbcpp
 {
 
@@ -26,12 +24,18 @@ public:
   virtual void waitUntilAllRequestsAreProcessed() const {}  // because evaluate is a blocking method
   
   // blocking method
-  virtual bool evaluate(const Variable& parameters) 
-  {  
+  virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
+  { 
     inProgressEvaluation = parameters;
-    objectiveFunction->compute(defaultExecutionContext(), parameters);
+    Variable ret = objectiveFunction->compute(context, parameters);
     inProgressEvaluation = Variable();
     // callback is done in function evaluation !
+    
+    if (!ret.exists()) {
+      context.errorCallback(T("No return value after function call!"));
+      return false;
+    }
+  
     return true;
   }
   

@@ -23,10 +23,10 @@ public:
   OptimizerState();
   
   // this should be in an inherited class
-  const DistributionPtr& getDistribution() const
-    {return distribution;}
-  void setDistribution(const DistributionPtr& newDistribution)
-    {distribution = newDistribution;}
+  const DistributionPtr& getDistribution() const;
+  
+  void setDistribution(ExecutionContext& context, const DistributionPtr& newDistribution);
+  
   
   /*
   ** Requests
@@ -51,11 +51,11 @@ public:
   */
   const Variable& getBestVariable() const;
   
-  void setBestVariable(const Variable& variable);
-  
   double getBestScore() const;
   
-  void setBestScore(double score);
+  void setBestRequest(double score, const Variable& parameter);
+  
+  const std::vector< std::pair<double, Variable> >& getBestRequests();
   
   /*
   ** Critical Section
@@ -77,8 +77,7 @@ protected:
   size_t totalNumberOfRequests;
   size_t totalNumberOfEvaluations;
   
-  Variable bestVariable;
-  double bestScore;
+  std::vector< std::pair<double, Variable> > bestRequests;  // should stay sorted (decreasing by score) by construction
   
   std::vector< std::pair<double, Variable> > processedRequests;  // evaluated WUs not processed yet
 };

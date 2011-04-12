@@ -27,29 +27,16 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    context.enterScope(T("Optimizing"));
-    std::cout << optimizerState->getDistribution()->toString() << std::endl;
     for (size_t i = 0; i < nbIterations; ++i)
     {
-      context.enterScope(T("Iteration ") + String((int)i + 1));
-      context.resultCallback(T("iteration"), i);
+
       Variable bestIterationParameters = optimizerState->getBestVariable();
       double score = performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState);
-      context.resultCallback(T("bestParameters"), bestIterationParameters);
-      std::cout << optimizerState->getDistribution()->toString() << std::endl;
-      
-      context.leaveScope(score);
       if (score < optimizerState->getBestScore())
-      {
-        optimizerState->setBestScore(score);
-        optimizerState->setBestVariable(bestIterationParameters);
-      }
+        optimizerState->setBestRequest(score, bestIterationParameters);
       context.progressCallback(new ProgressionState(i + 1, nbIterations, T("Iterations")));
     }
-    context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
-    context.leaveScope(optimizerState->getBestScore());
     return optimizerState->getBestScore();
-    return Variable();
   }
   
 protected:
@@ -77,8 +64,10 @@ private:
         input = optimizerState->getDistribution()->sample(random);
         
       }
-      optimizerContext->evaluate(input);
-      optimizerState->incTotalNumberOfRequests();
+      if (!optimizerContext->evaluate(context, input))
+        i--;
+      else
+        optimizerState->incTotalNumberOfRequests();
     }
     
     // wait and sort results
@@ -86,7 +75,10 @@ private:
     std::multimap<double, Variable> sortedScores;
     {
       ScopedLock _(optimizerState->getLock());
-      jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
+      
+      // TODO arnaud : uncomment AND debug !
+      // jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
+      
       /*while (optimizerState->getNumberOfProcessedRequests() != populationSize)
       {
         std::cout << optimizerState->getNumberOfProcessedRequests() << " VS " << populationSize << std::endl;
@@ -105,7 +97,7 @@ private:
     DistributionBuilderPtr builder = optimizerState->getDistribution()->createBuilder();
     for (size_t i = 0; i < numBests; ++i, ++it2)
       builder->addElement(it2->second);
-    optimizerState->setDistribution(builder->build(context));
+    optimizerState->setDistribution(context, builder->build(context));
     
     // return best score
     bestParameters = sortedScores.begin()->second;

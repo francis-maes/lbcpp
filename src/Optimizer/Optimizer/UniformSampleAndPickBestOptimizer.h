@@ -15,6 +15,8 @@
 namespace lbcpp
 {
 
+  
+// TODO arnaud : add progression callback, enter/leavescope callback
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
@@ -29,8 +31,10 @@ public:
     
     for (size_t i = 0; i < numSamples; ++i) 
     {
-      optimizerContext->evaluate(values[i]);
-      optimizerState->incTotalNumberOfRequests();
+      if (!optimizerContext->evaluate(context, values[i]))
+        i--;
+      else
+        optimizerState->incTotalNumberOfRequests();
     }
     
     optimizerContext->waitUntilAllRequestsAreProcessed();
@@ -40,14 +44,11 @@ public:
       ScopedLock _(optimizerState->getLock());
       jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
       for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++) {
-        if (it->first < optimizerState->getBestScore()) {
-          optimizerState->setBestScore(it->first);
-          optimizerState->setBestVariable(it->second);
-        }
+        if (it->first < optimizerState->getBestScore())
+          optimizerState->setBestRequest(it->first, it->second);
       }
       optimizerState->flushProcessedRequests();
     }
-    std::cout << "Best Score: " << optimizerState->getBestScore() << " (" << optimizerState->getBestVariable() << ")" << std::endl;
     return optimizerState->getBestScore();
  }
   

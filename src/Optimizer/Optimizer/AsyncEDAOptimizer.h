@@ -16,7 +16,8 @@
 
 namespace lbcpp
 {
-  
+
+// TODO arnaud : add progression callback, enter/leavescope callback
 class AsyncEDAOptimizer : public Optimizer
 {
 public:
@@ -37,17 +38,16 @@ public:
       // Send WU's on network
       if (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
       {
-        context.informationCallback(T("Asking evaluations ..."));
         size_t nb = 0;
         while (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
         {
           Variable input = optimizerState->getDistribution()->sample(random);
-          if (!optimizerContext->evaluate(input))
-            break;
-          optimizerState->incTotalNumberOfRequests();
-          nb++;
+          if (optimizerContext->evaluate(context, input))
+          {
+            optimizerState->incTotalNumberOfRequests();
+            nb++;
+          }          
         }
-        context.informationCallback(T("Asking evaluations ... : ") + String((int) nb) + T(" evaluations requested!"));
         
         
         if (nb > 0) 
@@ -62,9 +62,7 @@ public:
       
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) == 0)) 
-      {
-        context.informationCallback(T("Updating state ..."));
-        
+      {        
         // sort results
         std::multimap<double, Variable> sortedScores;
         {
@@ -91,16 +89,13 @@ public:
         distributionsBuilder->addDistribution(optimizerState->getDistribution());  // old distri
         for (size_t i = 0; i < updateFactor; ++i)
           distributionsBuilder->addDistribution(newDistri);
-        optimizerState->setDistribution(distributionsBuilder->build(context));        
+        optimizerState->setDistribution(context, distributionsBuilder->build(context));        
         
-        if (sortedScores.begin()->first < optimizerState->getBestScore()) {
-          optimizerState->setBestScore(sortedScores.begin()->first);
-          optimizerState->setBestVariable(sortedScores.begin()->second);
-          context.informationCallback(T("New best variable found : ") + optimizerState->getBestVariable().toString() + T(" ( ") + String(optimizerState->getBestScore()) + T(" )"));
-        }
+        if (sortedScores.begin()->first < optimizerState->getBestScore())
+          optimizerState->setBestRequest(sortedScores.begin()->first, sortedScores.begin()->second);
         
-        context.informationCallback(T("State updated"));
-        
+        context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
+                
         // TODO arnaud : save state
       }
     }
