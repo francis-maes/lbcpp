@@ -201,6 +201,9 @@ public:
   GoProblem(size_t size = 19)
     : DecisionProblem(new GoStateSampler(size), 1.0) {}
 
+  virtual TypePtr getActionType() const
+    {return positiveIntegerPairClass;}
+
   lbcpp_UseDebuggingNewOperator
 };
 

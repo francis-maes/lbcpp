@@ -82,6 +82,9 @@ public:
   virtual double getMaxReward() const
     {return 1.0;}
 
+  virtual TypePtr getActionType() const
+    {return booleanType;}
+
   virtual size_t getFixedNumberOfActions() const
     {return 2;}
 };

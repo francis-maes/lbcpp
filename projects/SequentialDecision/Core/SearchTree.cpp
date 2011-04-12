@@ -13,8 +13,8 @@ using namespace lbcpp;
 /*
 ** SearchTreeNode
 */
-SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState)
-  : Object(searchTreeNodeClass), allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
+SearchTreeNode::SearchTreeNode(ClassPtr thisClass, const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState)
+  : Object(thisClass), allNodes(allNodes), nodeIndex(nodeIndex), nodeUid(nodeUid), depth(0), reward(0.0), currentReturn(0.0),
     parentIndex(-1), childBeginIndex(-1), childEndIndex(-1), bestReturn(-DBL_MAX)
 {
   if (initialState)
@@ -22,7 +22,7 @@ SearchTreeNode::SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t node
 }
 
 SearchTreeNode::SearchTreeNode()
-  : Object(searchTreeNodeClass), allNodes(*(const SearchTreeNodeVector* )0), nodeIndex(0)
+  : allNodes(*(const SearchTreeNodeVector* )0), nodeIndex(0)
 {
 }
 
@@ -73,11 +73,11 @@ double SearchTreeNode::getBestReturnWithoutChild(SearchTreeNodePtr childNode) co
 ** SearchTree
 */
 SearchTree::SearchTree(DecisionProblemPtr problem, const DecisionProblemStatePtr& initialState, size_t maxOpenedNodes)
-  : problem(problem)
+  : problem(problem), nodeClass(searchTreeNodeClass(problem->getStateClass(), problem->getActionType()))
 {
   nodes.reserve(2 * maxOpenedNodes + 1);
   openedNodes.reserve(maxOpenedNodes);
-  addCandidate(defaultExecutionContext(), new SearchTreeNode(nodes, 0, 1, initialState));
+  addCandidate(defaultExecutionContext(), new SearchTreeNode(nodeClass, nodes, 0, 1, initialState));
 }
 
 void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
@@ -93,7 +93,7 @@ void SearchTree::exploreNode(ExecutionContext& context, size_t nodeIndex)
   node->setChildrenIndices(firstChildIndex, firstChildIndex + n);
   for (size_t i = 0; i < n; ++i)
   {
-    SearchTreeNodePtr childNode = new SearchTreeNode(nodes, firstChildIndex + i, node->getNodeUid() * n + i);
+    SearchTreeNodePtr childNode = new SearchTreeNode(nodeClass, nodes, firstChildIndex + i, node->getNodeUid() * n + i);
     childNode->open(problem, nodeIndex, actions->getElement(i));
     addCandidate(context, childNode);
   }
@@ -119,7 +119,7 @@ void SearchTree::removeCallback(SearchTreeCallbackPtr callback)
 
 ContainerPtr SearchTree::getBestNodeTrajectory() const
 {
-  VectorPtr res = vector(searchTreeNodeClass, 0);
+  VectorPtr res = vector(nodeClass, 0);
 
   SearchTreeNodePtr node = nodes[0];
   while (true)

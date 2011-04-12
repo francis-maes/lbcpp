@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DecisionProblem.cpp  | Sequential Decision System      |
+| Filename: DecisionProblem.cpp            | Sequential Decision Problem     |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/02/2011 16:20               |                                 |
 `------------------------------------------/                                 |
@@ -55,3 +55,11 @@ bool DecisionProblemState::checkTrajectoryValidity(ExecutionContext& context, co
   //context.resultCallback(state->getName(), state);
   return true;
 }
+
+ClassPtr DecisionProblem::getStateClass() const
+{
+  if (!initialStateSampler->isInitialized())
+    initialStateSampler->initialize(defaultExecutionContext(), randomGeneratorClass);
+  return initialStateSampler->getOutputType();
+}
+

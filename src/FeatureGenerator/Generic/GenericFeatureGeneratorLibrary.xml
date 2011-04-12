@@ -9,7 +9,11 @@
   <class name="ConcatenateDoubleVectorFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool lazy"/>
   </class>
-
+  
+  <class name="ConcatenateMixedDoubleDoubleVectorFeatureGenerator" base="ConcatenateDoubleVectorFeatureGenerator">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  
   <class name="ConcatenateFeatureGenerator" base="ProxyFunction">
     <constructor arguments="bool lazy" returnType="Function"/>
     <variable type="Boolean" name="lazy"/>

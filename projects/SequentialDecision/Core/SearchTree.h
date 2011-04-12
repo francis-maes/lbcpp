@@ -20,7 +20,7 @@ namespace lbcpp
 class SimpleSearchHeuristic : public SimpleUnaryFunction
 {
 public:
-  SimpleSearchHeuristic() : SimpleUnaryFunction(searchTreeNodeClass, doubleType) {}
+  SimpleSearchHeuristic() : SimpleUnaryFunction(searchTreeNodeClass(), doubleType) {}
 
   virtual double computeHeuristic(const SearchTreeNodePtr& node) const = 0;
 
@@ -119,6 +119,7 @@ protected:
   std::vector<SearchTreeNodePtr> nodes;
   std::vector<size_t> openedNodes;
   std::vector<SearchTreeCallbackPtr> callbacks;
+  ClassPtr nodeClass;
 
   void addCandidate(ExecutionContext& context, SearchTreeNodePtr node);
 };

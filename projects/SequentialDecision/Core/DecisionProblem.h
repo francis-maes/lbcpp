@@ -50,14 +50,20 @@ public:
   /*
   ** Initial states
   */
-  TypePtr getStateType() const
-    {return initialStateSampler->getOutputType();}
+  ClassPtr getStateClass() const;
 
   const FunctionPtr& getInitialStateSampler() const
     {return initialStateSampler;}
 
   DecisionProblemStatePtr sampleInitialState(RandomGeneratorPtr random) const
     {return initialStateSampler->compute(defaultExecutionContext(), random).getObjectAndCast<DecisionProblemState>();}
+
+  /*
+  ** Actions
+  */
+  virtual TypePtr getActionType() const = 0;
+  virtual size_t getFixedNumberOfActions() const
+    {return 0;}
 
   /*
   ** Objective
@@ -67,9 +73,6 @@ public:
 
   virtual double getMaxReward() const
     {return 1.0;}
-
-  virtual size_t getFixedNumberOfActions() const
-    {return 0;}
 
   lbcpp_UseDebuggingNewOperator
 
