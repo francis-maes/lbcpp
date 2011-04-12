@@ -19,52 +19,84 @@
 namespace lbcpp
 {
 
-class GenericSearchNodeFeatureGenerator : public CompositeFunction
+class WeightedRewardsFeatureGenerator : public FeatureGenerator
 {
 public:
-  GenericSearchNodeFeatureGenerator(bool includeAction, bool includeReward, bool includeState, bool includeDepth, bool includeReturn)
-    : includeAction(includeAction), includeReward(includeReward), includeState(includeState), includeDepth(includeDepth), includeReturn(includeReturn) {}
-  GenericSearchNodeFeatureGenerator() : includeAction(false), includeReward(false), includeState(false), includeDepth(false), includeReturn(false) {}
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return searchTreeNodeClass();}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration();
+    for (size_t i = 0; i < 10; ++i)
+      res->addElement(context, T("r.") + String((i + 1.0) / 10.0) + T("^d"));
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const SearchTreeNodePtr& node = inputs[0].getObjectAndCast<SearchTreeNode>();
+    size_t depth = node->getDepth();
+    double reward = node->getReward();
+    
+    for (size_t i = 0; i < 10; ++i)
+    {
+      double lambda = (i + 1.0) / 10.0;
+      callback.sense(i, reward * pow(lambda, (double)depth));
+    }
+  }
+};
+
+class SimpleSearchNodeFeatureGenerator : public CompositeFunction
+{
+public:
+  SimpleSearchNodeFeatureGenerator(bool applyLog = false, bool includeUnit = true)
+    : applyLog(applyLog), includeUnit(includeUnit) {}
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
     size_t state = builder.addFunction(getVariableFunction(T("state")), node);
-    // FIXME: type
 
     std::vector<size_t> features;
-    if (includeAction)
-    {
-      // FIXME: not implemented
-    }
-    if (includeReward)
-      features.push_back(builder.addFunction(getVariableFunction(T("reward")), node, T("r")));
-    if (includeState)
-      features.push_back(builder.addFunction(objectDoubleMembersFeatureGenerator(), state, T("s")));
-    if (includeDepth)
-    {
-      FunctionPtr convertFunction = lbcppMemberUnaryFunction(GenericSearchNodeFeatureGenerator, convertToDoubleFunction, variableType, doubleType);
-      size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
-      features.push_back(builder.addFunction(convertFunction, depth, T("d")));
-    }
-    if (includeReturn)
-      features.push_back(builder.addFunction(getVariableFunction(T("currentReturn")), node, T("R")));
+    size_t r = builder.addFunction(getVariableFunction(T("reward")), node, T("r"));
+    if (applyLog)
+      r = builder.addFunction(lbcppMemberUnaryFunction(SimpleSearchNodeFeatureGenerator, computeLogFunction, doubleType, doubleType), r, T("logr"));
+    features.push_back(r);
 
-    if (features.size() > 1)
-      builder.addFunction(concatenateFeatureGenerator(true), features);
+    FunctionPtr convertFunction = lbcppMemberUnaryFunction(SimpleSearchNodeFeatureGenerator, convertToDoubleFunction, variableType, doubleType);
+    size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
+    features.push_back(builder.addFunction(convertFunction, depth, T("d")));
+
+    if (includeUnit)
+      features.push_back(builder.addConstant(Variable(1.0), T("unit")));
+
+    size_t nodeFeatures = builder.addFunction(concatenateFeatureGenerator(true), features, T("node"));
+    size_t stateFeatures = builder.addFunction(objectDoubleMembersFeatureGenerator(), state, T("s"));
+
+    if (applyLog)
+      stateFeatures = builder.addFunction(mapContainerFunction(lbcppMemberUnaryFunction(SimpleSearchNodeFeatureGenerator, computeLogFunction, doubleType, doubleType)), stateFeatures, T("logS"));
+
+    builder.addFunction(cartesianProductFeatureGenerator(true), nodeFeatures, stateFeatures, T("prod"));
   }
 
   Variable convertToDoubleFunction(ExecutionContext& context, const Variable& input) const
     {return input.toDouble();}
+
+  Variable computeLogFunction(ExecutionContext& context, const Variable& input) const
+  {
+    double v = input.getDouble();
+    return v >= 1.0 ? log(v) : 0.0;
+  }
   
 protected:
-  friend class GenericSearchNodeFeatureGeneratorClass;
+  friend class SimpleSearchNodeFeatureGeneratorClass;
 
-  bool includeAction;
-  bool includeReward;
-  bool includeState;
-  bool includeDepth;
-  bool includeReturn;
+  bool applyLog;
+  bool includeUnit;
 };
 
 ///////////////////////////////////////////////////
@@ -107,7 +139,7 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
 
     //size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     //size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
@@ -170,7 +202,7 @@ public:
     if (!featuresFunction)
       return ObjectPtr();
     jassert(variableName == T("featuresEnumeration"));
-    if (!featuresFunction->isInitialized() && !featuresFunction->initialize(context, searchTreeNodeClass))
+    if (!featuresFunction->isInitialized() && !featuresFunction->initialize(context, searchTreeNodeClass()))
       return ObjectPtr();
     return DoubleVector::getElementsEnumeration(featuresFunction->getOutputType());
   }
@@ -193,7 +225,7 @@ public:
     : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction),
       maxSearchNodes(maxSearchNodes), maxHorizon(maxHorizon), discount(discount)
   {
-    bool ok = featuresFunction->initialize(defaultExecutionContext(), searchTreeNodeClass);
+    bool ok = featuresFunction->initialize(defaultExecutionContext(), searchTreeNodeClass(problem->getStateClass(), problem->getActionType()));
     if (ok)
       inputType = denseDoubleVectorClass(DenseDoubleVector::getElementsEnumeration(featuresFunction->getOutputType()));
   }
@@ -342,10 +374,10 @@ public:
   HIVSandBox() :  discount(0.98), minDepth(0), maxDepth(10), maxHorizon(300),
                   verboseTrajectories(false),
                   iterations(100), populationSize(100), numBests(10), reinjectBest(false),
-                  baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false),
-                  normalizeHeuristics(false), stateDependentHeuristic(false)
+                  baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
     problem = hivDecisionProblem(discount);
+    featuresFunction = new SimpleSearchNodeFeatureGenerator();
   }
 
   virtual Variable run(ExecutionContext& context)
@@ -363,7 +395,13 @@ public:
     }
     discount = problem->getDiscount();
 
-    // features parameters 
+    if (!featuresFunction)
+    {
+      context.errorCallback(T("No features function"));
+      return false;
+    }
+
+    /* features parameters 
     double maxReward = normalizeHeuristics ? problem->getMaxReward() : 1.0;
     double depthNormalize = normalizeHeuristics ? (double)maxHorizon : 1.0;
     FunctionPtr stateFeatures;
@@ -378,8 +416,11 @@ public:
         context.errorCallback(T("No known state features for this kind of problems"));
         return false;
       }
-    }
-    FunctionPtr featuresFunction = new HIVSearchFeatures(discount, maxReward, depthNormalize, stateFeatures);
+    }*/
+
+    //FunctionPtr featuresFunction = new HIVSearchFeatures(discount, maxReward, depthNormalize, stateFeatures);
+    //FunctionPtr featuresFunction = new GenericSearchNodeFeatureGenerator(false, true, true, true, false, true);
+    //FunctionPtr featuresFunction = new WeightedRewardsFeatureGenerator();
 
     // check depth parameters
     if (minDepth > maxDepth)
@@ -471,6 +512,7 @@ private:
   friend class HIVSandBoxClass;
  
   DecisionProblemPtr problem;
+  FunctionPtr featuresFunction;
  
   double discount;
   size_t minDepth, maxDepth;
@@ -486,9 +528,6 @@ private:
   bool baseHeuristics;
   bool optimisticHeuristics;
   bool learnedHeuristic;
-
-  bool normalizeHeuristics;
-  bool stateDependentHeuristic;
 
   double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
   {

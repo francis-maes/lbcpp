@@ -13,9 +13,7 @@
   </class>
   
   <!-- Damien's code wrapper -->
-  <class name="DamienState" base="DecisionProblemState" abstract="yes">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="state"/>
-  </class>
+  <class name="DamienState" base="DecisionProblemState" abstract="yes"/>
   <class name="HIVDecisionProblemState" base="DamienState">
     <variable type="Double" name="T1"/>
     <variable type="Double" name="T2"/>

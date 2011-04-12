@@ -32,7 +32,7 @@ public:
     {return 1;}
 
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return searchTreeNodeClass;}
+    {return searchTreeNodeClass();}
   
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
     {return positiveIntegerEnumerationEnumeration;}// new Enum(maxSearchNodes);}
@@ -52,7 +52,7 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
 
     builder.startSelection();
 
@@ -77,7 +77,7 @@ public:
 
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
     size_t reward = builder.addFunction(getVariableFunction(T("reward")), node);
     size_t currentReturn = builder.addFunction(getVariableFunction(T("currentReturn")), node);
@@ -199,7 +199,7 @@ public:
   void bazar(ExecutionContext& context, ContainerPtr testingStates)
   {
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
-    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
+    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass());
     NumericalLearnableFunctionPtr linearFunction = learnedHeuristic->getScoringFunction().dynamicCast<NumericalLearnableFunction>();
     PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
@@ -243,7 +243,7 @@ protected:
   double evaluate(ExecutionContext& context, const String& heuristicName, PolicyPtr searchPolicy, ContainerPtr initialStates, const Variable& argument = Variable()) const
   {
     FunctionPtr searchFunction = new SearchFunction(problem, searchPolicy, maxSearchNodes);
-    if (!searchFunction->initialize(context, problem->getStateType()))
+    if (!searchFunction->initialize(context, problem->getStateClass()))
       return -1.0;
 
     String scopeName = T("Evaluating heuristic ") + heuristicName;
@@ -263,7 +263,7 @@ protected:
   PolicyPtr train(ExecutionContext& context, const String& name, StochasticGDParametersPtr parameters, PolicyPtr explorationPolicy, const ContainerPtr& trainingStates, const ContainerPtr& testingStates) const
   {
     LearnableSearchHeuristicPtr learnedHeuristic = new LinearLearnableSearchHeuristic();
-    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass);
+    learnedHeuristic->initialize(context, (TypePtr)searchTreeNodeClass());
     PolicyPtr learnedSearchPolicy = beamSearchPolicy(learnedHeuristic, beamSize);
 
     SearchFunctionPtr lookAHeadSearch = new SearchFunction(problem, learnedSearchPolicy, parameters, explorationPolicy, maxSearchNodes);

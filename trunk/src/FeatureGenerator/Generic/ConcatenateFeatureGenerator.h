@@ -167,6 +167,102 @@ private:
   TypePtr elementsType;
 };
 
+class ConcatenateMixedDoubleDoubleVectorFeatureGenerator : public ConcatenateDoubleVectorFeatureGenerator
+{
+public:
+  ConcatenateMixedDoubleDoubleVectorFeatureGenerator(bool lazy = true)
+    : ConcatenateDoubleVectorFeatureGenerator(lazy) {}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return sumType(doubleType, doubleVectorClass());}
+ 
+  virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
+    {return FeatureGenerator::getLazyOutputType(featuresEnumeration, featuresType);}
+  
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    // make enum name
+    ConcatenateEnumerationPtr elementsEnumeration = new ConcatenateEnumeration(T("concatenatedFeatures(") + String((int)inputVariables.size()) + T(" double vectors)"));
+    elementsType = TypePtr();
+    size_t numInputs = inputVariables.size();
+    shifts.resize(numInputs);
+    elementsEnumeration->reserveSubEnumerations(numInputs);
+    for (size_t i = 0; i < numInputs; ++i)
+    {
+      const VariableSignaturePtr& inputVariable = inputVariables[i];
+
+      shifts[i] = elementsEnumeration->getNumElements();
+      if (i && !shifts[i])
+        jassertfalse;
+
+      TypePtr subElementsType;
+
+      if (inputVariable->getType()->inheritsFrom(doubleVectorClass()))
+      {
+        EnumerationPtr subElementsEnumeration;
+        if (!DoubleVector::getTemplateParameters(context, inputVariable->getType(), subElementsEnumeration, subElementsType))
+          return EnumerationPtr();
+        elementsEnumeration->addSubEnumeration(inputVariable->getName(), subElementsEnumeration);
+      }
+      else if (inputVariable->getType()->inheritsFrom(doubleType))
+      {
+        subElementsType = inputVariable->getType();
+        DefaultEnumerationPtr subElementsEnumeration = new DefaultEnumeration(inputVariable->getName());
+        subElementsEnumeration->addElement(context, T("value"));
+        elementsEnumeration->addSubEnumeration(inputVariable->getName(), subElementsEnumeration);
+      }
+      else
+      {
+        jassert(false);
+        continue;
+      }
+
+      if (i == 0)
+        elementsType = subElementsType;
+      else
+        elementsType = Type::findCommonBaseType(elementsType, subElementsType);
+    }
+    if (!elementsType || !elementsType->inheritsFrom(doubleType))
+    {
+      context.errorCallback(T("All elements do not inherit from double"));
+      return EnumerationPtr();
+    }
+    return elementsEnumeration;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    for (size_t i = 0; i < shifts.size(); ++i)
+      if (inputs[i].exists())
+      {
+        if (inputs[i].isDouble())
+          callback.sense(shifts[i], inputs[i].getDouble());
+        else
+          callback.sense(shifts[i], inputs[i].getObjectAndCast<DoubleVector>(), 1.0);
+      }
+  }
+
+  virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const
+  {
+    SparseDoubleVectorPtr res = createEmptySparseVector();
+    for (size_t i = 0; i < shifts.size(); ++i)
+      if (inputs[i].exists())
+      {
+        if (inputs[i].isDouble())
+          res->appendValue(shifts[i], inputs[i].getDouble());
+        else
+          inputs[i].getObjectAndCast<DoubleVector>()->appendTo(res, shifts[i], 1.0);
+      }
+
+    const_cast<ConcatenateMixedDoubleDoubleVectorFeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
+    return res;
+  }
+
+private:
+  std::vector<size_t> shifts;
+  TypePtr elementsType;
+};
+
 class ConcatenateFeatureGenerator : public ProxyFunction
 {
 public:
@@ -189,15 +285,21 @@ public:
   {
     bool isAllDouble = true;
     bool isAllDoubleVector = true;
+    bool isAllDoubleOrDoubleVector = true;
     for (size_t i = 0; i < inputVariables.size(); ++i)
     {
-      isAllDouble &= inputVariables[i]->getType()->inheritsFrom(doubleType);
-      isAllDoubleVector &= inputVariables[i]->getType()->inheritsFrom(doubleVectorClass());
+      bool isDouble = inputVariables[i]->getType()->inheritsFrom(doubleType);
+      bool isDoubleVector = inputVariables[i]->getType()->inheritsFrom(doubleVectorClass());
+      isAllDouble &= isDouble;
+      isAllDoubleVector &= isDoubleVector;
+      isAllDoubleOrDoubleVector &= (isDouble | isDoubleVector);
     }
     if (isAllDouble)
       return new ConcatenateDoubleFeatureGenerator(lazy);
     if (isAllDoubleVector)
       return new ConcatenateDoubleVectorFeatureGenerator(lazy);
+    if (isAllDoubleOrDoubleVector)
+      return new ConcatenateMixedDoubleDoubleVectorFeatureGenerator(lazy);
     return FunctionPtr();
   }
 

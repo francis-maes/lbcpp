@@ -119,7 +119,7 @@ protected:
   }
 
   double computeScoreToMinimize(ExecutionContext& context, const SearchTreeNodePtr& node) const
-    {return -heuristic->compute(context, Variable(node, searchTreeNodeClass)).getDouble();}
+    {return -heuristic->compute(context, node).getDouble();}
 };
 
 typedef ReferenceCountedObjectPtr<BestFirstSearchPolicy> BestFirstSearchPolicyPtr;

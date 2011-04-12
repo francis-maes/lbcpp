@@ -24,8 +24,14 @@ typedef std::vector<SearchTreeNodePtr> SearchTreeNodeVector;
 class SearchTreeNode : public Object
 {
 public:
-  SearchTreeNode(const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState = DecisionProblemStatePtr());
+  SearchTreeNode(ClassPtr thisClass, const SearchTreeNodeVector& allNodes, size_t nodeIndex, size_t nodeUid, const DecisionProblemStatePtr& initialState = DecisionProblemStatePtr());
   SearchTreeNode();
+
+  ClassPtr getStateClass() const
+    {return (ClassPtr)getClass()->getTemplateArgument(0);}
+
+  TypePtr getActionType() const
+    {return getClass()->getTemplateArgument(1);}
 
   void open(const DecisionProblemPtr& problem, size_t parentIndex, const Variable& action);
 
@@ -117,7 +123,7 @@ protected:
   double bestReturn;
 };
 
-extern ClassPtr searchTreeNodeClass;
+extern ClassPtr searchTreeNodeClass(TypePtr stateClass = decisionProblemStateClass, TypePtr actionType = variableType);
 
 }; /* namespace lbcpp */
 

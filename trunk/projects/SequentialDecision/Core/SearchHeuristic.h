@@ -97,8 +97,8 @@ public:
 
   virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
   {
-    if (!heuristic1->initialize(context, (TypePtr)searchTreeNodeClass) ||
-        !heuristic2->initialize(context, (TypePtr)searchTreeNodeClass))
+    if (!heuristic1->initialize(context, (TypePtr)searchTreeNodeClass()) ||
+        !heuristic2->initialize(context, (TypePtr)searchTreeNodeClass()))
       return TypePtr();
     return SimpleSearchHeuristic::initializeFunction(context, inputVariables, outputName, outputShortName);
   }
@@ -124,7 +124,7 @@ class LearnableSearchHeuristic : public CompositeFunction
 public:
   virtual void buildFunction(CompositeFunctionBuilder& builder)
   {
-    size_t node = builder.addInput(searchTreeNodeClass, T("node"));
+    size_t node = builder.addInput(searchTreeNodeClass(), T("node"));
     size_t perception = builder.addFunction(createPerceptionFunction(), node);
     size_t supervision = builder.addConstant(Variable());
     builder.addFunction(createScoringFunction(), perception, supervision);

@@ -26,6 +26,12 @@
   </template>
   <class name="IndependentDoubleVectorDistributionBuilder" base="DistributionBuilder[DenseDoubleVector[EnumValue,Double]]"/>
 
+  <class name="WeightedRewardsFeatureGenerator" base="FeatureGenerator" shortName="weightedRewardsSearchNodeFeatures"/>
+  <class name="SimpleSearchNodeFeatureGenerator" base="CompositeFunction" shortName="simpleSearchNodeFeatures">
+    <variable type="Boolean" name="applyLog"/>
+    <variable type="Boolean" name="includeUnit"/>
+  </class>
+
   <class name="HIVStateFeatures" base="CompositeFunction"/>
   <class name="LPPStateFeatures" base="CompositeFunction"/>
   
@@ -44,6 +50,7 @@
 
   <class name="HIVSandBox" base="WorkUnit">
     <variable type="DecisionProblem" name="problem" shortName="dp"/>
+    <variable type="Function" name="featuresFunction" shortName="phi"/>
     <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
     <variable type="PositiveInteger" name="maxHorizon" shortName="h"/>
@@ -57,9 +64,6 @@
     <variable type="Boolean" name="baseHeuristics"/>
     <variable type="Boolean" name="optimisticHeuristics"/>
     <variable type="Boolean" name="learnedHeuristic"/>
-
-    <variable type="Boolean" name="normalizeHeuristics"/>
-    <variable type="Boolean" name="stateDependentHeuristic"/>
   </class>
   
 </library>

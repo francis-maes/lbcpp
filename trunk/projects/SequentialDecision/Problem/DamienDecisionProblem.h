@@ -25,8 +25,8 @@ typedef ReferenceCountedObjectPtr<DamienState> DamienStatePtr;
 class DamienState : public DecisionProblemState
 {
 public:
-  DamienState(damien::optimalControlProblemPtr problem, const std::vector<double>& initialState)
-    : problem(problem), state(initialState) {}
+  DamienState(damien::optimalControlProblemPtr problem)
+    : problem(problem) {}
   DamienState() : problem(NULL) {}
 
   virtual void setState(const std::vector<double>& state) = 0;
@@ -50,7 +50,7 @@ public:
 
   virtual bool isFinalState() const
     {return problem->TerminalStateReached();}
- 
+
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     DecisionProblemState::clone(context, t);
@@ -64,14 +64,13 @@ private:
 
   CriticalSection problemLock;
   damien::optimalControlProblemPtr problem;
-  std::vector<double> state;
 };
 
 class HIVDecisionProblemState : public DamienState
 {
 public:
   HIVDecisionProblemState(const std::vector<double>& initialState)
-    : DamienState(new damien::HIV(), initialState)
+    : DamienState(new damien::HIV())
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     availableActions = new ObjectVector(actionClass, 4);
@@ -92,6 +91,8 @@ public:
     a->setValue(0, 0.7);
     a->setValue(1, 0.3);
     availableActions->setElement(3, a);
+
+    setState(initialState);
   }
 
   HIVDecisionProblemState() {}
@@ -127,12 +128,13 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<HIVDecisionProblemState> HIVDecisionProblemStatePtr;
+extern ClassPtr hivDecisionProblemStateClass;
 
 class HIVInitialStateSampler : public SimpleUnaryFunction
 {
 public:
   HIVInitialStateSampler()
-    : SimpleUnaryFunction(randomGeneratorClass, damienStateClass) {}
+    : SimpleUnaryFunction(randomGeneratorClass, hivDecisionProblemStateClass) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -174,6 +176,9 @@ public:
 
   virtual double getMaxReward() const
     {return 360e6;}
+
+  virtual TypePtr getActionType() const
+    {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
 
   virtual size_t getFixedNumberOfActions() const
     {return 4;}
