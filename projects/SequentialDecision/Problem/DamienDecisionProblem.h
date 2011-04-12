@@ -29,11 +29,8 @@ public:
     : problem(problem), state(initialState) {}
   DamienState() : problem(NULL) {}
 
-  size_t getNumDimensions() const
-    {return state.size();}
-  
-  double getStateDimension(size_t i) const
-    {return state[i];}
+  virtual void setState(const std::vector<double>& state) = 0;
+  virtual void getState(std::vector<double>& res) const = 0;
 
   virtual TypePtr getActionType() const
     {return denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);}
@@ -42,11 +39,13 @@ public:
   {
     const DenseDoubleVectorPtr& action = a.getObjectAndCast<DenseDoubleVector>();
     ScopedLock _(problemLock);
+    std::vector<double> state;
+    getState(state);
     problem->PutState(state);
     problem->PutAction(action->getValues());
     problem->Transition();
     reward = problem->GetReward();
-    state = problem->GetState();
+    setState(problem->GetState());
   }
 
   virtual bool isFinalState() const
@@ -54,10 +53,10 @@ public:
  
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
+    DecisionProblemState::clone(context, t);
     const DamienStatePtr& target = t.staticCast<DamienState>();
     ScopedLock _(problemLock);
     target->problem = problem;
-    target->state = state;
   }
  
 private:
@@ -106,8 +105,25 @@ public:
     t.staticCast<HIVDecisionProblemState>()->availableActions = availableActions;
   }
 
+  virtual void setState(const std::vector<double>& state)
+    {jassert(state.size() == 6); T1 = state[0]; T2 = state[1]; T1star = state[2]; T2star = state[3]; V = state[4]; E = state[5];}
+
+  virtual void getState(std::vector<double>& res) const
+    {res.resize(6); res[0] = T1; res[1] = T2; res[2] = T1star; res[3] = T2star; res[4] = V; res[5] = E;}
+
+  double getE() const
+    {return E;}
+
 protected:
+  friend class HIVDecisionProblemStateClass;
   ContainerPtr availableActions;
+
+  double T1;
+  double T2;
+  double T1star;
+  double T2star;
+  double V;
+  double E;
 };
 
 typedef ReferenceCountedObjectPtr<HIVDecisionProblemState> HIVDecisionProblemStatePtr;

@@ -16,7 +16,14 @@
   <class name="DamienState" base="DecisionProblemState" abstract="yes">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="state"/>
   </class>
-  <class name="HIVDecisionProblemState" base="DamienState"/>
+  <class name="HIVDecisionProblemState" base="DamienState">
+    <variable type="Double" name="T1"/>
+    <variable type="Double" name="T2"/>
+    <variable type="Double" name="T1star" shortName="T1*"/>
+    <variable type="Double" name="T2star" shortName="T2*"/>
+    <variable type="Double" name="V"/>
+    <variable type="Double" name="E"/>
+  </class>
   <class name="HIVInitialStateSampler" base="Function"/>
 
   <class name="HIVDecisionProblem" base="DecisionProblem" shortName="hiv">

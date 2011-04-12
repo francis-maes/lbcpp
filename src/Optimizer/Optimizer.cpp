@@ -6,7 +6,7 @@
  *  Copyright 2011 __MyCompanyName__. All rights reserved.
  *
  */
-
+#include "precompiled.h"
 #include <lbcpp/Optimizer/Optimizer.h>
 #include <lbcpp/Optimizer/OptimizerState.h>
 

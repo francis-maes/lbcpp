@@ -122,6 +122,9 @@ extern FeatureGeneratorPtr defaultDoubleFeatureGenerator(size_t numIntervals = 2
 extern FeatureGeneratorPtr defaultPositiveDoubleFeatureGenerator(size_t numIntervals = 20, double minPowerOfTen = -10.0, double maxPowerOfTen = 10.0);
 extern FeatureGeneratorPtr defaultProbabilityFeatureGenerator(size_t numIntervals = 5);
 
+// atomic - objects
+extern FeatureGeneratorPtr objectDoubleMembersFeatureGenerator();
+
 // generic
 extern FeatureGeneratorPtr fixedContainerWindowFeatureGenerator(size_t begin, size_t size);
 extern FeatureGeneratorPtr centeredContainerWindowFeatureGenerator(size_t windowSize);
