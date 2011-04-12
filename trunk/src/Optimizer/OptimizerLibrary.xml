@@ -15,8 +15,7 @@
     <variable type="Distribution[Variable]" name="distribution"/>
     <variable type="PositiveInteger" name="totalNumberOfRequests"/>
     <variable type="PositiveInteger" name="totalNumberOfEvaluations"/>
-    <variable type="Variable" name="bestVariable"/>
-    <variable type="Double" name="bestScore"/>
+    <variable type="GenericVector[Pair[Double, Variable]]" name="bestRequests"/>
     <variable type="GenericVector[Pair[Double, Variable]]" name="processedRequests"/>
   </class>
     

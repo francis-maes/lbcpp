@@ -29,7 +29,7 @@ public:
   
   virtual void waitUntilAllRequestsAreProcessed() const = 0;
   
-  virtual bool evaluate(const Variable& parameters) = 0;
+  virtual bool evaluate(ExecutionContext& context, const Variable& parameters) = 0;
   
 protected:
   friend class OptimizerContextClass;
