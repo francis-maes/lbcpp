@@ -38,7 +38,6 @@ public:
   virtual void performTransition(const Variable& a, double& reward)
   {
     const DenseDoubleVectorPtr& action = a.getObjectAndCast<DenseDoubleVector>();
-    ScopedLock _(problemLock);
     std::vector<double> state;
     getState(state);
     problem->PutState(state);
@@ -49,20 +48,20 @@ public:
   }
 
   virtual bool isFinalState() const
-    {return problem->TerminalStateReached();}
+    {return false;} // not supported
+
+  virtual damien::optimalControlProblemPtr createProblem() const = 0;
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
     DecisionProblemState::clone(context, t);
     const DamienStatePtr& target = t.staticCast<DamienState>();
-    ScopedLock _(problemLock);
-    target->problem = problem;
+    target->problem = createProblem();
   }
  
 private:
   friend class DamienStateClass;
 
-  CriticalSection problemLock;
   damien::optimalControlProblemPtr problem;
 };
 
@@ -96,6 +95,9 @@ public:
   }
 
   HIVDecisionProblemState() {}
+
+  virtual damien::optimalControlProblemPtr createProblem() const
+    {return new damien::HIV();}
 
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
