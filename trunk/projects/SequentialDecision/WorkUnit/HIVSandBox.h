@@ -469,38 +469,43 @@ public:
         context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
 
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
-      if (!depthIsBudget)
-        context.resultCallback(T("depth"), depth);
-
-      if (baseHeuristics)
+      if (maxSearchNodes)
       {
-        // BASELINES
-        computeTrajectory(context, problem, initialStates, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
-        computeTrajectory(context, problem, initialStates, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
-        computeTrajectory(context, problem, initialStates, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
-        computeTrajectory(context, problem, initialStates, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
-      }
+        if (!depthIsBudget)
+          context.resultCallback(T("depth"), depth);
 
-      if (optimisticHeuristics)
-      {
-        if (problem.isInstanceOf<HIVDecisionProblem>())
+        if (baseHeuristics)
         {
-          for (int i = 3; i <= 15; i += 3)
-            computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
+          // BASELINES
+          computeTrajectory(context, problem, initialStates, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
+          computeTrajectory(context, problem, initialStates, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
+          computeTrajectory(context, problem, initialStates, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
+          computeTrajectory(context, problem, initialStates, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
         }
-        else
-          computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount), T("optimistic"), maxSearchNodes);
-      }
 
-      if (learnedHeuristic)
-      {
-        FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, initialStates, maxSearchNodes);
-        context.resultCallback(T("model"), optimizedHeuristic);
-        computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
+        if (optimisticHeuristics)
+        {
+          if (problem.isInstanceOf<HIVDecisionProblem>())
+          {
+            for (int i = 3; i <= 15; i += 3)
+              computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
+          }
+          else
+            computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount), T("optimistic"), maxSearchNodes);
+        }
 
-        if (computeGeneralization)
-          computeEDAGeneralization(context, initialStates, maxSearchNodes);
+        if (learnedHeuristic)
+        {
+          FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, initialStates, maxSearchNodes);
+          context.resultCallback(T("model"), optimizedHeuristic);
+          computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
+
+          if (computeGeneralization)
+            computeEDAGeneralization(context, initialStates, maxSearchNodes);
+        }
       }
+      else
+        context.errorCallback(T("No max search nodes"));
 
       context.leaveScope();
       if (!depthIsBudget)

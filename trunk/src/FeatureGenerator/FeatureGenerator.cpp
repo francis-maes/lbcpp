@@ -19,7 +19,8 @@ TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const st
 {
   featuresType = doubleType;
   featuresEnumeration = initializeFeatures(context, inputVariables, featuresType, outputName, outputShortName);
-  jassert(featuresEnumeration && featuresType);
+  if (!featuresEnumeration || !featuresType)
+    return TypePtr();
   lazyOutputType = getLazyOutputType(featuresEnumeration, featuresType);
   nonLazyOutputType = getNonLazyOutputType(featuresEnumeration, featuresType);
   jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
