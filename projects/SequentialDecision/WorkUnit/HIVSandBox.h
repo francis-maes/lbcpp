@@ -221,8 +221,8 @@ protected:
 class EvaluateHIVSearchHeuristic : public SimpleUnaryFunction
 {
 public:
-  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, const FunctionPtr& featuresFunction, size_t maxSearchNodes, size_t maxHorizon, double discount)
-    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction),
+  EvaluateHIVSearchHeuristic(DecisionProblemPtr problem, const FunctionPtr& featuresFunction, const ContainerPtr& initialStates, size_t maxSearchNodes, size_t maxHorizon, double discount)
+    : SimpleUnaryFunction(TypePtr(), doubleType), problem(problem), featuresFunction(featuresFunction), initialStates(initialStates),
       maxSearchNodes(maxSearchNodes), maxHorizon(maxHorizon), discount(discount)
   {
     bool ok = featuresFunction->initialize(defaultExecutionContext(), searchTreeNodeClass(problem->getStateClass(), problem->getActionType()));
@@ -236,25 +236,32 @@ public:
     FunctionPtr heuristic = new HIVSearchHeuristic(featuresFunction, parameters);
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
 
-    DecisionProblemStatePtr state = problem->sampleInitialState(RandomGenerator::getInstance());
-
     double res = 0.0;
-    for (size_t i = 0; i < maxHorizon; ++i)
+    size_t n = initialStates->getNumElements();
+    if (!n)
+      return res;
+    for (size_t i = 0; i < n; ++i)
     {
-      SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
-      searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
-      Variable action = searchTree->getBestAction();
+      DecisionProblemStatePtr state = initialStates->getElement(i).clone(context).getObjectAndCast<DecisionProblemState>();
+      jassert(state);
+      for (size_t t = 0; t < maxHorizon; ++t)
+      {
+        SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
+        searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
+        Variable action = searchTree->getBestAction();
 
-      double reward = 0.0;
-      state->performTransition(action, reward);
-      res += reward * pow(discount, (double)i);
+        double reward = 0.0;
+        state->performTransition(action, reward);
+        res += reward * pow(discount, (double)t);
+      }
     }
-    return -res;
+    return -res / (double)n;
   }
 
 protected:
   DecisionProblemPtr problem;
   FunctionPtr featuresFunction;
+  ContainerPtr initialStates;
   size_t maxSearchNodes;
   size_t maxHorizon;
   double discount;
@@ -371,8 +378,8 @@ class HIVSandBox : public WorkUnit
 {
 public:
   // default values
-  HIVSandBox() :  discount(0.98), minDepth(0), maxDepth(10), maxHorizon(300),
-                  verboseTrajectories(false),
+  HIVSandBox() :  discount(0.98), minDepth(0), maxDepth(10), depthIsBudget(false), maxHorizon(300), numInitialStates(1),
+                  verboseTrajectories(false), computeGeneralization(false),
                   iterations(100), populationSize(100), numBests(10), reinjectBest(false),
                   baseHeuristics(false), optimisticHeuristics(false), learnedHeuristic(false)
   {
@@ -438,23 +445,40 @@ public:
 
     // compute initial value of maxSearchNodes
     size_t maxSearchNodes = 1;
-    for (size_t depth = 0; depth < minDepth; ++depth)
-      maxSearchNodes = maxSearchNodes * fixedNumberOfActions + 1; // any general formula for that ?
+    if (!depthIsBudget)
+    {
+      for (size_t depth = 0; depth < minDepth; ++depth)
+        maxSearchNodes = maxSearchNodes * fixedNumberOfActions + 1; // any general formula for that ?
+    }
+
+    // sample initial states
+    RandomGeneratorPtr random = RandomGenerator::getInstance();
+    ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
 
     // iterator over all possible depth values
     for (size_t depth = minDepth; depth <= maxDepth; ++depth)
     {
-      context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
+      if (depthIsBudget)
+      {
+        maxSearchNodes = depth;
+        if (depth >= 10)
+          depth += 4; // go five by five
+        context.enterScope(T("N = ")+ String((int)maxSearchNodes));
+      }
+      else
+        context.enterScope(T("D = ") + String((int)depth) + T(" N = ")+ String((int)maxSearchNodes));
+
       context.resultCallback(T("maxSearchNodes"), maxSearchNodes);
-      context.resultCallback(T("depth"), depth);
+      if (!depthIsBudget)
+        context.resultCallback(T("depth"), depth);
 
       if (baseHeuristics)
       {
         // BASELINES
-        computeTrajectory(context, problem, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
-        computeTrajectory(context, problem, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
-        computeTrajectory(context, problem, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
-        computeTrajectory(context, problem, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
+        computeTrajectory(context, problem, initialStates, greedySearchHeuristic(), T("maxReward"), maxSearchNodes);
+        computeTrajectory(context, problem, initialStates, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
+        computeTrajectory(context, problem, initialStates, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
+        computeTrajectory(context, problem, initialStates, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
       }
 
       if (optimisticHeuristics)
@@ -462,49 +486,26 @@ public:
         if (problem.isInstanceOf<HIVDecisionProblem>())
         {
           for (int i = 3; i <= 15; i += 3)
-            computeTrajectory(context, problem, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
+            computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount, pow(10.0, (double)i)), T("optimistic(10^") + String(i) + T(")"), maxSearchNodes);
         }
         else
-          computeTrajectory(context, problem, optimisticPlanningSearchHeuristic(discount), T("optimistic"), maxSearchNodes);
+          computeTrajectory(context, problem, initialStates, optimisticPlanningSearchHeuristic(discount), T("optimistic"), maxSearchNodes);
       }
 
       if (learnedHeuristic)
       {
-        // EDA
-        FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, maxSearchNodes, maxHorizon, discount);
-        
-        EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
-        if (!featuresEnumeration)
-        {
-          context.errorCallback(T("Problem in feature function"));
-          return false;
-        }
-        context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
-        ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+        FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, initialStates, maxSearchNodes);
+        context.resultCallback(T("model"), optimizedHeuristic);
+        computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
 
-        if (!functionToOptimize->initialize(context, parametersClass))
-          return false;
-
-        IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
-        for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
-          initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
-      
-        RandomGeneratorPtr random = RandomGenerator::getInstance();
-        //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
-
-        Variable bestParameters;
-        double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
-
-        // Evaluate EDA
-        FunctionPtr bestHeuristic = new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>());
-        context.resultCallback(T("model"), bestHeuristic);
-        computeTrajectory(context, problem, bestHeuristic, T("learnedHeuristic"), maxSearchNodes);        
+        if (computeGeneralization)
+          computeEDAGeneralization(context, initialStates, maxSearchNodes);
       }
 
       context.leaveScope();
-      maxSearchNodes = maxSearchNodes * fixedNumberOfActions + 1;
+      if (!depthIsBudget)
+        maxSearchNodes = maxSearchNodes * fixedNumberOfActions + 1;
     }
-
     return true;
   }
 
@@ -516,8 +517,11 @@ private:
  
   double discount;
   size_t minDepth, maxDepth;
+  bool depthIsBudget;
   size_t maxHorizon;
+  size_t numInitialStates;
   bool verboseTrajectories;
+  bool computeGeneralization;
 
   size_t iterations;
   size_t populationSize;
@@ -528,6 +532,62 @@ private:
   bool baseHeuristics;
   bool optimisticHeuristics;
   bool learnedHeuristic;
+
+  void computeEDAGeneralization(ExecutionContext& context, const ContainerPtr& initialStates, size_t maxSearchNodes) const
+  {
+    context.enterScope(T("Generalization"));
+
+    ContainerPtr trainingStates = problem->sampleInitialStates(context, RandomGenerator::getInstance(), 100);
+
+    for (size_t i = 1; i < 100; )
+    {
+      context.enterScope(T("Num training states = ") + String((int)i));
+      ContainerPtr trainingStatesSubset = trainingStates->range(0, i);
+      FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, trainingStatesSubset, maxSearchNodes);
+
+      context.resultCallback(T("numTrainingStates"), i);
+      double score = computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
+      context.resultCallback(T("score"), score);
+      context.leaveScope(score);
+
+      if (i < 10)
+        ++i;
+      else if (i < 30)
+        i += 2;
+      else
+        i += 5;
+    }
+
+    context.leaveScope(true);
+  }
+
+  FunctionPtr optimizeLookAHeadTreePolicy(ExecutionContext& context, const ContainerPtr& trainingStates, size_t maxSearchNodes) const
+  {
+    // EDA
+    FunctionPtr functionToOptimize = new EvaluateHIVSearchHeuristic(problem, featuresFunction, trainingStates, maxSearchNodes, maxHorizon, discount);
+    
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(functionToOptimize->getRequiredInputType(0, 1));
+    if (!featuresEnumeration)
+    {
+      context.errorCallback(T("Problem in feature function"));
+      return FunctionPtr();
+    }
+    context.informationCallback(String((int)featuresEnumeration->getNumElements()) + T(" parameters"));
+    ClassPtr parametersClass = denseDoubleVectorClass(featuresEnumeration, doubleType);
+
+    if (!functionToOptimize->initialize(context, parametersClass))
+      return FunctionPtr();
+
+    IndependentDoubleVectorDistributionPtr initialDistribution = new IndependentDoubleVectorDistribution(featuresEnumeration);
+    for (size_t i = 0; i < featuresEnumeration->getNumElements(); ++i)
+      initialDistribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
+  
+    //double bestIndividualScore = evaluateEachFeature(context, functionToOptimize, featuresEnumeration);
+
+    Variable bestParameters;
+    double bestScore = performEDA(context, functionToOptimize, initialDistribution, bestParameters);
+    return new HIVSearchHeuristic(featuresFunction, bestParameters.getObjectAndCast<DenseDoubleVector>());
+  }
 
   double performEDA(ExecutionContext& context, const FunctionPtr& functionToOptimize, const DistributionPtr& initialDistribution, Variable& bestParameters) const
   {
@@ -631,61 +691,70 @@ private:
     return bestScore;
   }
 
-  double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
+  double computeTrajectory(ExecutionContext& context, const DecisionProblemPtr& problem, const ContainerPtr& initialStates, const FunctionPtr& heuristic, const String& name, size_t maxSearchNodes) const
   {
     PolicyPtr searchPolicy = new BestFirstSearchPolicy(heuristic);
-    DecisionProblemStatePtr state = problem->sampleInitialState(RandomGenerator::getInstance());
 
-    if (verboseTrajectories)
-      context.enterScope(T("Trajectory ") + name);
     double res = 0.0;
-    for (size_t i = 0; i < maxHorizon; ++i)
+    size_t n = initialStates->getNumElements();
+    for (size_t i = 0; i < n; ++i)
     {
-      if (verboseTrajectories)
-        context.enterScope(T("element ") + String((int)i));
-
-      SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
-      searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
-      Variable bestAction = searchTree->getBestAction();
-
-      double reward = 0.0;
-      state->performTransition(bestAction, reward);
-      res += reward * pow(discount, (double)i);
+      DecisionProblemStatePtr state = initialStates->getElement(i).getObject()->cloneAndCast<DecisionProblemState>(context);
 
       if (verboseTrajectories)
+        context.enterScope(T("Trajectory ") + name);
+      double returnValue = 0.0;
+      for (size_t t = 0; t < maxHorizon; ++t)
       {
-        context.resultCallback(T("time"), i + 1);
-        context.resultCallback(T("reward"), reward);
-        
-        HIVDecisionProblemStatePtr hivState = state.dynamicCast<HIVDecisionProblemState>();
-        if (hivState)
+        if (verboseTrajectories)
+          context.enterScope(T("element ") + String((int)t));
+
+        SearchTreePtr searchTree = new SearchTree(problem, state, maxSearchNodes);
+        searchTree->doSearchEpisode(context, searchPolicy, maxSearchNodes);
+        Variable bestAction = searchTree->getBestAction();
+
+        double reward = 0.0;
+        state->performTransition(bestAction, reward);
+        returnValue += reward * pow(discount, (double)t);
+
+        if (verboseTrajectories)
         {
-          DenseDoubleVectorPtr hivAction = bestAction.dynamicCast<DenseDoubleVector>();
-
-          context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
-          context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
-
-          for (size_t i = 0; i < 6; ++i)
+          context.resultCallback(T("time"), t + 1);
+          context.resultCallback(T("reward"), reward);
+          
+          HIVDecisionProblemStatePtr hivState = state.dynamicCast<HIVDecisionProblemState>();
+          if (hivState)
           {
-            String name = hivState->getVariableName(i);
-            double value = hivState->getVariable(i).getDouble();
-            context.resultCallback(T("log10(") + name + T(")"), log10(value));
+            DenseDoubleVectorPtr hivAction = bestAction.dynamicCast<DenseDoubleVector>();
+
+            context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
+            context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
+
+            for (size_t k = 0; k < 6; ++k)
+            {
+              String name = hivState->getVariableName(k);
+              double value = hivState->getVariable(k).getDouble();
+              context.resultCallback(T("log10(") + name + T(")"), log10(value));
+            }
           }
-        }
 
-        LinearPointPhysicStatePtr linearPointState = state.dynamicCast<LinearPointPhysicState>();
-        if (linearPointState)
-        {
-          context.resultCallback(T("action"), bestAction);
-          context.resultCallback(T("position"), linearPointState->getPosition());
-          context.resultCallback(T("velocity"), linearPointState->getVelocity());
-        }
+          LinearPointPhysicStatePtr linearPointState = state.dynamicCast<LinearPointPhysicState>();
+          if (linearPointState)
+          {
+            context.resultCallback(T("action"), bestAction);
+            context.resultCallback(T("position"), linearPointState->getPosition());
+            context.resultCallback(T("velocity"), linearPointState->getVelocity());
+          }
 
-        context.leaveScope(res);
+          context.leaveScope(returnValue);
+        }
       }
+      if (verboseTrajectories)
+        context.leaveScope(returnValue);
+
+      res += returnValue;
     }
-    if (verboseTrajectories)
-      context.leaveScope(res);
+    res /= (double)n;
     context.resultCallback(name, res);
     return res;
   }

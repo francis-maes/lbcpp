@@ -53,8 +53,11 @@
     <variable type="Function" name="featuresFunction" shortName="phi"/>
     <variable type="PositiveInteger" name="minDepth" shortName="dmin"/>
     <variable type="PositiveInteger" name="maxDepth" shortName="dmax"/>
+    <variable type="Boolean" name="depthIsBudget"/>
     <variable type="PositiveInteger" name="maxHorizon" shortName="h"/>
+    <variable type="PositiveInteger" name="numInitialStates"/>
     <variable type="Boolean" name="verboseTrajectories"/>
+    <variable type="Boolean" name="computeGeneralization"/>
     
     <variable type="PositiveInteger" name="iterations" shortName="i"/>
     <variable type="PositiveInteger" name="populationSize" shortName="p"/>

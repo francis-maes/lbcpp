@@ -65,11 +65,11 @@ public:
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
-    return new LinearPointPhysicState(-1.0, 0.0);
-    /*const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
+    //return new LinearPointPhysicState(-1.0, 0.0);
+    const RandomGeneratorPtr& random = input.getObjectAndCast<RandomGenerator>();
     double position = random->sampleDouble(-1.0, 1.0);
     double velocity = random->sampleDouble(-2.0, 2.0);
-    return new LinearPointPhysicState(position, velocity);*/
+    return new LinearPointPhysicState(position, velocity);
   }
 };
 
