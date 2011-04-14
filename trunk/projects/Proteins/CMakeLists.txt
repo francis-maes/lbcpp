@@ -93,6 +93,8 @@ SET(LBCPP_PROTEIN_EVALUATOR_SOURCES
   Evaluator/ContactMapEvaluator.h
   Evaluator/DisulfideBondEvaluator.h
   Evaluator/ProteinEvaluator.h
+  Evaluator/QScoreEvaluator.h
+  Evaluator/QScoreEvaluator.cpp
   Evaluator/ProteinEvaluatorLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinEvaluatorLibrary.cpp
 )

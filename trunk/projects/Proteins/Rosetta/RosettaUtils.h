@@ -16,6 +16,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <cmath>
+#include <iostream>
 
 #undef T
 #include <core/chemical/AtomType.hh>
@@ -24,6 +25,7 @@
 #include <core/chemical/ResidueType.hh>
 #include <core/conformation/Residue.hh>
 #include <core/init.hh>
+#include <core/io/pdb/file_data.hh>
 #include <core/io/pdb/pose_io.hh>
 #include <core/pose/PDBInfo.hh>
 #include <core/pose/Pose.hh>
@@ -49,7 +51,8 @@ core::pose::PoseOP convertProtein2Pose(const ProteinPtr protein);
  * @param pose a pointer to the Pose object to convert
  * @return a pointer to the Protein object
  */
-ProteinPtr convertPose2Protein(const core::pose::PoseOP pose);
+//ProteinPtr convertPose2Protein(const core::pose::PoseOP pose);
+ProteinPtr convertPose2Protein(ExecutionContext& context, const core::pose::PoseOP pose);
 
 /**
  * Returns the total energy of a Protein object.
