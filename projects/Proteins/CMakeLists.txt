@@ -145,6 +145,12 @@ IF(LBCPP_PROTEIN_ROSETTA)
 
   SET(LBCPP_PROTEIN_ROSETTA_SOURCES
     Rosetta/RosettaTest.h
+    Rosetta/RosettaUtils.h
+    Rosetta/RosettaUtils.cpp
+    Rosetta/RosettaMover.h
+    Rosetta/RosettaMover.cpp
+    Rosetta/RosettaOptimizer.h
+    Rosetta/RosettaOptimizer.cpp
     Rosetta/ProteinRosettaLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
   )
@@ -153,8 +159,22 @@ IF(LBCPP_PROTEIN_ROSETTA)
 
 IF(APPLE)
   
-  # todo: fill paths
-
+  INCLUDE_DIRECTORIES(
+    /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src
+    /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src/platform/macos
+    /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/external/boost_1_38_0
+  )
+  
+  IF(DEBUG)
+  
+  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc/libcore.dylib /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc/libutility.dylib)
+  
+  ELSE(DEBUG)
+  
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc/libcore.dylib /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc/libutility.dylib)
+  
+  ENDIF(DEBUG)
+  
 ELSE(APPLE)
 
   INCLUDE_DIRECTORIES(
@@ -166,6 +186,7 @@ ELSE(APPLE)
 ENDIF(APPLE)
 
 ENDIF(LBCPP_PROTEIN_ROSETTA)
+
 
 SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_GEOMETRY_SOURCES}

@@ -2,6 +2,8 @@
 
 <library name="ProteinRosetta" directory="Rosetta">
 
-  <class name="RosettaTest" base="WorkUnit"/>
+  <class name="RosettaTest" base="WorkUnit">
+  	<variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
+  </class>
 
 </library>

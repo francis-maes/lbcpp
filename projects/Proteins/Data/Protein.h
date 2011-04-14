@@ -9,6 +9,7 @@
 #ifndef LBCPP_PROTEINS_PROTEIN_H_
 # define LBCPP_PROTEINS_PROTEIN_H_
 
+# include <lbcpp/Core/Pair.h>
 # include <lbcpp/Data/DoubleVector.h>
 # include <lbcpp/Data/SymmetricMatrix.h>
 # include <lbcpp/Distribution/Distribution.h>

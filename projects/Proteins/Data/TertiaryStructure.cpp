@@ -403,3 +403,27 @@ void TertiaryStructure::applyAffineTransform(const impl::Matrix4& affineTransfor
       residue->applyAffineTransform(affineTransform);
   }
 }
+
+size_t TertiaryStructure::computeCAlphaAtomsGDTTS(TertiaryStructurePtr targetStructure, double cutoff) const
+{
+  impl::Matrix4 matrix = superposeCAlphaAtoms(targetStructure);
+
+  size_t n = getNumResidues();
+  size_t count = 0;
+  for (size_t i = 0; i < n; ++i)
+  {
+    ResiduePtr residue1 = getResidue(i);
+    ResiduePtr residue2 = targetStructure->getResidue(i);
+    if (!residue1 || !residue2)
+      continue;
+    Vector3Ptr position1 = residue1->getAtomPosition(T("CA"));
+    Vector3Ptr position2 = residue2->getAtomPosition(T("CA"));
+    if (!position1 || !position2)
+      continue;
+
+    double delta = (matrix.transformAffine(position1->getValue()) - position2->getValue()).l2norm();
+    if (delta <= cutoff)
+    	++count;
+  }
+  return count;
+}
