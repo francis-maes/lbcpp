@@ -63,6 +63,7 @@ public:
 
   impl::Matrix4 superposeCAlphaAtoms(TertiaryStructurePtr targetStructure) const;
   double computeCAlphaAtomsRMSE(TertiaryStructurePtr targetStructure) const;
+  size_t computeCAlphaAtomsGDTTS(TertiaryStructurePtr targetStructure, double cutoff) const;
   void applyAffineTransform(const impl::Matrix4& affineTransform) const;
 
   lbcpp_UseDebuggingNewOperator

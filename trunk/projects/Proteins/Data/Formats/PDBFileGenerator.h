@@ -24,6 +24,7 @@ public:
 
   static String makeHeaderLine(const String& classification, const String& date, const String& idCode);
     
+  static String producePDBString(ProteinPtr protein);
 
   static String makeSeqResLine(size_t serialNumber, const String& chainId, size_t numResidues,
                                const std::vector<String>& residues, size_t& firstResidueIndex);
