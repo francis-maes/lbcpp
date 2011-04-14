@@ -17,60 +17,74 @@ core::pose::PoseOP convertProtein2Pose(const ProteinPtr protein)
 	return pose;
 }
 
-ProteinPtr convertPose2Protein(const core::pose::PoseOP pose)
+ProteinPtr convertPose2Protein(ExecutionContext& context, const core::pose::PoseOP pose)
 {
-	// Number of residues
-	int numres = pose->n_residue();
-	ProteinPtr protein = new Protein();
+	std::ostringstream oss;
+	core::io::pdb::FileData::dump_pdb((*pose), oss);
+	oss.flush();
+	std::string poseString = oss.str();
+	juce::String pdbString(poseString.c_str());
 
-	// Primary structure
-	protein->setPrimaryStructure((String)(pose->sequence()).c_str());
+	ProteinPtr prot = Protein::createFromPDB(context, pdbString, true);
+	return prot;
+	/*
+	 // Number of residues
+	 int numres = pose->n_residue();
+	 ProteinPtr protein = new Protein();
 
-	// Tertiary structure
-	TertiaryStructurePtr ts = new TertiaryStructure(numres);
+	 // Primary structure
+	 protein->setPrimaryStructure((String) (pose->sequence()).c_str());
 
-	for (int i = 0; i < numres; i++)
-	{
-		// rosetta : get residue information
-		core::conformation::Residue tempResRos = pose->residue(i + 1);
-		core::chemical::ResidueType tempResRosType = pose->residue_type(i + 1);
-		int nbatoms = tempResRos.natoms();
+	 // Tertiary structure
+	 TertiaryStructurePtr ts = new TertiaryStructure(numres);
+	 for (int i = 0; i < numres; i++)
+	 {
+	 // rosetta : get residue information
+	 core::conformation::Residue tempResRos = pose->residue(i + 1);
+	 core::chemical::ResidueType tempResRosType = pose->residue_type(i + 1);
+	 int nbatoms = tempResRos.natoms();
 
-		// lbcpp : create residue
-		ResiduePtr temp = new Residue((AminoAcidType) AminoAcid::fromOneLetterCode(
-				(juce::tchar) tempResRosType.name1()).getInteger());
+	 // lbcpp : create residue
+	 ResiduePtr temp = new Residue((AminoAcidType) AminoAcid::fromOneLetterCode(
+	 (juce::tchar) tempResRosType.name1()).getInteger());
 
-		// fill residue with atoms
-		for (size_t j = 0; j < nbatoms; j++)
-		{
-			// get atoms information
-			numeric::xyzVector < core::Real > positionAtomRos = tempResRos.xyz(j + 1);
-			std::string atomTypeRos = (tempResRos.atom_type(j + 1)).element();
-			std::string atomNameRos = tempResRos.atom_name(j + 1);
+	 // fill residue with atoms
+	 for (size_t j = 0; j < nbatoms; j++)
+	 {
+	 // get atoms information
+	 numeric::xyzVector < core::Real > positionAtomRos = tempResRos.xyz(j + 1);
+	 std::string atomTypeRos = (tempResRos.atom_type(j + 1)).element();
+	 std::string atomNameRos = tempResRos.atom_name(j + 1);
 
-			// create atom and set position and occupancy
-			impl::Vector3 v3(0.0, 0.0, 0.0);
-			Vector3Ptr v3p = new Vector3(v3);
-			AtomPtr tempAtom = new Atom((juce::String)(atomNameRos.c_str()), (juce::String)(
-					atomTypeRos.c_str()), v3p);
-			tempAtom->setOccupancy((pose->pdb_info())->occupancy(i + 1, j + 1));
+	 // create atom and set position and occupancy
+	 impl::Vector3 v3(0.0, 0.0, 0.0);
+	 Vector3Ptr v3p = new Vector3(v3);
+	 AtomPtr tempAtom = new Atom((juce::String) (atomNameRos.c_str()),
+	 (juce::String) (atomTypeRos.c_str()), v3p);
 
-			tempAtom->setX(positionAtomRos.x());
-			tempAtom->setY(positionAtomRos.y());
-			tempAtom->setZ(positionAtomRos.z());
+	 // Probleme, si pose cree par makePoseFromSequence, energie
+	 //sensiblement differente... (du a occupancy de toute evidence)
+	 if ((pose->pdb_info()).get() != NULL)
+	 tempAtom->setOccupancy((pose->pdb_info())->occupancy(i + 1, j + 1));
+	 else
+	 tempAtom->setOccupancy(1.0);
 
-			// add atom to residue
-			temp->addAtom(tempAtom);
-		}
+	 tempAtom->setX(positionAtomRos.x());
+	 tempAtom->setY(positionAtomRos.y());
+	 tempAtom->setZ(positionAtomRos.z());
 
-		// add residue to tertiary structure
-		ts->setResidue(i, temp);
-	}
+	 // add atom to residue
+	 temp->addAtom(tempAtom);
+	 }
+	 // add residue to tertiary structure
+	 ts->setResidue(i, temp);
+	 }
 
-	// add tertiary structure to protein
-	protein->setTertiaryStructure(ts);
+	 // add tertiary structure to protein
+	 protein->setTertiaryStructure(ts);
 
-	return protein;
+	 return protein;
+	 */
 }
 
 double getTotalEnergy(const ProteinPtr prot)
@@ -93,7 +107,7 @@ void rosettaInit()
 
 void rosettaInit(bool verbose)
 {
-	srand( time(NULL));
+	srand(time(NULL));
 	int argc = 3;
 	if (!verbose)
 	{
@@ -112,7 +126,7 @@ void rosettaInit(bool verbose)
 	argv[2] = (char*)"/home/alejandro/soft/rosetta-3.2/rosetta_database";
 #elif JUCE_MAC
 	// path to find rosetta database in personnal mac
-	argv[2] = (char*)"/Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_database";
+	argv[2] = (char*) "/Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_database";
 #endif
 	core::init(argc, argv);
 }
@@ -140,7 +154,7 @@ double generateNormalRand()
 		x2 = (2 * generateRand()) - 1;
 		val = std::pow(x1, 2) + std::pow(x2, 2);
 	}
-	return (x1 * std::sqrt(((double)-2 * std::log(val)) / val));
+	return (x1 * std::sqrt(((double) -2 * std::log(val)) / val));
 }
 }
 ; /* namespace lbcpp */

@@ -44,6 +44,44 @@ ProteinPtr Protein::createFromPDB(ExecutionContext& context, const File& pdbFile
   return res;
 }
 
+ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
+		bool beTolerant)
+{
+	const char* tab0 = pdbString.toUTF8();
+	juce::MemoryInputStream* mb = new juce::MemoryInputStream((const void*) tab0,
+			pdbString.length(), true);
+
+	ReferenceCountedObjectPtr<PDBFileParser> parser(new PDBFileParser(context, mb, beTolerant));
+
+	if (!parser->next().exists())
+		return ProteinPtr();
+
+	std::vector<ProteinPtr> proteins = parser->getAllChains();
+	jassert(proteins.size());
+	ProteinPtr res = proteins[0];
+
+	if (proteins.size() > 1)
+	{
+		size_t chainSize = proteins[0]->getLength();
+		for (size_t i = 1; i < proteins.size(); ++i)
+			if (proteins[i]->getLength() != chainSize)
+			{
+				for (size_t j = 0; j < proteins.size(); ++j)
+					std::cerr << "Chain Size: " << proteins[j]->getLength() << std::endl;
+				context.errorCallback(
+						T("ProteinObject::createFromPDB"),
+						T("This file contains chains of different size, I do not know which one to choose"));
+				return ProteinPtr();
+			}
+	}
+
+	VectorPtr primaryStructure = res->getPrimaryStructure();
+	jassert(primaryStructure);
+	TertiaryStructurePtr tertiaryStructure = res->getTertiaryStructure();
+	jassert(tertiaryStructure && tertiaryStructure->getNumResidues() == primaryStructure->getNumElements());
+	return res;
+}
+
 ProteinPtr Protein::createFromXml(ExecutionContext& context, const File& file)
   {return Variable::createFromFile(context, file).getObjectAndCast<Protein>(context);}
 

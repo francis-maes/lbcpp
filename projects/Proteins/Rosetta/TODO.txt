@@ -1,0 +1,20 @@
+Pending error
+=============
+
+1)
+Variable.hpp::checkInheritance: IntegerType -|> AminoAcidTypeEnumeration
+JUCE Assertion failure in /Users/alex/Documents/workspace/lbcpp/include/lbcpp/Core/../Core/impl/Variable.hpp, line 278
+
+2)
+
+TODO
+====
+
+1) corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
+bool beTolerant) au niveau du pointeur de mb. Faut il le liberer?
+		
+2) terminer QScore.
+
+3) ajouter les traces dans les optimiseurs.
+
+4) creer les rigid body movers.

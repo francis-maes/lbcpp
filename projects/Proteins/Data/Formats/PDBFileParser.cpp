@@ -13,6 +13,11 @@ PDBFileParser::PDBFileParser(ExecutionContext& context, const File& file, bool b
   : TextParser(context, file), beTolerant(beTolerant)
   {}
 
+PDBFileParser::PDBFileParser(ExecutionContext& context, InputStream* newInputStream,
+		bool beTolerant) :
+	TextParser(context, newInputStream), beTolerant(beTolerant)
+{}
+
 void PDBFileParser::parseBegin()
 {
   currentSeqResSerialNumber = 0;

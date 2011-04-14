@@ -19,7 +19,7 @@ class PDBFileParser : public TextParser
 {
 public:
   PDBFileParser(ExecutionContext& context, const File& file, bool beTolerant);
-  
+  PDBFileParser(ExecutionContext& context, InputStream* newInputStream, bool beTolerant);
   virtual TypePtr getElementsType() const
     {return proteinClass;}
 
