@@ -176,6 +176,9 @@ inline WorkUnitPtr functionWorkUnit(const FunctionPtr& function, const std::vect
                                     const String& description = String::empty, Variable* output = NULL, bool sendInputAsResult = false)
   {return new FunctionWorkUnit(function, inputs, description, output, sendInputAsResult);}
 
+typedef ReferenceCountedObjectPtr<FunctionWorkUnit> FunctionWorkUnitPtr;
+  
+  
 }; /* namespace lbcpp */
 
 #endif //!LBCPP_EXECUTION_WORK_UNIT_H_

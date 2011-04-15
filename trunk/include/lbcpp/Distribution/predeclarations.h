@@ -1,11 +1,11 @@
-/*
- *  predeclarations.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 11/03/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: predeclarations.h              | Distribution predeclarations    |
+| Author  : Arnaud Schoofs                 |                                 |
+| Started : 11/03/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 
 #ifndef LBCPP_DISTRIBUTION_PREDECLARATIONS_H_
 # define LBCPP_DISTRIBUTION_PREDECLARATIONS_H_
@@ -37,4 +37,4 @@ namespace lbcpp
   
 }; /* namespace lbcpp */
 
-#endif //!LBCPP_EXECUTION_PREDECLARATIONS_H_
+#endif //!LBCPP_DISTRIBUTION_PREDECLARATIONS_H_

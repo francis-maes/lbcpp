@@ -1,11 +1,10 @@
-/*
- *  MultiThreadsOptimizerContext.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 3/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: MultiThreadsOptimizerContext.h | OptimizerContext that uses      |
+| Author  : Arnaud Schoofs                 | multi-threads to evaluate the   |
+| Started : 03/04/2011                     | requests from the Optimizer     |
+`------------------------------------------/ (asynchronous)                  |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_MULTI_THEADS_OPTIMIZER_CONTEXT_H_
 # define LBCPP_MULTI_THEADS_OPTIMIZER_CONTEXT_H_

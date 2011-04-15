@@ -1,11 +1,10 @@
-/*
- *  SynchroneousOptimizerContext.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 3/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: SynchroneousOptimizerContext.h | OptimizerContext that evaluates |
+| Author  : Arnaud Schoofs                 | the requests from the Optimizer |
+| Started : 03/04/2011                     | synchronously (single-thread    |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_SYNCHRONEOUS_OPTIMIZER_CONTEXT_H_
 # define LBCPP_SYNCHRONEOUS_OPTIMIZER_CONTEXT_H_

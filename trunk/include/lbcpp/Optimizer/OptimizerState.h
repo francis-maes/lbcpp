@@ -1,11 +1,10 @@
-/*
- *  OptimizerState.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 4/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: OptimizerState.h               | State associated with an        |
+| Author  : Arnaud Schoofs                 | Optimizer (useful to restart    |
+| Started : 04/04/2011                     | the Optimizer)                  |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_OPTIMIZER_STATE_H_
 # define LBCPP_OPTIMIZER_STATE_H_
@@ -16,7 +15,7 @@
 
 namespace lbcpp
 {
-// TODO arnaud : ScopedLock in each method ? (object should be thread safe)
+
 class OptimizerState : public Object, public FunctionCallback
 {
 public:

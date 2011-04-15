@@ -41,14 +41,14 @@ public:
     
     // TESTS OPTIMIZER
     
-    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(1000);
-    OptimizerPtr optimizer = new EDAOptimizer(20, 500, 100);
+    OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(1000);
+    //OptimizerPtr optimizer = new EDAOptimizer(20, 500, 100);
     //OptimizerPtr optimizer = new AsyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
-    OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
-    //OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
+    //OptimizerContextPtr optimizerContext = new SynchroneousOptimizerContext(squareFunction());
+    OptimizerContextPtr optimizerContext = new MultiThreadsOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
-    //optimizerState->setDistribution(context, new UniformDistribution(-5,5));
-    optimizerState->setDistribution(context, new GaussianDistribution(10, 10000));
+    optimizerState->setDistribution(context, new UniformDistribution(-5,5));
+    //optimizerState->setDistribution(context, new GaussianDistribution(10, 10000));
     return optimizer->compute(context, optimizerContext, optimizerState);
     
     
