@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: Optimizer.h                    | Optimizers                      |
+| Filename: Optimizer.h                    | Optimizer <- Function           |
 | Author  : Francis Maes, Arnaud Schoofs   |                                 |
 | Started : 21/12/2010 23:39               |                                 |
 `------------------------------------------/                                 |

@@ -72,6 +72,7 @@ private:
     
     // wait and sort results
     optimizerContext->waitUntilAllRequestsAreProcessed();
+    
     std::multimap<double, Variable> sortedScores;
     {
       ScopedLock _(optimizerState->getLock());

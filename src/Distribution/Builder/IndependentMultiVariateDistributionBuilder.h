@@ -1,11 +1,11 @@
-/*
- *  IndependentMultiVariateDistributionBuilder.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 7/03/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: Ind..Mul..Distri..Builder.h    | DistributionBuilder associated  |
+| Author  : Arnaud Schoofs                 | with IndependentMultiVariate    |
+| Started : 07/03/2011                     | Distribution                    |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 
 #ifndef LBCPP_INDEPENDENT_MULTI_VARIATE_DISTRIBUTION_BUILDER_H_
 # define LBCPP_INDEPENDENT_MULTI_VARIATE_DISTRIBUTION_BUILDER_H_

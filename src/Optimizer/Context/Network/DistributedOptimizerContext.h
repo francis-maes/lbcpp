@@ -1,11 +1,10 @@
-/*
- *  DistributedOptimizerContext.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 3/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: DistributedOptimizerContext.h  | OptimizerContext used to        |
+| Author  : Arnaud Schoofs                 | distribute work on NIC3, BOINC, |
+| Started : 03/04/2011                     | ... (asynchronous)              |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
 # define LBCPP_DISTRIBUTED_OPTIMIZER_CONTEXT_H_
