@@ -21,24 +21,34 @@ namespace lbcpp
  * Temporary structure to store the distances and scores
  * for each pair of amino acids.
  */
+struct CAlphaDist;
+typedef struct CAlphaDist CAlphaDist;
+
 struct CAlphaDist
 {
 	int i;
 	int j;
-	double dist;
+	double dist1;
+	double dist2;
 	double score;
 	CAlphaDist() :
-		i(0), j(0), dist(-1), score(-1)
+		i(0), j(0), dist1(-1), dist2(-1), score(-1)
 	{
 	}
-	CAlphaDist(int x, int y, double d, double s) :
-		i(x), j(y), dist(d), score(s)
+	CAlphaDist(int x, int y, double d1, double d2, double s) :
+		i(x), j(y), dist1(d1), dist2(d2), score(s)
+	{
+	}
+	CAlphaDist(const CAlphaDist& x) :
+		i(x.i), j(x.j), dist1(x.dist1), dist2(x.dist2), score(x.score)
 	{
 	}
 };
-typedef struct CAlphaDist CAlphaDist;
 
 CAlphaDist copyCAlphaDist(CAlphaDist toCopy);
+
+class QScoreObject;
+typedef ReferenceCountedObjectPtr<QScoreObject> QScoreObjectPtr;
 
 class QScoreObject: public ScoreObject
 {
@@ -47,7 +57,21 @@ public:
 	 * Constructor and destructors
 	 */
 	QScoreObject();
+	QScoreObject(QScoreObjectPtr copy);
+	QScoreObject(std::vector<CAlphaDist>& copy);
 	~QScoreObject();
+
+	/**
+	 * Tells if the QScore object is empty.
+	 * @retur true if empty.
+	 */
+	bool isEmpty();
+
+	/**
+	 * Gives the size of the QScoreObject.
+	 * @return the number of scores stored in the QScoreObject.
+	 */
+	int size();
 
 	/**
 	 * @brief Returns the score that has to be minimized. A call to
@@ -122,11 +146,19 @@ public:
 	 */
 	std::vector<CAlphaDist> getSortedScores();
 
+	/**
+	 * Sorts the QScoreObject that is, by default, unsorted.
+	 */
+	void sort();
+
+	std::vector<CAlphaDist> getScoresByDist(int minDist, int maxDist);
+
+	QScoreObjectPtr getQScoreObjectByDist(int minDist, int maxDist);
+
 private:
 	std::vector<CAlphaDist>* scores;
 	double mean;
 };
-typedef ReferenceCountedObjectPtr<QScoreObject> QScoreObjectPtr;
 
 /**
  * @brief Computes QScore for the target and model. Target and model are supposed
@@ -137,13 +169,13 @@ typedef ReferenceCountedObjectPtr<QScoreObject> QScoreObjectPtr;
  * @param target the target protein.
  * @param model the model protein, that has to match the target.
  * @param minDist the minimum distance in the chain of amino acids between two
- * amino acids that are evaluated for the QScore. -1 if no min distance, default.
+ * amino acids that are evaluated for the QScore. -1 means no minimum distance.
  * @param maxDist the maximum distance in the chain of amino acids between two
- * amino acids that are evaluated for the QScore. -1 if no max distance, default.
+ * amino acids that are evaluated for the QScore. -1 means no minimum distance.
  * @return a QScoreObjectPtr that represents the similarity between the proteins.
  */
-QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, size_t minDist = -1,
-		size_t maxDist = -1);
+QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist = -1,
+		int maxDist = -1);
 
 }
 ; /* namespace lbcpp */

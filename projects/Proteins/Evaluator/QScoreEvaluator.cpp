@@ -13,7 +13,8 @@ CAlphaDist copyCAlphaDist(CAlphaDist toCopy)
 	CAlphaDist temp;
 	temp.i = toCopy.i;
 	temp.j = toCopy.j;
-	temp.dist = toCopy.dist;
+	temp.dist1 = toCopy.dist1;
+	temp.dist2 = toCopy.dist2;
 	temp.score = toCopy.score;
 	return temp;
 }
@@ -24,9 +25,33 @@ QScoreObject::QScoreObject()
 	mean = 0;
 }
 
+QScoreObject::QScoreObject(QScoreObjectPtr copy)
+{
+	scores = new std::vector<CAlphaDist>(copy->getScores());
+	mean = copy->getMean();
+}
+
+QScoreObject::QScoreObject(std::vector<CAlphaDist>& copy)
+{
+	scores = new std::vector<CAlphaDist>(copy);
+	double acc = 0;
+	for (int i = 0; i < copy.size(); i++)
+		acc += copy.at(i).score;
+	mean = acc / copy.size();
+}
 QScoreObject::~QScoreObject()
 {
 	delete (scores);
+}
+
+bool QScoreObject::isEmpty()
+{
+	return (scores->size() == 0);
+}
+
+int QScoreObject::size()
+{
+	return (scores->size());
 }
 
 double QScoreObject::getScoreToMinimize() const
@@ -50,7 +75,8 @@ void QScoreObject::update()
 
 void QScoreObject::addScore(const CAlphaDist cad)
 {
-	CAlphaDist temp = copyCAlphaDist(cad);
+	//CAlphaDist temp = copyCAlphaDist(cad);
+	CAlphaDist temp(cad);
 	scores->push_back(temp);
 }
 
@@ -127,11 +153,6 @@ std::vector<CAlphaDist> QScoreObject::getScores()
 	return temp;
 }
 
-bool compare4sortCAlphaDist(CAlphaDist calpha1, CAlphaDist calpha2)
-{
-	return (calpha1.dist > calpha2.dist);
-}
-
 bool compare4sortCAlphaScore(CAlphaDist calpha1, CAlphaDist calpha2)
 {
 	return (calpha1.score > calpha2.score);
@@ -155,17 +176,70 @@ std::vector<CAlphaDist> QScoreObject::getSortedScores()
 	return tempVec;
 }
 
-QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, size_t minDist,
-		size_t maxDist)
+void QScoreObject::sort()
 {
-	if( target->getLength() != model->getLength())
+	std::vector<CAlphaDist> tempVec = getSortedScores();
+	delete (scores);
+	scores = new std::vector<CAlphaDist>(tempVec);
+}
+
+std::vector<CAlphaDist> QScoreObject::getScoresByDist(int minDist, int maxDist)
+{
+	std::vector<CAlphaDist> tempVec;
+	for (int i = 0; i < scores->size(); i++)
+	{
+		CAlphaDist ca(scores->at(i));
+		if ((std::abs((long int) (ca.i - ca.j)) >= minDist) && (std::abs((long int) (ca.i - ca.j))
+				<= maxDist))
+			tempVec.push_back(copyCAlphaDist(ca));
+	}
+	return tempVec;
+}
+
+QScoreObjectPtr QScoreObject::getQScoreObjectByDist(int minDist, int maxDist)
+{
+	std::vector<CAlphaDist> tempVec = this->getScoresByDist(minDist, maxDist);
+	QScoreObjectPtr temp = new QScoreObject(tempVec);
+	return temp;
+}
+
+QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist, int maxDist)
+{
+	if (maxDist < 0)
+		maxDist = target->getLength();
+
+	if (target->getLength() != model->getLength())
 		return NULL;
-	QScoreObjectPtr scores = new QScoreObject;
 
+	std::vector<CAlphaDist> tempVec;
 
+	SymmetricMatrixPtr matTarget = (target->getTertiaryStructure())->makeCAlphaDistanceMatrix();
+	SymmetricMatrixPtr matModel = (model->getTertiaryStructure())->makeCAlphaDistanceMatrix();
+	int numRows = matTarget->getNumRows();
+	int numCols = matTarget->getNumColumns();
 
+	for (int i = 0; i < numRows; i++)
+	{
+		for (int j = i + 1; j < numCols; j++)
+		{
+			if ((std::abs((long int) (i - j)) >= minDist) && (std::abs((long int) (i - j))
+					<= maxDist))
+			{
+				if ((matTarget->getElement(i, j)).isDouble()
+						&& (matModel->getElement(i, j)).isDouble())
+				{
+					double dist1 = (matTarget->getElement(i, j)).getDouble();
+					double dist2 = (matModel->getElement(i, j)).getDouble();
+					double score = std::exp(-std::pow(dist1 - dist2, 2));
+					CAlphaDist ca(i, j, dist1, dist2, score);
+					tempVec.push_back(copyCAlphaDist(ca));
+				}
 
-	return scores;
+			}
+		}
+	}
+	QScoreObjectPtr qs = new QScoreObject(tempVec);
+	return qs;
 }
 
 }

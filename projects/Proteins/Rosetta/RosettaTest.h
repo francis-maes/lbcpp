@@ -46,91 +46,71 @@ public:
 
 		rosettaInit(false);
 		core::pose::PoseOP pose = new core::pose::Pose();
-		//makePoseFromSequence(
-		//		pose,
-		//		String(
-		//				"MERLLDDVCVMVDVTSAEIRNIVTRQLENWGATCITPDERLISQDYDIFLTDNPSNLTASGLLLSDDESGVREIGPGQLCVNFNMSNAMQEAVLQLIEVQLAQEEVTESRSHHHHHH"));
-		makePoseFromSequence(pose, String("AAA"));
+		makePoseFromSequence(pose, String("AAAAAAAAAAAA"));
 		core::io::pdb::dump_pdb((*pose), "/Users/alex/Desktop/init.pdb");
 		cout << "energy init : " << getTotalEnergy(pose) << endl;
 		cout << "num residus : " << pose->n_residue() << endl;
 
-		/*
-		 // TEST
-		 // Creation string a partir de rosetta
-		 std::ostringstream oss;
-		 core::io::pdb::FileData::dump_pdb((*pose), oss);
-		 oss.flush();
-		 std::string poseString = oss.str();
-		 cout << poseString << endl;
+		juce::String* str = new juce::String[2];
+		str[0]=juce::String("AAAAAAA");
+		str[1] =juce::String((double)0.01);
 
-		 // Lecture string a partir de lbcpp
-		 juce::String js(poseString.c_str());
-		 const char* tab0 = js.toUTF8();
-		 juce::MemoryInputStream mb((const void*)tab0,js.length(),true);
-		 juce::String testStringJuce = (juce::String)mb.readString();
-		 cout << "test juce string apres memoryinputstream: " << (const char*)testStringJuce << endl;
+				/*
+		 std::vector<Variable*>* vs =new std::vector<Variable*>;
+		 cout << "test 1 " << endl;
+		 //Variable temp1 = new Variable(opt->getVariable(0));
+		 vs->push_back(tempv);
+		 cout << "test 2 " << endl;
+		 cout << " var 0 : " << (const char*) ((vs->at(0))->toString()) << endl << flush;
+		 cout << "test 3 " << endl << flush;
+		 Variable* temp2 = new Variable(0.1);
+		 //opt->addVariable(temp2);
+		 cout << "test 4 " << endl << flush;
+		 vs->push_back(temp2);
+		 cout << " var 1 : " << (vs->at(1))->getDouble() << endl << flush;
+		 cout << "size : " << vs->size() << endl << flush;
 
-		 // FIN TEST
+		 delete(tempv);
+		 delete(temp2);
+		 delete(vs);
 		 */
-		juce::String path("/Users/alex/Desktop/init.pdb");
-		ProteinPtr prottest = Protein::createFromPDB(context, juce::File(path), true);
-		cout << "nombre acides amines dans prottest : " << prottest->getLength() << endl;
 
-		cout << "test convertPose2protein " << endl;
-		ProteinPtr prot = convertPose2Protein(context, pose);
-		cout << "test convertPose2protein : OK." << endl;
-		TertiaryStructurePtr ts = prot->getTertiaryStructure();
-		cout << "nombre acides amines dans prot : " << prot->getLength() << endl;
-		CartesianPositionVectorPtr calphatrace = ts->makeCAlphaTrace();
-		impl::Vector3 v0 = calphatrace->get(0);
-		impl::Vector3 v1 = calphatrace->get(1);
-		impl::Vector3 v2 = calphatrace->get(2);
-		cout << "v0 : " << v0.x << " , " << v0.y << " , " << v0.z << endl;
-		cout << "v1 : " << v1.x << " , " << v1.y << " , " << v1.z << endl;
-		cout << "v2 : " << v2.x << " , " << v2.y << " , " << v2.z << endl;
-
-		ResiduePtr r0 = ts->getResidue(0);
-		cout << "CA dans residu 0 ? " << r0->hasCAlphaAtom() << endl;
-		ResiduePtr r1 = ts->getResidue(1);
-		cout << "CA dans residu 1 ? " << r1->hasCAlphaAtom() << endl;
-		ResiduePtr r2 = ts->getResidue(2);
-		cout << "CA dans residu 2 ? " << r2->hasCAlphaAtom() << endl;
-
-		// Symmetric matrix
-		SymmetricMatrixPtr mat = (prot->getTertiaryStructure())->makeCAlphaDistanceMatrix();
-		cout << "matrice nombre de colonnes : " << mat->getNumColumns() << endl;
-		cout << "matrice nombre de lignes : " << mat->getNumRows() << endl;
-		cout << "matrice element 0,0 : " << mat->getElement(0, 0) << endl;
-		cout << "matrice element 0,1 : " << mat->getElement(0, 1) << endl;
-		cout << "matrice element 1,0 : " << mat->getElement(1, 0) << endl;
-		cout << "matrice element 0,2 : " << mat->getElement(0, 2) << endl;
-		cout << "matrice element 2,0 : " << mat->getElement(2, 0) << endl;
-		cout << "matrice element 1,2 : " << mat->getElement(1, 2) << endl;
-		cout << "matrice element 2,1 : " << mat->getElement(2, 1) << endl;
-		//cout << "matrice element 0,3 : " << mat->getElement(0,3) << endl;
-		//cout << "matrice element 3,0 : " << mat->getElement(3,0) << endl;
-
-		// AUTRE
-		//std::vector<void*>* optArgs = new std::vector<void*>();
-		//double ang = 40;
-		//optArgs->push_back((void*) &ang);
-
-		//core::pose::PoseOP init = new core::pose::Pose("/Users/alex/Desktop/2KX7.pdb");
-		//cout << "2KX7 numres : " << init->n_residue() << endl;
-		//cout << "energy 2KX7 : " << getTotalEnergy(init) << endl;
 		/*
-		 core::pose::PoseOP result3 = simulatedAnnealingOptimization(pose, phiPsiMover, optArgs);
-		 core::io::pdb::dump_pdb((*result3), "/Users/alex/Desktop/sa_aprescompil.pdb");
-		 cout << "energy sa : " << getTotalEnergy(result3) << endl;
-		 cout << "sa numres : " << result3->n_residue() << endl;
-		 cout << "sa done." << endl;
+		juce::String scopeName("energy");
+		 context.enterScope(T("Protein name : AAAAAAAA"));
+		 for (int i=0;i<10;i++)
+		 {
+		 context.enterScope(scopeName);
+		 context.resultCallback(T("energies"),Variable(i));
+		 context.leaveScope(Variable(i*i));
+		 }
+		 context.leaveScope();
+*/
 
-		 core::pose::PoseOP result1 = sequentialOptimization(pose, phiPsiMover, optArgs);
-		 core::io::pdb::dump_pdb((*result1), "/Users/alex/Desktop/sequential.pdb");
-		 cout << "energy sequential : " << getTotalEnergy(result1) << endl;
-		 cout << "sequential numres : " << result1->n_residue() << endl;
-		 cout << "sequential done." << endl;
+
+		 std::vector<void*>* optArgs = new std::vector<void*>();
+		 double ang = 50;
+		 optArgs->push_back((void*) &ang);
+		 core::pose::PoseOP result1 = greedyOptimization(pose, phiPsiMover, optArgs, 1000, str, &context);
+		 cout << "energy final : " << getTotalEnergy(result1) << endl;
+		 cout << "num residus final : " << result1->n_residue() << endl;
+		 //cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
+		 //cout << "greedy done." << endl;
+
+
+
+		/*std::vector<void*>* optArgs = new std::vector<void*>();
+		 double ang = 50;
+		 optArgs->push_back((void*) &ang);
+		 core::pose::PoseOP result1 = monteCarloOptimization(pose, phiPsiMover, optArgs, 2.0, 1000);
+		 core::io::pdb::dump_pdb((*result1), "/Users/alex/Desktop/result_greedy1.pdb");
+		 cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
+		 cout << "greedy done." << endl;
+
+		 core::pose::PoseOP result2 = monteCarloOptimization(pose, phiPsiMover, optArgs, 2.0, 20000);
+		 core::io::pdb::dump_pdb((*result2), "/Users/alex/Desktop/result_greedy2.pdb");
+		 cout << "energy greedy2 : " << getTotalEnergy(result2) << endl;
+		 cout << "greedy done." << endl;
 		 */
 		context.informationCallback(T("RosettaTest done."));
 		return Variable();
