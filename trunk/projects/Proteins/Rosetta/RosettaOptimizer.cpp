@@ -21,7 +21,7 @@ bool keepConformation(double deltaEnergy, double temp)
 
 core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, void(*mover)(core::pose::PoseOP,
 		std::vector<void*>*), std::vector<void*>* optArgs, double temp, int maxSteps,
-		int reinitInterval)
+		int timesReinit)
 {
 	double currEn = getTotalEnergy(pose);
 	double minEn = currEn;
@@ -29,6 +29,10 @@ core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, void(*mover)(
 	core::pose::PoseOP optimized = new core::pose::Pose((*pose));
 	core::pose::PoseOP tempOptimized = new core::pose::Pose((*pose));
 	core::pose::PoseOP working = new core::pose::Pose((*pose));
+
+	int reinitInterval = -1;
+	if (timesReinit > 0)
+		reinitInterval = maxSteps / timesReinit;
 
 	if ((maxSteps <= 0) || (temp <= 0))
 		return NULL;
@@ -55,7 +59,7 @@ core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, void(*mover)(
 			minEn = tempEn;
 		}
 
-		if ((reinitInterval >= 0) && (i % reinitInterval) == 0)
+		if ((reinitInterval > 0) && (i % reinitInterval) == 0)
 		{
 			working->set_new_conformation(&(optimized->conformation()));
 			tempOptimized->set_new_conformation(&(optimized->conformation()));
@@ -69,7 +73,7 @@ core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, void(*mover)(
 
 core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, void(*mover)(
 		core::pose::PoseOP, std::vector<void*>*), std::vector<void*>* optArgs, double initTemp,
-		double finalTemp, int numSteps, int maxSteps, int reinitInterval)
+		double finalTemp, int numSteps, int maxSteps, int timesReinit)
 {
 	double currEn = getTotalEnergy(pose);
 	double minEn = currEn;
@@ -77,6 +81,10 @@ core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, void(
 	if ((initTemp < finalTemp) || (numSteps > maxSteps) || (numSteps <= 0) || (maxSteps <= 0)
 			|| (initTemp <= 0) || (finalTemp <= 0))
 		return NULL;
+
+	int reinitInterval = -1;
+	if (timesReinit > 0)
+		reinitInterval = maxSteps / timesReinit;
 
 	double currTemp = initTemp;
 	int interSteps = maxSteps / numSteps;
@@ -106,7 +114,7 @@ core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, void(
 			minEn = tempEn;
 		}
 
-		if ((reinitInterval >= 0) && (i % reinitInterval) == 0)
+		if ((reinitInterval > 0) && (i % reinitInterval) == 0)
 		{
 			working->set_new_conformation(&(optimized->conformation()));
 			tempOptimized->set_new_conformation(&(optimized->conformation()));
@@ -124,9 +132,11 @@ core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, void(
 }
 
 core::pose::PoseOP greedyOptimization(core::pose::PoseOP pose, void(*mover)(core::pose::PoseOP,
-		std::vector<void*>*), std::vector<void*>* optArgs, int maxSteps)
+		std::vector<void*>*), std::vector<void*>* optArgs, int maxSteps, juce::String* opt,
+		ExecutionContextPtr context)
 {
-	double currEn = getTotalEnergy(pose);
+	// Initialization
+	double minEn = getTotalEnergy(pose);
 	double tempEn;
 	core::pose::PoseOP optimized = new core::pose::Pose((*pose));
 	core::pose::PoseOP working = new core::pose::Pose((*pose));
@@ -134,22 +144,70 @@ core::pose::PoseOP greedyOptimization(core::pose::PoseOP pose, void(*mover)(core
 	if (maxSteps <= 0)
 		return NULL;
 
+	// Verbosity
+	bool verbosity = false;
+	juce::String nameScope("Greedy optim : ");
+	double freqVerb = 0;
+	int intervVerb = 0;
+
+	if ((opt != NULL) && (context.get() != NULL))
+	{
+		verbosity = true;
+		nameScope += opt[0];
+		freqVerb = std::abs(opt[1].getDoubleValue());
+		intervVerb = (int) std::ceil(maxSteps * freqVerb);
+	}
+
+	if (verbosity)
+	{
+		context->enterScope(nameScope);
+		context->enterScope(T("Initial energy"));
+		context->resultCallback(T("Energy"), Variable(minEn));
+		context->leaveScope();
+		context->enterScope(T("Energies"));
+		context->enterScope(T("valEnergy"));
+		context->resultCallback(T("Step"), Variable(0));
+		context->resultCallback(T("Energy"), Variable(minEn));
+		context->leaveScope();
+	}
+	// End verbosity
+
 	for (int i = 1; i <= maxSteps; i++)
 	{
 		(*mover)(working, optArgs);
 		tempEn = getTotalEnergy(working);
 
-		if (tempEn < currEn)
+		if (tempEn < minEn)
 		{
 			optimized->set_new_conformation(&(working->conformation()));
-			currEn = tempEn;
+			minEn = tempEn;
 		}
 		else
 		{
 			working->set_new_conformation(&(optimized->conformation()));
 		}
+
+		// Verbosity
+		if (verbosity && ((i % intervVerb) == 0))
+		{
+			context->enterScope(T("valEnergy"));
+			context->resultCallback(T("Step"), Variable(i));
+			context->resultCallback(T("Energy"), Variable(minEn));
+			context->leaveScope();
+		}
 	}
 
+	// Verbosity
+	if (verbosity)
+	{
+		context->leaveScope();
+		context->enterScope(T("Final energy"));
+		context->resultCallback(T("Energy"), Variable(minEn));
+		context->leaveScope();
+		context->leaveScope();
+	}
+
+	// Return
 	return optimized;
 }
 

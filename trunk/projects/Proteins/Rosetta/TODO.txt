@@ -1,20 +1,28 @@
 Pending error
 =============
 
-1)
+-
 Variable.hpp::checkInheritance: IntegerType -|> AminoAcidTypeEnumeration
 JUCE Assertion failure in /Users/alex/Documents/workspace/lbcpp/include/lbcpp/Core/../Core/impl/Variable.hpp, line 278
 
-2)
+apparait lors de lappel a convertPose2Protein.
+
+-
 
 TODO
 ====
 
-1) corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
+- corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
 bool beTolerant) au niveau du pointeur de mb. Faut il le liberer?
-		
-2) terminer QScore.
 
-3) ajouter les traces dans les optimiseurs.
+- ajouter les traces dans les optimiseurs restants (monte carlo, annealing, sequential?).
 
-4) creer les rigid body movers.
+- creer les rigid body movers et autres movers.
+
+- creer les optimiseurs qui recoltent les donnees.
+
+
+Rapport
+=======
+- parler de la fonction denergie
+- expliquer un peu les bases sur la structure des proteines (angles, fonciton denergie, etc.) peut etre mis en annexe
