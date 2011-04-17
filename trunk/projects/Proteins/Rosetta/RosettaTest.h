@@ -52,10 +52,10 @@ public:
 		cout << "num residus : " << pose->n_residue() << endl;
 
 		juce::String* str = new juce::String[2];
-		str[0]=juce::String("AAAAAAA");
-		str[1] =juce::String((double)0.01);
+		str[0] = juce::String("AAAAAAAAAAAA");
+		str[1] = juce::String((double) 0.01);
 
-				/*
+		/*
 		 std::vector<Variable*>* vs =new std::vector<Variable*>;
 		 cout << "test 1 " << endl;
 		 //Variable temp1 = new Variable(opt->getVariable(0));
@@ -76,7 +76,7 @@ public:
 		 */
 
 		/*
-		juce::String scopeName("energy");
+		 juce::String scopeName("energy");
 		 context.enterScope(T("Protein name : AAAAAAAA"));
 		 for (int i=0;i<10;i++)
 		 {
@@ -85,18 +85,28 @@ public:
 		 context.leaveScope(Variable(i*i));
 		 }
 		 context.leaveScope();
-*/
+		 */
 
+		std::vector<void*>* optArgs = new std::vector<void*>();
+		double ang = 50;
+		optArgs->push_back((void*) &ang);
+		RosettaOptimizerPtr o = new RosettaOptimizer(&context, T("AAAAA"), 0.01);
+		//core::pose::PoseOP result1 = greedyOptimization(pose, phiPsiMover, optArgs, 1000, str, &context);
+		core::pose::PoseOP result1 = o->greedyOptimization(pose, phiPsiMover, optArgs, 10000);
+		cout << "energy final : " << getTotalEnergy(result1) << endl;
+		cout << "num residus final : " << result1->n_residue() << endl;
 
-		 std::vector<void*>* optArgs = new std::vector<void*>();
-		 double ang = 50;
-		 optArgs->push_back((void*) &ang);
-		 core::pose::PoseOP result1 = greedyOptimization(pose, phiPsiMover, optArgs, 1000, str, &context);
-		 cout << "energy final : " << getTotalEnergy(result1) << endl;
-		 cout << "num residus final : " << result1->n_residue() << endl;
-		 //cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
-		 //cout << "greedy done." << endl;
+		core::pose::PoseOP result2 = o->simulatedAnnealingOptimization(pose, phiPsiMover, optArgs,
+				3.0, 0.01, 100, 10000);
+		cout << "SA energy final : " << getTotalEnergy(result2) << endl;
+		cout << "num residus final : " << result2->n_residue() << endl;
 
+		core::pose::PoseOP result3 = o->monteCarloOptimization(pose, phiPsiMover, optArgs, 3.0,
+				10000);
+		cout << "MC energy final : " << getTotalEnergy(result3) << endl;
+		cout << "num residus final : " << result3->n_residue() << endl;
+		//cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
+		//cout << "greedy done." << endl;
 
 
 		/*std::vector<void*>* optArgs = new std::vector<void*>();
