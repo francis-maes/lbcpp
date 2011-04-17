@@ -542,25 +542,29 @@ private:
   {
     context.enterScope(T("Generalization"));
 
-    ContainerPtr trainingStates = problem->sampleInitialStates(context, RandomGenerator::getInstance(), 100);
-
-    for (size_t i = 1; i < 100; )
+    for (size_t numTrainingStates = 1; numTrainingStates <= 128; numTrainingStates *= 2)
     {
-      context.enterScope(T("Num training states = ") + String((int)i));
-      ContainerPtr trainingStatesSubset = trainingStates->range(0, i);
-      FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, trainingStatesSubset, maxSearchNodes);
+      context.enterScope(T("Num training states = ") + String((int)numTrainingStates));
+      ScalarVariableStatisticsPtr statistics = new ScalarVariableStatistics(T("score"));
+      for (size_t j = 0; j < 10; ++j)
+      {
+        context.enterScope(T("Trial ") + String((int)j));
 
-      context.resultCallback(T("numTrainingStates"), i);
-      double score = computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
-      context.resultCallback(T("score"), score);
-      context.leaveScope(score);
+        ContainerPtr trainingStates = problem->sampleInitialStates(context, RandomGenerator::getInstance(), numTrainingStates);
+        FunctionPtr optimizedHeuristic = optimizeLookAHeadTreePolicy(context, trainingStates, maxSearchNodes);
 
-      if (i < 10)
-        ++i;
-      else if (i < 30)
-        i += 2;
-      else
-        i += 5;
+        context.resultCallback(T("numTrainingStates"), numTrainingStates);
+        double score = computeTrajectory(context, problem, initialStates, optimizedHeuristic, T("optimized"), maxSearchNodes);        
+        context.resultCallback(T("score"), score);
+        statistics->push(score);
+
+        context.leaveScope(score);
+      }
+      context.resultCallback(T("numTrainingStates"), numTrainingStates);
+      context.resultCallback(T("mean"), statistics->getMean());
+      context.resultCallback(T("stddev"), statistics->getStandardDeviation());
+      context.resultCallback(T("stats"), statistics);
+      context.leaveScope(statistics->getMean());
     }
 
     context.leaveScope(true);
