@@ -407,27 +407,9 @@ public:
       context.errorCallback(T("No features function"));
       return false;
     }
-
-    /* features parameters 
-    double maxReward = normalizeHeuristics ? problem->getMaxReward() : 1.0;
-    double depthNormalize = normalizeHeuristics ? (double)maxHorizon : 1.0;
-    FunctionPtr stateFeatures;
-    if (stateDependentHeuristic)
-    {
-      if (problem.isInstanceOf<HIVDecisionProblem>())
-        stateFeatures = new HIVStateFeatures();
-      else if (problem.isInstanceOf<LinearPointPhysicProblem>())
-        stateFeatures = new LPPStateFeatures();
-      else
-      {
-        context.errorCallback(T("No known state features for this kind of problems"));
-        return false;
-      }
-    }*/
-
-    //FunctionPtr featuresFunction = new HIVSearchFeatures(discount, maxReward, depthNormalize, stateFeatures);
-    //FunctionPtr featuresFunction = new GenericSearchNodeFeatureGenerator(false, true, true, true, false, true);
-    //FunctionPtr featuresFunction = new WeightedRewardsFeatureGenerator();
+    if (!featuresFunction->initialize(context, searchTreeNodeClass(problem->getStateClass(), problem->getActionType())))
+      return false;
+      
 
     // check depth parameters
     if (minDepth > maxDepth)
@@ -455,6 +437,12 @@ public:
     RandomGeneratorPtr random = RandomGenerator::getInstance();
     ContainerPtr initialStates = problem->sampleInitialStates(context, random, numInitialStates);
 
+    // load heuristics
+    std::vector<FunctionPtr> loadedHeuristics;
+    if (this->loadedHeuristics.existsAsFile() && !loadHeuristicsFromAlaRacheTextFile(context, this->loadedHeuristics, loadedHeuristics))
+      return false;
+
+
     // iterator over all possible depth values
     for (size_t depth = minDepth; depth <= maxDepth; ++depth)
     {
@@ -481,6 +469,12 @@ public:
           computeTrajectory(context, problem, initialStates, greedySearchHeuristic(discount), T("maxDiscountedReward"), maxSearchNodes);
           computeTrajectory(context, problem, initialStates, maxReturnSearchHeuristic(), T("maxReturn"), maxSearchNodes);
           computeTrajectory(context, problem, initialStates, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
+        }
+
+        if (loadedHeuristics.size() && (depth - minDepth) < loadedHeuristics.size())
+        {
+          // loaded heuristic
+          computeTrajectory(context, problem, initialStates, loadedHeuristics[depth - minDepth], T("loadedHeuristic"), maxSearchNodes);
         }
 
         if (optimisticHeuristics)
@@ -514,6 +508,40 @@ public:
     return true;
   }
 
+  bool loadHeuristicsFromAlaRacheTextFile(ExecutionContext& context, const File& textFile, std::vector<FunctionPtr>& res)
+  {
+    EnumerationPtr featuresEnumeration = DoubleVector::getElementsEnumeration(featuresFunction->getOutputType());
+    if (!featuresEnumeration)
+    {
+      context.errorCallback(T("Problem in feature function"));
+      return false;
+    }
+
+    InputStream* istr = textFile.createInputStream();
+    if (!istr)
+    {
+      context.errorCallback(T("prout"));
+      return false;
+    }
+    while (!istr->isExhausted())
+    {
+      String line = istr->readNextLine();
+      StringArray tokens;
+      tokens.addTokens(line, true);
+
+      if (tokens.size() == 0)
+        continue;
+
+      DenseDoubleVectorPtr denseDoubleVector = new DenseDoubleVector(featuresEnumeration, doubleType, tokens.size());
+      for (int i = 0; i < tokens.size(); ++i)
+        denseDoubleVector->setValue(i, tokens[i].getDoubleValue());
+      context.resultCallback(T("Loaded heuristic ") + String((int)res.size()), denseDoubleVector);
+      res.push_back(new HIVSearchHeuristic(featuresFunction, denseDoubleVector));
+    }
+    delete istr;
+    return true;
+  }
+
 private:
   friend class HIVSandBoxClass;
  
@@ -537,6 +565,7 @@ private:
   bool baseHeuristics;
   bool optimisticHeuristics;
   bool learnedHeuristic;
+  File loadedHeuristics;
 
   void computeEDAGeneralization(ExecutionContext& context, const ContainerPtr& initialStates, size_t maxSearchNodes) const
   {

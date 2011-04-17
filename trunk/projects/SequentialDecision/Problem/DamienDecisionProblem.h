@@ -174,6 +174,14 @@ public:
     initialState[4] = 1.0;
     initialState[5] = 10.0;
 
+    // close to "non-healty" 
+    initialState[0] = 163500;
+    initialState[1] = 4;
+    initialState[2] = 12000;
+    initialState[3] = 50;
+    initialState[4] = 63000;
+    initialState[5] = 20;
+
     return new HIVDecisionProblemState(initialState);
   }
 };

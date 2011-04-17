@@ -67,6 +67,7 @@
     <variable type="Boolean" name="baseHeuristics"/>
     <variable type="Boolean" name="optimisticHeuristics"/>
     <variable type="Boolean" name="learnedHeuristic"/>
+    <variable type="File" name="loadedHeuristics"/>
   </class>
   
 </library>
