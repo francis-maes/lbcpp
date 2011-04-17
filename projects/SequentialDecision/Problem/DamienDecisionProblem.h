@@ -166,6 +166,14 @@ public:
     initialState[4] = 63919;
     initialState[5] = 24;
 
+    // just after infection start
+    initialState[0] = 1000000.0;
+    initialState[1] = 3198.0;
+    initialState[2] = 0.0;
+    initialState[3] = 0.0;
+    initialState[4] = 1.0;
+    initialState[5] = 10.0;
+
     return new HIVDecisionProblemState(initialState);
   }
 };

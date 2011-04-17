@@ -739,7 +739,7 @@ private:
             context.resultCallback(T("RTI"), hivAction->getValue(0) > 0.0);
             context.resultCallback(T("PI"), hivAction->getValue(1) > 0.0);
 
-            for (size_t k = 0; k < 6; ++k)
+            for (size_t k = 1; k <= 6; ++k)
             {
               String name = hivState->getVariableName(k);
               double value = hivState->getVariable(k).getDouble();
