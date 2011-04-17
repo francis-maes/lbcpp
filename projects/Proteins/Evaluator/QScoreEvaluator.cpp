@@ -3,7 +3,7 @@
  * date: 14/04/2011
  * name: QScoreEvaluator.cpp
  */
-
+#include "precompiled.h"
 #include "QScoreEvaluator.h"
 
 namespace lbcpp
@@ -35,7 +35,7 @@ QScoreObject::QScoreObject(std::vector<CAlphaDist>& copy)
 {
 	scores = new std::vector<CAlphaDist>(copy);
 	double acc = 0;
-	for (int i = 0; i < copy.size(); i++)
+	for (size_t i = 0; i < copy.size(); i++)
 		acc += copy.at(i).score;
 	mean = acc / copy.size();
 }
@@ -68,7 +68,7 @@ double QScoreObject::getMean()
 void QScoreObject::update()
 {
 	double acc = 0;
-	for (int i = 0; i < scores->size(); i++)
+	for (size_t i = 0; i < scores->size(); i++)
 		acc += scores->at(i).score;
 	mean = acc / scores->size();
 }
@@ -91,7 +91,7 @@ CAlphaDist QScoreObject::getScore(size_t index)
 CAlphaDist QScoreObject::getScore(int aa1, int aa2)
 {
 	CAlphaDist temp;
-	for (int i = 0; i < scores->size(); i++)
+	for (size_t i = 0; i < scores->size(); i++)
 	{
 		if (((scores->at(i).i == aa1) && (scores->at(i).j == aa2)) || ((scores->at(i).j == aa1)
 				&& (scores->at(i).i == aa2)))
@@ -113,7 +113,7 @@ CAlphaDist QScoreObject::getMaxScore()
 		max = temp.score;
 	}
 	// Loop to find max.
-	for (int i = 1; i < scores->size(); i++)
+	for (size_t i = 1; i < scores->size(); i++)
 	{
 		if (scores->at(i).score > max)
 		{
@@ -136,7 +136,7 @@ CAlphaDist QScoreObject::getMinScore()
 		min = temp.score;
 	}
 	// Loop to find min.
-	for (int i = 1; i < scores->size(); i++)
+	for (size_t i = 1; i < scores->size(); i++)
 	{
 		if (scores->at(i).score < min)
 		{
@@ -162,7 +162,7 @@ std::vector<CAlphaDist> QScoreObject::getSortedScores()
 {
 	// Create list and sort.
 	std::list<CAlphaDist> tempList;
-	for (int i = 0; i < scores->size(); i++)
+	for (size_t i = 0; i < scores->size(); i++)
 		tempList.push_back(copyCAlphaDist(scores->at(i)));
 	tempList.sort(compare4sortCAlphaScore);
 
@@ -186,7 +186,7 @@ void QScoreObject::sort()
 std::vector<CAlphaDist> QScoreObject::getScoresByDist(int minDist, int maxDist)
 {
 	std::vector<CAlphaDist> tempVec;
-	for (int i = 0; i < scores->size(); i++)
+	for (size_t i = 0; i < scores->size(); i++)
 	{
 		CAlphaDist ca(scores->at(i));
 		if ((std::abs((long int) (ca.i - ca.j)) >= minDist) && (std::abs((long int) (ca.i - ca.j))
