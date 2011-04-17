@@ -43,8 +43,8 @@ public:
   virtual void performTransition(const Variable& action, double& reward)
   {
     static const double deltaT = 0.1;
-    velocity += deltaT * (action.getBoolean() ? 1.0 : -1.0);
     position += deltaT * velocity;
+    velocity += deltaT * (action.getBoolean() ? 1.0 : -1.0);
     reward = juce::jmax(0.0, 1.0 - position * position);
   }
 
