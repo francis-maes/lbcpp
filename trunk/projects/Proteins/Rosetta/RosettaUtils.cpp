@@ -9,7 +9,7 @@
 
 using namespace lbcpp;
 
-core::pose::PoseOP lbcpp::convertProtein2Pose(const ProteinPtr protein)
+core::pose::PoseOP lbcpp::convertProteinToPose(const ProteinPtr protein)
 {
   core::pose::PoseOP pose = new core::pose::Pose();
   String proteinPDBString = PDBFileGenerator::producePDBString(protein);
@@ -17,7 +17,7 @@ core::pose::PoseOP lbcpp::convertProtein2Pose(const ProteinPtr protein)
   return pose;
 }
 
-ProteinPtr lbcpp::convertPose2Protein(ExecutionContext& context, const core::pose::PoseOP pose)
+ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP pose)
 {
   std::ostringstream oss;
   core::io::pdb::FileData::dump_pdb((*pose), oss);
@@ -89,7 +89,7 @@ ProteinPtr lbcpp::convertPose2Protein(ExecutionContext& context, const core::pos
 
 double lbcpp::getTotalEnergy(const ProteinPtr prot)
 {
-  core::pose::PoseOP tempPose = convertProtein2Pose(prot);
+  core::pose::PoseOP tempPose = convertProteinToPose(prot);
   return getTotalEnergy(tempPose);
 }
 
@@ -100,12 +100,12 @@ double lbcpp::getTotalEnergy(core::pose::PoseOP pose)
   return (*score_fxn)(*pose);
 }
 
-void lbcpp::rosettaInit()
+void lbcpp::rosettaInitialization()
 {
-  rosettaInit(true);
+  rosettaInitialization(true);
 }
 
-void lbcpp::rosettaInit(bool verbose)
+void lbcpp::rosettaInitialization(bool verbose)
 {
   srand(time(NULL));
   int argc = 3;

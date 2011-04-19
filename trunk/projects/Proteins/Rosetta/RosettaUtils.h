@@ -47,15 +47,14 @@ typedef std::map<std::string, Vector> ResidueCoords;
  * @param protein pointer to the Protein object to convert
  * @return a pointer to the Pose object
  */
-core::pose::PoseOP convertProtein2Pose(const ProteinPtr protein);
+core::pose::PoseOP convertProteinToPose(const ProteinPtr protein);
 
 /**
  * Converts Pose object to Protein object.
  * @param pose a pointer to the Pose object to convert
  * @return a pointer to the Protein object
  */
-//ProteinPtr convertPose2Protein(const core::pose::PoseOP pose);
-ProteinPtr convertPose2Protein(ExecutionContext& context, const core::pose::PoseOP pose);
+ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP pose);
 
 /**
  * Returns the total energy of a Protein object.
@@ -82,12 +81,12 @@ void makePoseFromSequence(core::pose::PoseOP pose, const String& sequence);
  * Initializes Rosetta.
  * @param verbose sets verbosity level. true or false.
  */
-void rosettaInit(bool verbose);
+void rosettaInitialization(bool verbose);
 
 /**
  * Initializes Rosetta with verbosity set to true.
  */
-void rosettaInit();
+void rosettaInitialization();
 
 /**
  * Generates random number uniformly distributed between 0 and 1.
