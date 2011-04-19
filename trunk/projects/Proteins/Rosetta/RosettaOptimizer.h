@@ -11,6 +11,7 @@
 //#include <lbcpp/Execution/ExecutionContext.h>
 
 #include "RosettaUtils.h"
+#include "RosettaMover.h"
 #include <iostream>
 #include <cmath>
 #include <algorithm>
@@ -22,47 +23,11 @@
 
 namespace lbcpp
 {
-/*namespace options
- {
- class callbackOptions;
- typedef ReferenceCountedObjectPtr<callbackOptions> callbackOptionsPtr;
-
- class callbackOptions
- {
- private:
- //ExecutionContextPtr context;
- std::vector<Variable>* vars;
-
- public:
- callbackOptions()
- {
- vars = new std::vector<Variable>;
- }
- ~callbackOptions()
- {
- delete (vars);
- }
-
- void add(const Variable& i)
- {
- Variable tmp(i);
- vars->push_back(tmp);
- }
- Variable get(int index)
- {
- Variable tmp(vars->at(index));
- return tmp;
- }
- };
-
- }
- ; // namespace options
- */
 
 class RosettaOptimizer;
 typedef ReferenceCountedObjectPtr<RosettaOptimizer> RosettaOptimizerPtr;
 
-class RosettaOptimizer
+class RosettaOptimizer: public Object
 {
 private:
 	bool verbosity;
@@ -71,29 +36,104 @@ private:
 	ExecutionContextPtr context;
 	bool nameScopesSet;
 	std::vector<juce::String> nameScopes;
+
+	/**
+	 * Function that performs the monte carlo selection based on the
+	 * difference in the energies.
+	 * @param deltaEnergy the difference in the energies.
+	 * @param temp the normalized temperature, i.e. kT.
+	 * @return a boolean, if true, keep the conformation.
+	 */
 	bool keepConformation(double deltaEnergy, double temp);
-	void initCallbacks(std::vector<juce::String> n, double en);
+
+	/**
+	 * Initializes lbcpp callbacks.
+	 * @param n a vector containing all the names of the scopes used to store
+	 * the results and so on. First must be the name of the englobing scope. Second
+	 * the name of the scope englobing the results. Third the name of each scope
+	 * containing one result. The others depend on what you want to output. Thus, there
+	 * must be 3 + number of outputs for each conformation names in this vector.
+	 * @param en initial energy.
+	 * @param mover a pointer to the mover used to modify the protein object. This
+	 * will create a scope with tha name of the mover and with its parameters.
+	 */
+	void initCallbacks(std::vector<juce::String> n, double en, RosettaMoverPtr mover = NULL);
+
+	/**
+	 * Finalizes lbcpp callbacks.
+	 * @param en final energy of the conformation.
+	 */
 	void finalizeCallbacks(double en);
+
+	/**
+	 * Callbacks. You only need to provide a vector of Variable that contain the things
+	 * you want to appear in the trace. The size of vals must the same as (the size of n)-3
+	 * (see initCallbacks).
+	 * @param vals the values to add in the trace (beware of the number of variables).
+	 */
 	void callback(std::vector<Variable> vals);
 
 public:
+	/**
+	 * Initializes the RosettaOptimizer without any output.
+	 */
 	RosettaOptimizer();
+
+	/**
+	 * Initializes the RosettaOptimizer with callbacks.
+	 * @param c a pointer to the execution context used for the callbacks.
+	 * @param n the name of the protein optimized. (can be changed).
+	 * @param f the frequency you want the callbacks to appear in the
+	 * optimization. 0.1 gives 10 trace callbacks.
+	 */
 	RosettaOptimizer(ExecutionContextPtr c, juce::String n, double f);
+
+	/**
+	 * Destructor.
+	 */
 	~RosettaOptimizer();
 
+	/**
+	 * Returns the protein name.
+	 * @return protein name.
+	 */
 	juce::String getProteinName();
+
+	/**
+	 * Sets the protein name (used in the callbacks).
+	 * @param n the new protein name.
+	 */
 	void setProteinName(juce::String n);
 
+	/**
+	 * Sets the verbosity level to true or false.
+	 * @param v new verbosity level.
+	 */
 	void setVerbosity(bool v);
+
+	/**
+	 * Gets the actual verbosity level.
+	 * @return the verbosity level.
+	 */
+	bool getVerbosity();
+
+	/**
+	 * Sets the new frequency of trace callbacks. It depends on the number
+	 * of optimization steps performed by the optmizer. For example, if you
+	 * give 0.1 for this frequency, there will be 10 trace callbacks.
+	 */
 	void setFrequency(double f);
+
+	/**
+	 * Returns the actual trace callbacks frequency.
+	 * @return the actual trace callbacks frequency.
+	 */
+	double getFrequency();
 
 	/*
 	 * Performs greedy optimization on the pose object.
 	 * @param pose the initial conformation
-	 * @param mover pointer to the perturbation function used to modify the conformation
-	 * at each step
-	 * @param optArgs the arguments of the function, see the perturbation function
-	 * for more information. Default = NULL.
+	 * @param mover pointer to a mover that perturbs the object at each iteration.
 	 * @param maxSteps number of steps to perform before stopping the optimization.
 	 * Default = 50000.
 	 * @param str options used to create the trace of the optimization. First argument =
@@ -103,16 +143,13 @@ public:
 	 * @param context, the context used to create the trace. NULL if no trace desired, default.
 	 * @return the new conformation
 	 */
-	core::pose::PoseOP greedyOptimization(core::pose::PoseOP pose, void(*mover)(core::pose::PoseOP,
-			std::vector<void*>*), std::vector<void*>* optArgs = NULL, int maxSteps = 50000);
+	core::pose::PoseOP greedyOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover,
+			int maxSteps = 50000);
 
 	/*
 	 * Performs Monte Carlo optimization on the pose object.
 	 * @param pose the initial conformation
-	 * @param mover pointer to the perturbation function used to modify the conformation
-	 * at each step
-	 * @param optArgs the arguments of the function, see the perturbation function
-	 * for more information. Default = NULL.
+	 * @param mover pointer to a mover that perturbs the object at each iteration.
 	 * @param temp the temperature used in Monte Carlo optimization. In fact, temp
 	 * represents the product k_b*T. Default = 1.0.
 	 * @param maxSteps number of steps to perform before stopping the optimization
@@ -122,17 +159,13 @@ public:
 	 * Default = 5.
 	 * @return the new conformation
 	 */
-	core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, void(*mover)(
-			core::pose::PoseOP, std::vector<void*>*), std::vector<void*>* optArgs = NULL,
+	core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover,
 			double temp = 1.0, int maxSteps = 50000, int timesReinit = 5);
 
 	/*
 	 * Performs simulated annealing on the pose object.
 	 * @param pose the initial conformation
-	 * @param mover pointer to the perturbation function used to modify the conformation
-	 * at each step
-	 * @param optArgs the arguments of the function, see the perturbation function
-	 * for more information. Default = NULL.
+	 * @param mover pointer to a mover that perturbs the object at each iteration.
 	 * @param initTemp the initial temperature used in simulated annealing. In fact, initTemp
 	 * represents the product k_b*T used in the first step. Default = 4.0.
 	 * @param finalTemp the initial temperature used in simulated annealing. In fact, initTemp
@@ -146,13 +179,19 @@ public:
 	 * Default = 5.
 	 * @return the new conformation
 	 */
-	core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, void(*mover)(
-			core::pose::PoseOP, std::vector<void*>*), std::vector<void*>* optArgs = NULL,
-			double initTemp = 4.0, double finalTemp = 0.01, int numSteps = 100, int maxSteps =
-					50000, int timesReinit = 5);
+	core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose,
+			RosettaMoverPtr mover, double initTemp = 4.0, double finalTemp = 0.01, int numSteps =
+					100, int maxSteps = 50000, int timesReinit = 5);
 
-	core::pose::PoseOP sequentialOptimization(core::pose::PoseOP pose, void(*mover)(
-			core::pose::PoseOP, std::vector<void*>*), std::vector<void*>* optArgs);
+	/*
+	 * Performs sequential simulation on the pose object. This function adds a residue
+	 * at each iteration and then performs optimization on the resulting protein object.
+	 * The purpose is to fold the protein as it was being cronstructed.
+	 * @param pose the initial conformation
+	 * @param mover pointer to a mover that perturbs the object at each iteration.
+	 * @return the new conformation
+	 */
+	core::pose::PoseOP sequentialOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover);
 };
 
 }

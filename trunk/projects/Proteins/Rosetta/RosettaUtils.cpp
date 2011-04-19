@@ -135,7 +135,7 @@ void makePoseFromSequence(core::pose::PoseOP pose, const String& sequence)
 {
 	core::chemical::make_pose_from_sequence(*pose, (const char*) sequence,
 			core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set(
-					"FA_STANDARD"));
+					"fa_standard"));
 }
 
 double generateRand()
