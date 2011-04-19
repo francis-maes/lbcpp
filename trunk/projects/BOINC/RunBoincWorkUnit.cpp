@@ -1,10 +1,12 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RunWorkUnit.cpp                | A program to launch work units  |
+| Filename: RunBoincWorkUnit.cpp           | A program to launch work units  |
 | Author  : Arnaud Schoofs                 | on BOINC                        |
 | Started : 16/12/2010 12:25               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+
+// TODO arnaud : merge RunBoincWorkUnit and RunWorkUnit
 
 #include <lbcpp/Execution/WorkUnit.h>
 #include <lbcpp/Execution/ExecutionTrace.h>

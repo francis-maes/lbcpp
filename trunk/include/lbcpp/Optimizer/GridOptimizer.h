@@ -1,6 +1,6 @@
 /*-----------------------------------------.---------------------------------.
 | Filename: GridOptimizer.h                | Optimizer's base class for Grid |
-| Author  : Arnaud Schoofs                 |                                 |
+| Author  : Arnaud Schoofs                 | (deprecated)                    |
 | Started : 11/03/2011 00:18               |                                 |
 `------------------------------------------/                                 |
                                |                                             |

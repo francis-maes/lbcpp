@@ -1,11 +1,10 @@
-/*
- *  OptimizerContext.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 3/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: OptimizerContext.h             | Performs evaluations asked by   |
+| Author  : Arnaud Schoofs                 | an Optimizer (abstract class)   |
+| Started : 03/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+															 `--------------------------------------------*/
 
 #ifndef LBCPP_OPTIMIZER_CONTEXT_H_
 # define LBCPP_OPTIMIZER_CONTEXT_H_

@@ -1,10 +1,10 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: ProteinGridEvoOptimizer.h      | Optimizer using Evolutionary    |
- | Author  : Arnaud Schoofs                 | Algorithm on Grid for Protein   |
- | Started : 01/03/2010 23:45               | project                         |
- `------------------------------------------/                                 |
-                                            |                                 |
-                                            `--------------------------------*/
+| Filename: ProteinGridEvoOptimizer.h      | Optimizer using Evolutionary    |
+| Author  : Arnaud Schoofs                 | Algorithm on Grid for Protein   |
+| Started : 01/03/2011                     | project (deprecated)            |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef PROTEIN_GRID_EVO_OPTIMIZER_H_
 #define PROTEIN_GRID_EVO_OPTIMIZER_H_
