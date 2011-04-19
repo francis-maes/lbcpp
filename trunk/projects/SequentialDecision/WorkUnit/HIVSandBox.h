@@ -471,10 +471,10 @@ public:
           computeTrajectory(context, problem, initialStates, minDepthSearchHeuristic(), T("minDepth"), maxSearchNodes);
         }
 
-        if (loadedHeuristics.size() && (depth - minDepth) < loadedHeuristics.size())
+        if (loadedHeuristics.size() && depth < loadedHeuristics.size())
         {
           // loaded heuristic
-          computeTrajectory(context, problem, initialStates, loadedHeuristics[depth - minDepth], T("loadedHeuristic"), maxSearchNodes);
+          computeTrajectory(context, problem, initialStates, loadedHeuristics[depth], T("loadedHeuristic"), maxSearchNodes);
         }
 
         if (optimisticHeuristics)
