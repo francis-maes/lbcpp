@@ -1,10 +1,11 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: RunWorkUnit.cpp                | A program to unzip zip files    |
- | Author  : Arnaud Schoofs                 |                                 |
- | Started : 30/10/2010 12:00               |                                 |
- `------------------------------------------/                                 |
-                                            |                                 |
-                                            `--------------------------------*/
+| Filename: unzipper.cpp                   | A program to unzip zip files    |
+| Author  : Arnaud Schoofs                 |                                 |
+| Started : 16/12/2010 12:25               |                                 |
+`------------------------------------------/                                 |
+															 |                                             |
+                               `--------------------------------------------*/
+
 
 #include <lbcpp/library.h>
 using namespace lbcpp;

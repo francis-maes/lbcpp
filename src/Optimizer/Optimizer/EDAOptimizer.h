@@ -1,11 +1,11 @@
-/*
- *  EDAOptimizer.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 6/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: EDAOptimizer.h                 | Basic EDA Optimizer             |
+| Author  : Arnaud Schoofs                 |                                 |
+| Started : 06/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+															 `--------------------------------------------*/
+
 #ifndef LBCPP_EDA_OPTIMIZER_H_
 # define LBCPP_EDA_OPTIMIZER_H_
 

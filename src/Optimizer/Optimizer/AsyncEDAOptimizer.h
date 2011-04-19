@@ -1,11 +1,10 @@
-/*
- *  AsyncEDAOptimizer.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 10/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: AsyncEDAOptimizer.h            | Asynchronous EDA based Optimizer|
+| Author  : Arnaud Schoofs                 | (samples to evaluate are        |
+| Started : 10/04/2011                     | genrated continuously)          |
+`------------------------------------------/                                 |
+															 |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_ASYNC_EDA_OPTIMIZER_H_
 # define LBCPP_ASYNC_EDA_OPTIMIZER_H_

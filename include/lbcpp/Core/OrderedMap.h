@@ -1,10 +1,10 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: OrderedMap.h                   | OrderedMap of Variables         |
- | Author  : Arnaud Schoofs                 |                                 |
- | Started : 10/03/2011 21:41               |                                 |
- `------------------------------------------/                                 |
-                                            |                                 |
-                                            `--------------------------------*/
+| Filename: OrderedMap.h                   | OrderedMap of Variables         |
+| Author  : Arnaud Schoofs                 | TODO arnaud : not finished !    |
+| Started : 10/03/2011 21:41               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #ifndef LBCPP_CORE_ORDERED_MAP_H_
 # define LBCPP_CORE_ORDERED_MAP_H_

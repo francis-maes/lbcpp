@@ -1,11 +1,11 @@
-/*
- *  OptimizerTest.h
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 2/03/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: OptimizerTest.h                | WorkUnit used to test Optimizer |
+| Author  : Arnaud Schoofs                 | (debug purpose)                 |
+| Started : 02/03/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 
 #ifndef OPTIMIZER_TEST_H_
 #define OPTIMIZER_TEST_H_

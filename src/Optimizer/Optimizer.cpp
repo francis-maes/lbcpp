@@ -1,11 +1,11 @@
-/*
- *  Optimizer.cpp
- *  LBCpp
- *
- *  Created by Arnaud Schoofs on 11/04/11.
- *  Copyright 2011 __MyCompanyName__. All rights reserved.
- *
- */
+/*-----------------------------------------.---------------------------------.
+| Filename: Optimizer.cpp                  | Implementation file of          |
+| Author  : Arnaud Schoofs                 | Optimizer, OptimizerState and   |
+| Started : 11/04/2011                     | OptimizerContext                |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 #include "precompiled.h"
 #include <lbcpp/Optimizer/Optimizer.h>
 #include <lbcpp/Optimizer/OptimizerState.h>

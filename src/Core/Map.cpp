@@ -1,10 +1,11 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: Map.cpp                        | Map Containeer base class       |
- | Author  : Arnaud Schoofs                 |                                 |
- | Started : 10/03/2011 21:41               |                                 |
- `------------------------------------------/                                 |
-                                            |                                 |
-                                            `--------------------------------*/
+| Filename: Map.cpp                        | Map Containeer base class       |
+| Author  : Arnaud Schoofs                 | TODO arnaud : not finished !    |
+| Started : 10/03/2011 21:41               |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
+
 #include "precompiled.h"
 #include <lbcpp/Core/Map.h>
 

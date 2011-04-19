@@ -1,10 +1,10 @@
 /*-----------------------------------------.---------------------------------.
- | Filename: GridEvoOptimizer.h             | Optimizer using Evolutionary    |
- | Author  : Arnaud Schoofs                 | Algorithm on Grid               |
- | Started : 01/03/2010 23:45               |                                 |
- `------------------------------------------/                                 |
-                                            |                                 |
-                                            `--------------------------------*/
+| Filename: GridEvoOptimizer.h             | Optimizer using Evolutionary    |
+| Author  : Arnaud Schoofs                 | Algorithm on Grid               |
+| Started : 01/03/2010 23:45               | (deprecated)                    |
+`------------------------------------------/                                 |
+                               |                                             |
+															 `--------------------------------------------*/
 
 // TODO arnaud : clean things up to compile wihtout network
 
