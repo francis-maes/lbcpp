@@ -1,430 +1,446 @@
-/**
- * author: Alejandro Marcos Alvarez
- * date: 12/04/2011
- * name: RosettaOptimizer.cpp
- */
+/*-----------------------------------------.---------------------------------.
+| Filename:  RosettaOptimizer.cpp          | RosettaOptimizer                |
+| Author  : Alejandro Marcos Alvarez       |                                 |
+| Started : 12/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include "RosettaOptimizer.h"
 
-namespace lbcpp
-{
+using namespace lbcpp;
 
-void RosettaOptimizer::initCallbacks(std::vector<juce::String> n, double en, RosettaMoverPtr mover)
+void RosettaOptimizer::initializeCallbacks(const std::vector<String>& names, double energy,
+    int maxStepsNumber, RosettaMoverPtr mover)
 {
-	if (verbosity)
-	{
-		nameScopesSet = true;
-		nameScopes = n;
-		juce::String nameScope(nameScopes.at(0));
-		nameScope += name;
-		context->enterScope(nameScope);
-		if (mover.get() != NULL)
-		{
-			context->enterScope(T("Mover"));
-			context->resultCallback(T("Name"), mover->getName());
-
-			std::vector<juce::String> names = mover->getParamNames();
-			std::vector<Variable> params = mover->getParams();
-			for (int i = 0; i < names.size(); i++)
-				context->resultCallback(names.at(i), params.at(i));
-			context->leaveScope(mover->getName());
-		}
-		context->enterScope(T("Initial energy"));
-		context->resultCallback(T("Initial Energy"), Variable(en));
-		context->leaveScope(Variable(en));
-		context->enterScope(nameScopes.at(1));
-	}
+  if (verbosity)
+  {
+    nameScopesSet = true;
+    nameScopes = names;
+    String nameScope(nameScopes.at(0));
+    nameScope += name;
+    context->enterScope(nameScope);
+    context->resultCallback(T("Protein name"), name);
+    if (mover.get() != NULL)
+    {
+      context->resultCallback(T("Mover Name"), mover->getName());
+      context->progressCallback(new ProgressionState((double)0, (double)maxStepsNumber,
+          T("Iterations")));
+      std::vector<String> names = mover->getParametersNames();
+      std::vector<Variable> parameters = mover->getParameters();
+      String templateName("Mover parameter : ");
+      for (int i = 0; i < names.size(); i++)
+        context->resultCallback(templateName + names.at(i), parameters.at(i));
+    }
+    context->resultCallback(T("Initial Energy"), Variable(energy));
+    context->enterScope(nameScopes.at(1));
+  }
 }
 
-void RosettaOptimizer::finalizeCallbacks(double en)
+void RosettaOptimizer::finalizeCallbacks(double energy)
 {
-	if (verbosity)
-	{
-		if (nameScopesSet)
-		{
-			context->leaveScope(); //leave Energies
-			context->enterScope(T("Final energy"));
-			context->resultCallback(T("Final Energy"), Variable(en));
-			context->leaveScope(Variable(en));
-			context->leaveScope(Variable(en));
-			nameScopesSet = false;
-		}
-	}
+  if (verbosity)
+  {
+    if (nameScopesSet)
+    {
+      context->leaveScope(); //leave Energies
+      context->resultCallback(T("Final Energy"), Variable(energy));
+      context->leaveScope(Variable(energy));
+      nameScopesSet = false;
+    }
+  }
 }
 
-void RosettaOptimizer::callback(std::vector<Variable> vals)
+void RosettaOptimizer::callback(const std::vector<Variable>& resultCallbackValues, Variable returnValue,
+    int maxStepsNumber)
 {
-	if (verbosity)
-	{
-		if (nameScopesSet)
-		{
-			context->enterScope(nameScopes.at(2));
-			for (int i = 0; i < vals.size(); i++)
-				context->resultCallback(nameScopes.at(i + 3), Variable(vals.at(i)));
-			context->leaveScope();
-		}
-		else
-			context->errorCallback(T("nameScopes undefined."));
-	}
+  if (verbosity)
+  {
+    if (nameScopesSet)
+    {
+      context->progressCallback(new ProgressionState((double)resultCallbackValues.at(0).getInteger(),
+          (double)maxStepsNumber, T("Iterations")));
+      context->enterScope(nameScopes.at(2));
+      for (int i = 0; i < resultCallbackValues.size(); i++)
+        context->resultCallback(nameScopes.at(i + 3), Variable(resultCallbackValues.at(i)));
+      context->leaveScope(returnValue);
+    }
+    else
+      context->errorCallback(T("nameScopes undefined."));
+  }
 }
 
-void RosettaOptimizer::setVerbosity(bool v)
+void RosettaOptimizer::setVerbosity(bool verbosity)
 {
-	verbosity = v;
+  this->verbosity = verbosity;
 }
 
 bool RosettaOptimizer::getVerbosity()
 {
-	return verbosity;
+  return verbosity;
 }
 
-void RosettaOptimizer::setFrequency(double f)
+void RosettaOptimizer::setFrequency(double frequency)
 {
-	freqVerb = f;
+  frequencyVerbosity = frequency;
 }
 
 double RosettaOptimizer::getFrequency()
 {
-	return freqVerb;
+  return frequencyVerbosity;
 }
 
 RosettaOptimizer::RosettaOptimizer()
 {
-	context = NULL;
-	name = (juce::String) "Default";
-	freqVerb = 0.1;
-	verbosity = false;
-	nameScopesSet = false;
+  context = NULL;
+  name = (String) "Default";
+  frequencyVerbosity = 0.1;
+  verbosity = false;
+  nameScopesSet = false;
 }
 
-RosettaOptimizer::RosettaOptimizer(ExecutionContextPtr c, juce::String n, double f)
+RosettaOptimizer::RosettaOptimizer(ExecutionContextPtr context, String name, double frequency)
 {
-	if (c.get() != NULL)
-	{
-		context = c;
-		if (n.isEmpty())
-			name = (juce::String) "Default";
-		else
-			name = n;
-		if ((f < 0) || (f > 1))
-			freqVerb = 0.1;
-		else
-			freqVerb = f;
-		verbosity = true;
-	}
-	else
-	{
-		context = NULL;
-		name = (juce::String) "Default";
-		freqVerb = 0.1;
-		verbosity = false;
-	}
-	nameScopesSet = false;
+  if (context.get() != NULL)
+  {
+    this->context = context;
+    if (name.isEmpty())
+      this->name = (String) "Default";
+    else
+      this->name = name;
+    if ((frequency < 0) || (frequency > 1))
+      frequencyVerbosity = 0.1;
+    else
+      frequencyVerbosity = frequency;
+    verbosity = true;
+  }
+  else
+  {
+    this->context = NULL;
+    this->name = (String) "Default";
+    frequencyVerbosity = 0.1;
+    verbosity = false;
+  }
+  nameScopesSet = false;
 }
 
 RosettaOptimizer::~RosettaOptimizer()
 {
 }
 
-juce::String RosettaOptimizer::getProteinName()
+String RosettaOptimizer::getProteinName()
 {
-	juce::String tmp(name);
-	return tmp;
+  return String(name);
 }
 
-void RosettaOptimizer::setProteinName(juce::String n)
+void RosettaOptimizer::setProteinName(String name)
 {
-	name = (juce::String) n;
+  this->name = name;
 }
 
-bool RosettaOptimizer::keepConformation(double deltaEnergy, double temp)
+bool RosettaOptimizer::keepConformation(double deltaEnergy, double temperature)
 {
-	double val = std::exp(-deltaEnergy / temp);
+  double val = std::exp(-deltaEnergy / temperature);
 
-	if (generateRand() < val)
-		return true;
-	else
-		return false;
+  if (generateRand() < val)
+    return true;
+  else
+    return false;
 }
 
 core::pose::PoseOP RosettaOptimizer::monteCarloOptimization(core::pose::PoseOP pose,
-		RosettaMoverPtr mover, double temp, int maxSteps, int timesReinit)
+    RosettaMoverPtr mover, double temperature, int maxSteps, int timesReinitialization)
 {
-	double currEn = getTotalEnergy(pose);
-	double minEn = currEn;
-	double tempEn = currEn;
-	core::pose::PoseOP optimized = new core::pose::Pose((*pose));
-	core::pose::PoseOP tempOptimized = new core::pose::Pose((*pose));
-	core::pose::PoseOP working = new core::pose::Pose((*pose));
+  double currentEnergy = getTotalEnergy(pose);
+  double minimumEnergy = currentEnergy;
+  double temporaryEnergy = currentEnergy;
+  core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
+  core::pose::PoseOP temporaryOptimizedPose = new core::pose::Pose((*pose));
+  core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
 
-	int reinitInterval = -1;
-	if (timesReinit > 0)
-		reinitInterval = maxSteps / timesReinit;
+  int reinitializationInterval = -1;
+  if (timesReinitialization > 0)
+    reinitializationInterval = maxSteps / timesReinitialization;
 
-	if ((maxSteps <= 0) || (temp <= 0))
-		return NULL;
+  if ((maxSteps <= 0) || (temperature <= 0))
+    return NULL;
 
-	// Init verbosity
-	juce::String ns("Monte carlo optim : ");
-	int intervVerb = (int) std::ceil(maxSteps * freqVerb);
-	std::vector<Variable> vals;
-	if (verbosity)
-	{
-		std::vector<juce::String> v;
-		v.push_back(ns);
-		v.push_back(T("Energies"));
-		v.push_back(T("Energy"));
-		v.push_back(T("Step"));
-		v.push_back(T("Minimal energy"));
-		v.push_back(T("Temporary energy"));
-		v.push_back(T("Temperature"));
-		initCallbacks(v, minEn, mover);
-		vals.push_back(Variable((int) 0));
-		vals.push_back(Variable(minEn));
-		vals.push_back(Variable(tempEn));
-		vals.push_back(Variable(temp));
-		callback(vals);
-	}
+  // Init verbosity
+  String nameEnglobingScope("Monte carlo optimization : ");
+  int intervalVerbosity = (int) std::ceil(maxSteps * frequencyVerbosity);
+  std::vector<Variable> resultCallbackValues;
+  if (verbosity)
+  {
+    std::vector<String> englobingScopesNames;
+    englobingScopesNames.push_back(nameEnglobingScope);
+    englobingScopesNames.push_back(T("Energies"));
+    englobingScopesNames.push_back(T("Energy"));
+    englobingScopesNames.push_back(T("Step"));
+    englobingScopesNames.push_back(T("Minimal energy"));
+    englobingScopesNames.push_back(T("Temporary energy"));
+    englobingScopesNames.push_back(T("Temperature"));
+    englobingScopesNames.push_back(T("Minimal energy (log10)"));
+    englobingScopesNames.push_back(T("Temporary energy (log10)"));
+    initializeCallbacks(englobingScopesNames, minimumEnergy, mover);
+    resultCallbackValues.push_back(Variable((int) 0));
+    resultCallbackValues.push_back(Variable(minimumEnergy));
+    resultCallbackValues.push_back(Variable(temporaryEnergy));
+    resultCallbackValues.push_back(Variable(temperature));
+    resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
+    resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
+    callback(resultCallbackValues, Variable(minimumEnergy), 0.0);
+  }
 
-	for (int i = 1; i <= maxSteps; i++)
-	{
-		mover->move(working);
-		tempEn = getTotalEnergy(working);
+  for (int i = 1; i <= maxSteps; i++)
+  {
+    mover->move(workingPose);
+    temporaryEnergy = getTotalEnergy(workingPose);
 
-		if (keepConformation(tempEn - currEn, temp))
-		{
-			tempOptimized->set_new_conformation(&(working->conformation()));
-			currEn = tempEn;
-		}
-		else
-		{
-			working->set_new_conformation(&(tempOptimized->conformation()));
-			tempEn = currEn;
-		}
+    if (keepConformation(temporaryEnergy - currentEnergy, temperature))
+    {
+      temporaryOptimizedPose->set_new_conformation(&(workingPose->conformation()));
+      currentEnergy = temporaryEnergy;
+    }
+    else
+    {
+      workingPose->set_new_conformation(&(temporaryOptimizedPose->conformation()));
+      temporaryEnergy = currentEnergy;
+    }
 
-		if (tempEn < minEn)
-		{
-			optimized->set_new_conformation(&(working->conformation()));
-			minEn = tempEn;
-		}
+    if (temporaryEnergy < minimumEnergy)
+    {
+      optimizedPose->set_new_conformation(&(workingPose->conformation()));
+      minimumEnergy = temporaryEnergy;
+    }
 
-		if ((reinitInterval > 0) && (i % reinitInterval) == 0)
-		{
-			working->set_new_conformation(&(optimized->conformation()));
-			tempOptimized->set_new_conformation(&(optimized->conformation()));
-			tempEn = minEn;
-			currEn = minEn;
-		}
+    if ((reinitializationInterval > 0) && (i % reinitializationInterval) == 0)
+    {
+      workingPose->set_new_conformation(&(optimizedPose->conformation()));
+      temporaryOptimizedPose->set_new_conformation(&(optimizedPose->conformation()));
+      temporaryEnergy = minimumEnergy;
+      currentEnergy = minimumEnergy;
+    }
 
-		// Verbosity
-		if (verbosity && (((i % intervVerb) == 0) || (i == maxSteps)))
-		{
-			vals.at(0) = Variable((int) i);
-			vals.at(1) = Variable(minEn);
-			vals.at(2) = Variable(currEn);
-			vals.at(3) = Variable(temp);
-			callback(vals);
-		}
-	}
-	// Verbosity
-	if (verbosity)
-		finalizeCallbacks(minEn);
+    // Verbosity
+    if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
+    {
+      resultCallbackValues.at(0) = Variable((int) i);
+      resultCallbackValues.at(1) = Variable(minimumEnergy);
+      resultCallbackValues.at(2) = Variable(currentEnergy);
+      resultCallbackValues.at(3) = Variable(temperature);
+      resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
+      resultCallbackValues.at(5) = Variable(log10(temporaryEnergy));
+      callback(resultCallbackValues, Variable(minimumEnergy), (double)i / (double)maxSteps);
+    }
+  }
+  // Verbosity
+  if (verbosity)
+    finalizeCallbacks(minimumEnergy);
 
-	return optimized;
+  return optimizedPose;
 }
 
 core::pose::PoseOP RosettaOptimizer::simulatedAnnealingOptimization(core::pose::PoseOP pose,
-		RosettaMoverPtr mover, double initTemp, double finalTemp, int numSteps, int maxSteps,
-		int timesReinit)
+    RosettaMoverPtr mover, double initialTemperature, double finalTemperature,
+    int numberDecreasingSteps, int maxSteps, int timesReinitialization)
 {
-	double currEn = getTotalEnergy(pose);
-	double minEn = currEn;
-	double tempEn = currEn;
-	if ((initTemp < finalTemp) || (numSteps > maxSteps) || (numSteps <= 0) || (maxSteps <= 0)
-			|| (initTemp <= 0) || (finalTemp <= 0))
-		return NULL;
+  double currentEnergy = getTotalEnergy(pose);
+  double minimumEnergy = currentEnergy;
+  double temporaryEnergy = currentEnergy;
+  if ((initialTemperature < finalTemperature) || (numberDecreasingSteps > maxSteps) || (numberDecreasingSteps <= 0) || (maxSteps <= 0)
+      || (initialTemperature <= 0) || (finalTemperature <= 0))
+    return NULL;
 
-	int reinitInterval = -1;
-	if (timesReinit > 0)
-		reinitInterval = maxSteps / timesReinit;
+  int reinitializationInterval = -1;
+  if (timesReinitialization > 0)
+    reinitializationInterval = maxSteps / timesReinitialization;
 
-	double currTemp = initTemp;
-	int interSteps = maxSteps / numSteps;
-	core::pose::PoseOP optimized = new core::pose::Pose((*pose));
-	core::pose::PoseOP tempOptimized = new core::pose::Pose((*pose));
-	core::pose::PoseOP working = new core::pose::Pose((*pose));
+  double currentTemperature = initialTemperature;
+  int intervalDecreasingTemperature = maxSteps / numberDecreasingSteps;
+  core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
+  core::pose::PoseOP temporaryOptimizedPose = new core::pose::Pose((*pose));
+  core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
 
-	// Init verbosity
-	juce::String ns("Simulated annealing optim : ");
-	int intervVerb = (int) std::ceil(maxSteps * freqVerb);
-	std::vector<Variable> vals;
-	if (verbosity)
-	{
-		std::vector<juce::String> v;
-		v.push_back(ns);
-		v.push_back(T("Energies"));
-		v.push_back(T("Energy"));
-		v.push_back(T("Step"));
-		v.push_back(T("Minimal energy"));
-		v.push_back(T("Temporary energy"));
-		v.push_back(T("Temperature"));
-		initCallbacks(v, minEn, mover);
-		vals.push_back(Variable((int) 0));
-		vals.push_back(Variable(minEn));
-		vals.push_back(Variable(tempEn));
-		vals.push_back(Variable(currTemp));
-		callback(vals);
-	}
+  // Init verbosity
+  String nameEnglobingScope("Simulated annealing optimization : ");
+  int intervalVerbosity = (int) std::ceil(maxSteps * frequencyVerbosity);
+  std::vector<Variable> resultCallbackValues;
+  if (verbosity)
+  {
+    std::vector<String> englobingScopesNames;
+    englobingScopesNames.push_back(nameEnglobingScope);
+    englobingScopesNames.push_back(T("Energies"));
+    englobingScopesNames.push_back(T("Energy"));
+    englobingScopesNames.push_back(T("Step"));
+    englobingScopesNames.push_back(T("Minimal energy"));
+    englobingScopesNames.push_back(T("Temporary energy"));
+    englobingScopesNames.push_back(T("Temperature"));
+    englobingScopesNames.push_back(T("Minimal energy (log10)"));
+    englobingScopesNames.push_back(T("Temporary energy (log10)"));
+    initializeCallbacks(englobingScopesNames, minimumEnergy, mover);
+    resultCallbackValues.push_back(Variable((int) 0));
+    resultCallbackValues.push_back(Variable(minimumEnergy));
+    resultCallbackValues.push_back(Variable(temporaryEnergy));
+    resultCallbackValues.push_back(Variable(currentTemperature));
+    resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
+    resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
+    callback(resultCallbackValues, Variable(minimumEnergy), 0.0);
+  }
 
-	for (int i = 1; i <= maxSteps; i++)
-	{
-		mover->move(working);
-		tempEn = getTotalEnergy(working);
+  for (int i = 1; i <= maxSteps; i++)
+  {
+    mover->move(workingPose);
+    temporaryEnergy = getTotalEnergy(workingPose);
 
-		if (keepConformation(tempEn - currEn, currTemp))
-		{
-			tempOptimized->set_new_conformation(&(working->conformation()));
-			currEn = tempEn;
-		}
-		else
-		{
-			working->set_new_conformation(&(tempOptimized->conformation()));
-			tempEn = currEn;
-		}
+    if (keepConformation(temporaryEnergy - currentEnergy, currentTemperature))
+    {
+      temporaryOptimizedPose->set_new_conformation(&(workingPose->conformation()));
+      currentEnergy = temporaryEnergy;
+    }
+    else
+    {
+      workingPose->set_new_conformation(&(temporaryOptimizedPose->conformation()));
+      temporaryEnergy = currentEnergy;
+    }
 
-		if (tempEn < minEn)
-		{
-			optimized->set_new_conformation(&(working->conformation()));
-			minEn = tempEn;
-		}
+    if (temporaryEnergy < minimumEnergy)
+    {
+      optimizedPose->set_new_conformation(&(workingPose->conformation()));
+      minimumEnergy = temporaryEnergy;
+    }
 
-		if ((reinitInterval > 0) && (i % reinitInterval) == 0)
-		{
-			working->set_new_conformation(&(optimized->conformation()));
-			tempOptimized->set_new_conformation(&(optimized->conformation()));
-			tempEn = minEn;
-			currEn = minEn;
-		}
+    if ((reinitializationInterval > 0) && (i % reinitializationInterval) == 0)
+    {
+      workingPose->set_new_conformation(&(optimizedPose->conformation()));
+      temporaryOptimizedPose->set_new_conformation(&(optimizedPose->conformation()));
+      temporaryEnergy = minimumEnergy;
+      currentEnergy = minimumEnergy;
+    }
 
-		if ((i % interSteps) == 0)
-		{
-			currTemp = currTemp - ((initTemp - finalTemp) / (double) numSteps);
-		}
+    if ((i % intervalDecreasingTemperature) == 0)
+    {
+      currentTemperature = currentTemperature - ((initialTemperature - finalTemperature) / (double) numberDecreasingSteps);
+    }
 
-		// Verbosity
-		if (verbosity && (((i % intervVerb) == 0) || (i == maxSteps)))
-		{
-			vals.at(0) = Variable((int) i);
-			vals.at(1) = Variable(minEn);
-			vals.at(2) = Variable(currEn);
-			vals.at(3) = Variable(currTemp);
-			callback(vals);
-		}
-	}
-	// Verbosity
-	if (verbosity)
-		finalizeCallbacks(minEn);
+    // Verbosity
+    if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
+    {
+      resultCallbackValues.at(0) = Variable((int) i);
+      resultCallbackValues.at(1) = Variable(minimumEnergy);
+      resultCallbackValues.at(2) = Variable(currentEnergy);
+      resultCallbackValues.at(3) = Variable(currentTemperature);
+      resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
+      resultCallbackValues.at(5) = Variable(log10(currentEnergy));
+      callback(resultCallbackValues, Variable(minimumEnergy), (double)i / (double)maxSteps);
+    }
+  }
+  // Verbosity
+  if (verbosity)
+    finalizeCallbacks(minimumEnergy);
 
-	return optimized;
+  return optimizedPose;
 }
 
 core::pose::PoseOP RosettaOptimizer::greedyOptimization(core::pose::PoseOP pose,
-		RosettaMoverPtr mover, int maxSteps)
+    RosettaMoverPtr mover, int maxSteps)
 {
-	// Initialization
-	double minEn = getTotalEnergy(pose);
-	double tempEn = minEn;
-	core::pose::PoseOP optimized = new core::pose::Pose((*pose));
-	core::pose::PoseOP working = new core::pose::Pose((*pose));
+  // Initialization
+  double minimumEnergy = getTotalEnergy(pose);
+  double temporaryEnergy = minimumEnergy;
+  core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
+  core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
 
-	if (maxSteps <= 0)
-		return NULL;
+  if (maxSteps <= 0)
+    return NULL;
 
-	// Init verbosity
-	juce::String ns("Greedy optim : ");
-	int intervVerb = (int) std::ceil(maxSteps * freqVerb);
-	std::vector<Variable> vals;
-	if (verbosity)
-	{
-		std::vector<juce::String> v;
-		v.push_back(ns);
-		v.push_back(T("Energies"));
-		v.push_back(T("Energy"));
-		v.push_back(T("Step"));
-		v.push_back(T("Minimal energy"));
-		v.push_back(T("Temporary energy"));
-		initCallbacks(v, minEn, mover);
-		vals.push_back(Variable((int) 0));
-		vals.push_back(Variable(minEn));
-		vals.push_back(Variable(tempEn));
-		callback(vals);
-	}
+  // Init verbosity
+  String nameEnglobingScope("Greedy optimization : ");
+  int intervalVerbosity = (int) std::ceil(maxSteps * frequencyVerbosity);
+  std::vector<Variable> resultCallbackValues;
+  if (verbosity)
+  {
+    std::vector<String> englobingScopesNames;
+    englobingScopesNames.push_back(nameEnglobingScope);
+    englobingScopesNames.push_back(T("Energies"));
+    englobingScopesNames.push_back(T("Energy"));
+    englobingScopesNames.push_back(T("Step"));
+    englobingScopesNames.push_back(T("Minimal energy"));
+    englobingScopesNames.push_back(T("Temporary energy"));
+    englobingScopesNames.push_back(T("Minimal energy (log10)"));
+    englobingScopesNames.push_back(T("Temporary energy (log10)"));
+    initializeCallbacks(englobingScopesNames, minimumEnergy, mover);
+    resultCallbackValues.push_back(Variable((int) 0));
+    resultCallbackValues.push_back(Variable(minimumEnergy));
+    resultCallbackValues.push_back(Variable(temporaryEnergy));
+    resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
+    resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
+    callback(resultCallbackValues, Variable(minimumEnergy), 0.0);
+  }
 
-	for (int i = 1; i <= maxSteps; i++)
-	{
-		mover->move(working);
-		tempEn = getTotalEnergy(working);
+  for (int i = 1; i <= maxSteps; i++)
+  {
+    mover->move(workingPose);
+    temporaryEnergy = getTotalEnergy(workingPose);
 
-		if (tempEn < minEn)
-		{
-			optimized->set_new_conformation(&(working->conformation()));
-			minEn = tempEn;
-		}
-		else
-		{
-			working->set_new_conformation(&(optimized->conformation()));
-		}
+    if (temporaryEnergy < minimumEnergy)
+    {
+      optimizedPose->set_new_conformation(&(workingPose->conformation()));
+      minimumEnergy = temporaryEnergy;
+    }
+    else
+    {
+      workingPose->set_new_conformation(&(optimizedPose->conformation()));
+    }
 
-		// Verbosity
-		if (verbosity && (((i % intervVerb) == 0) || (i == maxSteps)))
-		{
-			vals.at(0) = Variable((int) i);
-			vals.at(1) = Variable(minEn);
-			vals.at(2) = Variable(tempEn);
-			callback(vals);
-		}
-	}
+    // Verbosity
+    if (verbosity && (((i % intervalVerbosity) == 0) || (i == maxSteps)))
+    {
+      resultCallbackValues.at(0) = Variable((int) i);
+      resultCallbackValues.at(1) = Variable(minimumEnergy);
+      resultCallbackValues.at(2) = Variable(temporaryEnergy);
+      resultCallbackValues.at(3) = Variable(log10(minimumEnergy));
+      resultCallbackValues.at(4) = Variable(log10(temporaryEnergy));
+      callback(resultCallbackValues, Variable(minimumEnergy), (double)i / (double)maxSteps);
+    }
+  }
 
-	// Verbosity
-	if (verbosity)
-		finalizeCallbacks(minEn);
+  // Verbosity
+  if (verbosity)
+    finalizeCallbacks(minimumEnergy);
 
-	// Return
-	return optimized;
+  // Return
+  return optimizedPose;
 }
 
 core::pose::PoseOP RosettaOptimizer::sequentialOptimization(core::pose::PoseOP pose,
-		RosettaMoverPtr mover)
+    RosettaMoverPtr mover)
 {
-	core::pose::PoseOP acc = new core::pose::Pose();
+  core::pose::PoseOP acc = new core::pose::Pose();
 
-	double initTemp = 4.0;
-	double finalTemp = 0.01;
-	int numSteps = 100;
-	int maxSteps = 0;
-	int factor = 5000;
-	bool store = getVerbosity();
-	setVerbosity(false);
+  double initialTemperature = 4.0;
+  double finalTemperature = 0.01;
+  int numberDecreasingSteps = 100;
+  int maxSteps = 0;
+  int factor = 5000;
+  bool store = getVerbosity();
+  setVerbosity(false);
 
-	for (int i = 1; i <= pose->n_residue(); i++)
-	{
-		maxSteps = (int) std::max((int) ((factor * log(i)) + 1), numSteps);
-		acc->append_residue_by_bond(pose->residue(i), true);
-		core::pose::PoseOP tempPose = simulatedAnnealingOptimization(acc, mover, initTemp,
-				finalTemp, numSteps, maxSteps);
-		//core::pose::PoseOP tempPose = monteCarloOptimization(acc, mover, optArgs, finalTemp,
-		//		maxSteps);
-		if (tempPose.get() == NULL)
-		{
-			return NULL;
-		}
-		acc->set_new_conformation(&(tempPose->conformation()));
-	}
+  for (int i = 1; i <= pose->n_residue(); i++)
+  {
+    maxSteps = (int) std::max((int) ((factor * log(i)) + 1), numberDecreasingSteps);
+    acc->append_residue_by_bond(pose->residue(i), true);
+    core::pose::PoseOP tempPose = simulatedAnnealingOptimization(acc, mover, initialTemperature, finalTemperature,
+        numberDecreasingSteps, maxSteps);
+    //core::pose::PoseOP tempPose = monteCarloOptimization(acc, mover, optArgs, finalTemperature,
+    //		maxSteps);
+    if (tempPose.get() == NULL)
+    {
+      return NULL;
+    }
+    acc->set_new_conformation(&(tempPose->conformation()));
+  }
 
-	setVerbosity(store);
-	return acc;
+  setVerbosity(store);
+  return acc;
 }
-
-}
-; /* namespace lbcpp */
 

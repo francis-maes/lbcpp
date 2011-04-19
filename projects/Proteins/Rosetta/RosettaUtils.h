@@ -1,38 +1,41 @@
-/**
- * author: Alejandro Marcos Alvarez
- * date: 03/04/2011
- * name: RosettaUtils.h
- */
+/*-----------------------------------------.---------------------------------.
+| Filename:  RosettaUtils.h                | RosettaUtils                    |
+| Author  : Alejandro Marcos Alvarez       |                                 |
+| Started : 03/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTAUTILS_H_
-#define LBCPP_PROTEINS_ROSETTAUTILS_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_UTILS_H_
+# define LBCPP_PROTEINS_ROSETTA_UTILS_H_
 
-#include "../Data/AminoAcid.h"
-#include "../Data/Protein.h"
-#include "../Data/Residue.h"
-#include "../Data/Formats/PDBFileGenerator.h"
-#include "../Geometry/Vector3.h"
+# include "precompiled.h"
+# include "../Data/AminoAcid.h"
+# include "../Data/Protein.h"
+# include "../Data/Residue.h"
+# include "../Data/Formats/PDBFileGenerator.h"
+# include "../Geometry/Vector3.h"
 
-#include <time.h>
-#include <stdlib.h>
-#include <cmath>
-#include <iostream>
+# include <time.h>
+# include <stdlib.h>
+# include <cmath>
+# include <iostream>
 
-#undef T
-#include <core/chemical/AtomType.hh>
-#include <core/chemical/ChemicalManager.hh>
-#include <core/chemical/util.hh>
-#include <core/chemical/ResidueType.hh>
-#include <core/conformation/Residue.hh>
-#include <core/init.hh>
-#include <core/io/pdb/file_data.hh>
-#include <core/io/pdb/pose_io.hh>
-#include <core/pose/PDBInfo.hh>
-#include <core/pose/Pose.hh>
-#include <core/scoring/ScoreFunction.hh>
-#include <core/scoring/ScoreFunctionFactory.hh>
-#include <numeric/xyzVector.hh>
-#define T JUCE_T
+# undef T
+#  include <core/chemical/AtomType.hh>
+#  include <core/chemical/ChemicalManager.hh>
+#  include <core/chemical/util.hh>
+#  include <core/chemical/ResidueType.hh>
+#  include <core/conformation/Residue.hh>
+#  include <core/init.hh>
+#  include <core/io/pdb/file_data.hh>
+#  include <core/io/pdb/pose_io.hh>
+#  include <core/pose/PDBInfo.hh>
+#  include <core/pose/Pose.hh>
+#  include <core/scoring/ScoreFunction.hh>
+#  include <core/scoring/ScoreFunctionFactory.hh>
+#  include <numeric/xyzVector.hh>
+# define T JUCE_T
 
 namespace lbcpp
 {
@@ -101,4 +104,4 @@ double generateNormalRand();
 }
 ; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTAUTILS_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_UTILS_H_
