@@ -168,12 +168,13 @@ IF(APPLE)
   )
   
   IF(DEBUG)
-  
-  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc/libcore.dylib /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc/libutility.dylib)
+  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc)
+  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libprotocols.dylib)
   
   ELSE(DEBUG)
   
-    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc/libcore.dylib /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc/libutility.dylib)
+  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libprotocols.dylib)
   
   ENDIF(DEBUG)
   
@@ -183,7 +184,7 @@ ELSE(APPLE)
     /home/alejandro/soft/rosetta-3.2/rosetta_source/src
     /home/alejandro/soft/rosetta-3.2/rosetta_source/src/platform/linux
   )
-  SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /home/alejandro/soft/libcore.so /home/alejandro/soft/libutility.so)
+  SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES /home/alejandro/soft/libcore.so /home/alejandro/soft/libutility.so /home/alejandro/soft/libnumeric.so /home/alejandro/soft/libObjexxFCL.so /home/alejandro/soft/libprotocols.so)
 
 ENDIF(APPLE)
 

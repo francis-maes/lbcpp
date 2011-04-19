@@ -7,22 +7,17 @@ JUCE Assertion failure in /Users/alex/Documents/workspace/lbcpp/include/lbcpp/Co
 
 apparait lors de lappel a convertPose2Protein.
 
--
-
 TODO
 ====
 
 - corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
 bool beTolerant) au niveau du pointeur de mb. Faut il le liberer?
 
-- ajouter les traces dans les optimiseurs restants (monte carlo, annealing, sequential?).
-
-- creer les rigid body movers et autres movers.
-
 - creer les optimiseurs qui recoltent les donnees.
 
 
 Rapport
 =======
-- parler de la fonction denergie
-- expliquer un peu les bases sur la structure des proteines (angles, fonciton denergie, etc.) peut etre mis en annexe
+- parler de la fonction denergie.
+- expliquer un peu les bases sur la structure des proteines (angles, fonciton denergie, etc.) peut etre mis en annexe.
+- ajout derniere phrase page 507 du structural bioinformatics.

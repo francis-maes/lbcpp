@@ -28,6 +28,8 @@
 #include <core/chemical/util.hh>
 #include <core/io/pdb/pose_io.hh>
 #include <core/io/pdb/file_data.hh>
+#include <core/kinematics/FoldTree.hh>
+#include <protocols/init.hh>
 #define T JUCE_T
 
 using namespace std;
@@ -46,82 +48,70 @@ public:
 
 		rosettaInit(false);
 		core::pose::PoseOP pose = new core::pose::Pose();
-		makePoseFromSequence(pose, String("AAAAAAAAAAAA"));
+		makePoseFromSequence(pose, String("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
 		core::io::pdb::dump_pdb((*pose), "/Users/alex/Desktop/init.pdb");
 		cout << "energy init : " << getTotalEnergy(pose) << endl;
 		cout << "num residus : " << pose->n_residue() << endl;
 
-		juce::String* str = new juce::String[2];
-		str[0] = juce::String("AAAAAAAAAAAA");
-		str[1] = juce::String((double) 0.01);
+		std::vector<Variable>* optArgs = new std::vector<Variable>;
+		optArgs->push_back(Variable((double) 25));
 
-		/*
-		 std::vector<Variable*>* vs =new std::vector<Variable*>;
-		 cout << "test 1 " << endl;
-		 //Variable temp1 = new Variable(opt->getVariable(0));
-		 vs->push_back(tempv);
-		 cout << "test 2 " << endl;
-		 cout << " var 0 : " << (const char*) ((vs->at(0))->toString()) << endl << flush;
-		 cout << "test 3 " << endl << flush;
-		 Variable* temp2 = new Variable(0.1);
-		 //opt->addVariable(temp2);
-		 cout << "test 4 " << endl << flush;
-		 vs->push_back(temp2);
-		 cout << " var 1 : " << (vs->at(1))->getDouble() << endl << flush;
-		 cout << "size : " << vs->size() << endl << flush;
+		int maxit = 10000;
 
-		 delete(tempv);
-		 delete(temp2);
-		 delete(vs);
-		 */
+		time_t time1;
+		time_t time2;
+		struct tm * timeinfo;
 
-		/*
-		 juce::String scopeName("energy");
-		 context.enterScope(T("Protein name : AAAAAAAA"));
-		 for (int i=0;i<10;i++)
-		 {
-		 context.enterScope(scopeName);
-		 context.resultCallback(T("energies"),Variable(i));
-		 context.leaveScope(Variable(i*i));
-		 }
-		 context.leaveScope();
-		 */
-
-		std::vector<void*>* optArgs = new std::vector<void*>();
-		double ang = 50;
-		optArgs->push_back((void*) &ang);
 		RosettaOptimizerPtr o = new RosettaOptimizer(&context, T("AAAAA"), 0.01);
-		//core::pose::PoseOP result1 = greedyOptimization(pose, phiPsiMover, optArgs, 1000, str, &context);
-		core::pose::PoseOP result1 = o->greedyOptimization(pose, phiPsiMover, optArgs, 10000);
+		//RosettaOptimizerPtr o = new RosettaOptimizer();
+
+		time(&time1);
+		PhiPsiRandomMoverPtr pprm = new PhiPsiRandomMover(optArgs);
+		core::pose::PoseOP result1 = o->greedyOptimization(pose, pprm, maxit);
 		cout << "energy final : " << getTotalEnergy(result1) << endl;
-		cout << "num residus final : " << result1->n_residue() << endl;
+		time(&time2);
+		cout << "time : " << difftime(time2, time1) << endl;
 
-		core::pose::PoseOP result2 = o->simulatedAnnealingOptimization(pose, phiPsiMover, optArgs,
-				3.0, 0.01, 100, 10000);
-		cout << "SA energy final : " << getTotalEnergy(result2) << endl;
-		cout << "num residus final : " << result2->n_residue() << endl;
+		time(&time1);
+		PhiPsiGaussRandomMoverPtr pprgm = new PhiPsiGaussRandomMover(optArgs);
+		core::pose::PoseOP result2 = o->greedyOptimization(pose, pprgm, maxit);
+		cout << "phipsi gauss energy final : " << getTotalEnergy(result2) << endl;
+		time(&time2);
+		cout << "time : " << difftime(time2, time1) << endl;
 
-		core::pose::PoseOP result3 = o->monteCarloOptimization(pose, phiPsiMover, optArgs, 3.0,
-				10000);
-		cout << "MC energy final : " << getTotalEnergy(result3) << endl;
-		cout << "num residus final : " << result3->n_residue() << endl;
-		//cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
-		//cout << "greedy done." << endl;
+		optArgs->at(0) = Variable((double) 1.0);
 
+		time(&time1);
+		RigidBodyTransRandomMoverPtr rgtrm = new RigidBodyTransRandomMover(optArgs);
+		core::pose::PoseOP result3 = o->greedyOptimization(pose, rgtrm, maxit);
+		cout << "RBT energy final : " << getTotalEnergy(result3) << endl;
+		time(&time2);
+		cout << "time : " << difftime(time2, time1) << endl;
 
-		/*std::vector<void*>* optArgs = new std::vector<void*>();
-		 double ang = 50;
-		 optArgs->push_back((void*) &ang);
-		 core::pose::PoseOP result1 = monteCarloOptimization(pose, phiPsiMover, optArgs, 2.0, 1000);
-		 core::io::pdb::dump_pdb((*result1), "/Users/alex/Desktop/result_greedy1.pdb");
-		 cout << "energy greedy1 : " << getTotalEnergy(result1) << endl;
-		 cout << "greedy done." << endl;
+		optArgs->push_back(Variable((double) 5.0));
+		time(&time1);
+		RigidBodyPerturbRandomMoverPtr rbprm = new RigidBodyPerturbRandomMover(optArgs);
+		core::pose::PoseOP result5 = o->greedyOptimization(pose, rbprm, maxit);
+		cout << "RBP energy final : " << getTotalEnergy(result5) << endl;
+		time(&time2);
+		cout << "time : " << difftime(time2, time1) << endl;
 
-		 core::pose::PoseOP result2 = monteCarloOptimization(pose, phiPsiMover, optArgs, 2.0, 20000);
-		 core::io::pdb::dump_pdb((*result2), "/Users/alex/Desktop/result_greedy2.pdb");
-		 cout << "energy greedy2 : " << getTotalEnergy(result2) << endl;
-		 cout << "greedy done." << endl;
-		 */
+		delete (optArgs);
+
+		std::vector<Variable>* optArgs2 = new std::vector<Variable>;
+		optArgs2->push_back(Variable((double) 10));
+		optArgs2->push_back(Variable((double) 25));
+		optArgs2->push_back(Variable((int) 1));
+
+		time(&time1);
+		ShearRandomMoverPtr srm = new ShearRandomMover(optArgs2);
+		core::pose::PoseOP result4 = o->greedyOptimization(pose, srm, maxit);
+		cout << "Shear energy final : " << getTotalEnergy(result4) << endl;
+		time(&time2);
+		cout << "time : " << difftime(time2, time1) << endl;
+
+		delete (optArgs2);
+
 		context.informationCallback(T("RosettaTest done."));
 		return Variable();
 
