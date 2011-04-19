@@ -7,11 +7,24 @@ JUCE Assertion failure in /Users/alex/Documents/workspace/lbcpp/include/lbcpp/Co
 
 apparait lors de lappel a convertPose2Protein.
 
+- corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
+bool beTolerant) au niveau du pointeur de mb. Faut il le liberer? ==> normalement, supprime dans le destructeur de TextParser
+
+
 TODO
 ====
 
-- corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
-bool beTolerant) au niveau du pointeur de mb. Faut il le liberer?
+- appeler les fonctions random de lbcpp plutot.
+
+- corriger calcul energie (energie negative).
+
+- creer movers deterministes.
+
+- changer chemins pour linux, et trier le dossier rosetta.
+
+- faire tourner code sur NIC3.
+
+- creer compositeworkunit pour codes paralleles. 
 
 - creer les optimiseurs qui recoltent les donnees.
 

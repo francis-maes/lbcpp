@@ -1,303 +1,296 @@
-/**
- * author: Alejandro Marcos Alvarez
- * date: 12/04/2011
- * name: RosettaMovers.cpp
- */
+/*-----------------------------------------.---------------------------------.
+| Filename:  RosettaMover.cpp              | RosettaMover                    |
+| Author  : Alejandro Marcos Alvarez       |                                 |
+| Started : 12/04/2011                     |                                 |
+`------------------------------------------/                                 |
+                               |                                             |
+                               `--------------------------------------------*/
 
 #include "RosettaMover.h"
 
-namespace lbcpp
-{
+using namespace lbcpp;
 
 // RosettaMover
 double RosettaMover::generateAngleFromUniform(double std, double mean)
 {
-	return ((std * (2 * generateRand() - 1)) + mean);
+  return ((std * (2 * generateRand() - 1)) + mean);
 }
 
 double RosettaMover::generateAngleFromGaussian(double std, double mean, double limit)
 {
-	double ang = (std * generateNormalRand()) + mean;
-	double l = std::abs(limit);
-	ang = std::min(std::max(-l, ang), l);
+  double ang = (std * generateNormalRand()) + mean;
+  double l = std::abs(limit);
+  ang = juce::jlimit(-l, l, ang);
 
-	return ang;
+  return ang;
 }
 
-juce::String RosettaMover::getName()
+String RosettaMover::getName()
 {
-	juce::String tmp("Default");
-	return tmp;
+  String tmp("Default");
+  return tmp;
 }
 
-std::vector<juce::String> RosettaMover::getParamNames()
+std::vector<String> RosettaMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Default param name"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Default param name"));
+  return tmp;
 }
 
-std::vector<Variable> RosettaMover::getParams()
+std::vector<Variable> RosettaMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable(T("Default param")));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable(T("Default param")));
+  return tmp;
 }
 
 // PhiPsiRandomMover
-PhiPsiRandomMover::PhiPsiRandomMover(std::vector<Variable>* vec)
+PhiPsiRandomMover::PhiPsiRandomMover(const std::vector<Variable>& vec)
 {
-	if ((vec != NULL) && (vec->size() >= 0))
-		step = (vec->at(0)).getDouble();
-	else
-		step = 25;
+  if (vec.size() >= 0)
+    maxAngle = (vec.at(0)).getDouble();
+  else
+    maxAngle = 25;
 }
 
 void PhiPsiRandomMover::move(core::pose::PoseOP pose)
 {
-	int k = ((int) rand() % pose->n_residue()) + 1;
-	pose->set_phi(k, pose->phi(k) + generateAngleFromUniform(step));
-	pose->set_psi(k, pose->psi(k) + generateAngleFromUniform(step));
+  int k = ((int)rand() % pose->n_residue()) + 1;
+  pose->set_phi(k, pose->phi(k) + generateAngleFromUniform(maxAngle));
+  pose->set_psi(k, pose->psi(k) + generateAngleFromUniform(maxAngle));
 }
 
-juce::String PhiPsiRandomMover::getName()
+String PhiPsiRandomMover::getName()
 {
-	juce::String tmp("PhiPsiRandomMover");
-	return tmp;
+  return String("PhiPsiRandomMover");
 }
 
-std::vector<juce::String> PhiPsiRandomMover::getParamNames()
+std::vector<String> PhiPsiRandomMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Step"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Maximum angle"));
+  return tmp;
 }
 
-std::vector<Variable> PhiPsiRandomMover::getParams()
+std::vector<Variable> PhiPsiRandomMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable((double) step));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable((double)maxAngle));
+  return tmp;
 }
 
 // PhiPsiGaussRandomMover
-PhiPsiGaussRandomMover::PhiPsiGaussRandomMover(std::vector<Variable>* vec)
+PhiPsiGaussRandomMover::PhiPsiGaussRandomMover(const std::vector<Variable>& vec)
 {
-	if ((vec != NULL) && (vec->size() >= 0))
-		step = (vec->at(0)).getDouble();
-	else
-		step = 30;
+  if (vec.size() >= 0)
+    stdAngle = (vec.at(0)).getDouble();
+  else
+    stdAngle = 30;
 }
 
 void PhiPsiGaussRandomMover::move(core::pose::PoseOP pose)
 {
-	int k = ((int) rand() % pose->n_residue()) + 1;
-	pose->set_phi(k, pose->phi(k) + generateAngleFromGaussian(step));
-	pose->set_psi(k, pose->psi(k) + generateAngleFromGaussian(step));
+  int k = ((int)rand() % pose->n_residue()) + 1;
+  pose->set_phi(k, pose->phi(k) + generateAngleFromGaussian(stdAngle));
+  pose->set_psi(k, pose->psi(k) + generateAngleFromGaussian(stdAngle));
 }
 
-juce::String PhiPsiGaussRandomMover::getName()
+String PhiPsiGaussRandomMover::getName()
 {
-	juce::String tmp("PhiPsiGaussRandomMover");
-	return tmp;
+  return String("PhiPsiGaussRandomMover");
 }
 
-std::vector<juce::String> PhiPsiGaussRandomMover::getParamNames()
+std::vector<String> PhiPsiGaussRandomMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Standard deviation"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Standard deviation"));
+  return tmp;
 }
 
-std::vector<Variable> PhiPsiGaussRandomMover::getParams()
+std::vector<Variable> PhiPsiGaussRandomMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable((double) step));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable((double)stdAngle));
+  return tmp;
 }
 
 // ShearRandomMover
-ShearRandomMover::ShearRandomMover(std::vector<Variable>* vec)
+ShearRandomMover::ShearRandomMover(const std::vector<Variable>& vec)
 {
-	// Recover arguments
-	if ((vec != NULL) && (vec->size() >= 3))
-	{
-		temp = (vec->at(0)).getDouble();
-		anglemax = (vec->at(1)).getDouble();
-		nmoves = (vec->at(2)).getInteger();
-	}
-	else
-	{
-		temp = 2.0;
-		anglemax = 10;
-		nmoves = 1;
-	}
+  // Recover arguments
+  if (vec.size() >= 3)
+  {
+    temperature = (vec.at(0)).getDouble();
+    anglemax = (vec.at(1)).getDouble();
+    numberOfMoves = (vec.at(2)).getInteger();
+  }
+  else
+  {
+    temperature = 2.0;
+    anglemax = 10;
+    numberOfMoves = 1;
+  }
 
-	// Initially allow all moves
-	map = new core::kinematics::MoveMap;
-	map->set_bb(true);
+  // Initially allow all moves
+  moveMap = new core::kinematics::MoveMap;
+  moveMap->set_bb(true);
 
-	// Forbid only moves specified by the user
-	for (int i = 3; i < vec->size(); i++)
-		map->set_bb((vec->at(i)).getInteger(), false);
+  // Forbid only moves specified by the user
+  for (int i = 3; i < vec.size(); i++)
+    moveMap->set_bb((vec.at(i)).getInteger(), false);
 
-	// Create mover and apply to pose
-	mov = new protocols::moves::ShearMover(map, temp, nmoves);
-	mov->set_angles(anglemax);
+  // Create mover and apply to pose
+  mover = new protocols::moves::ShearMover(moveMap, temperature, numberOfMoves);
+  mover->set_angles(anglemax);
 }
 
 void ShearRandomMover::move(core::pose::PoseOP pose)
 {
-	mov->apply((*pose));
+  mover->apply((*pose));
 }
 
-juce::String ShearRandomMover::getName()
+String ShearRandomMover::getName()
 {
-	juce::String tmp("ShearRandomMover");
-	return tmp;
+  return String("ShearRandomMover");
 }
 
-std::vector<juce::String> ShearRandomMover::getParamNames()
+std::vector<String> ShearRandomMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Temperature"));
-	tmp.push_back(T("Angle max"));
-	tmp.push_back(T("Number of moves"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Temperature"));
+  tmp.push_back(T("Angle max"));
+  tmp.push_back(T("Number of moves"));
+  return tmp;
 }
 
-std::vector<Variable> ShearRandomMover::getParams()
+std::vector<Variable> ShearRandomMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable((double) temp));
-	tmp.push_back(Variable((double) anglemax));
-	tmp.push_back(Variable((int) nmoves));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable((double)temperature));
+  tmp.push_back(Variable((double)anglemax));
+  tmp.push_back(Variable((int)numberOfMoves));
+  return tmp;
 }
 
 // RigidBodyTransRandomMover
-RigidBodyTransRandomMover::RigidBodyTransRandomMover(std::vector<Variable>* vec)
+RigidBodyTransRandomMover::RigidBodyTransRandomMover(const std::vector<Variable>& vec)
 {
-	step = 0.1;
-	if ((vec != NULL) && (vec->size() >= 0))
-		step = (vec->at(0)).getDouble();
+  step = 0.1;
+  if (vec.size() >= 0)
+    step = (vec.at(0)).getDouble();
 }
 
 void RigidBodyTransRandomMover::move(core::pose::PoseOP pose)
 {
-	int numRes = (int) pose->n_residue();
-	if (numRes < 2)
-		return;
+  int numberResidues = (int)pose->n_residue();
+  if (numberResidues < 2)
+    return;
 
-	double s = step * ((2 * generateRand()) - 1);
+  double randomStep = step * ((2 * generateRand()) - 1);
 
-	// Set a jump
-	core::kinematics::FoldTree ft = pose->fold_tree();
-	int num1 = std::ceil(numRes * generateRand());
-	int num2 = std::ceil(numRes * generateRand());
-	if (num1 == num2)
-	{
-		num1 = std::min((int) std::max(1, num1 - 1), (int) numRes);
-		num2 = std::min((int) std::max(1, num2 + 1), (int) numRes);
-	}
-	int cp = std::floor(((double) num1 + (double) num2) / 2.0);
+  // Set a jump
+  core::kinematics::FoldTree foldTree = pose->fold_tree();
+  int numberResidue1 = std::ceil(numberResidues * generateRand());
+  int numberResidue2 = std::ceil(numberResidues * generateRand());
+  if (numberResidue1 == numberResidue2)
+  {
+    numberResidue1 = juce::jlimit((int)1, numberResidues, (int)(numberResidue1 - 1));
+    numberResidue2 = juce::jlimit((int)1, numberResidues, (int)(numberResidue2 + 1));
+  }
+  int cutpointResidue = std::floor(((double)numberResidue1 + (double)numberResidue2) / 2.0);
 
-	ft.new_jump(num1, num2, cp);
-	pose->fold_tree(ft);
+  foldTree.new_jump(numberResidue1, numberResidue2, cutpointResidue);
+  pose->fold_tree(foldTree);
 
-	// Perturb the pose
-	protocols::moves::RigidBodyTransMoverOP mov = new protocols::moves::RigidBodyTransMover(
-			(*pose), 1);
-	mov->step_size(s);
-	mov->apply((*pose));
+  // Perturb the pose
+  protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover(
+      (*pose), 1);
+  mover->step_size(randomStep);
+  mover->apply((*pose));
 
-	// Clear the jump
-	ft.delete_jump_and_intervening_cutpoint(1);
-	pose->fold_tree(ft);
+  // Clear the jump
+  foldTree.delete_jump_and_intervening_cutpoint(1);
+  pose->fold_tree(foldTree);
 }
 
-juce::String RigidBodyTransRandomMover::getName()
+String RigidBodyTransRandomMover::getName()
 {
-	juce::String tmp("RigidBodyTransRandomMover");
-	return tmp;
+  return String("RigidBodyTransRandomMover");
 }
 
-std::vector<juce::String> RigidBodyTransRandomMover::getParamNames()
+std::vector<String> RigidBodyTransRandomMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Step"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Step"));
+  return tmp;
 }
 
-std::vector<Variable> RigidBodyTransRandomMover::getParams()
+std::vector<Variable> RigidBodyTransRandomMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable((double) step));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable((double)step));
+  return tmp;
 }
 
 // RigidBodyPerturbRandomMover
-RigidBodyPerturbRandomMover::RigidBodyPerturbRandomMover(std::vector<Variable>* vec)
+RigidBodyPerturbRandomMover::RigidBodyPerturbRandomMover(const std::vector<Variable>& vec)
 {
-	step = 0.1;
-	ang = 1;
-	if ((vec != NULL) && (vec->size() >= 2))
-	{
-		step = (vec->at(0)).getDouble();
-		ang = (vec->at(1)).getDouble();
-	}
-	mov = new protocols::moves::RigidBodyPerturbMover(1, ang, step);
+  maximumStep = 0.1;
+  maximumAngle = 1;
+  if (vec.size() >= 2)
+  {
+    maximumStep = (vec.at(0)).getDouble();
+    maximumAngle = (vec.at(1)).getDouble();
+  }
+  mover = new protocols::moves::RigidBodyPerturbMover(1, maximumAngle, maximumStep);
 }
 
 void RigidBodyPerturbRandomMover::move(core::pose::PoseOP pose)
 {
-	int numRes = (int) pose->n_residue();
-	if (numRes < 2)
-		return;
+  int numberResidues = (int)pose->n_residue();
+  if (numberResidues < 2)
+    return;
 
-	// Set a jump
-	core::kinematics::FoldTree ft = pose->fold_tree();
-	int num1 = std::ceil(numRes * generateRand());
-	int num2 = std::ceil(numRes * generateRand());
-	if (num1 == num2)
-	{
-		num1 = std::min((int) std::max(1, num1 - 1), numRes);
-		num2 = std::min((int) std::max(1, num2 + 1), numRes);
-	}
-	int cp = std::floor(((double) num1 + (double) num2) / 2.0);
+  // Set a jump
+  core::kinematics::FoldTree foldTree = pose->fold_tree();
+  int numberResidue1 = std::ceil(numberResidues * generateRand());
+  int numberResidue2 = std::ceil(numberResidues * generateRand());
+  if (numberResidue1 == numberResidue2)
+  {
+    numberResidue1 = juce::jlimit((int)1, numberResidues, (int)(numberResidue1 - 1));
+    numberResidue2 = juce::jlimit((int)1, numberResidues, (int)(numberResidue2 + 1));
+  }
+  int cutpointResidue = std::floor(((double)numberResidue1 + (double)numberResidue2) / 2.0);
 
-	ft.new_jump(num1, num2, cp);
-	pose->fold_tree(ft);
+  foldTree.new_jump(numberResidue1, numberResidue2, cutpointResidue);
+  pose->fold_tree(foldTree);
 
-	// Perturb the pose
-	mov->apply((*pose));
+  // Perturb the pose
+  mover->apply((*pose));
 
-	// Clear the jump
-	ft.delete_jump_and_intervening_cutpoint(1);
-	pose->fold_tree(ft);
+  // Clear the jump
+  foldTree.delete_jump_and_intervening_cutpoint(1);
+  pose->fold_tree(foldTree);
 }
 
-juce::String RigidBodyPerturbRandomMover::getName()
+String RigidBodyPerturbRandomMover::getName()
 {
-	juce::String tmp("RigidBodyPerturbRandomMover");
-	return tmp;
+  return String("RigidBodyPerturbRandomMover");
 }
 
-std::vector<juce::String> RigidBodyPerturbRandomMover::getParamNames()
+std::vector<String> RigidBodyPerturbRandomMover::getParametersNames()
 {
-	std::vector<juce::String> tmp;
-	tmp.push_back(T("Step"));
-	tmp.push_back(T("Angle max"));
-	return tmp;
+  std::vector<String> tmp;
+  tmp.push_back(T("Step"));
+  tmp.push_back(T("Angle max"));
+  return tmp;
 }
 
-std::vector<Variable> RigidBodyPerturbRandomMover::getParams()
+std::vector<Variable> RigidBodyPerturbRandomMover::getParameters()
 {
-	std::vector<Variable> tmp;
-	tmp.push_back(Variable((double) step));
-	tmp.push_back(Variable((double) ang));
-	return tmp;
+  std::vector<Variable> tmp;
+  tmp.push_back(Variable((double)maximumStep));
+  tmp.push_back(Variable((double)maximumAngle));
+  return tmp;
 }
-
-}
-; /* namespace lbcpp */
