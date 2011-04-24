@@ -33,6 +33,32 @@ size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& proba
   return 0;
 }
 
+#if 0 
+uint get_random()
+{
+    m_z = 36969 * (m_z & 65535) + (m_z >> 16);
+    m_w = 18000 * (m_w & 65535) + (m_w >> 16);
+    return (m_z << 16) + m_w;  /* 32-bit result */
+}
+
+#define MODULUS    2147483647
+#define MULTIPLIER 48271
+
+int RandomGenerator::sampleInt()
+{
+  const long Q = MODULUS / MULTIPLIER;
+  const long R = MODULUS % MULTIPLIER;
+  long long t = MULTIPLIER * (seed % Q) - R * (seed / Q);
+  if (t > 0) 
+    seed = t;
+  else 
+    seed = t + MODULUS;
+  return (int)(0xffffffff * seed / MODULUS);
+}
+#endif // 0
+
+// TODO: Mersenne Twister random number generator
+
 int RandomGenerator::sampleInt()
 {
   seed = (seed * 0x5deece66dLL + 11) & 0xffffffffffffLL;

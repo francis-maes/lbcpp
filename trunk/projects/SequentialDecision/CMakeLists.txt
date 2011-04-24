@@ -27,7 +27,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
-  Problem/BanditsDecisionProblem.h
+  Problem/DiscreteBanditDecisionProblem.h
   Problem/LinearPointPhysicProblem.h
   Problem/DamienDecisionProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
