@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: BanditsDecisionProblem.h       | Bandits DecisionProblem         |
+| Filename: DiscreteBanditDecisionProblem.h       | Bandits DecisionProblem         |
 | Author  : Francis Maes                   |                                 |
 | Started : 24/04/2011 14:48               |                                 |
 `------------------------------------------/                                 |
@@ -17,23 +17,23 @@ namespace lbcpp
 /*
 ** Bandits base classes
 */
-class BanditsState;
-typedef ReferenceCountedObjectPtr<BanditsState> BanditsStatePtr;
+class DiscreteBanditState;
+typedef ReferenceCountedObjectPtr<DiscreteBanditState> DiscreteBanditStatePtr;
 
-class BanditsState : public DecisionProblemState
+class DiscreteBanditState : public DecisionProblemState
 {
 public:
-  BanditsState(size_t numBandits, long long seedValue)
+  DiscreteBanditState(size_t numBandits, long long seedValue)
   {
     randomGenerators.resize(numBandits);
     availableActions = vector(positiveIntegerType, numBandits);
     for (size_t i = 0; i < numBandits; ++i)
     {
-      randomGenerators[i] = new RandomGenerator(seedValue);
+      randomGenerators[i] = new RandomGenerator(seedValue << i);
       availableActions->setElement(i, i);
     }
   }
-  BanditsState() {}
+  DiscreteBanditState() {}
 
   virtual TypePtr getActionType() const
     {return positiveIntegerType;}
@@ -42,6 +42,7 @@ public:
     {return availableActions;}
 
   virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) = 0;
+  virtual size_t getOptimalBandit(double& bestReward, double& secondBestReward) const = 0;
 
   virtual void performTransition(const Variable& action, double& reward)
   {
@@ -52,7 +53,7 @@ public:
 
   virtual void clone(ExecutionContext& context, const ObjectPtr& t)
   {
-    const BanditsStatePtr& target = t.staticCast<BanditsState>();
+    const DiscreteBanditStatePtr& target = t.staticCast<DiscreteBanditState>();
     target->availableActions = availableActions;
     target->randomGenerators.resize(randomGenerators.size());
     for (size_t i = 0; i < randomGenerators.size(); ++i)
@@ -62,18 +63,18 @@ public:
   lbcpp_UseDebuggingNewOperator
 
 protected:
-  friend class BanditsStateClass;
+  friend class DiscreteBanditStateClass;
 
   std::vector<RandomGeneratorPtr> randomGenerators;
   ContainerPtr availableActions;
 };
 
-class BanditsDecisionProblem : public DecisionProblem
+class DiscreteBanditDecisionProblem : public DecisionProblem
 {
 public:
-  BanditsDecisionProblem(const FunctionPtr& initialStateSampler, size_t numBandits)
+  DiscreteBanditDecisionProblem(const FunctionPtr& initialStateSampler, size_t numBandits)
     : DecisionProblem(initialStateSampler, 1.0), numBandits(numBandits) {}
-  BanditsDecisionProblem() {}
+  DiscreteBanditDecisionProblem() {}
 
   virtual TypePtr getActionType() const
     {return positiveIntegerType;}
@@ -82,7 +83,7 @@ public:
     {return numBandits;}
 
 protected:
-  friend class BanditsDecisionProblemClass;
+  friend class DiscreteBanditDecisionProblemClass;
 
   size_t numBandits;
 };
@@ -90,29 +91,52 @@ protected:
 /*
 ** Bernouilli Bandits
 */
-class BernouilliBanditsState : public BanditsState
+class BernouilliDiscreteBanditState : public DiscreteBanditState
 {
 public:
-  BernouilliBanditsState(const std::vector<double>& probabilities, long long seedValue)
-    : BanditsState(probabilities.size(), seedValue), probabilities(probabilities) {}
-  BernouilliBanditsState() {}
+  BernouilliDiscreteBanditState(const std::vector<double>& probabilities, long long seedValue)
+    : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities) {}
+  BernouilliDiscreteBanditState() {}
 
   virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random)
     {return random->sampleBool(probabilities[banditNumber]) ? 1.0 : 0.0;}
 
+  virtual size_t getOptimalBandit(double& bestReward, double& secondBestReward) const
+  {
+    size_t res = 0;
+    bestReward = -DBL_MAX;
+    for (size_t i = 0; i < probabilities.size(); ++i)
+    {
+      double p = probabilities[i];
+      if (p > bestReward)
+      {
+        bestReward = p;
+        res = i;
+      }
+    }
+
+    secondBestReward = -DBL_MAX;
+    for (size_t i = 0; i < probabilities.size(); ++i)
+      if (i != res)
+        secondBestReward = juce::jmax(secondBestReward, probabilities[i]);
+
+    jassert(secondBestReward < bestReward);
+    return res;
+  }
+
 protected:
-  friend class BernouilliBanditsStateClass;
+  friend class BernouilliDiscreteBanditStateClass;
 
   std::vector<double> probabilities;
 };
 
-extern ClassPtr bernouilliBanditsStateClass;
+extern ClassPtr bernouilliDiscreteBanditStateClass;
 
 class BernouilliBanditsInitialStateSampler : public SimpleUnaryFunction
 {
 public:
   BernouilliBanditsInitialStateSampler(size_t numBandits = 0)
-    : SimpleUnaryFunction(randomGeneratorClass, bernouilliBanditsStateClass), numBandits(numBandits) {}
+    : SimpleUnaryFunction(randomGeneratorClass, bernouilliDiscreteBanditStateClass), numBandits(numBandits) {}
 
   virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
   {
@@ -121,7 +145,7 @@ public:
     for (size_t i = 0; i < numBandits; ++i)
       probabilities[i] = random->sampleDouble(1.0);
     long long seed = random->sampleInt();
-    return new BernouilliBanditsState(probabilities, seed);   
+    return new BernouilliDiscreteBanditState(probabilities, seed);   
   }
 
 protected:
@@ -130,12 +154,12 @@ protected:
   size_t numBandits;
 };
 
-class BernouilliBanditsDecisionProblem : public BanditsDecisionProblem
+class BernouilliDiscreteBanditDecisionProblem : public DiscreteBanditDecisionProblem
 {
 public:
-  BernouilliBanditsDecisionProblem(size_t numBandits)
-    : BanditsDecisionProblem(new BernouilliBanditsInitialStateSampler(numBandits), numBandits) {}
-  BernouilliBanditsDecisionProblem() {}
+  BernouilliDiscreteBanditDecisionProblem(size_t numBandits)
+    : DiscreteBanditDecisionProblem(new BernouilliBanditsInitialStateSampler(numBandits), numBandits) {}
+  BernouilliDiscreteBanditDecisionProblem() {}
 };
 
 }; /* namespace lbcpp */

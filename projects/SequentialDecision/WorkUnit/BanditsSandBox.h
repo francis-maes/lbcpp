@@ -9,7 +9,7 @@
 #ifndef LBCPP_SEQUENTIAL_DECISION_BANDITS_SAND_BOX_H_
 # define LBCPP_SEQUENTIAL_DECISION_BANDITS_SAND_BOX_H_
 
-# include "../Problem/BanditsDecisionProblem.h"
+# include "../Problem/DiscreteBanditDecisionProblem.h"
 # include <lbcpp/Execution/WorkUnit.h>
 
 namespace lbcpp
@@ -78,6 +78,8 @@ protected:
 
   virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) = 0;
 };
+
+typedef ReferenceCountedObjectPtr<DiscreteBanditPolicy> DiscreteBanditPolicyPtr;
 
 class IndexBasedDiscreteBanditPolicy : public DiscreteBanditPolicy
 {
@@ -169,7 +171,7 @@ protected:
     if (timeStep < numBandits)
       return timeStep; // play each bandit once
 
-    if (episodeRemainingSteps == 0)
+    while (episodeRemainingSteps == 0)
     {
       currentBandit = selectMaximumIndexBandit(timeStep, banditStatistics);
       size_t& rj = episodeCounts[currentBandit];
@@ -222,12 +224,118 @@ protected:
 class BanditsSandBox : public WorkUnit
 {
 public:
-  BanditsSandBox() {}
+  BanditsSandBox() : maxTimeStep(100000), numRuns(100) {}
  
   virtual Variable run(ExecutionContext& context)
   {
+    std::vector<bool> insertTimeStepIntoCurve(maxTimeStep + 1, false);
+    for (double d = 0.0; d <= log10((double)maxTimeStep); d += 0.25)
+    {
+      size_t index = (size_t)pow(10.0, d);
+      jassert(index < insertTimeStepIntoCurve.size());
+      insertTimeStepIntoCurve[index] = true;
+    }
+
+    size_t numBandits = 2;
+    std::vector<double> probs(numBandits);
+    probs[0] = 0.6;
+    probs[1] = 0.9;
+
+    std::map<size_t, std::map<String, double> > results;
+
+    context.enterScope(T("UCB2"));
+
+    for (size_t run = 0; run < numRuns; ++run)
+    {
+      context.progressCallback(new ProgressionState(run, numRuns, T("Runs")));
+
+      DiscreteBanditStatePtr state = new BernouilliDiscreteBanditState(probs, RandomGenerator::getInstance()->sampleInt());
+      double bestReward, secondBestReward;
+      size_t optimalBandit = state->getOptimalBandit(bestReward, secondBestReward);
+
+      DiscreteBanditPolicyPtr policy = new UCB1TunedDiscreteBanditPolicy();
+        // new UCB2DiscreteBanditPolicy(0.001);
+        // new EpsilonGreedyDiscreteBanditPolicy(0.10, bestReward - secondBestReward);
+        //new UCB1TunedDiscreteBanditPolicy();
+      policy->initialize(numBandits);
+      double sumOfRewards = 0.0;
+      size_t numberOfTimesOptimalIsPlayed = 0;
+      for (size_t timeStep = 1; timeStep <= maxTimeStep; ++timeStep)
+      {
+        size_t action = policy->selectNextBandit();
+        double reward;
+        state->performTransition(action, reward);
+        policy->updatePolicy(action, reward);
+
+        sumOfRewards += reward;
+        if (action == optimalBandit)
+          ++numberOfTimesOptimalIsPlayed;
+
+        if (insertTimeStepIntoCurve[timeStep])
+        {
+          std::map<String, double>& res = results[timeStep];
+
+          res[T("bestMachinePlayed")] += 100.0 * numberOfTimesOptimalIsPlayed / (double)timeStep;
+          res[T("actualRegret")] += timeStep * bestReward - sumOfRewards;
+          res[T("sumOfRewards")] += sumOfRewards;
+          res[T("optimalSumOfRewards")] += timeStep * bestReward;
+/*
+          context.enterScope(T("Time Step ") + String((int)timeStep));
+          context.resultCallback(T("log10(timeStep)"), log10((double)timeStep));
+          context.resultCallback(T("bestMachinePlayed"), 100.0 * numberOfTimesOptimalIsPlayed / (double)timeStep);
+          context.resultCallback(T("actualRegret"), timeStep * bestReward - sumOfRewards);
+          context.resultCallback(T("sumOfRewards"), sumOfRewards);
+          context.resultCallback(T("optimalSumOfRewards"), timeStep * bestReward);
+          context.resultCallback(T("timeStep"), timeStep);
+          context.leaveScope(true);*/
+        }
+      }
+    }
+
+    context.leaveScope(true);
+
+    context.enterScope(T("UCB2"));
+    for (std::map<size_t, std::map<String, double> >::const_iterator it = results.begin(); it != results.end(); ++it)
+    {
+      size_t timeStep = it->first;
+      context.enterScope(T("timeStep" ) + String((int)timeStep));
+      const std::map<String, double>& res = it->second;
+      context.resultCallback(T("log10(timeStep)"), log10((double)timeStep));
+      for (std::map<String, double>::const_iterator it2 = res.begin(); it2 != res.end(); ++it2)
+        context.resultCallback(it2->first, it2->second / numRuns);
+      context.leaveScope(true);
+    }
+    context.leaveScope(true);
     return true;
   }
+
+  bool testRandom(ExecutionContext& context)
+  {
+    RandomGeneratorPtr random = RandomGenerator::getInstance();
+
+    context.enterScope(T("testRandom"));
+
+    for (size_t i = 0; i < 100; ++i)
+    {
+      size_t pouet = 0;
+      for (size_t j = 0; j < 10; ++j)
+        if (random->sampleBool(0.9))
+          ++pouet;
+      context.enterScope(T("hop"));
+        context.resultCallback(T("i"), i);
+        context.resultCallback(T("m"), pouet / 10.0);
+      context.leaveScope(true);
+    }
+
+    context.leaveScope(true);
+    return true;
+  }
+
+protected:
+  friend class BanditsSandBoxClass;
+
+  size_t maxTimeStep;
+  size_t numRuns;
 };
 
 }; /* namespace lbcpp */
