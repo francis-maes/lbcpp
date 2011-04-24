@@ -27,6 +27,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_CORE_SOURCES
 )
 
 SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_SOURCES
+  Problem/BanditsDecisionProblem.h
   Problem/LinearPointPhysicProblem.h
   Problem/DamienDecisionProblem.h
   Problem/SequentialDecisionProblemLibrary.xml
@@ -42,6 +43,7 @@ SET(LBCPP_SEQUENTIAL_DECISION_PROBLEM_DAMIEN_SOURCES
 SET(LBCPP_SEQUENTIAL_DECISION_WORK_UNIT_SOURCES
   WorkUnit/HIVSandBox.h
   WorkUnit/SequentialDecisionSandBox.h
+  WorkUnit/BanditsSandBox.h
   WorkUnit/SequentialDecisionWorkUnitLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SequentialDecisionWorkUnitLibrary.cpp
 )
