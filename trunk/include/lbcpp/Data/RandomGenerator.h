@@ -323,6 +323,7 @@ public:
     for (size_t i = 0; i < subsetSize; ++i)
       res.insert(elements[order[i]]);
   }
+
 private:
   friend class RandomGeneratorClass;
 

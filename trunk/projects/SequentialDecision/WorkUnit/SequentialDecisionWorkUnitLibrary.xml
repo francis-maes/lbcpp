@@ -70,4 +70,20 @@
     <variable type="File" name="loadedHeuristics"/>
   </class>
   
+  <!-- Bandits -->
+
+  <class name="BanditStatistics" base="Object">
+    <variable type="PositiveInteger" name="playedCount"/>
+    <variable type="Double" name="sumOfRewards"/>
+    <variable type="Double" name="sumOfSquaredRewards"/>
+  </class>
+
+  <class name="BanditsPolicy" base="Object" abstract="yes">
+    <variable type="PositiveInteger" name="timeStep"/>
+    <variable type="ObjectVector" name="banditStatistics"/>
+  </class>
+  <class name="IndexBasedBanditsPolicy" base="BanditsPolicy" abstract="yes"/>
+
+  <class name="UCB1BanditsPolicy" base="IndexBasedBanditsPolicy"/>
+
 </library>
