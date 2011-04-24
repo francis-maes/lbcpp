@@ -78,12 +78,25 @@
     <variable type="Double" name="sumOfSquaredRewards"/>
   </class>
 
-  <class name="BanditsPolicy" base="Object" abstract="yes">
+  <class name="DiscreteBanditPolicy" base="Object" abstract="yes">
     <variable type="PositiveInteger" name="timeStep"/>
     <variable type="ObjectVector" name="banditStatistics"/>
   </class>
-  <class name="IndexBasedBanditsPolicy" base="BanditsPolicy" abstract="yes"/>
+  <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
 
-  <class name="UCB1BanditsPolicy" base="IndexBasedBanditsPolicy"/>
+  <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy"/>
+  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy"/>
+  <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="Double" name="alpha"/>
+    <variable type="GenericVector[PositiveInteger]" name="episodeCounts"/>
+    <variable type="PositiveInteger" name="episodeRemainingSteps"/>
+    <variable type="PositiveInteger" name="currentBandit"/>
+  </class>
+
+  <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="Double" name="c"/>
+    <variable type="Double" name="d"/>
+    <variable type="RandomGenerator" name="random"/>
+  </class>
 
 </library>

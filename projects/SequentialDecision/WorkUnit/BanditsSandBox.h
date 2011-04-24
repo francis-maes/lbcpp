@@ -30,8 +30,14 @@ public:
   size_t getPlayedCount() const
     {return playedCount;}
 
-  double getAverageReward() const
+  double getRewardMean() const
     {jassert(playedCount); return sumOfRewards / playedCount;}
+
+  double getSquaredRewardMean() const
+    {jassert(playedCount); return sumOfSquaredRewards / playedCount;}
+
+  double getRewardVariance() const
+    {double ar = getRewardMean(); return getSquaredRewardMean() - ar * ar;}
 
 private:
   friend class BanditStatisticsClass;
@@ -43,7 +49,7 @@ private:
 
 typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
 
-class BanditsPolicy : public Object
+class DiscreteBanditPolicy : public Object
 {
 public:
   virtual void initialize(size_t numBandits)
@@ -65,7 +71,7 @@ public:
   }
 
 protected:
-  friend class BanditsPolicyClass;
+  friend class DiscreteBanditPolicyClass;
 
   size_t timeStep;
   std::vector<BanditStatisticsPtr> banditStatistics;
@@ -73,23 +79,25 @@ protected:
   virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) = 0;
 };
 
-class IndexBasedBanditsPolicy : public BanditsPolicy
+class IndexBasedDiscreteBanditPolicy : public DiscreteBanditPolicy
 {
 protected:
-  virtual bool playEachMachineOnceAtInitialization() const = 0;
-  virtual double computeBanditIndex(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const = 0;
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const = 0;
 
   virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
-    size_t numBandits = banditStatistics.size();
-    if (playEachMachineOnceAtInitialization() && timeStep < numBandits)
+    if (timeStep < banditStatistics.size())
       return timeStep; // play each bandit once
+    return selectMaximumIndexBandit(timeStep, banditStatistics);
+  }
 
+  size_t selectMaximumIndexBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
     double bestScore = -DBL_MAX;
     size_t bestBandit = 0;
-    for (size_t i = 0; i < numBandits; ++i)
+    for (size_t i = 0; i < banditStatistics.size(); ++i)
     {
-      double score = computeBanditIndex(i, timeStep, banditStatistics);
+      double score = computeBanditScore(i, timeStep, banditStatistics);
       if (score > bestScore)
         bestBandit = i, bestScore = score;
     }
@@ -97,74 +105,115 @@ protected:
   }
 };
 
-class UCB1BanditsPolicy : public IndexBasedBanditsPolicy
+class UCB1DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
 {
 protected:
-  virtual bool playEachMachineOnceAtInitialization() const
-    {return true;}
-
-  virtual double computeBanditIndex(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
-    return statistics->getAverageReward() + sqrt(2 * log((double)timeStep) / statistics->getPlayedCount());
+    return statistics->getRewardMean() + sqrt(2 * log((double)timeStep) / statistics->getPlayedCount());
+  }
+};
+
+class UCB1TunedDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+{
+protected:
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    size_t nj = statistics->getPlayedCount();
+    double lnn = log((double)timeStep);
+    double varianceUB = statistics->getRewardVariance() + sqrt(2 * lnn / nj);
+    return statistics->getRewardMean() + sqrt((lnn / nj) * juce::jmin(0.25, varianceUB));
   }
 };
 
 // TODO:
-// Finish UCB2BanditsPolicy
 // UCB1TunedBanditsPolicy
 // UCB1NormalBanditsPolicy
 // EpsilonGreedyBanditsPolicy
 
-class UCB2BanditsPolicy : public IndexBasedBanditsPolicy
+class UCB2DiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
 {
 public:
-  UCB2BanditsPolicy(double alpha = 1.0) : alpha(alpha) {}
+  UCB2DiscreteBanditPolicy(double alpha = 1.0) : alpha(alpha) {}
  
   virtual void initialize(size_t numBandits)
   {
-    IndexBasedBanditsPolicy::initialize(numBandits);
+    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
     episodeCounts.clear();
     episodeCounts.resize(numBandits, 0);
+    episodeRemainingSteps = 0;
+    currentBandit = 0;
   }
 
 protected:
-  friend class UCB2BanditsPolicyClass;
+  friend class UCB2DiscreteBanditPolicyClass;
 
   double alpha;
   std::vector<size_t> episodeCounts;
+  size_t episodeRemainingSteps;
+  size_t currentBandit;
 
-  virtual bool playEachMachineOnceAtInitialization() const
-    {return true;}
-
-  virtual double computeBanditIndex(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     double tauEpisodeCount = tau(episodeCounts[banditNumber]);
     double e = 1.0; // FIXME: what is e ????
-    return statistics->getAverageReward() + sqrt((1.0 + alpha) * log(e * timeStep / tauEpisodeCount) / (2.0 * tauEpisodeCount));
+    return statistics->getRewardMean() + sqrt((1.0 + alpha) * log(e * timeStep / tauEpisodeCount) / (2.0 * tauEpisodeCount));
   }
 
   virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
   {
-    // FIXME: implement this function !!!
     size_t numBandits = banditStatistics.size();
-    if (playEachMachineOnceAtInitialization() && timeStep < numBandits)
+    if (timeStep < numBandits)
       return timeStep; // play each bandit once
 
-    double bestScore = -DBL_MAX;
-    size_t bestBandit = 0;
-    for (size_t i = 0; i < numBandits; ++i)
+    if (episodeRemainingSteps == 0)
     {
-      double score = computeBanditIndex(i, timeStep, banditStatistics);
-      if (score > bestScore)
-        bestBandit = i, bestScore = score;
+      currentBandit = selectMaximumIndexBandit(timeStep, banditStatistics);
+      size_t& rj = episodeCounts[currentBandit];
+      episodeRemainingSteps = tau(rj + 1) - tau(rj);
+      ++rj;
     }
-    return bestBandit;
+
+    --episodeRemainingSteps;
+    return currentBandit;
   }
 
   size_t tau(size_t count) const
     {return (size_t)ceil(pow(1 + alpha, (double)count));}
+};
+
+class EpsilonGreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy
+{
+public:
+  EpsilonGreedyDiscreteBanditPolicy(double c, double d)
+    : c(c), d(d), random(new RandomGenerator()) {}
+  EpsilonGreedyDiscreteBanditPolicy() : c(0.0), d(0.0) {}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+    {return banditStatistics[banditNumber]->getRewardMean();}
+ 
+  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
+    size_t numBandits = banditStatistics.size();
+    if (timeStep < numBandits)
+      return timeStep; // play each bandit once
+
+    double epsilon = juce::jmin(1.0, c * numBandits / (d * d * timeStep));
+    if (random->sampleBool(epsilon))
+      return random->sampleSize(numBandits);
+    else
+      return selectMaximumIndexBandit(timeStep, banditStatistics);
+  }
+
+protected:
+  friend class EpsilonGreedyDiscreteBanditPolicyClass;
+
+  double c;
+  double d;
+  RandomGeneratorPtr random;
 };
 
 /*
