@@ -50,38 +50,22 @@ public:
   **
   ** @param seedValue : seed for the random numbers generator.
   */
-  RandomGenerator(long long seedValue = 0)
-    : seed(seedValue) {}
-
-  /** Constructor.
-  **
-  ** @param seedValue : seed for the random numbers generator.  
-  */
-  RandomGenerator(int seedValue)
+  RandomGenerator(juce::uint32 seedValue = 16645186)
     {setSeed(seedValue);}
 
-  virtual ~RandomGenerator() {}
 
   /** Seed setter.
   **
   ** @param seed : random seed.
   */
-  void setSeed(int seed)
-    {this->seed = (long long)seed; sampleInt();}
+  void setSeed(juce::uint32 seed);
 
-  /** Seed setter.
+  /** Samples an integer value uniformly in [0, 2^32[
   **
-  ** @param seed1 : random seed.
-  ** @param seed2 : random seed.
+  ** @return an integer value.
   */
-  void setSeed(int seed1, int seed2);
+  juce::uint32 sampleUint32();
 
-  /** Seed setter.
-  **
-  ** @param seed : random seed.
-  */
-  void setSeed(long long seed)
-    {this->seed = seed;}
 
   /** Samples a Boolean value uniformly.
   **
@@ -92,7 +76,7 @@ public:
   ** @return True or False (see above).
   */
   bool sampleBool()
-    {return (sampleInt() & 0x80000000) != 0;}
+    {return (sampleUint32() & 0x80000000) != 0;}
 
   /** Samples a Boolean value using a Bernoulli distribution.
   **
@@ -160,12 +144,6 @@ public:
   unsigned char sampleByte()
     {return (unsigned char)sampleInt(256);}
 
-  /** Samples an integer value uniformly.
-  **
-  ** @return an integer value.
-  */
-  int sampleInt();
-
   /** Samples an integer value in range [0, @a maxValue[.
   **
   ** @param maxValue : upper bound.
@@ -173,7 +151,7 @@ public:
   ** @return an interger value in range [0, @a maxValue[
   */
   int sampleInt(int maxValue)
-    {jassert(maxValue > 0); return (sampleInt() & 0x7fffffff) % maxValue;}
+    {jassert(maxValue > 0); return (int)(sampleUint32() % maxValue);}
 
   /** Samples an integer value in range [@a minValue, @a maxValue[.
   **
@@ -183,7 +161,7 @@ public:
   ** @return an integer value in range [@a minValue, @a maxValue[
   */
   int sampleInt(int minValue, int maxValue)
-    {jassert(maxValue > minValue); return (sampleInt() & 0x7fffffff) % (maxValue - minValue) + minValue;}
+    {jassert(maxValue > minValue); return minValue + sampleInt(maxValue - minValue);}
 
   /** Samples an unsigned integer value in range [0, @a maxSize[.
   **
@@ -211,7 +189,7 @@ public:
   ** @return a float value uniformly from range [0, 1[
   */
   float sampleFloat()
-    {return ((unsigned int) sampleInt()) / (float) 0xffffffff;}
+    {return sampleUint32() / (float)0xffffffff;}
 
   /** Samples a float value uniformly from range [0, @a maxValue[.
   **
@@ -237,7 +215,7 @@ public:
   ** @return a double value uniformly from range [0, 1[
   */
   double sampleDouble()
-    {return ((unsigned int) sampleInt()) / (double) 0xffffffff;}
+    {return sampleUint32() / (double)0xffffffff;}
 
   /** Samples a double value uniformly from range [0, @a maxValue[.
   **
@@ -327,7 +305,9 @@ public:
 private:
   friend class RandomGeneratorClass;
 
-  long long seed;               /*!< RandomGenerator seed. */
+  enum {N=624};
+  unsigned long mt[N];
+  int mti;
 
   /**
   ** Swaps @a a and @a b content.

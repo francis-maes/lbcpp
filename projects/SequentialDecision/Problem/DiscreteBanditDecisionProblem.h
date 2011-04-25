@@ -23,13 +23,13 @@ typedef ReferenceCountedObjectPtr<DiscreteBanditState> DiscreteBanditStatePtr;
 class DiscreteBanditState : public DecisionProblemState
 {
 public:
-  DiscreteBanditState(size_t numBandits, long long seedValue)
+  DiscreteBanditState(size_t numBandits, juce::uint32 seedValue)
   {
     randomGenerators.resize(numBandits);
     availableActions = vector(positiveIntegerType, numBandits);
     for (size_t i = 0; i < numBandits; ++i)
     {
-      randomGenerators[i] = new RandomGenerator(seedValue << i);
+      randomGenerators[i] = new RandomGenerator(seedValue + i);
       availableActions->setElement(i, i);
     }
   }
@@ -94,7 +94,7 @@ protected:
 class BernouilliDiscreteBanditState : public DiscreteBanditState
 {
 public:
-  BernouilliDiscreteBanditState(const std::vector<double>& probabilities, long long seedValue)
+  BernouilliDiscreteBanditState(const std::vector<double>& probabilities, juce::uint32 seedValue)
     : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities) {}
   BernouilliDiscreteBanditState() {}
 
@@ -144,7 +144,7 @@ public:
     std::vector<double> probabilities(numBandits);
     for (size_t i = 0; i < numBandits; ++i)
       probabilities[i] = random->sampleDouble(1.0);
-    long long seed = random->sampleInt();
+    juce::uint32 seed = random->sampleUint32();
     return new BernouilliDiscreteBanditState(probabilities, seed);   
   }
 
