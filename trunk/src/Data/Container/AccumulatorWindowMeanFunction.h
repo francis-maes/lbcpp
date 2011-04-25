@@ -40,7 +40,7 @@ public:
     int endPosition = inputs[2].getInteger();
     
     if (startPosition == endPosition)
-      return Variable::missingValue(denseDoubleVectorClass(getOutputType()));
+      return Variable::missingValue(getOutputType());
     
     jassert(startPosition >= 0 && startPosition < (int)n);
     jassert(endPosition >= 0 && endPosition < (int)n);

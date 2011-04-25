@@ -94,7 +94,7 @@ public:
     {return value.getInteger() == -1;}
 
   virtual VariableValue getMissingValue() const
-    {return VariableValue((size_t)-1);}
+    {return VariableValue((juce::int64)-1);}
 };
 
 }; /* namespace lbcpp */
