@@ -8,9 +8,8 @@
     <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
   </class>
   
-  <class name="MultiThreadsOptimizerContext" base="OptimizerContext">
-    <constructor arguments="const FunctionPtr&amp; objectiveFunction, size_t numThreads"/>
-    <variable type="PositiveInteger" name="numThreads"/>
+  <class name="MultiThreadedOptimizerContext" base="OptimizerContext">
+    <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
   </class>
   
 </library>

@@ -109,7 +109,15 @@
     <variable type="DiscreteBanditPolicy" name="policy"/>
     <variable type="Boolean" name="verbose"/>
   </class>
-
+  
+  <class name="EvaluateOptimizedDiscreteBanditPolicyParameters" base="Function">
+    <variable type="Function" name="perception"/>
+    <variable type="PositiveInteger" name="numBandits"/>
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="Boolean" name="verbose"/>
+  </class>
+  
   <class name="BanditsSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numBandits"/>
     <variable type="PositiveInteger" name="maxTimeStep"/>

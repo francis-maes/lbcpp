@@ -9,13 +9,11 @@
 #include "precompiled.h"
 #include <lbcpp/Optimizer/Optimizer.h>
 #include <lbcpp/Optimizer/OptimizerState.h>
-
 using namespace lbcpp;
 
 /*
- ** Optimizer
- */
-
+** Optimizer
+*/
 TypePtr Optimizer::getRequiredContextType() const
   {return optimizerContextClass;}
 
@@ -50,7 +48,8 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
     ScopedLock _(optimizerState->getLock());  // should be useless
     std::vector< std::pair<double, Variable> >::const_iterator it;
     size_t i = 0;
-    for (it = optimizerState->getBestRequests().begin(); it < optimizerState->getBestRequests().end(); it++) {
+    for (it = optimizerState->getBestRequests().begin(); it < optimizerState->getBestRequests().end(); it++)
+    {
       context.enterScope(T("Best Score ") + String((int) i));
       context.resultCallback(T("scoreNumber"), i);
       context.resultCallback(T("bestParameter"), it->second);
@@ -76,7 +75,8 @@ const DistributionPtr& OptimizerState::getDistribution() const
 void OptimizerState::setDistribution(ExecutionContext& context, const DistributionPtr& newDistribution)
 {
   distribution = newDistribution;
-  context.informationCallback(T("Distribution updated : ") + distribution->toString());
+  context.resultCallback(T("distribution"), newDistribution);
+  context.informationCallback(T("Distribution: ") + newDistribution->toShortString());
 }
 
 
@@ -135,9 +135,8 @@ void OptimizerState::setBestRequest(double score, const Variable& parameter)
 {
   ScopedLock _(lock);
   jassert(getBestScore() > score);
-  if (getBestScore() == DBL_MAX) {
+  if (getBestScore() == DBL_MAX)
     bestRequests.clear();
-  }
   bestRequests.push_back(std::make_pair(score, parameter));
 }
 
@@ -157,10 +156,10 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 {
   ScopedLock _(lock);
   processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
-  context.enterScope(T("Request ") + String((int) totalNumberOfEvaluations));
+/*  context.enterScope(T("Request ") + String((int) totalNumberOfEvaluations));
   context.resultCallback(T("requestNumber"), totalNumberOfEvaluations);
   context.resultCallback(T("parameter"), inputs[0]);      
-  context.leaveScope(output.toDouble());
+  context.leaveScope(output.toDouble());*/
   totalNumberOfEvaluations++;
 }
 
@@ -170,7 +169,13 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 OptimizerContext::OptimizerContext(const FunctionPtr& objectiveFunction)
   : objectiveFunction(objectiveFunction) {jassert(objectiveFunction->getNumRequiredInputs() == 1);}
 
-OptimizerContext::OptimizerContext() {}
+bool OptimizerContext::evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
+{
+  bool ok = true;
+  for (size_t i = 0; i < parametersVector.size(); ++i)
+    ok &= evaluate(context, parametersVector[i]);
+  return ok;
+}
 
 void OptimizerContext::setPostEvaluationCallback(const FunctionCallbackPtr& callback)
   {objectiveFunction->addPostCallback(callback);}

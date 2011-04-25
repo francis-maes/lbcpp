@@ -47,6 +47,7 @@ public:
   MessageExecutionTraceItem() {}
 
   virtual String toString() const;
+  virtual String toShortString() const;
   virtual String getPreferedXmlTag() const;
   virtual String getPreferedIcon() const;
 

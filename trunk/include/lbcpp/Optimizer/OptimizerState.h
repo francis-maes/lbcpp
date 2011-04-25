@@ -23,7 +23,6 @@ public:
   
   // this should be in an inherited class
   const DistributionPtr& getDistribution() const;
-  
   void setDistribution(ExecutionContext& context, const DistributionPtr& newDistribution);
   
   
@@ -31,29 +30,22 @@ public:
   ** Requests
   */
   size_t getTotalNumberOfRequests() const;
-
   void incTotalNumberOfRequests();
-  
   size_t getTotalNumberOfEvaluations() const;
   
   /*
   ** Processeded requests
   */
   size_t getNumberOfProcessedRequests() const;
-  
   const std::vector< std::pair<double, Variable> >& getProcessedRequests() const;
-  
   void flushProcessedRequests();
   
   /*
   ** Best variable and score
   */
   const Variable& getBestVariable() const;
-  
   double getBestScore() const;
-  
   void setBestRequest(double score, const Variable& parameter);
-  
   const std::vector< std::pair<double, Variable> >& getBestRequests();
   
   /*
@@ -62,8 +54,8 @@ public:
   const CriticalSection& getLock() const;
   
   /*
-   ** FunctionCallback
-   */
+  ** FunctionCallback
+  */
   virtual void functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output);
   
 protected:  
