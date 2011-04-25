@@ -19,16 +19,14 @@ class OptimizerContext : public Object
 {
 public:
   OptimizerContext(const FunctionPtr& objectiveFunction);
-  
-  OptimizerContext();
+  OptimizerContext() {}
   
   void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
-  
   void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
-  virtual void waitUntilAllRequestsAreProcessed() const = 0;
-  
+  virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const = 0;
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) = 0;
+  virtual bool evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector);
   
 protected:
   friend class OptimizerContextClass;
@@ -39,6 +37,7 @@ protected:
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
 extern ClassPtr optimizerContextClass;
 
-  
+extern OptimizerContextPtr multiThreadedOptimizerContext(const FunctionPtr& objectiveFunction);
+
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_

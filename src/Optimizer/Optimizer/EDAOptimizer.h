@@ -30,8 +30,13 @@ public:
     {
       Variable bestIterationParameters = optimizerState->getBestVariable();
       double bestScore;
-      if (!performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState, bestScore))
+
+      context.enterScope(T("Iteration ") + String((int)i + 1));
+      context.resultCallback(T("iteration"), i + 1);
+      bool ok = performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState, bestScore);
+      if (!ok)
         return false;
+      context.leaveScope(bestScore);
 
       if (bestScore < optimizerState->getBestScore())
         optimizerState->setBestRequest(bestScore, bestIterationParameters);
@@ -55,6 +60,7 @@ protected:
     jassert(numBests < populationSize);
     
     // generate evaluations
+    std::vector<Variable> parametersVector(populationSize);
     for (size_t i = 0; i < populationSize; ++i)
     {
       Variable input;
@@ -63,14 +69,15 @@ protected:
       else 
         input = optimizerState->getDistribution()->sample(random);
 
-      if (!optimizerContext->evaluate(context, input))
-        return false;
-
+      parametersVector[i] = input;
       optimizerState->incTotalNumberOfRequests();
     }
+
+    if (!optimizerContext->evaluate(context, parametersVector))
+      return false;
     
     // wait and sort results
-    optimizerContext->waitUntilAllRequestsAreProcessed();
+    optimizerContext->waitUntilAllRequestsAreProcessed(context);
     
     std::multimap<double, Variable> sortedScores;
     {
@@ -95,7 +102,7 @@ protected:
     // build new distribution
     std::multimap<double, Variable>::const_iterator it2 = sortedScores.begin();
     DistributionBuilderPtr builder = optimizerState->getDistribution()->createBuilder();
-    for (size_t i = 0; i < numBests; ++i, ++it2)
+    for (size_t i = 0; i < numBests && it2 != sortedScores.end(); ++i, ++it2)
       builder->addElement(it2->second);
     optimizerState->setDistribution(context, builder->build(context));
     

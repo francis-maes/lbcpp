@@ -40,6 +40,9 @@ MessageExecutionTraceItem::MessageExecutionTraceItem(double time, ExecutionMessa
 String MessageExecutionTraceItem::toString() const
   {return what + (where.isEmpty() ? String::empty : (T(" (in ") + where + T(")")));}
 
+String MessageExecutionTraceItem::toShortString() const
+  {return toString();}
+
 String MessageExecutionTraceItem::getPreferedXmlTag() const
 {
   switch (messageType)

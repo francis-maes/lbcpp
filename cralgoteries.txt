@@ -1,12 +1,3 @@
-* Sample training and testing initial states datasets
-* Launch experiments on LPP
-* Launch EVA_simple_unit with more small N values
-* Redaction finale LPP
-* Redaction finale EVA
-
-
-
-* Compilation sans UI et sans Reseau
 
 Go:
  * learn a big model

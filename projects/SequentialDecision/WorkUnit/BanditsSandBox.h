@@ -12,6 +12,8 @@
 # include "../Problem/DiscreteBanditDecisionProblem.h"
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/Optimizer.h>
+# include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Optimizer/OptimizerState.h>
 
 namespace lbcpp
 {
@@ -321,7 +323,7 @@ protected:
 };
 
 /*
-** Sand Box
+** Evaluate functions
 */
 class EvaluateDiscreteBanditPolicyWorkUnit : public WorkUnit
 {
@@ -427,6 +429,41 @@ protected:
   }
 };
 
+class EvaluateOptimizedDiscreteBanditPolicyParameters : public SimpleUnaryFunction
+{
+public:
+  EvaluateOptimizedDiscreteBanditPolicyParameters(FunctionPtr perception, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates)
+    : SimpleUnaryFunction(denseDoubleVectorClass(), doubleType), perception(perception),
+      numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), verbose(false)
+  {
+  }
+  EvaluateOptimizedDiscreteBanditPolicyParameters() : SimpleUnaryFunction(variableType, variableType) {}
+
+  virtual Variable computeFunction(ExecutionContext& context, const Variable& input) const
+  {
+    const DenseDoubleVectorPtr& parameters = input.getObjectAndCast<DenseDoubleVector>();
+    DiscreteBanditPolicyPtr policy = new OptimizedDiscreteBanditPolicy(perception, parameters);
+    WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, policy, verbose);
+    ScalarVariableStatisticsPtr stats = context.run(workUnit).getObjectAndCast<ScalarVariableStatistics>();
+    if (!stats)
+      return Variable::missingValue(getOutputType());
+
+    return stats->getMean();
+  }
+
+protected:
+  friend class EvaluateOptimizedDiscreteBanditPolicyParametersClass;
+
+  FunctionPtr perception;
+  size_t numBandits;
+  size_t maxTimeStep;
+  std::vector<DiscreteBanditStatePtr> initialStates;
+  bool verbose;
+};
+
+/*
+** SandBox
+*/
 class BanditsSandBox : public WorkUnit
 {
 public:
@@ -434,6 +471,11 @@ public:
  
   virtual Variable run(ExecutionContext& context)
   {
+    RandomGeneratorPtr random = RandomGenerator::getInstance();
+
+    /*
+    ** Make training and testing problems
+    */
     jassert(numBandits == 10);
     std::vector<double> probs(numBandits);
     probs[0] = 0.9;
@@ -447,8 +489,6 @@ public:
     probs[8] = 0.8;
     probs[9] = 0.8;
     const double rewardMargin = 0.1;
-
-    RandomGeneratorPtr random = RandomGenerator::getInstance();
 
     std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
     for (size_t i = 0; i < trainingStates.size(); ++i)
@@ -464,6 +504,9 @@ public:
       testingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
     }
 
+    /*
+    ** Compute a bunch of baseline policies
+    */
     std::vector<DiscreteBanditPolicyPtr> policies;
     policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
     policies.push_back(new UCB1TunedDiscreteBanditPolicy());
@@ -473,6 +516,18 @@ public:
     policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.20, rewardMargin));
     policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.25, rewardMargin));
 
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
+    for (size_t i = 0; i < policies.size(); ++i)
+      workUnit->setWorkUnit(i, new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingStates, policies[i], true));
+
+    workUnit->setProgressionUnit(T("Policies"));
+    workUnit->setPushChildrenIntoStackFlag(true);
+
+    context.run(workUnit);
+   
+    /*
+    ** Optimize policy
+    */
     FunctionPtr perception = new DiscreteBanditPerception(maxTimeStep);
     if (!perception->initialize(context, positiveIntegerType, banditStatisticsClass))
       return false;
@@ -482,23 +537,25 @@ public:
     context.informationCallback(String((int)parametersEnumeration->getNumElements()) + T(" parameters"));
     context.resultCallback(T("parametersEnumeration"), parametersEnumeration);
 
-    for (size_t pouet = 0; pouet < 100; ++pouet)
-    {
-      DenseDoubleVectorPtr parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
-      for (size_t i = 0; i < parametersEnumeration->getNumElements(); ++i)
-        parameters->setValue(i, random->sampleDoubleFromGaussian());
-      policies.push_back(new OptimizedDiscreteBanditPolicy(perception, parameters));
-    }
+    // eda parameters
+    size_t numIterations = 100;
+    size_t populationSize = 100;
+    size_t numBests = 10;
 
+    // optimizer state
+    IndependentDoubleVectorDistributionPtr distribution = new IndependentDoubleVectorDistribution(parametersEnumeration);
+    for (size_t i = 0; i < parametersEnumeration->getNumElements(); ++i)
+      distribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
+    OptimizerStatePtr optimizerState = new OptimizerState();
+    optimizerState->setDistribution(context, distribution);
 
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
-    for (size_t i = 0; i < policies.size(); ++i)
-      workUnit->setWorkUnit(i, new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingStates, policies[i], true));
+    // optimizer context
+    FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, testingStates);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(objectiveFunction);
 
-    workUnit->setProgressionUnit(T("Policies"));
-    workUnit->setPushChildrenIntoStackFlag(true);
-
-    context.run(workUnit);
+    // optimizer
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
+    optimizer->compute(context, optimizerContext, optimizerState);
     return true;
   }
 

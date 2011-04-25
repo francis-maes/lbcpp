@@ -37,7 +37,7 @@ public:
         optimizerState->incTotalNumberOfRequests();
     }
     
-    optimizerContext->waitUntilAllRequestsAreProcessed();
+    optimizerContext->waitUntilAllRequestsAreProcessed(context);
     
     std::vector< std::pair<double, Variable> >::const_iterator it;
     {
