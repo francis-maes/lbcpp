@@ -18,23 +18,25 @@ namespace lbcpp
 class EDAOptimizer : public Optimizer
 {
 public:
-  EDAOptimizer(size_t nbIterations, size_t populationSize, size_t numBests)
-    : nbIterations(nbIterations), populationSize(populationSize), numBests(numBests)
-    {random = RandomGenerator::getInstance();}
+  EDAOptimizer(size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest = false)
+    : numIterations(numIterations), populationSize(populationSize), numBests(numBests), reinjectBest(reinjectBest), random(new RandomGenerator()) {}
   
-  EDAOptimizer() 
-    {random = RandomGenerator::getInstance();}
+  EDAOptimizer()
+    : numIterations(0), populationSize(0), numBests(0) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    for (size_t i = 0; i < nbIterations; ++i)
+    for (size_t i = 0; i < numIterations; ++i)
     {
-
       Variable bestIterationParameters = optimizerState->getBestVariable();
-      double score = performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState);
-      if (score < optimizerState->getBestScore())
-        optimizerState->setBestRequest(score, bestIterationParameters);
-      context.progressCallback(new ProgressionState(i + 1, nbIterations, T("Iterations")));
+      double bestScore;
+      if (!performEDAIteration(context, bestIterationParameters, optimizerContext, optimizerState, bestScore))
+        return false;
+
+      if (bestScore < optimizerState->getBestScore())
+        optimizerState->setBestRequest(bestScore, bestIterationParameters);
+
+      context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
     }
     return optimizerState->getBestScore();
   }
@@ -42,14 +44,13 @@ public:
 protected:
   friend class EDAOptimizerClass;
   
-private:
   RandomGeneratorPtr random;
-  size_t nbIterations;
+  size_t numIterations;
   size_t populationSize;
   size_t numBests;
+  bool reinjectBest;
   
-  
-  double performEDAIteration(ExecutionContext& context, Variable& bestParameters, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
+  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState, double& bestScore) const
   {
     jassert(numBests < populationSize);
     
@@ -57,17 +58,15 @@ private:
     for (size_t i = 0; i < populationSize; ++i)
     {
       Variable input;
-      if (i == 0 && bestParameters.exists())
+      if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
       else 
-      {
         input = optimizerState->getDistribution()->sample(random);
-        
-      }
+
       if (!optimizerContext->evaluate(context, input))
-        i--;
-      else
-        optimizerState->incTotalNumberOfRequests();
+        return false;
+
+      optimizerState->incTotalNumberOfRequests();
     }
     
     // wait and sort results
@@ -102,8 +101,8 @@ private:
     
     // return best score
     bestParameters = sortedScores.begin()->second;
-    double bestScore = sortedScores.begin()->first;
-    return bestScore;
+    bestScore = sortedScores.begin()->first;
+    return true;
   }
 };
 

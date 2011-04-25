@@ -11,11 +11,12 @@
     <variable type="PositiveInteger" name="numSamples"/>
   </class>
   
-  <class name="EDAOptimizer" base="Optimizer">
-    <constructor arguments="size_t nbIterations, size_t populationSize, size_t numBests"/>
-    <variable type="PositiveInteger" name="nbIterations"/>
+  <class name="EDAOptimizer" base="Optimizer" shortName="eda">
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest"/>
+    <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numBests"/>
+    <variable type="Boolean" name="reinjectBest"/>
   </class>
   
   <class name="AsyncEDAOptimizer" base="Optimizer">
