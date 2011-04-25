@@ -13,9 +13,7 @@
   <include file="lbcpp/Data/SymmetricMatrix.h"/>
   
   <!-- Random Generator -->
-  <class name="RandomGenerator">
-    <variable type="Integer" name="seed"/>
-  </class>
+  <class name="RandomGenerator"/>
   
   <!-- Random Variable -->
   <class name="ScalarVariableMean" base="NameableObject">

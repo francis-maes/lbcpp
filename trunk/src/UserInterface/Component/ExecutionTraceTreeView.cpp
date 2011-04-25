@@ -170,7 +170,7 @@ void ExecutionTraceTreeView::timerCallback()
         ExecutionTraceNodePtr trace = item->getTrace().dynamicCast<ExecutionTraceNode>();
         if (trace)
         {
-          bool hasResults = trace->getResults().size() > (size_t)(trace->getReturnValue().exists() ? 1 : 0);
+          bool hasResults = trace->getResults().size() > 0;//(size_t)(trace->getReturnValue().exists() ? 1 : 0);
           bool hasSubItems = trace->getNumSubItems() > 0;
           if (!hasResults && !hasSubItems)
             continue;

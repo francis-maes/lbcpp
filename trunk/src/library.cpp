@@ -248,7 +248,7 @@ struct ApplicationContext
 #ifdef LBCPP_DEBUG_OBJECT_ALLOCATION
     memoryLeakDetector = new MemoryLeakDetector();
 #endif
-    defaultRandomGenerator = new RandomGenerator(1664518616645186LL);
+    defaultRandomGenerator = new RandomGenerator();
 #ifdef LBCPP_USER_INTERFACE
     userInterfaceManager = new UserInterfaceManager();
 #endif

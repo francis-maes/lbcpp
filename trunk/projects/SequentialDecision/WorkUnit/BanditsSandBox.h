@@ -249,7 +249,7 @@ public:
     {
       context.progressCallback(new ProgressionState(run, numRuns, T("Runs")));
 
-      DiscreteBanditStatePtr state = new BernouilliDiscreteBanditState(probs, RandomGenerator::getInstance()->sampleInt());
+      DiscreteBanditStatePtr state = new BernouilliDiscreteBanditState(probs, run);
       double bestReward, secondBestReward;
       size_t optimalBandit = state->getOptimalBandit(bestReward, secondBestReward);
 
@@ -262,7 +262,7 @@ public:
       size_t numberOfTimesOptimalIsPlayed = 0;
       for (size_t timeStep = 1; timeStep <= maxTimeStep; ++timeStep)
       {
-        size_t action = policy->selectNextBandit();
+        size_t action = 1;//policy->selectNextBandit();
         double reward;
         state->performTransition(action, reward);
         policy->updatePolicy(action, reward);
