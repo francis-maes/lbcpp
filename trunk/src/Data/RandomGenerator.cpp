@@ -116,7 +116,7 @@ juce::uint32 RandomGenerator::sampleUint32()
 
 //////////////////////////////////////////////////////////////////////////////
 
-void RandomGenerator::clone(ExecutionContext& context, const ObjectPtr& t)
+void RandomGenerator::clone(ExecutionContext& context, const ObjectPtr& t) const
 {
   Object::clone(context, t);
   const RandomGeneratorPtr& target = t.staticCast<RandomGenerator>();

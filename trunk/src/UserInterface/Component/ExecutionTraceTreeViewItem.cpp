@@ -133,10 +133,10 @@ ExecutionTraceTreeViewNode::ExecutionTraceTreeViewNode(ExecutionTraceTreeView* o
   {
     // online
     CompositeWorkUnitPtr compositeWorkUnit = trace->getWorkUnit().dynamicCast<CompositeWorkUnit>();
-    setOpen((!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10) && depth <= 3);
+    setOpen((!compositeWorkUnit || compositeWorkUnit->getNumWorkUnits() <= 10) && depth < 3);
   }
   else
-    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1 && depth <= 3); // open nodes that took more than 1 seconds and that have less than 10 childs
+    setOpen(trace->getNumSubItems() < 10 && trace->getTimeLength() > 1 && depth < 3); // open nodes that took more than 1 seconds and that have less than 10 childs
 }
 
 void ExecutionTraceTreeViewNode::createSubItems()

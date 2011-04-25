@@ -161,7 +161,7 @@ protected:
   {
     const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
     double tauEpisodeCount = tau(episodeCounts[banditNumber]);
-    double e = 1.0; // FIXME: what is e ????
+    double e = 1.0;//2.71828183;
     return statistics->getRewardMean() + sqrt((1.0 + alpha) * log(e * timeStep / tauEpisodeCount) / (2.0 * tauEpisodeCount));
   }
 
@@ -194,6 +194,12 @@ public:
     : c(c), d(d), random(new RandomGenerator()) {}
   EpsilonGreedyDiscreteBanditPolicy() : c(0.0), d(0.0) {}
 
+  virtual void initialize(size_t numBandits)
+  {
+    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
+    random->setSeed(16645186);
+  }
+
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
     {return banditStatistics[banditNumber]->getRewardMean();}
  
@@ -203,7 +209,7 @@ public:
     if (timeStep < numBandits)
       return timeStep; // play each bandit once
 
-    double epsilon = juce::jmin(1.0, c * numBandits / (d * d * timeStep));
+    double epsilon = juce::jmin(1.0, c * numBandits / (d * d * (timeStep + 1)));
     if (random->sampleBool(epsilon))
       return random->sampleSize(numBandits);
     else
@@ -238,19 +244,21 @@ public:
     // compute timeSteps
     std::vector<size_t> timeSteps;
     size_t timeStep = 0;
-    size_t batchSize = numBandits;
+    size_t batchSize = 2;//numBandits;
     size_t batchIndex = 0;
     while (timeStep < maxTimeStep)
     {
       timeStep += batchSize;
       timeSteps.push_back(timeStep);
       ++batchIndex;
-      batchSize *= numBandits;
+      batchSize *= 2;//numBandits;
     }
     
     // initial accumulators
     std::vector<double> actualRegretVector(timeSteps.size(), 0.0);
     std::vector<double> bestMachinePlayedVector(timeSteps.size(), 0.0);
+
+    ScalarVariableStatisticsPtr actualRegretStatistics = new ScalarVariableStatistics(T("actualRegret")); 
 
     // main calculation loop
     for (size_t i = 0; i < initialStates.size(); ++i)
@@ -262,18 +270,21 @@ public:
 
       double sumOfRewards = 0.0;
       size_t numberOfTimesOptimalIsPlayed = 0;
-      size_t previousTimeStep = 0;
+      timeStep = 0;
       for (size_t j = 0; j < timeSteps.size(); ++j)
       {
-        size_t timeStep = timeSteps[j];
-        size_t numTimeSteps = timeStep - previousTimeStep;
-        for (size_t k = 0; k < numTimeSteps; ++k)
+        size_t numTimeSteps = timeSteps[j] - (j > 0 ? timeSteps[j - 1] : 0);
+        for (size_t k = 0; k < numTimeSteps; ++k, ++timeStep)
            performBanditStep(state, policy, optimalBandit, sumOfRewards, numberOfTimesOptimalIsPlayed);
+        jassert(timeStep == timeSteps[j]);
  
         actualRegretVector[j] += timeStep * bestReward - sumOfRewards;
-        bestMachinePlayedVector[j] += numberOfTimesOptimalIsPlayed / (double)timeStep;
-        previousTimeStep = timeStep;
+        if (timeStep <= numBandits)
+          bestMachinePlayedVector[j] += 1.0 / (double)numBandits;
+        else
+          bestMachinePlayedVector[j] += numberOfTimesOptimalIsPlayed / (double)timeStep;
       }
+      actualRegretStatistics->push(timeStep * bestReward - sumOfRewards);
 
       if (verbose)
         context.progressCallback(new ProgressionState(i + 1, initialStates.size(), T("Problems")));
@@ -296,7 +307,7 @@ public:
       }
     }
 
-    return actualRegretVector.back();
+    return actualRegretStatistics;
   }
  
 protected:
@@ -327,10 +338,18 @@ public:
  
   virtual Variable run(ExecutionContext& context)
   {
-    jassert(numBandits == 2);
+    jassert(numBandits == 10);
     std::vector<double> probs(numBandits);
     probs[0] = 0.9;
-    probs[1] = 0.6;
+    probs[1] = 0.8;
+    probs[2] = 0.8;
+    probs[3] = 0.8;
+    probs[4] = 0.8;
+    probs[5] = 0.8;
+    probs[6] = 0.8;
+    probs[7] = 0.8;
+    probs[8] = 0.8;
+    probs[9] = 0.8;
 
     RandomGeneratorPtr random = RandomGenerator::getInstance();
 
@@ -348,7 +367,9 @@ public:
     policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, probs[0] - probs[1]));
     policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.10, probs[0] - probs[1]));
     policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.15, probs[0] - probs[1]));
-    
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.20, probs[0] - probs[1]));
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.25, probs[0] - probs[1]));
+
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
       workUnit->setWorkUnit(i, new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingStates, policies[i], true));

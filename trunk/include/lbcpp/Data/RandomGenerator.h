@@ -302,7 +302,7 @@ public:
       res.insert(elements[order[i]]);
   }
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& target);
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
   
 private:
   friend class RandomGeneratorClass;
