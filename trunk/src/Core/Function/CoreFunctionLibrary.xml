@@ -34,6 +34,11 @@
     <variable type="Class" name="objectClass"/>
   </class>
 
+  <class name="ConvertToDoubleFunction" base="Function">
+    <constructor arguments="bool applyLogScale"/>
+    <variable type="Boolean" name="applyLogScale"/>
+  </class>
+  
   <class name="SignedScalarToProbabilityFunction" base="SimpleUnaryFunction">
     <constructor returnType="Function"/>
   </class>

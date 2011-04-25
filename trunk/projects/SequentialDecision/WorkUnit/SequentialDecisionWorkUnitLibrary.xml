@@ -66,9 +66,7 @@
   
   <!-- Bandits -->
   <class name="BanditStatistics" base="Object">
-    <variable type="PositiveInteger" name="playedCount"/>
-    <variable type="Double" name="sumOfRewards"/>
-    <variable type="Double" name="sumOfSquaredRewards"/>
+    
   </class>
 
   <class name="DiscreteBanditPolicy" base="Object" abstract="yes">
@@ -93,6 +91,16 @@
     <variable type="Double" name="d"/>
 <!--    <variable type="RandomGenerator" name="random"/> -->
   </class>
+
+  <class name="BanditStatisticsFeatureGenerator" base="FeatureGenerator"/>
+  <class name="DiscreteBanditPerception" base="CompositeFunction">
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+  </class>
+  <class name="OptimizedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="optimized">
+    <variable type="Function" name="perceptionFunction"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
 
   <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="numBandits"/>
