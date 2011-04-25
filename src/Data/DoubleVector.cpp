@@ -322,6 +322,7 @@ DenseDoubleVector::DenseDoubleVector(ClassPtr thisClass, size_t initialSize, dou
 DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr elementsType, size_t initialSize, double initialValue)
   : DoubleVector(denseDoubleVectorClass(enumeration, elementsType)), ownValues(true)
 {
+  jassert(((ObjectPtr)enumeration).isInstanceOf<Enumeration>());
   if (initialSize == (size_t)-1)
     initialSize = getElementsEnumeration()->getNumElements();
   values = new std::vector<double>(initialSize, initialValue);
@@ -357,12 +358,15 @@ bool DenseDoubleVector::loadFromXml(XmlImporter& importer)
   tokens.addTokens(allText, true);
   tokens.removeEmptyStrings();
   size_t n = tokens.size();
-  int expectedSize = importer.getIntAttribute(T("size"), -1);
-  if (expectedSize != (int)n)
+  if (importer.hasAttribute(T("size")))
   {
-    importer.getContext().errorCallback(T("Invalid number of tokens: expected ") +
-      String(expectedSize) + T(" values, found ") + String((int)n) + T(" values"));
-    ok = false;
+    int expectedSize = importer.getIntAttribute(T("size"), -1);
+    if (expectedSize != (int)n)
+    {
+      importer.getContext().errorCallback(T("Invalid number of tokens: expected ") +
+        String(expectedSize) + T(" values, found ") + String((int)n) + T(" values"));
+      ok = false;
+    }
   }
 
   TypePtr elementType = getElementsType();

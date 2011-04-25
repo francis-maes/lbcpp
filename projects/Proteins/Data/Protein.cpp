@@ -358,13 +358,14 @@ DoubleVectorPtr Protein::computeDisorderRegionsFromTertiaryStructure(TertiaryStr
 ContainerPtr Protein::computeSecondaryStructureFromDSSPSecondaryStructure(ContainerPtr dsspSecondaryStructure)
 {
   size_t n = dsspSecondaryStructure->getNumElements();
-  ContainerPtr res = objectVector(sparseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType), n);
+  ClassPtr ss8SparseVectorClass = sparseDoubleVectorClass(secondaryStructureElementEnumeration, probabilityType);
+  ContainerPtr res = objectVector(ss8SparseVectorClass, n);
   for (size_t i = 0; i < n; ++i)
   {
     DoubleVectorPtr dssp = dsspSecondaryStructure->getElement(i).getObjectAndCast<DoubleVector>();
     if (dssp)
     {
-      SparseDoubleVectorPtr value = new SparseDoubleVector(res->getElementsType(), probabilityType);
+      SparseDoubleVectorPtr value = new SparseDoubleVector(ss8SparseVectorClass);
       value->appendValue(dsspSecondaryStructureToSecondaryStructure((DSSPSecondaryStructureElement)dssp->getIndexOfMaximumValue()), 1.0);
       res->setElement(i, value);
     }
