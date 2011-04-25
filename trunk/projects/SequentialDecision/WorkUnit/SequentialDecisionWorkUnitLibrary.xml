@@ -20,12 +20,6 @@
   </class>
   
   <!-- HIV -->
-  <template name="IndependentDoubleVectorDistribution" base="MultiVariateDistribution[DenseDoubleVector[elementsEnumeration,Double]]">
-    <parameter name="elementsEnumeration" type="EnumValue"/>
-    <variable type="ObjectVector[Distribution[Double]]" name="subDistributions"/>
-  </template>
-  <class name="IndependentDoubleVectorDistributionBuilder" base="DistributionBuilder[DenseDoubleVector[EnumValue,Double]]"/>
-
   <class name="WeightedRewardsFeatureGenerator" base="FeatureGenerator" shortName="weightedRewardsSearchNodeFeatures"/>
   <class name="SimpleSearchNodeFeatureGenerator" base="CompositeFunction" shortName="simpleSearchNodeFeatures">
     <variable type="Boolean" name="applyLog"/>

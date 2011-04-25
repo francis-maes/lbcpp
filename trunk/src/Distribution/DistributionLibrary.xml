@@ -90,5 +90,10 @@
     
     <variable type="ObjectVector[Distribution[Variable]]" name="distributions"/>
   </template>
-  
+
+  <template name="IndependentDoubleVectorDistribution" base="MultiVariateDistribution[DenseDoubleVector[elementsEnumeration,Double]]">
+    <parameter name="elementsEnumeration" type="EnumValue"/>
+    <variable type="ObjectVector[Distribution[Double]]" name="subDistributions"/>
+  </template>
+
 </library>

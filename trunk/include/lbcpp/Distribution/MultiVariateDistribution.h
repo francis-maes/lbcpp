@@ -61,6 +61,46 @@ protected:
 typedef ReferenceCountedObjectPtr<IndependentMultiVariateDistribution> IndependentMultiVariateDistributionPtr;
 extern ClassPtr independentMultiVariateDistributionClass(TypePtr type);
 
+
+class IndependentDoubleVectorDistribution : public MultiVariateDistribution
+{
+public:
+  IndependentDoubleVectorDistribution(EnumerationPtr elementsEnumeration);
+  IndependentDoubleVectorDistribution() {}
+
+  virtual TypePtr getElementsType() const
+    {return elementsType;}
+
+  virtual double computeEntropy() const
+    {jassert(false); return 0.0;}
+
+  virtual double computeProbability(const Variable& value) const
+    {jassert(false); return 0.0;}
+
+  virtual Variable sample(RandomGeneratorPtr random) const;
+
+  virtual Variable sampleBest(RandomGeneratorPtr random) const
+    {jassert(false); return Variable();}
+  
+  virtual DistributionBuilderPtr createBuilder() const;
+
+  void setSubDistribution(size_t index, const DistributionPtr& distribution)
+    {subDistributions[index] = distribution;}
+
+  size_t getNumSubDistributions() const
+    {return subDistributions.size();}
+
+protected:
+  friend class IndependentDoubleVectorDistributionClass;
+
+  EnumerationPtr elementsEnumeration;
+  TypePtr elementsType;
+  std::vector<DistributionPtr> subDistributions;
+};
+
+typedef ReferenceCountedObjectPtr<IndependentDoubleVectorDistribution> IndependentDoubleVectorDistributionPtr;
+extern ClassPtr independentDoubleVectorDistributionClass(TypePtr elementsEnumeration);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_PROBABILITY_DISTRIBUTION_MULTI_VARIATE_H_

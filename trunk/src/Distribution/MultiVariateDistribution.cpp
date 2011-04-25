@@ -7,8 +7,8 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Distribution/MultiVariateDistribution.h>
-#include "Builder/IndependentMultiVariateDistributionBuilder.h"
-
+#include <lbcpp/Distribution/DistributionBuilder.h>
+#include <lbcpp/Data/DoubleVector.h>
 using namespace lbcpp;
 
 /*
@@ -52,8 +52,42 @@ Variable IndependentMultiVariateDistribution::sampleBest(RandomGeneratorPtr rand
 
 DistributionBuilderPtr IndependentMultiVariateDistribution::createBuilder() const
 {
-  IndependentMultiVariateDistributionBuilderPtr builder = new IndependentMultiVariateDistributionBuilder(getElementsType());
+  std::vector<DistributionBuilderPtr> subBuilders(distributions.size());
   for (size_t i = 0; i < distributions.size(); ++i)
-    builder->setSubDistributionBuilder(i, distributions[i]->createBuilder());
-  return builder;
+    subBuilders[i] = distributions[i]->createBuilder();
+  return independentMultiVariateDistributionBuilder(getElementsType(), subBuilders);
+}
+
+/*
+** IndependentDoubleVectorDistribution
+*/
+IndependentDoubleVectorDistribution::IndependentDoubleVectorDistribution(EnumerationPtr elementsEnumeration)
+  : MultiVariateDistribution(independentDoubleVectorDistributionClass(elementsEnumeration)),
+    elementsEnumeration(elementsEnumeration), elementsType(denseDoubleVectorClass(elementsEnumeration))
+{
+  subDistributions.resize(elementsEnumeration->getNumElements());
+}
+
+Variable IndependentDoubleVectorDistribution::sample(RandomGeneratorPtr random) const
+{
+  // /!\ This distribution only outputs normalized double vectors
+  DenseDoubleVectorPtr res(new DenseDoubleVector(elementsType, subDistributions.size()));
+//  double sumOfSquares = 0.0;
+  for (size_t i = 0; i < subDistributions.size(); ++i)
+  {
+    double value = subDistributions[i]->sample(random).getDouble();
+//    sumOfSquares += value * value;
+    res->setValue(i, value);
+  }
+//   if (sumOfSquares)
+//     res->multiplyByScalar(1.0 / sqrt(sumOfSquares)); // normalize
+  return res;
+}
+
+DistributionBuilderPtr IndependentDoubleVectorDistribution::createBuilder() const
+{
+  std::vector<DistributionBuilderPtr> subBuilders(subDistributions.size());
+  for (size_t i = 0; i < subBuilders.size(); ++i)
+    subBuilders[i] = subDistributions[i]->createBuilder();
+  return independentDoubleVectorDistributionBuilder(elementsEnumeration, subBuilders);
 }

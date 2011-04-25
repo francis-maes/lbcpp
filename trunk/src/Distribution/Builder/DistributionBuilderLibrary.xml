@@ -34,7 +34,12 @@
   
   <template name="IndependentMultiVariateDistributionBuilder" base="DistributionBuilder[elementsType]">
     <parameter name="elementsType" type="Object"/>
-    <variable type="ObjectVector[DistributionBuilder[Variable]]" name="distributionsBuilders"/>
+    <constructor arguments="ClassPtr elementsType, const std::vector&lt;DistributionBuilderPtr&gt;&amp; subBuilders" parameters="elementsType"/>
+    <variable type="ObjectVector[DistributionBuilder[Variable]]" name="subBuilders"/>
   </template>
+  
+  <class name="IndependentDoubleVectorDistributionBuilder" base="DistributionBuilder[DenseDoubleVector[EnumValue,Double]]">
+    <constructor arguments="EnumerationPtr elementsEnumeration, const std::vector&lt;DistributionBuilderPtr&gt;&amp; subBuilders"/>
+  </class>
 
 </library>

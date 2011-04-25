@@ -100,10 +100,7 @@ class PositiveIntegerGaussianDistributionBuilder : public IntegerGaussianDistrib
     {return positiveIntegerType;}
   
   virtual DistributionPtr build(ExecutionContext& context) const;
-    
 };
-  
-
   
 }; /* namespace lbcpp */
 
