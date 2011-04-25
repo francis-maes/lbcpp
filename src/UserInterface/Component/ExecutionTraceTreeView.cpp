@@ -213,7 +213,7 @@ void ExecutionTraceTreeView::invalidateTree()
   {isTreeUpToDate = false;}
 
 int ExecutionTraceTreeView::getDefaultWidth() const
-  {return 600;}
+  {return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 3;}
 
 #include "../../Execution/Callback/MakeTraceExecutionCallback.h"
 

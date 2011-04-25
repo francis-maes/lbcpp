@@ -224,7 +224,7 @@ public:
   void initialize();
 
   virtual int getDefaultWidth() const
-    {return 900;}
+    {return juce::Desktop::getInstance().getMainMonitorArea().getWidth() * 4 / 10;}
 
   ViewportComponent* getContentViewport() const
     {return contentViewport;}

@@ -337,19 +337,28 @@ protected:
   static void getMarkerValues(double minValue, double maxValue, double valuePerPixel,
                               std::vector<double>& main, std::vector<double>& secondary)
   {
-    double step = pow(10.0, (double)(int)(log10(valuePerPixel) + 0.9));
-    int ibegin = (int)(minValue / step);
-    int iend = (int)(maxValue / step);
-    for (int i = ibegin; i <= iend; ++i)
+    int powerOfTen = (int)(log10(valuePerPixel) + 0.9);
+    while (main.size() < 2)
     {
-      double time = i * step;
-      if (time >= minValue && time <= maxValue)
+      main.clear();
+      secondary.clear();
+
+      double step = pow(10.0, (double)powerOfTen);
+      int ibegin = (int)(minValue / step);
+      int iend = (int)(maxValue / step);
+      for (int i = ibegin; i <= iend; ++i)
       {
-        if (i % 10 == 0)
-          main.push_back(time);
-        else
-          secondary.push_back(time);
+        double time = i * step;
+        if (time >= minValue && time <= maxValue)
+        {
+          if (i % 10 == 0)
+            main.push_back(time);
+          else
+            secondary.push_back(time);
+        }
       }
+
+      --powerOfTen; // if there are not enough main markers, retry with a more finner scale
     }
   }
 };
