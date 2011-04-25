@@ -7,6 +7,7 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Data/RandomVariable.h>
+#include <lbcpp/Core/Variable.h>
 using namespace lbcpp;
 
 /*
@@ -28,7 +29,7 @@ String ScalarVariableMean::toString() const
 }
 
 String ScalarVariableMean::toShortString() const
-  {return String(getMean());}
+  {return Variable(getMean()).toShortString();}
 
 /*
 ** ScalarVariableMeanAndVariance
@@ -44,7 +45,7 @@ String ScalarVariableMeanAndVariance::toShortString() const
   String res = ScalarVariableMean::toShortString();
   double stddev = getStandardDeviation();
   if (stddev)
-    res += T(" +/- ") + String(stddev);
+    res += T(" +/- ") + Variable(stddev).toShortString();
   return res;
 }
 

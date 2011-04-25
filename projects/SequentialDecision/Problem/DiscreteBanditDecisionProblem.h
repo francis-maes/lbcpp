@@ -52,8 +52,9 @@ public:
     reward = sampleReward(banditNumber, randomGenerators[banditNumber]);
   }
 
-  virtual void clone(ExecutionContext& context, const ObjectPtr& t)
+  virtual void clone(ExecutionContext& context, const ObjectPtr& t) const
   {
+    Object::clone(context, t);
     const DiscreteBanditStatePtr& target = t.staticCast<DiscreteBanditState>();
     target->availableActions = availableActions;
     target->randomGenerators.resize(randomGenerators.size());
