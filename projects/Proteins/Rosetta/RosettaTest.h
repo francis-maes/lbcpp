@@ -43,83 +43,90 @@ class RosettaTest: public WorkUnit
 private:
   friend class RosettaTestClass;
   size_t arg;
+  String proteinsDir;
+  std::vector<double> parameters;
 
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    rosettaInitialization(context, false);
 
-    rosettaInitialization(false);
-    core::pose::PoseOP pose = new core::pose::Pose();
-    makePoseFromSequence(pose, String("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
-    //core::io::pdb::dump_pdb((*pose), "/Users/alex/Desktop/init.pdb");
-    cout << "energy init : " << getTotalEnergy(pose) << endl;
-    cout << "num residus : " << pose->n_residue() << endl;
+    File fichier = context.getFile(T("init.pdb"));
+    //File fichier("/Users/alex/Desktop/2KX7.pdb");
+    File fichierout("/Users/alex/Desktop/init_lbcpp.pdb");
+    ProteinPtr protein = Protein::createFromPDB(context, fichier, true);
+    core::pose::PoseOP pose = convertProteinToPose(context, protein);
 
-    std::vector<Variable> optArgs;
-    optArgs.push_back(Variable((double)25));
+    // Number of residues
+       int numRes = pose->n_residue();
 
-    int maxit = 1000;
+       // Tertiary structure
+       TertiaryStructurePtr ts = protein->getTertiaryStructure();
+       for (int i = 0; i < numRes; i++)
+       {
+         ResiduePtr residue = ts->getResidue(i);
 
-    time_t time1;
-    time_t time2;
-    struct tm * timeinfo;
-    RosettaOptimizerPtr o;
-    if (arg == 2)
-      o = new RosettaOptimizer(&context, T("AAAAA"), 0.01);
-    else if (arg == 3)
-      o = new RosettaOptimizer();
-    if (arg >= 2)
-    {
-      time(&time1);
-      PhiPsiRandomMoverPtr pprm = new PhiPsiRandomMover(optArgs);
-      core::pose::PoseOP result1 = o->greedyOptimization(pose, pprm, maxit);
-      cout << "energy final : " << getTotalEnergy(result1) << endl;
-      time(&time2);
-      cout << "time : " << difftime(time2, time1) << endl;
+       // rosetta : get residue information
+       core::conformation::Residue tempResRos = pose->residue(i + 1);
+       core::chemical::ResidueType tempResRosType = pose->residue_type(i + 1);
+       int nbatoms = tempResRos.natoms();
 
-      time(&time1);
-      PhiPsiGaussRandomMoverPtr pprgm = new PhiPsiGaussRandomMover(optArgs);
-      core::pose::PoseOP result2 = o->greedyOptimization(pose, pprgm, maxit);
-      cout << "phipsi gauss energy final : " << getTotalEnergy(result2) << endl;
-      time(&time2);
-      cout << "time : " << difftime(time2, time1) << endl;
+       // fill residue with atoms
+       for (size_t j = 0; j < nbatoms; j++)
+       {
+       // get atoms information
+       numeric::xyzVector < core::Real > positionAtomRos = tempResRos.xyz(j + 1);
+       std::string atomTypeRos = (tempResRos.atom_type(j + 1)).element();
+       std::string atomNameRos = tempResRos.atom_name(j + 1);
 
-      optArgs.at(0) = Variable((double)1.0);
+       // create atom and set position and occupancy
+       impl::Vector3 v3(0.0, 0.0, 0.0);
+       Vector3Ptr v3p = new Vector3(v3);
+       AtomPtr tempAtom = new Atom((String) (atomNameRos.c_str()),
+       (String) (atomTypeRos.c_str()), v3p);
 
-      time(&time1);
-      RigidBodyTransRandomMoverPtr rgtrm = new RigidBodyTransRandomMover(optArgs);
-      core::pose::PoseOP result3 = o->greedyOptimization(pose, rgtrm, maxit);
-      cout << "RBT energy final : " << getTotalEnergy(result3) << endl;
-      time(&time2);
-      cout << "time : " << difftime(time2, time1) << endl;
+       // Probleme, si pose cree par makePoseFromSequence, energie
+       //sensiblement differente... (du a occupancy de toute evidence)
+       if ((pose->pdb_info()).get() != NULL)
+       tempAtom->setOccupancy((pose->pdb_info())->occupancy(i + 1, j + 1));
+       else
+       tempAtom->setOccupancy(1.0);
 
-      optArgs.push_back(Variable((double)5.0));
-      time(&time1);
-      RigidBodyPerturbRandomMoverPtr rbprm = new RigidBodyPerturbRandomMover(optArgs);
-      core::pose::PoseOP result5 = o->greedyOptimization(pose, rbprm, maxit);
-      cout << "RBP energy final : " << getTotalEnergy(result5) << endl;
-      time(&time2);
-      cout << "time : " << difftime(time2, time1) << endl;
+       tempAtom->setX(positionAtomRos.x());
+       tempAtom->setY(positionAtomRos.y());
+       tempAtom->setZ(positionAtomRos.z());
+       }
+       }
 
-      std::vector<Variable> optArgs2;
-      optArgs2.push_back(Variable((double)10));
-      optArgs2.push_back(Variable((double)25));
-      optArgs2.push_back(Variable((int)1));
+    protein->saveToPDBFile(context, fichierout);
+    core::io::pdb::dump_pdb((*pose), "/Users/alex/Desktop/init_rosetta.pdb");
 
-      time(&time1);
-      ShearRandomMoverPtr srm = new ShearRandomMover(optArgs2);
-      core::pose::PoseOP result4 = o->greedyOptimization(pose, srm, maxit);
-      cout << "Shear energy final : " << getTotalEnergy(result4) << endl;
-      time(&time2);
-      cout << "time : " << difftime(time2, time1) << endl;
-    }
+    //pose_from_pdb(*pose2, );
+    //ProteinPtr prot1 = convertPoseToProtein(context, pose2);
+    //core::pose::PoseOP pose3 = convertProteinToPose(context, prot1);
+
+    //cout << "energie cas 1 : " << getTotalEnergy(pose) << endl;
+    //cout << "energie cas 2 : " << getTotalEnergy(pose2) << endl;
+/*
+    std::ostringstream oss;
+      core::io::pdb::FileData::dump_pdb((*pose2), oss);
+      oss.flush();
+      std::string poseString = oss.str();
+      String pdbString(poseString.c_str());
+*/
+      //cout << "pose2 : " << pdbString <<endl;
+
+//    core::pose::PoseOP pose = new core::pose::Pose();
+//    makePoseFromSequence(pose, T("AAAAAA"));
+//    ProteinPtr protein = convertPoseToProtein(context, pose);
+
+
     context.informationCallback(T("RosettaTest done."));
     return Variable();
 
   }
 };
 
-}
-; /* namespace lbcpp */
+}; /* namespace lbcpp */
 
 #endif // !LBCPP_PROTEINS_ROSETTA_TEST_H_

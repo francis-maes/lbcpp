@@ -33,8 +33,9 @@ class RosettaOptimizer: public Object
 public:
   /**
    * Initializes the RosettaOptimizer without any output.
+   * @param seedForRandom seed used to initialize the random generator.
    */
-  RosettaOptimizer();
+  RosettaOptimizer(long long seedForRandom = 0);
 
   /**
    * Initializes the RosettaOptimizer with callbacks.
@@ -42,13 +43,12 @@ public:
    * @param n the name of the protein optimized. (can be changed).
    * @param f the frequency you want the callbacks to appear in the
    * optimization. 0.1 gives 10 trace callbacks.
+   * @param outputDirectory the directory where to put the saved files.
+   * @param numOutputFiles the number of output files stored in outputDirectory.
+   * @param seedForRandom seed used to initialize the random generator.
    */
-  RosettaOptimizer(ExecutionContextPtr context, String name, double frequency);
-
-  /**
-   * Destructor.
-   */
-  ~RosettaOptimizer();
+  RosettaOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
+      File outputDirectory, int numOutputFiles, long long seedForRandom = 0);
 
   /**
    * Returns the protein name.
@@ -79,7 +79,7 @@ public:
    * of optimization steps performed by the optmizer. For example, if you
    * give 0.1 for this frequency, there will be 10 trace callbacks.
    */
-  void setFrequency(double frequency);
+  void setFrequency(double frequencyCallback);
 
   /**
    * Returns the actual trace callbacks frequency.
@@ -87,76 +87,19 @@ public:
    */
   double getFrequency();
 
-  /*
-   * Performs greedy optimization on the pose object.
-   * @param pose the initial conformation
-   * @param mover pointer to a mover that perturbs the object at each iteration.
-   * @param maxSteps number of steps to perform before stopping the optimization.
-   * Default = 50000.
-   * @param str options used to create the trace of the optimization. First argument =
-   * name of the protein to optimize. Second = a double between 0 and 1, that specifies
-   * the frequency of the trace callbacks. It is given in the form of a String also.
-   * String((double)0.2) for example. NULL if no trace desired, default.
-   * @param context, the context used to create the trace. NULL if no trace desired, default.
-   * @return the new conformation
-   */
-  core::pose::PoseOP greedyOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover,
-      int maxSteps = 50000);
+  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover)=0;
 
-  /*
-   * Performs Monte Carlo optimization on the pose object.
-   * @param pose the initial conformation
-   * @param mover pointer to a mover that perturbs the object at each iteration.
-   * @param temperature the temperature used in Monte Carlo optimization. In fact, temperature
-   * represents the product k_b*T. Default = 1.0.
-   * @param maxSteps number of steps to perform before stopping the optimization
-   * Default = 50000.
-   * @param timesReinitialization number of times the working conformation is resetted to the
-   * lowest-energy conformation found so far. If set to -1, no reinitialization is performed.
-   * Default = 5.
-   * @return the new conformation
-   */
-  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover,
-      double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5);
-
-  /*
-   * Performs simulated annealing on the pose object.
-   * @param pose the initial conformation
-   * @param mover pointer to a mover that perturbs the object at each iteration.
-   * @param initialTemperature the initial temperature used in simulated annealing. In fact, initialTemperature
-   * represents the product k_b*T used in the first step. Default = 4.0.
-   * @param finalTemperature the initial temperature used in simulated annealing. In fact, initialTemperature
-   * represents the product k_b*T used in the first step. Default = 0.01.
-   * @param numberDecreasingSteps temperature decreases by step. numberDecreasingSteps represents the number of steps the
-   * algorithm uses to decrease the temperature from initialTemperature to finalTemperature.
-   * @param maxSteps number of steps to perform before stopping the optimization
-   * Default = 50000.
-   * @param timesReinitialization number of times the working conformation is resetted to the
-   * lowest-energy conformation found so far. If set to -1, no reinitialization is performed.
-   * Default = 5.
-   * @return the new conformation
-   */
-  core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover,
-      double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
-          100, int maxSteps = 50000, int timesReinitialization = 5);
-
-  /*
-   * Performs sequential simulation on the pose object. This function adds a residue
-   * at each iteration and then performs optimization on the resulting protein object.
-   * The purpose is to fold the protein as it was being cronstructed.
-   * @param pose the initial conformation
-   * @param mover pointer to a mover that perturbs the object at each iteration.
-   * @return the new conformation
-   */
-  core::pose::PoseOP sequentialOptimization(core::pose::PoseOP pose, RosettaMoverPtr mover);
-
-private:
+protected:
   bool verbosity;
   double frequencyVerbosity;
   String name;
   ExecutionContextPtr context;
   bool nameScopesSet;
   std::vector<String> nameScopes;
+  RandomGeneratorPtr randomGenerator;
+  bool saveToFile;
+  juce::File outputDirectory;
+  int numOutputFiles;
 
   /**
    * Function that performs the monte carlo selection based on the
@@ -180,7 +123,7 @@ private:
    * will create a scope with tha name of the mover and with its parameters.
    */
   void initializeCallbacks(const std::vector<String>& names, double energy, int maxStepsNumber,
-      RosettaMoverPtr mover = NULL);
+      RosettaMoverPtr& mover);
 
   /**
    * Finalizes lbcpp callbacks.
@@ -196,7 +139,155 @@ private:
    * variable should the iteration number.
    */
   void callback(const std::vector<Variable>& resultCallbackValues, Variable returnValue,
-      int maxStepsNumber);
+      int maxStepsNumber = 0);
+};
+
+class RosettaGreedyOptimizer;
+typedef ReferenceCountedObjectPtr<RosettaGreedyOptimizer> RosettaGreedyOptimizerPtr;
+
+class RosettaGreedyOptimizer: public RosettaOptimizer
+{
+public:
+  RosettaGreedyOptimizer(long long seedForRandom = 0);
+  RosettaGreedyOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
+      File outputDirectory, int numOutputFiles, long long seedForRandom = 0);
+  RosettaGreedyOptimizer(int maxSteps, long long seedForRandom = 0);
+  RosettaGreedyOptimizer(int maxSteps, ExecutionContextPtr context, String name,
+      double frequencyCallback, File outputDirectory, int numOutputFiles, long long seedForRandom =
+          0);
+
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+
+  /*
+   * Performs greedy optimization on the pose object.
+   * @param pose the initial conformation
+   * @param mover pointer to a mover that perturbs the object at each iteration.
+   * @param maxSteps number of steps to perform before stopping the optimization.
+   * Default = 50000.
+   * @param str options used to create the trace of the optimization. First argument =
+   * name of the protein to optimize. Second = a double between 0 and 1, that specifies
+   * the frequency of the trace callbacks. It is given in the form of a String also.
+   * String((double)0.2) for example. NULL if no trace desired, default.
+   * @param context, the context used to create the trace. NULL if no trace desired, default.
+   * @return the new conformation
+   */
+  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover,
+      int maxSteps = 50000);
+
+private:
+  int maxSteps;
+};
+
+class RosettaMonteCarloOptimizer;
+typedef ReferenceCountedObjectPtr<RosettaMonteCarloOptimizer> RosettaMonteCarloOptimizerPtr;
+
+class RosettaMonteCarloOptimizer: public RosettaOptimizer
+{
+public:
+  RosettaMonteCarloOptimizer(long long seedForRandom = 0);
+  RosettaMonteCarloOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
+      File outputDirectory, int numOutputFiles, long long seedForRandom = 0);
+  RosettaMonteCarloOptimizer(double temperature, int maxSteps, int timesReinitialization,
+      long long seedForRandom = 0);
+  RosettaMonteCarloOptimizer(double temperature, int maxSteps, int timesReinitialization,
+      ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
+      int numOutputFiles, long long seedForRandom = 0);
+
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+
+  /*
+   * Performs Monte Carlo optimization on the pose object.
+   * @param pose the initial conformation
+   * @param mover pointer to a mover that perturbs the object at each iteration.
+   * @param temperature the temperature used in Monte Carlo optimization. In fact, temperature
+   * represents the product k_b*T. Default = 1.0.
+   * @param maxSteps number of steps to perform before stopping the optimization
+   * Default = 50000.
+   * @param timesReinitialization number of times the working conformation is resetted to the
+   * lowest-energy conformation found so far. If set to -1, no reinitialization is performed.
+   * Default = 5.
+   * @return the new conformation
+   */
+  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover,
+      double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5);
+
+private:
+  double temperature;
+  int maxSteps;
+  int timesReinitialization;
+};
+
+class RosettaSimulatedAnnealingOptimizer;
+typedef ReferenceCountedObjectPtr<RosettaSimulatedAnnealingOptimizer>
+    RosettaSimulatedAnnealingOptimizerPtr;
+
+class RosettaSimulatedAnnealingOptimizer: public RosettaOptimizer
+{
+public:
+  RosettaSimulatedAnnealingOptimizer(long long seedForRandom = 0);
+  RosettaSimulatedAnnealingOptimizer(ExecutionContextPtr context, String name,
+      double frequencyCallback, File outputDirectory, int numOutputFiles, long long seedForRandom =
+          0);
+  RosettaSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
+      int numberDecreasingSteps, int maxSteps, int timesReinitialization, long long seedForRandom =
+          0);
+  RosettaSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
+      int numberDecreasingSteps, int maxSteps, int timesReinitialization,
+      ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
+      int numOutputFiles, long long seedForRandom = 0);
+
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+
+  /*
+   * Performs simulated annealing on the pose object.
+   * @param pose the initial conformation
+   * @param mover pointer to a mover that perturbs the object at each iteration.
+   * @param initialTemperature the initial temperature used in simulated annealing. In fact, initialTemperature
+   * represents the product k_b*T used in the first step. Default = 4.0.
+   * @param finalTemperature the initial temperature used in simulated annealing. In fact, initialTemperature
+   * represents the product k_b*T used in the first step. Default = 0.01.
+   * @param numberDecreasingSteps temperature decreases by step. numberDecreasingSteps represents the number of steps the
+   * algorithm uses to decrease the temperature from initialTemperature to finalTemperature.
+   * @param maxSteps number of steps to perform before stopping the optimization
+   * Default = 50000.
+   * @param timesReinitialization number of times the working conformation is resetted to the
+   * lowest-energy conformation found so far. If set to -1, no reinitialization is performed.
+   * Default = 5.
+   * @return the new conformation
+   */
+  core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP& pose,
+      RosettaMoverPtr& mover, double initialTemperature = 4.0, double finalTemperature = 0.01,
+      int numberDecreasingSteps = 100, int maxSteps = 50000, int timesReinitialization = 5);
+
+private:
+  double initialTemperature;
+  double finalTemperature;
+  int numberDecreasingSteps;
+  int maxSteps;
+  int timesReinitialization;
+};
+
+class RosettaSequentialOptimizer;
+typedef ReferenceCountedObjectPtr<RosettaSequentialOptimizer> RosettaSequentialOptimizerPtr;
+
+class RosettaSequentialOptimizer: public RosettaOptimizer
+{
+public:
+  RosettaSequentialOptimizer(long long seedForRandom = 0);
+  RosettaSequentialOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
+      long long seedForRandom = 0);
+
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+
+  /*
+   * Performs sequential simulation on the pose object. This function adds a residue
+   * at each iteration and then performs optimization on the resulting protein object.
+   * The purpose is to fold the protein as it was being cronstructed.
+   * @param pose the initial conformation
+   * @param mover pointer to a mover that perturbs the object at each iteration.
+   * @return the new conformation
+   */
+  core::pose::PoseOP sequentialOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
 };
 
 }; /* namespace lbcpp */

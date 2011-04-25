@@ -9,15 +9,15 @@
 
 using namespace lbcpp;
 
-core::pose::PoseOP lbcpp::convertProteinToPose(const ProteinPtr protein)
+core::pose::PoseOP lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein)
 {
   core::pose::PoseOP pose = new core::pose::Pose();
-  String proteinPDBString = PDBFileGenerator::producePDBString(protein);
+  String proteinPDBString = PDBFileGenerator::producePDBString(context, protein);
   core::io::pdb::pose_from_pdbstring((*pose), (const char*) proteinPDBString);
   return pose;
 }
 
-ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP pose)
+ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP& pose)
 {
   std::ostringstream oss;
   core::io::pdb::FileData::dump_pdb((*pose), oss);
@@ -87,71 +87,112 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
    */
 }
 
-double lbcpp::getTotalEnergy(const ProteinPtr prot)
+double lbcpp::getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot)
 {
-  core::pose::PoseOP tempPose = convertProteinToPose(prot);
+  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
   return getTotalEnergy(tempPose);
 }
 
-double lbcpp::getTotalEnergy(core::pose::PoseOP pose)
+double lbcpp::getTotalEnergy(const core::pose::PoseOP& pose)
 {
   core::scoring::ScoreFunctionOP score_fxn =
       core::scoring::ScoreFunctionFactory::create_score_function("standard");
   return (*score_fxn)(*pose);
 }
 
-void lbcpp::rosettaInitialization()
+double lbcpp::getConformationScore(ExecutionContext& context, const ProteinPtr& prot)
 {
-  rosettaInitialization(true);
+  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
+  return getConformationScore(tempPose);
 }
 
-void lbcpp::rosettaInitialization(bool verbose)
+double formattingCorrectionFactor(double value, double mean, double std)
 {
-  srand(time(NULL));
+  return std::exp(std::pow((value - mean) / std, 2));
+}
+
+double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
+{
+  core::scoring::ScoreFunctionOP score_fxn =
+      core::scoring::ScoreFunctionFactory::create_score_function("standard");
+
+  // Correct the energy function
+  double meanCN = 1.5; //1.33
+  double stdCN = 0.5; // diminuer tous les std...
+  double meanCAN = 1.5; // 1.46
+  double stdCAN = 0.5;
+  double meanCAC = 1.5; // 1.53
+  double stdCAC = 0.5;
+  double correctionFactor = 0;
+  int numberResidues = pose->n_residue();
+
+  for (int i = 1; i < numberResidues; i++)
+  {
+    // Get coordinates
+    numeric::xyzVector<double> coordinatesC = (pose->residue(i)).xyz("C");
+    numeric::xyzVector<double> coordinatesCA = (pose->residue(i)).xyz("CA");
+    numeric::xyzVector<double> coordinatesN = (pose->residue(i)).xyz("N");
+    numeric::xyzVector<double> coordinatesNiplus1 = (pose->residue(i + 1)).xyz("N");
+
+    // Calculate correction factor
+    correctionFactor += formattingCorrectionFactor(coordinatesN.distance(coordinatesCA), meanCAN,
+        stdCAN);
+    correctionFactor += formattingCorrectionFactor(coordinatesCA.distance(coordinatesC), meanCAC,
+        stdCAC);
+    correctionFactor += formattingCorrectionFactor(coordinatesC.distance(coordinatesNiplus1),
+        meanCN, stdCN);
+  }
+  // Last residue is special, no bond between C and Niplus1
+  numeric::xyzVector<double> coordinatesC = (pose->residue(numberResidues)).xyz("C");
+  numeric::xyzVector<double> coordinatesCA = (pose->residue(numberResidues)).xyz("CA");
+  numeric::xyzVector<double> coordinatesN = (pose->residue(numberResidues)).xyz("N");
+
+  // Calculate correction factor
+  correctionFactor += formattingCorrectionFactor(coordinatesN.distance(coordinatesCA), meanCAN,
+      stdCAN);
+  correctionFactor += formattingCorrectionFactor(coordinatesCA.distance(coordinatesC), meanCAC,
+      stdCAC);
+
+  double score = (*score_fxn)(*pose) + juce::jmax(0.0, correctionFactor - (double)3
+      * numberResidues + 1);
+  return (score > 0 ? score : std::pow(10.0, score));
+}
+
+void lbcpp::rosettaInitialization(ExecutionContext& context)
+{
+  rosettaInitialization(context, true);
+}
+
+void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
+{
   int argc = 3;
   if (!verbose)
   {
     argc = 5;
   }
   char* argv[argc];
-  argv[0] = (char*) "./main";
-  argv[1] = (char*) "-database";
+  argv[0] = (char*)"./main";
+  argv[1] = (char*)"-database";
   if (!verbose)
   {
-    argv[3] = (char*) "-mute";
-    argv[4] = (char*) "all";
+    argv[3] = (char*)"-mute";
+    argv[4] = (char*)"all";
   }
-#ifdef JUCE_LINUX
-  // path to find rosetta database in monster24
-  argv[2] = (char*)"/home/alejandro/soft/rosetta-3.2/rosetta_database";
-#elif JUCE_MAC
-  // path to find rosetta database in personnal mac
-  argv[2] = (char*) "/Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_database";
-#endif
+
+  juce::File projectDirectory = context.getProjectDirectory();
+  String projectDirectoryPath = projectDirectory.getFullPathName();
+  String rosettaDatabasePath = projectDirectoryPath + String("/rosetta_database");
+  char bufferDatabasePath[300];
+  std::string stringDatabasePath = std::string((const char*)rosettaDatabasePath);
+  stringDatabasePath += '\0';
+  int length = stringDatabasePath.copy(bufferDatabasePath, stringDatabasePath.size() + 1, 0);
+  argv[2] = bufferDatabasePath;
+
   core::init(argc, argv);
 }
 
-void lbcpp::makePoseFromSequence(core::pose::PoseOP pose, const String& sequence)
+void lbcpp::makePoseFromSequence(core::pose::PoseOP& pose, const String& sequence)
 {
-  core::chemical::make_pose_from_sequence(*pose, (const char*) sequence,
+  core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
-}
-
-double lbcpp::generateRand()
-{
-  return (double) rand() / (double) RAND_MAX;
-}
-
-double lbcpp::generateNormalRand()
-{
-  double val = 2;
-  double x1;
-  double x2;
-  while (val >= 1)
-  {
-    x1 = (2 * generateRand()) - 1;
-    x2 = (2 * generateRand()) - 1;
-    val = std::pow(x1, 2) + std::pow(x2, 2);
-  }
-  return (x1 * std::sqrt(((double) -2 * std::log(val)) / val));
 }
