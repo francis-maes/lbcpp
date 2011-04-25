@@ -109,6 +109,9 @@ public:
   void setWorkUnit(size_t index, const WorkUnitPtr& workUnit)
     {workUnits->set(index, workUnit);}
 
+  void addWorkUnit(const WorkUnitPtr& workUnit)
+    {workUnits->append(workUnit);}
+
   virtual String getProgressionUnit() const
     {return progressionUnit;}
 

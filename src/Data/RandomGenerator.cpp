@@ -116,6 +116,14 @@ juce::uint32 RandomGenerator::sampleUint32()
 
 //////////////////////////////////////////////////////////////////////////////
 
+void RandomGenerator::clone(ExecutionContext& context, const ObjectPtr& t)
+{
+  Object::clone(context, t);
+  const RandomGeneratorPtr& target = t.staticCast<RandomGenerator>();
+  memcpy(target->mt, mt, sizeof (juce::uint32) * N);
+  target->mti = mti;
+}
+
 size_t RandomGenerator::sampleWithProbabilities(const std::vector<double>& probabilities, double probabilitiesSum)
 {
   jassert(probabilities.size());

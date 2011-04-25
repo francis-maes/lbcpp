@@ -69,9 +69,15 @@ public:
   ExecutionTraceNode(const String& description, const WorkUnitPtr& workUnit, double startTime);
   ExecutionTraceNode() {}
 
-  virtual String toString() const;
+  virtual String toString() const
+    {return description;}
+
+  virtual String toShortString() const
+    {return description;}
+
   virtual String getPreferedXmlTag() const
     {return T("node");}
+
   virtual String getPreferedIcon() const;
 
   /*

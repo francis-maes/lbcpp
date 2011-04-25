@@ -41,7 +41,8 @@ public:
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
 
-  virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) = 0;
+  virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) const = 0;
+  virtual double getExpectedReward(size_t banditNumber) const = 0;
   virtual size_t getOptimalBandit(double& bestReward, double& secondBestReward) const = 0;
 
   virtual void performTransition(const Variable& action, double& reward)
@@ -98,8 +99,11 @@ public:
     : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities) {}
   BernouilliDiscreteBanditState() {}
 
-  virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random)
+  virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) const
     {return random->sampleBool(probabilities[banditNumber]) ? 1.0 : 0.0;}
+
+  virtual double getExpectedReward(size_t banditNumber) const
+    {jassert(banditNumber < probabilities.size()); return probabilities[banditNumber];}
 
   virtual size_t getOptimalBandit(double& bestReward, double& secondBestReward) const
   {

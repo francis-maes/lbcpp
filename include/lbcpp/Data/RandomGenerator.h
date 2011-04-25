@@ -302,11 +302,13 @@ public:
       res.insert(elements[order[i]]);
   }
 
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target);
+  
 private:
   friend class RandomGeneratorClass;
 
-  enum {N=624};
-  unsigned long mt[N];
+  enum {N = 624};
+  juce::uint32 mt[N];
   int mti;
 
   /**

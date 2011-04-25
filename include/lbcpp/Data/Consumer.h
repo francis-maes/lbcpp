@@ -57,7 +57,7 @@ protected:
   OutputStream* ostr;   
   
   void printNewLine()
-  {if (ostr) (*ostr) << "\n";}
+    {if (ostr) (*ostr) << "\n";}
   
   void print(const String& str, bool addNewLine = false)
   {

@@ -104,9 +104,6 @@ ExecutionTraceNode::ExecutionTraceNode(const String& description, const WorkUnit
   setThisClass(executionTraceNodeClass);
 }
 
-String ExecutionTraceNode::toString() const
-  {return description;}
-
 String ExecutionTraceNode::getPreferedIcon() const
   {return T("WorkUnit-32.png");}
 
