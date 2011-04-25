@@ -288,9 +288,9 @@ public:
 
     size_t unitFeature = builder.addConstant(1.0);
     size_t banditFeatures = builder.addFunction(new BanditStatisticsFeatureGenerator(), banditStatistics);
-    size_t stateFeatures = builder.addFunction(concatenateFeatureGenerator(), unitFeature, timeFeature, banditFeatures);
+    size_t stateFeatures = builder.addFunction(concatenateFeatureGenerator(false), timeFeature, unitFeature, banditFeatures);
 
-    //builder.addFunction(cartesianProductFeatureGenerator(), timeFeatures, stateFeatures);
+    builder.addFunction(cartesianProductFeatureGenerator(), stateFeatures, stateFeatures);
   }
 
 protected:
@@ -476,9 +476,9 @@ public:
     /*
     ** Make training and testing problems
     */
-    jassert(numBandits == 10);
+   // jassert(numBandits == 10);
     std::vector<double> probs(numBandits);
-    probs[0] = 0.9;
+    /*probs[0] = 0.9;
     probs[1] = 0.8;
     probs[2] = 0.8;
     probs[3] = 0.8;
@@ -487,20 +487,24 @@ public:
     probs[6] = 0.8;
     probs[7] = 0.8;
     probs[8] = 0.8;
-    probs[9] = 0.8;
+    probs[9] = 0.8;*/
     const double rewardMargin = 0.1;
 
     std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
     for (size_t i = 0; i < trainingStates.size(); ++i)
     {
-      std::random_shuffle(probs.begin(), probs.end());
+      for (size_t j = 0; j < probs.size(); ++j)
+        probs[j] = random->sampleDouble();
+      //std::random_shuffle(probs.begin(), probs.end());
       trainingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
     }
 
     std::vector<DiscreteBanditStatePtr> testingStates(numTestingProblems);
     for (size_t i = 0; i < testingStates.size(); ++i)
     {
-      std::random_shuffle(probs.begin(), probs.end());
+      for (size_t j = 0; j < probs.size(); ++j)
+        probs[j] = random->sampleDouble();
+      //std::random_shuffle(probs.begin(), probs.end());
       testingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
     }
 
@@ -550,12 +554,13 @@ public:
     optimizerState->setDistribution(context, distribution);
 
     // optimizer context
-    FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, testingStates);
+    FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, trainingStates);
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(objectiveFunction);
 
     // optimizer
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
     optimizer->compute(context, optimizerContext, optimizerState);
+
     return true;
   }
 
