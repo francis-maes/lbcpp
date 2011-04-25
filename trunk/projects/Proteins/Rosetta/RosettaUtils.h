@@ -28,6 +28,7 @@
 #  include <core/chemical/ResidueType.hh>
 #  include <core/conformation/Residue.hh>
 #  include <core/init.hh>
+#  include <core/scoring/ScoreType.hh>
 #  include <core/io/pdb/file_data.hh>
 #  include <core/io/pdb/pose_io.hh>
 #  include <core/pose/PDBInfo.hh>
@@ -47,60 +48,65 @@ typedef std::map<std::string, Vector> ResidueCoords;
  * @param protein pointer to the Protein object to convert
  * @return a pointer to the Pose object
  */
-core::pose::PoseOP convertProteinToPose(const ProteinPtr protein);
+core::pose::PoseOP convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein);
 
 /**
  * Converts Pose object to Protein object.
  * @param pose a pointer to the Pose object to convert
  * @return a pointer to the Protein object
  */
-ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP pose);
+ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP& pose);
 
 /**
  * Returns the total energy of a Protein object.
  * @param protein a pointer to the Protein object
  * @return the total energy of the protein
  */
-double getTotalEnergy(const ProteinPtr prot);
+double getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot);
 
 /**
  * Returns the total energy of a Pose object.
  * @param pose a pointer to the Pose object
  * @return the total energy of the protein
  */
-double getTotalEnergy(const core::pose::PoseOP pose);
+double getTotalEnergy(const core::pose::PoseOP& pose);
+
+/**
+ * Returns the score of the current pose. This takes into account
+ * the average distance between backbone atoms.
+ * @param prot a pointer to the protein object to evaluate.
+ * @return the score of the actual conformation.
+ */
+double getConformationScore(ExecutionContext& context, const ProteinPtr& prot);
+
+/**
+ * Returns the score of the current pose. This takes into account
+ * the average distance between backbone atoms.
+ * @param pose a pointer to the pose object to evaluate.
+ * @return the score of the actual conformation.
+ */
+double getConformationScore(const core::pose::PoseOP& pose);
 
 /**
  * Initializes a Pose object, in fact its pointer, to the given sequence.
  * @param pose a pointer to the Pose object to initialize
  * @param sequence the sequence of amino acids of the protein
  */
-void makePoseFromSequence(core::pose::PoseOP pose, const String& sequence);
+void makePoseFromSequence(core::pose::PoseOP& pose, const String& sequence);
 
 /**
- * Initializes Rosetta.
+ * Initializes Rosetta. Rosetta database must be placed in the project directory and named
+ * rosetta_database.
  * @param verbose sets verbosity level. true or false.
  */
-void rosettaInitialization(bool verbose);
+void rosettaInitialization(ExecutionContext& context, bool verbose);
 
 /**
- * Initializes Rosetta with verbosity set to true.
+ * Initializes Rosetta with verbosity set to true. Rosetta database must be placed in
+ * the project directory and named rosetta_database.
  */
-void rosettaInitialization();
+void rosettaInitialization(ExecutionContext& context);;
 
-/**
- * Generates random number uniformly distributed between 0 and 1.
- * @return a random double uniformly distributed between 0 and 1.
- */
-double generateRand();
-
-/**
- * Generates random numbers following normal distribution with mean 0
- * and standard deviation of 1.
- * @return a normally distributed random double.
- */
-double generateNormalRand();
-}
-; /* namespace lbcpp */
+}; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_UTILS_H_

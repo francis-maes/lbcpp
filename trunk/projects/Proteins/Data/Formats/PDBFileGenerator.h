@@ -19,12 +19,13 @@ class PDBFileGenerator : public TextPrinter
 {
 public:
   PDBFileGenerator(ExecutionContext& context, const File& file);
+  PDBFileGenerator(ExecutionContext& context);
 
   virtual void consume(ExecutionContext& context, const Variable& variable);
 
   static String makeHeaderLine(const String& classification, const String& date, const String& idCode);
     
-  static String producePDBString(ProteinPtr protein);
+  static String producePDBString(ExecutionContext& context, ProteinPtr protein);
 
   static String makeSeqResLine(size_t serialNumber, const String& chainId, size_t numResidues,
                                const std::vector<String>& residues, size_t& firstResidueIndex);

@@ -14,23 +14,48 @@ bool beTolerant) au niveau du pointeur de mb. Faut il le liberer? ==> normalemen
 TODO
 ====
 
-- appeler les fonctions random de lbcpp plutot.
-
 - corriger calcul energie (energie negative).
-
-- creer movers deterministes.
-
-- changer chemins pour linux, et trier le dossier rosetta.
+telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
+(Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour connaitre les valeurs approx.
+  - regarder autre forme pour le facteur de correction?
+  - faire une etude de proteines pour evaluer les std?
 
 - faire tourner code sur NIC3.
+  
+- verifier parallele
 
-- creer compositeworkunit pour codes paralleles. 
+- verifier les fuites memoire.
 
-- creer les optimiseurs qui recoltent les donnees.
+- corriger PDBFileGenerator::producePDBString.
 
+- corriger fonction energie (encore).
 
 Rapport
 =======
 - parler de la fonction denergie.
 - expliquer un peu les bases sur la structure des proteines (angles, fonciton denergie, etc.) peut etre mis en annexe.
 - ajout derniere phrase page 507 du structural bioinformatics.
+- ajouter reference Main-chain Bond Lengths and Bond Angles in Protein Structures 
+(Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour longueurs de liens peptides.
+
+DONE
+====
+Correction des progression callbacks.
+Utilisation du RandomGenerator de lbcpp.
+Nouveau score prenant en compte les distances entre atomes dans backbone.
+Nouveaux movers. (RigidBody...)
+Changer les pointeurs en pointeurs& dans arguments de fonctions.
+Modification des optimiseurs, affichage lbcpp + sauvegarde des xml
+
+
+
+
+
+
+
+
+
+
+
+
+

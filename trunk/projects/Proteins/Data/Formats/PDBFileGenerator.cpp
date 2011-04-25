@@ -12,6 +12,9 @@ using namespace lbcpp;
 PDBFileGenerator::PDBFileGenerator(ExecutionContext& context, const File& file)
   : TextPrinter(context, file) {}
 
+PDBFileGenerator::PDBFileGenerator(ExecutionContext& context)
+  : TextPrinter(new juce::MemoryOutputStream()) {}
+
 void PDBFileGenerator::consume(ExecutionContext& context, const Variable& variable)
 {
   const ProteinPtr& protein = variable.getObjectAndCast<Protein>(context);
@@ -64,63 +67,13 @@ void PDBFileGenerator::consume(ExecutionContext& context, const Variable& variab
   print(makeEndLine(), true);
 }
 
-String PDBFileGenerator::producePDBString(ProteinPtr protein)
+String PDBFileGenerator::producePDBString(ExecutionContext& context, ProteinPtr protein)
 {
-  juce::String pdboutput = "";
-  jassert(protein);
-  size_t n = protein->getLength();
-
-  VectorPtr primaryStructure = protein->getPrimaryStructure();
-  jassert(primaryStructure);
-  TertiaryStructurePtr tertiaryStructure = protein->getTertiaryStructure();
-  jassert(tertiaryStructure);
-
-  /*
-  ** Header
-  */
-  String idCode = protein->getName();
-  if (idCode.length() > 4)
-	idCode = idCode.substring(0, 4);
-  pdboutput += makeHeaderLine(String::empty, String::empty, idCode);
-  pdboutput += "\n";
-
-  /*
-  ** Primary Structure
-  */
-  std::vector<String> residueNames(n);
-  for (size_t i = 0; i < n; ++i)
-	residueNames[i] = AminoAcid::toThreeLettersCode((AminoAcidType)primaryStructure->getElement(i).getInteger()).toUpperCase();
-  size_t firstResidueIndex = 0;
-  size_t seqResIndex = 1;
-  while (firstResidueIndex < n)
-  {
-	pdboutput += makeSeqResLine(seqResIndex++, String::empty, n, residueNames, firstResidueIndex);
-	pdboutput += "\n";
-  }
-
-  /*
-  ** Tertiary Structure
-  */
-  size_t atomNumber = 1;
-  for (size_t i = 0; i < n; ++i)
-  {
-	ResiduePtr residue = tertiaryStructure->getResidue(i);
-	if (residue)
-	  for (size_t j = 0; j < residue->getNumAtoms(); ++j)
-	  {
-		AtomPtr atom = residue->getAtom(j);
-		jassert(atom->getPosition().exists());
-		jassert(isNumberValid(atom->getX()) && isNumberValid(atom->getY()) && isNumberValid(atom->getZ()));
-		pdboutput += makeAtomLine(atomNumber++, atom->getName(), residue->getThreeLettersCodeName(), String::empty,
-		  i + 1, atom->getX(), atom->getY(), atom->getZ(), atom->getOccupancy(), atom->getTemperatureFactor(),
-		  String::empty, atom->getElementSymbol(), String::empty);
-		pdboutput += "\n";
-	  }
-  }
-
-  pdboutput += makeEndLine();
-  pdboutput += "\n";
-  return pdboutput;
+   PDBFileGenerator generator(context);
+   generator.consume(context, protein);
+   juce::MemoryOutputStream* mos = (juce::MemoryOutputStream* )generator.ostr;
+   String pdbString(mos->getData());
+   return pdbString;
 }
 
 String PDBFileGenerator::makeHeaderLine(const String& classification, const String& date, const String& idCode)
