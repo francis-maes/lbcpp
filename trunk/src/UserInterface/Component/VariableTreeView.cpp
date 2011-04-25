@@ -299,9 +299,12 @@ void VariableTreeView::invalidateSelection()
 
 int VariableTreeView::getDefaultWidth() const
 {
+  return juce::Desktop::getInstance().getMainMonitorArea().getWidth() / 3;
+  /*
   int numFields = 1;
   if (options.showTypes) ++numFields;
   if (options.showShortSummaries) ++numFields;
-  return numFields * 200;
+  return numFields * 200
+  */
 }
 
