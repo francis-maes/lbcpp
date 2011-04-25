@@ -242,6 +242,9 @@ public:
       }
   }
 
+  virtual DoubleVectorPtr toLazyVector(const Variable* inputs) const
+    {return FeatureGenerator::toLazyVector(inputs);}
+
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const
   {
     SparseDoubleVectorPtr res = createEmptySparseVector();

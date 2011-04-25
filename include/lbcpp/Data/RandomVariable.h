@@ -86,8 +86,11 @@ public:
   void push(double val, double weight)
     {ScalarVariableMean::push(val, weight); samplesSumOfSquares += sqr(val) * weight;}
 
+  double getSquaresMean() const
+    {return samplesSumOfSquares / samplesCount;}
+
   double getVariance() const // mean(sqr(x)) - sqr(mean(x))
-    {return samplesCount ? samplesSumOfSquares / samplesCount - sqr(getMean()) : 0.0;}
+    {return samplesCount ? getSquaresMean() - sqr(getMean()) : 0.0;}
 
   double getStandardDeviation() const
     {double v = getVariance(); return v > DBL_EPSILON ? sqrt(v) : 0.0;}

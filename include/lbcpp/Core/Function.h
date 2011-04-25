@@ -226,6 +226,8 @@ extern FunctionPtr createObjectFunction(ClassPtr objectClass);
 extern FunctionPtr createVectorFunction(FunctionPtr elementGeneratorFunction, bool transmitIndexToGeneratorFunction = true);
 extern FunctionPtr createSymmetricMatrixFunction(FunctionPtr elementGeneratorFunction);
 
+extern FunctionPtr convertToDoubleFunction(bool applyLogScale = false);
+
 extern FunctionPtr composeFunction(const FunctionPtr& f, const FunctionPtr& g);
 
 extern FunctionPtr signedScalarToProbabilityFunction();

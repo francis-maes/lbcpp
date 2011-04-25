@@ -67,9 +67,8 @@ public:
       r = builder.addFunction(lbcppMemberUnaryFunction(SimpleSearchNodeFeatureGenerator, computeLogFunction, doubleType, doubleType), r, T("logr"));
     features.push_back(r);
 
-    FunctionPtr convertFunction = lbcppMemberUnaryFunction(SimpleSearchNodeFeatureGenerator, convertToDoubleFunction, variableType, doubleType);
     size_t depth = builder.addFunction(getVariableFunction(T("depth")), node);
-    features.push_back(builder.addFunction(convertFunction, depth, T("d")));
+    features.push_back(builder.addFunction(convertToDoubleFunction(), depth, T("d")));
 
     if (includeUnit)
       features.push_back(builder.addConstant(Variable(1.0), T("unit")));
@@ -82,9 +81,6 @@ public:
 
     builder.addFunction(cartesianProductFeatureGenerator(true), nodeFeatures, stateFeatures, T("prod"));
   }
-
-  Variable convertToDoubleFunction(ExecutionContext& context, const Variable& input) const
-    {return input.toDouble();}
 
   Variable computeLogFunction(ExecutionContext& context, const Variable& input) const
   {

@@ -144,6 +144,7 @@ SET(LBCPP_CORE_FUNCTION_SOURCES
   Core/Function/MapContainerFunction.h
   Core/Function/MapSymmetricMatrixFunction.h
   Core/Function/ComposeFunction.h
+  Core/Function/ConvertToDoubleFunction.h
   Core/Function/SignedScalarToProbabilityFunction.h
   Core/Function/ConcatenateContainerFunction.h
   Core/Function/CoreFunctionLibrary.xml
