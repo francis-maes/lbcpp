@@ -33,6 +33,7 @@ public:
     if (!multiThreadedContext.exists()) {
       multiThreadedContext = multiThreadedExecutionContext(numThreads);
       multiThreadedContext->setCallbacks(context.getCallbacks());
+      multiThreadedContext->setStack(context.getStack());      
     }
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
     multiThreadedContext->pushWorkUnit(wu);
