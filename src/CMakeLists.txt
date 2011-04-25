@@ -323,7 +323,7 @@ SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
   Distribution/Builder/GaussianDistributionBuilder.cpp
   Distribution/Builder/BernoulliDistributionBuilder.h
   Distribution/Builder/IndependentMultiVariateDistributionBuilder.h
-  Distribution/Builder/IndependentMultiVariateDistributionBuilder.cpp
+  Distribution/Builder/IndependentDoubleVectorDistributionBuilder.h
   Distribution/Builder/DistributionBuilderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
 )

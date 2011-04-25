@@ -65,7 +65,10 @@ extern DistributionBuilderPtr integerGaussianDistributionBuilder();
 extern DistributionBuilderPtr positiveIntegerGaussianDistributionBuilder();
 extern DistributionBuilderPtr enumerationDistributionBuilder(EnumerationPtr enumeration);
 extern DistributionBuilderPtr bernoulliDistributionBuilder();
-  
+
+extern DistributionBuilderPtr independentMultiVariateDistributionBuilder(ClassPtr elementsType, const std::vector<DistributionBuilderPtr>& subBuilders);
+extern DistributionBuilderPtr independentDoubleVectorDistributionBuilder(EnumerationPtr elementsEnumeration, const std::vector<DistributionBuilderPtr>& subBuilders);
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_DISTRIBUTION_BUILDER_H_
