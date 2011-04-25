@@ -78,29 +78,41 @@
   </class>
 
   <class name="DiscreteBanditPolicy" base="Object" abstract="yes">
+    <!--
     <variable type="PositiveInteger" name="timeStep"/>
     <variable type="ObjectVector[BanditStatistics]" name="banditStatistics"/>
+    -->
   </class>
   <class name="IndexBasedDiscreteBanditPolicy" base="DiscreteBanditPolicy" abstract="yes"/>
 
-  <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy"/>
-  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy"/>
-  <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  <class name="UCB1DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1"/>
+  <class name="UCB1TunedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb1Tuned"/>
+  <class name="UCB2DiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="ucb2">
     <variable type="Double" name="alpha"/>
-    <variable type="GenericVector[PositiveInteger]" name="episodeCounts"/>
+<!--    <variable type="GenericVector[PositiveInteger]" name="episodeCounts"/>
     <variable type="PositiveInteger" name="episodeRemainingSteps"/>
-    <variable type="PositiveInteger" name="currentBandit"/>
+    <variable type="PositiveInteger" name="currentBandit"/> -->
   </class>
 
-  <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
     <variable type="Double" name="c"/>
     <variable type="Double" name="d"/>
-    <variable type="RandomGenerator" name="random"/>
+<!--    <variable type="RandomGenerator" name="random"/> -->
+  </class>
+
+  <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
+    <variable type="PositiveInteger" name="numBandits"/>
+    <variable type="PositiveInteger" name="maxTimeStep"/>
+    <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
+    <variable type="DiscreteBanditPolicy" name="policy"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
 
   <class name="BanditsSandBox" base="WorkUnit">
+    <variable type="PositiveInteger" name="numBandits"/>
     <variable type="PositiveInteger" name="maxTimeStep"/>
-    <variable type="PositiveInteger" name="numRuns"/>
+    <variable type="PositiveInteger" name="numTrainingProblems"/>
+    <variable type="PositiveInteger" name="numTestingProblems"/>
   </class>
 
 

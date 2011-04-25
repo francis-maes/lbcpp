@@ -221,121 +221,154 @@ protected:
 /*
 ** Sand Box
 */
-class BanditsSandBox : public WorkUnit
+class EvaluateDiscreteBanditPolicyWorkUnit : public WorkUnit
 {
 public:
-  BanditsSandBox() : maxTimeStep(100000), numRuns(100) {}
- 
+  EvaluateDiscreteBanditPolicyWorkUnit(size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const DiscreteBanditPolicyPtr& policy, bool verbose = true)
+    : numBandits(numBandits), maxTimeStep(maxTimeStep), initialStates(initialStates), policy(policy), verbose(verbose) {}
+
+  EvaluateDiscreteBanditPolicyWorkUnit()
+    : numBandits(0), maxTimeStep(0), verbose(false) {}
+
+  virtual String toShortString() const
+    {return T("Evaluate ") + policy->getClass()->getShortName() + T("(") +  policy->toShortString() + T(") on ") + String((int)initialStates.size()) + T(" problems");}
+
   virtual Variable run(ExecutionContext& context)
   {
-    std::vector<bool> insertTimeStepIntoCurve(maxTimeStep + 1, false);
-    for (double d = 0.0; d <= log10((double)maxTimeStep); d += 0.25)
+    // compute timeSteps
+    std::vector<size_t> timeSteps;
+    size_t timeStep = 0;
+    size_t batchSize = numBandits;
+    size_t batchIndex = 0;
+    while (timeStep < maxTimeStep)
     {
-      size_t index = (size_t)pow(10.0, d);
-      jassert(index < insertTimeStepIntoCurve.size());
-      insertTimeStepIntoCurve[index] = true;
+      timeStep += batchSize;
+      timeSteps.push_back(timeStep);
+      ++batchIndex;
+      batchSize *= numBandits;
     }
+    
+    // initial accumulators
+    std::vector<double> actualRegretVector(timeSteps.size(), 0.0);
+    std::vector<double> bestMachinePlayedVector(timeSteps.size(), 0.0);
 
-    size_t numBandits = 2;
-    std::vector<double> probs(numBandits);
-    probs[0] = 0.6;
-    probs[1] = 0.9;
-
-    std::map<size_t, std::map<String, double> > results;
-
-    context.enterScope(T("UCB2"));
-
-    for (size_t run = 0; run < numRuns; ++run)
+    // main calculation loop
+    for (size_t i = 0; i < initialStates.size(); ++i)
     {
-      context.progressCallback(new ProgressionState(run, numRuns, T("Runs")));
-
-      DiscreteBanditStatePtr state = new BernouilliDiscreteBanditState(probs, run);
+      DiscreteBanditStatePtr state = initialStates[i]->cloneAndCast<DiscreteBanditState>();
       double bestReward, secondBestReward;
       size_t optimalBandit = state->getOptimalBandit(bestReward, secondBestReward);
-
-      DiscreteBanditPolicyPtr policy = new UCB1TunedDiscreteBanditPolicy();
-        // new UCB2DiscreteBanditPolicy(0.001);
-        // new EpsilonGreedyDiscreteBanditPolicy(0.10, bestReward - secondBestReward);
-        //new UCB1TunedDiscreteBanditPolicy();
       policy->initialize(numBandits);
+
       double sumOfRewards = 0.0;
       size_t numberOfTimesOptimalIsPlayed = 0;
-      for (size_t timeStep = 1; timeStep <= maxTimeStep; ++timeStep)
+      size_t previousTimeStep = 0;
+      for (size_t j = 0; j < timeSteps.size(); ++j)
       {
-        size_t action = 1;//policy->selectNextBandit();
-        double reward;
-        state->performTransition(action, reward);
-        policy->updatePolicy(action, reward);
+        size_t timeStep = timeSteps[j];
+        size_t numTimeSteps = timeStep - previousTimeStep;
+        for (size_t k = 0; k < numTimeSteps; ++k)
+           performBanditStep(state, policy, optimalBandit, sumOfRewards, numberOfTimesOptimalIsPlayed);
+ 
+        actualRegretVector[j] += timeStep * bestReward - sumOfRewards;
+        bestMachinePlayedVector[j] += numberOfTimesOptimalIsPlayed / (double)timeStep;
+        previousTimeStep = timeStep;
+      }
 
-        sumOfRewards += reward;
-        if (action == optimalBandit)
-          ++numberOfTimesOptimalIsPlayed;
+      if (verbose)
+        context.progressCallback(new ProgressionState(i + 1, initialStates.size(), T("Problems")));
+    }
 
-        if (insertTimeStepIntoCurve[timeStep])
-        {
-          std::map<String, double>& res = results[timeStep];
-
-          res[T("bestMachinePlayed")] += 100.0 * numberOfTimesOptimalIsPlayed / (double)timeStep;
-          res[T("actualRegret")] += timeStep * bestReward - sumOfRewards;
-          res[T("sumOfRewards")] += sumOfRewards;
-          res[T("optimalSumOfRewards")] += timeStep * bestReward;
-/*
-          context.enterScope(T("Time Step ") + String((int)timeStep));
-          context.resultCallback(T("log10(timeStep)"), log10((double)timeStep));
-          context.resultCallback(T("bestMachinePlayed"), 100.0 * numberOfTimesOptimalIsPlayed / (double)timeStep);
-          context.resultCallback(T("actualRegret"), timeStep * bestReward - sumOfRewards);
-          context.resultCallback(T("sumOfRewards"), sumOfRewards);
-          context.resultCallback(T("optimalSumOfRewards"), timeStep * bestReward);
-          context.resultCallback(T("timeStep"), timeStep);
-          context.leaveScope(true);*/
-        }
+    double invZ = 1.0 / initialStates.size();
+    for (size_t i = 0; i < timeSteps.size(); ++i)
+    {
+      actualRegretVector[i] *= invZ;
+      bestMachinePlayedVector[i] *= invZ;
+      if (verbose)
+      {
+        size_t timeStep = timeSteps[i];
+        context.enterScope(String((int)timeStep) + T(" Steps"));
+        context.resultCallback(T("log10(n)"), log10((double)timeStep));
+        context.resultCallback(T("actualRegret"), actualRegretVector[i]);
+        context.resultCallback(T("bestMachinePlayed"), bestMachinePlayedVector[i] * 100.0);
+        context.resultCallback(T("n"), timeStep);
+        context.leaveScope(actualRegretVector[i]);
       }
     }
 
-    context.leaveScope(true);
-
-    context.enterScope(T("UCB2"));
-    for (std::map<size_t, std::map<String, double> >::const_iterator it = results.begin(); it != results.end(); ++it)
-    {
-      size_t timeStep = it->first;
-      context.enterScope(T("timeStep" ) + String((int)timeStep));
-      const std::map<String, double>& res = it->second;
-      context.resultCallback(T("log10(timeStep)"), log10((double)timeStep));
-      for (std::map<String, double>::const_iterator it2 = res.begin(); it2 != res.end(); ++it2)
-        context.resultCallback(it2->first, it2->second / numRuns);
-      context.leaveScope(true);
-    }
-    context.leaveScope(true);
-    return true;
+    return actualRegretVector.back();
   }
+ 
+protected:
+  friend class EvaluateDiscreteBanditPolicyWorkUnitClass;
 
-  bool testRandom(ExecutionContext& context)
+  size_t numBandits;
+  size_t maxTimeStep;
+  std::vector<DiscreteBanditStatePtr> initialStates;
+  DiscreteBanditPolicyPtr policy;
+  bool verbose;
+
+  void performBanditStep(DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy, size_t optimalBandit, double& sumOfRewards, size_t& numberOfTimesOptimalIsPlayed)
   {
+    size_t action = policy->selectNextBandit();
+    double reward;
+    state->performTransition(action, reward);
+    policy->updatePolicy(action, reward);
+    sumOfRewards += state->getExpectedReward(action);
+    if (action == optimalBandit)
+      ++numberOfTimesOptimalIsPlayed;
+  }
+};
+
+class BanditsSandBox : public WorkUnit
+{
+public:
+  BanditsSandBox() : numBandits(2), maxTimeStep(100000), numTrainingProblems(100), numTestingProblems(100) {}
+ 
+  virtual Variable run(ExecutionContext& context)
+  {
+    jassert(numBandits == 2);
+    std::vector<double> probs(numBandits);
+    probs[0] = 0.9;
+    probs[1] = 0.6;
+
     RandomGeneratorPtr random = RandomGenerator::getInstance();
 
-    context.enterScope(T("testRandom"));
+    std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
+    for (size_t i = 0; i < trainingStates.size(); ++i)
+      trainingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
 
-    for (size_t i = 0; i < 100; ++i)
-    {
-      size_t pouet = 0;
-      for (size_t j = 0; j < 10; ++j)
-        if (random->sampleBool(0.9))
-          ++pouet;
-      context.enterScope(T("hop"));
-        context.resultCallback(T("i"), i);
-        context.resultCallback(T("m"), pouet / 10.0);
-      context.leaveScope(true);
-    }
+    std::vector<DiscreteBanditStatePtr> testingStates(numTestingProblems);
+    for (size_t i = 0; i < testingStates.size(); ++i)
+      testingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
 
-    context.leaveScope(true);
+    std::vector<DiscreteBanditPolicyPtr> policies;
+    policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
+    policies.push_back(new UCB1TunedDiscreteBanditPolicy());
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, probs[0] - probs[1]));
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.10, probs[0] - probs[1]));
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.15, probs[0] - probs[1]));
+    
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
+    for (size_t i = 0; i < policies.size(); ++i)
+      workUnit->setWorkUnit(i, new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, testingStates, policies[i], true));
+
+    workUnit->setProgressionUnit(T("Policies"));
+    workUnit->setPushChildrenIntoStackFlag(true);
+
+    context.run(workUnit);
     return true;
   }
+
 
 protected:
   friend class BanditsSandBoxClass;
 
+  size_t numBandits;
   size_t maxTimeStep;
-  size_t numRuns;
+
+  size_t numTrainingProblems;
+  size_t numTestingProblems;
 };
 
 }; /* namespace lbcpp */

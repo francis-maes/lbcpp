@@ -17,7 +17,7 @@ using juce::Colour;
 ** ExecutionTraceTreeViewItem
 */
 ExecutionTraceTreeViewItem::ExecutionTraceTreeViewItem(ExecutionTraceTreeView* owner, const ExecutionTraceItemPtr& trace, size_t depth)
-  : SimpleTreeViewItem(trace->toString(), trace->getPreferedIcon(), false), owner(owner), trace(trace), depth(depth)
+  : SimpleTreeViewItem(trace->toShortString(), trace->getPreferedIcon(), false), owner(owner), trace(trace), depth(depth)
 {
   String str = getUniqueName();
   numLines = 1;
