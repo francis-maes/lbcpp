@@ -91,7 +91,7 @@ public:
         optimizerState->setDistribution(context, distributionsBuilder->build(context));        
         
         if (sortedScores.begin()->first < optimizerState->getBestScore())
-          optimizerState->setBestRequest(sortedScores.begin()->first, sortedScores.begin()->second);
+          optimizerState->setBestRequest(context, sortedScores.begin()->first, sortedScores.begin()->second);
         
         context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
                 

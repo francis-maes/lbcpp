@@ -208,7 +208,7 @@ public:
       {
         subElementsType = inputVariable->getType();
         DefaultEnumerationPtr subElementsEnumeration = new DefaultEnumeration(inputVariable->getName());
-        subElementsEnumeration->addElement(context, T("value"));
+        subElementsEnumeration->addElement(context, T("_"));
         elementsEnumeration->addSubEnumeration(inputVariable->getName(), subElementsEnumeration);
       }
       else

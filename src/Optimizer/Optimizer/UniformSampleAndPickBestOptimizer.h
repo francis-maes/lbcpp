@@ -43,9 +43,10 @@ public:
     {
       ScopedLock _(optimizerState->getLock());
       jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
-      for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++) {
+      for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
+      {
         if (it->first < optimizerState->getBestScore())
-          optimizerState->setBestRequest(it->first, it->second);
+          optimizerState->setBestRequest(context, it->first, it->second);
       }
       optimizerState->flushProcessedRequests();
     }

@@ -39,7 +39,7 @@ public:
       context.leaveScope(bestScore);
 
       if (bestScore < optimizerState->getBestScore())
-        optimizerState->setBestRequest(bestScore, bestIterationParameters);
+        optimizerState->setBestRequest(context, bestScore, bestIterationParameters);
 
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
     }
@@ -109,6 +109,8 @@ protected:
     // return best score
     bestParameters = sortedScores.begin()->second;
     bestScore = sortedScores.begin()->first;
+    context.resultCallback(T("bestScore"), bestScore);
+    context.resultCallback(T("bestParameters"), bestParameters);
     return true;
   }
 };

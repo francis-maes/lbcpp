@@ -45,7 +45,7 @@ public:
   */
   const Variable& getBestVariable() const;
   double getBestScore() const;
-  void setBestRequest(double score, const Variable& parameter);
+  void setBestRequest(ExecutionContext& context, double score, const Variable& parameter);
   const std::vector< std::pair<double, Variable> >& getBestRequests();
   
   /*

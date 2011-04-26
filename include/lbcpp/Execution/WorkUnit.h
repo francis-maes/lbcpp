@@ -100,6 +100,9 @@ public:
   virtual String toString() const
     {return description;}
 
+  virtual String toShortString() const
+    {return description;}
+
   size_t getNumWorkUnits() const
     {return workUnits->getNumElements();}
 

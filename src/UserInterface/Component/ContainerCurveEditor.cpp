@@ -491,9 +491,16 @@ ContainerCurveEditorConfiguration::ContainerCurveEditorConfiguration(ClassPtr ro
     TypePtr variableType = rowType->getMemberVariableType(i);
     if (variableType->inheritsFrom(integerType) || variableType->inheritsFrom(doubleType) || 
         variableType->inheritsFrom(booleanType) || variableType->inheritsFrom(scoreObjectClass))
-      variables[i] = new CurveVariableConfiguration(i == 1, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
+      variables[i] = new CurveVariableConfiguration(false, i < numDefaultColours ? defaultColours[i] : randomColour(), rowType->getMemberVariableName(i));
   }
+  // select two first variables
   keyVariableIndex = 0;
+  for (size_t i = keyVariableIndex + 1; i < variables.size(); ++i)
+    if (variables[i])
+    {
+      variables[i]->setSelected(true);
+      break;
+    }
 }
 
 std::vector<size_t> ContainerCurveEditorConfiguration::getSelectedCurves() const

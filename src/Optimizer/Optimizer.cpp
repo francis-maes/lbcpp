@@ -43,6 +43,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
   context.leaveScope(optimizerState->getBestScore());
   optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   
+  /*
   context.enterScope(T("Best Score Evolution"));
   {
     ScopedLock _(optimizerState->getLock());  // should be useless
@@ -57,7 +58,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
       i++;
     }
   }
-  context.leaveScope();
+  context.leaveScope();*/
   return output;
 }
 
@@ -76,7 +77,7 @@ void OptimizerState::setDistribution(ExecutionContext& context, const Distributi
 {
   distribution = newDistribution;
   context.resultCallback(T("distribution"), newDistribution);
-  context.informationCallback(T("Distribution: ") + newDistribution->toShortString());
+  //context.informationCallback(T("Distribution: ") + newDistribution->toShortString());
 }
 
 
@@ -131,7 +132,7 @@ double OptimizerState::getBestScore() const
   return bestRequests[bestRequests.size()-1].first;
 }
 
-void OptimizerState::setBestRequest(double score, const Variable& parameter) 
+void OptimizerState::setBestRequest(ExecutionContext& context, double score, const Variable& parameter) 
 {
   ScopedLock _(lock);
   jassert(getBestScore() > score);
