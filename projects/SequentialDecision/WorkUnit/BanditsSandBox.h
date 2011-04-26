@@ -466,7 +466,7 @@ protected:
 class BanditsSandBox : public WorkUnit
 {
 public:
-  BanditsSandBox() : numBandits(2), maxTimeStep(100000), numTrainingProblems(100), numTestingProblems(100) {}
+  BanditsSandBox() : numBandits(2), maxTimeStep(100000), numTrainingProblems(100), numTestingProblems(1000) {}
  
   virtual Variable run(ExecutionContext& context)
   {
