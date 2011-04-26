@@ -285,11 +285,12 @@ public:
 
     //size_t timeFeatures = builder.addFunction(softDiscretizedLogNumberFeatureGenerator(0.0, log10((double)maxTimeStep), 3), timeStep);
     size_t timeFeature = builder.addFunction(convertToDoubleFunction(true), timeStep, T("time"));
-    //timeFeatures = builder.addFunction(concatenateFeatureGenerator(), timeFeatures);
+    //size_t timeFeatures = builder.addFunction(concatenateFeatureGenerator(), timeFeature);
 
     size_t unitFeature = builder.addConstant(1.0, T("1"));
     size_t banditFeatures = builder.addFunction(new BanditStatisticsFeatureGenerator(), banditStatistics, T("bandit"));
     size_t stateFeatures = builder.addFunction(concatenateFeatureGenerator(false), timeFeature, unitFeature, banditFeatures, T("s"));
+
 
     builder.addFunction(cartesianProductFeatureGenerator(), stateFeatures, stateFeatures);
   }
