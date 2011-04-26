@@ -112,6 +112,7 @@ ClassPtr Object::getClass() const
 {
   if (!thisClass)
   {
+    // /!!\ This is not thread-safe
     //jassert(false);
     const_cast<Object* >(this)->thisClass = lbcpp::getType(getTypeName(typeid(*this)));
     jassert(thisClass);

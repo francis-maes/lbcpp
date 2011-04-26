@@ -120,6 +120,7 @@ Variable Function::compute(ExecutionContext& context, const Variable* inputs, si
 {
   if (!isInitialized())
   {
+    // /!!\ This is not thread-safe
     std::vector<VariableSignaturePtr> inputVariables(numInputs);
     for (size_t i = 0; i < inputVariables.size(); ++i)
     {

@@ -10,6 +10,7 @@
 #include <lbcpp/Core/Pair.h>
 #include <lbcpp/Core/XmlSerialisation.h>
 #include <lbcpp/Core/Container.h>
+#include <lbcpp/Data/RandomVariable.h>
 #include <lbcpp/Function/Evaluator.h>
 using namespace lbcpp;
 
@@ -283,6 +284,10 @@ double Variable::toDouble() const
   ScoreObjectPtr scoreObject = dynamicCast<ScoreObject>();
   if (scoreObject)
     return -scoreObject->getScoreToMinimize();
+
+  ScalarVariableMeanPtr mean = dynamicCast<ScalarVariableMean>();
+  if (mean)
+    return mean->getMean();
 
   jassert(false); // not convertible to double
   return 0.0;
