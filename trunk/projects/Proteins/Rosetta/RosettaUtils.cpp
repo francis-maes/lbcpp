@@ -9,6 +9,16 @@
 
 using namespace lbcpp;
 
+String lbcpp::standardizedAtomName(const String& atomName)
+{
+  String workingCopy = atomName;
+  workingCopy = workingCopy.trimEnd();
+  workingCopy = workingCopy.trimStart();
+  String numbers = workingCopy.initialSectionContainingOnly(String("0123456789"));
+  String letters = workingCopy.substring(numbers.length(), workingCopy.length());
+  return String(letters + numbers);
+}
+
 core::pose::PoseOP lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein)
 {
   core::pose::PoseOP pose = new core::pose::Pose();

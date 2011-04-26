@@ -44,6 +44,14 @@ namespace lbcpp
 typedef std::map<std::string, Vector> ResidueCoords;
 
 /**
+ * Returns a standardized version of atoms names to match atoms form lbcpp
+ * and rosetta. All atoms names begin with letters and can end with a number.
+ * @param atomName the name of the atom.
+ * @return the standardized name
+ */
+String standardizedAtomName(const String& atomName);
+
+/**
  * Converts Protein object to Pose object.
  * @param protein pointer to the Protein object to convert
  * @return a pointer to the Pose object
