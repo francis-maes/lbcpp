@@ -26,10 +26,6 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
 
 - verifier les fuites memoire.
 
-- corriger PDBFileGenerator::producePDBString.
-
-- corriger fonction energie (encore).
-
 Rapport
 =======
 - parler de la fonction denergie.
@@ -39,13 +35,8 @@ Rapport
 (Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour longueurs de liens peptides.
 
 DONE
-====
-Correction des progression callbacks.
-Utilisation du RandomGenerator de lbcpp.
-Nouveau score prenant en compte les distances entre atomes dans backbone.
-Nouveaux movers. (RigidBody...)
-Changer les pointeurs en pointeurs& dans arguments de fonctions.
-Modification des optimiseurs, affichage lbcpp + sauvegarde des xml
+=====
+
 
 
 

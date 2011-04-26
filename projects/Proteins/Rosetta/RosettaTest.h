@@ -51,74 +51,48 @@ public:
   {
     rosettaInitialization(context, false);
 
-    File fichier = context.getFile(T("init.pdb"));
-    //File fichier("/Users/alex/Desktop/2KX7.pdb");
-    File fichierout("/Users/alex/Desktop/init_lbcpp.pdb");
-    ProteinPtr protein = Protein::createFromPDB(context, fichier, true);
-    core::pose::PoseOP pose = convertProteinToPose(context, protein);
+    core::pose::PoseOP pose = new core::pose::Pose();
+    makePoseFromSequence(pose, "AAAAA");
+    ProteinPtr protein = convertPoseToProtein(context, pose);
 
-    // Number of residues
-       int numRes = pose->n_residue();
-
-       // Tertiary structure
-       TertiaryStructurePtr ts = protein->getTertiaryStructure();
-       for (int i = 0; i < numRes; i++)
-       {
-         ResiduePtr residue = ts->getResidue(i);
-
-       // rosetta : get residue information
-       core::conformation::Residue tempResRos = pose->residue(i + 1);
-       core::chemical::ResidueType tempResRosType = pose->residue_type(i + 1);
-       int nbatoms = tempResRos.natoms();
-
-       // fill residue with atoms
-       for (size_t j = 0; j < nbatoms; j++)
-       {
-       // get atoms information
-       numeric::xyzVector < core::Real > positionAtomRos = tempResRos.xyz(j + 1);
-       std::string atomTypeRos = (tempResRos.atom_type(j + 1)).element();
-       std::string atomNameRos = tempResRos.atom_name(j + 1);
-
-       // create atom and set position and occupancy
-       impl::Vector3 v3(0.0, 0.0, 0.0);
-       Vector3Ptr v3p = new Vector3(v3);
-       AtomPtr tempAtom = new Atom((String) (atomNameRos.c_str()),
-       (String) (atomTypeRos.c_str()), v3p);
-
-       // Probleme, si pose cree par makePoseFromSequence, energie
-       //sensiblement differente... (du a occupancy de toute evidence)
-       if ((pose->pdb_info()).get() != NULL)
-       tempAtom->setOccupancy((pose->pdb_info())->occupancy(i + 1, j + 1));
-       else
-       tempAtom->setOccupancy(1.0);
-
-       tempAtom->setX(positionAtomRos.x());
-       tempAtom->setY(positionAtomRos.y());
-       tempAtom->setZ(positionAtomRos.z());
-       }
-       }
-
-    protein->saveToPDBFile(context, fichierout);
-    core::io::pdb::dump_pdb((*pose), "/Users/alex/Desktop/init_rosetta.pdb");
-
-    //pose_from_pdb(*pose2, );
-    //ProteinPtr prot1 = convertPoseToProtein(context, pose2);
-    //core::pose::PoseOP pose3 = convertProteinToPose(context, prot1);
-
-    //cout << "energie cas 1 : " << getTotalEnergy(pose) << endl;
-    //cout << "energie cas 2 : " << getTotalEnergy(pose2) << endl;
-/*
-    std::ostringstream oss;
-      core::io::pdb::FileData::dump_pdb((*pose2), oss);
-      oss.flush();
-      std::string poseString = oss.str();
-      String pdbString(poseString.c_str());
-*/
-      //cout << "pose2 : " << pdbString <<endl;
-
-//    core::pose::PoseOP pose = new core::pose::Pose();
-//    makePoseFromSequence(pose, T("AAAAAA"));
-//    ProteinPtr protein = convertPoseToProtein(context, pose);
+    //    File fichier = context.getFile(T("data/1A11.xml"));
+    //    File fichierout = context.getFile(T("init_lbcpp.pdb"));
+    //    ProteinPtr protein = Protein::createFromXml(context, fichier);
+    //    core::pose::PoseOP pose = convertProteinToPose(context, protein);
+    //
+    //    protein->saveToPDBFile(context, fichierout);
+    //    File fichieroutRos = context.getFile(T("init_rosetta.pdb"));
+    //    core::io::pdb::dump_pdb((*pose), (const char*)fichieroutRos.getFullPathName());
+    //
+    //    core::pose::PoseOP pose2 = new core::pose::Pose();
+    //    File fichieroutRos2 = context.getFile(T("init2_rosetta.pdb"));
+    //    core::io::pdb::pose_from_pdb(*pose2, (const char*)fichieroutRos.getFullPathName());
+    //    core::io::pdb::dump_pdb((*pose2), (const char*)fichieroutRos2.getFullPathName());
+    //    //ProteinPtr prot1 = convertPoseToProtein(context, pose2);
+    //    //core::pose::PoseOP pose3 = convertProteinToPose(context, prot1);
+    //
+    //    cout << "energie cas 1 : " << getTotalEnergy(pose) << endl;
+    //    cout << "energie cas 2 : " << getTotalEnergy(pose2) << endl;
+    //
+    //    for (int i = 1; i <= pose->n_residue(); i++)
+    //    {
+    //      for (int j = 1; j <= pose->residue(i).natoms(); j++)
+    //      {
+    //        core::Vector v = pose->residue(i).atom(j).xyz();
+    //        core::Vector v2 = pose2->residue(i).atom(j).xyz();
+    //        if (((v.x() - v2.x()) != 0) || ((v.y() - v2.y()) != 0) || ((v.z() - v2.z()) != 0))
+    //        {
+    //          cout << "residu : " << i <<"atome : " << pose->residue(i).atom_name(j) << " x : " << v.x() << " y : "
+    //              << v.y() << " z : " << v.z() << endl;
+    //          cout << "residu : " << i <<"atome : " << pose2->residue(i).atom_name(j) << " x : " << v2.x() << " y : "
+    //                        << v2.y() << " z : " << v2.z() << endl;
+    //        }
+    //      }
+    //    }
+    //cout << "pose2 : " << pdbString <<endl;
+    //    core::pose::PoseOP pose = new core::pose::Pose();
+    //    makePoseFromSequence(pose, T("AAAAAA"));
+    //    ProteinPtr protein = convertPoseToProtein(context, pose);
 
 
     context.informationCallback(T("RosettaTest done."));
