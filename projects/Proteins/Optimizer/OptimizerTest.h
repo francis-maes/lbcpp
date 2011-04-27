@@ -42,13 +42,13 @@ public:
     
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(1000);
-    OptimizerPtr optimizer = edaOptimizer(10, 50, 10);
+    OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
     //OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
     //optimizerState->setDistribution(context, new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
-    optimizerState->setDistribution(context, new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
+    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
     
     

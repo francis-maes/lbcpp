@@ -36,14 +36,14 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 {
   OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
   OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
-  context.enterScope(T("Optimizing ..."));
+  context.enterScope(T("Optimizing"));
   optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   Variable output = optimize(context, optimizerContext, optimizerState);
   optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
-  context.resultCallback(T("bestParameter"), optimizerState->getBestVariable());
+  context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
   context.resultCallback(T("bestScore"), optimizerState->getBestScore());
-  context.leaveScope(optimizerState->getBestScore());
-  return output;
+  context.leaveScope(optimizerState->getBestVariable());
+  return output;  // bestVariable
 }
 
 /*
@@ -56,10 +56,9 @@ OptimizerState::OptimizerState()
 const DistributionPtr& OptimizerState::getDistribution() const
   {return distribution;}
 
-void OptimizerState::setDistribution(ExecutionContext& context, const DistributionPtr& newDistribution)
+void OptimizerState::setDistribution(const DistributionPtr& newDistribution)
 {
   distribution = newDistribution;
-  context.resultCallback(T("distribution"), newDistribution);
 }
 
 

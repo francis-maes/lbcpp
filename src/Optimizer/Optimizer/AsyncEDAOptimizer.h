@@ -87,7 +87,9 @@ public:
         distributionsBuilder->addDistribution(optimizerState->getDistribution());  // old distri
         for (size_t i = 0; i < updateFactor; ++i)
           distributionsBuilder->addDistribution(newDistri);
-        optimizerState->setDistribution(context, distributionsBuilder->build(context));        
+        newDistri = distributionsBuilder->build(context);
+        optimizerState->setDistribution(newDistri);        
+        context.resultCallback(T("distribution"), newDistri);
         
         if (sortedScores.begin()->first < optimizerState->getBestScore()) 
         {

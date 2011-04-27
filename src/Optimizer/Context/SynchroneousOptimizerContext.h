@@ -20,32 +20,26 @@ public:
   SynchroneousOptimizerContext(const FunctionPtr& objectiveFunction) : OptimizerContext(objectiveFunction) {}
   SynchroneousOptimizerContext() {}
   
-  virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const {}  // because evaluate is a blocking method
-  virtual bool areAllRequestsProcessed(ExecutionContext& context) const
+  // evaluate is a blocking method
+  virtual void waitUntilAllRequestsAreProcessed() const {}
+  virtual bool areAllRequestsProcessed() const
     {return true;}
 
   // blocking method
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
   { 
-    inProgressEvaluation = parameters;
     Variable ret = objectiveFunction->compute(context, parameters);
-    inProgressEvaluation = Variable();
     // callback is done in function evaluation !
     
     if (!ret.exists()) {
       context.errorCallback(T("No return value after function call!"));
       return false;
     }
-  
     return true;
   }
   
 protected:  
   friend class SynchroneousOptimizerContextClass;
-  
-private:
-  Variable inProgressEvaluation;
-
 };
 
 };

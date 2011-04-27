@@ -23,7 +23,7 @@ public:
   
   // this should be in an inherited class
   const DistributionPtr& getDistribution() const;
-  void setDistribution(ExecutionContext& context, const DistributionPtr& newDistribution);
+  void setDistribution(const DistributionPtr& newDistribution);
   
   
   /*
