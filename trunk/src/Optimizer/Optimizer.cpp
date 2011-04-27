@@ -135,10 +135,6 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 {
   ScopedLock _(lock);
   processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
-/*  context.enterScope(T("Request ") + String((int) totalNumberOfEvaluations));
-  context.resultCallback(T("requestNumber"), totalNumberOfEvaluations);
-  context.resultCallback(T("parameter"), inputs[0]);      
-  context.leaveScope(output.toDouble());*/
   totalNumberOfEvaluations++;
 }
 

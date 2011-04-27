@@ -28,6 +28,9 @@ public:
       Thread::sleep(10);
   }
   
+  virtual bool areAllRequestsProcessed(ExecutionContext& context) const
+    {return numEvaluationInProgress == 0;}
+  
   // TODO arnaud : verifier multithread ?
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
   { 
