@@ -88,7 +88,7 @@ public:
       {return workUnit;}
   };
 
-  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, Variable* result = NULL);
+  void push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true, Variable* result = NULL);
   void push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& stack, int* numRemainingWorkUnitsCounter = NULL, Variable* result = NULL);
 
   Entry pop();
@@ -112,13 +112,13 @@ typedef ReferenceCountedObjectPtr<WaitingWorkUnitQueue> WaitingWorkUnitQueuePtr;
 /*
 ** WaitingWorkUnitQueue
 */
-void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, Variable* result)
+void WaitingWorkUnitQueue::push(const WorkUnitPtr& workUnit, const ExecutionStackPtr& stack, int* counterToDecrementWhenDone, bool pushIntoStack, Variable* result)
 {
   ScopedLock _(lock);
   size_t priority = stack->getDepth();
   if (entries.size() <= priority)
     entries.resize(priority + 1);
-  entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), true, counterToDecrementWhenDone, result));
+  entries[priority].push_back(Entry(workUnit, stack->cloneAndCast<ExecutionStack>(), pushIntoStack, counterToDecrementWhenDone, result));
 }
 
 void WaitingWorkUnitQueue::push(const CompositeWorkUnitPtr& workUnits, const ExecutionStackPtr& s, int* numRemainingWorkUnitsCounter, Variable* result)
@@ -416,10 +416,10 @@ public:
   virtual bool isPaused() const
     {return false;}
 
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
   {
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
-    queue->push(workUnit, stack);
+    queue->push(workUnit, stack, counterToDecrementWhenDone, pushIntoStack);
   }
 
   virtual void waitUntilAllWorkUnitsAreDone()
@@ -430,7 +430,7 @@ public:
     int remainingWorkUnits = 1;
     Variable result;
     WaitingWorkUnitQueuePtr queue = threadPool->getWaitingQueue();
-    queue->push(workUnit, stack, &remainingWorkUnits, &result);
+    queue->push(workUnit, stack, &remainingWorkUnits, pushIntoStack, &result);
     threadPool->waitUntilWorkUnitsAreDone(remainingWorkUnits);
     return result;
   }

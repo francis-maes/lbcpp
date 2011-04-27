@@ -10,7 +10,7 @@
 # define LBCPP_OPTIMIZER_UNIFORM_SAMPLE_AND_PICK_BEST_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Distribution/ContinuousDistribution.h>
+# include <lbcpp/Distribution/ContinuousDistribution.h> // TODO arnaud : should no be here !!!
 
 namespace lbcpp
 {
@@ -46,7 +46,11 @@ public:
       for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
       {
         if (it->first < optimizerState->getBestScore())
-          optimizerState->setBestRequest(context, it->first, it->second);
+        {
+          ScopedLock _(optimizerState->getLock());  // TODO arnaud : tt block scoped ?
+          optimizerState->setBestScore(it->first);
+          optimizerState->setBestVariable(it->second);
+        }
       }
       optimizerState->flushProcessedRequests();
     }

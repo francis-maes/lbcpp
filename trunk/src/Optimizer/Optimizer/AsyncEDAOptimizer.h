@@ -10,7 +10,6 @@
 # define LBCPP_ASYNC_EDA_OPTIMIZER_H_
 
 # include <lbcpp/Optimizer/Optimizer.h>
-# include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Distribution/DistributionBuilder.h>
 
 namespace lbcpp
@@ -90,9 +89,12 @@ public:
           distributionsBuilder->addDistribution(newDistri);
         optimizerState->setDistribution(context, distributionsBuilder->build(context));        
         
-        if (sortedScores.begin()->first < optimizerState->getBestScore())
-          optimizerState->setBestRequest(context, sortedScores.begin()->first, sortedScores.begin()->second);
-        
+        if (sortedScores.begin()->first < optimizerState->getBestScore()) 
+        {
+          ScopedLock _(optimizerState->getLock());  // TODO arnaud : tt block scoped ?
+          optimizerState->setBestScore(sortedScores.begin()->first);
+          optimizerState->setBestVariable(sortedScores.begin()->second);
+        }
         context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
                 
         // TODO arnaud : save state

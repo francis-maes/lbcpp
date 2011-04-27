@@ -37,7 +37,9 @@ protected:
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
 extern ClassPtr optimizerContextClass;
 
+extern OptimizerContextPtr synchroneousOptimizerContext(const FunctionPtr& objectiveFunction);  
 extern OptimizerContextPtr multiThreadedOptimizerContext(const FunctionPtr& objectiveFunction);
+  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_

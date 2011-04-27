@@ -30,7 +30,7 @@
   </class>
      
   <!--
-  <class name="IterativeBracketingOptimizer" base="OptimizerOld">
+  <class name="IterativeBracketingOptimizer" base="Optimizer">
     <constructor arguments="size_t numPasses, double reductionFactor, const OptimizerOldPtr&amp; baseOptimizer"/>
     <variable type="PositiveInteger" name="numPasses"/>
     <variable type="Double" name="reductionFactor"/>

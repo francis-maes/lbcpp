@@ -32,6 +32,9 @@ public:
     ExecutionContext::notificationCallback(notification);
   }
 
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
+    {parent->pushWorkUnit(workUnit, counterToDecrementWhenDone, pushIntoStack);}
+  
 protected:
   friend class SubExecutionContextClass;
 

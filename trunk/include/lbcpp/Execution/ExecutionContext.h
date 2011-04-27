@@ -53,7 +53,7 @@ public:
   virtual Variable run(const CompositeWorkUnitPtr& workUnits, bool pushIntoStack = true) = 0;
 
   // multi-thread
-  virtual void pushWorkUnit(const WorkUnitPtr& workUnit)
+  virtual void pushWorkUnit(const WorkUnitPtr& workUnit, int* counterToDecrementWhenDone = NULL, bool pushIntoStack = true)
     {jassert(isMultiThread());}
   virtual void waitUntilAllWorkUnitsAreDone()
     {jassert(isMultiThread());}

@@ -11,24 +11,25 @@
 #define OPTIMIZER_TEST_H_
 
 # include <lbcpp/Execution/WorkUnit.h>
-# include <lbcpp/Optimizer/GridOptimizer.h>
-# include "../Optimizer/ProteinGridEvoOptimizer.h"
-# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
+# include <lbcpp/Optimizer/Optimizer.h>
+# include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Optimizer/OptimizerState.h>
+# include <lbcpp/Function/ScalarFunction.h>
+
+// TODO arnaud : a enlever
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
-# include "../Predictor/ProteinPredictorParameters.h"
 # include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
 # include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
 
-// TODO arnaud : just to compile header file
-# include <lbcpp/Optimizer/OptimizerContext.h>
-# include "../WorkUnit/DebugWorkUnit.h"
-
-# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
+//# include <lbcpp/Optimizer/GridOptimizer.h>
+//# include "../Optimizer/ProteinGridEvoOptimizer.h"
+//# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
+//# include "../Predictor/ProteinPredictorParameters.h"
+//# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
-# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
+//# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
 //# include "../../../src/Optimizer/Context/SynchroneousOptimizerContext.h"
 //# include "../../../src/Optimizer/Context/MultiThreadsOptimizerContext.h"
-# include <lbcpp/Function/ScalarFunction.h>
 
 namespace lbcpp
 {
@@ -40,15 +41,14 @@ public:
   {
     
     // TESTS OPTIMIZER
-    
-    //OptimizerPtr optimizer = new UniformSampleAndPickBestOptimizer(1000);
-    OptimizerPtr optimizer = edaOptimizer(20, 500, 100);
-    //OptimizerPtr optimizer = new AsyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
+    //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(1000);
+    OptimizerPtr optimizer = edaOptimizer(20, 200, 100);
+    //OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
-    //optimizerState->setDistribution(context, new UniformDistribution(-5,5));
-    optimizerState->setDistribution(context, new GaussianDistribution(10, 10000));
+    //optimizerState->setDistribution(context, new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
+    optimizerState->setDistribution(context, new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
     
     
