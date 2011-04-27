@@ -74,7 +74,6 @@ public:
           ScopedLock _(optimizerState->getLock());
           std::vector< std::pair<double, Variable> >::const_iterator it;
           size_t i = 1;
-          std::cout << "BEFORE: " << optimizerState->getNumberOfProcessedRequests() << std::endl;
           for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + numberEvaluationsToUpdate; it++) {  // use only numberEvaluationsToUpdate results
             //std::cout << "HERE 2 : " << i << std::endl;
             sortedScores.insert(*it);
@@ -89,8 +88,6 @@ public:
             i++;  // outside if to avoid a warning for unused variable
           }
           optimizerState->flushFirstProcessedRequests(numberEvaluationsToUpdate);  // TODO arnaud : maybe do that after building new distri
-          std::cout << "AFTER: " << optimizerState->getNumberOfProcessedRequests() << std::endl;
-          std::cout << "SIZE: " << sortedScores.size() << std::endl;
         }
         
         // build new distribution
