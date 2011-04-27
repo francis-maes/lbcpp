@@ -42,8 +42,8 @@ public:
     
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(1000);
-    OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
-    //OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
+    //OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
+    OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 2, 1, 1, 500);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();

@@ -39,9 +39,9 @@ public:
       
       // update OptimizerState if necessary
       {
-        ScopedLock _(optimizerState->getLock());
         if (bestIterationScore < optimizerState->getBestScore())
         {
+          ScopedLock _(optimizerState->getLock());
           optimizerState->setBestScore(bestIterationScore);
           optimizerState->setBestVariable(bestIterationParameters);
         }
