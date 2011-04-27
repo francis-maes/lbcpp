@@ -1,18 +1,18 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  RosettaOptimizer.h            | RosettaOptimizer.h              |
+| Filename:  ProteinRosettaOptimizer.h     | ProteinRosettaOptimizer.h       |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_OPTIMIZER_H_
-# define LBCPP_PROTEINS_ROSETTA_OPTIMIZER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_
+# define LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_
 
 # include "precompiled.h"
 
 # include "RosettaUtils.h"
-# include "RosettaMover.h"
+# include "ProteinMover.h"
 # include <iostream>
 # include <cmath>
 # include <algorithm>
@@ -87,7 +87,7 @@ public:
    */
   double getFrequency();
 
-  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover)=0;
+  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover)=0;
 
 protected:
   bool verbosity;
@@ -123,7 +123,7 @@ protected:
    * will create a scope with tha name of the mover and with its parameters.
    */
   void initializeCallbacks(const std::vector<String>& names, double energy, int maxStepsNumber,
-      RosettaMoverPtr& mover);
+      ProteinMoverPtr& mover);
 
   /**
    * Finalizes lbcpp callbacks.
@@ -156,7 +156,7 @@ public:
       double frequencyCallback, File outputDirectory, int numOutputFiles, long long seedForRandom =
           0);
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover);
 
   /*
    * Performs greedy optimization on the pose object.
@@ -171,7 +171,7 @@ public:
    * @param context, the context used to create the trace. NULL if no trace desired, default.
    * @return the new conformation
    */
-  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover,
+  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, ProteinMoverPtr& mover,
       int maxSteps = 50000);
 
 private:
@@ -193,7 +193,7 @@ public:
       ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
       int numOutputFiles, long long seedForRandom = 0);
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover);
 
   /*
    * Performs Monte Carlo optimization on the pose object.
@@ -208,7 +208,7 @@ public:
    * Default = 5.
    * @return the new conformation
    */
-  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover,
+  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose, ProteinMoverPtr& mover,
       double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5);
 
 private:
@@ -236,7 +236,7 @@ public:
       ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
       int numOutputFiles, long long seedForRandom = 0);
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover);
 
   /*
    * Performs simulated annealing on the pose object.
@@ -256,7 +256,7 @@ public:
    * @return the new conformation
    */
   core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP& pose,
-      RosettaMoverPtr& mover, double initialTemperature = 4.0, double finalTemperature = 0.01,
+      ProteinMoverPtr& mover, double initialTemperature = 4.0, double finalTemperature = 0.01,
       int numberDecreasingSteps = 100, int maxSteps = 50000, int timesReinitialization = 5);
 
 private:
@@ -277,7 +277,7 @@ public:
   RosettaSequentialOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
       long long seedForRandom = 0);
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover);
 
   /*
    * Performs sequential simulation on the pose object. This function adds a residue
@@ -287,9 +287,9 @@ public:
    * @param mover pointer to a mover that perturbs the object at each iteration.
    * @return the new conformation
    */
-  core::pose::PoseOP sequentialOptimization(core::pose::PoseOP& pose, RosettaMoverPtr& mover);
+  core::pose::PoseOP sequentialOptimization(core::pose::PoseOP& pose, ProteinMoverPtr& mover);
 };
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_OPTIMIZER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_OPTIMIZER_H_

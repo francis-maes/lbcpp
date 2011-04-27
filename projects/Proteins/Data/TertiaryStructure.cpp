@@ -91,7 +91,7 @@ VectorPtr TertiaryStructure::makePrimaryStructure() const
   jassert(n);
   VectorPtr res = vector(aminoAcidTypeEnumeration, n);
   for (size_t i = 0; i < n; ++i)
-    res->setElement(i, getResidue(i)->getAminoAcidType());
+    res->setElement(i, Variable(getResidue(i)->getAminoAcidType(), aminoAcidTypeEnumeration));
   return res;
 }
 
