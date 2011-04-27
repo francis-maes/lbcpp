@@ -21,7 +21,9 @@ public:
   SynchroneousOptimizerContext() {}
   
   virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const {}  // because evaluate is a blocking method
-  
+  virtual bool areAllRequestsProcessed(ExecutionContext& context) const
+    {return true;}
+
   // blocking method
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
   { 

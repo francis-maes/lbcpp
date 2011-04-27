@@ -24,7 +24,9 @@ public:
   void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
   void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
+  // TODO arnaud : context not needed ?
   virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const = 0;
+  virtual bool areAllRequestsProcessed(ExecutionContext& context) const = 0;
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) = 0;
   virtual bool evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector);
   

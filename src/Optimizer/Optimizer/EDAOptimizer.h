@@ -79,29 +79,48 @@ protected:
       optimizerState->incTotalNumberOfRequests();
     }
 
-    if (!optimizerContext->evaluate(context, parametersVector))
-      return false;
+    // TODO arnaud : deprected to have progressCallback !
+    //if (!optimizerContext->evaluate(context, parametersVector))
+    //  return false;
+    // 
+    //  optimizerContext->waitUntilAllRequestsAreProcessed(context);
+
+    for (size_t i = 0; i < populationSize; ++i)
+    {
+      if(!optimizerContext->evaluate(context, parametersVector[i]))
+        return false;
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+    }
     
-    // wait and sort results
-    optimizerContext->waitUntilAllRequestsAreProcessed(context);
-    
+    // wait (in case of async context)
+    while (!optimizerContext->areAllRequestsProcessed(context)) {
+      Thread::sleep(100);
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+    }
+    context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+
+    // sort results
     std::multimap<double, Variable> sortedScores;
     {
       ScopedLock _(optimizerState->getLock());
       
-      // TODO arnaud : uncomment AND debug !
-      // jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
-      
-      /*while (optimizerState->getNumberOfProcessedRequests() != populationSize)
-      {
-        std::cout << optimizerState->getNumberOfProcessedRequests() << " VS " << populationSize << std::endl;
-        Thread::sleep(1000);
-      }*/
+      jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
       
       // sort results
       std::vector< std::pair<double, Variable> >::const_iterator it;
+      size_t i = 1;
       for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
+      {
         sortedScores.insert(*it);
+        // TODO arnaud : only in vervose mode !
+        /*
+        context.enterScope(T("Request ") + String((int) i));
+        context.resultCallback(T("requestNumber"), i);
+        context.resultCallback(T("parameter"), it->second);      
+        context.leaveScope(it->first);
+        i++;
+        */
+      }
       optimizerState->flushProcessedRequests();  // TODO arnaud : maybe do that after building new distri
     }
     
