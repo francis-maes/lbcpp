@@ -37,6 +37,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
   OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
   OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
   context.enterScope(T("Optimizing"));
+  context.informationCallback(toString());
   optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   Variable output = optimize(context, optimizerContext, optimizerState);
   optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
@@ -84,7 +85,7 @@ size_t OptimizerState::getTotalNumberOfEvaluations() const
 size_t OptimizerState::getNumberOfInProgressEvaluations() const
 {
   ScopedLock _(lock);
-  getTotalNumberOfRequests() - getTotalNumberOfEvaluations();
+  return getTotalNumberOfRequests() - getTotalNumberOfEvaluations();
 }
 
 // Processeded requests

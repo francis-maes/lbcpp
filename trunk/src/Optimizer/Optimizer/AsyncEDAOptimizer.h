@@ -31,7 +31,7 @@ public:
   {  
     // TODO arnaud : save initial state
     size_t numIterations = (size_t) ceil((double)totalNumberEvaluationsRequested/(double)numberEvaluationsToUpdate);
-    int i = 0;  // TODO arnaud : rename
+    size_t i = 0;  // TODO arnaud : rename
     context.enterScope(T("Iteration ") + String((int)i + 1));
     context.resultCallback(T("iteration"), i + 1);
     
@@ -60,18 +60,21 @@ public:
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*10);      
+      juce::Thread::sleep(timeToSleep*10);
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
       
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate/* || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && optimizerState->getNumberOfInProgressEvaluations() == 0)*/) 
       {   
         //std::cout << "HERE:" << optimizerState->getNumberOfProcessedRequests() << std::endl;
+        context.progressCallback(new ProgressionState(numberEvaluationsToUpdate, numberEvaluationsToUpdate, T("Evaluations"))); // TODO arnaud : forced
         // sort results
         std::multimap<double, Variable> sortedScores;
         {
           ScopedLock _(optimizerState->getLock());
           std::vector< std::pair<double, Variable> >::const_iterator it;
           size_t i = 1;
+          std::cout << "BEFORE: " << optimizerState->getNumberOfProcessedRequests() << std::endl;
           for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + numberEvaluationsToUpdate; it++) {  // use only numberEvaluationsToUpdate results
             //std::cout << "HERE 2 : " << i << std::endl;
             sortedScores.insert(*it);
@@ -86,6 +89,8 @@ public:
             i++;  // outside if to avoid a warning for unused variable
           }
           optimizerState->flushFirstProcessedRequests(numberEvaluationsToUpdate);  // TODO arnaud : maybe do that after building new distri
+          std::cout << "AFTER: " << optimizerState->getNumberOfProcessedRequests() << std::endl;
+          std::cout << "SIZE: " << sortedScores.size() << std::endl;
         }
         
         // build new distribution
@@ -120,9 +125,11 @@ public:
         context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
         
         i++;
-        context.enterScope(T("Iteration ") + String((int)i + 1));
-        context.resultCallback(T("iteration"), i + 1);
-        //context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
+        if (i < numIterations) {
+          context.enterScope(T("Iteration ") + String((int)i + 1));
+          context.resultCallback(T("iteration"), i + 1);
+        }
+        
                 
         // TODO arnaud : save state
       }
