@@ -21,5 +21,10 @@
   
   <class name="RosettaProteinOptimizerAndFeatureGeneratorWorkUnit" base="WorkUnit">
   </class>
+  
+  <class name="RosettaOptimizer" base="Object" abstract="yes">
+  </class>
+  
+  
 
 </library>

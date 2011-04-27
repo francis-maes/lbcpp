@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  RosettaMover.h                | RosettaMover                    |
+| Filename:  ProteinMover.h                | ProteinMover                    |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_MOVER_H_
-# define LBCPP_PROTEINS_ROSETTA_MOVER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
+# define LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 
 # include "precompiled.h"
 # include "RosettaUtils.h"
@@ -33,13 +33,13 @@
 
 namespace lbcpp
 {
-class RosettaMover;
-typedef ReferenceCountedObjectPtr<RosettaMover> RosettaMoverPtr;
-class RosettaMover: public NameableObject
+class ProteinMover;
+typedef ReferenceCountedObjectPtr<ProteinMover> ProteinMoverPtr;
+class ProteinMover: public NameableObject
 {
 public:
-  RosettaMover(const String& newName, long long seedForRandom = 0);
-  ~RosettaMover();
+  ProteinMover(const String& newName, long long seedForRandom = 0);
+  ~ProteinMover();
   /**
    * Generates a random angle drawn form a uniform distribution between
    * -std and std with an offset given by mean.
@@ -96,7 +96,7 @@ protected:
 
 class PhiPsiRandomMover;
 typedef ReferenceCountedObjectPtr<PhiPsiRandomMover> PhiPsiRandomMoverPtr;
-class PhiPsiRandomMover: public RosettaMover
+class PhiPsiRandomMover: public ProteinMover
 {
 public:
   /**
@@ -138,7 +138,7 @@ private:
 
 class PhiPsiGaussRandomMover;
 typedef ReferenceCountedObjectPtr<PhiPsiGaussRandomMover> PhiPsiGaussRandomMoverPtr;
-class PhiPsiGaussRandomMover: public RosettaMover
+class PhiPsiGaussRandomMover: public ProteinMover
 {
 public:
   /**
@@ -180,7 +180,7 @@ private:
 
 class ShearRandomMover;
 typedef ReferenceCountedObjectPtr<ShearRandomMover> ShearRandomMoverPtr;
-class ShearRandomMover: public RosettaMover
+class ShearRandomMover: public ProteinMover
 {
 public:
   /**
@@ -242,7 +242,7 @@ private:
 
 class RigidBodyTransRandomMover;
 typedef ReferenceCountedObjectPtr<RigidBodyTransRandomMover> RigidBodyTransRandomMoverPtr;
-class RigidBodyTransRandomMover: public RosettaMover
+class RigidBodyTransRandomMover: public ProteinMover
 {
 public:
   /**
@@ -284,7 +284,8 @@ private:
 
 class RigidBodyPerturbRandomMover;
 typedef ReferenceCountedObjectPtr<RigidBodyPerturbRandomMover> RigidBodyPerturbRandomMoverPtr;
-class RigidBodyPerturbRandomMover: public RosettaMover
+
+class RigidBodyPerturbRandomMover : public ProteinMover
 {
 public:
   /**
@@ -342,7 +343,7 @@ private:
 
 class PhiPsiMover;
 typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;
-class PhiPsiMover: public RosettaMover
+class PhiPsiMover: public ProteinMover
 {
 public:
   /**
@@ -413,17 +414,40 @@ public:
   double getPsiIncrement();
 
 protected:
+  friend class PhiPsiMoverClass;
+
   void updateParameters();
 
-private:
-  int residueNumber;
+  int residueNumber;  // size_t: 0..
   double phiAngleIncrement;
   double psiAngleIncrement;
 };
 
+/*
+<class name="ProteinMover" base="Object" abstract="yes"/>
+<class name="PhiPsiMover" base="ProteinMover" shortName="phiPsi">
+  <variable type="PositiveInteger" name="residueIndex"/>
+  <variable type="Double" name="deltaPhi"/>
+  <variable type="Double" name="deltaPsi"/>
+</class>
+*/
+
+/*
+ * dans la work unit:
+ *
+ProteinMoverPtr mover;
+
+dans le xml:
+<variable type="ProteinMover" name="mover"/>
+
+dans l'explorer/dans RunWorkUit
+
+phiPsi(5, 0.2, -0.1)
+
+*/
 class RigidBodyMover;
 typedef ReferenceCountedObjectPtr<RigidBodyMover> RigidBodyMoverPtr;
-class RigidBodyMover: public RosettaMover
+class RigidBodyMover: public ProteinMover
 {
 public:
   /**
@@ -656,4 +680,4 @@ private:
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_MOVER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_

@@ -13,7 +13,7 @@
 # include "../Data/Protein.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
-# include "RosettaOptimizer.h"
+# include "ProteinRosettaOptimizer.h"
 
 namespace lbcpp
 {
@@ -21,24 +21,25 @@ namespace lbcpp
 class RosettaProteinOptimizerAndFeatureGeneratorWorkUnit;
 typedef ReferenceCountedObjectPtr<RosettaProteinOptimizerAndFeatureGeneratorWorkUnit>
     RosettaProteinOptimizerAndFeatureGeneratorWorkUnitPtr;
-class RosettaProteinOptimizerAndFeatureGeneratorWorkUnit: public WorkUnit
+
+class RosettaProteinOptimizerAndFeatureGeneratorWorkUnit : public WorkUnit
 {
 protected:
   friend class RosettaProteinOptimizerAndFeatureGeneratorWorkUnitClass;
   String proteinName;
   core::pose::PoseOP pose;
   RosettaOptimizerPtr optimizer;
-  RosettaMoverPtr mover;
+  ProteinMoverPtr mover;
   core::pose::PoseOP returnPose;
 
 public:
-  // returnPose must be already instanciated
+  // returnPose must be already instantiated
   RosettaProteinOptimizerAndFeatureGeneratorWorkUnit()
   {
   }
 
   RosettaProteinOptimizerAndFeatureGeneratorWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
-      RosettaOptimizerPtr& optimizer, RosettaMoverPtr& mover, core::pose::PoseOP& returnPose)
+      RosettaOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose)
   {
     this->proteinName = proteinName;
     this->pose = pose;
@@ -80,7 +81,7 @@ public:
     std::vector<Variable> moverArguments;
     for (int i = 0; i < commandLineMoverParameters.size(); i++)
       moverArguments.push_back(Variable(commandLineMoverParameters[i]));
-    RosettaMoverPtr mover;
+    ProteinMoverPtr mover;
     if (!moverName.compareIgnoreCase(T("phipsirandom")))
       mover = new PhiPsiRandomMover(moverArguments);
     else if (!moverName.compareIgnoreCase(T("phipsigaussrandom")))
@@ -89,7 +90,7 @@ public:
       mover = new ShearRandomMover(moverArguments);
     else if (!moverName.compareIgnoreCase(T("rigidbodytransrandom")))
       mover = new RigidBodyTransRandomMover(moverArguments);
-    else if (!moverName.compareIgnoreCase(T("rigidbodyperturbrandom")))
+    else if (!moverName.compareIgnoreCase(T("rigidBodyPerturbRandom")))
       mover = new RigidBodyPerturbRandomMover(moverArguments);
     else
     {

@@ -199,6 +199,9 @@ public:
   virtual String toString() const
     {return description;}
 
+  virtual String toShortString() const
+    {return description;}
+
 protected:
   String description;
   ContainerPtr source;

@@ -149,10 +149,10 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/RosettaTest.h
     Rosetta/RosettaUtils.h
     Rosetta/RosettaUtils.cpp
-    Rosetta/RosettaMover.h
-    Rosetta/RosettaMover.cpp
-    Rosetta/RosettaOptimizer.h
-    Rosetta/RosettaOptimizer.cpp
+    Rosetta/ProteinMover.h
+    Rosetta/ProteinMover.cpp
+    Rosetta/ProteinRosettaOptimizer.h
+    Rosetta/ProteinRosettaOptimizer.cpp
     Rosetta/ProteinRosettaLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
   )

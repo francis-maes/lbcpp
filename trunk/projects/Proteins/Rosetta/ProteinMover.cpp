@@ -1,32 +1,32 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  RosettaMover.cpp              | RosettaMover                    |
+| Filename:  ProteinMover.cpp              | ProteinMover                    |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include "RosettaMover.h"
+#include "ProteinMover.h"
 
 using namespace lbcpp;
 
-// RosettaMover
-RosettaMover::RosettaMover(const String& newName, long long seedForRandom) :
+// ProteinMover
+ProteinMover::ProteinMover(const String& newName, long long seedForRandom) :
   NameableObject(newName)
 {
   randomGenerator = new RandomGenerator(seedForRandom);
 }
 
-RosettaMover::~RosettaMover()
+ProteinMover::~ProteinMover()
 {
 }
 
-double RosettaMover::generateAngleFromUniform(double std, double mean)
+double ProteinMover::generateAngleFromUniform(double std, double mean)
 {
   return ((std * (2 * randomGenerator->sampleDouble() - 1)) + mean);
 }
 
-double RosettaMover::generateAngleFromGaussian(double std, double mean, double limit)
+double ProteinMover::generateAngleFromGaussian(double std, double mean, double limit)
 {
   double ang = (std * randomGenerator->sampleDoubleFromGaussian()) + mean;
   double l = std::abs(limit);
@@ -35,13 +35,13 @@ double RosettaMover::generateAngleFromGaussian(double std, double mean, double l
   return ang;
 }
 
-std::vector<String> RosettaMover::getParametersNames()
+std::vector<String> ProteinMover::getParametersNames()
 {
   std::vector<String> tmp(parameterNames);
   return tmp;
 }
 
-std::vector<Variable> RosettaMover::getParameters()
+std::vector<Variable> ProteinMover::getParameters()
 {
   updateParameters();
   std::vector<Variable> tmp(parameterValues);
@@ -50,7 +50,7 @@ std::vector<Variable> RosettaMover::getParameters()
 
 // PhiPsiRandomMover
 PhiPsiRandomMover::PhiPsiRandomMover(const std::vector<Variable>& vec, long long seedForRandom) :
-  RosettaMover(T("PhiPsiRandomMover"), seedForRandom)
+  ProteinMover(T("PhiPsiRandomMover"), seedForRandom)
 {
   if (vec.size() >= 0)
     maxAngle = (vec.at(0)).getDouble();
@@ -86,7 +86,7 @@ void PhiPsiRandomMover::updateParameters()
 // PhiPsiGaussRandomMover
 PhiPsiGaussRandomMover::PhiPsiGaussRandomMover(const std::vector<Variable>& vec,
     long long seedForRandom) :
-  RosettaMover(T("PhiPsiGaussRandomMover"), seedForRandom)
+  ProteinMover(T("PhiPsiGaussRandomMover"), seedForRandom)
 {
   if (vec.size() >= 0)
     stdAngle = (vec.at(0)).getDouble();
@@ -122,7 +122,7 @@ void PhiPsiGaussRandomMover::updateParameters()
 
 // ShearRandomMover
 ShearRandomMover::ShearRandomMover(const std::vector<Variable>& vec, long long seedForRandom) :
-  RosettaMover(T("ShearRandomMover"), seedForRandom)
+  ProteinMover(T("ShearRandomMover"), seedForRandom)
 {
   // Recover arguments
   if (vec.size() >= 2)
@@ -188,7 +188,7 @@ void ShearRandomMover::updateParameters()
 // RigidBodyTransRandomMover
 RigidBodyTransRandomMover::RigidBodyTransRandomMover(const std::vector<Variable>& vec,
     long long seedForRandom) :
-  RosettaMover(T("RigidBodyTransRandomMover"), seedForRandom)
+  ProteinMover(T("RigidBodyTransRandomMover"), seedForRandom)
 {
   step = 0.1;
   if (vec.size() >= 0)
@@ -249,7 +249,7 @@ void RigidBodyTransRandomMover::updateParameters()
 // RigidBodyPerturbRandomMover
 RigidBodyPerturbRandomMover::RigidBodyPerturbRandomMover(const std::vector<Variable>& vec,
     long long seedForRandom) :
-  RosettaMover(T("RigidBodyPerturbRandomMover"), seedForRandom)
+  ProteinMover(T("RigidBodyPerturbRandomMover"), seedForRandom)
 {
   maximumStep = 0.1;
   maximumAngle = 1;
@@ -322,7 +322,7 @@ void RigidBodyPerturbRandomMover::updateParameters()
 
 // PhiPsiMover
 PhiPsiMover::PhiPsiMover(const std::vector<Variable>& vec) :
-  RosettaMover(T("PhiPsiMover"))
+  ProteinMover(T("PhiPsiMover"))
 {
   if (vec.size() == 3)
   {
@@ -396,7 +396,7 @@ void PhiPsiMover::updateParameters()
 
 // RigidBodyMover
 RigidBodyMover::RigidBodyMover(String name, const std::vector<Variable>& vec) :
-  RosettaMover(name)
+  ProteinMover(name)
 {
   if (vec.size() >= 2)
   {

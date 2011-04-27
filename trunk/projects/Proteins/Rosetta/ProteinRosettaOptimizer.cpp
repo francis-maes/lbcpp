@@ -1,17 +1,17 @@
 /*-----------------------------------------.---------------------------------.
-| Filename:  RosettaOptimizer.cpp          | RosettaOptimizer                |
+| Filename:  ProteinRosettaOptimizer.cpp   | ProteinRosettaOptimizer         |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 12/04/2011                     |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#include "RosettaOptimizer.h"
+#include "ProteinRosettaOptimizer.h"
 
 using namespace lbcpp;
 
 void RosettaOptimizer::initializeCallbacks(const std::vector<String>& names, double energy,
-    int maxStepsNumber, RosettaMoverPtr& mover)
+    int maxStepsNumber, ProteinMoverPtr& mover)
 {
   if (verbosity)
   {
@@ -189,13 +189,13 @@ RosettaGreedyOptimizer::RosettaGreedyOptimizer(int maxSteps, ExecutionContextPtr
 {
 }
 
-core::pose::PoseOP RosettaGreedyOptimizer::apply(core::pose::PoseOP& pose, RosettaMoverPtr& mover)
+core::pose::PoseOP RosettaGreedyOptimizer::apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover)
 {
   return greedyOptimization(pose, mover, maxSteps);
 }
 
 core::pose::PoseOP RosettaGreedyOptimizer::greedyOptimization(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover, int maxSteps)
+    ProteinMoverPtr& mover, int maxSteps)
 {
   // Initialization
   double minimumEnergy = getConformationScore(pose);
@@ -307,13 +307,13 @@ RosettaMonteCarloOptimizer::RosettaMonteCarloOptimizer(double temperature, int m
 }
 
 core::pose::PoseOP RosettaMonteCarloOptimizer::apply(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover)
+    ProteinMoverPtr& mover)
 {
   return monteCarloOptimization(pose, mover, temperature, maxSteps, timesReinitialization);
 }
 
 core::pose::PoseOP RosettaMonteCarloOptimizer::monteCarloOptimization(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover, double temperature, int maxSteps, int timesReinitialization)
+    ProteinMoverPtr& mover, double temperature, int maxSteps, int timesReinitialization)
 {
   double currentEnergy = getConformationScore(pose);
   double minimumEnergy = currentEnergy;
@@ -453,14 +453,14 @@ RosettaSimulatedAnnealingOptimizer::RosettaSimulatedAnnealingOptimizer(double in
 }
 
 core::pose::PoseOP RosettaSimulatedAnnealingOptimizer::apply(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover)
+    ProteinMoverPtr& mover)
 {
   return simulatedAnnealingOptimization(pose, mover, initialTemperature, finalTemperature,
       numberDecreasingSteps, maxSteps, timesReinitialization);
 }
 
 core::pose::PoseOP RosettaSimulatedAnnealingOptimizer::simulatedAnnealingOptimization(
-    core::pose::PoseOP& pose, RosettaMoverPtr& mover, double initialTemperature,
+    core::pose::PoseOP& pose, ProteinMoverPtr& mover, double initialTemperature,
     double finalTemperature, int numberDecreasingSteps, int maxSteps, int timesReinitialization)
 {
   double currentEnergy = getConformationScore(pose);
@@ -588,13 +588,13 @@ RosettaSequentialOptimizer::RosettaSequentialOptimizer(ExecutionContextPtr conte
 }
 
 core::pose::PoseOP RosettaSequentialOptimizer::apply(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover)
+    ProteinMoverPtr& mover)
 {
   return sequentialOptimization(pose, mover);
 }
 
 core::pose::PoseOP RosettaSequentialOptimizer::sequentialOptimization(core::pose::PoseOP& pose,
-    RosettaMoverPtr& mover)
+    ProteinMoverPtr& mover)
 {
   core::pose::PoseOP acc = new core::pose::Pose();
 
