@@ -573,17 +573,10 @@ SET(LBCPP_OPTIMIZER_CONTEXT_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextLibrary.cpp
 )
 
-SET(LBCPP_OPTIMIZER_OBJECTIVE_FUNCTION_SOURCES
-  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
-  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
-  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
-)
-
 SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
   Optimizer/Optimizer/EDAOptimizer.h
   Optimizer/Optimizer/AsyncEDAOptimizer.h
   Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h
-  Optimizer/Optimizer/IterativeBracketingOptimizer.h
   Optimizer/Optimizer/OptimizerOptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerOptimizerLibrary.cpp
 )
@@ -599,6 +592,10 @@ ENDIF(LBCPP_NETWORKING)
 
 SET(LBCPP_OPTIMIZER_OLD_SOURCES
   ../include/lbcpp/Optimizer/GridOptimizer.h
+  Optimizer/Optimizer/IterativeBracketingOptimizer.h
+  Optimizer/ObjectiveFunction/MarginalObjectiveFunction.h
+  Optimizer/ObjectiveFunction/ObjectiveFunctionLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ObjectiveFunctionLibrary.cpp
 )
 IF(LBCPP_NETWORKING)
   SET(LBCPP_OPTIMIZER_OLD_SOURCES

@@ -36,29 +36,13 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 {
   OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
   OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
-  optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   context.enterScope(T("Optimizing ..."));
+  optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
   Variable output = optimize(context, optimizerContext, optimizerState);
-  context.resultCallback(T("bestParameter"), optimizerState->getBestVariable());
-  context.leaveScope(optimizerState->getBestScore());
   optimizerContext->removePostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
-  
-  /*
-  context.enterScope(T("Best Score Evolution"));
-  {
-    ScopedLock _(optimizerState->getLock());  // should be useless
-    std::vector< std::pair<double, Variable> >::const_iterator it;
-    size_t i = 0;
-    for (it = optimizerState->getBestRequests().begin(); it < optimizerState->getBestRequests().end(); it++)
-    {
-      context.enterScope(T("Best Score ") + String((int) i));
-      context.resultCallback(T("scoreNumber"), i);
-      context.resultCallback(T("bestParameter"), it->second);
-      context.leaveScope(it->first);
-      i++;
-    }
-  }
-  context.leaveScope();*/
+  context.resultCallback(T("bestParameter"), optimizerState->getBestVariable());
+  context.resultCallback(T("bestScore"), optimizerState->getBestScore());
+  context.leaveScope(optimizerState->getBestScore());
   return output;
 }
 
@@ -66,8 +50,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
  ** OptimizerState
  */
 OptimizerState::OptimizerState() 
-  : totalNumberOfRequests(0), totalNumberOfEvaluations(0) 
-  {bestRequests.push_back(std::make_pair(DBL_MAX, Variable()));}  // this element will be erased as soon as an another bestResult is available
+  : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestVariable(Variable()), bestScore(DBL_MAX) {}
 
 // Distribution
 const DistributionPtr& OptimizerState::getDistribution() const
@@ -77,7 +60,6 @@ void OptimizerState::setDistribution(ExecutionContext& context, const Distributi
 {
   distribution = newDistribution;
   context.resultCallback(T("distribution"), newDistribution);
-  //context.informationCallback(T("Distribution: ") + newDistribution->toShortString());
 }
 
 
@@ -123,30 +105,26 @@ void OptimizerState::flushProcessedRequests()
 const Variable& OptimizerState::getBestVariable() const
 {
   ScopedLock _(lock);
-  return bestRequests[bestRequests.size()-1].second;
+  return bestVariable;
+}
+
+void OptimizerState::setBestVariable(const Variable& variable)
+{
+  ScopedLock _(lock);
+  bestVariable = variable;
 }
 
 double OptimizerState::getBestScore() const
 {
   ScopedLock _(lock);
-  return bestRequests[bestRequests.size()-1].first;
+  return bestScore;
 }
 
-void OptimizerState::setBestRequest(ExecutionContext& context, double score, const Variable& parameter) 
+void OptimizerState::setBestScore(double score)
 {
   ScopedLock _(lock);
-  jassert(getBestScore() > score);
-  if (getBestScore() == DBL_MAX)
-    bestRequests.clear();
-  bestRequests.push_back(std::make_pair(score, parameter));
+  bestScore = score;
 }
-
-const std::vector< std::pair<double, Variable> >& OptimizerState::getBestRequests()
-{
-  ScopedLock _(lock);
-  return bestRequests;
-}
-
 
 // Critical Section
 const CriticalSection& OptimizerState::getLock() const

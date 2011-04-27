@@ -11,7 +11,6 @@
 
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Optimizer/OptimizerContext.h>
-# include <lbcpp/Optimizer/OptimizerState.h>
 
 namespace lbcpp
 {  
@@ -20,28 +19,25 @@ class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
   MultiThreadedOptimizerContext(const FunctionPtr& objectiveFunction)
-    : OptimizerContext(objectiveFunction) {}
-  MultiThreadedOptimizerContext() {}
+    : OptimizerContext(objectiveFunction) {numEvaluationInProgress=0;}
+  MultiThreadedOptimizerContext() {numEvaluationInProgress=0;}
     
   virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const 
-    {context.waitUntilAllWorkUnitsAreDone();}
+  {
+    while (numEvaluationInProgress)
+      Thread::sleep(10);
+  }
   
+  // TODO arnaud : verifier multithread ?
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
   { 
-    context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters));
+    juce::atomicIncrement(numEvaluationInProgress);
+    context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters), &numEvaluationInProgress, false); // TODO arnaud verbose ?
     return true;
   }
-
-  virtual bool evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
-  {
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating ") + String((int)parametersVector.size()) + T(" parameters"), parametersVector.size());
-    for (size_t i = 0; i < parametersVector.size(); ++i)
-      workUnit->setWorkUnit(i, new FunctionWorkUnit(objectiveFunction, parametersVector[i]));
-    workUnit->setProgressionUnit(T("Parameters"));
-    workUnit->setPushChildrenIntoStackFlag(false);
-    context.run(workUnit); // FIXME: should be pushWorkUnit
-    return true;
-  }
+  
+private:
+  int numEvaluationInProgress;
 };
   
 };

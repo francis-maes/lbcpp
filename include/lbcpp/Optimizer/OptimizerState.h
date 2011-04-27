@@ -44,9 +44,9 @@ public:
   ** Best variable and score
   */
   const Variable& getBestVariable() const;
+  void setBestVariable(const Variable& variable);
   double getBestScore() const;
-  void setBestRequest(ExecutionContext& context, double score, const Variable& parameter);
-  const std::vector< std::pair<double, Variable> >& getBestRequests();
+  void setBestScore(double score);
   
   /*
   ** Critical Section
@@ -68,8 +68,9 @@ protected:
   size_t totalNumberOfRequests;
   size_t totalNumberOfEvaluations;
   
-  std::vector< std::pair<double, Variable> > bestRequests;  // should stay sorted (decreasing by score) by construction
-  
+  Variable bestVariable;
+  double bestScore;
+    
   std::vector< std::pair<double, Variable> > processedRequests;  // evaluated WUs not processed yet
 };
   
