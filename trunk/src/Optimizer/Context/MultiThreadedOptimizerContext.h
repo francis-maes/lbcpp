@@ -19,16 +19,18 @@ class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
   MultiThreadedOptimizerContext(const FunctionPtr& objectiveFunction)
-    : OptimizerContext(objectiveFunction) {numEvaluationInProgress=0;}
-  MultiThreadedOptimizerContext() {numEvaluationInProgress=0;}
+    : OptimizerContext(objectiveFunction) 
+    {numEvaluationInProgress=0;}
+  MultiThreadedOptimizerContext() 
+    {numEvaluationInProgress=0;}
     
-  virtual void waitUntilAllRequestsAreProcessed(ExecutionContext& context) const 
+  virtual void waitUntilAllRequestsAreProcessed() const 
   {
-    while (numEvaluationInProgress)
+    while (numEvaluationInProgress) // value modified in function evaluation (after pushWorkUnit)
       Thread::sleep(10);
   }
   
-  virtual bool areAllRequestsProcessed(ExecutionContext& context) const
+  virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
   
   // TODO arnaud : verifier multithread ?

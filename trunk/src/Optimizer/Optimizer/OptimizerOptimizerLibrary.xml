@@ -12,11 +12,13 @@
   </class>
   
   <class name="EDAOptimizer" base="Optimizer" shortName="eda">
-    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest, bool verbose"/>
     <variable type="PositiveInteger" name="numIterations"/>
     <variable type="PositiveInteger" name="populationSize"/>
     <variable type="PositiveInteger" name="numBests"/>
     <variable type="Boolean" name="reinjectBest"/>
+    <variable type="Boolean" name="verbose"/>
+    <variable type="RandomGenerator" name="random"/>
   </class>
   
   <class name="AsyncEDAOptimizer" base="Optimizer">
