@@ -19,34 +19,38 @@ namespace lbcpp
 class AsyncEDAOptimizer : public Optimizer
 {
 public:
-  AsyncEDAOptimizer(size_t totalNumberEvaluationsRequested, size_t numberEvaluationsToUpdate, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor, size_t numberEvaluationsInProgress)
+  AsyncEDAOptimizer(size_t totalNumberEvaluationsRequested, size_t numberEvaluationsToUpdate, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor, size_t numberEvaluationsInProgress, bool verbose = false)
     : totalNumberEvaluationsRequested(totalNumberEvaluationsRequested), numberEvaluationsToUpdate(numberEvaluationsToUpdate),
-    ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep), updateFactor(updateFactor), numberEvaluationsInProgress(numberEvaluationsInProgress) 
+      ratioUsedForUpdate(ratioUsedForUpdate), timeToSleep(timeToSleep), updateFactor(updateFactor), numberEvaluationsInProgress(numberEvaluationsInProgress), verbose(false) 
     {random = RandomGenerator::getInstance();}
   
-  AsyncEDAOptimizer() 
+  AsyncEDAOptimizer() : verbose(false) 
     {random = RandomGenerator::getInstance();}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
     // TODO arnaud : save initial state
+    size_t numIterations = (size_t) ceil((double)totalNumberEvaluationsRequested/(double)numberEvaluationsToUpdate);
+    int i = 0;  // TODO arnaud : rename
+    context.enterScope(T("Iteration ") + String((int)i + 1));
+    context.resultCallback(T("iteration"), i + 1);
     
     while (optimizerState->getTotalNumberOfEvaluations() < totalNumberEvaluationsRequested) 
     {      
       // Send WU's on network
-      if (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
+      if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) 
       {
         size_t nb = 0;
-        while (optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && (optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) < numberEvaluationsInProgress) 
+        while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) 
         {
           Variable input = optimizerState->getDistribution()->sample(random);
           if (optimizerContext->evaluate(context, input))
           {
             optimizerState->incTotalNumberOfRequests();
             nb++;
+            context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
           }          
         }
-        
         
         if (nb > 0) 
         {
@@ -56,27 +60,40 @@ public:
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*1000);      
+      juce::Thread::sleep(timeToSleep*10);      
       
       // enough WUs evaluated -> update distribution (with best results)
-      if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && (optimizerState->getTotalNumberOfRequests() - optimizerState->getTotalNumberOfEvaluations()) == 0)) 
-      {        
+      if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate/* || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && optimizerState->getNumberOfInProgressEvaluations() == 0)*/) 
+      {   
+        //std::cout << "HERE:" << optimizerState->getNumberOfProcessedRequests() << std::endl;
         // sort results
         std::multimap<double, Variable> sortedScores;
         {
           ScopedLock _(optimizerState->getLock());
           std::vector< std::pair<double, Variable> >::const_iterator it;
-          for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
+          size_t i = 1;
+          for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + numberEvaluationsToUpdate; it++) {  // use only numberEvaluationsToUpdate results
+            //std::cout << "HERE 2 : " << i << std::endl;
             sortedScores.insert(*it);
-          optimizerState->flushProcessedRequests();  // TODO arnaud : maybe do that after building new distri
+            
+            if (verbose) 
+            {
+              context.enterScope(T("Request ") + String((int) i));
+              context.resultCallback(T("requestNumber"), i);
+              context.resultCallback(T("parameter"), it->second);      
+              context.leaveScope(it->first);
+            }
+            i++;  // outside if to avoid a warning for unused variable
+          }
+          optimizerState->flushFirstProcessedRequests(numberEvaluationsToUpdate);  // TODO arnaud : maybe do that after building new distri
         }
         
-        
+        // build new distribution
         DistributionBuilderPtr distributionsBuilder = optimizerState->getDistribution()->createBuilder();
         size_t nb = 0;
         std::multimap<double, Variable>::iterator mapIt;
         // best results : use them then delete
-        for (mapIt = sortedScores.begin(); mapIt != sortedScores.end() && nb < sortedScores.size()/ratioUsedForUpdate; mapIt++)
+        for (mapIt = sortedScores.begin(); mapIt != sortedScores.end() && nb < sortedScores.size()/ratioUsedForUpdate; mapIt++)   // TODO arnaud: au lieu d'un ratio faire comme dans EDAOptimizer
         {
           distributionsBuilder->addElement(mapIt->second);  // TODO arnaud : maybe use all results and use weight
           nb++;
@@ -85,7 +102,7 @@ public:
         DistributionPtr newDistri = distributionsBuilder->build(context);
         distributionsBuilder->clear();
         distributionsBuilder->addDistribution(optimizerState->getDistribution());  // old distri
-        for (size_t i = 0; i < updateFactor; ++i)
+        for (size_t x = 0; x < updateFactor; ++x)
           distributionsBuilder->addDistribution(newDistri);
         newDistri = distributionsBuilder->build(context);
         optimizerState->setDistribution(newDistri);        
@@ -93,11 +110,19 @@ public:
         
         if (sortedScores.begin()->first < optimizerState->getBestScore()) 
         {
-          ScopedLock _(optimizerState->getLock());  // TODO arnaud : tt block scoped ?
+          ScopedLock _(optimizerState->getLock());
           optimizerState->setBestScore(sortedScores.begin()->first);
           optimizerState->setBestVariable(sortedScores.begin()->second);
         }
-        context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
+        context.resultCallback(T("bestScore"), optimizerState->getBestScore());
+        context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
+        context.leaveScope(sortedScores.begin()->first); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
+        context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
+        
+        i++;
+        context.enterScope(T("Iteration ") + String((int)i + 1));
+        context.resultCallback(T("iteration"), i + 1);
+        //context.progressCallback(new ProgressionState(optimizerState->getTotalNumberOfEvaluations(), totalNumberEvaluationsRequested, T("Evaluations")));
                 
         // TODO arnaud : save state
       }
@@ -117,6 +142,8 @@ protected:
   size_t timeToSleep;                     // time to sleep to avoid busy waiting
   size_t updateFactor;                    // preponderance of new distri vs old distri (low value avoid too quick convergence)
   size_t numberEvaluationsInProgress;              // number of evaluations in progress to maintain
+  
+  bool verbose;
 };
 
 typedef ReferenceCountedObjectPtr<AsyncEDAOptimizer> AsyncEDAOptimizerPtr;  

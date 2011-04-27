@@ -81,6 +81,12 @@ size_t OptimizerState::getTotalNumberOfEvaluations() const
   return totalNumberOfEvaluations;
 }
 
+size_t OptimizerState::getNumberOfInProgressEvaluations() const
+{
+  ScopedLock _(lock);
+  getTotalNumberOfRequests() - getTotalNumberOfEvaluations();
+}
+
 // Processeded requests
 size_t OptimizerState::getNumberOfProcessedRequests() const
 {
@@ -98,6 +104,18 @@ void OptimizerState::flushProcessedRequests()
 {
   ScopedLock _(lock);
   processedRequests.clear();
+}
+
+void OptimizerState::flushFirstProcessedRequests(size_t nb) 
+{
+  ScopedLock _(lock);
+  processedRequests.erase(processedRequests.begin(), processedRequests.begin()+nb);
+}
+
+void OptimizerState::flushLastProcessedRequests(size_t nb)
+{
+  ScopedLock _(lock);
+  processedRequests.erase(processedRequests.end()-nb, processedRequests.end());
 }
 
 // Best variable and score

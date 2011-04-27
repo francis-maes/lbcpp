@@ -32,6 +32,7 @@ public:
   size_t getTotalNumberOfRequests() const;
   void incTotalNumberOfRequests();
   size_t getTotalNumberOfEvaluations() const;
+  size_t getNumberOfInProgressEvaluations() const;
   
   /*
   ** Processeded requests
@@ -39,6 +40,9 @@ public:
   size_t getNumberOfProcessedRequests() const;
   const std::vector< std::pair<double, Variable> >& getProcessedRequests() const;
   void flushProcessedRequests();
+  void flushFirstProcessedRequests(size_t nb);
+  void flushLastProcessedRequests(size_t nb);
+
   
   /*
   ** Best variable and score
