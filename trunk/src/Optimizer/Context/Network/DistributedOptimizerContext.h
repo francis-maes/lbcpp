@@ -31,12 +31,12 @@ public:
   
   virtual void waitUntilAllRequestsAreProcessed() const
   {
+    while (inProgressWUs.size())
+      Thread::sleep(10);
   }
   
   virtual bool areAllRequestsProcessed() const
-  {
-    return true;
-  }
+    {return inProgressWUs.size() == 0;}
   
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters)
   {
