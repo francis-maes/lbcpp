@@ -21,11 +21,11 @@ class IndependentDoubleVectorDistributionBuilder : public DistributionBuilder
 {
 public:
   IndependentDoubleVectorDistributionBuilder(EnumerationPtr elementsEnumeration, const std::vector<DistributionBuilderPtr>& subBuilders)
-    : elementsEnumeration(elementsEnumeration), subBuilders(subBuilders) {}
+    : DistributionBuilder(independentDoubleVectorDistributionClass(elementsEnumeration)), elementsEnumeration(elementsEnumeration), subBuilders(subBuilders) {}
   IndependentDoubleVectorDistributionBuilder() {}
 
   virtual TypePtr getInputType() const
-    {return denseDoubleVectorClass();}
+    {return denseDoubleVectorClass(elementsEnumeration);}
 
   virtual void clear()
   {
@@ -41,7 +41,16 @@ public:
   }
 
   virtual void addDistribution(const DistributionPtr& distribution, double weight = 1.0)
-    {jassert(false);}
+  {
+    IndependentDoubleVectorDistributionPtr indepDistribution = distribution.staticCast<IndependentDoubleVectorDistribution>();
+    jassert(indepDistribution);
+    
+    if (indepDistribution->getElementsType() != getInputType()) jassertfalse;
+    
+    for (size_t i = 0; i < subBuilders.size(); ++i) 
+      subBuilders[i]->addDistribution(indepDistribution->getSubDistribution(i));  
+  }
+  
 
   virtual DistributionPtr build(ExecutionContext& context) const
   {
