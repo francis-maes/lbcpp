@@ -584,6 +584,7 @@ SET(LBCPP_OPTIMIZER_OPTIMIZER_SOURCES
 IF(LBCPP_NETWORKING)
   SET(LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES
     Optimizer/Context/Network/DistributedOptimizerContext.h
+    Optimizer/Context/Network/DistributedOptimizerContext.cpp
     Optimizer/Context/Network/OptimizerContextNetworkLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/OptimizerContextNetworkLibrary.cpp
     ${LBCPP_OPTIMIZER_CONTEXT_NETWORK_SOURCES}

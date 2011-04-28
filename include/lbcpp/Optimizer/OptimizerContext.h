@@ -21,8 +21,8 @@ public:
   OptimizerContext(const FunctionPtr& objectiveFunction);
   OptimizerContext() {}
   
-  void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
-  void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
+  virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
+  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
   virtual void waitUntilAllRequestsAreProcessed() const = 0;
   virtual bool areAllRequestsProcessed() const = 0;

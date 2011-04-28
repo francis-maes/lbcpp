@@ -41,6 +41,9 @@ public:
     return true;
   }
   
+protected:  
+  friend class MultiThreadedOptimizerContextClass;
+  
 private:
   int numEvaluationInProgress;
 };
