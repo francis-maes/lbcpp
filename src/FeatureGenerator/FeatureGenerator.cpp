@@ -11,7 +11,7 @@
 using namespace lbcpp;
 
 FeatureGenerator::FeatureGenerator(bool lazy)
-  : lazyComputation(lazy), meanSparseVectorSize(new ScalarVariableRecentMeanAndVariance(T("sparseVectorSize"), 100)), sparseVectorSizeUpperBound(0)
+  : lazyComputation(lazy), sparse(true), sparseVectorSizeUpperBound(10)
 {
 }
 
@@ -21,9 +21,9 @@ TypePtr FeatureGenerator::initializeFunction(ExecutionContext& context, const st
   featuresEnumeration = initializeFeatures(context, inputVariables, featuresType, outputName, outputShortName);
   if (!featuresEnumeration || !featuresType)
     return TypePtr();
+  sparse = isSparse();
   lazyOutputType = getLazyOutputType(featuresEnumeration, featuresType);
   nonLazyOutputType = getNonLazyOutputType(featuresEnumeration, featuresType);
-  jassert(nonLazyOutputType->inheritsFrom(sparseDoubleVectorClass()));
   return lazyComputation ? lazyOutputType : nonLazyOutputType;
 }
 
@@ -32,9 +32,13 @@ DoubleVectorPtr FeatureGenerator::toLazyVector(const Variable* inputs) const
 
 void FeatureGenerator::pushSparseVectorSize(size_t size)
 {
-  ScopedLock _(meanSparseVectorSizeLock);
-  meanSparseVectorSize->push((double)size);
-  sparseVectorSizeUpperBound = (size_t)(0.5 + meanSparseVectorSize->getMean() + 3 * meanSparseVectorSize->getStandardDeviation());
+  int delta = (int)size - (int)sparseVectorSizeUpperBound;
+  if (delta > 10)
+    sparseVectorSizeUpperBound += 3 * delta / 4;
+  else if (delta > 0)
+    sparseVectorSizeUpperBound += 10;
+  else if (3 * sparseVectorSizeUpperBound / 4 > size)
+    --sparseVectorSizeUpperBound;
 }
 
 SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
@@ -48,11 +52,21 @@ SparseDoubleVectorPtr FeatureGenerator::createEmptySparseVector() const
 
 DoubleVectorPtr FeatureGenerator::toComputedVector(const Variable* inputs) const
 {
-  SparseDoubleVectorPtr res = createEmptySparseVector();
-  FillSparseVectorFeatureGeneratorCallback callback(res);
-  computeFeatures(inputs, callback);
-  const_cast<FeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
-  return res;
+  if (sparse)
+  {
+    SparseDoubleVectorPtr res = createEmptySparseVector();
+    FillSparseVectorFeatureGeneratorCallback callback(res);
+    computeFeatures(inputs, callback);
+    const_cast<FeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
+    return res;
+  }
+  else
+  {
+    DenseDoubleVectorPtr res = new DenseDoubleVector(nonLazyOutputType);
+    FillDenseVectorFeatureGeneratorCallback callback(res);
+    computeFeatures(inputs, callback);
+    return res;
+  }
 }
 
 Variable FeatureGenerator::computeFunction(ExecutionContext& context, const Variable* inputs) const

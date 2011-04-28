@@ -15,13 +15,13 @@ namespace lbcpp
 {
 
 // DoubleVector[n], DoubleVector[m] -> DoubleVector[n x m]
-class CartesianProductFeatureGenerator : public FeatureGenerator
+class CartesianProductFeatureGeneratorImpl : public FeatureGenerator
 {
 public:
-  CartesianProductFeatureGenerator(bool lazy)
+  CartesianProductFeatureGeneratorImpl(bool lazy)
     : FeatureGenerator(lazy) {}
-  CartesianProductFeatureGenerator() {}
-
+  CartesianProductFeatureGeneratorImpl() {}
+    
   virtual size_t getNumRequiredInputs() const
     {return 2;}
 
@@ -53,6 +53,20 @@ public:
     const DoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DoubleVector>();
     return v1 && v2 ? v1->sumOfSquares() * v2->sumOfSquares() : 0;
   }
+
+protected:
+  size_t numSecondElements;
+};
+
+class SparseCartesianProductFeatureGenerator : public CartesianProductFeatureGeneratorImpl
+{
+public:
+  SparseCartesianProductFeatureGenerator(bool lazy)
+    : CartesianProductFeatureGeneratorImpl(lazy) {}
+  SparseCartesianProductFeatureGenerator() {}
+
+  virtual bool isSparse() const
+    {return true;}
 
   virtual double dotProduct(const Variable* inputs, const DenseDoubleVectorPtr& denseVector, size_t offsetInDenseVector) const
   {
@@ -157,10 +171,82 @@ public:
       }
     }
   }
-  
-protected:
-  size_t numSecondElements;
 };
+
+class DenseCartesianProductFeatureGenerator : public CartesianProductFeatureGeneratorImpl
+{
+public:
+  DenseCartesianProductFeatureGenerator(bool lazy)
+    : CartesianProductFeatureGeneratorImpl(lazy) {}
+
+  DenseCartesianProductFeatureGenerator() {}
+
+  virtual bool isSparse() const
+    {return false;}
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    const DenseDoubleVectorPtr& v1 = inputs[0].getObjectAndCast<DenseDoubleVector>();
+    const DenseDoubleVectorPtr& v2 = inputs[1].getObjectAndCast<DenseDoubleVector>();
+    if (!v1 || !v2)
+      return;
+
+    size_t n1 = v1->getNumElements();
+    size_t n2 = v2->getNumElements();
+    if (!n1 || !n2)
+      return;
+
+    const double* data1 = v1->getValuePointer(0);
+    const double* data2 = v2->getValuePointer(0);
+    jassert(data1 && data2);
+
+    for (size_t i = 0; i < n1; ++i)
+    {
+      double value1 = data1[i];
+      if (value1 != 0.0)
+      {
+        size_t index = i * numSecondElements;
+        for (size_t j = 0; j < n2; ++j, ++index)
+        {
+          double value2 = data2[j];
+          if (value2)
+            callback.sense(index, value1 * value2);
+        }
+      }
+    }
+  }
+};
+
+class CartesianProductFeatureGenerator : public ProxyFunction
+{
+public:
+  CartesianProductFeatureGenerator(bool lazy = true)
+    : lazy(lazy) {}
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return (TypePtr)doubleVectorClass();}
+
+  virtual String getOutputPostFix() const
+    {return T("CartesianProduct");}
+
+  virtual FunctionPtr createImplementation(const std::vector<VariableSignaturePtr>& inputVariables) const
+  {
+    if (inputVariables[0]->getType()->inheritsFrom(denseDoubleVectorClass()) &&
+        inputVariables[1]->getType()->inheritsFrom(denseDoubleVectorClass()))
+      return new DenseCartesianProductFeatureGenerator(lazy);
+    else
+      return new SparseCartesianProductFeatureGenerator(lazy);
+  }
+
+protected:
+  friend class CartesianProductFeatureGeneratorClass;
+
+  bool lazy;
+};
+
 
 }; /* namespace lbcpp */
 
