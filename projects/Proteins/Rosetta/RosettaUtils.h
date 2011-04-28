@@ -15,6 +15,7 @@
 # include "../Data/Residue.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Geometry/Vector3.h"
+# include "ProteinMover.h"
 
 # include <time.h>
 # include <stdlib.h>
@@ -113,7 +114,9 @@ void rosettaInitialization(ExecutionContext& context, bool verbose);
  * Initializes Rosetta with verbosity set to true. Rosetta database must be placed in
  * the project directory and named rosetta_database.
  */
-void rosettaInitialization(ExecutionContext& context);;
+void rosettaInitialization(ExecutionContext& context);
+
+core::pose::PoseOP initializeProteinStructure(core::pose::PoseOP pose);
 
 }; /* namespace lbcpp */
 

@@ -33,8 +33,10 @@
 
 namespace lbcpp
 {
+
 class ProteinMover;
 typedef ReferenceCountedObjectPtr<ProteinMover> ProteinMoverPtr;
+
 class ProteinMover: public NameableObject
 {
 public:
@@ -82,6 +84,7 @@ public:
   std::vector<Variable> getParameters();
 
 protected:
+  friend class ProteinMoverClass;
   /**
    * Methods that must be reimplemented in each subclass. This ensures the
    * refresh of the paramaterValues vector before throwing it in the
@@ -96,6 +99,7 @@ protected:
 
 class PhiPsiRandomMover;
 typedef ReferenceCountedObjectPtr<PhiPsiRandomMover> PhiPsiRandomMoverPtr;
+
 class PhiPsiRandomMover: public ProteinMover
 {
 public:
@@ -110,6 +114,7 @@ public:
    *   and phi angles lie.
    */
   PhiPsiRandomMover(const std::vector<Variable>& vec, long long seedForRandom = 0);
+  PhiPsiRandomMover();
 
   /**
    * Applies the mover on the pose.
@@ -130,6 +135,7 @@ public:
   double getMaximumAngle();
 
 protected:
+  friend class PhiPsiRandomMoverClass;
   void updateParameters();
 
 private:
@@ -138,6 +144,7 @@ private:
 
 class PhiPsiGaussRandomMover;
 typedef ReferenceCountedObjectPtr<PhiPsiGaussRandomMover> PhiPsiGaussRandomMoverPtr;
+
 class PhiPsiGaussRandomMover: public ProteinMover
 {
 public:
@@ -152,6 +159,7 @@ public:
    *   used to sample the psi and phi angles.
    */
   PhiPsiGaussRandomMover(const std::vector<Variable>& vec, long long seedForRandom = 0);
+  PhiPsiGaussRandomMover();
 
   /**
    * Applies the mover on the pose.
@@ -172,14 +180,14 @@ public:
   double getAngleStandardDeviation();
 
 protected:
+  friend class PhiPsiGaussRandomMoverClass;
   void updateParameters();
-
-private:
   double stdAngle;
 };
 
 class ShearRandomMover;
 typedef ReferenceCountedObjectPtr<ShearRandomMover> ShearRandomMoverPtr;
+
 class ShearRandomMover: public ProteinMover
 {
 public:
@@ -198,6 +206,7 @@ public:
    * Note : Only the first two arguments are required, the others are facultative.
    */
   ShearRandomMover(const std::vector<Variable>& vec, long long seedForRandom = 0);
+  ShearRandomMover();
 
   /**
    * Performs the move on the pose.
@@ -231,9 +240,8 @@ public:
   double getMaximumAngle();
 
 protected:
+  friend class ShearRandomMoverClass;
   void updateParameters();
-
-private:
   double temperature;
   double anglemax;
   core::kinematics::MoveMapOP moveMap;
@@ -358,6 +366,7 @@ public:
    * - anglePsi, is a double specifying a value for the PSI angle increment.
    */
   PhiPsiMover(const std::vector<Variable>& vec);
+  PhiPsiMover(int residue, double deltaPhi, double deltaPsi);
 
   /**
    * Performs the move on the pose specified by the parameters of the mover.
@@ -423,28 +432,6 @@ protected:
   double psiAngleIncrement;
 };
 
-/*
-<class name="ProteinMover" base="Object" abstract="yes"/>
-<class name="PhiPsiMover" base="ProteinMover" shortName="phiPsi">
-  <variable type="PositiveInteger" name="residueIndex"/>
-  <variable type="Double" name="deltaPhi"/>
-  <variable type="Double" name="deltaPsi"/>
-</class>
-*/
-
-/*
- * dans la work unit:
- *
-ProteinMoverPtr mover;
-
-dans le xml:
-<variable type="ProteinMover" name="mover"/>
-
-dans l'explorer/dans RunWorkUit
-
-phiPsi(5, 0.2, -0.1)
-
-*/
 class RigidBodyMover;
 typedef ReferenceCountedObjectPtr<RigidBodyMover> RigidBodyMoverPtr;
 class RigidBodyMover: public ProteinMover

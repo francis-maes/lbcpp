@@ -2,13 +2,23 @@
 
 <library name="ProteinRosetta" directory="Rosetta">
 
+  <class name="ProteinMover" base="Object" abstract="yes"/>
+  
+  <class name="PhiPsiRandomMover" base="ProteinMover" shortName="phiPsiRandom">
+    <variable type="Double" name="maxAngle" shortName="a" description="Maximum angle by which an angle Phi or Psi can be modified."/>
+  </class>
+  
+  <class name="PhiPsiGaussRandomMover" base="ProteinMover" shortName="phiPsiGaussRandom">
+    <variable type="Double" name="stdAngle" shortName="a" description="Standard deviation of gaussian distribution used to sample the angles by which Phi or Psi are be modified."/>
+  </class>
+  
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
     <variable type="GenericVector[Double]" name="parameters" shortName="p" description="Parameters values"/>
   </class>
 
-  <class name="RosettaProteinsFeaturesGeneratorWorkUnit" base="WorkUnit">
+  <class name="ProteinFeaturesGeneratorWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
     <variable type="String" name="resultsDirectory" shortName="o" description="Directory where to store the outputs"/>
     <variable type="String" name="moverName" shortName="mov" description="Mover name"/>
@@ -19,12 +29,15 @@
     <variable type="GenericVector[Double]" name="commandLineOptimizerParameters" shortName="optp" description="Parameters for the optimizer specified, see the optimizer description for more information. Parameters must be given in the same order as for the constructor."/>
   </class>
   
-  <class name="RosettaProteinOptimizerAndFeatureGeneratorWorkUnit" base="WorkUnit">
+  <class name="ProteinOptimizerWorkUnit" base="CompositeWorkUnit">
   </class>
   
   <class name="RosettaOptimizer" base="Object" abstract="yes">
   </class>
   
+  <class name="XmlToPDBConverterWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
+    <variable type="String" name="resultsDirectory" shortName="o" description="Directory where to store the outputs"/>
+  </class>
   
-
 </library>

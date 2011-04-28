@@ -37,6 +37,7 @@ double ProteinMover::generateAngleFromGaussian(double std, double mean, double l
 
 std::vector<String> ProteinMover::getParametersNames()
 {
+  updateParameters();
   std::vector<String> tmp(parameterNames);
   return tmp;
 }
@@ -59,6 +60,13 @@ PhiPsiRandomMover::PhiPsiRandomMover(const std::vector<Variable>& vec, long long
 
   parameterNames.push_back(T("Maximum angle"));
   parameterValues.push_back(Variable((double)maxAngle));
+}
+
+PhiPsiRandomMover::PhiPsiRandomMover() :
+  ProteinMover(T("PhiPsiRandomMover"), 0)
+{
+  parameterNames.push_back(T("Maximum angle"));
+  parameterValues.push_back(Variable((double)this->maxAngle));
 }
 
 void PhiPsiRandomMover::move(core::pose::PoseOP& pose)
@@ -96,6 +104,13 @@ PhiPsiGaussRandomMover::PhiPsiGaussRandomMover(const std::vector<Variable>& vec,
   parameterNames.push_back(T("Standard deviation"));
   parameterValues.push_back(Variable((double)stdAngle));
 
+}
+
+PhiPsiGaussRandomMover::PhiPsiGaussRandomMover() :
+  ProteinMover(T("PhiPsiGaussRandomMover"), 0)
+{
+  parameterNames.push_back(T("Standard deviation"));
+  parameterValues.push_back(Variable((double)stdAngle));
 }
 
 void PhiPsiGaussRandomMover::move(core::pose::PoseOP& pose)
@@ -154,6 +169,11 @@ ShearRandomMover::ShearRandomMover(const std::vector<Variable>& vec, long long s
   parameterValues.push_back(Variable((double)anglemax));
 }
 
+ShearRandomMover::ShearRandomMover() :
+  ProteinMover(T("ShearRandomMover"), 0)
+{
+}
+
 void ShearRandomMover::move(core::pose::PoseOP& pose)
 {
   mover->apply((*pose));
@@ -172,6 +192,7 @@ double ShearRandomMover::getTemperatureFactor()
 void ShearRandomMover::setMaximumAngle(double newMaxAngle)
 {
   anglemax = newMaxAngle;
+  mover->set_angles(anglemax);
 }
 
 double ShearRandomMover::getMaximumAngle()
@@ -336,6 +357,22 @@ PhiPsiMover::PhiPsiMover(const std::vector<Variable>& vec) :
     phiAngleIncrement = 5;
     psiAngleIncrement = 5;
   }
+
+  parameterNames.push_back(T("Residue Number"));
+  parameterNames.push_back(T("Phi angle increment"));
+  parameterNames.push_back(T("Psi angle increment"));
+
+  parameterValues.push_back(Variable(residueNumber));
+  parameterValues.push_back(Variable(phiAngleIncrement));
+  parameterValues.push_back(Variable(psiAngleIncrement));
+}
+
+PhiPsiMover::PhiPsiMover(int residue, double deltaPhi, double deltaPsi) :
+  ProteinMover(T("PhiPsiMover"))
+{
+  residueNumber = residue + 1;
+  phiAngleIncrement = deltaPhi;
+  psiAngleIncrement = deltaPsi;
 
   parameterNames.push_back(T("Residue Number"));
   parameterNames.push_back(T("Phi angle increment"));

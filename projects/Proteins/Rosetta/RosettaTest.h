@@ -52,8 +52,15 @@ public:
     rosettaInitialization(context, false);
 
     core::pose::PoseOP pose = new core::pose::Pose();
-    makePoseFromSequence(pose, "AAAAA");
-    ProteinPtr protein = convertPoseToProtein(context, pose);
+    makePoseFromSequence(pose, "AAAA");
+    core::pose::PoseOP init = initializeProteinStructure(pose);
+
+    for (int i = 1; i <= 4 ; i++)
+    {
+      cout << "phi : " << init->phi(i) << endl;
+      cout << "psi : " << init->psi(i) << endl;
+      cout << "omega : " << init->omega(i) << endl;
+    }
 
     //    File fichier = context.getFile(T("data/1A11.xml"));
     //    File fichierout = context.getFile(T("init_lbcpp.pdb"));
