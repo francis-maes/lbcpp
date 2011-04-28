@@ -20,8 +20,8 @@ namespace lbcpp
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
-  UniformSampleAndPickBestOptimizer(size_t numSamples = 0)
-    : numSamples(numSamples) {}
+  UniformSampleAndPickBestOptimizer(size_t numSamples = 0, bool verbose = false)
+    : numSamples(numSamples), verbose(verbose) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
@@ -33,24 +33,40 @@ public:
     {
       if (!optimizerContext->evaluate(context, values[i]))
         i--;
-      else
+      else 
+      {
         optimizerState->incTotalNumberOfRequests();
+        context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
+      }
     }
     
-    optimizerContext->waitUntilAllRequestsAreProcessed();
+    // wait (in case of async context) & update progression
+    while (!optimizerContext->areAllRequestsProcessed()) {
+      Thread::sleep(10);
+      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
+    }
+    jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
+    context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations"))); // needed to be sure to have 100% in Explorer
     
     std::vector< std::pair<double, Variable> >::const_iterator it;
     {
       ScopedLock _(optimizerState->getLock());
-      jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
+      size_t i = 1;
       for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
       {
         if (it->first < optimizerState->getBestScore())
         {
-          ScopedLock _(optimizerState->getLock());  // TODO arnaud : tt block scoped ?
           optimizerState->setBestScore(it->first);
           optimizerState->setBestVariable(it->second);
+        }        
+        if (verbose) 
+        {
+          context.enterScope(T("Request ") + String((int) i));
+          context.resultCallback(T("requestNumber"), i);
+          context.resultCallback(T("parameter"), it->second);      
+          context.leaveScope(it->first);
         }
+        i++;  // outside if to avoid a warning for unused variable
       }
       optimizerState->flushProcessedRequests();
     }
@@ -60,6 +76,7 @@ public:
 protected:
   friend class UniformSampleAndPickBestOptimizerClass;
   size_t numSamples;
+  bool verbose;
 };
 
 typedef ReferenceCountedObjectPtr<UniformSampleAndPickBestOptimizer> UniformSampleAndPickBestOptimizerPtr;  
