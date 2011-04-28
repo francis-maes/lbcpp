@@ -29,7 +29,7 @@ public:
     availableActions = vector(positiveIntegerType, numBandits);
     for (size_t i = 0; i < numBandits; ++i)
     {
-      randomGenerators[i] = new RandomGenerator(seedValue + i);
+      randomGenerators[i] = new RandomGenerator(seedValue * i);
       availableActions->setElement(i, i);
     }
   }
@@ -40,6 +40,12 @@ public:
 
   virtual ContainerPtr getAvailableActions() const
     {return availableActions;}
+
+  void setSeed(juce::uint32 seedValue)
+  {
+    for (size_t i = 0; i < randomGenerators.size(); ++i)
+      randomGenerators[i] = new RandomGenerator(seedValue * i);
+  }
 
   virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) const = 0;
   virtual double getExpectedReward(size_t banditNumber) const = 0;
@@ -97,7 +103,17 @@ class BernouilliDiscreteBanditState : public DiscreteBanditState
 {
 public:
   BernouilliDiscreteBanditState(const std::vector<double>& probabilities, juce::uint32 seedValue)
-    : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities) {}
+    : DiscreteBanditState(probabilities.size(), seedValue), probabilities(probabilities)
+  {
+    String name;
+    for (size_t i = 0; i < probabilities.size(); ++i)
+    {
+      if (name.isNotEmpty())
+        name += T(" ");
+      name += T("p") + String((int)i + 1) + T(" = ") + String(probabilities[i]);
+    }
+    setName(name);
+  }
   BernouilliDiscreteBanditState() {}
 
   virtual double sampleReward(size_t banditNumber, RandomGeneratorPtr random) const

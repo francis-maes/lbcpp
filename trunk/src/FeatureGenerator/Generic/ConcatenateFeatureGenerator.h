@@ -31,7 +31,10 @@ public:
   
   virtual String getOutputPostFix() const
     {return T("Concatenated");}
-
+ 
+  virtual bool isSparse() const
+    {return false;}
+ 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     // create enum
@@ -90,6 +93,14 @@ public:
   
   virtual String getOutputPostFix() const
     {return T("Concatenated");}
+
+  virtual bool isSparse() const
+  {
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+      if (!inputVariables[i]->getType()->inheritsFrom(denseDoubleVectorClass()))
+        return true;
+    return false;
+  }
 
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
@@ -179,6 +190,17 @@ public:
   virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
     {return FeatureGenerator::getLazyOutputType(featuresEnumeration, featuresType);}
   
+  virtual bool isSparse() const
+  {
+    for (size_t i = 0; i < inputVariables.size(); ++i)
+    {
+      TypePtr inputType = inputVariables[i]->getType();
+      if (!inputType->inheritsFrom(doubleType) && !inputType->inheritsFrom(denseDoubleVectorClass()))
+        return true;
+    }
+    return false;
+  }
+
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
   {
     // make enum name
@@ -246,20 +268,7 @@ public:
     {return FeatureGenerator::toLazyVector(inputs);}
 
   virtual DoubleVectorPtr toComputedVector(const Variable* inputs) const
-  {
-    SparseDoubleVectorPtr res = createEmptySparseVector();
-    for (size_t i = 0; i < shifts.size(); ++i)
-      if (inputs[i].exists())
-      {
-        if (inputs[i].isDouble())
-          res->appendValue(shifts[i], inputs[i].getDouble());
-        else
-          inputs[i].getObjectAndCast<DoubleVector>()->appendTo(res, shifts[i], 1.0);
-      }
-
-    const_cast<ConcatenateMixedDoubleDoubleVectorFeatureGenerator* >(this)->pushSparseVectorSize(res->getNumValues());
-    return res;
-  }
+    {return FeatureGenerator::toComputedVector(inputs);}
 
 private:
   std::vector<size_t> shifts;

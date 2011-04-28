@@ -2,6 +2,7 @@
 
 <library name="GenericFeatureGenerator" directory="FeatureGenerator/Generic">
 
+  <!-- Concatenate Feature Generator -->
   <class name="ConcatenateDoubleFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="bool lazy"/>
   </class>
@@ -19,6 +20,19 @@
     <variable type="Boolean" name="lazy"/>
   </class>
 
+  <!-- Cartesian Product Feature Generator -->
+  <class name="CartesianProductFeatureGeneratorImpl" base="FeatureGenerator" abstract="yes"/>
+  <class name="SparseCartesianProductFeatureGenerator" base="CartesianProductFeatureGeneratorImpl">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  <class name="DenseCartesianProductFeatureGenerator" base="CartesianProductFeatureGeneratorImpl">
+    <constructor arguments="bool lazy" returnType="FeatureGenerator"/>
+  </class>
+  <class name="CartesianProductFeatureGenerator" base="ProxyFunction">
+    <constructor arguments="bool lazy" returnType="Function"/>
+  </class>
+  
+  <!-- Window Feature Generator -->
   <class name="ContainerWindowFeatureGenerator" base="FeatureGenerator" abstract="yes"/>
 
   <class name="FixedContainerWindowFeatureGenerator" base="ContainerWindowFeatureGenerator">
@@ -37,11 +51,8 @@
     <variable type="PositiveInteger" name="windowRows"/>
     <variable type="PositiveInteger" name="windowColumns"/>
   </class>
-  
-  <class name="CartesianProductFeatureGenerator" base="FeatureGenerator">
-    <constructor arguments="bool lazy"/>
-  </class>
 
+  <!-- Dynamically Mapped Feature Generator -->
   <class name="DynamicSubsetEnumeration" base="Enumeration" abstract="yes"/>
   <class name="DynamicallyMappedFeatureGenerator" base="FeatureGenerator">
     <constructor arguments="FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy"/>

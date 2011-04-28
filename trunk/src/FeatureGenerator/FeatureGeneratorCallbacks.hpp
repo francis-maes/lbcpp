@@ -33,6 +33,25 @@ private:
   SparseDoubleVectorPtr target;
 };
 
+class FillDenseVectorFeatureGeneratorCallback : public FeatureGeneratorCallback
+{
+public:
+  FillDenseVectorFeatureGeneratorCallback(const DenseDoubleVectorPtr& target)
+    : target(target) {}
+
+  virtual void sense(size_t index, double value)
+    {target->setValue(index, value);}
+
+  virtual void sense(size_t index, const DoubleVectorPtr& vector, double weight)
+    {vector->addWeightedTo(target, index, weight);}
+
+  virtual void sense(size_t index, const FeatureGeneratorPtr& featureGenerator, const Variable* inputs, double weight)
+    {featureGenerator->addWeightedTo(inputs, target, index, weight);}
+
+private:
+  DenseDoubleVectorPtr target;
+};
+
 class ComputeL0NormFeatureGeneratorCallback : public FeatureGeneratorCallback
 {
 public:

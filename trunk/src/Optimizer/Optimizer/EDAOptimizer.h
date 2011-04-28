@@ -85,15 +85,16 @@ protected:
     // send request & update progression
     for (size_t i = 0; i < populationSize; ++i)
     {
-      if(!optimizerContext->evaluate(context, parametersVector[i]))
+      if (!optimizerContext->evaluate(context, parametersVector[i]))
         return false;
       optimizerState->incTotalNumberOfRequests();
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
     }
     
     // wait (in case of async context) & update progression
-    while (!optimizerContext->areAllRequestsProcessed()) {
-      Thread::sleep(10);
+    while (!optimizerContext->areAllRequestsProcessed())
+    {
+      Thread::sleep(100);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
     }
     jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);

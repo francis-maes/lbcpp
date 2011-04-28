@@ -34,8 +34,12 @@ public:
   virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName) = 0;
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const = 0;
 
+  virtual bool isSparse() const
+    {return true;}
+
   virtual ClassPtr getNonLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
-    {return sparseDoubleVectorClass(featuresEnumeration, featuresType);}
+    {return isSparse() ? sparseDoubleVectorClass(featuresEnumeration, featuresType)
+                       : denseDoubleVectorClass(featuresEnumeration, featuresType);}
 
   virtual ClassPtr getLazyOutputType(EnumerationPtr featuresEnumeration, TypePtr featuresType) const
     {return lazyDoubleVectorClass(featuresEnumeration, featuresType);}
@@ -94,8 +98,7 @@ protected:
   TypePtr featuresType;
 
   // stats on non-lazy outputs
-  CriticalSection meanSparseVectorSizeLock;
-  ScalarVariableRecentMeanAndVariancePtr meanSparseVectorSize;
+  bool sparse;
   mutable size_t sparseVectorSizeUpperBound;
 
   void pushSparseVectorSize(size_t size);
@@ -133,7 +136,7 @@ extern FeatureGeneratorPtr matrixWindowFeatureGenerator(size_t windowRows, size_
 extern FunctionPtr concatenateFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr concatenateDoubleFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr concatenateDoubleVectorFeatureGenerator(bool lazy = true);
-extern FeatureGeneratorPtr cartesianProductFeatureGenerator(bool lazy = true);
+extern FunctionPtr cartesianProductFeatureGenerator(bool lazy = true);
 extern FeatureGeneratorPtr dynamicallyMappedFeatureGenerator(FeatureGeneratorPtr baseFeatureGenerator, size_t reservedSize, bool lazy = true);
 
 // composite
