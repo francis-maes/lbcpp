@@ -25,7 +25,7 @@ public:
     {random = RandomGenerator::getInstance();}
   
   AsyncEDAOptimizer() : verbose(false) 
-    {random = RandomGenerator::getInstance();}
+    {random = RandomGenerator::getInstance();}  // TODO arnaud : comme dans EDA
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  

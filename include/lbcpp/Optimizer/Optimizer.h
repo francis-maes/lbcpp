@@ -33,7 +33,7 @@ public:
 
 typedef ReferenceCountedObjectPtr<Optimizer> OptimizerPtr;
 
-extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples);
+extern OptimizerPtr uniformSampleAndPickBestOptimizer(size_t numSamples, bool verbose = false);
 extern OptimizerPtr edaOptimizer(size_t numIterations, size_t populationSize, size_t numBests, bool reinjectBest = false, bool verbose = false);
 extern OptimizerPtr asyncEDAOptimizer(size_t totalNumberEvaluationsRequested, size_t numberEvaluationsToUpdate, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor, size_t numberEvaluationsInProgress, bool verbose = false);
 
