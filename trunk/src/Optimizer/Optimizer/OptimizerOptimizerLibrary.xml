@@ -7,8 +7,9 @@
   <include file="lbcpp/Optimizer/Optimizer.h"/>
 
   <class name="UniformSampleAndPickBestOptimizer" base="Optimizer">
-    <constructor arguments="size_t numSamples"/>
+    <constructor arguments="size_t numSamples, bool verbose"/>
     <variable type="PositiveInteger" name="numSamples"/>
+    <variable type="Boolean" name="verbose"/>
   </class>
   
   <class name="EDAOptimizer" base="Optimizer" shortName="eda">

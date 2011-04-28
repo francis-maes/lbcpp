@@ -10,6 +10,7 @@
   
   <class name="MultiThreadedOptimizerContext" base="OptimizerContext">
     <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
+    <variable type="Integer" name="numEvaluationInProgress"/>
   </class>
   
 </library>
