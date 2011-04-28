@@ -86,6 +86,9 @@ public:
 
   void setSubDistribution(size_t index, const DistributionPtr& distribution)
     {subDistributions[index] = distribution;}
+  
+  const DistributionPtr& getSubDistribution(size_t index) const
+    {jassert(index < subDistributions.size()); return subDistributions[index];}
 
   size_t getNumSubDistributions() const
     {return subDistributions.size();}
