@@ -204,7 +204,10 @@ core::pose::PoseOP RosettaGreedyOptimizer::greedyOptimization(core::pose::PoseOP
   core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
 
   if (maxSteps <= 0)
+  {
+    std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
     return NULL;
+  }
 
   // Init verbosity
   String nameEnglobingScope("Greedy optimization : ");
@@ -232,6 +235,15 @@ core::pose::PoseOP RosettaGreedyOptimizer::greedyOptimization(core::pose::PoseOP
   int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
   String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
   int indexOutputFile = 0;
+
+  if (saveToFile)
+  {
+    ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+    String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+    File temporaryFile(temporaryOutputFileName);
+    protein->saveToXmlFile(*context, temporaryFile);
+    indexOutputFile++;
+  }
 
   for (int i = 1; i <= maxSteps; i++)
   {
@@ -323,7 +335,10 @@ core::pose::PoseOP RosettaMonteCarloOptimizer::monteCarloOptimization(core::pose
   core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
 
   if ((maxSteps <= 0) || (temperature <= 0))
+  {
+    std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
     return NULL;
+  }
 
   int reinitializationInterval = -1;
   if (timesReinitialization > 0)
@@ -357,6 +372,15 @@ core::pose::PoseOP RosettaMonteCarloOptimizer::monteCarloOptimization(core::pose
   int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
   String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
   int indexOutputFile = 0;
+
+  if (saveToFile)
+  {
+    ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+    String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+    File temporaryFile(temporaryOutputFileName);
+    protein->saveToXmlFile(*context, temporaryFile);
+    indexOutputFile++;
+  }
 
   for (int i = 1; i <= maxSteps; i++)
   {
@@ -470,7 +494,10 @@ core::pose::PoseOP RosettaSimulatedAnnealingOptimizer::simulatedAnnealingOptimiz
   if ((initialTemperature < finalTemperature) || (numberDecreasingSteps > maxSteps)
       || (numberDecreasingSteps <= 0) || (maxSteps <= 0) || (initialTemperature <= 0)
       || (finalTemperature <= 0))
+  {
+    std::cout << "Error in arguments of optimizer, check out in implementation." << std::endl;
     return NULL;
+  }
 
   int reinitializationInterval = -1;
   if (timesReinitialization > 0)
@@ -510,6 +537,15 @@ core::pose::PoseOP RosettaSimulatedAnnealingOptimizer::simulatedAnnealingOptimiz
   int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
   String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
   int indexOutputFile = 0;
+
+  if (saveToFile)
+  {
+    ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+    String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+    File temporaryFile(temporaryOutputFileName);
+    protein->saveToXmlFile(*context, temporaryFile);
+    indexOutputFile++;
+  }
 
   for (int i = 1; i <= maxSteps; i++)
   {

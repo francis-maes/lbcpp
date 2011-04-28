@@ -127,12 +127,12 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
       core::scoring::ScoreFunctionFactory::create_score_function("standard");
 
   // Correct the energy function
-  double meanCN = 1.5; //1.33
-  double stdCN = 0.5; // diminuer tous les std...
-  double meanCAN = 1.5; // 1.46
-  double stdCAN = 0.5;
-  double meanCAC = 1.5; // 1.53
-  double stdCAC = 0.5;
+  double meanCN = 1.33; //1.33
+  double stdCN = 0.1; // diminuer tous les std...
+  double meanCAN = 1.46; // 1.46
+  double stdCAN = 0.1;
+  double meanCAC = 1.53; // 1.53
+  double stdCAC = 0.1;
   double correctionFactor = 0;
   int numberResidues = pose->n_residue();
 
@@ -205,4 +205,24 @@ void lbcpp::makePoseFromSequence(core::pose::PoseOP& pose, const String& sequenc
 {
   core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
+}
+
+core::pose::PoseOP lbcpp::initializeProteinStructure(core::pose::PoseOP pose)
+{
+  core::pose::PoseOP initialized = new core::pose::Pose((*pose));
+
+  for (int i = 1; i <= pose->n_residue(); i++)
+  {
+    if (i == 1)
+      initialized->set_phi(i, 0);
+    else
+      initialized->set_phi(i, -150);
+    if (i == pose->n_residue())
+      initialized->set_psi(i, 0);
+    else
+      initialized->set_psi(i, 150);
+    initialized->set_omega(i, 45);
+  }
+
+  return initialized;
 }

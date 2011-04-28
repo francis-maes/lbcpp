@@ -26,6 +26,8 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
 
 - verifier les fuites memoire.
 
+- modifier la fonction de decroissance de la temperature
+
 Rapport
 =======
 - parler de la fonction denergie.

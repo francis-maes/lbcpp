@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: RosettaWorkunit.h              | Rosetta Workunits               |
+| Filename: RosettaWorkUnit.h              | Rosetta WorkUnits               |
 | Author  : Alejandro Marcos Alvarez       |                                 |
 | Started : 22/04/2011 15:17               |                                 |
 `------------------------------------------/                                 |
@@ -18,28 +18,21 @@
 namespace lbcpp
 {
 
-class RosettaProteinOptimizerAndFeatureGeneratorWorkUnit;
-typedef ReferenceCountedObjectPtr<RosettaProteinOptimizerAndFeatureGeneratorWorkUnit>
-    RosettaProteinOptimizerAndFeatureGeneratorWorkUnitPtr;
+class ProteinOptimizerWorkUnit;
+typedef ReferenceCountedObjectPtr<ProteinOptimizerWorkUnit>
+    ProteinOptimizerWorkUnitPtr;
 
-class RosettaProteinOptimizerAndFeatureGeneratorWorkUnit : public WorkUnit
+class ProteinOptimizerWorkUnit : public CompositeWorkUnit
 {
-protected:
-  friend class RosettaProteinOptimizerAndFeatureGeneratorWorkUnitClass;
-  String proteinName;
-  core::pose::PoseOP pose;
-  RosettaOptimizerPtr optimizer;
-  ProteinMoverPtr mover;
-  core::pose::PoseOP returnPose;
-
 public:
   // returnPose must be already instantiated
-  RosettaProteinOptimizerAndFeatureGeneratorWorkUnit()
+  ProteinOptimizerWorkUnit()
   {
   }
 
-  RosettaProteinOptimizerAndFeatureGeneratorWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
-      RosettaOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose)
+  ProteinOptimizerWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
+      RosettaOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose) :
+        CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
     this->pose = pose;
@@ -61,9 +54,17 @@ public:
 
     return Variable(proteinName);
   }
+
+protected:
+  friend class ProteinOptimizerWorkUnitClass;
+  String proteinName;
+  core::pose::PoseOP pose;
+  RosettaOptimizerPtr optimizer;
+  ProteinMoverPtr mover;
+  core::pose::PoseOP returnPose;
 };
 
-class RosettaProteinsFeaturesGeneratorWorkUnit: public WorkUnit
+class ProteinFeaturesGeneratorWorkUnit: public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -112,6 +113,7 @@ public:
     {
       ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein>();
       core::pose::PoseOP currentPose = convertProteinToPose(context, currentProtein);
+      core::pose::PoseOP initialPose = initializeProteinStructure(currentPose);
       core::pose::PoseOP returnPose = new core::pose::Pose();
 
       // Optimizer
@@ -137,21 +139,20 @@ public:
         return Variable();
       }
 
-      WorkUnitPtr childWorkUnit = new RosettaProteinOptimizerAndFeatureGeneratorWorkUnit(
-          currentProtein->getName(), currentPose, optimizer, mover, returnPose);
+      WorkUnitPtr childWorkUnit = new ProteinOptimizerWorkUnit(
+          currentProtein->getName(), initialPose, optimizer, mover, returnPose);
       proteinsOptimizer->setWorkUnit(i, childWorkUnit);
     }
-    //proteinsOptimizer->setPushChildrenIntoStackFlag(true);
-    proteinsOptimizer->setPushChildrenIntoStackFlag(false);
+    proteinsOptimizer->setPushChildrenIntoStackFlag(true);
     context.informationCallback(T("Computing..."));
     context.run(proteinsOptimizer);
 
-    context.informationCallback(T("RosettaProteinsFeaturesGeneratorWorkUnit done."));
+    context.informationCallback(T("ProteinFeaturesGeneratorWorkUnit done."));
     return Variable();
   }
 
 protected:
-  friend class RosettaProteinsFeaturesGeneratorWorkUnitClass;
+  friend class ProteinFeaturesGeneratorWorkUnitClass;
   String proteinsDirectory;
   String resultsDirectory;
   String moverName;
@@ -161,6 +162,47 @@ protected:
   String optimizerName;
   int maxNumberIterations;
   std::vector<double> commandLineOptimizerParameters;
+};
+
+class XmlToPDBConverterWorkUnit: public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    // Load all xml files in proteinsDir
+    File directory = context.getFile(proteinsDirectory);
+    if (!directory.exists())
+      context.errorCallback(T("Proteins' directory not found."));
+
+    juce::OwnedArray<File> results;
+    directory.findChildFiles(results, File::findFiles, false, T("*.xml"));
+
+    // Other arguments
+    juce::File outputDirectory = context.getFile(resultsDirectory);
+    if (!outputDirectory.exists())
+      outputDirectory.createDirectory();
+
+    context.informationCallback(T("Performing conversion..."));
+
+    for (int i = 0; i < results.size(); i++)
+    {
+      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
+
+      String nameXmlFile = results[i]->getFileNameWithoutExtension();
+
+      //String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
+      File outFile(outputDirectory.getFullPathName() + T("/") + nameXmlFile + T(".pdb"));
+      currentProtein->saveToPDBFile(context, outFile);
+    }
+
+    context.informationCallback(T("Conversion in PDB files done."));
+    return Variable();
+  }
+
+protected:
+  friend class XmlToPDBConverterWorkUnitClass;
+  String proteinsDirectory;
+  String resultsDirectory;
 };
 
 }; /* namespace lbcpp */
