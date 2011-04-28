@@ -39,16 +39,31 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+    /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
+    wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
+    std::cout << "HERE HERE HERE HERE !!!!" << std::endl;*/
     
-    // TESTS OPTIMIZER
-    //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(1000);
+  
+    // variables used by GridOptimizer
+    String projectName(T("NewOptimizerTest"));
+    String source(T("arnaud@monster24"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+    size_t managerPort = 1664;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+     // TESTS OPTIMIZER
+    OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
     //OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
-    OptimizerPtr optimizer = asyncEDAOptimizer(30000, 1000, 3, 1, 1, 400);
+    //OptimizerPtr optimizer = asyncEDAOptimizer(30000, 1000, 3, 1, 1, 400);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
+    //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
-    //optimizerState->setDistribution(context, new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
-    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
+    optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
+    //optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
     
     
