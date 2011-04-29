@@ -57,18 +57,12 @@ int getScoreImpl(const char* fileName, double& score)
   }
 
   Variable returnValue = traceNode->getReturnValue();
-  if (!returnValue.exists() || !returnValue.isObject()) {
+  if (!returnValue.exists()) {
     log_messages.printf(MSG_CRITICAL, "No return value in ExecutionTrace : %s\n", fileName);
     return 1;
   }
   
-  ScoreObjectPtr scoreObject = returnValue.dynamicCast<ScoreObject>();
-  if (!scoreObject) {
-    log_messages.printf(MSG_CRITICAL, "Return value in ExecutionTrace is not a ScoreObject : %s\n", fileName);
-    return 1;
-  }
-  
-  score = 1 - scoreObject->getScoreToMinimize();  
+  score = returnValue.toDouble(); 
   
   return 0;
 }

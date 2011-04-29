@@ -250,7 +250,7 @@ public:
     {return 2;}
   
   virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return index ? banditStatisticsClass : positiveIntegerType;}
+    {return index ? (TypePtr) banditStatisticsClass : positiveIntegerType;}
 
   virtual bool isSparse() const
     {return true;}
@@ -620,6 +620,8 @@ public:
 
     // optimizer
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
+    //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, 10, populationSize);
+
     optimizer->compute(context, optimizerContext, optimizerState);
 
     // best parameters
