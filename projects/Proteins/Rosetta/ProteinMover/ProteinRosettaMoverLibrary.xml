@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaMover" directory="Rosetta/ProteinMover">
+
+  <class name="PhiPsiMover" base="ProteinMover">
+    <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>  
+    <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>
+    <variable type="Double" name="deltaPhi" shorName="phi" description="Value of delta Phi"/>
+    <variable type="Double" name="deltaPsi" shorName="psi" description="Value of delta Psi"/>
+  </class>
+  
+  <class name="ShearMover" base="ProteinMover">
+    <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>
+    <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>
+    <variable type="Double" name="deltaPhi" shorName="phi" description="Value of delta Phi"/>
+    <variable type="Double" name="deltaPsi" shorName="psi" description="Value of delta Psi"/>
+  </class>
+  
+  <class name="RigidBodyTransMover" base="RigidBodyMover">
+    <constructor arguments="size_t indexResidueOne, size_t indexResidueTwo, double magnitude"/>
+    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
+    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
+    <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
+  </class>
+  
+  <class name="RigidBodySpinMover" base="RigidBodyMover">
+    <constructor arguments="size_t indexResidueOne, size_t indexResidueTwo, double amplitude"/>
+    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
+    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
+    <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>
+  </class>
+  
+  <class name="RigidBodyGeneralMover" base="RigidBodyMover">
+    <constructor arguments="size_t indexResidueOne, size_t indexResidueTwo, double magnitude, double amplitude"/>
+    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
+    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
+    <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
+    <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>
+  </class>
+    
+</library>

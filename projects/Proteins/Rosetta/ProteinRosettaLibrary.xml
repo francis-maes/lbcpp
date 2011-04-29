@@ -2,20 +2,21 @@
 
 <library name="ProteinRosetta" directory="Rosetta">
 
-  <class name="ProteinMover" base="Object" abstract="yes"/>
+  <import name="ProteinRosettaMover"/>
+  <import name="ProteinRosettaOptimizer"/>
   
-  <class name="PhiPsiRandomMover" base="ProteinMover" shortName="phiPsiRandom">
-    <variable type="Double" name="maxAngle" shortName="a" description="Maximum angle by which an angle Phi or Psi can be modified."/>
+  <class name="ProteinMover" base="Object" abstract="yes">
+    <variable type="String" name="moverName" shortName="n" description="Name of the mover"/>
   </class>
   
-  <class name="PhiPsiGaussRandomMover" base="ProteinMover" shortName="phiPsiGaussRandom">
-    <variable type="Double" name="stdAngle" shortName="a" description="Standard deviation of gaussian distribution used to sample the angles by which Phi or Psi are be modified."/>
+  <class name="RigidBodyMover" base="ProteinMover" abstract="yes">
   </class>
   
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
     <variable type="GenericVector[Double]" name="parameters" shortName="p" description="Parameters values"/>
+    <variable type="RigidBodySpinMover" name="mover" description="mover"/>
   </class>
 
   <class name="ProteinFeaturesGeneratorWorkUnit" base="WorkUnit">
@@ -32,7 +33,7 @@
   <class name="ProteinOptimizerWorkUnit" base="CompositeWorkUnit">
   </class>
   
-  <class name="RosettaOptimizer" base="Object" abstract="yes">
+  <class name="ProteinOptimizer" base="Object" abstract="yes">
   </class>
   
   <class name="XmlToPDBConverterWorkUnit" base="WorkUnit">

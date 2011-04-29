@@ -13,7 +13,12 @@
 # include "../Data/Protein.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "RosettaUtils.h"
-# include "ProteinRosettaOptimizer.h"
+# include "ProteinOptimizer.h"
+# include "ProteinMover.h"
+# include "ProteinOptimizer/GreedyOptimizer.h"
+# include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
+# include "ProteinOptimizer/SequentialOptimizer.h"
+# include "ProteinOptimizer/MonteCarloOptimizer.h"
 
 namespace lbcpp
 {
@@ -31,7 +36,7 @@ public:
   }
 
   ProteinOptimizerWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
-      RosettaOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose) :
+      ProteinOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose) :
         CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
@@ -59,7 +64,7 @@ protected:
   friend class ProteinOptimizerWorkUnitClass;
   String proteinName;
   core::pose::PoseOP pose;
-  RosettaOptimizerPtr optimizer;
+  ProteinOptimizerPtr optimizer;
   ProteinMoverPtr mover;
   core::pose::PoseOP returnPose;
 };
@@ -83,21 +88,6 @@ public:
     for (int i = 0; i < commandLineMoverParameters.size(); i++)
       moverArguments.push_back(Variable(commandLineMoverParameters[i]));
     ProteinMoverPtr mover;
-    if (!moverName.compareIgnoreCase(T("phipsirandom")))
-      mover = new PhiPsiRandomMover(moverArguments);
-    else if (!moverName.compareIgnoreCase(T("phipsigaussrandom")))
-      mover = new PhiPsiGaussRandomMover(moverArguments);
-    else if (!moverName.compareIgnoreCase(T("shearrandom")))
-      mover = new ShearRandomMover(moverArguments);
-    else if (!moverName.compareIgnoreCase(T("rigidbodytransrandom")))
-      mover = new RigidBodyTransRandomMover(moverArguments);
-    else if (!moverName.compareIgnoreCase(T("rigidBodyPerturbRandom")))
-      mover = new RigidBodyPerturbRandomMover(moverArguments);
-    else
-    {
-      context.errorCallback(T("Bad mover name."));
-      return Variable();
-    }
 
     // Other arguments
     juce::File outputDirectory = context.getFile(resultsDirectory);
@@ -117,21 +107,21 @@ public:
       core::pose::PoseOP returnPose = new core::pose::Pose();
 
       // Optimizer
-      RosettaOptimizerPtr optimizer;
+      ProteinOptimizerPtr optimizer;
       if (!optimizerName.compareIgnoreCase(T("greedy")))
-        optimizer = new RosettaGreedyOptimizer(maxNumberIterations, &context,
+        optimizer = new ProteinGreedyOptimizer(maxNumberIterations, &context,
             currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
       else if (!optimizerName.compareIgnoreCase(T("montecarlo")))
-        optimizer = new RosettaMonteCarloOptimizer(commandLineOptimizerParameters[0],
+        optimizer = new ProteinMonteCarloOptimizer(commandLineOptimizerParameters[0],
             maxNumberIterations, (int)commandLineOptimizerParameters[1], &context,
             currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
       else if (!optimizerName.compareIgnoreCase(T("simulatedannealing")))
-        optimizer = new RosettaSimulatedAnnealingOptimizer(commandLineOptimizerParameters[0],
+        optimizer = new ProteinSimulatedAnnealingOptimizer(commandLineOptimizerParameters[0],
             commandLineOptimizerParameters[1], (int)commandLineOptimizerParameters[2],
             maxNumberIterations, (int)commandLineOptimizerParameters[3], &context,
             currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
       else if (!optimizerName.compareIgnoreCase(T("sequential")))
-        optimizer = new RosettaSequentialOptimizer(&context, currentProtein->getName(),
+        optimizer = new ProteinSequentialOptimizer(&context, currentProtein->getName(),
             frequenceVerbosity);
       else
       {

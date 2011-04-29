@@ -20,13 +20,9 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
   - regarder autre forme pour le facteur de correction?
   - faire une etude de proteines pour evaluer les std?
 
-- faire tourner code sur NIC3.
-  
-- verifier parallele
-
-- verifier les fuites memoire.
-
 - modifier la fonction de decroissance de la temperature
+
+- corriger lappel dans lbcpp??
 
 Rapport
 =======
@@ -38,7 +34,8 @@ Rapport
 
 DONE
 =====
-
+modifications lbcpp des movers
+modifications lbccp des optimiseurs
 
 
 

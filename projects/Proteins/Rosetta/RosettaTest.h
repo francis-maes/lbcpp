@@ -17,12 +17,14 @@
 # include "../Evaluator/QScoreEvaluator.h"
 # include "RosettaUtils.h"
 # include "ProteinMover.h"
-# include "ProteinRosettaOptimizer.h"
+# include "ProteinOptimizer.h"
 # include <iostream>
 # include <string>
 # include <vector>
 # include <cmath>
 # include <time.h>
+# include "ProteinMover/PhiPsiMover.h"
+# include "ProteinMover/RigidBodySpinMover.h"
 
 # undef T
 #  include <core/pose/Pose.hh>
@@ -44,6 +46,7 @@ private:
   friend class RosettaTestClass;
   size_t arg;
   String proteinsDir;
+  RigidBodySpinMoverPtr mover;
   std::vector<double> parameters;
 
 public:
@@ -57,10 +60,28 @@ public:
 
     for (int i = 1; i <= 4 ; i++)
     {
-      cout << "phi : " << init->phi(i) << endl;
-      cout << "psi : " << init->psi(i) << endl;
-      cout << "omega : " << init->omega(i) << endl;
+      cout << "phi : " << pose->phi(i) << endl;
+      cout << "psi : " << pose->psi(i) << endl;
+      cout << "omega : " << pose->omega(i) << endl;
     }
+
+    cout << "energy init : " << getConformationScore(pose) << endl;
+
+    //mover = new RigidBodySpinMover(0, 2, 15);
+    cout << "residue 1 : " << mover->getIndexResidueOne() << endl;
+    cout << "residue 2 : " << mover->getIndexResidueTwo() << endl;
+    cout << "amplitude : " << mover->getAmplitude() << endl;
+
+    mover->move(pose);
+
+    for (int i = 1; i <= 4; i++)
+    {
+      cout << "phi : " << pose->phi(i) << endl;
+      cout << "psi : " << pose->psi(i) << endl;
+      cout << "omega : " << pose->omega(i) << endl;
+    }
+
+    cout << "energy final : " << getConformationScore(pose) << endl;
 
     //    File fichier = context.getFile(T("data/1A11.xml"));
     //    File fichierout = context.getFile(T("init_lbcpp.pdb"));
