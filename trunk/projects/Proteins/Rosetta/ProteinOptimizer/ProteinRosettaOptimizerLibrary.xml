@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaOptimizer" directory="Rosetta/ProteinOptimizer">
+
+  <class name="ProteinGreedyOptimizer" base="ProteinOptimizer">
+  </class>
+  
+  <class name="ProteinMonteCarloOptimizer" base="ProteinOptimizer">
+  </class>
+  
+  <class name="ProteinSimulatedAnnealingOptimizer" base="ProteinOptimizer">
+  </class>
+  
+  <class name="ProteinSequentialOptimizer" base="ProteinOptimizer">
+  </class>
+    
+</library>

@@ -23,6 +23,8 @@ ENDIF(LBCPP_USER_INTERFACE)
 
 IF(LBCPP_PROTEIN_ROSETTA)
   GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml ProteinRosettaMoverLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
 ENDIF(LBCPP_PROTEIN_ROSETTA)
 
 GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
@@ -150,12 +152,28 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/RosettaUtils.h
     Rosetta/RosettaUtils.cpp
     Rosetta/ProteinMover.h
-    Rosetta/ProteinMover.cpp
-    Rosetta/ProteinRosettaOptimizer.h
-    Rosetta/ProteinRosettaOptimizer.cpp
+    Rosetta/ProteinOptimizer.h
     Rosetta/RosettaWorkUnit.h
     Rosetta/ProteinRosettaLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
+  )
+  
+  SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
+    Rosetta/ProteinMover/PhiPsiMover.h
+    Rosetta/ProteinMover/ShearMover.h
+    Rosetta/ProteinMover/RigidBodyTransMover.h
+    Rosetta/ProteinMover/RigidBodySpinMover.h
+    Rosetta/ProteinMover/RigidBodyGeneralMover.h
+    Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaMoverLibrary.cpp
+  )
+  
+  SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
+    Rosetta/ProteinOptimizer/GreedyOptimizer.h
+    Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
+    Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
+    Rosetta/ProteinOptimizer/SequentialOptimizer.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
   )
 
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
@@ -169,12 +187,12 @@ IF(APPLE)
   )
   
   IF(DEBUG)
-  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc)
-  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libprotocols.dylib)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_DEBUG}/libprotocols.dylib)
   
   ELSE(DEBUG)
   
-  	SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc)
     SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE_RELEASE}/libprotocols.dylib)
   
   ENDIF(DEBUG)
@@ -205,6 +223,8 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_OPTIMIZER_SOURCES}
   ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES}
   ${LBCPP_PROTEIN_ROSETTA_SOURCES}
+  ${LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES}
+  ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
   
   ProteinLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinLibrary.cpp
@@ -229,6 +249,8 @@ SOURCE_GROUP(WorkUnit FILES ${LBCPP_PROTEIN_WORK_UNIT_SOURCES})
 SOURCE_GROUP(Optimizer FILES ${LBCPP_PROTEIN_OPTIMIZER_SOURCES})
 SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 SOURCE_GROUP(Rosetta FILES ${LBCPP_PROTEIN_ROSETTA_SOURCES})
+SOURCE_SUB_GROUP(Rosetta ProteinMover FILES ${LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
 
 GENERATE_LBCPP_PRECOMPILED(precompiled PROTEINS_SOURCES)
 
