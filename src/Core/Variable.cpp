@@ -283,7 +283,7 @@ double Variable::toDouble() const
 
   ScoreObjectPtr scoreObject = dynamicCast<ScoreObject>();
   if (scoreObject)
-    return -scoreObject->getScoreToMinimize();
+    return scoreObject->getScoreToMinimize();
 
   ScalarVariableMeanPtr mean = dynamicCast<ScalarVariableMean>();
   if (mean)
