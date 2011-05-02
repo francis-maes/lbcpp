@@ -4,6 +4,7 @@
 
   <import name="ProteinRosettaMover"/>
   <import name="ProteinRosettaOptimizer"/>
+  <import name="ProteinRosettaSampler"/>
   
   <class name="ProteinMover" base="Object" abstract="yes">
     <variable type="String" name="moverName" shortName="n" description="Name of the mover"/>
@@ -40,5 +41,20 @@
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
     <variable type="String" name="resultsDirectory" shortName="o" description="Directory where to store the outputs"/>
   </class>
+  
+  <class name="Sampler" base="Object" abstract="yes">
+  </class>
+  
+  <class name="ContinuousSampler" base="Sampler" abstract="yes">
+  </class>
+
+  <class name="DiscreteSampler" base="Sampler" abstract="yes">
+  </class>
+
+  <class name="SequentialSampler" base="Sampler" abstract="yes">
+  </class>
+
+  <class name="CompositeSampler" base="Sampler" abstract="yes">
+  </class>  
   
 </library>

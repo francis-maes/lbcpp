@@ -25,6 +25,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
   GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml ProteinRosettaMoverLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml ProteinRosettaSamplerLibrary.cpp)
 ENDIF(LBCPP_PROTEIN_ROSETTA)
 
 GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
@@ -152,6 +153,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/RosettaUtils.h
     Rosetta/RosettaUtils.cpp
     Rosetta/ProteinMover.h
+    Rosetta/Sampler.h
     Rosetta/ProteinOptimizer.h
     Rosetta/RosettaWorkUnit.h
     Rosetta/ProteinRosettaLibrary.xml
@@ -174,6 +176,14 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
     Rosetta/ProteinOptimizer/SequentialOptimizer.h
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
+  )
+  
+    SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
+    Rosetta/Sampler/GaussianContinuousSampler.h
+    Rosetta/Sampler/EnumerationDiscreteSampler.h
+    Rosetta/Sampler/ProteinMoverSampler.h
+    Rosetta/Sampler/ParzenContinuousSampler.h
+    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
   )
 
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
@@ -225,6 +235,7 @@ SET(PROTEINS_CPP_SOURCES
   ${LBCPP_PROTEIN_ROSETTA_SOURCES}
   ${LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES}
   ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES}
+  ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES}
   
   ProteinLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinLibrary.cpp
@@ -251,6 +262,7 @@ SOURCE_GROUP(UserInterface FILES ${LBCPP_PROTEIN_USER_INTERFACE_SOURCES})
 SOURCE_GROUP(Rosetta FILES ${LBCPP_PROTEIN_ROSETTA_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinMover FILES ${LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES})
 SOURCE_SUB_GROUP(Rosetta ProteinOptimizer FILES ${LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES})
+SOURCE_SUB_GROUP(Rosetta Sampler FILES ${LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES})
 
 GENERATE_LBCPP_PRECOMPILED(precompiled PROTEINS_SOURCES)
 

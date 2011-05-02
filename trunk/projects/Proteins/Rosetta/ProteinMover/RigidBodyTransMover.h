@@ -58,6 +58,12 @@ public:
   {
   }
 
+  RigidBodyTransMover(const RigidBodyTransMover& mover) :
+        RigidBodyMover(T("Rigid body translation mover"), mover.indexResidueOne,
+            mover.indexResidueTwo), magnitude(mover.magnitude)
+  {
+  }
+
   /**
    * Performs the translation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
@@ -119,6 +125,15 @@ public:
   double getMagnitude()
   {
     return magnitude;
+  }
+
+  RigidBodyTransMover operator=(const RigidBodyTransMover& mover)
+  {
+    RigidBodyTransMover copy;
+    copy.indexResidueOne = mover.indexResidueOne;
+    copy.indexResidueTwo = mover.indexResidueTwo;
+    copy.magnitude = mover.magnitude;
+    return copy;
   }
 
 protected:

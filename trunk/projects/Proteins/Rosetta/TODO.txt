@@ -24,6 +24,8 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
 
 - corriger lappel dans lbcpp??
 
+- sampler maximum entropy (+ref)
+
 Rapport
 =======
 - parler de la fonction denergie.
@@ -31,11 +33,16 @@ Rapport
 - ajout derniere phrase page 507 du structural bioinformatics.
 - ajouter reference Main-chain Bond Lengths and Bond Angles in Protein Structures 
 (Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour longueurs de liens peptides.
+- ajouter references maximum entropy
+- sampler gaussian (+ references : )
+- sampler kde (voir hastie + ref)
+
 
 DONE
 =====
-modifications lbcpp des movers
-modifications lbccp des optimiseurs
+- EnumerationDiscreteSampler
+- GaussianContinuousSampler
+- ParzenContinuousSampler
 
 
 
