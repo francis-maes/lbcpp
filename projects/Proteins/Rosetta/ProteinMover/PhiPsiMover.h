@@ -54,6 +54,12 @@ public:
   {
   }
 
+  PhiPsiMover(const PhiPsiMover& mover) :
+    ProteinMover(T("PhiPsi mover")), residue(mover.residue), deltaPhi(mover.deltaPhi), deltaPsi(
+        mover.deltaPsi)
+  {
+  }
+
   /**
    * Performs the move on the pose specified by the parameters of the mover.
    * @param pose the pose to modify.
@@ -131,6 +137,15 @@ public:
   double getDeltaPsi()
   {
     return deltaPsi;
+  }
+
+  PhiPsiMover operator=(const PhiPsiMover& mover)
+  {
+    PhiPsiMover copy;
+    copy.residue = mover.residue;
+    copy.deltaPhi = mover.deltaPhi;
+    copy.deltaPsi = mover.deltaPsi;
+    return copy;
   }
 
 protected:

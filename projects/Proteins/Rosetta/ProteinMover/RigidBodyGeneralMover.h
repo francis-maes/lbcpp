@@ -63,6 +63,12 @@ public:
   {
   }
 
+  RigidBodyGeneralMover(const RigidBodyGeneralMover& mover) :
+    RigidBodyMover(T("Rigid body general mover"), mover.indexResidueOne, mover.indexResidueTwo),
+        magnitude(mover.magnitude), amplitude(mover.amplitude)
+  {
+  }
+
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
@@ -123,6 +129,16 @@ public:
   double getMagnitude()
   {
     return magnitude;
+  }
+
+  RigidBodyGeneralMover operator=(const RigidBodyGeneralMover& mover)
+  {
+    RigidBodyGeneralMover copy;
+    copy.indexResidueOne = mover.indexResidueOne;
+    copy.indexResidueTwo = mover.indexResidueTwo;
+    copy.magnitude = mover.magnitude;
+    copy.amplitude = mover.amplitude;
+    return copy;
   }
 
 protected:

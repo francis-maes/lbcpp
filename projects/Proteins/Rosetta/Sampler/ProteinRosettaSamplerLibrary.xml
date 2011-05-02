@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
+
+  <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
+  </class>
+  
+  <class name="GaussianContinuousSampler" base="ContinuousSampler">
+  </class>
+  
+  <class name="ParzenContinuousSampler" base="ContinuousSampler">
+  </class>
+  
+  <class name="PhiPsiMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="ShearMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="RigidBodyTransMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="RigidBodySpinMoverSampler" base="CompositeSampler">
+  </class>
+  
+  <class name="RigidBodyGeneralMoverSampler" base="CompositeSampler">
+  </class>
+    
+</library>

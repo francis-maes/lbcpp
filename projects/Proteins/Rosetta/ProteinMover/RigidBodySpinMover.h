@@ -60,6 +60,12 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
   {
   }
 
+  RigidBodySpinMover(const RigidBodySpinMover& mover) :
+    RigidBodyMover(T("Rigid body spin mover"), mover.indexResidueOne, mover.indexResidueTwo),
+        amplitude(mover.amplitude)
+  {
+  }
+
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
@@ -131,6 +137,15 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
   double getAmplitude()
   {
     return amplitude;
+  }
+
+  RigidBodySpinMover operator=(const RigidBodySpinMover& mover)
+  {
+    RigidBodySpinMover copy;
+    copy.indexResidueOne = mover.indexResidueOne;
+    copy.indexResidueTwo = mover.indexResidueTwo;
+    copy.amplitude = mover.amplitude;
+    return copy;
   }
 
 protected:
