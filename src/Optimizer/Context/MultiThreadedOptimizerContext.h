@@ -27,7 +27,7 @@ public:
   virtual void waitUntilAllRequestsAreProcessed() const 
   {
     while (numEvaluationInProgress) // value modified in function evaluation (after pushWorkUnit)
-      Thread::sleep(10);
+      Thread::sleep(100);
   }
   
   virtual bool areAllRequestsProcessed() const

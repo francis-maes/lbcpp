@@ -40,7 +40,7 @@ extern ClassPtr optimizerContextClass;
 
 extern OptimizerContextPtr synchroneousOptimizerContext(const FunctionPtr& objectiveFunction);  
 extern OptimizerContextPtr multiThreadedOptimizerContext(const FunctionPtr& objectiveFunction);
-extern OptimizerContextPtr distributedOptimizerContext(String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);  
+extern OptimizerContextPtr distributedOptimizerContext(const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_

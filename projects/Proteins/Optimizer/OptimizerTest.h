@@ -20,6 +20,8 @@
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
 # include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
+# include <lbcpp/Network/NetworkClient.h>
+# include <lbcpp/Network/NetworkInterface.h>
 
 //# include <lbcpp/Optimizer/GridOptimizer.h>
 //# include "../Optimizer/ProteinGridEvoOptimizer.h"
@@ -39,11 +41,7 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
-    wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
-    std::cout << "HERE HERE HERE HERE !!!!" << std::endl;*/
     
-  
     // variables used by GridOptimizer
     String projectName(T("NewOptimizerTest"));
     String source(T("arnaud@monster24"));
@@ -54,17 +52,47 @@ public:
     size_t requiredCpus = 1;
     size_t requiredTime = 1;
     
+    /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
+    wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
+    std::cout << "HERE HERE HERE HERE !!!!" << std::endl;*/
+    /*Thread::sleep(1000);
+    FunctionPtr fc = squareFunction();
+    std::cout << fc->toString() << std::endl;
+    WorkUnitPtr wu = new FunctionWorkUnit(fc, 5.0);
+    std::cout << wu->toString() << std::endl;
+    
+    NetworkClientPtr client = blockingNetworkClient(context);
+    if (!client->startClient(managerHostName, managerPort))
+    {
+      context.errorCallback(T("DistributedOptimizerContext::getNetworkInterfaceAndConnect"), T("Not connected !"));
+    }
+    //context.informationCallback(managerHostName, T("Connected !")); TODO arnaud : useless ?
+    ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
+    interface->sendInterfaceClass();
+    
+    NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
+    
+    //interface->pushWorkUnit(request);
+    //interface->closeCommunication();
+    
+    std::cout << request->toString() << std::endl;
+    std::cout << "----------" << std::endl;
+    */
+    
+    
+    
      // TESTS OPTIMIZER
-    OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
+    //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
     //OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
-    //OptimizerPtr optimizer = asyncEDAOptimizer(30000, 1000, 3, 1, 1, 400);
+    OptimizerPtr optimizer = asyncEDAOptimizer(1000, 250, 3, 30, 100, 300);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
     //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
-    optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
-    //optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
+    //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
+    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
+    
     
     
     return Variable();

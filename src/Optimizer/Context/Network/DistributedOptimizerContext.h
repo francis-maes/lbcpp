@@ -16,23 +16,22 @@
 
 namespace lbcpp
 {
+class GetFinishedExecutionTracesDaemon;
   
 class DistributedOptimizerContext : public OptimizerContext
 {
 public:
-  DistributedOptimizerContext(String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
+  DistributedOptimizerContext(const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
   DistributedOptimizerContext() {}
-  
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
     {functionCallback = callback;}
-  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback)
-    {functionCallback = NULL;}
+  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
   virtual void waitUntilAllRequestsAreProcessed() const
   {
     while (inProgressWUs.size())
-      Thread::sleep(10);
+      Thread::sleep(60000);
   }
   
   virtual bool areAllRequestsProcessed() const
@@ -46,7 +45,6 @@ public:
     ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
     if (!interface)
       return false;
-    
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
     String res = sendWU(context, wu, interface);
     
@@ -66,8 +64,6 @@ public:
   }
   
   
-//  void OptimizerState::functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) 
-
 protected:  
   friend class DistributedOptimizerContextClass;
   friend class GetFinishedExecutionTracesDaemon;
@@ -87,6 +83,7 @@ protected:
   std::vector< std::pair<String, Variable> > inProgressWUs;
   
   CriticalSection lock;
+  GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
   
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       
@@ -121,7 +118,7 @@ public:
   {
     while (!threadShouldExit())
     {
-      sleep(10000);
+      sleep(30000);
       
       // handle finished WUs
       ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(*(optimizerContext->executionContext));  // TODO arnaud
