@@ -11,6 +11,7 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
+# include "../Sampler/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -20,34 +21,21 @@ typedef ReferenceCountedObjectPtr<ProteinGreedyOptimizer> ProteinGreedyOptimizer
 class ProteinGreedyOptimizer: public ProteinOptimizer
 {
 public:
-  ProteinGreedyOptimizer(long long seedForRandom = 0) :
-    ProteinOptimizer(seedForRandom), maxSteps(50000)
+  ProteinGreedyOptimizer() :
+    ProteinOptimizer()
   {
   }
 
-  ProteinGreedyOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
-      File outputDirectory, int numOutputFiles, long long seedForRandom = 0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), maxSteps(50000)
+  ProteinGreedyOptimizer(int maxSteps, String name = juce::String("Default"),
+      double frequencyCallback = 0.01, int numOutputFiles = -1, File outputDirectory = juce::File()) :
+    ProteinOptimizer(name, frequencyCallback, numOutputFiles, outputDirectory), maxSteps(maxSteps)
   {
   }
 
-  ProteinGreedyOptimizer(int maxSteps, long long seedForRandom = 0) :
-    ProteinOptimizer(seedForRandom), maxSteps(maxSteps)
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+      ExecutionContext& context, RandomGeneratorPtr& random)
   {
-  }
-
-  ProteinGreedyOptimizer(int maxSteps, ExecutionContextPtr context, String name,
-      double frequencyCallback, File outputDirectory, int numOutputFiles, long long seedForRandom =
-          0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), maxSteps(maxSteps)
-  {
-  }
-
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover)
-  {
-    return greedyOptimization(pose, mover, maxSteps);
+    return greedyOptimization(pose, sampler, context, random, maxSteps);
   }
 
   /*
@@ -63,8 +51,8 @@ public:
    * @param context, the context used to create the trace. NULL if no trace desired, default.
    * @return the new conformation
    */
-  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, ProteinMoverPtr& mover,
-      int maxSteps = 50000)
+  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+      ExecutionContext& context, RandomGeneratorPtr& random, int maxSteps = 50000)
   {
     // Initialization
     double minimumEnergy = getConformationScore(pose);
@@ -94,13 +82,13 @@ public:
       englobingScopesNames.push_back(T("Temporary energy"));
       englobingScopesNames.push_back(T("Minimal energy (log10)"));
       englobingScopesNames.push_back(T("Temporary energy (log10)"));
-      initializeCallbacks(englobingScopesNames, minimumEnergy);
+      initializeCallbacks(context, englobingScopesNames, minimumEnergy);
       resultCallbackValues.push_back(Variable((int)0));
       resultCallbackValues.push_back(Variable(minimumEnergy));
       resultCallbackValues.push_back(Variable(temporaryEnergy));
       resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
       resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
-      callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+      callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
     }
     int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
     String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
@@ -108,15 +96,17 @@ public:
 
     if (saveToFile)
     {
-      ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+      ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
       String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
       File temporaryFile(temporaryOutputFileName);
-      protein->saveToXmlFile(*context, temporaryFile);
+      protein->saveToXmlFile(context, temporaryFile);
       indexOutputFile++;
     }
 
     for (int i = 1; i <= maxSteps; i++)
     {
+      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<
+          ProteinMover> ();
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose);
 
@@ -138,22 +128,22 @@ public:
         resultCallbackValues.at(2) = Variable(temporaryEnergy);
         resultCallbackValues.at(3) = Variable(log10(minimumEnergy));
         resultCallbackValues.at(4) = Variable(log10(temporaryEnergy));
-        callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+        callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
       }
 
       if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
       {
-        ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+        ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
         String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
         File temporaryFile(temporaryOutputFileName);
-        protein->saveToXmlFile(*context, temporaryFile);
+        protein->saveToXmlFile(context, temporaryFile);
         indexOutputFile++;
       }
     }
 
     // Verbosity
     if (verbosity)
-      finalizeCallbacks(minimumEnergy);
+      finalizeCallbacks(context, minimumEnergy);
 
     // Return
     return optimizedPose;

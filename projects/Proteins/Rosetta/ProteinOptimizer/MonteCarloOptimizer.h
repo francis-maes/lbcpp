@@ -11,6 +11,7 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
+# include "../Sampler/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -21,37 +22,24 @@ typedef ReferenceCountedObjectPtr<ProteinMonteCarloOptimizer> ProteinMonteCarloO
 class ProteinMonteCarloOptimizer: public ProteinOptimizer
 {
 public:
-  ProteinMonteCarloOptimizer(long long seedForRandom = 0) :
-    ProteinOptimizer(seedForRandom), temperature(1.0), maxSteps(50000), timesReinitialization(5)
-  {
-  }
-
-  ProteinMonteCarloOptimizer(ExecutionContextPtr context, String name, double frequencyCallback,
-      File outputDirectory, int numOutputFiles, long long seedForRandom = 0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), temperature(1.0), maxSteps(50000), timesReinitialization(5)
+  ProteinMonteCarloOptimizer() :
+    ProteinOptimizer()
   {
   }
 
   ProteinMonteCarloOptimizer(double temperature, int maxSteps, int timesReinitialization,
-      long long seedForRandom = 0) :
-    ProteinOptimizer(seedForRandom), temperature(temperature), maxSteps(maxSteps),
-        timesReinitialization(timesReinitialization)
+      String name = juce::String("Default"), double frequencyCallback = 0.01, int numOutputFiles =
+          -1, File outputDirectory = juce::File()) :
+    ProteinOptimizer(name, frequencyCallback, numOutputFiles, outputDirectory), temperature(
+        temperature), maxSteps(maxSteps), timesReinitialization(timesReinitialization)
   {
   }
 
-  ProteinMonteCarloOptimizer(double temperature, int maxSteps, int timesReinitialization,
-      ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
-      int numOutputFiles, long long seedForRandom = 0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), temperature(temperature), maxSteps(maxSteps), timesReinitialization(
-        timesReinitialization)
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+      ExecutionContext& context, RandomGeneratorPtr& random)
   {
-  }
-
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover)
-  {
-    return monteCarloOptimization(pose, mover, temperature, maxSteps, timesReinitialization);
+    return monteCarloOptimization(pose, sampler, context, random, temperature, maxSteps,
+        timesReinitialization);
   }
 
   /*
@@ -67,7 +55,8 @@ public:
    * Default = 5.
    * @return the new conformation
    */
-  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose, ProteinMoverPtr& mover,
+  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose,
+      ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
       double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5)
   {
     double currentEnergy = getConformationScore(pose);
@@ -104,14 +93,14 @@ public:
       englobingScopesNames.push_back(T("Temperature"));
       englobingScopesNames.push_back(T("Minimal energy (log10)"));
       englobingScopesNames.push_back(T("Temporary energy (log10)"));
-      initializeCallbacks(englobingScopesNames, minimumEnergy);
+      initializeCallbacks(context, englobingScopesNames, minimumEnergy);
       resultCallbackValues.push_back(Variable((int)0));
       resultCallbackValues.push_back(Variable(minimumEnergy));
       resultCallbackValues.push_back(Variable(temporaryEnergy));
       resultCallbackValues.push_back(Variable(temperature));
       resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
       resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
-      callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+      callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
     }
     int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
     String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
@@ -119,19 +108,20 @@ public:
 
     if (saveToFile)
     {
-      ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+      ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
       String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
       File temporaryFile(temporaryOutputFileName);
-      protein->saveToXmlFile(*context, temporaryFile);
+      protein->saveToXmlFile(context, temporaryFile);
       indexOutputFile++;
     }
 
     for (int i = 1; i <= maxSteps; i++)
     {
+      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose);
 
-      if (keepConformation(temporaryEnergy - currentEnergy, temperature))
+      if (keepConformation(random, temporaryEnergy - currentEnergy, temperature))
       {
         (*temporaryOptimizedPose) = (*workingPose);
         currentEnergy = temporaryEnergy;
@@ -165,21 +155,21 @@ public:
         resultCallbackValues.at(3) = Variable(temperature);
         resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
         resultCallbackValues.at(5) = Variable(log10(temporaryEnergy));
-        callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+        callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
       }
 
       if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
       {
-        ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+        ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
         String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
         File temporaryFile(temporaryOutputFileName);
-        protein->saveToXmlFile(*context, temporaryFile);
+        protein->saveToXmlFile(context, temporaryFile);
         indexOutputFile++;
       }
     }
     // Verbosity
     if (verbosity)
-      finalizeCallbacks(minimumEnergy);
+      finalizeCallbacks(context, minimumEnergy);
 
     return optimizedPose;
   }
