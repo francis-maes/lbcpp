@@ -60,13 +60,12 @@ public:
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*10);
+      juce::Thread::sleep(timeToSleep*1000);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
       
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate/* || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && optimizerState->getNumberOfInProgressEvaluations() == 0)*/) 
       {   
-        //std::cout << "HERE:" << optimizerState->getNumberOfProcessedRequests() << std::endl;
         context.progressCallback(new ProgressionState(numberEvaluationsToUpdate, numberEvaluationsToUpdate, T("Evaluations"))); // TODO arnaud : forced
         // sort results
         std::multimap<double, Variable> sortedScores;
@@ -75,7 +74,6 @@ public:
           std::vector< std::pair<double, Variable> >::const_iterator it;
           size_t i = 1;
           for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().begin() + numberEvaluationsToUpdate; it++) {  // use only numberEvaluationsToUpdate results
-            //std::cout << "HERE 2 : " << i << std::endl;
             sortedScores.insert(*it);
             
             if (verbose) 

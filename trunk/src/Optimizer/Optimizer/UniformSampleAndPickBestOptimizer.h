@@ -42,7 +42,7 @@ public:
     
     // wait (in case of async context) & update progression
     while (!optimizerContext->areAllRequestsProcessed()) {
-      Thread::sleep(10);
+      Thread::sleep(60000);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
     }
     jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
