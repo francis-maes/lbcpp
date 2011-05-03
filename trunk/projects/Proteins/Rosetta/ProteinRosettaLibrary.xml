@@ -16,19 +16,13 @@
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
-    <variable type="GenericVector[Double]" name="parameters" shortName="p" description="Parameters values"/>
-    <variable type="RigidBodySpinMover" name="mover" description="mover"/>
   </class>
 
   <class name="ProteinFeaturesGeneratorWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
     <variable type="String" name="resultsDirectory" shortName="o" description="Directory where to store the outputs"/>
-    <variable type="String" name="moverName" shortName="mov" description="Mover name"/>
-    <variable type="String" name="optimizerName" shortName="opt" description="Optimizer name"/>
     <variable type="Integer" name="timesFeatureGeneration" shortName="t" description="Number of generate output files for one protein. So one file generated every maxNumberIterations/timesFeatureGeneration."/>
     <variable type="Integer" name="maxNumberIterations" shortName="m" description="Max number of desired iterations for the optimization"/>
-    <variable type="GenericVector[Double]" name="commandLineMoverParameters" shortName="movp" description="Parameters for the mover specified, see the mover description for more information. (submission example : -movp 2.3,1.0,4.5)"/>
-    <variable type="GenericVector[Double]" name="commandLineOptimizerParameters" shortName="optp" description="Parameters for the optimizer specified, see the optimizer description for more information. Parameters must be given in the same order as for the constructor."/>
   </class>
   
   <class name="ProteinOptimizerWorkUnit" base="CompositeWorkUnit">

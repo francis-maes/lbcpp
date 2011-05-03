@@ -15,19 +15,16 @@
 # include "RosettaUtils.h"
 # include "ProteinOptimizer.h"
 # include "ProteinMover.h"
-# include "ProteinOptimizer/GreedyOptimizer.h"
 # include "ProteinOptimizer/SimulatedAnnealingOptimizer.h"
-# include "ProteinOptimizer/SequentialOptimizer.h"
-# include "ProteinOptimizer/MonteCarloOptimizer.h"
+# include "Sampler/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
 
 class ProteinOptimizerWorkUnit;
-typedef ReferenceCountedObjectPtr<ProteinOptimizerWorkUnit>
-    ProteinOptimizerWorkUnitPtr;
+typedef ReferenceCountedObjectPtr<ProteinOptimizerWorkUnit> ProteinOptimizerWorkUnitPtr;
 
-class ProteinOptimizerWorkUnit : public CompositeWorkUnit
+class ProteinOptimizerWorkUnit: public CompositeWorkUnit
 {
 public:
   // returnPose must be already instantiated
@@ -36,23 +33,22 @@ public:
   }
 
   ProteinOptimizerWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
-      ProteinOptimizerPtr& optimizer, ProteinMoverPtr& mover, core::pose::PoseOP& returnPose) :
-        CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
+      ProteinOptimizerPtr& optimizer, ProteinMoverSamplerPtr& sampler, RandomGeneratorPtr& random) :
+    CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
     this->pose = pose;
     this->optimizer = optimizer;
-    this->mover = mover;
-    this->returnPose = returnPose;
+    this->sampler = sampler;
+    this->random = random;
   }
 
   virtual Variable run(ExecutionContext& context)
   {
     context.informationCallback(T("Protein : ") + proteinName + T(" loaded succesfully."));
     context.resultCallback(T("Initial energy"), Variable(getConformationScore(pose)));
-    *returnPose = *pose;
-    core::pose::PoseOP temporaryPose = new core::pose::Pose((*pose));
-    *returnPose = (*(optimizer->apply(temporaryPose, mover)));
+    core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
+    *returnPose = (*(optimizer->apply(pose, sampler, context, random)));
     context.informationCallback(T("Optimization done."));
     double score = getConformationScore(returnPose);
     context.resultCallback(T("Final energy"), Variable(score));
@@ -65,8 +61,8 @@ protected:
   String proteinName;
   core::pose::PoseOP pose;
   ProteinOptimizerPtr optimizer;
-  ProteinMoverPtr mover;
-  core::pose::PoseOP returnPose;
+  ProteinMoverSamplerPtr sampler;
+  RandomGeneratorPtr random;
 };
 
 class ProteinFeaturesGeneratorWorkUnit: public WorkUnit
@@ -83,17 +79,6 @@ public:
     ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, directory);
     int numProteins = proteins->getNumElements();
 
-    // Mover
-    std::vector<Variable> moverArguments;
-    for (int i = 0; i < commandLineMoverParameters.size(); i++)
-      moverArguments.push_back(Variable(commandLineMoverParameters[i]));
-    ProteinMoverPtr mover;
-
-    // Other arguments
-    juce::File outputDirectory = context.getFile(resultsDirectory);
-    if (!outputDirectory.exists())
-      outputDirectory.createDirectory();
-
     double frequenceVerbosity = 0.01;
 
     // Creating parallel workunits
@@ -101,36 +86,45 @@ public:
         numProteins);
     for (int i = 0; i < proteinsOptimizer->getNumWorkUnits(); i++)
     {
-      ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein>();
+      ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein> ();
       core::pose::PoseOP currentPose = convertProteinToPose(context, currentProtein);
       core::pose::PoseOP initialPose = initializeProteinStructure(currentPose);
       core::pose::PoseOP returnPose = new core::pose::Pose();
+      String currentName = currentProtein->getName();
 
-      // Optimizer
-      ProteinOptimizerPtr optimizer;
-      if (!optimizerName.compareIgnoreCase(T("greedy")))
-        optimizer = new ProteinGreedyOptimizer(maxNumberIterations, &context,
-            currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
-      else if (!optimizerName.compareIgnoreCase(T("montecarlo")))
-        optimizer = new ProteinMonteCarloOptimizer(commandLineOptimizerParameters[0],
-            maxNumberIterations, (int)commandLineOptimizerParameters[1], &context,
-            currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
-      else if (!optimizerName.compareIgnoreCase(T("simulatedannealing")))
-        optimizer = new ProteinSimulatedAnnealingOptimizer(commandLineOptimizerParameters[0],
-            commandLineOptimizerParameters[1], (int)commandLineOptimizerParameters[2],
-            maxNumberIterations, (int)commandLineOptimizerParameters[3], &context,
-            currentProtein->getName(), frequenceVerbosity, outputDirectory, timesFeatureGeneration);
-      else if (!optimizerName.compareIgnoreCase(T("sequential")))
-        optimizer = new ProteinSequentialOptimizer(&context, currentProtein->getName(),
-            frequenceVerbosity);
-      else
+      // Output arguments
+      juce::File outputDirectory;
+      if (timesFeatureGeneration > 0)
       {
-        context.errorCallback(T("Bad optimizer name."));
-        return Variable();
+        outputDirectory = context.getFile(resultsDirectory);
+        if (!outputDirectory.exists())
+          outputDirectory.createDirectory();
       }
 
-      WorkUnitPtr childWorkUnit = new ProteinOptimizerWorkUnit(
-          currentProtein->getName(), initialPose, optimizer, mover, returnPose);
+      // Optimizer
+      PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(initialPose->n_residue(), 0, 25, 0, 25);
+      ShearMoverSamplerPtr samp1 = new ShearMoverSampler(initialPose->n_residue(), 0, 25, 0, 25);
+      RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(
+          initialPose->n_residue(), 0.5, 0.25);
+      RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(initialPose->n_residue(),
+          0, 20);
+      RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(
+          initialPose->n_residue(), 0.5, 0.25, 0, 20);
+
+      std::vector<Variable> samplers;
+      samplers.push_back(Variable(samp0));
+      samplers.push_back(Variable(samp1));
+      samplers.push_back(Variable(samp2));
+      samplers.push_back(Variable(samp3));
+      samplers.push_back(Variable(samp4));
+      ProteinMoverSamplerPtr samp(new ProteinMoverSampler(5, samplers));
+      ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
+          maxNumberIterations, 5, currentProtein->getName(), 0.01, timesFeatureGeneration,
+          outputDirectory);
+      RandomGeneratorPtr random = new RandomGenerator(0);
+
+      WorkUnitPtr childWorkUnit = new ProteinOptimizerWorkUnit(currentName, initialPose, o, samp,
+          random);
       proteinsOptimizer->setWorkUnit(i, childWorkUnit);
     }
     proteinsOptimizer->setPushChildrenIntoStackFlag(true);
@@ -145,13 +139,9 @@ protected:
   friend class ProteinFeaturesGeneratorWorkUnitClass;
   String proteinsDirectory;
   String resultsDirectory;
-  String moverName;
-  std::vector<double> commandLineMoverParameters;
 
   int timesFeatureGeneration;
-  String optimizerName;
   int maxNumberIterations;
-  std::vector<double> commandLineOptimizerParameters;
 };
 
 class XmlToPDBConverterWorkUnit: public WorkUnit
@@ -180,7 +170,6 @@ public:
 
       String nameXmlFile = results[i]->getFileNameWithoutExtension();
 
-      //String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
       File outFile(outputDirectory.getFullPathName() + T("/") + nameXmlFile + T(".pdb"));
       currentProtein->saveToPDBFile(context, outFile);
     }

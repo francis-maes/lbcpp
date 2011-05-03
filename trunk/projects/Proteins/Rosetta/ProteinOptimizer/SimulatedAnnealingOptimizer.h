@@ -11,6 +11,7 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
+# include "../Sampler/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -21,45 +22,26 @@ typedef ReferenceCountedObjectPtr<ProteinSimulatedAnnealingOptimizer>
 class ProteinSimulatedAnnealingOptimizer: public ProteinOptimizer
 {
 public:
-  ProteinSimulatedAnnealingOptimizer(long long seedForRandom = 0) :
-    ProteinOptimizer(seedForRandom), initialTemperature(4.0), finalTemperature(0.01),
-        numberDecreasingSteps(100), maxSteps(50000), timesReinitialization(5)
-  {
-  }
-
-  ProteinSimulatedAnnealingOptimizer(ExecutionContextPtr context, String name,
-      double frequencyCallback, File outputDirectory, int numOutputFiles, long long seedForRandom =
-          0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), initialTemperature(4.0), finalTemperature(0.01),
-        numberDecreasingSteps(100), maxSteps(50000), timesReinitialization(5)
+  ProteinSimulatedAnnealingOptimizer() :
+    ProteinOptimizer()
   {
   }
 
   ProteinSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
-      int numberDecreasingSteps, int maxSteps, int timesReinitialization, long long seedForRandom =
-          0) :
-    ProteinOptimizer(seedForRandom), initialTemperature(initialTemperature), finalTemperature(
-        finalTemperature), numberDecreasingSteps(numberDecreasingSteps), maxSteps(maxSteps),
-        timesReinitialization(timesReinitialization)
+      int numberDecreasingSteps, int maxSteps, int timesReinitialization, String name =
+          juce::String("Default"), double frequencyCallback = 0.01, int numOutputFiles = -1,
+      File outputDirectory = juce::File()) :
+    ProteinOptimizer(name, frequencyCallback, numOutputFiles, outputDirectory), initialTemperature(
+        initialTemperature), finalTemperature(finalTemperature), numberDecreasingSteps(
+        numberDecreasingSteps), maxSteps(maxSteps), timesReinitialization(timesReinitialization)
   {
   }
 
-  ProteinSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
-      int numberDecreasingSteps, int maxSteps, int timesReinitialization,
-      ExecutionContextPtr context, String name, double frequencyCallback, File outputDirectory,
-      int numOutputFiles, long long seedForRandom = 0) :
-    ProteinOptimizer(context, name, frequencyCallback, outputDirectory, numOutputFiles,
-        seedForRandom), initialTemperature(initialTemperature), finalTemperature(finalTemperature),
-        numberDecreasingSteps(numberDecreasingSteps), maxSteps(maxSteps), timesReinitialization(
-            timesReinitialization)
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+      ExecutionContext& context, RandomGeneratorPtr& random)
   {
-  }
-
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverPtr& mover)
-  {
-    return simulatedAnnealingOptimization(pose, mover, initialTemperature, finalTemperature,
-        numberDecreasingSteps, maxSteps, timesReinitialization);
+    return simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
+        finalTemperature, numberDecreasingSteps, maxSteps, timesReinitialization);
   }
 
   /*
@@ -80,8 +62,9 @@ public:
    * @return the new conformation
    */
   core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP& pose,
-      ProteinMoverPtr& mover, double initialTemperature = 4.0, double finalTemperature = 0.01,
-      int numberDecreasingSteps = 100, int maxSteps = 50000, int timesReinitialization = 5)
+      ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
+      double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
+          50, int maxSteps = 50000, int timesReinitialization = 5)
   {
     double currentEnergy = getConformationScore(pose);
     double minimumEnergy = currentEnergy;
@@ -122,14 +105,14 @@ public:
       englobingScopesNames.push_back(T("Temperature"));
       englobingScopesNames.push_back(T("Minimal energy (log10)"));
       englobingScopesNames.push_back(T("Temporary energy (log10)"));
-      initializeCallbacks(englobingScopesNames, minimumEnergy);
+      initializeCallbacks(context, englobingScopesNames, minimumEnergy);
       resultCallbackValues.push_back(Variable((int)0));
       resultCallbackValues.push_back(Variable(minimumEnergy));
       resultCallbackValues.push_back(Variable(temporaryEnergy));
       resultCallbackValues.push_back(Variable(currentTemperature));
       resultCallbackValues.push_back(Variable(log10(minimumEnergy)));
       resultCallbackValues.push_back(Variable(log10(temporaryEnergy)));
-      callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+      callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
     }
     int intervalSaveToFile = juce::jlimit(1, maxSteps, maxSteps / numOutputFiles);
     String nameOutputFile = outputDirectory.getFullPathName() + T("/") + name + T("_");
@@ -137,19 +120,20 @@ public:
 
     if (saveToFile)
     {
-      ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+      ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
       String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
       File temporaryFile(temporaryOutputFileName);
-      protein->saveToXmlFile(*context, temporaryFile);
+      protein->saveToXmlFile(context, temporaryFile);
       indexOutputFile++;
     }
 
     for (int i = 1; i <= maxSteps; i++)
     {
+      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose);
 
-      if (keepConformation(temporaryEnergy - currentEnergy, currentTemperature))
+      if (keepConformation(random, temporaryEnergy - currentEnergy, currentTemperature))
       {
         (*temporaryOptimizedPose) = (*workingPose);
         currentEnergy = temporaryEnergy;
@@ -189,21 +173,21 @@ public:
         resultCallbackValues.at(3) = Variable(currentTemperature);
         resultCallbackValues.at(4) = Variable(log10(minimumEnergy));
         resultCallbackValues.at(5) = Variable(log10(currentEnergy));
-        callback(resultCallbackValues, Variable(minimumEnergy), maxSteps);
+        callback(context, resultCallbackValues, Variable(minimumEnergy), maxSteps);
       }
 
       if (saveToFile && (((i % intervalSaveToFile) == 0) || (i == maxSteps)))
       {
-        ProteinPtr protein = convertPoseToProtein(*context, optimizedPose);
+        ProteinPtr protein = convertPoseToProtein(context, optimizedPose);
         String temporaryOutputFileName = nameOutputFile + String(indexOutputFile) + T(".xml");
         File temporaryFile(temporaryOutputFileName);
-        protein->saveToXmlFile(*context, temporaryFile);
+        protein->saveToXmlFile(context, temporaryFile);
         indexOutputFile++;
       }
     }
     // Verbosity
     if (verbosity)
-      finalizeCallbacks(minimumEnergy);
+      finalizeCallbacks(context, minimumEnergy);
 
     return optimizedPose;
   }
