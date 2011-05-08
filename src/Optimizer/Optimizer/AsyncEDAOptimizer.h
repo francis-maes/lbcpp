@@ -53,7 +53,7 @@ public:
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*10);
+      juce::Thread::sleep(timeToSleep*1000);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
       saveState(context, optimizerState);
       

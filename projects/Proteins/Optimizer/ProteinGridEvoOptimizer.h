@@ -32,7 +32,7 @@ class ProteinObjectiveFunction : public Function
   Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
   {
     WorkUnitPtr wu = new ProteinLearner();
-    wu->parseArguments(context, T("-s ./supervision -i ./predicted -p \"numerical(") + inputs->toString() + T(",sgd)\" -t ss3 -n 1 -m 10"));
+    wu->parseArguments(context, T("-s ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/supervision -i ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/predicted -p \"numerical(") + inputs->toString() + T(",sgd)\" -t ss3 -n 1"));
     ScoreObjectPtr scoreObject = (wu->run(context)).getObjectAndCast<ScoreObject>();
     return scoreObject->getScoreToMinimize();
   }
