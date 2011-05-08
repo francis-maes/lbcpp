@@ -1,0 +1,7 @@
+NetworkClient - time left: 998
+T00000 warning        ClientManagerNodeNetworkInterface::pushWorkUnit (in arnaud@monster24)                                                                    
+T00000 warning        ClientManagerNodeNetworkInterface::pushWorkUnit (in arnaud@monster24)                                                                    
+T00000 error          Trouble - We didn't correclty receive the acknowledgement (in DistributedOptimizerContext::evaluate)                                     
+JUCE Assertion failure in /home/arnaudschoofs/Bureau/LBCpp/juce/juce_amalgamated.cpp, line 37023
+pure virtual method called
+terminate called recursively
