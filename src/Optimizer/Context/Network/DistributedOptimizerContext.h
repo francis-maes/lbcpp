@@ -26,7 +26,7 @@ public:
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
     {functionCallback = callback;}
-  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
+  virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback); // TODO arnaud : code should be elsewhere ?
   
   virtual void waitUntilAllRequestsAreProcessed() const
   {

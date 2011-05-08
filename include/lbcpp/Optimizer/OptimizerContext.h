@@ -27,7 +27,6 @@ public:
   virtual void waitUntilAllRequestsAreProcessed() const = 0;
   virtual bool areAllRequestsProcessed() const = 0;
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) = 0;
-  virtual bool evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector);
   
 protected:
   friend class OptimizerContextClass;

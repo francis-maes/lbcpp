@@ -20,6 +20,12 @@ TypePtr Optimizer::getRequiredContextType() const
 TypePtr Optimizer::getRequiredStateType() const
   {return optimizerStateClass;}
 
+void Optimizer::saveState(ExecutionContext& context, const OptimizerStatePtr& optimizerState) const
+{
+  ScopedLock _(optimizerState->getLock());
+  optimizerState->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")));  // TODO arnaud : file name as args ?
+}
+
 size_t Optimizer::getNumRequiredInputs() const
   {return 2;}
 
@@ -36,6 +42,7 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 {
   OptimizerContextPtr optimizerContext = inputs[0].getObjectAndCast<OptimizerContext>();
   OptimizerStatePtr optimizerState = inputs[1].getObjectAndCast<OptimizerState>();
+  optimizerState->initialize();
   context.enterScope(T("Optimizing"));
   context.informationCallback(toString());
   optimizerContext->setPostEvaluationCallback((FunctionCallbackPtr) optimizerState.get());
@@ -53,14 +60,19 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 OptimizerState::OptimizerState() 
   : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestVariable(Variable()), bestScore(DBL_MAX) {}
 
+void OptimizerState::initialize()
+{
+  // usefull if Optimizer is "restarted" with an existing OptimizerState (in pogress evaluations are lost)
+  if (totalNumberOfRequests > totalNumberOfEvaluations)
+    totalNumberOfRequests = totalNumberOfEvaluations;
+}
+
 // Distribution
 const DistributionPtr& OptimizerState::getDistribution() const
   {return distribution;}
 
 void OptimizerState::setDistribution(const DistributionPtr& newDistribution)
-{
-  distribution = newDistribution;
-}
+  {distribution = newDistribution;}
 
 
 // Requests
@@ -162,13 +174,13 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 OptimizerContext::OptimizerContext(const FunctionPtr& objectiveFunction)
   : objectiveFunction(objectiveFunction) {jassert(objectiveFunction->getNumRequiredInputs() == 1);}
 
-bool OptimizerContext::evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
+/*bool OptimizerContext::evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
 {
   bool ok = true;
   for (size_t i = 0; i < parametersVector.size(); ++i)
     ok &= evaluate(context, parametersVector[i]);
   return ok;
-}
+}*/
 
 void OptimizerContext::setPostEvaluationCallback(const FunctionCallbackPtr& callback)
   {objectiveFunction->addPostCallback(callback);}
