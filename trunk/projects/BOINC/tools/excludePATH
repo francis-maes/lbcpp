@@ -1,8 +1,14 @@
 apps/BoincEvaluator/*/*.zip
+apps/LBCppBeta/*/*.zip
 archives/
 download/*.zip
+download/*-apple-darwin*
+download/*-pc-linux-gnu*
+download/*windows_intelx86*
+download/*.sh
+download/*.xml
 error_results/
-html/cache
+html/cache/
 html/stats_*
 invalid_results/
 log_boinc/
@@ -11,3 +17,4 @@ results/
 sample_results/
 strange/
 tmp_boinc/
+
