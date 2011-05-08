@@ -32,8 +32,8 @@ public:
       DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES) :
     DiscreteSampler(), probabilityForUnseenSamples(probabilityForUnseenSamples)
   {
-    probabilities = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType,
-        numElements, 1.0 / (double)numElements);
+    probabilities = new DenseDoubleVector(denseDoubleVectorClass(
+        positiveIntegerEnumerationEnumeration), numElements, 1.0 / (double)numElements);
   }
 
   EnumerationDiscreteSampler(DenseDoubleVectorPtr& probabilities,
@@ -51,6 +51,12 @@ public:
         positiveIntegerEnumerationEnumeration), sampler.probabilities->getValues());
   }
 
+  SamplerPtr clone()
+  {
+    EnumerationDiscreteSamplerPtr temp = new EnumerationDiscreteSampler(*this);
+    return temp;
+  }
+
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
@@ -64,8 +70,12 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
-    probabilities = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, probabilityType,
-        probabilities->getNumElements(), probabilityForUnseenSamples);
+    if (dataset.size() == 0)
+      return;
+
+    probabilities = new DenseDoubleVector(denseDoubleVectorClass(
+        positiveIntegerEnumerationEnumeration), probabilities->getNumElements(),
+        probabilityForUnseenSamples);
     int numSamples = dataset.size();
     double increment = 1.0 / (double)numSamples;
     double totalNorm = probabilities->getNumElements() * probabilityForUnseenSamples;

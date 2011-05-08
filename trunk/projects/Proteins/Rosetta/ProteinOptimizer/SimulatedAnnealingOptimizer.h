@@ -193,6 +193,7 @@ public:
   }
 
 private:
+  friend class ProteinSimulatedAnnealingOptimizerClass;
   double initialTemperature;
   double finalTemperature;
   int numberDecreasingSteps;

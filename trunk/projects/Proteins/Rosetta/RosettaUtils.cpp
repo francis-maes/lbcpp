@@ -165,7 +165,7 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
 
   double score = (*score_fxn)(*pose) + juce::jmax(0.0, correctionFactor - (double)3
       * numberResidues + 1);
-  return (score > 0 ? score : std::pow(10.0, score));
+  return (score >= 1 ? score : std::exp(score - 1));
 }
 
 void lbcpp::rosettaInitialization(ExecutionContext& context)

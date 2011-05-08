@@ -28,6 +28,7 @@ public:
       const Variable* inputs = NULL) const=0;
   virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random,
       const std::vector<std::pair<Variable, Variable> >& dataset)=0;
+  virtual SamplerPtr clone()=0;
 
 protected:
   friend class SamplerClass;
@@ -107,7 +108,7 @@ public:
 
 protected:
   friend class SequentialSamplerClass;
-  std::vector<SamplerPtr> samplers;
+  std::vector<Variable> samplers; // each Variable contains a pointer to the corresponding sampler
 };
 
 class CompositeSampler;
@@ -116,11 +117,13 @@ typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 class CompositeSampler: public Sampler
 {
 public:
-  CompositeSampler():Sampler()
+  CompositeSampler() :
+    Sampler()
   {
   }
 
-  CompositeSampler(size_t numSamplers):Sampler()
+  CompositeSampler(size_t numSamplers) :
+    Sampler()
   {
     sons = std::vector<Variable>(numSamplers);
   }
@@ -139,6 +142,7 @@ extern SamplerPtr shearMoverSampler();
 extern SamplerPtr rigidBodyTransMoverSampler();
 extern SamplerPtr rigidBodySpinMoverSampler();
 extern SamplerPtr rigidBodyGeneralMoverSampler();
+extern SamplerPtr simpleResidueSampler();
 
 }; /* namespace lbcpp */
 

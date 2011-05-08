@@ -79,7 +79,7 @@ public:
     ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, directory);
     int numProteins = proteins->getNumElements();
 
-    double frequenceVerbosity = 0.01;
+    double frequenceVerbosity = 0.0001;
 
     // Creating parallel workunits
     CompositeWorkUnitPtr proteinsOptimizer = new CompositeWorkUnit(T("ProteinsOptimizer"),
@@ -182,6 +182,127 @@ protected:
   friend class XmlToPDBConverterWorkUnitClass;
   String proteinsDirectory;
   String resultsDirectory;
+};
+
+class EnergyEvaluationWorkUnit: public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    rosettaInitialization(context, false);
+
+    // Load all xml files in proteinsDir
+    File directory = context.getFile(proteinsDirectory);
+    if (!directory.exists())
+    {
+      context.errorCallback(T("Proteins' directory not found."));
+      return Variable();
+    }
+
+    juce::OwnedArray<File> results;
+    directory.findChildFiles(results, File::findFiles, false, T("*.xml"));
+
+    // Other arguments
+    juce::File output(directory.getFullPathName() + T("/") + T("energies_")
+        + directory.getFileName() + T(".data"));
+    juce::OutputStream *fos = output.createOutputStream();
+
+    context.informationCallback(T("Performing calculation..."));
+
+    for (int i = 0; i < results.size(); i++)
+    {
+      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
+      core::pose::PoseOP pose = convertProteinToPose(context, currentProtein);
+      context.informationCallback((*results[i]).getFileNameWithoutExtension());
+      context.informationCallback(currentProtein->getName());
+      context.informationCallback(Variable(getTotalEnergy(pose)).toString());
+
+      *fos << getTotalEnergy(pose) << "\r\n";
+    }
+
+    fos->flush();
+    delete fos;
+
+    context.informationCallback(T("Energies evaluated and stored in energies.data"));
+    return Variable();
+  }
+
+protected:
+  friend class EnergyEvaluationWorkUnitClass;
+  String proteinsDirectory;
+};
+
+class FilesHarmonizationWorkUnit: public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    File homeDirectory = context.getFile(proteinsDirectory);
+    if (!homeDirectory.exists())
+    {
+      context.errorCallback(T("Proteins' directory not found."));
+      return Variable();
+    }
+
+    juce::OwnedArray<File> directories;
+    homeDirectory.findChildFiles(directories, File::findDirectories, false);
+
+    for (int j = 0; j < directories.size(); j++)
+    {
+      juce::OwnedArray<File> results;
+      (*directories[j]).findChildFiles(results, File::findFiles, false, T("*.xml"));
+
+      for (int i = 0; i < results.size(); i++)
+      {
+        String nameToModify = (*results[i]).getFileNameWithoutExtension();
+        String goodName;
+        if (nameToModify.contains(T("_")))
+          goodName = nameToModify.upToFirstOccurrenceOf(T("_"), false, true);
+        else
+          goodName = nameToModify;
+
+        bool exist = existsForAllDirectories(directories, goodName);
+        if (!exist)
+          deleteForAllDirectories(directories, goodName);
+
+      }
+    }
+    context.informationCallback(T("All files harmonized."));
+    return Variable();
+  }
+
+  bool existsForAllDirectories(juce::OwnedArray<File>& directories, String name)
+  {
+    bool exists = true;
+    for (int k = 0; k < directories.size(); k++)
+    {
+      juce::OwnedArray<File> results;
+      (*directories[k]).findChildFiles(results, File::findFiles, false, name + T("*.xml"));
+      if (results.size() == 0)
+      {
+        exists = false;
+        break;
+      }
+    }
+    return exists;
+  }
+
+  void deleteForAllDirectories(juce::OwnedArray<File>& directories, String name)
+  {
+    for (int k = 0; k < directories.size(); k++)
+    {
+      juce::OwnedArray<File> results;
+      (*directories[k]).findChildFiles(results, File::findFiles, false, name + T("*.xml"));
+      for (int i = 0; i < results.size(); i++)
+      {
+        (*results[i]).deleteFile();
+      }
+    }
+  }
+
+protected:
+  friend class FilesHarmonizationWorkUnitClass;
+  String proteinsDirectory;
 };
 
 }; /* namespace lbcpp */

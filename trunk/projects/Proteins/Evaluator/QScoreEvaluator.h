@@ -171,7 +171,7 @@ private:
  * @param minDist the minimum distance in the chain of amino acids between two
  * amino acids that are evaluated for the QScore. -1 means no minimum distance.
  * @param maxDist the maximum distance in the chain of amino acids between two
- * amino acids that are evaluated for the QScore. -1 means no minimum distance.
+ * amino acids that are evaluated for the QScore. -1 means no maximum distance.
  * @return a QScoreObjectPtr that represents the similarity between the proteins.
  */
 QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist = -1,

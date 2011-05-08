@@ -156,6 +156,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/Sampler.h
     Rosetta/ProteinOptimizer.h
     Rosetta/RosettaWorkUnit.h
+    Rosetta/ProteinEDAOptimizer.h
     Rosetta/ProteinRosettaLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
   )
@@ -183,6 +184,12 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/Sampler/EnumerationDiscreteSampler.h
     Rosetta/Sampler/ProteinMoverSampler.h
     Rosetta/Sampler/ParzenContinuousSampler.h
+    Rosetta/Sampler/SimpleResidueSampler.h
+    Rosetta/Sampler/PhiPsiMoverSampler.h
+    Rosetta/Sampler/RigidBodyTransMoverSampler.h
+    Rosetta/Sampler/RigidBodySpinMoverSampler.h
+    Rosetta/Sampler/RigidBodyGeneralMoverSampler.h
+    Rosetta/Sampler/ShearMoverSampler.h
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
   )
 

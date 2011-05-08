@@ -20,14 +20,6 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
   - regarder autre forme pour le facteur de correction?
   - faire une etude de proteines pour evaluer les std?
 
-- modifier la fonction de decroissance de la temperature
-
-- corriger les optimiseurs
-
-- corriger la workunit doptimisation
-
-- corriger lappel dans lbcpp??
-
 - sampler maximum entropy (+ref)
 
 Rapport
@@ -44,8 +36,9 @@ Rapport
 
 DONE
 =====
-
-
+serialisation xml des movers, optimizers et samplers
+implementation EDA
+proteinmoversampler corrige
 
 
 

@@ -3,12 +3,21 @@
 <library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
 
   <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
+    <variable type="Double" name="probabilityForUnseenSamples" shortName="pus" description="Minimum probability for each sample. Used in the learning procedure"/>
   </class>
   
   <class name="GaussianContinuousSampler" base="ContinuousSampler">
   </class>
   
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="abscissa" shortName="a" description="Abscissa where the integral is evaluated"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="integral" shortName="i" description="Values of the integral of the density probability function"/>
+    <variable type="Double" name="precision" shortName="p" description="Precision of the abscissa. It is a ratio, e.g. 0.0001 means the abscissa are evaluated 10000 times in the total abscissa interval (which is fixed or not)"/>
+    <variable type="Double" name="excursion" shortName="e" description="The abscissa interval, if not fixed, is evaluated at learning time. It is calculated to lie between mean - excursion * std and mean + excursion * std where mean and std are calculated on the dataset"/>
+    <variable type="Double" name="kernelWidth" shortName="w" description="A double which is multiplied by the std of the dataset to determine, at learning time, the std of the gaussians used to approximate the density function"/>
+    <variable type="Boolean" name="learned" shortName="l" description="Indicates if the sampler has already been learned"/>
+    <variable type="Boolean" name="fixedAbscissa" shortName="f" description="Indicates if the abscissa must be evaluated dynamically or not."/>  
   </class>
   
   <class name="PhiPsiMoverSampler" base="CompositeSampler">
@@ -18,12 +27,24 @@
   </class>
   
   <class name="RigidBodyTransMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
   </class>
   
   <class name="RigidBodySpinMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
   </class>
   
   <class name="RigidBodyGeneralMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
+  </class>
+  
+  <class name="SimpleResidueSampler" base="CompositeSampler">
+    <variable type="Integer" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+    <variable type="Integer" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>
     
+  <class name="ProteinMoverSampler" base="CompositeSampler">
+    <variable type="PositiveInteger" name="numMover" shortName="n" description="The number of movers to sample from."/>
+  </class>
+  
 </library>

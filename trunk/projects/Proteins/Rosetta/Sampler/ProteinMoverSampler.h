@@ -29,7 +29,7 @@ namespace lbcpp
 
 enum ProteinMoverEnumeration
 {
-  phipsi = 0, shear, rigidbodytrans, rigidbodyspin, rigidbodygeneral,
+  phipsi = 0, shear, rigidbodytrans, rigidbodyspin, rigidbodygeneral, numberOfMovers
 };
 
 extern EnumerationPtr proteinMoverEnumerationEnumeration;
@@ -53,9 +53,24 @@ public:
     CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    sons[0] = Variable(new EnumerationDiscreteSampler(numMover));
+    sons[0] = Variable(new EnumerationDiscreteSampler(numMover, 1.0 / (2 * numMover)));
+    whichMover = std::vector<int>(numberOfMovers, -1);
     for (int i = 0; i < samplers.size(); i++)
+    {
       sons[i + 1] = Variable(samplers[i]);
+      SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
+
+      if (t.isInstanceOf<PhiPsiMoverSampler> ())
+        whichMover[phipsi] = i;
+      else if (t.isInstanceOf<ShearMoverSampler> ())
+        whichMover[shear] = i;
+      else if (t.isInstanceOf<RigidBodyTransMoverSampler> ())
+        whichMover[rigidbodytrans] = i;
+      else if (t.isInstanceOf<RigidBodySpinMoverSampler> ())
+        whichMover[rigidbodyspin] = i;
+      else if (t.isInstanceOf<RigidBodyGeneralMoverSampler> ())
+        whichMover[rigidbodygeneral] = i;
+    }
   }
 
   ProteinMoverSampler(DenseDoubleVectorPtr& probabilitiesMover, std::vector<Variable>& samplers) :
@@ -63,23 +78,51 @@ public:
         probabilitiesMover->getNumElements())
   {
     // select mover
-    sons[0] = Variable(new EnumerationDiscreteSampler(probabilitiesMover));
+    sons[0] = Variable(new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (2 * numMover)));
+    whichMover = std::vector<int>(numberOfMovers, -1);
     for (int i = 0; i < samplers.size(); i++)
+    {
       sons[i + 1] = Variable(samplers[i]);
+      SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
+
+      if (t.isInstanceOf<PhiPsiMoverSampler> ())
+        whichMover[phipsi] = i;
+      else if (t.isInstanceOf<ShearMoverSampler> ())
+        whichMover[shear] = i;
+      else if (t.isInstanceOf<RigidBodyTransMoverSampler> ())
+        whichMover[rigidbodytrans] = i;
+      else if (t.isInstanceOf<RigidBodySpinMoverSampler> ())
+        whichMover[rigidbodyspin] = i;
+      else if (t.isInstanceOf<RigidBodyGeneralMoverSampler> ())
+        whichMover[rigidbodygeneral] = i;
+    }
+  }
+
+  ProteinMoverSampler(const ProteinMoverSampler& copy) :
+    CompositeSampler(copy.numMover + 1), numMover(copy.numMover), whichMover(copy.whichMover)
+  {
+    for (int i = 0; i < sons.size(); i++)
+      sons[i] = Variable(copy.sons[i].getObjectAndCast<Sampler> ()->clone());
+  }
+
+  SamplerPtr clone()
+  {
+    ProteinMoverSamplerPtr temp = new ProteinMoverSampler(*this);
+    return temp;
   }
 
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t whichMover = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
+    size_t indexMover = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
         random, inputs).getInteger();
-    SamplerPtr sampler = sons[whichMover + 1].getObjectAndCast<Sampler> ();
+    SamplerPtr sampler = sons[indexMover + 1].getObjectAndCast<Sampler> ();
     ProteinMoverPtr sampled = (sampler->sample(context, random, inputs)).getObjectAndCast<
         ProteinMover> ();
 
     Variable mover = Variable(sampled);
 
-    return Variable(mover);
+    return mover;
   }
 
   /**
@@ -90,11 +133,7 @@ public:
       std::pair<Variable, Variable> >& dataset)
   {
     std::vector<std::pair<Variable, Variable> > moverFrequencies;
-    std::vector<std::pair<Variable, Variable> > phiPsiSamples;
-    std::vector<std::pair<Variable, Variable> > shearSamples;
-    std::vector<std::pair<Variable, Variable> > rigidBodyTransSamples;
-    std::vector<std::pair<Variable, Variable> > rigidBodySpinSamples;
-    std::vector<std::pair<Variable, Variable> > rigidBodyGeneralSamples;
+    std::vector<std::vector<std::pair<Variable, Variable> > > samples(numMover);
 
     for (int i = 0; i < dataset.size(); i++)
     {
@@ -102,49 +141,67 @@ public:
 
       if (t.isInstanceOf<PhiPsiMover> ())
       {
-        moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(phipsi), Variable()));
-        phiPsiSamples.push_back(std::pair<Variable, Variable>(Variable(t), Variable()));
+        if (whichMover[phipsi] >= 0)
+        {
+          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(whichMover[phipsi]),
+              Variable()));
+          samples[whichMover[phipsi]].push_back(std::pair<Variable, Variable>(Variable(t),
+              Variable()));
+        }
       }
       else if (t.isInstanceOf<ShearMover> ())
       {
-        moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(shear), Variable()));
-        shearSamples.push_back(std::pair<Variable, Variable>(Variable(t), Variable()));
+        if (whichMover[shear] >= 0)
+        {
+          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(whichMover[shear]),
+              Variable()));
+          samples[whichMover[shear]].push_back(std::pair<Variable, Variable>(Variable(t),
+              Variable()));
+        }
       }
       else if (t.isInstanceOf<RigidBodyTransMover> ())
       {
-        moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(rigidbodytrans),
-            Variable()));
-        rigidBodyTransSamples.push_back(std::pair<Variable, Variable>(Variable(t), Variable()));
+        if (whichMover[rigidbodytrans] >= 0)
+        {
+          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
+              whichMover[rigidbodytrans]), Variable()));
+          samples[whichMover[rigidbodytrans]].push_back(std::pair<Variable, Variable>(Variable(t),
+              Variable()));
+        }
       }
       else if (t.isInstanceOf<RigidBodySpinMover> ())
       {
-        moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(rigidbodyspin),
-            Variable()));
-        rigidBodySpinSamples.push_back(std::pair<Variable, Variable>(Variable(t), Variable()));
+        if (whichMover[rigidbodyspin] >= 0)
+        {
+          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
+              whichMover[rigidbodyspin]), Variable()));
+          samples[whichMover[rigidbodyspin]].push_back(std::pair<Variable, Variable>(Variable(t),
+              Variable()));
+        }
       }
       else if (t.isInstanceOf<RigidBodyGeneralMover> ())
       {
-        moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(rigidbodygeneral),
-            Variable()));
-        rigidBodyGeneralSamples.push_back(std::pair<Variable, Variable>(Variable(t), Variable()));
+        if (whichMover[rigidbodygeneral] >= 0)
+        {
+          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
+              whichMover[rigidbodygeneral]), Variable()));
+          samples[whichMover[rigidbodygeneral]].push_back(std::pair<Variable, Variable>(
+              Variable(t), Variable()));
+        }
       }
     }
 
     sons[0].getObjectAndCast<Sampler> ()->learn(context, random, moverFrequencies);
-    sons[1].getObjectAndCast<Sampler> ()->learn(context, random, phiPsiSamples);
-    sons[2].getObjectAndCast<Sampler> ()->learn(context, random, shearSamples);
-    sons[3].getObjectAndCast<Sampler> ()->learn(context, random, rigidBodyTransSamples);
-    sons[4].getObjectAndCast<Sampler> ()->learn(context, random, rigidBodySpinSamples);
-    sons[5].getObjectAndCast<Sampler> ()->learn(context, random, rigidBodyGeneralSamples);
-
+    for (int i = 0; i < numMover; i++)
+      sons[i + 1].getObjectAndCast<Sampler> ()->learn(context, random, samples[i]);
   }
 
 protected:
   friend class ProteinMoverSamplerClass;
   size_t numMover;
+  std::vector<int> whichMover;
 };
 
 }; /* namespace lbcpp */
-
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_SAMPLER_H_

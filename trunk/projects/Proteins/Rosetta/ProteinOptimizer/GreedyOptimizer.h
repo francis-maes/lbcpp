@@ -150,6 +150,7 @@ public:
   }
 
 private:
+  friend class ProteinGreedyOptimizerClass;
   int maxSteps;
 };
 
