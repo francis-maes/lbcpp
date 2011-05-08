@@ -23,6 +23,8 @@ TypePtr Optimizer::getRequiredStateType() const
 void Optimizer::saveState(ExecutionContext& context, const OptimizerStatePtr& optimizerState) const
 {
   ScopedLock _(optimizerState->getLock());
+  if (File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).existsAsFile())
+    File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("optimizerState_backup.xml")));
   optimizerState->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")));  // TODO arnaud : file name as args ?
 }
 
