@@ -26,7 +26,8 @@
 //# include <lbcpp/Optimizer/GridOptimizer.h>
 //# include "../Optimizer/ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
-//# include "../Predictor/ProteinPredictorParameters.h"
+# include "../Predictor/ProteinPredictorParameters.h"
+# include "ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/AsyncEDAOptimizer.h"
@@ -51,6 +52,25 @@ public:
     size_t requiredMemory = 1;
     size_t requiredCpus = 1;
     size_t requiredTime = 1;
+    
+    
+    // initial distribution
+    IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+    distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,9));
+    distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,9));
+    distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+    distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
+    distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
+    distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
+    
     
     /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
     wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
@@ -80,20 +100,30 @@ public:
     */
     
     
+    /*OptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml"))).staticCast<OptimizerState>();
+    state->initialize();
+    std::cout << state->getTotalNumberOfEvaluations() << " VS " << state->getTotalNumberOfRequests() << std::endl;*/
     
+    /*
      // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
-    //OptimizerPtr optimizer = edaOptimizer(30, 1000, 300, false, true);
-    OptimizerPtr optimizer = asyncEDAOptimizer(1000, 250, 3, 30, 100, 300);
+    //OptimizerPtr optimizer = edaOptimizer(300, 1000, 300, false, false);
+    OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
-    //OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
+    //OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
+    */
     
+    OptimizerPtr optimizer = asyncEDAOptimizer(100, 20, 3, 30, 100, 40);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(new ProteinObjectiveFunction());
+    OptimizerStatePtr optimizerState = new OptimizerState();
+    optimizerState->setDistribution(distributions);
     
+    return optimizer->compute(context, optimizerContext, optimizerState);
     
     return Variable();
     

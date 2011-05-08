@@ -15,8 +15,6 @@
 namespace lbcpp
 {
 
-  
-// TODO arnaud : add progression callback, enter/leavescope callback
 class UniformSampleAndPickBestOptimizer : public Optimizer
 {
 public:
