@@ -8,4 +8,6 @@
    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
   </class>
   
+  <class name="ProteinObjectiveFunction" base="Function"/>
+  
 </library>
