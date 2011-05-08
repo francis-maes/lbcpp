@@ -36,6 +36,12 @@ public:
   {
   }
 
+  SamplerPtr clone()
+  {
+    GaussianContinuousSamplerPtr temp = new GaussianContinuousSampler(*this);
+    return temp;
+  }
+
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {

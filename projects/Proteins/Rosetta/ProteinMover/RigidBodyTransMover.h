@@ -64,6 +64,12 @@ public:
   {
   }
 
+  ProteinMoverPtr clone()
+  {
+    RigidBodyTransMoverPtr temp = new RigidBodyTransMover(*this);
+    return temp;
+  }
+
   /**
    * Performs the translation on the pose specified by the parameters of the mover.
    * @param the pose to modify.

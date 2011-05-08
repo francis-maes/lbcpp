@@ -175,6 +175,7 @@ public:
   }
 
 private:
+  friend class ProteinMonteCarloOptimizerClass;
   double temperature;
   int maxSteps;
   int timesReinitialization;

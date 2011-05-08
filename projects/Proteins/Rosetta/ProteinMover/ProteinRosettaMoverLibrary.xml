@@ -15,20 +15,14 @@
   </class>
   
   <class name="RigidBodyTransMover" base="RigidBodyMover">
-    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
-    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
     <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
   </class>
   
   <class name="RigidBodySpinMover" base="RigidBodyMover">
-    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
-    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
     <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>
   </class>
   
   <class name="RigidBodyGeneralMover" base="RigidBodyMover">
-    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
-    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
     <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
     <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>
   </class>

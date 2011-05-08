@@ -12,7 +12,7 @@
 # include "precompiled.h"
 # include "../Sampler.h"
 # include "../ProteinMover/PhiPsiMover.h"
-# include "EnumerationDiscreteSampler.h"
+# include "SimpleResidueSampler.h"
 # include "GaussianContinuousSampler.h"
 
 namespace lbcpp
@@ -29,11 +29,12 @@ public:
   {
   }
 
-  PhiPsiMoverSampler(size_t numResidue, double meanPhi, double stdPhi, double meanPsi, double stdPsi) :
+  PhiPsiMoverSampler(size_t numResidue, double meanPhi, double stdPhi, double meanPsi,
+      double stdPsi) :
     CompositeSampler(3)
   {
     // select residue
-    sons[0] = Variable(new EnumerationDiscreteSampler(numResidue, 0.01));
+    sons[0] = Variable(new SimpleResidueSampler(numResidue, (int)0.05 * numResidue));
     //select phi
     sons[1] = Variable(new GaussianContinuousSampler(meanPhi, stdPhi));
     // select psi
@@ -43,19 +44,25 @@ public:
   PhiPsiMoverSampler(const PhiPsiMoverSampler& sampler) :
     CompositeSampler(3)
   {
-    sons[0] = new EnumerationDiscreteSampler(*sampler.sons[0].getObjectAndCast<
-        EnumerationDiscreteSampler> ());
-    sons[1] = new GaussianContinuousSampler(*sampler.sons[1].getObjectAndCast<
-        GaussianContinuousSampler> ());
-    sons[2] = new GaussianContinuousSampler(*sampler.sons[2].getObjectAndCast<
-        GaussianContinuousSampler> ());
+    sons[0] = Variable(new SimpleResidueSampler(*sampler.sons[0].getObjectAndCast<
+        SimpleResidueSampler> ()));
+    sons[1] = Variable(new GaussianContinuousSampler(*sampler.sons[1].getObjectAndCast<
+        GaussianContinuousSampler> ()));
+    sons[2] = Variable(new GaussianContinuousSampler(*sampler.sons[2].getObjectAndCast<
+        GaussianContinuousSampler> ()));
+  }
+
+  SamplerPtr clone()
+  {
+    PhiPsiMoverSamplerPtr temp = new PhiPsiMoverSampler(*this);
+    return temp;
   }
 
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t residue = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
-        random, inputs).getInteger();
+    size_t residue = sons[0].getObjectAndCast<SimpleResidueSampler> ()->sample(context, random,
+        inputs).getInteger();
     // TODO rajouter la dependance entre le residu et les angles
     double phi = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context, random,
         inputs).getDouble();
@@ -72,6 +79,9 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
+    if (dataset.size() == 0)
+      return;
+
     std::vector<std::pair<Variable, Variable> > datasetResidue;
     std::vector<std::pair<Variable, Variable> > datasetPhi;
     std::vector<std::pair<Variable, Variable> > datasetPsi;
@@ -85,7 +95,7 @@ public:
       datasetPsi.push_back(
           std::pair<Variable, Variable>(Variable(mover->getDeltaPsi()), Variable()));
     }
-    sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->learn(context, random, datasetResidue);
+    sons[0].getObjectAndCast<SimpleResidueSampler> ()->learn(context, random, datasetResidue);
     sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetPhi);
     sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetPsi);
   }
@@ -95,7 +105,5 @@ protected:
 };
 
 }; /* namespace lbcpp */
-
-
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PHI_PSI_MOVER_SAMPLER_H_

@@ -2,17 +2,57 @@
 
 <library name="ProteinRosetta" directory="Rosetta">
 
+  <!-- Imports -->
   <import name="ProteinRosettaMover"/>
   <import name="ProteinRosettaOptimizer"/>
   <import name="ProteinRosettaSampler"/>
   
+  <!-- Movers -->
   <class name="ProteinMover" base="Object" abstract="yes">
     <variable type="String" name="moverName" shortName="n" description="Name of the mover"/>
   </class>
   
   <class name="RigidBodyMover" base="ProteinMover" abstract="yes">
+    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
+    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
   </class>
   
+  <!-- Optimizers -->
+  <class name="ProteinEDAOptimizer" base="Object">
+  </class>
+  
+  <class name="ProteinOptimizer" base="Object" abstract="yes">
+    <variable type="GenericVector[String]" name="nameScopes" description="Name of the different scopes used for verbosity in explorer"/>
+    <variable type="Boolean" name="verbosity" description="Indicates if there is verbosity to the explorer"/>
+    <variable type="Boolean" name="saveToFile" description="Indicates if there is verbosity to files"/>
+    <variable type="Boolean" name="nameScopesSet" description="Indicates if the name scopes are set"/>
+    <variable type="Double" name="frequencyVerbosity" description="Frequency at which information are output"/>
+    <variable type="Integer" name="numOutputFiles" description="Number of files that have to be created with current structure information"/>  
+    <variable type="String" name="name" description="Name of the protein optimized"/>
+    <variable type="File" name="outputDirectory" description="Output directory where the files are going to be created"/>
+  </class>
+  
+  <!-- Samplers -->
+  <class name="Sampler" base="Object" abstract="yes">
+  </class>
+  
+  <class name="ContinuousSampler" base="Sampler" abstract="yes">
+    <variable type="Double" name="mean" shortName="m" description="Mean of the distribution"/>
+    <variable type="Double" name="std" shortName="s" description="Standard deviation of the distribution"/>
+  </class>
+
+  <class name="DiscreteSampler" base="Sampler" abstract="yes">
+  </class>
+
+  <class name="SequentialSampler" base="Sampler" abstract="yes">
+    <variable type="VariableVector" name="samplers"/>
+  </class>
+
+  <class name="CompositeSampler" base="Sampler" abstract="yes">
+    <variable type="VariableVector" name="sons"/>
+  </class>
+  
+  <!-- WorkUnits -->
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
     <variable type="String" name="proteinsDir" shortName="d" description="Directory of proteins to load"/>
@@ -28,27 +68,17 @@
   <class name="ProteinOptimizerWorkUnit" base="CompositeWorkUnit">
   </class>
   
-  <class name="ProteinOptimizer" base="Object" abstract="yes">
-  </class>
-  
   <class name="XmlToPDBConverterWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
     <variable type="String" name="resultsDirectory" shortName="o" description="Directory where to store the outputs"/>
   </class>
   
-  <class name="Sampler" base="Object" abstract="yes">
+  <class name="EnergyEvaluationWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
   </class>
   
-  <class name="ContinuousSampler" base="Sampler" abstract="yes">
-  </class>
-
-  <class name="DiscreteSampler" base="Sampler" abstract="yes">
-  </class>
-
-  <class name="SequentialSampler" base="Sampler" abstract="yes">
-  </class>
-
-  <class name="CompositeSampler" base="Sampler" abstract="yes">
+  <class name="FilesHarmonizationWorkUnit" base="WorkUnit">
+    <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
   </class>  
   
 </library>

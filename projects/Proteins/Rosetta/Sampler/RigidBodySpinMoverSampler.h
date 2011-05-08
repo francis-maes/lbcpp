@@ -49,6 +49,12 @@ public:
         GaussianContinuousSampler> ()));
   }
 
+  SamplerPtr clone()
+  {
+    RigidBodySpinMoverSamplerPtr temp = new RigidBodySpinMoverSampler(*this);
+    return temp;
+  }
+
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
@@ -85,6 +91,9 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
+    if (dataset.size() == 0)
+      return;
+
     std::vector<std::pair<Variable, Variable> > datasetFirstResidue;
     std::vector<std::pair<Variable, Variable> > datasetSecondResidue;
     std::vector<std::pair<Variable, Variable> > datasetAmplitude;
@@ -111,7 +120,5 @@ protected:
 };
 
 }; /* namespace lbcpp */
-
-
 
 #endif //! LBCPP_PROTEINS_ROSETTA_RIGID_BODY_SPIN_MOVER_SAMPLER_H_

@@ -22,19 +22,31 @@ class ParzenContinuousSampler: public ContinuousSampler
 {
 public:
   ParzenContinuousSampler() :
-    ContinuousSampler(), precision(0.0001), excursion(6), kernelWidth(0.25), learned(false)
+    ContinuousSampler(), precision(0.0001), excursion(6), kernelWidth(0.25), learned(false),
+        fixedAbscissa(false)
   {
   }
 
-  ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25) :
-    ContinuousSampler(), precision(precision), excursion(excursion), kernelWidth(kernelWidth),
-        learned(false)
+  ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25,
+      double initialMean = 0, double initialStd = 1) :
+    ContinuousSampler(initialMean, initialStd), precision(precision), excursion(excursion),
+        kernelWidth(kernelWidth), learned(false), fixedAbscissa(false)
   {
+  }
+
+  ParzenContinuousSampler(double precision, double minAbscissa, double maxAbscissa,
+      double kernelWidth, double initialMean, double initialStd) :
+    ContinuousSampler(initialMean, initialStd), precision(precision), excursion(1), kernelWidth(
+        kernelWidth), learned(false), fixedAbscissa(true)
+  {
+    double delta = std::abs((maxAbscissa - minAbscissa) * precision);
+    abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
 
   ParzenContinuousSampler(const ParzenContinuousSampler& sampler) :
     ContinuousSampler(sampler.mean, sampler.std), learned(sampler.learned), precision(
-        sampler.precision), excursion(sampler.excursion), kernelWidth(sampler.kernelWidth)
+        sampler.precision), excursion(sampler.excursion), kernelWidth(sampler.kernelWidth),
+        fixedAbscissa(sampler.fixedAbscissa)
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     integral = new DenseDoubleVector(actionClass, sampler.integral->getValues());
@@ -45,11 +57,21 @@ public:
   {
   }
 
+  SamplerPtr clone()
+  {
+    ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(*this);
+    return temp;
+  }
+
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     if (!learned)
-      return Variable(random->sampleDoubleFromGaussian());
+      if (!fixedAbscissa)
+        return Variable(random->sampleDoubleFromGaussian(mean, std));
+      else
+        return Variable(juce::jlimit(abscissa->getValue(0), abscissa->getValue(
+            abscissa->getNumElements() - 1), random->sampleDoubleFromGaussian(mean, std)));
     else
     {
       size_t minIndex = 0;
@@ -88,12 +110,18 @@ public:
     mean = getMean(dataset);
     std = std::sqrt(getVariance(dataset, mean));
 
-    double delta = std::abs(2 * excursion * std * precision);
+    double delta = 0;
+    if (!fixedAbscissa)
+      delta = std::abs(2 * excursion * std * precision);
+    else
+      delta = (abscissa->getValue(abscissa->getNumElements() - 1) - abscissa->getValue(0))
+          * precision;
     double minAbscissa = mean - excursion * std;
     double maxAbscissa = mean + excursion * std;
 
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-    abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
+    if (!fixedAbscissa)
+      abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
     DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, std * kernelWidth);
     integral = createIntegral(frequencies, delta);
   }
@@ -111,8 +139,12 @@ public:
     for (int j = 0; j < frequencies->getNumElements(); j++)
     {
       accumulator += frequencies->getValue(j);
-      integral->setValue(j, accumulator * delta);
+      if (j == 0)
+        integral->setValue(j, 0);
+      else
+        integral->setValue(j, accumulator * delta);
     }
+    integral->setValue(integral->getNumElements() - 1, 1.0);
     return integral;
   }
 
@@ -157,7 +189,7 @@ public:
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     DenseDoubleVectorPtr abscissa = new DenseDoubleVector(actionClass, 0, 0.0);
     double tempAbscissa = minAbscissa;
-    while (tempAbscissa < maxAbscissa)
+    while (tempAbscissa <= maxAbscissa)
     {
       abscissa->append(Variable(tempAbscissa));
       tempAbscissa += delta;
@@ -173,6 +205,7 @@ protected:
   double precision;
   double excursion;
   double kernelWidth;
+  bool fixedAbscissa;
 };
 
 }; /* namespace lbcpp */

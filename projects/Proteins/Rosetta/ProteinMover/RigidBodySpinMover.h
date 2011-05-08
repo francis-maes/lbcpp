@@ -66,6 +66,12 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
   {
   }
 
+  ProteinMoverPtr clone()
+  {
+    RigidBodySpinMoverPtr temp = new RigidBodySpinMover(*this);
+    return temp;
+  }
+
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.

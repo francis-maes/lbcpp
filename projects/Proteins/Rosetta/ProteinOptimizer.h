@@ -140,6 +140,7 @@ public:
       ExecutionContext& context, RandomGeneratorPtr& random)=0;
 
 protected:
+  friend class ProteinOptimizerClass;
   bool verbosity;
   double frequencyVerbosity;
   String name;

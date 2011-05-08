@@ -60,6 +60,12 @@ public:
   {
   }
 
+  ProteinMoverPtr clone()
+  {
+    PhiPsiMoverPtr temp = new PhiPsiMover(*this);
+    return temp;
+  }
+
   /**
    * Performs the move on the pose specified by the parameters of the mover.
    * @param pose the pose to modify.

@@ -39,6 +39,8 @@ public:
   {
   }
 
+  virtual ProteinMoverPtr clone()=0;
+
   /**
    * Performs the perturbation on the object. Must be reimplemented in the inheriting
    * classes.
@@ -67,7 +69,7 @@ public:
   {
   }
 
-  RigidBodyMover(String name):
+  RigidBodyMover(String name) :
     ProteinMover(name)
   {
   }

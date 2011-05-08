@@ -69,6 +69,12 @@ public:
   {
   }
 
+  ProteinMoverPtr clone()
+  {
+    RigidBodyGeneralMoverPtr temp = new RigidBodyGeneralMover(*this);
+    return temp;
+  }
+
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
