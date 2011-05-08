@@ -21,6 +21,8 @@ class OptimizerState : public Object, public FunctionCallback
 public:
   OptimizerState();
   
+  void initialize();
+  
   // this should be in an inherited class
   const DistributionPtr& getDistribution() const;
   void setDistribution(const DistributionPtr& newDistribution);

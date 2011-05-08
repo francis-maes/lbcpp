@@ -21,6 +21,7 @@ class Optimizer : public Function
 public:
   virtual TypePtr getRequiredContextType() const;
   virtual TypePtr getRequiredStateType() const;
+  virtual void saveState(ExecutionContext& context, const OptimizerStatePtr& optimizerState) const;
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const = 0;
   
   // Function

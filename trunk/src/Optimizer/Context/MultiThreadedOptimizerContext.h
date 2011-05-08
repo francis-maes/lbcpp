@@ -23,7 +23,7 @@ public:
     {numEvaluationInProgress=0;}
   MultiThreadedOptimizerContext() 
     {numEvaluationInProgress=0;}
-    
+  
   virtual void waitUntilAllRequestsAreProcessed() const 
   {
     while (numEvaluationInProgress) // value modified in function evaluation (after pushWorkUnit)
@@ -35,13 +35,13 @@ public:
   
   // TODO arnaud : verifier multithread ?
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
-  { 
+  {
     juce::atomicIncrement(numEvaluationInProgress);
     context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters), &numEvaluationInProgress, false); // TODO arnaud verbose ?
     return true;
   }
   
-protected:  
+protected:
   friend class MultiThreadedOptimizerContextClass;
   
 private:

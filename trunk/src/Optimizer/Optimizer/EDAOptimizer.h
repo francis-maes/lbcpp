@@ -26,7 +26,10 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    for (size_t i = 0; i < numIterations; ++i)
+    size_t i = (size_t) floor(optimizerState->getTotalNumberOfEvaluations()/populationSize);
+    context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
+
+    for ( ; i < numIterations; ++i)
     {
       Variable bestIterationParameters = optimizerState->getBestVariable();
       double bestIterationScore;
@@ -51,6 +54,8 @@ public:
       context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
       context.leaveScope(bestIterationScore); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
+      
+      saveState(context, optimizerState);
     }
     return optimizerState->getBestVariable();
   }
@@ -70,23 +75,16 @@ protected:
     jassert(numBests < populationSize);
     
     // generate evaluations requests
-    std::vector<Variable> parametersVector(populationSize);
-    for (size_t i = 0; i < populationSize; ++i)
-    {
+    size_t offset = optimizerState->getNumberOfProcessedRequests();   // always 0 except if optimizer has been restarted from file !
+    for (size_t i = offset; i < populationSize; i++) {  // init condition used to restart from file
       Variable input;
       if (reinjectBest && i == 0 && bestParameters.exists())
         input = bestParameters;
       else 
         input = optimizerState->getDistribution()->sample(random);
-
-      parametersVector[i] = input;
-    }
-
-    // send request & update progression
-    for (size_t i = 0; i < populationSize; ++i)
-    {
-      if (!optimizerContext->evaluate(context, parametersVector[i]))
-        return false;
+      
+      if (!optimizerContext->evaluate(context, input))
+        return false; // TODO arnaud : handle this
       optimizerState->incTotalNumberOfRequests();
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
     }
@@ -96,6 +94,7 @@ protected:
     {
       Thread::sleep(100);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
+      saveState(context, optimizerState);
     }
     jassert(optimizerState->getNumberOfProcessedRequests() == populationSize);
     context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer
