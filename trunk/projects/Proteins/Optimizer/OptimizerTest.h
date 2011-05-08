@@ -44,7 +44,7 @@ public:
   {
     
     // variables used by GridOptimizer
-    String projectName(T("NewOptimizerTest"));
+    String projectName(T("ProteinNewOptimizer"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("monster24.montefiore.ulg.ac.be"));
@@ -118,14 +118,14 @@ public:
     return optimizer->compute(context, optimizerContext, optimizerState);
     */
     
-    OptimizerPtr optimizer = asyncEDAOptimizer(100, 20, 3, 30, 100, 40);
+    OptimizerPtr optimizer = asyncEDAOptimizer(20000, 1000, 3, 30, 5, 1500);
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(new ProteinObjectiveFunction());
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
     
-    return Variable();
+    //return Variable();
     
     /*
     // initial distribution
