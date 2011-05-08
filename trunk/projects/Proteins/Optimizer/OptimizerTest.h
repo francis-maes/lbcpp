@@ -119,7 +119,7 @@ public:
     */
     
     OptimizerPtr optimizer = asyncEDAOptimizer(20000, 1000, 3, 30, 5, 1500);
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(new ProteinObjectiveFunction());
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
