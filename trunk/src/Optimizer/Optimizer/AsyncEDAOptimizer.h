@@ -15,7 +15,6 @@
 namespace lbcpp
 {
 
-// TODO arnaud : add progression callback, enter/leavescope callback
 class AsyncEDAOptimizer : public Optimizer
 {
 public:
@@ -29,9 +28,10 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    // TODO arnaud : save initial state
     size_t numIterations = (size_t) ceil((double)totalNumberEvaluationsRequested/(double)numberEvaluationsToUpdate);
-    size_t i = 0;  // TODO arnaud : rename
+    size_t i = (size_t) floor(optimizerState->getTotalNumberOfEvaluations()/numberEvaluationsToUpdate);
+    context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
+    
     context.enterScope(T("Iteration ") + String((int)i + 1));
     context.resultCallback(T("iteration"), i + 1);
     
@@ -40,28 +40,22 @@ public:
       // Send WU's on network
       if (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) 
       {
-        size_t nb = 0;
         while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) 
         {
           Variable input = optimizerState->getDistribution()->sample(random);
           if (optimizerContext->evaluate(context, input))
           {
             optimizerState->incTotalNumberOfRequests();
-            nb++;
             context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
           }          
-        }
-        
-        if (nb > 0) 
-        {
-          // TODO arnaud : save state
         }
       }
       
       
       // don't do busy waiting
-      juce::Thread::sleep(timeToSleep*1000);
+      juce::Thread::sleep(timeToSleep*10);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));
+      saveState(context, optimizerState);
       
       // enough WUs evaluated -> update distribution (with best results)
       if (optimizerState->getNumberOfProcessedRequests() >= numberEvaluationsToUpdate/* || (optimizerState->getTotalNumberOfRequests() == totalNumberEvaluationsRequested && optimizerState->getNumberOfInProgressEvaluations() == 0)*/) 
@@ -125,8 +119,7 @@ public:
           context.resultCallback(T("iteration"), i + 1);
         }
         
-                
-        // TODO arnaud : save state
+        saveState(context, optimizerState);
       }
     }
     
