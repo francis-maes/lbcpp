@@ -29,7 +29,7 @@ public:
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
     size_t numIterations = (size_t) ceil((double)totalNumberEvaluationsRequested/(double)numberEvaluationsToUpdate);
-    size_t i = (size_t) floor(optimizerState->getTotalNumberOfEvaluations()/numberEvaluationsToUpdate);
+    size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/numberEvaluationsToUpdate);	// interger division	
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
     
     context.enterScope(T("Iteration ") + String((int)i + 1));

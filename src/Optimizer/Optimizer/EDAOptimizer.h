@@ -26,7 +26,7 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {  
-    size_t i = (size_t) floor(optimizerState->getTotalNumberOfEvaluations()/populationSize);
+    size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
     for ( ; i < numIterations; ++i)
