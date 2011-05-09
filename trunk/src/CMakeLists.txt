@@ -561,6 +561,7 @@ SET(LBCPP_OPTIMIZER_SOURCES
   ../include/lbcpp/Optimizer/Optimizer.h
   ../include/lbcpp/Optimizer/OptimizerState.h
   ../include/lbcpp/Optimizer/OptimizerContext.h
+  ../include/lbcpp/Optimizer/OptimizerTestBed.h
   Optimizer/Optimizer.cpp
   Optimizer/OptimizerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/OptimizerLibrary.cpp
