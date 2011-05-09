@@ -305,6 +305,103 @@ protected:
   String proteinsDirectory;
 };
 
+class SamplerGenerationWorkUnit: public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    rosettaInitialization(context, false);
+
+    File referenceFile = context.getFile(referenceDirectory);
+    if (!referenceFile.exists())
+    {
+      context.errorCallback(T("References' directory not found."));
+      return Variable();
+    }
+    File targetFile = context.getFile(targetDirectory);
+    if (!targetFile.exists())
+    {
+      context.errorCallback(T("Targets' directory not found."));
+      return Variable();
+    }
+    File outputFile = context.getFile(outputDirectory);
+    if (!outputFile.exists())
+    {
+      outputFile.createDirectory();
+    }
+
+    juce::OwnedArray<File> references;
+    referenceFile.findChildFiles(references, File::findFiles, false);
+
+    for (int j = 0; j < references.size(); j++)
+    {
+      ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
+      core::pose::PoseOP referencePose = convertProteinToPose(context, proteinRef);
+
+      // verbosity
+      context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" EDA optimization"));
+      context.resultCallback(T("Energy"), Variable(getConformationScore(referencePose)));
+
+      juce::OwnedArray<File> targets;
+      targetFile.findChildFiles(targets, File::findFiles, false,
+          (*references[j]).getFileNameWithoutExtension() + T("*"));
+
+      RandomGeneratorPtr random = new RandomGenerator(0);
+      for (int i = 0; i < targets.size(); i++)
+      {
+        ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
+        core::pose::PoseOP targetPose = convertProteinToPose(context, proteinTarget);
+
+        // verbosity
+        context.progressCallback(new ProgressionState((double)i, (double)targets.size(),
+            T("Intermediate conformations")));
+        context.enterScope((*targets[i]).getFileNameWithoutExtension()
+            + T(" intermediate conformation"));
+        context.resultCallback(T("Energy"), Variable(getConformationScore(targetPose)));
+
+        PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(proteinTarget->getLength(), 0, 25, 0,
+            25);
+        ShearMoverSamplerPtr samp1 =
+            new ShearMoverSampler(proteinTarget->getLength(), 0, 25, 0, 25);
+        RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(
+            proteinTarget->getLength(), 0, 0.5);
+
+        std::vector<Variable> samplers;
+
+        samplers.push_back(Variable(samp0));
+        samplers.push_back(Variable(samp1));
+        samplers.push_back(Variable(samp2));
+
+        ProteinMoverSamplerPtr samp = new ProteinMoverSampler(3, samplers);
+
+        ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
+        ProteinMoverSamplerPtr out = opti->findBestMovers(context, random, targetPose,
+            referencePose, samp, numIterations, numSamples, 0.5);
+        out->saveToFile(context, File(outputFile.getFullPathName() + T("/sampler_")
+            + (*targets[i]).getFileNameWithoutExtension() + T(".xml")));
+
+        // verbosity
+        context.leaveScope();
+      }
+      context.progressCallback(new ProgressionState((double)targets.size(), (double)targets.size(),
+          T("Intermediate conformations")));
+      context.leaveScope();
+    }
+
+    context.informationCallback(T("All samplers generated."));
+    return Variable();
+  }
+
+protected:
+  friend class SamplerGenerationWorkUnitClass;
+  String referenceDirectory;
+  String targetDirectory;
+  String outputDirectory;
+  double energyWeight;
+  int numIterations;
+  int numSamples;
+};
+
 }; /* namespace lbcpp */
 
 #endif // ! LBCPP_PROTEINS_ROSETTA_WORKUNIT_H_

@@ -1,15 +1,6 @@
 Pending error
 =============
 
--
-Variable.hpp::checkInheritance: IntegerType -|> AminoAcidTypeEnumeration
-JUCE Assertion failure in /Users/alex/Documents/workspace/lbcpp/include/lbcpp/Core/../Core/impl/Variable.hpp, line 278
-
-apparait lors de lappel a convertPose2Protein.
-
-- corriger (peut etre?) ProteinPtr Protein::createFromPDB(ExecutionContext& context, const String pdbString,
-bool beTolerant) au niveau du pointeur de mb. Faut il le liberer? ==> normalement, supprime dans le destructeur de TextParser
-
 
 TODO
 ====
@@ -22,10 +13,10 @@ telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
 
 - sampler maximum entropy (+ref)
 
+- critere darret de EDA optimizer sur la ressemblance de deux samplers appris
+
 Rapport
 =======
-- parler de la fonction denergie.
-- expliquer un peu les bases sur la structure des proteines (angles, fonciton denergie, etc.) peut etre mis en annexe.
 - ajout derniere phrase page 507 du structural bioinformatics.
 - ajouter reference Main-chain Bond Lengths and Bond Angles in Protein Structures 
 (Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour longueurs de liens peptides.
@@ -36,9 +27,6 @@ Rapport
 
 DONE
 =====
-serialisation xml des movers, optimizers et samplers
-implementation EDA
-proteinmoversampler corrige
 
 
 

@@ -19,6 +19,7 @@
   
   <!-- Optimizers -->
   <class name="ProteinEDAOptimizer" base="Object">
+    <variable type="Double" name="energyWeight" description="The ponderation factor between energy and structure score"/>
   </class>
   
   <class name="ProteinOptimizer" base="Object" abstract="yes">
@@ -80,5 +81,15 @@
   <class name="FilesHarmonizationWorkUnit" base="WorkUnit">
     <variable type="String" name="proteinsDirectory" shortName="i" description="Directory of input proteins to load"/>
   </class>  
+  
+  <class name="SamplerGenerationWorkUnit" base="WorkUnit">
+    <variable type="String" name="referenceDirectory" description="Directory where one can find the real proteins"/>
+    <variable type="String" name="targetDirectory" description="Directory where one can find the intermediate proteins"/>
+    <variable type="String" name="outputDirectory" description="Directory where to store the samplers created for each intermediate protein"/>
+    <variable type="Double" name="energyWeight" description="The weight of the energy in the score of the EDA optimizer"/>
+    <variable type="Integer" name="numIterations" description="Maximum number of iterations performed by the EDA optimizer"/>
+    <variable type="Integer" name="numSamples" description="Number of samples generated at each iteration of the EDA optimization"/>  
+  </class>
+  
   
 </library>
