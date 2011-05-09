@@ -54,24 +54,39 @@ public:
   {
   }
 
+  ProteinEDAOptimizer(double energyWeight) :
+    Object(), energyWeight(energyWeight)
+  {
+  }
+
   double evaluate(ExecutionContext& context, core::pose::PoseOP target,
       core::pose::PoseOP reference)
   {
-    double energyWeight = 0.2;
     int minDist =
         juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
     int maxDist = -1;
 
     double referenceEnergy = getConformationScore(reference);
     double targetEnergy = getConformationScore(target);
-    double energyScore = juce::jlimit(0.0, 1.0, targetEnergy / referenceEnergy);
+    double energyScore;
+    if (targetEnergy == 0)
+      energyScore = std::numeric_limits<double>::max();
+    else
+      energyScore = juce::jmax(0.0, referenceEnergy / targetEnergy);
 
     double structureScore = 0;
     QScoreObjectPtr scores = QScoreSingleEvaluator(convertPoseToProtein(context, target),
         convertPoseToProtein(context, reference), minDist, maxDist);
+
+    if (scores.get() == NULL)
+      context.errorCallback(
+          T("Error in QScoreObject returned. Check that the two proteins are the same."));
     structureScore = scores->getMean();
 
-    return energyWeight * energyScore + (1 - energyWeight) * structureScore;
+    if (energyWeight >= 0)
+      return energyWeight * energyScore + (1 - energyWeight) * structureScore;
+    else
+      return energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
   }
 
   ProteinMoverSamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
@@ -81,17 +96,22 @@ public:
     ProteinMoverSamplerPtr workingSampler = new ProteinMoverSampler(*sampler);
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 
+    context.enterScope(T("Protein EDA optimizer."));
+
     for (int i = 0; i < maxIterations; i++)
     {
+      context.progressCallback(new ProgressionState((double)i, (double)maxIterations,
+          T("Iterations")));
       std::list<MoverAndScore> tempList;
 
       for (int j = 0; j < numSamples; j++)
       {
         ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<
             ProteinMover> ();
-        mover->move(workingPose);
 
+        mover->move(workingPose);
         double score = evaluate(context, workingPose, reference);
+
         MoverAndScore candidate(mover, score);
         tempList.push_back(candidate);
         *workingPose = *target;
@@ -110,12 +130,15 @@ public:
       workingSampler->learn(context, random, dataset);
 
     }
-
+    context.progressCallback(new ProgressionState((double)maxIterations, (double)maxIterations,
+        T("Iterations")));
+    context.leaveScope();
     return workingSampler;
   }
 
 protected:
   friend class ProteinEDAOptimizerClass;
+  double energyWeight;
 };
 
 }; /* namespace lbcpp */

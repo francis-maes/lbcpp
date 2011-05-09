@@ -79,6 +79,8 @@ public:
         temporaryVariance += std::pow(dataset[i].first.getDouble() - mean, 2);
       temporaryVariance = temporaryVariance / dataset.size();
     }
+    if (temporaryVariance <= 0)
+      temporaryVariance = 0.000001;
     return temporaryVariance;
   }
 
