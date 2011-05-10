@@ -47,6 +47,8 @@ public:
   virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
   {
     const ContainerPtr& container = inputs[0].getObjectAndCast<Container>();
+    if (!container)
+      return;
     int startPosition;
     size_t windowSize;
     
