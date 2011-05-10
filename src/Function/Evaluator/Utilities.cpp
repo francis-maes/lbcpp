@@ -8,48 +8,30 @@
 #include "precompiled.h"
 #include "Utilities.h"
 #include <lbcpp/Core/Variable.h>
+#include <lbcpp/Core/XmlSerialisation.h>
+
 using namespace lbcpp;
 
 /*
 ** BinaryClassificationConfusionMatrix
 */
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& other)
-  : precision(0.0),
-    recall(0.0),
-    f1score(0.0),
-    matthewsCorrelation(0.0),
-    accuracy(0.0),
-    truePositive(other.truePositive),
+  : truePositive(other.truePositive),
     falsePositive(other.falsePositive),
     falseNegative(other.falseNegative),
     trueNegative(other.trueNegative),
     totalCount(other.totalCount)
 {
-  finalize();
 }
 
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(BinaryClassificationScore scoreToOptimize)
   : scoreToOptimize(scoreToOptimize),
-    precision(0.0),
-    recall(0.0),
-    f1score(0.0),
-    matthewsCorrelation(0.0),
-    accuracy(0.0),
     truePositive(0),
     falsePositive(0),
     falseNegative(0),
     trueNegative(0),
     totalCount(0)
 {
-}
-
-void BinaryClassificationConfusionMatrix::finalize()
-{
-  precision = computePrecision();
-  recall = computeRecall();
-  f1score = computeF1Score();
-  matthewsCorrelation = computeMatthewsCorrelation();
-  accuracy = computeAccuracy();
 }
 
 inline String toFixedLengthString(const String& str, int size)
@@ -67,13 +49,13 @@ inline String toFixedLengthString(const String& str, int size)
 String BinaryClassificationConfusionMatrix::toString() const
 {
   return toFixedLengthString(T("Actual value: "), 20) + toFixedLengthString(T("positive"), 15) + toFixedLengthString(T("negative"), 15) + T("\n") +
-  toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
-  toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
-  + T("ACC = ") + String(accuracy * 100.0, 2)
-  + T("% P = ") + String(precision * 100.0, 2)
-  + T("% R = ") + String(recall * 100.0, 2)
-  + T("% F1 = ") + String(f1score * 100.0, 2)
-  + T("% MCC = ") + String(matthewsCorrelation, 4) + T("\n");
+    toFixedLengthString(T("Predicted as pos.: "), 20) + toFixedLengthString(String((int)truePositive), 15) + toFixedLengthString(String((int)falsePositive), 15) + T("\n") +
+    toFixedLengthString(T("Predicted as neg.: "), 20) + toFixedLengthString(String((int)falseNegative), 15) + toFixedLengthString(String((int)trueNegative), 15) + T("\n")
+    + T("ACC = ") + String(computeAccuracy() * 100.0, 2)
+    + T("% P = ") + String(computePrecision() * 100.0, 2)
+    + T("% R = ") + String(computeRecall() * 100.0, 2)
+    + T("% F1 = ") + String(computeF1Score() * 100.0, 2)
+    + T("% MCC = ") + String(computeMatthewsCorrelation(), 4) + T("\n");
 }
 
 bool BinaryClassificationConfusionMatrix::convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res)
@@ -139,8 +121,8 @@ void BinaryClassificationConfusionMatrix::removePrediction(bool predicted, bool 
 size_t BinaryClassificationConfusionMatrix::getCount(bool predicted, bool correct) const
 {
   return predicted
-  ? (correct ? truePositive : falsePositive)
-  : (correct ? falseNegative : trueNegative);
+    ? (correct ? truePositive : falsePositive)
+    : (correct ? falseNegative : trueNegative);
 }
 
 double BinaryClassificationConfusionMatrix::computeMatthewsCorrelation() const
@@ -183,6 +165,49 @@ double BinaryClassificationConfusionMatrix::computeSensitivity() const
 
 double BinaryClassificationConfusionMatrix::computeSpecificity() const
   {return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;}
+
+void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
+{
+  ScoreObject::saveToXml(exporter);
+  String res = String((int)truePositive) + T(" ")
+             + String((int)falsePositive) + T(" ")
+             + String((int)falseNegative) + T(" ")
+             + String((int)trueNegative);
+  exporter.addTextElement(res);
+}
+
+bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
+{
+  if (!ScoreObject::loadFromXml(importer))
+    return false;
+  StringArray tokens;
+  tokens.addTokens(importer.getAllSubText(), true);
+  if (tokens.size() != 4)
+    return false;
+
+  Variable v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[0]);
+  if (!v.exists())
+    return false;
+  truePositive = v.getInteger();
+
+  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[1]);
+  if (!v.exists())
+    return false;
+  falsePositive = v.getInteger();
+
+  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
+  if (!v.exists())
+    return false;
+  falseNegative = v.getInteger();
+
+  v = Variable::createFromString(importer.getContext(), positiveIntegerType, tokens[2]);
+  if (!v.exists())
+    return false;
+  trueNegative = v.getInteger();
+
+  totalCount = truePositive + falsePositive + falseNegative + trueNegative;
+  return true;
+}
 
 bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
 {return truePositive == other.truePositive && falsePositive == other.falsePositive && 

@@ -30,16 +30,10 @@
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
-    <variable type="Probability" name="precision"/>
-    <variable type="Probability" name="recall"/>
-    <variable type="Probability" name="f1score"/>
-    <variable type="Double" name="matthewsCorrelation"/>
-    <variable type="Probability" name="accuracy"/>
     <variable type="PositiveInteger" name="truePositive"/>
     <variable type="PositiveInteger" name="falsePositive"/>
     <variable type="PositiveInteger" name="falseNegative"/>
     <variable type="PositiveInteger" name="trueNegative"/>
-    <variable type="PositiveInteger" name="totalCount"/>
   </class>
 
   <class name="ROCScoreObjectElement" base="Object">
