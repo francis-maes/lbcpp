@@ -56,6 +56,8 @@ public:
   double computePrecision() const;
   double computeRecall() const;
   double computeMatthewsCorrelation() const;
+  double computeSensitivity() const;
+  double computeSpecificity() const;
   
   void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
 
@@ -188,6 +190,10 @@ protected:
   BinaryClassificationScore scoreToOptimize;
   double bestThreshold;
   double bestThresholdScore;
+  
+  double sensitivity;
+  double specificity;
+  
   std::vector< std::pair<double, double> > precision;
   std::vector< std::pair<double, double> > recall;
 

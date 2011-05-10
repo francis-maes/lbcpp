@@ -173,10 +173,16 @@ double BinaryClassificationConfusionMatrix::computeF1Score() const
 }
 
 double BinaryClassificationConfusionMatrix::computePrecision() const
-{return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;}
+  {return (truePositive || falsePositive) ? truePositive / (double)(truePositive + falsePositive) : 0.0;}
 
 double BinaryClassificationConfusionMatrix::computeRecall() const
-{return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
+  {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
+
+double BinaryClassificationConfusionMatrix::computeSensitivity() const
+  {return truePositive / (truePositive + falseNegative);}
+
+double BinaryClassificationConfusionMatrix::computeSpecificity() const
+  {return trueNegative / (trueNegative + falsePositive);}
 
 bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
 {return truePositive == other.truePositive && falsePositive == other.falsePositive && 
@@ -258,6 +264,8 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
 #ifdef JUCE_DEBUG
       bestMatrix = confusionMatrix;
 #endif // JUCE_DEBUG
+      const_cast<ROCScoreObject*>(this)->sensitivity = confusionMatrix.computeSensitivity();
+      const_cast<ROCScoreObject*>(this)->specificity = confusionMatrix.computeSpecificity();
     }
   }
   
