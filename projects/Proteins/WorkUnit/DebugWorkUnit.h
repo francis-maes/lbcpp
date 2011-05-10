@@ -12,6 +12,11 @@
 # define LBCPP_DEBUG_WORK_UNIT_H_
 
 # include <lbcpp/lbcpp.h>
+# include <lbcpp/Optimizer/Optimizer.h>
+# include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Optimizer/OptimizerState.h>
+# include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
+
 # include "../Optimizer/ProteinGridEvoOptimizer.h"
 
 namespace lbcpp
@@ -22,7 +27,25 @@ public:
   virtual Variable run(ExecutionContext& context) 
   {
   
-    ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
+    // variables used by DistributedOptimizerContext
+    String projectName(T("DebugNetwork"));
+    String source(T("arnaud@monster24"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+    size_t managerPort = 1664;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+    // Optimizer
+    OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    OptimizerStatePtr optimizerState = new OptimizerState();
+    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
+    return optimizer->compute(context, optimizerContext, optimizerState);
+    
+    
+    /*ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     foo(context, state);
     
     std::cout << numericalProteinPredictorParameters()->toString() << std::endl;
@@ -34,7 +57,7 @@ private:
   void foo(ExecutionContext& context, const GridOptimizerStatePtr& state_)
   {
     GridEvoOptimizerStatePtr state = state_.dynamicCast<GridEvoOptimizerState>();
-    state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
+    state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));*/
   }
 };
 

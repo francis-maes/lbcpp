@@ -33,7 +33,6 @@ public:
   virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
   
-  // TODO arnaud : verifier multithread ?
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
   {
     juce::atomicIncrement(numEvaluationInProgress);
