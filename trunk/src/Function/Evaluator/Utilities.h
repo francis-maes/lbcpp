@@ -37,9 +37,7 @@ public:
     }
     return DBL_MAX;
   }
-  
-  void finalize();
-  
+
   virtual String toString() const;
 
   static bool convertToBoolean(ExecutionContext& context, const Variable& variable, bool& res);
@@ -83,6 +81,10 @@ public:
 
   size_t getNegatives() const
     {return trueNegative + falsePositive;}
+  
+  /* Object */
+  virtual void saveToXml(XmlExporter& exporter) const;
+  virtual bool loadFromXml(XmlImporter& importer);
 
   bool operator ==(const BinaryClassificationConfusionMatrix& other) const;
   bool operator !=(const BinaryClassificationConfusionMatrix& other) const
@@ -92,12 +94,6 @@ protected:
   friend class BinaryClassificationConfusionMatrixClass;
 
   BinaryClassificationScore scoreToOptimize;
-
-  double precision;
-  double recall;
-  double f1score;
-  double matthewsCorrelation;
-  double accuracy;
 
  // correct: positive   negative
   size_t truePositive, falsePositive; // predicted as positive
