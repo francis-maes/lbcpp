@@ -22,6 +22,8 @@
 # include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
+# include <lbcpp/Optimizer/OptimizerTestBed.h>
+# include <lbcpp/Function/ScalarVectorFunction.h>
 
 //# include <lbcpp/Optimizer/GridOptimizer.h>
 //# include "../Optimizer/ProteinGridEvoOptimizer.h"
@@ -43,8 +45,24 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     
+    std::vector<double> coefs;
+    coefs.push_back(4.0);
+    coefs.push_back(3.0);
+    ScalarVectorFunctionPtr f = new SphereFunction(coefs, 2.0);
+    DenseDoubleVectorPtr input = new DenseDoubleVector();
+    input->resize(2);
+    input->setValue(0, 1.0);
+    input->setValue(1, -3.0);
+    double output;
+    //f->computeScalarVectorFunction(input, NULL, &output, NULL, 1);
+    f->compute(context, input);
+    std::cout << output << std::endl;
+    
+    return Variable();
+    
     // variables used by GridOptimizer
-    String projectName(T("ProteinNewOptimizer"));
+    /*
+     String projectName(T("ProteinNewOptimizer"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("monster24.montefiore.ulg.ac.be"));
@@ -70,7 +88,7 @@ public:
     distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
     distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
-    
+    */
     
     /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
     wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
@@ -104,8 +122,8 @@ public:
     state->initialize();
     std::cout << state->getTotalNumberOfEvaluations() << " VS " << state->getTotalNumberOfRequests() << std::endl;*/
     
-    /*
-     // TESTS OPTIMIZER
+    
+ /*    // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
     //OptimizerPtr optimizer = edaOptimizer(300, 1000, 300, false, false);
     OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
@@ -117,14 +135,14 @@ public:
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
     */
-    
+    /*
     OptimizerPtr optimizer = asyncEDAOptimizer(20000, 1000, 3, 30, 5, 1500);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
-    
+    */
     //return Variable();
     
     /*
