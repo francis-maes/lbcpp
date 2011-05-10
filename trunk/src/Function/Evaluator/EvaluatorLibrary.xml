@@ -30,11 +30,11 @@
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
-    <variable type="Double" name="precision"/>
-    <variable type="Double" name="recall"/>
-    <variable type="Double" name="f1score"/>
+    <variable type="Probability" name="precision"/>
+    <variable type="Probability" name="recall"/>
+    <variable type="Probability" name="f1score"/>
     <variable type="Double" name="matthewsCorrelation"/>
-    <variable type="Double" name="accuracy"/>
+    <variable type="Probability" name="accuracy"/>
     <variable type="PositiveInteger" name="truePositive"/>
     <variable type="PositiveInteger" name="falsePositive"/>
     <variable type="PositiveInteger" name="falseNegative"/>
@@ -43,16 +43,16 @@
   </class>
 
   <class name="ROCScoreObjectElement" base="Object">
-    <variable type="Double" name="falsePositiveRate"/>
-    <variable type="Double" name="truePositiveRate"/>
+    <variable type="Probability" name="falsePositiveRate"/>
+    <variable type="Probability" name="truePositiveRate"/>
   </class>
 
   <class name="ROCScoreObject" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="bestThreshold"/>
     <variable type="Double" name="bestThresholdScore"/>
-    <variable type="ObjectVector[Pair[Double, Double]]" name="precision"/>
-    <variable type="ObjectVector[Pair[Double, Double]]" name="recall"/>
+    <variable type="ObjectVector[Pair[Double, Probability]]" name="precision"/>
+    <variable type="ObjectVector[Pair[Double, Probability]]" name="recall"/>
   </class>
 
   <!-- Regression -->
@@ -80,7 +80,7 @@
 
   <!-- MultiClass Classification -->
   <class name="ClassificationScoreObject" base="ScoreObject">
-    <variable type="Double" name="accuracy"/>
+    <variable type="Probability" name="accuracy"/>
   </class>
 
   <class name="ClassificationEvaluator" base="SupervisedEvaluator">
@@ -90,9 +90,9 @@
   <!-- MultiLabel Classification -->
   <class name="MultiLabelClassificationScoreObject" base="ScoreObject">
     <variable type="Double" name="hammingLoss"/>
-    <variable type="Double" name="accuracy"/>
-    <variable type="Double" name="precision"/>
-    <variable type="Double" name="recall"/>
+    <variable type="Probability" name="accuracy"/>
+    <variable type="Probability" name="precision"/>
+    <variable type="Probability" name="recall"/>
   </class>
   
   <class name="MultiLabelClassificationEvaluator" base="SupervisedEvaluator">

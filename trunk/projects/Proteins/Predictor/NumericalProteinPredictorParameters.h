@@ -91,6 +91,11 @@ public:
       cysteinEntropyRow = builder.addFunction(new ComputeCysteinEntropy(true), normalizedDsb, cysteinIndex);
       cysteinEntropyColumn = builder.addFunction(new ComputeCysteinEntropy(false), normalizedDsb, cysteinIndex);
     }
+    
+    size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein);
+    size_t discretizedCbs = (size_t)-1;
+    if (featuresParameters->cbsDiscretization)
+      discretizedCbs = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs);
 
     // feature generators
     builder.startSelection();
@@ -116,6 +121,9 @@ public:
       if (cysteinEntropyColumn != (size_t)-1)
         builder.addFunction(defaultProbabilityFeatureGenerator(featuresParameters->dsbEntropyDiscretization), cysteinEntropyColumn, T("dsbEntColumn"));
 
+      if (discretizedCbs != (size_t)-1 && featuresParameters->cbsWindowSize)
+        builder.addFunction(centeredContainerWindowFeatureGenerator(featuresParameters->cbsWindowSize), discretizedCbs, cysteinIndex);
+    
     builder.finishSelectionWithFunction(concatenateFeatureGenerator(false));
   }
   

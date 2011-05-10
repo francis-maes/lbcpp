@@ -127,6 +127,8 @@ public:
       dsbDiscretization(3), dsbNormalizedDiscretization(3),
       dsbWindowRows(3), dsbWindowColumns(3), dsbEntropyDiscretization(4),
       dsbPairWindowRows(3), dsbPairWindowColumns(3),
+  
+      cbsWindowSize(3), cbsDiscretization(5),
 
       residueGlobalFeatures(true), residueWindowSize(9),
       residueLocalMeanSize(18), residueMediumMeanSize(90),
@@ -167,6 +169,10 @@ public:
   size_t dsbEntropyDiscretization;
   size_t dsbPairWindowRows;
   size_t dsbPairWindowColumns;
+  
+  // cbs
+  size_t cbsWindowSize;
+  size_t cbsDiscretization;
 
   // global
   bool residueGlobalFeatures;
