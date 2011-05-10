@@ -179,10 +179,10 @@ double BinaryClassificationConfusionMatrix::computeRecall() const
   {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
 
 double BinaryClassificationConfusionMatrix::computeSensitivity() const
-  {return truePositive / (truePositive + falseNegative);}
+  {return (truePositive || falseNegative) ? truePositive / (double)(truePositive + falseNegative) : 0.0;}
 
 double BinaryClassificationConfusionMatrix::computeSpecificity() const
-  {return trueNegative / (trueNegative + falsePositive);}
+  {return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;}
 
 bool BinaryClassificationConfusionMatrix::operator ==(const BinaryClassificationConfusionMatrix& other) const
 {return truePositive == other.truePositive && falsePositive == other.falsePositive && 
