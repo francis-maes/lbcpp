@@ -13,6 +13,7 @@
 # include "../Sampler.h"
 
 # define DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES 0.001
+# define LEARNING_RATE 0.1
 
 namespace lbcpp
 {
@@ -73,17 +74,23 @@ public:
     if (dataset.size() == 0)
       return;
 
-    probabilities = new DenseDoubleVector(denseDoubleVectorClass(
-        positiveIntegerEnumerationEnumeration), probabilities->getNumElements(),
-        probabilityForUnseenSamples);
-    int numSamples = dataset.size();
-    double increment = 1.0 / (double)numSamples;
-    double totalNorm = probabilities->getNumElements() * probabilityForUnseenSamples;
+    // Compute empirical frequencies
+    DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(denseDoubleVectorClass(
+        positiveIntegerEnumerationEnumeration), probabilities->getNumElements(), 0.0);
+    double increment = 1.0 / (double)dataset.size();
     for (int i = 0; i < dataset.size(); i++)
     {
       size_t index = dataset[i].first.getInteger();
-      probabilities->setValue(index, probabilities->getValue(index) + increment);
-      totalNorm += increment;
+      empiricalFrequencies->setValue(index, empiricalFrequencies->getValue(index) + increment);
+    }
+
+    // Update frequencies
+    double totalNorm = 0;
+    for (int i = 0; i < probabilities->getNumElements(); i++)
+    {
+      probabilities->setValue(i, juce::jmax(probabilityForUnseenSamples, probabilities->getValue(i)
+          + LEARNING_RATE * (empiricalFrequencies->getValue(i) - probabilities->getValue(i))));
+      totalNorm += probabilities->getValue(i);
     }
 
     double normalize = 1.0 / totalNorm;

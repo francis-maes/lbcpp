@@ -9,6 +9,8 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
 # define LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
 
+# define MAX_INTERVAL_VALUE 1000000
+
 # include "precompiled.h"
 # include "../Sampler.h"
 # include "ParzenContinuousSampler.h"
@@ -30,8 +32,8 @@ public:
   SimpleResidueSampler(int numResidues, int residuesDeviation = 0) :
     CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
   {
-    ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001, -1, 2, 10.0
-        / (double)numResidues, 0.5, 0.25);
+    ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001, -1 * MAX_INTERVAL_VALUE,
+        2 * MAX_INTERVAL_VALUE, 1.0 / 2.0, 0.5 * MAX_INTERVAL_VALUE, 0.25 * MAX_INTERVAL_VALUE);
     sons[0] = temp;
   }
 
@@ -59,9 +61,9 @@ public:
   {
     double rand = std::abs(
         sons[0].getObjectAndCast<Sampler> ()->sample(context, random, NULL).getDouble());
-    rand = rand > 1 ? 2 - rand : rand;
+    rand = rand > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - rand : rand;
 
-    int residue = std::floor(rand * numResidues);
+    int residue = std::floor(rand * numResidues / (double)MAX_INTERVAL_VALUE);
     if (residue == numResidues)
       residue--;
     return Variable(residue);
@@ -78,14 +80,15 @@ public:
       return;
 
     std::vector<std::pair<Variable, Variable> > data;
-    double varianceIncrement = (double)residuesDeviation / (double)numResidues;
+    double scaleFactor = (double)MAX_INTERVAL_VALUE / (double)numResidues;
+    double varianceIncrement = (double)residuesDeviation * scaleFactor;
 
     for (int i = 0; i < dataset.size(); i++)
     {
       int res = dataset[i].first.getInteger();
-      double value = (double)res / (double)numResidues;
+      double value = (double)res * scaleFactor;
       value = std::abs(value + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
-      value = value > 1 ? 2 - value : value;
+      value = value > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - value : value;
       data.push_back(std::pair<Variable, Variable>(Variable(value), Variable()));
     }
 

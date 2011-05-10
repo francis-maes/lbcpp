@@ -33,7 +33,8 @@ public:
     CompositeSampler(3)
   {
     // select residue
-    sons[0] = Variable(new SimpleResidueSampler(numResidue, (int)(0.05 * numResidue)));
+    sons[0] = Variable(
+        new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue))));
     //select phi
     sons[1] = Variable(new GaussianContinuousSampler(meanPhi, stdPhi));
     // select psi

@@ -119,7 +119,7 @@ public:
       samplers.push_back(Variable(samp4));
       ProteinMoverSamplerPtr samp(new ProteinMoverSampler(5, samplers));
       ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
-          maxNumberIterations, 5, currentProtein->getName(), 0.01, timesFeatureGeneration,
+          maxNumberIterations, 5, currentProtein->getName(), 0.000001, timesFeatureGeneration,
           outputDirectory);
       RandomGeneratorPtr random = new RandomGenerator(0);
 
@@ -400,6 +400,84 @@ protected:
   double energyWeight;
   int numIterations;
   int numSamples;
+};
+
+class ConformationSortingWorkUnit: public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    rosettaInitialization(context, false);
+    RandomGeneratorPtr random = new RandomGenerator(0);
+
+    File dir = context.getFile(referenceDir);
+    if (!dir.exists())
+    {
+      context.errorCallback(T("Input directory for references not found."));
+      return Variable();
+    }
+
+    juce::OwnedArray<File> references;
+    dir.findChildFiles(references, File::findFiles, false, T("*.xml"));
+
+    File opt = context.getFile(targetDir);
+    if (!opt.exists())
+    {
+      context.errorCallback(T("Input directory for targets not found."));
+      return Variable();
+    }
+
+    int count = 0;
+    for (int j = 0; j < references.size(); j++)
+    {
+      ProteinPtr refProtein = Protein::createFromXml(context, (*references[j]));
+      double refScore = getConformationScore(context, refProtein);
+      double factor = 1.2;
+      if (refScore < 1)
+        factor = std::exp(-0.2 * (1 + std::log(refScore)));
+
+      context.enterScope(T("Protein name : ") + (*references[j]).getFileNameWithoutExtension());
+      context.informationCallback(T("Score : ") + String(refScore));
+      context.informationCallback(T("Length : ") + String((int)refProtein->getLength()));
+
+      juce::OwnedArray<File> results;
+      opt.findChildFiles(results, File::findFiles, false,
+          (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
+
+      int deleted = 0;
+      for (int i = 0; i < results.size(); i++)
+      {
+        ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
+        double score = getConformationScore(context, currentProtein);
+        context.informationCallback((*results[i]).getFileNameWithoutExtension() + T(" : ")
+            + String(score));
+        if (score <= factor * refScore)
+        {
+          count++;
+          deleted++;
+          context.informationCallback(T("To drop : ") + (*results[i]).getFileNameWithoutExtension());
+          context.informationCallback(T("Its score : ") + String(score));
+
+          if (del)
+            (*results[i]).deleteFile();
+        }
+      }
+      context.leaveScope(Variable(deleted));
+    }
+
+    if (del)
+      context.informationCallback(T("Number deleted files : ") + String(count));
+    else
+      context.informationCallback(T("Number files found : ") + String(count));
+
+    return Variable();
+  }
+
+protected:
+  friend class ConformationSortingWorkUnitClass;
+  String referenceDir;
+  String targetDir;
+  bool del;
 };
 
 }; /* namespace lbcpp */
