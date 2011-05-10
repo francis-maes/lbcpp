@@ -91,5 +91,11 @@
     <variable type="Integer" name="numSamples" description="Number of samples generated at each iteration of the EDA optimization"/>  
   </class>
   
+  <class name="ConformationSortingWorkUnit" base="WorkUnit">
+    <variable type="String" name="referenceDir"/>
+    <variable type="String" name="targetDir"/>
+    <variable type="Boolean" name="del"/>
+  </class>
+  
   
 </library>

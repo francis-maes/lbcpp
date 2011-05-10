@@ -27,12 +27,12 @@ struct MoverAndScore
     mover(NULL), score(-1)
   {
   }
-  MoverAndScore(ProteinMoverPtr m, double s) :
-    mover(m->clone()), score(s)
+  MoverAndScore(ProteinMoverPtr& m, double s) :
+    mover(m), score(s)
   {
   }
   MoverAndScore(const MoverAndScore& x) :
-    mover(x.mover->clone()), score(x.score)
+    mover(x.mover), score(x.score)
   {
   }
 };
@@ -103,7 +103,6 @@ public:
       context.progressCallback(new ProgressionState((double)i, (double)maxIterations,
           T("Iterations")));
       std::list<MoverAndScore> tempList;
-
       for (int j = 0; j < numSamples; j++)
       {
         ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<
@@ -119,16 +118,23 @@ public:
 
       tempList.sort(compareMovers);
 
-      std::vector<std::pair<Variable, Variable> > dataset;
-      for (int j = 0; j < numSamples * ratioGoodSamples; j++)
+      size_t numLearningSamples = (size_t)(numSamples * ratioGoodSamples);
+      std::vector<MoverAndScore> moversVector(numLearningSamples);
+      for (int j = 0; j < numLearningSamples; j++)
       {
-        dataset.push_back(std::pair<Variable, Variable>(Variable(tempList.front().mover),
-            Variable()));
+        moversVector[j] = MoverAndScore(tempList.front());
         tempList.pop_front();
       }
 
-      workingSampler->learn(context, random, dataset);
+      std::vector<size_t> ordering;
+      random->sampleOrder((size_t)(numSamples * ratioGoodSamples), ordering);
 
+      std::vector<std::pair<Variable, Variable> > dataset(numLearningSamples / 2);
+      for (int j = 0; j < numLearningSamples / 2; j++)
+        dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[ordering[j]].mover),
+            Variable());
+
+      workingSampler->learn(context, random, dataset);
     }
     context.progressCallback(new ProgressionState((double)maxIterations, (double)maxIterations,
         T("Iterations")));

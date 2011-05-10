@@ -89,12 +89,11 @@ public:
         else
           minIndex = newIndex;
       }
-      double minValue = integral->getValue(minIndex) - randomSeed;
-      double maxValue = integral->getValue(maxIndex) - randomSeed;
-      if (std::abs(minValue) > std::abs(maxValue))
-        return Variable(abscissa->getValue(maxIndex));
-      else
-        return Variable(abscissa->getValue(minIndex));
+
+      double finalValue = ((abscissa->getValue(maxIndex) - abscissa->getValue(minIndex))
+          / (integral->getValue(maxIndex) - integral->getValue(minIndex))) * (randomSeed
+          - integral->getValue(maxIndex)) + abscissa->getValue(maxIndex);
+      return Variable(finalValue);
     }
   }
 
@@ -112,21 +111,6 @@ public:
     mean = getMean(dataset);
     std = std::sqrt(getVariance(dataset, mean));
 
-    // TEST
-    if (mean!=mean)
-    {
-      ParzenContinuousSamplerPtr jksdfl = NULL;
-      jksdfl->getName();
-    }
-    // FIN TEST
-    // TEST
-    if (std!=std)
-    {
-      ParzenContinuousSamplerPtr jksdfl = NULL;
-      jksdfl->getName();
-    }
-    // FIN TEST
-
     double delta = 0;
     if (!fixedAbscissa)
       delta = std::abs(2 * excursion * std * precision);
@@ -134,38 +118,17 @@ public:
       delta = (abscissa->getValue(abscissa->getNumElements() - 1) - abscissa->getValue(0))
           * precision;
 
-    // TEST
-    if (delta != delta)
-    {
-      ParzenContinuousSamplerPtr jksdfl = NULL;
-      jksdfl->getName();
-    }
-    // FIN TEST
-
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     if (!fixedAbscissa)
     {
       double minAbscissa = mean - excursion * std;
       double maxAbscissa = mean + excursion * std;
       abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
-
-      // TEST
-          if (maxAbscissa != maxAbscissa)
-          {
-            ParzenContinuousSamplerPtr jksdfl = NULL;
-            jksdfl->getName();
-          }
-          // FIN TEST
-
-          // TEST
-          if (minAbscissa != minAbscissa)
-          {
-            ParzenContinuousSamplerPtr jksdfl = NULL;
-            jksdfl->getName();
-          }
-          // FIN TEST
     }
-    DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, std * kernelWidth);
+    double stdCorrectionFactor = dataset.size() >= 20 ? kernelWidth : kernelWidth * (20.0
+        / (double)dataset.size());
+    DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, std
+        * stdCorrectionFactor);
     integral = createIntegral(frequencies, delta);
   }
 
@@ -191,14 +154,6 @@ public:
 
       if (integral->getValue(j) > 1)
         integral->setValue(j, 1.0);
-
-      // TEST
-      if (integral->getValue(j) != integral->getValue(j))
-      {
-        ParzenContinuousSamplerPtr jksdfl = NULL;
-        jksdfl->getName();
-      }
-      // FIN TEST
     }
 
     return integral;
@@ -215,14 +170,6 @@ public:
     DenseDoubleVectorPtr frequencies = new DenseDoubleVector(actionClass,
         abscissa->getNumElements(), 0.0);
 
-    // TEST
-    if (gaussianDeviation != gaussianDeviation)
-    {
-      ParzenContinuousSamplerPtr jksdfl = NULL;
-      jksdfl->getName();
-    }
-    // FIN TEST
-
     for (int i = 0; i < dataset.size(); i++)
     {
       for (int j = 0; j < frequencies->getNumElements(); j++)
@@ -231,38 +178,15 @@ public:
         double inc = std::exp(-std::pow(abscissa->getValue(j) - dataset[i].first.getDouble(), 2)
             / (2 * std::pow(gaussianDeviation, 2)));
         frequencies->setValue(j, oldValue + inc);
-        // TEST
-        if (frequencies->getValue(j) != frequencies->getValue(j))
-        {
-          ParzenContinuousSamplerPtr jksdfl = NULL;
-          jksdfl->getName();
-        }
-        // FIN TEST
       }
     }
 
     double normalize = 1.0 / ((double)dataset.size() * std::sqrt(2 * M_PI * std::pow(
         gaussianDeviation, 2)));
-
-    // TEST
-    if (normalize != normalize)
-    {
-      ParzenContinuousSamplerPtr jksdfl = NULL;
-      jksdfl->getName();
-    }
-    // FIN TEST
-
     for (int i = 0; i < frequencies->getNumElements(); i++)
     {
       double oldValue = frequencies->getValue(i) * normalize;
       frequencies->setValue(i, oldValue);
-      // TEST
-      if (frequencies->getValue(i) != frequencies->getValue(i))
-      {
-        ParzenContinuousSamplerPtr jksdfl = NULL;
-        jksdfl->getName();
-      }
-      // FIN TEST
     }
     return frequencies;
   }

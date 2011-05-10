@@ -32,9 +32,9 @@ public:
     CompositeSampler(4), numResidue(numResidue)
   {
     // select first residue
-    sons[0] = Variable(new EnumerationDiscreteSampler(numResidue, 0.01));
+    sons[0] = Variable(new EnumerationDiscreteSampler(numResidue, 1.0 / (double)(10 * numResidue)));
     // select second residue
-    sons[1] = Variable(new EnumerationDiscreteSampler(numResidue, 0.01));
+    sons[1] = Variable(new EnumerationDiscreteSampler(numResidue, 1.0 / (double)(10 * numResidue)));
     // select magnitude
     sons[2] = Variable(new GaussianContinuousSampler(meanMagnitude, stdMagnitude));
     // select amplitude

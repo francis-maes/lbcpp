@@ -73,14 +73,14 @@ public:
   double getVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double mean)
   {
     double temporaryVariance = 0;
-    if (dataset.size() > 0)
+    if (dataset.size() > 1)
     {
       for (int i = 0; i < dataset.size(); i++)
         temporaryVariance += std::pow(dataset[i].first.getDouble() - mean, 2);
       temporaryVariance = temporaryVariance / dataset.size();
     }
     if (temporaryVariance <= 0)
-      temporaryVariance = 0.000001;
+      temporaryVariance = 0.3 * mean;
     return temporaryVariance;
   }
 

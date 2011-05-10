@@ -72,32 +72,17 @@ public:
     rosettaInitialization(context, false);
     RandomGeneratorPtr random = new RandomGenerator(0);
 
-    ProteinPtr proteinTarget = Protein::createFromXml(context, context.getFile(T("1LEA_2.xml")));
-    ProteinPtr proteinRef = Protein::createFromXml(context, context.getFile(T("1LEA.xml")));
-    core::pose::PoseOP target = convertProteinToPose(context, proteinTarget);
-    core::pose::PoseOP reference = convertProteinToPose(context, proteinRef);
-    cout << "score ref : " << getConformationScore(reference) << endl;
-    cout << "score target : " << getConformationScore(target) << endl;
+    core::pose::PoseOP pose = new core::pose::Pose();
+    makePoseFromSequence(pose, String("AAAAAAAAAAAAAAA"));
 
-    PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(proteinTarget->getLength(), 0, 25, 0, 25);
-    ShearMoverSamplerPtr samp1 = new ShearMoverSampler(proteinTarget->getLength(), 0, 25, 0, 25);
-    RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(proteinTarget->getLength(), 0, 0.5);
-
+    PhiPsiMoverSamplerPtr m = new PhiPsiMoverSampler((int)pose->n_residue(), 0, 25, 0, 25);
     std::vector<Variable> samplers;
+    samplers.push_back(Variable(m));
 
-    samplers.push_back(Variable(samp0));
-    samplers.push_back(Variable(samp2));
-    samplers.push_back(Variable(samp1));
+    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(1, samplers);
 
-    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(3, samplers);
-
-    ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(0.5);
-    ProteinMoverSamplerPtr out = opti->findBestMovers(context, random, target, reference, samp, 2,
-        5, 0.5);
-    out->saveToFile(context, context.getFile(T("outSampler.xml")));
-
-
-
+    ProteinSimulatedAnnealingOptimizer opt(4.0, 0.01, 50, 1000, 5, String("AAA"), 0.0001);
+    opt.apply(pose, samp, context, random);
 
     context.informationCallback(T("RosettaTest done."));
     return Variable();
