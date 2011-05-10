@@ -61,6 +61,8 @@ public:
     if (!matrix)
       return;
     ObjectMatrixPtr objectMatrix = matrix.dynamicCast<ObjectMatrix>();
+    if (!inputs[1].exists() || !inputs[2].exists())
+      return;
     int row = inputs[1].getInteger();
     int column = inputs[2].getInteger();
 

@@ -66,7 +66,7 @@ public:
     {dest.setDouble(source.getDouble());}
 
   virtual String toString(const VariableValue& value) const
-    {jassert(!isMissingValue(value)); return String(value.getDouble());}
+    {jassert(!isMissingValue(value)); return String(value.getDouble(), 4);}
 
   static String positiveNumberToShortString(double d)
   {
