@@ -51,6 +51,8 @@
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="bestThreshold"/>
     <variable type="Double" name="bestThresholdScore"/>
+    <variable type="Probability" name="sensitivity"/>
+    <variable type="Probability" name="specificity"/>
     <variable type="ObjectVector[Pair[Double, Probability]]" name="precision"/>
     <variable type="ObjectVector[Pair[Double, Probability]]" name="recall"/>
   </class>
