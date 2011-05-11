@@ -16,7 +16,8 @@ using namespace lbcpp;
 ** BinaryClassificationConfusionMatrix
 */
 BinaryClassificationConfusionMatrix::BinaryClassificationConfusionMatrix(const BinaryClassificationConfusionMatrix& other)
-  : truePositive(other.truePositive),
+  : scoreToOptimize(other.scoreToOptimize),
+    truePositive(other.truePositive),
     falsePositive(other.falsePositive),
     falseNegative(other.falseNegative),
     trueNegative(other.trueNegative),
@@ -168,7 +169,6 @@ double BinaryClassificationConfusionMatrix::computeSpecificity() const
 
 void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
-  ScoreObject::saveToXml(exporter);
   String res = String((int)truePositive) + T(" ")
              + String((int)falsePositive) + T(" ")
              + String((int)falseNegative) + T(" ")
@@ -178,8 +178,6 @@ void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 
 bool BinaryClassificationConfusionMatrix::loadFromXml(XmlImporter& importer)
 {
-  if (!ScoreObject::loadFromXml(importer))
-    return false;
   StringArray tokens;
   tokens.addTokens(importer.getAllSubText(), true);
   if (tokens.size() != 4)
@@ -263,10 +261,7 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
   bestScore = (confusionMatrix.*measure)(); 
   double bestThreshold = predictedScores.size() ? predictedScores.begin()->first - margin : 0.0;
   
-#ifdef JUCE_DEBUG
-  BinaryClassificationConfusionMatrix bestMatrix = confusionMatrix;
-#endif // JUCE_DEBUG
-  
+  BinaryClassificationConfusionMatrix bestMatrix = confusionMatrix;  
   for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
   {
     if (it->second.first)
@@ -286,14 +281,13 @@ double ROCScoreObject::findBestThreshold(ScoreFunction measure, double& bestScor
     {
       bestScore = result;
       bestThreshold = getBestThreshold(it, margin);
-#ifdef JUCE_DEBUG
       bestMatrix = confusionMatrix;
-#endif // JUCE_DEBUG
-      const_cast<ROCScoreObject*>(this)->sensitivity = confusionMatrix.computeSensitivity();
-      const_cast<ROCScoreObject*>(this)->specificity = confusionMatrix.computeSpecificity();
     }
   }
-  
+
+  const_cast<ROCScoreObject*>(this)->bestConfusionMatrix = new BinaryClassificationConfusionMatrix(bestMatrix);
+  bestConfusionMatrix->setName(getName() + T(" confusion matrix"));
+
 #ifdef JUCE_DEBUG
   BinaryClassificationConfusionMatrix debugMatrix;
   for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
@@ -325,7 +319,7 @@ double ROCScoreObject::getBestThreshold(ScoresMap::const_iterator lastLower, dou
     return (lastLower->first + nxt->first) / 2.0;
 }
 
-void ROCScoreObject::finalize()
+void ROCScoreObject::finalize(bool saveConfusionMatrices)
 {
   ScopedLock _(lock);
 
@@ -383,6 +377,28 @@ void ROCScoreObject::finalize()
   recall.push_back(std::make_pair(50, bestRecAt50));
   recall.push_back(std::make_pair(75, bestRecAt75));
   recall.push_back(std::make_pair(90, bestRecAt90));
+
+  if (saveConfusionMatrices)
+  {
+    BinaryClassificationConfusionMatrix confusionMatrix;
+    confusionMatrix.set(numPositives, numNegatives, 0, 0);
+    for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
+    {
+      if (it->second.first)
+      {
+        confusionMatrix.removePrediction(true, false, it->second.first);
+        confusionMatrix.addPrediction(false, false, it->second.first);
+      }
+      if (it->second.second)
+      {
+        confusionMatrix.removePrediction(true, true, it->second.second);
+        confusionMatrix.addPrediction(false, true, it->second.second);
+      }
+      jassert(confusionMatrix.getSampleCount() == numPositives + numNegatives);
+      
+      confusionMatrices.push_back(new BinaryClassificationConfusionMatrix(confusionMatrix));
+    }
+  }
 
   predictedScores.clear();
 }

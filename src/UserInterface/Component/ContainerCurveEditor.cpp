@@ -68,6 +68,10 @@ public:
     drawZeroAxis(g, transform, configuration->getYAxis(), false);
     drawZeroAxis(g, transform, configuration->getXAxis(), true);
     drawFrame(g, transform);
+
+    if (table->getNumElements() == 0)
+      return;
+
     for (size_t i = 0; i < selectedCurves.size(); ++i)
     {
       drawCurveLine(g, transform, selectedCurves[i], configuration->getCurve(selectedCurves[i]));

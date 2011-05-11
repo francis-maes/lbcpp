@@ -351,6 +351,7 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
       identifier = makeSharedObjectIdentifier(object);
       const XmlElementPtr& sourceElement = it->second.first;
       sourceElement->setAttribute(T("id"), identifier);
+      sourceElement->setAttribute(T("type"), object->getClassName());
     }
     getCurrentElement()->setAttribute(T("ref"), identifier);
   }

@@ -183,7 +183,7 @@ enum BinaryClassificationScore
 
 // Classification
 extern SupervisedEvaluatorPtr binaryClassificationEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
-extern SupervisedEvaluatorPtr rocAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore);
+extern SupervisedEvaluatorPtr rocAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false);
 
 extern SupervisedEvaluatorPtr classificationEvaluator();
 

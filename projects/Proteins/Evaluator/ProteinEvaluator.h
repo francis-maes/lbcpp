@@ -71,7 +71,7 @@ protected:
 class ProteinEvaluator : public CompositeEvaluator
 {
 public:
-  ProteinEvaluator()
+  ProteinEvaluator(bool isFinalEvaluation = false)
   {
     addEvaluator(ss3Target,  containerSupervisedEvaluator(classificationEvaluator()));
     addEvaluator(ss8Target,  containerSupervisedEvaluator(classificationEvaluator()));
@@ -80,10 +80,10 @@ public:
     addEvaluator(stalTarget, containerSupervisedEvaluator(classificationEvaluator()));
 //    addEvaluator(cma8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
 //    addEvaluator(cmb8Target, containerSupervisedEvaluator(new ContactMapEvaluator(8)));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore), 1));
-    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore), 1));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation), 1));
+    addEvaluator(dsbTarget,  symmetricMatrixSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationMCCScore, isFinalEvaluation), 1));
     addEvaluator(dsbTarget,  new DisulfidePatternEvaluator());
-    addEvaluator(cbsTarget, containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore)));
+    addEvaluator(cbsTarget,  containerSupervisedEvaluator(rocAnalysisEvaluator(binaryClassificationAccuracyScore, isFinalEvaluation)));
   }
 
   /* CompositeEvaluator */
