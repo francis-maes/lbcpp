@@ -107,15 +107,29 @@ typedef ReferenceCountedObjectPtr<BinaryClassificationConfusionMatrix> BinaryCla
 class ROCScoreObjectElement : public Object
 {
 public:
-  ROCScoreObjectElement(double falsePositiveRate, double truePositiveRate)
-    : falsePositiveRate(falsePositiveRate), truePositiveRate(truePositiveRate) {}
+  ROCScoreObjectElement(const BinaryClassificationConfusionMatrixPtr& confusionMatrix)
+  {
+    accuracy = confusionMatrix->computeAccuracy();
+    f1Score = confusionMatrix->computeF1Score();
+    precision = confusionMatrix->computePrecision();
+    recallOrSensitivity = confusionMatrix->computeRecall();
+    specificity = confusionMatrix->computeSpecificity();
+    falsePositiveRate = 1 - specificity;
+    matthewsCorrelation = confusionMatrix->computeMatthewsCorrelation();
+  }
+
   ROCScoreObjectElement() {}
 
 protected:
   friend class ROCScoreObjectElementClass;
 
+  double accuracy;
+  double f1Score;
+  double precision;
+  double recallOrSensitivity;
+  double specificity;
   double falsePositiveRate;
-  double truePositiveRate;
+  double matthewsCorrelation;
 };
 
 extern ClassPtr rocScoreObjectElementClass;
@@ -132,7 +146,7 @@ public:
   typedef double (BinaryClassificationConfusionMatrix::*ScoreFunction)() const;
 
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
-  void finalize();
+  void finalize(bool saveConfusionMatrices);
   double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
 
   size_t getSampleCount() const
@@ -155,28 +169,11 @@ public:
   }
   
   ContainerPtr createROCCurveElements() const
-  {    
-    std::vector<double> sortedPredictedScores;
-    sortedPredictedScores.reserve(predictedScores.size());
-    for (ScoresMap::const_iterator it = predictedScores.begin(); it != predictedScores.end(); ++it)
-      sortedPredictedScores.push_back(it->first);
-    std::sort(sortedPredictedScores.begin(), sortedPredictedScores.end());
-
-    ContainerPtr res = vector(rocScoreObjectElementClass, sortedPredictedScores.size() + 2);
-    res->setElement(0, new ROCScoreObjectElement(0, 0));
-    size_t numFalseNegative = 0;
-    size_t numTruePositive = 0;
-    for (size_t i = 0; i < sortedPredictedScores.size(); ++i)
-    {
-      std::pair<size_t, size_t> n = predictedScores.find(sortedPredictedScores[i])->second;
-      numFalseNegative += n.first;
-      numTruePositive += n.second;
-
-      res->setElement(i + 1, new ROCScoreObjectElement((double)numFalseNegative / (double)numNegatives,
-                                                       (double)numTruePositive / (double)numPositives));
-    }
-    res->setElement(sortedPredictedScores.size() + 1, new ROCScoreObjectElement(1, 1));
-
+  {
+    const size_t n = confusionMatrices.size();
+    ContainerPtr res = vector(rocScoreObjectElementClass, n);
+    for (size_t i = 0; i < n; ++i)
+      res->setElement(i, new ROCScoreObjectElement(confusionMatrices[i]));
     return res;
   }
 
@@ -186,10 +183,10 @@ protected:
   BinaryClassificationScore scoreToOptimize;
   double bestThreshold;
   double bestThresholdScore;
-  
-  double sensitivity;
-  double specificity;
-  
+
+  BinaryClassificationConfusionMatrixPtr bestConfusionMatrix;
+  std::vector< BinaryClassificationConfusionMatrixPtr > confusionMatrices;
+
   std::vector< std::pair<double, double> > precision;
   std::vector< std::pair<double, double> > recall;
 

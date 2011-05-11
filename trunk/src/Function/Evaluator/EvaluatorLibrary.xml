@@ -29,7 +29,7 @@
 
   <!-- Utility Classes -->
   <class name="BinaryClassificationConfusionMatrix" base="ScoreObject">
-    <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
+    <!-- <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/> -->
     <variable type="PositiveInteger" name="truePositive"/>
     <variable type="PositiveInteger" name="falsePositive"/>
     <variable type="PositiveInteger" name="falseNegative"/>
@@ -37,18 +37,25 @@
   </class>
 
   <class name="ROCScoreObjectElement" base="Object">
+    <variable type="Probability" name="accuracy"/>
+    <variable type="Double" name="f1Score"/>
+    <variable type="Probability" name="precision"/>
+    <variable type="Probability" name="recallOrSensitivity"/>
+    <variable type="Probability" name="specificity"/>
     <variable type="Probability" name="falsePositiveRate"/>
-    <variable type="Probability" name="truePositiveRate"/>
+    <variable type="Double" name="matthewsCorrelation"/>
   </class>
 
   <class name="ROCScoreObject" base="ScoreObject">
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
     <variable type="Double" name="bestThreshold"/>
     <variable type="Double" name="bestThresholdScore"/>
-    <variable type="Probability" name="sensitivity"/>
-    <variable type="Probability" name="specificity"/>
+    <variable type="BinaryClassificationConfusionMatrix" name="bestConfusionMatrix"/>
+    <variable type="GenericVector[BinaryClassificationConfusionMatrix]" name="confusionMatrices"/>
+<!--
     <variable type="ObjectVector[Pair[Double, Probability]]" name="precision"/>
     <variable type="ObjectVector[Pair[Double, Probability]]" name="recall"/>
+-->
   </class>
 
   <!-- Regression -->
@@ -70,7 +77,7 @@
   </class>
   
   <class name="ROCAnalysisEvaluator" base="SupervisedEvaluator">
-    <constructor arguments="BinaryClassificationScore scoreToOptimize"/>
+    <constructor arguments="BinaryClassificationScore scoreToOptimize, bool saveConfusionMatrices"/>
     <variable type="BinaryClassificationScore" name="scoreToOptimize" enumeration="yes"/>
   </class>
 

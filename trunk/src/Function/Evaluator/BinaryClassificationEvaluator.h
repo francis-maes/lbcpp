@@ -43,8 +43,8 @@ protected:
 class ROCAnalysisEvaluator : public SupervisedEvaluator
 {
 public:
-  ROCAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore)
-    : scoreToOptimize(scoreToOptimize) {}
+  ROCAnalysisEvaluator(BinaryClassificationScore scoreToOptimize = binaryClassificationAccuracyScore, bool saveConfusionMatrices = false)
+    : scoreToOptimize(scoreToOptimize), saveConfusionMatrices(saveConfusionMatrices) {}
 
   virtual TypePtr getRequiredPredictionType() const
     {return probabilityType;}
@@ -56,6 +56,7 @@ protected:
   friend class ROCAnalysisEvaluatorClass;
 
   BinaryClassificationScore scoreToOptimize;
+  bool saveConfusionMatrices;
 
   virtual ScoreObjectPtr createEmptyScoreObject(ExecutionContext& context, const FunctionPtr& function) const
     {return new ROCScoreObject(scoreToOptimize);}
@@ -70,7 +71,7 @@ protected:
   }
 
   virtual void finalizeScoreObject(const ScoreObjectPtr& scores, const FunctionPtr& function) const
-    {scores.staticCast<ROCScoreObject>()->finalize();}
+    {scores.staticCast<ROCScoreObject>()->finalize(saveConfusionMatrices);}
 };
 
 }; /* namespace lbcpp */
