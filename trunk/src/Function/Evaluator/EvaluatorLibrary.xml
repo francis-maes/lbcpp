@@ -37,12 +37,12 @@
   </class>
 
   <class name="ROCScoreObjectElement" base="Object">
+    <variable type="Probability" name="falsePositiveRate"/>
+    <variable type="Probability" name="recallOrSensitivity"/>
     <variable type="Probability" name="accuracy"/>
     <variable type="Double" name="f1Score"/>
     <variable type="Probability" name="precision"/>
-    <variable type="Probability" name="recallOrSensitivity"/>
     <variable type="Probability" name="specificity"/>
-    <variable type="Probability" name="falsePositiveRate"/>
     <variable type="Double" name="matthewsCorrelation"/>
   </class>
 
