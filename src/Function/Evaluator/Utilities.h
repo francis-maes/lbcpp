@@ -148,6 +148,8 @@ public:
   void addPrediction(ExecutionContext& context, double predictedScore, bool isPositive); 
   void finalize(bool saveConfusionMatrices);
   double findBestThreshold(BinaryClassificationScore scoreToOptimize, double& bestScore) const;
+  
+  BinaryClassificationConfusionMatrixPtr findBestSensitivitySpecificityTradeOff() const;
 
   size_t getSampleCount() const
     {ScopedLock _(lock); return numPositives + numNegatives;}

@@ -419,6 +419,7 @@ public:
   ContainerCurveEditorConfigurationComponent(ContainerCurveEditorConfigurationPtr configuration)
     : configuration(configuration)
   {
+    addAndMakeVisible(xAxisLabel = new juce::Label(T("xaxis"), T("X-Axis")));
     addAndMakeVisible(keyComboBox = createVariableIndexComboBox(configuration->getKeyVariableIndex()));
     addAndMakeVisible(selectedCurves = new ContainerCurveSelectorConfigurationComponent(configuration));
     selectedCurves->addChangeListener(this);
@@ -439,13 +440,17 @@ public:
 
   virtual void resized()
   {
+    xAxisLabel->setBoundsRelative(0, 0, 0.4f, 0.5f);
+    xAxisLabel->setSize(xAxisLabel->getWidth(), 20);
     keyComboBox->setBoundsRelative(0, 0.25f, 0.4f, 0.5f);
+    keyComboBox->setSize(keyComboBox->getWidth(), 20);
     selectedCurves->setBoundsRelative(0.4f, 0, 0.6f, 1.f);
   }
 
 protected:
   ContainerCurveEditorConfigurationPtr configuration;
 
+  juce::Label* xAxisLabel;
   ComboBox* keyComboBox;
   ContainerCurveSelectorConfigurationComponent* selectedCurves;
 

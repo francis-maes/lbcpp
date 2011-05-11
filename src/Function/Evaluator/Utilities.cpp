@@ -319,6 +319,31 @@ double ROCScoreObject::getBestThreshold(ScoresMap::const_iterator lastLower, dou
     return (lastLower->first + nxt->first) / 2.0;
 }
 
+BinaryClassificationConfusionMatrixPtr ROCScoreObject::findBestSensitivitySpecificityTradeOff() const
+{
+  const size_t n = confusionMatrices.size();
+  if (n == 0)
+    return BinaryClassificationConfusionMatrixPtr();
+
+  double bestDistance = DBL_MAX;
+  size_t bestIndex = (size_t)-1;
+  for (size_t i = 0; i < n; ++i)
+  {
+    double sensitivity = 1 - confusionMatrices[i]->computeRecall();
+    double specificity = 1 - confusionMatrices[i]->computeSpecificity();
+    sensitivity *= sensitivity;
+    specificity *= specificity;
+    const double euclideanDistance = sqrt(sensitivity + specificity);
+    if (euclideanDistance < bestDistance)
+    {
+      bestDistance = euclideanDistance;
+      bestIndex = i;
+    }
+  }
+  jassert(bestIndex != (size_t)-1);
+  return confusionMatrices[bestIndex];
+}
+
 void ROCScoreObject::finalize(bool saveConfusionMatrices)
 {
   ScopedLock _(lock);
