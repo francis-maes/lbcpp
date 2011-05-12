@@ -95,7 +95,7 @@ public:
     size_t cbs = builder.addFunction(getVariableFunction(T("cysteinBondingStates")), protein);
     size_t discretizedCbs = (size_t)-1;
     if (featuresParameters->cbsDiscretization)
-      discretizedCbs = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs);
+      discretizedCbs = builder.addFunction(mapContainerFunction(defaultProbabilityFeatureGenerator(featuresParameters->cbsDiscretization)), cbs, T("cbs"));
 
     // feature generators
     builder.startSelection();
@@ -269,34 +269,15 @@ public:
     
     builder.startSelection();
 
-      size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
       builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
       builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
       builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
       builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
 
-    size_t primaryPairFeatures = builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
-/*    
-    builder.startSelection();
-
-      builder.addFunction(getVariableFunction(T("numCysteins")), proteinPerception);
-      builder.addInSelection(primaryPairFeatures);
-    
-    builder.finishSelectionWithFunction(createSymmetricMatrixFunction(
-                                        lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, disulfideResiduePairFeatures)),
-                                        T("residueFeaturesSymmetricMatrix"));
-*/
+    builder.finishSelectionWithFunction(new CreateDisulfideSymmetricMatrixFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residuePairFeatures)), T("residueFeaturesSymmetricMatrix"));
   }
-/*
-  void disulfideResiduePairFeatures(CompositeFunctionBuilder& builder) const
-  {
-    size_t firstPosition = builder.addInput(positiveIntegerType);
-    size_t secondPosition = builder.addInput(positiveIntegerType);
-    size_t disulfideMatrix = builder.addInput(symmetricMatrixClass(doubleVectorClass()));
 
-    builder.addFunction(matrixWindowFeatureGenerator(2, 2), firstPosition, secondPosition, disulfideMatrix);
-  }
-*/
   /* Cystein Bonding State Residue Perception */
   virtual void cysteinBondingStateVectorPerception(CompositeFunctionBuilder& builder) const
   {
@@ -304,13 +285,12 @@ public:
     
     builder.startSelection();
     
-    size_t protein = builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
-    builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
-    builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
-    builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
-    builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("protein")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("primaryResidueFeatures")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("accumulator")), proteinPerception);
+      builder.addFunction(getVariableFunction(T("globalFeatures")), proteinPerception);
     
-    builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, primaryResidueFeatures)), T("cysteinBondingStateResidueFeature"));    
+    builder.finishSelectionWithFunction(new CreateCysteinBondingStateVectorFunction(lbcppMemberCompositeFunction(NumericalProteinPredictorParameters, residueFeatures)), T("cysteinBondingStateResidueFeature"));    
   }
 
   // Learning Machine
