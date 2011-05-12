@@ -21,8 +21,8 @@ class GetFinishedExecutionTracesDaemon;
 class DistributedOptimizerContext : public OptimizerContext
 {
 public:
-  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
-  DistributedOptimizerContext() {}
+  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime, size_t timeToSleep = 60000);
+  DistributedOptimizerContext() {timeToSleep = 60000;}
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
     {functionCallback = callback;}
@@ -31,11 +31,14 @@ public:
   virtual void waitUntilAllRequestsAreProcessed() const
   {
     while (inProgressWUs.size())
-      Thread::sleep(60000);
+      Thread::sleep(timeToSleep);
   }
   
   virtual bool areAllRequestsProcessed() const
     {return inProgressWUs.size() == 0;}
+  
+  virtual size_t getTimeToSleep() const
+    {return timeToSleep;}
   
   virtual bool evaluate(const Variable& parameters)
   {   
@@ -72,6 +75,7 @@ protected:
   size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
+  size_t timeToSleep;
   
   FunctionCallbackPtr functionCallback;
   
@@ -88,7 +92,6 @@ protected:
       context.errorCallback(T("DistributedOptimizerContext::getNetworkInterfaceAndConnect"), T("Not connected !"));
       return NULL;
     }
-    //context.informationCallback(managerHostName, T("Connected !")); TODO arnaud : useless ?
     ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
     interface->sendInterfaceClass();
     return interface;
@@ -113,7 +116,7 @@ public:
   {    
     while (!threadShouldExit())
     {
-      sleep(30000);
+      sleep(optimizerContext->timeToSleep);
        
       // handle finished WUs
       ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect();
@@ -130,16 +133,49 @@ public:
             NetworkResponsePtr res = interface->getExecutionTrace(it->first);
             if (res)
             {  
-              // TODO arnaud : traiter cas où qq pas valide
+              // TODO arnaud : traiter cas où qq pas valide mieux
              
               ExecutionTracePtr trace = res->getExecutionTrace(context);
+              if (!trace) {
+                context.warningCallback(T("Trace of ") + it->first + T(" is not a valide ExecutionTrace"));
+                optimizerContext->functionCallback->functionReturned(context, optimizerContext->objectiveFunction, &(it->second), DBL_MAX);
+                optimizerContext->inProgressWUs.erase(it);
+                continue;
+              }
+              
               ExecutionTraceNodePtr root = trace->getRootNode();
-              std::vector<ExecutionTraceItemPtr> vec = root->getSubItems();  
+              if (!root) {
+                context.warningCallback(T("Can't get root in trace of ") + it->first);
+                optimizerContext->functionCallback->functionReturned(context, optimizerContext->objectiveFunction, &(it->second), DBL_MAX);
+                optimizerContext->inProgressWUs.erase(it);
+                continue;
+              }
+              
+              std::vector<ExecutionTraceItemPtr> vec = root->getSubItems();
+              if (vec.empty()) {
+                context.warningCallback(T("Can't get subitems in trace of ") + it->first);
+                optimizerContext->functionCallback->functionReturned(context, optimizerContext->objectiveFunction, &(it->second), DBL_MAX);
+                optimizerContext->inProgressWUs.erase(it);
+                continue;
+              }
+              
               ExecutionTraceNodePtr traceNode = vec[0].dynamicCast<ExecutionTraceNode>();
+              if (!traceNode) {
+                context.warningCallback(T("Can't get node in trace of ") + it->first);
+                optimizerContext->functionCallback->functionReturned(context, optimizerContext->objectiveFunction, &(it->second), DBL_MAX);
+                optimizerContext->inProgressWUs.erase(it);
+                continue;
+              }
+              
               Variable returnValue = traceNode->getReturnValue();
+              if (!returnValue.exists()) {
+                context.warningCallback(T("No return value in trace of ") + it->first);
+                optimizerContext->functionCallback->functionReturned(context, optimizerContext->objectiveFunction, &(it->second), DBL_MAX);
+                optimizerContext->inProgressWUs.erase(it);
+                continue;
+              }
               
-              optimizerContext->functionCallback->functionReturned(context, FunctionPtr(), &(it->second), returnValue); 
-              
+              optimizerContext->functionCallback->functionReturned(context, FunctionPtr(), &(it->second), returnValue);
               optimizerContext->inProgressWUs.erase(it);
             }
             else

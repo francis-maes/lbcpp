@@ -9,8 +9,9 @@
   </class>
   
   <class name="MultiThreadedOptimizerContext" base="OptimizerContext">
-    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction"/>
+    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction, size_t timeToSleep"/>
     <variable type="Integer" name="numEvaluationInProgress"/>
+    <variable type="PositiveInteger" name="timeToSleep"/>
   </class>
   
 </library>

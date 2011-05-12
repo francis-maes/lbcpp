@@ -92,7 +92,7 @@ protected:
     // wait (in case of async context) & update progression
     while (!optimizerContext->areAllRequestsProcessed())
     {
-      Thread::sleep(100);
+      Thread::sleep(optimizerContext->getTimeToSleep());
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
       saveState(context, optimizerState);
     }

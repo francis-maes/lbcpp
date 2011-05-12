@@ -26,6 +26,7 @@ public:
   
   virtual void waitUntilAllRequestsAreProcessed() const = 0;
   virtual bool areAllRequestsProcessed() const = 0;
+  virtual size_t getTimeToSleep() const = 0;
   virtual bool evaluate(const Variable& parameters) = 0;
   
 protected:
@@ -39,8 +40,8 @@ typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
 extern ClassPtr optimizerContextClass;
 
 extern OptimizerContextPtr synchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);  
-extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);
-extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);  
+extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, size_t timeToSleep = 100);
+extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTimesize_t, size_t timeToSleep = 60000);  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_

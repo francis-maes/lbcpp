@@ -18,20 +18,26 @@ namespace lbcpp
 class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
-  MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction)
-    : OptimizerContext(context, objectiveFunction) 
-    {numEvaluationInProgress=0;}
+  MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, size_t timeToSleep = 100)
+    : OptimizerContext(context, objectiveFunction), timeToSleep(timeToSleep) 
+    {numEvaluationInProgress = 0;}
   MultiThreadedOptimizerContext() 
-    {numEvaluationInProgress=0;}
+  {
+    numEvaluationInProgress = 0;
+    timeToSleep = 100;
+  }
   
   virtual void waitUntilAllRequestsAreProcessed() const 
   {
     while (numEvaluationInProgress) // value modified in function evaluation (after pushWorkUnit)
-      Thread::sleep(100);
+      Thread::sleep(timeToSleep);
   }
   
   virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
+  
+  virtual size_t getTimeToSleep() const
+    {return timeToSleep;}
   
   virtual bool evaluate(const Variable& parameters) 
   {
@@ -45,6 +51,7 @@ protected:
   
 private:
   int numEvaluationInProgress;
+  size_t timeToSleep;
 };
   
 };
