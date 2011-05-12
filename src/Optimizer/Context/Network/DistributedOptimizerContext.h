@@ -39,7 +39,11 @@ public:
   
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters)
   {
-    executionContext = &context;  // TODOD arnaud : if
+    // Todo : remove this:
+    {
+      ScopedLock _(executionContextLock);
+      executionContext = &context; 
+    }
     
     ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
     if (!interface)
@@ -55,10 +59,9 @@ public:
     interface->closeCommunication();
     
     {
-      ScopedLock _(lock);
+      ScopedLock _(inProgressWUsLock);
       inProgressWUs.push_back(std::make_pair(res, parameters));
     }
-    
     return true;
   }
   
@@ -77,11 +80,16 @@ protected:
   size_t requiredTime;
   
   FunctionCallbackPtr functionCallback;
+
+  // FIXME: this should be a reference initialized at construction : 
+  // ExecutionContext& context; (with no lock)
+  CriticalSection executionContextLock; 
   ExecutionContextPtr executionContext;
+  // --
   
+  CriticalSection inProgressWUsLock;
   std::vector< std::pair<String, Variable> > inProgressWUs;
-  
-  CriticalSection lock;
+
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
   
   ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
@@ -118,15 +126,21 @@ public:
     while (!threadShouldExit())
     {
       sleep(30000);
+       
+      ExecutionContextPtr context; // FIXME: remove all these stuffs: and replace by a static reference at the beggining of run()
+      {
+        ScopedLock _(optimizerContext->executionContextLock);
+        context = optimizerContext->executionContext;
+      }
       
       // handle finished WUs
-      ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(*(optimizerContext->executionContext));  // TODO arnaud
+      ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(*context);  // TODO arnaud
       if (!interface) 
         continue;
       
       std::vector< std::pair<String, Variable> >::iterator it;
       {
-        ScopedLock _(optimizerContext->lock);
+        ScopedLock _(optimizerContext->inProgressWUsLock);
         for (it = optimizerContext->inProgressWUs.begin(); it != optimizerContext->inProgressWUs.end(); )
         {
           if (interface->isFinished(it->first))
@@ -135,13 +149,14 @@ public:
             if (res)
             {  
               // TODO arnaud : traiter cas où qq pas valide
-              ExecutionTracePtr trace = res->getExecutionTrace(*(optimizerContext->executionContext));
+             
+              ExecutionTracePtr trace = res->getExecutionTrace(*context);
               ExecutionTraceNodePtr root = trace->getRootNode();
               std::vector<ExecutionTraceItemPtr> vec = root->getSubItems();  
               ExecutionTraceNodePtr traceNode = vec[0].dynamicCast<ExecutionTraceNode>();
               Variable returnValue = traceNode->getReturnValue();
               
-              optimizerContext->functionCallback->functionReturned(*(optimizerContext->executionContext), FunctionPtr(), &(it->second), returnValue); 
+              optimizerContext->functionCallback->functionReturned(*context, FunctionPtr(), &(it->second), returnValue); 
               
               optimizerContext->inProgressWUs.erase(it);
             }
