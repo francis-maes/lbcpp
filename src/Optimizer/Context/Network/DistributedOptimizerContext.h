@@ -39,7 +39,6 @@ public:
   
   virtual bool evaluate(ExecutionContext& context, const Variable& parameters)
   {
-    
     executionContext = &context;  // TODOD arnaud : if
     
     ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);

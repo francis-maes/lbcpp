@@ -26,12 +26,11 @@ class DebugWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context) 
   {
-  
     // variables used by DistributedOptimizerContext
     String projectName(T("DebugNetwork"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
-    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+    String managerHostName(T("localhost"));
     size_t managerPort = 1664;
     size_t requiredMemory = 1;
     size_t requiredCpus = 1;
