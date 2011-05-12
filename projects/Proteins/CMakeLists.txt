@@ -181,6 +181,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
   
     SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
     Rosetta/Sampler/GaussianContinuousSampler.h
+    Rosetta/Sampler/GaussianMultivariateSampler.h
     Rosetta/Sampler/EnumerationDiscreteSampler.h
     Rosetta/Sampler/ProteinMoverSampler.h
     Rosetta/Sampler/ParzenContinuousSampler.h

@@ -10,6 +10,15 @@
   <class name="GaussianContinuousSampler" base="ContinuousSampler">
   </class>
   
+  <class name="GaussianMultivariateSampler" base="ContinuousSampler">
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities"/>
+    <variable type="GenericVector[DenseDoubleVector[PositiveIntegerEnumeration, Double]]" name="means"/>
+    <variable type="GenericVector[DoubleSymmetricMatrix[Double]]" name="covarianceMatrix"/>
+    <variable type="Integer" name="numVariables"/>
+    <variable type="Integer" name="numClusters"/>
+    <variable type="Boolean" name="learned" shortName="l" description="Indicates if the sampler has already been learned"/>
+  </class>
+  
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="abscissa" shortName="a" description="Abscissa where the integral is evaluated"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="integral" shortName="i" description="Values of the integral of the density probability function"/>

@@ -24,6 +24,10 @@ Rapport
 - sampler gaussian (+ references : )
 - sampler kde (voir hastie + ref)
 
+Citer:
+- bishop
+- article MonteCarlo framework de Martin Haugh
+- book Theory and use of the EM algo, Gupta, chen
 
 DONE
 =====
