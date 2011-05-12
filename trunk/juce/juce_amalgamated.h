@@ -12420,9 +12420,10 @@ public:
     juce_UseDebuggingNewOperator
 
 private:
+    CriticalSection lock;
     String hostName;
-    int volatile portNumber, handle;
-    bool volatile connected; // francis: put this as volatile
+    int portNumber, handle;
+    bool connected;
     bool isListener;
 
     StreamingSocket (const String& hostname, const int portNumber, const int handle);
