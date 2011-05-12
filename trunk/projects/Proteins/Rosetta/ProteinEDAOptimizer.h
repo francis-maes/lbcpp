@@ -91,10 +91,13 @@ public:
 
   ProteinMoverSamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
       core::pose::PoseOP target, core::pose::PoseOP reference, ProteinMoverSamplerPtr sampler,
-      int maxIterations, int numSamples = 1000, double ratioGoodSamples = 0.5)
+      std::vector<ProteinMoverPtr>& movers, int maxIterations, int numSamples = 1000,
+      double ratioGoodSamples = 0.5, int numMoversToKeep = 20)
   {
     ProteinMoverSamplerPtr workingSampler = new ProteinMoverSampler(*sampler);
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
+
+    std::list<MoverAndScore> moversToKeep;
 
     context.enterScope(T("Protein EDA optimizer."));
 
@@ -111,35 +114,138 @@ public:
         mover->move(workingPose);
         double score = evaluate(context, workingPose, reference);
 
+        // TEST
+        printMover(mover);
+        std::cout << "score : " << score << std::endl;
+        //FIN TEST
+
         MoverAndScore candidate(mover, score);
         tempList.push_back(candidate);
         *workingPose = *target;
+
+        moversToKeep.push_back(MoverAndScore(candidate));
       }
 
       tempList.sort(compareMovers);
+      moversToKeep.sort(compareMovers);
+      while (moversToKeep.size() > numMoversToKeep)
+        moversToKeep.pop_back();
 
       size_t numLearningSamples = (size_t)(numSamples * ratioGoodSamples);
+      size_t numLearningSamplesFirstPass = numLearningSamples / 2;
+      size_t numLearningSamplesSecondPass = numLearningSamples - numLearningSamplesFirstPass;
       std::vector<MoverAndScore> moversVector(numLearningSamples);
-      for (int j = 0; j < numLearningSamples; j++)
+      for (int j = 0; j < numLearningSamplesFirstPass; j++)
       {
         moversVector[j] = MoverAndScore(tempList.front());
         tempList.pop_front();
       }
 
-      std::vector<size_t> ordering;
-      random->sampleOrder((size_t)(numSamples * ratioGoodSamples), ordering);
+      std::vector<MoverAndScore> rest(tempList.size());
+      for (int j = 0; j < tempList.size(); j++)
+      {
+        rest[j] = MoverAndScore(tempList.front());
+        tempList.pop_front();
+      }
 
-      std::vector<std::pair<Variable, Variable> > dataset(numLearningSamples / 2);
-      for (int j = 0; j < numLearningSamples / 2; j++)
-        dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[ordering[j]].mover),
+      std::vector<size_t> ordering;
+      random->sampleOrder((size_t)(rest.size()), ordering);
+
+      for (int j = 0; j < numLearningSamplesSecondPass; j++)
+      {
+        // TEST
+        std::cout << "on passe ici " << numLearningSamplesFirstPass + j << std::endl;
+        //FIN TEST
+        moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
+      }
+
+      // TEST
+      std::cout << "numLearningSamples : " << numLearningSamples << std::endl;
+      std::cout << "numLearningSamplesFirstPass : " <<  numLearningSamplesFirstPass << std::endl;
+      std::cout << "numLearningSampelsSecondPass : " << numLearningSamplesSecondPass << std::endl;
+      std::cout << "chosen movers : " << moversVector.size() << std::endl;
+      for (int j = 0; j < moversVector.size(); j++)
+      {
+        std::cout << "on passe par ici  : affichage du  mover" << j << std::endl;
+        printMover(moversVector[j].mover);
+      }
+      std::cout << "affichage de rest : " << rest.size() << std::endl;
+      for (int j = 0; j < rest.size(); j++)
+      {
+        std::cout << "rest  : affichage du  mover" << j << std::endl;
+        printMover(rest[j].mover);
+      }
+      // FIN TEST
+
+      std::vector<std::pair<Variable, Variable> > dataset(numLearningSamples);
+      for (int j = 0; j < numLearningSamples; j++)
+        dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[j].mover),
             Variable());
 
       workingSampler->learn(context, random, dataset);
+
+      // TEST
+      workingSampler->saveToFile(context, context.getFile(T("sampler_temp_") + String(i)
+          +T(".xml")));
+      // FIN TEST
     }
+
+    movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
+    for (int i = 0; i < numMoversToKeep; i++)
+    {
+      // TEST
+      std::cout << "best ever movers" << std::endl;
+      printMover(moversToKeep.front().mover);
+      std::cout << "score : " << moversToKeep.front().score << std::endl;
+      // FIN TEST
+
+      movers[i] = moversToKeep.front().mover;
+      moversToKeep.pop_front();
+    }
+
     context.progressCallback(new ProgressionState((double)maxIterations, (double)maxIterations,
         T("Iterations")));
     context.leaveScope();
     return workingSampler;
+  }
+
+  void printMover(ProteinMoverPtr& t)
+  {
+    if (t.isInstanceOf<PhiPsiMover> ())
+    {
+      PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
+      std::cout << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
+          << ", psi : " << t0->getDeltaPsi() << std::endl;
+    }
+    else if (t.isInstanceOf<ShearMover> ())
+    {
+      ShearMoverPtr t0 = (ShearMoverPtr)t;
+      std::cout << "shear " << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
+          << ", psi : " << t0->getDeltaPsi() << std::endl;
+    }
+    else if (t.isInstanceOf<RigidBodyTransMover> ())
+    {
+      RigidBodyTransMoverPtr t0 = (RigidBodyTransMoverPtr)t;
+      std::cout << "trans" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+          << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << std::endl;
+    }
+    else if (t.isInstanceOf<RigidBodySpinMover> ())
+    {
+      RigidBodySpinMoverPtr t0 = (RigidBodySpinMoverPtr)t;
+      std::cout << "spin" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+          << t0->getIndexResidueTwo() << ", amplitude : " << t0->getAmplitude() << std::endl;
+    }
+    else if (t.isInstanceOf<RigidBodyGeneralMover> ())
+    {
+      RigidBodyGeneralMoverPtr t0 = (RigidBodyGeneralMoverPtr)t;
+      std::cout << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+          << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << ", amplitude : "
+          << t0->getAmplitude() << std::endl;
+    }
+    else
+    {
+      std::cout << "autre mover......" << std::endl;
+    }
   }
 
 protected:

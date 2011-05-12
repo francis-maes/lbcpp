@@ -45,6 +45,7 @@
 # include "Sampler/RigidBodySpinMoverSampler.h"
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/GaussianMultivariateSampler.h"
+# include "Sampler/DualResidueSampler.h"
 
 # undef T
 #  include <core/pose/Pose.hh>
@@ -73,205 +74,291 @@ public:
     rosettaInitialization(context, false);
     RandomGeneratorPtr random = new RandomGenerator(0);
 
-    MatrixPtr m = new DoubleSymmetricMatrix(doubleType, 4, 0.0);
-    MatrixPtr probabilities = new DoubleMatrix(2,1,0.0);
-    std::vector<MatrixPtr> means(2);
-    std::vector<MatrixPtr> covarianceMatrix(2);
-    std::vector<MatrixPtr> invCov(2);
-    probabilities->setElement(0, 0, Variable(0.9));
-    probabilities->setElement(1, 0, Variable(0.3));
-    means[0] = new DoubleMatrix(2,1,0.0);
-    means[1] = new DoubleMatrix(2,1,0.0);
-    means[0]->setElement(0, 0, Variable(-5.0));
-    means[0]->setElement(1, 0, Variable(-5.0));
-    means[1]->setElement(0, 0, Variable(5.0));
-    means[1]->setElement(1, 0, Variable(5.0));
+    PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(5, -20, 5, 50, 2);
+    ShearMoverSamplerPtr samp1 = new ShearMoverSampler(5, 0, 20, 30, 5);
+    RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(5, 0.5, 0.05);
+    RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(5, 0, 20);
+    RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(5, 0.5, 0.05, 0, 20);
 
-    covarianceMatrix[0] = new DoubleMatrix(2,2,0.0);
-    covarianceMatrix[0]->setElement(0, 0, Variable(49.0));
-    covarianceMatrix[0]->setElement(0, 1, Variable(40.0));
-    covarianceMatrix[0]->setElement(1, 0, Variable(40.0));
-    covarianceMatrix[0]->setElement(1, 1, Variable(50.0));
-    covarianceMatrix[1] = new DoubleMatrix(2,2,0.0);
-    covarianceMatrix[1]->setElement(0, 0, Variable(50.0));
-    covarianceMatrix[1]->setElement(0, 1, Variable(0.2));
-    covarianceMatrix[1]->setElement(1, 0, Variable(0.1));
-    covarianceMatrix[1]->setElement(1, 1, Variable(40.0));
-    GaussianMultivariateSamplerPtr p = new GaussianMultivariateSampler(2, 2, probabilities, means,
-        covarianceMatrix);
+    std::vector<Variable> samplers;
+    samplers.push_back(Variable(samp0));
+    samplers.push_back(Variable(samp1));
+    samplers.push_back(Variable(samp2));
+    samplers.push_back(Variable(samp3));
+    samplers.push_back(Variable(samp4));
 
-    invCov[0] = p->inverseMatrix(covarianceMatrix[0]);
-    invCov[1] = p->inverseMatrix(covarianceMatrix[1]);
+    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
 
-    m->setElement(0, 0, Variable(2.0));
-    m->setElement(0, 1, Variable(0.5));
-    m->setElement(0, 2, Variable(0.5));
-    m->setElement(0, 3, Variable(0.6));
-    m->setElement(1, 0, Variable(0.5));
-    m->setElement(1, 1, Variable(2.0));
-    m->setElement(1, 2, Variable(0.3));
-    m->setElement(1, 3, Variable(0.4));
-    m->setElement(2, 0, Variable(0.5));
-    m->setElement(2, 1, Variable(0.3));
-    m->setElement(2, 2, Variable(1.5));
-    m->setElement(2, 3, Variable(0.2));
-    m->setElement(3, 0, Variable(0.6));
-    m->setElement(3, 1, Variable(0.4));
-    m->setElement(3, 2, Variable(0.2));
-    m->setElement(3, 3, Variable(3.0));
+    std::vector<std::pair<Variable, Variable> > learning;
 
-    p->printMatrix(m);
-    cout << endl;
+    // phipsi
+    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(1, 34, -123)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(0, 30, -122)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(2, 27, -121)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(3, 33, -121)),
+        Variable()));
+    // shear
+    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(3, 0.9, 4.5)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(4, 0.7, 4.3)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(3, 0.8, 3.4)),
+        Variable()));
+    // general
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(3, 5, 2.8,
+        -3.4)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(3, 5, 2.5,
+        -2.4)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.8,
+        3.4)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(0, 4, 1.2,
+        2.4)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(2, 4, 0.3,
+        3.4)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.76,
+        4.2)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.76,
+        4.2)), Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(0, 3, 1.01,
+        4)), Variable()));
+    // spin
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(0, 3, 11.3)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(1, 3, 12.4)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(3, 5, 9.3)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(2, 5, 10.2)),
+        Variable()));
+    // trans
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 1, 10.2)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 1, 9.2)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 0, 12.1)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(1, 3, -0.3)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(0, 2, -2.1)),
+        Variable()));
+    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(0, 3, -1.3)),
+        Variable()));
 
-    MatrixPtr r1 = p->choleskyDecomposition(m);
-    p->printMatrix(r1);
-    cout << endl;
+    samp->learn(context, random, learning);
+    random = new RandomGenerator(0);
+    RandomGeneratorPtr random2 = new RandomGenerator(0);
 
-    MatrixPtr r2 = p->transposeMatrix(r1);
-    p->printMatrix(r2);
-    cout << endl;
+    File outfile = context.getFile(T("protSampler.xml"));
+    samp->saveToFile(context, outfile);
 
-    MatrixPtr r3 = p->matrixProduct(r1, r2);
-    p->printMatrix(r3);
-
-    MatrixPtr t2 = new DoubleMatrix(1, 4, 0.0);
-    t2->setElement(0, 0, Variable(1.2));
-    t2->setElement(0, 1, Variable(2.1));
-    t2->setElement(0, 2, Variable(3.1));
-    t2->setElement(0, 3, Variable(0.5));
-    p->printMatrix(t2);
-
-    MatrixPtr transpose = p->transposeMatrix(t2);
-    MatrixPtr r4 = p->matrixProduct(r1, transpose);
-    p->printMatrix(r4);
-
-    MatrixPtr t3 = new DoubleMatrix(2, 2, 0.0);
-    t3->setElement(0, 0, Variable(3.0));
-    t3->setElement(0, 1, Variable(5.0));
-    t3->setElement(1, 0, Variable(2.0));
-    t3->setElement(1, 1, Variable(-1.0));
-    p->printMatrix(t3);
-
-    MatrixPtr t4 = new DoubleMatrix(2, 2, 0.0);
-    t4->setElement(0, 0, Variable(-3.0));
-    t4->setElement(0, 1, Variable(-5.0));
-    t4->setElement(1, 0, Variable(12.0));
-    t4->setElement(1, 1, Variable(2.0));
-    p->printMatrix(t4);
-
-    MatrixPtr add = p->addMatrix(t3, t4);
-    MatrixPtr sub = p->subtractMatrix(t3, t4);
-    p->printMatrix(add);
-    p->printMatrix(sub);
-
-    MatrixPtr inv = p->inverseMatrix(t3);
-    p->printMatrix(inv);
-
-    MatrixPtr verif = p->matrixProduct(inv, t3);
-    p->printMatrix(verif);
-    p->printMatrix(p->matrixProduct(inv, t3));
-
-    cout << p->normOneMatrix(t3) << endl;
-
-    cout << "=========== test sample =======================" << endl;
-    ofstream ofs("/Users/alex/Documents/MATLAB/multi.data");
-
-    for (int i = 0; i < 10000; i++)
+    int count0 = 0;
+    int count1 = 0;
+    int count2 = 0;
+    int count3 = 0;
+    int count4 = 0;
+    int num = 10000;
+    for (int i = 0; i < num; i++)
     {
-      MatrixPtr out = p->sample(context, random).getObjectAndCast<Matrix> ();
-      ofs << out->getElement(0, 0).getDouble() << ", " << out->getElement(1, 0) << endl;
+
+      Variable v = samp->sample(context, random);
+
+      ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
+
+      if (t.isInstanceOf<PhiPsiMover> ())
+      {
+        PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
+        cout << i << " = " << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : "
+            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
+        count0++;
+      }
+      else if (t.isInstanceOf<ShearMover> ())
+      {
+        ShearMoverPtr t0 = (ShearMoverPtr)t;
+        cout << i << " = " << "shear " << " r : " << t0->getResidueIndex() << ", phi : "
+            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
+        count1++;
+      }
+      else if (t.isInstanceOf<RigidBodyTransMover> ())
+      {
+        RigidBodyTransMoverPtr t0 = (RigidBodyTransMoverPtr)t;
+        cout << i << " = " << "trans" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << endl;
+        count2++;
+      }
+      else if (t.isInstanceOf<RigidBodySpinMover> ())
+      {
+        RigidBodySpinMoverPtr t0 = (RigidBodySpinMoverPtr)t;
+        cout << i << " = " << "spin" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", amplitude : " << t0->getAmplitude() << endl;
+        count3++;
+      }
+      else if (t.isInstanceOf<RigidBodyGeneralMover> ())
+      {
+        RigidBodyGeneralMoverPtr t0 = (RigidBodyGeneralMoverPtr)t;
+        cout << i << " = " << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude()
+            << ", amplitude : " << t0->getAmplitude() << endl;
+        count4++;
+      }
     }
 
-    ofs.flush();
-    ofs.close();
+    cout << "il y a  " << endl;
+    cout << "phipsi : " << (double)count0 / (double)num << endl;
+    cout << "shear : " << (double)count1 / (double)num << endl;
+    cout << "rigidbodytrans : " << (double)count2 / (double)num << endl;
+    cout << "rigidbodyspin : " << (double)count3 / (double)num << endl;
+    cout << "rigidbodygeneral : " << (double)count4 / (double)num << endl;
 
-    std::vector<std::pair<Variable, Variable> > dataset;
-    std::vector<MatrixPtr> mm(8);
-    mm[0] = new DoubleMatrix(2, 1, 0.0);
-    mm[0]->setElement(0, 0, Variable(-13.54634));
-    mm[0]->setElement(1, 0, Variable(-13.5464));
-    mm[1] = new DoubleMatrix(2, 1, 0.0);
-    mm[1]->setElement(0, 0, Variable(-16.2462));
-    mm[1]->setElement(1, 0, Variable(-18.14646));
-    mm[2] = new DoubleMatrix(2, 1, 0.0);
-    mm[2]->setElement(0, 0, Variable(-12.5644));
-    mm[2]->setElement(1, 0, Variable(-19.5356));
-    mm[3] = new DoubleMatrix(2, 1, 0.0);
-    mm[3]->setElement(0, 0, Variable(-15.59));
-    mm[3]->setElement(1, 0, Variable(-17.57));
-    mm[4] = new DoubleMatrix(2, 1, 0.0);
-    mm[4]->setElement(0, 0, Variable(20.57));
-    mm[4]->setElement(1, 0, Variable(96.52));
-    mm[5] = new DoubleMatrix(2, 1, 0.0);
-    mm[5]->setElement(0, 0, Variable(19.95));
-    mm[5]->setElement(1, 0, Variable(90.52));
-    mm[6] = new DoubleMatrix(2, 1, 0.0);
-    mm[6]->setElement(0, 0, Variable(25.52));
-    mm[6]->setElement(1, 0, Variable(89.3));
-    mm[7] = new DoubleMatrix(2, 1, 0.0);
-    mm[7]->setElement(0, 0, Variable(17.9));
-    mm[7]->setElement(1, 0, Variable(88.2));
-
-    for (int i = 0; i < mm.size();i++)
-      dataset.push_back(std::pair<Variable, Variable>(Variable(mm[i]), Variable(0.0)));
-
-    cout << "=========== learning =======================" << endl;
-    p->learn(context, random, dataset);
-
-    cout << "=========== sampling again =======================" << endl;
-    ofstream ofs2("/Users/alex/Documents/MATLAB/multiLearned.data");
-    for (double i = 0; i < 10000; i++)
+    ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
+        ProteinMoverSampler> ();
+    ProteinMoverSamplerPtr rebirth2 = samp->clone();
+    rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
+    count0 = 0;
+    count1 = 0;
+    count2 = 0;
+    count3 = 0;
+    count4 = 0;
+    RandomGeneratorPtr random3 = new RandomGenerator(0);
+    for (int i = 0; i < num; i++)
     {
-        MatrixPtr out = p->sample(context, random).getObjectAndCast<Matrix> ();
-        ofs2 << out->getElement(0, 0).getDouble() << ", " << out->getElement(1, 0) << endl;
+
+      Variable v = rebirth->sample(context, random2);
+      Variable v2 = rebirth2->sample(context, random3);
+
+      ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
+      ProteinMoverPtr t2 = v2.getObjectAndCast<ProteinMover> ();
+
+      if (t.isInstanceOf<PhiPsiMover> ())
+      {
+        PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
+        cout << i << " = " << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : "
+            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
+        PhiPsiMoverPtr t0b = (PhiPsiMoverPtr)t2;
+        cout << i << " = " << "phipsi" << " r : " << t0b->getResidueIndex() << ", phi : "
+            << t0b->getDeltaPhi() << ", psi : " << t0b->getDeltaPsi() << endl;
+        count0++;
+      }
+      else if (t.isInstanceOf<ShearMover> ())
+      {
+        ShearMoverPtr t0 = (ShearMoverPtr)t;
+        cout << i << " = " << "shear " << " r : " << t0->getResidueIndex() << ", phi : "
+            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
+        ShearMoverPtr t0b = (ShearMoverPtr)t2;
+        cout << i << " = " << "shear " << " r : " << t0b->getResidueIndex() << ", phi : "
+            << t0b->getDeltaPhi() << ", psi : " << t0b->getDeltaPsi() << endl;
+        count1++;
+      }
+      else if (t.isInstanceOf<RigidBodyTransMover> ())
+      {
+        RigidBodyTransMoverPtr t0 = (RigidBodyTransMoverPtr)t;
+        cout << i << " = " << "trans" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << endl;
+        RigidBodyTransMoverPtr t0b = (RigidBodyTransMoverPtr)t2;
+        cout << i << " = " << "trans" << " r1 : " << t0b->getIndexResidueOne() << ", r2 : "
+            << t0b->getIndexResidueTwo() << ", magnitude : " << t0b->getMagnitude() << endl;
+        count2++;
+      }
+      else if (t.isInstanceOf<RigidBodySpinMover> ())
+      {
+        RigidBodySpinMoverPtr t0 = (RigidBodySpinMoverPtr)t;
+        cout << i << " = " << "spin" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", amplitude : " << t0->getAmplitude() << endl;
+        RigidBodySpinMoverPtr t0b = (RigidBodySpinMoverPtr)t2;
+        cout << i << " = " << "spin" << " r1 : " << t0b->getIndexResidueOne() << ", r2 : "
+            << t0b->getIndexResidueTwo() << ", amplitude : " << t0b->getAmplitude() << endl;
+        count3++;
+      }
+      else if (t.isInstanceOf<RigidBodyGeneralMover> ())
+      {
+        RigidBodyGeneralMoverPtr t0 = (RigidBodyGeneralMoverPtr)t;
+        cout << i << " = " << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude()
+            << ", amplitude : " << t0->getAmplitude() << endl;
+        RigidBodyGeneralMoverPtr t0b = (RigidBodyGeneralMoverPtr)t2;
+        cout << i << " = " << "general" << " r1 : " << t0b->getIndexResidueOne() << ", r2 : "
+            << t0b->getIndexResidueTwo() << ", magnitude : " << t0b->getMagnitude()
+            << ", amplitude : " << t0b->getAmplitude() << endl;
+        count4++;
+      }
     }
 
-    ofs2.flush();
-    ofs2.close();
+    cout << "il y a  " << endl;
+    cout << "phipsi : " << (double)count0 / (double)num << endl;
+    cout << "shear : " << (double)count1 / (double)num << endl;
+    cout << "rigidbodytrans : " << (double)count2 / (double)num << endl;
+    cout << "rigidbodyspin : " << (double)count3 / (double)num << endl;
+    cout << "rigidbodygeneral : " << (double)count4 / (double)num << endl;
 
-    //    MatrixPtr means0 = new DoubleMatrix(2, 1, 0.0);
-    //    MatrixPtr means1 = new DoubleMatrix(2, 1, 0.0);
-    //    means0->setElement(0, 0, Variable(-10.0));
-    //    means0->setElement(1, 0, Variable(-10.0));
-    //    means1->setElement(0, 0, Variable(20.0));
-    //    means1->setElement(1, 0, Variable(50.0));
+    //==============TEST serialisation Mover ==============================
+    //    RigidBodySpinMoverPtr p0 = new RigidBodySpinMover(1, 4, 12.8);
     //
-    //    SymmetricMatrixPtr covarianceMatrix0 = new DoubleSymmetricMatrix(doubleType, 2, 0.0);
-    //    SymmetricMatrixPtr covarianceMatrix1 = new DoubleSymmetricMatrix(doubleType, 2, 0.0);
-    //    covarianceMatrix0->setElement(0, 0, Variable(49.0));
-    //    covarianceMatrix0->setElement(0, 1, Variable(40.0));
-    //    covarianceMatrix0->setElement(1, 0, Variable(40.0));
-    //    covarianceMatrix0->setElement(1, 1, Variable(50.0));
+    //    File outfile = context.getFile(T("moverPP.xml"));
+    //    p0->saveToFile(context, outfile);
     //
-    //    covarianceMatrix1->setElement(0, 0, Variable(5.0));
-    //    covarianceMatrix1->setElement(0, 1, Variable(0.2));
-    //    covarianceMatrix1->setElement(1, 0, Variable(0.1));
-    //    covarianceMatrix1->setElement(1, 1, Variable(4.0));
+    //    p0->setIndexResidueOne(5);
+    //    p0->setIndexResidueTwo(10);
+    //    RigidBodySpinMoverPtr t0 = Variable::createFromFile(context, outfile).getObjectAndCast<
+    //        RigidBodySpinMover> ();
+    //    t0->setAmplitude(0.9);
+    //    //t0->setMagnitude(1.1);
     //
-    //    MatrixPtr inv0 = p->inverseMatrix(covarianceMatrix0);
-    //    MatrixPtr inv1 = p->inverseMatrix(covarianceMatrix1);
+    //    cout << "phipsi true " << " r1 : " << p0->getIndexResidueOne() << ", r2 : "
+    //        << p0->getIndexResidueTwo() /*<< ", mag : " << p0->getMagnitude()*/<< ", amp : "<< p0->getAmplitude() <<endl;
     //
+    //    cout << "phipsi true " << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
+    //        << t0->getIndexResidueTwo() /*<< ", mag : " << t0->getMagnitude() */<< ", amp : "<< t0->getAmplitude() << endl;
+    // =========================================================================
 
-//    ofstream ofs3("/Users/alex/Documents/MATLAB/multiProb.data");
-//
-//    for (double i = -50; i <= 60; i++)
-//    {
-//      for (double j = -50; j <= 60; j++)
-//      {
-//        MatrixPtr obs = new DoubleMatrix(2, 1, 0.0);
-//        obs->setElement(0, 0, Variable(i));
-//        obs->setElement(1, 0, Variable(j));
-//        double val = probabilities->getElement(0, 0).getDouble() * p->computeProbability(obs,
-//            means[0], covarianceMatrix[0], invCov[0]);
-//        val += probabilities->getElement(1, 0).getDouble() * p->computeProbability(obs, means[1],
-//            covarianceMatrix[1], invCov[1]);
-//        ofs3 << val << " ";
-//      }
-//      ofs3 << endl;
-//    }
-//
-//    ofs3.flush();
-//    ofs3.close();
+    // ================TEST serialisation Sampler PhiPsi et Shear ============================
+    //    cout << "test 1 " << endl;
+    //    ShearMoverSamplerPtr p0 = new ShearMoverSampler(10, 20, 0.2, -10.5, 1);
+    //    cout << "test 2 " << endl;
+    //    File outfile = context.getFile(T("moverPP.xml"));
+    //    cout << "test 3 " << endl;
+    //    samp1->saveToFile(context, outfile);
+    //    cout << "test 4 " << endl;
+    //
+    //    ShearMoverSamplerPtr t0 = Variable::createFromFile(context, outfile).getObjectAndCast<
+    //        ShearMoverSampler> ();
+    //    cout << "test 5 " << endl;
+    //
+    //    for (int i = 0; i < 20; i++)
+    //    {
+    //      ShearMoverPtr p0 = samp1->sample(context, random).getObjectAndCast<ShearMover> ();
+    //      ShearMoverPtr p1 = t0->sample(context, random2).getObjectAndCast<ShearMover> ();
+    //
+    //      cout << "(" << p0->getResidueIndex() << ", " << p0->getDeltaPhi() << ", "
+    //          << p0->getDeltaPsi() << ") <-----> ";
+    //      cout << "(" << p1->getResidueIndex() << ", " << p1->getDeltaPhi() << ", "
+    //          << p1->getDeltaPsi() << ")" << endl;
+    //    }
+    //    cout << "Done." << endl;
+    //===================================================================================================
+
+    // ================TEST serialisation RigidBody ============================
+    //    File outfile = context.getFile(T("moverPP.xml"));
+    //    samp4->saveToFile(context, outfile);
+    //
+    //    RigidBodyGeneralMoverSamplerPtr
+    //        t0 = Variable::createFromFile(context, outfile).getObjectAndCast<
+    //            RigidBodyGeneralMoverSampler> ();
+    //
+    //    for (int i = 0; i < 20; i++)
+    //    {
+    //      RigidBodyGeneralMoverPtr p0 = samp4->sample(context, random).getObjectAndCast<
+    //          RigidBodyGeneralMover> ();
+    //      RigidBodyGeneralMoverPtr p1 = t0->sample(context, random2).getObjectAndCast<
+    //          RigidBodyGeneralMover> ();
+    //
+    //      cout << "(" << p0->getIndexResidueOne() << ", " << p0->getIndexResidueTwo() << ", "
+    //          << p0->getAmplitude() << ", " << p0->getMagnitude() << ") <-----> ";
+    //      cout << "(" << p1->getIndexResidueOne() << ", " << p1->getIndexResidueTwo() << ", "
+    //          << p1->getAmplitude() << ", " << p1->getMagnitude() << ")" << endl;
+    //    }
+    //===================================================================================================
 
     context.informationCallback(T("RosettaTest done."));
     return Variable();

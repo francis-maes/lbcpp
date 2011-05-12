@@ -53,7 +53,7 @@ public:
     CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    sons[0] = Variable(new EnumerationDiscreteSampler(numMover, 1.0 / (3 * numMover)));
+    sons[0] = Variable(new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover)));
     whichMover = std::vector<int>(numberOfMovers, -1);
     for (int i = 0; i < samplers.size(); i++)
     {
@@ -132,6 +132,9 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
+    if (dataset.size() < 1)
+      return;
+
     std::vector<std::pair<Variable, Variable> > moverFrequencies;
     std::vector<std::vector<std::pair<Variable, Variable> > > samples(numMover);
 
