@@ -111,7 +111,7 @@ class GetFinishedExecutionTracesDaemon : public Thread
 {
 public:
   GetFinishedExecutionTracesDaemon(const DistributedOptimizerContextPtr& optimizerContext) 
-  : Thread(T("GetFinishedExecutionTracesDaemon")), optimizerContext(optimizerContext) {}
+    : Thread(T("GetFinishedExecutionTracesDaemon")), optimizerContext(optimizerContext) {}
   
   virtual void run()
   {

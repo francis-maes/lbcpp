@@ -1,3 +1,9 @@
+NetworkBugs:
+
+ * InterprocessConnection::disconnect() race => volatile variables
+ * DistributedOptimizerContext::context: mettre un lock en attendant, le ExecutionContext devrait être passé au ctor une fois pour toute
+ * Enlever les std::cout
+
 
 Go:
  * learn a big model

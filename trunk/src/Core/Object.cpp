@@ -94,7 +94,7 @@ void ReferenceCountedObject::decrementReferenceCounter()
 void ReferenceCountedObject::resetRefCountDebugInfo()
   {}
 void ReferenceCountedObject::displayRefCountDebugInfo(std::ostream& ostr)
-  {std::cout << "No RefCount Debug Info." << std::endl;}
+  {ostr << "No RefCount Debug Info." << std::endl;}
 #endif // LBCPP_DEBUG_REFCOUNT_ATOMIC_OPERATIONS
 
 void Object::setThisClass(ClassPtr thisClass)
