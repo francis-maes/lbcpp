@@ -23,14 +23,14 @@
   </class>
   
   <class name="AsyncEDAOptimizer" base="Optimizer">
-    <constructor arguments="size_t totalNumberEvaluationsRequested, size_t numberEvaluationsToUpdate, size_t ratioUsedForUpdate, size_t timeToSleep, size_t updateFactor, size_t numberEvaluationsInProgress, bool verbose"/>
-    <variable type="PositiveInteger" name="totalNumberEvaluationsRequested"/>
-    <variable type="PositiveInteger" name="numberEvaluationsToUpdate"/>
-    <variable type="PositiveInteger" name="ratioUsedForUpdate"/>
-    <variable type="PositiveInteger" name="timeToSleep"/>
-    <variable type="PositiveInteger" name="updateFactor"/>
+    <constructor arguments="size_t numIterations, size_t populationSize, size_t numBests, size_t numberEvaluationsInProgress, size_t updateFactor, bool verbose"/>
+    <variable type="PositiveInteger" name="numIterations"/>
+    <variable type="PositiveInteger" name="populationSize"/>
+    <variable type="PositiveInteger" name="numBests"/>
     <variable type="PositiveInteger" name="numberEvaluationsInProgress"/>
+    <variable type="PositiveInteger" name="updateFactor"/>
     <variable type="Boolean" name="verbose"/>
+    <variable type="RandomGenerator" name="random"/>
   </class>
      
   <!--

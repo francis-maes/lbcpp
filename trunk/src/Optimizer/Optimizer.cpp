@@ -166,7 +166,13 @@ const CriticalSection& OptimizerState::getLock() const
 void OptimizerState::functionReturned(ExecutionContext& context, const FunctionPtr& function, const Variable* inputs, const Variable& output) 
 {
   ScopedLock _(lock);
-  processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
+  
+  if (!inputs[0].isConvertibleToDouble()) {
+    context.warningCallback(T("OptimizerState::functionReturned"), T("Return value is not convertible to double"));
+    processedRequests.push_back(std::make_pair(output.toDouble(), DBL_MAX));
+  }
+  else
+    processedRequests.push_back(std::make_pair(output.toDouble(), inputs[0]));
   totalNumberOfEvaluations++;
 }
 

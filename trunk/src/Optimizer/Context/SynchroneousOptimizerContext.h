@@ -24,6 +24,8 @@ public:
   virtual void waitUntilAllRequestsAreProcessed() const {}
   virtual bool areAllRequestsProcessed() const
     {return true;}
+  virtual size_t getTimeToSleep() const
+    {return 0;} // no need to sleep in synchroneous
 
   // blocking method
   virtual bool evaluate(const Variable& parameters) 

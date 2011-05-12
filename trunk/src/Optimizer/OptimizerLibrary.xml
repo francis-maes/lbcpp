@@ -18,7 +18,7 @@
     <variable type="PositiveInteger" name="totalNumberOfEvaluations"/>
     <variable type="Variable" name="bestVariable"/>
     <variable type="Double" name="bestScore"/>
-    <variable type="GenericVector[Pair[Double, Variable]]" name="processedRequests"/>
+    <variable type="ObjectVector[Pair[Double, Variable]]" name="processedRequests"/>
   </class>
     
   <class name="OptimizerContext" base="Object" abstract="yes">

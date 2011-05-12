@@ -71,13 +71,13 @@
   <!-- OptimizerTestBed -->
   <class name="SphereFunction" base="ScalarVectorFunction">
     <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="GenericVector[Double]" name="coefs"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="coefs"/>
     <variable type="Double" name="fopt"/> 
   </class>
   
   <class name="EllipsoidalFunction" base="ScalarVectorFunction">
     <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="GenericVector[Double]" name="coefs"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="coefs"/>
     <variable type="Double" name="fopt"/> 
   </class>
 </library>
