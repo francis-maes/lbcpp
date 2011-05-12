@@ -186,17 +186,39 @@ TypePtr TypeManager::getType(ExecutionContext& context, const String& name) cons
   if (type)
     return type;
 
-  if (!TemplateType::isInstanciatedTypeName(typeName))
+  if (TemplateType::isInstanciatedTypeName(typeName))
   {
-    context.errorCallback(T("TypeManager::getType()"), T("Could not find type ") + typeName);
+    // this is a template type, parse, instantiate and retrieve it
+    String templateName;
+    std::vector<TypePtr> templateArguments;
+    if (!TemplateType::parseInstanciatedTypeName(context, typeName, templateName, templateArguments))
+      return TypePtr();
+    return getType(context, templateName, templateArguments);
+  }
+  else
+  {
+    // this is a simple type that was not found, make error message
+    TemplateTypeCache* cache = getTemplateType(context, typeName);
+    String message;
+    if (cache)
+    {
+      size_t n = cache->definition->getNumParameters();
+      message = typeName.quoted() + T(" is a template type with ") + String((int)n) + T(" parameters. Replace ") + typeName + T(" by ");
+      message += typeName + T("[");
+      for (size_t i = 0; i < n; ++i)
+      {
+        message += cache->definition->getParameterName(i) + T(" (") + cache->definition->getParameterBaseType(i)->getName() + T(")");
+        if (i < n - 1)
+          message += T(", ");
+      }
+      message += T("]");
+    }
+    else
+      message = T("Type ") + typeName.quoted() + T(" does not exists");
+
+    context.errorCallback(T("TypeManager::getType"), message);
     return TypePtr();
   }
-
-  String templateName;
-  std::vector<TypePtr> templateArguments;
-  if (!TemplateType::parseInstanciatedTypeName(context, typeName, templateName, templateArguments))
-    return TypePtr();
-  return getType(context, templateName, templateArguments);
 }
 
 String TypeManager::removeAllSpaces(const String& str)

@@ -44,13 +44,11 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    
     std::vector<double> coefs;
     coefs.push_back(4.0);
     coefs.push_back(3.0);
     ScalarVectorFunctionPtr f = new SphereFunction(coefs, 2.0);
-    DenseDoubleVectorPtr input = new DenseDoubleVector();
-    input->resize(2);
+    DenseDoubleVectorPtr input = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
     input->setValue(0, 1.0);
     input->setValue(1, -3.0);
     double output;
