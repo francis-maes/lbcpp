@@ -19,8 +19,7 @@ bool NetworkClient::sendVariable(const Variable& variable)
   if (text == String::empty)
     return false;
 #ifdef JUCE_DEBUG
-  std::cout << "----- Send -----" << std::endl
-            << text << std::endl;
+  context.informationCallback(T("sendVariable"), text);
 #endif // !JUCE_DEBUG
   juce::MemoryBlock block(text.toUTF8(), text.length());
   return sendMessage(block);
@@ -42,10 +41,7 @@ bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
     if (elapsedTime >= timeout || disconnected)
       return false;
 #ifdef JUCE_DEBUG
-    {
-      ScopedLock _(lock);
-      std::cout << "NetworkClient - time left: " << timeout - elapsedTime << std::endl;
-    }
+    context.informationCallback(T("receiveVariable"), T("NetworkClient - time left: ") + String((timeout - elapsedTime) / 100) + T(" s"));
 #endif // !JUCE_DEBUG
     juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
     if (!timeToSleep)
@@ -132,8 +128,7 @@ void NetworkClient::messageReceived(const juce::MemoryBlock& message)
 {
   ScopedLock _(lock);
 #ifdef JUCE_DEBUG
-  std::cout << "----- Received ----- " << std::endl
-            << message.toString() << std::endl;
+  context.informationCallback(T("messageReceived"), message.toString());
 #endif // !JUCE_DEBUG
   juce::XmlDocument document(message.toString());
   XmlImporter importer(context, document);

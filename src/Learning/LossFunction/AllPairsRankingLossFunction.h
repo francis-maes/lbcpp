@@ -100,7 +100,6 @@ protected:
           ++numPairs;
           
           double deltaScore = scores[i] - scores[j]; // deltaScore should be positive
-          //std::cout << "Pair (" << i << ", " << j << ") => " << deltaValue << std::endl;
           addRankingPair(deltaCost, deltaScore, i, j, output, gradient);
         }
       }
