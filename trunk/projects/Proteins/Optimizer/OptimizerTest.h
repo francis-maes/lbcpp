@@ -22,7 +22,7 @@
 # include "../../../src/Distribution/Builder/BernoulliDistributionBuilder.h"
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
-# include <lbcpp/Optimizer/OptimizerTestBed.h>
+# include "../../../projects/Examples/OptimizerTestBed.h"
 # include <lbcpp/Function/ScalarVectorFunction.h>
 
 //# include <lbcpp/Optimizer/GridOptimizer.h>
@@ -44,6 +44,7 @@ class OptimizerTest : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+/*
     std::vector<double> coefs;
     coefs.push_back(4.0);
     coefs.push_back(3.0);
@@ -57,10 +58,9 @@ public:
     std::cout << output << std::endl;
     
     return Variable();
-    
+  */  
     // variables used by GridOptimizer
-    /*
-     String projectName(T("ProteinNewOptimizer"));
+    String projectName(T("ProteinNewOptimizer"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("monster24.montefiore.ulg.ac.be"));
@@ -86,7 +86,6 @@ public:
     distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
     distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
     distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
-    */
     
     /*WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 5.0);
     wu->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("MyWorkUnit.xml")));
@@ -133,14 +132,14 @@ public:
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
     */
-    /*
+    
     OptimizerPtr optimizer = asyncEDAOptimizer(20000, 1000, 3, 30, 5, 1500);
     OptimizerContextPtr optimizerContext = distributedOptimizerContext(new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
-    */
+    
     //return Variable();
     
     /*
