@@ -120,26 +120,26 @@ public:
     std::cout << state->getTotalNumberOfEvaluations() << " VS " << state->getTotalNumberOfRequests() << std::endl;*/
     
     
- /*    // TESTS OPTIMIZER
-    //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(2);
+    // TESTS OPTIMIZER
+    //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
     //OptimizerPtr optimizer = edaOptimizer(300, 1000, 300, false, false);
     OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
-    //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(squareFunction());
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(squareFunction());
-    //OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, squareFunction());
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, squareFunction());
+    //OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
-    */
     
+    /*
     OptimizerPtr optimizer = asyncEDAOptimizer(20000, 1000, 3, 30, 5, 1500);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
-    
+    */
     //return Variable();
     
     /*

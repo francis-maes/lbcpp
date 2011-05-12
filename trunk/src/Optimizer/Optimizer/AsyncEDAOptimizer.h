@@ -43,7 +43,7 @@ public:
         while (optimizerState->getNumberOfInProgressEvaluations() < numberEvaluationsInProgress && optimizerState->getTotalNumberOfRequests() < totalNumberEvaluationsRequested && optimizerState->getNumberOfProcessedRequests() < numberEvaluationsToUpdate) 
         {
           Variable input = optimizerState->getDistribution()->sample(random);
-          if (optimizerContext->evaluate(context, input))
+          if (optimizerContext->evaluate(input))
           {
             optimizerState->incTotalNumberOfRequests();
             context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numberEvaluationsToUpdate, T("Evaluations")));

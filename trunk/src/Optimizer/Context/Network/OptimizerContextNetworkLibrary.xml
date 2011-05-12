@@ -2,7 +2,7 @@
 
 <library name="OptimizerContextNetwork" directory="Optimizer/Context/Network">
   <class name="DistributedOptimizerContext" base="OptimizerContext">
-    <constructor arguments="const FunctionPtr&amp; objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
+    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime"/>
     <variable type="String" name="projectName"/>
     <variable type="String" name="source"/>
     <variable type="String" name="destination"/>

@@ -17,7 +17,7 @@ namespace lbcpp
 class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
-  SynchroneousOptimizerContext(const FunctionPtr& objectiveFunction) : OptimizerContext(objectiveFunction) {}
+  SynchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction) : OptimizerContext(context, objectiveFunction) {}
   SynchroneousOptimizerContext() {}
   
   // evaluate is a blocking method
@@ -26,7 +26,7 @@ public:
     {return true;}
 
   // blocking method
-  virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
+  virtual bool evaluate(const Variable& parameters) 
   { 
     Variable ret = objectiveFunction->compute(context, parameters);
     // callback is done in function evaluation !

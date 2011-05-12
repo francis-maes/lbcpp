@@ -5,11 +5,11 @@
   <import name="OptimizerContextNetwork" ifdef="LBCPP_NETWORKING"/>
 
   <class name="SynchroneousOptimizerContext" base="OptimizerContext">
-    <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
+    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction"/>
   </class>
   
   <class name="MultiThreadedOptimizerContext" base="OptimizerContext">
-    <constructor arguments="const FunctionPtr&amp; objectiveFunction"/>
+    <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction"/>
     <variable type="Integer" name="numEvaluationInProgress"/>
   </class>
   

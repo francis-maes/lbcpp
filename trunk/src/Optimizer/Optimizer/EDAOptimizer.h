@@ -83,7 +83,7 @@ protected:
       else 
         input = optimizerState->getDistribution()->sample(random);
       
-      if (!optimizerContext->evaluate(context, input))
+      if (!optimizerContext->evaluate(input))
         return false; // TODO arnaud : handle this
       optimizerState->incTotalNumberOfRequests();
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
