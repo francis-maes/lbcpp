@@ -55,7 +55,7 @@ public:
     input->setValue(1, -3.0);
     double output;
     //f->computeScalarVectorFunction(input, NULL, &output, NULL, 1);
-    f->compute(context, input);
+    output = f->compute(context, input).toDouble();
     std::cout << output << std::endl;
     
     return Variable();

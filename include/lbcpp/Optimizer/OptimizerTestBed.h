@@ -10,10 +10,10 @@
 #ifndef LBCPP_OPTIMIZER_TEST_BED_H_
 # define LBCPP_OPTIMIZER_TEST_BED_H_
 
-#include <lbcpp/Distribution/Distribution.h>
-#include <lbcpp/Core/Function.h>
+# include <lbcpp/Distribution/Distribution.h>
+# include <lbcpp/Core/Function.h>
 # include <lbcpp/Function/ScalarVectorFunction.h>
-#include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Optimizer/OptimizerContext.h>
 
 namespace lbcpp
 {
@@ -30,8 +30,8 @@ public:
   
   static void Tosz(std::vector<double>& inputTab) 
   {
-    
-    for (size_t i = 0; i < inputTab.size(); i++) {
+    for (size_t i = 0; i < inputTab.size(); i++)
+    {
       double x = inputTab[i];
       
       double xhat;
@@ -69,12 +69,12 @@ public:
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    
     const std::vector<double>& inputTab = input->getValues();
     
     jassert(coefs.size() == inputTab.size());
     double result = 0;
-    for (size_t i = 0; i < coefs.size(); i++) {
+    for (size_t i = 0; i < coefs.size(); i++)
+    {
       double diff = inputTab[i] - coefs[i];
       result += diff*diff;
     }
@@ -89,7 +89,6 @@ protected:
   double fopt;
 };
   
-
 class EllipsoidalFunction : public ScalarVectorFunction
 {
 public:
@@ -101,7 +100,6 @@ public:
   
   virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input, const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget, double gradientWeight) const
   {
-    
     const std::vector<double>& inputTab = input->getValues();
     
     jassert(coefs.size() == inputTab.size());
@@ -114,21 +112,19 @@ public:
     
     double result = 0;
     for (size_t i = 1; i <= coefs.size(); i++)
-    {
-      result += pow(10.0, 6*((i-1)/(coefs.size()-1)))*diff[i]*diff[i];
-    }
+      result += pow(10.0, 6.0*((i-1)/(coefs.size()-1)))*diff[i]*diff[i];
+
     result += fopt;
     *output = result;
   }
-  
   
 protected:
   friend class EllipsoidalFunctionClass;
   
   std::vector<double> coefs;
   double fopt;
-  
 };
   
-};
+}; /* namespace lbcpp */
+
 #endif // !LBCPP_OPTIMIZER_TEST_BED_H_
