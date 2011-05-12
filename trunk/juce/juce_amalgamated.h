@@ -12422,7 +12422,8 @@ public:
 private:
     String hostName;
     int volatile portNumber, handle;
-    bool connected, isListener;
+    bool volatile connected; // francis: put this as volatile
+    bool isListener;
 
     StreamingSocket (const String& hostname, const int portNumber, const int handle);
     StreamingSocket (const StreamingSocket&);
