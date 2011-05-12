@@ -26,6 +26,8 @@ class DebugWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context) 
   {
+    return Variable();
+    
     /*
      // variables used by DistributedOptimizerContext
     String projectName(T("DebugNetwork"));
