@@ -49,9 +49,9 @@ public:
     g.drawText(T("false"), center, yCursor, cellWidth, 20, juce::Justification::horizontallyCentred, true);
     yCursor += 20;
 
-    g.drawTextAsPath(T("Outcome"), juce::AffineTransform::rotation((float)-M_PI / 2.).translated(center - cellWidth - 10, yCursor + cellHeight * 1.5));
-    g.drawTextAsPath(T("   true"), juce::AffineTransform::rotation((float)M_PI / 2.).translated(center + cellWidth + 10, yCursor));
-    g.drawTextAsPath(T("   false"), juce::AffineTransform::rotation((float)M_PI / 2.).translated(center + cellWidth + 10, yCursor + cellHeight));
+    g.drawTextAsPath(T("Outcome"), juce::AffineTransform::rotation((float)-M_PI / 2.).translated((float)(center - cellWidth - 10), (float)(yCursor + cellHeight * 1.5)));
+    g.drawTextAsPath(T("   true"), juce::AffineTransform::rotation((float)M_PI / 2.).translated((float)(center + cellWidth + 10), (float)yCursor));
+    g.drawTextAsPath(T("   false"), juce::AffineTransform::rotation((float)M_PI / 2.).translated((float)(center + cellWidth + 10), (float)(yCursor + cellHeight)));
 
     g.drawRect(center - cellWidth, yCursor, cellWidth, cellHeight);
     g.drawText(String((int)confusionMatrix->getTruePositives()), center - cellWidth, yCursor, cellWidth, cellHeight, juce::Justification::centred, true);
