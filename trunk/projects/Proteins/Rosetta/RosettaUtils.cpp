@@ -127,11 +127,11 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
       core::scoring::ScoreFunctionFactory::create_score_function("standard");
 
   // Correct the energy function
-  double meanCN = 1.33; //1.33
-  double stdCN = 0.1; // diminuer tous les std...
-  double meanCAN = 1.46; // 1.46
+  double meanCN = 1.323;
+  double stdCN = 0.1;
+  double meanCAN = 1.4646;
   double stdCAN = 0.1;
-  double meanCAC = 1.53; // 1.53
+  double meanCAC = 1.524;
   double stdCAC = 0.1;
   double correctionFactor = 0;
   int numberResidues = pose->n_residue();

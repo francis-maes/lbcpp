@@ -145,6 +145,7 @@ extern SamplerPtr rigidBodyTransMoverSampler();
 extern SamplerPtr rigidBodySpinMoverSampler();
 extern SamplerPtr rigidBodyGeneralMoverSampler();
 extern SamplerPtr simpleResidueSampler();
+extern SamplerPtr gaussianMultivariateSampler();
 
 }; /* namespace lbcpp */
 
