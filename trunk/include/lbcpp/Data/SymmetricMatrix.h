@@ -125,6 +125,12 @@ public:
   virtual void setElement(size_t index, const Variable& value)
     {BuiltinTypeSymmetricMatrix<double>::setElement(index, value.getDouble());}
 
+  void setValue(size_t row, size_t column, double value)
+    {setElement(makeIndex(row, column), value);}
+
+  double getValue(size_t row, size_t column) const
+    {return elements[makeIndex(row, column)];}
+ 
   lbcpp_UseDebuggingNewOperator
 };
 
