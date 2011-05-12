@@ -32,6 +32,8 @@ public:
         return 1.0 - computeF1Score();
       case binaryClassificationMCCScore:
         return 1.0 - computeMatthewsCorrelation();
+      case binaryClassificationSensitivityAndSpecificityScore:
+        return 1.0 - computeSensitivityAndSpecificity();
       default:
         jassertfalse;
     }
@@ -56,6 +58,7 @@ public:
   double computeMatthewsCorrelation() const;
   double computeSensitivity() const;
   double computeSpecificity() const;
+  double computeSensitivityAndSpecificity() const;
   
   void computePrecisionRecallAndF1(double& precision, double& recall, double& f1score) const;
 

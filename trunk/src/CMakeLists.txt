@@ -668,6 +668,8 @@ IF(LBCPP_USER_INTERFACE)
     UserInterface/Component/ExecutionTraceTreeViewItem.cpp
     UserInterface/Component/ExecutionTraceTreeView.h
     UserInterface/Component/ExecutionTraceTreeView.cpp
+    UserInterface/Component/ROCScoreObjectComponent.h
+    UserInterface/Component/ConfusionMatrixComponent.h
     UserInterface/Component/UserInterfaceComponentLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/UserInterfaceComponentLibrary.cpp
   )
