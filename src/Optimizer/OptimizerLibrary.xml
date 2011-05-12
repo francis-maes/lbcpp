@@ -3,7 +3,6 @@
 <library name="Optimizer" directory="Optimizer">
 
   <include file="lbcpp/Optimizer/Optimizer.h"/>
-  <include file="lbcpp/Optimizer/OptimizerTestBed.h"/>
   <include file="lbcpp/Optimizer/GridOptimizer.h"/>
   <include file="lbcpp/Function/ScalarVectorFunction.h"/>
 
@@ -24,18 +23,6 @@
     
   <class name="OptimizerContext" base="Object" abstract="yes">
     <variable type="Function" name="objectiveFunction"/>
-  </class>
-  
-  <class name="SphereFunction" base="ScalarVectorFunction">
-    <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="GenericVector[Double]" name="coefs"/>
-    <variable type="Double" name="fopt"/> 
-  </class>
-  
-  <class name="EllipsoidalFunction" base="ScalarVectorFunction">
-    <constructor arguments="const std::vector&lt;double&gt;&amp; coefs, double fopt"/>
-    <variable type="GenericVector[Double]" name="coefs"/>
-    <variable type="Double" name="fopt"/> 
   </class>
   
   <class name="GridOptimizer" base="Function" abstract="yes"/>

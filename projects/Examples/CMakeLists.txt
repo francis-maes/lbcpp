@@ -17,6 +17,7 @@ SET(LBCPP_EXAMPLES_SOURCES
   GeneticProgrammingExample.h
   OptimizerExampleWorkUnit.h
   RandomGeneratorExample.h
+  OptimizerTestBed.h
   ExamplesLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ExamplesLibrary.cpp
 )
