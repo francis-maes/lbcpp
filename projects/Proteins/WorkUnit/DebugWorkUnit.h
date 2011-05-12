@@ -26,7 +26,8 @@ class DebugWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context) 
   {
-    // variables used by DistributedOptimizerContext
+    /*
+     // variables used by DistributedOptimizerContext
     String projectName(T("DebugNetwork"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
@@ -42,7 +43,7 @@ public:
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
-    
+    */
     
     /*ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     foo(context, state);
