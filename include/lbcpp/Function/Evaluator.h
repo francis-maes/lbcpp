@@ -178,7 +178,8 @@ enum BinaryClassificationScore
 {
   binaryClassificationAccuracyScore = 0,
   binaryClassificationF1Score,
-  binaryClassificationMCCScore
+  binaryClassificationMCCScore,
+  binaryClassificationSensitivityAndSpecificityScore
 };
 
 // Classification

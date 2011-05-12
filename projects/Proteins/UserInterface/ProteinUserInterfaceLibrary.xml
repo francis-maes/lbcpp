@@ -4,8 +4,6 @@
 
   <uicomponent name="ProteinComponent" type="Protein"/>
   <uicomponent name="MultiProteinComponent" type="Container[Protein]"/>
-  <uicomponent name="ROCScoreObjectComponent" type="ROCScoreObject"/>
-  <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
 <!--
   <uicomponent name="ResiduePerceptionComponent" type="Pair[Protein,PositiveInteger]"/>
   <uicomponent name="ResiduePairPerceptionComponent" type="Pair[Protein,Pair[PositiveInteger,PositiveInteger]]"/>

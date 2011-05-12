@@ -167,6 +167,9 @@ double BinaryClassificationConfusionMatrix::computeSensitivity() const
 double BinaryClassificationConfusionMatrix::computeSpecificity() const
   {return (trueNegative || falsePositive) ? trueNegative / (double)(trueNegative + falsePositive) : 0.0;}
 
+double BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity() const
+  {return (computeSensitivity() + computeSpecificity()) / 2;}
+
 void BinaryClassificationConfusionMatrix::saveToXml(XmlExporter& exporter) const
 {
   String res = String((int)truePositive) + T(" ")
@@ -240,6 +243,10 @@ double ROCScoreObject::findBestThreshold(BinaryClassificationScore scoreToOptimi
 
   case binaryClassificationMCCScore:
     scoreFunction = &BinaryClassificationConfusionMatrix::computeMatthewsCorrelation;
+    break;
+  
+  case binaryClassificationSensitivityAndSpecificityScore:
+    scoreFunction = &BinaryClassificationConfusionMatrix::computeSensitivityAndSpecificity;
     break;
 
   default:
