@@ -29,7 +29,7 @@ public:
     
     for (size_t i = 0; i < numSamples; ++i) 
     {
-      if (!optimizerContext->evaluate(context, values[i]))
+      if (!optimizerContext->evaluate(values[i]))
         i--;
       else 
       {
@@ -40,7 +40,7 @@ public:
     
     // wait (in case of async context) & update progression
     while (!optimizerContext->areAllRequestsProcessed()) {
-      Thread::sleep(60000);
+      Thread::sleep(100);
       context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
     }
     jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);

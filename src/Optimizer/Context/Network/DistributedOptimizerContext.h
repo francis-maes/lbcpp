@@ -21,7 +21,7 @@ class GetFinishedExecutionTracesDaemon;
 class DistributedOptimizerContext : public OptimizerContext
 {
 public:
-  DistributedOptimizerContext(const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
+  DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);
   DistributedOptimizerContext() {}
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback)
@@ -37,19 +37,13 @@ public:
   virtual bool areAllRequestsProcessed() const
     {return inProgressWUs.size() == 0;}
   
-  virtual bool evaluate(ExecutionContext& context, const Variable& parameters)
-  {
-    // Todo : remove this:
-    {
-      ScopedLock _(executionContextLock);
-      executionContext = &context; 
-    }
-    
-    ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+  virtual bool evaluate(const Variable& parameters)
+  {   
+    ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect();
     if (!interface)
       return false;
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
-    String res = sendWU(context, wu, interface);
+    String res = sendWU(wu, interface);
     
     if (res == T("Error"))
     {
@@ -80,19 +74,13 @@ protected:
   size_t requiredTime;
   
   FunctionCallbackPtr functionCallback;
-
-  // FIXME: this should be a reference initialized at construction : 
-  // ExecutionContext& context; (with no lock)
-  CriticalSection executionContextLock; 
-  ExecutionContextPtr executionContext;
-  // --
   
   CriticalSection inProgressWUsLock;
   std::vector< std::pair<String, Variable> > inProgressWUs;
 
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
   
-  ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
+  ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect() const
   {       
     NetworkClientPtr client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
@@ -106,7 +94,7 @@ protected:
     return interface;
   }
   
-  String sendWU(ExecutionContext& context, WorkUnitPtr wu, ManagerNodeNetworkInterfacePtr interface) const
+  String sendWU(WorkUnitPtr wu, ManagerNodeNetworkInterfacePtr interface) const
   {    
     NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
@@ -119,22 +107,16 @@ class GetFinishedExecutionTracesDaemon : public Thread
 {
 public:
   GetFinishedExecutionTracesDaemon(const DistributedOptimizerContextPtr& optimizerContext) 
-    : Thread(T("GetFinishedExecutionTracesDaemon")), optimizerContext(optimizerContext) {}
+    : Thread(T("GetFinishedExecutionTracesDaemon")), optimizerContext(optimizerContext), context(optimizerContext->context) {}
   
   virtual void run()
-  {
+  {    
     while (!threadShouldExit())
     {
       sleep(30000);
        
-      ExecutionContextPtr context; // FIXME: remove all these stuffs: and replace by a static reference at the beggining of run()
-      {
-        ScopedLock _(optimizerContext->executionContextLock);
-        context = optimizerContext->executionContext;
-      }
-      
       // handle finished WUs
-      ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(*context);  // TODO arnaud
+      ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect();
       if (!interface) 
         continue;
       
@@ -150,13 +132,13 @@ public:
             {  
               // TODO arnaud : traiter cas où qq pas valide
              
-              ExecutionTracePtr trace = res->getExecutionTrace(*context);
+              ExecutionTracePtr trace = res->getExecutionTrace(context);
               ExecutionTraceNodePtr root = trace->getRootNode();
               std::vector<ExecutionTraceItemPtr> vec = root->getSubItems();  
               ExecutionTraceNodePtr traceNode = vec[0].dynamicCast<ExecutionTraceNode>();
               Variable returnValue = traceNode->getReturnValue();
               
-              optimizerContext->functionCallback->functionReturned(*context, FunctionPtr(), &(it->second), returnValue); 
+              optimizerContext->functionCallback->functionReturned(context, FunctionPtr(), &(it->second), returnValue); 
               
               optimizerContext->inProgressWUs.erase(it);
             }
@@ -173,6 +155,7 @@ public:
   
 private:
   DistributedOptimizerContextPtr optimizerContext;
+  ExecutionContext& context;
 };
   
 };

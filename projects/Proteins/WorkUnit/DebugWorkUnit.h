@@ -38,7 +38,7 @@ public:
     
     // Optimizer
     OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);

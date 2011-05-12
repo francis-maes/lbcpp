@@ -11,8 +11,8 @@
 
 using namespace lbcpp;
 
-DistributedOptimizerContext::DistributedOptimizerContext(const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
-: OptimizerContext(objectiveFunction), projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), 
+DistributedOptimizerContext::DistributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime)
+: OptimizerContext(context, objectiveFunction), projectName(projectName), source(source), destination(destination), managerHostName(managerHostName), managerPort(managerPort), 
 requiredCpus(requiredCpus), requiredMemory(requiredMemory), requiredTime(requiredTime) 
 {
   getFinishedTracesThread = new GetFinishedExecutionTracesDaemon(this);

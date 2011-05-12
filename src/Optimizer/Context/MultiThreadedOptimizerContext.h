@@ -18,8 +18,8 @@ namespace lbcpp
 class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
-  MultiThreadedOptimizerContext(const FunctionPtr& objectiveFunction)
-    : OptimizerContext(objectiveFunction) 
+  MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction)
+    : OptimizerContext(context, objectiveFunction) 
     {numEvaluationInProgress=0;}
   MultiThreadedOptimizerContext() 
     {numEvaluationInProgress=0;}
@@ -33,7 +33,7 @@ public:
   virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
   
-  virtual bool evaluate(ExecutionContext& context, const Variable& parameters) 
+  virtual bool evaluate(const Variable& parameters) 
   {
     juce::atomicIncrement(numEvaluationInProgress);
     context.pushWorkUnit(new FunctionWorkUnit(objectiveFunction, parameters), &numEvaluationInProgress, false); // TODO arnaud verbose ?

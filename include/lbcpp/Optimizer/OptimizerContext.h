@@ -18,28 +18,29 @@ namespace lbcpp
 class OptimizerContext : public Object
 {
 public:
-  OptimizerContext(const FunctionPtr& objectiveFunction);
-  OptimizerContext() {}
+  OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);
+  OptimizerContext() : context(*(ExecutionContext* )0) {}
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
   virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
   virtual void waitUntilAllRequestsAreProcessed() const = 0;
   virtual bool areAllRequestsProcessed() const = 0;
-  virtual bool evaluate(ExecutionContext& context, const Variable& parameters) = 0;
+  virtual bool evaluate(const Variable& parameters) = 0;
   
 protected:
   friend class OptimizerContextClass;
   
+  ExecutionContext& context;
   FunctionPtr objectiveFunction;
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
 extern ClassPtr optimizerContextClass;
 
-extern OptimizerContextPtr synchroneousOptimizerContext(const FunctionPtr& objectiveFunction);  
-extern OptimizerContextPtr multiThreadedOptimizerContext(const FunctionPtr& objectiveFunction);
-extern OptimizerContextPtr distributedOptimizerContext(const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);  
+extern OptimizerContextPtr synchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);  
+extern OptimizerContextPtr multiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction);
+extern OptimizerContextPtr distributedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, String projectName, String source, String destination, String managerHostName, size_t managerPort, size_t requiredCpus, size_t requiredMemory, size_t requiredTime);  
 
 };
 #endif // !LBCPP_OPTIMIZER_CONTEXT_H_
