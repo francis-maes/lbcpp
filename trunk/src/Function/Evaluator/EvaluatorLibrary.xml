@@ -25,6 +25,7 @@
     <value name="accuracyScore" oneLetterCode="a"/>
     <value name="f1Score" oneLetterCode="f"/>
     <value name="mccScore" oneLetterCode="m"/>
+    <value name="sensitivityAndSpecificityScore" oneLetterCode="s"/>
   </enumeration>
 
   <!-- Utility Classes -->
