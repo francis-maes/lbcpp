@@ -186,6 +186,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/Sampler/ProteinMoverSampler.h
     Rosetta/Sampler/ParzenContinuousSampler.h
     Rosetta/Sampler/SimpleResidueSampler.h
+    Rosetta/Sampler/DualResidueSampler.h
     Rosetta/Sampler/PhiPsiMoverSampler.h
     Rosetta/Sampler/RigidBodyTransMoverSampler.h
     Rosetta/Sampler/RigidBodySpinMoverSampler.h

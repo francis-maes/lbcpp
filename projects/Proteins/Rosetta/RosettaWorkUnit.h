@@ -331,7 +331,7 @@ public:
     }
 
     juce::OwnedArray<File> references;
-    referenceFile.findChildFiles(references, File::findFiles, false);
+    referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
 
     for (int j = 0; j < references.size(); j++)
     {
@@ -344,7 +344,7 @@ public:
 
       juce::OwnedArray<File> targets;
       targetFile.findChildFiles(targets, File::findFiles, false,
-          (*references[j]).getFileNameWithoutExtension() + T("*"));
+          (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
 
       RandomGeneratorPtr random = new RandomGenerator(0);
       for (int i = 0; i < targets.size(); i++)
@@ -365,20 +365,31 @@ public:
             new ShearMoverSampler(proteinTarget->getLength(), 0, 25, 0, 25);
         RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(
             proteinTarget->getLength(), 0, 0.5);
+        RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(
+            proteinTarget->getLength(), 0, 25);
+        RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(
+            proteinTarget->getLength(), 0.0, 1.0, 0, 25);
 
         std::vector<Variable> samplers;
 
         samplers.push_back(Variable(samp0));
         samplers.push_back(Variable(samp1));
         samplers.push_back(Variable(samp2));
+        samplers.push_back(Variable(samp3));
+        samplers.push_back(Variable(samp4));
 
-        ProteinMoverSamplerPtr samp = new ProteinMoverSampler(3, samplers);
+        std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
+        ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
 
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
         ProteinMoverSamplerPtr out = opti->findBestMovers(context, random, targetPose,
-            referencePose, samp, numIterations, numSamples, 0.5);
-        out->saveToFile(context, File(outputFile.getFullPathName() + T("/sampler_")
-            + (*targets[i]).getFileNameWithoutExtension() + T(".xml")));
+            referencePose, samp, returnMovers, numIterations, numSamples, 0.5, numMoversToKeep);
+        out->saveToFile(context, File(outputFile.getFullPathName() + T("/")
+            + (*targets[i]).getFileNameWithoutExtension() + T("_sampler.xml")));
+
+        for (int k = 0; k < numMoversToKeep; k++)
+          returnMovers[k]->saveToFile(context, File(outputFile.getFullPathName() + T("/")
+              + (*targets[i]).getFileNameWithoutExtension() + T("_mover_") + String(k) + T(".xml")));
 
         // verbosity
         context.leaveScope();
@@ -400,6 +411,7 @@ protected:
   double energyWeight;
   int numIterations;
   int numSamples;
+  int numMoversToKeep;
 };
 
 class ConformationSortingWorkUnit: public WorkUnit

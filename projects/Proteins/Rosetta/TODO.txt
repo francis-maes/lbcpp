@@ -31,7 +31,9 @@ Citer:
 
 DONE
 =====
-
+- tolerance et maxit en argument de GaussianMultivariate
+- suppression de learned qui etait inutile
+- serialisation de GaussianMultivariate
 
 
 

@@ -104,7 +104,7 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
-    if (dataset.size() == 0)
+    if (dataset.size() < 2)
       return;
 
     learned = true;

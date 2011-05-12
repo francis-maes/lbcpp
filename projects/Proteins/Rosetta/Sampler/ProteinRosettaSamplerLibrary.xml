@@ -10,13 +10,14 @@
   <class name="GaussianContinuousSampler" base="ContinuousSampler">
   </class>
   
-  <class name="GaussianMultivariateSampler" base="ContinuousSampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities"/>
-    <variable type="GenericVector[DenseDoubleVector[PositiveIntegerEnumeration, Double]]" name="means"/>
-    <variable type="GenericVector[DoubleSymmetricMatrix[Double]]" name="covarianceMatrix"/>
+  <class name="GaussianMultivariateSampler" base="ContinuousSampler">  
+    <variable type="DoubleMatrix[Double]" name="probabilities"/>
+    <variable type="GenericVector[DoubleMatrix[Double]]" name="means"/>
+    <variable type="GenericVector[DoubleMatrix[Double]]" name="covarianceMatrix"/>
+    <variable type="Double" name="tolerance"/>
+    <variable type="Integer" name="maxIt"/>
     <variable type="Integer" name="numVariables"/>
     <variable type="Integer" name="numClusters"/>
-    <variable type="Boolean" name="learned" shortName="l" description="Indicates if the sampler has already been learned"/>
   </class>
   
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
@@ -48,6 +49,11 @@
   </class>
   
   <class name="SimpleResidueSampler" base="CompositeSampler">
+    <variable type="Integer" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+    <variable type="Integer" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
+  </class>
+  
+  <class name="DualResidueSampler" base="CompositeSampler">
     <variable type="Integer" name="numResidues" shortName="n" description="The number of residues to sample from."/>
     <variable type="Integer" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>

@@ -22,37 +22,45 @@ class GaussianMultivariateSampler: public ContinuousSampler
 {
 public:
   GaussianMultivariateSampler() :
-    ContinuousSampler(0, 0), numVariables(0), numClusters(0), learned(false)
+    ContinuousSampler(0, 0), maxIt(100), tolerance(0.01), numVariables(0), numClusters(0)
   {
   }
 
-  GaussianMultivariateSampler(int numVariables, int numClusters, MatrixPtr& initialProbabilities, std::vector<MatrixPtr>& initialMean,
-      std::vector<MatrixPtr>& initialStd) :
-    ContinuousSampler(0.0, 1.0), numVariables(numVariables),
-        numClusters(numClusters), learned(false)
+  GaussianMultivariateSampler(int maxIt, double tolerance, MatrixPtr& initialProbabilities,
+      std::vector<MatrixPtr>& initialMean, std::vector<MatrixPtr>& initialStd) :
+    ContinuousSampler(0.0, 1.0), maxIt(maxIt), tolerance(tolerance), numVariables(
+        initialMean[0]->getNumRows()), numClusters(initialProbabilities->getNumRows())
   {
     probabilities = new DoubleMatrix(numClusters, 1, 1.0 / numClusters);
+    double norm = 0;
     for (int j = 0; j < numClusters; j++)
-      probabilities->setElement(j,0,initialProbabilities->getElement(j,0));
+    {
+      probabilities->setElement(j, 0, initialProbabilities->getElement(j, 0));
+      norm += probabilities->getElement(j,0).getDouble();
+    }
+    // ensures that variables are normalized
+    double factor = 1.0 / norm;
+    for (int j = 0; j < numClusters; j++)
+      probabilities->setElement(j, 0, probabilities->getElement(j, 0).getDouble() * factor );
 
     means = std::vector<MatrixPtr>(numClusters);
     covarianceMatrix = std::vector<MatrixPtr>(numClusters);
     for (int j = 0; j < numClusters; j++)
     {
       means[j] = new DoubleMatrix(numVariables, 1, 0.0);
-      for (int k = 0; k < numVariables;k++)
-        means[j]->setElement(k,0,initialMean[j]->getElement(k,0));
+      for (int k = 0; k < numVariables; k++)
+        means[j]->setElement(k, 0, initialMean[j]->getElement(k, 0));
 
       covarianceMatrix[j] = new DoubleMatrix(numVariables, numVariables, 0.0);
       for (int k = 0; k < covarianceMatrix[j]->getNumRows(); k++)
         for (int l = 0; l < covarianceMatrix[j]->getNumColumns(); l++)
-            covarianceMatrix[j]->setElement(k, l, initialStd[j]->getElement(k,l));
+            covarianceMatrix[j]->setElement(k, l, initialStd[j]->getElement(k, l));
     }
   }
 
   GaussianMultivariateSampler(const GaussianMultivariateSampler& copy) :
-    ContinuousSampler(copy.mean, copy.std), numVariables(copy.numVariables), numClusters(
-        copy.numClusters), learned(copy.learned)
+    ContinuousSampler(copy.mean, copy.std), maxIt(copy.maxIt), tolerance(copy.tolerance),
+        numVariables(copy.numVariables), numClusters(copy.numClusters)
   {
     probabilities = new DoubleMatrix(copy.probabilities->getNumRows(), 1);
     for (int j = 0; j < copy.probabilities->getNumRows(); j++)
@@ -110,18 +118,19 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
-    if (dataset.size() <= numClusters)
+    if (dataset.size() < 2 * numClusters)
+    {
+      context.warningCallback(T("Not enough values in dataset to ensure correct EM. Nothing done."));
       return;
+    }
 
     std::vector<MatrixPtr> vals(dataset.size());
-    for (int i = 0; i < dataset.size();i++)
-      vals[i] = dataset[i].first.getObjectAndCast<Matrix>();
+    for (int i = 0; i < dataset.size(); i++)
+      vals[i] = dataset[i].first.getObjectAndCast<Matrix> ();
 
-
-    double tolerance = 0.001;
     double oldLL = computeLogLikelihood(vals, probabilities, means, covarianceMatrix);
     double newLL = oldLL + 2 * oldLL * tolerance;
-    int maxIt = 100;
+
     for (int i = 0; ((std::abs((oldLL - newLL) / oldLL) > tolerance) && (i < maxIt)); i++)
     {
       MatrixPtr gammas;
@@ -131,20 +140,7 @@ public:
 
       oldLL = newLL;
       newLL = computeLogLikelihood(vals, probabilities, means, covarianceMatrix);
-      std::cout << "num iteration : " << i << std::endl;
-      std::cout << "gammas : " << std::endl;
-      printMatrix(gammas);
-      std::cout << "oldLL : " << oldLL << std::endl;
-      std::cout << "newLL : " << newLL << std::endl;
     }
-    std::cout << "probabilities : " << std::endl;
-    printMatrix(probabilities);
-    std::cout << "means : " << std::endl;
-    printMatrix(means[0]);
-    printMatrix(means[1]);
-    std::cout << "covariance : " << std::endl;
-    printMatrix(covarianceMatrix[0]);
-    printMatrix(covarianceMatrix[1]);
   }
 
   /**
@@ -234,8 +230,8 @@ public:
    * dataset vector containing m matrices of size n by 1, where n is the dimension
    * and m the number of samples.
    */
-  double computeLogLikelihood(std::vector<MatrixPtr>& dataset, MatrixPtr& probabilities, std::vector<
-      MatrixPtr>& means, std::vector<MatrixPtr>& covariances)
+  double computeLogLikelihood(std::vector<MatrixPtr>& dataset, MatrixPtr& probabilities,
+      std::vector<MatrixPtr>& means, std::vector<MatrixPtr>& covariances)
   {
     std::vector<MatrixPtr> invCov(covariances.size());
     for (int i = 0; i < covariances.size(); i++)
@@ -301,7 +297,7 @@ public:
         temp->setElement(i, j, Variable(a->getElement(i, j).getDouble()));
 
     // Decomposition
-    temp->setElement(0, 0, Variable(std::sqrt(temp->getElement(0, 0).getDouble())));
+    temp->setElement(0, 0, Variable(std::sqrt(std::abs(temp->getElement(0, 0).getDouble()))));
     int N = temp->getNumColumns();
     for (int i = 1; i < N; i++)
       temp->setElement(i, 0, Variable(temp->getElement(i, 0).getDouble()
@@ -313,7 +309,7 @@ public:
 
       for (int j = 0; j < k; j++)
         sum1 += std::pow(temp->getElement(k, j).getDouble(), 2.0);
-      temp->setElement(k, k, Variable(std::sqrt(temp->getElement(k, k).getDouble() - sum1)));
+      temp->setElement(k, k, Variable(std::sqrt(std::abs(temp->getElement(k, k).getDouble() - sum1))));
 
       for (int i = k + 1; i < N; i++)
       {
@@ -328,8 +324,8 @@ public:
     double sum2 = 0;
     for (int j = 0; j < (N - 1); j++)
       sum2 += std::pow(temp->getElement(N - 1, j).getDouble(), 2.0);
-    temp->setElement(N - 1, N - 1, Variable(std::sqrt(temp->getElement(N - 1, N - 1).getDouble()
-        - sum2)));
+    temp->setElement(N - 1, N - 1, Variable(std::sqrt(std::abs(temp->getElement(N - 1, N - 1).getDouble()
+        - sum2))));
 
     // Set the upper part to 0
     for (int i = 0; i < a->getNumRows(); i++)
@@ -381,7 +377,8 @@ public:
     MatrixPtr temp = new DoubleMatrix(a->getNumRows(), a->getNumColumns(), 0.0);
     for (int i = 0; i < a->getNumRows(); i++)
       for (int j = 0; j < a->getNumColumns(); j++)
-        temp->setElement(i, j, Variable(a->getElement(i, j).getDouble() + b->getElement(i, j).getDouble()));
+        temp->setElement(i, j, Variable(a->getElement(i, j).getDouble()
+            + b->getElement(i, j).getDouble()));
 
     return temp;
   }
@@ -391,7 +388,8 @@ public:
     MatrixPtr temp = new DoubleMatrix(a->getNumRows(), a->getNumColumns(), 0.0);
     for (int i = 0; i < a->getNumRows(); i++)
       for (int j = 0; j < a->getNumColumns(); j++)
-        temp->setElement(i, j, Variable(a->getElement(i, j).getDouble() - b->getElement(i, j).getDouble()));
+        temp->setElement(i, j, Variable(a->getElement(i, j).getDouble()
+            - b->getElement(i, j).getDouble()));
 
     return temp;
   }
@@ -445,15 +443,16 @@ public:
   double determinantMatrix(MatrixPtr a)
   {
     double determinant = a->getElement(0, 0).getDouble() * a->getElement(1, 1).getDouble()
-            - a->getElement(0, 1).getDouble() * a->getElement(1, 0).getDouble();
+        - a->getElement(0, 1).getDouble() * a->getElement(1, 0).getDouble();
     return determinant;
   }
 
 protected:
   friend class GaussianMultivariateSamplerClass;
+  double tolerance;
+  int maxIt;
   int numVariables;
   int numClusters;
-  bool learned;
   MatrixPtr probabilities;
   std::vector<MatrixPtr> means;
   std::vector<MatrixPtr> covarianceMatrix;

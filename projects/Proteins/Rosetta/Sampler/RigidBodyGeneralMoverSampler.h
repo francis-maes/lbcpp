@@ -12,6 +12,7 @@
 # include "precompiled.h"
 # include "../Sampler.h"
 # include "../ProteinMover/RigidBodyGeneralMover.h"
+# include "DualResidueSampler.h"
 
 namespace lbcpp
 {
@@ -23,34 +24,30 @@ class RigidBodyGeneralMoverSampler: public CompositeSampler
 {
 public:
   RigidBodyGeneralMoverSampler() :
-    CompositeSampler(4), numResidue(0)
+    CompositeSampler(3), numResidue(0)
   {
   }
 
   RigidBodyGeneralMoverSampler(size_t numResidue, double meanMagnitude, double stdMagnitude,
       double meanAmplitude, double stdAmplitude) :
-    CompositeSampler(4), numResidue(numResidue)
+    CompositeSampler(3), numResidue(numResidue)
   {
-    // select first residue
-    sons[0] = Variable(new EnumerationDiscreteSampler(numResidue, 1.0 / (double)(10 * numResidue)));
-    // select second residue
-    sons[1] = Variable(new EnumerationDiscreteSampler(numResidue, 1.0 / (double)(10 * numResidue)));
+    // select residue
+    sons[0] = Variable(new DualResidueSampler(numResidue, 2));
     // select magnitude
-    sons[2] = Variable(new GaussianContinuousSampler(meanMagnitude, stdMagnitude));
+    sons[1] = Variable(new GaussianContinuousSampler(meanMagnitude, stdMagnitude));
     // select amplitude
-    sons[3] = Variable(new GaussianContinuousSampler(meanAmplitude, stdAmplitude));
+    sons[2] = Variable(new GaussianContinuousSampler(meanAmplitude, stdAmplitude));
   }
 
   RigidBodyGeneralMoverSampler(const RigidBodyGeneralMoverSampler& sampler) :
-    CompositeSampler(4), numResidue(sampler.numResidue)
+    CompositeSampler(3), numResidue(sampler.numResidue)
   {
-    sons[0] = Variable(new EnumerationDiscreteSampler(*sampler.sons[0].getObjectAndCast<
-        EnumerationDiscreteSampler> ()));
-    sons[1] = Variable(new EnumerationDiscreteSampler(*sampler.sons[1].getObjectAndCast<
-        EnumerationDiscreteSampler> ()));
-    sons[2] = Variable(new GaussianContinuousSampler(*sampler.sons[2].getObjectAndCast<
+    sons[0] = Variable(new DualResidueSampler(
+        *sampler.sons[0].getObjectAndCast<DualResidueSampler> ()));
+    sons[1] = Variable(new GaussianContinuousSampler(*sampler.sons[1].getObjectAndCast<
         GaussianContinuousSampler> ()));
-    sons[3] = Variable(new GaussianContinuousSampler(*sampler.sons[3].getObjectAndCast<
+    sons[2] = Variable(new GaussianContinuousSampler(*sampler.sons[2].getObjectAndCast<
         GaussianContinuousSampler> ()));
   }
 
@@ -63,29 +60,14 @@ public:
   Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t firstResidue = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
-        random, inputs).getInteger();
-    // TODO rajouter la dependance entre le premier residu et le reste
-    size_t secondResidue = sons[1].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
-        random, inputs).getInteger();
-    // residues must have at least one other residue between them
-    if (std::abs((int)(firstResidue - secondResidue)) <= 1)
-    {
-      if (firstResidue <= secondResidue)
-      {
-        firstResidue = (size_t)juce::jlimit(0, (int)numResidue - 1, (int)firstResidue - 1);
-        secondResidue = (size_t)juce::jlimit(0, (int)numResidue - 1, (int)secondResidue + 1);
-      }
-      else
-      {
-        firstResidue = (size_t)juce::jlimit(0, (int)numResidue - 1, (int)firstResidue + 1);
-        secondResidue = (size_t)juce::jlimit(0, (int)numResidue - 1, (int)secondResidue - 1);
-      }
-    }
+    MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
+        inputs).getObjectAndCast<Matrix> ();
+    size_t firstResidue = (int)(residues->getElement(0, 0).getDouble());
+    size_t secondResidue = (int)(residues->getElement(1, 0).getDouble());
 
-    double magnitude = sons[2].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
+    double magnitude = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
         random, inputs).getDouble();
-    double amplitude = sons[3].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
+    double amplitude = sons[2].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
         random, inputs).getDouble();
     RigidBodyGeneralMoverPtr mover = new RigidBodyGeneralMover(firstResidue, secondResidue,
         magnitude, amplitude);
@@ -99,31 +81,27 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
-    if (dataset.size() == 0)
+    if (dataset.size() < 2)
       return;
 
-    std::vector<std::pair<Variable, Variable> > datasetFirstResidue;
-    std::vector<std::pair<Variable, Variable> > datasetSecondResidue;
+    std::vector<std::pair<Variable, Variable> > datasetResidues;
     std::vector<std::pair<Variable, Variable> > datasetMagnitude;
     std::vector<std::pair<Variable, Variable> > datasetAmplitude;
     for (int i = 0; i < dataset.size(); i++)
     {
       RigidBodyGeneralMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodyGeneralMover> ();
-      datasetFirstResidue.push_back(std::pair<Variable, Variable>(Variable(
-          mover->getIndexResidueOne()), Variable()));
-      datasetSecondResidue.push_back(std::pair<Variable, Variable>(Variable(
-          mover->getIndexResidueTwo()), Variable()));
+      MatrixPtr tempResidue = new DoubleMatrix(2, 1);
+      tempResidue->setElement(0, 0, Variable((double)mover->getIndexResidueOne()));
+      tempResidue->setElement(1, 0, Variable((double)mover->getIndexResidueTwo()));
+      datasetResidues.push_back(std::pair<Variable, Variable>(Variable(tempResidue), Variable()));
       datasetMagnitude.push_back(std::pair<Variable, Variable>(Variable(mover->getMagnitude()),
           Variable()));
       datasetAmplitude.push_back(std::pair<Variable, Variable>(Variable(mover->getAmplitude()),
           Variable()));
     }
-    sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->learn(context, random,
-        datasetFirstResidue);
-    sons[1].getObjectAndCast<EnumerationDiscreteSampler> ()->learn(context, random,
-        datasetSecondResidue);
-    sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetMagnitude);
-    sons[3].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetAmplitude);
+    sons[0].getObjectAndCast<DualResidueSampler> ()->learn(context, random, datasetResidues);
+    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetMagnitude);
+    sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetAmplitude);
   }
 
 protected:

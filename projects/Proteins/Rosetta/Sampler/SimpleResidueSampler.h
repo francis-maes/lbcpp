@@ -76,7 +76,7 @@ public:
   void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
-    if ((dataset.size() == 0) || (numResidues <= 0))
+    if ((dataset.size() < 2) || (numResidues <= 0))
       return;
 
     std::vector<std::pair<Variable, Variable> > data;
