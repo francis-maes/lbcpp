@@ -355,7 +355,6 @@ bool Object::loadFromXml(XmlImporter& importer)
     }
     TypePtr expectedType = thisClass->getMemberVariableType((size_t)variableNumber);
     jassert(expectedType);
-    bool isGenerated = defaultClass && defaultClass->isMemberVariableGenerated((size_t)variableNumber);
     
     Variable value;
     if (child->getBoolAttribute(T("generated"), false))
