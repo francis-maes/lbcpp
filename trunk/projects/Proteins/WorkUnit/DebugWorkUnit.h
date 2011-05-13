@@ -17,7 +17,7 @@
 # include <lbcpp/Optimizer/OptimizerState.h>
 # include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
 
-# include "../Optimizer/ProteinGridEvoOptimizer.h"
+# include "../WorkUnit/ProteinLearner.h"
 
 namespace lbcpp
 {
@@ -28,9 +28,9 @@ public:
   {
     return Variable();
     
-    /*
-     // variables used by DistributedOptimizerContext
-    String projectName(T("DebugNetwork"));
+    
+    // variables used by DistributedOptimizerContext
+    String projectName(T("DebugNetwork2"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
     String managerHostName(T("localhost"));
@@ -39,13 +39,29 @@ public:
     size_t requiredCpus = 1;
     size_t requiredTime = 1;
     
+    // initial distribution
+    IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+    distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,9));
+    distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,9));
+    distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+    distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
+    distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
+    distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
+    
     // Optimizer
-    OptimizerPtr optimizer = asyncEDAOptimizer(10000, 1000, 3, 30, 100, 1500);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
-    OptimizerStatePtr optimizerState = new OptimizerState();
-    optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
-    return optimizer->compute(context, optimizerContext, optimizerState);
-    */
+    OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
+    DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
+    optimizerState->setDistribution(distributions);
+    return optimizer->compute(context, optimizerContext, optimizerState);    
     
     /*ProteinGridEvoOptimizerStatePtr state = Object::createFromFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml"))).staticCast<ProteinGridEvoOptimizerState>();
     foo(context, state);
