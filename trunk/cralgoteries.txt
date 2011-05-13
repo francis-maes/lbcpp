@@ -1,21 +1,42 @@
 
+Alejandro:
+ * Dans tous les samplers: rendre le learn() pure
 
-Objectif Bandit with sampler:
+ * EnumerationDiscreteSampler: enlever DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES et LEARNING_RATE
+ * EnumerationDiscreteSampler: conserver le bon type pour le DenseDoubleVector
+ 
+ * GaussianMultivariateSampler est en réalité un MixtureOfGaussianMultivariateSampler
+   -> Splitter en MixtureSampler + MultiVariateGaussianSampler
+   -> MixtureSampler existe deja, il faut completer la partie apprentissage avec l'algo EM
+   -> MultiVariateGaussianSampler ne dois contenir que une gaussienne
 
-1) descendre les classes de base de samplers dans lbcpp-core
-2) avoir une implementation d'EDA qui utilise les samplers
-3) utiliser les samplers dans Bandits
+ * RigidBodySpinMover et RidigBodyTransMover sont des cas particuliers de RigidBodyGeneralMover;
+      choisir de contraindre une des sous valeurs à 0 est un choix de sampling. C'est donc bien qu'il y ait
+      differents sampler pour cela, mais ca ne sert à rien qu'il y ait différentes implémentation de Mover
+   -> Enlever RigidBodySpinMover et RidigBodyTransMover, mettre tout cette logique la dans les Sampler
+ 
+ * PhiPsiMoverSampler, RigidBodyMoverSampler, ShearMoverSampler sont des cas particulier d'un sampler plus generale qui
+       1) crée une nouvelle instance d'une classe
+       2) utilise ses sous-samplers pour "setter" les variables de l'objet crée
+    J'ai crée ce sampler dans lbcpp-core sous le nom ObjectCompositeSampler
+  -> Essayer d'enlever ces classes (ou de les reduire au maximum) pour les remplacer par des ObjectCompositeSampler
+ 
+ * SimpleResidueSampler et DualResidueSampler accomplissent une fonction generale qui est de discretiser
+     une distribution continue pour obtenir une distribution discrete sur des entiers
+   -> Faire une classe DiscretizeSampler qui derive de Sampler et a un "ContinuousSamplerPtr continuousSampler" en variable
+         + une option pour clamper les valeurs de sortie (par exemple forcer des entiers positifs)
+ 
+  * Les types de sortie de SimpleResidueSampler et de DualResidueSampler devrait être "PositiveInteger" et "Pair[PositiveInteger,PositiveInteger]"
 
-Objectif Unification
+  * ProteinMoverSampler: est un cas particulier de MixtureSampler
+     -> Le faire disparaitre au profit de MixtureSampler
+ 
 
-1) faire deriver Sampler de Function
-2) unifier les BatchLearner de Sampler et de Function
-
-Objectif Alejandro
-
-1) Il faut un sampler maxent
-2) Il faut un sampler gaussian parametree
-
+Samplers:
+ * Make Sampler inherit from Function (?)
+   * Unify BatchLearners from Sampler and from Function
+ * MaximumEntropySampler
+ * ConditionalGaussianSampler
 
 Proteins:
  * Ajouter des features de segments

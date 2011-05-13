@@ -2,10 +2,20 @@
 
 <library name="CompositeSampler" directory="Sampler/Composite">
 
+  <class name="ObjectCompositeSampler" base="CompositeSampler">
+    <constructor arguments="ClassPtr objectClass, const std::vector&lt;SamplerPtr&gt;&amp; variableSamplers"/>
+    <variable type="Class" name="objectClass"/>
+  </class>
+
   <class name="IndependentDenseDoubleVectorSampler" base="CompositeSampler">
     <constructor arguments="EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel"/>
     <constructor arguments="size_t numElements, SamplerPtr elementSamplerModel"/>
     <variable type="Enumeration" name="elementsEnumeration"/>
   </class>
-
+  
+  <class name="MixtureSampler" base="CompositeSampler">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; probabilities, const std::vector&lt;SamplerPtr&gt;&amp; samplers"/>
+    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
+  </class>
+  
 </library>
