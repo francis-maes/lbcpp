@@ -9,6 +9,7 @@
 #ifndef LBCPP_SAMPLER_H_
 # define LBCPP_SAMPLER_H_
 
+# include "../Data/DoubleVector.h"
 # include "../Data/RandomGenerator.h"
 # include "../Core/Variable.h"
 # include "../Core/Vector.h"
@@ -66,6 +67,8 @@ class CompositeSampler : public Sampler
 public:
   CompositeSampler(size_t numSamplers)
     : samplers(numSamplers) {}
+  CompositeSampler(const std::vector<SamplerPtr>& samplers)
+    : samplers(samplers) {}
   CompositeSampler() {}
 
   lbcpp_UseDebuggingNewOperator
@@ -78,8 +81,12 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 
+extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const std::vector<SamplerPtr>& variableSamplers);
+
 extern CompositeSamplerPtr independentDenseDoubleVectorSampler(EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel);
 extern CompositeSamplerPtr independentDenseDoubleVectorSampler(size_t numElements, SamplerPtr elementSamplerModel);
+
+extern CompositeSamplerPtr mixtureSampler(const DenseDoubleVectorPtr& probabilities, const std::vector<SamplerPtr>& samplers);
 
 }; /* namespace lbcpp */
 

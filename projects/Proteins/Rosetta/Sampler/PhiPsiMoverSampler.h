@@ -47,8 +47,7 @@ public:
     // TODO rajouter la dependance entre le residu et les angles
     double phi = samplers[1]->sample(context, random, inputs).getDouble();
     double psi = samplers[2]->sample(context, random, inputs).getDouble();
-    PhiPsiMoverPtr mover = new PhiPsiMover(residue, phi, psi);
-    return Variable(mover);
+    return new PhiPsiMover(residue, phi, psi);
   }
 
   /**

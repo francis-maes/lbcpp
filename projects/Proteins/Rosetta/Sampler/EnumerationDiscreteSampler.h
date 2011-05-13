@@ -52,11 +52,8 @@ public:
         positiveIntegerEnumerationEnumeration), sampler.probabilities->getValues());
   }
 
-  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
-      const Variable* inputs = NULL) const
-  {
-    return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()));
-  }
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
+    {return random->sampleWithNormalizedProbabilities(probabilities->getValues());}
 
   /**
    * dataset = first : a Variable of integer type that corresponds to the element observed.
