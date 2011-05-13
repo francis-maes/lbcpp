@@ -22,14 +22,14 @@ class GaussianMultivariateSampler : public ContinuousSampler
 {
 public:
   GaussianMultivariateSampler()
-    : ContinuousSampler(0, 0), maxIt(100), tolerance(0.01), numVariables(0), numClusters(0)
+    : maxIt(100), tolerance(0.01), numVariables(0), numClusters(0)
   {
   }
 
   GaussianMultivariateSampler(size_t maxIt, double tolerance, MatrixPtr& initialProbabilities,
       std::vector<MatrixPtr>& initialMean, std::vector<MatrixPtr>& initialStd)
-    : ContinuousSampler(0.0, 1.0), maxIt(maxIt), tolerance(tolerance), numVariables(
-        initialMean[0]->getNumRows()), numClusters(initialProbabilities->getNumRows())
+    : maxIt(maxIt), tolerance(tolerance),
+      numVariables(initialMean[0]->getNumRows()), numClusters(initialProbabilities->getNumRows())
   {
     probabilities = new DoubleMatrix(numClusters, 1, 1.0 / numClusters);
     double norm = 0;
@@ -57,7 +57,7 @@ public:
           covarianceMatrix[j]->setElement(k, l, initialStd[j]->getElement(k, l));
     }
   }
-
+/*
   GaussianMultivariateSampler(const GaussianMultivariateSampler& copy)
     : ContinuousSampler(copy.mean, copy.std), maxIt(copy.maxIt), tolerance(copy.tolerance),
         numVariables(copy.numVariables), numClusters(copy.numClusters)
@@ -81,7 +81,7 @@ public:
         for (size_t l = 0; l < copy.covarianceMatrix[j]->getNumColumns(); l++)
           covarianceMatrix[j]->setElement(k, l, copy.covarianceMatrix[j]->getElement(k, l));
     }
-  }
+  }*/
 
   /*
    * The variable returned is a n by 1 matrix containing the n values sampled.

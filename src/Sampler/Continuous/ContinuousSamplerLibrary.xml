@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ContinuousSampler" directory="Sampler/Continuous">
+
+  <class name="GaussianSampler" base="ContinuousSampler">
+    <constructor arguments="double mean, double stddev"/>
+    <variable type="Double" name="mean" shortName="m" description="Mean of the distribution"/>
+    <variable type="Double" name="stddev" shortName="s" description="Standard deviation of the distribution"/>
+  </class>
+
+</library>

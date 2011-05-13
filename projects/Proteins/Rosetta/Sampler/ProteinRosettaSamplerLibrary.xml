@@ -6,10 +6,7 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
     <variable type="Double" name="probabilityForUnseenSamples" shortName="pus" description="Minimum probability for each sample. Used in the learning procedure"/>
   </class>
-  
-  <class name="GaussianContinuousSampler" base="ContinuousSampler">
-  </class>
-  
+
   <class name="GaussianMultivariateSampler" base="ContinuousSampler">  
     <variable type="DoubleMatrix[Double]" name="probabilities"/>
     <variable type="GenericVector[DoubleMatrix[Double]]" name="means"/>
@@ -23,6 +20,8 @@
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="abscissa" shortName="a" description="Abscissa where the integral is evaluated"/>
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="integral" shortName="i" description="Values of the integral of the density probability function"/>
+    <variable type="Double" name="mean"/>
+    <variable type="Double" name="stddev"/>
     <variable type="Double" name="precision" shortName="p" description="Precision of the abscissa. It is a ratio, e.g. 0.0001 means the abscissa are evaluated 10000 times in the total abscissa interval (which is fixed or not)"/>
     <variable type="Double" name="excursion" shortName="e" description="The abscissa interval, if not fixed, is evaluated at learning time. It is calculated to lie between mean - excursion * std and mean + excursion * std where mean and std are calculated on the dataset"/>
     <variable type="Double" name="kernelWidth" shortName="w" description="A double which is multiplied by the std of the dataset to determine, at learning time, the std of the gaussians used to approximate the density function"/>

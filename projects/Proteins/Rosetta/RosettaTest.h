@@ -34,7 +34,6 @@
 # include "ProteinMover/RigidBodyGeneralMover.h"
 # include "ProteinMover/RigidBodyTransMover.h"
 # include "Sampler.h"
-# include "Sampler/GaussianContinuousSampler.h"
 # include "Sampler/ParzenContinuousSampler.h"
 # include "Sampler/EnumerationDiscreteSampler.h"
 # include "Sampler/ProteinMoverSampler.h"

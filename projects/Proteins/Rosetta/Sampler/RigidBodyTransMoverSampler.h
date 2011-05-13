@@ -32,30 +32,19 @@ public:
     : CompositeSampler(2), numResidue(numResidue)
   {
     // select residue
-    sons[0] = Variable(new DualResidueSampler(numResidue, 2));
+    sons[0] = new DualResidueSampler(numResidue, 2);
     // select magnitude
-    sons[1] = Variable(new GaussianContinuousSampler(meanMagnitude, stdMagnitude));
-  }
-
-  RigidBodyTransMoverSampler(const RigidBodyTransMoverSampler& sampler)
-    : CompositeSampler(2), numResidue(sampler.numResidue)
-  {
-    sons[0] = Variable(new DualResidueSampler(
-        *sampler.sons[0].getObjectAndCast<DualResidueSampler> ()));
-    sons[1] = Variable(new GaussianContinuousSampler(*sampler.sons[1].getObjectAndCast<
-        GaussianContinuousSampler> ()));
+    sons[1] = gaussianSampler(meanMagnitude, stdMagnitude);
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
-        inputs).getObjectAndCast<Matrix> ();
+    MatrixPtr residues = sons[0]->sample(context, random, inputs).getObjectAndCast<Matrix> ();
     size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
     size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
-    double magnitude = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
-        random, inputs).getDouble();
+    double magnitude = sons[1]->sample(context, random, inputs).getDouble();
     RigidBodyTransMoverPtr mover = new RigidBodyTransMover(firstResidue, secondResidue, magnitude);
     return Variable(mover);
   }
@@ -82,8 +71,8 @@ public:
           Variable()));
     }
 
-    sons[0].getObjectAndCast<DualResidueSampler> ()->learn(context, datasetResidues);
-    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetMagnitude);
+    sons[0]->learn(context, datasetResidues);
+    sons[1]->learn(context, datasetMagnitude);
   }
 
 protected:

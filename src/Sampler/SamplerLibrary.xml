@@ -5,5 +5,10 @@
   <include file="lbcpp/Sampler/Sampler.h"/>
 
   <class name="Sampler" base="Object" abstract="yes"/>
+  <class name="ContinuousSampler" base="Sampler" abstract="yes"/>
 
+  <import name="ContinuousSampler"/>
+  <import name="DiscreteSampler"/>
+  <import name="CompositeSampler"/>
+  
 </library>
