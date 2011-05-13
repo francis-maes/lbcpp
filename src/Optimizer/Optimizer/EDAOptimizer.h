@@ -25,7 +25,7 @@ public:
     : numIterations(0), populationSize(0), numBests(0), reinjectBest(false), verbose(false), random(new RandomGenerator()) {}
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
-  {  
+  {     
     size_t i = (size_t) (optimizerState->getTotalNumberOfEvaluations()/populationSize);	// integer division
     context.progressCallback(new ProgressionState(i, numIterations, T("Iterations")));
 
@@ -70,8 +70,11 @@ protected:
   bool verbose;
   RandomGeneratorPtr random;
   
-  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState, double& bestScore, bool verbose = false) const
+  bool performEDAIteration(ExecutionContext& context, Variable& bestParameters, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& state, double& bestScore, bool verbose = false) const
   {
+    DistributionBasedOptimizerStatePtr optimizerState = state.dynamicCast<DistributionBasedOptimizerState>();
+    jassert(optimizerState);  // TODO arnaud : message erreur
+    
     jassert(numBests < populationSize);
     
     // generate evaluations requests

@@ -13,12 +13,15 @@
   <class name="Optimizer" base="Function" abstract="yes"/>
   
   <class name="OptimizerState" base="Object">
-    <variable type="Distribution[Variable]" name="distribution"/>
     <variable type="PositiveInteger" name="totalNumberOfRequests"/>
     <variable type="PositiveInteger" name="totalNumberOfEvaluations"/>
     <variable type="Variable" name="bestVariable"/>
     <variable type="Double" name="bestScore"/>
     <variable type="ObjectVector[Pair[Double, Variable]]" name="processedRequests"/>
+  </class>
+  
+  <class name="DistributionBasedOptimizerState" base="OptimizerState">
+    <variable type="Distribution[Variable]" name="distribution"/>
   </class>
     
   <class name="OptimizerContext" base="Object" abstract="yes">
