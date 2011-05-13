@@ -171,7 +171,7 @@ protected:
 
   String thisNetworkNodeName;
   NetworkClientPtr managerClient;
-  ManagerNodeNetworkInterfacePtr managerInterface;
+  ManagerNetworkInterfacePtr managerInterface;
 };
 
 }; /* namespace lbcpp */

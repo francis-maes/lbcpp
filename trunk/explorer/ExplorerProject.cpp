@@ -194,7 +194,7 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
   context.informationCallback(managerHostName, T("Connected !"));
 
   thisNetworkNodeName = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
-  managerInterface = clientManagerNodeNetworkInterface(context, managerClient, thisNetworkNodeName);
+  managerInterface = clientManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
   managerInterface->sendInterfaceClass();
   return true;
 }
@@ -207,7 +207,7 @@ void ExplorerProject::disconnectFromManager(ExecutionContext& context)
     if (managerInterface)
     {
       managerInterface->closeCommunication();
-      managerInterface = ManagerNodeNetworkInterfacePtr();
+      managerInterface = ManagerNetworkInterfacePtr();
     }
     managerClient->stopClient();
     managerClient = NetworkClientPtr();
@@ -221,7 +221,7 @@ bool ExplorerProject::sendWorkUnitToManager(ExecutionContext& context, const Wor
     context.errorCallback(T("Not connected to manager"));
     return false;
   }
-  NetworkRequestPtr request = new NetworkRequest(context, getName(), thisNetworkNodeName, grid, workUnit, requiredCpus, requiredMemory, requiredTime);
+  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, getName(), thisNetworkNodeName, grid, workUnit, requiredCpus, requiredMemory, requiredTime);
   String res = managerInterface->pushWorkUnit(request);
   if (res == T("Error"))
   {

@@ -1,35 +1,35 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GridNodeNetworkNotification.h  | Grid Node Network Notification  |
+| Filename: GridNetworkNotification.h  | Grid  Network Notification  |
 | Author  : Julien Becker                  |                                 |
 | Started : 26/02/2011 19:20               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_GRID_NODE_NETWORK_NOTIFICATION_H_
-# define LBCPP_GRID_NODE_NETWORK_NOTIFICATION_H_
+#ifndef LBCPP_GRID_NETWORK_NOTIFICATION_H_
+# define LBCPP_GRID_NETWORK_NOTIFICATION_H_
 
-# include "../NodeNetworkNotification.h"
+# include <lbcpp/Network/NetworkNotification.h>
 
 namespace lbcpp
 {
 
-class GridNodeNetworkNotification : public NodeNetworkNotification
+class GridNetworkNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
-    {notifyGridNodeNetwork(target);}
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+    {notifyGridNetwork(target);}
 
-  virtual void notifyGridNodeNetwork(const GridNodeNetworkInterfacePtr& target) = 0;
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target) = 0;
 };
 
-class PushWorkUnitsNotification : public GridNodeNetworkNotification
+class PushWorkUnitsNotification : public GridNetworkNotification
 {
 public:
   PushWorkUnitsNotification(ContainerPtr networkRequests) : networkRequests(networkRequests) {}
   PushWorkUnitsNotification() {}
   
-  virtual void notifyGridNodeNetwork(const GridNodeNetworkInterfacePtr& target)
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target)
   {
     ContainerPtr res = target->pushWorkUnits(networkRequests);
     target->getNetworkClient()->sendVariable(res);
@@ -41,10 +41,10 @@ protected:
   ContainerPtr networkRequests;
 };
 
-class GetFinishedExecutionTraces : public GridNodeNetworkNotification
+class GetFinishedExecutionTraces : public GridNetworkNotification
 {
 public:
-  virtual void notifyGridNodeNetwork(const GridNodeNetworkInterfacePtr& target)
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target)
   {
     ContainerPtr res = target->getFinishedExecutionTraces();
     if (!target->getNetworkClient()->sendVariable(res))
@@ -63,4 +63,4 @@ public:
 
 };
 
-#endif //!LBCPP_GRID_NODE_NETWORK_NOTIFICATION_H_
+#endif //!LBCPP_GRID_NETWORK_NOTIFICATION_H_

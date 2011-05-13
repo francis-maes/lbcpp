@@ -42,7 +42,7 @@ public:
   
   virtual bool evaluate(const Variable& parameters)
   {   
-    ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect();
+    ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect();
     if (!interface)
       return false;
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
@@ -85,7 +85,7 @@ protected:
 
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
   
-  ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect() const
+  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect() const
   {       
     NetworkClientPtr client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
@@ -93,14 +93,14 @@ protected:
       context.errorCallback(T("DistributedOptimizerContext::getNetworkInterfaceAndConnect"), T("Not connected !"));
       return NULL;
     }
-    ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
+    ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, source);
     interface->sendInterfaceClass();
     return interface;
   }
   
-  String sendWU(WorkUnitPtr wu, ManagerNodeNetworkInterfacePtr interface) const
+  String sendWU(WorkUnitPtr wu, ManagerNetworkInterfacePtr interface) const
   {    
-    NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
   }
 };
@@ -120,7 +120,7 @@ public:
       sleep(optimizerContext->timeToSleep);
        
       // handle finished WUs
-      ManagerNodeNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect();
+      ManagerNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect();
       if (!interface) 
         continue;
       
@@ -131,7 +131,7 @@ public:
         {
           if (interface->isFinished(it->first))
           {
-            NetworkResponsePtr res = interface->getExecutionTrace(it->first);
+            ExecutionTraceNetworkResponsePtr res = interface->getExecutionTrace(it->first);
             if (res)
             {  
               // TODO arnaud : traiter cas où qq pas valide mieux

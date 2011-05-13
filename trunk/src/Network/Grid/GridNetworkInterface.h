@@ -1,27 +1,27 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GridNodeNetworkInterface.h     | Grid Node Network Interface     |
+| Filename: GridNetworkInterface.h         | Grid Network Interface          |
 | Author  : Julien Becker                  |                                 |
 | Started : 26/02/2011 19:01               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_GRID_NODE_NETWORK_INTERFACE_H_
-# define LBCPP_GRID_NODE_NETWORK_INTERFACE_H_
+#ifndef LBCPP_GRID_NETWORK_INTERFACE_H_
+# define LBCPP_GRID_NETWORK_INTERFACE_H_
 
 # include <lbcpp/Network/NetworkInterface.h>
 
 namespace lbcpp
 {
 
-extern ClassPtr gridNodeNetworkInterfaceClass;
+extern ClassPtr gridNetworkInterfaceClass;
 
-class ClientGridNodeNetworkInterface : public GridNodeNetworkInterface
+class ClientGridNetworkInterface : public GridNetworkInterface
 {
 public:
-  ClientGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : GridNodeNetworkInterface(context, client, nodeName) {}
-  ClientGridNodeNetworkInterface() {}
+  ClientGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
+    : GridNetworkInterface(context, client, nodeName) {}
+  ClientGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
   virtual ContainerPtr getFinishedExecutionTraces();
@@ -31,30 +31,30 @@ public:
   void closeCommunication();
 };
 
-class SgeGridNodeNetworkInterface : public GridNodeNetworkInterface
+class SgeGridNetworkInterface : public GridNetworkInterface
 {
 public:
-  SgeGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
-  SgeGridNodeNetworkInterface() {}
+  SgeGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+  SgeGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
   virtual ContainerPtr getFinishedExecutionTraces();
   virtual void removeExecutionTraces(ContainerPtr networkResponses);
 
 protected:
-  NetworkResponsePtr getNetworkResponse(const String& identifier)
+  ExecutionTraceNetworkResponsePtr getExecutionTraceNetworkResponse(const String& identifier)
   {
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     if (!f.exists())
-      return new NetworkResponse(identifier);
+      return new ExecutionTraceNetworkResponse(identifier);
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f);
-    return new NetworkResponse(context, identifier, trace);
+    return new ExecutionTraceNetworkResponse(context, identifier, trace);
   }
 
-  File getRequestFile(NetworkRequestPtr request)
+  File getRequestFile(WorkUnitNetworkRequestPtr request)
     {return context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));}
 
-  File getWaitingFile(NetworkRequestPtr request)
+  File getWaitingFile(WorkUnitNetworkRequestPtr request)
     {return context.getFile(T("PreProcessing/") + request->getIdentifier() + T(".workUnit"));}
 
   File getFinishDirectory()
@@ -68,29 +68,29 @@ protected:
   }
 };
 
-class BoincGridNodeNetworkInterface : public GridNodeNetworkInterface
+class BoincGridNetworkInterface : public GridNetworkInterface
 {
 public:
-  BoincGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
-  BoincGridNodeNetworkInterface() {}
+  BoincGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+  BoincGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
   virtual ContainerPtr getFinishedExecutionTraces();
   virtual void removeExecutionTraces(ContainerPtr networkResponses);
   
 protected:
-  NetworkResponsePtr getNetworkResponse(const String& identifier)
+  ExecutionTraceNetworkResponsePtr getExecutionTraceNetworkResponse(const String& identifier)
   {
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     if (!f.exists())
-      return new NetworkResponse(identifier);
+      return new ExecutionTraceNetworkResponse(identifier);
     ExecutionTracePtr trace = ExecutionTrace::createFromFile(context, f);
-    return new NetworkResponse(context, identifier, trace);
+    return new ExecutionTraceNetworkResponse(context, identifier, trace);
   }
   
-  File getRequestFile(NetworkRequestPtr request)
+  File getRequestFile(WorkUnitNetworkRequestPtr request)
     {return context.getFile(T("Requests/") + request->getIdentifier() + T(".request"));}
-  File getWaitingFile(NetworkRequestPtr request)
+  File getWaitingFile(WorkUnitNetworkRequestPtr request)
     {return context.getFile(T("Waiting/") + request->getIdentifier() + T(".workUnit"));}
   File getFinishDirectory()
     {return context.getProjectDirectory().getChildFile(T("Finished"));}
@@ -105,4 +105,4 @@ protected:
 
 };
 
-#endif //!LBCPP_GRID_NODE_NETWORK_INTERFACE_H_
+#endif //!LBCPP_GRID_NETWORK_INTERFACE_H_

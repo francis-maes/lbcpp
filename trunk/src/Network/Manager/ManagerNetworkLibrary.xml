@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="ManagerNetwork" directory="Network/Manager">
+
+  <!-- NetworkInterface -->
+  <class name="ManagerNetworkInterface" base="NetworkInterface" abstract="yes"/>
+  <class name="FileSystemManagerNetworkInterface" base="ManagerNetworkInterface"/>
+  <class name="ClientManagerNetworkInterface" base="ManagerNetworkInterface">
+    <constructor arguments="ExecutionContext&amp; context, NetworkClientPtr client, const String&amp; name"/>
+  </class>
+
+  <!-- NetworkNotification -->
+  <class name="ManagerNetworkNotification" base="NetworkNotification" abstract="yes"/>
+  <class name="PushWorkUnitNotification" base="ManagerNetworkNotification">
+    <variable type="WorkUnitNetworkRequest" name="request"/>
+  </class>
+  <class name="IsWorkUnitFinishedNotification" base="ManagerNetworkNotification">
+    <variable type="String" name="identifier"/>
+  </class>
+  <class name="GetExecutionTraceNotification" base="ManagerNetworkNotification">
+    <variable type="String" name="identifier"/>
+  </class>
+
+</library>

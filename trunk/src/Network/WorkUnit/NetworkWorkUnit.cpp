@@ -7,8 +7,9 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Network/NetworkServer.h>
-#include "../Node/NodeNetworkNotification.h"
+#include <lbcpp/Network/NetworkNotification.h>
 #include "NetworkWorkUnit.h"
+
 using namespace lbcpp;
 
 /*
@@ -35,33 +36,33 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     context.informationCallback(connectedHostName, T("Connected"));
     
     /* Which kind of connection ? */
-    NodeNetworkInterfacePtr remoteInterface;
-    if (!client->receiveObject<NodeNetworkInterface>(300000, remoteInterface) || !remoteInterface)
+    NetworkInterfacePtr remoteInterface;
+    if (!client->receiveObject<NetworkInterface>(300000, remoteInterface) || !remoteInterface)
     {
-      context.warningCallback(connectedHostName, T("Unknown NodeNetworkInterface - Need to update Manager and/or Client? Invalid NetworkInterface?"));
+      context.warningCallback(connectedHostName, T("Unknown NetworkInterface - Need to update Manager and/or Client? Invalid NetworkInterface?"));
       client->stopClient();
       continue;
     }
 
-    context.informationCallback(connectedHostName, T("Node name: ") + remoteInterface->getNodeName());
+    context.informationCallback(connectedHostName, T("Node name: ") + remoteInterface->getName());
     context.informationCallback(connectedHostName, T("Interface: ") + remoteInterface->getClassName());
 
     ClassPtr type = remoteInterface->getClass();
     /* Strat communication (depending of the type) */
-    NodeNetworkInterfacePtr interface;
-    if (type->inheritsFrom(clientManagerNodeNetworkInterfaceClass))
+    NetworkInterfacePtr interface;
+    if (type->inheritsFrom(clientManagerNetworkInterfaceClass))
     {
-      interface = new FileSystemManagerNodeNetworkInterface(context, client, T("Manager"), fileManager);
+      interface = new FileSystemManagerNetworkInterface(context, client, T("Manager"), fileManager);
       serverCommunication(context, interface);
     }
-    else if (type->inheritsFrom(gridNodeNetworkInterfaceClass))
+    else if (type->inheritsFrom(gridNetworkInterfaceClass))
     {
-      interface = new ClientGridNodeNetworkInterface(context, client, remoteInterface->getNodeName());
+      interface = new ClientGridNetworkInterface(context, client, remoteInterface->getName());
       clientCommunication(context, interface);
     }
     else
     {
-      context.warningCallback(connectedHostName, T("Unknown NodeNetworkInterface - No communication protocol specified for this interface"));
+      context.warningCallback(connectedHostName, T("Unknown NetworkInterface - No communication protocol specified for this interface"));
       client->stopClient();
       continue;
     }
@@ -72,7 +73,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
   }
 }
 
-void ManagerWorkUnit::serverCommunication(ExecutionContext& context, ManagerNodeNetworkInterfacePtr interface) const
+void ManagerWorkUnit::serverCommunication(ExecutionContext& context, ManagerNetworkInterfacePtr interface) const
 {
   NetworkClientPtr client = interface->getNetworkClient();
   while (client->isConnected() || client->hasVariableInQueue())
@@ -87,9 +88,9 @@ void ManagerWorkUnit::serverCommunication(ExecutionContext& context, ManagerNode
   }
 }
   
-void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNetworkInterfacePtr interface)
+void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNetworkInterfacePtr interface)
 {
-  String nodeName = interface->getNodeName();
+  String nodeName = interface->getName();
   if (nodeName == String::empty)
   {
     interface->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Fail - Empty node name"));
@@ -97,7 +98,7 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
   }
 
   /* Send new requests */
-  std::vector<NetworkRequestPtr> waitingRequests;
+  std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
   fileManager->getWaitingRequests(nodeName, waitingRequests);
   sendRequests(context, interface, waitingRequests);
 
@@ -109,20 +110,20 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNodeNet
   size_t n = networkResponses->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    NetworkResponsePtr response = networkResponses->getElement(i).getObjectAndCast<NetworkResponse>();
+    ExecutionTraceNetworkResponsePtr response = networkResponses->getElement(i).getObjectAndCast<ExecutionTraceNetworkResponse>();
     if (!response)
     {
-      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("GetFinishedExecutionTraces - NetworkResponsePtr()"));
+      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("GetFinishedExecutionTraces - ExecutionTraceNetworkResponsePtr()"));
       continue;
     }
-    NetworkRequestPtr request = fileManager->getRequest(response->getIdentifier());
+    WorkUnitNetworkRequestPtr request = fileManager->getRequest(response->getIdentifier());
     if (!request)
       continue;
     fileManager->archiveRequest(new NetworkArchive(request, response));
   }
 }
 
-void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNodeNetworkInterfacePtr interface, const std::vector<NetworkRequestPtr>& requests) const
+void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const std::vector<WorkUnitNetworkRequestPtr>& requests) const
 {
   const size_t numRequests = requests.size();
   if (!numRequests)
@@ -133,7 +134,7 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNodeNetworkInt
   {
     const size_t numThisTime = juce::jmin(numRequests - numRequestsSent, 200);
     /* Prepare data and send */
-    ObjectVectorPtr v = objectVector(networkRequestClass, numThisTime);
+    ObjectVectorPtr v = objectVector(workUnitNetworkRequestClass, numThisTime);
     for (size_t i = 0; i < numThisTime; ++i)
       v->set(i, requests[numRequestsSent + i]);
     ContainerPtr results = interface->pushWorkUnits(v);
@@ -141,7 +142,7 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNodeNetworkInt
     if (!results || results->getNumElements() != numThisTime)
     {
       context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
-      std::vector<NetworkRequestPtr> errorRequests(requests.begin() + numRequestsSent, requests.begin() + numRequestsSent + numThisTime);        
+      std::vector<WorkUnitNetworkRequestPtr> errorRequests(requests.begin() + numRequestsSent, requests.begin() + numRequestsSent + numThisTime);        
       fileManager->setAsWaitingRequests(errorRequests);
     }
     else
@@ -177,11 +178,11 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   }
   context.informationCallback(T("NetworkContext::run"), T("Connected to ") + hostName + T(":") + String((int)port));
   
-  NodeNetworkInterfacePtr interface;
+  NetworkInterfacePtr interface;
   if (gridEngine == T("SGE"))
-    interface = new SgeGridNodeNetworkInterface(context, client, gridName);
+    interface = new SgeGridNetworkInterface(context, client, gridName);
   else if (gridEngine == T("BOINC"))
-    interface = new BoincGridNodeNetworkInterface(context, client, gridName);
+    interface = new BoincGridNetworkInterface(context, client, gridName);
   else
   {
     jassertfalse;
@@ -229,7 +230,7 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
   }
   context.informationCallback(hostName, T("Connected !"));
   
-  ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, T("Client"));
+  ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, T("Client"));
   interface->sendInterfaceClass();
   
   if (!interface->isFinished(workUnitIdentifier))
@@ -238,10 +239,10 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
     return true;
   }
   
-  NetworkResponsePtr res = interface->getExecutionTrace(workUnitIdentifier);
+  ExecutionTraceNetworkResponsePtr res = interface->getExecutionTrace(workUnitIdentifier);
   if (!res)
   {
-    context.errorCallback(T("GetTraceWorkUnit::run"), T("No NetworkResponse received !"));
+    context.errorCallback(T("GetTraceWorkUnit::run"), T("No ExecutionTraceNetworkResponse received !"));
     return false;
   }
 

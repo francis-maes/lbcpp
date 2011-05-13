@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GridNodeNetworkInterface.cpp   | Grid Node Network Interface     |
+| Filename: GridNetworkInterface.cpp       | Grid Network Interface         |
 | Author  : Julien Becker, Arnaud Schoofs  |                                 |
 | Started : 26/02/2011 19:04               |                                 |
 `------------------------------------------/                                 |
@@ -7,47 +7,47 @@
                                `--------------------------------------------*/
 #include "precompiled.h"
 #include <lbcpp/Data/Stream.h>
-#include "GridNodeNetworkInterface.h"
-#include "GridNodeNetworkNotification.h"
+#include "GridNetworkInterface.h"
+#include "GridNetworkNotification.h"
 
 using namespace lbcpp;
 
-/* ClientGridNodeNetworkInterface */
-void ClientGridNodeNetworkInterface::closeCommunication()
+/* ClientGridNetworkInterface */
+void ClientGridNetworkInterface::closeCommunication()
 {
   client->sendVariable(new CloseCommunicationNotification());
   client->stopClient();
   return;
 }
 
-ContainerPtr ClientGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
+ContainerPtr ClientGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   client->sendVariable(new PushWorkUnitsNotification(networkRequests));
   ContainerPtr res;
   if (!client->receiveObject<Container>(300000, res))
-    context.warningCallback(client->getConnectedHostName(), T("ClientGridNodeNetworkInterface::pushWorkUnits"));
+    context.warningCallback(client->getConnectedHostName(), T("ClientGridNetworkInterface::pushWorkUnits"));
   return res;
 }
 
-ContainerPtr ClientGridNodeNetworkInterface::getFinishedExecutionTraces()
+ContainerPtr ClientGridNetworkInterface::getFinishedExecutionTraces()
 {
   client->sendVariable(new GetFinishedExecutionTraces());
   ContainerPtr res;
   if (!client->receiveObject<Container>(300000, res))
-    context.warningCallback(client->getConnectedHostName(), T("ClientGridNodeNetworkInterface::getFinishedExecutionTraces"));
+    context.warningCallback(client->getConnectedHostName(), T("ClientGridNetworkInterface::getFinishedExecutionTraces"));
   else
     client->sendVariable(true);
   return res;
 }
 
-void ClientGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
+void ClientGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
 {
   jassertfalse;
 }
 
-/* SgeGridNodeNetworkInterface */
-SgeGridNodeNetworkInterface::SgeGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-  : GridNodeNetworkInterface(context, client, nodeName)
+/* SgeGridNetworkInterface */
+SgeGridNetworkInterface::SgeGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
+  : GridNetworkInterface(context, client, Name)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("PreProcessing"));
@@ -57,13 +57,13 @@ SgeGridNodeNetworkInterface::SgeGridNodeNetworkInterface(ExecutionContext& conte
   createDirectoryIfNotExists(T("Jobs"));
 }
 
-ContainerPtr SgeGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
+ContainerPtr SgeGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   size_t n = networkRequests->getNumElements();
   VectorPtr res = vector(stringType, n);
   for (size_t i = 0; i < n; ++i)
   {
-    NetworkRequestPtr request = networkRequests->getElement(i).getObjectAndCast<NetworkRequest>();
+    WorkUnitNetworkRequestPtr request = networkRequests->getElement(i).getObjectAndCast<WorkUnitNetworkRequest>();
     WorkUnitPtr workUnit = request->getWorkUnit(context);
     if (!workUnit)
     {
@@ -78,24 +78,24 @@ ContainerPtr SgeGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRequ
   return res;
 }
 
-ContainerPtr SgeGridNodeNetworkInterface::getFinishedExecutionTraces()
+ContainerPtr SgeGridNetworkInterface::getFinishedExecutionTraces()
 {
   VectorPtr res = vector(networkResponseClass);
   StreamPtr files = directoryFileStream(context, getFinishDirectory(), T("*"));
   while (!files->isExhausted())
   {
     String identifier = files->next().getFile().getFileName();
-    res->append(getNetworkResponse(identifier));
+    res->append(getExecutionTraceNetworkResponse(identifier));
   }
   return res;
 }
 
-void SgeGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
+void SgeGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
 {
   size_t n = networkResponses->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    String identifier = networkResponses->getElement(i).getObjectAndCast<NetworkResponse>()->getIdentifier();
+    String identifier = networkResponses->getElement(i).getObjectAndCast<ExecutionTraceNetworkResponse>()->getIdentifier();
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     f.deleteFile();
     f = context.getFile(T("Requests/") + identifier + T(".request"));
@@ -107,9 +107,9 @@ void SgeGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResp
   }
 }
 
-/* BoincGridNodeNetworkInterface */
-BoincGridNodeNetworkInterface::BoincGridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-  : GridNodeNetworkInterface(context, client, nodeName)
+/* BoincGridNetworkInterface */
+BoincGridNetworkInterface::BoincGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
+  : GridNetworkInterface(context, client, Name)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("Waiting"));
@@ -118,13 +118,13 @@ BoincGridNodeNetworkInterface::BoincGridNodeNetworkInterface(ExecutionContext& c
   createDirectoryIfNotExists(T("Traces"));
 }
 
-ContainerPtr BoincGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
+ContainerPtr BoincGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   size_t n = networkRequests->getNumElements();
   VectorPtr res = vector(stringType, n);
   for (size_t i = 0; i < n; ++i)
   {
-    NetworkRequestPtr request = networkRequests->getElement(i).getObjectAndCast<NetworkRequest>();
+    WorkUnitNetworkRequestPtr request = networkRequests->getElement(i).getObjectAndCast<WorkUnitNetworkRequest>();
     WorkUnitPtr workUnit = request->getWorkUnit(context);
     if (!workUnit)
     {
@@ -139,24 +139,24 @@ ContainerPtr BoincGridNodeNetworkInterface::pushWorkUnits(ContainerPtr networkRe
   return res;
 }
 
-ContainerPtr BoincGridNodeNetworkInterface::getFinishedExecutionTraces()
+ContainerPtr BoincGridNetworkInterface::getFinishedExecutionTraces()
 {
   VectorPtr res = vector(networkResponseClass);
   StreamPtr files = directoryFileStream(context, getFinishDirectory(), T("*.workUnit"));
   while (!files->isExhausted())
   {
     String identifier = files->next().getFile().getFileNameWithoutExtension();
-    res->append(getNetworkResponse(identifier));
+    res->append(getExecutionTraceNetworkResponse(identifier));
   }
   return res;
 }
 
-void BoincGridNodeNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
+void BoincGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
 {
   size_t n = networkResponses->getNumElements();
   for (size_t i = 0; i < n; ++i)
   {
-    String identifier = networkResponses->getElement(i).getObjectAndCast<NetworkResponse>()->getIdentifier();
+    String identifier = networkResponses->getElement(i).getObjectAndCast<ExecutionTraceNetworkResponse>()->getIdentifier();
     File f = context.getFile(T("Traces/") + identifier + T(".trace"));
     f.deleteFile();
     f = context.getFile(T("Requests/") + identifier + T(".request"));

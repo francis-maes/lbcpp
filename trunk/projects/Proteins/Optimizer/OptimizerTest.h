@@ -103,10 +103,10 @@ public:
       context.errorCallback(T("DistributedOptimizerContext::getNetworkInterfaceAndConnect"), T("Not connected !"));
     }
     //context.informationCallback(managerHostName, T("Connected !")); TODO arnaud : useless ?
-    ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
+    ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, source);
     interface->sendInterfaceClass();
     
-    NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     
     //interface->pushWorkUnit(request);
     //interface->closeCommunication();

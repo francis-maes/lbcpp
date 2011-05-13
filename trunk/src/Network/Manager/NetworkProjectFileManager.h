@@ -6,11 +6,11 @@
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
-# define LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
+#ifndef LBCPP_NETWORK_PROJECT_FILE_MANAGER_H_
+# define LBCPP_NETWORK_PROJECT_FILE_MANAGER_H_
 
 # include <lbcpp/Data/Stream.h>
-# include <lbcpp/Network/NetworkRequest.h>
+# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 
 namespace lbcpp
 {
@@ -31,10 +31,10 @@ public:
       while (!files->isExhausted())
       {
         File f = files->next().getFile();
-        NetworkRequestPtr request = NetworkRequest::createFromFile(context, f);
+        WorkUnitNetworkRequestPtr request = WorkUnitNetworkRequest::createFromFile(context, f);
         if (!request)
         {
-          context.errorCallback(T("ManagerNodeNetworkInterface::ManagerNodeNetworkInterface"), T("Fail to restore: ") + f.getFileName());
+          context.errorCallback(T("ManagerNetworkInterface::ManagerNetworkInterface"), T("Fail to restore: ") + f.getFileName());
           continue;
         }
         
@@ -51,7 +51,7 @@ public:
     }
   }
   
-  void addRequest(NetworkRequestPtr request)
+  void addRequest(WorkUnitNetworkRequestPtr request)
   {
 //    ScopedLock _(globalLock);
     requests[request->getIdentifier()] = request;
@@ -63,13 +63,13 @@ public:
   void archiveRequest(NetworkArchivePtr archive)
   {
 //    ScopedLock _(globalLock);
-    NetworkRequestPtr request = archive->getNetworkRequest();
+    WorkUnitNetworkRequestPtr request = archive->getWorkUnitNetworkRequest();
     archive->saveToFile(context, createFullPathOfFile(getArchiveFile(context, request)));
     getRequestFile(context, request).deleteFile();
     requests.erase(request->getIdentifier());
   }
   
-  void crachedRequest(NetworkRequestPtr request)
+  void crachedRequest(WorkUnitNetworkRequestPtr request)
   {
 //    ScopedLock _(globalLock);
     request->saveToFile(context, createFullPathOfFile(getCrachedFile(context, request)));
@@ -77,19 +77,19 @@ public:
     requests.erase(request->getIdentifier());
   }
 
-  NetworkRequestPtr getRequest(const String& identifier) const
+  WorkUnitNetworkRequestPtr getRequest(const String& identifier) const
   {
 //    ScopedLock _(globalLock);
-    std::map<String, NetworkRequestPtr>::const_iterator res = requests.find(identifier);
+    std::map<String, WorkUnitNetworkRequestPtr>::const_iterator res = requests.find(identifier);
     if (res == requests.end())
-      return NetworkRequestPtr();
+      return WorkUnitNetworkRequestPtr();
     return res->second;
   }
   
-  void getWaitingRequests(const String& nodeName, std::vector<NetworkRequestPtr>& results)
+  void getWaitingRequests(const String& nodeName, std::vector<WorkUnitNetworkRequestPtr>& results)
   {
 //    ScopedLock _(globalLock);
-    std::vector<NetworkRequestPtr> remainingRequests;
+    std::vector<WorkUnitNetworkRequestPtr> remainingRequests;
     for (size_t i = 0; i < waitingRequests.size(); ++i)
     {
       if (waitingRequests[i]->getDestination() == nodeName)
@@ -103,7 +103,7 @@ public:
     waitingRequests = remainingRequests;
   }
   
-  void setAsWaitingRequests(const std::vector<NetworkRequestPtr>& networkRequests)
+  void setAsWaitingRequests(const std::vector<WorkUnitNetworkRequestPtr>& networkRequests)
   {
 //    ScopedLock _(globalLock);
     for (size_t i = 0; i < networkRequests.size(); ++i)
@@ -116,8 +116,8 @@ public:
 protected:
   ExecutionContext& context;
   CriticalSection globalLock;
-  std::map<String, NetworkRequestPtr> requests; // id
-  std::vector<NetworkRequestPtr> waitingRequests;
+  std::map<String, WorkUnitNetworkRequestPtr> requests; // id
+  std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
 
   static File createFullPathOfFile(const File& f)
   {
@@ -126,24 +126,24 @@ protected:
     return f;
   }
   
-  File getRequestFile(ExecutionContext& context, NetworkRequestPtr request) const
+  File getRequestFile(ExecutionContext& context, WorkUnitNetworkRequestPtr request) const
   {
     return context.getFile(request->getProjectName() + T("/Requests/") + request->getIdentifier() + T(".request"));
   }
   
-  File getArchiveFile(ExecutionContext& context, NetworkRequestPtr request) const
+  File getArchiveFile(ExecutionContext& context, WorkUnitNetworkRequestPtr request) const
   {
     Time time(request->getCreationTime());
     return context.getFile(request->getProjectName() + T("/") + time.formatted(T("%Y-%m-%d")) + T("/") + request->getIdentifier() + T(".archive"));
   }
   
-  File getCrachedFile(ExecutionContext& context, NetworkRequestPtr request) const
+  File getCrachedFile(ExecutionContext& context, WorkUnitNetworkRequestPtr request) const
   {
     Time time(request->getCreationTime());
     return context.getFile(request->getProjectName() + T("/") + time.formatted(T("%Y-%m-%d")) + T("/Error/") + request->getIdentifier() + T(".request"));
   }
 
-  File getWaitingFile(ExecutionContext& context, NetworkRequestPtr request) const
+  File getWaitingFile(ExecutionContext& context, WorkUnitNetworkRequestPtr request) const
   {
     return context.getFile(request->getProjectName() + T(".") + request->getIdentifier());
   }
@@ -153,5 +153,5 @@ typedef ReferenceCountedObjectPtr<NetworkProjectFileManager> NetworkProjectFileM
 
 }; /* namespace */
   
-#endif // !LBCPP_NODE_NETWORK_PROJECT_FILE_MANAGER_H_
+#endif // !LBCPP_NETWORK_PROJECT_FILE_MANAGER_H_
 

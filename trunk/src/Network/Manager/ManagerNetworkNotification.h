@@ -1,36 +1,36 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: ManagerNodeNetworkNotifica...h | Manager Node Network            |
+| Filename: ManagerNetworkNotification.h   | Manager  Network                |
 | Author  : Julien Becker                  |   Notification                  |
 | Started : 26/02/2011 19:33               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_MANAGER_NODE_NETWORK_NOTIFICATION_H_
-# define LBCPP_MANAGER_NODE_NETWORK_NOTIFICATION_H_
+#ifndef LBCPP_MANAGER_NETWORK_NOTIFICATION_H_
+# define LBCPP_MANAGER_NETWORK_NOTIFICATION_H_
 
-# include "../NodeNetworkNotification.h"
+# include <lbcpp/Network/NetworkNotification.h>
 
 namespace lbcpp
 {
 
-class ManagerNodeNetworkNotification : public NodeNetworkNotification
+class ManagerNetworkNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNodeNetwork(const NodeNetworkInterfacePtr& target)
-    {notifyManagerNodeNetwork(target);}
+  virtual void notifyNetwork(const NetworkInterfacePtr& target)
+    {notifyManagerNetwork(target);}
 
-  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target) = 0;
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target) = 0;
 };
 
-class PushWorkUnitNotification : public ManagerNodeNetworkNotification
+class PushWorkUnitNotification : public ManagerNetworkNotification
 {
 public:
-  PushWorkUnitNotification(NetworkRequestPtr request)
+  PushWorkUnitNotification(WorkUnitNetworkRequestPtr request)
     : request(request) {}
   PushWorkUnitNotification() {}
 
-  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
   {
     String res = target->pushWorkUnit(request);
     target->getNetworkClient()->sendVariable(res);
@@ -38,17 +38,17 @@ public:
 protected:
   friend class PushWorkUnitNotificationClass;
 
-  NetworkRequestPtr request;
+  WorkUnitNetworkRequestPtr request;
 };
 
-class IsWorkUnitFinishedNotification : public ManagerNodeNetworkNotification
+class IsWorkUnitFinishedNotification : public ManagerNetworkNotification
 {
 public:
   IsWorkUnitFinishedNotification(const String& identifier)
     : identifier(identifier) {}
   IsWorkUnitFinishedNotification() {}
   
-  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
   {
     bool res = target->isFinished(identifier);
     target->getNetworkClient()->sendVariable(res);
@@ -60,16 +60,16 @@ protected:
   String identifier;
 };
 
-class GetExecutionTraceNotification : public ManagerNodeNetworkNotification
+class GetExecutionTraceNotification : public ManagerNetworkNotification
 {
 public:
   GetExecutionTraceNotification(const String& identifier)
     : identifier(identifier) {}
   GetExecutionTraceNotification() {}
   
-  virtual void notifyManagerNodeNetwork(const ManagerNodeNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
   {
-    NetworkResponsePtr res = target->getExecutionTrace(identifier);
+    ExecutionTraceNetworkResponsePtr res = target->getExecutionTrace(identifier);
     target->getNetworkClient()->sendVariable(res);
   }
 
@@ -81,4 +81,4 @@ protected:
 
 }; /* namespace */
   
-#endif // !LBCPP_MANAGER_NODE_NETWORK_NOTIFICATION_H_
+#endif // !LBCPP_MANAGER_NETWORK_NOTIFICATION_H_

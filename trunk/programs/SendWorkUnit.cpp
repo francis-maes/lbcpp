@@ -256,10 +256,10 @@ int mainImpl(int argc, char** argv)
   }
   context->informationCallback(managerHostName, T("Connected !"));
 
-  ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(*context, client, source);
+  ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(*context, client, source);
   interface->sendInterfaceClass();
 
-  NetworkRequestPtr request = new NetworkRequest(*context, projectName, source, destination, workUnit, requiredCpus, requiredMemory, requiredTime);
+  WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(*context, projectName, source, destination, workUnit, requiredCpus, requiredMemory, requiredTime);
   String res = interface->pushWorkUnit(request);
   if (res == T("Error"))
   {

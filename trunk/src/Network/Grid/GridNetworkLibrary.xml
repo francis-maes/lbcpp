@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="GridNetwork" directory="Network/Grid">
+
+  <!-- NetworkInterface -->
+  <class name="GridNetworkInterface" base="NetworkInterface" abstract="yes"/>
+  <class name="ClientGridNetworkInterface" base="GridNetworkInterface"/>
+  <class name="SgeGridNetworkInterface" base="GridNetworkInterface"/>
+  <class name="BoincGridNetworkInterface" base="GridNetworkInterface"/>
+  
+  <!-- NetworkNotification -->
+  <class name="GridNetworkNotification" base="NetworkNotification" abstract="yes"/>
+  <class name="PushWorkUnitsNotification" base="GridNetworkNotification">
+    <variable type="Container[WorkUnitNetworkRequest]" name="networkRequests"/>
+  </class>
+  <class name="GetFinishedExecutionTraces" base="GridNetworkNotification"/>
+
+</library>
