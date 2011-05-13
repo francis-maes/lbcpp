@@ -20,16 +20,16 @@ namespace lbcpp
 class RigidBodySpinMoverSampler;
 typedef ReferenceCountedObjectPtr<RigidBodySpinMoverSampler> RigidBodySpinMoverSamplerPtr;
 
-class RigidBodySpinMoverSampler: public CompositeSampler
+class RigidBodySpinMoverSampler : public CompositeSampler
 {
 public:
-  RigidBodySpinMoverSampler() :
-    CompositeSampler(2), numResidue(0)
+  RigidBodySpinMoverSampler()
+    : CompositeSampler(2), numResidue(0)
   {
   }
 
-  RigidBodySpinMoverSampler(size_t numResidue, double meanAmplitude, double stdAmplitude) :
-    CompositeSampler(2), numResidue(numResidue)
+  RigidBodySpinMoverSampler(size_t numResidue, double meanAmplitude, double stdAmplitude)
+    : CompositeSampler(2), numResidue(numResidue)
   {
     // select residue
     sons[0] = Variable(new DualResidueSampler(numResidue, 2));
@@ -37,8 +37,8 @@ public:
     sons[1] = Variable(new GaussianContinuousSampler(meanAmplitude, stdAmplitude));
   }
 
-  RigidBodySpinMoverSampler(const RigidBodySpinMoverSampler& sampler) :
-    CompositeSampler(2), numResidue(sampler.numResidue)
+  RigidBodySpinMoverSampler(const RigidBodySpinMoverSampler& sampler)
+    : CompositeSampler(2), numResidue(sampler.numResidue)
   {
     sons[0] = Variable(new DualResidueSampler(
         *sampler.sons[0].getObjectAndCast<DualResidueSampler> ()));
@@ -57,8 +57,8 @@ public:
   {
     MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
         inputs).getObjectAndCast<Matrix> ();
-    size_t firstResidue = (int)(residues->getElement(0, 0).getDouble());
-    size_t secondResidue = (int)(residues->getElement(1, 0).getDouble());
+    size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
+    size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
     double amplitude = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
         random, inputs).getDouble();
@@ -78,7 +78,7 @@ public:
 
     std::vector<std::pair<Variable, Variable> > datasetResidues;
     std::vector<std::pair<Variable, Variable> > datasetAmplitude;
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       RigidBodySpinMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodySpinMover> ();
       MatrixPtr tempResidue = new DoubleMatrix(2, 1);

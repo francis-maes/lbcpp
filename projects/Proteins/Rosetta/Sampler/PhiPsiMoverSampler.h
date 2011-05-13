@@ -21,17 +21,17 @@ namespace lbcpp
 class PhiPsiMoverSampler;
 typedef ReferenceCountedObjectPtr<PhiPsiMoverSampler> PhiPsiMoverSamplerPtr;
 
-class PhiPsiMoverSampler: public CompositeSampler
+class PhiPsiMoverSampler : public CompositeSampler
 {
 public:
-  PhiPsiMoverSampler() :
-    CompositeSampler(3)
+  PhiPsiMoverSampler()
+    : CompositeSampler(3)
   {
   }
 
   PhiPsiMoverSampler(size_t numResidue, double meanPhi, double stdPhi, double meanPsi,
-      double stdPsi) :
-    CompositeSampler(3)
+      double stdPsi)
+    : CompositeSampler(3)
   {
     // select residue
     sons[0] = Variable(
@@ -42,8 +42,8 @@ public:
     sons[2] = Variable(new GaussianContinuousSampler(meanPsi, stdPsi));
   }
 
-  PhiPsiMoverSampler(const PhiPsiMoverSampler& sampler) :
-    CompositeSampler(3)
+  PhiPsiMoverSampler(const PhiPsiMoverSampler& sampler)
+    : CompositeSampler(3)
   {
     sons[0] = Variable(new SimpleResidueSampler(*sampler.sons[0].getObjectAndCast<
         SimpleResidueSampler> ()));
@@ -86,7 +86,7 @@ public:
     std::vector<std::pair<Variable, Variable> > datasetResidue;
     std::vector<std::pair<Variable, Variable> > datasetPhi;
     std::vector<std::pair<Variable, Variable> > datasetPsi;
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       PhiPsiMoverPtr mover = dataset[i].first.getObjectAndCast<PhiPsiMover> ();
       datasetResidue.push_back(std::pair<Variable, Variable>(Variable(mover->getResidueIndex()),

@@ -18,35 +18,35 @@ namespace lbcpp
 class ParzenContinuousSampler;
 typedef ReferenceCountedObjectPtr<ParzenContinuousSampler> ParzenContinuousSamplerPtr;
 
-class ParzenContinuousSampler: public ContinuousSampler
+class ParzenContinuousSampler : public ContinuousSampler
 {
 public:
-  ParzenContinuousSampler() :
-    ContinuousSampler(), precision(0.0001), excursion(6), kernelWidth(0.25), learned(false),
-        fixedAbscissa(false)
+  ParzenContinuousSampler()
+    : ContinuousSampler(), precision(0.0001), excursion(6), kernelWidth(0.25),
+      learned(false), fixedAbscissa(false)
   {
   }
 
   ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25,
-      double initialMean = 0, double initialStd = 1) :
-    ContinuousSampler(initialMean, initialStd), precision(precision), excursion(excursion),
-        kernelWidth(kernelWidth), learned(false), fixedAbscissa(false)
+      double initialMean = 0, double initialStd = 1)
+    : ContinuousSampler(initialMean, initialStd), precision(precision), excursion(excursion),
+      kernelWidth(kernelWidth), learned(false), fixedAbscissa(false)
   {
   }
 
   ParzenContinuousSampler(double precision, double minAbscissa, double maxAbscissa,
-      double kernelWidth, double initialMean, double initialStd) :
-    ContinuousSampler(initialMean, initialStd), precision(precision), excursion(1), kernelWidth(
-        kernelWidth), learned(false), fixedAbscissa(true)
+      double kernelWidth, double initialMean, double initialStd)
+    : ContinuousSampler(initialMean, initialStd), precision(precision), excursion(1),
+      kernelWidth(kernelWidth), learned(false), fixedAbscissa(true)
   {
     double delta = std::abs((maxAbscissa - minAbscissa) * precision);
     abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
 
-  ParzenContinuousSampler(const ParzenContinuousSampler& sampler) :
-    ContinuousSampler(sampler.mean, sampler.std), learned(sampler.learned), precision(
-        sampler.precision), excursion(sampler.excursion), kernelWidth(sampler.kernelWidth),
-        fixedAbscissa(sampler.fixedAbscissa)
+  ParzenContinuousSampler(const ParzenContinuousSampler& sampler)
+    : ContinuousSampler(sampler.mean, sampler.std), learned(sampler.learned),
+      precision(sampler.precision), excursion(sampler.excursion),
+      kernelWidth(sampler.kernelWidth), fixedAbscissa(sampler.fixedAbscissa)
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     if (learned)
@@ -109,7 +109,10 @@ public:
 
     learned = true;
     mean = getMean(dataset);
-    std = std::sqrt(getVariance(dataset, mean));
+    double temporaryVariance = getVariance(dataset, mean);
+    if (temporaryVariance <= 0)
+      temporaryVariance = juce::jmax(1.0, std::abs(mean * 0.3));
+    std = std::sqrt(temporaryVariance);
 
     double delta = 0;
     if (!fixedAbscissa)
@@ -142,7 +145,7 @@ public:
         frequencies->getNumElements(), 0.0);
 
     double accumulator = 0;
-    for (int j = 0; j < frequencies->getNumElements(); j++)
+    for (size_t j = 0; j < frequencies->getNumElements(); j++)
     {
       accumulator += frequencies->getValue(j);
       if (j == 0)
@@ -170,9 +173,9 @@ public:
     DenseDoubleVectorPtr frequencies = new DenseDoubleVector(actionClass,
         abscissa->getNumElements(), 0.0);
 
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
-      for (int j = 0; j < frequencies->getNumElements(); j++)
+      for (size_t j = 0; j < frequencies->getNumElements(); j++)
       {
         double oldValue = frequencies->getValue(j);
         double inc = std::exp(-std::pow(abscissa->getValue(j) - dataset[i].first.getDouble(), 2)
@@ -183,7 +186,7 @@ public:
 
     double normalize = 1.0 / ((double)dataset.size() * std::sqrt(2 * M_PI * std::pow(
         gaussianDeviation, 2)));
-    for (int i = 0; i < frequencies->getNumElements(); i++)
+    for (size_t i = 0; i < frequencies->getNumElements(); i++)
     {
       double oldValue = frequencies->getValue(i) * normalize;
       frequencies->setValue(i, oldValue);

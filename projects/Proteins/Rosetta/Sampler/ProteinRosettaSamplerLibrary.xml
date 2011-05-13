@@ -15,9 +15,9 @@
     <variable type="GenericVector[DoubleMatrix[Double]]" name="means"/>
     <variable type="GenericVector[DoubleMatrix[Double]]" name="covarianceMatrix"/>
     <variable type="Double" name="tolerance"/>
-    <variable type="Integer" name="maxIt"/>
-    <variable type="Integer" name="numVariables"/>
-    <variable type="Integer" name="numClusters"/>
+    <variable type="PositiveInteger" name="maxIt"/>
+    <variable type="PositiveInteger" name="numVariables"/>
+    <variable type="PositiveInteger" name="numClusters"/>
   </class>
   
   <class name="ParzenContinuousSampler" base="ContinuousSampler">
@@ -49,17 +49,18 @@
   </class>
   
   <class name="SimpleResidueSampler" base="CompositeSampler">
-    <variable type="Integer" name="numResidues" shortName="n" description="The number of residues to sample from."/>
-    <variable type="Integer" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
+    <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+    <variable type="PositiveInteger" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>
   
   <class name="DualResidueSampler" base="CompositeSampler">
-    <variable type="Integer" name="numResidues" shortName="n" description="The number of residues to sample from."/>
-    <variable type="Integer" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
+    <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
+    <variable type="PositiveInteger" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>
     
   <class name="ProteinMoverSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numMover" shortName="n" description="The number of movers to sample from."/>
+    <variable type="GenericVector[PositiveInteger]" name="whichMover"/>
   </class>
   
 </library>

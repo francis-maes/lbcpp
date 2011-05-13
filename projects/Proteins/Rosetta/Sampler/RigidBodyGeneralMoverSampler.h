@@ -20,17 +20,17 @@ namespace lbcpp
 class RigidBodyGeneralMoverSampler;
 typedef ReferenceCountedObjectPtr<RigidBodyGeneralMoverSampler> RigidBodyGeneralMoverSamplerPtr;
 
-class RigidBodyGeneralMoverSampler: public CompositeSampler
+class RigidBodyGeneralMoverSampler : public CompositeSampler
 {
 public:
-  RigidBodyGeneralMoverSampler() :
-    CompositeSampler(3), numResidue(0)
+  RigidBodyGeneralMoverSampler()
+    : CompositeSampler(3), numResidue(0)
   {
   }
 
   RigidBodyGeneralMoverSampler(size_t numResidue, double meanMagnitude, double stdMagnitude,
-      double meanAmplitude, double stdAmplitude) :
-    CompositeSampler(3), numResidue(numResidue)
+      double meanAmplitude, double stdAmplitude)
+    : CompositeSampler(3), numResidue(numResidue)
   {
     // select residue
     sons[0] = Variable(new DualResidueSampler(numResidue, 2));
@@ -40,8 +40,8 @@ public:
     sons[2] = Variable(new GaussianContinuousSampler(meanAmplitude, stdAmplitude));
   }
 
-  RigidBodyGeneralMoverSampler(const RigidBodyGeneralMoverSampler& sampler) :
-    CompositeSampler(3), numResidue(sampler.numResidue)
+  RigidBodyGeneralMoverSampler(const RigidBodyGeneralMoverSampler& sampler)
+    : CompositeSampler(3), numResidue(sampler.numResidue)
   {
     sons[0] = Variable(new DualResidueSampler(
         *sampler.sons[0].getObjectAndCast<DualResidueSampler> ()));
@@ -62,8 +62,8 @@ public:
   {
     MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
         inputs).getObjectAndCast<Matrix> ();
-    size_t firstResidue = (int)(residues->getElement(0, 0).getDouble());
-    size_t secondResidue = (int)(residues->getElement(1, 0).getDouble());
+    size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
+    size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
     double magnitude = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
         random, inputs).getDouble();
@@ -87,7 +87,7 @@ public:
     std::vector<std::pair<Variable, Variable> > datasetResidues;
     std::vector<std::pair<Variable, Variable> > datasetMagnitude;
     std::vector<std::pair<Variable, Variable> > datasetAmplitude;
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       RigidBodyGeneralMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodyGeneralMover> ();
       MatrixPtr tempResidue = new DoubleMatrix(2, 1);

@@ -127,6 +127,14 @@ public:
       }
 
       tempList.sort(compareMovers);
+
+      // TEST
+      std::list<MoverAndScore>::iterator it;
+      std::cout << "============= tempList ===========" << std::endl;
+      for ( it=tempList.begin() ; it != tempList.end(); it++ )
+        printMover((*it).mover);
+      // FIN TEST
+
       moversToKeep.sort(compareMovers);
       while (moversToKeep.size() > numMoversToKeep)
         moversToKeep.pop_back();
@@ -142,7 +150,7 @@ public:
       }
 
       std::vector<MoverAndScore> rest(tempList.size());
-      for (int j = 0; j < tempList.size(); j++)
+      for (int j = 0; j < rest.size(); j++)
       {
         rest[j] = MoverAndScore(tempList.front());
         tempList.pop_front();
@@ -152,27 +160,20 @@ public:
       random->sampleOrder((size_t)(rest.size()), ordering);
 
       for (int j = 0; j < numLearningSamplesSecondPass; j++)
-      {
-        // TEST
-        std::cout << "on passe ici " << numLearningSamplesFirstPass + j << std::endl;
-        //FIN TEST
         moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
-      }
 
       // TEST
       std::cout << "numLearningSamples : " << numLearningSamples << std::endl;
       std::cout << "numLearningSamplesFirstPass : " <<  numLearningSamplesFirstPass << std::endl;
       std::cout << "numLearningSampelsSecondPass : " << numLearningSamplesSecondPass << std::endl;
-      std::cout << "chosen movers : " << moversVector.size() << std::endl;
+      std::cout << "======================= chosen movers : " << moversVector.size() << "==================== "<< std::endl;
       for (int j = 0; j < moversVector.size(); j++)
       {
-        std::cout << "on passe par ici  : affichage du  mover" << j << std::endl;
         printMover(moversVector[j].mover);
       }
-      std::cout << "affichage de rest : " << rest.size() << std::endl;
+      std::cout << "=================== affichage de rest : ========================" << rest.size() << std::endl;
       for (int j = 0; j < rest.size(); j++)
       {
-        std::cout << "rest  : affichage du  mover" << j << std::endl;
         printMover(rest[j].mover);
       }
       // FIN TEST
@@ -190,11 +191,14 @@ public:
       // FIN TEST
     }
 
+    // TEST
+    std::cout << " ==================== best ever movers =====================" << std::endl;
+    // FIN TEST
+
     movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
     for (int i = 0; i < numMoversToKeep; i++)
     {
       // TEST
-      std::cout << "best ever movers" << std::endl;
       printMover(moversToKeep.front().mover);
       std::cout << "score : " << moversToKeep.front().score << std::endl;
       // FIN TEST

@@ -18,21 +18,21 @@ namespace lbcpp
 class GaussianContinuousSampler;
 typedef ReferenceCountedObjectPtr<GaussianContinuousSampler> GaussianContinuousSamplerPtr;
 
-class GaussianContinuousSampler: public ContinuousSampler
+class GaussianContinuousSampler : public ContinuousSampler
 {
 public:
-  GaussianContinuousSampler() :
-    ContinuousSampler()
+  GaussianContinuousSampler()
+    : ContinuousSampler()
   {
   }
 
-  GaussianContinuousSampler(double mean, double std) :
-    ContinuousSampler(mean, std)
+  GaussianContinuousSampler(double mean, double std)
+    : ContinuousSampler(mean, std)
   {
   }
 
-  GaussianContinuousSampler(const GaussianContinuousSampler& sampler) :
-    ContinuousSampler(sampler.mean, sampler.std)
+  GaussianContinuousSampler(const GaussianContinuousSampler& sampler)
+    : ContinuousSampler(sampler.mean, sampler.std)
   {
   }
 
@@ -59,6 +59,8 @@ public:
       return;
     double temporaryMean = getMean(dataset);
     double temporaryVariance = getVariance(dataset, temporaryMean);
+    if (temporaryVariance <= 0)
+      temporaryVariance = juce::jmax(1.0, std::abs(temporaryMean * 0.3));
 
     mean = temporaryMean;
     std = std::sqrt(temporaryVariance) >= std::pow(10.0, -5) ? std::sqrt(temporaryVariance)

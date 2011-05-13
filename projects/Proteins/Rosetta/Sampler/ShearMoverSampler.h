@@ -21,16 +21,16 @@ namespace lbcpp
 class ShearMoverSampler;
 typedef ReferenceCountedObjectPtr<ShearMoverSampler> ShearMoverSamplerPtr;
 
-class ShearMoverSampler: public CompositeSampler
+class ShearMoverSampler : public CompositeSampler
 {
 public:
-  ShearMoverSampler() :
-    CompositeSampler(3)
+  ShearMoverSampler()
+    : CompositeSampler(3)
   {
   }
 
-  ShearMoverSampler(size_t numResidue, double meanPhi, double stdPhi, double meanPsi, double stdPsi) :
-    CompositeSampler(3)
+  ShearMoverSampler(size_t numResidue, double meanPhi, double stdPhi, double meanPsi, double stdPsi)
+    : CompositeSampler(3)
   {
     // select residue
     sons[0] = Variable(
@@ -41,8 +41,8 @@ public:
     sons[2] = Variable(new GaussianContinuousSampler(meanPsi, stdPsi));
   }
 
-  ShearMoverSampler(const ShearMoverSampler& sampler) :
-    CompositeSampler(3)
+  ShearMoverSampler(const ShearMoverSampler& sampler)
+    : CompositeSampler(3)
   {
     sons[0] = Variable(new SimpleResidueSampler(*sampler.sons[0].getObjectAndCast<
         SimpleResidueSampler> ()));
@@ -85,7 +85,7 @@ public:
     std::vector<std::pair<Variable, Variable> > datasetResidue;
     std::vector<std::pair<Variable, Variable> > datasetPhi;
     std::vector<std::pair<Variable, Variable> > datasetPsi;
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       ShearMoverPtr mover = dataset[i].first.getObjectAndCast<ShearMover> ();
       datasetResidue.push_back(std::pair<Variable, Variable>(Variable(mover->getResidueIndex()),
