@@ -33,7 +33,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
       continue;
 
     String connectedHostName = client->getConnectedHostName();
-    context.informationCallback(connectedHostName, T("Connected"));
+    context.informationCallback(connectedHostName, T("Connected at ") + Time::getCurrentTime().toString(true, true, true, true));
     
     /* Which kind of connection ? */
     NetworkInterfacePtr remoteInterface;
@@ -68,7 +68,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     }
     
     /* Terminate the connection */
-    context.informationCallback(connectedHostName, T("Disconnected"));
+    context.informationCallback(connectedHostName, T("Disconnected at ") + Time::getCurrentTime().toString(true, true, true, true));
   }
 }
 
@@ -84,7 +84,10 @@ void ManagerWorkUnit::serverCommunication(ExecutionContext& context, const Manag
     }
 
     if (notification.dynamicCast<CloseCommunicationNotification>())
+    {
+      context.informationCallback(T("Disconnected"));
       client->stopClient();
+    }
 
     notification->notifyNetwork(interface, client);
   }
@@ -177,11 +180,11 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   NetworkClientPtr client = blockingNetworkClient(context, 3);
   if (!client->startClient(hostName, port))
   {
-    context.warningCallback(T("NetworkContext::run"), T("Connection to ") + hostName.quoted() + (" fail !"));
+    context.warningCallback(hostName, T("Not connected !"));
     client->stopClient();
     return Variable();
   }
-  context.informationCallback(T("NetworkContext::run"), T("Connected to ") + hostName + T(":") + String((int)port));
+  context.informationCallback(hostName, T("Connected to ") + hostName + T(":") + String((int)port) + T(" at ") + Time::getCurrentTime().toString(true, true, true, true));
   
   NetworkInterfacePtr interface;
   if (gridEngine == T("SGE"))
@@ -201,9 +204,16 @@ Variable GridWorkUnit::run(ExecutionContext& context)
     NetworkNotificationPtr notification;
     if (!client->receiveObject<NetworkNotification>(300000, notification) || !notification)
     {
-      context.warningCallback(T("NetworkContext::run"), T("No notification received"));
+      context.warningCallback(hostName, T("No notification received at ") + Time::getCurrentTime().toString(true, true, true, true));
       return false;
     }
+
+    if (notification.dynamicCast<CloseCommunicationNotification>())
+    {
+      context.informationCallback(hostName, T("Disconnected at ") + Time::getCurrentTime().toString(true, true, true, true));
+      client->stopClient();
+    }
+
     notification->notifyNetwork(interface, client);
   }
   return true;
