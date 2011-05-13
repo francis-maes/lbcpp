@@ -89,63 +89,42 @@ public:
 
     ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
 
-    std::vector<std::pair<Variable, Variable> > learning;
+    std::vector<Variable> learning;
 
     // phipsi
-    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(1, 34, -123)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(0, 30, -122)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(2, 27, -121)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new PhiPsiMover(3, 33, -121)),
-        Variable()));
+    learning.push_back(new PhiPsiMover(1, 34, -123));
+    learning.push_back(new PhiPsiMover(0, 30, -122));
+    learning.push_back(new PhiPsiMover(2, 27, -121));
+    learning.push_back(new PhiPsiMover(3, 33, -121));
+
     // shear
-    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(3, 0.9, 4.5)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(4, 0.7, 4.3)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new ShearMover(3, 0.8, 3.4)),
-        Variable()));
+    learning.push_back(new ShearMover(3, 0.9, 4.5));
+    learning.push_back(new ShearMover(4, 0.7, 4.3));
+    learning.push_back(new ShearMover(3, 0.8, 3.4));
+
     // general
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(3, 5, 2.8,
-        -3.4)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(3, 5, 2.5,
-        -2.4)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.8,
-        3.4)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(0, 4, 1.2,
-        2.4)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(2, 4, 0.3,
-        3.4)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.76,
-        4.2)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(1, 3, 0.76,
-        4.2)), Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyGeneralMover(0, 3, 1.01,
-        4)), Variable()));
+    learning.push_back(new RigidBodyGeneralMover(3, 5, 2.8, -3.4));
+    learning.push_back(new RigidBodyGeneralMover(3, 5, 2.5, -2.4));
+    learning.push_back(new RigidBodyGeneralMover(1, 3, 0.8, 3.4));
+    learning.push_back(new RigidBodyGeneralMover(0, 4, 1.2, 2.4));
+    learning.push_back(new RigidBodyGeneralMover(2, 4, 0.3, 3.4));
+    learning.push_back(new RigidBodyGeneralMover(1, 3, 0.76, 4.2));
+    learning.push_back(new RigidBodyGeneralMover(1, 3, 0.76, 4.2));
+    learning.push_back(new RigidBodyGeneralMover(0, 3, 1.01, 4));
+
     // spin
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(0, 3, 11.3)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(1, 3, 12.4)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(3, 5, 9.3)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodySpinMover(2, 5, 10.2)),
-        Variable()));
+    learning.push_back(new RigidBodySpinMover(0, 3, 11.3));
+    learning.push_back(new RigidBodySpinMover(1, 3, 12.4));
+    learning.push_back(new RigidBodySpinMover(3, 5, 9.3));
+    learning.push_back(new RigidBodySpinMover(2, 5, 10.2));
+
     // trans
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 1, 10.2)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 1, 9.2)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(4, 0, 12.1)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(1, 3, -0.3)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(0, 2, -2.1)),
-        Variable()));
-    learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(0, 3, -1.3)),
-        Variable()));
+    learning.push_back(new RigidBodyTransMover(4, 1, 10.2));
+    learning.push_back(new RigidBodyTransMover(4, 1, 9.2));
+    learning.push_back(new RigidBodyTransMover(4, 0, 12.1));
+    learning.push_back(new RigidBodyTransMover(1, 3, -0.3));
+    learning.push_back(new RigidBodyTransMover(0, 2, -2.1));
+    learning.push_back(new RigidBodyTransMover(0, 3, -1.3));
 
     samp->learn(context, learning);
     random = new RandomGenerator(0);

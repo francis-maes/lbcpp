@@ -62,7 +62,7 @@ public:
    * dataset = first : a Variable of integer type that corresponds to the element observed.
    *           second : not yet used.
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2)
       return;
@@ -73,7 +73,7 @@ public:
     double increment = 1.0 / (double)dataset.size();
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      size_t index = dataset[i].first.getInteger();
+      size_t index = dataset[i].getInteger();
       empiricalFrequencies->setValue(index, empiricalFrequencies->getValue(index) + increment);
     }
 

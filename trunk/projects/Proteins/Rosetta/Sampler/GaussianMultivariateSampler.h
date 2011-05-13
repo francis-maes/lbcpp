@@ -109,7 +109,7 @@ public:
     return Variable(result);
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2 * numClusters)
     {
@@ -119,7 +119,7 @@ public:
 
     std::vector<MatrixPtr> vals(dataset.size());
     for (size_t i = 0; i < dataset.size(); i++)
-      vals[i] = dataset[i].first.getObjectAndCast<Matrix> ();
+      vals[i] = dataset[i].getObjectAndCast<Matrix> ();
 
     double oldLL = computeLogLikelihood(vals, probabilities, means, covarianceMatrix);
     double newLL = oldLL + 2 * oldLL * tolerance;

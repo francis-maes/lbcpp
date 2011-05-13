@@ -176,11 +176,9 @@ public:
       }
       // FIN TEST
 
-      std::vector<std::pair<Variable, Variable> > dataset(numLearningSamples);
+      std::vector<Variable> dataset(numLearningSamples);
       for (size_t j = 0; j < numLearningSamples; j++)
-        dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[j].mover),
-            Variable());
-
+        dataset[j] = moversVector[j].mover;
       workingSampler->learn(context, dataset);
 
       // TEST

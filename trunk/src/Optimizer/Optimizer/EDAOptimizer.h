@@ -96,11 +96,11 @@ protected:
     if (samplerBasedState)
     {
       SamplerPtr sampler = samplerBasedState->getSampler();
-      std::vector<std::pair<Variable, Variable> > dataset;
+      std::vector<Variable> dataset;
       dataset.reserve(numBests);
       std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
       for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        dataset.push_back(std::make_pair(it->second, Variable()));
+        dataset.push_back(it->second);
 
       sampler->learn(context, dataset);
       return;

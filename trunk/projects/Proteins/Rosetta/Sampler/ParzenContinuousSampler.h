@@ -80,16 +80,16 @@ public:
    *           second : not yet used.
    */
 
-  static void getMeanAndVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double& mean, double& variance)
+  static void getMeanAndVariance(const std::vector<Variable>& dataset, double& mean, double& variance)
   {
     ScalarVariableMeanAndVariance v;
     for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].first.getDouble());
+      v.push(dataset[i].getDouble());
     mean = v.getMean();
     variance = v.getVariance();
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2)
       return;
@@ -152,7 +152,7 @@ public:
    * Creates the frequencies of the data provided, i.e. its probability density function.
    */
   DenseDoubleVectorPtr createFrequencies(
-      const std::vector<std::pair<Variable, Variable> >& dataset, DenseDoubleVectorPtr& abscissa,
+      const std::vector<Variable>& dataset, DenseDoubleVectorPtr& abscissa,
       double gaussianDeviation)
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
@@ -164,7 +164,7 @@ public:
       for (size_t j = 0; j < frequencies->getNumElements(); j++)
       {
         double oldValue = frequencies->getValue(j);
-        double inc = std::exp(-std::pow(abscissa->getValue(j) - dataset[i].first.getDouble(), 2)
+        double inc = std::exp(-std::pow(abscissa->getValue(j) - dataset[i].getDouble(), 2)
             / (2 * std::pow(gaussianDeviation, 2)));
         frequencies->setValue(j, oldValue + inc);
       }

@@ -36,20 +36,20 @@ public:
     return res;
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     size_t n = samplers.size();
 
-    std::vector< std::vector<std::pair<Variable, Variable> > > subDatasets(n);
+    std::vector< std::vector<Variable> > subDatasets(n);
     for (size_t i = 0; i < n; ++i)
       subDatasets[i].resize(dataset.size());
 
     for (size_t i = 0; i < dataset.size(); ++i)
     {
-      const DenseDoubleVectorPtr& vector = dataset[i].first.getObjectAndCast<DenseDoubleVector>();
+      const DenseDoubleVectorPtr& vector = dataset[i].getObjectAndCast<DenseDoubleVector>();
       jassert(vector->getNumElements() == samplers.size());
       for (size_t j = 0; j < n; ++j)
-        subDatasets[j][i].first = vector->getValue(j);
+        subDatasets[j][i] = vector->getValue(j);
     }
 
     for (size_t i = 0; i < n; ++i)

@@ -36,16 +36,29 @@ public:
    *           second : not yet used.
    */
 
-  static void getMeanAndVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double& mean, double& variance)
+#if 1
+  // new
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     ScalarVariableMeanAndVariance v;
     for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].first.getDouble());
+      v.push(dataset[i].getDouble());
+    mean = v.getMean();
+    stddev = v.getStandardDeviation();
+  }
+
+#else
+  // old
+  static void getMeanAndVariance(const std::vector<Variable>& dataset, double& mean, double& variance)
+  {
+    ScalarVariableMeanAndVariance v;
+    for (size_t i = 0; i < dataset.size(); i++)
+      v.push(dataset[i].getDouble());
     mean = v.getMean();
     variance = v.getVariance();
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2)
       return;
@@ -59,6 +72,7 @@ public:
     stddev = std::sqrt(temporaryVariance) >= std::pow(10.0, -5) ? std::sqrt(temporaryVariance)
         : std::pow(10.0, -5);
   }
+#endif 
 
 protected:
   friend class GaussianSamplerClass;

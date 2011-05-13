@@ -53,23 +53,23 @@ public:
    * dataset = first : a Variable of integer type containing the residue observed.
    *           second : not yet used.
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if ((dataset.size() < 2) || (numResidues <= 0))
       return;
 
-    std::vector<std::pair<Variable, Variable> > data;
+    std::vector<Variable> data;
     double scaleFactor = (double)MAX_INTERVAL_VALUE / (double)numResidues;
     double varianceIncrement = (double)residuesDeviation * scaleFactor;
 
     RandomGeneratorPtr random = new RandomGenerator(); // francis: I do not understand why random is needed here ..
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      size_t res = (size_t)dataset[i].first.getInteger();
+      size_t res = (size_t)dataset[i].getInteger();
       double value = (double)res * scaleFactor;
       value = std::abs(value + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
       value = value > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - value : value;
-      data.push_back(std::pair<Variable, Variable>(Variable(value), Variable()));
+      data.push_back(value);
     }
 
     samplers[0]->learn(context, data);

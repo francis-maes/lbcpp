@@ -117,19 +117,19 @@ public:
    * expressed in terms of their integer value represented in double.
    *           second : not yet used.
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if ((dataset.size() < 2) || (numResidues <= 0))
       return;
 
-    std::vector<std::pair<Variable, Variable> > data;
+    std::vector<Variable> data;
     double scaleFactor = (double)MAX_INTERVAL_VALUE_DUAL / (double)numResidues;
     double varianceIncrement = (double)residuesDeviation * scaleFactor;
     
     RandomGeneratorPtr random = new RandomGenerator(); // francis: I do not understand why random is needed here ..
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      MatrixPtr residuePair = dataset[i].first.getObjectAndCast<Matrix> ();
+      MatrixPtr residuePair = dataset[i].getObjectAndCast<Matrix> ();
       size_t res1 = (size_t)(residuePair->getElement(0, 0).getDouble());
       size_t res2 = (size_t)(residuePair->getElement(1, 0).getDouble());
       double value1 = (double)res1 * scaleFactor;
@@ -140,10 +140,11 @@ public:
       value2 = std::abs(value2 + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
       value2 = value2 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL)
           - value2) : value2;
-      residuePair = new DoubleMatrix(2, 1);
-      residuePair->setElement(0, 0, Variable(value1));
-      residuePair->setElement(1, 0, Variable(value2));
-      data.push_back(std::pair<Variable, Variable>(Variable(residuePair), Variable()));
+      
+      DoubleMatrixPtr residuePair2 = new DoubleMatrix(2, 1);
+      residuePair2->setValue(0, 0, value1);
+      residuePair2->setValue(1, 0, value2);
+      data.push_back(residuePair2);
     }
 
     samplers[0]->learn(context, data);
