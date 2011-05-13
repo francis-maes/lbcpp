@@ -58,12 +58,12 @@ public:
     : CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    sons[0] = new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover));
+    samplers[0] = new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover));
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler>();
-      sons[i + 1] = t;
+      samplers[i + 1] = t;
 
       if (t.isInstanceOf<PhiPsiMoverSampler> ())
         whichMover[phipsi] = i;
@@ -83,12 +83,12 @@ public:
       numMover(probabilitiesMover->getNumElements())
   {
     // select mover
-    sons[0] = new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover));
+    samplers[0] = new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover));
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
-      sons[i + 1] = t;
+      samplers[i + 1] = t;
       
       if (t.isInstanceOf<PhiPsiMoverSampler> ())
         whichMover[phipsi] = i;
@@ -106,8 +106,8 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t indexMover = sons[0]->sample(context, random, inputs).getInteger();
-    SamplerPtr sampler = sons[indexMover + 1];
+    size_t indexMover = samplers[0]->sample(context, random, inputs).getInteger();
+    SamplerPtr sampler = samplers[indexMover + 1];
     return sampler->sample(context, random, inputs);
   }
 
@@ -179,9 +179,9 @@ public:
       }
     }
 
-    sons[0]->learn(context, moverFrequencies);
+    samplers[0]->learn(context, moverFrequencies);
     for (size_t i = 0; i < numMover; i++)
-      sons[i + 1]->learn(context, samples[i]);
+      samplers[i + 1]->learn(context, samples[i]);
   }
 
 protected:

@@ -28,9 +28,9 @@ public:
     : CompositeSampler(2), numResidue(numResidue)
   {
     // select residue
-    sons[0] = new DualResidueSampler(numResidue, 2);
+    samplers[0] = new DualResidueSampler(numResidue, 2);
     // select amplitude
-    sons[1] = gaussianSampler(meanAmplitude, stdAmplitude);
+    samplers[1] = gaussianSampler(meanAmplitude, stdAmplitude);
   }
 
   RigidBodySpinMoverSampler() : numResidue(0) {}
@@ -38,11 +38,11 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr residues = sons[0]->sample(context, random, inputs).getObjectAndCast<Matrix> ();
+    MatrixPtr residues = samplers[0]->sample(context, random, inputs).getObjectAndCast<Matrix> ();
     size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
     size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
-    double amplitude = sons[1]->sample(context, random, inputs).getDouble();
+    double amplitude = samplers[1]->sample(context, random, inputs).getDouble();
     RigidBodySpinMoverPtr mover = new RigidBodySpinMover(firstResidue, secondResidue, amplitude);
     return Variable(mover);
   }
@@ -68,8 +68,8 @@ public:
       datasetAmplitude.push_back(std::pair<Variable, Variable>(Variable(mover->getAmplitude()),
           Variable()));
     }
-    sons[0]->learn(context, datasetResidues);
-    sons[1]->learn(context, datasetAmplitude);
+    samplers[0]->learn(context, datasetResidues);
+    samplers[1]->learn(context, datasetAmplitude);
   }
 
 protected:

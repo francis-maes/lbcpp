@@ -65,13 +65,13 @@ public:
     GaussianMultivariateSamplerPtr p = new GaussianMultivariateSampler(1000, 0.001, probabilities,
         means, covarianceMatrix);
 
-    sons[0] = p;
+    samplers[0] = p;
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr temp = sons[0]->sample(context, random, NULL).getObjectAndCast<Matrix>();
+    MatrixPtr temp = samplers[0]->sample(context, random, NULL).getObjectAndCast<Matrix>();
     double rand1 = std::abs(temp->getElement(0, 0).getDouble());
     double rand2 = std::abs(temp->getElement(1, 0).getDouble());
     rand1 = rand1 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand1)
@@ -146,7 +146,7 @@ public:
       data.push_back(std::pair<Variable, Variable>(Variable(residuePair), Variable()));
     }
 
-    sons[0]->learn(context, data);
+    samplers[0]->learn(context, data);
   }
 
 protected:

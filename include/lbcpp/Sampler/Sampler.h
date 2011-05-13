@@ -11,13 +11,14 @@
 
 # include "../Data/RandomGenerator.h"
 # include "../Core/Variable.h"
+# include "../Core/Vector.h"
 
 namespace lbcpp
 { 
-  
-class Sampler;
-typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
+/*
+** Sampler Base Class
+*/
 class Sampler : public Object
 {
 public:
@@ -25,65 +26,57 @@ public:
 
   virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset) = 0;
 
+  lbcpp_UseDebuggingNewOperator
+
 protected:
   friend class SamplerClass;
 };
+typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
-class ContinuousSampler;
-typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
-
+/*
+** Continuous Sampler
+*/
 class ContinuousSampler : public Sampler
 {
-public:/*
-  ContinuousSampler()
-    : mean(0), std(1)
-  {
-  }
+public:
+  virtual double computeExpectation(const Variable* inputs = NULL) const
+    {jassert(false); return 0.0;}
 
-  ContinuousSampler(double mean, double std)
-    : mean(mean), std(std)
-  {
-  }*/
-
-  /**
-   * dataset = first : a Variable of double type containing the data observed.
-   *           second : not yet used.
-   */
-  double getMean(const std::vector<std::pair<Variable, Variable> >& dataset)
-  {
-    double temporaryMean = 0;
-    if (dataset.size() > 0)
-    {
-      for (size_t i = 0; i < dataset.size(); i++)
-        temporaryMean += dataset[i].first.getDouble();
-      temporaryMean = temporaryMean / dataset.size();
-    }
-    return temporaryMean;
-  }
-
-  /**
-   * dataset = first : a Variable of double type containing the data observed.
-   *           second : not yet used.
-   */
-  double getVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double mean)
-  {
-    double temporaryVariance = 0;
-    if (dataset.size() > 0)
-    {
-      for (size_t i = 0; i < dataset.size(); i++)
-        temporaryVariance += std::pow(dataset[i].first.getDouble() - mean, 2);
-      temporaryVariance = temporaryVariance / dataset.size();
-    }
-    return temporaryVariance;
-  }
-
-protected:
-//  friend class ContinuousSamplerClass;
-//  double mean;
-//  double std;
+  lbcpp_UseDebuggingNewOperator
 };
+typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 
 extern ContinuousSamplerPtr gaussianSampler(double mean, double stddev);
+
+/*
+** Discrete Sampler
+*/
+class DiscreteSampler : public Sampler
+{
+public:
+  lbcpp_UseDebuggingNewOperator
+};
+typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
+
+/*
+** Composite Sampler
+*/
+class CompositeSampler : public Sampler
+{
+public:
+  CompositeSampler(size_t numSamplers)
+    : samplers(numSamplers) {}
+  CompositeSampler() {}
+
+  lbcpp_UseDebuggingNewOperator
+
+protected:
+  friend class CompositeSamplerClass;
+
+  std::vector<SamplerPtr> samplers;
+};
+
+typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 
 }; /* namespace lbcpp */
 

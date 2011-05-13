@@ -10,6 +10,7 @@
 # define LBCPP_SAMPLER_CONTINUOUS_GAUSSIAN_H_
 
 # include <lbcpp/Sampler/Sampler.h>
+# include <lbcpp/Data/RandomVariable.h>
 
 namespace lbcpp
 {
@@ -24,6 +25,9 @@ public:
     : mean(mean), stddev(stddev)
     {}
 
+  virtual double computeExpectation(const Variable* inputs = NULL) const
+    {return mean;}
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleDoubleFromGaussian(mean, stddev);}
 
@@ -31,12 +35,23 @@ public:
    * dataset = first : a Variable of double type containing the data observed.
    *           second : not yet used.
    */
+
+  static void getMeanAndVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double& mean, double& variance)
+  {
+    ScalarVariableMeanAndVariance v;
+    for (size_t i = 0; i < dataset.size(); i++)
+      v.push(dataset[i].first.getDouble());
+    mean = v.getMean();
+    variance = v.getVariance();
+  }
+
   virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2)
       return;
-    double temporaryMean = getMean(dataset);
-    double temporaryVariance = getVariance(dataset, temporaryMean);
+    double temporaryMean;
+    double temporaryVariance;
+    getMeanAndVariance(dataset, temporaryMean, temporaryVariance);
     if (temporaryVariance <= 0)
       temporaryVariance = juce::jmax(1.0, std::abs(temporaryMean * 0.3));
 

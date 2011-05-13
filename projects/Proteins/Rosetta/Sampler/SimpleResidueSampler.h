@@ -34,13 +34,13 @@ public:
   {
     ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001, -1 * MAX_INTERVAL_VALUE,
         2 * MAX_INTERVAL_VALUE, 1.0 / 2.0, 0.5 * MAX_INTERVAL_VALUE, 0.25 * MAX_INTERVAL_VALUE);
-    sons[0] = temp;
+    samplers[0] = temp;
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    double rand = std::abs(sons[0]->sample(context, random, NULL).getDouble());
+    double rand = std::abs(samplers[0]->sample(context, random, NULL).getDouble());
     rand = rand > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - rand : rand;
 
     size_t residue = (size_t)std::floor(rand * (double)numResidues / (double)MAX_INTERVAL_VALUE);
@@ -72,7 +72,7 @@ public:
       data.push_back(std::pair<Variable, Variable>(Variable(value), Variable()));
     }
 
-    sons[0]->learn(context, data);
+    samplers[0]->learn(context, data);
   }
 
 protected:
