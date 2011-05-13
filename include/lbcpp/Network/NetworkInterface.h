@@ -20,8 +20,6 @@ class NetworkInterface : public NameableObject
 public:
   NetworkInterface(ExecutionContext& context, const String& name = String::empty)
     : NameableObject(name), context(context) {}
-  NetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name = String::empty)
-    : NameableObject(name), context(context), client(client) {}
   NetworkInterface()
     : context(*(ExecutionContext*)NULL) {}
 
@@ -31,32 +29,37 @@ public:
   ExecutionContext& getContext() const
     {return context;}
 
-  void setNetworkClient(NetworkClientPtr client)
-    {this->client = client;}
-
-  NetworkClientPtr getNetworkClient() const
-    {return client;}
-
-  virtual void sendInterfaceClass()
-    {client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(this));}
-
-  virtual void closeCommunication()
-    {client->stopClient();}
-
 protected:
   friend class NetworkInterfaceClass;
 
   ExecutionContext& context;
-  NetworkClientPtr client;
 };
 
 typedef ReferenceCountedObjectPtr<NetworkInterface> NetworkInterfacePtr;
 
+template<class BaseClass>
+class ForwarderNetworkInterface : public BaseClass
+{
+public:
+  ForwarderNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name)
+    : BaseClass(context, name), client(client) {}
+  ForwarderNetworkInterface() {}
+  
+  void setNetworkClient(NetworkClientPtr client)
+    {this->client = client;}
+  
+  NetworkClientPtr getNetworkClient() const
+    {return client;}
+
+protected:
+  NetworkClientPtr client;
+};
+
 class ManagerNetworkInterface : public NetworkInterface
 {
 public:
-  ManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name)
-    : NetworkInterface(context, client, name) {}
+  ManagerNetworkInterface(ExecutionContext& context, const String& name)
+    : NetworkInterface(context, name) {}
   ManagerNetworkInterface() {}
 
   virtual String pushWorkUnit(WorkUnitNetworkRequestPtr request) = 0;
@@ -66,13 +69,13 @@ public:
 
 typedef ReferenceCountedObjectPtr<ManagerNetworkInterface> ManagerNetworkInterfacePtr;
 
-extern ManagerNetworkInterfacePtr clientManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+extern ManagerNetworkInterfacePtr forwarderManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
 
 class GridNetworkInterface : public NetworkInterface
 {
 public:
-  GridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : NetworkInterface(context, client, nodeName) {}
+  GridNetworkInterface(ExecutionContext& context, const String& nodeName)
+    : NetworkInterface(context, nodeName) {}
   GridNetworkInterface() {}
 
   // input : containerClass(networkRequestClass)

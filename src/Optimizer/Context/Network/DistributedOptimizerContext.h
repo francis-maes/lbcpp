@@ -13,6 +13,7 @@
 # include <lbcpp/Execution/WorkUnit.h>
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
+# include <lbcpp/Network/NetworkNotification.h>
 
 namespace lbcpp
 {
@@ -41,20 +42,23 @@ public:
     {return timeToSleep;}
   
   virtual bool evaluate(const Variable& parameters)
-  {   
-    ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect();
+  {
+    NetworkClientPtr client;
+    ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(client);
+    
     if (!interface)
       return false;
     WorkUnitPtr wu = new FunctionWorkUnit(objectiveFunction, parameters);
     String res = sendWU(wu, interface);
     
+    client->sendVariable(new CloseCommunicationNotification());
+    client->stopClient();
+    
     if (res == T("Error"))
     {
       context.errorCallback(T("DistributedOptimizerContext::evaluate"), T("Trouble - We didn't correclty receive the acknowledgement"));
-      interface->closeCommunication();
       return false;
     }
-    interface->closeCommunication();
     
     {
       ScopedLock _(inProgressWUsLock);
@@ -85,16 +89,17 @@ protected:
 
   GetFinishedExecutionTracesDaemon* getFinishedTracesThread;
   
-  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect() const
+  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(NetworkClientPtr& client) const
   {       
-    NetworkClientPtr client = blockingNetworkClient(context);
+    client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
     {
       context.errorCallback(T("DistributedOptimizerContext::getNetworkInterfaceAndConnect"), T("Not connected !"));
-      return NULL;
+      client = NetworkClientPtr();
+      return ManagerNetworkInterfacePtr();
     }
-    ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, source);
-    interface->sendInterfaceClass();
+    ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, source);
+    client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
     return interface;
   }
   
@@ -120,7 +125,8 @@ public:
       sleep(optimizerContext->timeToSleep);
        
       // handle finished WUs
-      ManagerNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect();
+      NetworkClientPtr client;
+      ManagerNetworkInterfacePtr interface = optimizerContext->getNetworkInterfaceAndConnect(client);
       if (!interface) 
         continue;
       
@@ -186,7 +192,8 @@ public:
             ++it;
         }
       }
-      interface->closeCommunication();
+      client->sendVariable(new CloseCommunicationNotification());
+      client->stopClient();
     }
   }
   

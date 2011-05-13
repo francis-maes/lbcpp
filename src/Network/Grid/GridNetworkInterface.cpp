@@ -13,14 +13,7 @@
 using namespace lbcpp;
 
 /* ClientGridNetworkInterface */
-void ClientGridNetworkInterface::closeCommunication()
-{
-  client->sendVariable(new CloseCommunicationNotification());
-  client->stopClient();
-  return;
-}
-
-ContainerPtr ClientGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
+ContainerPtr ForwarderGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   client->sendVariable(new PushWorkUnitsNotification(networkRequests));
   ContainerPtr res;
@@ -29,7 +22,7 @@ ContainerPtr ClientGridNetworkInterface::pushWorkUnits(ContainerPtr networkReque
   return res;
 }
 
-ContainerPtr ClientGridNetworkInterface::getFinishedExecutionTraces()
+ContainerPtr ForwarderGridNetworkInterface::getFinishedExecutionTraces()
 {
   client->sendVariable(new GetFinishedExecutionTraces());
   ContainerPtr res;
@@ -40,14 +33,14 @@ ContainerPtr ClientGridNetworkInterface::getFinishedExecutionTraces()
   return res;
 }
 
-void ClientGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
+void ForwarderGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponses)
 {
   jassertfalse;
 }
 
 /* SgeGridNetworkInterface */
 SgeGridNetworkInterface::SgeGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
-  : GridNetworkInterface(context, client, Name)
+  : GridNetworkInterface(context, Name)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("PreProcessing"));
@@ -109,7 +102,7 @@ void SgeGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponse
 
 /* BoincGridNetworkInterface */
 BoincGridNetworkInterface::BoincGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
-  : GridNetworkInterface(context, client, Name)
+  : GridNetworkInterface(context, Name)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("Waiting"));

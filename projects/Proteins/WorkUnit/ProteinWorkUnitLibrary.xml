@@ -119,6 +119,8 @@
     <variable type="File" name="spxFile"/>
     <variable type="File" name="outputDirectory"/>
   </class>
+  
+  <class name="CheckManagerWorkUnit" base="WorkUnit"/>
 
   <class name="DebugWorkUnit" base="WorkUnit"/>
 

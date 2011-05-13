@@ -19,16 +19,17 @@ class NetworkNotification : public Notification
 {
 public:
   virtual void notify(const ObjectPtr& target)
-    {notifyNetwork(target);}
+    {notifyNetwork(target, NetworkClientPtr());}
 
-  virtual void notifyNetwork(const NetworkInterfacePtr& target) = 0;
+  virtual void notifyNetwork(const NetworkInterfacePtr& target, const NetworkClientPtr& client) = 0;
 };
+
+typedef ReferenceCountedObjectPtr<NetworkNotification> NetworkNotificationPtr;
 
 class CloseCommunicationNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNetwork(const NetworkInterfacePtr& target)
-    {target->closeCommunication();}
+  virtual void notifyNetwork(const NetworkInterfacePtr& target, const NetworkClientPtr& client) {}
 };
 
 }; /* namespace */

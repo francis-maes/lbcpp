@@ -8,6 +8,8 @@
 #include "precompiled.h"
 #include "ExplorerProject.h"
 #include "WorkUnitManager/NewWorkUnitDialogWindow.h"
+#include <lbcpp/Network/NetworkNotification.h>
+
 using namespace lbcpp;
 
 ExplorerProjectPtr ExplorerProject::currentProject;
@@ -194,8 +196,8 @@ bool ExplorerProject::connectToManager(ExecutionContext& context, const String& 
   context.informationCallback(managerHostName, T("Connected !"));
 
   thisNetworkNodeName = T("lbcpp-explorer on ") + juce::SystemStats::getOperatingSystemName();
-  managerInterface = clientManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
-  managerInterface->sendInterfaceClass();
+  managerInterface = forwarderManagerNetworkInterface(context, managerClient, thisNetworkNodeName);
+  managerClient->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(managerInterface));
   return true;
 }
 
@@ -205,10 +207,9 @@ void ExplorerProject::disconnectFromManager(ExecutionContext& context)
   if (managerClient)
   {
     if (managerInterface)
-    {
-      managerInterface->closeCommunication();
       managerInterface = ManagerNetworkInterfacePtr();
-    }
+
+    managerClient->sendVariable(new CloseCommunicationNotification());
     managerClient->stopClient();
     managerClient = NetworkClientPtr();
   }

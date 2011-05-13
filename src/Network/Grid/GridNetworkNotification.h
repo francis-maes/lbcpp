@@ -17,10 +17,14 @@ namespace lbcpp
 class GridNetworkNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNetwork(const NetworkInterfacePtr& target)
-    {notifyGridNetwork(target);}
+  virtual void notifyNetwork(const NetworkInterfacePtr& target, const NetworkClientPtr& client)
+  {
+    if (!client)
+      return;
+    notifyGridNetwork(target, client);
+  }
 
-  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target) = 0;
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target, const NetworkClientPtr& client) = 0;
 };
 
 class PushWorkUnitsNotification : public GridNetworkNotification
@@ -29,10 +33,10 @@ public:
   PushWorkUnitsNotification(ContainerPtr networkRequests) : networkRequests(networkRequests) {}
   PushWorkUnitsNotification() {}
   
-  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target)
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target, const NetworkClientPtr& client)
   {
     ContainerPtr res = target->pushWorkUnits(networkRequests);
-    target->getNetworkClient()->sendVariable(res);
+    client->sendVariable(res);
   }
 
 protected:
@@ -44,17 +48,17 @@ protected:
 class GetFinishedExecutionTraces : public GridNetworkNotification
 {
 public:
-  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target)
+  virtual void notifyGridNetwork(const GridNetworkInterfacePtr& target, const NetworkClientPtr& client)
   {
     ContainerPtr res = target->getFinishedExecutionTraces();
-    if (!target->getNetworkClient()->sendVariable(res))
+    if (!client->sendVariable(res))
     {
       target->getContext().warningCallback(T("GetFinishedExecutionTraces"), T("Trace not sent"));
       return;
     }
     /* Short way that avoid to use network trafic */
     bool ack = false;
-    if (!target->getNetworkClient()->receiveBoolean(300000, ack) || !ack)
+    if (!client->receiveBoolean(300000, ack) || !ack)
       return;
     target->removeExecutionTraces(res);
   }

@@ -15,28 +15,25 @@
 namespace lbcpp
 {
 
-class ClientManagerNetworkInterface : public ManagerNetworkInterface
+class ForwarderManagerNetworkInterface : public ForwarderNetworkInterface<ManagerNetworkInterface>
 {
 public:
-  ClientManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name = String::empty)
-    : ManagerNetworkInterface(context, client, Name)  {}
-  ClientManagerNetworkInterface() {}
+  ForwarderManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name = String::empty)
+    : ForwarderNetworkInterface<ManagerNetworkInterface>(context, client, Name)  {}
+  ForwarderManagerNetworkInterface() {}
 
   virtual String pushWorkUnit(WorkUnitNetworkRequestPtr request);
   virtual bool isFinished(const String& identifier);
   virtual ExecutionTraceNetworkResponsePtr getExecutionTrace(const String& identifier);
-
-  /* NetworkInterface */
-  virtual void closeCommunication();
 };
 
-extern ClassPtr clientManagerNetworkInterfaceClass;
+extern ClassPtr forwarderManagerNetworkInterfaceClass;
 
 class FileSystemManagerNetworkInterface : public ManagerNetworkInterface
 {
 public:
-  FileSystemManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name, NetworkProjectFileManagerPtr fileManager)
-    : ManagerNetworkInterface(context, client, name), fileManager(fileManager) {}
+  FileSystemManagerNetworkInterface(ExecutionContext& context, const String& name, NetworkProjectFileManagerPtr fileManager)
+    : ManagerNetworkInterface(context, name), fileManager(fileManager) {}
   FileSystemManagerNetworkInterface() {}
 
   virtual String pushWorkUnit(WorkUnitNetworkRequestPtr request)
