@@ -46,7 +46,7 @@ public:
 };
 typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 
-extern ContinuousSamplerPtr gaussianSampler(double mean, double stddev);
+extern ContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
 
 /*
 ** Discrete Sampler
@@ -77,6 +77,9 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
+
+extern CompositeSamplerPtr independentDenseDoubleVectorSampler(EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel);
+extern CompositeSamplerPtr independentDenseDoubleVectorSampler(size_t numElements, SamplerPtr elementSamplerModel);
 
 }; /* namespace lbcpp */
 

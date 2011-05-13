@@ -98,6 +98,10 @@ typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionB
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
+  SamplerBasedOptimizerState(const SamplerPtr& sampler)
+    : sampler(sampler) {}
+  SamplerBasedOptimizerState() {}
+
   const SamplerPtr& getSampler() const
     {return sampler;}
   

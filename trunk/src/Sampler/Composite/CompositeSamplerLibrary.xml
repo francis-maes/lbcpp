@@ -2,4 +2,10 @@
 
 <library name="CompositeSampler" directory="Sampler/Composite">
 
+  <class name="IndependentDenseDoubleVectorSampler" base="CompositeSampler">
+    <constructor arguments="EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel"/>
+    <constructor arguments="size_t numElements, SamplerPtr elementSamplerModel"/>
+    <variable type="Enumeration" name="elementsEnumeration"/>
+  </class>
+
 </library>
