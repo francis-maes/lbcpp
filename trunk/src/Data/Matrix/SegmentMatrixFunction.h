@@ -129,7 +129,7 @@ public:
           neighbors[numNeighbors++] = Position(position.first + 1, position.second - 1);
       }
 
-      size_t numMissingNeighbors = (use8Connexity ? 8 : 4) - numNeighbors;
+      //size_t numMissingNeighbors = (use8Connexity ? 8 : 4) - numNeighbors;
       //region->addNeighboringElement(Variable::missingValue(elementsType), numMissingNeighbors);
 
       // add neighbors in the toExplore list
