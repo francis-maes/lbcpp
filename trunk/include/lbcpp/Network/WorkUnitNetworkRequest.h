@@ -122,7 +122,6 @@ protected:
 typedef ReferenceCountedObjectPtr<NetworkArchive> NetworkArchivePtr;
 
 extern ClassPtr workUnitNetworkRequestClass;
-extern ClassPtr networkResponseClass;
 
 }; /* namespace */
 

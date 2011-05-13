@@ -80,7 +80,7 @@ ContainerPtr SgeGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests
 
 ContainerPtr SgeGridNetworkInterface::getFinishedExecutionTraces()
 {
-  VectorPtr res = vector(networkResponseClass);
+  VectorPtr res = vector(workUnitNetworkRequestClass);
   StreamPtr files = directoryFileStream(context, getFinishDirectory(), T("*"));
   while (!files->isExhausted())
   {
@@ -141,7 +141,7 @@ ContainerPtr BoincGridNetworkInterface::pushWorkUnits(ContainerPtr networkReques
 
 ContainerPtr BoincGridNetworkInterface::getFinishedExecutionTraces()
 {
-  VectorPtr res = vector(networkResponseClass);
+  VectorPtr res = vector(workUnitNetworkRequestClass);
   StreamPtr files = directoryFileStream(context, getFinishDirectory(), T("*.workUnit"));
   while (!files->isExhausted())
   {

@@ -62,8 +62,9 @@
 # include "Distribution/DiscreteDistribution.h"
 # include "Distribution/ContinuousDistribution.h"
 # include "Distribution/MultiVariateDistribution.h"
-
 # include "Distribution/DistributionBuilder.h"
+
+# include "Sampler/Sampler.h"
 
 
 # include "Execution/ExecutionStack.h"

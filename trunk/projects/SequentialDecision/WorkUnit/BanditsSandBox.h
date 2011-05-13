@@ -611,7 +611,7 @@ public:
     for (size_t i = 0; i < parametersEnumeration->getNumElements(); ++i)
       distribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
     OptimizerStatePtr optimizerState = new OptimizerState();
-    optimizerState->setDistribution(distribution);
+    optimizerState.staticCast<DistributionBasedOptimizerState>()->setDistribution(distribution);
 
     // optimizer context
     FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, trainingStates);

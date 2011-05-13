@@ -25,6 +25,8 @@ GENERATE_INTROSPECTION_CODE(Distribution/DistributionLibrary.xml DistributionLib
 GENERATE_INTROSPECTION_CODE(Distribution/Function/DistributionFunctionLibrary.xml DistributionFunctionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Distribution/Builder/DistributionBuilderLibrary.xml DistributionBuilderLibrary.cpp)
 
+GENERATE_INTROSPECTION_CODE(Sampler/SamplerLibrary.xml SamplerLibrary.cpp)
+
 GENERATE_INTROSPECTION_CODE(Execution/ExecutionLibrary.xml ExecutionLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Callback/ExecutionCallbackLibrary.xml ExecutionCallbackLibrary.cpp)
 GENERATE_INTROSPECTION_CODE(Execution/Context/ExecutionContextLibrary.xml ExecutionContextLibrary.cpp)
@@ -326,6 +328,12 @@ SET(LBCPP_DISTRIBUTION_BUILDER_SOURCES
   Distribution/Builder/IndependentDoubleVectorDistributionBuilder.h
   Distribution/Builder/DistributionBuilderLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DistributionBuilderLibrary.cpp
+)
+
+SET(LBCPP_SAMPLER_SOURCES
+  ../include/lbcpp/Sampler/Sampler.h
+  Sampler/SamplerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )
 
 #### Function ####
@@ -715,6 +723,8 @@ SET(LBCPP_SOURCES
     ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES}
     ${LBCPP_DISTRIBUTION_BUILDER_SOURCES}  
 
+  ${LBCPP_SAMPLER_SOURCES}
+
   # Execution
   ${LBCPP_EXECUTION_SOURCES}
     ${LBCPP_EXECUTION_CALLBACK_SOURCES}
@@ -795,6 +805,8 @@ SOURCE_SUB_GROUP(Network WorkUnit FILES ${LBCPP_NETWORK_WORK_UNIT_SOURCES})
 SOURCE_GROUP(Distribution FILES ${LBCPP_DISTRIBUTION_SOURCES})
 SOURCE_SUB_GROUP(Distribution Function FILES ${LBCPP_DISTRIBUTION_FUNCTION_SOURCES})
 SOURCE_SUB_GROUP(Distribution Builder FILES ${LBCPP_DISTRIBUTION_BUILDER_SOURCES})
+
+SOURCE_GROUP(Sampler FILES ${LBCPP_SAMPLER_SOURCES})
 
 ## Execution
 SOURCE_GROUP(Execution FILES ${LBCPP_EXECUTION_SOURCES})
