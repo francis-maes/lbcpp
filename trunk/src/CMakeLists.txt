@@ -308,6 +308,7 @@ SET(LBCPP_SAMPLER_SOURCES
 )
 
 SET(LBCPP_SAMPLER_CONTINUOUS_SOURCES
+  Sampler/Continuous/GaussianSampler.h
   Sampler/Continuous/ContinuousSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContinuousSamplerLibrary.cpp
 )

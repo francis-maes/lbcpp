@@ -31,20 +31,20 @@ public:
     : CompositeSampler(3)
   {
     // select residue
-    sons[0] = new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue)));
+    samplers[0] = new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue)));
     //select phi
-    sons[1] = gaussianSampler(meanPhi, stdPhi);
+    samplers[1] = gaussianSampler(meanPhi, stdPhi);
     // select psi
-    sons[2] = gaussianSampler(meanPsi, stdPsi);
+    samplers[2] = gaussianSampler(meanPsi, stdPsi);
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t residue = sons[0]->sample(context, random, inputs).getInteger();
+    size_t residue = samplers[0]->sample(context, random, inputs).getInteger();
     // TODO rajouter la dependance entre le residu et les angles
-    double phi = sons[1]->sample(context, random, inputs).getDouble();
-    double psi = sons[2]->sample(context, random, inputs).getDouble();
+    double phi = samplers[1]->sample(context, random, inputs).getDouble();
+    double psi = samplers[2]->sample(context, random, inputs).getDouble();
     ShearMoverPtr mover = new ShearMover(residue, phi, psi);
     return Variable(mover);
   }
@@ -71,9 +71,9 @@ public:
       datasetPsi.push_back(
           std::pair<Variable, Variable>(Variable(mover->getDeltaPsi()), Variable()));
     }
-    sons[0]->learn(context, datasetResidue);
-    sons[1]->learn(context, datasetPhi);
-    sons[2]->learn(context, datasetPsi);
+    samplers[0]->learn(context, datasetResidue);
+    samplers[1]->learn(context, datasetPhi);
+    samplers[2]->learn(context, datasetPsi);
   }
 
 protected:

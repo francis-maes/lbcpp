@@ -211,7 +211,7 @@ core::pose::PoseOP lbcpp::initializeProteinStructure(core::pose::PoseOP pose)
 {
   core::pose::PoseOP initialized = new core::pose::Pose((*pose));
 
-  for (int i = 1; i <= pose->n_residue(); i++)
+  for (size_t i = 1; i <= pose->n_residue(); i++)
   {
     if (i == 1)
       initialized->set_phi(i, 0);

@@ -100,7 +100,9 @@ protected:
       dataset.reserve(numBests);
       std::multimap<double, Variable>::const_iterator it = sortedScores.begin();
       for (size_t i = 0; i < numBests && it != sortedScores.end(); ++i, ++it)
-        dataset.push_back(std::make_pair(Variable(), it->second));
+        dataset.push_back(std::make_pair(it->second, Variable()));
+
+      sampler->learn(context, dataset);
       return;
     }
 

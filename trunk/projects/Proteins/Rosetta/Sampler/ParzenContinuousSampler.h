@@ -43,23 +43,6 @@ public:
     abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
 
-/*
-  ParzenContinuousSampler(const ParzenContinuousSampler& sampler)
-    : ContinuousSampler(sampler.mean, sampler.std), learned(sampler.learned),
-      precision(sampler.precision), excursion(sampler.excursion),
-      kernelWidth(sampler.kernelWidth), fixedAbscissa(sampler.fixedAbscissa)
-  {
-    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-    if (learned)
-      integral = new DenseDoubleVector(actionClass, sampler.integral->getValues());
-    if (learned || fixedAbscissa)
-      abscissa = new DenseDoubleVector(actionClass, sampler.abscissa->getValues());
-  }
-
-  ~ParzenContinuousSampler()
-  {
-  }*/
-
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
@@ -96,15 +79,25 @@ public:
    * dataset = first : a Variable of double type containing the data observed.
    *           second : not yet used.
    */
+
+  static void getMeanAndVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double& mean, double& variance)
+  {
+    ScalarVariableMeanAndVariance v;
+    for (size_t i = 0; i < dataset.size(); i++)
+      v.push(dataset[i].first.getDouble());
+    mean = v.getMean();
+    variance = v.getVariance();
+  }
+
   virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2)
       return;
 
     learned = true;
-    mean = getMean(dataset);
-    double temporaryVariance = getVariance(dataset, mean);
-    if (temporaryVariance <= 0)
+    double temporaryVariance;
+    getMeanAndVariance(dataset, mean, temporaryVariance);
+    if (temporaryVariance == 0)
       temporaryVariance = juce::jmax(1.0, std::abs(mean * 0.3));
     stddev = std::sqrt(temporaryVariance);
 

@@ -15,39 +15,6 @@
 namespace lbcpp
 {
 
-class DiscreteSampler;
-typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
-
-class DiscreteSampler : public Sampler
-{
-public:
-
-protected:
-  friend class DiscreteSamplerClass;
-};
-
-class CompositeSampler;
-typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
-
-class CompositeSampler : public Sampler
-{
-public:
-  CompositeSampler(size_t numSamplers)
-    : sons(numSamplers)
-  {
-  }
-
-  CompositeSampler()
-    : Sampler()
-  {
-  }
-
-
-protected:
-  friend class CompositeSamplerClass;
-  std::vector<SamplerPtr> sons; // each Variable contains a pointer to the corresponding sampler
-};
-
 extern SamplerPtr gaussianContinuousSampler();
 extern SamplerPtr enumerationDiscreteSampler();
 extern SamplerPtr parzenContinuousSampler();

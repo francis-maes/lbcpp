@@ -33,14 +33,6 @@
     <variable type="File" name="outputDirectory" description="Output directory where the files are going to be created"/>
   </class>
   
-  <!-- Samplers -->
-  <class name="DiscreteSampler" base="Sampler" abstract="yes">
-  </class>
-
-  <class name="CompositeSampler" base="Sampler" abstract="yes">
-    <variable type="VariableVector" name="sons"/>
-  </class>
-  
   <!-- WorkUnits -->
   <class name="RosettaTest" base="WorkUnit">
     <variable type="Integer" name="arg" shortName="a" description="An input argument to RosettaTest"/>
