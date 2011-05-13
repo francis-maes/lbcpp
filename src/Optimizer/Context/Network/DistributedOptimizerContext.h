@@ -51,6 +51,7 @@ public:
     if (res == T("Error"))
     {
       context.errorCallback(T("DistributedOptimizerContext::evaluate"), T("Trouble - We didn't correclty receive the acknowledgement"));
+      interface->closeCommunication();
       return false;
     }
     interface->closeCommunication();
