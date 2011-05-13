@@ -62,17 +62,11 @@ public:
   {
   }
 
-  ProteinMoverPtr clone()
-  {
-    ShearMoverPtr temp = new ShearMover(*this);
-    return temp;
-  }
-
   /**
    * Performs the move on the pose specified by the parameters of the mover.
    * @param pose the pose to modify.
    */
-  void move(core::pose::PoseOP& pose)
+  virtual void move(core::pose::PoseOP& pose)
   {
     move(pose, residue, deltaPhi, deltaPsi);
   }

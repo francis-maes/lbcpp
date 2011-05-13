@@ -52,13 +52,7 @@ public:
         GaussianContinuousSampler> ()));
   }
 
-  SamplerPtr clone()
-  {
-    ShearMoverSamplerPtr temp = new ShearMoverSampler(*this);
-    return temp;
-  }
-
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     size_t residue = sons[0].getObjectAndCast<SimpleResidueSampler> ()->sample(context, random,
@@ -76,7 +70,7 @@ public:
    * dataset = first : ShearMoverPtr observed
    *           second : not yet used
    */
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2)

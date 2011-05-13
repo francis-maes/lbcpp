@@ -46,13 +46,7 @@ public:
         GaussianContinuousSampler> ()));
   }
 
-  SamplerPtr clone()
-  {
-    RigidBodyTransMoverSamplerPtr temp = new RigidBodyTransMoverSampler(*this);
-    return temp;
-  }
-
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
@@ -70,7 +64,7 @@ public:
    * dataset = first : RigidBodyTransMoverPtr observed
    *           second : not yet used
    */
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 1)

@@ -69,17 +69,11 @@ public:
   {
   }
 
-  ProteinMoverPtr clone()
-  {
-    RigidBodyGeneralMoverPtr temp = new RigidBodyGeneralMover(*this);
-    return temp;
-  }
-
   /**
    * Performs the rotation on the pose specified by the parameters of the mover.
    * @param the pose to modify.
    */
-  void move(core::pose::PoseOP& pose)
+  virtual void move(core::pose::PoseOP& pose)
   {
     move(pose, indexResidueOne, indexResidueTwo, magnitude, amplitude);
   }
