@@ -81,11 +81,12 @@ public:
     RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(5, 0.5, 0.05, 0, 20);
 
     std::vector<Variable> samplers;
+    samplers.push_back(Variable(samp2));
     samplers.push_back(Variable(samp0));
     samplers.push_back(Variable(samp1));
-    samplers.push_back(Variable(samp2));
-    samplers.push_back(Variable(samp3));
     samplers.push_back(Variable(samp4));
+    samplers.push_back(Variable(samp3));
+
 
     ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
 
@@ -159,7 +160,7 @@ public:
     int count2 = 0;
     int count3 = 0;
     int count4 = 0;
-    int num = 10000;
+    int num = 20;
     for (int i = 0; i < num; i++)
     {
 

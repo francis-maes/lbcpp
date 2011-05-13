@@ -16,11 +16,11 @@ namespace lbcpp
 class Sampler;
 typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
-class Sampler: public Object
+class Sampler : public Object
 {
 public:
-  Sampler() :
-    Object()
+  Sampler()
+    : Object()
   {
   }
 
@@ -37,16 +37,16 @@ protected:
 class ContinuousSampler;
 typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 
-class ContinuousSampler: public Sampler
+class ContinuousSampler : public Sampler
 {
 public:
-  ContinuousSampler() :
-    mean(0), std(1)
+  ContinuousSampler()
+    : mean(0), std(1)
   {
   }
 
-  ContinuousSampler(double mean, double std) :
-    mean(mean), std(std)
+  ContinuousSampler(double mean, double std)
+    : mean(mean), std(std)
   {
   }
 
@@ -59,7 +59,7 @@ public:
     double temporaryMean = 0;
     if (dataset.size() > 0)
     {
-      for (int i = 0; i < dataset.size(); i++)
+      for (size_t i = 0; i < dataset.size(); i++)
         temporaryMean += dataset[i].first.getDouble();
       temporaryMean = temporaryMean / dataset.size();
     }
@@ -73,14 +73,12 @@ public:
   double getVariance(const std::vector<std::pair<Variable, Variable> >& dataset, double mean)
   {
     double temporaryVariance = 0;
-    if (dataset.size() > 1)
+    if (dataset.size() > 0)
     {
-      for (int i = 0; i < dataset.size(); i++)
+      for (size_t i = 0; i < dataset.size(); i++)
         temporaryVariance += std::pow(dataset[i].first.getDouble() - mean, 2);
       temporaryVariance = temporaryVariance / dataset.size();
     }
-    if (temporaryVariance <= 0)
-      temporaryVariance = 0.3 * mean;
     return temporaryVariance;
   }
 
@@ -93,7 +91,7 @@ protected:
 class DiscreteSampler;
 typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
 
-class DiscreteSampler: public Sampler
+class DiscreteSampler : public Sampler
 {
 public:
 
@@ -101,31 +99,19 @@ protected:
   friend class DiscreteSamplerClass;
 };
 
-class SequentialSampler;
-typedef ReferenceCountedObjectPtr<SequentialSampler> SequentialSamplerPtr;
-
-class SequentialSampler: public Sampler
-{
-public:
-
-protected:
-  friend class SequentialSamplerClass;
-  std::vector<Variable> samplers; // each Variable contains a pointer to the corresponding sampler
-};
-
 class CompositeSampler;
 typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 
-class CompositeSampler: public Sampler
+class CompositeSampler : public Sampler
 {
 public:
-  CompositeSampler() :
-    Sampler()
+  CompositeSampler()
+    : Sampler()
   {
   }
 
-  CompositeSampler(size_t numSamplers) :
-    Sampler()
+  CompositeSampler(size_t numSamplers)
+    : Sampler()
   {
     sons = std::vector<Variable>(numSamplers);
   }

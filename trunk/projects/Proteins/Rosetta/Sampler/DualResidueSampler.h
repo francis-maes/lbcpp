@@ -21,16 +21,16 @@ namespace lbcpp
 class DualResidueSampler;
 typedef ReferenceCountedObjectPtr<DualResidueSampler> DualResidueSamplerPtr;
 
-class DualResidueSampler: public CompositeSampler
+class DualResidueSampler : public CompositeSampler
 {
 public:
-  DualResidueSampler() :
-    CompositeSampler(), numResidues(1), residuesDeviation(0)
+  DualResidueSampler()
+    : CompositeSampler(), numResidues(1), residuesDeviation(0)
   {
   }
 
-  DualResidueSampler(int numResidues, int residuesDeviation = 0) :
-    CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
+  DualResidueSampler(size_t numResidues, size_t residuesDeviation = 0)
+    : CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
   {
     // only 2 clusters for GMM
     MatrixPtr probabilities = new DoubleMatrix(2, 1, 0.0);
@@ -68,9 +68,9 @@ public:
     sons[0] = p;
   }
 
-  DualResidueSampler(const DualResidueSampler& sampler) :
-    CompositeSampler(1), numResidues(sampler.numResidues), residuesDeviation(
-        sampler.residuesDeviation)
+  DualResidueSampler(const DualResidueSampler& sampler)
+    : CompositeSampler(1), numResidues(sampler.numResidues),
+      residuesDeviation(sampler.residuesDeviation)
   {
     GaussianMultivariateSamplerPtr temp = new GaussianMultivariateSampler(
         (*(sampler.sons[0].getObjectAndCast<GaussianMultivariateSampler> ())));
@@ -100,8 +100,8 @@ public:
     rand2 = rand2 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand2)
         : rand2;
 
-    int firstResidue = std::floor(rand1 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
-    int secondResidue = std::floor(rand2 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
+    size_t firstResidue = std::floor(rand1 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
+    size_t secondResidue = std::floor(rand2 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
 
     if (firstResidue == numResidues)
       firstResidue--;
@@ -148,11 +148,11 @@ public:
     double scaleFactor = (double)MAX_INTERVAL_VALUE_DUAL / (double)numResidues;
     double varianceIncrement = (double)residuesDeviation * scaleFactor;
 
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       MatrixPtr residuePair = dataset[i].first.getObjectAndCast<Matrix> ();
-      int res1 = (int)(residuePair->getElement(0, 0).getDouble());
-      int res2 = (int)(residuePair->getElement(1, 0).getDouble());
+      size_t res1 = (size_t)(residuePair->getElement(0, 0).getDouble());
+      size_t res2 = (size_t)(residuePair->getElement(1, 0).getDouble());
       double value1 = (double)res1 * scaleFactor;
       double value2 = (double)res2 * scaleFactor;
       value1 = std::abs(value1 + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
@@ -172,8 +172,8 @@ public:
 
 protected:
   friend class DualResidueSamplerClass;
-  int numResidues;
-  int residuesDeviation;
+  size_t numResidues;
+  size_t residuesDeviation;
 };
 
 }; /* namespace lbcpp */

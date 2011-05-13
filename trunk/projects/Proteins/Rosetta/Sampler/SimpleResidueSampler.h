@@ -21,33 +21,29 @@ namespace lbcpp
 class SimpleResidueSampler;
 typedef ReferenceCountedObjectPtr<SimpleResidueSampler> SimpleResidueSamplerPtr;
 
-class SimpleResidueSampler: public CompositeSampler
+class SimpleResidueSampler : public CompositeSampler
 {
 public:
-  SimpleResidueSampler() :
-    CompositeSampler(), numResidues(1), residuesDeviation(0)
+  SimpleResidueSampler()
+    : CompositeSampler(), numResidues(1), residuesDeviation(0)
   {
   }
 
-  SimpleResidueSampler(int numResidues, int residuesDeviation = 0) :
-    CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
+  SimpleResidueSampler(size_t numResidues, size_t residuesDeviation = 0)
+    : CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
   {
     ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001, -1 * MAX_INTERVAL_VALUE,
         2 * MAX_INTERVAL_VALUE, 1.0 / 2.0, 0.5 * MAX_INTERVAL_VALUE, 0.25 * MAX_INTERVAL_VALUE);
     sons[0] = temp;
   }
 
-  SimpleResidueSampler(const SimpleResidueSampler& sampler) :
-    CompositeSampler(1), numResidues(sampler.numResidues), residuesDeviation(
-        sampler.residuesDeviation)
+  SimpleResidueSampler(const SimpleResidueSampler& sampler)
+    : CompositeSampler(1), numResidues(sampler.numResidues),
+      residuesDeviation(sampler.residuesDeviation)
   {
     ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(
         (*(sampler.sons[0].getObjectAndCast<ParzenContinuousSampler> ())));
     sons[0] = temp;
-  }
-
-  ~SimpleResidueSampler()
-  {
   }
 
   SamplerPtr clone()
@@ -63,7 +59,7 @@ public:
         sons[0].getObjectAndCast<Sampler> ()->sample(context, random, NULL).getDouble());
     rand = rand > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - rand : rand;
 
-    int residue = std::floor(rand * numResidues / (double)MAX_INTERVAL_VALUE);
+    size_t residue = (size_t)std::floor(rand * (double)numResidues / (double)MAX_INTERVAL_VALUE);
     if (residue == numResidues)
       residue--;
     return Variable(residue);
@@ -83,9 +79,9 @@ public:
     double scaleFactor = (double)MAX_INTERVAL_VALUE / (double)numResidues;
     double varianceIncrement = (double)residuesDeviation * scaleFactor;
 
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
-      int res = dataset[i].first.getInteger();
+      size_t res = (size_t)dataset[i].first.getInteger();
       double value = (double)res * scaleFactor;
       value = std::abs(value + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
       value = value > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - value : value;
@@ -97,8 +93,8 @@ public:
 
 protected:
   friend class SimpleResidueSamplerClass;
-  int numResidues;
-  int residuesDeviation;
+  size_t numResidues;
+  size_t residuesDeviation;
 };
 
 }; /* namespace lbcpp */

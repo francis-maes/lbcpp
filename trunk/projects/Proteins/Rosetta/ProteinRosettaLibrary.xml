@@ -45,10 +45,6 @@
   <class name="DiscreteSampler" base="Sampler" abstract="yes">
   </class>
 
-  <class name="SequentialSampler" base="Sampler" abstract="yes">
-    <variable type="VariableVector" name="samplers"/>
-  </class>
-
   <class name="CompositeSampler" base="Sampler" abstract="yes">
     <variable type="VariableVector" name="sons"/>
   </class>

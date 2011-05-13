@@ -29,7 +29,12 @@ namespace lbcpp
 
 enum ProteinMoverEnumeration
 {
-  phipsi = 0, shear, rigidbodytrans, rigidbodyspin, rigidbodygeneral, numberOfMovers
+  phipsi = 0,
+  shear,
+  rigidbodytrans,
+  rigidbodyspin,
+  rigidbodygeneral,
+  numberOfMovers
 };
 
 extern EnumerationPtr proteinMoverEnumerationEnumeration;
@@ -37,11 +42,11 @@ extern EnumerationPtr proteinMoverEnumerationEnumeration;
 class ProteinMoverSampler;
 typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
 
-class ProteinMoverSampler: public CompositeSampler
+class ProteinMoverSampler : public CompositeSampler
 {
 public:
-  ProteinMoverSampler() :
-    CompositeSampler(0), numMover(0)
+  ProteinMoverSampler()
+    : CompositeSampler(0), numMover(0)
   {
   }
 
@@ -49,13 +54,13 @@ public:
    * Each variable of samplers is a Ptr to a sampler. Do not deallocate
    * a sampler before deallocating ProteinMoverSampler.
    */
-  ProteinMoverSampler(size_t numMover, std::vector<Variable>& samplers) :
-    CompositeSampler(numMover + 1), numMover(numMover)
+  ProteinMoverSampler(size_t numMover, std::vector<Variable>& samplers)
+    : CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
     sons[0] = Variable(new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover)));
-    whichMover = std::vector<int>(numberOfMovers, -1);
-    for (int i = 0; i < samplers.size(); i++)
+    whichMover = std::vector<size_t>(numberOfMovers, -1);
+    for (size_t i = 0; i < samplers.size(); i++)
     {
       sons[i + 1] = Variable(samplers[i]);
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
@@ -73,14 +78,14 @@ public:
     }
   }
 
-  ProteinMoverSampler(DenseDoubleVectorPtr& probabilitiesMover, std::vector<Variable>& samplers) :
-    CompositeSampler(probabilitiesMover->getNumElements() + 1), numMover(
-        probabilitiesMover->getNumElements())
+  ProteinMoverSampler(DenseDoubleVectorPtr& probabilitiesMover, std::vector<Variable>& samplers)
+    : CompositeSampler(probabilitiesMover->getNumElements() + 1),
+      numMover(probabilitiesMover->getNumElements())
   {
     // select mover
     sons[0] = Variable(new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover)));
-    whichMover = std::vector<int>(numberOfMovers, -1);
-    for (int i = 0; i < samplers.size(); i++)
+    whichMover = std::vector<size_t>(numberOfMovers, -1);
+    for (size_t i = 0; i < samplers.size(); i++)
     {
       sons[i + 1] = Variable(samplers[i]);
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
@@ -98,10 +103,11 @@ public:
     }
   }
 
-  ProteinMoverSampler(const ProteinMoverSampler& copy) :
-    CompositeSampler(copy.numMover + 1), numMover(copy.numMover), whichMover(copy.whichMover)
+  ProteinMoverSampler(const ProteinMoverSampler& copy)
+    : CompositeSampler(copy.numMover + 1), numMover(copy.numMover),
+      whichMover(copy.whichMover)
   {
-    for (int i = 0; i < sons.size(); i++)
+    for (size_t i = 0; i < sons.size(); i++)
       sons[i] = Variable(copy.sons[i].getObjectAndCast<Sampler> ()->clone());
   }
 
@@ -138,7 +144,7 @@ public:
     std::vector<std::pair<Variable, Variable> > moverFrequencies;
     std::vector<std::vector<std::pair<Variable, Variable> > > samples(numMover);
 
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       ProteinMoverPtr t = dataset[i].first.getObjectAndCast<ProteinMover> ();
 
@@ -195,14 +201,14 @@ public:
     }
 
     sons[0].getObjectAndCast<Sampler> ()->learn(context, random, moverFrequencies);
-    for (int i = 0; i < numMover; i++)
+    for (size_t i = 0; i < numMover; i++)
       sons[i + 1].getObjectAndCast<Sampler> ()->learn(context, random, samples[i]);
   }
 
 protected:
   friend class ProteinMoverSamplerClass;
   size_t numMover;
-  std::vector<int> whichMover;
+  std::vector<size_t> whichMover;
 };
 
 }; /* namespace lbcpp */

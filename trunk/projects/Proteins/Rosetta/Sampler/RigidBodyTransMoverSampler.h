@@ -20,16 +20,16 @@ namespace lbcpp
 class RigidBodyTransMoverSampler;
 typedef ReferenceCountedObjectPtr<RigidBodyTransMoverSampler> RigidBodyTransMoverSamplerPtr;
 
-class RigidBodyTransMoverSampler: public CompositeSampler
+class RigidBodyTransMoverSampler : public CompositeSampler
 {
 public:
-  RigidBodyTransMoverSampler() :
-    CompositeSampler(2), numResidue(0)
+  RigidBodyTransMoverSampler()
+    : CompositeSampler(2), numResidue(0)
   {
   }
 
-  RigidBodyTransMoverSampler(size_t numResidue, double meanMagnitude, double stdMagnitude) :
-    CompositeSampler(2), numResidue(numResidue)
+  RigidBodyTransMoverSampler(size_t numResidue, double meanMagnitude, double stdMagnitude)
+    : CompositeSampler(2), numResidue(numResidue)
   {
     // select residue
     sons[0] = Variable(new DualResidueSampler(numResidue, 2));
@@ -37,8 +37,8 @@ public:
     sons[1] = Variable(new GaussianContinuousSampler(meanMagnitude, stdMagnitude));
   }
 
-  RigidBodyTransMoverSampler(const RigidBodyTransMoverSampler& sampler) :
-    CompositeSampler(2), numResidue(sampler.numResidue)
+  RigidBodyTransMoverSampler(const RigidBodyTransMoverSampler& sampler)
+    : CompositeSampler(2), numResidue(sampler.numResidue)
   {
     sons[0] = Variable(new DualResidueSampler(
         *sampler.sons[0].getObjectAndCast<DualResidueSampler> ()));
@@ -57,8 +57,8 @@ public:
   {
     MatrixPtr residues = sons[0].getObjectAndCast<DualResidueSampler> ()->sample(context, random,
         inputs).getObjectAndCast<Matrix> ();
-    size_t firstResidue = (int)(residues->getElement(0, 0).getDouble());
-    size_t secondResidue = (int)(residues->getElement(1, 0).getDouble());
+    size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
+    size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
     double magnitude = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context,
         random, inputs).getDouble();
@@ -78,7 +78,7 @@ public:
 
     std::vector<std::pair<Variable, Variable> > datasetResidues;
     std::vector<std::pair<Variable, Variable> > datasetMagnitude;
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
     {
       RigidBodyTransMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodyTransMover> ();
       MatrixPtr tempResidue = new DoubleMatrix(2, 1);
