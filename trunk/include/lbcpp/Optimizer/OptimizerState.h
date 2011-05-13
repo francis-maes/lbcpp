@@ -16,17 +16,13 @@
 namespace lbcpp
 {
 
+// TODO arnaud : force abstract in xml ?
 class OptimizerState : public Object, public FunctionCallback
 {
 public:
   OptimizerState();
   
   void initialize();
-  
-  // this should be in an inherited class
-  const DistributionPtr& getDistribution() const;
-  void setDistribution(const DistributionPtr& newDistribution);
-  
   
   /*
   ** Requests
@@ -68,9 +64,7 @@ protected:
   friend class OptimizerStateClass;
   
   CriticalSection lock;
-  
-  DistributionPtr distribution;
-  
+    
   size_t totalNumberOfRequests;
   size_t totalNumberOfEvaluations;
   
@@ -82,6 +76,26 @@ protected:
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
 extern ClassPtr optimizerStateClass;
+
+class DistributionBasedOptimizerState : public OptimizerState
+{
+public:    
+  
+  // Distribution
+  const DistributionPtr& getDistribution() const
+  {return distribution;}
+  
+  void setDistribution(const DistributionPtr& newDistribution)
+  {distribution = newDistribution;}
+  
+protected:  
+  friend class DistributionBasedOptimizerStateClass;
+  
+  DistributionPtr distribution;
+};
+
+typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionBasedOptimizerStatePtr;
+extern ClassPtr distributionBasedOptimizerStateClass; 
   
 }; /* namespace lbcpp */
 

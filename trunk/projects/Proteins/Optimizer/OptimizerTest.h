@@ -128,7 +128,7 @@ public:
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, squareFunction());
     //OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, squareFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime);
-    OptimizerStatePtr optimizerState = new OptimizerState();
+    DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
     //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);

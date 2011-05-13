@@ -69,14 +69,6 @@ void OptimizerState::initialize()
     totalNumberOfRequests = totalNumberOfEvaluations;
 }
 
-// Distribution
-const DistributionPtr& OptimizerState::getDistribution() const
-  {return distribution;}
-
-void OptimizerState::setDistribution(const DistributionPtr& newDistribution)
-  {distribution = newDistribution;}
-
-
 // Requests
 size_t OptimizerState::getTotalNumberOfRequests() const
 {

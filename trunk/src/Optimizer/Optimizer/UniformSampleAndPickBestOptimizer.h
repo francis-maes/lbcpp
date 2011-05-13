@@ -23,8 +23,11 @@ public:
   
   virtual Variable optimize(ExecutionContext& context, const OptimizerContextPtr& optimizerContext, const OptimizerStatePtr& optimizerState) const
   {   
+    DistributionBasedOptimizerStatePtr state = optimizerState.dynamicCast<DistributionBasedOptimizerState>();
+    jassert(state);  // TODO arnaud : message erreur
+    
     std::vector<double> values;
-    ContinuousDistributionPtr apriori = optimizerState->getDistribution().dynamicCast<ContinuousDistribution>();
+    ContinuousDistributionPtr apriori = state->getDistribution().dynamicCast<ContinuousDistribution>();
     apriori->sampleUniformly(numSamples, values);
     
     for (size_t i = 0; i < numSamples; ++i) 
@@ -33,29 +36,29 @@ public:
         i--;
       else 
       {
-        optimizerState->incTotalNumberOfRequests();
-        context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
+        state->incTotalNumberOfRequests();
+        context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
       }
     }
     
     // wait (in case of async context) & update progression
     while (!optimizerContext->areAllRequestsProcessed()) {
       Thread::sleep(100);
-      context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
+      context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), numSamples, T("Evaluations")));
     }
-    jassert(optimizerState->getNumberOfProcessedRequests() == numSamples);
-    context.progressCallback(new ProgressionState(optimizerState->getNumberOfProcessedRequests(), numSamples, T("Evaluations"))); // needed to be sure to have 100% in Explorer
+    jassert(state->getNumberOfProcessedRequests() == numSamples);
+    context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), numSamples, T("Evaluations"))); // needed to be sure to have 100% in Explorer
     
     std::vector< std::pair<double, Variable> >::const_iterator it;
     {
-      ScopedLock _(optimizerState->getLock());
+      ScopedLock _(state->getLock());
       size_t i = 1;
-      for (it = optimizerState->getProcessedRequests().begin(); it < optimizerState->getProcessedRequests().end(); it++)
+      for (it = state->getProcessedRequests().begin(); it < state->getProcessedRequests().end(); it++)
       {
-        if (it->first < optimizerState->getBestScore())
+        if (it->first < state->getBestScore())
         {
-          optimizerState->setBestScore(it->first);
-          optimizerState->setBestVariable(it->second);
+          state->setBestScore(it->first);
+          state->setBestVariable(it->second);
         }        
         if (verbose) 
         {
@@ -66,9 +69,9 @@ public:
         }
         i++;  // outside if to avoid a warning for unused variable
       }
-      optimizerState->flushProcessedRequests();
+      state->flushProcessedRequests();
     }
-    return optimizerState->getBestScore();
+    return state->getBestScore();
  }
   
 protected:
