@@ -1,4 +1,18 @@
+Objectif Bandit with sampler:
 
+1) descendre les classes de base de samplers dans lbcpp-core
+2) avoir une implementation d'EDA qui utilise les samplers
+3) utiliser les samplers dans Bandits
+
+Objectif Unification
+
+1) faire deriver Sampler de Function
+2) unifier les BatchLearner de Sampler et de Function
+
+Objectif Alejandro
+
+1) Il faut un sampler maxent
+2) Il faut un sampler gaussian parametree
 
 
 Proteins:
