@@ -16,6 +16,8 @@
 # include <lbcpp/Optimizer/OptimizerState.h>
 # include <lbcpp/Function/ScalarFunction.h>
 
+# include "../WorkUnit/ProteinLearner.h"
+
 // TODO arnaud : a enlever
 # include <lbcpp/Distribution/MultiVariateDistribution.h>
 # include "../../../src/Distribution/Builder/GaussianDistributionBuilder.h"
@@ -28,7 +30,7 @@
 //# include <lbcpp/Optimizer/GridOptimizer.h>
 //# include "../Optimizer/ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/Grid/GridEvoOptimizer.h"
-# include "../Predictor/ProteinPredictorParameters.h"
+//# include "../Predictor/ProteinPredictorParameters.h"
 # include "ProteinGridEvoOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/UniformSampleAndPickBestOptimizer.h"
 //# include "../../../src/Optimizer/Optimizer/EDAOptimizer.h"
@@ -118,7 +120,7 @@ public:
     state->initialize();
     std::cout << state->getTotalNumberOfEvaluations() << " VS " << state->getTotalNumberOfRequests() << std::endl;*/
     
-    /*
+    
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
     //OptimizerPtr optimizer = edaOptimizer(10, 100, 30, false, false);
@@ -130,15 +132,15 @@ public:
     //optimizerState->setDistribution(new UniformDistribution(-5,5));    // TODO arnaud use constructor from library
     optimizerState->setDistribution(new GaussianDistribution(10, 10000));  // TODO arnaud use constructor from library
     return optimizer->compute(context, optimizerContext, optimizerState);
-    */
     
-    OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
-    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
+    
+    /*OptimizerPtr optimizer = asyncEDAOptimizer(15, 1000, 300, 1500, 15);
+    OptimizerContextPtr optimizerContext = distributedOptimizerContext(context, new ProteinLearnerObjectiveFunction(), projectName, source, destination, managerHostName, managerPort, requiredCpus, requiredMemory, requiredTime, 150000);
     OptimizerStatePtr optimizerState = new OptimizerState();
     optimizerState->setDistribution(distributions);
     
     return optimizer->compute(context, optimizerContext, optimizerState);
-    
+    */
     //return Variable();
     
     /*

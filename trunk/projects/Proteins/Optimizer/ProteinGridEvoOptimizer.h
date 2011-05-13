@@ -17,27 +17,7 @@
 #include <set>
 
 namespace lbcpp
-{
-
-class ProteinObjectiveFunction : public Function
-{
-  virtual size_t getNumRequiredInputs() const
-    {return 1;}
-  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
-    {return numericalProteinFeaturesParametersClass;}
-  virtual String getOutputPostFix() const
-    {return T("ProteinObjectiveFunction evalued");}
-  virtual TypePtr initializeFunction(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, String& outputName, String& outputShortName)
-    {return doubleType;}
-  Variable computeFunction(ExecutionContext& context, const Variable* inputs) const
-  {
-    WorkUnitPtr wu = new ProteinLearner();
-    wu->parseArguments(context, T("-s ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/supervision -i ./../../projects/boinc.run.montefiore.ulg.ac.be_evo/predicted -p \"numerical(") + inputs->toString() + T(",sgd)\" -t ss3 -n 1"));
-    ScoreObjectPtr scoreObject = (wu->run(context)).getObjectAndCast<ScoreObject>();
-    return scoreObject->getScoreToMinimize();
-  }
-};
-  
+{  
   
 class ProteinGridEvoOptimizerState : public GridEvoOptimizerState
 {

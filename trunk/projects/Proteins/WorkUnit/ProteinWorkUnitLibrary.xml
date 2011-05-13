@@ -67,6 +67,9 @@
     <variable type="File" name="predictionDirectory" shortName="o" description="The directory where to save predictions (optional)"/>
     <variable type="File" name="learnedModelFile" shortName="l" description="The file where to save learned model (optional)"/>
   </class>
+  
+  <!-- ProteinLearnerObjectiveFunction -->
+  <class name="ProteinLearnerObjectiveFunction" base="SimpleUnaryFunction"/>
          
   <!-- BricoBox -->
   <class name="CheckDisulfideBondsWorkUnit" base="WorkUnit">
