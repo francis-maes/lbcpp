@@ -58,12 +58,12 @@ public:
     : CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    sons[0] = Variable(new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover)));
+    sons[0] = new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover));
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
-      sons[i + 1] = Variable(samplers[i]);
-      SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
+      SamplerPtr t = samplers[i].getObjectAndCast<Sampler>();
+      sons[i + 1] = t;
 
       if (t.isInstanceOf<PhiPsiMoverSampler> ())
         whichMover[phipsi] = i;
@@ -83,13 +83,13 @@ public:
       numMover(probabilitiesMover->getNumElements())
   {
     // select mover
-    sons[0] = Variable(new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover)));
+    sons[0] = new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover));
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
-      sons[i + 1] = Variable(samplers[i]);
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
-
+      sons[i + 1] = t;
+      
       if (t.isInstanceOf<PhiPsiMoverSampler> ())
         whichMover[phipsi] = i;
       else if (t.isInstanceOf<ShearMoverSampler> ())
@@ -103,26 +103,12 @@ public:
     }
   }
 
-  ProteinMoverSampler(const ProteinMoverSampler& copy)
-    : CompositeSampler(copy.numMover + 1), numMover(copy.numMover),
-      whichMover(copy.whichMover)
-  {
-    for (size_t i = 0; i < sons.size(); i++)
-      sons[i] = Variable(copy.sons[i].getObjectAndCast<Sampler> ()->cloneAndCast<Sampler>());
-  }
-
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t indexMover = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
-        random, inputs).getInteger();
-    SamplerPtr sampler = sons[indexMover + 1].getObjectAndCast<Sampler> ();
-    ProteinMoverPtr sampled = (sampler->sample(context, random, inputs)).getObjectAndCast<
-        ProteinMover> ();
-
-    Variable mover = Variable(sampled);
-
-    return mover;
+    size_t indexMover = sons[0]->sample(context, random, inputs).getInteger();
+    SamplerPtr sampler = sons[indexMover + 1];
+    return sampler->sample(context, random, inputs);
   }
 
   /**
@@ -193,9 +179,9 @@ public:
       }
     }
 
-    sons[0].getObjectAndCast<Sampler> ()->learn(context, moverFrequencies);
+    sons[0]->learn(context, moverFrequencies);
     for (size_t i = 0; i < numMover; i++)
-      sons[i + 1].getObjectAndCast<Sampler> ()->learn(context, samples[i]);
+      sons[i + 1]->learn(context, samples[i]);
   }
 
 protected:

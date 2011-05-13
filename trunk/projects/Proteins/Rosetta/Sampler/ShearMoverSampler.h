@@ -13,7 +13,6 @@
 # include "../Sampler.h"
 # include "../ProteinMover/ShearMover.h"
 # include "SimpleResidueSampler.h"
-# include "GaussianContinuousSampler.h"
 
 namespace lbcpp
 {
@@ -25,7 +24,6 @@ class ShearMoverSampler : public CompositeSampler
 {
 public:
   ShearMoverSampler()
-    : CompositeSampler(3)
   {
   }
 
@@ -33,35 +31,20 @@ public:
     : CompositeSampler(3)
   {
     // select residue
-    sons[0] = Variable(
-        new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue))));
+    sons[0] = new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue)));
     //select phi
-    sons[1] = Variable(new GaussianContinuousSampler(meanPhi, stdPhi));
+    sons[1] = gaussianSampler(meanPhi, stdPhi);
     // select psi
-    sons[2] = Variable(new GaussianContinuousSampler(meanPsi, stdPsi));
-  }
-
-  ShearMoverSampler(const ShearMoverSampler& sampler)
-    : CompositeSampler(3)
-  {
-    sons[0] = Variable(new SimpleResidueSampler(*sampler.sons[0].getObjectAndCast<
-        SimpleResidueSampler> ()));
-    sons[1] = Variable(new GaussianContinuousSampler(*sampler.sons[1].getObjectAndCast<
-        GaussianContinuousSampler> ()));
-    sons[2] = Variable(new GaussianContinuousSampler(*sampler.sons[2].getObjectAndCast<
-        GaussianContinuousSampler> ()));
+    sons[2] = gaussianSampler(meanPsi, stdPsi);
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    size_t residue = sons[0].getObjectAndCast<SimpleResidueSampler> ()->sample(context, random,
-        inputs).getInteger();
+    size_t residue = sons[0]->sample(context, random, inputs).getInteger();
     // TODO rajouter la dependance entre le residu et les angles
-    double phi = sons[1].getObjectAndCast<GaussianContinuousSampler> ()->sample(context, random,
-        inputs).getDouble();
-    double psi = sons[2].getObjectAndCast<GaussianContinuousSampler> ()->sample(context, random,
-        inputs).getDouble();
+    double phi = sons[1]->sample(context, random, inputs).getDouble();
+    double psi = sons[2]->sample(context, random, inputs).getDouble();
     ShearMoverPtr mover = new ShearMover(residue, phi, psi);
     return Variable(mover);
   }
@@ -88,9 +71,9 @@ public:
       datasetPsi.push_back(
           std::pair<Variable, Variable>(Variable(mover->getDeltaPsi()), Variable()));
     }
-    sons[0].getObjectAndCast<SimpleResidueSampler> ()->learn(context, datasetResidue);
-    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetPhi);
-    sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetPsi);
+    sons[0]->learn(context, datasetResidue);
+    sons[1]->learn(context, datasetPhi);
+    sons[2]->learn(context, datasetPsi);
   }
 
 protected:

@@ -22,27 +22,28 @@ class ParzenContinuousSampler : public ContinuousSampler
 {
 public:
   ParzenContinuousSampler()
-    : ContinuousSampler(), precision(0.0001), excursion(6), kernelWidth(0.25),
+    : mean(0.0), stddev(1.0), precision(0.0001), excursion(6), kernelWidth(0.25),
       learned(false), fixedAbscissa(false)
   {
   }
 
   ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25,
-      double initialMean = 0, double initialStd = 1)
-    : ContinuousSampler(initialMean, initialStd), precision(precision), excursion(excursion),
+      double initialMean = 0, double initialStddev = 1)
+    : mean(initialMean), stddev(initialStddev), precision(precision), excursion(excursion),
       kernelWidth(kernelWidth), learned(false), fixedAbscissa(false)
   {
   }
 
   ParzenContinuousSampler(double precision, double minAbscissa, double maxAbscissa,
-      double kernelWidth, double initialMean, double initialStd)
-    : ContinuousSampler(initialMean, initialStd), precision(precision), excursion(1),
+      double kernelWidth, double initialMean, double initialStddev)
+    : mean(initialMean), stddev(initialStddev), precision(precision), excursion(1),
       kernelWidth(kernelWidth), learned(false), fixedAbscissa(true)
   {
     double delta = std::abs((maxAbscissa - minAbscissa) * precision);
     abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
 
+/*
   ParzenContinuousSampler(const ParzenContinuousSampler& sampler)
     : ContinuousSampler(sampler.mean, sampler.std), learned(sampler.learned),
       precision(sampler.precision), excursion(sampler.excursion),
@@ -57,17 +58,17 @@ public:
 
   ~ParzenContinuousSampler()
   {
-  }
+  }*/
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     if (!learned)
       if (!fixedAbscissa)
-        return Variable(random->sampleDoubleFromGaussian(mean, std));
+        return Variable(random->sampleDoubleFromGaussian(mean, stddev));
       else
         return Variable(juce::jlimit(abscissa->getValue(0), abscissa->getValue(
-            abscissa->getNumElements() - 1), random->sampleDoubleFromGaussian(mean, std)));
+            abscissa->getNumElements() - 1), random->sampleDoubleFromGaussian(mean, stddev)));
     else
     {
       size_t minIndex = 0;
@@ -105,11 +106,11 @@ public:
     double temporaryVariance = getVariance(dataset, mean);
     if (temporaryVariance <= 0)
       temporaryVariance = juce::jmax(1.0, std::abs(mean * 0.3));
-    std = std::sqrt(temporaryVariance);
+    stddev = std::sqrt(temporaryVariance);
 
     double delta = 0;
     if (!fixedAbscissa)
-      delta = std::abs(2 * excursion * std * precision);
+      delta = std::abs(2 * excursion * stddev * precision);
     else
       delta = (abscissa->getValue(abscissa->getNumElements() - 1) - abscissa->getValue(0))
           * precision;
@@ -117,14 +118,13 @@ public:
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     if (!fixedAbscissa)
     {
-      double minAbscissa = mean - excursion * std;
-      double maxAbscissa = mean + excursion * std;
+      double minAbscissa = mean - excursion * stddev;
+      double maxAbscissa = mean + excursion * stddev;
       abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
     }
     double stdCorrectionFactor = dataset.size() >= 20 ? kernelWidth : kernelWidth * (20.0
         / (double)dataset.size());
-    DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, std
-        * stdCorrectionFactor);
+    DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, stddev * stdCorrectionFactor);
     integral = createIntegral(frequencies, delta);
   }
 
@@ -209,6 +209,8 @@ protected:
   bool learned;
   DenseDoubleVectorPtr integral;
   DenseDoubleVectorPtr abscissa;
+  double mean;
+  double stddev;
   double precision;
   double excursion;
   double kernelWidth;

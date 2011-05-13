@@ -180,7 +180,6 @@ IF(LBCPP_PROTEIN_ROSETTA)
   )
   
     SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
-    Rosetta/Sampler/GaussianContinuousSampler.h
     Rosetta/Sampler/GaussianMultivariateSampler.h
     Rosetta/Sampler/EnumerationDiscreteSampler.h
     Rosetta/Sampler/ProteinMoverSampler.h
@@ -192,6 +191,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/Sampler/RigidBodySpinMoverSampler.h
     Rosetta/Sampler/RigidBodyGeneralMoverSampler.h
     Rosetta/Sampler/ShearMoverSampler.h
+    Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
   )
 

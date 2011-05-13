@@ -68,25 +68,10 @@ public:
     sons[0] = p;
   }
 
-  DualResidueSampler(const DualResidueSampler& sampler)
-    : CompositeSampler(1), numResidues(sampler.numResidues),
-      residuesDeviation(sampler.residuesDeviation)
-  {
-    GaussianMultivariateSamplerPtr temp = new GaussianMultivariateSampler(
-        (*(sampler.sons[0].getObjectAndCast<GaussianMultivariateSampler> ())));
-    sons[0] = temp;
-  }
-
-  ~DualResidueSampler()
-  {
-  }
-
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr temp =
-        (sons[0].getObjectAndCast<Sampler> ())->sample(context, random, NULL).getObjectAndCast<
-            Matrix> ();
+    MatrixPtr temp = sons[0]->sample(context, random, NULL).getObjectAndCast<Matrix>();
     double rand1 = std::abs(temp->getElement(0, 0).getDouble());
     double rand2 = std::abs(temp->getElement(1, 0).getDouble());
     rand1 = rand1 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand1)
@@ -161,7 +146,7 @@ public:
       data.push_back(std::pair<Variable, Variable>(Variable(residuePair), Variable()));
     }
 
-    sons[0].getObjectAndCast<Sampler> ()->learn(context, data);
+    sons[0]->learn(context, data);
   }
 
 protected:

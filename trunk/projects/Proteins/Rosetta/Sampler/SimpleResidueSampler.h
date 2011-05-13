@@ -37,20 +37,10 @@ public:
     sons[0] = temp;
   }
 
-  SimpleResidueSampler(const SimpleResidueSampler& sampler)
-    : CompositeSampler(1), numResidues(sampler.numResidues),
-      residuesDeviation(sampler.residuesDeviation)
-  {
-    ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(
-        (*(sampler.sons[0].getObjectAndCast<ParzenContinuousSampler> ())));
-    sons[0] = temp;
-  }
-
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    double rand = std::abs(
-        sons[0].getObjectAndCast<Sampler> ()->sample(context, random, NULL).getDouble());
+    double rand = std::abs(sons[0]->sample(context, random, NULL).getDouble());
     rand = rand > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - rand : rand;
 
     size_t residue = (size_t)std::floor(rand * (double)numResidues / (double)MAX_INTERVAL_VALUE);
@@ -82,7 +72,7 @@ public:
       data.push_back(std::pair<Variable, Variable>(Variable(value), Variable()));
     }
 
-    sons[0].getObjectAndCast<Sampler> ()->learn(context, data);
+    sons[0]->learn(context, data);
   }
 
 protected:
