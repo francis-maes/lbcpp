@@ -129,8 +129,7 @@ public:
    * dataset = first : ProteinMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
-      std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 1)
       return;
@@ -194,9 +193,9 @@ public:
       }
     }
 
-    sons[0].getObjectAndCast<Sampler> ()->learn(context, random, moverFrequencies);
+    sons[0].getObjectAndCast<Sampler> ()->learn(context, moverFrequencies);
     for (size_t i = 0; i < numMover; i++)
-      sons[i + 1].getObjectAndCast<Sampler> ()->learn(context, random, samples[i]);
+      sons[i + 1].getObjectAndCast<Sampler> ()->learn(context, samples[i]);
   }
 
 protected:

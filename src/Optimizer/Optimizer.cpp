@@ -159,7 +159,8 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 {
   ScopedLock _(lock);
   
-  if (!inputs[0].isConvertibleToDouble()) {
+  if (!output.isConvertibleToDouble())
+  {
     context.warningCallback(T("OptimizerState::functionReturned"), T("Return value is not convertible to double"));
     processedRequests.push_back(std::make_pair(output.toDouble(), DBL_MAX));
   }

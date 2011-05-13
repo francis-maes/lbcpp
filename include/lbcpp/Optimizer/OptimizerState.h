@@ -9,9 +9,10 @@
 #ifndef LBCPP_OPTIMIZER_STATE_H_
 # define LBCPP_OPTIMIZER_STATE_H_
 
-#include <lbcpp/Distribution/Distribution.h>
-#include <lbcpp/Core/Function.h>
-#include <lbcpp/Optimizer/OptimizerContext.h>
+# include <lbcpp/Sampler/Sampler.h> // new 
+# include <lbcpp/Distribution/Distribution.h> // old
+# include <lbcpp/Core/Function.h>
+# include <lbcpp/Optimizer/OptimizerContext.h>
 
 namespace lbcpp
 {
@@ -80,7 +81,6 @@ extern ClassPtr optimizerStateClass;
 class DistributionBasedOptimizerState : public OptimizerState
 {
 public:    
-  // Distribution
   const DistributionPtr& getDistribution() const
     {return distribution;}
   
@@ -94,8 +94,24 @@ protected:
 };
 
 typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionBasedOptimizerStatePtr;
-extern ClassPtr distributionBasedOptimizerStateClass; 
+
+class SamplerBasedOptimizerState : public OptimizerState
+{
+public:
+  const SamplerPtr& getSampler() const
+    {return sampler;}
   
+  void setSampler(const SamplerPtr& newSampler)
+    {sampler = newSampler;}
+  
+protected:
+  friend class SamplerBasedOptimizerStateClass;
+
+  SamplerPtr sampler;
+};
+
+typedef ReferenceCountedObjectPtr<SamplerBasedOptimizerState> SamplerBasedOptimizerStatePtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_OPTIMIZER_STATE_H_

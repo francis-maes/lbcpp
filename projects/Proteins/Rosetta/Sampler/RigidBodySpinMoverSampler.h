@@ -64,8 +64,7 @@ public:
    * dataset = first : RigidBodySpinMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
-      std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 1)
       return;
@@ -82,8 +81,8 @@ public:
       datasetAmplitude.push_back(std::pair<Variable, Variable>(Variable(mover->getAmplitude()),
           Variable()));
     }
-    sons[0].getObjectAndCast<DualResidueSampler> ()->learn(context, random, datasetResidues);
-    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetAmplitude);
+    sons[0].getObjectAndCast<DualResidueSampler> ()->learn(context, datasetResidues);
+    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetAmplitude);
   }
 
 protected:

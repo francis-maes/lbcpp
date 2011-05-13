@@ -132,8 +132,7 @@ public:
    * expressed in terms of their integer value represented in double.
    *           second : not yet used.
    */
-  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
-      std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if ((dataset.size() < 2) || (numResidues <= 0))
       return;
@@ -141,7 +140,8 @@ public:
     std::vector<std::pair<Variable, Variable> > data;
     double scaleFactor = (double)MAX_INTERVAL_VALUE_DUAL / (double)numResidues;
     double varianceIncrement = (double)residuesDeviation * scaleFactor;
-
+    
+    RandomGeneratorPtr random = new RandomGenerator(); // francis: I do not understand why random is needed here ..
     for (size_t i = 0; i < dataset.size(); i++)
     {
       MatrixPtr residuePair = dataset[i].first.getObjectAndCast<Matrix> ();
@@ -161,7 +161,7 @@ public:
       data.push_back(std::pair<Variable, Variable>(Variable(residuePair), Variable()));
     }
 
-    sons[0].getObjectAndCast<Sampler> ()->learn(context, random, data);
+    sons[0].getObjectAndCast<Sampler> ()->learn(context, data);
   }
 
 protected:

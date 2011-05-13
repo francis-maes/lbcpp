@@ -23,7 +23,10 @@
   <class name="DistributionBasedOptimizerState" base="OptimizerState">
     <variable type="Distribution[Variable]" name="distribution"/>
   </class>
-    
+  <class name="SamplerBasedOptimizerState" base="OptimizerState">
+    <variable type="Sampler" name="sampler"/>
+  </class>
+
   <class name="OptimizerContext" base="Object" abstract="yes">
     <variable type="Function" name="objectiveFunction"/>
   </class>
