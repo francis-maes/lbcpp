@@ -91,8 +91,8 @@ public:
 
   ProteinMoverSamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
       core::pose::PoseOP target, core::pose::PoseOP reference, ProteinMoverSamplerPtr sampler,
-      std::vector<ProteinMoverPtr>& movers, int maxIterations, int numSamples = 1000,
-      double ratioGoodSamples = 0.5, int numMoversToKeep = 20)
+      std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
+      double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
   {
     ProteinMoverSamplerPtr workingSampler = new ProteinMoverSampler(*sampler);
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
@@ -101,15 +101,13 @@ public:
 
     context.enterScope(T("Protein EDA optimizer."));
 
-    for (int i = 0; i < maxIterations; i++)
+    for (size_t i = 0; i < maxIterations; i++)
     {
-      context.progressCallback(new ProgressionState((double)i, (double)maxIterations,
-          T("Iterations")));
+      context.progressCallback(new ProgressionState(i, maxIterations, T("Iterations")));
       std::list<MoverAndScore> tempList;
-      for (int j = 0; j < numSamples; j++)
+      for (size_t j = 0; j < numSamples; j++)
       {
-        ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<
-            ProteinMover> ();
+        ProteinMoverPtr mover = workingSampler->sample(context, random, NULL).getObjectAndCast<ProteinMover>();
 
         mover->move(workingPose);
         double score = evaluate(context, workingPose, reference);
@@ -143,14 +141,14 @@ public:
       size_t numLearningSamplesFirstPass = numLearningSamples / 2;
       size_t numLearningSamplesSecondPass = numLearningSamples - numLearningSamplesFirstPass;
       std::vector<MoverAndScore> moversVector(numLearningSamples);
-      for (int j = 0; j < numLearningSamplesFirstPass; j++)
+      for (size_t j = 0; j < numLearningSamplesFirstPass; j++)
       {
         moversVector[j] = MoverAndScore(tempList.front());
         tempList.pop_front();
       }
 
       std::vector<MoverAndScore> rest(tempList.size());
-      for (int j = 0; j < rest.size(); j++)
+      for (size_t j = 0; j < rest.size(); j++)
       {
         rest[j] = MoverAndScore(tempList.front());
         tempList.pop_front();
@@ -159,7 +157,7 @@ public:
       std::vector<size_t> ordering;
       random->sampleOrder((size_t)(rest.size()), ordering);
 
-      for (int j = 0; j < numLearningSamplesSecondPass; j++)
+      for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
         moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
 
       // TEST
@@ -167,19 +165,19 @@ public:
       std::cout << "numLearningSamplesFirstPass : " <<  numLearningSamplesFirstPass << std::endl;
       std::cout << "numLearningSampelsSecondPass : " << numLearningSamplesSecondPass << std::endl;
       std::cout << "======================= chosen movers : " << moversVector.size() << "==================== "<< std::endl;
-      for (int j = 0; j < moversVector.size(); j++)
+      for (size_t j = 0; j < moversVector.size(); j++)
       {
         printMover(moversVector[j].mover);
       }
       std::cout << "=================== affichage de rest : ========================" << rest.size() << std::endl;
-      for (int j = 0; j < rest.size(); j++)
+      for (size_t j = 0; j < rest.size(); j++)
       {
         printMover(rest[j].mover);
       }
       // FIN TEST
 
       std::vector<std::pair<Variable, Variable> > dataset(numLearningSamples);
-      for (int j = 0; j < numLearningSamples; j++)
+      for (size_t j = 0; j < numLearningSamples; j++)
         dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[j].mover),
             Variable());
 
@@ -196,7 +194,7 @@ public:
     // FIN TEST
 
     movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
-    for (int i = 0; i < numMoversToKeep; i++)
+    for (size_t i = 0; i < numMoversToKeep; i++)
     {
       // TEST
       printMover(moversToKeep.front().mover);

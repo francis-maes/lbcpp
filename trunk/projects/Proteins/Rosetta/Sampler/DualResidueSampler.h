@@ -94,8 +94,8 @@ public:
     rand2 = rand2 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand2)
         : rand2;
 
-    size_t firstResidue = std::floor(rand1 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
-    size_t secondResidue = std::floor(rand2 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
+    size_t firstResidue = (size_t)std::floor(rand1 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
+    size_t secondResidue = (size_t)std::floor(rand2 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
 
     if (firstResidue == numResidues)
       firstResidue--;

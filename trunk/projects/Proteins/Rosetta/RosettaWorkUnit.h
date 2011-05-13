@@ -82,9 +82,8 @@ public:
     double frequenceVerbosity = 0.0001;
 
     // Creating parallel workunits
-    CompositeWorkUnitPtr proteinsOptimizer = new CompositeWorkUnit(T("ProteinsOptimizer"),
-        numProteins);
-    for (int i = 0; i < proteinsOptimizer->getNumWorkUnits(); i++)
+    CompositeWorkUnitPtr proteinsOptimizer = new CompositeWorkUnit(T("ProteinsOptimizer"), numProteins);
+    for (size_t i = 0; i < proteinsOptimizer->getNumWorkUnits(); i++)
     {
       ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein> ();
       core::pose::PoseOP currentPose = convertProteinToPose(context, currentProtein);
