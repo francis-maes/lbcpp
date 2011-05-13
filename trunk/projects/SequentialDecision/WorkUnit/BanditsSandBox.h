@@ -616,7 +616,7 @@ public:
     // optimizer context
     FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, trainingStates);
     objectiveFunction->initialize(context, distribution->getElementsType());
-    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(objectiveFunction);
+    OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction);
 
     // optimizer
     OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
