@@ -14,6 +14,7 @@
 # include <lbcpp/Optimizer/Optimizer.h>
 # include <lbcpp/Optimizer/OptimizerContext.h>
 # include <lbcpp/Optimizer/OptimizerState.h>
+# include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
 {
@@ -607,16 +608,18 @@ public:
     size_t numBests = 10;
 
     // optimizer state
-    IndependentDoubleVectorDistributionPtr distribution = new IndependentDoubleVectorDistribution(parametersEnumeration);
+    SamplerPtr sampler = independentDenseDoubleVectorSampler(parametersEnumeration, gaussianSampler());
+
+/*    IndependentDoubleVectorDistributionPtr distribution = new IndependentDoubleVectorDistribution(parametersEnumeration);
     for (size_t i = 0; i < parametersEnumeration->getNumElements(); ++i)
       distribution->setSubDistribution(i, new GaussianDistribution(0.0, 1.0));
     DistributionBasedOptimizerStatePtr optimizerState = new DistributionBasedOptimizerState();
-    jassertfalse; // FIXME: julien
-    //optimizerState->setDistribution(distribution);
+    optimizerState->setDistribution(distribution);*/
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);
 
     // optimizer context
     FunctionPtr objectiveFunction = new EvaluateOptimizedDiscreteBanditPolicyParameters(perception, numBandits, maxTimeStep, trainingStates);
-    objectiveFunction->initialize(context, distribution->getElementsType());
+    objectiveFunction->initialize(context, denseDoubleVectorClass(parametersEnumeration));
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction);
 
     // optimizer
