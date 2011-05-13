@@ -97,11 +97,8 @@ typedef ReferenceCountedObjectPtr<Function> FunctionPtr;
 class CompositeFunction;
 typedef ReferenceCountedObjectPtr<CompositeFunction> CompositeFunctionPtr;
 
-class Frame;
-typedef ReferenceCountedObjectPtr<Frame> FramePtr;
-
-class FrameClass;
-typedef ReferenceCountedObjectPtr<FrameClass> FrameClassPtr;
+class Sampler;
+typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 
 }; /* namespace lbcpp */
 

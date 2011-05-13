@@ -181,7 +181,7 @@ public:
         dataset[j] = std::pair<Variable, Variable>(Variable(moversVector[j].mover),
             Variable());
 
-      workingSampler->learn(context, random, dataset);
+      workingSampler->learn(context, dataset);
 
       // TEST
       workingSampler->saveToFile(context, context.getFile(T("sampler_temp_") + String(i)

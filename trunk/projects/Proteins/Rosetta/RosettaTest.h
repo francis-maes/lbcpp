@@ -148,7 +148,7 @@ public:
     learning.push_back(std::pair<Variable, Variable>(Variable(new RigidBodyTransMover(0, 3, -1.3)),
         Variable()));
 
-    samp->learn(context, random, learning);
+    samp->learn(context, learning);
     random = new RandomGenerator(0);
     RandomGeneratorPtr random2 = new RandomGenerator(0);
 

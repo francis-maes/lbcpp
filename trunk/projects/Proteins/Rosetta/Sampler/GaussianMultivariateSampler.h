@@ -109,8 +109,7 @@ public:
     return Variable(result);
   }
 
-  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
-      std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2 * numClusters)
     {

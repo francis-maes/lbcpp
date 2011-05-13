@@ -71,8 +71,7 @@ public:
    * dataset = first : PhiPsiMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
-      std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2)
       return;
@@ -90,9 +89,9 @@ public:
       datasetPsi.push_back(
           std::pair<Variable, Variable>(Variable(mover->getDeltaPsi()), Variable()));
     }
-    sons[0].getObjectAndCast<SimpleResidueSampler> ()->learn(context, random, datasetResidue);
-    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetPhi);
-    sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, random, datasetPsi);
+    sons[0].getObjectAndCast<SimpleResidueSampler> ()->learn(context, datasetResidue);
+    sons[1].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetPhi);
+    sons[2].getObjectAndCast<GaussianContinuousSampler> ()->learn(context, datasetPsi);
   }
 
 protected:
