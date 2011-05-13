@@ -51,22 +51,21 @@ public:
    * dataset = first : RigidBodySpinMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 1)
       return;
 
-    std::vector<std::pair<Variable, Variable> > datasetResidues;
-    std::vector<std::pair<Variable, Variable> > datasetAmplitude;
+    std::vector<Variable> datasetResidues;
+    std::vector<Variable> datasetAmplitude;
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      RigidBodySpinMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodySpinMover> ();
-      MatrixPtr tempResidue = new DoubleMatrix(2, 1);
-      tempResidue->setElement(0, 0, Variable((double)mover->getIndexResidueOne()));
-      tempResidue->setElement(1, 0, Variable((double)mover->getIndexResidueTwo()));
-      datasetResidues.push_back(std::pair<Variable, Variable>(Variable(tempResidue), Variable()));
-      datasetAmplitude.push_back(std::pair<Variable, Variable>(Variable(mover->getAmplitude()),
-          Variable()));
+      RigidBodySpinMoverPtr mover = dataset[i].getObjectAndCast<RigidBodySpinMover> ();
+      DoubleMatrixPtr tempResidue = new DoubleMatrix(2, 1);
+      tempResidue->setValue(0, 0, (double)mover->getIndexResidueOne());
+      tempResidue->setValue(1, 0, (double)mover->getIndexResidueTwo());
+      datasetResidues.push_back(tempResidue);
+      datasetAmplitude.push_back(mover->getAmplitude());
     }
     samplers[0]->learn(context, datasetResidues);
     samplers[1]->learn(context, datasetAmplitude);

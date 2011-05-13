@@ -115,66 +115,56 @@ public:
    * dataset = first : ProteinMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 1)
       return;
 
-    std::vector<std::pair<Variable, Variable> > moverFrequencies;
-    std::vector<std::vector<std::pair<Variable, Variable> > > samples(numMover);
+    std::vector<Variable> moverFrequencies;
+    std::vector<std::vector<Variable> > samples(numMover);
 
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      ProteinMoverPtr t = dataset[i].first.getObjectAndCast<ProteinMover> ();
+      ProteinMoverPtr t = dataset[i].getObjectAndCast<ProteinMover> ();
 
       if (t.isInstanceOf<PhiPsiMover> ())
       {
         if (whichMover[phipsi] >= 0)
         {
-          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(whichMover[phipsi]),
-              Variable()));
-          samples[whichMover[phipsi]].push_back(std::pair<Variable, Variable>(Variable(t),
-              Variable()));
+          moverFrequencies.push_back(whichMover[phipsi]);
+          samples[whichMover[phipsi]].push_back(t);
         }
       }
       else if (t.isInstanceOf<ShearMover> ())
       {
         if (whichMover[shear] >= 0)
         {
-          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(whichMover[shear]),
-              Variable()));
-          samples[whichMover[shear]].push_back(std::pair<Variable, Variable>(Variable(t),
-              Variable()));
+          moverFrequencies.push_back(whichMover[shear]);
+          samples[whichMover[shear]].push_back(t);
         }
       }
       else if (t.isInstanceOf<RigidBodyTransMover> ())
       {
         if (whichMover[rigidbodytrans] >= 0)
         {
-          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
-              whichMover[rigidbodytrans]), Variable()));
-          samples[whichMover[rigidbodytrans]].push_back(std::pair<Variable, Variable>(Variable(t),
-              Variable()));
+          moverFrequencies.push_back(whichMover[rigidbodytrans]);
+          samples[whichMover[rigidbodytrans]].push_back(t);
         }
       }
       else if (t.isInstanceOf<RigidBodySpinMover> ())
       {
         if (whichMover[rigidbodyspin] >= 0)
         {
-          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
-              whichMover[rigidbodyspin]), Variable()));
-          samples[whichMover[rigidbodyspin]].push_back(std::pair<Variable, Variable>(Variable(t),
-              Variable()));
+          moverFrequencies.push_back(whichMover[rigidbodyspin]);
+          samples[whichMover[rigidbodyspin]].push_back(t);
         }
       }
       else if (t.isInstanceOf<RigidBodyGeneralMover> ())
       {
         if (whichMover[rigidbodygeneral] >= 0)
         {
-          moverFrequencies.push_back(std::pair<Variable, Variable>(Variable(
-              whichMover[rigidbodygeneral]), Variable()));
-          samples[whichMover[rigidbodygeneral]].push_back(std::pair<Variable, Variable>(
-              Variable(t), Variable()));
+          moverFrequencies.push_back(whichMover[rigidbodygeneral]);
+          samples[whichMover[rigidbodygeneral]].push_back(t);
         }
       }
     }

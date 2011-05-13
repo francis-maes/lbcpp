@@ -53,23 +53,20 @@ public:
    * dataset = first : ShearMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2)
       return;
 
-    std::vector<std::pair<Variable, Variable> > datasetResidue;
-    std::vector<std::pair<Variable, Variable> > datasetPhi;
-    std::vector<std::pair<Variable, Variable> > datasetPsi;
+    std::vector<Variable> datasetResidue;
+    std::vector<Variable> datasetPhi;
+    std::vector<Variable> datasetPsi;
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      ShearMoverPtr mover = dataset[i].first.getObjectAndCast<ShearMover> ();
-      datasetResidue.push_back(std::pair<Variable, Variable>(Variable(mover->getResidueIndex()),
-          Variable()));
-      datasetPhi.push_back(
-          std::pair<Variable, Variable>(Variable(mover->getDeltaPhi()), Variable()));
-      datasetPsi.push_back(
-          std::pair<Variable, Variable>(Variable(mover->getDeltaPsi()), Variable()));
+      ShearMoverPtr mover = dataset[i].getObjectAndCast<ShearMover> ();
+      datasetResidue.push_back(mover->getResidueIndex());
+      datasetPhi.push_back(mover->getDeltaPhi());
+      datasetPsi.push_back(mover->getDeltaPsi());
     }
     samplers[0]->learn(context, datasetResidue);
     samplers[1]->learn(context, datasetPhi);

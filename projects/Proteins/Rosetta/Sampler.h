@@ -15,7 +15,6 @@
 namespace lbcpp
 {
 
-extern SamplerPtr gaussianContinuousSampler();
 extern SamplerPtr enumerationDiscreteSampler();
 extern SamplerPtr parzenContinuousSampler();
 extern SamplerPtr proteinMoverSampler();

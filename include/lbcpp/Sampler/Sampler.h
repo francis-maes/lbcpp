@@ -24,7 +24,7 @@ class Sampler : public Object
 public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const = 0;
 
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset) = 0;
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset) = 0;
 
   lbcpp_UseDebuggingNewOperator
 

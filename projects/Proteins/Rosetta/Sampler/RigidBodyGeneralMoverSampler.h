@@ -52,25 +52,23 @@ public:
    * dataset = first : RigidBodyGeneralMoverPtr observed
    *           second : not yet used
    */
-  virtual void learn(ExecutionContext& context, const std::vector<std::pair<Variable, Variable> >& dataset)
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if (dataset.size() < 2)
       return;
 
-    std::vector<std::pair<Variable, Variable> > datasetResidues;
-    std::vector<std::pair<Variable, Variable> > datasetMagnitude;
-    std::vector<std::pair<Variable, Variable> > datasetAmplitude;
+    std::vector<Variable> datasetResidues;
+    std::vector<Variable> datasetMagnitude;
+    std::vector<Variable> datasetAmplitude;
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      RigidBodyGeneralMoverPtr mover = dataset[i].first.getObjectAndCast<RigidBodyGeneralMover> ();
+      RigidBodyGeneralMoverPtr mover = dataset[i].getObjectAndCast<RigidBodyGeneralMover> ();
       MatrixPtr tempResidue = new DoubleMatrix(2, 1);
       tempResidue->setElement(0, 0, Variable((double)mover->getIndexResidueOne()));
       tempResidue->setElement(1, 0, Variable((double)mover->getIndexResidueTwo()));
-      datasetResidues.push_back(std::pair<Variable, Variable>(Variable(tempResidue), Variable()));
-      datasetMagnitude.push_back(std::pair<Variable, Variable>(Variable(mover->getMagnitude()),
-          Variable()));
-      datasetAmplitude.push_back(std::pair<Variable, Variable>(Variable(mover->getAmplitude()),
-          Variable()));
+      datasetResidues.push_back(tempResidue);
+      datasetMagnitude.push_back(mover->getMagnitude());
+      datasetAmplitude.push_back(mover->getAmplitude());
     }
     samplers[0]->learn(context, datasetResidues);
     samplers[1]->learn(context, datasetMagnitude);
