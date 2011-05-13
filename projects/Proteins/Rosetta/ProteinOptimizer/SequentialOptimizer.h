@@ -76,7 +76,7 @@ public:
     bool store = getVerbosity();
     setVerbosity(false);
 
-    for (int i = 1; i <= pose->n_residue(); i++)
+    for (size_t i = 1; i <= pose->n_residue(); i++)
     {
       maxSteps = (int)std::max((int)((factor * log((double)i)) + 1), numberDecreasingSteps);
 

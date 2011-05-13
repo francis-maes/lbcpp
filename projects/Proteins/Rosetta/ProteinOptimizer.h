@@ -231,7 +231,7 @@ protected:
             (double)resultCallbackValues.at(0).getInteger(), (double)maxStepsNumber,
             T("Iterations")));
         context.enterScope(nameScopes.at(2));
-        for (int i = 0; i < resultCallbackValues.size(); i++)
+        for (size_t i = 0; i < resultCallbackValues.size(); i++)
           context.resultCallback(nameScopes.at(i + 3), Variable(resultCallbackValues.at(i)));
         context.leaveScope(returnValue);
       }
