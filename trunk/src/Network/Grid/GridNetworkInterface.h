@@ -16,19 +16,16 @@ namespace lbcpp
 
 extern ClassPtr gridNetworkInterfaceClass;
 
-class ClientGridNetworkInterface : public GridNetworkInterface
+class ForwarderGridNetworkInterface : public ForwarderNetworkInterface<GridNetworkInterface>
 {
 public:
-  ClientGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : GridNetworkInterface(context, client, nodeName) {}
-  ClientGridNetworkInterface() {}
+  ForwarderGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
+    : ForwarderNetworkInterface<GridNetworkInterface>(context, client, nodeName) {}
+  ForwarderGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
   virtual ContainerPtr getFinishedExecutionTraces();
   virtual void removeExecutionTraces(ContainerPtr networkResponses);
-  
-  /* NetworkInterface */
-  void closeCommunication();
 };
 
 class SgeGridNetworkInterface : public GridNetworkInterface

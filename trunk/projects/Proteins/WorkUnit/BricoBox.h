@@ -4,6 +4,11 @@
 
 #include "Data/Formats/SPXFileParser.h"
 
+#ifdef LBCPP_NETWORKING
+# include <lbcpp/Network/NetworkInterface.h>
+# include <lbcpp/Network/NetworkNotification.h>
+#endif
+
 /*
 ** BricoBox - Some non-important test tools
 */
@@ -313,7 +318,7 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
 #ifdef LBCPP_NETWORKING
-    for (size_t i = 0; i < 5; ++i)
+    for (size_t i = 0; i < 50; ++i)
     {
       NetworkClientPtr client = blockingNetworkClient(context, 3);
       if (!client->startClient(T("localhost"), 1664))
@@ -358,6 +363,35 @@ protected:
 
   File spxFile;
   File outputDirectory;
+};
+
+class CheckManagerWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+#ifdef LBCPP_NETWORKING
+    NetworkClientPtr client = blockingNetworkClient(context);
+    if (!client->startClient(T("localhost"), 1664))
+    {
+      context.errorCallback(T("CheckManagerWorkUnit::run"), T("Not connected !"));
+      return false;
+    }
+    context.informationCallback(T("localhost"), T("Connected !"));
+    
+    ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, T("Alpha"));
+    client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
+    
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, T("CheckManagerWorkUnit"), T("Alpha"), T("Omega"), new UnknownFromManagerWorkUnit(), 1, 1, 1);
+    for (size_t i = 0; i < 1500; ++i)
+      context.informationCallback(String((int)i) + T(" : ") + interface->pushWorkUnit(request));
+    client->sendVariable(new CloseCommunicationNotification());
+    client->stopClient();
+    
+    return true;
+#endif
+    return false;
+  }
 };
 
 };

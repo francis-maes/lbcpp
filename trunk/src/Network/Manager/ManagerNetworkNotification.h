@@ -17,10 +17,14 @@ namespace lbcpp
 class ManagerNetworkNotification : public NetworkNotification
 {
 public:
-  virtual void notifyNetwork(const NetworkInterfacePtr& target)
-    {notifyManagerNetwork(target);}
+  virtual void notifyNetwork(const NetworkInterfacePtr& target, const NetworkClientPtr& client)
+  {
+    if (!client)
+      return;
+    notifyManagerNetwork(target, client);
+  }
 
-  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target) = 0;
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target, const NetworkClientPtr& client) = 0;
 };
 
 class PushWorkUnitNotification : public ManagerNetworkNotification
@@ -30,10 +34,10 @@ public:
     : request(request) {}
   PushWorkUnitNotification() {}
 
-  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target, const NetworkClientPtr& client)
   {
     String res = target->pushWorkUnit(request);
-    target->getNetworkClient()->sendVariable(res);
+    client->sendVariable(res);
   }
 protected:
   friend class PushWorkUnitNotificationClass;
@@ -48,10 +52,10 @@ public:
     : identifier(identifier) {}
   IsWorkUnitFinishedNotification() {}
   
-  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target, const NetworkClientPtr& client)
   {
     bool res = target->isFinished(identifier);
-    target->getNetworkClient()->sendVariable(res);
+    client->sendVariable(res);
   }
   
 protected:
@@ -67,10 +71,10 @@ public:
     : identifier(identifier) {}
   GetExecutionTraceNotification() {}
   
-  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target)
+  virtual void notifyManagerNetwork(const ManagerNetworkInterfacePtr& target, const NetworkClientPtr& client)
   {
     ExecutionTraceNetworkResponsePtr res = target->getExecutionTrace(identifier);
-    target->getNetworkClient()->sendVariable(res);
+    client->sendVariable(res);
   }
 
 protected:

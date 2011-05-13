@@ -16,6 +16,7 @@
 #ifdef LBCPP_NETWORKING
 # include <lbcpp/Network/NetworkClient.h>
 # include <lbcpp/Network/NetworkInterface.h>
+# include <lbcpp/Network/NetworkNotification.h>
 #endif
 
 # include "../../../Distribution/Builder/IndependentMultiVariateDistributionBuilder.h"
@@ -281,7 +282,8 @@ public:
       if (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
       {
         // Establish network connection
-        ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+        NetworkClientPtr client;
+        ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context, client);
         if (!interface)
           continue;
         context.informationCallback(T("Sending WUs ..."));
@@ -301,7 +303,8 @@ public:
           state->totalNumberGeneratedWUs++;
           nb++;
         }
-        interface->closeCommunication();
+        client->sendVariable(new CloseCommunicationNotification());
+        client->stopClient();
         context.informationCallback(T("WUs generation: ") + String((int) nb) + T(" WU(s) generated"));
 
         
@@ -320,7 +323,8 @@ public:
       
 
       // handle finished WUs
-      ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+      NetworkClientPtr client;
+      ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context, client);
       if (!interface) 
         continue;
       
@@ -345,7 +349,8 @@ public:
         else 
           ++it;
       }
-      interface->closeCommunication();
+      client->sendVariable(new CloseCommunicationNotification());
+      client->stopClient();
       
       File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState_backup.xml")));
       state->saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("GridEvoOptimizerState.xml")));
@@ -428,17 +433,17 @@ private:
   size_t updateFactor;
   
 #ifdef LBCPP_NETWORKING
-  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
+  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context, NetworkClientPtr& client) const
   {       
-    NetworkClientPtr client = blockingNetworkClient(context);
+    client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
     {
       context.errorCallback(T("SendWorkUnit::run"), T("Not connected !"));
       return NULL;
     }
     context.informationCallback(managerHostName, T("Connected !"));
-    ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, source);
-    interface->sendInterfaceClass();
+    ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, source);
+    client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
     return interface;
   }
   

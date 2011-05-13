@@ -11,14 +11,7 @@
 
 using namespace lbcpp;  
 
-void ClientManagerNetworkInterface::closeCommunication()
-{
-  client->sendVariable(new CloseCommunicationNotification());
-  client->stopClient();
-  return;
-}
-
-String ClientManagerNetworkInterface::pushWorkUnit(WorkUnitNetworkRequestPtr request)
+String ForwarderManagerNetworkInterface::pushWorkUnit(WorkUnitNetworkRequestPtr request)
 {
   client->sendVariable(new PushWorkUnitNotification(request));
   String res = T("Error");
@@ -27,7 +20,7 @@ String ClientManagerNetworkInterface::pushWorkUnit(WorkUnitNetworkRequestPtr req
   return res;
 }
 
-bool ClientManagerNetworkInterface::isFinished(const String& identifier)
+bool ForwarderManagerNetworkInterface::isFinished(const String& identifier)
 {
   client->sendVariable(new IsWorkUnitFinishedNotification(identifier));
   bool res = false;
@@ -36,7 +29,7 @@ bool ClientManagerNetworkInterface::isFinished(const String& identifier)
   return res;
 }
 
-ExecutionTraceNetworkResponsePtr ClientManagerNetworkInterface::getExecutionTrace(const String& identifier)
+ExecutionTraceNetworkResponsePtr ForwarderManagerNetworkInterface::getExecutionTrace(const String& identifier)
 {
   client->sendVariable(new GetExecutionTraceNotification(identifier));
   ExecutionTraceNetworkResponsePtr res;

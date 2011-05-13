@@ -50,15 +50,15 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     ClassPtr type = remoteInterface->getClass();
     /* Strat communication (depending of the type) */
     NetworkInterfacePtr interface;
-    if (type->inheritsFrom(clientManagerNetworkInterfaceClass))
+    if (type->inheritsFrom(forwarderManagerNetworkInterfaceClass))
     {
-      interface = new FileSystemManagerNetworkInterface(context, client, T("Manager"), fileManager);
-      serverCommunication(context, interface);
+      interface = new FileSystemManagerNetworkInterface(context, T("Manager"), fileManager);
+      serverCommunication(context, interface, client);
     }
     else if (type->inheritsFrom(gridNetworkInterfaceClass))
     {
-      interface = new ClientGridNetworkInterface(context, client, remoteInterface->getName());
-      clientCommunication(context, interface);
+      interface = new ForwarderGridNetworkInterface(context, client, remoteInterface->getName());
+      clientCommunication(context, interface, client);
     }
     else
     {
@@ -68,39 +68,41 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     }
     
     /* Terminate the connection */
-    interface->closeCommunication();
     context.informationCallback(connectedHostName, T("Disconnected"));
   }
 }
 
-void ManagerWorkUnit::serverCommunication(ExecutionContext& context, ManagerNetworkInterfacePtr interface) const
+void ManagerWorkUnit::serverCommunication(ExecutionContext& context, const ManagerNetworkInterfacePtr& interface, const NetworkClientPtr& client) const
 {
-  NetworkClientPtr client = interface->getNetworkClient();
   while (client->isConnected() || client->hasVariableInQueue())
   {
-    NotificationPtr notification;
-    if (!client->receiveObject<Notification>(300000, notification) || !notification)
+    NetworkNotificationPtr notification;
+    if (!client->receiveObject<NetworkNotification>(300000, notification) || !notification)
     {
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return;
     }
-    notification->notify(interface);
+
+    if (notification.dynamicCast<CloseCommunicationNotification>())
+      client->stopClient();
+
+    notification->notifyNetwork(interface, client);
   }
 }
   
-void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNetworkInterfacePtr interface)
+void ManagerWorkUnit::clientCommunication(ExecutionContext& context, const GridNetworkInterfacePtr& interface, const NetworkClientPtr& client)
 {
   String nodeName = interface->getName();
   if (nodeName == String::empty)
   {
-    interface->getContext().warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("Fail - Empty node name"));
+    interface->getContext().warningCallback(client->getConnectedHostName(), T("Fail - Empty node name"));
     return;
   }
 
   /* Send new requests */
   std::vector<WorkUnitNetworkRequestPtr> waitingRequests;
   fileManager->getWaitingRequests(nodeName, waitingRequests);
-  sendRequests(context, interface, waitingRequests);
+  sendRequests(context, interface, client, waitingRequests);
 
   /* Get trace */
   ContainerPtr networkResponses = interface->getFinishedExecutionTraces();
@@ -113,7 +115,7 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNetwork
     ExecutionTraceNetworkResponsePtr response = networkResponses->getElement(i).getObjectAndCast<ExecutionTraceNetworkResponse>();
     if (!response)
     {
-      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("GetFinishedExecutionTraces - ExecutionTraceNetworkResponsePtr()"));
+      context.warningCallback(client->getConnectedHostName(), T("GetFinishedExecutionTraces - ExecutionTraceNetworkResponsePtr()"));
       continue;
     }
     WorkUnitNetworkRequestPtr request = fileManager->getRequest(response->getIdentifier());
@@ -121,9 +123,12 @@ void ManagerWorkUnit::clientCommunication(ExecutionContext& context, GridNetwork
       continue;
     fileManager->archiveRequest(new NetworkArchive(request, response));
   }
+
+  client->sendVariable(new CloseCommunicationNotification());
+  client->stopClient();
 }
 
-void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const std::vector<WorkUnitNetworkRequestPtr>& requests) const
+void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const NetworkClientPtr& client, const std::vector<WorkUnitNetworkRequestPtr>& requests) const
 {
   const size_t numRequests = requests.size();
   if (!numRequests)
@@ -141,7 +146,7 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfa
     /* Check acknowledgement */
     if (!results || results->getNumElements() != numThisTime)
     {
-      context.warningCallback(interface->getNetworkClient()->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
+      context.warningCallback(client->getConnectedHostName(), T("PushWorkUnits - No acknowledgement received."));
       std::vector<WorkUnitNetworkRequestPtr> errorRequests(requests.begin() + numRequestsSent, requests.begin() + numRequestsSent + numThisTime);        
       fileManager->setAsWaitingRequests(errorRequests);
     }
@@ -190,16 +195,16 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   }
   
   /* Slave mode - Execute received commands */
-  interface->sendInterfaceClass();
+  client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
   while (client->isConnected() || client->hasVariableInQueue())
   {
-    NotificationPtr notification;
-    if (!client->receiveObject<Notification>(300000, notification) || !notification)
+    NetworkNotificationPtr notification;
+    if (!client->receiveObject<NetworkNotification>(300000, notification) || !notification)
     {
       context.warningCallback(T("NetworkContext::run"), T("No notification received"));
       return false;
     }
-    notification->notify(interface);
+    notification->notifyNetwork(interface, client);
   }
   return true;
 }
@@ -230,9 +235,9 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
   }
   context.informationCallback(hostName, T("Connected !"));
   
-  ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, T("Client"));
-  interface->sendInterfaceClass();
+  ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, T("Client"));
   
+  client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
   if (!interface->isFinished(workUnitIdentifier))
   {
     context.informationCallback(T("GetTraceWorkUnit::run"), T("The Work Unit (") + workUnitIdentifier + T(") is not finished !"));
@@ -257,6 +262,8 @@ Variable GetTraceWorkUnit::run(ExecutionContext& context)
   trace->saveToFile(context, dst);
   context.informationCallback(T("The trace has been saved to ") + dst.getFullPathName().quoted());
   
-  interface->closeCommunication();
+  client->sendVariable(new CloseCommunicationNotification());
+  client->stopClient();
+
   return true;
 }

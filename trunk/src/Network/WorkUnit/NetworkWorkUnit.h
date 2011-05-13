@@ -30,11 +30,11 @@ protected:
   size_t port;
   NetworkProjectFileManagerPtr fileManager;
 
-  void serverCommunication(ExecutionContext& context, ManagerNetworkInterfacePtr interface) const;
-  void clientCommunication(ExecutionContext& context, GridNetworkInterfacePtr interface);
+  void serverCommunication(ExecutionContext& context, const ManagerNetworkInterfacePtr& interface, const NetworkClientPtr& client) const;
+  void clientCommunication(ExecutionContext& context, const GridNetworkInterfacePtr& interface, const NetworkClientPtr& client);
   
 private:
-  void sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const std::vector<WorkUnitNetworkRequestPtr>& requests) const; 
+  void sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const NetworkClientPtr& client, const std::vector<WorkUnitNetworkRequestPtr>& requests) const; 
 };
 
 class GridWorkUnit : public WorkUnit

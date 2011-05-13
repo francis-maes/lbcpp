@@ -11,6 +11,8 @@
 #include <lbcpp/library.h>
 #include <lbcpp/Network/NetworkClient.h>
 #include <lbcpp/Network/NetworkInterface.h>
+#include <lbcpp/Network/NetworkNotification.h>
+
 using namespace lbcpp;
 
 void usage()
@@ -256,15 +258,17 @@ int mainImpl(int argc, char** argv)
   }
   context->informationCallback(managerHostName, T("Connected !"));
 
-  ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(*context, client, source);
-  interface->sendInterfaceClass();
+  ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(*context, client, source);
+  client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
 
   WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(*context, projectName, source, destination, workUnit, requiredCpus, requiredMemory, requiredTime);
   String res = interface->pushWorkUnit(request);
+  client->sendVariable(new CloseCommunicationNotification());
+  client->stopClient();
+
   if (res == T("Error"))
   {
     context->errorCallback(T("SendWorkUnit::run"), T("Touble - We didn't correclty receive the acknowledgement"));
-    interface->closeCommunication();
     return false;
   }
   request->setIdentifier(res);
@@ -273,7 +277,6 @@ int mainImpl(int argc, char** argv)
   File f = context->getFile(projectName + T(".") + request->getIdentifier() + T(".request"));
   request->saveToFile(*context, f);
   
-  interface->closeCommunication();
   return true;
 }
 

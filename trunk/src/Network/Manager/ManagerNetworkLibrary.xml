@@ -5,7 +5,7 @@
   <!-- NetworkInterface -->
   <class name="ManagerNetworkInterface" base="NetworkInterface" abstract="yes"/>
   <class name="FileSystemManagerNetworkInterface" base="ManagerNetworkInterface"/>
-  <class name="ClientManagerNetworkInterface" base="ManagerNetworkInterface">
+  <class name="ForwarderManagerNetworkInterface" base="ManagerNetworkInterface">
     <constructor arguments="ExecutionContext&amp; context, NetworkClientPtr client, const String&amp; name"/>
   </class>
 
