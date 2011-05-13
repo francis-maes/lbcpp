@@ -34,9 +34,6 @@
   </class>
   
   <!-- Samplers -->
-  <class name="Sampler" base="Object" abstract="yes">
-  </class>
-  
   <class name="ContinuousSampler" base="Sampler" abstract="yes">
     <variable type="Double" name="mean" shortName="m" description="Mean of the distribution"/>
     <variable type="Double" name="std" shortName="s" description="Standard deviation of the distribution"/>

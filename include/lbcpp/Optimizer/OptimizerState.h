@@ -80,13 +80,12 @@ extern ClassPtr optimizerStateClass;
 class DistributionBasedOptimizerState : public OptimizerState
 {
 public:    
-  
   // Distribution
   const DistributionPtr& getDistribution() const
-  {return distribution;}
+    {return distribution;}
   
   void setDistribution(const DistributionPtr& newDistribution)
-  {distribution = newDistribution;}
+    {distribution = newDistribution;}
   
 protected:  
   friend class DistributionBasedOptimizerStateClass;

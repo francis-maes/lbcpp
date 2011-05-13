@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<library name="Sampler" directory="Sampler">
+
+  <include file="lbcpp/Sampler/Sampler.h"/>
+
+  <class name="Sampler" base="Object" abstract="yes"/>
+
+</library>
