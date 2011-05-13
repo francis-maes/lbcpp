@@ -1,17 +1,5 @@
-NetworkBugs:
-
- * InterprocessConnection::disconnect() race => volatile variables
- * DistributedOptimizerContext::context: mettre un lock en attendant, le ExecutionContext devrait être passé au ctor une fois pour toute
- * Enlever les std::cout
 
 
-Go:
- * learn a big model
- * integrate's olivier last modifs
- * Nouvelles features
- * Courbes dans l'evaluateur
- * GoPatterns
- * Utilisation du manager
 
 Proteins:
  * Ajouter des features de segments
@@ -36,3 +24,12 @@ Explorer:
      - Command: Type -> UICommand: (getIcon(), getName(), perform())
      - TreeItems: Type -> UITreeItemBuilder: (getIcon(), getToolTip(), getAttributes(), perform())
      - Component: Type -> UIComponent: (preferedSize, variableSelector, parameters, ...)
+
+Go:
+ * learn a big model
+ * integrate's olivier last modifs
+ * Nouvelles features
+ * Courbes dans l'evaluateur
+ * GoPatterns
+ * Utilisation du manager
+
