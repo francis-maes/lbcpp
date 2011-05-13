@@ -16,7 +16,8 @@ GENERATE_INTROSPECTION_CODE(Data/DataLibrary.xml DataLibrary.cpp)
 
 IF(LBCPP_NETWORKING)
   GENERATE_INTROSPECTION_CODE(Network/NetworkLibrary.xml NetworkLibrary.cpp)
-  GENERATE_INTROSPECTION_CODE(Network/Node/NetworkNodeLibrary.xml NetworkNodeLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Network/Grid/GridNetworkLibrary.xml GridNetworkLibrary.cpp)
+  GENERATE_INTROSPECTION_CODE(Network/Manager/ManagerNetworkLibrary.xml ManagerNetworkLibrary.cpp)
   GENERATE_INTROSPECTION_CODE(Network/WorkUnit/NetworkWorkUnitLibrary.xml NetworkWorkUnitLibrary.cpp)
 ENDIF(LBCPP_NETWORKING)
 
@@ -261,29 +262,27 @@ IF(LBCPP_NETWORKING)
     ../include/lbcpp/Network/NetworkCallback.h
     ../include/lbcpp/Network/NetworkInterface.h
     ../include/lbcpp/Network/NetworkNotification.h
+    ../include/lbcpp/Network/WorkUnitNetworkRequest.h
+    Network/WorkUnitNetworkRequest.cpp
     Network/NetworkLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/NetworkLibrary.cpp
   )
-
-  SET(LBCPP_NETWORK_NODE_SOURCES
-    ../include/lbcpp/Network/NetworkRequest.h
-    Network/Node/NetworkRequest.cpp
-    Network/Node/NodeNetworkNotification.h
-    Network/Node/NetworkNodeLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/NetworkNodeLibrary.cpp
+  
+  SET(LBCPP_NETWORK_GRID_SOURCES
+    Network/Grid/GridNetworkInterface.h
+    Network/Grid/GridNetworkInterface.cpp
+    Network/Grid/GridNetworkNotification.h
+    Network/Grid/GridNetworkLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/GridNetworkLibrary.cpp
   )
   
-  SET(LBCPP_NETWORK_GRID_NODE_SOURCES
-    Network/Node/GridNode/GridNodeNetworkInterface.h
-    Network/Node/GridNode/GridNodeNetworkInterface.cpp
-    Network/Node/GridNode/GridNodeNetworkNotification.h
-  )
-  
-  SET(LBCPP_NETWORK_MANAGER_NODE_SOURCES
-    Network/Node/ManagerNode/ManagerNodeNetworkInterface.h
-    Network/Node/ManagerNode/ManagerNodeNetworkInterface.cpp
-    Network/Node/ManagerNode/ManagerNodeNetworkNotification.h
-    Network/Node/ManagerNode/NetworkProjectFileManager.h
+  SET(LBCPP_NETWORK_MANAGER_SOURCES
+    Network/Manager/ManagerNetworkInterface.h
+    Network/Manager/ManagerNetworkInterface.cpp
+    Network/Manager/ManagerNetworkNotification.h
+    Network/Manager/NetworkProjectFileManager.h
+    Network/Manager/ManagerNetworkLibrary.xml
+    ${CMAKE_CURRENT_BINARY_DIR}/ManagerNetworkLibrary.cpp
   )
   
   SET(LBCPP_NETWORK_WORK_UNIT_SOURCES
@@ -707,9 +706,8 @@ SET(LBCPP_SOURCES
   
   # Network
   ${LBCPP_NETWORK_SOURCES}
-    ${LBCPP_NETWORK_NODE_SOURCES}
-      ${LBCPP_NETWORK_GRID_NODE_SOURCES}
-      ${LBCPP_NETWORK_MANAGER_NODE_SOURCES}
+    ${LBCPP_NETWORK_GRID_SOURCES}
+    ${LBCPP_NETWORK_MANAGER_SOURCES}
     ${LBCPP_NETWORK_WORK_UNIT_SOURCES}
   
   # Distribution
@@ -789,9 +787,8 @@ SOURCE_SUB_GROUP(Data Matrix FILES ${LBCPP_DATA_MATRIX_SOURCES})
 
 ## Network
 SOURCE_GROUP(Network FILES ${LBCPP_NETWORK_SOURCES})
-SOURCE_SUB_GROUP(Network Node FILES ${LBCPP_NETWORK_NODE_SOURCES})
-SOURCE_SUB_GROUP2(Network Node GridNode FILES ${LBCPP_NETWORK_GRID_NODE_SOURCES})
-SOURCE_SUB_GROUP2(Network Node ManagerNode FILES ${LBCPP_NETWORK_MANAGER_NODE_SOURCES})
+SOURCE_SUB_GROUP(Network Grid FILES ${LBCPP_NETWORK_GRID_SOURCES})
+SOURCE_SUB_GROUP(Network Manager FILES ${LBCPP_NETWORK_MANAGER_SOURCES})
 SOURCE_SUB_GROUP(Network WorkUnit FILES ${LBCPP_NETWORK_WORK_UNIT_SOURCES})
 
 ## Distribution

@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: NetworkRequest.h               | Network Request                 |
+| Filename: WorkUnitNetworkRequest.h       | Network Request of Work Unit    |
 | Author  : Julien Becker                  |                                 |
 | Started : 01/02/2011 19:26               |                                 |
 `------------------------------------------/                                 |
@@ -17,13 +17,13 @@
 namespace lbcpp
 {
 
-class NetworkRequest : public Object
+class WorkUnitNetworkRequest : public Object
 {
 public:
-  NetworkRequest(ExecutionContext& context,
+  WorkUnitNetworkRequest(ExecutionContext& context,
                  const String& projectName, const String& source, const String& destination, WorkUnitPtr workUnit,
                  size_t requiredCpus = 1, size_t requiredMemory = 2, size_t requiredTime = 10);
-  NetworkRequest() {}
+  WorkUnitNetworkRequest() {}
   
  void setIdentifier(const String& identifier)
     {this->identifier = identifier;}
@@ -56,7 +56,7 @@ public:
     {return workUnit ? workUnit->createObjectAndCast<WorkUnit>(context) : WorkUnitPtr();}
   
 protected:
-  friend class NetworkRequestClass;
+  friend class WorkUnitNetworkRequestClass;
 
   String identifier;
   String projectName;
@@ -72,17 +72,17 @@ protected:
   static String generateIdentifier();
 };
 
-typedef ReferenceCountedObjectPtr<NetworkRequest> NetworkRequestPtr;
+typedef ReferenceCountedObjectPtr<WorkUnitNetworkRequest> WorkUnitNetworkRequestPtr;
 
-class NetworkResponse : public Object
+class ExecutionTraceNetworkResponse : public Object
 {
 public:
-  NetworkResponse(ExecutionContext& context, const String& identifier, ExecutionTracePtr executionTrace)
+  ExecutionTraceNetworkResponse(ExecutionContext& context, const String& identifier, ExecutionTracePtr executionTrace)
     : identifier(identifier), trace(new XmlElement())
     {this->trace->saveObject(context, executionTrace, T("trace"));}
-  NetworkResponse(const String& identifier)
+  ExecutionTraceNetworkResponse(const String& identifier)
     : identifier(identifier) {}
-  NetworkResponse() {}
+  ExecutionTraceNetworkResponse() {}
 
   const String& getIdentifier() const
     {return identifier;}
@@ -91,37 +91,37 @@ public:
     {return trace ? trace->createObjectAndCast<ExecutionTrace>(context) : ExecutionTracePtr();}
 
 protected:
-  friend class NetworkResponseClass;
+  friend class ExecutionTraceNetworkResponseClass;
 
   String identifier;
   XmlElementPtr trace;
 };
 
-typedef ReferenceCountedObjectPtr<NetworkResponse> NetworkResponsePtr;
+typedef ReferenceCountedObjectPtr<ExecutionTraceNetworkResponse> ExecutionTraceNetworkResponsePtr;
 
 class NetworkArchive : public Object
 {
 public:
-  NetworkArchive(NetworkRequestPtr request, NetworkResponsePtr response)
+  NetworkArchive(WorkUnitNetworkRequestPtr request, ExecutionTraceNetworkResponsePtr response)
     : request(request), response(response) {}
   NetworkArchive() {}
   
-  const NetworkRequestPtr& getNetworkRequest() const
+  const WorkUnitNetworkRequestPtr& getWorkUnitNetworkRequest() const
     {return request;}
   
-  const NetworkResponsePtr& getNetworkResponse() const
+  const ExecutionTraceNetworkResponsePtr& getExecutionTraceNetworkResponse() const
     {return response;}
   
 protected:
   friend class NetworkArchiveClass;
   
-  NetworkRequestPtr request;
-  NetworkResponsePtr response;
+  WorkUnitNetworkRequestPtr request;
+  ExecutionTraceNetworkResponsePtr response;
 };
 
 typedef ReferenceCountedObjectPtr<NetworkArchive> NetworkArchivePtr;
 
-extern ClassPtr networkRequestClass;
+extern ClassPtr workUnitNetworkRequestClass;
 extern ClassPtr networkResponseClass;
 
 }; /* namespace */

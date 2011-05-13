@@ -281,7 +281,7 @@ public:
       if (state->totalNumberGeneratedWUs < totalNumberWuRequested && state->inProgressWUs.size() < numberWuInProgress) 
       {
         // Establish network connection
-        ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+        ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
         if (!interface)
           continue;
         context.informationCallback(T("Sending WUs ..."));
@@ -320,7 +320,7 @@ public:
       
 
       // handle finished WUs
-      ManagerNodeNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
+      ManagerNetworkInterfacePtr interface = getNetworkInterfaceAndConnect(context);
       if (!interface) 
         continue;
       
@@ -329,7 +329,7 @@ public:
       {
         if (interface->isFinished(*it))
         {
-          NetworkResponsePtr res = interface->getExecutionTrace(*it);
+          ExecutionTraceNetworkResponsePtr res = interface->getExecutionTrace(*it);
           if (res)
           {  
             ExecutionTracePtr trace = res->getExecutionTrace(context);
@@ -428,7 +428,7 @@ private:
   size_t updateFactor;
   
 #ifdef LBCPP_NETWORKING
-  ManagerNodeNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
+  ManagerNetworkInterfacePtr getNetworkInterfaceAndConnect(ExecutionContext& context) const
   {       
     NetworkClientPtr client = blockingNetworkClient(context);
     if (!client->startClient(managerHostName, managerPort))
@@ -437,14 +437,14 @@ private:
       return NULL;
     }
     context.informationCallback(managerHostName, T("Connected !"));
-    ManagerNodeNetworkInterfacePtr interface = clientManagerNodeNetworkInterface(context, client, source);
+    ManagerNetworkInterfacePtr interface = clientManagerNetworkInterface(context, client, source);
     interface->sendInterfaceClass();
     return interface;
   }
   
-  String sendWU(ExecutionContext& context, WorkUnitPtr wu, ManagerNodeNetworkInterfacePtr interface) const
+  String sendWU(ExecutionContext& context, WorkUnitPtr wu, ManagerNetworkInterfacePtr interface) const
   {    
-    NetworkRequestPtr request = new NetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);
     return interface->pushWorkUnit(request);
   }
 #endif

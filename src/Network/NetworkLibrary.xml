@@ -2,23 +2,48 @@
 
 <library name="Network" directory="Network">
 
-  <import name="NetworkNode"/>
+  <import name="GridNetwork"/>
+  <import name="ManagerNetwork"/>
   <import name="NetworkWorkUnit"/>
 
   <include file="lbcpp/Network/NetworkClient.h"/>
   <include file="lbcpp/Network/NetworkServer.h"/>
   <include file="lbcpp/Network/NetworkInterface.h"/>
+  <include file="lbcpp/Network/NetworkNotification.h"/>
 
   <class name="NetworkClient" base="Object" abstract="yes"/>
   <class name="NetworkServer" base="Object"/>
 
-  <class name="NetworkNotification" base="Notification" abstract="yes"/>
-
   <class name="NetworkCallback" base="Object" abstract="yes"/>
 
   <!-- NetworkInterface -->
-  <class name="NetworkInterface" base="Object">
-    <!-- <variable type="NetworkClient" name="client"/> -->
+  <class name="NetworkInterface" base="Object"/>
+  
+  <!-- WorkUnitNetworkRequest -->
+  <class name="WorkUnitNetworkRequest" base="Object">
+    <variable type="String" name="identifier"/>
+    <variable type="String" name="projectName"/>
+    <variable type="String" name="source"/>
+    <variable type="String" name="destination"/>
+    <variable type="XmlElement" name="workUnit"/>
+    <variable type="Integer" name="requiredCpus"/>
+    <variable type="Integer" name="requiredMemory"/>
+    <variable type="Integer" name="requiredTime"/>
   </class>
+
+  <class name="ExecutionTraceNetworkResponse" base="Object">
+    <variable type="String" name="identifier"/>
+    <variable type="XmlElement" name="trace"/>
+  </class>
+
+  <class name="NetworkArchive" base="Object">
+    <variable type="WorkUnitNetworkRequest" name="request"/>
+    <variable type="ExecutionTraceNetworkResponse" name="response"/>
+  </class>
+  
+  <!-- NetworkNotification -->
+  <class name="NetworkNotification" base="Notification" abstract="yes"/>
+
+  <class name="CloseCommunicationNotification" base="NetworkNotification"/>
 
 </library>

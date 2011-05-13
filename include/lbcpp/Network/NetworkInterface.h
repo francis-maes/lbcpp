@@ -10,18 +10,18 @@
 # define LBCPP_NETWORK_INTERFACE_H_
 
 # include <lbcpp/Network/NetworkClient.h>
-# include <lbcpp/Network/NetworkRequest.h>
+# include <lbcpp/Network/WorkUnitNetworkRequest.h>
 
 namespace lbcpp
 {
 
-class NetworkInterface : public Object
+class NetworkInterface : public NameableObject
 {
 public:
-  NetworkInterface(ExecutionContext& context)
-    : context(context) {}
-  NetworkInterface(ExecutionContext& context, NetworkClientPtr client)
-    : context(context), client(client) {}
+  NetworkInterface(ExecutionContext& context, const String& name = String::empty)
+    : NameableObject(name), context(context) {}
+  NetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name = String::empty)
+    : NameableObject(name), context(context), client(client) {}
   NetworkInterface()
     : context(*(ExecutionContext*)NULL) {}
 
@@ -52,48 +52,28 @@ protected:
 
 typedef ReferenceCountedObjectPtr<NetworkInterface> NetworkInterfacePtr;
 
-class NodeNetworkInterface : public NetworkInterface
+class ManagerNetworkInterface : public NetworkInterface
 {
 public:
-  NodeNetworkInterface(ExecutionContext& context, const String& nodeName = String::empty)
-    : NetworkInterface(context), nodeName(nodeName) {}
-  NodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName = String::empty)
-    : NetworkInterface(context, client), nodeName(nodeName) {}
-  NodeNetworkInterface() {}
+  ManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name)
+    : NetworkInterface(context, client, name) {}
+  ManagerNetworkInterface() {}
 
-  String getNodeName() const
-    {return nodeName;}
-
-protected:
-  friend class NodeNetworkInterfaceClass;
-  
-  String nodeName;
-};
-
-typedef ReferenceCountedObjectPtr<NodeNetworkInterface> NodeNetworkInterfacePtr;
-
-class ManagerNodeNetworkInterface : public NodeNetworkInterface
-{
-public:
-  ManagerNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& name)
-    : NodeNetworkInterface(context, client, name) {}
-  ManagerNodeNetworkInterface() {}
-
-  virtual String pushWorkUnit(NetworkRequestPtr request) = 0;
+  virtual String pushWorkUnit(WorkUnitNetworkRequestPtr request) = 0;
   virtual bool isFinished(const String& identifier) = 0;
-  virtual NetworkResponsePtr getExecutionTrace(const String& identifier) = 0;
+  virtual ExecutionTraceNetworkResponsePtr getExecutionTrace(const String& identifier) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<ManagerNodeNetworkInterface> ManagerNodeNetworkInterfacePtr;
+typedef ReferenceCountedObjectPtr<ManagerNetworkInterface> ManagerNetworkInterfacePtr;
 
-extern ManagerNodeNetworkInterfacePtr clientManagerNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+extern ManagerNetworkInterfacePtr clientManagerNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
 
-class GridNodeNetworkInterface : public NodeNetworkInterface
+class GridNetworkInterface : public NetworkInterface
 {
 public:
-  GridNodeNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
-    : NodeNetworkInterface(context, client, nodeName) {}
-  GridNodeNetworkInterface() {}
+  GridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName)
+    : NetworkInterface(context, client, nodeName) {}
+  GridNetworkInterface() {}
 
   // input : containerClass(networkRequestClass)
   // return: containerClass(stringType)
@@ -105,7 +85,7 @@ public:
   virtual void removeExecutionTraces(ContainerPtr networkResponses) = 0;
 };
 
-typedef ReferenceCountedObjectPtr<GridNodeNetworkInterface> GridNodeNetworkInterfacePtr;
+typedef ReferenceCountedObjectPtr<GridNetworkInterface> GridNetworkInterfacePtr;
 
 }; /* namespace */
 
