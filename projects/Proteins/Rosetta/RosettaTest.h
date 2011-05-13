@@ -53,7 +53,7 @@
 #  include <core/io/pdb/pose_io.hh>
 #  include <core/io/pdb/file_data.hh>
 #  include <core/kinematics/FoldTree.hh>
-#  include <protocols/init.hh>
+//#  include <protocols/init.hh>
 # define T JUCE_T
 
 using namespace std;

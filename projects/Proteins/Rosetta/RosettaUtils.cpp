@@ -5,8 +5,8 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#include "precompiled.h"
 #include "RosettaUtils.h"
-
 using namespace lbcpp;
 
 String lbcpp::standardizedAtomName(const String& atomName)
@@ -180,7 +180,7 @@ void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
   {
     argc = 5;
   }
-  char* argv[argc];
+  char* argv[3];
   argv[0] = (char*)"./main";
   argv[1] = (char*)"-database";
   if (!verbose)

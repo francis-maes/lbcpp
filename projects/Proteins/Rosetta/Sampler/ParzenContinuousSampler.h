@@ -76,7 +76,7 @@ public:
       double newValue;
       while (std::abs((int)(minIndex - maxIndex)) > 1)
       {
-        size_t newIndex = (size_t)std::floor((minIndex + maxIndex) / 2);
+        size_t newIndex = (size_t)std::floor((minIndex + maxIndex) / 2.0);
         newValue = integral->getValue(newIndex) - randomSeed;
         if (newValue >= 0)
           maxIndex = newIndex;

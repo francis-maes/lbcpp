@@ -16,7 +16,7 @@
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
-#  include <protocols/init.hh>
+//#  include <protocols/init.hh>
 #  include <protocols/moves/BackboneMover.hh>
 #  include <protocols/moves/Mover.hh>
 #  include <protocols/moves/MoverCreator.hh>
@@ -94,7 +94,7 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
 
     // Set a jump
     core::kinematics::FoldTree foldTree = pose->fold_tree();
-    int cutpointResidue = std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
+    int cutpointResidue = (int)std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
 
     foldTree.new_jump(firstResidue, secondResidue, cutpointResidue);
     pose->fold_tree(foldTree);
@@ -112,7 +112,7 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
 
     // Apply rotation
     jumpToModify.set_rb_center(1, secondStub, rotationCenter);
-    jumpToModify.rotation_by_axis(firstStub, rotationAxis, rotationCenter, amplitude);
+    jumpToModify.rotation_by_axis(firstStub, rotationAxis, rotationCenter, (float)amplitude);
 
     // Set new conformation and clear the jump
     pose->set_jump(1, jumpToModify);
