@@ -215,7 +215,7 @@ public:
 
     ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
         ProteinMoverSampler> ();
-    ProteinMoverSamplerPtr rebirth2 = samp->clone();
+    ProteinMoverSamplerPtr rebirth2 = samp->cloneAndCast<ProteinMoverSampler>();
     rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
     count0 = 0;
     count1 = 0;

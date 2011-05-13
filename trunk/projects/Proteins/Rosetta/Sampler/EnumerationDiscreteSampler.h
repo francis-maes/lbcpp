@@ -52,13 +52,7 @@ public:
         positiveIntegerEnumerationEnumeration), sampler.probabilities->getValues());
   }
 
-  SamplerPtr clone()
-  {
-    EnumerationDiscreteSamplerPtr temp = new EnumerationDiscreteSampler(*this);
-    return temp;
-  }
-
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()));
@@ -68,7 +62,7 @@ public:
    * dataset = first : a Variable of integer type that corresponds to the element observed.
    *           second : not yet used.
    */
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2)

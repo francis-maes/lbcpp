@@ -46,13 +46,7 @@ public:
     sons[0] = temp;
   }
 
-  SamplerPtr clone()
-  {
-    SimpleResidueSamplerPtr temp = new SimpleResidueSampler(*this);
-    return temp;
-  }
-
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     double rand = std::abs(
@@ -69,7 +63,7 @@ public:
    * dataset = first : a Variable of integer type containing the residue observed.
    *           second : not yet used.
    */
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if ((dataset.size() < 2) || (numResidues <= 0))

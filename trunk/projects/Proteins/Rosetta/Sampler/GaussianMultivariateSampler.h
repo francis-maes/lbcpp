@@ -83,16 +83,10 @@ public:
     }
   }
 
-  SamplerPtr clone()
-  {
-    GaussianMultivariateSamplerPtr temp = new GaussianMultivariateSampler(*this);
-    return temp;
-  }
-
   /*
    * The variable returned is a n by 1 matrix containing the n values sampled.
    */
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
@@ -115,7 +109,7 @@ public:
     return Variable(result);
   }
 
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 2 * numClusters)

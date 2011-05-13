@@ -108,16 +108,10 @@ public:
       whichMover(copy.whichMover)
   {
     for (size_t i = 0; i < sons.size(); i++)
-      sons[i] = Variable(copy.sons[i].getObjectAndCast<Sampler> ()->clone());
+      sons[i] = Variable(copy.sons[i].getObjectAndCast<Sampler> ()->cloneAndCast<Sampler>());
   }
 
-  SamplerPtr clone()
-  {
-    ProteinMoverSamplerPtr temp = new ProteinMoverSampler(*this);
-    return temp;
-  }
-
-  Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
     size_t indexMover = sons[0].getObjectAndCast<EnumerationDiscreteSampler> ()->sample(context,
@@ -135,7 +129,7 @@ public:
    * dataset = first : ProteinMoverPtr observed
    *           second : not yet used
    */
-  void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
+  virtual void learn(ExecutionContext& context, const RandomGeneratorPtr& random, const std::vector<
       std::pair<Variable, Variable> >& dataset)
   {
     if (dataset.size() < 1)
