@@ -18,7 +18,7 @@
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
-#  include <protocols/init.hh>
+//#  include <protocols/init.hh>
 #  include <protocols/moves/BackboneMover.hh>
 #  include <protocols/moves/Mover.hh>
 #  include <protocols/moves/MoverCreator.hh>

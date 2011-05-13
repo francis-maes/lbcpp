@@ -78,7 +78,7 @@ public:
 
     for (int i = 1; i <= pose->n_residue(); i++)
     {
-      maxSteps = (int)std::max((int)((factor * log(i)) + 1), numberDecreasingSteps);
+      maxSteps = (int)std::max((int)((factor * log((double)i)) + 1), numberDecreasingSteps);
 
       ProteinSimulatedAnnealingOptimizerPtr optimizer = new ProteinSimulatedAnnealingOptimizer(
           initialTemperature, finalTemperature, numberDecreasingSteps, maxSteps,
