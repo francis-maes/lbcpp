@@ -47,6 +47,7 @@ Variable ManagerWorkUnit::run(ExecutionContext& context)
     context.informationCallback(connectedHostName, T("Node name: ") + remoteInterface->getName());
     context.informationCallback(connectedHostName, T("Interface: ") + remoteInterface->getClassName());
 
+    // - replace by virtual function call -->
     ClassPtr type = remoteInterface->getClass();
     /* Strat communication (depending of the type) */
     NetworkInterfacePtr interface;
@@ -191,9 +192,9 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   
   NetworkInterfacePtr interface;
   if (gridEngine == T("SGE"))
-    interface = new SgeGridNetworkInterface(context, client, gridName);
+    interface = new SgeGridNetworkInterface(context, gridName);
   else if (gridEngine == T("BOINC"))
-    interface = new BoincGridNetworkInterface(context, client, gridName);
+    interface = new BoincGridNetworkInterface(context, gridName);
   else
   {
     jassertfalse;

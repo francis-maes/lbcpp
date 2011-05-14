@@ -81,6 +81,9 @@ protected:
 
 typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 
+extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const SamplerPtr& firstVariableSampler);
+extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const SamplerPtr& firstVariableSampler, const SamplerPtr& secondVariableSampler);
+extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const SamplerPtr& firstVariableSampler, const SamplerPtr& secondVariableSampler, const SamplerPtr& thirdVariableSampler);
 extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const std::vector<SamplerPtr>& variableSamplers);
 
 extern CompositeSamplerPtr independentDoubleVectorSampler(EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel);

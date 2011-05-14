@@ -303,6 +303,7 @@ ENDIF(LBCPP_NETWORKING)
 
 SET(LBCPP_SAMPLER_SOURCES
   ../include/lbcpp/Sampler/Sampler.h
+  Sampler/Sampler.cpp
   Sampler/SamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/SamplerLibrary.cpp
 )

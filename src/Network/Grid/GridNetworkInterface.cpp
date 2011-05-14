@@ -39,8 +39,8 @@ void ForwarderGridNetworkInterface::removeExecutionTraces(ContainerPtr networkRe
 }
 
 /* SgeGridNetworkInterface */
-SgeGridNetworkInterface::SgeGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
-  : GridNetworkInterface(context, Name)
+SgeGridNetworkInterface::SgeGridNetworkInterface(ExecutionContext& context, const String& name)
+  : GridNetworkInterface(context, name)
 {
   createDirectoryIfNotExists(T("Requests"));
   createDirectoryIfNotExists(T("PreProcessing"));
@@ -101,7 +101,7 @@ void SgeGridNetworkInterface::removeExecutionTraces(ContainerPtr networkResponse
 }
 
 /* BoincGridNetworkInterface */
-BoincGridNetworkInterface::BoincGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& Name)
+BoincGridNetworkInterface::BoincGridNetworkInterface(ExecutionContext& context, const String& Name)
   : GridNetworkInterface(context, Name)
 {
   createDirectoryIfNotExists(T("Requests"));

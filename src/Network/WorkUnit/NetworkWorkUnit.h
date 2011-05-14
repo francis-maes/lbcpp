@@ -37,7 +37,7 @@ private:
   void sendRequests(ExecutionContext& context, GridNetworkInterfacePtr interface, const NetworkClientPtr& client, const std::vector<WorkUnitNetworkRequestPtr>& requests) const; 
 };
 
-class GridWorkUnit : public WorkUnit
+class GridWorkUnit : public WorkUnit // => ClientWorkUnit
 {
 public:
   GridWorkUnit(const String& gridName, const String& gridEngine, const String& hostName, size_t port)
@@ -49,10 +49,10 @@ public:
 protected:
   friend class GridWorkUnitClass;
 
-  String gridName;
-  String gridEngine;
-  String hostName;
-  size_t port;
+  String gridName;    // clientHostName
+  String gridEngine;  // remplacer par NetworkInterfacePtr clientInterface   // -i SGE
+  String hostName;    // serverHostName
+  size_t port;        // serverPort
 };
 
 class DumbWorkUnit : public WorkUnit
