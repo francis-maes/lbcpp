@@ -19,10 +19,8 @@
 # include "RigidBodySpinMoverSampler.h"
 # include "../ProteinMover.h"
 # include "../ProteinMover/PhiPsiMover.h"
-# include "../ProteinMover/RigidBodySpinMover.h"
 # include "../ProteinMover/ShearMover.h"
-# include "../ProteinMover/RigidBodyGeneralMover.h"
-# include "../ProteinMover/RigidBodyTransMover.h"
+# include "../ProteinMover/RigidBodyMover.h"
 
 namespace lbcpp
 {
@@ -58,7 +56,7 @@ public:
     : CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    samplers[0] = new EnumerationDiscreteSampler(numMover, 1.0 / (5 * numMover));
+    samplers[0] = new EnumerationDiscreteSampler(proteinMoverEnumerationEnumeration, numMover, 1.0 / numMover);
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
@@ -83,7 +81,7 @@ public:
       numMover(probabilitiesMover->getNumElements())
   {
     // select mover
-    samplers[0] = new EnumerationDiscreteSampler(probabilitiesMover, 1.0 / (3 * numMover));
+    samplers[0] = new EnumerationDiscreteSampler(proteinMoverEnumerationEnumeration, numMover);
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
@@ -143,23 +141,7 @@ public:
           samples[whichMover[shear]].push_back(t);
         }
       }
-      else if (t.isInstanceOf<RigidBodyTransMover> ())
-      {
-        if (whichMover[rigidbodytrans] >= 0)
-        {
-          moverFrequencies.push_back(whichMover[rigidbodytrans]);
-          samples[whichMover[rigidbodytrans]].push_back(t);
-        }
-      }
-      else if (t.isInstanceOf<RigidBodySpinMover> ())
-      {
-        if (whichMover[rigidbodyspin] >= 0)
-        {
-          moverFrequencies.push_back(whichMover[rigidbodyspin]);
-          samples[whichMover[rigidbodyspin]].push_back(t);
-        }
-      }
-      else if (t.isInstanceOf<RigidBodyGeneralMover> ())
+      else if (t.isInstanceOf<RigidBodyMover> ())
       {
         if (whichMover[rigidbodygeneral] >= 0)
         {

@@ -33,8 +33,8 @@ public:
   }
 
   ProteinOptimizerWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
-      ProteinOptimizerPtr& optimizer, ProteinMoverSamplerPtr& sampler, RandomGeneratorPtr& random) :
-    CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
+      ProteinOptimizerPtr& optimizer, ProteinMoverSamplerPtr& sampler, RandomGeneratorPtr& random)
+    : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
     this->pose = pose;

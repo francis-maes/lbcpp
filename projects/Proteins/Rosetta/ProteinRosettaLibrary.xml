@@ -12,11 +12,6 @@
     <variable type="String" name="moverName" shortName="n" description="Name of the mover"/>
   </class>
   
-  <class name="RigidBodyMover" base="ProteinMover" abstract="yes">
-    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
-    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
-  </class>
-  
   <!-- Optimizers -->
   <class name="ProteinEDAOptimizer" base="Object">
     <variable type="Double" name="energyWeight" description="The ponderation factor between energy and structure score"/>

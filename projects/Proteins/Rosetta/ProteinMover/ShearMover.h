@@ -16,7 +16,6 @@
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
-//#  include <protocols/init.hh>
 #  include <protocols/moves/BackboneMover.hh>
 #  include <protocols/moves/Mover.hh>
 #  include <protocols/moves/MoverCreator.hh>
@@ -36,8 +35,8 @@ typedef ReferenceCountedObjectPtr<ShearMover> ShearMoverPtr;
 class ShearMover: public ProteinMover
 {
 public:
-  ShearMover() :
-    ProteinMover(T("Shear mover"))
+  ShearMover()
+    : ProteinMover(T("Shear mover"))
   {
   }
 
@@ -51,14 +50,14 @@ public:
    * @param deltaPhi the increment of the Phi angle
    * @param deltaPsi the increment of the Psi angle
    */
-  ShearMover(size_t residue, double deltaPhi, double deltaPsi) :
-    ProteinMover(T("Shear mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
+  ShearMover(size_t residue, double deltaPhi, double deltaPsi)
+    : ProteinMover(T("Shear mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
   {
   }
 
-  ShearMover(const ShearMover& mover) :
-    ProteinMover(T("Shear mover")), residue(mover.residue), deltaPhi(mover.deltaPhi), deltaPsi(
-        mover.deltaPsi)
+  ShearMover(const ShearMover& mover)
+    : ProteinMover(T("Shear mover")), residue(mover.residue), deltaPhi(mover.deltaPhi),
+      deltaPsi(mover.deltaPsi)
   {
   }
 

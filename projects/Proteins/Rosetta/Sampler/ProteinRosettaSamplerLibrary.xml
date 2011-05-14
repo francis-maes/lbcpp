@@ -4,7 +4,6 @@
 
   <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
-    <variable type="Double" name="probabilityForUnseenSamples" shortName="pus" description="Minimum probability for each sample. Used in the learning procedure"/>
   </class>
 
   <class name="GaussianMultivariateSampler" base="ContinuousSampler">  
@@ -61,5 +60,13 @@
     <variable type="PositiveInteger" name="numMover" shortName="n" description="The number of movers to sample from."/>
     <variable type="GenericVector[PositiveInteger]" name="whichMover"/>
   </class>
+  
+  <enumeration name="ProteinMoverEnumeration">
+    <value name="phipsi"/>
+    <value name="shear"/>
+    <value name="rigidbodytrans"/>
+    <value name="rigidbodyspin"/>
+    <value name="rigidbodygeneral"/>
+  </enumeration>
   
 </library>
