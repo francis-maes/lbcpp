@@ -33,7 +33,7 @@ public:
     : CompositeSampler(3)
   {
     // select residue
-    samplers[0] = new SimpleResidueSampler(numResidue, juce::jmax(1, (int)(0.02 * numResidue)));
+    samplers[0] = new SimpleResidueSampler(numResidue);
     //select phi
     samplers[1] = gaussianSampler(meanPhi, stdPhi);
     // select psi

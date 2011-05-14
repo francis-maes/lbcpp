@@ -9,10 +9,9 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
 # define LBCPP_PROTEINS_ROSETTA_SIMPLE_RESIDUE_SAMPLER_H_
 
-# define MAX_INTERVAL_VALUE 1000000
-
 # include "precompiled.h"
 # include "../Sampler.h"
+# include "DiscretizeSampler.h"
 # include "ParzenContinuousSampler.h"
 
 namespace lbcpp
@@ -25,60 +24,40 @@ class SimpleResidueSampler : public CompositeSampler
 {
 public:
   SimpleResidueSampler()
-    : CompositeSampler(), numResidues(1), residuesDeviation(0)
+    : CompositeSampler(1)
   {
   }
 
-  SimpleResidueSampler(size_t numResidues, size_t residuesDeviation = 0)
-    : CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
+  SimpleResidueSampler(size_t numResidues)
+    : CompositeSampler(1), numResidues(numResidues)
   {
-    ParzenContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001, -1 * MAX_INTERVAL_VALUE,
-        2 * MAX_INTERVAL_VALUE, 1.0 / 2.0, 0.5 * MAX_INTERVAL_VALUE, 0.25 * MAX_INTERVAL_VALUE);
-    samplers[0] = temp;
+//    ContinuousSamplerPtr temp = new ParzenContinuousSampler(0.0001,
+//        (double)(-1 * numResidues), (double)(2 * numResidues), 1.0 / 2.0, 0.5 * numResidues, 0.25
+//            * numResidues);
+    ContinuousSamplerPtr temp = gaussianSampler(0.5 * numResidues, 0.25 * numResidues);
+    DiscretizeSamplerPtr samp = new DiscretizeSampler(0, (int)(numResidues - 1), temp);
+    samplers[0] = samp;
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    double rand = std::abs(samplers[0]->sample(context, random, NULL).getDouble());
-    rand = rand > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - rand : rand;
-
-    size_t residue = (size_t)std::floor(rand * (double)numResidues / (double)MAX_INTERVAL_VALUE);
-    if (residue == numResidues)
-      residue--;
-    return Variable(residue);
+    return samplers[0]->sample(context, random, inputs);
   }
 
   /**
    * dataset = first : a Variable of integer type containing the residue observed.
-   *           second : not yet used.
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     if ((dataset.size() < 2) || (numResidues <= 0))
       return;
-
-    std::vector<Variable> data;
-    double scaleFactor = (double)MAX_INTERVAL_VALUE / (double)numResidues;
-    double varianceIncrement = (double)residuesDeviation * scaleFactor;
-
-    RandomGeneratorPtr random = new RandomGenerator(); // francis: I do not understand why random is needed here ..
-    for (size_t i = 0; i < dataset.size(); i++)
-    {
-      size_t res = (size_t)dataset[i].getInteger();
-      double value = (double)res * scaleFactor;
-      value = std::abs(value + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
-      value = value > (1 * MAX_INTERVAL_VALUE) ? (2 * MAX_INTERVAL_VALUE) - value : value;
-      data.push_back(value);
-    }
-
-    samplers[0]->learn(context, data);
+    samplers[0]->learn(context, dataset);
   }
 
 protected:
   friend class SimpleResidueSamplerClass;
   size_t numResidues;
-  size_t residuesDeviation;
 };
 
 }; /* namespace lbcpp */

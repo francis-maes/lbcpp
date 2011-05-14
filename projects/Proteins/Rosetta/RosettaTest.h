@@ -72,24 +72,38 @@ public:
     rosettaInitialization(context, false);
     RandomGeneratorPtr random = new RandomGenerator(0);
 
+//    RandomGeneratorPtr random2 = new RandomGenerator(0);
+//    RandomGeneratorPtr random3 = new RandomGenerator(0);
+//    ContinuousSamplerPtr gauss = gaussianSampler(2, 1);
+//    ContinuousSamplerPtr temp = gauss->cloneAndCast<ContinuousSampler>();
+//    DiscretizeSamplerPtr disc = new DiscretizeSampler(0, 5, gauss);
+//
+//    for (int i = 0; i < 5; i++)
+//    {
+//      std::cout << "val : " << i << " : " << gauss->sample(context, random).getDouble() << std::endl;
+//      std::cout << "val : " << i << " : " << temp->sample(context, random2).getDouble() << "clone " << std::endl;
+//      std::cout << "val : " << i << " : " << disc->sample(context, random3).getInteger() << std::endl;
+//    }
+
     PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(5, -20, 5, 50, 2);
     ShearMoverSamplerPtr samp1 = new ShearMoverSampler(5, 0, 20, 30, 5);
-    RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(5, 0.5, 0.05);
-    RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(5, 0, 20);
+    //    RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(5, 0.5, 0.05);
+    //    RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(5, 0, 20);
     RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(5, 0.5, 0.05, 0, 20);
 
     std::vector<Variable> samplers;
-    samplers.push_back(Variable(samp2));
+    //samplers.push_back(Variable(samp2));
     samplers.push_back(Variable(samp0));
     samplers.push_back(Variable(samp1));
     samplers.push_back(Variable(samp4));
-    samplers.push_back(Variable(samp3));
+    //samplers.push_back(Variable(samp3));
 
-    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
+    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(3, samplers);
 
     std::vector<Variable> learning;
 
     // phipsi
+
     learning.push_back(new PhiPsiMover(1, 34, -123));
     learning.push_back(new PhiPsiMover(0, 30, -122));
     learning.push_back(new PhiPsiMover(2, 27, -121));
@@ -121,8 +135,8 @@ public:
     learning.push_back(new RigidBodyMover(0, 3, -1.3, 0.0));
 
     samp->learn(context, learning);
+
     random = new RandomGenerator(0);
-    RandomGeneratorPtr random2 = new RandomGenerator(0);
 
     File outfile = context.getFile(T("protSampler.xml"));
     samp->saveToFile(context, outfile);
@@ -174,12 +188,13 @@ public:
     ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
         ProteinMoverSampler> ();
     ProteinMoverSamplerPtr rebirth2 = samp->cloneAndCast<ProteinMoverSampler> ();
-    rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
+    //rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
     count0 = 0;
     count1 = 0;
     count2 = 0;
     count3 = 0;
     count4 = 0;
+    RandomGeneratorPtr random2 = new RandomGenerator(0);
     RandomGeneratorPtr random3 = new RandomGenerator(0);
     for (int i = 0; i < num; i++)
     {
