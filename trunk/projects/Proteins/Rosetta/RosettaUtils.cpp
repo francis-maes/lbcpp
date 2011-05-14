@@ -195,10 +195,8 @@ void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
 {
   int argc = 3;
   if (!verbose)
-  {
     argc = 5;
-  }
-  char* argv[3];
+  char* argv[argc];
   argv[0] = (char*)"./main";
   argv[1] = (char*)"-database";
   if (!verbose)

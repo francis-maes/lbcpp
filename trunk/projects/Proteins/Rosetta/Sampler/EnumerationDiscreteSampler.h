@@ -12,9 +12,6 @@
 # include "precompiled.h"
 # include "../Sampler.h"
 
-# define DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES 0.001
-# define LEARNING_RATE 0.1
-
 namespace lbcpp
 {
 
@@ -25,31 +22,28 @@ class EnumerationDiscreteSampler : public DiscreteSampler
 {
 public:
   EnumerationDiscreteSampler()
-    : DiscreteSampler(), probabilityForUnseenSamples(DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES)
+    : DiscreteSampler()
   {
   }
 
-  EnumerationDiscreteSampler(size_t numElements, double probabilityForUnseenSamples =
-      DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES)
-    : DiscreteSampler(), probabilityForUnseenSamples(probabilityForUnseenSamples)
+  EnumerationDiscreteSampler(EnumerationPtr enumeration, size_t numElements, double initialProbability = 0.0)
+    : DiscreteSampler()
   {
-    probabilities = new DenseDoubleVector(denseDoubleVectorClass(
-        positiveIntegerEnumerationEnumeration), numElements, 1.0 / (double)numElements);
+    probabilities = new DenseDoubleVector(enumeration, probabilityType, numElements, initialProbability);
   }
 
-  EnumerationDiscreteSampler(DenseDoubleVectorPtr& probabilities,
-      double probabilityForUnseenSamples = DEFAULT_PROBABILITY_FOR_UNSEEN_SAMPLES)
-    : DiscreteSampler(), probabilityForUnseenSamples(probabilityForUnseenSamples)
+  EnumerationDiscreteSampler(EnumerationPtr enumeration, DenseDoubleVectorPtr& probabilities)
+    : DiscreteSampler()
   {
-    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-    this->probabilities = new DenseDoubleVector(actionClass, probabilities->getValues());
+    this->probabilities = new DenseDoubleVector(enumeration, probabilityType, probabilities->getNumElements(), 0.0);
+    for (size_t i = 0; i < probabilities->getNumElements(); i++)
+      this->probabilities->setValue(i, probabilities->getValue(i));
   }
 
   EnumerationDiscreteSampler(const EnumerationDiscreteSampler& sampler)
-    : DiscreteSampler(), probabilityForUnseenSamples(sampler.probabilityForUnseenSamples)
+    : DiscreteSampler()
   {
-    probabilities = new DenseDoubleVector(denseDoubleVectorClass(
-        positiveIntegerEnumerationEnumeration), sampler.probabilities->getValues());
+    probabilities = sampler.probabilities->cloneAndCast<DenseDoubleVector>();
   }
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
@@ -65,33 +59,20 @@ public:
       return;
 
     // Compute empirical frequencies
-    DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(denseDoubleVectorClass(
-        positiveIntegerEnumerationEnumeration), probabilities->getNumElements(), 0.0);
+    DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(
+        probabilities->getElementsEnumeration(), probabilities->getElementsType(),
+        probabilities->getNumElements(), 0.0);
     double increment = 1.0 / (double)dataset.size();
     for (size_t i = 0; i < dataset.size(); i++)
     {
       size_t index = dataset[i].getInteger();
       empiricalFrequencies->setValue(index, empiricalFrequencies->getValue(index) + increment);
     }
-
-    // Update frequencies
-    double totalNorm = 0;
-    for (size_t i = 0; i < probabilities->getNumElements(); i++)
-    {
-      probabilities->setValue(i, juce::jmax(probabilityForUnseenSamples, probabilities->getValue(i)
-          + LEARNING_RATE * (empiricalFrequencies->getValue(i) - probabilities->getValue(i))));
-      totalNorm += probabilities->getValue(i);
-    }
-
-    double normalize = 1.0 / totalNorm;
-    for (size_t i = 0; i < probabilities->getNumElements(); i++)
-      probabilities->setValue(i, probabilities->getValue(i) * normalize);
   }
 
 protected:
   friend class EnumerationDiscreteSamplerClass;
   DenseDoubleVectorPtr probabilities;
-  double probabilityForUnseenSamples;
 };
 
 }; /* namespace lbcpp */

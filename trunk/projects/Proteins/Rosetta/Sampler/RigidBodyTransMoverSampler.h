@@ -11,7 +11,6 @@
 
 # include "precompiled.h"
 # include "../Sampler.h"
-# include "../ProteinMover/RigidBodyTransMover.h"
 # include "DualResidueSampler.h"
 
 namespace lbcpp
@@ -45,7 +44,7 @@ public:
     size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
 
     double magnitude = samplers[1]->sample(context, random, inputs).getDouble();
-    RigidBodyTransMoverPtr mover = new RigidBodyTransMover(firstResidue, secondResidue, magnitude);
+    RigidBodyMoverPtr mover = new RigidBodyMover(firstResidue, secondResidue, magnitude, 0.0);
     return Variable(mover);
   }
 
@@ -62,7 +61,7 @@ public:
     std::vector<Variable> datasetMagnitude;
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      RigidBodyTransMoverPtr mover = dataset[i].getObjectAndCast<RigidBodyTransMover> ();
+      RigidBodyMoverPtr mover = dataset[i].getObjectAndCast<RigidBodyMover> ();
       MatrixPtr tempResidue = new DoubleMatrix(2, 1);
       tempResidue->setElement(0, 0, Variable((double)mover->getIndexResidueOne()));
       tempResidue->setElement(1, 0, Variable((double)mover->getIndexResidueTwo()));

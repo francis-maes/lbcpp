@@ -16,7 +16,6 @@
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
-//#  include <protocols/init.hh>
 #  include <protocols/moves/BackboneMover.hh>
 #  include <protocols/moves/Mover.hh>
 #  include <protocols/moves/MoverCreator.hh>
@@ -36,8 +35,8 @@ typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;
 class PhiPsiMover: public ProteinMover
 {
 public:
-  PhiPsiMover() :
-    ProteinMover(T("PhiPsi mover"))
+  PhiPsiMover()
+    : ProteinMover(T("PhiPsi mover"))
   {
   }
 
@@ -49,14 +48,14 @@ public:
    * @param deltaPhi the increment of the Phi angle
    * @param deltaPsi the increment of the Psi angle
    */
-  PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi) :
-    ProteinMover(T("PhiPsi mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
+  PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
+    : ProteinMover(T("PhiPsi mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
   {
   }
 
-  PhiPsiMover(const PhiPsiMover& mover) :
-    ProteinMover(T("PhiPsi mover")), residue(mover.residue), deltaPhi(mover.deltaPhi), deltaPsi(
-        mover.deltaPsi)
+  PhiPsiMover(const PhiPsiMover& mover)
+    : ProteinMover(T("PhiPsi mover")), residue(mover.residue), deltaPhi(mover.deltaPhi),
+      deltaPsi(mover.deltaPsi)
   {
   }
 

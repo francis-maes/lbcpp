@@ -164,9 +164,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
   SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
     Rosetta/ProteinMover/PhiPsiMover.h
     Rosetta/ProteinMover/ShearMover.h
-    Rosetta/ProteinMover/RigidBodyTransMover.h
-    Rosetta/ProteinMover/RigidBodySpinMover.h
-    Rosetta/ProteinMover/RigidBodyGeneralMover.h
+    Rosetta/ProteinMover/RigidBodyMover.h
     Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaMoverLibrary.cpp
   )
