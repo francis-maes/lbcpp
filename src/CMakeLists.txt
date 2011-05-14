@@ -320,8 +320,9 @@ SET(LBCPP_SAMPLER_DISCRETE_SOURCES
 
 SET(LBCPP_SAMPLER_COMPOSITE_SOURCES
   Sampler/Composite/ObjectCompositeSampler.h
-  Sampler/Composite/IndependentDenseDoubleVectorSampler.h
   Sampler/Composite/MixtureSampler.h
+  Sampler/Composite/IndependentDoubleVectorSampler.h
+  Sampler/Composite/IndependentDoubleMatrixSampler.h
   Sampler/Composite/CompositeSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CompositeSamplerLibrary.cpp
 )

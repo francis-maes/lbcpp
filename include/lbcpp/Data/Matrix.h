@@ -190,6 +190,9 @@ public:
   void setValue(size_t row, size_t column, double value)
     {BaseClass::setElement(row, column, value);}
 
+  double getValue(size_t row, size_t column) const
+    {return elements[makeIndex(row, column)];}
+
   lbcpp_UseDebuggingNewOperator
 };
 
