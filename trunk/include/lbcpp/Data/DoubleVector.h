@@ -200,6 +200,9 @@ public:
   void setValue(size_t index, double value)
     {getValueReference(index) = value;}
 
+  size_t getNumValues() const
+    {return values ? values->size() : 0;}
+
   void incrementValue(size_t index, double value)
     {jassert(values && index < values->size()); (*values)[index] += value;}
 

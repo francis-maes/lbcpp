@@ -174,7 +174,10 @@ void ManagerWorkUnit::sendRequests(ExecutionContext& context, GridNetworkInterfa
 Variable GridWorkUnit::run(ExecutionContext& context)
 {
   if (gridEngine != T("SGE") && gridEngine != T("BOINC"))
+  {
+    context.errorCallback(T("Unknown grid engine: ") + gridEngine);
     return false;
+  }
   
   /* Establishing a connection */
   NetworkClientPtr client = blockingNetworkClient(context, 3);
@@ -198,7 +201,7 @@ Variable GridWorkUnit::run(ExecutionContext& context)
   }
   
   /* Slave mode - Execute received commands */
-  client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));
+  client->sendVariable(interface);
   while (client->isConnected() || client->hasVariableInQueue())
   {
     NetworkNotificationPtr notification;

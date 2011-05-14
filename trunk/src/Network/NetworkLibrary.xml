@@ -17,7 +17,7 @@
   <class name="NetworkCallback" base="Object" abstract="yes"/>
 
   <!-- NetworkInterface -->
-  <class name="NetworkInterface" base="Object"/>
+  <class name="NetworkInterface" base="NameableObject"/>
   
   <!-- WorkUnitNetworkRequest -->
   <class name="WorkUnitNetworkRequest" base="Object">
