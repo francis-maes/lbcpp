@@ -37,6 +37,7 @@
 #  include <core/scoring/ScoreFunction.hh>
 #  include <core/scoring/ScoreFunctionFactory.hh>
 #  include <numeric/xyzVector.hh>
+#  include <protocols/moves/SwitchResidueTypeSetMover.hh>
 # define T JUCE_T
 
 namespace lbcpp
@@ -66,19 +67,24 @@ core::pose::PoseOP convertProteinToPose(ExecutionContext& context, const Protein
  */
 ProteinPtr convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP& pose);
 
+double fullAtomEnergy(const core::pose::PoseOP& pose);
+double centroidEnergy(const core::pose::PoseOP& pose);
+
 /**
  * Returns the total energy of a Protein object.
  * @param protein a pointer to the Protein object
  * @return the total energy of the protein
  */
-double getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot);
+double getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot, double(*scoreFunction)(
+    const core::pose::PoseOP&));
 
 /**
  * Returns the total energy of a Pose object.
  * @param pose a pointer to the Pose object
  * @return the total energy of the protein
  */
-double getTotalEnergy(const core::pose::PoseOP& pose);
+double getTotalEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&));
 
 /**
  * Returns the score of the current pose. This takes into account
@@ -86,7 +92,8 @@ double getTotalEnergy(const core::pose::PoseOP& pose);
  * @param prot a pointer to the protein object to evaluate.
  * @return the score of the actual conformation.
  */
-double getConformationScore(ExecutionContext& context, const ProteinPtr& prot);
+double getConformationScore(ExecutionContext& context, const ProteinPtr& prot,
+    double(*scoreFunction)(const core::pose::PoseOP&));
 
 /**
  * Returns the score of the current pose. This takes into account
@@ -94,7 +101,8 @@ double getConformationScore(ExecutionContext& context, const ProteinPtr& prot);
  * @param pose a pointer to the pose object to evaluate.
  * @return the score of the actual conformation.
  */
-double getConformationScore(const core::pose::PoseOP& pose);
+double getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&));
 
 /**
  * Initializes a Pose object, in fact its pointer, to the given sequence.
@@ -117,6 +125,8 @@ void rosettaInitialization(ExecutionContext& context, bool verbose);
 void rosettaInitialization(ExecutionContext& context);
 
 core::pose::PoseOP initializeProteinStructure(core::pose::PoseOP pose);
+
+SymmetricMatrixPtr createCalphaMatrixDistance(core::pose::PoseOP pose);
 
 }; /* namespace lbcpp */
 

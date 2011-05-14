@@ -66,8 +66,8 @@ public:
         juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
     int maxDist = -1;
 
-    double referenceEnergy = getConformationScore(reference);
-    double targetEnergy = getConformationScore(target);
+    double referenceEnergy = getConformationScore(reference, fullAtomEnergy);
+    double targetEnergy = getConformationScore(target, fullAtomEnergy);
     double energyScore;
     if (targetEnergy == 0)
       energyScore = std::numeric_limits<double>::max();
@@ -75,8 +75,7 @@ public:
       energyScore = juce::jmax(0.0, referenceEnergy / targetEnergy);
 
     double structureScore = 0;
-    QScoreObjectPtr scores = QScoreSingleEvaluator(convertPoseToProtein(context, target),
-        convertPoseToProtein(context, reference), minDist, maxDist);
+    QScoreObjectPtr scores = QScoreSingleEvaluator(target, reference, minDist, maxDist);
 
     if (scores.get() == NULL)
       context.errorCallback(
@@ -112,11 +111,6 @@ public:
         mover->move(workingPose);
         double score = evaluate(context, workingPose, reference);
 
-        // TEST
-        printMover(mover);
-        std::cout << "score : " << score << std::endl;
-        //FIN TEST
-
         MoverAndScore candidate(mover, score);
         tempList.push_back(candidate);
         *workingPose = *target;
@@ -125,13 +119,6 @@ public:
       }
 
       tempList.sort(compareMovers);
-
-      // TEST
-      std::list<MoverAndScore>::iterator it;
-      std::cout << "============= tempList ===========" << std::endl;
-      for ( it=tempList.begin() ; it != tempList.end(); it++ )
-        printMover((*it).mover);
-      // FIN TEST
 
       moversToKeep.sort(compareMovers);
       while (moversToKeep.size() > numMoversToKeep)
@@ -160,45 +147,15 @@ public:
       for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
         moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
 
-      // TEST
-      std::cout << "numLearningSamples : " << numLearningSamples << std::endl;
-      std::cout << "numLearningSamplesFirstPass : " <<  numLearningSamplesFirstPass << std::endl;
-      std::cout << "numLearningSampelsSecondPass : " << numLearningSamplesSecondPass << std::endl;
-      std::cout << "======================= chosen movers : " << moversVector.size() << "==================== "<< std::endl;
-      for (size_t j = 0; j < moversVector.size(); j++)
-      {
-        printMover(moversVector[j].mover);
-      }
-      std::cout << "=================== affichage de rest : ========================" << rest.size() << std::endl;
-      for (size_t j = 0; j < rest.size(); j++)
-      {
-        printMover(rest[j].mover);
-      }
-      // FIN TEST
-
       std::vector<Variable> dataset(numLearningSamples);
       for (size_t j = 0; j < numLearningSamples; j++)
         dataset[j] = moversVector[j].mover;
       workingSampler->learn(context, dataset);
-
-      // TEST
-      workingSampler->saveToFile(context, context.getFile(T("sampler_temp_") + String(i)
-          +T(".xml")));
-      // FIN TEST
     }
-
-    // TEST
-    std::cout << " ==================== best ever movers =====================" << std::endl;
-    // FIN TEST
 
     movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
     for (size_t i = 0; i < numMoversToKeep; i++)
     {
-      // TEST
-      printMover(moversToKeep.front().mover);
-      std::cout << "score : " << moversToKeep.front().score << std::endl;
-      // FIN TEST
-
       movers[i] = moversToKeep.front().mover;
       moversToKeep.pop_front();
     }
@@ -207,45 +164,6 @@ public:
         T("Iterations")));
     context.leaveScope();
     return workingSampler;
-  }
-
-  void printMover(ProteinMoverPtr& t)
-  {
-    if (t.isInstanceOf<PhiPsiMover> ())
-    {
-      PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
-      std::cout << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
-          << ", psi : " << t0->getDeltaPsi() << std::endl;
-    }
-    else if (t.isInstanceOf<ShearMover> ())
-    {
-      ShearMoverPtr t0 = (ShearMoverPtr)t;
-      std::cout << "shear " << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
-          << ", psi : " << t0->getDeltaPsi() << std::endl;
-    }
-    else if (t.isInstanceOf<RigidBodyTransMover> ())
-    {
-      RigidBodyTransMoverPtr t0 = (RigidBodyTransMoverPtr)t;
-      std::cout << "trans" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-          << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << std::endl;
-    }
-    else if (t.isInstanceOf<RigidBodySpinMover> ())
-    {
-      RigidBodySpinMoverPtr t0 = (RigidBodySpinMoverPtr)t;
-      std::cout << "spin" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-          << t0->getIndexResidueTwo() << ", amplitude : " << t0->getAmplitude() << std::endl;
-    }
-    else if (t.isInstanceOf<RigidBodyGeneralMover> ())
-    {
-      RigidBodyGeneralMoverPtr t0 = (RigidBodyGeneralMoverPtr)t;
-      std::cout << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-          << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << ", amplitude : "
-          << t0->getAmplitude() << std::endl;
-    }
-    else
-    {
-      std::cout << "autre mover......" << std::endl;
-    }
   }
 
 protected:

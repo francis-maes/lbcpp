@@ -83,30 +83,31 @@ public:
    * @param indexResidueTwo an integer specifying the second residue in [0, number residues - 1],
    * @param magnitude a double specifying the magnitude of the translation.
    */
-  static void move(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo, double magnitude)
+  static void move(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo,
+      double magnitude)
   {
-      if (pose->n_residue() < 2)
-        return;
+    if (pose->n_residue() < 2)
+      return;
 
-      size_t firstResidue = indexResidueOne+1;
-      size_t secondResidue = indexResidueTwo+1;
+    size_t firstResidue = indexResidueOne + 1;
+    size_t secondResidue = indexResidueTwo + 1;
 
-      // Set a jump
-      core::kinematics::FoldTree foldTree = pose->fold_tree();
-      int cutpointResidue = (int)std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
+    // Set a jump
+    core::kinematics::FoldTree foldTree = pose->fold_tree();
+    int cutpointResidue = (int)std::floor(((double)firstResidue + (double)secondResidue) / 2.0);
 
-      foldTree.new_jump(firstResidue, secondResidue, cutpointResidue);
-      pose->fold_tree(foldTree);
+    foldTree.new_jump(firstResidue, secondResidue, cutpointResidue);
+    pose->fold_tree(foldTree);
 
-      // Perturb the pose
-      protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover(
-          (*pose), 1);
-      mover->step_size(magnitude);
-      mover->apply((*pose));
+    // Perturb the pose
+    protocols::moves::RigidBodyTransMoverOP mover = new protocols::moves::RigidBodyTransMover(
+        (*pose), 1);
+    mover->step_size(magnitude);
+    mover->apply((*pose));
 
-      // Clear the jump
-      foldTree.delete_jump_and_intervening_cutpoint(1);
-      pose->fold_tree(foldTree);
+    // Clear the jump
+    foldTree.simple_tree(pose->n_residue());
+    pose->fold_tree(foldTree);
   }
 
   /**

@@ -59,7 +59,7 @@ public:
       ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
       double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5)
   {
-    double currentEnergy = getConformationScore(pose);
+    double currentEnergy = getConformationScore(pose, fullAtomEnergy);
     double minimumEnergy = currentEnergy;
     double temporaryEnergy = currentEnergy;
     core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
@@ -119,7 +119,7 @@ public:
     {
       ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
       mover->move(workingPose);
-      temporaryEnergy = getConformationScore(workingPose);
+      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 
       if (keepConformation(random, temporaryEnergy - currentEnergy, temperature))
       {

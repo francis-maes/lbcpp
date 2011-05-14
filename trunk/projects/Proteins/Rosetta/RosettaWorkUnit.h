@@ -24,7 +24,7 @@ namespace lbcpp
 class ProteinOptimizerWorkUnit;
 typedef ReferenceCountedObjectPtr<ProteinOptimizerWorkUnit> ProteinOptimizerWorkUnitPtr;
 
-class ProteinOptimizerWorkUnit: public CompositeWorkUnit
+class ProteinOptimizerWorkUnit : public CompositeWorkUnit
 {
 public:
   // returnPose must be already instantiated
@@ -46,11 +46,12 @@ public:
   virtual Variable run(ExecutionContext& context)
   {
     context.informationCallback(T("Protein : ") + proteinName + T(" loaded succesfully."));
-    context.resultCallback(T("Initial energy"), Variable(getConformationScore(pose)));
+    context.resultCallback(T("Initial energy"),
+        Variable(getConformationScore(pose, fullAtomEnergy)));
     core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
     *returnPose = (*(optimizer->apply(pose, sampler, context, random)));
     context.informationCallback(T("Optimization done."));
-    double score = getConformationScore(returnPose);
+    double score = getConformationScore(returnPose, fullAtomEnergy);
     context.resultCallback(T("Final energy"), Variable(score));
 
     return Variable(proteinName);
@@ -65,7 +66,7 @@ protected:
   RandomGeneratorPtr random;
 };
 
-class ProteinFeaturesGeneratorWorkUnit: public WorkUnit
+class ProteinFeaturesGeneratorWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -143,7 +144,7 @@ protected:
   int maxNumberIterations;
 };
 
-class XmlToPDBConverterWorkUnit: public WorkUnit
+class XmlToPDBConverterWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -183,55 +184,7 @@ protected:
   String resultsDirectory;
 };
 
-class EnergyEvaluationWorkUnit: public WorkUnit
-{
-public:
-  virtual Variable run(ExecutionContext& context)
-  {
-    rosettaInitialization(context, false);
-
-    // Load all xml files in proteinsDir
-    File directory = context.getFile(proteinsDirectory);
-    if (!directory.exists())
-    {
-      context.errorCallback(T("Proteins' directory not found."));
-      return Variable();
-    }
-
-    juce::OwnedArray<File> results;
-    directory.findChildFiles(results, File::findFiles, false, T("*.xml"));
-
-    // Other arguments
-    juce::File output(directory.getFullPathName() + T("/") + T("energies_")
-        + directory.getFileName() + T(".data"));
-    juce::OutputStream *fos = output.createOutputStream();
-
-    context.informationCallback(T("Performing calculation..."));
-
-    for (int i = 0; i < results.size(); i++)
-    {
-      ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
-      core::pose::PoseOP pose = convertProteinToPose(context, currentProtein);
-      context.informationCallback((*results[i]).getFileNameWithoutExtension());
-      context.informationCallback(currentProtein->getName());
-      context.informationCallback(Variable(getTotalEnergy(pose)).toString());
-
-      *fos << getTotalEnergy(pose) << "\r\n";
-    }
-
-    fos->flush();
-    delete fos;
-
-    context.informationCallback(T("Energies evaluated and stored in energies.data"));
-    return Variable();
-  }
-
-protected:
-  friend class EnergyEvaluationWorkUnitClass;
-  String proteinsDirectory;
-};
-
-class FilesHarmonizationWorkUnit: public WorkUnit
+class FilesHarmonizationWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -263,6 +216,18 @@ public:
         bool exist = existsForAllDirectories(directories, goodName);
         if (!exist)
           deleteForAllDirectories(directories, goodName);
+        else
+        {
+          if (nameToModify.contains(T("_")))
+          {
+            String num = nameToModify.fromLastOccurrenceOf(T("_"), false, true);
+            while (num.length() <= 4)
+              num = T("0") + num;
+            File newFile((*directories[j]).getFullPathName() + T("/") + goodName + T("_") + num
+                + T(".xml"));
+            (*results[i]).moveFileTo(newFile);
+          }
+        }
 
       }
     }
@@ -304,7 +269,7 @@ protected:
   String proteinsDirectory;
 };
 
-class SamplerGenerationWorkUnit: public WorkUnit
+class SamplerGenerationWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -339,7 +304,8 @@ public:
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" EDA optimization"));
-      context.resultCallback(T("Energy"), Variable(getConformationScore(referencePose)));
+      context.resultCallback(T("Energy"), Variable(getConformationScore(referencePose,
+          centroidEnergy)));
 
       juce::OwnedArray<File> targets;
       targetFile.findChildFiles(targets, File::findFiles, false,
@@ -356,7 +322,8 @@ public:
             T("Intermediate conformations")));
         context.enterScope((*targets[i]).getFileNameWithoutExtension()
             + T(" intermediate conformation"));
-        context.resultCallback(T("Energy"), Variable(getConformationScore(targetPose)));
+        context.resultCallback(T("Energy"), Variable(getConformationScore(targetPose,
+            centroidEnergy)));
 
         PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(proteinTarget->getLength(), 0, 25, 0,
             25);
@@ -370,15 +337,25 @@ public:
             proteinTarget->getLength(), 0.0, 1.0, 0, 25);
 
         std::vector<Variable> samplers;
+        size_t numMovers;
 
-        samplers.push_back(Variable(samp0));
-        samplers.push_back(Variable(samp1));
-        samplers.push_back(Variable(samp2));
-        samplers.push_back(Variable(samp3));
-        samplers.push_back(Variable(samp4));
+        if (oneOrAll)
+        {
+          numMovers = 1;
+          samplers.push_back(Variable(samp0));
+        }
+        else
+        {
+          numMovers = 5;
+          samplers.push_back(Variable(samp0));
+          samplers.push_back(Variable(samp1));
+          samplers.push_back(Variable(samp2));
+          samplers.push_back(Variable(samp3));
+          samplers.push_back(Variable(samp4));
+        }
 
         std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
-        ProteinMoverSamplerPtr samp = new ProteinMoverSampler(5, samplers);
+        ProteinMoverSamplerPtr samp = new ProteinMoverSampler(numMovers, samplers);
 
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
         ProteinMoverSamplerPtr out = opti->findBestMovers(context, random, targetPose,
@@ -411,9 +388,10 @@ protected:
   int numIterations;
   int numSamples;
   int numMoversToKeep;
+  bool oneOrAll;
 };
 
-class ConformationSortingWorkUnit: public WorkUnit
+class ConformationSortingWorkUnit : public WorkUnit
 {
 public:
   virtual Variable run(ExecutionContext& context)
@@ -442,7 +420,7 @@ public:
     for (int j = 0; j < references.size(); j++)
     {
       ProteinPtr refProtein = Protein::createFromXml(context, (*references[j]));
-      double refScore = getConformationScore(context, refProtein);
+      double refScore = getConformationScore(context, refProtein, centroidEnergy);
       double factor = 1.2;
       if (refScore < 1)
         factor = std::exp(-0.2 * (1 + std::log(refScore)));
@@ -459,7 +437,7 @@ public:
       for (int i = 0; i < results.size(); i++)
       {
         ProteinPtr currentProtein = Protein::createFromXml(context, (*results[i]));
-        double score = getConformationScore(context, currentProtein);
+        double score = getConformationScore(context, currentProtein, centroidEnergy);
         context.informationCallback((*results[i]).getFileNameWithoutExtension() + T(" : ")
             + String(score));
         if (score <= factor * refScore)
@@ -489,6 +467,143 @@ protected:
   String referenceDir;
   String targetDir;
   bool del;
+};
+
+class EnergyAndQScoreComparisonWorkUnit : public WorkUnit
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    rosettaInitialization(context, false);
+    File referenceFile = context.getFile(referenceDirectory);
+    File targetFile = context.getFile(targetDirectory);
+
+    File outputFile;
+    bool out = false;
+    juce::OutputStream *fos;
+    if (!(outputDirectory.isEmpty()))
+    {
+      outputFile = context.getFile(outputDirectory);
+      fos = outputFile.createOutputStream();
+      out = true;
+    }
+
+    juce::OwnedArray<File> references;
+    referenceFile.findChildFiles(references, File::findFiles, false, T("*.xml"));
+
+    std::vector<File> toDelete;
+    for (int j = 0; j < references.size(); j++)
+    {
+      ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
+      core::pose::PoseOP referencePose = convertProteinToPose(context, proteinRef);
+
+      std::cout << "=============================================" << std::endl;
+      std::cout << "======== protein : "
+          << (const char*)(*references[j]).getFileNameWithoutExtension() << " ==============="
+          << std::endl;
+      double totEnFA = getTotalEnergy(referencePose, fullAtomEnergy);
+      double totEnC = getTotalEnergy(referencePose, centroidEnergy);
+      double confScoreFA = getConformationScore(referencePose, fullAtomEnergy);
+      double confScoreC = getConformationScore(referencePose, centroidEnergy);
+      std::cout << "energy fa : " << totEnFA << std::endl;
+      std::cout << "energy centroid : " << totEnC << std::endl;
+      std::cout << "score fa : " << confScoreFA << std::endl;
+      std::cout << "score centroid : " << confScoreC << std::endl;
+      if (out)
+      {
+        *fos << (int)proteinRef->getLength() << " ";
+        *fos << totEnFA << " ";
+        *fos << totEnC << " ";
+        *fos << confScoreFA << " ";
+        *fos << confScoreC << " ";
+      }
+
+      juce::OwnedArray<File> targets;
+      targetFile.findChildFiles(targets, File::findFiles, false,
+          (*references[j]).getFileNameWithoutExtension() + T("*.xml"));
+
+      RandomGeneratorPtr random = new RandomGenerator(0);
+      bool cont = true;
+      for (int i = 0; cont && (i < targets.size()); i++)
+      {
+        ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
+        core::pose::PoseOP targetPose = convertProteinToPose(context, proteinTarget);
+
+        std::cout << "---------- structure : "
+            << (const char*)(*targets[i]).getFileNameWithoutExtension() << " ---------"
+            << std::endl;
+        totEnFA = getTotalEnergy(targetPose, fullAtomEnergy);
+        totEnC = getTotalEnergy(targetPose, centroidEnergy);
+        confScoreFA = getConformationScore(targetPose, fullAtomEnergy);
+        confScoreC = getConformationScore(targetPose, centroidEnergy);
+        std::cout << "energy fa : " << totEnFA << std::endl;
+        std::cout << "energy centroid : " << totEnC << std::endl;
+        std::cout << "score fa : " << confScoreFA << std::endl;
+        std::cout << "score centroid : " << confScoreC << std::endl;
+        if (out)
+        {
+          *fos << totEnFA << " ";
+          *fos << totEnC << " ";
+          *fos << confScoreFA << " ";
+          *fos << confScoreC << " ";
+        }
+
+        int minDist = juce::jlimit(1, (int)targetPose->n_residue(), juce::jmin(20,
+            targetPose->n_residue() / 2));
+        int maxDist = -1;
+
+        // pose Qscore
+        QScoreObjectPtr scoresPose = QScoreSingleEvaluator(targetPose, referencePose, minDist,
+            maxDist);
+
+        if (scoresPose.get() == NULL)
+        {
+          toDelete.push_back((*references[j]));
+          cont = false;
+          continue;
+        }
+        double QScorePose = scoresPose->getMean();
+        std::cout << "tertiary structure score pose : " << QScorePose << std::endl;
+        if (out)
+          *fos << QScorePose << " ";
+
+        minDist = -1;
+        maxDist = juce::jlimit(1, (int)targetPose->n_residue(), juce::jmin(20,
+            targetPose->n_residue() / 2));
+        // pose Qscore
+        QScoreObjectPtr scoresPose2 = QScoreSingleEvaluator(targetPose, referencePose, minDist,
+            maxDist);
+        double QScorePose2 = scoresPose2->getMean();
+        std::cout << "secondary structure score pose : " << QScorePose2 << std::endl;
+        if (out)
+          *fos << QScorePose2 << " ";
+      }
+
+      if (out)
+        *fos << "\r\n";
+    }
+
+    if (out)
+    {
+      fos->flush();
+      delete fos;
+    }
+    std::cout << "deleting : " << std::endl;
+    for (size_t i = 0; i < toDelete.size(); i++)
+    {
+      std::cout << "deleting : " << (const char*)toDelete[i].getFileNameWithoutExtension()
+          << std::endl;
+      toDelete[i].deleteFile();
+    }
+
+    return Variable();
+  }
+
+protected:
+  friend class EnergyAndQScoreComparisonWorkUnitClass;
+  String referenceDirectory;
+  String targetDirectory;
+  String outputDirectory;
 };
 
 }; /* namespace lbcpp */
