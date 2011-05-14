@@ -29,9 +29,7 @@ enum ProteinMoverEnumeration
 {
   phipsi = 0,
   shear,
-  rigidbodytrans,
-  rigidbodyspin,
-  rigidbodygeneral,
+  rigidbody,
   numberOfMovers
 };
 
@@ -52,52 +50,25 @@ public:
    * Each variable of samplers is a Ptr to a sampler. Do not deallocate
    * a sampler before deallocating ProteinMoverSampler.
    */
-  ProteinMoverSampler(size_t numMover, std::vector<Variable>& samplers)
+  ProteinMoverSampler(size_t numMover, const std::vector<Variable>& samplers)
     : CompositeSampler(numMover + 1), numMover(numMover)
   {
     // select mover
-    samplers[0] = new EnumerationDiscreteSampler(proteinMoverEnumerationEnumeration, numMover, 1.0 / numMover);
-    whichMover = std::vector<size_t>(numberOfMovers, -1);
-    for (size_t i = 0; i < samplers.size(); i++)
-    {
-      SamplerPtr t = samplers[i].getObjectAndCast<Sampler>();
-      samplers[i + 1] = t;
-
-      if (t.isInstanceOf<PhiPsiMoverSampler> ())
-        whichMover[phipsi] = i;
-      else if (t.isInstanceOf<ShearMoverSampler> ())
-        whichMover[shear] = i;
-      else if (t.isInstanceOf<RigidBodyTransMoverSampler> ())
-        whichMover[rigidbodytrans] = i;
-      else if (t.isInstanceOf<RigidBodySpinMoverSampler> ())
-        whichMover[rigidbodyspin] = i;
-      else if (t.isInstanceOf<RigidBodyGeneralMoverSampler> ())
-        whichMover[rigidbodygeneral] = i;
-    }
-  }
-
-  ProteinMoverSampler(DenseDoubleVectorPtr& probabilitiesMover, std::vector<Variable>& samplers)
-    : CompositeSampler(probabilitiesMover->getNumElements() + 1),
-      numMover(probabilitiesMover->getNumElements())
-  {
-    // select mover
-    samplers[0] = new EnumerationDiscreteSampler(proteinMoverEnumerationEnumeration, numMover);
+    ContinuousSamplerPtr gauss = gaussianSampler((double)numMover / 2.0, (double)numMover);
+    DiscretizeSamplerPtr disc = new DiscretizeSampler(0, numMover - 1, gauss);
+    this->samplers[0] = disc;
     whichMover = std::vector<size_t>(numberOfMovers, -1);
     for (size_t i = 0; i < samplers.size(); i++)
     {
       SamplerPtr t = samplers[i].getObjectAndCast<Sampler> ();
-      samplers[i + 1] = t;
-      
+      this->samplers[i + 1] = t;
+
       if (t.isInstanceOf<PhiPsiMoverSampler> ())
         whichMover[phipsi] = i;
       else if (t.isInstanceOf<ShearMoverSampler> ())
         whichMover[shear] = i;
-      else if (t.isInstanceOf<RigidBodyTransMoverSampler> ())
-        whichMover[rigidbodytrans] = i;
-      else if (t.isInstanceOf<RigidBodySpinMoverSampler> ())
-        whichMover[rigidbodyspin] = i;
       else if (t.isInstanceOf<RigidBodyGeneralMoverSampler> ())
-        whichMover[rigidbodygeneral] = i;
+        whichMover[rigidbody] = i;
     }
   }
 
@@ -111,7 +82,6 @@ public:
 
   /**
    * dataset = first : ProteinMoverPtr observed
-   *           second : not yet used
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
@@ -129,7 +99,7 @@ public:
       {
         if (whichMover[phipsi] >= 0)
         {
-          moverFrequencies.push_back(whichMover[phipsi]);
+          moverFrequencies.push_back((int)whichMover[phipsi]);
           samples[whichMover[phipsi]].push_back(t);
         }
       }
@@ -137,16 +107,16 @@ public:
       {
         if (whichMover[shear] >= 0)
         {
-          moverFrequencies.push_back(whichMover[shear]);
+          moverFrequencies.push_back((int)whichMover[shear]);
           samples[whichMover[shear]].push_back(t);
         }
       }
       else if (t.isInstanceOf<RigidBodyMover> ())
       {
-        if (whichMover[rigidbodygeneral] >= 0)
+        if (whichMover[rigidbody] >= 0)
         {
-          moverFrequencies.push_back(whichMover[rigidbodygeneral]);
-          samples[whichMover[rigidbodygeneral]].push_back(t);
+          moverFrequencies.push_back((int)whichMover[rigidbody]);
+          samples[whichMover[rigidbody]].push_back(t);
         }
       }
     }

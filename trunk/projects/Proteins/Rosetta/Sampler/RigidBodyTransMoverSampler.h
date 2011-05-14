@@ -31,7 +31,7 @@ public:
     : CompositeSampler(2), numResidue(numResidue)
   {
     // select residue
-    samplers[0] = new DualResidueSampler(numResidue, 2);
+    samplers[0] = new DualResidueSampler(numResidue);
     // select magnitude
     samplers[1] = gaussianSampler(meanMagnitude, stdMagnitude);
   }
@@ -39,9 +39,9 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr residues = samplers[0]->sample(context, random, inputs).getObjectAndCast<Matrix> ();
-    size_t firstResidue = (size_t)(residues->getElement(0, 0).getDouble());
-    size_t secondResidue = (size_t)(residues->getElement(1, 0).getDouble());
+    PairPtr residues = samplers[0]->sample(context, random, inputs).getObjectAndCast<Pair>();
+    size_t firstResidue = (size_t)residues->getFirst().getInteger();
+    size_t secondResidue = (size_t)residues->getSecond().getInteger();
 
     double magnitude = samplers[1]->sample(context, random, inputs).getDouble();
     RigidBodyMoverPtr mover = new RigidBodyMover(firstResidue, secondResidue, magnitude, 0.0);
@@ -50,7 +50,6 @@ public:
 
   /**
    * dataset = first : RigidBodyTransMoverPtr observed
-   *           second : not yet used
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
@@ -62,9 +61,8 @@ public:
     for (size_t i = 0; i < dataset.size(); i++)
     {
       RigidBodyMoverPtr mover = dataset[i].getObjectAndCast<RigidBodyMover> ();
-      MatrixPtr tempResidue = new DoubleMatrix(2, 1);
-      tempResidue->setElement(0, 0, Variable((double)mover->getIndexResidueOne()));
-      tempResidue->setElement(1, 0, Variable((double)mover->getIndexResidueTwo()));
+      PairPtr tempResidue = new Pair((size_t)mover->getIndexResidueOne(),
+          (size_t)mover->getIndexResidueTwo());
       datasetResidues.push_back(tempResidue);
       datasetMagnitude.push_back(mover->getMagnitude());
     }

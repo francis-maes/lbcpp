@@ -9,8 +9,6 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_DUAL_RESIDUE_SAMPLER_H_
 # define LBCPP_PROTEINS_ROSETTA_DUAL_RESIDUE_SAMPLER_H_
 
-# define MAX_INTERVAL_VALUE_DUAL 100
-
 # include "precompiled.h"
 # include "../Sampler.h"
 # include "GaussianMultivariateSampler.h"
@@ -25,12 +23,12 @@ class DualResidueSampler : public CompositeSampler
 {
 public:
   DualResidueSampler()
-    : CompositeSampler(), numResidues(1), residuesDeviation(0)
+    : CompositeSampler(), numResidues(1)
   {
   }
 
-  DualResidueSampler(size_t numResidues, size_t residuesDeviation = 0)
-    : CompositeSampler(1), numResidues(numResidues), residuesDeviation(residuesDeviation)
+  DualResidueSampler(size_t numResidues)
+    : CompositeSampler(1), numResidues(numResidues)
   {
     // only 2 clusters for GMM
     MatrixPtr probabilities = new DoubleMatrix(2, 1, 0.0);
@@ -43,16 +41,16 @@ public:
     std::vector<MatrixPtr> means(2);
     means[0] = new DoubleMatrix(2, 1, 0.0);
     means[1] = new DoubleMatrix(2, 1, 0.0);
-    means[0]->setElement(0, 0, Variable(0.45 * MAX_INTERVAL_VALUE_DUAL));
-    means[0]->setElement(1, 0, Variable(0.45 * MAX_INTERVAL_VALUE_DUAL));
-    means[1]->setElement(0, 0, Variable(0.55 * MAX_INTERVAL_VALUE_DUAL));
-    means[1]->setElement(1, 0, Variable(0.55 * MAX_INTERVAL_VALUE_DUAL));
+    means[0]->setElement(0, 0, Variable(0.45 * numResidues));
+    means[0]->setElement(1, 0, Variable(0.45 * numResidues));
+    means[1]->setElement(0, 0, Variable(0.55 * numResidues));
+    means[1]->setElement(1, 0, Variable(0.55 * numResidues));
 
     // initialize covarianceMatrix
     std::vector<MatrixPtr> covarianceMatrix(2);
     covarianceMatrix[0] = new DoubleMatrix(2, 2, 0.0);
-    double var = std::pow(0.25 * MAX_INTERVAL_VALUE_DUAL, 2.0);
-    double covar = std::pow(0.01 * MAX_INTERVAL_VALUE_DUAL, 2.0);
+    double var = std::pow(0.25 * numResidues, 2.0);
+    double covar = std::pow(0.01 * numResidues, 2.0);
     covarianceMatrix[0]->setElement(0, 0, Variable(var));
     covarianceMatrix[0]->setElement(0, 1, Variable(covar));
     covarianceMatrix[0]->setElement(1, 0, Variable(covar));
@@ -71,21 +69,12 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    MatrixPtr temp = samplers[0]->sample(context, random, NULL).getObjectAndCast<Matrix>();
+    MatrixPtr temp = samplers[0]->sample(context, random, inputs).getObjectAndCast<Matrix>();
     double rand1 = std::abs(temp->getElement(0, 0).getDouble());
     double rand2 = std::abs(temp->getElement(1, 0).getDouble());
-    rand1 = rand1 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand1)
-        : rand1;
-    rand2 = rand2 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL) - rand2)
-        : rand2;
 
-    size_t firstResidue = (size_t)std::floor(rand1 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
-    size_t secondResidue = (size_t)std::floor(rand2 * numResidues / (double)MAX_INTERVAL_VALUE_DUAL);
-
-    if (firstResidue == numResidues)
-      firstResidue--;
-    if (secondResidue == numResidues)
-      secondResidue--;
+    size_t firstResidue = juce::jlimit((size_t)0, (size_t)(numResidues - 1), (size_t)std::floor(rand1));
+    size_t secondResidue = juce::jlimit((size_t)0, (size_t)(numResidues - 1), (size_t)std::floor(rand2));
 
     if (std::abs((int)(firstResidue - secondResidue)) <= 1)
     {
@@ -106,16 +95,13 @@ public:
       }
     }
 
-    MatrixPtr result = new DoubleMatrix(2, 1);
-    result->setElement(0, 0, Variable((double)firstResidue));
-    result->setElement(1, 0, Variable((double)secondResidue));
-    return Variable(result);
+    PairPtr residuePair = new Pair(firstResidue, secondResidue);
+    return Variable(residuePair);
   }
 
   /**
-   * dataset = first : a Variable of DoubleMatrix type containing the residues observed
-   * expressed in terms of their integer value represented in double.
-   *           second : not yet used.
+   * dataset = first : a Variable of Pair type containing the residues observed
+   * expressed in size_t variables.
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
@@ -123,27 +109,16 @@ public:
       return;
 
     std::vector<Variable> data;
-    double scaleFactor = (double)MAX_INTERVAL_VALUE_DUAL / (double)numResidues;
-    double varianceIncrement = (double)residuesDeviation * scaleFactor;
     
-    RandomGeneratorPtr random = new RandomGenerator(); // francis: I do not understand why random is needed here ..
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      MatrixPtr residuePair = dataset[i].getObjectAndCast<Matrix> ();
-      size_t res1 = (size_t)(residuePair->getElement(0, 0).getDouble());
-      size_t res2 = (size_t)(residuePair->getElement(1, 0).getDouble());
-      double value1 = (double)res1 * scaleFactor;
-      double value2 = (double)res2 * scaleFactor;
-      value1 = std::abs(value1 + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
-      value1 = value1 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL)
-          - value1) : value1;
-      value2 = std::abs(value2 + varianceIncrement * random->sampleDoubleFromGaussian(0, 1));
-      value2 = value2 > (1 * MAX_INTERVAL_VALUE_DUAL) ? std::abs((2 * MAX_INTERVAL_VALUE_DUAL)
-          - value2) : value2;
-      
+      PairPtr residuePair = dataset[i].getObjectAndCast<Pair> ();
+      size_t res1 = (size_t)residuePair->getFirst().getInteger();
+      size_t res2 = (size_t)residuePair->getSecond().getInteger();
+
       DoubleMatrixPtr residuePair2 = new DoubleMatrix(2, 1);
-      residuePair2->setValue(0, 0, value1);
-      residuePair2->setValue(1, 0, value2);
+      residuePair2->setValue(0, 0, (double)res1);
+      residuePair2->setValue(1, 0, (double)res2);
       data.push_back(residuePair2);
     }
 
@@ -153,7 +128,6 @@ public:
 protected:
   friend class DualResidueSamplerClass;
   size_t numResidues;
-  size_t residuesDeviation;
 };
 
 }; /* namespace lbcpp */

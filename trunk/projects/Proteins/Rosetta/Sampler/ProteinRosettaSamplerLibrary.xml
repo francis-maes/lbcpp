@@ -5,6 +5,12 @@
   <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
   </class>
+  
+  <class name="DiscretizeSampler" base="Sampler">
+    <variable type="Integer" name="minValue" description="Minimum value returned."/>
+    <variable type="Integer" name="maxValue" description="Maximum value returned."/>
+    <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
+  </class>
 
   <class name="GaussianMultivariateSampler" base="ContinuousSampler">  
     <variable type="DoubleMatrix[Double]" name="probabilities"/>
@@ -48,12 +54,10 @@
   
   <class name="SimpleResidueSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
-    <variable type="PositiveInteger" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>
   
   <class name="DualResidueSampler" base="CompositeSampler">
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
-    <variable type="PositiveInteger" name="residuesDeviation" shortName="d" description="The standard deviation, expressed in number of residues, added to the values at learning time. This results in more variance in the sampled values."/>
   </class>
     
   <class name="ProteinMoverSampler" base="CompositeSampler">
@@ -64,9 +68,7 @@
   <enumeration name="ProteinMoverEnumeration">
     <value name="phipsi"/>
     <value name="shear"/>
-    <value name="rigidbodytrans"/>
-    <value name="rigidbodyspin"/>
-    <value name="rigidbodygeneral"/>
+    <value name="rigidbody"/>
   </enumeration>
   
 </library>
