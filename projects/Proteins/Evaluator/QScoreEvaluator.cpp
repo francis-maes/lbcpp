@@ -206,18 +206,11 @@ QScoreObjectPtr QScoreObject::getQScoreObjectByDist(int minDist, int maxDist)
   return temp;
 }
 
-QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist, int maxDist)
+QScoreObjectPtr QScoreObject::createQScoreFromMatrices(SymmetricMatrixPtr matTarget,
+    SymmetricMatrixPtr matModel, int minDist, int maxDist)
 {
-  if (maxDist < 0)
-    maxDist = target->getLength();
-
-  if (target->getLength() != model->getLength())
-    return NULL;
-
   std::vector<CAlphaDist> tempVec;
 
-  SymmetricMatrixPtr matTarget = (target->getTertiaryStructure())->makeCAlphaDistanceMatrix();
-  SymmetricMatrixPtr matModel = (model->getTertiaryStructure())->makeCAlphaDistanceMatrix();
   int numRows = matTarget->getNumRows();
   int numCols = matTarget->getNumColumns();
 
@@ -241,6 +234,35 @@ QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int m
   }
   QScoreObjectPtr qs = new QScoreObject(tempVec);
   return qs;
+}
+
+QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist, int maxDist)
+{
+  if (maxDist < 0)
+    maxDist = target->getLength();
+
+  if (target->getLength() != model->getLength())
+    return NULL;
+
+  SymmetricMatrixPtr matTarget = (target->getTertiaryStructure())->makeCAlphaDistanceMatrix();
+  SymmetricMatrixPtr matModel = (model->getTertiaryStructure())->makeCAlphaDistanceMatrix();
+
+  return QScoreObject::createQScoreFromMatrices(matTarget, matModel, minDist, maxDist);
+}
+
+QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::PoseOP model,
+    int minDist, int maxDist)
+{
+  if (maxDist < 0)
+    maxDist = target->n_residue();
+
+  if ((size_t)target->n_residue() != (size_t)model->n_residue())
+    return NULL;
+
+  SymmetricMatrixPtr matTarget = createCalphaMatrixDistance(target);
+  SymmetricMatrixPtr matModel = createCalphaMatrixDistance(model);
+
+  return QScoreObject::createQScoreFromMatrices(matTarget, matModel, minDist, maxDist);
 }
 
 }; /* namespace lbcpp */
