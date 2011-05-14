@@ -97,23 +97,43 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
    */
 }
 
-double lbcpp::getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot)
-{
-  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
-  return getTotalEnergy(tempPose);
-}
-
-double lbcpp::getTotalEnergy(const core::pose::PoseOP& pose)
+double lbcpp::fullAtomEnergy(const core::pose::PoseOP& pose)
 {
   core::scoring::ScoreFunctionOP score_fxn =
       core::scoring::ScoreFunctionFactory::create_score_function("standard");
   return (*score_fxn)(*pose);
 }
 
-double lbcpp::getConformationScore(ExecutionContext& context, const ProteinPtr& prot)
+double lbcpp::centroidEnergy(const core::pose::PoseOP& pose)
+{
+  core::scoring::ScoreFunctionOP score_fxn =
+      core::scoring::ScoreFunctionFactory::create_score_function("cen_std");
+  protocols::moves::SwitchResidueTypeSetMoverOP switcher =
+      new protocols::moves::SwitchResidueTypeSetMover("centroid");
+  core::pose::PoseOP energyPose = new core::pose::Pose();
+  *energyPose = *pose;
+  switcher->apply(*energyPose);
+  return (*score_fxn)(*energyPose);
+}
+
+double lbcpp::getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot,
+    double(*scoreFunction)(const core::pose::PoseOP&))
 {
   core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
-  return getConformationScore(tempPose);
+  return getTotalEnergy(tempPose, scoreFunction);
+}
+
+double lbcpp::getTotalEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&))
+{
+  return (*scoreFunction)(pose);
+}
+
+double lbcpp::getConformationScore(ExecutionContext& context, const ProteinPtr& prot,
+    double(*scoreFunction)(const core::pose::PoseOP&))
+{
+  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
+  return getConformationScore(tempPose, scoreFunction);
 }
 
 double formattingCorrectionFactor(double value, double mean, double std)
@@ -121,11 +141,9 @@ double formattingCorrectionFactor(double value, double mean, double std)
   return std::exp(std::pow((value - mean) / std, 2));
 }
 
-double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
+double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
+    const core::pose::PoseOP&))
 {
-  core::scoring::ScoreFunctionOP score_fxn =
-      core::scoring::ScoreFunctionFactory::create_score_function("standard");
-
   // Correct the energy function
   double meanCN = 1.323;
   double stdCN = 0.1;
@@ -163,7 +181,7 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose)
   correctionFactor += formattingCorrectionFactor(coordinatesCA.distance(coordinatesC), meanCAC,
       stdCAC);
 
-  double score = (*score_fxn)(*pose) + juce::jmax(0.0, correctionFactor - (double)3
+  double score = (*scoreFunction)(pose) + juce::jmax(0.0, correctionFactor - (double)3
       * numberResidues + 1);
   return (score >= 1 ? score : std::exp(score - 1));
 }
@@ -226,3 +244,26 @@ core::pose::PoseOP lbcpp::initializeProteinStructure(core::pose::PoseOP pose)
 
   return initialized;
 }
+
+SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(core::pose::PoseOP pose)
+{
+  SymmetricMatrixPtr matrix = new DoubleSymmetricMatrix(doubleType, (int)pose->n_residue(), 0.0);
+
+  for (size_t i = 0; i < matrix->getNumRows(); i++)
+  {
+    for (size_t j = i; j < matrix->getNumColumns(); j++)
+    {
+      // Get coordinates
+      numeric::xyzVector<double> coordinatesCAi = (pose->residue(i + 1)).xyz("CA");
+      numeric::xyzVector<double> coordinatesCAj = (pose->residue(j + 1)).xyz("CA");
+
+      matrix->setElement(i, j, coordinatesCAi.distance(coordinatesCAj));
+    }
+  }
+  return matrix;
+}
+
+//double lbcpp::getConformationScoreCentroid(const core::pose::PoseOP& pose)
+//{
+//
+//}

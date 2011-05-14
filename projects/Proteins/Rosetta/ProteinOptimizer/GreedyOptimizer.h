@@ -55,7 +55,7 @@ public:
       ExecutionContext& context, RandomGeneratorPtr& random, int maxSteps = 50000)
   {
     // Initialization
-    double minimumEnergy = getConformationScore(pose);
+    double minimumEnergy = getConformationScore(pose, fullAtomEnergy);
     double temporaryEnergy = minimumEnergy;
     core::pose::PoseOP optimizedPose = new core::pose::Pose((*pose));
     core::pose::PoseOP workingPose = new core::pose::Pose((*pose));
@@ -108,7 +108,7 @@ public:
       ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<
           ProteinMover> ();
       mover->move(workingPose);
-      temporaryEnergy = getConformationScore(workingPose);
+      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 
       if (temporaryEnergy < minimumEnergy)
       {

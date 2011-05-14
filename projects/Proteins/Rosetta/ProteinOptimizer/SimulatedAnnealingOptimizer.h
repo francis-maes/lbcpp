@@ -66,7 +66,7 @@ public:
       double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
           50, int maxSteps = 50000, int timesReinitialization = 5)
   {
-    double currentEnergy = getConformationScore(pose);
+    double currentEnergy = getConformationScore(pose, fullAtomEnergy);
     double minimumEnergy = currentEnergy;
     double temporaryEnergy = currentEnergy;
 
@@ -131,7 +131,7 @@ public:
     {
       ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
       mover->move(workingPose);
-      temporaryEnergy = getConformationScore(workingPose);
+      temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 
       if (keepConformation(random, temporaryEnergy - currentEnergy, currentTemperature))
       {

@@ -105,19 +105,18 @@ RigidBodySpinMover():RigidBodyMover(T("Rigid body spin mover"))
     core::kinematics::Stub secondStub = (pose->conformation()).downstream_jump_stub(1);
 
     // Create rotation axis and rotation center
-    core::Vector upCentroids;
-    core::Vector rotationCenter;
-    protocols::geometry::centroids_by_jump((*pose), 1, upCentroids, rotationCenter);
-    core::Vector rotationAxis = upCentroids - rotationCenter;
+    core::Vector oneEnd = (pose->residue(firstResidue)).xyz("CA");
+    core::Vector secondEnd = (pose->residue(secondResidue)).xyz("CA");
+    core::Vector rotationAxis = oneEnd - secondEnd;
 
     // Apply rotation
-    jumpToModify.set_rb_center(1, secondStub, rotationCenter);
-    jumpToModify.rotation_by_axis(firstStub, rotationAxis, rotationCenter, (float)amplitude);
+    jumpToModify.set_rb_center(1, secondStub, secondEnd);
+    jumpToModify.rotation_by_axis(firstStub, rotationAxis, secondEnd, (float)amplitude);
 
     // Set new conformation and clear the jump
     pose->set_jump(1, jumpToModify);
     foldTree = pose->fold_tree();
-    foldTree.delete_jump_and_intervening_cutpoint(1);
+    foldTree.simple_tree(pose->n_residue());
     pose->fold_tree(foldTree);
   }
 
