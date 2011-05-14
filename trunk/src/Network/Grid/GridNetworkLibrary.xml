@@ -5,8 +5,8 @@
   <!-- NetworkInterface -->
   <class name="GridNetworkInterface" base="NetworkInterface" abstract="yes"/>
   <class name="ForwarderGridNetworkInterface" base="GridNetworkInterface"/>
-  <class name="SgeGridNetworkInterface" base="GridNetworkInterface"/>
-  <class name="BoincGridNetworkInterface" base="GridNetworkInterface"/>
+  <class name="SgeGridNetworkInterface" base="GridNetworkInterface" shortName="SGE"/>
+  <class name="BoincGridNetworkInterface" base="GridNetworkInterface" shortName="BOINC"/>
   
   <!-- NetworkNotification -->
   <class name="GridNetworkNotification" base="NetworkNotification" abstract="yes"/>

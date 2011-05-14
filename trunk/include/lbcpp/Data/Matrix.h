@@ -191,7 +191,7 @@ public:
     {BaseClass::setElement(row, column, value);}
 
   double getValue(size_t row, size_t column) const
-    {return elements[makeIndex(row, column)];}
+    {size_t index = makeIndex(row, column); jassert(index < elements.size()); return elements[index];}
 
   lbcpp_UseDebuggingNewOperator
 };

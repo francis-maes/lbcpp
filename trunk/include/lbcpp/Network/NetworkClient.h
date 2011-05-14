@@ -47,7 +47,7 @@ public:
 protected:
   enum {magicNumber = 0xdeadface};
   ExecutionContext& context;
-  std::deque<Variable> variables;
+  std::deque<Variable> variables; // receivedVariables
   std::vector<NetworkCallbackPtr> callbacks;
   bool disconnected;
   CriticalSection lock;

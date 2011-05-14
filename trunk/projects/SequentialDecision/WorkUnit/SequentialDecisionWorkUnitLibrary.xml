@@ -92,6 +92,7 @@
 <!--    <variable type="RandomGenerator" name="random"/> -->
   </class>
 
+  <!--
   <class name="BanditStatisticsFeatureGenerator" base="FeatureGenerator"/>
   <class name="DiscreteBanditPerception" base="CompositeFunction">
     <variable type="PositiveInteger" name="maxTimeStep"/>
@@ -100,12 +101,13 @@
     <variable type="Function" name="perceptionFunction"/>
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
-
-  <class name="WeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  -->
+  
+  <class name="WeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="weightedUCB">
     <variable type="Double" name="C"/>
   </class>
   
-  <class name="PerTimesWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  <class name="PerTimesWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="perTimesWeightedUCB">
     <variable type="PositiveInteger" name="maxTimeStep"/>
     <variable type="DoubleMatrix[Double]" name="matrix"/>
   </class>
@@ -125,11 +127,9 @@
     <value name="conf(reward)^2"/>
   </enumeration>
   
-  <class name="OldStyleParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
-    <variable type="PositiveInteger" name="maxTimeStep"/>
+  <class name="OldStyleParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="oldStyle">
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
-
 
   <class name="EvaluateDiscreteBanditPolicyWorkUnit" base="WorkUnit">
     <variable type="PositiveInteger" name="numBandits"/>
@@ -152,6 +152,7 @@
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
     <variable type="PositiveInteger" name="numTrainingProblems" shortName="T"/>
     <variable type="PositiveInteger" name="numTestingProblems"/>
+    <!-- <variable type="DiscreteBanditPolicy" name="policyToOptimize" shortName="p"/> -->
   </class>
 
 

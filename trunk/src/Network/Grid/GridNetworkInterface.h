@@ -31,7 +31,7 @@ public:
 class SgeGridNetworkInterface : public GridNetworkInterface
 {
 public:
-  SgeGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+  SgeGridNetworkInterface(ExecutionContext& context, const String& nodeName);
   SgeGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
@@ -68,7 +68,7 @@ protected:
 class BoincGridNetworkInterface : public GridNetworkInterface
 {
 public:
-  BoincGridNetworkInterface(ExecutionContext& context, NetworkClientPtr client, const String& nodeName);
+  BoincGridNetworkInterface(ExecutionContext& context, const String& nodeName);
   BoincGridNetworkInterface() {}
 
   virtual ContainerPtr pushWorkUnits(ContainerPtr networkRequests);
