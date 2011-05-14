@@ -74,8 +74,8 @@ extern ManagerNetworkInterfacePtr forwarderManagerNetworkInterface(ExecutionCont
 class GridNetworkInterface : public NetworkInterface
 {
 public:
-  GridNetworkInterface(ExecutionContext& context, const String& nodeName)
-    : NetworkInterface(context, nodeName) {}
+  GridNetworkInterface(ExecutionContext& context, const String& name)
+    : NetworkInterface(context, name) {}
   GridNetworkInterface() {}
 
   // input : containerClass(networkRequestClass)

@@ -12,7 +12,7 @@
 
 using namespace lbcpp;
 
-/* ClientGridNetworkInterface */
+/* ForwarderGridNetworkInterface */
 ContainerPtr ForwarderGridNetworkInterface::pushWorkUnits(ContainerPtr networkRequests)
 {
   client->sendVariable(new PushWorkUnitsNotification(networkRequests));
