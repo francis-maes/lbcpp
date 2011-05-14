@@ -16,6 +16,13 @@
 
 # include "../Data/Protein.h"
 # include "lbcpp/Function/Evaluator.h"
+# include "../Rosetta/RosettaUtils.h"
+
+# undef T
+#  include <core/conformation/Residue.hh>
+#  include <core/pose/Pose.hh>
+#  include <numeric/xyzVector.hh>
+# define T JUCE_T
 
 namespace lbcpp
 {
@@ -157,6 +164,9 @@ public:
 
   QScoreObjectPtr getQScoreObjectByDist(int minDist, int maxDist);
 
+  static QScoreObjectPtr createQScoreFromMatrices(SymmetricMatrixPtr matrix1,
+      SymmetricMatrixPtr matrix2, int minDist, int maxDist);
+
 private:
   std::vector<CAlphaDist>* scores;
   double mean;
@@ -178,6 +188,9 @@ private:
  */
 QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist = -1,
     int maxDist = -1);
+
+QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::PoseOP model,
+    int minDist = -1, int maxDist = -1);
 
 }; /* namespace lbcpp */
 
