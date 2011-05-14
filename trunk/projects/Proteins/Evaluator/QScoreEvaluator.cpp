@@ -5,6 +5,7 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
+#ifdef LBCPP_PROTEIN_ROSETTA
 
 #include "precompiled.h"
 #include "QScoreEvaluator.h"
@@ -266,3 +267,5 @@ QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::Pos
 }
 
 }; /* namespace lbcpp */
+
+#endif // !LBCPP_PROTEIN_ROSETTA

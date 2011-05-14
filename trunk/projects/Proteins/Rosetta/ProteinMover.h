@@ -9,6 +9,8 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 
+# ifdef LBCPP_PROTEIN_ROSETTA
+
 # include "precompiled.h"
 # include "RosettaUtils.h"
 
@@ -61,5 +63,7 @@ extern ProteinMoverPtr shearMover();
 extern ProteinMoverPtr rigidBodyGeneralMover();
 
 }; /* namespace lbcpp */
+
+#endif // !LBCPP_PROTEIN_ROSETTA
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_

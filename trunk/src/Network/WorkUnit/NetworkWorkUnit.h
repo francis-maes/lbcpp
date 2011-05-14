@@ -41,7 +41,7 @@ class GridWorkUnit : public WorkUnit // => ClientWorkUnit
 {
 public:
   GridWorkUnit(const String& gridName, const String& gridEngine, const String& hostName, size_t port)
-  : gridName(gridName), gridEngine(gridEngine), hostName(hostName), port(port) {}
+    : gridName(gridName), gridEngine(gridEngine), hostName(hostName), port(port) {}
   GridWorkUnit() : port(1664) {}
 
   virtual Variable run(ExecutionContext& context);

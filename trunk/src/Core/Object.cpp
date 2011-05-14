@@ -430,7 +430,7 @@ bool Object::loadArgumentsFromString(ExecutionContext& context, const String& st
   if (tokens.size() > n)
   {
     context.errorCallback(T("Could not parse ") + str.quoted() + T(": too much tokens (") +
-      String(tokens.size()) + T(" tokens, ") + String((int)n) + T(" expected variables."));
+      String((int)tokens.size()) + T(" tokens, ") + String((int)n) + T(" expected variables."));
     return false;
   }
   bool ok = true;

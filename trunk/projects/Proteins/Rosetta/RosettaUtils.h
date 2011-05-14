@@ -8,6 +8,7 @@
 
 #ifndef LBCPP_PROTEINS_ROSETTA_UTILS_H_
 # define LBCPP_PROTEINS_ROSETTA_UTILS_H_
+# ifdef LBCPP_PROTEIN_ROSETTA
 
 # include "precompiled.h"
 # include "../Data/AminoAcid.h"
@@ -129,5 +130,7 @@ core::pose::PoseOP initializeProteinStructure(core::pose::PoseOP pose);
 SymmetricMatrixPtr createCalphaMatrixDistance(core::pose::PoseOP pose);
 
 }; /* namespace lbcpp */
+
+# endif // !LBCPP_PROTEIN_ROSETTA
 
 #endif //! LBCPP_PROTEINS_ROSETTA_UTILS_H_
