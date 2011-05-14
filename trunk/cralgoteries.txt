@@ -1,3 +1,5 @@
+
+
 Voir avec julien:
  * GridWorkUnit: le NetworkInteface pourrait directement être en argument => avec des shortNames
  * GridWorkUnit: pourrait être quelque chose de plus general type : NetworkClientWorkUnit ?

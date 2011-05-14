@@ -83,8 +83,9 @@ typedef ReferenceCountedObjectPtr<CompositeSampler> CompositeSamplerPtr;
 
 extern CompositeSamplerPtr objectCompositeSampler(ClassPtr objectClass, const std::vector<SamplerPtr>& variableSamplers);
 
-extern CompositeSamplerPtr independentDenseDoubleVectorSampler(EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel);
-extern CompositeSamplerPtr independentDenseDoubleVectorSampler(size_t numElements, SamplerPtr elementSamplerModel);
+extern CompositeSamplerPtr independentDoubleVectorSampler(EnumerationPtr elementsEnumeration, SamplerPtr elementSamplerModel);
+extern CompositeSamplerPtr independentDoubleVectorSampler(size_t numElements, SamplerPtr elementSamplerModel);
+extern CompositeSamplerPtr independentDoubleMatrixSampler(size_t numRows, size_t numColumns, SamplerPtr elementSamplerModel);
 
 extern CompositeSamplerPtr mixtureSampler(const DenseDoubleVectorPtr& probabilities, const std::vector<SamplerPtr>& samplers);
 

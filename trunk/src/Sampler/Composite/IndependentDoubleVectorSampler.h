@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: IndependentDenseDoubleVecto...h| Samples vectors in R^n          |
+| Filename: IndependentDoubleVectorSampler.h| Samples vectors in R^n         |
 | Author  : Francis Maes                   |                                 |
 | Started : 13/05/2011 19:08               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DENSE_DOUBLE_VECTOR_H_
-# define LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DENSE_DOUBLE_VECTOR_H_
+#ifndef LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DOUBLE_VECTOR_H_
+# define LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DOUBLE_VECTOR_H_
 
 # include <lbcpp/Sampler/Sampler.h>
 # include <lbcpp/Data/DoubleVector.h>
@@ -15,18 +15,18 @@
 namespace lbcpp
 {
 
-class IndependentDenseDoubleVectorSampler : public CompositeSampler
+class IndependentDoubleVectorSampler : public CompositeSampler
 {
 public:
-  IndependentDenseDoubleVectorSampler(const EnumerationPtr& elementsEnumeration, const SamplerPtr& elementSamplerModel)
+  IndependentDoubleVectorSampler(const EnumerationPtr& elementsEnumeration, const SamplerPtr& elementSamplerModel)
     : CompositeSampler(elementsEnumeration->getNumElements()), elementsEnumeration(elementsEnumeration)
     {createSamplers(elementSamplerModel);}
 
-  IndependentDenseDoubleVectorSampler(size_t numElements, const SamplerPtr& elementSamplerModel)
+  IndependentDoubleVectorSampler(size_t numElements, const SamplerPtr& elementSamplerModel)
     : CompositeSampler(numElements), elementsEnumeration(positiveIntegerEnumerationEnumeration)
     {createSamplers(elementSamplerModel);}
 
-  IndependentDenseDoubleVectorSampler() {}
+  IndependentDoubleVectorSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
@@ -57,7 +57,7 @@ public:
   }
 
 protected:
-  friend class IndependentDenseDoubleVectorSamplerClass;
+  friend class IndependentDoubleVectorSamplerClass;
 
   EnumerationPtr elementsEnumeration;
 
@@ -70,4 +70,4 @@ protected:
 
 }; /* namespace lbcpp */
 
-#endif // !LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DENSE_DOUBLE_VECTOR_H_
+#endif // !LBCPP_SAMPLER_COMPOSITE_INDEPENDENT_DOUBLE_VECTOR_H_
