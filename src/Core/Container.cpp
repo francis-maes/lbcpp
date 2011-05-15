@@ -121,13 +121,20 @@ void Container::saveToXml(XmlExporter& exporter) const
   Object::saveToXml(exporter);
   size_t n = getNumElements();
   exporter.setAttribute(T("size"), (int)n);
-  //TypePtr elementsType = getElementsType();
-  TypePtr actuallyType = computeElementsCommonBaseType();
+  TypePtr elementsType = getElementsType();
+  TypePtr actualType = computeElementsCommonBaseType();
+  if (elementsType != actualType)
+  {
+    exporter.enter(T("elementsActualType"));
+    exporter.writeType(actualType);
+    exporter.leave();
+  }
+
   for (size_t i = 0; i < n; ++i)
   {
     Variable element = getElement(i);
     if (!element.isMissingValue())
-      exporter.saveElement(i, getElement(i), actuallyType);
+      exporter.saveElement(i, getElement(i), actualType);
   }
 }
 
@@ -137,6 +144,13 @@ bool Container::loadFromXml(XmlImporter& importer)
     return false;
 
   TypePtr elementsType = getElementsType();
+  if (importer.enter(T("elementsActualType")))
+  {
+    elementsType = importer.loadType(TypePtr());
+    importer.leave();
+    if (!elementsType)
+      return false;
+  }
 
   forEachXmlChildElementWithTagName(*importer.getCurrentElement(), child, T("element"))
   {
