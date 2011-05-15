@@ -57,7 +57,7 @@ public:
       // don't do busy waiting
       juce::Thread::sleep(optimizerContext->getTimeToSleep());
       context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-      saveState(context, state);
+      state->autoSaveToFile(context);
       
       // enough WUs evaluated -> update distribution (with best results)
       if (state->getNumberOfProcessedRequests() >= populationSize) 
@@ -121,10 +121,10 @@ public:
           context.resultCallback(T("iteration"), i + 1);
         }
         
-        saveState(context, state);
+        state->autoSaveToFile(context);
       }
     }
-    
+    state->autoSaveToFile(context, true); // force to save at end of optimization
     return state->getBestVariable();
   }
   
