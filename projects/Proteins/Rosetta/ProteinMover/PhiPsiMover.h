@@ -12,7 +12,11 @@
 # include "precompiled.h"
 # include "../ProteinMover.h"
 
-# undef T
+namespace lbcpp
+{
+
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
@@ -24,15 +28,13 @@
 #  include <protocols/geometry/RB_geometry.hh>
 #  include <core/kinematics/Jump.hh>
 #  include <core/kinematics/Stub.hh>
-# define T JUCE_T
-
-namespace lbcpp
-{
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 class PhiPsiMover;
 typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;
 
-class PhiPsiMover: public ProteinMover
+class PhiPsiMover : public ProteinMover
 {
 public:
   PhiPsiMover()
@@ -50,12 +52,6 @@ public:
    */
   PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
     : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
-  {
-  }
-
-  PhiPsiMover(const PhiPsiMover& mover)
-    : ProteinMover(), residue(mover.residue), deltaPhi(mover.deltaPhi),
-      deltaPsi(mover.deltaPsi)
   {
   }
 
@@ -80,8 +76,12 @@ public:
    */
   static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
     pose->set_psi(residue + 1, pose->psi(residue + 1) + deltaPsi);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   /**
@@ -138,17 +138,9 @@ public:
     return deltaPsi;
   }
 
-  PhiPsiMover operator=(const PhiPsiMover& mover)
-  {
-    PhiPsiMover copy;
-    copy.residue = mover.residue;
-    copy.deltaPhi = mover.deltaPhi;
-    copy.deltaPsi = mover.deltaPsi;
-    return copy;
-  }
-
 protected:
   friend class PhiPsiMoverClass;
+
   size_t residue;
   double deltaPhi;
   double deltaPsi;

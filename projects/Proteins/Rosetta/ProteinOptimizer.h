@@ -20,9 +20,9 @@
 # include "Sampler.h"
 # include "ProteinMover.h"
 
-# undef T
-#  include <core/conformation/Conformation.hh>
-# define T JUCE_T
+//# undef T
+//#  include <core/conformation/Conformation.hh>
+//# define T JUCE_T
 
 namespace lbcpp
 {

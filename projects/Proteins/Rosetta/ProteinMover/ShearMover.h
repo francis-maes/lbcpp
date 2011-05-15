@@ -12,7 +12,8 @@
 # include "precompiled.h"
 # include "../ProteinMover.h"
 
-# undef T
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
@@ -24,7 +25,8 @@
 #  include <protocols/geometry/RB_geometry.hh>
 #  include <core/kinematics/Jump.hh>
 #  include <core/kinematics/Stub.hh>
-# define T JUCE_T
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp
 {
@@ -32,7 +34,7 @@ namespace lbcpp
 class ShearMover;
 typedef ReferenceCountedObjectPtr<ShearMover> ShearMoverPtr;
 
-class ShearMover: public ProteinMover
+class ShearMover : public ProteinMover
 {
 public:
   ShearMover()
@@ -52,12 +54,6 @@ public:
    */
   ShearMover(size_t residue, double deltaPhi, double deltaPsi)
     : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
-  {
-  }
-
-  ShearMover(const ShearMover& mover)
-    : ProteinMover(), residue(mover.residue), deltaPhi(mover.deltaPhi),
-      deltaPsi(mover.deltaPsi)
   {
   }
 
@@ -82,9 +78,13 @@ public:
    */
   static void move(core::pose::PoseOP& pose, int residue, double deltaPhi, double deltaPsi)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     pose->set_phi(residue + 1, pose->phi(residue + 1) + deltaPhi);
     if (residue != 0)
       pose->set_psi(residue, pose->psi(residue) + deltaPsi);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   /**
@@ -139,15 +139,6 @@ public:
   double getDeltaPsi()
   {
     return deltaPsi;
-  }
-
-  ShearMover operator=(const ShearMover& mover)
-  {
-    ShearMover copy;
-    copy.residue = mover.residue;
-    copy.deltaPhi = mover.deltaPhi;
-    copy.deltaPsi = mover.deltaPsi;
-    return copy;
   }
 
 protected:

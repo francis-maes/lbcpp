@@ -39,13 +39,15 @@
 # include "Sampler/ResiduePairSampler.h"
 # include "Sampler/MultiVariateGaussianSampler.h"
 
-# undef T
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
 #  include <core/pose/Pose.hh>
 #  include <core/chemical/util.hh>
 #  include <core/io/pdb/pose_io.hh>
 #  include <core/io/pdb/file_data.hh>
 #  include <core/kinematics/FoldTree.hh>
-# define T JUCE_T
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 using namespace std;
 

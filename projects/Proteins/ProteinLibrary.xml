@@ -9,7 +9,7 @@
   <import name="ProteinWorkUnit"/>
   <import name="ProteinUserInterface" ifdef="LBCPP_USER_INTERFACE"/>
   <import name="ProteinOptimizer" ifdef="LBCPP_NETWORKING"/>
-  <import name="ProteinRosetta" ifdef="LBCPP_PROTEIN_ROSETTA"/>
+  <import name="ProteinRosetta"/>
 
   <include file="Data/Protein.h"/>
 

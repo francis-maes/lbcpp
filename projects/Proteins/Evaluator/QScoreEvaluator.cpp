@@ -6,8 +6,6 @@
                                |                                             |
                                `--------------------------------------------*/
 #include "precompiled.h"
-
-#ifdef LBCPP_PROTEIN_ROSETTA
 #include "QScoreEvaluator.h"
 
 namespace lbcpp
@@ -255,6 +253,7 @@ QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int m
 QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::PoseOP model,
     int minDist, int maxDist)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   if (maxDist < 0)
     maxDist = target->n_residue();
 
@@ -265,8 +264,10 @@ QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::Pos
   SymmetricMatrixPtr matModel = createCalphaMatrixDistance(model);
 
   return QScoreObject::createQScoreFromMatrices(matTarget, matModel, minDist, maxDist);
+#else
+  jassert(false);
+  return QScoreObjectPtr();
+#endif // !LBCPP_PROTEIN_ROSETTA
 }
 
 }; /* namespace lbcpp */
-
-#endif // !LBCPP_PROTEIN_ROSETTA

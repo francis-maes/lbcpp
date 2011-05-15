@@ -61,6 +61,7 @@ public:
   double evaluate(ExecutionContext& context, core::pose::PoseOP target,
       core::pose::PoseOP reference)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     int minDist =
         juce::jlimit(1, (int)target->n_residue(), juce::jmin(20, target->n_residue() / 2));
     int maxDist = -1;
@@ -85,6 +86,10 @@ public:
       return energyWeight * energyScore + (1 - energyWeight) * structureScore;
     else
       return energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
+#else
+    jassert(false);
+    return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   SamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
@@ -93,6 +98,7 @@ public:
       double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
   {
     SamplerPtr workingSampler = sampler->cloneAndCast<Sampler>();
+#ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 
     std::list<MoverAndScore> moversToKeep;
@@ -162,6 +168,10 @@ public:
     context.progressCallback(new ProgressionState((double)maxIterations, (double)maxIterations,
         T("Iterations")));
     context.leaveScope();
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
+
     return workingSampler;
   }
 
