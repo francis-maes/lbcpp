@@ -189,7 +189,7 @@ private:
 QScoreObjectPtr QScoreSingleEvaluator(ProteinPtr target, ProteinPtr model, int minDist = -1,
     int maxDist = -1);
 
-QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::PoseOP model,
+QScoreObjectPtr QScoreSingleEvaluator(const core::pose::PoseOP& target, const core::pose::PoseOP& model,
     int minDist = -1, int maxDist = -1);
 
 }; /* namespace lbcpp */

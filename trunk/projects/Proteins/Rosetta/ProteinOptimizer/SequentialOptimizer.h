@@ -36,19 +36,25 @@ public:
     else
       this->name = name;
   }
-
+/*
   core::pose::PoseOP apply(core::pose::PoseOP& pose, ExecutionContext& context,
       RandomGeneratorPtr& random)
   {
     SamplerPtr sampler;
     return sequentialOptimization(pose, sampler, context, random);
+  }*/
+
+  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
+                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
+  {
+#ifdef LBCPP_PROTEIN_ROSETTA
+    return sequentialOptimization(pose, sampler, context, random);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)
-  {
-    return sequentialOptimization(pose, sampler, context, random);
-  }
+#ifdef LBCPP_PROTEIN_ROSETTA
 
   /*
    * Performs sequential simulation on the pose object. This function adds a residue
@@ -121,6 +127,8 @@ public:
     setVerbosity(store);
     return acc;
   }
+#endif // LBCPP_PROTEIN_ROSETTA
+
 };
 
 }; /* namespace lbcpp */

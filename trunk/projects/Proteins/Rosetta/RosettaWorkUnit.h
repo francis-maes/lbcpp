@@ -32,12 +32,14 @@ public:
   {
   }
 
-  ProteinOptimizerWorkUnit(const String& proteinName, core::pose::PoseOP& pose,
+  ProteinOptimizerWorkUnit(const String& proteinName, const core::pose::PoseOP& pose,
       ProteinOptimizerPtr& optimizer, SamplerPtr& sampler, RandomGeneratorPtr& random)
     : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
+#ifdef LBCPP_PROTEIN_ROSETTA
     this->pose = pose;
+#endif // LBCPP_PROTEIN_ROSETTA
     this->optimizer = optimizer;
     this->sampler = sampler;
     this->random = random;
@@ -65,7 +67,9 @@ public:
 protected:
   friend class ProteinOptimizerWorkUnitClass;
   String proteinName;
+#ifdef LBCPP_PROTEIN_ROSETTA
   core::pose::PoseOP pose;
+#endif // LBCPP_PROTEIN_ROSETTA
   ProteinOptimizerPtr optimizer;
   SamplerPtr sampler;
   RandomGeneratorPtr random;

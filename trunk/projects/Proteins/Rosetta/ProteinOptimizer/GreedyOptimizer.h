@@ -33,13 +33,17 @@ public:
   {
   }
 
-#ifdef LBCPP_PROTEIN_ROSETTA
-  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)
+  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
+                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     return greedyOptimization(pose, sampler, context, random, maxSteps);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
+#ifdef LBCPP_PROTEIN_ROSETTA
   /*
    * Performs greedy optimization on the pose object.
    * @param pose the initial conformation
@@ -149,11 +153,6 @@ public:
     // Return
     return optimizedPose;
   }
-
-#else
-  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)
-    {jassert(false);}
 #endif // LBCPP_PROTEIN_ROSETTA
 
 private:
