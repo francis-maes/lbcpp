@@ -12,7 +12,8 @@
 # include "precompiled.h"
 # include "../ProteinMover.h"
 
-# undef T
+# ifdef LBCPP_PROTEIN_ROSETTA
+#  undef T
 #  include <core/kinematics/MoveMap.hh>
 #  include <core/kinematics/FoldTree.hh>
 #  include <core/conformation/Conformation.hh>
@@ -24,7 +25,8 @@
 #  include <protocols/geometry/RB_geometry.hh>
 #  include <core/kinematics/Jump.hh>
 #  include <core/kinematics/Stub.hh>
-# define T JUCE_T
+#  define T JUCE_T
+# endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp
 {
@@ -131,6 +133,7 @@ public:
   static void applyTranslation(core::pose::PoseOP& pose, size_t indexResidueOne,
       size_t indexResidueTwo, double magnitude)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     if (pose->n_residue() < 2)
       return;
 
@@ -153,11 +156,15 @@ public:
     // Clear the jump
     foldTree.simple_tree(pose->n_residue());
     pose->fold_tree(foldTree);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   static void applyRotation(core::pose::PoseOP& pose, size_t indexResidueOne,
       size_t indexResidueTwo, double amplitude)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     if (pose->n_residue() < 2)
       return;
 
@@ -190,6 +197,9 @@ public:
     foldTree = pose->fold_tree();
     foldTree.simple_tree(pose->n_residue());
     pose->fold_tree(foldTree);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
   /**
@@ -230,6 +240,7 @@ public:
 
 protected:
   friend class RigidBodyMoverClass;
+
   PairPtr residues;
   double magnitude; // for translation
   double amplitude; // for rotation

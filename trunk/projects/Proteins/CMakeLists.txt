@@ -21,12 +21,10 @@ IF(LBCPP_USER_INTERFACE)
   GENERATE_INTROSPECTION_CODE(UserInterface/ProteinUserInterfaceLibrary.xml ProteinUserInterfaceLibrary.cpp)
 ENDIF(LBCPP_USER_INTERFACE)
 
-IF(LBCPP_PROTEIN_ROSETTA)
-  GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
-  GENERATE_INTROSPECTION_CODE(Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml ProteinRosettaMoverLibrary.cpp)
-  GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
-  GENERATE_INTROSPECTION_CODE(Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml ProteinRosettaSamplerLibrary.cpp)
-ENDIF(LBCPP_PROTEIN_ROSETTA)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinRosettaLibrary.xml ProteinRosettaLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml ProteinRosettaMoverLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml ProteinRosettaOptimizerLibrary.cpp)
+GENERATE_INTROSPECTION_CODE(Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml ProteinRosettaSamplerLibrary.cpp)
 
 GENERATE_INTROSPECTION_CODE(ProteinLibrary.xml ProteinLibrary.cpp)
 
@@ -145,51 +143,49 @@ IF(LBCPP_USER_INTERFACE)
   )
 ENDIF(LBCPP_USER_INTERFACE)
 
+SET(LBCPP_PROTEIN_ROSETTA_SOURCES
+  Rosetta/RosettaTest.h
+  Rosetta/RosettaUtils.h
+  Rosetta/RosettaUtils.cpp
+  Rosetta/ProteinMover.h
+  Rosetta/Sampler.h
+  Rosetta/ProteinOptimizer.h
+  Rosetta/RosettaWorkUnit.h
+  Rosetta/ProteinEDAOptimizer.h
+  Rosetta/ProteinRosettaLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
+  Rosetta/ProteinMover/PhiPsiMover.h
+  Rosetta/ProteinMover/ShearMover.h
+  Rosetta/ProteinMover/RigidBodyMover.h
+  Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaMoverLibrary.cpp
+)
+
+SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
+  Rosetta/ProteinOptimizer/GreedyOptimizer.h
+  Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
+  Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
+  Rosetta/ProteinOptimizer/SequentialOptimizer.h
+  Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
+)
+
+  SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
+  Rosetta/Sampler/MultiVariateGaussianSampler.h
+  Rosetta/Sampler/DiscretizeSampler.h
+  Rosetta/Sampler/GaussianMultivariateSampler.h
+  Rosetta/Sampler/EnumerationDiscreteSampler.h
+  Rosetta/Sampler/ParzenContinuousSampler.h
+  Rosetta/Sampler/SimpleResidueSampler.h
+  Rosetta/Sampler/ResiduePairSampler.h
+  Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
+  ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
+)
 
 IF(LBCPP_PROTEIN_ROSETTA)
-
-  SET(LBCPP_PROTEIN_ROSETTA_SOURCES
-    Rosetta/RosettaTest.h
-    Rosetta/RosettaUtils.h
-    Rosetta/RosettaUtils.cpp
-    Rosetta/ProteinMover.h
-    Rosetta/Sampler.h
-    Rosetta/ProteinOptimizer.h
-    Rosetta/RosettaWorkUnit.h
-    Rosetta/ProteinEDAOptimizer.h
-    Rosetta/ProteinRosettaLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaLibrary.cpp
-  )
-  
-  SET(LBCPP_PROTEIN_ROSETTA_MOVER_SOURCES
-    Rosetta/ProteinMover/PhiPsiMover.h
-    Rosetta/ProteinMover/ShearMover.h
-    Rosetta/ProteinMover/RigidBodyMover.h
-    Rosetta/ProteinMover/ProteinRosettaMoverLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaMoverLibrary.cpp
-  )
-  
-  SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
-    Rosetta/ProteinOptimizer/GreedyOptimizer.h
-    Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
-    Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
-    Rosetta/ProteinOptimizer/SequentialOptimizer.h
-    Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
-  )
-  
-    SET(LBCPP_PROTEIN_ROSETTA_SAMPLER_SOURCES
-    Rosetta/Sampler/MultiVariateGaussianSampler.h
-    Rosetta/Sampler/DiscretizeSampler.h
-    Rosetta/Sampler/GaussianMultivariateSampler.h
-    Rosetta/Sampler/EnumerationDiscreteSampler.h
-    Rosetta/Sampler/ParzenContinuousSampler.h
-    Rosetta/Sampler/SimpleResidueSampler.h
-    Rosetta/Sampler/ResiduePairSampler.h
-    Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
-    ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
-  )
-
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
 
   

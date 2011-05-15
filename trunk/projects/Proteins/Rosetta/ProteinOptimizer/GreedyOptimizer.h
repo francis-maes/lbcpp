@@ -33,7 +33,8 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
+#ifdef LBCPP_PROTEIN_ROSETTA
+  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)
   {
     return greedyOptimization(pose, sampler, context, random, maxSteps);
@@ -52,8 +53,8 @@ public:
    * @param context, the context used to create the trace. NULL if no trace desired, default.
    * @return the new conformation
    */
-  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random, int maxSteps = 50000)
+  core::pose::PoseOP greedyOptimization(const core::pose::PoseOP& pose, const SamplerPtr& sampler,
+      ExecutionContext& context, const RandomGeneratorPtr& random, int maxSteps = 50000)
   {
     // Initialization
     double minimumEnergy = getConformationScore(pose, fullAtomEnergy);
@@ -148,6 +149,12 @@ public:
     // Return
     return optimizedPose;
   }
+
+#else
+  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
+      ExecutionContext& context, RandomGeneratorPtr& random)
+    {jassert(false);}
+#endif // LBCPP_PROTEIN_ROSETTA
 
 private:
   friend class ProteinGreedyOptimizerClass;

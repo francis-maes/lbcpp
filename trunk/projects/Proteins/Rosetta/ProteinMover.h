@@ -9,14 +9,8 @@
 #ifndef LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 # define LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_
 
-# ifdef LBCPP_PROTEIN_ROSETTA
-
 # include "precompiled.h"
 # include "RosettaUtils.h"
-
-# undef T
-#  include <core/pose/Pose.hh>
-# define T JUCE_T
 
 namespace lbcpp
 {
@@ -48,7 +42,5 @@ extern ClassPtr rigidBodyMoverClass;
 extern ClassPtr shearMoverClass;
 
 }; /* namespace lbcpp */
-
-#endif // !LBCPP_PROTEIN_ROSETTA
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_

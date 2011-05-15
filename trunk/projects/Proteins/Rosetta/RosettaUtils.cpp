@@ -19,16 +19,18 @@ String lbcpp::standardizedAtomName(const String& atomName)
   return String(letters + numbers);
 }
 
-core::pose::PoseOP lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein)
+void lbcpp::convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein, core::pose::PoseOP& res)
 {
-  core::pose::PoseOP pose = new core::pose::Pose();
+#ifdef LBCPP_PROTEIN_ROSETTA
+  res = new core::pose::Pose();
   String proteinPDBString = PDBFileGenerator::producePDBString(context, protein);
-  core::io::pdb::pose_from_pdbstring((*pose), (const char*) proteinPDBString);
-  return pose;
+  core::io::pdb::pose_from_pdbstring((*res), (const char* )proteinPDBString);
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::pose::PoseOP& pose)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   std::ostringstream oss;
   core::io::pdb::FileData::dump_pdb((*pose), oss);
   oss.flush();
@@ -95,17 +97,26 @@ ProteinPtr lbcpp::convertPoseToProtein(ExecutionContext& context, const core::po
 
    return protein;
    */
+#else
+  jassert(false);
+  return ProteinPtr();
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 double lbcpp::fullAtomEnergy(const core::pose::PoseOP& pose)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   core::scoring::ScoreFunctionOP score_fxn =
       core::scoring::ScoreFunctionFactory::create_score_function("standard");
   return (*score_fxn)(*pose);
+#else
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 double lbcpp::centroidEnergy(const core::pose::PoseOP& pose)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   core::scoring::ScoreFunctionOP score_fxn =
       core::scoring::ScoreFunctionFactory::create_score_function("cen_std");
   protocols::moves::SwitchResidueTypeSetMoverOP switcher =
@@ -114,13 +125,21 @@ double lbcpp::centroidEnergy(const core::pose::PoseOP& pose)
   *energyPose = *pose;
   switcher->apply(*energyPose);
   return (*score_fxn)(*energyPose);
+#else
+  return 0.0;
+#endif
 }
 
 double lbcpp::getTotalEnergy(ExecutionContext& context, const ProteinPtr& prot,
     double(*scoreFunction)(const core::pose::PoseOP&))
 {
-  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
+#ifdef LBCPP_PROTEIN_ROSETTA
+  core::pose::PoseOP tempPose;
+  convertProteinToPose(context, prot, tempPose);
   return getTotalEnergy(tempPose, scoreFunction);
+#else
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 double lbcpp::getTotalEnergy(const core::pose::PoseOP& pose, double(*scoreFunction)(
@@ -132,8 +151,13 @@ double lbcpp::getTotalEnergy(const core::pose::PoseOP& pose, double(*scoreFuncti
 double lbcpp::getConformationScore(ExecutionContext& context, const ProteinPtr& prot,
     double(*scoreFunction)(const core::pose::PoseOP&))
 {
-  core::pose::PoseOP tempPose = convertProteinToPose(context, prot);
+#ifdef LBCPP_PROTEIN_ROSETTA
+  core::pose::PoseOP tempPose;
+  convertProteinToPose(context, prot, tempPose);
   return getConformationScore(tempPose, scoreFunction);
+#else
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 double formattingCorrectionFactor(double value, double mean, double std)
@@ -144,6 +168,7 @@ double formattingCorrectionFactor(double value, double mean, double std)
 double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*scoreFunction)(
     const core::pose::PoseOP&))
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   // Correct the energy function
   double meanCN = 1.323;
   double stdCN = 0.1;
@@ -184,6 +209,10 @@ double lbcpp::getConformationScore(const core::pose::PoseOP& pose, double(*score
   double score = (*scoreFunction)(pose) + juce::jmax(0.0, correctionFactor - (double)3
       * numberResidues + 1);
   return (score >= 1 ? score : std::exp(score - 1));
+#else
+  jassert(false);
+  return 0.0;
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
 void lbcpp::rosettaInitialization(ExecutionContext& context)
@@ -193,6 +222,7 @@ void lbcpp::rosettaInitialization(ExecutionContext& context)
 
 void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   int argc = 3;
   if (!verbose)
     argc = 5;
@@ -215,37 +245,46 @@ void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
   argv[2] = bufferDatabasePath;
 
   core::init(argc, &argv[0]);
+#else
+  jassert(false);
+#endif // !LBCPP_PROTEIN_ROSETTA
 }
 
 void lbcpp::makePoseFromSequence(core::pose::PoseOP& pose, const String& sequence)
 {
+#ifdef LBCPP_PROTEIN_ROSETTA
   core::chemical::make_pose_from_sequence(*pose, (const char*)sequence,
       core::chemical::ChemicalManager::get_instance()->nonconst_residue_type_set("fa_standard"));
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
-core::pose::PoseOP lbcpp::initializeProteinStructure(core::pose::PoseOP pose)
+void lbcpp::initializeProteinStructure(const core::pose::PoseOP& pose, core::pose::PoseOP& res)
 {
-  core::pose::PoseOP initialized = new core::pose::Pose((*pose));
+#ifdef LBCPP_PROTEIN_ROSETTA
+  res = new core::pose::Pose((*pose));
 
   for (size_t i = 1; i <= pose->n_residue(); i++)
   {
     if (i == 1)
-      initialized->set_phi(i, 0);
+      res->set_phi(i, 0);
     else
-      initialized->set_phi(i, -150);
+      res->set_phi(i, -150);
     if (i == pose->n_residue())
-      initialized->set_psi(i, 0);
+      res->set_psi(i, 0);
     else
-      initialized->set_psi(i, 150);
-    initialized->set_omega(i, 45);
+      res->set_psi(i, 150);
+    res->set_omega(i, 45);
   }
-
-  return initialized;
+#else
+  jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
 }
 
-SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(core::pose::PoseOP pose)
+SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(const core::pose::PoseOP& pose)
 {
-  SymmetricMatrixPtr matrix = new DoubleSymmetricMatrix(doubleType, (int)pose->n_residue(), 0.0);
+  SymmetricMatrixPtr matrix;
+#ifdef LBCPP_PROTEIN_ROSETTA
+  matrix = new DoubleSymmetricMatrix(doubleType, (int)pose->n_residue(), 0.0);
 
   for (size_t i = 0; i < matrix->getNumRows(); i++)
   {
@@ -258,6 +297,9 @@ SymmetricMatrixPtr lbcpp::createCalphaMatrixDistance(core::pose::PoseOP pose)
       matrix->setElement(i, j, coordinatesCAi.distance(coordinatesCAj));
     }
   }
+#else
+  jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   return matrix;
 }
 

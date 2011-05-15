@@ -8,7 +8,6 @@
 
 #ifndef LBCPP_PROTEINS_ROSETTA_UTILS_H_
 # define LBCPP_PROTEINS_ROSETTA_UTILS_H_
-# ifdef LBCPP_PROTEIN_ROSETTA
 
 # include "precompiled.h"
 # include "../Data/AminoAcid.h"
@@ -16,14 +15,15 @@
 # include "../Data/Residue.h"
 # include "../Data/Formats/PDBFileGenerator.h"
 # include "../Geometry/Vector3.h"
-# include "ProteinMover.h"
 
 # include <time.h>
 # include <stdlib.h>
 # include <cmath>
 # include <iostream>
 
-# undef T
+# ifdef LBCPP_PROTEIN_ROSETTA
+
+#  undef T
 #  include <core/chemical/AtomType.hh>
 #  include <core/chemical/ChemicalManager.hh>
 #  include <core/chemical/util.hh>
@@ -39,7 +39,20 @@
 #  include <core/scoring/ScoreFunctionFactory.hh>
 #  include <numeric/xyzVector.hh>
 #  include <protocols/moves/SwitchResidueTypeSetMover.hh>
-# define T JUCE_T
+#  define T JUCE_T
+
+# else // predeclare rosetta
+
+namespace utility {namespace pointer{
+  template< typename T > class owning_ptr;
+}; };
+
+namespace core { namespace pose {
+  class Pose;
+  typedef utility::pointer::owning_ptr< Pose > PoseOP;
+}; };
+
+#endif // LBCPP_PROTEIN_ROSETTA
 
 namespace lbcpp
 {
@@ -57,9 +70,9 @@ String standardizedAtomName(const String& atomName);
 /**
  * Converts Protein object to Pose object.
  * @param protein pointer to the Protein object to convert
- * @return a pointer to the Pose object
+ * @param result pointer
  */
-core::pose::PoseOP convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein);
+void convertProteinToPose(ExecutionContext& context, const ProteinPtr& protein, core::pose::PoseOP& res);
 
 /**
  * Converts Pose object to Protein object.
@@ -125,12 +138,10 @@ void rosettaInitialization(ExecutionContext& context, bool verbose);
  */
 void rosettaInitialization(ExecutionContext& context);
 
-core::pose::PoseOP initializeProteinStructure(core::pose::PoseOP pose);
+void initializeProteinStructure(const core::pose::PoseOP& pose, core::pose::PoseOP& res);
 
-SymmetricMatrixPtr createCalphaMatrixDistance(core::pose::PoseOP pose);
+SymmetricMatrixPtr createCalphaMatrixDistance(const core::pose::PoseOP& pose);
 
 }; /* namespace lbcpp */
-
-# endif // !LBCPP_PROTEIN_ROSETTA
 
 #endif //! LBCPP_PROTEINS_ROSETTA_UTILS_H_

@@ -720,7 +720,7 @@ public:
     {
       DiscreteBanditPolicyPtr policyToOptimize = policiesToOptimize[i];
       context.enterScope(T("Optimizing ") + policyToOptimize->toString());
-      Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates, 20);
+      Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates);
       DiscreteBanditPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policyToOptimize, bestParameters);
 
       // evaluate on train and on test
@@ -776,7 +776,7 @@ protected:
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, verbose);}
   
-  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 20)
+  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 10)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);

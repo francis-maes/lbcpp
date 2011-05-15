@@ -45,6 +45,7 @@ public:
 
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     context.informationCallback(T("Protein : ") + proteinName + T(" loaded succesfully."));
     context.resultCallback(T("Initial energy"),
         Variable(getConformationScore(pose, fullAtomEnergy)));
@@ -55,6 +56,10 @@ public:
     context.resultCallback(T("Final energy"), Variable(score));
 
     return Variable(proteinName);
+#else
+    jassert(false);
+    return false;
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
 protected:
@@ -71,6 +76,7 @@ class ProteinFeaturesGeneratorWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
     // Load all xml files in proteinsDir
@@ -87,8 +93,10 @@ public:
     for (size_t i = 0; i < proteinsOptimizer->getNumWorkUnits(); i++)
     {
       ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein> ();
-      core::pose::PoseOP currentPose = convertProteinToPose(context, currentProtein);
-      core::pose::PoseOP initialPose = initializeProteinStructure(currentPose);
+      core::pose::PoseOP currentPose;
+      convertProteinToPose(context, currentProtein, currentPose);
+      core::pose::PoseOP initialPose;
+      initializeProteinStructure(currentPose, initialPose);
       core::pose::PoseOP returnPose = new core::pose::Pose();
       String currentName = currentProtein->getName();
 
@@ -141,6 +149,10 @@ public:
 
     context.informationCallback(T("ProteinFeaturesGeneratorWorkUnit done."));
     return Variable();
+#else
+    jassert(false);
+    return false;
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
 protected:
@@ -282,6 +294,7 @@ class SamplerGenerationWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
 
     File referenceFile = context.getFile(referenceDirectory);
@@ -308,7 +321,8 @@ public:
     for (int j = 0; j < references.size(); j++)
     {
       ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
-      core::pose::PoseOP referencePose = convertProteinToPose(context, proteinRef);
+      core::pose::PoseOP referencePose;
+      convertProteinToPose(context, proteinRef, referencePose);
 
       // verbosity
       context.enterScope((*references[j]).getFileNameWithoutExtension() + T(" EDA optimization"));
@@ -323,7 +337,8 @@ public:
       for (int i = 0; i < targets.size(); i++)
       {
         ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
-        core::pose::PoseOP targetPose = convertProteinToPose(context, proteinTarget);
+        core::pose::PoseOP targetPose;
+        convertProteinToPose(context, proteinTarget, targetPose);
 
         // verbosity
         context.progressCallback(new ProgressionState((double)i, (double)targets.size(),
@@ -390,6 +405,10 @@ public:
 
     context.informationCallback(T("All samplers generated."));
     return Variable();
+#else
+    jassert(false);
+    return false;
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
 protected:
@@ -487,6 +506,7 @@ class EnergyAndQScoreComparisonWorkUnit : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     rosettaInitialization(context, false);
     File referenceFile = context.getFile(referenceDirectory);
     File targetFile = context.getFile(targetDirectory);
@@ -508,7 +528,8 @@ public:
     for (int j = 0; j < references.size(); j++)
     {
       ProteinPtr proteinRef = Protein::createFromXml(context, *references[j]);
-      core::pose::PoseOP referencePose = convertProteinToPose(context, proteinRef);
+      core::pose::PoseOP referencePose;
+      convertProteinToPose(context, proteinRef, referencePose);
 
       std::cout << "=============================================" << std::endl;
       std::cout << "======== protein : "
@@ -540,7 +561,8 @@ public:
       for (int i = 0; cont && (i < targets.size()); i++)
       {
         ProteinPtr proteinTarget = Protein::createFromXml(context, *targets[i]);
-        core::pose::PoseOP targetPose = convertProteinToPose(context, proteinTarget);
+        core::pose::PoseOP targetPose;
+        convertProteinToPose(context, proteinTarget, targetPose);
 
         std::cout << "---------- structure : "
             << (const char*)(*targets[i]).getFileNameWithoutExtension() << " ---------"
@@ -610,6 +632,10 @@ public:
     }
 
     return Variable();
+#else
+    jassert(false);
+    return false;
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
 protected:

@@ -9,8 +9,6 @@
 #ifndef LBCPP_PROTEINS_EVALUATOR_QSCOREEVALUATOR_H_
 # define LBCPP_PROTEINS_EVALUATOR_QSCOREEVALUATOR_H_
 
-# ifdef LBCPP_PROTEIN_ROSETTA
-
 # include <vector>
 # include <list>
 # include <iostream>
@@ -20,11 +18,11 @@
 # include "lbcpp/Function/Evaluator.h"
 # include "../Rosetta/RosettaUtils.h"
 
-# undef T
+/*# undef T
 #  include <core/conformation/Residue.hh>
 #  include <core/pose/Pose.hh>
 #  include <numeric/xyzVector.hh>
-# define T JUCE_T
+# define T JUCE_T*/
 
 namespace lbcpp
 {
@@ -195,7 +193,5 @@ QScoreObjectPtr QScoreSingleEvaluator(core::pose::PoseOP target, core::pose::Pos
     int minDist = -1, int maxDist = -1);
 
 }; /* namespace lbcpp */
-
-#endif // !LBCPP_PROTEIN_ROSETTA
 
 #endif //! LBCPP_PROTEINS_EVALUATOR_QSCOREEVALUATOR_H_
