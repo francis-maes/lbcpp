@@ -12,12 +12,8 @@
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
 # include "SimulatedAnnealingOptimizer.h"
-# include "../Sampler/ProteinMoverSampler.h"
-# include "../Sampler/PhiPsiMoverSampler.h"
-# include "../Sampler/ShearMoverSampler.h"
-# include "../Sampler/RigidBodyGeneralMoverSampler.h"
-# include "../Sampler/RigidBodySpinMoverSampler.h"
-# include "../Sampler/RigidBodyTransMoverSampler.h"
+# include "../Sampler.h"
+# include "../ProteinMover.h"
 
 namespace lbcpp
 {
@@ -44,11 +40,11 @@ public:
   core::pose::PoseOP apply(core::pose::PoseOP& pose, ExecutionContext& context,
       RandomGeneratorPtr& random)
   {
-    ProteinMoverSamplerPtr sampler;
+    SamplerPtr sampler;
     return sequentialOptimization(pose, sampler, context, random);
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)
   {
     return sequentialOptimization(pose, sampler, context, random);
@@ -63,7 +59,7 @@ public:
    * @return the new conformation
    */
   core::pose::PoseOP sequentialOptimization(core::pose::PoseOP& pose,
-      ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random)
+      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random)
   {
     core::pose::PoseOP acc = new core::pose::Pose();
 
@@ -86,25 +82,34 @@ public:
 
       acc->append_residue_by_bond(pose->residue(i), true);
 
-      PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(acc->n_residue(), 0, 25, 0, 25);
-      ShearMoverSamplerPtr samp1 = new ShearMoverSampler(acc->n_residue(), 0, 25, 0, 25);
-      RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(acc->n_residue(), 0.5,
-          0.25);
-      RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(acc->n_residue(), 0, 20);
-      RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(acc->n_residue(),
-          0.5, 0.25, 0, 20);
+      // phipsisampler
+      CompositeSamplerPtr ppsres = simpleResidueSampler(pose->n_residue());
+      ContinuousSamplerPtr ppsphi = gaussianSampler(0, 25);
+      ContinuousSamplerPtr ppspsi = gaussianSampler(0, 25);
+      CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
+      // shearsampler
+      CompositeSamplerPtr sres = simpleResidueSampler(pose->n_residue());
+      ContinuousSamplerPtr sphi = gaussianSampler(0, 25);
+      ContinuousSamplerPtr spsi = gaussianSampler(0, 25);
+      CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
+      // rigidbody
+      CompositeSamplerPtr rbres = residuePairSampler(pose->n_residue());
+      ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.25);
+      ContinuousSamplerPtr rbamp = gaussianSampler(0, 25);
+      CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres, rbmagn,
+          rbamp);
+      std::vector<SamplerPtr> samplers;
+      samplers.push_back(phipsi);
+      samplers.push_back(shear);
+      samplers.push_back(rigidbody);
+      ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+      DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 3, 0.33);
+      SamplerPtr samp = mixtureSampler(proba, samplers).staticCast<Sampler>();
 
-      std::vector<Variable> samplers;
-      samplers.push_back(Variable(samp0));
-      samplers.push_back(Variable(samp1));
-      samplers.push_back(Variable(samp2));
-      samplers.push_back(Variable(samp3));
-      samplers.push_back(Variable(samp4));
-      ProteinMoverSamplerPtr samp(new ProteinMoverSampler(5, samplers));
-
-      core::pose::PoseOP tempPose = optimizer->simulatedAnnealingOptimization(acc, samp, context,
-          random, initialTemperature, finalTemperature, numberDecreasingSteps, maxSteps,
-          timesReinitialization);
+      core::pose::PoseOP tempPose;
+//      core::pose::PoseOP tempPose = optimizer->simulatedAnnealingOptimization(acc, samp.staticCast<
+//          Sampler> (), context, random, initialTemperature, finalTemperature,
+//          numberDecreasingSteps, maxSteps, timesReinitialization);
 
       if (tempPose.get() == NULL)
       {

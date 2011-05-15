@@ -11,7 +11,8 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
-# include "../Sampler/ProteinMoverSampler.h"
+# include "../Sampler.h"
+# include "../ProteinMover.h"
 
 namespace lbcpp
 {
@@ -32,7 +33,7 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)
   {
     return greedyOptimization(pose, sampler, context, random, maxSteps);
@@ -51,7 +52,7 @@ public:
    * @param context, the context used to create the trace. NULL if no trace desired, default.
    * @return the new conformation
    */
-  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  core::pose::PoseOP greedyOptimization(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random, int maxSteps = 50000)
   {
     // Initialization
@@ -105,8 +106,7 @@ public:
 
     for (int i = 1; i <= maxSteps; i++)
     {
-      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<
-          ProteinMover> ();
+      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 

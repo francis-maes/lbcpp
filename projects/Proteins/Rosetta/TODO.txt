@@ -5,15 +5,7 @@ Pending error
 TODO
 ====
 
-- corriger calcul energie (energie negative).
-telecharger : Main-chain Bond Lengths and Bond Angles in Protein Structures
-(Roman A. Laskowski, David S. Moss and Janet M. Thornton) pour connaitre les valeurs approx.
-  - regarder autre forme pour le facteur de correction?
-  - faire une etude de proteines pour evaluer les std?
-
 - sampler maximum entropy (+ref)
-
-- critere darret de EDA optimizer sur la ressemblance de deux samplers appris
 
 Rapport
 =======

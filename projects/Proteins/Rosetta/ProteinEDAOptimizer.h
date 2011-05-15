@@ -14,7 +14,6 @@
 # include "RosettaUtils.h"
 # include "ProteinMover.h"
 # include "Sampler.h"
-# include "Sampler/ProteinMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
 
 namespace lbcpp
@@ -88,12 +87,12 @@ public:
       return energyScore * energyScore + juce::jmax(0.0, 1 - energyScore) * structureScore;
   }
 
-  ProteinMoverSamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
-      core::pose::PoseOP target, core::pose::PoseOP reference, ProteinMoverSamplerPtr sampler,
+  SamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
+      core::pose::PoseOP target, core::pose::PoseOP reference, SamplerPtr sampler,
       std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
       double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
   {
-    ProteinMoverSamplerPtr workingSampler = new ProteinMoverSampler(*sampler);
+    SamplerPtr workingSampler = sampler->cloneAndCast<Sampler>();
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 
     std::list<MoverAndScore> moversToKeep;

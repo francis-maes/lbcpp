@@ -42,7 +42,7 @@ public:
   {
     ScalarVariableMeanAndVariance v;
     for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].toDouble());
+      v.push(dataset[i].getDouble());
     mean = v.getMean();
     stddev = v.getStandardDeviation();
   }

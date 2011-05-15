@@ -11,7 +11,8 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
-# include "../Sampler/ProteinMoverSampler.h"
+# include "../Sampler.h"
+# include "../ProteinMover.h"
 
 namespace lbcpp
 {
@@ -37,7 +38,7 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)
   {
     return simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
@@ -62,7 +63,7 @@ public:
    * @return the new conformation
    */
   core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP& pose,
-      ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
+      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
       double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
           50, int maxSteps = 50000, int timesReinitialization = 5)
   {

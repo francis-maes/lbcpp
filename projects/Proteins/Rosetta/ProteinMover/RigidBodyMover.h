@@ -235,8 +235,6 @@ protected:
   double amplitude; // for rotation
 };
 
-extern ClassPtr rigidBodyMoverClass;
-
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_RIGID_BODY_MOVER_H_

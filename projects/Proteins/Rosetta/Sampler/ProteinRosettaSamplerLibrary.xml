@@ -3,13 +3,15 @@
 <library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
 
   <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration, Double]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
+    <constructor argument="const DenseDoubleVectorPtr&amp; probabilities"/>
+    <variable type="DenseDoubleVector[Enumeration, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
   </class>
   
   <class name="DiscretizeSampler" base="Sampler">
+    <constructor arguments="const ContinuousSamplerPtr&amp; sampler, int minValue, int maxValue"/>
+    <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
     <variable type="Integer" name="minValue" description="Minimum value returned."/>
     <variable type="Integer" name="maxValue" description="Maximum value returned."/>
-    <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
   </class>
 
   <class name="MultiVariateGaussianSampler" base="ContinuousSampler">  
@@ -40,35 +42,14 @@
     <variable type="Boolean" name="fixedAbscissa" shortName="f" description="Indicates if the abscissa must be evaluated dynamically or not."/>  
   </class>
   
-  <class name="PhiPsiMoverSampler" base="CompositeSampler">
-  </class>
-  
-  <class name="ShearMoverSampler" base="CompositeSampler">
-  </class>
-  
-  <class name="RigidBodyTransMoverSampler" base="CompositeSampler">
-    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
-  </class>
-  
-  <class name="RigidBodySpinMoverSampler" base="CompositeSampler">
-    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
-  </class>
-  
-  <class name="RigidBodyGeneralMoverSampler" base="CompositeSampler">
-    <variable type="PositiveInteger" name="numResidue" shortName="n" description="The number of residues to sample from."/>
-  </class>
-  
   <class name="SimpleResidueSampler" base="CompositeSampler">
+    <constructor arguments="size_t numResidues"/>
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
   </class>
   
-  <class name="DualResidueSampler" base="CompositeSampler">
+  <class name="ResiduePairSampler" base="CompositeSampler">
+    <constructor arguments="size_t numResidues"/>
     <variable type="PositiveInteger" name="numResidues" shortName="n" description="The number of residues to sample from."/>
-  </class>
-    
-  <class name="ProteinMoverSampler" base="CompositeSampler">
-    <variable type="PositiveInteger" name="numMover" shortName="n" description="The number of movers to sample from."/>
-    <variable type="GenericVector[PositiveInteger]" name="whichMover"/>
   </class>
   
   <enumeration name="ProteinMoverEnumeration">

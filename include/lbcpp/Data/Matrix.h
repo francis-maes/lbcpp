@@ -197,10 +197,10 @@ public:
     {size_t index = makeIndex(row, column); jassert(index < elements.size()); return elements[index];}
 
   DoubleMatrixPtr multiplyBy(const DoubleMatrixPtr& factor) const;
-  DoubleMatrixPtr transpose() const;
-  DoubleMatrixPtr add(const DoubleMatrixPtr& term) const;
-  DoubleMatrixPtr subtract(const DoubleMatrixPtr& term) const;
-  DoubleMatrixPtr multiplyByScalar(double factor) const;
+  void transpose();
+  void add(const DoubleMatrixPtr& term);
+  void subtract(const DoubleMatrixPtr& term);
+  void multiplyByScalar(double factor);
 
   lbcpp_UseDebuggingNewOperator
 };

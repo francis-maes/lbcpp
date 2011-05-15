@@ -27,15 +27,6 @@ typedef ReferenceCountedObjectPtr<ProteinMover> ProteinMoverPtr;
 class ProteinMover: public Object
 {
 public:
-  ProteinMover()
-    : Object()
-  {
-  }
-
-  ~ProteinMover()
-  {
-  }
-
   /**
    * Performs the perturbation on the object. Must be reimplemented in the inheriting
    * classes.
@@ -52,6 +43,9 @@ extern ProteinMoverPtr shearMover();
 extern ProteinMoverPtr rigidBodyGeneralMover();
 
 extern ClassPtr proteinMoverClass;
+extern ClassPtr phiPsiMoverClass;
+extern ClassPtr rigidBodyMoverClass;
+extern ClassPtr shearMoverClass;
 
 }; /* namespace lbcpp */
 
