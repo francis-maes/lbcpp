@@ -196,7 +196,7 @@ void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
   int argc = 3;
   if (!verbose)
     argc = 5;
-  char* argv[argc];
+  std::vector<char* > argv(argc);
   argv[0] = (char*)"./main";
   argv[1] = (char*)"-database";
   if (!verbose)
@@ -214,7 +214,7 @@ void lbcpp::rosettaInitialization(ExecutionContext& context, bool verbose)
   int length = stringDatabasePath.copy(bufferDatabasePath, stringDatabasePath.size() + 1, 0);
   argv[2] = bufferDatabasePath;
 
-  core::init(argc, argv);
+  core::init(argc, &argv[0]);
 }
 
 void lbcpp::makePoseFromSequence(core::pose::PoseOP& pose, const String& sequence)

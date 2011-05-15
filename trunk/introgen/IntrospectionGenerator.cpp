@@ -289,12 +289,20 @@ protected:
     newLine();
 
     // create() function
-    if (!isAbstract && classBaseClass == T("DefaultClass"))
+    if (classBaseClass == T("DefaultClass"))
     {
       openScope(T("virtual Variable create(ExecutionContext& context) const"));
+      if (isAbstract)
+      {
+        writeLine(T("context.errorCallback(\"Cannot instantiate abstract class ") + className + T("\");"));
+        writeLine(T("return Variable();"));
+      }
+      else
+      {
         writeLine(className + T("* res = new ") + className + T("();"));
         writeLine(T("res->setThisClass(refCountedPointerFromThis(this));"));
         writeLine(T("return res;"));
+      }
       closeScope();
       newLine();
     }
