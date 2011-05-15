@@ -157,8 +157,6 @@ protected:
   double deltaPsi;
 };
 
-extern ClassPtr shearMoverClass;
-
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_SHEAR_MOVER_H_

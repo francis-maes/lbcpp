@@ -34,15 +34,9 @@
 # include "Sampler.h"
 # include "Sampler/ParzenContinuousSampler.h"
 # include "Sampler/EnumerationDiscreteSampler.h"
-# include "Sampler/ProteinMoverSampler.h"
-# include "Sampler/PhiPsiMoverSampler.h"
-# include "Sampler/ShearMoverSampler.h"
-# include "Sampler/RigidBodyGeneralMoverSampler.h"
-# include "Sampler/RigidBodyTransMoverSampler.h"
-# include "Sampler/RigidBodySpinMoverSampler.h"
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/GaussianMultivariateSampler.h"
-# include "Sampler/DualResidueSampler.h"
+# include "Sampler/ResiduePairSampler.h"
 # include "Sampler/MultiVariateGaussianSampler.h"
 
 # undef T
@@ -57,7 +51,6 @@ using namespace std;
 
 namespace lbcpp
 {
-void printMover(ProteinMoverPtr& t);
 void outputEnergiesAndQScores(ExecutionContext& context, String referenceDirectory, String targetDirectory);
 
 class RosettaTest : public WorkUnit
@@ -73,84 +66,72 @@ public:
     rosettaInitialization(context, false);
     RandomGeneratorPtr random = new RandomGenerator(0);
 
-//    DoubleMatrixPtr initMeans = new DoubleMatrix(3, 1, 0.0);
-//    initMeans->setValue(0, 0, 2);
-//    initMeans->setValue(1, 0, 10);
-//    initMeans->setValue(2, 0, -5);
-//
-//    DoubleMatrixPtr initStd = new DoubleMatrix(3, 3, 0.0);
-//    initStd->setValue(0, 0, 2);
-//    initStd->setValue(0, 1, 0.01);
-//    initStd->setValue(0, 2, 0.2);
-//    initStd->setValue(1, 0, 0.01);
-//    initStd->setValue(1, 1, 1);
-//    initStd->setValue(1, 2, 0.2);
-//    initStd->setValue(2, 0, 0.2);
-//    initStd->setValue(2, 1, 0.2);
-//    initStd->setValue(2, 2, 3);
-//    MultiVariateGaussianSamplerPtr mvgsamp = new MultiVariateGaussianSampler(initMeans, initStd);
-//
-//    std::vector<Variable> learningmvg;
-//    DoubleMatrixPtr temp = new DoubleMatrix(3, 1, 0.0);
-//    temp->setValue(0, 0, 4);
-//    temp->setValue(1, 0, 2);
-//    temp->setValue(2, 0, 0.6);
-//    learningmvg.push_back(temp);
-//    temp = new DoubleMatrix(3, 1, 0.0);
-//    temp->setValue(0, 0, 4.2);
-//    temp->setValue(1, 0, 2.1);
-//    temp->setValue(2, 0, 0.59);
-//    learningmvg.push_back(temp);
-//    temp = new DoubleMatrix(3, 1, 0.0);
-//    temp->setValue(0, 0, 3.9);
-//    temp->setValue(1, 0, 2);
-//    temp->setValue(2, 0, 0.58);
-//    learningmvg.push_back(temp);
-//    temp = new DoubleMatrix(3, 1, 0.0);
-//    temp->setValue(0, 0, 4.3);
-//    temp->setValue(1, 0, 2.1);
-//    temp->setValue(2, 0, 0.62);
-//    learningmvg.push_back(temp);
-//    temp = new DoubleMatrix(3, 1, 0.0);
-//    temp->setValue(0, 0, 4.1);
-//    temp->setValue(1, 0, 2.2);
-//    temp->setValue(2, 0, 0.63);
-//    learningmvg.push_back(temp);
-//    mvgsamp->learn(context, learningmvg);
-//
-//    for (int i = 0; i < 20; i++)
-//    {
-//      DoubleMatrixPtr result = mvgsamp->sample(context, random).getObjectAndCast<DoubleMatrix>();
-//      cout << (const char* )result->toString() << endl;
-//    }
+    DoubleMatrixPtr initMeans = new DoubleMatrix(3, 1, 0.0);
+    initMeans->setValue(0, 0, 2);
+    initMeans->setValue(1, 0, 10);
+    initMeans->setValue(2, 0, -5);
+
+    DoubleMatrixPtr initStd = new DoubleMatrix(3, 3, 0.0);
+    initStd->setValue(0, 0, 2);
+    initStd->setValue(0, 1, 0.01);
+    initStd->setValue(0, 2, 0.2);
+    initStd->setValue(1, 0, 0.01);
+    initStd->setValue(1, 1, 1);
+    initStd->setValue(1, 2, 0.2);
+    initStd->setValue(2, 0, 0.2);
+    initStd->setValue(2, 1, 0.2);
+    initStd->setValue(2, 2, 3);
+    MultiVariateGaussianSamplerPtr mvgsamp = new MultiVariateGaussianSampler(initMeans, initStd);
+
+    std::vector<Variable> learningmvg;
+    DoubleMatrixPtr temp = new DoubleMatrix(3, 1, 0.0);
+    temp->setValue(0, 0, 4);
+    temp->setValue(1, 0, 2);
+    temp->setValue(2, 0, 0.6);
+    learningmvg.push_back(temp);
+    temp = new DoubleMatrix(3, 1, 0.0);
+    temp->setValue(0, 0, 4.2);
+    temp->setValue(1, 0, 2.1);
+    temp->setValue(2, 0, 0.59);
+    learningmvg.push_back(temp);
+    temp = new DoubleMatrix(3, 1, 0.0);
+    temp->setValue(0, 0, 3.9);
+    temp->setValue(1, 0, 2);
+    temp->setValue(2, 0, 0.58);
+    learningmvg.push_back(temp);
+    temp = new DoubleMatrix(3, 1, 0.0);
+    temp->setValue(0, 0, 4.3);
+    temp->setValue(1, 0, 2.1);
+    temp->setValue(2, 0, 0.62);
+    learningmvg.push_back(temp);
+    temp = new DoubleMatrix(3, 1, 0.0);
+    temp->setValue(0, 0, 4.1);
+    temp->setValue(1, 0, 2.2);
+    temp->setValue(2, 0, 0.63);
+    learningmvg.push_back(temp);
+    mvgsamp->learn(context, learningmvg);
+
+    for (int i = 0; i < 20; i++)
+    {
+      DoubleMatrixPtr result = mvgsamp->sample(context, random).getObjectAndCast<DoubleMatrix>();
+      cout << (const char* )result->toString() << endl;
+    }
 
     // phipsisampler
     SimpleResidueSamplerPtr ppsres = new SimpleResidueSampler(5);
     ContinuousSamplerPtr ppsphi = gaussianSampler(50, 2);
     ContinuousSamplerPtr ppspsi = gaussianSampler(-1000, 10);
-    std::vector<SamplerPtr> pps(3);
-    pps[0] = ppsres;
-    pps[1] = ppsphi;
-    pps[2] = ppspsi;
-    CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, pps);
+    CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
     // shearsampler
     SimpleResidueSamplerPtr sres = new SimpleResidueSampler(5);
     ContinuousSamplerPtr sphi = gaussianSampler(2000, 2);
     ContinuousSamplerPtr spsi = gaussianSampler(-10, 1);
-    std::vector<SamplerPtr> sh(3);
-    sh[0] = sres;
-    sh[1] = sphi;
-    sh[2] = spsi;
-    CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sh);
+    CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
     // rigidbody
-    DualResidueSamplerPtr rbres = new DualResidueSampler(5);
+    ResiduePairSamplerPtr rbres = new ResiduePairSampler(5);
     ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.01);
     ContinuousSamplerPtr rbamp = gaussianSampler(20, 1);
-    std::vector<SamplerPtr> rb(3);
-    rb[0] = rbres;
-    rb[1] = rbmagn;
-    rb[2] = rbamp;
-    CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rb);
+    CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres,rbmagn, rbamp);
     std::vector<SamplerPtr> samplers;
     samplers.push_back(phipsi);
     samplers.push_back(shear);
@@ -206,14 +187,14 @@ public:
     int count0 = 0;
     int count1 = 0;
     int count2 = 0;
-    int num = 5;
+    int num = 10000;
     for (int i = 0; i < num; i++)
     {
 
       Variable v = samp->sample(context, random);
 
       ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
-      printMover(t);
+      cout << (const char* )t->toString() << endl;
       if (t.isInstanceOf<PhiPsiMover> ())
         count0++;
       else if (t.isInstanceOf<ShearMover> ())
@@ -227,8 +208,7 @@ public:
     cout << "shear : " << (double)count1 / (double)num << endl;
     cout << "rigidbody : " << (double)count2 / (double)num << endl;
 
-    //ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
-    //    ProteinMoverSampler> ();
+    CompositeSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<CompositeSampler> ();
     CompositeSamplerPtr rebirth2 = samp->cloneAndCast<CompositeSampler> ();
     //rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
     count0 = 0;
@@ -239,13 +219,13 @@ public:
     for (int i = 0; i < num; i++)
     {
 
-      Variable v = samp->sample(context, random2);
+      Variable v = rebirth->sample(context, random2);
       Variable v2 = rebirth2->sample(context, random3);
 
       ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
       ProteinMoverPtr t2 = v2.getObjectAndCast<ProteinMover> ();
-      printMover(t);
-      printMover(t2);
+      cout << (const char* )t->toString() << endl;
+      cout << (const char* )t2->toString() << endl;
       if (t.isInstanceOf<PhiPsiMover> ())
         count0++;
       else if (t.isInstanceOf<ShearMover> ())
@@ -264,33 +244,6 @@ public:
 
   }
 };
-
-void printMover(ProteinMoverPtr& t)
-{
-  if (t.isInstanceOf<PhiPsiMover> ())
-  {
-    PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
-    std::cout << "PhiPsi" << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
-        << ", psi : " << t0->getDeltaPsi() << std::endl;
-  }
-  else if (t.isInstanceOf<ShearMover> ())
-  {
-    ShearMoverPtr t0 = (ShearMoverPtr)t;
-    std::cout << "Shear " << " r : " << t0->getResidueIndex() << ", phi : " << t0->getDeltaPhi()
-        << ", psi : " << t0->getDeltaPsi() << std::endl;
-  }
-  else if (t.isInstanceOf<RigidBodyMover> ())
-  {
-    RigidBodyMoverPtr t0 = (RigidBodyMoverPtr)t;
-    std::cout << "General" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-        << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude() << ", amplitude : "
-        << t0->getAmplitude() << std::endl;
-  }
-  else
-  {
-    std::cout << "Another mover......" << std::endl;
-  }
-}
 
 }; /* namespace lbcpp */
 

@@ -21,30 +21,18 @@ typedef ReferenceCountedObjectPtr<DiscretizeSampler> DiscretizeSamplerPtr;
 class DiscretizeSampler : public Sampler
 {
 public:
-  DiscretizeSampler()
-    : Sampler(), minValue(0), maxValue(1)
+  DiscretizeSampler(const ContinuousSamplerPtr& sampler, int minValue, int maxValue)
+    : sampler(sampler), minValue(minValue), maxValue(maxValue)
   {
   }
 
-  DiscretizeSampler(int minValue, int maxValue, ContinuousSamplerPtr& sampler)
-    : Sampler(), minValue(minValue), maxValue(maxValue)
-  {
-    this->sampler = sampler->cloneAndCast<ContinuousSampler>();
-  }
+  DiscretizeSampler() : minValue(0), maxValue(1) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
   {
-    double sampled = juce::jlimit((double)minValue, (double)maxValue, sampler->sample(context,
-        random, inputs).getDouble());
-    int roundDown = (int)std::floor(sampled);
-    int roundUp = (int)std::ceil(sampled);
-    double downGap = sampled - roundDown;
-    double upGap = roundUp - sampled;
-    if (downGap < upGap)
-      return roundDown;
-    else
-      return roundUp;
+    return juce::jlimit(minValue, maxValue, juce::roundDoubleToInt(sampler->sample(context, random,
+        inputs).getDouble()));
   }
 
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
@@ -52,14 +40,15 @@ public:
     std::vector<Variable> learning(dataset.size());
     for (size_t i = 0; i < dataset.size(); i++)
       learning[i] = Variable(dataset[i].toDouble());
-    sampler->learn(context, dataset);
+    sampler->learn(context, learning);
   }
 
 protected:
   friend class DiscretizeSamplerClass;
+
+  ContinuousSamplerPtr sampler;
   int minValue;
   int maxValue;
-  ContinuousSamplerPtr sampler;
 };
 
 }; /* namespace lbcpp */

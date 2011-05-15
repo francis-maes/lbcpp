@@ -15,15 +15,17 @@
 namespace lbcpp
 {
 
-extern SamplerPtr enumerationDiscreteSampler();
+extern CompositeSamplerPtr residuePairSampler(size_t numResidues);
+extern SamplerPtr discretizeSample(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
+extern DiscreteSamplerPtr enumerationDiscreteSampler(const DenseDoubleVectorPtr& probabilities);
+extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
+
 extern SamplerPtr parzenContinuousSampler();
-extern SamplerPtr proteinMoverSampler();
 extern SamplerPtr phiPsiMoverSampler();
 extern SamplerPtr shearMoverSampler();
 extern SamplerPtr rigidBodyTransMoverSampler();
 extern SamplerPtr rigidBodySpinMoverSampler();
 extern SamplerPtr rigidBodyGeneralMoverSampler();
-extern SamplerPtr simpleResidueSampler();
 extern SamplerPtr gaussianMultivariateSampler();
 
 }; /* namespace lbcpp */

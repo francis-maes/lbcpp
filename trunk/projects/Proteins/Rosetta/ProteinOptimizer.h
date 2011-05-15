@@ -17,7 +17,8 @@
 # include <cmath>
 # include <algorithm>
 # include <vector>
-# include "Sampler/ProteinMoverSampler.h"
+# include "Sampler.h"
+# include "ProteinMover.h"
 
 # undef T
 #  include <core/conformation/Conformation.hh>
@@ -136,7 +137,7 @@ public:
     return frequencyVerbosity;
   }
 
-  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)=0;
 
 protected:

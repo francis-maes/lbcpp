@@ -154,8 +154,6 @@ protected:
   double deltaPsi;
 };
 
-extern ClassPtr phiPsiMoverClass;
-
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PHI_PSI_MOVER_H_

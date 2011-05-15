@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DualResidueSampler.h           | DualResidueSampler              |
+| Filename: ResiduePairSampler.h           | ResiduePairSampler              |
 | Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : 12 mai 2011  14:56:29          |                                 |
+| Started : 15 mai 2011  17:16:11          |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_PROTEINS_ROSETTA_DUAL_RESIDUE_SAMPLER_H_
-# define LBCPP_PROTEINS_ROSETTA_DUAL_RESIDUE_SAMPLER_H_
+#ifndef LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
+# define LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_
 
 # include "precompiled.h"
 # include "../Sampler.h"
@@ -16,55 +16,42 @@
 namespace lbcpp
 {
 
-class DualResidueSampler;
-typedef ReferenceCountedObjectPtr<DualResidueSampler> DualResidueSamplerPtr;
+class ResiduePairSampler;
+typedef ReferenceCountedObjectPtr<ResiduePairSampler> ResiduePairSamplerPtr;
 
-class DualResidueSampler : public CompositeSampler
+class ResiduePairSampler : public CompositeSampler
 {
 public:
-  DualResidueSampler()
-    : CompositeSampler(), numResidues(1)
-  {
-  }
-
-  DualResidueSampler(size_t numResidues)
+  ResiduePairSampler(size_t numResidues)
     : CompositeSampler(1), numResidues(numResidues)
   {
     // only 2 clusters for GMM
-    MatrixPtr probabilities = new DoubleMatrix(2, 1, 0.0);
-
-    // initialize probabilities for each cluster
-    probabilities->setElement(0, 0, Variable(0.5));
-    probabilities->setElement(1, 0, Variable(0.5));
+    MatrixPtr probabilities = new DoubleMatrix(2, 1, 0.5);
 
     // initialize means
     std::vector<MatrixPtr> means(2);
-    means[0] = new DoubleMatrix(2, 1, 0.0);
-    means[1] = new DoubleMatrix(2, 1, 0.0);
-    means[0]->setElement(0, 0, Variable(0.45 * numResidues));
-    means[0]->setElement(1, 0, Variable(0.45 * numResidues));
-    means[1]->setElement(0, 0, Variable(0.55 * numResidues));
-    means[1]->setElement(1, 0, Variable(0.55 * numResidues));
+    means[0] = new DoubleMatrix(2, 1, 0.45 * numResidues);
+    means[1] = new DoubleMatrix(2, 1, 0.45 * numResidues);
 
     // initialize covarianceMatrix
     std::vector<MatrixPtr> covarianceMatrix(2);
-    covarianceMatrix[0] = new DoubleMatrix(2, 2, 0.0);
     double var = std::pow(0.25 * numResidues, 2.0);
     double covar = std::pow(0.01 * numResidues, 2.0);
+
+    covarianceMatrix[0] = new DoubleMatrix(2, 2, covar);
     covarianceMatrix[0]->setElement(0, 0, Variable(var));
-    covarianceMatrix[0]->setElement(0, 1, Variable(covar));
-    covarianceMatrix[0]->setElement(1, 0, Variable(covar));
     covarianceMatrix[0]->setElement(1, 1, Variable(var));
-    covarianceMatrix[1] = new DoubleMatrix(2, 2, 0.0);
+
+    covarianceMatrix[1] = new DoubleMatrix(2, 2, covar);
     covarianceMatrix[1]->setElement(0, 0, Variable(var));
-    covarianceMatrix[1]->setElement(0, 1, Variable(covar));
-    covarianceMatrix[1]->setElement(1, 0, Variable(covar));
     covarianceMatrix[1]->setElement(1, 1, Variable(var));
     GaussianMultivariateSamplerPtr p = new GaussianMultivariateSampler(1000, 0.001, probabilities,
         means, covarianceMatrix);
 
     samplers[0] = p;
   }
+
+  ResiduePairSampler() : CompositeSampler(1), numResidues(1) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
@@ -105,11 +92,10 @@ public:
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
-    if ((dataset.size() < 2) || (numResidues <= 0))
-      return;
+    jassert((dataset.size() > 0) && (numResidues > 0));
 
     std::vector<Variable> data;
-    
+
     for (size_t i = 0; i < dataset.size(); i++)
     {
       PairPtr residuePair = dataset[i].getObjectAndCast<Pair> ();
@@ -126,10 +112,11 @@ public:
   }
 
 protected:
-  friend class DualResidueSamplerClass;
+  friend class ResiduePairSamplerClass;
+
   size_t numResidues;
 };
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_PROTEINS_ROSETTA_DUAL_RESIDUE_SAMPLER_H_
+#endif //! LBCPP_PROTEINS_ROSETTA_RESIDUE_PAIR_SAMPLER_H_

@@ -21,23 +21,12 @@ typedef ReferenceCountedObjectPtr<MultiVariateGaussianSampler> MultiVariateGauss
 class MultiVariateGaussianSampler : public ContinuousSampler
 {
 public:
-  MultiVariateGaussianSampler()
-    : numVariables(0)
+  MultiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev)
+    : numVariables(initialMean->getNumRows()), means(initialMean), covariances(initialStdDev)
   {
   }
 
-  MultiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStd)
-    : numVariables(initialMean->getNumRows())
-  {
-    means = new DoubleMatrix(numVariables, 1, 0.0);
-    for (size_t k = 0; k < numVariables; k++)
-      means->setElement(k, 0, initialMean->getElement(k, 0));
-
-    covariances = new DoubleMatrix(numVariables, numVariables, 0.0);
-    for (size_t k = 0; k < covariances->getNumRows(); k++)
-      for (size_t l = 0; l < covariances->getNumColumns(); l++)
-        covariances->setElement(k, l, initialStd->getElement(k, l));
-  }
+  MultiVariateGaussianSampler() : numVariables(0) {}
 
   /*
    * The variable returned is a n by 1 matrix containing the n values sampled.
@@ -52,26 +41,28 @@ public:
     DoubleMatrixPtr chol = choleskyDecomposition(covariances);
     DoubleMatrixPtr result = chol->multiplyBy(normalSeed);
 
-    result = result->add(means);
+    result->add(means);
 
-    return Variable(result);
+    return result;
   }
 
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     means = new DoubleMatrix(numVariables, 1, 0.0);
     for (size_t i = 0; i < dataset.size(); i++)
-      means = means->add(dataset[i].getObjectAndCast<DoubleMatrix> ());
+      means->add(dataset[i].getObjectAndCast<DoubleMatrix> ());
     double factor = 1.0 / (double)dataset.size();
-    means = means->multiplyByScalar(factor);
+    means->multiplyByScalar(factor);
 
     covariances = new DoubleMatrix(numVariables, numVariables, 0.0);
     for (size_t i = 0; i < dataset.size(); i++)
     {
-      DoubleMatrixPtr sub = dataset[i].getObjectAndCast<DoubleMatrix> ()->subtract(means);
-      covariances = covariances->add(sub->multiplyBy(sub->transpose()));
+      DoubleMatrixPtr sub = dataset[i].getObjectAndCast<DoubleMatrix>();
+      sub->subtract(means);
+      sub->transpose();
+      covariances->add(sub->multiplyBy(sub));
     }
-    covariances = covariances->multiplyByScalar(1.0 / (dataset.size() - 1));
+    covariances->multiplyByScalar(1.0 / (dataset.size() - 1));
   }
 
   /**
@@ -142,7 +133,7 @@ public:
     temp->setElement(1, 0, Variable(a->getElement(1, 0).getDouble() * (-1.0)));
     temp->setElement(1, 1, a->getElement(0, 0));
 
-    temp = temp->multiplyByScalar(1.0 / determinant);
+    temp->multiplyByScalar(1.0 / determinant);
     return temp;
   }
 
@@ -174,6 +165,7 @@ public:
 
 protected:
   friend class MultiVariateGaussianSamplerClass;
+
   size_t numVariables;
   DoubleMatrixPtr means;
   DoubleMatrixPtr covariances;

@@ -23,11 +23,6 @@ typedef ReferenceCountedObjectPtr<SimpleResidueSampler> SimpleResidueSamplerPtr;
 class SimpleResidueSampler : public CompositeSampler
 {
 public:
-  SimpleResidueSampler()
-    : CompositeSampler(1)
-  {
-  }
-
   SimpleResidueSampler(size_t numResidues)
     : CompositeSampler(1), numResidues(numResidues)
   {
@@ -35,28 +30,28 @@ public:
 //        (double)(-1 * numResidues), (double)(2 * numResidues), 1.0 / 2.0, 0.5 * numResidues, 0.25
 //            * numResidues);
     ContinuousSamplerPtr temp = gaussianSampler(0.5 * numResidues, 0.25 * numResidues);
-    DiscretizeSamplerPtr samp = new DiscretizeSampler(0, (int)(numResidues - 1), temp);
+    DiscretizeSamplerPtr samp = new DiscretizeSampler(temp, 0, (int)(numResidues - 1));
     samplers[0] = samp;
   }
 
+  SimpleResidueSampler() : CompositeSampler(1) {}
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
-  {
-    return samplers[0]->sample(context, random, inputs);
-  }
+  {return samplers[0]->sample(context, random, inputs);}
 
   /**
    * dataset = first : a Variable of integer type containing the residue observed.
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
-    if ((dataset.size() < 2) || (numResidues <= 0))
-      return;
+    jassert((dataset.size() > 0) && (numResidues > 0));
     samplers[0]->learn(context, dataset);
   }
 
 protected:
   friend class SimpleResidueSamplerClass;
+
   size_t numResidues;
 };
 

@@ -21,30 +21,14 @@ typedef ReferenceCountedObjectPtr<EnumerationDiscreteSampler> EnumerationDiscret
 class EnumerationDiscreteSampler : public DiscreteSampler
 {
 public:
-  EnumerationDiscreteSampler()
-    : DiscreteSampler()
+  EnumerationDiscreteSampler(EnumerationPtr enumeration)
   {
+    probabilities = new DenseDoubleVector(enumeration, probabilityType);
   }
 
-  EnumerationDiscreteSampler(EnumerationPtr enumeration, size_t numElements, double initialProbability = 0.0)
-    : DiscreteSampler()
-  {
-    probabilities = new DenseDoubleVector(enumeration, probabilityType, numElements, initialProbability);
-  }
+  EnumerationDiscreteSampler(const DenseDoubleVectorPtr& probabilities) : probabilities(probabilities) {}
 
-  EnumerationDiscreteSampler(EnumerationPtr enumeration, DenseDoubleVectorPtr& probabilities)
-    : DiscreteSampler()
-  {
-    this->probabilities = new DenseDoubleVector(enumeration, probabilityType, probabilities->getNumElements(), 0.0);
-    for (size_t i = 0; i < probabilities->getNumElements(); i++)
-      this->probabilities->setValue(i, probabilities->getValue(i));
-  }
-
-  EnumerationDiscreteSampler(const EnumerationDiscreteSampler& sampler)
-    : DiscreteSampler()
-  {
-    probabilities = sampler.probabilities->cloneAndCast<DenseDoubleVector>();
-  }
+  EnumerationDiscreteSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleWithNormalizedProbabilities(probabilities->getValues());}
@@ -55,8 +39,7 @@ public:
    */
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
-    if (dataset.size() < 2)
-      return;
+    jassert(dataset.size());
 
     // Compute empirical frequencies
     DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(
@@ -72,6 +55,7 @@ public:
 
 protected:
   friend class EnumerationDiscreteSamplerClass;
+
   DenseDoubleVectorPtr probabilities;
 };
 

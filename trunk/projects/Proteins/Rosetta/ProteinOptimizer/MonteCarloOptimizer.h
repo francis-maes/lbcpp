@@ -11,7 +11,8 @@
 
 # include "precompiled.h"
 # include "../ProteinOptimizer.h"
-# include "../Sampler/ProteinMoverSampler.h"
+# include "../Sampler.h"
+# include "../ProteinMover.h"
 
 namespace lbcpp
 {
@@ -35,7 +36,7 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, ProteinMoverSamplerPtr& sampler,
+  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
       ExecutionContext& context, RandomGeneratorPtr& random)
   {
     return monteCarloOptimization(pose, sampler, context, random, temperature, maxSteps,
@@ -56,7 +57,7 @@ public:
    * @return the new conformation
    */
   core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose,
-      ProteinMoverSamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
+      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
       double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5)
   {
     double currentEnergy = getConformationScore(pose, fullAtomEnergy);
@@ -117,7 +118,7 @@ public:
 
     for (int i = 1; i <= maxSteps; i++)
     {
-      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
+      ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover>();
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 
