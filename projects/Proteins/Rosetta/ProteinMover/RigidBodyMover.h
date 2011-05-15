@@ -36,7 +36,7 @@ class RigidBodyMover : public ProteinMover
 {
 public:
   RigidBodyMover()
-    : ProteinMover(T("Rigid body mover"))
+    : ProteinMover()
   {
   }
 
@@ -54,15 +54,14 @@ public:
    * abs(index1-index2) >= 2.
    */
   RigidBodyMover(size_t indexResidueOne, size_t indexResidueTwo, double magnitude, double amplitude)
-    : ProteinMover(T("Rigid body mover")), indexResidueOne(indexResidueOne), indexResidueTwo(indexResidueTwo),
+    : ProteinMover(), residues(new Pair(indexResidueOne, indexResidueTwo)),
       magnitude(magnitude), amplitude(amplitude)
   {
   }
 
   RigidBodyMover(const RigidBodyMover& mover)
-    : ProteinMover(T("Rigid body general mover")), indexResidueOne(mover.indexResidueOne),
-      indexResidueTwo(mover.indexResidueTwo), magnitude(mover.magnitude),
-      amplitude(mover.amplitude)
+    : ProteinMover(), residues(new Pair(mover.residues->getFirst(), mover.residues->getSecond())),
+      magnitude(mover.magnitude), amplitude(mover.amplitude)
   {
   }
 
@@ -72,7 +71,8 @@ public:
    */
   virtual void move(core::pose::PoseOP& pose)
   {
-    move(pose, indexResidueOne, indexResidueTwo, magnitude, amplitude);
+    move(pose, residues->getFirst().getInteger(), residues->getSecond().getInteger(), magnitude,
+        amplitude);
   }
 
   /**
@@ -96,9 +96,9 @@ public:
    * Sets the new rotation angle.
    * @param amplitude the new rotation angle.
    */
-  void setAmplitude(double amplitude)
+  void setAmplitude(double newAmplitude)
   {
-    this->amplitude = amplitude;
+    amplitude = newAmplitude;
   }
 
   /**
@@ -112,7 +112,7 @@ public:
 
   /**
    * Sets the new increment for the distance.
-   * @param amplitude the new value for the distance increment.
+   * @param magnitude the new value for the distance increment.
    */
   void setMagnitude(double newMagnitude)
   {
@@ -126,16 +126,6 @@ public:
   double getMagnitude()
   {
     return magnitude;
-  }
-
-  RigidBodyMover operator=(const RigidBodyMover& mover)
-  {
-    RigidBodyMover copy;
-    copy.indexResidueOne = mover.indexResidueOne;
-    copy.indexResidueTwo = mover.indexResidueTwo;
-    copy.magnitude = mover.magnitude;
-    copy.amplitude = mover.amplitude;
-    return copy;
   }
 
   static void applyTranslation(core::pose::PoseOP& pose, size_t indexResidueOne,
@@ -208,7 +198,7 @@ public:
    */
   void setIndexResidueOne(size_t index)
   {
-    indexResidueOne = index;
+    residues->setFirst(index);
   }
 
   /**
@@ -217,7 +207,7 @@ public:
    */
   size_t getIndexResidueOne()
   {
-    return indexResidueOne;
+    return residues->getFirst().getInteger();
   }
 
   /**
@@ -226,25 +216,26 @@ public:
    */
   void setIndexResidueTwo(size_t index)
   {
-    indexResidueTwo = index;
+    residues->setSecond(index);
   }
 
   /**
    * Gets the current index of the second residue to modify.
    * @return the index of the current second residue.
    */
-  int getIndexResidueTwo()
+  size_t getIndexResidueTwo()
   {
-    return indexResidueTwo;
+    return residues->getSecond().getInteger();
   }
 
 protected:
   friend class RigidBodyMoverClass;
-  double amplitude; // for rotation
+  PairPtr residues;
   double magnitude; // for translation
-  size_t indexResidueOne;
-  size_t indexResidueTwo;
+  double amplitude; // for rotation
 };
+
+extern ClassPtr rigidBodyMoverClass;
 
 }; /* namespace lbcpp */
 

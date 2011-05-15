@@ -196,59 +196,11 @@ public:
   double getValue(size_t row, size_t column) const
     {size_t index = makeIndex(row, column); jassert(index < elements.size()); return elements[index];}
 
-  DoubleMatrixPtr multiplyBy(const DoubleMatrixPtr& factor) const
-  {
-    jassert(this->getNumColumns() == factor->getNumRows());
-    DoubleMatrixPtr product = new DoubleMatrix(this->getNumRows(), factor->getNumColumns(), 0.0);
-    for (size_t i = 0; i < this->getNumRows(); i++)
-      for (size_t j = 0; j < factor->getNumColumns(); j++)
-      {
-        double value = 0.0;
-        for (size_t k = 0; k < this->getNumColumns(); k++)
-          value += this->getValue(i, k) * factor->getValue(k, j);
-        product->setValue(i, j, value);
-      }
-    return product;
-  }
-
-  DoubleMatrixPtr transpose() const
-  {
-    DoubleMatrixPtr transposed = new DoubleMatrix(this->getNumColumns(), this->getNumRows(), 0.0);
-    for (size_t i = 0; i < this->getNumRows(); i++)
-      for (size_t j = 0; j < this->getNumColumns(); j++)
-        transposed->setValue(j, i, this->getValue(i, j));
-    return transposed;
-  }
-
-  DoubleMatrixPtr add(const DoubleMatrixPtr& term) const
-  {
-    jassert((this->getNumRows() == term->getNumRows()) && (this->getNumColumns() == term->getNumColumns()));
-    DoubleMatrixPtr sum = new DoubleMatrix(this->getNumRows(), this->getNumColumns(), 0.0);
-    for (size_t i = 0; i < this->getNumRows(); i++)
-      for (size_t j = 0; j < this->getNumColumns(); j++)
-        sum->setValue(i, j, this->getValue(i, j) + term->getValue(i, j));
-    return sum;
-  }
-
-  DoubleMatrixPtr subtract(const DoubleMatrixPtr& term) const
-  {
-    jassert((this->getNumRows() == term->getNumRows()) && (this->getNumColumns() == term->getNumColumns()));
-    DoubleMatrixPtr sum = new DoubleMatrix(this->getNumRows(), this->getNumColumns(), 0.0);
-    for (size_t i = 0; i < this->getNumRows(); i++)
-      for (size_t j = 0; j < this->getNumColumns(); j++)
-        sum->setValue(i, j, this->getValue(i, j) - term->getValue(i, j));
-    return sum;
-  }
-
-  DoubleMatrixPtr multiplyByScalar(double factor) const
-  {
-    jassert(factor);
-    DoubleMatrixPtr product = new DoubleMatrix(this->getNumRows(), this->getNumColumns(), 0.0);
-    for (size_t i = 0; i < this->getNumRows(); i++)
-      for (size_t j = 0; j < this->getNumColumns(); j++)
-        product->setValue(i, j, factor * this->getValue(i, j));
-    return product;
-  }
+  DoubleMatrixPtr multiplyBy(const DoubleMatrixPtr& factor) const;
+  DoubleMatrixPtr transpose() const;
+  DoubleMatrixPtr add(const DoubleMatrixPtr& term) const;
+  DoubleMatrixPtr subtract(const DoubleMatrixPtr& term) const;
+  DoubleMatrixPtr multiplyByScalar(double factor) const;
 
   lbcpp_UseDebuggingNewOperator
 };

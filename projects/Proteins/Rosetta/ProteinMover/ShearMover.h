@@ -36,7 +36,7 @@ class ShearMover: public ProteinMover
 {
 public:
   ShearMover()
-    : ProteinMover(T("Shear mover"))
+    : ProteinMover()
   {
   }
 
@@ -51,12 +51,12 @@ public:
    * @param deltaPsi the increment of the Psi angle
    */
   ShearMover(size_t residue, double deltaPhi, double deltaPsi)
-    : ProteinMover(T("Shear mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
+    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
   {
   }
 
   ShearMover(const ShearMover& mover)
-    : ProteinMover(T("Shear mover")), residue(mover.residue), deltaPhi(mover.deltaPhi),
+    : ProteinMover(), residue(mover.residue), deltaPhi(mover.deltaPhi),
       deltaPsi(mover.deltaPsi)
   {
   }
@@ -156,6 +156,8 @@ protected:
   double deltaPhi;
   double deltaPsi;
 };
+
+extern ClassPtr shearMoverClass;
 
 }; /* namespace lbcpp */
 

@@ -9,7 +9,6 @@
   
   <!-- Movers -->
   <class name="ProteinMover" base="Object" abstract="yes">
-    <variable type="String" name="moverName" shortName="n" description="Name of the mover"/>
   </class>
   
   <!-- Optimizers -->

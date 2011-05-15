@@ -36,7 +36,7 @@ class PhiPsiMover: public ProteinMover
 {
 public:
   PhiPsiMover()
-    : ProteinMover(T("PhiPsi mover"))
+    : ProteinMover()
   {
   }
 
@@ -49,12 +49,12 @@ public:
    * @param deltaPsi the increment of the Psi angle
    */
   PhiPsiMover(size_t residue, double deltaPhi, double deltaPsi)
-    : ProteinMover(T("PhiPsi mover")), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
+    : ProteinMover(), residue(residue), deltaPhi(deltaPhi), deltaPsi(deltaPsi)
   {
   }
 
   PhiPsiMover(const PhiPsiMover& mover)
-    : ProteinMover(T("PhiPsi mover")), residue(mover.residue), deltaPhi(mover.deltaPhi),
+    : ProteinMover(), residue(mover.residue), deltaPhi(mover.deltaPhi),
       deltaPsi(mover.deltaPsi)
   {
   }
@@ -153,6 +153,8 @@ protected:
   double deltaPhi;
   double deltaPsi;
 };
+
+extern ClassPtr phiPsiMoverClass;
 
 }; /* namespace lbcpp */
 
