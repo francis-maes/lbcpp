@@ -2,19 +2,22 @@
 
 <library name="ProteinRosettaMover" directory="Rosetta/ProteinMover">
 
-  <class name="PhiPsiMover" base="ProteinMover">  
+  <class name="PhiPsiMover" base="ProteinMover">
+    <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>
     <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>
     <variable type="Double" name="deltaPhi" shorName="phi" description="Value of delta Phi"/>
     <variable type="Double" name="deltaPsi" shorName="psi" description="Value of delta Psi"/>
   </class>
   
   <class name="ShearMover" base="ProteinMover">
+    <constructor arguments="size_t residue, double deltaPhi, double deltaPsi"/>
     <variable type="PositiveInteger" name="residue" shortName="r" description="Index of the residue"/>
     <variable type="Double" name="deltaPhi" shorName="phi" description="Value of delta Phi"/>
     <variable type="Double" name="deltaPsi" shorName="psi" description="Value of delta Psi"/>
   </class>
     
   <class name="RigidBodyMover" base="ProteinMover">
+    <constructor arguments="size_t residue1, size_t residue2, double magnitude, double amplitude"/>
     <variable type="Pair[Integer, Integer]" name="residues" shortName="r" description="Index of residues"/>
     <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
     <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>

@@ -20,9 +20,9 @@
 # include "Sampler.h"
 # include "ProteinMover.h"
 
-# undef T
-#  include <core/conformation/Conformation.hh>
-# define T JUCE_T
+//# undef T   // TODO: Alejandro: if this include is truely usefull, add #ifdef LBCPP_PROTEINS_ROSETTA, otherwise remove this comment
+//#  include <core/conformation/Conformation.hh>
+//# define T JUCE_T
 
 namespace lbcpp
 {

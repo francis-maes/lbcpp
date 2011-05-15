@@ -328,6 +328,12 @@ DenseDoubleVector::DenseDoubleVector(EnumerationPtr enumeration, TypePtr element
   values = new std::vector<double>(initialSize, initialValue);
 }
 
+DenseDoubleVector::DenseDoubleVector(size_t initialSize, double initialValue)
+  : DoubleVector(denseDoubleVectorClass(positiveIntegerEnumerationEnumeration, doubleType)), ownValues(true)
+{
+  values = new std::vector<double>(initialSize, initialValue);
+}
+
 DenseDoubleVector::DenseDoubleVector()
   : values(NULL), ownValues(false)
 {
