@@ -32,7 +32,22 @@ public:
   BanditStatistics() : Object(banditStatisticsClass), statistics(new ScalarVariableStatistics(T("reward"))) {}
 
   void update(double reward)
-    {statistics->push(reward);}
+  {
+    statistics->push(reward);
+    if (reward == 0)
+    {
+      for (size_t i = 0; i < numMoments; ++i)
+        moments[i].push(0.0);
+    }
+    else if (reward == 1)
+    {
+      for (size_t i = 0; i < numMoments; ++i)
+        moments[i].push(1.0);
+    }
+    else
+      for (size_t i = 0; i < numMoments; ++i)
+        moments[i].push(pow(reward, (double)(i + 2)));
+  }
 
   size_t getPlayedCount() const
     {return (size_t)statistics->getCount();}
@@ -55,10 +70,29 @@ public:
   double getMaxReward() const
     {return statistics->getMaximum();}
 
+  size_t getNumMoments() const
+    {return numMoments + 2;}
+
+  // 0 -> 1
+  // 1 -> mean
+  // i -> E[X^i]^{1/i}
+  double getMoment(size_t index) const
+  {
+    jassert(index < getNumMoments());
+    if (index == 0)
+      return 1.0;
+    else if (index == 1)
+      return statistics->getMean();
+    else
+      return pow(moments[index - 2].getMean(), 1.0 / (double)index);
+  }
+
 private:
   friend class BanditStatisticsClass;
 
   ScalarVariableStatisticsPtr statistics;
+  enum {numMoments = 10};
+  ScalarVariableMean moments[numMoments];
 };
 
 typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
@@ -331,12 +365,13 @@ public:
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
-    const BanditStatisticsPtr& statistics = banditStatistics[banditNumber];
+    const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
     double a = parameters->getValue(0);
     double b = parameters->getValue(1);
     double c = parameters->getValue(2);
-    double C = a * log10((double)timeStep) + b * statistics->getPlayedCount() + c;
-    return statistics->getRewardMean() + C * sqrt(2 * log((double)timeStep) / statistics->getPlayedCount());
+
+    double C = a * log10((double)timeStep) + b * bandit->getPlayedCount() + c;
+    return bandit->getRewardMean() + sqrt(2 * C * log((double)timeStep) / bandit->getPlayedCount());
   }
 
 protected:
@@ -374,6 +409,43 @@ protected:
 
   size_t maxTimeStep;
   DoubleMatrixPtr matrix;
+};
+
+class MomentsWeightedUCBBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  MomentsWeightedUCBBanditPolicy(size_t numMoments)
+  {
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("moments"));
+    parametersEnumeration->addElement(defaultExecutionContext(), T("1"));
+    for (size_t i = 1; i < numMoments; ++i)
+      parametersEnumeration->addElement(defaultExecutionContext(), T("E[r^") + String((int)i) + T("]"));
+    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+  }
+  MomentsWeightedUCBBanditPolicy() {}
+
+  virtual SamplerPtr createParametersSampler() const
+    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
+
+  virtual void setParameters(const Variable& parameters)
+    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
+
+  virtual Variable getParameters() const
+    {return parameters;}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
+    double C = 0.0;
+    for (size_t i = 0; i < parameters->getNumElements(); ++i)
+      C += bandit->getMoment(i) * parameters->getValue(i);
+    return bandit->getRewardMean() + sqrt(C * log((double)timeStep) / bandit->getPlayedCount());
+  }
+
+protected:
+  friend class MomentsWeightedUCBBanditPolicyClass;
+
+  DenseDoubleVectorPtr parameters;
 };
 
 extern EnumerationPtr oldStyleParameterizedBanditPolicyEnumerationEnumeration;
@@ -636,16 +708,19 @@ public:
 
     std::vector<DiscreteBanditPolicyPtr> policiesToOptimize;
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
+    //policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
+    policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
     policiesToOptimize.push_back(new TimeDependentWeightedUCBBanditPolicy());
     policiesToOptimize.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1));
-    policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
-    policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
+
+    for (size_t i = 1; i < 10; ++i)
+      policiesToOptimize.push_back(new MomentsWeightedUCBBanditPolicy(i));
 
     for (size_t i = 0; i < policiesToOptimize.size(); ++i)
     {
       DiscreteBanditPolicyPtr policyToOptimize = policiesToOptimize[i];
       context.enterScope(T("Optimizing ") + policyToOptimize->toString());
-      Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates);
+      Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates, 20);
       DiscreteBanditPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policyToOptimize, bestParameters);
 
       // evaluate on train and on test
@@ -701,7 +776,7 @@ protected:
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, verbose);}
   
-  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates)
+  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 20)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);
@@ -709,7 +784,6 @@ protected:
     context.resultCallback(T("parametersType"), parametersType);
 
     // eda parameters
-    size_t numIterations = 5;
     size_t populationSize = 100;
     size_t numBests = 10;
 

@@ -89,20 +89,8 @@
   <class name="EpsilonGreedyDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="epsilonGreedy">
     <variable type="Double" name="c"/>
     <variable type="Double" name="d"/>
-<!--    <variable type="RandomGenerator" name="random"/> -->
   </class>
 
-  <!--
-  <class name="BanditStatisticsFeatureGenerator" base="FeatureGenerator"/>
-  <class name="DiscreteBanditPerception" base="CompositeFunction">
-    <variable type="PositiveInteger" name="maxTimeStep"/>
-  </class>
-  <class name="OptimizedDiscreteBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="optimized">
-    <variable type="Function" name="perceptionFunction"/>
-    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
-  </class>
-  -->
-  
   <class name="WeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="weightedUCB">
     <variable type="Double" name="C"/>
   </class>
@@ -121,7 +109,11 @@
   <class name="TimeDependentWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="timeDependentWeightedUCB">
     <variable type="DenseDoubleVector[TimeDependentWeightedUCBBanditPolicyEnumeration,Double]" name="parameters"/>
   </class>
-  
+
+  <class name="MomentsWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+
   <enumeration name="OldStyleParameterizedBanditPolicyEnumeration">
     <value name="mean(reward)"/>
     <value name="stddev(reward)"/>
