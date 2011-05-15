@@ -52,7 +52,7 @@ public:
     context.resultCallback(T("Initial energy"),
         Variable(getConformationScore(pose, fullAtomEnergy)));
     core::pose::PoseOP returnPose = new core::pose::Pose(*pose);
-    *returnPose = (*(optimizer->apply(pose, sampler, context, random)));
+    optimizer->apply(context, pose, random, sampler, returnPose);
     context.informationCallback(T("Optimization done."));
     double score = getConformationScore(returnPose, fullAtomEnergy);
     context.resultCallback(T("Final energy"), Variable(score));

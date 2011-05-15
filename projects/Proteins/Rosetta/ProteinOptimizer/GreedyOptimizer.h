@@ -37,7 +37,7 @@ public:
                      const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    return greedyOptimization(pose, sampler, context, random, maxSteps);
+    res = greedyOptimization(pose, sampler, context, random, maxSteps);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA

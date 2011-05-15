@@ -20,9 +20,9 @@
 # include "Sampler.h"
 # include "ProteinMover.h"
 
-//# undef T
-//#  include <core/conformation/Conformation.hh>
-//# define T JUCE_T
+# undef T
+#  include <core/conformation/Conformation.hh>
+# define T JUCE_T
 
 namespace lbcpp
 {
@@ -146,7 +146,7 @@ protected:
    * @param temperature the normalized temperature, i.e. kT.
    * @return a boolean, if true, keep the conformation.
    */
-  bool keepConformation(RandomGeneratorPtr& random, double deltaEnergy, double temperature)
+  bool keepConformation(const RandomGeneratorPtr& random, double deltaEnergy, double temperature)
   {
     double val = std::exp(-deltaEnergy / temperature);
 

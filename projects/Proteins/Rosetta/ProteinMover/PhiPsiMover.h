@@ -12,9 +12,6 @@
 # include "precompiled.h"
 # include "../ProteinMover.h"
 
-namespace lbcpp
-{
-
 # ifdef LBCPP_PROTEIN_ROSETTA
 #  undef T
 #  include <core/kinematics/MoveMap.hh>
@@ -30,6 +27,9 @@ namespace lbcpp
 #  include <core/kinematics/Stub.hh>
 #  define T JUCE_T
 # endif // LBCPP_PROTEIN_ROSETTA
+
+namespace lbcpp
+{
 
 class PhiPsiMover;
 typedef ReferenceCountedObjectPtr<PhiPsiMover> PhiPsiMoverPtr;

@@ -39,7 +39,7 @@ public:
                      const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    return simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
+    res = simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
         finalTemperature, numberDecreasingSteps, maxSteps, timesReinitialization);
 #else
     jassert(false);
@@ -64,8 +64,8 @@ public:
    * Default = 5.
    * @return the new conformation
    */
-  core::pose::PoseOP simulatedAnnealingOptimization(core::pose::PoseOP& pose,
-      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
+  core::pose::PoseOP simulatedAnnealingOptimization(const core::pose::PoseOP& pose,
+      const SamplerPtr& sampler, ExecutionContext& context, const RandomGeneratorPtr& random,
       double initialTemperature = 4.0, double finalTemperature = 0.01, int numberDecreasingSteps =
           50, int maxSteps = 50000, int timesReinitialization = 5)
   {
