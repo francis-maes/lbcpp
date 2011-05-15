@@ -20,14 +20,9 @@ class ProteinSimulatedAnnealingOptimizer;
 typedef ReferenceCountedObjectPtr<ProteinSimulatedAnnealingOptimizer>
     ProteinSimulatedAnnealingOptimizerPtr;
 
-class ProteinSimulatedAnnealingOptimizer: public ProteinOptimizer
+class ProteinSimulatedAnnealingOptimizer : public ProteinOptimizer
 {
 public:
-  ProteinSimulatedAnnealingOptimizer() :
-    ProteinOptimizer()
-  {
-  }
-
   ProteinSimulatedAnnealingOptimizer(double initialTemperature, double finalTemperature,
       int numberDecreasingSteps, int maxSteps, int timesReinitialization, String name =
           juce::String("Default"), double frequencyCallback = 0.01, int numOutputFiles = -1,
@@ -38,13 +33,20 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)
+  ProteinSimulatedAnnealingOptimizer() {}
+
+  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
+                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     return simulatedAnnealingOptimization(pose, sampler, context, random, initialTemperature,
         finalTemperature, numberDecreasingSteps, maxSteps, timesReinitialization);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
+#ifdef LBCPP_PROTEIN_ROSETTA
   /*
    * Performs simulated annealing on the pose object.
    * @param pose the initial conformation
@@ -192,9 +194,11 @@ public:
 
     return optimizedPose;
   }
+#endif // LBCPP_PROTEIN_ROSETTA
 
 private:
   friend class ProteinSimulatedAnnealingOptimizerClass;
+
   double initialTemperature;
   double finalTemperature;
   int numberDecreasingSteps;

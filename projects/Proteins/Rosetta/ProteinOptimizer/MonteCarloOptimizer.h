@@ -20,14 +20,9 @@ namespace lbcpp
 class ProteinMonteCarloOptimizer;
 typedef ReferenceCountedObjectPtr<ProteinMonteCarloOptimizer> ProteinMonteCarloOptimizerPtr;
 
-class ProteinMonteCarloOptimizer: public ProteinOptimizer
+class ProteinMonteCarloOptimizer : public ProteinOptimizer
 {
 public:
-  ProteinMonteCarloOptimizer() :
-    ProteinOptimizer()
-  {
-  }
-
   ProteinMonteCarloOptimizer(double temperature, int maxSteps, int timesReinitialization,
       String name = juce::String("Default"), double frequencyCallback = 0.01, int numOutputFiles =
           -1, File outputDirectory = juce::File()) :
@@ -36,13 +31,20 @@ public:
   {
   }
 
-  core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)
+  ProteinMonteCarloOptimizer() {}
+
+  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
+                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
+#ifdef LBCPP_PROTEIN_ROSETTA
     return monteCarloOptimization(pose, sampler, context, random, temperature, maxSteps,
         timesReinitialization);
+#else
+    jassert(false);
+#endif // LBCPP_PROTEIN_ROSETTA
   }
 
+#ifdef LBCPP_PROTEIN_ROSETTA
   /*
    * Performs Monte Carlo optimization on the pose object.
    * @param pose the initial conformation
@@ -174,9 +176,11 @@ public:
 
     return optimizedPose;
   }
+#endif // LBCPP_PROTEIN_ROSETTA
 
 private:
   friend class ProteinMonteCarloOptimizerClass;
+
   double temperature;
   int maxSteps;
   int timesReinitialization;

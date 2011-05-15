@@ -58,8 +58,7 @@ public:
   {
   }
 
-  double evaluate(ExecutionContext& context, core::pose::PoseOP target,
-      core::pose::PoseOP reference)
+  double evaluate(ExecutionContext& context, const core::pose::PoseOP& target, const core::pose::PoseOP& reference)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
     int minDist =
@@ -92,8 +91,8 @@ public:
 #endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  SamplerPtr findBestMovers(ExecutionContext& context, RandomGeneratorPtr& random,
-      core::pose::PoseOP target, core::pose::PoseOP reference, SamplerPtr sampler,
+  SamplerPtr findBestMovers(ExecutionContext& context, const RandomGeneratorPtr& random,
+      const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler,
       std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
       double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
   {
@@ -177,6 +176,7 @@ public:
 
 protected:
   friend class ProteinEDAOptimizerClass;
+
   double energyWeight;
 };
 

@@ -87,36 +87,28 @@ public:
    * @return protein name.
    */
   String getProteinName()
-  {
-    return name;
-  }
+    {return name;}
 
   /**
    * Sets the protein name (used in the callbacks).
    * @param n the new protein name.
    */
   void setProteinName(String name)
-  {
-    this->name = name;
-  }
+    {this->name = name;}
 
   /**
    * Sets the verbosity level to true or false.
    * @param v new verbosity level.
    */
   void setVerbosity(bool verbosity)
-  {
-    this->verbosity = verbosity;
-  }
+    {this->verbosity = verbosity;}
 
   /**
    * Gets the actual verbosity level.
    * @return the verbosity level.
    */
   bool getVerbosity()
-  {
-    return verbosity;
-  }
+    {return verbosity;}
 
   /**
    * Sets the new frequency of trace callbacks. It depends on the number
@@ -124,21 +116,17 @@ public:
    * give 0.1 for this frequency, there will be 10 trace callbacks.
    */
   void setFrequency(double frequencyCallback)
-  {
-    frequencyVerbosity = frequencyCallback;
-  }
+    {frequencyVerbosity = frequencyCallback;}
 
   /**
    * Returns the actual trace callbacks frequency.
    * @return the actual trace callbacks frequency.
    */
   double getFrequency()
-  {
-    return frequencyVerbosity;
-  }
+    {return frequencyVerbosity;}
 
-  virtual core::pose::PoseOP apply(core::pose::PoseOP& pose, SamplerPtr& sampler,
-      ExecutionContext& context, RandomGeneratorPtr& random)=0;
+  virtual void apply(ExecutionContext& context, const core::pose::PoseOP& pose,
+                     const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res) = 0;
 
 protected:
   friend class ProteinOptimizerClass;
