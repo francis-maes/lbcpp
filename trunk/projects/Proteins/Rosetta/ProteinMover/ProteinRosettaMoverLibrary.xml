@@ -15,10 +15,9 @@
   </class>
     
   <class name="RigidBodyMover" base="ProteinMover">
+    <variable type="Pair[Integer, Integer]" name="residues" shortName="r" description="Index of residues"/>
     <variable type="Double" name="magnitude" shorName="m" description="Value of the magnitude of the translation"/>
     <variable type="Double" name="amplitude" shorName="a" description="Value of the amplitude of the rotation"/>
-    <variable type="PositiveInteger" name="indexResidueOne" shortName="r1" description="Index of first residue"/>
-    <variable type="PositiveInteger" name="indexResidueTwo" shortName="r2" description="Index of second residue"/>
   </class>
     
 </library>

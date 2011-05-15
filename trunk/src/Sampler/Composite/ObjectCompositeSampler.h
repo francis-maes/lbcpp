@@ -54,6 +54,8 @@ protected:
   ClassPtr objectClass;
 };
 
+typedef ReferenceCountedObjectPtr<ObjectCompositeSampler> ObjectCompositeSamplerPtr;
+
 }; /* namespace lbcpp */
 
 #endif // !LBCPP_SAMPLER_COMPOSITE_OBJECT_H_

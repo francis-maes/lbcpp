@@ -27,13 +27,8 @@ typedef ReferenceCountedObjectPtr<ProteinMover> ProteinMoverPtr;
 class ProteinMover: public Object
 {
 public:
-  ProteinMover() :
-    Object(), moverName(T("Default name"))
-  {
-  }
-
-  ProteinMover(const String& name) :
-    Object(), moverName(name)
+  ProteinMover()
+    : Object()
   {
   }
 
@@ -48,19 +43,15 @@ public:
    */
   virtual void move(core::pose::PoseOP& pose)=0;
 
-  String getName()
-  {
-    return moverName;
-  }
-
 protected:
   friend class ProteinMoverClass;
-  String moverName;
 };
 
 extern ProteinMoverPtr phiPsiMover();
 extern ProteinMoverPtr shearMover();
 extern ProteinMoverPtr rigidBodyGeneralMover();
+
+extern ClassPtr proteinMoverClass;
 
 }; /* namespace lbcpp */
 
