@@ -198,6 +198,13 @@ IF(LBCPP_PROTEIN_ROSETTA)
 
   ADD_DEFINITIONS(-DLBCPP_PROTEIN_ROSETTA)
 
+  
+  IF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(ROSETTA_BUILD_TYPE "debug")
+  ELSE (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    SET(ROSETTA_BUILD_TYPE "release")
+  ENDIF (CMAKE_BUILD_TYPE STREQUAL "Debug")
+
 IF(WIN32)
 #  ADD_SUBDIRECTORY(Rosetta/rosetta)
 
@@ -216,31 +223,23 @@ ELSE(WIN32)
 
   IF(APPLE)
     
+    # Mac
     INCLUDE_DIRECTORIES(
       /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src
       /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/src/platform/macos
       /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/external/boost_1_38_0
     )
-    
-    IF(DEBUG)
-      SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/debug/macos/10.6/64/x86/gcc)
-    ELSE(DEBUG)
-      SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/release/macos/10.6/64/x86/gcc)
-    ENDIF(DEBUG)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE /Users/alex/Documents/Ulg/2M/rosetta3.2_macos/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/macos/10.6/64/x86/gcc)
     SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libcore.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libutility.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libnumeric.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libObjexxFCL.dylib ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_APPLE}/libprotocols.dylib)
     
   ELSE(APPLE)
 
+    # Linux
     INCLUDE_DIRECTORIES(
       ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src
       ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src/platform/linux
     )
-    IF(DEBUG)
-      SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/debug/linux/2.6/64/x86/gcc)
-    ELSE(DEBUG)
-      SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/release/linux/2.6/64/x86/gcc)
-    ENDIF(DEBUG)
-    
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/linux/2.6/64/x86/gcc)
     SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libcore.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libnumeric.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libObjexxFCL.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libprotocols.so)
 
   ENDIF(APPLE)
