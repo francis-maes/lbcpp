@@ -12,6 +12,12 @@
     <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
   </class>
 
+  <class name="MultiVariateGaussianSampler" base="ContinuousSampler">  
+    <variable type="DoubleMatrix[Double]" name="means"/>
+    <variable type="DoubleMatrix[Double]" name="covariances"/>
+    <variable type="PositiveInteger" name="numVariables"/>
+  </class>
+  
   <class name="GaussianMultivariateSampler" base="ContinuousSampler">  
     <variable type="DoubleMatrix[Double]" name="probabilities"/>
     <variable type="GenericVector[DoubleMatrix[Double]]" name="means"/>
