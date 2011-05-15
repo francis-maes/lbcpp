@@ -122,19 +122,23 @@ void Container::saveToXml(XmlExporter& exporter) const
   size_t n = getNumElements();
   exporter.setAttribute(T("size"), (int)n);
   TypePtr elementsType = getElementsType();
-  TypePtr actualType = computeElementsCommonBaseType();
-  if (elementsType != actualType)
+  if (n > 1)
   {
-    exporter.enter(T("elementsActualType"));
-    exporter.writeType(actualType);
-    exporter.leave();
+    TypePtr actualType = computeElementsCommonBaseType();
+    if (elementsType != actualType)
+    {
+      exporter.enter(T("elementsActualType"));
+      exporter.writeType(actualType);
+      exporter.leave();
+      elementsType = actualType;
+    }
   }
 
   for (size_t i = 0; i < n; ++i)
   {
     Variable element = getElement(i);
     if (!element.isMissingValue())
-      exporter.saveElement(i, getElement(i), actualType);
+      exporter.saveElement(i, getElement(i), elementsType);
   }
 }
 
