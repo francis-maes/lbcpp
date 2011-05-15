@@ -198,10 +198,10 @@ TypePtr TypeManager::getType(ExecutionContext& context, const String& name) cons
   else
   {
     // this is a simple type that was not found, make error message
-    TemplateTypeCache* cache = getTemplateType(context, typeName);
     String message;
-    if (cache)
+    if (hasTemplateType(typeName))
     {
+      TemplateTypeCache* cache = getTemplateType(context, typeName);
       size_t n = cache->definition->getNumParameters();
       message = typeName.quoted() + T(" is a template type with ") + String((int)n) + T(" parameters. Replace ") + typeName + T(" by ");
       message += typeName + T("[");
@@ -262,6 +262,13 @@ void TypeManager::shutdown()
 
   for (size_t i = 0; i < toDelete.size(); ++i)
     delete toDelete[i];
+}
+
+bool TypeManager::hasTemplateType(const String& templateTypeName) const
+{
+  ScopedLock _(typesLock);
+  TemplateTypeMap::iterator it = const_cast<TypeManager* >(this)->templateTypes.find(templateTypeName);
+  return it != templateTypes.end();
 }
 
 TemplateTypeCache* TypeManager::getTemplateType(ExecutionContext& context, const String& templateTypeName) const

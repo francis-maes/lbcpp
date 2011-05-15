@@ -145,6 +145,7 @@ ENDIF(LBCPP_USER_INTERFACE)
 
 SET(LBCPP_PROTEIN_ROSETTA_SOURCES
   Rosetta/RosettaTest.h
+  Rosetta/RosettaSandBox.h
   Rosetta/RosettaUtils.h
   Rosetta/RosettaUtils.cpp
   Rosetta/ProteinMover.h

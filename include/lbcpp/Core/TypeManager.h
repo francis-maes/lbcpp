@@ -43,6 +43,7 @@ private:
   TypeMap typesByShortName;
   TemplateTypeMap templateTypes;
  
+  bool hasTemplateType(const String& templateTypeName) const;
   TemplateTypeCache* getTemplateType(ExecutionContext& context, const String& templateTypeName) const;
 
   static String removeAllSpaces(const String& str);

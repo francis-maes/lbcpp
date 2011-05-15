@@ -32,9 +32,9 @@ protected:
   friend class ProteinMoverClass;
 };
 
-extern ProteinMoverPtr phiPsiMover();
-extern ProteinMoverPtr shearMover();
-extern ProteinMoverPtr rigidBodyGeneralMover();
+extern ProteinMoverPtr phiPsiMover(size_t residue, double deltaPhi, double deltaPsi);
+extern ProteinMoverPtr shearMover(size_t residue, double deltaPhi, double deltaPsi);
+extern ProteinMoverPtr rigidBodyMover(size_t residue1, size_t residue2, double magnitude, double amplitude);
 
 extern ClassPtr proteinMoverClass;
 extern ClassPtr phiPsiMoverClass;
