@@ -345,17 +345,6 @@ public:
     return temp;
   }
 
-  void printMatrix(MatrixPtr m) const
-  {
-    for (size_t i = 0; i < m->getNumRows(); i++)
-    {
-      for (size_t j = 0; j < m->getNumColumns(); j++)
-        std::cout << m->getElement(i, j).getDouble() << " : ";
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-  }
-
   MatrixPtr transposeMatrix(MatrixPtr a) const
   {
     MatrixPtr temp = new DoubleMatrix(a->getNumColumns(), a->getNumRows(), 0.0);
