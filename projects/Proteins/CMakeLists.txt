@@ -174,6 +174,7 @@ IF(LBCPP_PROTEIN_ROSETTA)
     Rosetta/ProteinOptimizer/MonteCarloOptimizer.h
     Rosetta/ProteinOptimizer/SimulatedAnnealingOptimizer.h
     Rosetta/ProteinOptimizer/SequentialOptimizer.h
+    Rosetta/ProteinOptimizer/ProteinRosettaOptimizerLibrary.xml
     ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaOptimizerLibrary.cpp
   )
   

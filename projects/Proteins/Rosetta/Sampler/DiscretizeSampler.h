@@ -37,8 +37,8 @@ public:
   {
     double sampled = juce::jlimit((double)minValue, (double)maxValue, sampler->sample(context,
         random, inputs).getDouble());
-    int roundDown = std::floor(sampled);
-    int roundUp = std::ceil(sampled);
+    int roundDown = (int)std::floor(sampled);
+    int roundUp = (int)std::ceil(sampled);
     double downGap = sampled - roundDown;
     double upGap = roundUp - sampled;
     if (downGap < upGap)
@@ -50,7 +50,7 @@ public:
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
     std::vector<Variable> learning(dataset.size());
-    for (int i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < dataset.size(); i++)
       learning[i] = Variable(dataset[i].toDouble());
     sampler->learn(context, dataset);
   }

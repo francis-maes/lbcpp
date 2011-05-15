@@ -148,7 +148,9 @@ protected:
     {
       Thread::sleep(optimizerContext->getTimeToSleep());
       context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
-      saveState(context, state);
+
+      // FIXME: option "save frequency" pour regler ça
+      //saveState(context, state);
     }
     jassert(state->getNumberOfProcessedRequests() == populationSize);
     context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer

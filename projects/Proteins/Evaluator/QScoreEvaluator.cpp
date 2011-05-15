@@ -5,13 +5,14 @@
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
-#ifdef LBCPP_PROTEIN_ROSETTA
-
 #include "precompiled.h"
+
+#ifdef LBCPP_PROTEIN_ROSETTA
 #include "QScoreEvaluator.h"
 
 namespace lbcpp
 {
+
 CAlphaDist copyCAlphaDist(CAlphaDist toCopy)
 {
   CAlphaDist temp;
