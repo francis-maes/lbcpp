@@ -21,9 +21,20 @@ namespace lbcpp
 class OptimizerState : public Object, public FunctionCallback
 {
 public:
-  OptimizerState();
-  
+  // args in seconds -> converted into ms
+  OptimizerState(size_t autoSaveStateFrequency = 0);
+
   void initialize();
+  void autoSaveToFile(ExecutionContext& context, bool force = false)
+  {
+    ScopedLock _(lock);
+    if (force || (autoSaveStateFrequency && Time::currentTimeMillis() - lastSaveTime >= autoSaveStateFrequency)) {
+      if (File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).existsAsFile())
+        File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("optimizerState_backup.xml")));
+      saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")));  // TODO arnaud : file name as args ?
+      lastSaveTime = Time::currentTimeMillis();
+    }
+  }
   
   /*
   ** Requests
@@ -73,6 +84,9 @@ protected:
   double bestScore;
     
   std::vector< std::pair<double, Variable> > processedRequests;  // evaluated WUs not processed yet
+  
+  juce::int64 autoSaveStateFrequency; // in milliseconds
+  juce::int64 lastSaveTime; // timestamp in ms
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;
@@ -80,7 +94,9 @@ extern ClassPtr optimizerStateClass;
 
 class DistributionBasedOptimizerState : public OptimizerState
 {
-public:    
+public:
+  DistributionBasedOptimizerState(size_t autoSaveStateFrequency = 0) : OptimizerState(autoSaveStateFrequency) {}
+  
   const DistributionPtr& getDistribution() const
     {return distribution;}
   
@@ -98,8 +114,8 @@ typedef ReferenceCountedObjectPtr<DistributionBasedOptimizerState> DistributionB
 class SamplerBasedOptimizerState : public OptimizerState
 {
 public:
-  SamplerBasedOptimizerState(const SamplerPtr& sampler)
-    : sampler(sampler) {}
+  SamplerBasedOptimizerState(const SamplerPtr& sampler, size_t autoSaveStateFrequency = 0)
+    : OptimizerState(autoSaveStateFrequency), sampler(sampler) {}
   SamplerBasedOptimizerState() {}
 
   const SamplerPtr& getSampler() const

@@ -56,7 +56,7 @@ public:
       context.leaveScope(bestIterationScore); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
       
-      saveState(context, optimizerState);
+      optimizerState->autoSaveToFile(context, true);  // force to save at end of iteration
     }
     return optimizerState->getBestVariable();
   }
@@ -149,8 +149,7 @@ protected:
       Thread::sleep(optimizerContext->getTimeToSleep());
       context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations")));
 
-      // FIXME: option "save frequency" pour regler ça
-      //saveState(context, state);
+      state->autoSaveToFile(context);
     }
     jassert(state->getNumberOfProcessedRequests() == populationSize);
     context.progressCallback(new ProgressionState(state->getNumberOfProcessedRequests(), populationSize, T("Evaluations"))); // needed to be sure to have 100% in Explorer
