@@ -124,38 +124,43 @@ public:
 //      cout << (const char* )result->toString() << endl;
 //    }
 
-    SimpleResidueSamplerPtr res = new SimpleResidueSampler(5);
-    DualResidueSamplerPtr res2 = new DualResidueSampler(5);
-    ContinuousSamplerPtr magn = gaussianSampler(50, 2);
-    ContinuousSamplerPtr amp = gaussianSampler(-1000, 10);
+    // phipsisampler
+    SimpleResidueSamplerPtr ppsres = new SimpleResidueSampler(5);
+    ContinuousSamplerPtr ppsphi = gaussianSampler(50, 2);
+    ContinuousSamplerPtr ppspsi = gaussianSampler(-1000, 10);
     std::vector<SamplerPtr> pps(3);
-    pps[0] = res2;
-    pps[1] = magn;
-    pps[2] = amp;
-    CompositeSamplerPtr phipsi = objectCompositeSampler(rigidBodyMoverClass, pps);
-
-    for (int i = 0; i < 50; i++)
-    {
-      ProteinMoverPtr t = phipsi->sample(context, random).getObjectAndCast<RigidBodyMover> ();
-      printMover(t);
-    }
-
-
-
-    PhiPsiMoverSamplerPtr samp0 = new PhiPsiMoverSampler(5, -20, 5, 50, 2);
-    ShearMoverSamplerPtr samp1 = new ShearMoverSampler(5, 0, 20, 30, 5);
-    //    RigidBodyTransMoverSamplerPtr samp2 = new RigidBodyTransMoverSampler(5, 0.5, 0.05);
-    //    RigidBodySpinMoverSamplerPtr samp3 = new RigidBodySpinMoverSampler(5, 0, 20);
-    RigidBodyGeneralMoverSamplerPtr samp4 = new RigidBodyGeneralMoverSampler(5, 0.5, 0.05, 0, 20);
-
-    std::vector<Variable> samplers;
-    //samplers.push_back(Variable(samp2));
-    samplers.push_back(Variable(samp0));
-    samplers.push_back(Variable(samp1));
-    samplers.push_back(Variable(samp4));
-    //samplers.push_back(Variable(samp3));
-
-    ProteinMoverSamplerPtr samp = new ProteinMoverSampler(3, samplers);
+    pps[0] = ppsres;
+    pps[1] = ppsphi;
+    pps[2] = ppspsi;
+    CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, pps);
+    // shearsampler
+    SimpleResidueSamplerPtr sres = new SimpleResidueSampler(5);
+    ContinuousSamplerPtr sphi = gaussianSampler(2000, 2);
+    ContinuousSamplerPtr spsi = gaussianSampler(-10, 1);
+    std::vector<SamplerPtr> sh(3);
+    sh[0] = sres;
+    sh[1] = sphi;
+    sh[2] = spsi;
+    CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sh);
+    // rigidbody
+    DualResidueSamplerPtr rbres = new DualResidueSampler(5);
+    ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.01);
+    ContinuousSamplerPtr rbamp = gaussianSampler(20, 1);
+    std::vector<SamplerPtr> rb(3);
+    rb[0] = rbres;
+    rb[1] = rbmagn;
+    rb[2] = rbamp;
+    CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rb);
+    std::vector<SamplerPtr> samplers;
+    samplers.push_back(phipsi);
+    samplers.push_back(shear);
+    samplers.push_back(rigidbody);
+    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+    DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 3, 0.33);
+    proba->setValue(0, 0.5);
+    proba->setValue(1, 0.25);
+    proba->setValue(2, 0.25);
+    CompositeSamplerPtr samp = mixtureSampler(proba, samplers);
 
     std::vector<Variable> learning;
 
@@ -191,7 +196,7 @@ public:
     learning.push_back(new RigidBodyMover(0, 2, -2.1, 0.0));
     learning.push_back(new RigidBodyMover(0, 3, -1.3, 0.0));
 
-    samp->learn(context, learning);
+    //samp->learn(context, learning);
 
     random = new RandomGenerator(0);
 
@@ -201,56 +206,34 @@ public:
     int count0 = 0;
     int count1 = 0;
     int count2 = 0;
-    int count3 = 0;
-    int count4 = 0;
-    int num = 20;
+    int num = 5;
     for (int i = 0; i < num; i++)
     {
 
       Variable v = samp->sample(context, random);
 
       ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
-
+      printMover(t);
       if (t.isInstanceOf<PhiPsiMover> ())
-      {
-        PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
-        cout << i << " = " << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : "
-            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
         count0++;
-      }
       else if (t.isInstanceOf<ShearMover> ())
-      {
-        ShearMoverPtr t0 = (ShearMoverPtr)t;
-        cout << i << " = " << "shear " << " r : " << t0->getResidueIndex() << ", phi : "
-            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
         count1++;
-      }
       else if (t.isInstanceOf<RigidBodyMover> ())
-      {
-        RigidBodyMoverPtr t0 = (RigidBodyMoverPtr)t;
-        cout << i << " = " << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude()
-            << ", amplitude : " << t0->getAmplitude() << endl;
-        count4++;
-      }
+        count2++;
     }
 
     cout << "il y a  " << endl;
     cout << "phipsi : " << (double)count0 / (double)num << endl;
     cout << "shear : " << (double)count1 / (double)num << endl;
-    cout << "rigidbodytrans : " << (double)count2 / (double)num << endl;
-    cout << "rigidbodyspin : " << (double)count3 / (double)num << endl;
-    cout << "rigidbodygeneral : " << (double)count4 / (double)num << endl;
+    cout << "rigidbody : " << (double)count2 / (double)num << endl;
 
-//    ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
-//        ProteinMoverSampler> ();
-    ProteinMoverSamplerPtr rebirth2 = samp->cloneAndCast<ProteinMoverSampler> ();
+    //ProteinMoverSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<
+    //    ProteinMoverSampler> ();
+    CompositeSamplerPtr rebirth2 = samp->cloneAndCast<CompositeSampler> ();
     //rebirth->saveToFile(context, context.getFile(T("rebirth.xml")));
     count0 = 0;
     count1 = 0;
     count2 = 0;
-    count3 = 0;
-    count4 = 0;
     RandomGeneratorPtr random2 = new RandomGenerator(0);
     RandomGeneratorPtr random3 = new RandomGenerator(0);
     for (int i = 0; i < num; i++)
@@ -261,47 +244,20 @@ public:
 
       ProteinMoverPtr t = v.getObjectAndCast<ProteinMover> ();
       ProteinMoverPtr t2 = v2.getObjectAndCast<ProteinMover> ();
-
+      printMover(t);
+      printMover(t2);
       if (t.isInstanceOf<PhiPsiMover> ())
-      {
-        PhiPsiMoverPtr t0 = (PhiPsiMoverPtr)t;
-        cout << i << " = " << "phipsi" << " r : " << t0->getResidueIndex() << ", phi : "
-            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
-        PhiPsiMoverPtr t0b = (PhiPsiMoverPtr)t2;
-        cout << i << " = " << "phipsi" << " r : " << t0b->getResidueIndex() << ", phi : "
-            << t0b->getDeltaPhi() << ", psi : " << t0b->getDeltaPsi() << endl;
         count0++;
-      }
       else if (t.isInstanceOf<ShearMover> ())
-      {
-        ShearMoverPtr t0 = (ShearMoverPtr)t;
-        cout << i << " = " << "shear " << " r : " << t0->getResidueIndex() << ", phi : "
-            << t0->getDeltaPhi() << ", psi : " << t0->getDeltaPsi() << endl;
-        ShearMoverPtr t0b = (ShearMoverPtr)t2;
-        cout << i << " = " << "shear " << " r : " << t0b->getResidueIndex() << ", phi : "
-            << t0b->getDeltaPhi() << ", psi : " << t0b->getDeltaPsi() << endl;
         count1++;
-      }
       else if (t.isInstanceOf<RigidBodyMover> ())
-      {
-        RigidBodyMoverPtr t0 = (RigidBodyMoverPtr)t;
-        cout << i << " = " << "general" << " r1 : " << t0->getIndexResidueOne() << ", r2 : "
-            << t0->getIndexResidueTwo() << ", magnitude : " << t0->getMagnitude()
-            << ", amplitude : " << t0->getAmplitude() << endl;
-        RigidBodyMoverPtr t0b = (RigidBodyMoverPtr)t2;
-        cout << i << " = " << "general" << " r1 : " << t0b->getIndexResidueOne() << ", r2 : "
-            << t0b->getIndexResidueTwo() << ", magnitude : " << t0b->getMagnitude()
-            << ", amplitude : " << t0b->getAmplitude() << endl;
-        count4++;
-      }
+        count2++;
     }
 
     cout << "il y a  " << endl;
     cout << "phipsi : " << (double)count0 / (double)num << endl;
     cout << "shear : " << (double)count1 / (double)num << endl;
-    cout << "rigidbodytrans : " << (double)count2 / (double)num << endl;
-    cout << "rigidbodyspin : " << (double)count3 / (double)num << endl;
-    cout << "rigidbodygeneral : " << (double)count4 / (double)num << endl;
+    cout << "rigidbody : " << (double)count2 / (double)num << endl;
 
     context.informationCallback(T("RosettaTest done."));
     return Variable();
