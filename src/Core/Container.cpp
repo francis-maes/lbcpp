@@ -144,8 +144,10 @@ bool Container::loadFromXml(XmlImporter& importer)
     return false;
 
   TypePtr elementsType = getElementsType();
-  if (importer.enter(T("elementsActualType")))
+  juce::XmlElement* elementsActualType = importer.getCurrentElement()->getChildByName(T("elementsActualType"));
+  if (elementsActualType)
   {
+    importer.enter(elementsActualType);
     elementsType = importer.loadType(TypePtr());
     importer.leave();
     if (!elementsType)
