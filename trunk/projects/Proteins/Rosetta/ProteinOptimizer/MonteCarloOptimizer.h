@@ -37,7 +37,7 @@ public:
                      const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    return monteCarloOptimization(pose, sampler, context, random, temperature, maxSteps,
+    res = monteCarloOptimization(pose, sampler, context, random, temperature, maxSteps,
         timesReinitialization);
 #else
     jassert(false);
@@ -58,8 +58,8 @@ public:
    * Default = 5.
    * @return the new conformation
    */
-  core::pose::PoseOP monteCarloOptimization(core::pose::PoseOP& pose,
-      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random,
+  core::pose::PoseOP monteCarloOptimization(const core::pose::PoseOP& pose,
+      const SamplerPtr& sampler, ExecutionContext& context, const RandomGeneratorPtr& random,
       double temperature = 1.0, int maxSteps = 50000, int timesReinitialization = 5)
   {
     double currentEnergy = getConformationScore(pose, fullAtomEnergy);

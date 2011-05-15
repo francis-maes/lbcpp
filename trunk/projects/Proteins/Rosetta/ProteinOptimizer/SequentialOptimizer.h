@@ -48,7 +48,7 @@ public:
                      const RandomGeneratorPtr& random, const SamplerPtr& sampler, core::pose::PoseOP& res)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    return sequentialOptimization(pose, sampler, context, random);
+    res = sequentialOptimization(pose, sampler, context, random);
 #else
     jassert(false);
 #endif // LBCPP_PROTEIN_ROSETTA
@@ -64,8 +64,8 @@ public:
    * @param mover pointer to a mover that perturbs the object at each iteration.
    * @return the new conformation
    */
-  core::pose::PoseOP sequentialOptimization(core::pose::PoseOP& pose,
-      SamplerPtr& sampler, ExecutionContext& context, RandomGeneratorPtr& random)
+  core::pose::PoseOP sequentialOptimization(const core::pose::PoseOP& pose,
+      const SamplerPtr& sampler, ExecutionContext& context, const RandomGeneratorPtr& random)
   {
     core::pose::PoseOP acc = new core::pose::Pose();
 
