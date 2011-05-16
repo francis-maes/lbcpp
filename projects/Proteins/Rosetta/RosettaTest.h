@@ -66,6 +66,34 @@ public:
     RandomGeneratorPtr random = new RandomGenerator(0);
 
     SamplerPtr samp = new ProteinMoverSampler(5);
+    File output = context.getFile(T("tempdataset/1M4F.xml"));
+    ProteinPtr prottemp = Protein::createFromXml(context, output);
+    core::pose::PoseOP pose;
+    convertProteinToPose(context, prottemp, pose);
+//    // phipsisampler
+//    CompositeSamplerPtr ppsres = simpleResidueSampler(5);
+//    ContinuousSamplerPtr ppsphi = gaussianSampler(0, 25);
+//    ContinuousSamplerPtr ppspsi = gaussianSampler(0, 25);
+//    CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
+//    // shearsampler
+//    CompositeSamplerPtr sres = simpleResidueSampler(5);
+//    ContinuousSamplerPtr sphi = gaussianSampler(0, 25);
+//    ContinuousSamplerPtr spsi = gaussianSampler(0, 25);
+//    CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
+//    // rigidbody
+//    CompositeSamplerPtr rbres = residuePairSampler(5);
+//    ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.25);
+//    ContinuousSamplerPtr rbamp = gaussianSampler(0, 25);
+//    CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres, rbmagn,
+//        rbamp);
+//    std::vector<SamplerPtr> samplers;
+//
+//    samplers.push_back(phipsi);
+
+//    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+//    DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 1, 1);
+//    CompositeSamplerPtr samp = mixtureSampler(proba, samplers);
+//    ProteinMoverSamplerPtr moverSampler = samp;
 
     std::vector<Variable> learning;
 

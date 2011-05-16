@@ -8,6 +8,7 @@
 
 #ifndef LBCPP_PROTEINS_ROSETTA_UTILS_H_
 # define LBCPP_PROTEINS_ROSETTA_UTILS_H_
+//# define LBCPP_PROTEIN_ROSETTA
 
 # include "precompiled.h"
 # include "../Data/AminoAcid.h"

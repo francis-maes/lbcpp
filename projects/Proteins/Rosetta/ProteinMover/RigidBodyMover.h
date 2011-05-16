@@ -90,8 +90,10 @@ public:
   static void move(core::pose::PoseOP& pose, size_t indexResidueOne, size_t indexResidueTwo,
       double magnitudeTranslation, double amplitudeRotation)
   {
-    applyRotation(pose, indexResidueOne, indexResidueTwo, amplitudeRotation);
-    applyTranslation(pose, indexResidueOne, indexResidueTwo, magnitudeTranslation);
+    if (amplitudeRotation != 0)
+      applyRotation(pose, indexResidueOne, indexResidueTwo, amplitudeRotation);
+    if (magnitudeTranslation != 0)
+      applyTranslation(pose, indexResidueOne, indexResidueTwo, magnitudeTranslation);
   }
 
   /**
@@ -99,43 +101,34 @@ public:
    * @param amplitude the new rotation angle.
    */
   void setAmplitude(double newAmplitude)
-  {
-    amplitude = newAmplitude;
-  }
+    {amplitude = newAmplitude;}
 
   /**
    * Gets the current value for the rotation angle.
    * @return the current value for the rotation angle.
    */
   double getAmplitude()
-  {
-    return amplitude;
-  }
+    {return amplitude;}
 
   /**
    * Sets the new increment for the distance.
    * @param magnitude the new value for the distance increment.
    */
   void setMagnitude(double newMagnitude)
-  {
-    magnitude = newMagnitude;
-  }
+    {magnitude = newMagnitude;}
 
   /**
    * Gets the current value for the distance increment.
    * @return the current distance increment.
    */
   double getMagnitude()
-  {
-    return magnitude;
-  }
+    {return magnitude;}
 
   static void applyTranslation(core::pose::PoseOP& pose, size_t indexResidueOne,
       size_t indexResidueTwo, double magnitude)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    if (pose->n_residue() < 2)
-      return;
+    jassert(pose->n_residue() > 2);
 
     size_t firstResidue = indexResidueOne + 1;
     size_t secondResidue = indexResidueTwo + 1;
@@ -165,8 +158,7 @@ public:
       size_t indexResidueTwo, double amplitude)
   {
 #ifdef LBCPP_PROTEIN_ROSETTA
-    if (pose->n_residue() < 2)
-      return;
+    jassert(pose->n_residue() > 2);
 
     size_t firstResidue = indexResidueOne + 1;
     size_t secondResidue = indexResidueTwo + 1;
