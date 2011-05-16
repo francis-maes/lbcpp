@@ -116,31 +116,7 @@ public:
       cout << (const char* )result->toString() << endl;
     }
 
-    // phipsisampler
-    SimpleResidueSamplerPtr ppsres = new SimpleResidueSampler(5);
-    ContinuousSamplerPtr ppsphi = gaussianSampler(50, 2);
-    ContinuousSamplerPtr ppspsi = gaussianSampler(-1000, 10);
-    CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
-    // shearsampler
-    SimpleResidueSamplerPtr sres = new SimpleResidueSampler(5);
-    ContinuousSamplerPtr sphi = gaussianSampler(2000, 2);
-    ContinuousSamplerPtr spsi = gaussianSampler(-10, 1);
-    CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
-    // rigidbody
-    ResiduePairSamplerPtr rbres = new ResiduePairSampler(5);
-    ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.01);
-    ContinuousSamplerPtr rbamp = gaussianSampler(20, 1);
-    CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres,rbmagn, rbamp);
-    std::vector<SamplerPtr> samplers;
-    samplers.push_back(phipsi);
-    samplers.push_back(shear);
-    samplers.push_back(rigidbody);
-    ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-    DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 3, 0.33);
-    proba->setValue(0, 0.5);
-    proba->setValue(1, 0.25);
-    proba->setValue(2, 0.25);
-    CompositeSamplerPtr samp = mixtureSampler(proba, samplers);
+    SamplerPtr samp = new ProteinMoverSampler(5);
 
     std::vector<Variable> learning;
 
@@ -186,7 +162,7 @@ public:
     int count0 = 0;
     int count1 = 0;
     int count2 = 0;
-    int num = 10000;
+    int num = 10;
     for (int i = 0; i < num; i++)
     {
 
