@@ -103,6 +103,7 @@ protected:
         dataset.push_back(it->second);
 
       sampler->learn(context, dataset);
+      context.resultCallback(T("sampler"), sampler);
       return;
     }
 

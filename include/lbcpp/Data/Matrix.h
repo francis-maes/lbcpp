@@ -198,14 +198,20 @@ public:
 
   DoubleMatrixPtr multiplyBy(const DoubleMatrixPtr& factor) const;
   DoubleMatrixPtr transpose();
+
   void add(const DoubleMatrixPtr& term);
   void subtract(const DoubleMatrixPtr& term);
   void multiplyByScalar(double factor);
+
   DoubleMatrixPtr choleskyDecomposition() const;
+
   void inverse();
   DoubleMatrixPtr getInverse() const;
+
   double determinant() const;
   double inducedL1Norm() const;
+
+  void getExtremumValues(double& minValue, double& maxValue);
 
   lbcpp_UseDebuggingNewOperator
 };

@@ -114,6 +114,12 @@
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 
+  <class name="PowerFunctionParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+    <variable type="PositiveInteger" name="maxPower"/>
+    <variable type="Boolean" name="useToWeightUCB"/>
+    <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
+  </class>
+  
   <enumeration name="OldStyleParameterizedBanditPolicyEnumeration">
     <value name="mean(reward)"/>
     <value name="stddev(reward)"/>

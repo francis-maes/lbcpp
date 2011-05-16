@@ -297,7 +297,10 @@ class GoStateAndScoresComponent : public GoStateComponent
 {
 public:
   GoStateAndScoresComponent(PairPtr stateAndScores, const String& name);
- 
+
+  virtual bool doPaintShortString(const Variable& element, int width, int height)
+    {return false;}
+
   virtual void paintEntry(juce::Graphics& g, size_t row, size_t column, int x1, int y1, int width, int height, const Variable& element)
   {
     Player player = state->getBoard()->get(GoBoard::Position(column, row));
