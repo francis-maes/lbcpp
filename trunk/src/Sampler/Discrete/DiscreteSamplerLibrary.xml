@@ -8,4 +8,11 @@
     <variable type="DenseDoubleVector[EnumValue, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
   </class>
 
+  <class name="DiscretizeSampler" base="DiscreteSampler">
+    <constructor arguments="const ContinuousSamplerPtr&amp; sampler, int minValue, int maxValue"/>
+    <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
+    <variable type="Integer" name="minValue" description="Minimum value returned."/>
+    <variable type="Integer" name="maxValue" description="Maximum value returned."/>
+  </class>
+
 </library>

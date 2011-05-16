@@ -316,6 +316,7 @@ SET(LBCPP_SAMPLER_CONTINUOUS_SOURCES
 
 SET(LBCPP_SAMPLER_DISCRETE_SOURCES
   Sampler/Discrete/EnumerationSampler.h
+  Sampler/Discrete/DiscretizeSampler.h
   Sampler/Discrete/DiscreteSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/DiscreteSamplerLibrary.cpp
 )

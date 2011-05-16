@@ -109,17 +109,20 @@ public:
     return Variable(result);
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    if (dataset.size() < 2 * numClusters)
+    size_t n = trainingSamples->getNumElements();
+
+    if (n < 2 * numClusters)
     {
       context.warningCallback(T("Not enough values in dataset to ensure correct EM. Nothing done."));
       return;
     }
 
-    std::vector<MatrixPtr> vals(dataset.size());
-    for (size_t i = 0; i < dataset.size(); i++)
-      vals[i] = dataset[i].getObjectAndCast<Matrix> ();
+    std::vector<MatrixPtr> vals(n);
+    for (size_t i = 0; i < n; i++)
+      vals[i] = trainingSamples->getElement(i).getObjectAndCast<Matrix>();
 
     double oldLL = computeLogLikelihood(vals, probabilities, means, covarianceMatrix);
     double newLL = oldLL + 2 * oldLL * tolerance;

@@ -79,23 +79,27 @@ public:
    *           second : not yet used.
    */
 
-  static void getMeanAndVariance(const std::vector<Variable>& dataset, double& mean, double& variance)
+  static void getMeanAndVariance(const ContainerPtr& samples, double& mean, double& variance)
   {
+    size_t n = samples->getNumElements();
     ScalarVariableMeanAndVariance v;
-    for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].getDouble());
+    for (size_t i = 0; i < n; i++)
+      v.push(samples->getElement(i).getDouble());
     mean = v.getMean();
     variance = v.getVariance();
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    if (dataset.size() < 2)
+    size_t n = trainingSamples->getNumElements();
+
+    if (n < 2)
       return;
 
     learned = true;
     double temporaryVariance;
-    getMeanAndVariance(dataset, mean, temporaryVariance);
+    getMeanAndVariance(trainingSamples, mean, temporaryVariance);
     if (temporaryVariance == 0)
       temporaryVariance = juce::jmax(1.0, std::abs(mean * 0.3));
     stddev = std::sqrt(temporaryVariance);
@@ -114,9 +118,8 @@ public:
       double maxAbscissa = mean + excursion * stddev;
       abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
     }
-    double stdCorrectionFactor = dataset.size() >= 20 ? kernelWidth : kernelWidth * (20.0
-        / (double)dataset.size());
-    DenseDoubleVectorPtr frequencies = createFrequencies(dataset, abscissa, stddev * stdCorrectionFactor);
+    double stdCorrectionFactor = n >= 20 ? kernelWidth : kernelWidth * (20.0 / (double)n);
+    DenseDoubleVectorPtr frequencies = createFrequencies(trainingSamples, abscissa, stddev * stdCorrectionFactor);
     integral = createIntegral(frequencies, delta);
   }
 
@@ -151,26 +154,26 @@ public:
    * Creates the frequencies of the data provided, i.e. its probability density function.
    */
   DenseDoubleVectorPtr createFrequencies(
-      const std::vector<Variable>& dataset, DenseDoubleVectorPtr& abscissa,
+      const ContainerPtr& samples, DenseDoubleVectorPtr& abscissa,
       double gaussianDeviation)
   {
     ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
     DenseDoubleVectorPtr frequencies = new DenseDoubleVector(actionClass,
         abscissa->getNumElements(), 0.0);
 
-    for (size_t i = 0; i < dataset.size(); i++)
+    size_t n = samples->getNumElements();
+    for (size_t i = 0; i < n; i++)
     {
       for (size_t j = 0; j < frequencies->getNumElements(); j++)
       {
         double oldValue = frequencies->getValue(j);
-        double inc = std::exp(-std::pow(abscissa->getValue(j) - dataset[i].getDouble(), 2)
+        double inc = std::exp(-std::pow(abscissa->getValue(j) - samples->getElement(i).getDouble(), 2)
             / (2 * std::pow(gaussianDeviation, 2)));
         frequencies->setValue(j, oldValue + inc);
       }
     }
 
-    double normalize = 1.0 / ((double)dataset.size() * std::sqrt(2 * M_PI * std::pow(
-        gaussianDeviation, 2)));
+    double normalize = 1.0 / ((double)n * std::sqrt(2 * M_PI * std::pow(gaussianDeviation, 2)));
     for (size_t i = 0; i < frequencies->getNumElements(); i++)
     {
       double oldValue = frequencies->getValue(i) * normalize;

@@ -29,23 +29,22 @@ public:
     return res;
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
   {
-    size_t n = samplers.size();
-    std::vector< std::vector<Variable> > subDatasets(n);
-    for (size_t i = 0; i < n; ++i)
-      subDatasets[i].resize(dataset.size());
+    size_t n = samples->getNumElements();
+    size_t numSamplers = samplers.size();
+    subInputs.resize(numSamplers, inputs);
+    subSamples.resize(numSamplers);
+    for (size_t i = 0; i < numSamplers; ++i)
+      subSamples[i] = new VariableVector(0); // todo: static typing for better vector implementation
 
-    for (size_t i = 0; i < dataset.size(); ++i)
+    for (size_t i = 0; i < n; ++i)
     {
-      const ObjectPtr& object = dataset[i].getObject();
+      ObjectPtr object = samples->getElement(i).getObject();
       jassert(object->getNumVariables() >= samplers.size());
-      for (size_t j = 0; j < n; ++j)
-        subDatasets[j][i] = object->getVariable(j);
+      for (size_t j = 0; j < numSamplers; ++j)
+        subSamples[j].staticCast<VariableVector>()->append(object->getVariable(j));
     }
-
-    for (size_t i = 0; i < n; ++i)
-      samplers[i]->learn(context, subDatasets[i]);
   }
 
 protected:

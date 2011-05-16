@@ -11,7 +11,6 @@
 
 # include "precompiled.h"
 # include "../Sampler.h"
-# include "DiscretizeSampler.h"
 # include "ParzenContinuousSampler.h"
 
 namespace lbcpp
@@ -30,23 +29,19 @@ public:
 //        (double)(-1 * numResidues), (double)(2 * numResidues), 1.0 / 2.0, 0.5 * numResidues, 0.25
 //            * numResidues);
     ContinuousSamplerPtr temp = gaussianSampler(0.5 * numResidues, 0.25 * numResidues);
-    DiscretizeSamplerPtr samp = new DiscretizeSampler(temp, 0, (int)(numResidues - 1));
-    samplers[0] = samp;
+    samplers[0] = discretizeSampler(temp, 0, (int)(numResidues - 1));
   }
 
   SimpleResidueSampler() : CompositeSampler(1) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
-  {return samplers[0]->sample(context, random, inputs);}
+    {return samplers[0]->sample(context, random, inputs);}
 
-  /**
-   * dataset = first : a Variable of integer type containing the residue observed.
-   */
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
   {
-    jassert((dataset.size() > 0) && (numResidues > 0));
-    samplers[0]->learn(context, dataset);
+    subInputs.resize(1, inputs);
+    subSamples.resize(1, samples);
   }
 
 protected:

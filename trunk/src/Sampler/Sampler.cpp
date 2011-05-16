@@ -10,6 +10,35 @@
 #include <lbcpp/Sampler/Sampler.h>
 using namespace lbcpp;
 
+/*
+** CompositeSampler
+*/
+void CompositeSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                        const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+{
+  std::vector<ContainerPtr> subTrainingInputs, subTrainingSamples;
+  makeSubExamples(trainingInputs, trainingSamples, subTrainingInputs, subTrainingSamples);
+  jassert(subTrainingInputs.size() == samplers.size() && subTrainingSamples.size() == samplers.size());
+
+  if (validationSamples)
+  {
+    std::vector<ContainerPtr> subValidationInputs, subValidationSamples;
+    makeSubExamples(validationInputs, validationSamples, subValidationInputs, subValidationSamples);
+    jassert(subValidationInputs.size() == samplers.size() && subValidationSamples.size() == samplers.size());
+    
+    for (size_t i = 0; i < samplers.size(); ++i)
+      samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subValidationInputs[i], subValidationSamples[i]);
+  }
+  else
+  {
+    for (size_t i = 0; i < samplers.size(); ++i)
+      samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
+  }
+}
+
+/*
+** ObjectCompositeSampler
+*/
 CompositeSamplerPtr lbcpp::objectCompositeSampler(ClassPtr objectClass, const SamplerPtr& firstVariableSampler)
 {
   std::vector<SamplerPtr> samplers(1);

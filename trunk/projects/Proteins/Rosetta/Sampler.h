@@ -16,7 +16,6 @@ namespace lbcpp
 {
 
 extern CompositeSamplerPtr residuePairSampler(size_t numResidues);
-extern SamplerPtr discretizeSample(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
 extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
 
 extern CompositeSamplerPtr proteinMoverSampler(size_t numResidues);

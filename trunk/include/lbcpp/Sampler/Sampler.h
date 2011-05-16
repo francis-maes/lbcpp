@@ -25,7 +25,8 @@ class Sampler : public Object
 public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const = 0;
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset) = 0;
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr()) = 0;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -62,6 +63,8 @@ typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
 extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
 extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
 
+extern DiscreteSamplerPtr discretizeSampler(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
+
 /*
 ** Composite Sampler
 */
@@ -74,10 +77,15 @@ public:
     : samplers(samplers) {}
   CompositeSampler() {}
 
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples);
+
   lbcpp_UseDebuggingNewOperator
 
 protected:
   friend class CompositeSamplerClass;
+
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const = 0;
 
   std::vector<SamplerPtr> samplers;
 };
