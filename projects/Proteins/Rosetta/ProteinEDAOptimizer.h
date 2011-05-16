@@ -14,6 +14,7 @@
 # include "RosettaUtils.h"
 # include "ProteinMover.h"
 # include "Sampler.h"
+# include "Sampler/ProteinMoverSampler.h"
 # include "../Evaluator/QScoreEvaluator.h"
 
 namespace lbcpp
@@ -91,12 +92,13 @@ public:
 #endif // LBCPP_PROTEIN_ROSETTA
   }
 
-  SamplerPtr findBestMovers(ExecutionContext& context, const RandomGeneratorPtr& random,
-      const core::pose::PoseOP& target, const core::pose::PoseOP& reference, SamplerPtr sampler,
-      std::vector<ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
+  ProteinMoverSamplerPtr findBestMovers(ExecutionContext& context,
+      const RandomGeneratorPtr& random, const core::pose::PoseOP& target,
+      const core::pose::PoseOP& reference, ProteinMoverSamplerPtr sampler, std::vector<
+          ProteinMoverPtr>& movers, size_t maxIterations, size_t numSamples = 1000,
       double ratioGoodSamples = 0.5, size_t numMoversToKeep = 20)
   {
-    SamplerPtr workingSampler = sampler->cloneAndCast<Sampler>();
+    ProteinMoverSamplerPtr workingSampler = sampler->cloneAndCast<ProteinMoverSampler>();
 #ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP workingPose = new core::pose::Pose(*target);
 

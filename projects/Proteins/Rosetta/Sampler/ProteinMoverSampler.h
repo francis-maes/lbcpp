@@ -17,6 +17,9 @@
 
 namespace lbcpp
 {
+class ProteinMoverSampler;
+typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
+
 class ProteinMoverSampler : public CompositeSampler
 {
 public:
