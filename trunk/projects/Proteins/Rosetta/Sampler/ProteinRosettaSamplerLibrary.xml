@@ -8,11 +8,6 @@
     <variable type="Integer" name="minValue" description="Minimum value returned."/>
     <variable type="Integer" name="maxValue" description="Maximum value returned."/>
   </class>
-  
-  <class name="EnumerationDiscreteSampler" base="DiscreteSampler">
-    <constructor argument="const DenseDoubleVectorPtr&amp; probabilities"/>
-    <variable type="DenseDoubleVector[Enumeration, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
-  </class>
 
   <class name="MultiVariateGaussianSampler" base="ContinuousSampler">
     <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
@@ -60,8 +55,9 @@
   </enumeration>
   
   <class name="ProteinMoverSampler" base="CompositeSampler">
+    <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
     <constructor arguments="size_t numResidues"/>
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
+    <variable type="DiscreteSampler" name="classSampler"/>
   </class>
   
 </library>

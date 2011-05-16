@@ -30,7 +30,6 @@
 # include <time.h>
 # include "Sampler.h"
 # include "Sampler/ParzenContinuousSampler.h"
-# include "Sampler/EnumerationDiscreteSampler.h"
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/GaussianMultivariateSampler.h"
 # include "Sampler/ResiduePairSampler.h"

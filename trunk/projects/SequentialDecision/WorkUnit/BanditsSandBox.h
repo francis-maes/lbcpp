@@ -472,7 +472,7 @@ public:
     jassert(maxPower >= 1 || useToWeightUCB);
     DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("moments"));
 
-    static const char* names[4] = {"log T", "log T_i", "mean(r)", "stddev(r)"};
+    static const char* names[4] = {"sqrt(log T)", "1/sqrt(T_i)", "mean(r)", "stddev(r)"};
 
     for (size_t i = 0; i <= maxPower; ++i)
       for (size_t j = 0; j <= maxPower; ++j)
@@ -482,10 +482,15 @@ public:
             if (!useToWeightUCB && (i + j + k + l == 0))
               continue; // skip unit
             String name;
-            name += String(names[0]) + T("^") + String((int)i) + T(".");
-            name += String(names[1]) + T("^") + String((int)j) + T(".");
-            name += String(names[2]) + T("^") + String((int)k) + T(".");
-            name += String(names[3]) + T("^") + String((int)l);
+            if (i)
+              name += String(names[0]) + (i > 1 ? T("^") + String((int)i) : String::empty) + T(" ");
+            if (j)
+              name += String(names[1]) + (j > 1 ? T("^") + String((int)j) : String::empty) + T(" ");
+            if (k)
+              name += String(names[2]) + (k > 1 ? T("^") + String((int)k) : String::empty) + T(" ");
+            if (l)
+              name += String(names[3]) + (l > 1 ? T("^") + String((int)l) : String::empty) + T(" ");
+            name = name.trimEnd();
             parametersEnumeration->addElement(defaultExecutionContext(), name);
           }
 
@@ -504,8 +509,8 @@ public:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
-    double v1 = log10((double)timeStep);
-    double v2 = log10((double)bandit->getPlayedCount());
+    double v1 = sqrt(log((double)timeStep));
+    double v2 = 1.0 / sqrt((double)bandit->getPlayedCount());
     double v3 = bandit->getRewardMean();
     double v4 = bandit->getRewardStandardDeviation();
 
@@ -907,7 +912,7 @@ protected:
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, true);
     //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, 10, populationSize);
 
     optimizer->compute(context, optimizerContext, optimizerState);

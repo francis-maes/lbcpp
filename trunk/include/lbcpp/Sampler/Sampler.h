@@ -59,6 +59,9 @@ public:
 };
 typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
 
+extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
+extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
+
 /*
 ** Composite Sampler
 */

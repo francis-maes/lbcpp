@@ -2,4 +2,10 @@
 
 <library name="DiscreteSampler" directory="Sampler/Discrete">
 
+  <class name="EnumerationSampler" base="DiscreteSampler">
+    <constructor arguments="const DenseDoubleVectorPtr&amp; probabilities"/>
+    <constructor arguments="EnumerationPtr enumeration"/>
+    <variable type="DenseDoubleVector[EnumValue, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
+  </class>
+
 </library>

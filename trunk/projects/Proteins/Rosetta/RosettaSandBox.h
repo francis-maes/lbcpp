@@ -66,7 +66,7 @@ protected:
 class RosettaSandBox : public WorkUnit
 {
 public:
-  void generateDataSet(std::vector<Variable>& res)
+  void generateDataSet(std::vector<Variable>& learning)
   {
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
     TypePtr outputType = proteinMoverEnumerationEnumeration;
@@ -75,20 +75,28 @@ public:
     input->setValue(0, 1.0); // first distribution
     for (size_t i = 0; i < 100; ++i)
     {
-      res.push_back(new Pair(input, Variable(0, outputType)));
-      res.push_back(new Pair(input, Variable(0, outputType)));
-      res.push_back(new Pair(input, Variable(0, outputType)));
-      res.push_back(new Pair(input, Variable(1, outputType)));
+      learning.push_back(new Pair(input, phiPsiMover(1, 34, -123)));
+      learning.push_back(new Pair(input, phiPsiMover(0, 30, -122)));
+      learning.push_back(new Pair(input, phiPsiMover(2, 27, -121)));
+      learning.push_back(new Pair(input, phiPsiMover(3, 33, -121)));
     }
 
     input = new DenseDoubleVector(inputClass);
     input->setValue(1, 1.0); // second distribution
     for (size_t i = 0; i < 100; ++i)
     {
-      res.push_back(new Pair(input, Variable(2, outputType)));
-      res.push_back(new Pair(input, Variable(2, outputType)));
-      res.push_back(new Pair(input, Variable(2, outputType)));
-      res.push_back(new Pair(input, Variable(1, outputType)));
+      learning.push_back(new Pair(input, shearMover(3, 0.9, 4.5)));
+      learning.push_back(new Pair(input, shearMover(4, 0.7, 4.3)));
+      learning.push_back(new Pair(input, shearMover(3, 0.8, 3.4)));
+      // general
+      learning.push_back(new Pair(input, rigidBodyMover(3, 5, 2.8, -3.4)));
+      learning.push_back(new Pair(input, rigidBodyMover(3, 5, 2.5, -2.4)));
+      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.8, 3.4)));
+      learning.push_back(new Pair(input, rigidBodyMover(0, 4, 1.2, 2.4)));
+      learning.push_back(new Pair(input, rigidBodyMover(2, 4, 0.3, 3.4)));
+      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.76, 4.2)));
+      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.76, 4.2)));
+      learning.push_back(new Pair(input, rigidBodyMover(0, 3, 1.01, 4)));
     }
   }
 
@@ -97,7 +105,9 @@ public:
     std::vector<Variable> learning;
     generateDataSet(learning);
 
-    SamplerPtr sampler = new MaximumEntropySampler();
+    SamplerPtr moverClassSampler = new MaximumEntropySampler();
+    SamplerPtr sampler = proteinMoverSampler(moverClassSampler, 1000);
+
     sampler->learn(context, learning);
   
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
