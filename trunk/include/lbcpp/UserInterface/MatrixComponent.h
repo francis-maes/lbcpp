@@ -12,6 +12,7 @@
 # include "ObjectEditor.h"
 # include "ComponentWithPreferedSize.h"
 # include "VariableSelector.h"
+# include "../Data/Matrix.h"
 
 namespace lbcpp
 {
@@ -101,12 +102,21 @@ public:
   
   // overidable
   virtual juce::Colour selectColour(const Variable& element) = 0;
+  virtual bool doPaintShortString(const Variable& element, int width, int height)
+    {return width >= 20;}
+
   virtual void paintEntry(juce::Graphics& g, size_t row, size_t column, int x1, int y1, int width, int height, const Variable& element)
   {
     if (matrix)
     {
       g.setColour(selectColour(element));
       g.fillRect(x1, y1, width, height);
+    }
+    if (doPaintShortString(element, width, height))
+    {
+      g.setColour(juce::Colours::black);
+      g.setFont(juce::jlimit(5.f, 18.f, width / 2.f));
+      g.drawText(element.toShortString(), x1, y1, width, height, juce::Justification::centred, false); 
     }
   }
 

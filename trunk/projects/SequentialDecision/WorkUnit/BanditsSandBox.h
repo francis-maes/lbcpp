@@ -29,24 +29,33 @@ extern ClassPtr banditStatisticsClass;
 class BanditStatistics : public Object
 {
 public:
-  BanditStatistics() : Object(banditStatisticsClass), statistics(new ScalarVariableStatistics(T("reward"))) {}
+  BanditStatistics(size_t numMoments)
+    : Object(banditStatisticsClass), statistics(new ScalarVariableStatistics(T("reward")))
+  {
+    if (numMoments > 2)
+      moments.resize(numMoments - 2);
+  }
+  BanditStatistics() {}
 
   void update(double reward)
   {
     statistics->push(reward);
-    if (reward == 0)
+    if (moments.size())
     {
-      for (size_t i = 0; i < numMoments; ++i)
-        moments[i].push(0.0);
+      if (reward == 0)
+      {
+        for (size_t i = 0; i < moments.size(); ++i)
+          moments[i].push(0.0);
+      }
+      else if (reward == 1)
+      {
+        for (size_t i = 0; i < moments.size(); ++i)
+          moments[i].push(1.0);
+      }
+      else
+        for (size_t i = 0; i < moments.size(); ++i)
+          moments[i].push(pow(reward, (double)(i + 2)));
     }
-    else if (reward == 1)
-    {
-      for (size_t i = 0; i < numMoments; ++i)
-        moments[i].push(1.0);
-    }
-    else
-      for (size_t i = 0; i < numMoments; ++i)
-        moments[i].push(pow(reward, (double)(i + 2)));
   }
 
   size_t getPlayedCount() const
@@ -71,7 +80,7 @@ public:
     {return statistics->getMaximum();}
 
   size_t getNumMoments() const
-    {return numMoments + 2;}
+    {return moments.size() + 2;}
 
   // 0 -> 1
   // 1 -> mean
@@ -91,8 +100,7 @@ private:
   friend class BanditStatisticsClass;
 
   ScalarVariableStatisticsPtr statistics;
-  enum {numMoments = 10};
-  ScalarVariableMean moments[numMoments];
+  std::vector<ScalarVariableMean> moments;
 };
 
 typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
@@ -100,12 +108,16 @@ typedef ReferenceCountedObjectPtr<BanditStatistics> BanditStatisticsPtr;
 class DiscreteBanditPolicy : public Object
 {
 public:
+  virtual size_t getRequiredNumMoments() const
+    {return 2;} // unit, mean
+
   virtual void initialize(size_t numBandits)
   {
     timeStep = 0;
+    size_t numMoments = getRequiredNumMoments();
     banditStatistics.resize(numBandits);
     for (size_t i = 0; i < numBandits; ++i)
-      banditStatistics[i] = new BanditStatistics();
+      banditStatistics[i] = new BanditStatistics(numMoments);
   }
 
   size_t selectNextBandit()
@@ -370,7 +382,7 @@ public:
     double b = parameters->getValue(1);
     double c = parameters->getValue(2);
 
-    double C = a * log10((double)timeStep) + b * bandit->getPlayedCount() + c;
+    double C = a * log10((double)timeStep) + b * log10((double)bandit->getPlayedCount()) + c;
     return bandit->getRewardMean() + sqrt(2 * C * log((double)timeStep) / bandit->getPlayedCount());
   }
 
@@ -423,6 +435,9 @@ public:
     parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
   }
   MomentsWeightedUCBBanditPolicy() {}
+  
+  virtual size_t getRequiredNumMoments() const
+    {return parameters->getNumElements();}
 
   virtual SamplerPtr createParametersSampler() const
     {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
@@ -446,6 +461,92 @@ protected:
   friend class MomentsWeightedUCBBanditPolicyClass;
 
   DenseDoubleVectorPtr parameters;
+};
+
+class PowerFunctionParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  PowerFunctionParameterizedBanditPolicy(size_t maxPower = 1, bool useToWeightUCB = false)
+    : maxPower(maxPower), useToWeightUCB(useToWeightUCB)
+  {
+    jassert(maxPower >= 1 || useToWeightUCB);
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("moments"));
+
+    static const char* names[4] = {"log T", "log T_i", "mean(r)", "stddev(r)"};
+
+    for (size_t i = 0; i <= maxPower; ++i)
+      for (size_t j = 0; j <= maxPower; ++j)
+        for (size_t k = 0; k <= maxPower; ++k)
+          for (size_t l = 0; l <= maxPower; ++l)
+          {
+            if (!useToWeightUCB && (i + j + k + l == 0))
+              continue; // skip unit
+            String name;
+            name += String(name[0]) + T("^") + String((int)i) + T(".");
+            name += String(name[1]) + T("^") + String((int)j) + T(".");
+            name += String(name[2]) + T("^") + String((int)k) + T(".");
+            name += String(name[3]) + T("^") + String((int)l);
+            parametersEnumeration->addElement(defaultExecutionContext(), name);
+          }
+
+    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+  }
+
+  virtual SamplerPtr createParametersSampler() const
+    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
+
+  virtual void setParameters(const Variable& parameters)
+    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
+
+  virtual Variable getParameters() const
+    {return parameters;}
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
+    double v1 = log10((double)timeStep);
+    double v2 = log10((double)bandit->getPlayedCount());
+    double v3 = bandit->getRewardMean();
+    double v4 = bandit->getRewardStandardDeviation();
+
+    double res = 0.0;
+    const double* parameter = parameters->getValuePointer(0);
+    for (size_t i = 0; i <= maxPower; ++i)
+      for (size_t j = 0; j <= maxPower; ++j)
+        for (size_t k = 0; k <= maxPower; ++k)
+          for (size_t l = 0; l <= maxPower; ++l)
+          {
+            if (!useToWeightUCB && (i + j + k + l == 0))
+              continue; // skip unit
+            res += (*parameter++) * fastPow(v1, i) * fastPow(v2, j) * fastPow(v3, k) * fastPow(v4, l);
+          }
+
+    if (useToWeightUCB)
+      return bandit->getRewardMean() + sqrt(res * log((double)timeStep) / bandit->getPlayedCount());
+    else
+      return res;
+  }
+
+  static double fastPow(double value, size_t power)
+  {
+    if (power == 0)
+      return 1.0;
+    else if (power == 1)
+      return value;
+    else if (power == 2)
+      return value * value;
+    else if (power == 3)
+      return fastPow(value, 2) * value;
+    else
+      return pow(value, (double)power);
+  }
+
+protected:
+  friend class PowerFunctionParameterizedBanditPolicyClass;
+
+  size_t maxPower;
+  DenseDoubleVectorPtr parameters;
+  bool useToWeightUCB;
 };
 
 extern EnumerationPtr oldStyleParameterizedBanditPolicyEnumerationEnumeration;
@@ -707,14 +808,24 @@ public:
     context.run(workUnit);
 
     std::vector<DiscreteBanditPolicyPtr> policiesToOptimize;
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1, false));
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1, true));
+    policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
+    policiesToOptimize.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1));
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(0, true));
+    policiesToOptimize.push_back(new TimeDependentWeightedUCBBanditPolicy());
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2, true));
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2, false));
+
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
     //policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
-    policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
-    policiesToOptimize.push_back(new TimeDependentWeightedUCBBanditPolicy());
-    policiesToOptimize.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1));
+    //policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
+    
+    
+    //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
 
-    for (size_t i = 1; i < 10; ++i)
-      policiesToOptimize.push_back(new MomentsWeightedUCBBanditPolicy(i));
+    //for (size_t i = 1; i < 10; ++i)
+    //  policiesToOptimize.push_back(new MomentsWeightedUCBBanditPolicy(i));
 
     for (size_t i = 0; i < policiesToOptimize.size(); ++i)
     {
@@ -776,7 +887,7 @@ protected:
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, verbose);}
   
-  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 10)
+  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 20)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);

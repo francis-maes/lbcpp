@@ -190,6 +190,7 @@ DoubleMatrixPtr DoubleMatrix::choleskyDecomposition() const
 
 void DoubleMatrix::inverse()
 {
+  // only implemented for 2x2 matrices
   jassert((this->getNumColumns() == 2) && (this->getNumRows() == 2));
   DoubleMatrixPtr temp = this->cloneAndCast<DoubleMatrix> ();
   this->setValue(0, 0, temp->getValue(1, 1));
@@ -227,8 +228,23 @@ double DoubleMatrix::inducedL1Norm() const
 
 double DoubleMatrix::determinant() const
 {
+  // only implemented for 2x2 matrices
   jassert((this->getNumColumns() == 2) && (this->getNumRows() == 2));
   return this->getValue(0, 0) * this->getValue(1, 1) - this->getValue(0, 1) * this->getValue(1, 0);
+}
+
+void DoubleMatrix::getExtremumValues(double& minValue, double& maxValue)
+{
+  minValue = DBL_MAX;
+  maxValue = -DBL_MAX;
+  for (size_t i = 0; i < elements.size(); ++i)
+  {
+    double v = elements[i];
+    if (v < minValue)
+      minValue = v;
+    if (v > maxValue)
+      maxValue = v;
+  }
 }
 
 /*

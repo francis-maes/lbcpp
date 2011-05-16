@@ -27,4 +27,6 @@
   <uicomponent name="ROCScoreObjectComponent" type="ROCScoreObject"/>
   <uicomponent name="ConfusionMatrixComponent" type="BinaryClassificationConfusionMatrix"/>
 
+  <uicomponent name="DoubleMatrixComponent" type="DoubleMatrix[Double]"/>
+
 </library>

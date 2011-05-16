@@ -20,17 +20,17 @@ class IndependentDoubleVectorSampler : public CompositeSampler
 public:
   IndependentDoubleVectorSampler(const EnumerationPtr& elementsEnumeration, const SamplerPtr& elementSamplerModel)
     : CompositeSampler(elementsEnumeration->getNumElements()), elementsEnumeration(elementsEnumeration)
-    {createSamplers(elementSamplerModel);}
+    {initialize(elementSamplerModel);}
 
   IndependentDoubleVectorSampler(size_t numElements, const SamplerPtr& elementSamplerModel)
     : CompositeSampler(numElements), elementsEnumeration(positiveIntegerEnumerationEnumeration)
-    {createSamplers(elementSamplerModel);}
+    {initialize(elementSamplerModel);}
 
   IndependentDoubleVectorSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    DenseDoubleVectorPtr res = new DenseDoubleVector(elementsEnumeration, doubleType, samplers.size());
+    DenseDoubleVectorPtr res = new DenseDoubleVector(outputType, samplers.size());
     for (size_t i = 0; i < samplers.size(); ++i)
       res->setValue(i, samplers[i]->sample(context, random).toDouble());
     return res;
@@ -60,11 +60,13 @@ protected:
   friend class IndependentDoubleVectorSamplerClass;
 
   EnumerationPtr elementsEnumeration;
+  ClassPtr outputType;
 
-  void createSamplers(const SamplerPtr& elementSamplerModel)
+  void initialize(const SamplerPtr& elementSamplerModel)
   {
     for (size_t i = 0; i < samplers.size(); ++i)
       samplers[i] = elementSamplerModel->cloneAndCast<Sampler>();
+    outputType = denseDoubleVectorClass(elementsEnumeration, doubleType);
   }
 };
 
