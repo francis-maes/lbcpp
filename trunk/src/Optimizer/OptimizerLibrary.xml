@@ -19,8 +19,7 @@
     <variable type="Variable" name="bestVariable"/>
     <variable type="Double" name="bestScore"/>
     <variable type="ObjectVector[Pair[Double, Variable]]" name="processedRequests"/>
-    <variable type="PositiveInteger" name="autoSaveStateFrequency"/>
-    <variable type="PositiveInteger" name="lastSaveTime"/>
+    <variable type="Time" name="autoSaveStateFrequency"/>
   </class>
   
   <class name="DistributionBasedOptimizerState" base="OptimizerState">
