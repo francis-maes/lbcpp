@@ -77,9 +77,6 @@
 
 
   <!-- Francis -->
-  <class name="ProteinMoverSampler" base="CompositeSampler">
-    <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
-  </class>
   <class name="RosettaSandBox" base="WorkUnit"/>
   
 </library>

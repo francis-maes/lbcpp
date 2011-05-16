@@ -21,63 +21,12 @@
 # include "ProteinMover/RigidBodyMover.h"
 # include "Sampler/SimpleResidueSampler.h"
 # include "Sampler/ResiduePairSampler.h"
+# include "Sampler/ProteinMoverSampler.h"
 # include "Sampler.h"
 using namespace std;
 
 namespace lbcpp
 {
-
-class ProteinMoverSampler : public CompositeSampler
-{
-public:
-  ProteinMoverSampler()
-  {
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(5), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(5), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(5), gaussianSampler(1, 1), gaussianSampler(1, 1)));
-    probabilities = new DenseDoubleVector(3, 0.33);
-  }
-
-  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
-  {
-    jassert(probabilities->getNumValues() == samplers.size());
-    size_t index = random->sampleWithProbabilities(probabilities->getValues());
-    return samplers[index]->sample(context, random, inputs);
-  }
-
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
-  {
-    std::vector< std::vector<Variable> > subDatasets(samplers.size());
-    probabilities->clear();
-    probabilities->resize(samplers.size());
-
-    double invZ = 1.0 / dataset.size();
-    for (size_t i = 0; i < dataset.size(); ++i)
-    {
-      TypePtr type = dataset[i].getType();
-      size_t target;
-      if (type == phiPsiMoverClass)
-        target = 0;
-      else if (type == shearMoverClass)
-        target = 1;
-      else if (type == rigidBodyMoverClass)
-        target = 2;
-      else
-        jassert(false);
-      probabilities->incrementValue(target, invZ);
-      subDatasets[target].push_back(dataset[i]);
-    }
-
-    for (size_t i = 0; i < samplers.size(); ++i)
-      samplers[i]->learn(context, subDatasets[i]);
-  }
-
-protected:
-  friend class ProteinMoverSamplerClass;
-
-  DenseDoubleVectorPtr probabilities;
-};
-
 class RosettaSandBox : public WorkUnit
 {
 public:
@@ -116,7 +65,7 @@ public:
     learning.push_back(rigidBodyMover(0, 2, -2.1, 0.0));
     learning.push_back(rigidBodyMover(0, 3, -1.3, 0.0));
 
-    SamplerPtr sampler = new ProteinMoverSampler();
+    SamplerPtr sampler = new ProteinMoverSampler(5);
     sampler->learn(context, learning);
     context.resultCallback(T("sampler"), sampler);
     return Variable();
