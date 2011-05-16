@@ -482,10 +482,10 @@ public:
             if (!useToWeightUCB && (i + j + k + l == 0))
               continue; // skip unit
             String name;
-            name += String(name[0]) + T("^") + String((int)i) + T(".");
-            name += String(name[1]) + T("^") + String((int)j) + T(".");
-            name += String(name[2]) + T("^") + String((int)k) + T(".");
-            name += String(name[3]) + T("^") + String((int)l);
+            name += String(names[0]) + T("^") + String((int)i) + T(".");
+            name += String(names[1]) + T("^") + String((int)j) + T(".");
+            name += String(names[2]) + T("^") + String((int)k) + T(".");
+            name += String(names[3]) + T("^") + String((int)l);
             parametersEnumeration->addElement(defaultExecutionContext(), name);
           }
 
