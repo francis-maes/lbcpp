@@ -45,24 +45,28 @@ public:
     return result;
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
+    size_t n = trainingSamples->getNumElements();
+    jassert(n);
+
     means = new DoubleMatrix(numVariables, 1, 0.0);
-    for (size_t i = 0; i < dataset.size(); i++)
-      means->add(dataset[i].getObjectAndCast<DoubleMatrix> ());
-    double factor = 1.0 / (double)dataset.size();
+    for (size_t i = 0; i < n; i++)
+      means->add(trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix> ());
+    double factor = 1.0 / (double)n;
     means->multiplyByScalar(factor);
 
     covariances = new DoubleMatrix(numVariables, numVariables, 0.0);
-    for (size_t i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < n; i++)
     {
-      DoubleMatrixPtr sub = dataset[i].getObjectAndCast<DoubleMatrix>();
+      DoubleMatrixPtr sub = trainingSamples->getElement(i).getObjectAndCast<DoubleMatrix>();
       sub->subtract(means);
       DoubleMatrixPtr subT = sub->transpose();
       DoubleMatrixPtr product = sub->multiplyBy(subT);
       covariances->add(product);
     }
-    covariances->multiplyByScalar(1.0 / (dataset.size() - 1));
+    covariances->multiplyByScalar(1.0 / (n - 1));
   }
 
 protected:

@@ -26,20 +26,21 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleWithNormalizedProbabilities(probabilities->getValues());}
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    jassert(dataset.size());
+    size_t n = trainingSamples->getNumElements();
+    jassert(n);
 
     // Compute empirical frequencies
-    DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(
-        probabilities->getElementsEnumeration(), probabilities->getElementsType(),
-        probabilities->getNumElements(), 0.0);
-    double increment = 1.0 / (double)dataset.size();
-    for (size_t i = 0; i < dataset.size(); i++)
+    DenseDoubleVectorPtr empiricalFrequencies = new DenseDoubleVector(probabilities->getClass());
+    double increment = 1.0 / (double)n;
+    for (size_t i = 0; i < n; i++)
     {
-      size_t index = dataset[i].getInteger();
-      empiricalFrequencies->setValue(index, empiricalFrequencies->getValue(index) + increment);
+      size_t index = trainingSamples->getElement(i).getInteger();
+      empiricalFrequencies->incrementValue(index, increment);
     }
+    probabilities = empiricalFrequencies;
   }
 
 protected:

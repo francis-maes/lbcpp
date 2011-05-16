@@ -34,81 +34,129 @@ namespace lbcpp
 class MaximumEntropySampler : public DiscreteSampler
 {
 public:
-  MaximumEntropySampler()
+  MaximumEntropySampler(TypePtr outputType) : outputType(outputType)
   {
-    StochasticGDParametersPtr learnerParameters = new StochasticGDParameters(constantIterationFunction(1.0));
+    StochasticGDParametersPtr learnerParameters = new StochasticGDParameters(constantIterationFunction(1.0), maxIterationsStoppingCriterion(100));
     learnerParameters->setLossFunction(logBinomialMultiClassLossFunction());
+    learnerParameters->setEvaluateAtEachIteration(false);
+
     predictor = linearMultiClassClassifier(learnerParameters);
+    predictor->setEvaluator(EvaluatorPtr()); // todo: log-likelyhood evaluator
   }
+
+  MaximumEntropySampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    DenseDoubleVectorPtr probabilities = predictor->compute(context, inputs[0], Variable()).getObjectAndCast<DenseDoubleVector>();
+    DenseDoubleVectorPtr probabilities = predictor->compute(context, inputs[0], Variable::missingValue(outputType)).getObjectAndCast<DenseDoubleVector>();
     if (!probabilities)
       return Variable();
     return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()), probabilities->getElementsEnumeration());
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  static ContainerPtr mergeInputAndOutputs(const ContainerPtr& inputs, const ContainerPtr& samples)
   {
-    ContainerPtr trainingData = new ObjectVector(dataset[0].getType(), dataset.size());
-    for (size_t i = 0; i < dataset.size(); ++i)
-      trainingData->setElement(i, dataset[i]);
-    predictor->train(context, trainingData, ContainerPtr(), T("Training maxent"));
+    size_t n = inputs->getNumElements();
+    ClassPtr pairType = pairClass(inputs->getElementsType(), samples->getElementsType());
+    ObjectVectorPtr res = new ObjectVector(pairType, n);
+    for (size_t i = 0; i < n; ++i)
+      res->set(i, new Pair(pairType, inputs->getElement(i), samples->getElement(i)));
+    return res;
+  }
+
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
+  {
+    ContainerPtr trainingData = mergeInputAndOutputs(trainingInputs, trainingSamples);
+    ContainerPtr validationData;
+    if (validationSamples)
+      validationData = mergeInputAndOutputs(validationInputs, validationSamples);
+    predictor->train(context, trainingData, validationData, T("Training maxent"));
   }
 
 protected:
   friend class MaximumEntropySamplerClass;
 
+  TypePtr outputType; // tmp, todo: merge with Functions
   FunctionPtr predictor;
 };
 
 class RosettaSandBox : public WorkUnit
 {
 public:
-  void generateDataSet(std::vector<Variable>& learning)
+  void generateDataSet(VectorPtr& inputs, VectorPtr& samples)
   {
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
-    TypePtr outputType = proteinMoverEnumerationEnumeration;
+    inputs = vector(inputClass);
+    samples = vector(proteinMoverClass);
 
     DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
     input->setValue(0, 1.0); // first distribution
-    for (size_t i = 0; i < 100; ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
-      learning.push_back(new Pair(input, phiPsiMover(1, 34, -123)));
-      learning.push_back(new Pair(input, phiPsiMover(0, 30, -122)));
-      learning.push_back(new Pair(input, phiPsiMover(2, 27, -121)));
-      learning.push_back(new Pair(input, phiPsiMover(3, 33, -121)));
+      inputs->append(input);
+      samples->append(phiPsiMover(0, 32, -123));
+
+      inputs->append(input);
+      samples->append(phiPsiMover(1, 34, -120));
+
+      inputs->append(input);
+      samples->append(phiPsiMover(2, 38, -121));
+
+      inputs->append(input);
+      samples->append(phiPsiMover(3, 30, -122));
     }
 
     input = new DenseDoubleVector(inputClass);
     input->setValue(1, 1.0); // second distribution
-    for (size_t i = 0; i < 100; ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
-      learning.push_back(new Pair(input, shearMover(3, 0.9, 4.5)));
-      learning.push_back(new Pair(input, shearMover(4, 0.7, 4.3)));
-      learning.push_back(new Pair(input, shearMover(3, 0.8, 3.4)));
+      inputs->append(input);
+      samples->append(shearMover(3, 0.9, 4.5));
+
+      inputs->append(input);
+      samples->append(shearMover(4, 0.7, 4.3));
+
+      inputs->append(input);
+      samples->append(shearMover(3, 0.8, 3.4));
+
       // general
-      learning.push_back(new Pair(input, rigidBodyMover(3, 5, 2.8, -3.4)));
-      learning.push_back(new Pair(input, rigidBodyMover(3, 5, 2.5, -2.4)));
-      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.8, 3.4)));
-      learning.push_back(new Pair(input, rigidBodyMover(0, 4, 1.2, 2.4)));
-      learning.push_back(new Pair(input, rigidBodyMover(2, 4, 0.3, 3.4)));
-      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.76, 4.2)));
-      learning.push_back(new Pair(input, rigidBodyMover(1, 3, 0.76, 4.2)));
-      learning.push_back(new Pair(input, rigidBodyMover(0, 3, 1.01, 4)));
+      inputs->append(input);
+      samples->append(rigidBodyMover(3, 5, 2.8, -3.4));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(3, 5, 2.5, -2.4));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(1, 3, 0.8, 3.4));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(0, 4, 1.2, 2.4));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(2, 4, 0.3, 3.4));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(1, 3, 0.76, 4.2));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(1, 3, 0.76, 4.2));
+
+      inputs->append(input);
+      samples->append(rigidBodyMover(0, 3, 1.01, 4));
     }
   }
 
   virtual Variable run(ExecutionContext& context)
   {
-    std::vector<Variable> learning;
-    generateDataSet(learning);
+    VectorPtr inputs;
+    VectorPtr samples;
+    generateDataSet(inputs, samples);
 
-    SamplerPtr moverClassSampler = new MaximumEntropySampler();
+    SamplerPtr moverClassSampler = new MaximumEntropySampler(proteinMoverEnumerationEnumeration);
     SamplerPtr sampler = proteinMoverSampler(moverClassSampler, 1000);
 
-    sampler->learn(context, learning);
+    sampler->learn(context, inputs, samples);
   
     ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
     RandomGeneratorPtr random = new RandomGenerator();

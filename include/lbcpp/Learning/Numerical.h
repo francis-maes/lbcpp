@@ -138,6 +138,9 @@ public:
   bool doEvaluateAtEachIteration() const
     {return evaluateAtEachIteration;}
 
+  void setEvaluateAtEachIteration(bool enabled)
+    {evaluateAtEachIteration = enabled;}
+
 protected:
   friend class StochasticGDParametersClass;
 

@@ -200,7 +200,7 @@ public:
   virtual NumericalLearnableFunctionPtr createLearnableFunction() const
   {
     NumericalLearnableFunctionPtr res = multiLinearLearnableFunction();
-    res->setEvaluator(classificationEvaluator());
+    //res->setEvaluator(classificationEvaluator());
     return res;
   }
 };

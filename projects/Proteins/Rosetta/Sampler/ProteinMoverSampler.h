@@ -25,44 +25,48 @@ class ProteinMoverSampler : public CompositeSampler
 {
 public:
   ProteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues)
-    : classSampler(classSampler) {createObjectSamplers(numResidues);}
+  {
+    createObjectSamplers(numResidues);
+    samplers.push_back(classSampler);
+  }
 
   ProteinMoverSampler(size_t numResidues)
   {
     createObjectSamplers(numResidues);
-    classSampler = enumerationSampler(proteinMoverEnumerationEnumeration);
+    samplers.push_back(enumerationSampler(proteinMoverEnumerationEnumeration));
   }
 
   ProteinMoverSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    size_t index = (size_t)classSampler->sample(context, random, inputs).getInteger();
-    jassert(index < samplers.size());
+    size_t index = (size_t)samplers.back()->sample(context, random, inputs).getInteger();
+    jassert(index < samplers.size() - 1);
     return samplers[index]->sample(context, random, inputs);
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
   {
-    std::vector<Variable> classSamplerDataset(dataset.size());
-    std::vector< std::vector<Variable> > subDatasets(samplers.size());
+    size_t n = samples->getNumElements();
 
-    double invZ = 1.0 / dataset.size();
-    for (size_t i = 0; i < dataset.size(); ++i)
+    size_t numSamplers = samplers.size();
+    subInputs.resize(numSamplers);
+    subSamples.resize(numSamplers);
+
+    VectorPtr classSamples = vector(proteinMoverEnumerationEnumeration, n);
+    for (size_t i = 0; i < numSamplers - 1; ++i)
     {
-      const Variable& example = dataset[i];
-      TypePtr type;
-      bool isConditional = false;
-      Variable input;
-      if (example.dynamicCast<Pair>())
-      {
-        const PairPtr& pair = example.getObjectAndCast<Pair>();
-        input = pair->getFirst();
-        objectClass = pair->getSecond().getType();
-        isConditional = true;
-      }
-      else
-        objectClass = example.getType();
+      subSamples[i] = new ObjectVector(proteinMoverClass, 0);
+      if (inputs)
+        subInputs[i] = vector(inputs->getElementsType());
+    }
+    subInputs.back() = inputs;
+    subSamples.back() = classSamples;
+
+    for (size_t i = 0; i < n; ++i)
+    {
+      Variable element = samples->getElement(i);
+      TypePtr type = element.getType();
 
       size_t target;
       if (type == phiPsiMoverClass)
@@ -73,21 +77,15 @@ public:
         target = 2;
       else
         jassert(false);
-      
-      Variable targetVariable(target, proteinMoverEnumerationEnumeration);
-      classSamplerDataset.push_back(isConditional ? Variable(new Pair(input, targetVariable)) : targetVariable);
-      subDatasets[target].push_back(dataset[i]);
-    }
+      classSamples->setElement(i, Variable(target, proteinMoverEnumerationEnumeration));
 
-    for (size_t i = 0; i < samplers.size(); ++i)
-      samplers[i]->learn(context, subDatasets[i]);
+      subSamples[target].staticCast<Vector>()->append(element);
+      if (inputs)
+        subInputs[target].staticCast<Vector>()->append(inputs->getElement(i));
+    }
   }
 
 protected:
-  friend class ProteinMoverSamplerClass;
-
-  DiscreteSamplerPtr classSampler;
-
   void createObjectSamplers(size_t numResidues)
   {
     samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));

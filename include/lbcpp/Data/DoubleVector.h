@@ -210,6 +210,9 @@ public:
   void decrementValue(size_t index, double value)
     {jassert(values && index < values->size()); (*values)[index] -= value;}
 
+  void appendValue(double value)
+    {jassert(values); values->push_back(value);}
+
   void ensureSize(size_t minimumSize);
 
   // compute log(sum_i(exp(value[i]))) by avoiding numerical errors

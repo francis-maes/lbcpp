@@ -90,25 +90,34 @@ public:
    * dataset = first : a Variable of Pair type containing the residues observed
    * expressed in size_t variables.
    */
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    jassert((dataset.size() > 0) && (numResidues > 0));
+    size_t n = trainingSamples->getNumElements();
+    jassert((n > 0) && (numResidues > 0));
 
+    ObjectVectorPtr residuePairs = new ObjectVector(doubleMatrixClass(), n);
     std::vector<Variable> data;
 
-    for (size_t i = 0; i < dataset.size(); i++)
+    for (size_t i = 0; i < n; i++)
     {
-      PairPtr residuePair = dataset[i].getObjectAndCast<Pair> ();
+      PairPtr residuePair = trainingSamples->getElement(i).getObjectAndCast<Pair> ();
       size_t res1 = (size_t)residuePair->getFirst().getInteger();
       size_t res2 = (size_t)residuePair->getSecond().getInteger();
 
       DoubleMatrixPtr residuePair2 = new DoubleMatrix(2, 1);
       residuePair2->setValue(0, 0, (double)res1);
       residuePair2->setValue(1, 0, (double)res2);
-      data.push_back(residuePair2);
+      residuePairs->set(i, residuePair2);
     }
 
-    samplers[0]->learn(context, data);
+    samplers[0]->learn(context, trainingInputs, residuePairs);
+    // validation data not supported
+  }
+
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
+  {
+    jassert(false);
   }
 
 protected:

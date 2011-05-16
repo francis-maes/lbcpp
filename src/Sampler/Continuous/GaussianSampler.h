@@ -31,48 +31,17 @@ public:
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleDoubleFromGaussian(mean, stddev);}
 
-  /**
-   * dataset = first : a Variable of double type containing the data observed.
-   *           second : not yet used.
-   */
-
-#if 1
-  // new
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
+                                                const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
+    // todo: particular case when trainingSamples are DenseDoubleVectors
+    size_t n = trainingSamples->getNumElements();
     ScalarVariableMeanAndVariance v;
-    for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].getDouble());
+    for (size_t i = 0; i < n; i++)
+      v.push(trainingSamples->getElement(i).getDouble());
     mean = v.getMean();
     stddev = v.getStandardDeviation();
   }
-
-#else
-  // old
-  static void getMeanAndVariance(const std::vector<Variable>& dataset, double& mean, double& variance)
-  {
-    ScalarVariableMeanAndVariance v;
-    for (size_t i = 0; i < dataset.size(); i++)
-      v.push(dataset[i].getDouble());
-    mean = v.getMean();
-    variance = v.getVariance();
-  }
-
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
-  {
-    if (dataset.size() < 2)
-      return;
-    double temporaryMean;
-    double temporaryVariance;
-    getMeanAndVariance(dataset, temporaryMean, temporaryVariance);
-    if (temporaryVariance <= 0)
-      temporaryVariance = juce::jmax(1.0, std::abs(temporaryMean * 0.3));
-
-    mean = temporaryMean;
-    stddev = std::sqrt(temporaryVariance) >= std::pow(10.0, -5) ? std::sqrt(temporaryVariance)
-        : std::pow(10.0, -5);
-  }
-#endif 
 
 protected:
   friend class GaussianSamplerClass;

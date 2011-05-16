@@ -37,24 +37,22 @@ public:
     return res;
   }
 
-  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
   {
-    size_t n = samplers.size();
+    size_t n = samples->getNumElements();
+    size_t numSamplers = samplers.size();
+    subInputs.resize(numSamplers, inputs);
+    subSamples.resize(numSamplers);
+    for (size_t i = 0; i < numSamplers; ++i)
+      subSamples[i] = new DenseDoubleVector(0, 0.0);
 
-    std::vector< std::vector<Variable> > subDatasets(n);
     for (size_t i = 0; i < n; ++i)
-      subDatasets[i].resize(dataset.size());
-
-    for (size_t i = 0; i < dataset.size(); ++i)
     {
-      const DoubleMatrixPtr& matrix = dataset[i].getObjectAndCast<DoubleMatrix>();
+      DoubleMatrixPtr matrix = samples->getElement(i).getObjectAndCast<DoubleMatrix>();
       jassert(matrix->getNumRows() == numRows && matrix->getNumColumns() == numColumns);
-      for (size_t j = 0; j < n; ++j)
-        subDatasets[j][i] = matrix->getValue(j / numColumns, j % numColumns);
+      for (size_t j = 0; j < numSamplers; ++j)
+        subSamples[j].staticCast<DenseDoubleVector>()->appendValue(matrix->getValue(j / numColumns, j % numColumns));
     }
-
-    for (size_t i = 0; i < n; ++i)
-      samplers[i]->learn(context, subDatasets[i]);
   }
 
 protected:

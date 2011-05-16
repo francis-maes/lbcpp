@@ -2,13 +2,6 @@
 
 <library name="ProteinRosettaSampler" directory="Rosetta/Sampler">
 
-  <class name="DiscretizeSampler" base="Sampler">
-    <constructor arguments="const ContinuousSamplerPtr&amp; sampler, int minValue, int maxValue"/>
-    <variable type="ContinuousSampler" name="sampler" description="Continuous sampler used to sample the values."/>
-    <variable type="Integer" name="minValue" description="Minimum value returned."/>
-    <variable type="Integer" name="maxValue" description="Maximum value returned."/>
-  </class>
-
   <class name="MultiVariateGaussianSampler" base="ContinuousSampler">
     <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
     <variable type="PositiveInteger" name="numVariables"/>
@@ -57,7 +50,6 @@
   <class name="ProteinMoverSampler" base="CompositeSampler">
     <constructor arguments="DiscreteSamplerPtr classSampler, size_t numResidues"/>
     <constructor arguments="size_t numResidues"/>
-    <variable type="DiscreteSampler" name="classSampler"/>
   </class>
   
 </library>
