@@ -22,19 +22,10 @@ class OptimizerState : public Object, public FunctionCallback
 {
 public:
   // args in seconds -> converted into ms
-  OptimizerState(size_t autoSaveStateFrequency = 0);
-
+  OptimizerState(double autoSaveStateFrequency = 0);
+  
   void initialize();
-  void autoSaveToFile(ExecutionContext& context, bool force = false)
-  {
-    ScopedLock _(lock);
-    if (force || (autoSaveStateFrequency && Time::currentTimeMillis() - lastSaveTime >= autoSaveStateFrequency)) {
-      if (File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).existsAsFile())
-        File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")).copyFileTo(File::getCurrentWorkingDirectory().getChildFile(T("optimizerState_backup.xml")));
-      saveToFile(context, File::getCurrentWorkingDirectory().getChildFile(T("optimizerState.xml")));  // TODO arnaud : file name as args ?
-      lastSaveTime = Time::currentTimeMillis();
-    }
-  }
+  void autoSaveToFile(ExecutionContext& context, bool force = false);
   
   /*
   ** Requests
@@ -85,8 +76,8 @@ protected:
     
   std::vector< std::pair<double, Variable> > processedRequests;  // evaluated WUs not processed yet
   
-  juce::int64 autoSaveStateFrequency; // in milliseconds
-  juce::int64 lastSaveTime; // timestamp in ms
+  double autoSaveStateFrequency; // in seconds
+  double lastSaveTime;  // not serialized
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerState> OptimizerStatePtr;

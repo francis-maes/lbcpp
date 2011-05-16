@@ -51,14 +51,27 @@ Variable Optimizer::computeFunction(ExecutionContext& context, const Variable* i
 /*
  ** OptimizerState
  */
-OptimizerState::OptimizerState(size_t autoSaveStateFrequency) 
-  : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(1000*autoSaveStateFrequency), lastSaveTime(0) {}
+OptimizerState::OptimizerState(double autoSaveStateFrequency) 
+  : totalNumberOfRequests(0), totalNumberOfEvaluations(0), bestVariable(Variable()), bestScore(DBL_MAX), autoSaveStateFrequency(autoSaveStateFrequency), lastSaveTime(0) {}
 
 void OptimizerState::initialize()
 {
   // usefull if Optimizer is "restarted" with an existing OptimizerState (in pogress evaluations are lost)
   if (totalNumberOfRequests > totalNumberOfEvaluations)
     totalNumberOfRequests = totalNumberOfEvaluations;
+}
+
+void OptimizerState::autoSaveToFile(ExecutionContext& context, bool force)
+{
+  ScopedLock _(lock);
+  double time = Time::getMillisecondCounter() / 1000.0;
+  if (force || (autoSaveStateFrequency > 0.0 && (time - lastSaveTime >= autoSaveStateFrequency)))
+  {
+    lastSaveTime = time;
+    if (context.getFile(T("optimizerState.xml")).existsAsFile())
+      context.getFile(T("optimizerState.xml")).copyFileTo(context.getFile(T("optimizerState_backup.xml")));
+    saveToFile(context, context.getFile(T("optimizerState.xml")));// TODO arnaud : file name as args ?
+  }
 }
 
 // Requests
