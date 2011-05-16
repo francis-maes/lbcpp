@@ -230,7 +230,7 @@ ELSE(WIN32)
       ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src
       ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/src/platform/linux
     )
-    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/${ROSETTA_BUILD_TYPE}/linux/2.6/64/x86/gcc)
+    SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX ${LBCpp_SOURCE_DIR}/rosetta3.2-src/rosetta_source/build/src/release/linux/2.6/64/x86/gcc)
     SET(LBCPP_PROTEIN_ROSETTA_LIBRARIES ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libcore.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libnumeric.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libObjexxFCL.so ${LBCPP_PROTEIN_ROSETTA_LIBRARIES_DIR_LINUX}/libprotocols.so)
 
   ENDIF(APPLE)
