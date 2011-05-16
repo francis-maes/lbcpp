@@ -34,7 +34,7 @@ public:
   }
 
   ProteinOptimizerWorkUnit(const String& proteinName, const core::pose::PoseOP& pose,
-      ProteinOptimizerPtr& optimizer, ProteinMoverSamplerPtr& sampler, RandomGeneratorPtr& random)
+      ProteinOptimizerPtr& optimizer, SamplerPtr& sampler, RandomGeneratorPtr& random)
     : CompositeWorkUnit(T("ProteinOptimizerWorkUnit"))
   {
     this->proteinName = proteinName;
@@ -72,7 +72,7 @@ protected:
   core::pose::PoseOP pose;
 #endif // LBCPP_PROTEIN_ROSETTA
   ProteinOptimizerPtr optimizer;
-  ProteinMoverSamplerPtr sampler;
+  SamplerPtr sampler;
   RandomGeneratorPtr random;
 };
 
@@ -90,7 +90,6 @@ public:
       context.errorCallback(T("Proteins' directory not found."));
     ContainerPtr proteins = Protein::loadProteinsFromDirectory(context, directory);
     int numProteins = proteins->getNumElements();
-
     double frequenceVerbosity = 0.0001;
 
     // Creating parallel workunits
@@ -98,12 +97,12 @@ public:
     for (size_t i = 0; i < proteinsOptimizer->getNumWorkUnits(); i++)
     {
       ProteinPtr currentProtein = proteins->getElement(i).getObjectAndCast<Protein> ();
+      String currentName = currentProtein->getName();
       core::pose::PoseOP currentPose;
       convertProteinToPose(context, currentProtein, currentPose);
       core::pose::PoseOP initialPose;
       initializeProteinStructure(currentPose, initialPose);
       core::pose::PoseOP returnPose = new core::pose::Pose();
-      String currentName = currentProtein->getName();
 
       // Output arguments
       juce::File outputDirectory;
@@ -114,10 +113,44 @@ public:
           outputDirectory.createDirectory();
       }
 
-      ProteinMoverSamplerPtr moverSampler = new ProteinMoverSampler(currentPose->n_residue());
+      // phipsisampler
+      CompositeSamplerPtr ppsres = simpleResidueSampler(currentPose->n_residue());
+      ContinuousSamplerPtr ppsphi = gaussianSampler(0, 25);
+      ContinuousSamplerPtr ppspsi = gaussianSampler(0, 25);
+      CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
+      // shearsampler
+      CompositeSamplerPtr sres = simpleResidueSampler(currentPose->n_residue());
+      ContinuousSamplerPtr sphi = gaussianSampler(0, 25);
+      ContinuousSamplerPtr spsi = gaussianSampler(0, 25);
+      CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
+      // rigidbody
+      CompositeSamplerPtr rbres = residuePairSampler(currentPose->n_residue());
+      ContinuousSamplerPtr rbmagn = gaussianSampler(0, 0);
+      ContinuousSamplerPtr rbamp = gaussianSampler(0, 25);
+      CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres, rbmagn,
+          rbamp);
+      std::vector<SamplerPtr> samplers;
+      DenseDoubleVectorPtr proba;
+      ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
+
+      if (oneOrAll)
+      {
+        proba = new DenseDoubleVector(actionClass, 1, 1);
+        samplers.push_back(rigidbody);
+      }
+      else
+      {
+        proba = new DenseDoubleVector(actionClass, 3, 0.33);
+        samplers.push_back(phipsi);
+        samplers.push_back(shear);
+        samplers.push_back(rigidbody);
+      }
+
+      CompositeSamplerPtr samp = mixtureSampler(proba, samplers);
+      SamplerPtr moverSampler = samp;
 
       ProteinOptimizerPtr o = new ProteinSimulatedAnnealingOptimizer(4.0, 0.01, 50,
-          maxNumberIterations, 5, currentProtein->getName(), 0.000001, timesFeatureGeneration,
+          maxNumberIterations, 5, currentProtein->getName(), 0.0001, timesFeatureGeneration,
           outputDirectory);
       RandomGeneratorPtr random = new RandomGenerator(0);
 
@@ -125,6 +158,7 @@ public:
           random);
       proteinsOptimizer->setWorkUnit(i, childWorkUnit);
     }
+
     proteinsOptimizer->setPushChildrenIntoStackFlag(true);
     context.informationCallback(T("Computing..."));
     context.run(proteinsOptimizer);
@@ -139,9 +173,10 @@ public:
 
 protected:
   friend class ProteinFeaturesGeneratorWorkUnitClass;
+
   String proteinsDirectory;
   String resultsDirectory;
-
+  bool oneOrAll;
   int timesFeatureGeneration;
   int maxNumberIterations;
 };
@@ -348,27 +383,29 @@ public:
         CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres, rbmagn,
             rbamp);
         std::vector<SamplerPtr> samplers;
+        DenseDoubleVectorPtr proba;
+        ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
 
         if (oneOrAll)
         {
           samplers.push_back(phipsi);
+          proba = new DenseDoubleVector(actionClass, 1, 1);
         }
         else
         {
+          proba = new DenseDoubleVector(actionClass, 3, 0.33);
           samplers.push_back(phipsi);
           samplers.push_back(shear);
           samplers.push_back(rigidbody);
         }
 
-        ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-        DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 3, 0.33);
         CompositeSamplerPtr samp = mixtureSampler(proba, samplers);
-        ProteinMoverSamplerPtr moverSampler = samp;
+        SamplerPtr moverSampler = samp;
 
         std::vector<ProteinMoverPtr> returnMovers(numMoversToKeep);
 
         ProteinEDAOptimizerPtr opti = new ProteinEDAOptimizer(energyWeight);
-        ProteinMoverSamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose, moverSampler,
+        SamplerPtr out = opti->findBestMovers(context, random, targetPose, referencePose, moverSampler,
             returnMovers, numIterations, numSamples, 0.5, numMoversToKeep);
         out->saveToFile(context, File(outputFile.getFullPathName() + T("/")
             + (*targets[i]).getFileNameWithoutExtension() + T("_sampler.xml")));
