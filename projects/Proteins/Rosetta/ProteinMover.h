@@ -41,6 +41,8 @@ extern ClassPtr phiPsiMoverClass;
 extern ClassPtr rigidBodyMoverClass;
 extern ClassPtr shearMoverClass;
 
+extern EnumerationPtr proteinMoverEnumerationEnumeration;
+
 }; /* namespace lbcpp */
 
 #endif //! LBCPP_PROTEINS_ROSETTA_PROTEIN_MOVER_H_

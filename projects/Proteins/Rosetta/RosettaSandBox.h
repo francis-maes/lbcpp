@@ -23,16 +23,109 @@
 # include "Sampler/ResiduePairSampler.h"
 # include "Sampler/ProteinMoverSampler.h"
 # include "Sampler.h"
-using namespace std;
+# include <lbcpp/Learning/LossFunction.h>
+# include <lbcpp/Learning/Numerical.h>
+# include <lbcpp/Core/Vector.h>
+//using namespace std;
 
 namespace lbcpp
 {
+
+class MaximumEntropySampler : public DiscreteSampler
+{
+public:
+  MaximumEntropySampler()
+  {
+    StochasticGDParametersPtr learnerParameters = new StochasticGDParameters(constantIterationFunction(1.0));
+    learnerParameters->setLossFunction(logBinomialMultiClassLossFunction());
+    predictor = linearMultiClassClassifier(learnerParameters);
+  }
+
+  virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
+  {
+    DenseDoubleVectorPtr probabilities = predictor->compute(context, inputs[0], Variable()).getObjectAndCast<DenseDoubleVector>();
+    if (!probabilities)
+      return Variable();
+    return Variable(random->sampleWithNormalizedProbabilities(probabilities->getValues()), probabilities->getElementsEnumeration());
+  }
+
+  virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
+  {
+    ContainerPtr trainingData = new ObjectVector(dataset[0].getType(), dataset.size());
+    for (size_t i = 0; i < dataset.size(); ++i)
+      trainingData->setElement(i, dataset[i]);
+    predictor->train(context, trainingData, ContainerPtr(), T("Training maxent"));
+  }
+
+protected:
+  friend class MaximumEntropySamplerClass;
+
+  FunctionPtr predictor;
+};
+
 class RosettaSandBox : public WorkUnit
 {
 public:
+  void generateDataSet(std::vector<Variable>& res)
+  {
+    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+    TypePtr outputType = proteinMoverEnumerationEnumeration;
+
+    DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+    input->setValue(0, 1.0); // first distribution
+    for (size_t i = 0; i < 100; ++i)
+    {
+      res.push_back(new Pair(input, Variable(0, outputType)));
+      res.push_back(new Pair(input, Variable(0, outputType)));
+      res.push_back(new Pair(input, Variable(0, outputType)));
+      res.push_back(new Pair(input, Variable(1, outputType)));
+    }
+
+    input = new DenseDoubleVector(inputClass);
+    input->setValue(1, 1.0); // second distribution
+    for (size_t i = 0; i < 100; ++i)
+    {
+      res.push_back(new Pair(input, Variable(2, outputType)));
+      res.push_back(new Pair(input, Variable(2, outputType)));
+      res.push_back(new Pair(input, Variable(2, outputType)));
+      res.push_back(new Pair(input, Variable(1, outputType)));
+    }
+  }
+
   virtual Variable run(ExecutionContext& context)
   {
     std::vector<Variable> learning;
+    generateDataSet(learning);
+
+    SamplerPtr sampler = new MaximumEntropySampler();
+    sampler->learn(context, learning);
+  
+    ClassPtr inputClass = denseDoubleVectorClass(falseOrTrueEnumeration, doubleType);
+    RandomGeneratorPtr random = new RandomGenerator();
+
+    context.enterScope(T("Samples 1"));
+    DenseDoubleVectorPtr input = new DenseDoubleVector(inputClass);
+    input->setValue(0, 1.0); // first distribution
+    Variable inputVariable = input;
+    for (size_t i = 0; i < 100; ++i)
+    {
+      Variable sample = sampler->sample(context, random, &inputVariable);
+      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+    }
+    context.leaveScope();
+
+    context.enterScope(T("Samples 2"));
+    input = new DenseDoubleVector(inputClass);
+    input->setValue(1, 1.0); // second distribution
+    inputVariable = input;
+    for (size_t i = 0; i < 100; ++i)
+    {
+      Variable sample = sampler->sample(context, random, &inputVariable);
+      context.resultCallback(T("sample ") + String((int)i + 1), sample);
+    }
+    context.leaveScope();
+
+#if 0
 
     // phipsi
     learning.push_back(phiPsiMover(1, 34, -123));
@@ -68,6 +161,9 @@ public:
     SamplerPtr sampler = new ProteinMoverSampler(5);
     sampler->learn(context, learning);
     context.resultCallback(T("sampler"), sampler);
+#endif 
+
+
     return Variable();
 
   }

@@ -78,6 +78,10 @@
 
 
   <!-- Francis -->
+  <class name="MaximumEntropySampler" base="DiscreteSampler">
+    <variable type="Function" name="predictor"/>
+  </class>
+  
   <class name="RosettaSandBox" base="WorkUnit"/>
   
 </library>

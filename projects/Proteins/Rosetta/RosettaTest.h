@@ -68,8 +68,11 @@ public:
     SamplerPtr samp = new ProteinMoverSampler(5);
     File output = context.getFile(T("tempdataset/1M4F.xml"));
     ProteinPtr prottemp = Protein::createFromXml(context, output);
+
+# ifdef LBCPP_PROTEIN_ROSETTA
     core::pose::PoseOP pose;
     convertProteinToPose(context, prottemp, pose);
+# endif // LBCPP_PROTEIN_ROSETTA
 //    // phipsisampler
 //    CompositeSamplerPtr ppsres = simpleResidueSampler(5);
 //    ContinuousSamplerPtr ppsphi = gaussianSampler(0, 25);
