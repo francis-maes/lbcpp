@@ -17,39 +17,53 @@
 
 namespace lbcpp
 {
+
 class ProteinMoverSampler;
 typedef ReferenceCountedObjectPtr<ProteinMoverSampler> ProteinMoverSamplerPtr;
 
 class ProteinMoverSampler : public CompositeSampler
 {
 public:
+  ProteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues)
+    : classSampler(classSampler) {createObjectSamplers(numResidues);}
+
   ProteinMoverSampler(size_t numResidues)
   {
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, M_PI)));
-    probabilities = new DenseDoubleVector(3, 0.33);
+    createObjectSamplers(numResidues);
+    classSampler = enumerationSampler(proteinMoverEnumerationEnumeration);
   }
 
   ProteinMoverSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
   {
-    jassert(probabilities->getNumValues() == samplers.size());
-    size_t index = random->sampleWithProbabilities(probabilities->getValues());
+    size_t index = (size_t)classSampler->sample(context, random, inputs).getInteger();
+    jassert(index < samplers.size());
     return samplers[index]->sample(context, random, inputs);
   }
 
   virtual void learn(ExecutionContext& context, const std::vector<Variable>& dataset)
   {
+    std::vector<Variable> classSamplerDataset(dataset.size());
     std::vector< std::vector<Variable> > subDatasets(samplers.size());
-    probabilities->clear();
-    probabilities->resize(samplers.size());
 
     double invZ = 1.0 / dataset.size();
     for (size_t i = 0; i < dataset.size(); ++i)
     {
-      TypePtr type = dataset[i].getType();
+      const Variable& example = dataset[i];
+      TypePtr type;
+      bool isConditional = false;
+      Variable input;
+      if (example.dynamicCast<Pair>())
+      {
+        const PairPtr& pair = example.getObjectAndCast<Pair>();
+        input = pair->getFirst();
+        objectClass = pair->getSecond().getType();
+        isConditional = true;
+      }
+      else
+        objectClass = example.getType();
+
       size_t target;
       if (type == phiPsiMoverClass)
         target = 0;
@@ -59,7 +73,9 @@ public:
         target = 2;
       else
         jassert(false);
-      probabilities->incrementValue(target, invZ);
+      
+      Variable targetVariable(target, proteinMoverEnumerationEnumeration);
+      classSamplerDataset.push_back(isConditional ? Variable(new Pair(input, targetVariable)) : targetVariable);
       subDatasets[target].push_back(dataset[i]);
     }
 
@@ -70,7 +86,14 @@ public:
 protected:
   friend class ProteinMoverSamplerClass;
 
-  DenseDoubleVectorPtr probabilities;
+  DiscreteSamplerPtr classSampler;
+
+  void createObjectSamplers(size_t numResidues)
+  {
+    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
+    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
+    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, M_PI)));
+  }
 };
 
 }; /* namespace lbcpp */

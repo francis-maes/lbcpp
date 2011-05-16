@@ -17,9 +17,11 @@ namespace lbcpp
 
 extern CompositeSamplerPtr residuePairSampler(size_t numResidues);
 extern SamplerPtr discretizeSample(const ContinuousSamplerPtr& sampler, int minValue = INT_MIN, int maxValue = INT_MAX);
-extern DiscreteSamplerPtr enumerationDiscreteSampler(const DenseDoubleVectorPtr& probabilities);
 extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
+
 extern CompositeSamplerPtr proteinMoverSampler(size_t numResidues);
+extern CompositeSamplerPtr proteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
+
 extern ContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
 
 extern SamplerPtr parzenContinuousSampler();

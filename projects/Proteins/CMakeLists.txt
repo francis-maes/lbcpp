@@ -178,10 +178,10 @@ SET(LBCPP_PROTEIN_ROSETTA_OPTIMIZER_SOURCES
   Rosetta/Sampler/MultiVariateGaussianSampler.h
   Rosetta/Sampler/DiscretizeSampler.h
   Rosetta/Sampler/GaussianMultivariateSampler.h
-  Rosetta/Sampler/EnumerationDiscreteSampler.h
   Rosetta/Sampler/ParzenContinuousSampler.h
   Rosetta/Sampler/SimpleResidueSampler.h
   Rosetta/Sampler/ResiduePairSampler.h
+  Rosetta/Sampler/ProteinMoverSampler.h
   Rosetta/Sampler/ProteinRosettaSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ProteinRosettaSamplerLibrary.cpp
 )
