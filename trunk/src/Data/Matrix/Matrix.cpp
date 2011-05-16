@@ -107,17 +107,15 @@ DoubleMatrixPtr DoubleMatrix::multiplyBy(const DoubleMatrixPtr& factor) const
   return product;
 }
 
-void DoubleMatrix::transpose()
+DoubleMatrixPtr DoubleMatrix::transpose()
 {
-  double temp;
+  DoubleMatrixPtr transposed = new DoubleMatrix(this->getNumColumns(), this->getNumRows(), 0.0);
   for (size_t i = 0; i < this->getNumRows(); i++)
-    for (size_t j = i + 1; j < this->getNumColumns(); j++)
+    for (size_t j = 0; j < this->getNumColumns(); j++)
     {
-      temp = this->getValue(i, j);
-      this->setValue(i, j, this->getValue(j, i));
-      this->setValue(j, i, temp);
+      transposed->setValue(j, i, this->getValue(i, j));
     }
-  return;
+  return transposed;
 }
 
 void DoubleMatrix::add(const DoubleMatrixPtr& term)
@@ -145,6 +143,92 @@ void DoubleMatrix::multiplyByScalar(double factor)
     for (size_t j = 0; j < this->getNumColumns(); j++)
       this->setValue(i, j, factor * this->getValue(i, j));
   return;
+}
+
+DoubleMatrixPtr DoubleMatrix::choleskyDecomposition() const
+{
+  // matrix must be symmetric... and semi definite positive
+  // until now, we suppose it is
+  jassert(this->getNumColumns() == this->getNumRows());
+  DoubleMatrixPtr temp = this->cloneAndCast<DoubleMatrix>();
+
+  // Decomposition
+  temp->setValue(0, 0, std::sqrt(temp->getValue(0, 0)));
+  size_t N = temp->getNumColumns();
+  for (size_t i = 1; i < N; i++)
+    temp->setValue(i, 0, temp->getValue(i, 0) / temp->getValue(0, 0));
+
+  for (size_t k = 1; k < (N - 1); k++)
+  {
+    double sum1 = 0;
+
+    for (size_t j = 0; j < k; j++)
+      sum1 += std::pow(temp->getValue(k, j), 2.0);
+    temp->setValue(k, k, std::sqrt(std::abs(temp->getValue(k, k) - sum1)));
+
+    for (size_t i = k + 1; i < N; i++)
+    {
+      double sum3 = 0;
+      for (size_t j = 0; j < k; j++)
+        sum3 += temp->getValue(i, j) * temp->getValue(k, j);
+      temp->setValue(i, k, (1.0 / temp->getValue(k, k)) * (temp->getValue(i, k) - sum3));
+    }
+  }
+
+  double sum2 = 0;
+  for (size_t j = 0; j < (N - 1); j++)
+    sum2 += std::pow(temp->getValue(N - 1, j), 2.0);
+  temp->setValue(N - 1, N - 1, std::sqrt(std::abs(temp->getValue(N - 1, N - 1) - sum2)));
+
+  // Set the upper part to 0
+  for (size_t i = 0; i < N; i++)
+    for (size_t j = i + 1; j < N; j++)
+      temp->setValue(i, j, 0.0);
+
+  return temp;
+}
+
+void DoubleMatrix::inverse()
+{
+  jassert((this->getNumColumns() == 2) && (this->getNumRows() == 2));
+  DoubleMatrixPtr temp = this->cloneAndCast<DoubleMatrix> ();
+  this->setValue(0, 0, temp->getValue(1, 1));
+  this->setValue(0, 1, temp->getValue(0, 1) * (-1.0));
+  this->setValue(1, 0, temp->getValue(1, 0) * (-1.0));
+  this->setValue(1, 1, temp->getValue(0, 0));
+
+  double invD = 1.0 / this->determinant();
+  for (size_t i = 0; i < this->getNumRows(); i++)
+    for (size_t j = 0; j < this->getNumColumns(); j++)
+      this->setValue(i, j, invD * this->getValue(i, j));
+  this->multiplyByScalar(1.0 / this->determinant());
+}
+
+DoubleMatrixPtr DoubleMatrix::getInverse() const
+{
+  DoubleMatrixPtr temp = this->cloneAndCast<DoubleMatrix> ();
+  temp->inverse();
+  return temp;
+}
+
+double DoubleMatrix::inducedL1Norm() const
+{
+  double norm = 0;
+  for (size_t j = 0; j < this->getNumColumns(); j++)
+  {
+    double sum = 0;
+    for (size_t i = 0; i < this->getNumRows(); i++)
+      sum += std::abs(this->getValue(i, j));
+    if (sum > norm)
+      norm = sum;
+  }
+  return norm;
+}
+
+double DoubleMatrix::determinant() const
+{
+  jassert((this->getNumColumns() == 2) && (this->getNumRows() == 2));
+  return this->getValue(0, 0) * this->getValue(1, 1) - this->getValue(0, 1) * this->getValue(1, 0);
 }
 
 /*

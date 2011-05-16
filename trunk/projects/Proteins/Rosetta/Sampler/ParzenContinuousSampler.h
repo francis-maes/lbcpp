@@ -21,12 +21,6 @@ typedef ReferenceCountedObjectPtr<ParzenContinuousSampler> ParzenContinuousSampl
 class ParzenContinuousSampler : public ContinuousSampler
 {
 public:
-  ParzenContinuousSampler()
-    : mean(0.0), stddev(1.0), precision(0.0001), excursion(6), kernelWidth(0.25),
-      learned(false), fixedAbscissa(false)
-  {
-  }
-
   ParzenContinuousSampler(double precision, double excursion = 6, double kernelWidth = 0.25,
       double initialMean = 0, double initialStddev = 1)
     : mean(initialMean), stddev(initialStddev), precision(precision), excursion(excursion),
@@ -42,6 +36,11 @@ public:
     double delta = std::abs((maxAbscissa - minAbscissa) * precision);
     abscissa = createAbscissa(minAbscissa, maxAbscissa, delta);
   }
+
+  ParzenContinuousSampler()
+    : mean(0.0), stddev(1.0), precision(0.0001), excursion(6), kernelWidth(0.25),
+      learned(false), fixedAbscissa(false)
+  {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random,
       const Variable* inputs = NULL) const
@@ -199,6 +198,7 @@ public:
 
 protected:
   friend class ParzenContinuousSamplerClass;
+
   bool learned;
   DenseDoubleVectorPtr integral;
   DenseDoubleVectorPtr abscissa;

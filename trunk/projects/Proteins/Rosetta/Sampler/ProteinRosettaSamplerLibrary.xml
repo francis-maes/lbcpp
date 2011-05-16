@@ -14,10 +14,11 @@
     <variable type="DenseDoubleVector[Enumeration, Probability]" name="probabilities" shortName="p" description="Probabilities of each discrete element"/>
   </class>
 
-  <class name="MultiVariateGaussianSampler" base="ContinuousSampler">  
+  <class name="MultiVariateGaussianSampler" base="ContinuousSampler">
+    <constructor arguments="const DoubleMatrixPtr&amp; initialMean, const DoubleMatrixPtr&amp; initialStdDev"/>
+    <variable type="PositiveInteger" name="numVariables"/>
     <variable type="DoubleMatrix[Double]" name="means"/>
     <variable type="DoubleMatrix[Double]" name="covariances"/>
-    <variable type="PositiveInteger" name="numVariables"/>
   </class>
   
   <class name="ResiduePairSampler" base="CompositeSampler">
