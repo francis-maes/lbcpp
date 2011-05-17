@@ -95,11 +95,6 @@
     <variable type="Double" name="C"/>
   </class>
   
-  <class name="PerTimesWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="perTimesWeightedUCB">
-    <variable type="PositiveInteger" name="maxTimeStep"/>
-    <variable type="DoubleMatrix[Double]" name="matrix"/>
-  </class>
-
   <enumeration name="TimeDependentWeightedUCBBanditPolicyEnumeration">
     <value name="1"/>
     <value name="log10(timeStep)"/>
@@ -116,7 +111,7 @@
 
   <class name="PowerFunctionParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
     <variable type="PositiveInteger" name="maxPower"/>
-    <variable type="Boolean" name="useToWeightUCB"/>
+    <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
   
