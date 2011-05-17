@@ -24,4 +24,8 @@
     <variable type="DenseDoubleVector[PositiveIntegerEnumeration,Double]" name="probabilities"/>
   </class>
   
+  <class name="ZeroOrScalarContinuousSampler" base="CompositeSampler">
+    <constructor arguments="DiscreteSamplerPtr equalZeroSampler, ScalarContinuousSamplerPtr scalarSampler"/>
+  </class>
+
 </library>
