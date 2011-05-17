@@ -41,6 +41,51 @@
 namespace lbcpp
 {
 
+  
+class DebugNetworkWorkUnit : public WorkUnit
+{
+  virtual Variable run(ExecutionContext& context)
+  {
+    String projectName(T("GridEvoOptimizerExperience"));
+    String source(T("arnaud@monster24"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+    size_t managerPort = 1664;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+    // Establish network connection
+    NetworkClientPtr client = blockingNetworkClient(context);
+    if (!client->startClient(managerHostName, managerPort))
+      {context.errorCallback(T("Not connected !"));}
+    
+    context.informationCallback(managerHostName, T("Connected !"));
+    ManagerNetworkInterfacePtr interface = forwarderManagerNetworkInterface(context, client, source);
+    client->sendVariable(ReferenceCountedObjectPtr<NetworkInterface>(interface));  
+
+    if (!interface)
+      context.errorCallback(T("Can't get interface !"));
+    
+    context.informationCallback(T("Sending WU ..."));
+
+    WorkUnitPtr wu = new FunctionWorkUnit(squareFunction(), 2.0);
+      
+    WorkUnitNetworkRequestPtr request = new WorkUnitNetworkRequest(context, projectName, source, destination, wu, requiredCpus, requiredMemory, requiredTime);  
+    String res = interface->pushWorkUnit(request);
+    if (res == T("Error"))
+    {
+      context.errorCallback(T("Trouble - We didn't correclty receive the acknowledgement"));
+    }
+    context.resultCallback(T("WorkUnitIdentifier"), res);
+    
+    client->sendVariable(new CloseCommunicationNotification());
+    client->stopClient();
+    
+    return Variable();
+  }
+};  
+  
 class GridEvoOptimizerExperience : public WorkUnit  
 {
 public:
@@ -49,7 +94,7 @@ public:
     String projectName(T("GridEvoOptimizerExperience"));
     String source(T("arnaud@monster24"));
     String destination(T("boincadm@boinc.run"));
-    String managerHostName(T("localhost"));
+    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
     size_t managerPort = 1664;
     size_t requiredMemory = 1;
     size_t requiredCpus = 1;
