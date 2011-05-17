@@ -13,6 +13,7 @@
 # include "../Data/RandomGenerator.h"
 # include "../Core/Variable.h"
 # include "../Core/Vector.h"
+# include "../Data/Matrix.h"
 
 namespace lbcpp
 { 
@@ -52,6 +53,10 @@ typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 class ScalarContinuousSampler : public ContinuousSampler
 {
 public:
+
+  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities, size_t numColumnToFill) const = 0;
+  virtual void updateParameters(const ContainerPtr& data, const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn) = 0;
+
   lbcpp_UseDebuggingNewOperator
 };
 typedef ReferenceCountedObjectPtr<ScalarContinuousSampler> ScalarContinuousSamplerPtr;

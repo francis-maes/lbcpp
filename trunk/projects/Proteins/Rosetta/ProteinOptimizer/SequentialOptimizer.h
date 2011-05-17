@@ -14,6 +14,7 @@
 # include "SimulatedAnnealingOptimizer.h"
 # include "../Sampler.h"
 # include "../ProteinMover.h"
+# include "../Sampler/ProteinMoverSampler.h"
 
 namespace lbcpp
 {
@@ -88,29 +89,7 @@ public:
 
       acc->append_residue_by_bond(pose->residue(i), true);
 
-      // phipsisampler
-      CompositeSamplerPtr ppsres = simpleResidueSampler(pose->n_residue());
-      ContinuousSamplerPtr ppsphi = gaussianSampler(0, 25);
-      ContinuousSamplerPtr ppspsi = gaussianSampler(0, 25);
-      CompositeSamplerPtr phipsi = objectCompositeSampler(phiPsiMoverClass, ppsres, ppsphi, ppspsi);
-      // shearsampler
-      CompositeSamplerPtr sres = simpleResidueSampler(pose->n_residue());
-      ContinuousSamplerPtr sphi = gaussianSampler(0, 25);
-      ContinuousSamplerPtr spsi = gaussianSampler(0, 25);
-      CompositeSamplerPtr shear = objectCompositeSampler(shearMoverClass, sres, sphi, spsi);
-      // rigidbody
-      CompositeSamplerPtr rbres = residuePairSampler(pose->n_residue());
-      ContinuousSamplerPtr rbmagn = gaussianSampler(0.5, 0.25);
-      ContinuousSamplerPtr rbamp = gaussianSampler(0, 25);
-      CompositeSamplerPtr rigidbody = objectCompositeSampler(rigidBodyMoverClass, rbres, rbmagn,
-          rbamp);
-      std::vector<SamplerPtr> samplers;
-      samplers.push_back(phipsi);
-      samplers.push_back(shear);
-      samplers.push_back(rigidbody);
-      ClassPtr actionClass = denseDoubleVectorClass(positiveIntegerEnumerationEnumeration);
-      DenseDoubleVectorPtr proba = new DenseDoubleVector(actionClass, 3, 0.33);
-      SamplerPtr samp = mixtureSampler(proba, samplers).staticCast<Sampler>();
+      SamplerPtr samp = new ProteinMoverSampler(acc->n_residue());
 
       core::pose::PoseOP tempPose;
 //      core::pose::PoseOP tempPose = optimizer->simulatedAnnealingOptimization(acc, samp.staticCast<
