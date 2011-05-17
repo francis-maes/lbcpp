@@ -3,7 +3,7 @@
 <library name="ProteinOptimizer" directory="Optimizer">
 
   <class name="OptimizerTest" base="WorkUnit"/>
-  
+  <class name="GridEvoOptimizerExperience" base="WorkUnit"/>  
   <class name="ProteinGridEvoOptimizerState" base="GridEvoOptimizerState">
    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
   </class>
