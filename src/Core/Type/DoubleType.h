@@ -116,8 +116,11 @@ public:
   ProbabilityType(const String& name, TypePtr baseType)
     : DoubleType(name, baseType) {}
 
+  virtual String toShortString(const VariableValue& value) const
+    {return String(value.getDouble() * 100, 1) + T("%");}
+
   virtual String toString(const VariableValue& value) const
-    {return String(value.getDouble() * 100, 2) + T("%");}
+    {return String(value.getDouble() * 100, 3) + T("%");}
 
   virtual Variable createFromString(ExecutionContext& context, const String& value) const
   {

@@ -151,7 +151,7 @@
   </class>
 
   <class name="EvaluateDiscreteBanditPolicy" base="WorkUnit">
-    <variable type="File" name="policyFile"/>
+    <variable type="File" name="policiesDirectory"/>
     <variable type="PositiveInteger" name="numBandits"/>
     <variable type="PositiveInteger" name="numProblems"/>
   </class>
