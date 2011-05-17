@@ -74,7 +74,7 @@ public:
 };
 typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
 
-extern DiscreteSamplerPtr bernoulliSampler(double probability);
+extern DiscreteSamplerPtr bernoulliSampler(double probability, double minProbability = 0.0, double maxProbability = 1.0);
 extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
 extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
 
@@ -94,6 +94,8 @@ public:
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
                                                 const ContainerPtr& validationInputs, const ContainerPtr& validationSamples);
+
+  virtual void clone(ExecutionContext& context, const ObjectPtr& target) const;
 
   lbcpp_UseDebuggingNewOperator
 
@@ -118,6 +120,8 @@ extern CompositeSamplerPtr independentDoubleVectorSampler(size_t numElements, Sa
 extern CompositeSamplerPtr independentDoubleMatrixSampler(size_t numRows, size_t numColumns, SamplerPtr elementSamplerModel);
 
 extern CompositeSamplerPtr mixtureSampler(const DenseDoubleVectorPtr& probabilities, const std::vector<SamplerPtr>& samplers);
+
+extern CompositeSamplerPtr zeroOrScalarContinuousSampler(DiscreteSamplerPtr equalZeroSampler, ScalarContinuousSamplerPtr scalarSampler);
 
 }; /* namespace lbcpp */
 

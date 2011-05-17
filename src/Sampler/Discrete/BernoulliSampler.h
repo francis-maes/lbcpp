@@ -17,8 +17,8 @@ namespace lbcpp
 class BernoulliSampler : public DiscreteSampler
 {
 public:
-  BernoulliSampler(double p = 0.5)
-    : probability(p) {}
+  BernoulliSampler(double p = 0.5, double minProbability = 0.0, double maxProbability = 1.0)
+    : probability(p), minProbability(minProbability), maxProbability(maxProbability) {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
     {return random->sampleBool(probability);}
@@ -40,13 +40,15 @@ public:
       if (value)
         ++numTrue;
     }
-    probability = numTrue / (double)n;
+    probability = juce::jlimit(minProbability, maxProbability, numTrue / (double)n);
   }
 
 protected:
   friend class BernoulliSamplerClass;
 
   double probability;
+  double minProbability;
+  double maxProbability;
 };
 
 }; /* namespace lbcpp */

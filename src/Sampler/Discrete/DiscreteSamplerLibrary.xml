@@ -3,8 +3,10 @@
 <library name="DiscreteSampler" directory="Sampler/Discrete">
 
   <class name="BernoulliSampler" base="DiscreteSampler">
-    <constructor arguments="double probability"/>
+    <constructor arguments="double probability, double minProbability, double maxProbability"/>
     <variable type="Probability" name="probability"/>
+    <variable type="Probability" name="minProbability"/>
+    <variable type="Probability" name="maxProbability"/>
   </class>
 
   <class name="EnumerationSampler" base="DiscreteSampler">

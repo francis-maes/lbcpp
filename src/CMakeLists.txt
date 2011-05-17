@@ -328,6 +328,7 @@ SET(LBCPP_SAMPLER_COMPOSITE_SOURCES
   Sampler/Composite/MixtureSampler.h
   Sampler/Composite/IndependentDoubleVectorSampler.h
   Sampler/Composite/IndependentDoubleMatrixSampler.h
+  Sampler/Composite/ZeroOrScalarContinuousSampler.h
   Sampler/Composite/CompositeSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/CompositeSamplerLibrary.cpp
 )

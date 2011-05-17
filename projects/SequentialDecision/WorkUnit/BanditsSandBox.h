@@ -563,13 +563,20 @@ extern EnumerationPtr oldStyleParameterizedBanditPolicyEnumerationEnumeration;
 class OldStyleParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
-  OldStyleParameterizedBanditPolicy()
-    : parameters(new DenseDoubleVector(oldStyleParameterizedBanditPolicyEnumerationEnumeration, doubleType))
+  OldStyleParameterizedBanditPolicy(bool useSparseSampler = true)
+    : parameters(new DenseDoubleVector(oldStyleParameterizedBanditPolicyEnumerationEnumeration, doubleType)), useSparseSampler(useSparseSampler)
   {
   }
 
+//  virtual SamplerPtr createParametersSampler() const
+//    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
   virtual SamplerPtr createParametersSampler() const
-    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
+  {
+    SamplerPtr scalarSampler = gaussianSampler(0.0, 1.0);
+    if (useSparseSampler)
+      scalarSampler = zeroOrScalarContinuousSampler(bernoulliSampler(0.5, 0.1, 0.9), scalarSampler);
+    return independentDoubleVectorSampler(parameters->getElementsEnumeration(), scalarSampler);
+  }
 
   virtual void setParameters(const Variable& parameters)
     {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
@@ -580,9 +587,17 @@ public:
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
     const BanditStatisticsPtr& bandit = banditStatistics[banditNumber];
+  /*  size_t optimalBandit;
+    double bestRewardMean = -DBL_MAX;
+    for (size_t i = 0; i < banditStatistics.size(); ++i)
+    {
+      double rewardMean = banditStatistics[i]->getRewardMean();
+      if (rewardMean > bestRewardMean)
+        bestRewardMean = rewardMean, optimalBandit = i;
+    }*/
     
     double ts = log((double)timeStep);
-    double mean = bandit->getRewardMean();
+    double mean = bandit->getRewardMean();// - bestRewardMean;
     double stddev = bandit->getRewardStandardDeviation();
     double conf = sqrt(log((double)timeStep) / bandit->getPlayedCount());
 
@@ -612,9 +627,206 @@ protected:
   friend class OldStyleParameterizedBanditPolicyClass;
 
   DenseDoubleVectorPtr parameters;
+  bool useSparseSampler;
+};
+
+class BanditTimeFeatureGenerator : public FeatureGenerator
+{
+public:
+  virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return positiveIntegerType;}
+
+  virtual bool isSparse() const
+    {return false;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("banditTimeFeatures"));
+    String name = inputVariables[0]->getName();
+    res->addElement(context, name);
+    res->addElement(context, T("log(") + name + T(")"));
+    res->addElement(context, T("1.0 / ") + name);
+    res->addElement(context, T("sqrt(log(") + name + T("))"));
+    res->addElement(context, T("sqrt(1.0 / ") + name + T(")"));
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    double time = (double)inputs[0].toDouble();
+    callback.sense(0, time);
+    callback.sense(1, log(time));
+    callback.sense(2, 1.0 / time);
+    callback.sense(3, sqrt(log(time)));
+    callback.sense(4, sqrt(1.0 / time));
+  }
+};
+
+class BanditStatisticFeatureGenerator : public FeatureGenerator
+{
+public:
+ virtual size_t getNumRequiredInputs() const
+    {return 1;}
+
+  virtual TypePtr getRequiredInputType(size_t index, size_t numInputs) const
+    {return doubleType;}
+ 
+  virtual bool isSparse() const
+    {return false;}
+
+  virtual EnumerationPtr initializeFeatures(ExecutionContext& context, const std::vector<VariableSignaturePtr>& inputVariables, TypePtr& elementsType, String& outputName, String& outputShortName)
+  {
+    DefaultEnumerationPtr res = new DefaultEnumeration(T("banditStatisticFeatures"));
+    String name = inputVariables[0]->getName();
+    res->addElement(context, name);
+    res->addElement(context, name + T("^2"));
+    res->addElement(context, T("sqrt(") + name + T(")"));
+    return res;
+  }
+
+  virtual void computeFeatures(const Variable* inputs, FeatureGeneratorCallback& callback) const
+  {
+    double value = (double)inputs[0].toDouble();
+    callback.sense(0, value);
+    callback.sense(1, value * value);
+    callback.sense(2, sqrt(value));
+  }
+};
+
+// T, T_i, mean(reward), stddev(reward)
+class BanditFeatureGenerator : public CompositeFunction
+{
+public:
+  virtual void buildFunction(CompositeFunctionBuilder& builder)
+  {
+    size_t time = builder.addInput(positiveIntegerType, T("T"));
+    size_t playedCount = builder.addInput(positiveIntegerType, T("T_i"));
+    size_t rewardMean = builder.addInput(doubleType, T("mean"));
+    size_t rewardStddev = builder.addInput(doubleType, T("stddev"));
+
+    builder.startSelection();
+    size_t t1 = builder.addFunction(new BanditTimeFeatureGenerator(), time, T("[1]"));
+    size_t t2 = builder.addFunction(new BanditTimeFeatureGenerator(), playedCount, T("[2]"));
+    size_t v1 = builder.addFunction(new BanditStatisticFeatureGenerator(), rewardMean, T("[3]"));
+    size_t v2 = builder.addFunction(new BanditStatisticFeatureGenerator(), rewardStddev, T("[4]"));
+
+    builder.addFunction(cartesianProductFeatureGenerator(), t1, t2, T("[5]"));
+    builder.addFunction(cartesianProductFeatureGenerator(), v1, t1, T("[6]"));
+    builder.addFunction(cartesianProductFeatureGenerator(), v1, t2, T("[7]"));
+    builder.addFunction(cartesianProductFeatureGenerator(), v2, t1, T("[8]"));
+    builder.addFunction(cartesianProductFeatureGenerator(), v2, t2, T("[9]"));
+    builder.addFunction(cartesianProductFeatureGenerator(), v1, v2, T("[10]"));
+
+    builder.finishSelectionWithFunction(concatenateFeatureGenerator());
+  }
 };
 
 
+class UltimateParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
+{
+public:
+  UltimateParameterizedBanditPolicy()
+  {
+    random = new RandomGenerator();
+    banditFeatureGenerator = new BanditFeatureGenerator();
+    std::vector<TypePtr> types(4);    
+    types[0] = types[1] = positiveIntegerType;
+    types[2] = types[3] = doubleType;
+    banditFeatureGenerator->initialize(defaultExecutionContext(), types);
+    parametersEnumeration = DoubleVector::getElementsEnumeration(banditFeatureGenerator->getOutputType());
+    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+  }
+
+  virtual void initialize(size_t numBandits)
+  {
+    IndexBasedDiscreteBanditPolicy::initialize(numBandits);
+    random->setSeed(16645186);
+  }
+
+  virtual SamplerPtr createParametersSampler() const
+    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), 
+              zeroOrScalarContinuousSampler(bernoulliSampler(0.6, 0.1, 0.9), gaussianSampler(0.0, 1.0)));}
+
+  virtual void setParameters(const Variable& parameters)
+    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
+
+  virtual Variable getParameters() const
+    {return parameters;}
+
+#if 0
+  double rewardMargin;
+  virtual size_t selectBandit(size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics)
+  {
+    size_t numBandits = banditStatistics.size();
+    if (timeStep < numBandits)
+      return timeStep; // play each bandit once
+
+    size_t optimalBandit;
+    double bestRewardMean = -DBL_MAX;
+    for (size_t i = 0; i < numBandits; ++i)
+    {
+      double rewardMean = banditStatistics[i]->getRewardMean();
+      if (rewardMean > bestRewardMean)
+        bestRewardMean = rewardMean, optimalBandit = i;
+    }
+    double secondBestRewardMean = -DBL_MAX;
+    for (size_t i = 0; i < numBandits; ++i)
+      if (i == optimalBandit)
+        continue;
+      else
+        secondBestRewardMean = juce::jmax(secondBestRewardMean, banditStatistics[i]->getRewardMean());
+    
+    rewardMargin = bestRewardMean - secondBestRewardMean;
+
+    double score = parameters->getValue(0) + (parameters->getValue(1) / (double)timeStep) + parameters->getValue(2) * rewardMargin;
+
+                  //(parameters->getValue(2) + parameters->getValue(3)) * rewardMargin +
+                  //(parameters->getValue(4) + parameters->getValue(5)) * rewardMargin / timeStep;
+
+/*
+    double v1 = 1.0 / (double)timeStep;
+    double v2 = secondBestRewardMean;
+    double v3 = bestRewardMean;*/
+    //double score = parameters->getValue(0) * v1 + parameters->getValue(1) * v2 + parameters->getValue(2) * v3 + parameters->getValue(3);
+    double probability = 1.0 / (1.0 + exp(-score));
+
+    if (random->sampleBool(probability))
+    {
+      //return random->sampleSize(numBandits);
+      size_t index = random->sampleSize(numBandits - 1);
+      if (index >= optimalBandit)
+        ++index;
+      return index;
+    }
+    else
+      return selectMaximumIndexBandit(timeStep, banditStatistics);
+  }
+#endif // 0
+
+  virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
+  {
+    BanditStatisticsPtr bandit = banditStatistics[banditNumber];
+
+    std::vector<Variable> inputs(4);
+    inputs[0] = timeStep;
+    inputs[1] = bandit->getPlayedCount();
+    inputs[2] = bandit->getRewardMean();
+    inputs[3] = bandit->getRewardStandardDeviation();
+    DoubleVectorPtr features = banditFeatureGenerator->compute(defaultExecutionContext(), inputs).getObjectAndCast<DoubleVector>();
+    return features->dotProduct(parameters, 0);
+  }
+
+protected:
+  friend class UltimateParameterizedBanditPolicyClass;
+
+  FunctionPtr banditFeatureGenerator;
+  EnumerationPtr parametersEnumeration;
+  DenseDoubleVectorPtr parameters;
+  RandomGeneratorPtr random;
+};
 
 /*
 ** Evaluate functions
@@ -762,7 +974,13 @@ public:
     DiscreteBanditPolicyPtr policy = Parameterized::cloneWithNewParameters(this->policy, input);
     WorkUnitPtr workUnit = new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Training Problems"), policy, verbose);
     ScalarVariableStatisticsPtr stats = context.run(workUnit, false).getObjectAndCast<ScalarVariableStatistics>();
-    return stats->getMean();
+
+    double parametersPenalty = 0.0;
+    DenseDoubleVectorPtr parametersVector = input.dynamicCast<DenseDoubleVector>();
+    if (parametersVector)
+      parametersPenalty += 0.1 * parametersVector->l0norm() / (double)parametersVector->getNumValues();
+
+    return stats->getMean() + parametersPenalty;
     //return stats->getMaximum();
   }
 
@@ -963,13 +1181,13 @@ public:
     ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
     SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
 
-    std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
-    for (size_t i = 0; i < trainingStates.size(); ++i)
-      trainingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
-
     std::vector<DiscreteBanditStatePtr> testingStates(numTestingProblems);
     for (size_t i = 0; i < testingStates.size(); ++i)
       testingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+    std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
+    for (size_t i = 0; i < trainingStates.size(); ++i)
+      trainingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
 
     /*
     ** Compute a bunch of baseline policies
@@ -990,8 +1208,11 @@ public:
     context.run(workUnit);
 
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
+    policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
+    //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(true), T("oldStyle-sparse")));
+    //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle-dense")));
+
     policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
-    policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(), T("oldStyle")));
     policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
     policiesToOptimize.push_back(std::make_pair(new TimeDependentWeightedUCBBanditPolicy(), T("timeDependentWeighted")));
     policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
@@ -1074,7 +1295,8 @@ protected:
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, verbose);}
   
-  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, const std::vector<DiscreteBanditStatePtr>& testingStates, size_t numIterations = 20)
+  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates,
+                          const std::vector<DiscreteBanditStatePtr>& testingStates, size_t numIterations = 100)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);
@@ -1095,6 +1317,8 @@ protected:
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
+    populationSize = 100, numBests = 10;
+
     // optimizer state
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());
 
@@ -1108,7 +1332,7 @@ protected:
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, objectiveFunction, validationFunction);
 
     // optimizer
-    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests, true);
+    OptimizerPtr optimizer = edaOptimizer(numIterations, populationSize, numBests);
     //OptimizerPtr optimizer = asyncEDAOptimizer(numIterations*populationSize, populationSize, populationSize/numBests, 1, 10, populationSize);
 
     optimizer->compute(context, optimizerContext, optimizerState);

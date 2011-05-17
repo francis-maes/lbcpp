@@ -16,24 +16,34 @@ using namespace lbcpp;
 void CompositeSampler::learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
                                                         const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
 {
-  std::vector<ContainerPtr> subTrainingInputs, subTrainingSamples;
+  std::vector<ContainerPtr> subTrainingInputs(samplers.size()), subTrainingSamples(samplers.size());
   makeSubExamples(trainingInputs, trainingSamples, subTrainingInputs, subTrainingSamples);
   jassert(subTrainingInputs.size() == samplers.size() && subTrainingSamples.size() == samplers.size());
 
   if (validationSamples)
   {
-    std::vector<ContainerPtr> subValidationInputs, subValidationSamples;
+    std::vector<ContainerPtr> subValidationInputs(samplers.size()), subValidationSamples(samplers.size());
     makeSubExamples(validationInputs, validationSamples, subValidationInputs, subValidationSamples);
     jassert(subValidationInputs.size() == samplers.size() && subValidationSamples.size() == samplers.size());
     
     for (size_t i = 0; i < samplers.size(); ++i)
-      samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subValidationInputs[i], subValidationSamples[i]);
+      if (subTrainingSamples[i]->getNumElements())
+        samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i], subValidationInputs[i], subValidationSamples[i]);
   }
   else
   {
     for (size_t i = 0; i < samplers.size(); ++i)
-      samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
+      if (subTrainingSamples[i]->getNumElements())
+        samplers[i]->learn(context, subTrainingInputs[i], subTrainingSamples[i]);
   }
+}
+
+void CompositeSampler::clone(ExecutionContext& context, const ObjectPtr& t) const
+{
+  Sampler::clone(context, t);
+  const CompositeSamplerPtr& target = t.staticCast<CompositeSampler>();
+  for (size_t i = 0; i < samplers.size(); ++i)
+    target->samplers[i] = samplers[i]->cloneAndCast<Sampler>();
 }
 
 /*
