@@ -22,7 +22,7 @@
     <parameter name="elementsType" type="Variable"/>
     <variable type="ObjectVector[MatrixRegion[elementsType]]" name="regions"/>
   </template>
-  <!-- <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/> -->
+  <uicomponent name="SegmentedMatrixComponent" type="SegmentedMatrix[Variable]"/>
 
   <class name="SegmentMatrixFunction" base="Function">
     <constructor arguments="bool use8Connexity"/>
