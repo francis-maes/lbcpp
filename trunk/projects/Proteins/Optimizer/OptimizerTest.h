@@ -46,9 +46,9 @@ class DebugNetworkWorkUnit : public WorkUnit
 {
   virtual Variable run(ExecutionContext& context)
   {
-    String projectName(T("GridEvoOptimizerExperience"));
+    String projectName(T("DebugNetwork3"));
     String source(T("arnaud@monster24"));
-    String destination(T("boincadm@boinc.run"));
+    String destination(T("notdefined@unknown"));
     String managerHostName(T("monster24.montefiore.ulg.ac.be"));
     size_t managerPort = 1664;
     size_t requiredMemory = 1;
