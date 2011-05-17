@@ -49,6 +49,9 @@ using namespace std;
 
 namespace lbcpp
 {
+class GaussianLogLikelihoodFunction;
+extern ScalarVectorFunctionPtr gaussianLogValueFunction();
+
 void outputEnergiesAndQScores(ExecutionContext& context, String referenceDirectory, String targetDirectory);
 
 class RosettaTest : public WorkUnit
@@ -65,12 +68,8 @@ public:
     RandomGeneratorPtr random = new RandomGenerator(0);
 
     SamplerPtr samp = new ProteinMoverSampler(5);
-    File output = context.getFile(T("tempdataset/1M4F.xml"));
-    ProteinPtr prottemp = Protein::createFromXml(context, output);
 
 # ifdef LBCPP_PROTEIN_ROSETTA
-    core::pose::PoseOP pose;
-    convertProteinToPose(context, prottemp, pose);
 # endif // LBCPP_PROTEIN_ROSETTA
 //    // phipsisampler
 //    CompositeSamplerPtr ppsres = simpleResidueSampler(5);
@@ -100,11 +99,13 @@ public:
     ObjectVectorPtr learning = new ObjectVector(proteinMoverClass, 0);
 
     // phipsi
-
     learning->append(phiPsiMover(1, 34, -123));
     learning->append(phiPsiMover(0, 30, -122));
     learning->append(phiPsiMover(2, 27, -121));
     learning->append(phiPsiMover(3, 33, -121));
+    learning->append(phiPsiMover(1, 34, -123));
+    learning->append(phiPsiMover(0, 30, -122));
+    learning->append(phiPsiMover(2, 27, -121));
     // shear
     learning->append(shearMover(3, 0.9, 4.5));
     learning->append(shearMover(4, 0.7, 4.3));
@@ -115,21 +116,13 @@ public:
     learning->append(rigidBodyMover(1, 3, 0.8, 3.4));
     learning->append(rigidBodyMover(0, 4, 1.2, 2.4));
     learning->append(rigidBodyMover(2, 4, 0.3, 3.4));
-    learning->append(rigidBodyMover(1, 3, 0.76, 4.2));
-    learning->append(rigidBodyMover(1, 3, 0.76, 4.2));
-    learning->append(rigidBodyMover(0, 3, 1.01, 4));
     // spin
     learning->append(rigidBodyMover(0, 3, 0.0, 11.3));
     learning->append(rigidBodyMover(1, 3, 0.0, 12.4));
-    learning->append(rigidBodyMover(3, 5, 0.0, 9.3));
-    learning->append(rigidBodyMover(2, 5, 0.0, 10.2));
     // trans
     learning->append(rigidBodyMover(4, 1, 10.2, 0.0));
     learning->append(rigidBodyMover(4, 1, 9.2, 0.0));
     learning->append(rigidBodyMover(4, 0, 12.1, 0.0));
-    learning->append(rigidBodyMover(1, 3, -0.3, 0.0));
-    learning->append(rigidBodyMover(0, 2, -2.1, 0.0));
-    learning->append(rigidBodyMover(0, 3, -1.3, 0.0));
 
     samp->learn(context, ContainerPtr(), learning);
 
@@ -141,13 +134,14 @@ public:
     int count0 = 0;
     int count1 = 0;
     int count2 = 0;
-    int num = 50;
+    int num = 10000;
     for (int i = 0; i < num; i++)
     {
       Variable v = samp->sample(context, random);
 
       ProteinMoverPtr t = v.getObjectAndCast<ProteinMover>();
-      cout << (const char* )t->toString() << endl;
+      cout << i << " : " << (const char* )t->toString() << endl;
+
       if (t.isInstanceOf<PhiPsiMover> ())
         count0++;
       else if (t.isInstanceOf<ShearMover> ())
@@ -160,6 +154,19 @@ public:
     cout << "phipsi : " << (double)count0 / (double)num << endl;
     cout << "shear : " << (double)count1 / (double)num << endl;
     cout << "rigidbody : " << (double)count2 / (double)num << endl;
+
+    ScalarVectorFunctionPtr func = gaussianLogValueFunction();
+    DenseDoubleVectorPtr params = new DenseDoubleVector(2, 0);
+    params->setValue(0, 3.0);
+    params->setValue(1, 1.5);
+    Variable val(0.13);
+    double result = 0;
+    DenseDoubleVectorPtr grad = new DenseDoubleVector(2, 0);
+    double weight = 1;
+    func->computeScalarVectorFunction(params, &val, &result, &grad, weight);
+    cout << result << endl;
+    cout << (const char* )grad->toString() << endl;
+
 
 //    CompositeSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<CompositeSampler> ();
 //    CompositeSamplerPtr rebirth2 = samp->cloneAndCast<CompositeSampler> ();
@@ -196,6 +203,43 @@ public:
     return Variable();
 
   }
+};
+
+class GaussianLogValueFunction : public ScalarVectorFunction
+{
+public:
+  virtual bool isDerivable() const
+    {return true;}
+
+  // if (output) *output += result
+  // if (gradientTarget) *gradientTarget += resultGradinet * gradientWeight
+  virtual void computeScalarVectorFunction(const DenseDoubleVectorPtr& input,
+      const Variable* otherInputs, double* output, DenseDoubleVectorPtr* gradientTarget,
+      double gradientWeight) const
+  {
+    double mean = input->getValue(0);
+    double stdDev = input->getValue(1);
+    double invStdDev = 1.0 / stdDev;
+    double x = otherInputs->getDouble();
+    double srPi = std::sqrt(2 * M_PI);
+
+    double result = -1.0 * std::log(srPi * stdDev) - 0.5 * std::pow((x - mean) * invStdDev, 2.0);
+    DenseDoubleVectorPtr resultGradient = new DenseDoubleVector(2, 0);
+    resultGradient->setValue(0, (x - mean) * std::pow(invStdDev, 2.0));
+    resultGradient->setValue(1, (-1.0 / stdDev) + std::pow(x - mean, 2.0)
+        * std::pow(invStdDev, 3.0));
+
+    if (output)
+      *output += result;
+    if (gradientTarget)
+      resultGradient->addWeightedTo(*gradientTarget, 0, gradientWeight);
+  }
+
+  virtual size_t getNumRequiredInputs() const
+    {return 2;}
+
+protected:
+  friend class GaussianLogValueFunctionClass;
 };
 
 }; /* namespace lbcpp */
