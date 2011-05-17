@@ -351,7 +351,15 @@ void XmlExporter::writeObject(const ObjectPtr& object, TypePtr expectedType)
       identifier = makeSharedObjectIdentifier(object);
       const XmlElementPtr& sourceElement = it->second.first;
       sourceElement->setAttribute(T("id"), identifier);
-      sourceElement->setAttribute(T("type"), object->getClassName());
+
+      // write "id" and add "type" if it is missing
+      // (we do not have access to the "expectedType" information anymore since the object shared)
+      currentStack.push_back(sourceElement);
+      setAttribute(T("id"), identifier);
+      if (!getCurrentElement()->hasAttribute(T("type")) &&
+        !getCurrentElement()->getChildByName(T("type")))
+        writeType(object->getClass());
+      currentStack.pop_back();
     }
     getCurrentElement()->setAttribute(T("ref"), identifier);
   }

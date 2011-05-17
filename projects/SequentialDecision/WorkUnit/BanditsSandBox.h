@@ -466,10 +466,29 @@ protected:
 class PowerFunctionParameterizedBanditPolicy : public IndexBasedDiscreteBanditPolicy, public Parameterized
 {
 public:
-  PowerFunctionParameterizedBanditPolicy(size_t maxPower = 1, bool useToWeightUCB = false)
-    : maxPower(maxPower), useToWeightUCB(useToWeightUCB)
+  PowerFunctionParameterizedBanditPolicy(size_t maxPower) : maxPower(maxPower)
   {
-    jassert(maxPower >= 1 || useToWeightUCB);
+    jassert(maxPower >= 1);
+    parametersEnumeration = createParametersEnumeration();
+    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+  }
+
+  PowerFunctionParameterizedBanditPolicy() : maxPower(1) {}
+
+  virtual ObjectPtr computeGeneratedObject(ExecutionContext& context, const String& variableName)
+    {return createParametersEnumeration();}
+
+  virtual SamplerPtr createParametersSampler() const
+    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
+
+  virtual void setParameters(const Variable& parameters)
+    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
+
+  virtual Variable getParameters() const
+    {return parameters;}
+
+  EnumerationPtr createParametersEnumeration()
+  {
     DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("moments"));
 
     static const char* names[4] = {"sqrt(log T)", "1/sqrt(T_i)", "mean(r)", "stddev(r)"};
@@ -479,7 +498,7 @@ public:
         for (size_t k = 0; k <= maxPower; ++k)
           for (size_t l = 0; l <= maxPower; ++l)
           {
-            if (!useToWeightUCB && (i + j + k + l == 0))
+            if (i + j + k + l == 0)
               continue; // skip unit
             String name;
             if (i)
@@ -493,18 +512,8 @@ public:
             name = name.trimEnd();
             parametersEnumeration->addElement(defaultExecutionContext(), name);
           }
-
-    parameters = new DenseDoubleVector(parametersEnumeration, doubleType);
+    return parametersEnumeration;
   }
-
-  virtual SamplerPtr createParametersSampler() const
-    {return independentDoubleVectorSampler(parameters->getElementsEnumeration(), gaussianSampler(0.0, 1.0));}
-
-  virtual void setParameters(const Variable& parameters)
-    {this->parameters = parameters.getObjectAndCast<DenseDoubleVector>();}
-
-  virtual Variable getParameters() const
-    {return parameters;}
 
   virtual double computeBanditScore(size_t banditNumber, size_t timeStep, const std::vector<BanditStatisticsPtr>& banditStatistics) const
   {
@@ -521,15 +530,11 @@ public:
         for (size_t k = 0; k <= maxPower; ++k)
           for (size_t l = 0; l <= maxPower; ++l)
           {
-            if (!useToWeightUCB && (i + j + k + l == 0))
+            if (i + j + k + l == 0)
               continue; // skip unit
             res += (*parameter++) * fastPow(v1, i) * fastPow(v2, j) * fastPow(v3, k) * fastPow(v4, l);
           }
-
-    if (useToWeightUCB)
-      return bandit->getRewardMean() + sqrt(res * log((double)timeStep) / bandit->getPlayedCount());
-    else
-      return res;
+    return res;
   }
 
   static double fastPow(double value, size_t power)
@@ -550,8 +555,8 @@ protected:
   friend class PowerFunctionParameterizedBanditPolicyClass;
 
   size_t maxPower;
+  EnumerationPtr parametersEnumeration;
   DenseDoubleVectorPtr parameters;
-  bool useToWeightUCB;
 };
 
 extern EnumerationPtr oldStyleParameterizedBanditPolicyEnumerationEnumeration;
@@ -796,25 +801,10 @@ public:
     std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
     for (size_t i = 0; i < trainingStates.size(); ++i)
       trainingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
-    /*
-    {
-     // if ((i % 10) == 0)
-        for (size_t j = 0; j < samplers.size(); ++j)
-          samplers[j] = bernoulliSampler(random->sampleDouble());
-      //std::random_shuffle(probs.begin(), probs.end());
-      trainingStates[i] = new DiscreteBanditState(samplers, random->sampleUint32());
-    }
-*/
+
     std::vector<DiscreteBanditStatePtr> testingStates(numTestingProblems);
     for (size_t i = 0; i < testingStates.size(); ++i)
       testingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
-/*    {
-      //if ((i % 10) == 0)
-        for (size_t j = 0; j < samplers.size(); ++j)
-          samplers[j] = bernoulliSampler(random->sampleDouble());
-      //std::random_shuffle(probs.begin(), probs.end());
-      testingStates[i] = new DiscreteBanditState(samplers, random->sampleUint32());
-    }*/
 
     /*
     ** Compute a bunch of baseline policies
@@ -832,14 +822,11 @@ public:
     context.run(workUnit);
 
     std::vector<DiscreteBanditPolicyPtr> policiesToOptimize;
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1, false));
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1, true));
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1));
     policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
     policiesToOptimize.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1));
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(0, true));
     policiesToOptimize.push_back(new TimeDependentWeightedUCBBanditPolicy());
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2, true));
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2, false));
+    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2));
 
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
     //policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
@@ -911,12 +898,19 @@ protected:
   WorkUnitPtr makeEvaluationWorkUnit(const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& policy, bool verbose) const
     {return new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, initialStatesDescription, policy, verbose);}
   
-  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 20)
+  Variable optimizePolicy(ExecutionContext& context, DiscreteBanditPolicyPtr policy, const std::vector<DiscreteBanditStatePtr>& trainingStates, size_t numIterations = 1)
   {
     TypePtr parametersType = Parameterized::getParametersType(policy);
     jassert(parametersType);
+    EnumerationPtr enumeration = DoubleVector::getElementsEnumeration(parametersType);
+    if (enumeration)
+      context.resultCallback(T("numParameters"), enumeration->getNumElements());
+    else if (parametersType->inheritsFrom(doubleType))
+      context.resultCallback(T("numParameters"), 1);
+    else if (parametersType->inheritsFrom(pairClass(doubleType, doubleType)))
+      context.resultCallback(T("numParameters"), 2);
 
-    context.resultCallback(T("parametersType"), parametersType);
+    //context.resultCallback(T("parametersType"), parametersType);
 
     // eda parameters
     size_t populationSize = 100;
@@ -938,7 +932,7 @@ protected:
 
     // best parameters
     Variable bestParameters = optimizerState->getBestVariable();
-    context.resultCallback(T("bestParameters"), bestParameters);
+    context.resultCallback(T("optimizedPolicy"), Parameterized::cloneWithNewParameters(policy, bestParameters));
     return bestParameters;
   }
 };
