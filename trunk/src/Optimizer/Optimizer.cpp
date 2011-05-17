@@ -177,8 +177,8 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 /*
  ** OptimizerContext
  */
-OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction)
-  : context(context), objectiveFunction(objectiveFunction), validationFunction(validationFunction)
+OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction, size_t timeToSleep)
+  : context(context), objectiveFunction(objectiveFunction), validationFunction(validationFunction), timeToSleep(timeToSleep)
 {
   jassert(objectiveFunction->getNumRequiredInputs() == 1);
   jassert(!validationFunction || validationFunction->getNumRequiredInputs() == 1);
@@ -197,3 +197,13 @@ void OptimizerContext::setPostEvaluationCallback(const FunctionCallbackPtr& call
 
 void OptimizerContext::removePostEvaluationCallback(const FunctionCallbackPtr& callback)
   {objectiveFunction->removePostCallback(callback);}
+
+void OptimizerContext::waitUntilAllRequestsAreProcessed() const 
+{
+  while (!areAllRequestsProcessed())
+    Thread::sleep(timeToSleep);
+}
+
+size_t OptimizerContext::getTimeToSleep() const 
+  {return timeToSleep;}
+

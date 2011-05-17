@@ -29,17 +29,8 @@ public:
     {functionCallback = callback;}
   virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback); // TODO arnaud : code should be elsewhere ?
   
-  virtual void waitUntilAllRequestsAreProcessed() const
-  {
-    while (inProgressWUs.size())
-      Thread::sleep(timeToSleep);
-  }
-  
   virtual bool areAllRequestsProcessed() const
     {return inProgressWUs.size() == 0;}
-  
-  virtual size_t getTimeToSleep() const
-    {return timeToSleep;}
   
   virtual bool evaluate(const Variable& parameters)
   {
@@ -80,7 +71,6 @@ protected:
   size_t requiredCpus;
   size_t requiredMemory;
   size_t requiredTime;
-  size_t timeToSleep;
   
   FunctionCallbackPtr functionCallback;
   

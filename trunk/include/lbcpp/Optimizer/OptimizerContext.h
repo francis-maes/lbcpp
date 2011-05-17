@@ -18,15 +18,16 @@ namespace lbcpp
 class OptimizerContext : public Object
 {
 public:
-  OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr());
+
+  OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction = FunctionPtr(), size_t timeToSleep = 0);
   OptimizerContext() : context(*(ExecutionContext* )0) {}
   
   virtual void setPostEvaluationCallback(const FunctionCallbackPtr& callback);
   virtual void removePostEvaluationCallback(const FunctionCallbackPtr& callback);
   
-  virtual void waitUntilAllRequestsAreProcessed() const = 0;
+  virtual void waitUntilAllRequestsAreProcessed() const;
   virtual bool areAllRequestsProcessed() const = 0;
-  virtual size_t getTimeToSleep() const = 0;
+  virtual size_t getTimeToSleep() const;
   virtual bool evaluate(const Variable& parameters) = 0;
   
   const FunctionPtr& getValidationFunction() const
@@ -38,6 +39,7 @@ protected:
   ExecutionContext& context;
   FunctionPtr objectiveFunction;
   FunctionPtr validationFunction;
+  size_t timeToSleep;
 };
   
 typedef ReferenceCountedObjectPtr<OptimizerContext> OptimizerContextPtr;
