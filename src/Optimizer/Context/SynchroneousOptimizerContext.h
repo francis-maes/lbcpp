@@ -17,7 +17,8 @@ namespace lbcpp
 class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
-  SynchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction) : OptimizerContext(context, objectiveFunction) {}
+  SynchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction)
+    : OptimizerContext(context, objectiveFunction, validationFunction) {}
   SynchroneousOptimizerContext() {}
   
   // evaluate is a blocking method

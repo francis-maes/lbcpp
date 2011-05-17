@@ -18,8 +18,8 @@ namespace lbcpp
 class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
-  MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, size_t timeToSleep = 100)
-    : OptimizerContext(context, objectiveFunction), timeToSleep(timeToSleep) 
+  MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction, size_t timeToSleep = 100)
+    : OptimizerContext(context, objectiveFunction, validationFunction), timeToSleep(timeToSleep) 
     {numEvaluationInProgress = 0;}
   MultiThreadedOptimizerContext() 
   {

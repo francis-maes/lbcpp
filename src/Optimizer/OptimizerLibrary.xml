@@ -31,6 +31,7 @@
 
   <class name="OptimizerContext" base="Object" abstract="yes">
     <variable type="Function" name="objectiveFunction"/>
+    <variable type="Function" name="validationFunction"/>
   </class>
   
   <class name="GridOptimizer" base="Function" abstract="yes"/>
