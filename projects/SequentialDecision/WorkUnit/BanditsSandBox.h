@@ -489,7 +489,7 @@ public:
 
   EnumerationPtr createParametersEnumeration()
   {
-    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("moments"));
+    DefaultEnumerationPtr parametersEnumeration = new DefaultEnumeration(T("parameters"));
 
     static const char* names[4] = {"sqrt(log T)", "1/sqrt(T_i)", "mean(r)", "stddev(r)"};
 
@@ -776,6 +776,120 @@ protected:
   bool verbose;
 };
 
+class EvaluateDiscreteBanditPolicy : public WorkUnit
+{
+public:
+  EvaluateDiscreteBanditPolicy() : numBandits(2), numProblems(100) {}
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    DiscreteBanditPolicyPtr policy = DiscreteBanditPolicy::createFromFile(context, policyFile);
+    if (!policy)
+      return Variable();
+
+    ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
+    ClassPtr gaussianSamplerClass = lbcpp::getType(T("GaussianSampler"));
+
+    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
+    SamplerPtr initialStateSampler2 = new DiscreteBanditInitialStateSampler(objectCompositeSampler(gaussianSamplerClass, uniformScalarSampler(), uniformScalarSampler()), numBandits);
+
+    RandomGeneratorPtr random = new RandomGenerator();
+    std::vector<DiscreteBanditStatePtr> states(numProblems);
+    for (size_t i = 0; i < numProblems; ++i)
+      states[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+    std::vector<DiscreteBanditStatePtr> states2(numProblems);
+    for (size_t i = 0; i < numProblems; ++i)
+      states2[i] = initialStateSampler2->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+    DiscreteBanditPolicyPtr baselinePolicy = new UCB1TunedDiscreteBanditPolicy();
+
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policy ") + context.getFilePath(policyFile));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(10, states, T("Bernoulli problems with hor=10"),  baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(100, states, T("Bernoulli problems with hor=100"), baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(1000, states, T("Bernoulli problems with hor=1000"), baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(10000, states, T("Bernoulli problems with hor=10000"), baselinePolicy, policy));
+
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(10, states2, T("Gaussian problems with hor=10"), baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(100, states2, T("Gaussian problems with hor=100"), baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(1000, states2, T("Gaussian problems with hor=1000"), baselinePolicy, policy));
+    workUnit->addWorkUnit(makeEvaluationWorkUnit(10000, states2, T("Gaussian problems with hor=10000"), baselinePolicy, policy));
+
+    workUnit->setProgressionUnit(T("Evaluations"));
+    workUnit->setPushChildrenIntoStackFlag(true);
+    return context.run(workUnit);
+  }
+
+  struct EvaluateWorkUnit : public WorkUnit
+  {
+  public:
+    EvaluateWorkUnit(const String& description, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& states,
+                     const DiscreteBanditPolicyPtr& baselinePolicy, const DiscreteBanditPolicyPtr& optimizedPolicy)
+     : description(description), numBandits(numBandits), maxTimeStep(maxTimeStep), states(states), baselinePolicy(baselinePolicy), optimizedPolicy(optimizedPolicy) {}
+
+    virtual String toShortString() const
+      {return T("Evaluate ") + description;}
+
+    virtual Variable run(ExecutionContext& context)
+    {
+      // global evaluation
+      context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, states, T("Global evaluation"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), true));
+
+      // detailed evaluation
+      context.enterScope(T("Detailed evaluation"));
+      double baselineScoreSum = 0.0;
+      double optimizedScoreSum = 0.0;
+      size_t numberOptimizedOutperforms = 0; 
+      for (size_t i = 0; i < states.size(); ++i)
+      {
+        context.enterScope(T("Problem ") + String((int)i));
+        DiscreteBanditStatePtr initialState = states[i];
+        context.resultCallback(T("index"), i);
+        context.resultCallback(T("problem"), initialState);
+        std::vector<DiscreteBanditStatePtr> initialStates(1, initialState);
+
+        double baselineScore = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Baseline Policy"), baselinePolicy->cloneAndCast<DiscreteBanditPolicy>(), true)).toDouble();
+        baselineScoreSum += baselineScore;
+        double optimizedScore = context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, initialStates, T("Optimized Policy"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), true)).toDouble();
+        optimizedScoreSum += optimizedScore;
+
+        context.resultCallback(T("baseline"), baselineScore);
+        context.resultCallback(T("optimized"), optimizedScore);
+        context.resultCallback(T("delta"), optimizedScore - baselineScore);
+        if (optimizedScore < baselineScore)
+          ++numberOptimizedOutperforms;
+        context.progressCallback(new ProgressionState(i + 1, states.size(), T("Problems")));
+        context.leaveScope(new Pair(baselineScore, optimizedScore));
+      }
+
+      double outperformPercentage = 100.0 * numberOptimizedOutperforms / (double)states.size();
+      PairPtr result = new Pair(new Pair(baselineScoreSum / states.size(), optimizedScoreSum / states.size()), outperformPercentage);
+      context.leaveScope(result);
+      context.leaveScope(result);
+      return result;
+    }
+
+  protected:
+    String description;
+    size_t numBandits;
+    size_t maxTimeStep;
+    std::vector<DiscreteBanditStatePtr> states;
+    DiscreteBanditPolicyPtr baselinePolicy;
+    DiscreteBanditPolicyPtr optimizedPolicy;
+  };
+
+  WorkUnitPtr makeEvaluationWorkUnit(size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& baselinePolicy, const DiscreteBanditPolicyPtr& optimizedPolicy) const
+    {return new EvaluateWorkUnit(initialStatesDescription, numBandits, maxTimeStep, initialStates, baselinePolicy, optimizedPolicy);}
+ 
+private:
+  friend class EvaluateDiscreteBanditPolicyClass;
+
+  File policyFile;
+  size_t numBandits;
+  size_t numProblems;
+};
+
+
 /*
 ** SandBox
 */
@@ -791,10 +905,6 @@ public:
     /*
     ** Make training and testing problems
     */
-   // jassert(numBandits == 10);
-    std::vector<SamplerPtr> samplers(numBandits);
-    const double rewardMargin = 0.1;
-
     ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
     SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
 
@@ -812,21 +922,24 @@ public:
     std::vector<DiscreteBanditPolicyPtr> policies;
     policies.push_back(new UCB2DiscreteBanditPolicy(0.001));
     policies.push_back(new UCB1TunedDiscreteBanditPolicy());
-    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, rewardMargin));
+    policies.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.05, 0.1));
 
     CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies "), policies.size());
     for (size_t i = 0; i < policies.size(); ++i)
+    {
+      policies[i]->saveToFile(context, context.getFile(T("Policies/") + policies[i]->toString() + T(".policy")));
       workUnit->setWorkUnit(i, makeEvaluationWorkUnit(testingStates, T("Testing Problems"), policies[i], true));
+    }
     workUnit->setProgressionUnit(T("Policies"));
     workUnit->setPushChildrenIntoStackFlag(true);
     context.run(workUnit);
 
-    std::vector<DiscreteBanditPolicyPtr> policiesToOptimize;
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(1));
-    policiesToOptimize.push_back(new OldStyleParameterizedBanditPolicy());
-    policiesToOptimize.push_back(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1));
-    policiesToOptimize.push_back(new TimeDependentWeightedUCBBanditPolicy());
-    policiesToOptimize.push_back(new PowerFunctionParameterizedBanditPolicy(2));
+    std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
+    policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(), T("oldStyle")));
+    policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
+    policiesToOptimize.push_back(std::make_pair(new TimeDependentWeightedUCBBanditPolicy(), T("timeDependentWeighted")));
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
 
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
     //policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
@@ -840,10 +953,15 @@ public:
 
     for (size_t i = 0; i < policiesToOptimize.size(); ++i)
     {
-      DiscreteBanditPolicyPtr policyToOptimize = policiesToOptimize[i];
-      context.enterScope(T("Optimizing ") + policyToOptimize->toString());
+      DiscreteBanditPolicyPtr policyToOptimize = policiesToOptimize[i].first;
+      const String& policyName = policiesToOptimize[i].second;
+
+      context.enterScope(T("Optimizing ") + policyName);
       Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates);
       DiscreteBanditPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policyToOptimize, bestParameters);
+      String outputFileName = T("Policies/") + String((int)maxTimeStep) + T("/") + policyName + T(".policy");
+      context.informationCallback(T("Saving policy ") + outputFileName);
+      optimizedPolicy->saveToFile(context, context.getFile(outputFileName));
 
       // evaluate on train and on test
       workUnit = new CompositeWorkUnit(T("Evaluating optimized policy"), 2);

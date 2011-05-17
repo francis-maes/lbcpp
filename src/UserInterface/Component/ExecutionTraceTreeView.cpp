@@ -275,6 +275,11 @@ public:
     ExecutionTracePtr trace = tree->getTrace();
     ExecutionTraceNodePtr traceNode = trace->findNode(stack);
     jassert(traceNode);
+    if (!traceNode)
+    {
+      // tmp; debug
+      trace->findNode(stack);
+    }
     ExecutionTraceTreeViewNode* node = tree->getNodeFromStack(stack);
     if (node)
       // node is created, fill tree and trace dynamically 

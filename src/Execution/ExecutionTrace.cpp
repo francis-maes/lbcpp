@@ -136,13 +136,15 @@ ExecutionTraceNodePtr ExecutionTraceNode::findSubNode(const String& description,
     ExecutionTraceNodePtr res = subItems[i].dynamicCast<ExecutionTraceNode>();
     if (res)
     {
-      if (workUnit)
+      if (workUnit && res->getWorkUnit())
       {
+        // workUnit comparison
         if (res->getWorkUnit() == workUnit)
           return res;
       }
       else
       {
+        // description comparison
         if (res->toString() == description)
           return res;
       }
