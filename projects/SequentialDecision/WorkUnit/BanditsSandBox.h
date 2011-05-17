@@ -653,16 +653,26 @@ public:
     // main calculation loop
     for (size_t i = 0; i < initialStates.size(); ++i)
     {
+      DiscreteBanditStatePtr initialState = initialStates[i];
+      std::vector<double> expectedRewards(numBandits);
+      double bestReward = -DBL_MAX;
+      size_t optimalBandit = 0;
+      for (size_t j = 0; j < numBandits; ++j)
+      {
+        double er = initialState->getExpectedReward(j);
+        expectedRewards[j] = er;
+        if (er > bestReward)
+          bestReward = er, optimalBandit = j;
+      }
+
       for (size_t estimation = 0; estimation < numEstimationsPerBandit; ++estimation)
       {
-        DiscreteBanditStatePtr state = initialStates[i]->cloneAndCast<DiscreteBanditState>();
+        DiscreteBanditStatePtr state = initialState->cloneAndCast<DiscreteBanditState>();
   
         static int globalSeed = 1664;
         state->setSeed((juce::uint32)globalSeed);
         juce::atomicIncrement(globalSeed);
         
-        double bestReward, secondBestReward;
-        size_t optimalBandit = state->getOptimalBandit(bestReward, secondBestReward);
         policy->initialize(numBandits);
 
         double sumOfRewards = 0.0;
@@ -672,7 +682,12 @@ public:
         {
           size_t numTimeSteps = timeSteps[j] - (j > 0 ? timeSteps[j - 1] : 0);
           for (size_t k = 0; k < numTimeSteps; ++k, ++timeStep)
-             performBanditStep(state, policy, optimalBandit, sumOfRewards, numberOfTimesOptimalIsPlayed);
+          {
+            size_t action = performBanditStep(state, policy);
+            sumOfRewards += expectedRewards[action];
+            if (action == optimalBandit)
+              ++numberOfTimesOptimalIsPlayed;
+          }
           jassert(timeStep == timeSteps[j]);
    
           actualRegretVector[j] += timeStep * bestReward - sumOfRewards;
@@ -717,15 +732,13 @@ protected:
   DiscreteBanditPolicyPtr policy;
   bool verbose;
 
-  void performBanditStep(DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy, size_t optimalBandit, double& sumOfRewards, size_t& numberOfTimesOptimalIsPlayed)
+  static size_t performBanditStep(DiscreteBanditStatePtr state, DiscreteBanditPolicyPtr policy)
   {
     size_t action = policy->selectNextBandit();
     double reward;
     state->performTransition(action, reward);
     policy->updatePolicy(action, reward);
-    sumOfRewards += state->getExpectedReward(action);
-    if (action == optimalBandit)
-      ++numberOfTimesOptimalIsPlayed;
+    return action;
   }
 };
 
@@ -774,28 +787,34 @@ public:
     ** Make training and testing problems
     */
    // jassert(numBandits == 10);
-    std::vector<double> probs(numBandits);
+    std::vector<SamplerPtr> samplers(numBandits);
     const double rewardMargin = 0.1;
+
+    ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
+    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
 
     std::vector<DiscreteBanditStatePtr> trainingStates(numTrainingProblems);
     for (size_t i = 0; i < trainingStates.size(); ++i)
+      trainingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+    /*
     {
      // if ((i % 10) == 0)
-        for (size_t j = 0; j < probs.size(); ++j)
-          probs[j] = random->sampleDouble();
+        for (size_t j = 0; j < samplers.size(); ++j)
+          samplers[j] = bernoulliSampler(random->sampleDouble());
       //std::random_shuffle(probs.begin(), probs.end());
-      trainingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
+      trainingStates[i] = new DiscreteBanditState(samplers, random->sampleUint32());
     }
-
+*/
     std::vector<DiscreteBanditStatePtr> testingStates(numTestingProblems);
     for (size_t i = 0; i < testingStates.size(); ++i)
-    {
+      testingStates[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+/*    {
       //if ((i % 10) == 0)
-        for (size_t j = 0; j < probs.size(); ++j)
-          probs[j] = random->sampleDouble();
+        for (size_t j = 0; j < samplers.size(); ++j)
+          samplers[j] = bernoulliSampler(random->sampleDouble());
       //std::random_shuffle(probs.begin(), probs.end());
-      testingStates[i] = new BernouilliDiscreteBanditState(probs, random->sampleUint32());
-    }
+      testingStates[i] = new DiscreteBanditState(samplers, random->sampleUint32());
+    }*/
 
     /*
     ** Compute a bunch of baseline policies

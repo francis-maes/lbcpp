@@ -1,13 +1,13 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: GaussianSampler.h              | Gaussian Sampler                |
-| Author  : Alejandro Marcos Alvarez       |                                 |
-| Started : 30 avr. 2011  10:56:36         |                                 |
+| Filename: UniformScalarSampler.h         | Uniform Scalar Sampler          |
+| Author  : Francis Maes                   |                                 |
+| Started : 17/05/2011 13:06               |                                 |
 `------------------------------------------/                                 |
                                |                                             |
                                `--------------------------------------------*/
 
-#ifndef LBCPP_SAMPLER_CONTINUOUS_GAUSSIAN_H_
-# define LBCPP_SAMPLER_CONTINUOUS_GAUSSIAN_H_
+#ifndef LBCPP_SAMPLER_CONTINUOUS_UNIFORM_SCALAR_H_
+# define LBCPP_SAMPLER_CONTINUOUS_UNIFORM_SCALAR_H_
 
 # include <lbcpp/Sampler/Sampler.h>
 # include <lbcpp/Data/RandomVariable.h>
@@ -15,38 +15,42 @@
 namespace lbcpp
 {
 
-class GaussianSampler : public ScalarContinuousSampler
+class UniformScalarSampler : public ScalarContinuousSampler
 {
 public:
-  GaussianSampler(double mean = 0.0, double stddev = 1.0)
-    : mean(mean), stddev(stddev)
-    {}
+  UniformScalarSampler(double minValue = 0.0, double maxValue = 1.0)
+    : minValue(minValue), maxValue(maxValue) {}
 
   virtual Variable computeExpectation(const Variable* inputs = NULL) const
-    {return mean;}
+    {return (minValue + maxValue) / 2.0;}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
-    {return random->sampleDoubleFromGaussian(mean, stddev);}
+    {return random->sampleDouble(minValue, maxValue);}
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
                                                 const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)
   {
-    // TODO: particular case when trainingSamples are DenseDoubleVectors
     size_t n = trainingSamples->getNumElements();
-    ScalarVariableMeanAndVariance v;
+
+    minValue = DBL_MAX;
+    maxValue = -DBL_MAX;
     for (size_t i = 0; i < n; i++)
-      v.push(trainingSamples->getElement(i).getDouble());
-    mean = v.getMean();
-    stddev = v.getStandardDeviation();
+    {
+      double v = trainingSamples->getElement(i).getDouble();
+      if (v < minValue)
+        minValue = v;
+      if (v > maxValue)
+        maxValue = v;
+    }
   }
 
 protected:
-  friend class GaussianSamplerClass;
+  friend class UniformScalarSamplerClass;
 
-  double mean;
-  double stddev;
+  double minValue;
+  double maxValue;
 };
 
 }; /* namespace lbcpp */
 
-#endif //! LBCPP_SAMPLER_CONTINUOUS_GAUSSIAN_H_
+#endif //! LBCPP_SAMPLER_CONTINUOUS_UNIFORM_SCALAR_H_

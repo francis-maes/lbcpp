@@ -23,10 +23,14 @@ namespace lbcpp
 class Sampler : public Object
 {
 public:
+  virtual Variable computeExpectation(const Variable* inputs = NULL) const
+    {jassert(false); return Variable();}
+
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const = 0;
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
-                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr()) = 0;
+                                                const ContainerPtr& validationInputs = ContainerPtr(), const ContainerPtr& validationSamples = ContainerPtr())
+    {jassert(false);}
 
   lbcpp_UseDebuggingNewOperator
 
@@ -41,14 +45,19 @@ typedef ReferenceCountedObjectPtr<Sampler> SamplerPtr;
 class ContinuousSampler : public Sampler
 {
 public:
-  virtual double computeExpectation(const Variable* inputs = NULL) const
-    {jassert(false); return 0.0;}
-
   lbcpp_UseDebuggingNewOperator
 };
 typedef ReferenceCountedObjectPtr<ContinuousSampler> ContinuousSamplerPtr;
 
-extern ContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
+class ScalarContinuousSampler : public ContinuousSampler
+{
+public:
+  lbcpp_UseDebuggingNewOperator
+};
+typedef ReferenceCountedObjectPtr<ScalarContinuousSampler> ScalarContinuousSamplerPtr;
+
+extern ScalarContinuousSamplerPtr uniformScalarSampler(double minValue = 0.0, double maxValue = 1.0);
+extern ScalarContinuousSamplerPtr gaussianSampler(double mean = 0.0, double stddev = 1.0);
 
 /*
 ** Discrete Sampler
@@ -60,6 +69,7 @@ public:
 };
 typedef ReferenceCountedObjectPtr<DiscreteSampler> DiscreteSamplerPtr;
 
+extern DiscreteSamplerPtr bernoulliSampler(double probability);
 extern DiscreteSamplerPtr enumerationSampler(EnumerationPtr enumeration);
 extern DiscreteSamplerPtr enumerationSampler(const DenseDoubleVectorPtr& probabilities);
 
@@ -85,7 +95,8 @@ public:
 protected:
   friend class CompositeSamplerClass;
 
-  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const = 0;
+  virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
+    {jassert(false);}
 
   std::vector<SamplerPtr> samplers;
 };
