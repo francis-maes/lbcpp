@@ -153,10 +153,10 @@ public:
       for (size_t j = 0; j < numLearningSamplesSecondPass; j++)
         moversVector[numLearningSamplesFirstPass + j] = MoverAndScore(rest[ordering[j]]);
 
-      std::vector<Variable> dataset(numLearningSamples);
+      ObjectVectorPtr dataset = new ObjectVector(proteinMoverClass, 0);
       for (size_t j = 0; j < numLearningSamples; j++)
-        dataset[j] = moversVector[j].mover;
-      workingSampler->learn(context, dataset);
+        dataset->append(moversVector[j].mover);
+      workingSampler->learn(context, ContainerPtr(), dataset);
     }
 
     movers = std::vector<ProteinMoverPtr>(numMoversToKeep);
