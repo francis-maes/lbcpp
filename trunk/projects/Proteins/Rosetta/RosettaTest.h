@@ -124,7 +124,7 @@ public:
     learning->append(rigidBodyMover(4, 1, 9.2, 0.0));
     learning->append(rigidBodyMover(4, 0, 12.1, 0.0));
 
-    samp->learn(context, ContainerPtr(), learning);
+    //samp->learn(context, ContainerPtr(), learning);
 
     random = new RandomGenerator(0);
 
@@ -134,7 +134,7 @@ public:
     int count0 = 0;
     int count1 = 0;
     int count2 = 0;
-    int num = 10000;
+    int num = 5;
     for (int i = 0; i < num; i++)
     {
       Variable v = samp->sample(context, random);
@@ -155,17 +155,36 @@ public:
     cout << "shear : " << (double)count1 / (double)num << endl;
     cout << "rigidbody : " << (double)count2 / (double)num << endl;
 
-    ScalarVectorFunctionPtr func = gaussianLogValueFunction();
-    DenseDoubleVectorPtr params = new DenseDoubleVector(2, 0);
-    params->setValue(0, 3.0);
-    params->setValue(1, 1.5);
-    Variable val(0.13);
-    double result = 0;
-    DenseDoubleVectorPtr grad = new DenseDoubleVector(2, 0);
-    double weight = 1;
-    func->computeScalarVectorFunction(params, &val, &result, &grad, weight);
-    cout << result << endl;
-    cout << (const char* )grad->toString() << endl;
+    ObjectVectorPtr learning2 = new ObjectVector(proteinMoverClass, 0);
+    learning2->append(phiPsiMover(1, 34, -123));
+    learning2->append(phiPsiMover(0, 30, -122));
+    learning2->append(phiPsiMover(2, 27, -121));
+    learning2->append(phiPsiMover(3, 33, -121));
+    learning2->append(phiPsiMover(1, 34, -123));
+    learning2->append(phiPsiMover(0, 30, -122));
+    learning2->append(phiPsiMover(2, 27, -121));
+
+    RandomGeneratorPtr random2 = new RandomGenerator(0);
+    SamplerPtr phipsisampler = objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(5), gaussianSampler(0, 25), gaussianSampler(0, 25));
+    phipsisampler->learn(context, ContainerPtr(), learning2);
+    for (int i = 0; i < num; i++)
+    {
+      Variable v = phipsisampler->sample(context, random2);
+      ProteinMoverPtr t = v.getObjectAndCast<ProteinMover>();
+      cout << i << " : " << (const char* )t->toString() << endl;
+    }
+
+//    ScalarVectorFunctionPtr func = gaussianLogValueFunction();
+//    DenseDoubleVectorPtr params = new DenseDoubleVector(2, 0);
+//    params->setValue(0, 3.0);
+//    params->setValue(1, 1.5);
+//    Variable val(0.13);
+//    double result = 0;
+//    DenseDoubleVectorPtr grad = new DenseDoubleVector(2, 0);
+//    double weight = 1;
+//    func->computeScalarVectorFunction(params, &val, &result, &grad, weight);
+//    cout << result << endl;
+//    cout << (const char* )grad->toString() << endl;
 
 
 //    CompositeSamplerPtr rebirth = Variable::createFromFile(context, outfile).getObjectAndCast<CompositeSampler> ();

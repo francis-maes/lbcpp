@@ -133,6 +133,7 @@ public:
     for (int i = 1; i <= maxSteps; i++)
     {
       ProteinMoverPtr mover = sampler->sample(context, random).getObjectAndCast<ProteinMover> ();
+
       mover->move(workingPose);
       temporaryEnergy = getConformationScore(workingPose, fullAtomEnergy);
 

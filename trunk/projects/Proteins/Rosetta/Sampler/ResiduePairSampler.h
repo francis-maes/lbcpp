@@ -111,7 +111,8 @@ public:
       residuePairs->set(i, residuePair2);
     }
 
-    samplers[0]->learn(context, trainingInputs, residuePairs);
+    if (n)
+      samplers[0]->learn(context, trainingInputs, residuePairs);
     // validation data not supported
   }
 
