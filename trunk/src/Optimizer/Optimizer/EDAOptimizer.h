@@ -50,10 +50,23 @@ public:
           optimizerState->setBestVariable(bestIterationParameters);
         }
       }
-      
-      context.resultCallback(T("bestScore"), optimizerState->getBestScore());
+
       context.resultCallback(T("bestParameters"), optimizerState->getBestVariable());
-      context.leaveScope(bestIterationScore); // may be diffrent from optimizerState->getBestScore(), this is the return value of performEDAIteration, not the best score of all time !!!
+      context.resultCallback(T("bestScore"), bestIterationScore);
+      FunctionPtr validationFunction = optimizerContext->getValidationFunction();
+      double validationScore = 0.0;
+      if (validationFunction)
+      {
+        validationScore = validationFunction->compute(context, optimizerState->getBestVariable()).toDouble();
+        context.resultCallback(T("validationScore"), validationScore);
+      }
+      
+      context.resultCallback(T("allTimesBestScore"), optimizerState->getBestScore());
+
+      // bestIterationScore may be diffrent from optimizerState->getBestScore(),
+      // this is the return value of performEDAIteration, not the best score of all time !!!
+      context.leaveScope(validationFunction ? Variable(new Pair(bestIterationScore, validationScore)) : Variable(bestIterationScore)); 
+
       context.progressCallback(new ProgressionState(i + 1, numIterations, T("Iterations")));
       
       optimizerState->autoSaveToFile(context, true);  // force to save at end of iteration

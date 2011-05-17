@@ -226,6 +226,7 @@ public:
   virtual void preExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit)
   {
     MakeTraceThreadExecutionCallback::preExecutionCallback(stack, description, workUnit);
+    jassert(this->stack.size());
     ExecutionTraceTreeViewNode* node = this->stack.back();
     ExecutionTraceTreeViewNode* newNode = NULL;
     if (node && node->hasBeenOpenedOnce())
@@ -235,6 +236,7 @@ public:
   
   virtual void postExecutionCallback(const ExecutionStackPtr& stack, const String& description, const WorkUnitPtr& workUnit, const Variable& result)
   {
+    jassert(this->stack.size());
     this->stack.pop_back();
     MakeTraceThreadExecutionCallback::postExecutionCallback(stack, description, workUnit, result);
     tree->invalidateTree();
@@ -252,6 +254,7 @@ protected:
 
   virtual void appendTraceItem(ExecutionTraceItemPtr item)
   {
+    jassert(stack.size());
     MakeTraceThreadExecutionCallback::appendTraceItem(item);
     ExecutionTraceTreeViewNode* parent = stack.back();
     if (parent && parent->hasBeenOpenedOnce())
@@ -275,11 +278,6 @@ public:
     ExecutionTracePtr trace = tree->getTrace();
     ExecutionTraceNodePtr traceNode = trace->findNode(stack);
     jassert(traceNode);
-    if (!traceNode)
-    {
-      // tmp; debug
-      trace->findNode(stack);
-    }
     ExecutionTraceTreeViewNode* node = tree->getNodeFromStack(stack);
     if (node)
       // node is created, fill tree and trace dynamically 

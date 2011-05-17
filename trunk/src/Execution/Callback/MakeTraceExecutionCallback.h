@@ -52,6 +52,7 @@ public:
 
   virtual void preExecutionCallback(const ExecutionStackPtr& , const String& description, const WorkUnitPtr& workUnit)
   {
+    jassert(stack.size());
     ExecutionTraceNodePtr newNode(new ExecutionTraceNode(description, workUnit, currentNotificationTime));
     appendTraceItem(newNode);
     stack.push_back(newNode);
@@ -65,6 +66,7 @@ public:
     finishedNode->setReturnValue(result);
     jassert(stack.size());
     stack.pop_back();
+    jassert(stack.size());
   }
 
 protected:

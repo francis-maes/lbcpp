@@ -177,8 +177,12 @@ void OptimizerState::functionReturned(ExecutionContext& context, const FunctionP
 /*
  ** OptimizerContext
  */
-OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction)
-  : context(context), objectiveFunction(objectiveFunction) {jassert(objectiveFunction->getNumRequiredInputs() == 1);}
+OptimizerContext::OptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction)
+  : context(context), objectiveFunction(objectiveFunction), validationFunction(validationFunction)
+{
+  jassert(objectiveFunction->getNumRequiredInputs() == 1);
+  jassert(!validationFunction || validationFunction->getNumRequiredInputs() == 1);
+}
 
 /*bool OptimizerContext::evaluate(ExecutionContext& context, const std::vector<Variable>& parametersVector)
 {
