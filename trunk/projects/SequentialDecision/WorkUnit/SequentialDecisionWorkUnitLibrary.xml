@@ -105,11 +105,11 @@
     <variable type="DenseDoubleVector[TimeDependentWeightedUCBBanditPolicyEnumeration,Double]" name="parameters"/>
   </class>
 
-  <class name="MomentsWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  <class name="MomentsWeightedUCBBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="momentsWeighted">
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
   </class>
 
-  <class name="PowerFunctionParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy">
+  <class name="PowerFunctionParameterizedBanditPolicy" base="IndexBasedDiscreteBanditPolicy" shortName="powerFunction">
     <variable type="PositiveInteger" name="maxPower"/>
     <variable type="Enumeration" name="parametersEnumeration" generated="yes"/>
     <variable type="DenseDoubleVector[EnumValue,Double]" name="parameters"/>
@@ -149,7 +149,13 @@
     <variable type="ObjectVector[DiscreteBanditState]" name="initialStates"/>
     <variable type="Boolean" name="verbose"/>
   </class>
-  
+
+  <class name="EvaluateDiscreteBanditPolicy" base="WorkUnit">
+    <variable type="File" name="policyFile"/>
+    <variable type="PositiveInteger" name="numBandits"/>
+    <variable type="PositiveInteger" name="numProblems"/>
+  </class>
+
   <class name="BanditsSandBox" base="WorkUnit">
     <variable type="PositiveInteger" name="numBandits" shortName="K"/>
     <variable type="PositiveInteger" name="maxTimeStep" shortName="N"/>
