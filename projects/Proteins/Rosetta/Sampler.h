@@ -21,7 +21,7 @@ extern CompositeSamplerPtr simpleResidueSampler(size_t numResidues);
 extern CompositeSamplerPtr proteinMoverSampler(size_t numResidues);
 extern CompositeSamplerPtr proteinMoverSampler(DiscreteSamplerPtr classSampler, size_t numResidues);
 
-extern ContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
+extern ScalarContinuousSamplerPtr multiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev);
 
 extern SamplerPtr parzenContinuousSampler();
 extern SamplerPtr gaussianMultivariateSampler();

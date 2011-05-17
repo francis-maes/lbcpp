@@ -23,8 +23,7 @@ class GaussianMultivariateSampler : public ContinuousSampler
 public:
   GaussianMultivariateSampler()
     : maxIt(100), tolerance(0.01), numVariables(0), numClusters(0)
-  {
-  }
+  {}
 
   GaussianMultivariateSampler(size_t maxIt, double tolerance, MatrixPtr& initialProbabilities,
       std::vector<MatrixPtr>& initialMean, std::vector<MatrixPtr>& initialStd)

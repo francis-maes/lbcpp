@@ -18,7 +18,7 @@ namespace lbcpp
 class MultiVariateGaussianSampler;
 typedef ReferenceCountedObjectPtr<MultiVariateGaussianSampler> MultiVariateGaussianSamplerPtr;
 
-class MultiVariateGaussianSampler : public ContinuousSampler
+class MultiVariateGaussianSampler : public ScalarContinuousSampler
 {
 public:
   MultiVariateGaussianSampler(const DoubleMatrixPtr& initialMean, const DoubleMatrixPtr& initialStdDev)
@@ -67,6 +67,33 @@ public:
       covariances->add(product);
     }
     covariances->multiplyByScalar(1.0 / (n - 1));
+  }
+
+  virtual void computeProbabilities(const ContainerPtr& data, DoubleMatrixPtr& probabilities,
+      size_t numColumnToFill) const
+  {
+    // TODO
+    for (size_t i = 0; i < data->getNumElements(); i++)
+    {
+//      double denominator;
+//      denominator = 1.0 / (std::pow(2 * M_PI, (double)observed->getNumRows() / 2.0) * std::pow(
+//          covariances->determinant(), 0.5));
+//
+//      DoubleMatrixPtr inverseCovariance = covariances->getInverse();
+//
+//      MatrixPtr temp = subtractMatrix(observed, mean);
+//      MatrixPtr temp2 = matrixProduct(inverseCovariance, temp);
+//      MatrixPtr temp3 = transposeMatrix(temp);
+//      MatrixPtr result = matrixProduct(temp3, temp2);
+//      double numerator = std::exp(-0.5 * result->getElement(0, 0).getDouble());
+//
+//      return numerator * denominator;
+    }
+  }
+
+  virtual void updateParameters(const ContainerPtr& data, const DoubleMatrixPtr& probabilitiesForAllModels, size_t numColumn)
+  {
+
   }
 
 protected:
