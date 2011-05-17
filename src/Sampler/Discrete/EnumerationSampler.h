@@ -18,13 +18,14 @@ class EnumerationSampler : public DiscreteSampler
 {
 public:
   EnumerationSampler(EnumerationPtr enumeration)
-    : probabilities(new DenseDoubleVector(enumeration, probabilityType)) {}
+    : probabilities(new DenseDoubleVector(enumeration, probabilityType,
+      enumeration->getNumElements(), 1.0 / enumeration->getNumElements())) {}
   EnumerationSampler(const DenseDoubleVectorPtr& probabilities)
     : probabilities(probabilities) {}
   EnumerationSampler() {}
 
   virtual Variable sample(ExecutionContext& context, const RandomGeneratorPtr& random, const Variable* inputs = NULL) const
-    {return random->sampleWithNormalizedProbabilities(probabilities->getValues());}
+    {return random->sampleWithProbabilities(probabilities->getValues());}
 
   virtual void learn(ExecutionContext& context, const ContainerPtr& trainingInputs, const ContainerPtr& trainingSamples, 
                                                 const ContainerPtr& validationInputs, const ContainerPtr& validationSamples)

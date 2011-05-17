@@ -76,6 +76,9 @@
     <variable type="Boolean" name="del"/>
   </class>
 
+  <class name="GaussianLogValueFunction" base="ScalarVectorFunction">
+    <constructor/>
+  </class>
 
   <!-- Francis -->
   <class name="MaximumEntropySampler" base="DiscreteSampler">
