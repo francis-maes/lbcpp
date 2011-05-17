@@ -280,7 +280,7 @@ class EpsilonGreedyDiscreteBanditPolicy : public IndexBasedDiscreteBanditPolicy,
 public:
   EpsilonGreedyDiscreteBanditPolicy(double c, double d)
     : c(c), d(d), random(new RandomGenerator()) {}
-  EpsilonGreedyDiscreteBanditPolicy() : c(0.0), d(0.0) {}
+  EpsilonGreedyDiscreteBanditPolicy() : c(0.0), d(0.0), random(new RandomGenerator()) {}
 
   virtual void initialize(size_t numBandits)
   {
@@ -779,51 +779,12 @@ protected:
 class EvaluateDiscreteBanditPolicy : public WorkUnit
 {
 public:
-  EvaluateDiscreteBanditPolicy() : numBandits(2), numProblems(100) {}
+  EvaluateDiscreteBanditPolicy() : numBandits(2), numProblems(1000) {}
 
-  virtual Variable run(ExecutionContext& context)
-  {
-    DiscreteBanditPolicyPtr policy = DiscreteBanditPolicy::createFromFile(context, policyFile);
-    if (!policy)
-      return Variable();
-
-    ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
-    ClassPtr gaussianSamplerClass = lbcpp::getType(T("GaussianSampler"));
-
-    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
-    SamplerPtr initialStateSampler2 = new DiscreteBanditInitialStateSampler(objectCompositeSampler(gaussianSamplerClass, uniformScalarSampler(), uniformScalarSampler()), numBandits);
-
-    RandomGeneratorPtr random = new RandomGenerator();
-    std::vector<DiscreteBanditStatePtr> states(numProblems);
-    for (size_t i = 0; i < numProblems; ++i)
-      states[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
-
-    std::vector<DiscreteBanditStatePtr> states2(numProblems);
-    for (size_t i = 0; i < numProblems; ++i)
-      states2[i] = initialStateSampler2->sample(context, random).getObjectAndCast<DiscreteBanditState>();
-
-    DiscreteBanditPolicyPtr baselinePolicy = new UCB1TunedDiscreteBanditPolicy();
-
-    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policy ") + context.getFilePath(policyFile));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(10, states, T("Bernoulli problems with hor=10"),  baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(100, states, T("Bernoulli problems with hor=100"), baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(1000, states, T("Bernoulli problems with hor=1000"), baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(10000, states, T("Bernoulli problems with hor=10000"), baselinePolicy, policy));
-
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(10, states2, T("Gaussian problems with hor=10"), baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(100, states2, T("Gaussian problems with hor=100"), baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(1000, states2, T("Gaussian problems with hor=1000"), baselinePolicy, policy));
-    workUnit->addWorkUnit(makeEvaluationWorkUnit(10000, states2, T("Gaussian problems with hor=10000"), baselinePolicy, policy));
-
-    workUnit->setProgressionUnit(T("Evaluations"));
-    workUnit->setPushChildrenIntoStackFlag(true);
-    return context.run(workUnit);
-  }
-
-  struct EvaluateWorkUnit : public WorkUnit
+  struct EvaluatePolicyOnProblemsWorkUnit : public WorkUnit
   {
   public:
-    EvaluateWorkUnit(const String& description, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& states,
+    EvaluatePolicyOnProblemsWorkUnit(const String& description, size_t numBandits, size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& states,
                      const DiscreteBanditPolicyPtr& baselinePolicy, const DiscreteBanditPolicyPtr& optimizedPolicy)
      : description(description), numBandits(numBandits), maxTimeStep(maxTimeStep), states(states), baselinePolicy(baselinePolicy), optimizedPolicy(optimizedPolicy) {}
 
@@ -833,7 +794,7 @@ public:
     virtual Variable run(ExecutionContext& context)
     {
       // global evaluation
-      context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, states, T("Global evaluation"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), true));
+      context.run(new EvaluateDiscreteBanditPolicyWorkUnit(numBandits, maxTimeStep, states, T("Global evaluation"), optimizedPolicy->cloneAndCast<DiscreteBanditPolicy>(), false));
 
       // detailed evaluation
       context.enterScope(T("Detailed evaluation"));
@@ -858,15 +819,15 @@ public:
         context.resultCallback(T("delta"), optimizedScore - baselineScore);
         if (optimizedScore < baselineScore)
           ++numberOptimizedOutperforms;
-        context.progressCallback(new ProgressionState(i + 1, states.size(), T("Problems")));
         context.leaveScope(new Pair(baselineScore, optimizedScore));
+        context.progressCallback(new ProgressionState(i + 1, states.size(), T("Problems")));
       }
 
-      double outperformPercentage = 100.0 * numberOptimizedOutperforms / (double)states.size();
-      PairPtr result = new Pair(new Pair(baselineScoreSum / states.size(), optimizedScoreSum / states.size()), outperformPercentage);
+      double outperformPercentage = numberOptimizedOutperforms / (double)states.size();
+      PairPtr result = new Pair(new Pair(baselineScoreSum / states.size(), optimizedScoreSum / states.size()), Variable(outperformPercentage, probabilityType));
       context.leaveScope(result);
-      context.leaveScope(result);
-      return result;
+      context.leaveScope(new Pair(optimizedScoreSum / states.size(), Variable(outperformPercentage, probabilityType)));
+      return true;
     }
 
   protected:
@@ -878,13 +839,89 @@ public:
     DiscreteBanditPolicyPtr optimizedPolicy;
   };
 
-  WorkUnitPtr makeEvaluationWorkUnit(size_t maxTimeStep, const std::vector<DiscreteBanditStatePtr>& initialStates, const String& initialStatesDescription, const DiscreteBanditPolicyPtr& baselinePolicy, const DiscreteBanditPolicyPtr& optimizedPolicy) const
-    {return new EvaluateWorkUnit(initialStatesDescription, numBandits, maxTimeStep, initialStates, baselinePolicy, optimizedPolicy);}
- 
+  struct EvaluatePolicyWorkUnit : public CompositeWorkUnit
+  {
+  public:
+    EvaluatePolicyWorkUnit(const String& policyFilePath, size_t numBandits, const std::vector<DiscreteBanditStatePtr>& states, const std::vector<DiscreteBanditStatePtr>& states2,
+                     const DiscreteBanditPolicyPtr& baselinePolicy, const DiscreteBanditPolicyPtr& optimizedPolicy)
+      : CompositeWorkUnit(T("Evaluating policy ") + policyFilePath)
+    {
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=10"), numBandits, 10, states, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=100"), numBandits, 100, states, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=1000"), numBandits, 1000, states, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Bernoulli problems with hor=10000"), numBandits, 10000, states, baselinePolicy, optimizedPolicy));
+
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=10"), numBandits, 10, states2, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=100"), numBandits, 100, states2, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=1000"), numBandits, 1000, states2, baselinePolicy, optimizedPolicy));
+      addWorkUnit(new EvaluatePolicyOnProblemsWorkUnit(T("Gaussian problems with hor=10000"), numBandits, 10000, states2, baselinePolicy, optimizedPolicy));
+
+      setProgressionUnit(T("Evaluations"));
+      setPushChildrenIntoStackFlag(true);
+    }
+  };
+
+
+  virtual Variable run(ExecutionContext& context)
+  {
+    if (!policiesDirectory.exists())
+    {
+      context.errorCallback(T("Directory ") + policiesDirectory.getFullPathName() + T(" does not exists"));
+      return Variable();
+    }
+
+    /*
+    ** Create problems
+    */
+    ClassPtr bernoulliSamplerClass = lbcpp::getType(T("BernoulliSampler"));
+    ClassPtr gaussianSamplerClass = lbcpp::getType(T("GaussianSampler"));
+
+    SamplerPtr initialStateSampler = new DiscreteBanditInitialStateSampler(objectCompositeSampler(bernoulliSamplerClass, uniformScalarSampler(0.0, 1.0)), numBandits);
+    SamplerPtr initialStateSampler2 = new DiscreteBanditInitialStateSampler(objectCompositeSampler(gaussianSamplerClass, uniformScalarSampler(), uniformScalarSampler()), numBandits);
+
+    RandomGeneratorPtr random = new RandomGenerator();
+    std::vector<DiscreteBanditStatePtr> states(numProblems);
+    for (size_t i = 0; i < numProblems; ++i)
+      states[i] = initialStateSampler->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+    std::vector<DiscreteBanditStatePtr> states2(numProblems);
+    for (size_t i = 0; i < numProblems; ++i)
+      states2[i] = initialStateSampler2->sample(context, random).getObjectAndCast<DiscreteBanditState>();
+
+    /*
+    ** Create baseline policy
+    */
+    DiscreteBanditPolicyPtr baselinePolicy = new UCB1TunedDiscreteBanditPolicy();
+
+    /*
+    ** Find policies to evaluate
+    */
+    CompositeWorkUnitPtr workUnit = new CompositeWorkUnit(T("Evaluating policies"));
+    juce::OwnedArray<File> policyFiles;
+    policiesDirectory.findChildFiles(policyFiles, File::findFiles, true, T("*.policy"));
+    for (int i = 0; i < policyFiles.size(); ++i)
+    {
+      File policyFile = *policyFiles[i];
+      String policyFilePath = context.getFilePath(policyFile);
+
+      DiscreteBanditPolicyPtr policy = DiscreteBanditPolicy::createFromFile(context, policyFile);
+      if (policy)
+        workUnit->addWorkUnit(new EvaluatePolicyWorkUnit(policyFilePath, numBandits, states, states2, baselinePolicy, policy));
+    }
+
+    /*
+    ** Evaluate policies
+    */
+    workUnit->setProgressionUnit(T("Policies"));
+    workUnit->setPushChildrenIntoStackFlag(true);
+    return context.run(workUnit, false);
+  }
+
+
 private:
   friend class EvaluateDiscreteBanditPolicyClass;
 
-  File policyFile;
+  File policiesDirectory;
   size_t numBandits;
   size_t numProblems;
 };
