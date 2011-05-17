@@ -41,6 +41,59 @@
 namespace lbcpp
 {
 
+class GridEvoOptimizerExperience : public WorkUnit  
+{
+public:
+  virtual Variable run(ExecutionContext& context)
+  {
+    String projectName(T("GridEvoOptimizerExperience"));
+    String source(T("arnaud@monster24"));
+    String destination(T("boincadm@boinc.run"));
+    String managerHostName(T("localhost"));
+    size_t managerPort = 1664;
+    size_t requiredMemory = 1;
+    size_t requiredCpus = 1;
+    size_t requiredTime = 1;
+    
+    // initial distribution
+    IndependentMultiVariateDistributionPtr distributions = new IndependentMultiVariateDistribution(numericalProteinFeaturesParametersClass);      
+    distributions->setSubDistribution(0, new PositiveIntegerGaussianDistribution(1,9));
+    distributions->setSubDistribution(1, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(2, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(3, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(4, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(5, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(6, new PositiveIntegerGaussianDistribution(2,9));
+    distributions->setSubDistribution(7, new PositiveIntegerGaussianDistribution(3,9));
+    distributions->setSubDistribution(8, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(9, new PositiveIntegerGaussianDistribution(5,9));
+    distributions->setSubDistribution(10, new BernoulliDistribution(0.5));
+    distributions->setSubDistribution(11, new PositiveIntegerGaussianDistribution(15,4));
+    distributions->setSubDistribution(12, new PositiveIntegerGaussianDistribution(15,100));
+    distributions->setSubDistribution(13, new PositiveIntegerGaussianDistribution(50,225));
+    
+    // Create initial state either from distri or from existing file
+    ProteinGridEvoOptimizerStatePtr state = new ProteinGridEvoOptimizerState(distributions);
+    
+    // variables used by EvoOptimizer
+    size_t totalNumberWuRequested = 10000; // total number of WUs to evaluate
+    size_t numberWuToUpdate = 500;       // min number of WUs evaluated needed to update distribution
+    size_t numberWuInProgress = 750;      // number of WUs in progress (either in thread pool or in Boinc Network), should be <= totalNumberWuRequested. (for local optimizer should be a little bit higher than the number of CPUs)
+    size_t ratioUsedForUpdate = 3;      // number of WUs used to calculate new distribution is numberWuToUpdate/ratioUsedForUpdate 
+    size_t timeToSleep = 5*60;            // time to sleep between work generation and attemps to use finished results (avoid busy waiting)
+    size_t updateFactor = 10;            // preponderance of new distri vs old distri (low value avoid too quick convergence)
+    
+    /**
+     * GridEvoOptimizer
+     */
+    GridEvoOptimizerPtr optimizer = new GridEvoOptimizer(totalNumberWuRequested, numberWuToUpdate, numberWuInProgress, ratioUsedForUpdate, projectName, source, destination,
+                                                         managerHostName, managerPort, requiredMemory, requiredTime, timeToSleep, updateFactor);
+    return optimizer->optimize(context, state, new ProteinGetVariableFromTraceFunction(), new ProteinGetScoreFromTraceFunction());
+    
+  }
+  
+};
+  
 class OptimizerTest : public WorkUnit 
 {
 public:
@@ -123,7 +176,7 @@ public:
     
     // TESTS OPTIMIZER
     //OptimizerPtr optimizer = uniformSampleAndPickBestOptimizer(100);
-    //OptimizerPtr optimizer = edaOptimizer(10, 100, 30, false, false);
+    //OptimizerPtr optimizer = edaOptimizer(100, 100, 30, false, false);
     OptimizerPtr optimizer = asyncEDAOptimizer(10, 100, 30, 30, 100);
     //OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, squareFunction());
     OptimizerContextPtr optimizerContext = multiThreadedOptimizerContext(context, squareFunction());
