@@ -11,7 +11,6 @@
   <class name="MultiThreadedOptimizerContext" base="OptimizerContext">
     <constructor arguments="ExecutionContext&amp; context, const FunctionPtr&amp; objectiveFunction, const FunctionPtr&amp; validationFunction, size_t timeToSleep"/>
     <variable type="Integer" name="numEvaluationInProgress"/>
-    <variable type="PositiveInteger" name="timeToSleep"/>
   </class>
   
 </library>

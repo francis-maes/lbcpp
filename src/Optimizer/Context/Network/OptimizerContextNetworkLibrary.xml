@@ -11,7 +11,6 @@
     <variable type="PositiveInteger" name="requiredCpus"/>
     <variable type="PositiveInteger" name="requiredMemory"/>  
     <variable type="PositiveInteger" name="requiredTime"/>
-    <variable type="PositiveInteger" name="timeToSleep"/>
     <variable type="ObjectVector[Pair[String, Variable]]" name="inProgressWUs"/>
   </class>
 </library>

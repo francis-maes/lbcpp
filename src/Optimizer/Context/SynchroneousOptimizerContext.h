@@ -18,15 +18,12 @@ class SynchroneousOptimizerContext : public OptimizerContext
 {
 public:
   SynchroneousOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction)
-    : OptimizerContext(context, objectiveFunction, validationFunction) {}
+    : OptimizerContext(context, objectiveFunction, validationFunction, 0) {}
   SynchroneousOptimizerContext() {}
   
   // evaluate is a blocking method
-  virtual void waitUntilAllRequestsAreProcessed() const {}
   virtual bool areAllRequestsProcessed() const
     {return true;}
-  virtual size_t getTimeToSleep() const
-    {return 0;} // no need to sleep in synchroneous
 
   // blocking method
   virtual bool evaluate(const Variable& parameters) 

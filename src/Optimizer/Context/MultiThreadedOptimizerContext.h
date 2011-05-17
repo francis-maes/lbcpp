@@ -19,7 +19,7 @@ class MultiThreadedOptimizerContext : public OptimizerContext
 {
 public:
   MultiThreadedOptimizerContext(ExecutionContext& context, const FunctionPtr& objectiveFunction, const FunctionPtr& validationFunction, size_t timeToSleep = 100)
-    : OptimizerContext(context, objectiveFunction, validationFunction), timeToSleep(timeToSleep) 
+    : OptimizerContext(context, objectiveFunction, validationFunction, timeToSleep) 
     {numEvaluationInProgress = 0;}
   MultiThreadedOptimizerContext() 
   {
@@ -27,17 +27,8 @@ public:
     timeToSleep = 100;
   }
   
-  virtual void waitUntilAllRequestsAreProcessed() const 
-  {
-    while (numEvaluationInProgress) // value modified in function evaluation (after pushWorkUnit)
-      Thread::sleep(timeToSleep);
-  }
-  
   virtual bool areAllRequestsProcessed() const
     {return numEvaluationInProgress == 0;}
-  
-  virtual size_t getTimeToSleep() const
-    {return timeToSleep;}
   
   virtual bool evaluate(const Variable& parameters) 
   {
@@ -51,7 +42,6 @@ protected:
   
 private:
   int numEvaluationInProgress;
-  size_t timeToSleep;
 };
   
 };
