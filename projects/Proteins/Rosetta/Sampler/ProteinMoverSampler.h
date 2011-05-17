@@ -88,9 +88,9 @@ public:
 protected:
   void createObjectSamplers(size_t numResidues)
   {
-    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, M_PI), gaussianSampler(0, M_PI)));
-    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, M_PI)));
+    samplers.push_back(objectCompositeSampler(phiPsiMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+    samplers.push_back(objectCompositeSampler(shearMoverClass, new SimpleResidueSampler(numResidues), gaussianSampler(0, 25), gaussianSampler(0, 25)));
+    samplers.push_back(objectCompositeSampler(rigidBodyMoverClass, new ResiduePairSampler(numResidues), gaussianSampler(1, 1), gaussianSampler(0, 25)));
   }
 };
 
