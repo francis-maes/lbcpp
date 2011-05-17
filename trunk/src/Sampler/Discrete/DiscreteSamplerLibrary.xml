@@ -2,6 +2,11 @@
 
 <library name="DiscreteSampler" directory="Sampler/Discrete">
 
+  <class name="BernoulliSampler" base="DiscreteSampler">
+    <constructor arguments="double probability"/>
+    <variable type="Probability" name="probability"/>
+  </class>
+
   <class name="EnumerationSampler" base="DiscreteSampler">
     <constructor arguments="const DenseDoubleVectorPtr&amp; probabilities"/>
     <constructor arguments="EnumerationPtr enumeration"/>

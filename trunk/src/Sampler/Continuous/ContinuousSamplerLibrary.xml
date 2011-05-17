@@ -2,10 +2,16 @@
 
 <library name="ContinuousSampler" directory="Sampler/Continuous">
 
-  <class name="GaussianSampler" base="ContinuousSampler">
+  <class name="GaussianSampler" base="ScalarContinuousSampler">
     <constructor arguments="double mean, double stddev"/>
     <variable type="Double" name="mean" shortName="m" description="Mean of the distribution"/>
     <variable type="Double" name="stddev" shortName="s" description="Standard deviation of the distribution"/>
   </class>
 
+  <class name="UniformScalarSampler" base="ScalarContinuousSampler">
+    <constructor arguments="double minValue, double maxValue"/>
+    <variable type="Double" name="minValue"/>
+    <variable type="Double" name="maxValue"/>
+  </class>
+  
 </library>

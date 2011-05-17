@@ -310,11 +310,13 @@ SET(LBCPP_SAMPLER_SOURCES
 
 SET(LBCPP_SAMPLER_CONTINUOUS_SOURCES
   Sampler/Continuous/GaussianSampler.h
+  Sampler/Continuous/UniformScalarSampler.h
   Sampler/Continuous/ContinuousSamplerLibrary.xml
   ${CMAKE_CURRENT_BINARY_DIR}/ContinuousSamplerLibrary.cpp
 )
 
 SET(LBCPP_SAMPLER_DISCRETE_SOURCES
+  Sampler/Discrete/BernoulliSampler.h
   Sampler/Discrete/EnumerationSampler.h
   Sampler/Discrete/DiscretizeSampler.h
   Sampler/Discrete/DiscreteSamplerLibrary.xml

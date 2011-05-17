@@ -1,5 +1,5 @@
 /*-----------------------------------------.---------------------------------.
-| Filename: DecisionProblem.h    | Sequential Decision System      |
+| Filename: DecisionProblem.h              | Sequential Decision System      |
 | Author  : Francis Maes                   |                                 |
 | Started : 22/02/2011 16:19               |                                 |
 `------------------------------------------/                                 |
@@ -11,6 +11,7 @@
 
 # include <lbcpp/Core/Function.h>
 # include <lbcpp/Data/RandomGenerator.h>
+# include <lbcpp/Sampler/Sampler.h>
 
 namespace lbcpp
 {
