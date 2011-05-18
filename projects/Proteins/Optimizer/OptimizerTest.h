@@ -138,6 +138,54 @@ public:
   }
   
 };
+
+  
+class OptimizerTestBedWorkUnit : public WorkUnit 
+{
+  virtual Variable run(ExecutionContext& context)
+  {
+    /*
+    std::vector<double> test;
+    test.push_back(0.435579);
+    LinearTransformation::Tosz(test);
+    std::cout << "HERE : " << test[0] << std::endl;
+    return Variable();
+    */
+    
+    
+    //OptimizerPtr optimizer = edaOptimizer(20, 100, 30, false, false);
+    OptimizerPtr optimizer = asyncEDAOptimizer(20, 100, 30, 30, 100);
+    
+    std::vector<double> coefs;
+    coefs.push_back(2.0);
+    coefs.push_back(4.0);
+    FunctionPtr f = new SphereFunction(coefs, -2.0);
+    OptimizerContextPtr optimizerContext = synchroneousOptimizerContext(context, f);
+    
+    DenseDoubleVectorPtr test = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
+    SamplerPtr sampler = independentDoubleVectorSampler(2, gaussianSampler(0.0, 5.0));
+    OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(sampler);  
+    
+    return optimizer->compute(context, optimizerContext, optimizerState);
+    
+    
+    /*
+    std::vector<double> coefs;
+    coefs.push_back(0.0);
+    coefs.push_back(0.0);
+    ScalarVectorFunctionPtr f = new EllipsoidalFunction(coefs, 0.0);
+    DenseDoubleVectorPtr input = new DenseDoubleVector(positiveIntegerEnumerationEnumeration, doubleType, 2);
+    input->setValue(0, 0.0);
+    input->setValue(1, 0.0);
+    double output;
+    output = f->compute(context, input).toDouble();
+    std::cout << output << std::endl;
+    
+    return Variable();
+    */
+
+  }
+};
   
 class OptimizerTest : public WorkUnit 
 {

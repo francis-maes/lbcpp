@@ -1,0 +1,944 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{appendix}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0,0,0.6}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=darkblue,          % color of internal links
+    citecolor=darkblue,        % color of links to bibliography
+    filecolor=darkblue,      % color of file links
+    urlcolor=darkblue           % color of external links
+}
+\usepackage{subfigure}
+
+\usepackage{listings}
+\lstset{ %
+language={},                % choose the language of the code
+basicstyle=\tiny,       % the size of the fonts that are used for the code
+%numbers=left,                   % where to put the line-numbers
+%numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+%stepnumber=2,                   % the step between two line-numbers. If it's 1 each line will be numbered
+%numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,	                % adds a frame around the code
+tabsize=4,	                % sets default tabsize to 2 spaces
+%captionpos=b,                   % sets the caption-position to bottom
+breaklines=true,                % sets automatic line breaking
+breakatwhitespace=true,        % sets if automatic breaks should only happen at whitespace
+title=\lstname,                 % show the filename of files included with \lstinputlisting; also try caption instead of title
+escapeinside={\%*}{*)},          % if you want to add a comment within your code
+aboveskip=1pt,
+belowskip=5pt
+}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+\begin{document}
+
+\begin{titlepage}
+
+\begin{center}
+
+\begin{figure}
+\centering
+\mbox{\subfigure{\includegraphics[width=4cm]{ulg.pdf}}
+\hspace{6cm}
+\subfigure{\includegraphics[width=4cm]{sciencesappli}}}
+\end{figure}
+
+\ \\[1cm]
+
+\textbf{\large ATFE0015-1 - Travail de fin d'études}\\[1,5cm]
+
+
+
+
+\huge Intérêt du calcul distribué pour l'optimisation à l'aide d'algorithmes évolutionnaires
+\HRule \\[0.4cm]
+\includegraphics[width=5cm]{evo.pdf}
+
+
+\vfill
+
+\large
+\emph{Auteur:}\\
+Arnaud \textsc{Schoofs}\\
+\href{mailto:arnaud.schoofs@gmail.com}{arnaud.schoofs@gmail.com}\\
+\large $2^{\textnormal{ème}}$ année du grade de master en ingénieur civil en informatique,\\
+à finalité approfondie \\[1.5cm]
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Superviseurs:}\\
+Louis \textsc{Wehenkel}\\
+Francis \textsc{Maes}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Jury:} \\
+Louis \textsc{Wehenkel}\\
+Guy \textsc{Leduc}\\
+Pierre \textsc{Geurts}\\
+Francis \textsc{Maes}
+\end{flushright}
+\end{minipage}
+
+\ \\[1.5cm]
+
+{\large \today}
+
+\end{center}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+
+\section{Introduction}
+
+\subsection{Contexte}
+\label{contexte}
+Dans de nombreux domaines scientifiques la demande en puissance de calcul devient de plus en plus importante. Pour répondre à cette demande sont apparus les super-calculateurs, les grilles de calcul et le calcul distribué.
+% TODO preuve d'implications ?
+
+Personnellement, j'ai découvert le concept de calcul distribué, et plus précisément de calcul volontaire, le 28/02/2008 grâce à un article publié sur un site informatique~\cite{MACG}. J'ai rapidement été séduit par le concept et me suis fortement impliqué au sein de la communauté des volontaires de l'\textit{L'Alliance Francophone}~\cite{AF}. Arrivé en deuxième année de Master en ingénieur civil en informatique, il m'a semblé intéressant d'étudier l'intérêt que pourrait avoir le calcul volontaire pour les chercheurs de l'université de Liège. 
+
+Actuellement, les solutions privilégiées au sein de l'\textit{Institut Montefiore} sont l'utilisation d'ordinateurs très puissant (e.g. 24 cores @ 1.9GHz avec 24Go de RAM), l'utilisation du super-calculateur NIC3 et l'utilisation d'une petite grille de calcul au sein de l'institut. Un des buts principaux de ce travail est donc de présenter une solution alternative à ces trois solutions et d'en dégager les avantages et inconvénients.
+% TODO comparer les GFLOPS
+
+Afin de mener à bien ce projet, un sujet de recherche était nécessaire. Après divers contacts avec le corps enseignant, les recherches de F. \textsc{Maes} et J. \textsc{Becker} et L. \textsc{Wehenkel} concernant l'annotation de protéines grâce à des méthodes d'apprentissage ont semblées bien adaptées à ce nouveau paradigme de calcul~\cite{POSTER}\cite{CAP}. C'est donc principalement dans le cadre de l'apprentissage automatique et de l'étude des protéines que ce travail a été réalisé.
+
+\subsection{Objectifs}
+Comme mentionné dans la section~\ref{contexte}, l'objectif premier de ce travail est de fournir une solution alternative aux solutions actuellement utilisées par les chercheurs de l'\textit{Institut Montefiore} lorsque la demande en temps de calcul est très importante. A ce titre, le travail vise également à mettre en avant les avantages et inconvénients de la méthode proposée.
+
+Un autre objectif du travail est de se familiariser avec les algorithmes d'apprentissage de type évolutionnaires et d'implémenter un tel algorithme.
+
+Comme souvent en recherche, partant de ces deux objectifs bien définis, de nouveaux objectifs secondaires sont venus s'ajouter petit à petit durant la réalisation du travail en fonction des résultats obtenus. Ceux-ci seront détaillés au fur et à mesure dans ce rapport. En particulier, la solution proposée étant très prometteuse, des recherches approfondies en la matière sont nécessaires. C'est pourquoi un objectif du travail, et plus précisément de ce rapport, est de fourni un document aussi complet et compréhensible que possible afin que le travail de recherche puisse être continué à partir de cette base. Dans la même optique, la suite de ce rapport montrera qu'une partie importante du travail réalisé a été consacrée à l'intégration de la solution proposée au sein des recherches de F. \textsc{Maes} afin de faciliter les recherches en la matière à moyen et à long terme. 
+
+\subsection{Rapport} % TODO meilleur titre
+% TODO mettre des ref vers les sections
+Dans ce rapport je commencerai par faire un bref rappel de ce qu'est le calcul distribué. Je présenterai ensuite l'architecture choisie pour le calcul volontaire dans le cadre de ce travail. Ensuite, chaque tâche réalisée pour la mise en oeuvre et l'implémentation sera décrite en suivant, dans la mesure du possible, l'ordre chronologique de réalisation. Enfin, les conclusions mettront en avant les avantages et inconvénients de la solution proposée et des propositions de recherche future seront proposées.
+ % TODO étoffer 
+
+\section{Le calcul distribué}
+
+\subsection{Introduction}
+% TODO parler des différentes types et différentes architectures http://en.wikipedia.org/wiki/Distributed_computing#Models ?
+En informatique, lorsque les calculs à effectuer demandent énormément de temps d'exécution, la tendance actuelle est de diviser le problème en plusieurs tâches aussi indépendantes les unes des autres que possible. Une fois le problème divisé en plusieurs unités de calcul, différents niveaux de parallèlisation sont possibles:
+\begin{itemize}
+\item Répartition au sein de plusieurs coeurs d'un même processeurs. % TODO nom
+\item Répartition au sein de plusieurs processeurs d'une même machine. % TODO nom
+\item Répartition au sein de plusieurs machines du même type faisant partie d'une infrastructure particulière, on parlera souvent de \textit{supercomputers}.
+\item Répartition au sein de plusieurs machines hétérogènes faisant partie d'une infrastructure particulière, on parlera souvent de \textit{clusters} ou de \textit{soupercomputers}. % TODO vérifier
+\item Répartition au sein de plusieurs machines hétérogènes ne faisant pas partie d'une infrastructure particulière, on parlera souvent de \textit{grid computing} ou de \textit{volunteer computing}. Le terme \textit{grid computing} étant plutôt destiné aux organisations qui partagent leurs ressources entre elles en suivant certaines règles afin d'atteindre un but commun, tandis que le terme \textit{volunteer computing} désigne plutôt le cas de figure où quiconque (ayant un accès au réseau) peut mettre à disposition une certaine puissance de calcul sur base volontaire.
+% TODO avantages des stats etc
+\end{itemize}
+C'est à cette dernière catégorie que s'intéresse principalement ce travail. 
+
+\subsection{Le calcul volontaire}
+Cette section a pour but d'introduire le calcul volontaire, ses contraintes et ses avantages. Le texte présenté ci-dessous reprend les idées reprises dans~\cite{VOLUNTEER}.
+
+Comme expliqué précédemment, un projet de calcul volontaire est un projet où des volontaires peuvent mettre à disposition du projet une certaine puissance de calcul. Les volontaires participant sont la plupart du temps anonymes, ils ne sont connus du projet que par un \textit{login} permettant de les identifier au sein d'une base de données. Etant anonymes, ils n'ont aucune responsabilité vis à vis des projets. En particulier, rien n'empêche un volontaire de renvoyer sciemment des résultats falsifiés. C'est à l'administrateur de se protéger par rapport à ce genre de problématique.
+
+Pour qu'un projet de calcul volontaire ait du succès, celui-ci doit inspirer la confiance. En effet, les volontaires doivent faire confiance aux projets à différents points de vue:
+\begin{itemize}
+\item Les volontaires exécutent les applications fournies par les projets et doivent donc être convaincu que celles-ci ne sont nuisibles d'aucune façon.
+\item Les volontaires doivent faire confiance aux administrateurs des projets quant aux mesures de sécurité mises en place afin de protéger le serveur. En effet, un serveur vulnérable pourrait être utilisé comme vecteur de transmission pour toutes sortes de \textit{malwares}.
+\item Les volontaires doivent faire confiance aux projets quant aux recherches effectuées et aux publications qui s'en suivent.
+\end{itemize}
+Lors de la mise en place d'un projet de calcul volontaire, la communication avec les volontaires est donc un aspect à ne pas négliger.
+
+\subsection{Le choix de la plateforme}
+Pour la réalisation de ce travail deux approches sont possibles:
+\begin{itemize}
+\item Réaliser "à partir d'une page blanche" un serveur permettant de distribuer le calcul et s'intéresser ainsi plus particulièrement à la partie réseau du travail.
+\item Utiliser une plateforme existante de calcul distribué et consacrer plus de temps à l'amélioration/création d'algorithmes d'apprentissage et à l'intégration de la solution proposée au sein de l'\textit{Institut Montefiore}.
+\end{itemize}
+
+Dans ce travail, c'est la deuxième approche qui a été retenue. En particulier, c'est la plateforme libre \textsc{BOINC} qui a été utilisée. Il s'agit d'une plateforme de calcul distribué développée par l'université de \textit{Berkeley}. Les raisons de ce choix sont multiples:
+\begin{itemize}
+\item La plateforme \textsc{BOINC} existe depuis plusieurs années et est stable.
+\item Celle-ci est libre est de nombreux volontaires travaillent sans cesse à l'améliorer.
+% TODO check chiffres
+\item La communauté \textsc{BOINC} représente un nombre très importants de volontaires: 494671 machines pour 305398 volontaires représentant une moyenne de 5959,08 TFLOPS sur 24h~\cite{BOINC}. A titre comparatif, actuellement le super-calculateur le plus puissant au monde a une puissance effective de 2566 TFLOPS~\cite{TOP500}.
+\item Mon implication dans le monde \textsc{BOINC}, et plus précisément au sein de l'\textit{Alliance Francophone}~\cite{AF}, depuis plusieurs années m'assurait un certain soutien des volontaires de cette communauté.
+\item Les volontaires qui calculent sur le réseau \textsc{BOINC} reçoivent un certain nombre de crédits pour chaque unité calculée. Ces crédits ne représentent rien de concret mais ils engendrent une émulation importante au sein de la communauté: de nombreux sites présentent sous formes diverses et variées des statistiques par rapport à ces crédits, les utilisateurs se regroupent en équipe et organiser des compétitions entre eux (Fig.~\ref{fb}), ... En bref, ce système de crédits bien que n'ayant aucun intérêt scientifique permet de rendre la communauté très active et évite une certaine lassitude des utilisateurs.
+%TODO liens
+\end{itemize}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.6]{img/FB_Rosetta_total.png}
+\caption{Formula Boinc: Rosetta@home~\cite{SEB}}
+\label{fb}
+\end{figure}
+
+
+Le fait de partir d'une plateforme existante permet de conférer un double aspect à ce travail:
+\begin{itemize}
+\item Un aspect très pratique consistant en la compréhension du mode de fonctionnement de la plateforme existante, à la mise en place du serveur et à son entretien ainsi que la gestion des plaintes et demandes des volontaires via le site web du projet.
+\item Un aspect plus théorique visant à développer des algorithmes d'apprentissage et à intégrer ceux-ci à la plateforme \textsc{BOINC}.
+\end{itemize}
+
+
+\section{\textsc{BOINC}}
+Le but de cette section est d'introduire la plupart des aspects qu'il faut maîtriser afin de mettre en place un serveur \textsc{BOINC}. Les informations qui suivent constituent, en grande majorité, un résumé de la documentation du serveur \textsc{BOINC}~\cite{WIKI}.
+
+\subsection{Introduction}
+La plateforme \textsc{BOINC} est basée sur une architecture client-server (Fig.~\ref{clientserver}). Le serveur et le client sont disponibles gratuitement sur le site de \textit{Berkeley}~\cite{BOINC}.
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4]{img/Boinc_arch.pdf}
+\caption{\textsc{BOINC}: architecture client-server}
+\label{clientserver}
+\end{figure}
+
+Chaque projet scientifique désirant utiliser cette infrastructure déploie un serveur \textsc{BOINC} et publie l'adresse de celui-ci sur internet~\footnote{Plusieurs sites recensent l'ensemble des projets \textsc{BOINC}.}. % TODO exemples.
+Les volontaires exécutent quant à eux l'application client, \textit{BOINC Manager}, sur leur(s) machine(s). Ce manager permet aux volontaires de rejoindre simplement n'importe quel projet en spécifiant simplement son URL (Fig.~\ref{boincmanager}). Ce programme est disponible sous forme de sources et sous forme binaire pour différentes plateformes (Windows, Linux, OS X, ...). Enfin, cette application permet de régler un ensemble de paramètres définissant la manière dont la machine sera utilisée pour calculer les unités de travail des projets (Fig.~\ref{boincpref}): pourcentage de CPU maximum alloué, quantité maximale de RAM utilisable, espace disque maximum utilisable, calcul en permanence vs. calcul quand l'utilisateur est inactif, utilisation réseau, ... Une fois ces paramètres réglés, l'application s'exécutant avec une priorité extrêmement faible, l'utilisateur ne se rend normalement même plus compte qu'il calcule pour des projets scientifiques!
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.35]{img/boincmanager.png}
+\caption{\textit{Boinc Manager}}
+\label{boincmanager}
+\end{figure}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.35]{img/boincpref.png}
+\caption{\textsc{BOINC}: préférences utilisateur}
+\label{boincpref}
+\end{figure}
+
+\subsection{Fonctionnement général}
+Le principe général de fonctionnement est assez simple: le serveur \textsc{BOINC} génère des \textit{Work Units} (WU) et le \textit{BOINC Manager}, installé sur les ordinateurs des volontaires, contacte périodiquement le serveur afin de récupérer des WU. Dès que ces WU sont calculées, le \textit{BOINC Manager} renvoie les résultats au serveur qui se charge de traiter ces résultats et de générer de nouvelles unités. 
+
+Le fonctionnement du serveur est paramétrable à l'aide de fichiers XML de configuration (e.g. \textit{config.xml}). Le serveur repose principalement sur une base de données MySQL contenant toutes les informations nécessaires concernant les utilisateurs, les unités de travail, divers statistiques, ...
+
+Comme expliqué précédemment, le serveur \textsc{BOINC} est fourni par l'université de \textit{Berkeley}, et il n'y a donc pas eu un travail trop important à réaliser afin de pouvoir distribuer des unités de travail. Cependant, afin de pouvoir utiliser ce serveur, il faut se familiariser avec son mode de fonctionnement et réaliser certains "sous-programmes" utilisés par le serveur\footnote{Le rôle de chacun de ces programmes sera détaillé à la section~\ref{daemons}.}.
+En effet, tous les projets ne fonctionnent évidemment pas exactement de la même façon et il est donc logique que certaines parties du serveur doivent être adaptées selon les besoins du projet. Pour ce faire, l'université de \textit{Berkeley} maintient un wiki reprenant la documentation nécessaire à l'utilisation du serveur \textsc{BOINC} \cite{WIKI}.
+
+\subsection{Daemons}
+\label{daemons}
+Les programmes devant être développés pour mettre sur pied un serveur \textsc{BOINC} fonctionnel prennent la forme de \textit{daemons}. Les implémentations réalisées de ces programmes seront décrites plus loin dans ce rapport. Cette section vise simplement à introduire d'un point de vue fonctionnel ces programmes ainsi que les API permettant d'implémenter ceux-ci facilement.
+
+ %TODO sources pour chaque section ?
+\subsubsection{Work generator}
+Il s'agit du programme qui génère les unités de travail (\textit{Jobs} ou \textit{Work Units}). Concrètement une unité de travail consiste souvent en un ensemble de fichiers \textit{input} et/ou de paramètres à passer en ligne de commande au programme exécuté chez le volontaire. L'implémentation du \textit{work generator} est réalisée en utilisant l'API \textsc{BOINC} ce qui facilite grandement l'ajout du/des \textit{job(s)} créé(s) dans la base de données du serveur \textsc{BOINC} afin que ceux-ci soient prêt à être envoyés aux volontaires.
+
+Le serveur \textsc{BOINC} étant fourni avec un exemple de \textit{work generator}, l'implémentation de la partie \textsc{BOINC} du programme est facilement réalisée en se basant sur cet exemple (\textit{sample\_work\_generator.cpp}). Les étapes importantes sont:
+\begin{itemize}
+\item Génération du ou des fichiers \textit{input}.
+\item Placement des fichiers \textit{input} dans la hiérarchie de dossiers \textit{download} (via l'API \textsc{BOINC}). Les fichiers téléchargeables par l'utilisateur doivent impérativement se trouver dans le dossier \textit{download}. Ce dossier pouvant contenir des milliers de fichiers, l'API \textsc{BOINC} utilise une hiérarchie de dossiers où le nom du sous-dossier contenant un fichier est déterminé sur base du nom de ce fichier. Il s'agit d'une technique courante permettant de retrouver plus rapidement des fichiers lorsque ceux-ci sont nombreux au sein d'un répertoire.
+\item Remplissage de la structure de données décrivant une unité de travail (\textit{DB\_WORKUNIT}). Cette structure contient entre autres: nom de l'unité, application client cible, divers paramètres décrivant les ressources susceptibles d'être utilisées par le calcul de l'unité (mémoire RAM, temps CPU, ...).
+\item Appel de la fonction \textit{create\_work()} de l'API \textsc{BOINC}. Cette fonction se charge de mettre toutes les informations concernant l'unité dans la base de données. Après cet appel, l'unité est prête à être téléchargée par un volontaire. Les arguments à passer à cette fonction sont principalement: la structure \textit{DB\_WORKUNIT}, le ou les noms des fichiers \textit{input}, les fichiers \textit{template} décrivant les fichiers \textit{input} et les fichiers \textit{output} de l'unité de travail. % TODO plus d'info sur les templates
+\end{itemize}
+
+Les parties spécifique à une application sont principalement la génération des fichiers \textit{input} et les \textit{templates} \textit{input}/\textit{output} correspondant.
+
+\subsubsection{Validator}
+Les \textit{jobs} étant calculés par des volontaires, il est important d'implémenter une politique de validation des résultats renvoyés. 
+
+En effet, certains ordinateurs des volontaires peuvent être overclocké à outrance engeandrant parfois des résultats erronés. Parallèlement à cela, vu le système de points mis en place, certains utilisateurs pourraient être tentés de tricher en renvoyant volontairement de faux résultats. 
+
+Généralement, un même \textit{job} sera envoyé au moins deux fois sur le réseau \textsc{BOINC}. C'est ce qu'on appelle le principe de réplication. Ceci permet de valider simplement des résultats en les comparant par exemple. L'implémentation du \textit{validator} passe donc par l'implémentation d'une fonction de comparaison des résultats. La configuration du serveur \textsc{BOINC} (et plus particulièrement du \textit{scheduler} qui distribue les unités) permet également de pousser la validation encore plus loin en imposant que les multiples instances d'un \textit{job} soient calculées par des machines différentes par exemple.
+
+Concrètement l'implémentation d'un \textit{validator} passe par l'implémentation de 3 fonctions:
+\begin{verbatim}
+extern int init_result(RESULT& result, void*& data)
+extern int compare_results(RESULT& r1, void* data1, 
+                           RESULT& r2, void* data2, bool& match)
+extern int cleanup_result(RESULT& r, void* data)
+\end{verbatim}
+
+La première fonction prend en entrée un résultat ($result$), analyse d'une manière ou d'une autre les fichiers \textit{output} associés (ceux-ci sont accessibles via la structure $RESULT$) et crée une structure permettant de déterminer si deux résultats sont identiques. Un pointeur vers cette structure est alors retourné via le paramètre $data$. La valeur de retour de la fonction indique si l'opération s'est bien déroulée (0 en cas de succès, \textit{ERR\_OPENDIR} en cas d'erreur temporaire et toute autre valeur en cas d'erreur définitive).
+
+La deuxième fonction prend en entrée deux résultats et leur structure de données associée (crée grâce à la méthode précédente) et retourne via l'argument \textit{match} si les deux résultats sont identiques ou pas\footnote{Le terme identique n'est pas à prendre au pied de la lettre. Deux résultats sont considérés comme "identiques" par rapport à l'application visée.}.
+
+Enfin, la dernière fonction est appelée afin de libérer l'espace mémoire occupé par la structure de donnée \textit{data}.
+
+Pour que le programme soit fonctionnel, ces fonctions doivent être liées avec les fichiers \textit{validator.cpp}, \textit{validate\_util.cpp} et \textit{validate\_util2.cpp}. Deux exemples de \textit{validator} sont fournis avec le code source du serveur \textsc{BOINC} ce qui facilite l'implémentation d'un \textit{validator} particulier (\textit{sample\_trivial\_validator.cpp} et \textit{sample\_bitwise\_validator.cpp}).
+
+\subsubsection{Assimilator}
+Le rôle de l'\textit{assimilator} est de traiter les résultats canoniques (i.e. un résultat ayant passé l'étape de validation). En effet, sauf spécification contraire, lorsqu'un \textit{job} a obtenu un résultat valide, celui-ci est, après un certain laps de temps, retiré de la base de données et ses fichiers associés sont supprimés du serveur. Le rôle de l'\textit{assimilator} est donc par exemple de stocker les résultats dans une base de données dédiée ou de stocker les résultats à un autre endroit du disque (ou sur une autre machine).
+
+Concrètement, l'implémentation de ce programme est réalisée en implémentant la fonction:
+\begin{verbatim}
+int assimilate_handler(WORKUNIT& wu, vector<RESULT>& results, 
+                       RESULT& canonical_result)
+\end{verbatim}
+
+Cette fonction est appelée dans 2 cas de figure:
+\begin{itemize}
+\item Un résultat canonique a été trouvé, i.e. le \textit{validator} a identifié un nombre suffisant de résultats identiques (généralement 2).
+\item L'unité a été considérée comme invalide (trop de résultats indiquent une erreur ou trop de résultats différents).
+\end{itemize}
+La distinction entre ces deux cas est réalisée grâce au champ \textit{canonical\_resultid} de la structure \textit{WORKUNIT}. Dans le cas où un résultat canonique a été trouvé, la valeur de ce champ est non nulle et la référence \textit{canonical\_result} pointe vers le résultat canonique. Dans les deux cas de figure, le vecteur \textit{results} contient l'ensemble des résultats associés à l'unité de travail \textit{wu}.
+
+Comme souvent, une valeur de retour égale à 0 indique un succès. La valeur spéciale \textit{DEFER\_ASSIMILATION} est utilisée pour différer l'assimilation. La fonction sera appelée à nouveau lorsqu'un autre résultat concernant cette unité sera disponible. Toutes les autres valeurs indiquent une erreur qui sera reportée dans les \textit{logs}.
+
+\subsection{Gestion des fichiers}
+% TODO
+
+\subsection{BOINC API vs. wrapper}
+
+
+\subsection{Site web}
+
+\subsection{Sécurité}
+
+
+\section{Installation du server BOINC}
+
+\subsection{Premiers pas}
+Après la lecture de la documentation, la première étape fût l'installation du serveur \textsc{BOINC} sur mon ordinateur personnel. La démarche pour compiler le code du serveur et pour installer celui-ci est décrite en détail pour les plateformes de type \textit{Debian} sur le site de \textit{Berkeley}~\cite{BOINC}.
+
+Les sources du serveur \textsc{BOINC} contiennent une application de test, \textit{uppercase}. Cette application permet de convertir le contenu d'un fichier texte en majuscules. Elle n'a donc aucun intérêt scientifique, mais permet de tester rapidement que le serveur fonctionne comme attendu.
+
+En plus de l'application proprement dite, les sources contiennent également un exemple de \textit{workgenerator}, de \textit{validator} et d'\textit{assimilator}. Tout est donc à disposition afin de tester l'infrastructure très rapidement. J'ai donc pu créer un projet de test "privé" (dont l'URL n'était pas publique) et j'ai pu ainsi me familiariser avec le fonctionnement du serveur.
+
+% TODO release projet: logo, site web, publier les stats, ...
+
+\subsection{Installation à Montefiore}
+Une fois ces premiers tests réalisés, j'ai décidé d'installer le serveur à Montefiore. Il a donc fallu trouver une machine et un local où l'installer. Après divers contacts avec le corps enseignant, j'ai obtenu une ancienne machine du réseau 8 et j'ai pu installer celle-ci dans le laboratoire RUN (\url{boinc.run.montefiore.ulg.ac.be}).
+
+La machine en question est un Pentium 4 \@ $2,4$GHz avec 1Go de RAM. Cette "petite" configuration peut sembler surprenante pour un serveur, mais il faut bien se rendre compte que dans notre cas de figure, le serveur se contente de distribuer les unités et de récupérer les résultats. Contrairement à la situation classique, ici ce sont les clients qui calculent et non le serveur. Bien entendu, plus le nombre de clients augmente, plus la charge du serveur augmente mais durant les expérimentations réalisées, aucun problème du à la charge du serveur n'a été rencontré.
+
+\subsection{Monitoring}
+Comme expliqué dans la section précédente, la "petite" configuration du serveur peut faire peur de prime abord, c'est pourquoi j'ai rapidement décidé de mettre en place un système de monitoring du serveur. De manière générale c'est une bonne pratique de disposer d'outils pour monitorer un serveur. Cela permet en général de détecter la source d'un problème de performance (goulot d'étranglement au niveau réseau par exemple, ...).
+
+\subsubsection{Première approche: script CGI}
+Le serveur \textsc{BOINC} est livré avec un script CGI permettant de visualiser sous forme graphique des fichiers textes dont le contenu est:\\
+\begin{tabular}{ccccc}
+CIVDATE & UNIXDATE & VALUE1 & VALUE2 & ...\\
+\end{tabular}\\
+où CIVDATE est la date au format $\%Y:\%m:\%d:\%H:\%M$ et où UNIXDATE est le timestamp UNIX correspondant (ex: 2010:10:30:00:00 1288389602 24).
+
+Pour pouvoir utiliser ce mécanisme, il faut donc avoir un moyen de générer ces fichiers textes. L'approche que j'ai utilisée consiste à utiliser des commandes de base UNIX dans des script \textit{shell} et à isoler l'information pertinente via les commandes de type \textit{grep}, \textit{awk}, \textit{tr}, \textit{sed}, ... Cette approche m'a permis d'obtenir des graphique pour: l'utilisation du disque dur, la charge CPU, la consommation réseau, la charge réseau, l'utilisation RAM et la puissance délivrée par le projet (\textit{floating point operations per second}, FLOPS).
+
+Pour ce qui est de la puissance délivrée par le projet, quelques remarques s'imposent. Le script calculant cette valeur utilise la commande \textit{mysql} pour se connecter à la base de données du projet et sélectionne les résultats reçus au cours de la dernière minute\footnote{Le script est exécuté toutes les minutes.}. Pour chaque résultat, la base de données contient le temps CPU utilisé pour calculer le résultat ainsi qu'une estimation de la puissance du processeur utilisé (en FLOPS). Il est donc possible de calculer le nombre d'opérations qui ont été nécessaires pour chaque résultat. La somme de ces estimations divisé par l'intervalle de temps donne une estimation de la puissance délivrée par le projet.
+
+L'ensemble des scripts est exécuté de manière périodique via la \textit{crontab} et l'exécution de ceux-ci remplit progressivement les fichiers \textit{logs} utilisés pour les graphiques.
+%TODO nombre
+%TODO lignes de code ?
+
+\subsubsection{Deuxième approche: Munin}
+Bien que la première approche soit fonctionnelle, celle-ci n'était pas assez "\textit{user-friendly}" à mon goût et l'écriture des script \textit{shell} n'était pas toujours facile. Je me suis donc tourné vers des solutions de monitoring gratuites ayant fait leur preuve. La solution \textit{Munin} a retenu mon intérêt car elle est très facile d'utilisation, relativement \textit{plug-and-play}~\footnote{Il n'y a pas grand chose à configurer pour avoir accès aux graphiques de base.} et l'écriture de nouveaux \textit{plugins} est possible.%TODO source
+
+En utilisant le même principe que celui décrit à la section précédente, j'ai écrit un \textit{plugin} permettant de visualiser la puissance délivrée par le projet.
+
+Le résultat est visible ici: \url{http://boinc.run.montefiore.ulg.ac.be/munin/}.
+
+\subsection{Sauvegarde}
+Dès le début du projet, il m'est apparu évident qu'il fallait mettre en place un système de sauvegarde du serveur.
+
+\subsubsection{Première approche: machine virtuelle}
+La première idée explorée fût l'installation du serveur dans une machine virtuelle\footnote{Le logiciel VMWare Server 2 a été utilisé.}. %TODO source
+Cette solution présente certains avantages:
+\begin{itemize}
+\item La restauration d'une sauvegarde d'une machine virtuelle se fait très simplement et ne nécessite aucune re-configuration du serveur.
+\item On peut très facilement changer de machine hôte (pour une plus puissante par exemple) puisqu'il suffit d'installer le logiciel de virtualisation et de lancer la machine virtuelle. Ceci représentait un atout majeur au début du projet car je n'étais pas encore persuadé que le serveur serait assez puissant.
+%TODO autres avantages
+\end{itemize}
+Malheureusement cette solution a aussi ses inconvénients:
+\begin{itemize}
+\item Il faut arrêter la machine virtuelle pour pouvoir en faire une sauvegarde.
+\item Le temps de sauvegarde est relativement important et la taille du fichier de sauvegarde également.
+\item Bien que d'énormes progrès aient été fait en la matière, l'utilisation d'une machine virtuelle dégrade toujours un peu les performances.
+\end{itemize}
+Ce dernier inconvénient n'est pas réellement problématique ici, mais les deux autres constituent un problème majeur. En effet, il est important de faire des sauvegardes régulières (afin d'éviter la perte de résultats et la perte de crédits (points) pour les volontaires~\footnote{La perte de crédits ne pose aucun problème d'un point de vue scientifique, mais une telle perte peut rendre les volontaires mécontents ou amener ceux-ci à penser que le projet n'est pas sérieux, ce qui serait nuisible au projet.}) et il est impensable d'arrêter le projet plusieurs heures chaque jour.
+
+Enfin, pour que la sauvegarde soit fiable, celle-ci doit se trouver sur un autre disque dur ou mieux sur une autre machine. Il faudrait donc pouvoir transférer la sauvegarde par le réseau ce qui est relativement problématique vu sa taille importante. L'autre solution consistant à faire la sauvegarde sur un deuxième disque dur est également impossible car la machine utilisée ne comporte qu'un seul disque dur~\footnote{Pour la même raison, un système de sauvegarder de type RAID est également impossible.}. 
+
+\subsubsection{Deuxième approche: sauvegarde réseau}
+La deuxième approche consiste à ne sauvegarder que les parties nécessaires à la réinstallation du serveur en l'état de la sauvegarde. Il y a donc deux éléments à prendre en considération:
+\begin{itemize}
+\item La base de données.
+\item Divers fichiers au sein du serveur (applications compilées, fichiers de configurations, répertoires upload/download du serveur, ...).
+\end{itemize} 
+
+L'implémentation de cette politique de sauvegarde a été réalisée à l'aide d'un script \textit{shell}. Celui-ci permet de faire les sauvegardes de manière automatique grâce à la \textit{crontab} et ces sauvegardes sont automatiquement transférées sur le réseau 8 (ms8xx). 
+
+Le script s'articule en deux parties. La première partie consiste à effectuer un \textit{dump} des bases de données et à transférer celui-ci via la commande \textit{scp} sur le réseau 8. La deuxième partie consiste à sauvegarder l'ensemble des fichiers nécessaires à la restauration. Cette sauvegarde s'effectue directement en réseau et de manière incrémentale via la commande \textit{rsync}. Ainsi, seul les modifications sont transférées sur le réseau. % TODO code et/ou précisions
+
+Lorsque l'on parle de sauvegarde automatique sur le réseau 8 se pose la question de l'authentification. Deux solutions différentes ont été apportées:
+\begin{itemize}
+\item \textit{expect}: Il s'agit d'un outil UNIX permettant d'automatiser l'exécution de programmes interactif. Ici, la partie interactive est la demande de mot de passe.
+\item clé privée/publique: Les commandes \textit{scp} et \textit{rsync} utilisent un tunnel \textit{ssh}. Il est possible de réaliser l'authentification \textit{ssh} sans enter de mot de passe en utilisant le système de clé privée / clé publique. Il faut cependant que la privée ne soit pas protégée par une \textit{passphrase}! 
+\end{itemize}
+% TODO code ?
+
+\subsubsection{Les fichiers \textit{log}}
+Comme dans n'importe quel serveur, des fichiers \textit{log} sont générés en cours d'exécution. Ceux-ci sont d'un intérêt majeur lorsqu'il s'agit de comprendre un bug. La verbosité de ceux-ci peut-être contrôlée via les fichiers de configuration du serveur. Au fur et à mesure du temps, ces fichiers peuvent finalement occuper une place considérable. Il est donc important d'implémenter une politique de rotation de \textit{logs}. Pour ce faire, l'utilitaire \textit{logrotate} de \textit{linux} a été utilisé. L'exécution de \textit{logrotate} a lieu a chaque sauvegarde du serveur et la rotation a lieu selon les préférences définies dans le fichier de configuration. %TODO fichier config
+
+
+
+\section{Algorithmes évolutionnaires}
+% TODO source http://fr.wikipedia.org/wiki/Algorithme_évolutionniste
+Avant de passer aux implémentations réalisées et aux expériences réalisées, il est important de préciser ce que sont les algorithmes de types évolutionnaires. 
+
+Il s'agit d'algorithmes d'apprentissage s'inspirant de la théorie de l'évolution de \textit{Darwin}. L'idée de base est de faire évoluer un ensemble de solutions à un problème donné vers de meilleurs solutions. Ce type d'algorithme est en général utilisé pour l'optimisation.
+
+Afin de bien comprendre l'idée qui se cache derrière ce type d'algorithmes, il est indispensable de faire le parallèle avec la théorie de l'évolution. Pour rappel cette théorique indique que l'évolution des êtres vivants tend à produire des individus plus adaptés à leur environnement. %TODO citation
+Différents mécanismes entrent en jeux dans ce processus:
+\begin{itemize}
+\item Les propriétés d'un individu sont codées dans ses gènes.
+\item Une population est composée d'individus différents.
+\item Selon ses différences, un individu est plus ou moins bien adapté à son environnement.
+\item Les individus transmettent une partie de leurs propriétés à leur descendance.
+\item Les individus plus adaptés se reproduisent plus efficacement.
+\end{itemize} %TODO cite
+Dans le cadre de l'optimisation on cherche en général à fixer la valeur d'un certain nombre de paramètres afin de maximiser (ou minimiser) une fonction objectif (\textit{fitness}). Dans ce contexte, un jeu de paramètres (i.e. une valeur associée à chaque paramètre, une solution potentielle du problème d'optimisation) représente un individu. Les caractéristiques de la solution (de l'individu) sont les valeurs associées à chaque paramètre, ceci représente en quelque sorte le génotype. En biologie, l'expression du génotype est le phénotype. Ici les caractéristiques de la solution s'expriment au travers de la fonction objectif. De manière générale, les algorithmes évolutionnaires sont conçus de manière à favoriser la transmission des génotypes conduisant à un bon score.  
+
+% TODO shéma algo général cf wiki + remarques
+
+Ces algorithmes, bien qu'assez simple conceptuellement, produisent d'excellent résultats dans beaucoup de domaine.
+
+\subsection{Algorithmes à estimation de distribution}
+Les algorithmes à estimation de distribution (\textit{Estimation of distribution algorithm}, EDA) sont des variations plus "évoluées" des algorithmes évolutionnaires classiques. Contrairement à ces-derniers, les EDA n'utilisent pas d'opérateurs de croisement ou de mutation. En effet, un EDA cherche à estimer les relations entre les différentes variables du problème d'optimisation en y associant une distribution de probabilité. Les nouveaux individus (enfants) sont alors généré directement à partir de la distribution de probabilité.
+% TODO image wikipedia
+% TODO implémentation et/ou détail
+\section{Cadre de recherche}
+TODO
+
+\section{BOINC API vs wrapper}
+% TODO comparaison + mise en place wrapper
+% TODO template BOINC
+
+% TODO evaluation purement au hasard
+
+% TODO unzipper
+\section{BoincEvaluator}
+\subsection{Introduction et objectif}
+Le nom attribué à la première expérience d'apprentissage réalisée via \textsc{BOINC} est \textit{BoincEvaluator}.
+
+\subsection{Implémentation}
+Dès le début du travail il est apparu évident qu'il fallait concevoir les choses de manière aussi générique que possible. Ainsi, il était important de concevoir les choses de manière à ce que \textsc{BOINC} soit un moyen pour un chercheur d'exécuté une expérience "quelconque" et non pas un moyen d'exécuter une expérience particulière. Un langage basé sur XML a donc été défini afin de décrire/définir une expérience d'optimisation. Les éléments contenu dans cette description sont les suivants:
+\begin{itemize}
+\item Le nom du programme devant être exécuté par le \textit{wrapper} ainsi que les arguments à lui passer.
+\item Le nom de l'archive \textit{zip} contenant les données utilisées pour l'apprentissage et l'évaluation. %TODO unzipper
+Cette archive sera une unique fois chez le client via l'application \textit{unzipper}.
+\item La description des paramètres devant se trouver dans le fichier \textit{input.xml} à fournir au \textit{worker} (i.e. la description de l'ensemble des paramètres à utiliser). Cette description comprend deux parties:
+	\begin{itemize}
+	\item La déclaration d'un ensemble de catégories. Il s'agit de la définition de types énumérés. % TODO exemple
+	\item L'ensemble des paramètres proprement dit. Chaque paramètre est décrit par un nom et un type. Le type est soit un type énuméré définit dans la section "catégories", soit un type "primitif" (\textit{numeric} pour les réels et \textit{integer} pour les entiers).  Pour les paramètres de type primitif il faut également préciser des bornes pour le paramètre (\textit{min} et \textit{max}). Enfin, il est possible de fournir une information \textit{a priori} pour l'EDA, sous forme de la moyenne et/ou de l'écart type pour les paramètres numériques et sous formes de probabilités pour les types énumérés.
+	\end{itemize}
+\item Le nom du score devant être extrait du fichier \textit{output} généré par le \textit{worker}.
+\item Le nom des fichiers permettant de gérer l'avancement de l'unité de travail dans le \textsc{BOINC} Manager. %TODO factiondone, state
+\end{itemize}
+Comme souvent avec les langages basés sur XML, la compréhension de ceux-ci par un lecteur est immédiate. C'est pourquoi le langage ne sera pas détaillé. % TODO nom du fichier à regader
+
+% TODO format fichier input et output
+
+\subsection{Work Generator}
+L'application qui génère les unités de travail est un EDA. Les paramètres sont considérés comme étant indépendant. L'EDA va alors associer à chaque paramètre numérique une moyenne et un écart type. Pour les paramètres de type énuméré, l'EDA va associer une probabilité à chaque élément de l'énumération. Pour reprendre le vocabulaire employé à la section %TODO
+, chaque jeu de paramètres généré par l'EDA est un individu. Chaque jeu de paramètres permet de créer une unité de travail \textsc{BOINC} (\textit{Work Unit}, WU) qui sera évaluée par les volontaires. 
+
+Dans les versions classiques d'EDA, % TODO sources
+l'algorithme génère une population de taille fixe, évalue chaque individu puis met à jour la distribution de probabilité sur base des meilleurs résultats afin de générer une nouvelle population. Cette approche n'est pas applicable en pratique au cas de \textsc{BOINC} à cause des temps de latence. En effet, imaginons que 100 unités sont distribuées sur le réseau \textsc{BOINC}, il faudrait attendre que ces 100 unités aient été évaluées avant de pouvoir générer d'autres unités. Le problème vient du fait que les résultats d'évaluation ne parviendront avec un délais très variable au serveur (suivant l'hôte sur lequel l'évaluation à lieu notamment). Cette approche serait donc très efficace puisque l'EDA passerait énormément de temps à attendre les dernières évaluations. 
+
+La solution à ce problème est de mettre au point une version asynchrone d'un EDA. %TODO déjà fait qq part ?
+La section suivante vise à décrire l'EDA implémenté.
+
+\subsubsection{EDA Asynchrone: première version}
+La première chose à considérer est la distribution initiale à utiliser dans le cas où aucune information a priori n'est fournie:
+\begin{itemize}
+\item Pour les types énumérés une probabilité uniforme est utilisée. % TODO + précis
+\item Pour les types numériques la moyenne est estimée par la relation $\frac{min + max}{2}$ et l'écart type par la relation $\frac{\textnormal{max}(abs(mean-min), abs(mean-max))}{3}$.
+\end{itemize}
+
+A partir de cette distribution initiale le \textit{work generator} va générer et envoyer pour évaluation sur le réseau \textsc{BOINC} un certain nombre d'unités (population initiale). Ensuite, le générateur va maintenir un nombre constant d'évaluations en cours. Se pose alors là question de comment est mis à jour la distribution ou en d'autres termes comment sont générées les unités suivantes. Afin de répondre à cette question, il faut savoir que tous les résultats (score associé à chaque individu) sont stockés dans une base de donnée. A chaque fois que l'EDA doit générer de nouveaux individus, la distribution utilisée est construite sur base des $x\%$ meilleurs résultats obtenus jusqu'à présent (ceux-ci sont extrait de la base de données). Bien entendu, cette politique de mise à jour de la distribution n'est pas appliquée tout de suite, celle-ci ne prend effet que lorsqu'un nombre suffisant de résultas sont disponbiles.
+
+\subsubsection{Implémentation}
+Ce programme a été réalisé rapidement afin de pouvoir tester la pertinence de l'approche et l'utilité de \textsc{BOINC}, son implémentation n'est donc pas soignée et ne sera pas détaillée dans ce rapport.
+
+L'implémentation se base notamment sur la librairie \textit{juce}. Cette librairie contient un parser XML relativement simple à utiliser. Celui-ci est utilisé afin de parser le fichier \textit{application.xml} décrivant l'expérience d'optimisation (cf. %TODO)
+La fonction \textit{parseApplicationFile()} permet notamment de récupérer le nom de l'application et un pointeur vers le \textit{XmlElement} décrivant la liste des paramètres. L'exécution de cette méthode permet également de remplir une map associant à chaque nom de type énuméré défini un pointeur vers une instance de la classe \textit{Category} décrivant le type. Une telle instance contient notamment deux vecteurs:
+\begin{itemize}
+\item un contenant les noms de l'énumération.
+\item un contenant les probabilités associées à chaque valeur de l'énumération~\footnote{La correspondance est réalisée grâce aux indices des vecteurs}.
+\end{itemize}
+
+La deuxième partie intéressante du programme est l'EDA proprement dit qui, comme expliqué %TODO
+, repose sur une base de données. L'implémentation est donc réalisée grâce à l'API MySQL. La première chose à calculer est le nombre de résultats à utiliser pour l'estimation de la distribution. Ici l'algorithme utilise un certain pourcentage du nombre total de résultats disponibles. Afin de déterminer le nombre de résultats disponibles la requête MySQL suivante est utilisée:%TODO dire que name est le nom du paramètre
+$$\textnormal{SELECT count(*) from results\_sorted}$$
+Une fois le nombre de résultats à utiliser déterminé ($nb$), il s'agit d'extraire la moyenne et la déviation standard pour les paramètres numériques. Ceci est réalisé grâce à la règle suivante:
+$$\textnormal{SELECT AVG(}name\textnormal{), STDDEV\_POP(}name\textnormal{) FROM (SELECT * from results\_sorted limit }nb\textnormal{) a}$$ % TODO mise en page
+La table \textit{results\_sorted} est une vue triée par score de la table \textit{results}. L'utilisation d'une vue permet de réduire la charge de calcul puisqu'il ne faut pas trier la table à chaque exécution.
+
+En ce qui concerne les types énumérés, l'estimation de la distribution au sein des $nb$ meilleurs résultats est réalisées grâce à la requête:
+$$\textnormal{SELECT }name\textnormal{, count(*) as }nb\textnormal{ from (select * from results\_sorted limit }nb\textnormal{) a group by }name$$
+
+\subsection{Validator}
+%TODO voir sertion...
+La validation se base sur le score se trouvant dans le fichier \textit{output} de l'unité de travail. Le rôle de la fonction \textit{init\_result()} implémentée est donc d'extraire le score grâce au parser XML se trouvant dans la librairie Juce.
+
+La fonction \textit{compare\_results()} effectue simplement la comparaison des scores. Afin de tenir compte des éventuels différences dues à l'exécution sur un processeur 32 bits ou 64 bits, la comparaison n'est pas un simple test d'égalité mais fait intervenir une certaine marge de tolérance.
+
+Une fonctionnalité supplémentaire à été ajoutée à ce \textit{validator}: l'archivage des résultats invalides. Il s'agit d'un double archivage:
+\begin{itemize}
+\item Archivage des fichiers \textit{output} invalides dans un dossier dédié (\textit{invalids}).
+\item Insertion dans une table (\textit{invalids}) de la base de donnée associée à l'expérience des informations relatives aux résultats invalides (paramètres de l'unité de travail associée, noms des deux résultats, les deux scores, la date ainsi que les identifiants des hôtes qui ont calculé ces résultats).
+\end{itemize}
+Cet archivage peut paraître inutile mais il est en fait très pertinent afin d'aider au debug de l'application client.
+
+% TODO section dédiée à Juce ?
+\subsection{Assimilator}
+Le programme implémenté se comporte de la sorte:
+\begin{itemize}
+\item Si un résultats canonique existe, le fichier \textit{output} correspondant est copié de la hiérarchie des répertoires upload vers un répertoire dédié (\textit{results}) et le résultat est inséré dans la table \textit{results} de la base de données dédiée à l'expérience. Cette table reprend le nom de la WU, l'ensemble des paramètres utilisés, le score obtenu et la date. % TODO parler de upload avant
+% TOOD numéro de version ?
+\item S'il n'y a pas de résultat canonique (WU problématique), un comportement similaire est adopté mais avec les données d'\textit{input} uniquement, i.e le fichier \textit{input} est copié dans un répertoire particulier (\textit{error\_results}) et les paramètres  de cette WU (ainsi que le nom et la date) sont introduit dans une table de la base de données (\textit{errors}).
+\end{itemize}
+
+\subsection{Remarques}
+Il est primordial de comprendre que l'implémentation réalisée pour ces 3 programmes n'est pas une version finale. Il est cependant important de parler de celle-ci pour plusieurs raisons:
+\begin{itemize}
+\item Cela permet d'introduire les concepts utilisés dans ce travail.
+\item Cela permet de voir la méthodologie suivie durant le travail. % TODO maintenant plus rien à avoir ac ça
+\end{itemize}
+
+% TODO nuancer
+Ces implémentations ont été réalisées très rapidement et avaient pour but de tester la faisabilité du projet et de réaliser une première expérience d'optimisation sous \textsc{BOINC}.
+
+Alors que le \textit{work generator} réalisé est relativement général puisqu'il s'appuie sur le fichier \textit{application.xml} décrivant l'expérience d'optimisation à réaliser, le \textit{validator} et l'\textit{assimilator} sont eux spécifiques à l'application. Il serait tout à fait possible de rendre ceux-ci génériques en se basant sur le \textit{application.xml} mais ceci n'a pas été fait car, comme je l'expliquerai dans la suite de ce rapport, une autre approche encore plus générique à finalement été suivie.
+
+
+\subsection{Résultats}
+Dans cette section sont présentés les différents résultats obtenus grâce à cette première expérience. % TODO etoffer
+Pour cette première expérience le projet est resté "privé" et seul une poignée de volontaires avait accès au projet.
+
+\subsubsection{Manque de déterminisme}
+L'exécution du learner developpé par Francis Maes sur plusieurs machines différentes grâce à \textsc{BOINC} a permis de mettre au jour deux sources de non déterminisme:
+\begin{itemize}
+\item L'ordre des opérations dans la sérialisation XML. Ceci conduisait à des fichiers \textit{output} parfois dont le contenu était identique, mais dont l'ordre du contenu variait. Cette situation a été détectée grâce à la toute première version du \textit{validator} qui était en fait un des deux \textit{validator} exemples fourni avec le serveur \textsc{BOINC}. Celui-ci effectue une comparaison byte à byte des fichiers \textit{output} afin de déterminer si deux résultats sont identiques.
+\item L'ordre du chargement des fichiers décrivant les protéines (dataset) ce qui conduit à de légère différences au niveau du score.
+\end{itemize}
+
+\subsubsection{Utilisation de la mémoire RAM}
+Lorsqu'une machine dédiée est utilisée pour réaliser ce genre d'expériences (tel que la machine \textit{Monster24} comportant 24 coeurs et des dizaines de giga de RAM), la consommation mémoire n'est pas nécessairement un paramètre critique et il est en général plus tentant de privilégier le temps d'exécution par rapport à la consommation mémoire. Dans le cadre de \textsc{BOINC} c'est la règle contraire qu'il faut privilégier. En effet, le code est destiné à être exécuté sur les machines de particuliers et ces machines sont équipées avec beaucoup moins de RAM (quelques giga maximum). L'exécution de \textsc{BOINC} est sensée être complètement transparente pour l'utilisateur. \textsc{BOINC} est sensé utiliser les ressources inutilisées des ordinateurs et non pas monopoliser l'ensemble des ressources. Ceci est d'autant plus vrai concernant l'utilisation RAM puisque un ordinateur obligé de \textit{swappé} faute de RAM a un comportement % TODO adjectif.
+
+Les retours des quelques utilisateurs ainsi que mon expérience personnelle dans le domaine, ont conduit à fixe arbitrairement une limite à ne pas dépasser: 1Go. Il est important que les applications développées respectent cette limite afin d'éviter de décourager les volontaires.
+
+Le premier learner développé par Francis Maes avait une consommation mémoire relativement importante malgré l'utilisation d'un petit dataset. Le constat que nous avons tiré était simple: il fallait absolument réduire l'utilisation mémoire pour que l'utilisation de \textsc{BOINC} soit pertinente. Ayant réussi avec cette première expérience à démontrer la pertinence de l'utilisation de \textsc{BOINC} à Francis Maes, celui-ci s'est penché sur le problème de l'utilisation RAM et est parvenu à réduire l'utilisation RAM d'un facteur 4!
+
+\subsubsection{Paramètres invalides}
+Rapidement des scores nuls sont apparus dans la table contenant les résultats, signe d'un bug dans la routine d'évaluation; bug qui n'avait jusqu'à alors pas été détecté. La section %TODO
+détaille comment \textsc{BOINC} a facilité la tâche d'identification de la cause du bug.
+
+
+\subsubsection{Stress Test}
+A priori la machine utilisée comme serveur ne me paraissait pas assez puissante. Afin de tester cela, j'ai décidé d'organiser un premier \textit{stress-test} du serveur en demandant à une dizaine de volontaires de calculer 24h/24 pendant quelques jours sur le projet. Il s'est avéré que le serveur a très très bien supporté la charge et n'a montré aucun signe de faiblesse. Ainsi, un Pentium 4 a permis de développer 135GFLOPS de moyenne avec seulement une poignée de volontaires! Cette expérience a également permis d'améliorer le meilleur score obtenu jusqu'alors (%TODO -> 0,758665).
+%TODO images
+%TODO nbre d'évaluations, temps d'évaluation 
+ 
+La seul problématique rencontrée fût le stockage des résultats qui ont rapidement pris énormément de place sur le disque dur. La section %TODO
+montrera que ce n'est actuellement plus un problème. 
+
+\subsubsection{Page de statistiques}
+Une fois les bugs des sections  %TODO
+découvert, il fût important de mettre en place un système permettant de détecter facilement la cause du bug. Ceci a été rendu possible grâce à la base de données contenant non seulement les résultats valides, mais également les résultats non valides.
+
+%TODO pages dans le code ?
+J'ai rapidement mis en place un outil (sous la forme de pages \textit{php}) permettant d'explorer ces bases de données facilement. %TODO URL
+L'outil permet de sélectionner un pourcentage variable des meilleurs ou des pires résultas et affiche la distribution associée pour chaque paramètre.
+
+La sélection des 0.7\% pire résultats conduit à ne considérer que les résultats dont le score est de 0, i.e. les unités ayant conduit à un bug dans la phase d'évaluation. En comparant les distributions obtenues ces unités avec les distributions obtenues avec l'ensemble complet des résultats, la cause du bug est détectable très facilement:
+% tableau ac multiClassInference pour les deux cas
+J'ai ainsi pu communiquer à Francis Maes que la source du bug était à chercher dans le cas où %TODO one against all
+était utilisé alors que je n'avais que très peu de connaissances concernant l'implémentation du programme.
+
+L'analyse des distributions obtenues avec les meilleurs résultats a également apporté deux résultats importants:
+\begin{itemize}
+\item Les probabilités obtenues pour les paramètres booléens sont toutes de 50/50. Ceci peut paraître surprenant de prime abord, mais il s'avère que ces paramètres n'étaient pas utilisé par la première version du learner. L'optimizer a donc su mettre en évidence des paramètres inutiles!
+\item Francis Maes a analysé les distributions et a pu constater que les certains paramètres avaient probablement convergé trop rapidement. Ceci s'explique par le fait qu'il n'y avait aucun mécanisme permettant de conserver un certain caractère aléatoire dans la première version de l'EDA. Or les EDA essayent en général toujours de garder une partie non déterministe afin d'éviter de converger trop rapidement vers un maximum local (au lieu du maximum global). Pour reprendre le parallèle avec l'évolution, il s'agit des mutations que subissent les individus. Dans la section %TODO
+, les modifications permettant de freiner la convergence seront abordées.
+\end{itemize}
+
+
+\subsubsection{L'EDA en action}
+La figure %TODO
+présente l'évolution du score moyen au cours de l'expérience. Le score moyen est calculé à l'aide des résultat reçu pendant les 12 dernières heures. L'évolution croissante de la courbe montre clairement que l'EDA fonctionne; la distribution utilisée pour générer les unités tend à générer de meilleurs candidats. La courbe bleu représente l'évolution du score moyen en excluant les scores nul (résultats bugés) tandis que la courbe rouge inclus ces résultats. Fort heureusement, l'allure de la courbe est similaire dans les deux cas. Il est également important de remarquer que l'écart entre la courbe bleu et la courbe rouge tend à se réduire, ce qui démontre encore une fois le fonctionnement de l'EDA; celui-ci tend à exclure les scores nuls.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/boincevaluator1_avg.pdf}
+\caption{Evolution du score moyen (sur 12h) pendant 60h}%TODO}
+\label{boincevaluator1_avg}
+\end{figure}
+
+La figure %TODO
+présente l'évolution du score maximal obtenu pendant la période de 12h considérée. Mis à part la valeur relevée à l'itération 2 %TODO
+qui semble anormalement élevée (probablement un "coup de chance"), on peut constater que le score maximum semble évoluer de manière croissante ce qui confirme encore une fois le bon fonctionnement de l'EDA.
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/boincevaluator1_max.pdf}
+\caption{Evolution du score max (toutes les 12h) pendant 60h}%TODO}
+\label{boincevaluator1_avg}
+\end{figure}
+%TODO légende des graphiques
+%TODO commentaires
+
+
+% TODO : numéro svn pour faciliter le debug
+
+
+\section{BoincEvaluator2}
+%TODO site web ?
+Après correction par Francis Maes des différents bug trouvés dans l'application, j'ai mis en place une deuxième simulation sous \textsc{BOINC}. Celle-ci, contrairement à la première a été réalisée avec un nombre plus important d'utilisateurs puisque le projet a été rendu public pour l'occasion.
+
+J'ai également légèrement modifié le \textit{work generator} afin d'empêcher une convergence trop rapide de l'EDA vers un minimum local:
+\begin{itemize}
+\item La déviation standard utilisée pour générer les paramètres numériques est désormais égale à deux fois la déviation standard calculée via les meilleurs résultats.
+\item Les paramètres de type énuméré sont parfois générés sans mettre à jour la distribution. %TODO mieux expliquer
+\end{itemize}
+
+\subsection{Résultats}
+
+\subsubsection{Bugs}
+Cette expérience a permis de découvrir 2 bugs restant au sein de l'application client: présence de scores nuls et présence de scores égaux à l'unité!
+
+Le premier phénomène avait déjà été observé lors de la première expérience et le problème était sensé être résolu (grâce aux patchs de Francis Maes). Cette expérience a permis de montrer qu'il subsistait un problème.
+
+Le deuxième phénomène était quant à lui nouveau. Un score de 1 étant bien entendu impossible il ne pouvait s'agir que d'un bug. A nouveau l'outil statistique, sous forme de pages php, a permis au chercheur de trouver rapidement la source du problème.
+
+%TODO dire que les pages php pourraient être généralisées 
+
+\subsubsection{L'EDA en action}
+La figure %TODO
+est l'analogue de la figure %TODO
+présentée à la section %TODO.
+La courbe comporte deux phases:
+\begin{itemize}
+\item Une phase croissante.
+\item Un palier.
+\end{itemize}
+La phase croissante est le comportement attendu, c'est l'effet espéré de l'EDA. Il est intéressant de remarquer que cette croissance est cependant moins rapide que dans l'expérience ce qui s'explique (en partie du moins) par le système de "freinage" de l'EDA mis en place. %TODO cf
+Obtenir un palier est un comportement attendu. En revanche, le palier apparait ici bien trop tôt (score moyen de 0.45 seulement) et ce palier est bien trop brusque. Il y a cependant une explication plausible à ce phénomène. La date stockée dans la base de données des résultats est la date de \textbf{réception} du résultat et non pas la date de \textbf{création} de l'unité. Aussi cette expérience à été prématurément arrêtée (aux alentours de )%TODO
+puisque l'application contenant toujours certains bugs (cf. )~\footnote{Un projet sérieux se doit d'empêcher le gaspillage de la puissance de calcul.} %TODO
+De plus, comme expliqué précédemment, la latence entre la création d'une unité et la réception du résultat est très variable. Certains hôtes sont presque entièrement dédié au projet \textit{Evo@home} alors que d'autres calculent sur des dizaines de projets. Il est donc probable que les résultats obtenu après %TODO
+correspondant à de "vieilles" unités qui ont mis un temps plus important à être calculé. Ceci soulève un point important: stocker la date de \textbf{réception} plutôt que la date de \textbf{création} était une erreur de conception. Utiliser la date de réception fausse légèrement les résultats.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/boincevaluator2_avg.pdf}
+\caption{Evolution du score moyen (sur 12h) pendant 72h}%TODO}
+\label{boincevaluator2_avg}
+\end{figure}
+
+La figure %TODO
+présente l'évolution du pourcentage de résultats nuls obtenu sur une période de temps fixée. Encore une fois, on peut constater que l'EDA effectue correctement son travail puisque ce pourcentage à tendance à diminuer.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.5]{img/boincevaluator2_zero.pdf}
+\caption{Evolution du \% de résultats nuls (sur 12h) pendant 72h}%TODO}
+\label{boincevaluator2_zero}
+\end{figure}
+
+\subsubsection{Projet public}
+% TODO rendre projet public : site, forum, clé privée, stats
+Cette expérience était également une occasion de voir comment se passaient les choses en pratique avec un projet public. 
+
+Au niveau du serveur, celui-ci s'est à nouveau étonnement bien comporté; aucun ralentissement n'a été observé. Durant cette expérience, le projet a délivré environ 1TFLOPS de puissance. Cette valeur, bien que déjà importante, est cependant très en-dessous de qu'il est possible d'atteindre en pratique. En effet, l'expérience n'a duré que quelques jours à cause de la découverte de bug or à cause de latence il faut toujours un certain temps avant d'atteindre la "vitesse de croisière".  De plus, le projet venant à peine d'être rendu public, le nombre d'utilisateurs calculant était très en-dessous de ce qu'on peut espérer en pratique.
+%TODO chiffres
+
+A côté de ces aspects positifs, pas mal de problèmes liés à la diversité des machines clients se sont présentés. Ceux-ci sont détaillés dans la section %TODO.
+
+\section{Difficultés dues à la diversité des machines}
+Une difficulté inhérente au modèle \textsc{BOINC} est la diversité des machines sur lesquels l'application est susceptible d'être exécutée. Il faut pouvoir fournir des exécutables qui se comporteront correctement sur un maximum de machine et cela n'est pas si facile qu'il n'y parait.
+
+\subsection{Code multi-platefome}
+La première restriction est d'écrire du code multi-plateforme. Il faut éviter au maximum les recours aux fonctions spécifiques à un OS particulier et le cas échéant prévoir les alternatives pour les OS principaux (Windows, Linux, OS X). Fort heureusement l'application client écrite par Francis Maes respectait déjà ces contraintes. Celle-ci s'appuie sur la librairie \textit{Juce} ()%TODO ref ou quoi
+qui est \textit{multi-platforms} ce qui facilite la tâche au niveau de la gestion des fichiers, des threads, etc.
+
+
+\subsection{Minimiser les dépendances}
+Lorsque que l'on compile une application destinée à être exécutée sur d'autres machines, il est primordial de minimiser les dépendances. Ceci est particulièrement vrai en ce qui concerne les librairies dynamiques.
+
+L'application développée par Francis Maes fait partie d'une librairie que celui-ci développe actuellement (avec Julien Becker). Comment mentionné précédemment cette librairie repose en partie sur Juce et utilise notamment des primitives permettant la construction d'interface graphique ou l'élaboration d'application réseaux. Ainsi, le code compilé initialement dépendait de librairies dynamiques telles que: %TODO 
+Le problème c'est que certaines machines des volontaires sont des serveurs ne disposant pas de ces librairies! L'application ne pouvait donc être exécutée sur celles-ci.
+
+Fort heureusement, la librairie Juce étant bien conçue, il est possible de compiler celle-ci en excluant certaines parties inutiles (par exemple tout ce qui touche à l'interface graphique, à l'audio, au réseau, ...). En éditant le fichier header de cette librairie je suis donc parvenu à exclure les composants problématiques non-nécessaires.
+
+Cependant, bien que l'application client ne dépende pas de ces composants, ceci n'est pas vrai pour la totalité de la librairie développée par Francis Maes. Il fallait donc un moyen simple d'activer/désactiver ces composants aussi bien au niveau de la librairie LBCpp que de Juce. La compilation de LBCpp étant réalisée à l'aide d'un outil relativement puissant (CMake), cette tâche n'a pas été insurmontable. J'ai ainsi pu découvrir l'outil CMake et ses fonctionnalités et mettre en place les différentes directives permettant d'inclure/exclure le réseau/l'interface graphique lors de la compilation\footnote{Francis Maes a également participé dans cette tâche pour des parties plus pointues de sa librairie tel que l'introspection.}. 
+%TODO screen shot de comment ça marche ou quoi
+
+\subsection{Compatibilité}
+Si aucune précaution n'est prise, un logiciel compilé sur une version récente de linux ou de OS X ne fonctionnera pas nécessairement sur des versions plus anciennes. Ces problèmes ont été rencontrés par des utilisateurs et ont été reportés sur le forum du projet. %TODO url
+
+En ce qui concerne OS X, il est possible de spécifier à la compilation la version minimum de l'OS sur lequel le programme doit pouvoir être exécuté. Pour ce faire il faut spécifier une valeur pour la variable \textit{DEPLOYMENT\_TARGET}. Bizarrement il semble que cela ne soit pas suffisant. %TODO link
+La lecture de divers post sur internet m'a finalement conduit à utiliser la configuration présentée dans le Tab. % TODO
+Cette configuration semble résoudre tous les problèmes de compatibilités sous OS X.
+\begin{table}[htdp]
+\caption{default}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+Variable \textbackslash Architecture & i36 & x86\_64\\
+\hline
+DEPLOYMENT\_TARGET & 10.4 & 10.5\\
+SYSROOT & MacOSX10.4u.sdk & MacOSX10.5.sdk\\
+VERSION\_MAX\_ALLOWED & 1040 & 1050\\
+VERSION\_MIN\_REQUIRED & 1040 & 1050\\
+GCC version & 4.0 & 4.0\\
+\hline
+\end{tabular}
+\end{center}
+\label{default}
+\end{table}%
+
+Pour ce qui est de la plateforme Linux, j'ai installé deux machines virtuelles aussi vieilles que possible (32 bits et 64 bits) mais permettant de compiler le code. Finalement il s'agit de la distribution Dapper de Ubuntu (6.06, kernel 2.6.15) sur laquelle GCC 4.0.3 est installé. Cette configuration semble avoir évité la plupart des problèmes de compatibilité.
+%TODO lier statiquement libstdc++ etc
+
+
+
+\section{Intégration au sein de LBCpp}
+\subsection{Introduction}
+Après ces premières expériences relativement convaincantes, il est apparu clair qu'il serait intéressant de pousser l'intégration de \textsc{BOINC} encore plus loin afin d'en faciliter l'utilisation pour un chercheur. L'idée est vraiment de se servir de \textsc{BOINC} comme d'une grille de calcul susceptible d'exécuter toutes sortes d'unité de travail et non pas un moyen d'exécuter une expérience particulière.
+
+Parallèlement à cela, il semblait intéressant de découpler au maximum l'algorithme évolutionnaire de \textsc{BOINC} afin de pouvoir utiliser celui-ci dans d'autres cadres. En particulier, Francis Maes était intéressé par la possibilité d'intégrer des optimiseurs et plus particulièrement des EDA à sa librairie d'apprentissage LBCpp.
+
+Enfin, à la même époque, Julien Becker développait une partie réseau pour la librairie LBCpp. Ce module était destiné à permettre l'exécution de morceau de code LBCpp sur le super-calculateur de Montefiore, NIC3. Il paraissait séduisant de permettre la même chose sur \textsc{BOINC}.
+
+Toutes ces considérations m'ont donc décidé à développer la suite du projet au sein même de LBCpp et à repenser les choses afin de rendre le travail réalisé plus général.
+
+\subsection{LBCpp}
+LBCpp est une librairie d'apprentissage développée principalement par Francis Maes mais également par Julien Becker. Celle-ci est écrite en C++ mais dispose d'une sur-couche particulière. Cette sur-couche apporte principalement 2 améliorations par rapport au C++:
+\begin{itemize}
+\item Une structure maintient l'ensemble des références vers un objet créé sur le tas si bien que celui-ci est supprimée automatiquement lorsqu'il n'est plus accessible. Attention cependant que les cycles ne sont pas détectés !
+\item Chaque classe en plus d'être décrite dans son fichier .h est également partiellement ou totalement décrite par un fichier XML. Ces fichiers XML sont parsés à la compilation et utilisés pour générer du code permettant une certain introspection des classes. Cette introspection permet notamment de savoir combien de champs compte une classe mais également leur type. Enfin, le système implémenté permet également très facilement la (dé)sérialisation d'objets.
+\end{itemize}
+
+Avant même de commencer l'intégration de mon travail au sein de cette librairie il m'a donc fallu en comprendre le fonctionnement.
+
+\subsection{LBCpp - Distribution}
+Au sein de la librairie existe un concept de \textit{Distribution}. Comme son nom l'indique, il s'agit d'un type d'objets utilisé pour représenter des distributions de probabilité. Une méthode particulièrement intéressante associée à ce type d'objets est la méthode \textit{sample(...)} qui permet de tirer un élément suivant la distribution de probabilité. Cette classe sera d'un intérêt particulier pour l'implémentation d'EDA.
+
+\subsection{LBCpp, les librairies dynamiques et BOINC}
+Alors que le premier learner développé par Francis Maes était lié de manière statique à LBCpp et à Juce, ce n'est en principe pas la façon de procéder lorsqu'on programme au sein de LBCpp. En effet, la librairie LBCpp est normalement compilée sous forme d'une librairie dynamique, elle même liée dynamiquement à Juce. De plus, LBCpp se compose d'un coeur (\textit{lbcpp-core.so}) et de modules annexes sous forme de librairies dynamiques (\textit{libproteins.so} par exemple) chargés dynamiquement lorsque l'exécutable le requiert.
+
+Ainsi, il était intéressant de permettre ce mécanisme au sein de \textsc{BOINC}: distribuer les librairies dynamiques et l'exécutable plutôt qu'un simple exécutable lié statiquement. Bien que la chose semble aisée à mettre en oeuvre quelques difficultés ont été rencontrées en pratique à cause des différences de gestion des librairies dynamiques selon les systèmes d'exploitation et en particulier la variable indiquant où chercher les librairies dynamiques requises pour un exécutable. Il s'agit de la variable \textit{LD\_LIBRARY\_PATH} sous Linux et \textit{DYLD\_LIBRARY\_PATH} sous Mac OS. 
+
+%TODO avoir parlé de ça avant
+Malheureusement, le fichier XML utilisé par le wrapper ne permettait pas de spécifier ces variables. Afin de contourner le problème, j'ai donc écrit deux scripts shell dont le but était de modifier ces variables avant de lancer l'exécution du worker (les script retourne bien entendu la valeur retournée par l'exécution du worker). Cependant, cette solution étant peu pratique et pouvant mener à des failles de sécurité, j'ai contacté les développeurs de \textsc{BOINC} via leur mailing list afin de suggérer une modification du wrapper permettant de facilement modifier ces variables. L'idée étant intéressante et la communauté de développeurs étant très réactives, l'amélioration a été intégrée au code de \textsc{BOINC} quelques jours plus tard. % TODO liens
+
+
+\subsection{Une nouvelle infrastructure réseau}
+Comme mentionné plus haut, Julien Becker a développé récemment une couche réseau pour LBCpp. Le but de cette couche est simple: permettre à un chercheur d'exécuter des morceaux de code LBCpp (WorkUnit LBCpp) sur NIC3. En me basant sur ce que Julien avait fait jusque là, j'ai donc ajouté quelques éléments permettant d'effectuer exactement la même chose mais sur le réseau \textsc{BOINC}!
+%TODO avantage pour comaprer
+Concrètement la structure est la suivante:
+%TODO image
+Le serveur \textit{Manager} est donc une entité qui permet de dispatcher le travail sur NIC3 ou sur le réseau \textsc{BOINC} (selon les désirs du chercheur) et de récupérer les résultats lorsque ceux-ci sont disponibles. Dans cette vision, le serveur \textsc{BOINC} et NIC3 sont des \textbf{clients} et non des serveurs. C'est donc à eux de contacter régulièrement le \textit{Manager}. C'est lors de ces échanges périodiques que le \textit{Manager} récupère les unités terminées. C'est également à ce moment là que le \textit{Manager} envoie les nouvelles requêtes, les nouvelles unités de travail.
+
+\subsubsection{BoincGridManagerInterface}
+% TODO boinccran handler
+
+
+\subsubsection{BOINC work generator}
+Dans ce contexte, ce n'est plus la responsabilité du serveur \textsc{BOINC} de créer du travail. Celui-ci est envoyé directement depuis le \textit{Manager} et, comme expliqué dans la section %TODO
+, les unités LBCpp sont stockées dans. %TODO
+Le rôle du \textit{work generator} \textsc{BOINC} n'est donc plus que d'envoyer des requêtes sur le réseau \textsc{BOINC}, i.e. copier les fichiers dans la hiérarchie de répertoires \textit{download} et créé les \textit{jobs} dans la base de données \textsc{BOINC} via la fonction \textit{create\_work()} de l'API \textsc{BOINC}. 
+
+L'implémentation de programme est réalisée dans .%TODO
+Ce programme est donc désormais complètement indépendant de l'expérience de recherche menée. La seule restriction étant d'utiliser LBCpp.
+
+\subsubsection{BOINC validator}
+Le rôle du validateur ne change pas par rapport à la section .%TODO
+En revanche, son implémentation se base désormais sur l'extraction d'un score depuis une \textit{ExecutionTrace} LBCpp. La seule restriction quant à l'utilisation est donc que la trace d'exécution contienne comme valeur de retour un \textit{ScoreObject}.
+
+\subsubsection{BOINC assimilator}
+Tout comme le \textit{work generator}, l'\textit{assimilator} \textsc{BOINC} peut désormais se réduire à sa plus simple expression: le fichier \textit{output} (\textit{ExecutionTrace}) et le fichier \textit{request} sont déplacés dans les répertoires appropriés afin que le résultat puisse être récupérable par le \textit{Manager}.
+
+Ce programme est donc lui aussi complètement indépendant de l'expérience de recherche menée. Les résultats seront archivés sur le Manager est seront accessible au chercheur via cette entité. Libre à lui d'archiver les résultats autrement s'il le désire a posteriori. 
+
+
+\section{Première expérience au sein de LBCpp}
+
+\subsection{Introduction et objectif}
+Après avoir mis en place la partie réseau reliant le serveur \textsc{BOINC} au \textit{Manager}, il était important de tester/debuger celle-ci. Afin de faire d'une pierre deux coups, ces opérations ont été réalisée en même temps qu'une nouvelle opération d'optimisation.
+
+Le but de cette nouvelle expérience était de  ...
+
+\subsection{Les distributions}
+Comme mentionné à la section %TODO
+, la librairie dispose d'un type d'objet pour représenter les distributions. Il était donc naturel d'utiliser cette classe pour représenter la distribution apprise par un EDA. 
+
+En particulier, la librairie dispose d'une classe \textit{IndependentMultiVariateDistribution}. Comme son nom l'indique, cette classe représente une distribution multi-variée ou chaque variable est indépendante. Comme pour la première expérience (cf )%TODO
+l'EDA utilisé dans cette expérience considère que les paramètres à optimiser sont indépendant. C'est donc cette distribution qui sera utilisée.
+
+La classe \textit{Distribution} au sein de LBCpp est en réalité un template dont le paramètre est le type d'objets que doit renvoyer la méthode \textit{sample()}. Grâce à l'introspection disponible au sein de LBCpp il est donc possible d'instancier une distribution multi-variée indépendante qui renverra lorsqu'elle sera samplée %TODO
+une instance d'une classe éventuellement complexe définie par le programmeur. En effet, l'introspection permet d'avoir accès au nombre de champs contenu dans une classe ainsi qu'à leur type. La distribution multi-variée associe donc chacune de ses sous-distributions à une variable de la classe template %TODO
+%TODO graphique
+
+Comme dans l'expérience précédente, on attribue une distribution gaussienne à chaque paramètre numérique. Cependant, certains de ces paramètres numériques doivent être entier ce qui ne correspond pas à une distribution gaussienne classique. J'ai donc mis en place deux classes ()%TODO
+héritant de \textit{GaussianDistribution} mais renvoyant uniquement des entiers/des entiers positifs.
+
+Parallèlement à la hiérarchie de classes \textit{Distribution} existe une hiérarchie \textit{DistributionBuilder} (incomplète) utilisée afin de construire/d'apprendre une distribution. Dans le cas simple d'une distribution gaussienne, il est possible d'ajouter des éléments (des réels) au builder progressivement. Une fois tous les éléments ajouté, l'appel à la méthode \textit{build(...)} renvoie la \textit{GaussianDistribution} qui correspond à l'ensemble des éléments ajoutés. Cette fonctionnalité est très intéressante et je l'ai un peu étendue avant de m'en servir. J'ai entre autre créé la classe \textit{IndependentMultiVariateDistributionBuilder} qui permet comme son nom l'indique d'apprendre une distribution multi-variée indépendante. Afin de relier les deux hiérarchies j'ai également ajouté une méthode usine %TODO verifier
+à la hiérarchie \textit{Distribution}. Celle-ci permet d'obtenir le builder à utiliser pour une distribution particulière (\textit{createBuilder()}.
+
+%TODO graphique
+
+
+\subsection{Nouvel EDA Asynchrone}
+L'EDA Asynchrone implémenté pour cette expérience diffère de celui décrit à la section; le seul point commun étant qu'il soit asynchrone. %TODO
+
+La boucle principale de l'optimiseur effectue les opérations suivantes:
+\begin{itemize}
+\item Génération d'individus à évaluer (si nécessaire) et envoie des requêtes correspondantes au \textit{Manager}.
+\item Récupération des résultats disponibles sur le \textit{Manager}.
+\item Mise à jour de la distribution si assez de résultats disponibles.
+\end{itemize}
+% TODO schéma ?
+
+La différence principale réside dans le processus de mise à jour. Ici, la distribution n'est pas calculée sur l'\textbf{ensemble} des meilleurs résultats obtenus depuis le début de la simulation, mais sur l'ensemble des meilleurs résultats obtenus depuis la dernière mise à jour! Ceci correspond un peu plus à un EDA classique.
+
+Concernant la politique de "freinage" de l'EDA, celle-ci est également différente. Ici, un genre de filtre exponentiel %TODO
+est utilisé pour la mise à jour de la distribution. Concrètement, la formule suivante est utilisée:
+$$distribution = distribution + updateFactor * newDistribution$$
+où \textit{newDistribution} est la distribution calculée sur base des meilleurs résultats de cette itération et où \textit{updateFactor} est le terme permettant de contrôler le filtre exponentiel (à quel point faut-il favoriser la nouvelle distribution). Toute ces opérations de construction de distribution sont rendues très facile grâce au concept de \textit{DistributionBuilder}.
+
+\subsection{Sauvegarde de l'état}
+Les expériences d'optimisation peuvent prendre énormément de temps, plusieurs heures, jours, mois selon le problème et le résultat désiré. Dans les expériences réalisées précédemment, l'EDA faisait partie intégrante du serveur \textsc{BOINC}, il s'agissait du \textit{work generator} \textsc{BOINC} et son "état" était automatiquement sauvegardé via la base de données (BDD \textsc{BOINC} et BDD dédiée à l'expérience). Comme expliqué dans la section %TODO
+, ce n'est plus le cas ici et il faut donc mettre en place un système permettant de sauvegarder l'état d'un optimiseur et de relancer celui-ci à partir de son état.
+
+Dans LBCpp les optimiseurs sont vu comme des fonctions et le calcul de la fonction d'optimisation ne peut donc modifier l'instance de l'\textit{Optimizer}~\footnote{La fonction optimize(...) doit être \textit{const}.}. %TODO
+L'état de l'optimiseur (distribution courante, meilleur score/paramètres, nombre des résultas obtenus, ...) doit donc être stocké dans une classe dédiée. La fonction d'optimisation peut alors prendre en entrée une instance de cette classe afin de commencer/poursuivre le processus d'optimisation. La sauvegarde de l'état de l'optimiseur est donc réalisée en sérialisant sous format XML l'instance de cette classe périodiquement. Encore une fois, la sur-couche de LBCpp décrite dans la section %TODO
+rend cette opération assez facile à implémenter au même titre que l'instanciation à partir du fichier XML.
+
+\subsection{Résultats}
+
+\subsubsection{L'EDA en action}
+%TODO score
+%TODO courbes
+
+\subsubsection{Détection d'un bug}
+% TODO parler de evo_ops avant
+Cette nouvelle expérience sur le réseau \textsc{BOINC} a permis de mettre au jour un bug qui était jusqu'alors passé inaperçu. En effet, la page d'administration du serveur \textsc{BOINC} a permis d'observer un taux de plantage de presque 40\% sur les machines équipées de Linux alors que le pourcentage était inférieur à 10\% pour les autres systèmes d'exploitation.
+
+Après quelques recherches dans les \textit{logs} du serveur et un certain dialogue avec les volontaires ()%TODO)
+, il est apparu qu'il s'agissait d'un bug se manifestant ou non de manière aléatoire: le programme ne plantait pas sur 40\% des machines Linux, mais plantait 40\% du temps sur la plupart des machines Linux.
+
+Francis Maes étant dans l'impossibilité de reproduire le bug sur sa machine, c'est un travail d'équipe qui a permis de finalement isoler la cause du bug et de corriger celui-ci. %TODO préciser le problème ?
+
+
+\section{OptimizerFrameWork}
+\subsection{Introduction}
+Le travail décrit dans la section %TODO
+m'a permis de ma familiariser avec LBCpp et réaliser une nouvelle expérience mais n'a pas atteint tous les objectifs fixés. En effet, un désir de Francis Maes était de disposer d'EDA au sein de LBCpp et ce de manière indépendante par rapport à \textsc{BOINC}. Une implémentation rapide de l'EDA décrit dans la section %TODO
+mais utilisant l'ordinateur local (en multi-threads) pour les évaluations plutôt que le réseau \textsc{BOINC} a permis d'arriver à un constat simple: il faut impérativement séparer la logique d'optimisation de la manière dont les individus sont évalués.
+
+Ce constat a mené à la définition d'un réel \textit{framework} pour l'implémentation d'optimiseurs au sein de LBCpp. Ce \textit{framework} se compose de 3 entités: \textit{Optimizer}, \textit{OptimizerState} et \textit{OptimizerContext}. %TODO ref
+
+\subsection{OptimizerContext}
+% TODO diagramme interface
+Cette classer permets principalement aux optimiseurs d'évaluer des individus. Cette évaluation consiste à calculer la valeur d'une fonction pour une variable donnée. La fonction servant pour l'évaluation est donnée en argument au constructeur de cette classe.
+
+Avant d'utiliser cette classe l'optimiseur doit faire appel à la méthode \textit{setPostEvaluationCallback(...)}. Cette méthode permet de transmettre une référence vers la classe qu'il faut contacter une fois le résultat de l'évaluation connu. En effet, les \textit{OptimizerContext} pouvant fonctionner de manière asynchrone, il faut un processus de callback pour obtenir le résultat de l'évaluation. Concrètement, la méthode \textit{evaluate(...)} permet de demande de manière \textit{a priori} asynchrone l'évaluation d'une variable. Le résultat sera communiqué via la méthode \textit{functionReturned(...)} à la callback spécifiée. Il est également de la responsabilité de l'utilisateur du contexte d'appeler la méthode \textit{removePostEvaluationCallback(...)} dès que celui-ci a terminé d'utiliser le contexte. Par défaut, les méthodes \textit{setPostEvaluationCallback(...)}/\textit{removePostEvaluationCallback(...)} se content d'ajouter/supprimer une callback à l'instance de la fonction à optimiser. L'opération de callback est donc réalisée au sein même de l'évaluation de la fonction (le processus de callback ne repasse pas par l'OptimizerContext).
+
+Le processus d'évaluation étant \textit{a priori} asynchrone, les méthodes \textit{waitUntilAllRequestsAreProcessed()} et \textit{areAllRequestsProcessed()} permettent d'attendre que toutes les évaluations aient été effectuées. L'implémentation de \textit{waitUntilAllRequestsAreProcessed()} évitera normalement le \textit{busy-waiting} en mettant le \textit{thread} en sommeil entre chaque appel à \textit{areAllRequestsProcessed()}. La méthode \textit{getTimeToSleep()} permet au client du contexte d'obtenir le laps de temps utilisé pour ces périodes de sommeil.
+
+\subsubsection{SynchroneousOptimizerContext}
+Il s'agit d'une version synchrone d'un \textit{OptimizerContext}. La méthode \textit{evaluate(...)} est donc bloquante et le retour de cette fonction s'effectue \textbf{après} le callback renvoyant le résultat de l'évaluation.
+
+\subsubsection{MultiThreadedOptimizerContext}
+Il s'agit d'une version asynchrone d'un \textit{OptimizerContext} s'appuyant sur un \textit{MultiThreadedExecutionContext} de LBCpp. Le processus de callback ne passant pas par l'\textit{OptimizerContext}, une référence vers une variable entière est utilisée afin de tracker le nombre d'évaluations en cours.
+
+\subsubsection{DistributedOptimizerContext}
+Il s'agit de l'\textit{OptimizerContext} permettant de distribuer les requêtes d'évaluations sur une grille de calcul. L'implémentation de ce contexte est un peu plus délicate et se compose de deux parties.
+
+La fonction \textit{evaluate(...)} est chargée de créer une \textit{WorkUnit} LBCpp à partir de la requête d'évaluation de la fonction~\footnote{Ceci est nécessaire puisque le Manager traite uniquement des \textit{WorkUnit} LBCpp.}. Ceci est en réalité très simple à réaliser vu la présence de la classe \textit{FunctionWorkUnit} au sein de LBCpp. Une fois l'unité créée, celle-ci est envoyée au Manager grâce à l'API Network développée par Julien Becker.
+
+A chaque instance de \textit{DistributedOptimizerContext} est associé une instance de \textit{GetFinishedExecutionTracesDaemon}. Il s'agit d'une classe dérivant de \textit{Thread} dont le but est de récupérer périodiquement les résultats disponibles sur le Manager et d'appeler la callback spécifiée par l'utilisateur une fois le résultat récupéré. L'instance de \textit{DistributedOptimizerContext} et celle de \textit{GetFinishedExecutionTracesDaemon} ont toutes deux accès (en lecture et en écriture) à une structure de données maintenant les requêtes en cours d'évaluation. Les opérations des deux classes s'effectuant dans deux threads différents il faut bien entendu introduire une certain synchronisation entre les deux~\footnote{La librairie Juce fournit un moyen très simple et similaire à ce qui se fait en Java pour introduire cette synchronisation.}.
+
+
+\subsection{OptimizerState}
+Il s'agit de la classe responsable de stocker l'état d'un \textit{Optimizer}. En effet, comme expliqué à la section %TODO
+, la fonction \textit{optimize(...)} étant \textit{const}, l'état doit être stocké dans une classe auxiliaire. Cet classe contient:
+\begin{itemize}
+\item Le nombre total de requêtes d'évaluation effectuées et le nombre total de résultats obtenus (la différence étant le nombre d'évaluations en cours).
+\item Une structure contenant les résultats obtenus mais qui n'ont pas encore été traité par l'optimiseur. Cette structure est remplie via la callback appelée à la fin de l'évaluation de la fonction à optimiser.
+\item Le meilleur score obtenu jusqu'à présent ainsi que la variable associée~\footnote{Afin d'homogénéiser le code, les optimiseurs ont désormais pour but de minimiser le score.}.
+\item Un verrou Juce permettant de synchroniser les accès à l'état puisque ceux-ci peuvent se faire depuis des threads différents.
+\end{itemize}
+
+Comme mentionné plus haut, cette classe implémente l'interface \textit{FunctionCallback}, i.e. la méthode \textit{functionReturned(...)}. L'implémentation consiste simplement à stocker le résultat dans une structure de donnée propre à l'\textit{OptimizerState}. Cette structure sera par la suite consultée/vidée par la routine d'optimisation proprement dite.
+
+Grâce à la sur-couche de LBCpp ()%TODO
+cette classe est facilement sérialisable en XML afin de sauvegarder l'état de l'optimiseur en vue de pouvoir le redémarrer. En pratique il est intéressant de pouvoir sauvegarder l'état de manière régulière sans toute fois perdre trop de temps processeur pour la sauvegarde. Ainsi, le programmeur utilisant cette classe afin de coder un optimiseur est invité à appeler la fonction \textit{OptimizerState::autoSaveToFile(...)} de manière régulière (à des moments où l'était est cohérent). Un paramètre utilisé lors de l'instanciation de l'\textit{OptimizerState} permet de fixer la fréquence maximum de sauvegarde, si bien que la sauvegarde ne sera effective que si un certains laps de temps minimum s'est écoulé depuis la dernière sauvegarde, empêchant ainsi de gaspiller trop de temps processeur. L'utilisateur de cette fonction peut également contourner se principe à l'aide d'un flag boolean (ceci peut-être utile en fin de procédure d'optimisation par exemple). 
+
+\subsubsection{DistributionBasedOptimizerState}
+Certains optimiseur, dont les EDA, se basent sur une distribution. Il est donc logique de prévoir une classe dérivant \textit{OptimizerState} mais contenant une distribution de probabilité en plus dans l'état.
+
+% TODO samplerbased
+
+\subsection{Optimizer}
+Il s'agit de la hiérarchie de clase implémentant la logique d'optimisation. Un \textit{Optimizer} est vu comme une \textit{Function} dont les entrées sont un \textit{OptimizerContext} et un \textit{OptimizerState} qui renvoie la \textit{Variable} ayant obtenu le score minimum.
+
+\subsubsection{EDAOptimizer}
+Il s'agit de la version classique d'un EDA basé sur une distribution multi-variée indépendante. L'algorithme est celui décrit dans % TODO.
+
+\subsubsection{AsyncEDAOptimizer}
+Il s'agit d'une variation de l'EDA Asynchrone décrit dans la section .%TODO
+Celle-ci tend à s'approcher encore un peu plus de la version classique. 
+
+En particulier, précédemment la mise à jour de la distribution était basée sur \textbf{au moins} un certain nombre de résultas. Plus précisément, l'optimiseur attendait de disposer d'au moins $X$ résultats, % TODO
+et puis calculait la nouvelle distribution sur base des $Y$\% meilleurs résultats. Le nombre de résultats utilisés pour calculer la nouvelle distribution était donc variable mais toujours égal ou supérieur à un certain seuil.
+
+Dans cette nouvelle version de l'algorithme, la mise à jour est toujours basée sur exactement \textit{populationSize} résultats, et plus précisément la nouvelle distribution est calculée sur base des \textit{numBests} meilleurs résultats parmi cette population. 
+
+Il ne reste donc plus que deux différences majeur par rapport à la version classique de l'EDA:
+\begin{itemize}
+\item Le caractère asynchrone de l'optimiseur: celui-ci essaye de maintenir en permanence un certain nombre d'évaluations en cours contrairement à la version classique qui attend d'avoir obtenu tous les résultas d'une population avant de générer d'autres individus.
+\item La possibilité de "freiner" la convergence à l'aide du paramètre \textit{updateFactor} (cf. ) %TODO 
+\end{itemize}
+
+\subsection{Callbacks et intégration à l'Explorer}
+Le sujet n'a pas encore été abordé jusqu'ici, mais LBCpp dispose également d'une interface graphique, l'\textit{Explorer}. Il permet de visualiser en temps réel la trace d'exécution d'un morceau de code LBCpp. Pour ce faire, le code doit faire appel à certains fonctions telles que: \textit{informationCallback, resultCallback, progressionCallback, ...} Ces appels permettent de décrire l'avancement du programme et les résultats obtenus. Ces informations sont utilisées pour un affichage en console, mais également pour générer une trace d'exécution (\textit{ExecutionTrace}). C'est, entre autre, cette trace d'exécution que permet de visualiser le Manager. 
+
+Une autre fonctionnalité intéressante du Manager est qu'il permet en quelques clics d'obtenir des courbes à partir des résultats fourni via les callbacks.
+
+Ainsi, j'ai utiliser l'API à disposition afin que l'exécution des \textit{Optimizer} soit aussi bien intégrée que possible au sein de l'\textit{Explorer} et permettent notamment de visualiser directement les courbes de progression de l'optimisation. Le résultat est visible Fig. %TODO
+
+\section{OptimizerTestBed}
+
+\subsection{Utilité}
+
+\subsection{Résultats}
+
+\section{Améliorations et développements futurs}
+
+\section{Conclusion}
+
+% TODO CMake, X11, svn, etc
+% TODO gestion des fichiers sous BOINC
+%TODO différents aspects du traival: théorique, pratique, maintiens site, etc
+% TODO dans optimizer gestion explorer etc
+% TODO pour toutes les expériences mettre ancien best score, vs current best score
+%TODO EDA avec poids
+%TODO uniformsampleandpickbest + pas besoin de distributionbasedoptimizerstate pour lui
+% TODO voir ce qui se fait déjà en matière AsyncEDA
+% TODO avantages calcul volontaire : http://boinc.berkeley.edu/trac/wiki/VolunteerComputing
+% TODO vérifier que tt les .cpp cité sont sur svn
+% TODO utiliser les anciennes images de présentation du TFE
+\newpage
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+
+\end{document}

@@ -8,5 +8,6 @@
   <class name="ProteinGridEvoOptimizerState" base="GridEvoOptimizerState">
    <constructor arguments="IndependentMultiVariateDistributionPtr distributions"/>
   </class>
+  <class name="OptimizerTestBedWorkUnit" base="WorkUnit"/>
     
 </library>
