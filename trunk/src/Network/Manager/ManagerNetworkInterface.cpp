@@ -15,7 +15,7 @@ String ForwarderManagerNetworkInterface::pushWorkUnit(WorkUnitNetworkRequestPtr 
 {
   client->sendVariable(new PushWorkUnitNotification(request));
   String res = T("Error");
-  if (!client->receiveString(1000, /*300000*/ res))
+  if (!client->receiveString(15000/*1000*/, res))
     context.warningCallback(request->getSource(), T("ForwarderManagerNetworkInterface::pushWorkUnit"));
   return res;
 }
