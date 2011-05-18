@@ -138,7 +138,6 @@ void DoubleMatrix::subtract(const DoubleMatrixPtr& term)
 
 void DoubleMatrix::multiplyByScalar(double factor)
 {
-  jassert(factor);
   for (size_t i = 0; i < this->getNumRows(); i++)
     for (size_t j = 0; j < this->getNumColumns(); j++)
       this->setValue(i, j, factor * this->getValue(i, j));
