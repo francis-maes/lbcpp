@@ -976,9 +976,10 @@ public:
     ScalarVariableStatisticsPtr stats = context.run(workUnit, false).getObjectAndCast<ScalarVariableStatistics>();
 
     double parametersPenalty = 0.0;
-    DenseDoubleVectorPtr parametersVector = input.dynamicCast<DenseDoubleVector>();
+   /* DenseDoubleVectorPtr parametersVector = input.dynamicCast<DenseDoubleVector>();
     if (parametersVector)
       parametersPenalty += 0.1 * parametersVector->l0norm() / (double)parametersVector->getNumValues();
+     */ 
 
     return stats->getMean() + parametersPenalty;
     //return stats->getMaximum();
@@ -1210,12 +1211,12 @@ public:
     std::vector<std::pair<DiscreteBanditPolicyPtr, String> > policiesToOptimize;
     policiesToOptimize.push_back(std::make_pair(new UltimateParameterizedBanditPolicy(), T("ultimate")));
     //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(true), T("oldStyle-sparse")));
-    //policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle-dense")));
 
-    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
     policiesToOptimize.push_back(std::make_pair(new EpsilonGreedyDiscreteBanditPolicy(0.1, 0.1), T("epsilonGreedy")));
     policiesToOptimize.push_back(std::make_pair(new TimeDependentWeightedUCBBanditPolicy(), T("timeDependentWeighted")));
+    policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(1), T("powerFunction1")));
     policiesToOptimize.push_back(std::make_pair(new PowerFunctionParameterizedBanditPolicy(2), T("powerFunction2")));
+    policiesToOptimize.push_back(std::make_pair(new OldStyleParameterizedBanditPolicy(false), T("oldStyle")));
 
     //policiesToOptimize.push_back(new PerTimesWeightedUCBBanditPolicy(maxTimeStep));
     //policiesToOptimize.push_back(new WeightedUCBBanditPolicy());
@@ -1235,11 +1236,10 @@ public:
       context.enterScope(T("Optimizing ") + policyName);
       Variable bestParameters = optimizePolicy(context, policyToOptimize, trainingStates, testingStates);
       DiscreteBanditPolicyPtr optimizedPolicy = Parameterized::cloneWithNewParameters(policyToOptimize, bestParameters);
-      String outputFileName = T("Policies/") + String((int)maxTimeStep) + T("/") + policyName + T(".policy");
+      String outputFileName = T("Policies100iter/") + String((int)maxTimeStep) + T("/") + policyName + T(".policy");
       context.informationCallback(T("Saving policy ") + outputFileName);
       optimizedPolicy->saveToFile(context, context.getFile(outputFileName));
 
-#if 0
       // evaluate on train and on test
       workUnit = new CompositeWorkUnit(T("Evaluating optimized policy"), 2);
       // policy must be cloned since it may be used in multiple threads simultaneously
@@ -1249,6 +1249,7 @@ public:
       workUnit->setPushChildrenIntoStackFlag(true);
       context.run(workUnit);
       
+#if 0
       // detailed evaluation
       DiscreteBanditPolicyPtr baselinePolicy = new UCB1TunedDiscreteBanditPolicy();
       context.enterScope(T("DetailedEvaluation"));
@@ -1317,7 +1318,7 @@ protected:
     size_t populationSize = numParameters * 8;
     size_t numBests = numParameters * 2;
 
-    populationSize = 100, numBests = 10;
+    //populationSize = 100, numBests = 10;
 
     // optimizer state
     OptimizerStatePtr optimizerState = new SamplerBasedOptimizerState(Parameterized::get(policy)->createParametersSampler());

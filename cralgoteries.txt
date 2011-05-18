@@ -1,3 +1,12 @@
+
+* Experiments Bandit
+* Arnaud: bug: ProteinLearner boucle
+* Arnaud: bug: Manager chie dans le acknoledgment
+* Alejandro: gaussienne paramétrée
+* Alejandro: ProteinMover sampler
+* Bandit paper
+
+
 Samplers:
  * Include Movers in the default proteins project 
  * MaximumEntropySampler
