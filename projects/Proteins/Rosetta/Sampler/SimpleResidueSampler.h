@@ -40,8 +40,10 @@ public:
 
   virtual void makeSubExamples(const ContainerPtr& inputs, const ContainerPtr& samples, std::vector<ContainerPtr>& subInputs, std::vector<ContainerPtr>& subSamples) const
   {
-    subInputs.resize(1, inputs);
-    subSamples.resize(1, samples);
+    subInputs.resize(1);
+    subInputs[0] = inputs;
+    subSamples.resize(1);
+    subSamples[0] = samples;
   }
 
 protected:
