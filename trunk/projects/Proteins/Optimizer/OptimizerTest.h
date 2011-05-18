@@ -91,10 +91,10 @@ class GridEvoOptimizerExperience : public WorkUnit
 public:
   virtual Variable run(ExecutionContext& context)
   {
-    String projectName(T("GridEvoOptimizerExperience"));
-    String source(T("arnaud@monster24"));
+    String projectName(T("GridEvoOptimizerExperience2"));
+    String source(T("localhost"));
     String destination(T("boincadm@boinc.run"));
-    String managerHostName(T("monster24.montefiore.ulg.ac.be"));
+    String managerHostName(T("localhost"));
     size_t managerPort = 1664;
     size_t requiredMemory = 1;
     size_t requiredCpus = 1;
