@@ -41,7 +41,7 @@ bool NetworkClient::receiveVariable(juce::int64 timeout, Variable& result)
     if (elapsedTime >= timeout || disconnected)
       return false;
 #ifdef JUCE_DEBUG
-    context.informationCallback(T("receiveVariable"), T("NetworkClient - time left: ") + String((timeout - elapsedTime) / 100) + T(" s"));
+    context.informationCallback(T("receiveVariable"), T("NetworkClient - time left: ") + String((timeout - elapsedTime) / 1000) + T(" s"));
 #endif // !JUCE_DEBUG
     juce::int64 timeToSleep = juce::jlimit<juce::int64>((juce::int64)0, (juce::int64)1000, timeout - elapsedTime);
     if (!timeToSleep)
