@@ -29,12 +29,6 @@ StochasticGDParameters::StochasticGDParameters(IterationFunctionPtr learningRate
 {
 }
 
-StochasticGDParameters::StochasticGDParameters()
-  : maxIterations(0), perEpisodeUpdates(false), normalizeLearningRate(true),
-    restoreBestParameters(true), randomizeExamples(true), evaluateAtEachIteration(true), numExamplesPerIteration(0)
-{
-}
-
 BatchLearnerPtr StochasticGDParameters::createBatchLearner(ExecutionContext& context) const
 {
   return stochasticBatchLearner(maxIterations, randomizeExamples, numExamplesPerIteration);
